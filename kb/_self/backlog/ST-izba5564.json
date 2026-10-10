@@ -1,0 +1,32 @@
+{
+  "id": "ST-izba5564",
+  "kind": "story",
+  "title": "backlog.py cost says when no usage capture exists instead of printing zeros",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 7,
+  "goal": "backlog.py cost on a project or clone whose query log spool holds no usage rows for the id prints one line, no capture: tokens unavailable, with the spool path it read, exits 0 and prints no token figure; the kb-sprint review step says the same words when it sees that line, so a review never records zeros as a sprint's cost (SP-fvztfmtm closed with zeros because no work sidecar had been delivered). A project with capture is unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_no_capture"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cost.py",
+    "_tools/test_backlog_portable.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-qgnjxiol"
+  ],
+  "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here."
+}

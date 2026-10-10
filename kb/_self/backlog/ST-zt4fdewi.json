@@ -1,0 +1,35 @@
+{
+  "id": "ST-zt4fdewi",
+  "kind": "story",
+  "title": "A brief carries the rules of the project's own docs from backlog.json's docs map, and a project that is a kb root gets them as cited fact lines",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 3,
+  "goal": "backlog.json names a docs_map (the kb's is kb/_self/map.csv) and, when the project is a root of a kb (its own or an installed plugin's), the root name; backlog.py brief ID then adds a rules section: for a mapped project the docs its touches map to, by path and heading, and for a kb root the output of rag.py pack --root <root> --item ID (fact lines with path:line and tag), so a worker reads the rules of its files, never the project's whole rulebook (a workspace measured on 2026-10-10 has every worker read a 68 KB rulebook and an 88 KB rulings file before its task). A project with neither prints a one-line note that no docs map is set. /kb-add-root and /kb-ingest are named in kb/_self/backlog.md as the way a project becomes a root.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_rules"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_base.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-nq5z6whn"
+  ],
+  "links": [
+    "kb/_self/backlog.md: rag.py pack --root _self --item ID prints the rules of the docs an item's touches map to",
+    ".claude/skills/kb-add-root/SKILL.md and kb-ingest: a repository becomes a kb root with CODE and DOC facts"
+  ]
+}

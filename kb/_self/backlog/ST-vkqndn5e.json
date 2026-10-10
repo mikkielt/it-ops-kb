@@ -1,0 +1,37 @@
+{
+  "id": "ST-vkqndn5e",
+  "kind": "story",
+  "title": "An item carries typed external tracker ids that backlog.json validates, commits and merge requests carry, and brief and find print",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "An item has an external field, a map of tracker name to id list (such as jira to PROJ-123, or gitlab to an issue number), written by new and set --external TRACKER=ID (--add-external appends) and never by hand; backlog.json's trackers key names each tracker's id pattern and url template, check refuses an id that matches its tracker's pattern in no way or a tracker the file does not name, and a project without a trackers key accepts none; brief prints them with their urls; the commits claim and done make carry one KB-Ref: <id> trailer per id (a form a tracker's smart-commit parser reads), check-trailers accepts it, and land writes the ids and urls into the merge request description; find matches an id as it matches a word of the title. The kb's own backlog.json names no tracker, so nothing changes for the kb's items.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "external_ids"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_items.py",
+    "_tools/bl_check.py",
+    "_tools/bl_view.py",
+    "_tools/bl_land.py",
+    "_tools/bl_dispatch.py",
+    "_tools/kg_trailers.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-qgnjxiol"
+  ]
+}

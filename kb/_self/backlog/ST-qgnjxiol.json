@@ -1,0 +1,67 @@
+{
+  "id": "ST-qgnjxiol",
+  "kind": "story",
+  "title": "backlog.py reads its project settings from a backlog.json at the repository root, with the kb's current values as the default",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "bl_base.py's constants (the item directory, the always-in-scope globs, the review and research checks, the land steps that run (stale, eval, lint), the lane module, the id prefixes, the worktree directory, the forge project) are read from one backlog.json at the repository root through one function, with the kb's current values as the file the kb commits, so every existing command and test behaves as before on the kb; python3 _tools/backlog.py config prints the effective settings with each value's source (file or default) and exits 0, and a backlog.json with an unknown key or a wrong type is refused naming the key. No bl_ module imports backlog or kbgit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "config"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "backlog.json",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/map.csv"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "EP-gzr4mmkm parks orchestration features until the kb's fitness tests pass; this epic is orchestration. Run it now, or wait for EP-gzr4mmkm's first two stories?",
+      "options": [
+        "run now: the epic is a second product (sprint tooling for any project), and its brief and dispatch commands make the headless content sprint EP-gzr4mmkm wants cheaper",
+        "wait: the epic's stories stay drafts until EP-gzr4mmkm's held-out probe and headless content sprint pass"
+      ],
+      "recommendation": "run now: the epic is a second product (sprint tooling for any project), and its brief and dispatch commands make the headless content sprint EP-gzr4mmkm wants cheaper",
+      "do": {
+        "run now: the epic is a second product (sprint tooling for any project), and its brief and dispatch commands make the headless content sprint EP-gzr4mmkm wants cheaper": "ST-qgnjxiol",
+        "wait: the epic's stories stay drafts until EP-gzr4mmkm's held-out probe and headless content sprint pass": "EP-gzr4mmkm"
+      },
+      "class": "agents-rule",
+      "answer": "run now: the epic is a second product (sprint tooling for any project), and its brief and dispatch commands make the headless content sprint EP-gzr4mmkm wants cheaper",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does a project's backlog.json live, and how is it overridden?",
+      "options": [
+        "backlog.json at the repository root, KB_BACKLOG_CONFIG in the environment overrides the path; nothing under .claude/, which headless sessions cannot write in default or acceptEdits mode",
+        ".claude/backlog.json beside settings.json, no override"
+      ],
+      "recommendation": "backlog.json at the repository root, KB_BACKLOG_CONFIG in the environment overrides the path; nothing under .claude/, which headless sessions cannot write in default or acceptEdits mode",
+      "do": {
+        "backlog.json at the repository root, KB_BACKLOG_CONFIG in the environment overrides the path; nothing under .claude/, which headless sessions cannot write in default or acceptEdits mode": "ST-qgnjxiol",
+        ".claude/backlog.json beside settings.json, no override": "ST-qgnjxiol"
+      },
+      "class": "agents-rule",
+      "answer": "backlog.json at the repository root, KB_BACKLOG_CONFIG in the environment overrides the path; nothing under .claude/, which headless sessions cannot write in default or acceptEdits mode",
+      "by": "operator"
+    }
+  ],
+  "links": [
+    "kb/_self/code.md: standard library, flat prefixed modules behind a CLI facade, import direction"
+  ]
+}

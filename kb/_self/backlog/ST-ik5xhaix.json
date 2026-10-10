@@ -1,0 +1,36 @@
+{
+  "id": "ST-ik5xhaix",
+  "kind": "story",
+  "title": "An item names the repositories it changes, and claim, held, land and close work per repository of a multi-repository workspace",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 4,
+  "goal": "An item carries repos (required) and repos_if_needed (optional) when backlog.json declares a repositories map (name to checkout path under the workspace); its touches are then <repo>/<glob> (workspace/<glob> for workspace files) and held --overlaps compares them across items by repository and glob; dispatch makes one worktree per required repository under the configured worktree directory, branched from that repository's fetched origin default branch; land reads each repository's merge request titled <id>: once, refuses with the state when one is not merged, and when all are: removes the clean worktrees (refusing dirty, locked or live-process ones by name), deletes branches whose tip is on the default branch, writes the merge commit per repository as evidence, marks the item done and commits the item file in the workspace; close removes what land left. A project without a repositories map behaves as the kb does today.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "multirepo"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_view.py",
+    "_tools/bl_land.py",
+    "_tools/bl_procs.py",
+    "_tools/bl_base.py",
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-qgnjxiol"
+  ]
+}

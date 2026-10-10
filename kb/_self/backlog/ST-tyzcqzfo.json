@@ -1,0 +1,29 @@
+{
+  "id": "ST-tyzcqzfo",
+  "kind": "story",
+  "title": "A second project runs one item end to end on the plugin's /sprint, and its retrospective findings are kb items",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P1",
+  "rank": 8,
+  "goal": "A git project other than the kb installs the plugin, writes its backlog.json (a repositories map when it spans repositories, a docs map, its forge), files or imports its items, and one item is claimed, dispatched to a headless worker, landed and closed by the plugin's sprint skill with the operator present; the retrospective's findings about the tooling are filed as kb bugs or stories under this epic (titles naming the plugin sprint run), each with a repro from that run. This story is the epic's fitness test: the epic is not done while it is open, and it is closed with drop --why naming the run's findings, since its own touches are item files.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "find",
+        "plugin",
+        "sprint",
+        "run"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/*.json"
+  ],
+  "depends_on": [
+    "ST-ik5xhaix",
+    "ST-wrsuz64a"
+  ]
+}
