@@ -2645,3 +2645,20 @@ _Agent: kb-research_
 - See gitlab/issue-closing-patterns.md.
 
 _Agent: kb-research_
+
+## QK-gitlab-runner-source-file-maps-usetimestamps. Which gitlab-runner source file maps the UseTimestamps feature flag to FF_TIMESTAMPS?
+- `helpers/featureflags/flags.go` declares the constant `UseTimestamps` of package `featureflags` as the string `"FF_TIMESTAMPS"`, and registers it with default `true`, not deprecated. [CODE S-4pm7parz: helpers/featureflags/flags.go#L39, helpers/featureflags/flags.go#L338-L343]
+- The build reads the flag by that constant when it sets the logger's `Timestamping` option. [CODE S-k3j6wjbx: common/build.go#L1658]
+- Conclusion: the name `FF_TIMESTAMPS` a job sets and the `UseTimestamps` constant the runner code reads are the same flag, defined in one file at the pinned runner commit (main at 49138a48, VERSION 19.5.0). [DER S-4pm7parz, S-k3j6wjbx: the constant and its use]
+- See gitlab/job-log-timestamps.md.
+
+_Agent: kb-research_
+
+## QK-error-rename-return-windows-live-process. Which error does a rename return on Windows when a live process has the directory as its working directory?
+- Microsoft states that the current directory of a process is locked while it runs, which prevents the directory from being deleted, moved or renamed; it names no error code. [DOC S-qz6kfi4i]
+- One recorded run on a Windows 11 host (Python 3.14.7, 2026-10-08): `os.rename` of a directory that a live child process had as its working directory raised `PermissionError` with `winerror` 32, `ERROR_SHARING_VIOLATION`, and left the directory and its files in place. [DER S-qz6kfi4i, S-ttcgrkbl: the lock note and error code 32, read against the run]
+- Conclusion: for a rename of one directory, a tool can expect `ERROR_SHARING_VIOLATION` (`winerror` 32) and match on it rather than on the localized message; the run was one host and one Python version. [DER S-qz6kfi4i, S-ttcgrkbl]
+- Open: the same code for `RemoveDirectory` or a recursive delete, and whether a tree is left partly deleted, was not run. [UNK]
+- See python/stdlib-windows-portability.md.
+
+_Agent: kb-research_

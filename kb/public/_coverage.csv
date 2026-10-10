@@ -143,7 +143,7 @@ gitlab/github-branch-rules-and-auto-merge,P3,complete,gitlab/github-branch-rules
 gitlab/hosted-runners-windows,P3,complete,gitlab/hosted-runners-windows.md,5
 gitlab/issue-closing-patterns,P3,complete,gitlab/issue-closing-patterns.md,5
 gitlab/jira-issue-keys-in-commits,P3,partial,gitlab/jira-issue-keys-in-commits.md,3
-gitlab/job-log-timestamps,P3,complete,gitlab/job-log-timestamps.md,5
+gitlab/job-log-timestamps,P3,complete,gitlab/job-log-timestamps.md,6
 gitlab/repository-mirroring,P3,complete,gitlab/repository-mirroring.md,9
 gitlab/work-items-planning,P3,complete,gitlab/work-items-planning.md,11
 gpo/admx-central-store,P1,complete,gpo/admx-central-store.md,8

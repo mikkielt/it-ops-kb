@@ -2,8 +2,8 @@
 topic: gitlab/job-log-timestamps
 priority: P3
 applies_to: "GitLab CI job logs and GitLab Runner feature flag FF_TIMESTAMPS; docs at gitlab-org/gitlab master @a128b3dc and gitlab-org/gitlab-runner main @49138a48 (VERSION 19.5.0)"
-retrieved_utc: 2026-10-08
-sources: [S-fn452qtu, S-5qytzl6u, S-crjqbibt, S-k3j6wjbx, S-yfgczc7d]
+retrieved_utc: 2026-10-10
+sources: [S-fn452qtu, S-5qytzl6u, S-crjqbibt, S-k3j6wjbx, S-yfgczc7d, S-4pm7parz]
 status: complete
 ---
 
@@ -19,6 +19,7 @@ job logs page asks for GitLab Runner 18.7 or later. On the wire the runner write
 
 ## Facts
 - `FF_TIMESTAMPS` has default value `true`, is not marked deprecated and has no removal version; when it is disabled, timestamps are not added to the beginning of each log trace line. [DOC S-fn452qtu]
+- The runner source names the flag in `helpers/featureflags/flags.go`: the constant `UseTimestamps` of package `featureflags` is the string `"FF_TIMESTAMPS"`, and its entry in the flag list has default `true`, `Deprecated: false` and the description the docs repeat; the build reads the flag by that constant (below). [CODE S-4pm7parz: helpers/featureflags/flags.go#L39, helpers/featureflags/flags.go#L338-L343]
 - A runner feature flag is toggled through an environment variable of the same name: `"true"` or `1` activates it, `"false"` or `0` deactivates it. [DOC S-fn452qtu]
 - In pipeline configuration a flag is set as a CI/CD variable under `variables:`, globally for every job or inside one job. [DOC S-fn452qtu]
 - For every job a runner runs, a flag can be set in the `environment` array of the `[[runners]]` section of the runner configuration (for example `environment = ["FEATURE_FLAG_NAME=1"]`). [DOC S-fn452qtu]
@@ -43,6 +44,7 @@ job logs page asks for GitLab Runner 18.7 or later. On the wire the runner write
 |---|---|---|
 | Flag | `FF_TIMESTAMPS`, default `true` | S-fn452qtu |
 | Disable | `false` or `0` | S-fn452qtu |
+| Flag constant in the runner source | `featureflags.UseTimestamps` = `"FF_TIMESTAMPS"`, `helpers/featureflags/flags.go` | S-4pm7parz |
 | Documented control | `FF_TIMESTAMPS` CI/CD variable, runner 18.7 or later | S-5qytzl6u |
 | Feature GA | GitLab 18.9 (introduced 17.1, flag `parse_ci_job_timestamps` removed 17.2) | S-5qytzl6u |
 | Storage cost | about 10% more log space | S-5qytzl6u |

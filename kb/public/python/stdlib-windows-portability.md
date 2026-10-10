@@ -2,7 +2,7 @@
 topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
-retrieved_utc: 2026-10-08
+retrieved_utc: 2026-10-10
 sources: [S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb]
 status: partial
 ---
@@ -46,7 +46,8 @@ commands are `python` and `py`; `python3` exists only as a compatibility alias.
 - `RemoveDirectory` needs an empty directory and delete access, and "marks a directory for deletion on close": the directory is not removed until the last handle to it is closed. With a POSIX delete the directory goes while handles remain open, and later `CreateDirectory` calls to open it fail with `ERROR_FILE_NOT_FOUND`. [DOC S-t5ahy22o]
 - `ERROR_SHARING_VIOLATION` is code 32 (0x20): "The process cannot access the file because it is being used by another process." [DOC S-ttcgrkbl]
 - So Windows refuses to remove or rename a directory that is the working directory of a live process, its children included, until that process ends or changes directory; a tool that deletes worktrees on Windows ends or waits out such processes first, or reports them, before it deletes anything. [DER S-qz6kfi4i, S-6bobcclf, S-t5ahy22o: the lock note, cwd inheritance and delete-on-close]
-- Open: which error code a rename or delete returns when it hits a current directory (`ERROR_SHARING_VIOLATION` or `ERROR_ACCESS_DENIED`), and whether a tree is left partly deleted, is not stated: the lock note names the effect, not the code. [UNK: see `_gaps.md`]
+- One run on a Windows 11 host (Python 3.14.7, 2026-10-08): a child process sleeping with `cwd` set to a git worktree directory (started by `subprocess.Popen`), and `os.rename` of that directory to a sibling name raised `PermissionError` with `winerror` 32, `ERROR_SHARING_VIOLATION`; the directory and its tracked files stayed in place. The message text came in the host's display language, so a check matches `winerror` or the exception class, not the text. The run covered a rename of one directory only: not `RemoveDirectory` or a recursive delete, not a directory held by an open file instead of a working directory, not another Windows version. [DER S-qz6kfi4i, S-ttcgrkbl: the lock note and error code 32, read against the recorded run]
+- Open: whether `RemoveDirectory` or a recursive delete of a current directory returns the same code, and whether a tree is left partly deleted, is not recorded: the run above covers the rename only. [UNK: see `_gaps.md`]
 
 ### File locks without fcntl
 - The `fcntl` module is available on Unix only (not WASI). [DOC S-oavxfpsn]
