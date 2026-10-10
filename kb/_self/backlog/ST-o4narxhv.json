@@ -17,7 +17,7 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md",
+    "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
     "_tools/bl_items.py",
     "kb/_self/tools.md",

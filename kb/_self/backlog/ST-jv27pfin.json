@@ -26,7 +26,7 @@
   "touches": [
     "_tools/bl_items.py",
     "_tools/test_check_programs.py",
-    ".claude/skills/kb-sprint/SKILL.md",
+    "skills/sprint/SKILL.md",
     "kb/_self/backlog.md",
     "AGENTS.md",
     "kb/_self/maintaining.md",
