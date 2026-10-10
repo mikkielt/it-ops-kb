@@ -309,6 +309,18 @@ def test_backlog_cost_no_capture_names_the_spool_and_prints_no_table_of_zeros(tm
     assert len(lines) == 2 and lines[1].startswith("no item line: because no work sidecar names it")
     assert " usage rows but none in a window of the item" in lines[1]
     assert json.loads(worked("--format", "json"))["no_line"]["kind"] == "unnamed"
+    assert worked("--rework").splitlines() == lines  # no open session: --rework prints what plain cost prints
+
+    # a session still open that claimed the item: the same line, then its open session block, no table of zeros
+    claim = {"id": "r2", "ts": "2026-10-10T10:01:00.000Z", "surface": "work", "session_id": "s2", "prompt_id": "p2",
+             "item": sid, "action": "claim"}
+    (spool / "s2.jsonl").write_text(json.dumps(claim) + "\n", encoding="utf-8")
+    rework = worked("--rework").splitlines()
+    assert rework[:2] == worked().splitlines() and " rows in a window of the item" in rework[1]
+    assert rework[2].startswith("open session figures (the session has not closed: provisional until it does): 1 open ")
+    assert rework[3].startswith("no figure yet: ")
+    assert not any(x.startswith(("direct", "attributed", "session total", "work and rework")) for x in rework)
+    assert json.loads(worked("--rework", "--format", "json"))["no_line"]["kind"] == "unnamed"
 
     # a sidecar line of the item: the tables, as before
     models = {"claude-sonnet-5-5": {"requests": 2, "in": 10, "cw": 0, "cw1h": 0, "cr": 5, "out": 7}}

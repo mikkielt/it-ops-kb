@@ -337,8 +337,8 @@ def cost_report(bl, iid, rework=False):
     item work lines, research left out as in the figures above; without it, no line and no key of the report
     differs from a report that never heard of rework. With `rework` the report also has `open`: the sessions still open
     with work in the scope (`open_lines`), their prompts and the `split` of their figures, kept apart from every figure
-    above, which stay the sidecars'. A report whose scope has no item line at all (and, with `rework`, no open session
-    with work in it) also has `no_line` (`cost_no_line`): why it reads 0, with no figure."""
+    above, which stay the sidecars'. A report whose scope has no item line at all also has `no_line`
+    (`cost_no_line`): why it reads 0, with no figure, whether or not `rework` found an open session."""
     all_lines, skipped = cost_lines(bl.root, None, rework=True) if rework else cost_lines(bl.root, None)
     extra, opened = open_lines(bl.root) if rework else ([], [])  # sessions still open: no sidecar line yet
     named = {i for w in all_lines + extra for i in (w["items"] if "items" in w else [w["item"]])}
@@ -366,7 +366,7 @@ def cost_report(bl, iid, rework=False):
         own = [w for w in extra if w.get("item") in keep and w["item"] not in research]
         rep["open"] = {"sessions": len(mine), "missing": sum(o["missing"] for o in mine),
                        "prompts": cost_sum(own)["prompts"], "split": cost_split(own)}
-    if not lines and not (rework and rep["open"]["sessions"]):  # an open session's block below says why it reads 0
+    if not lines:
         rep["no_line"] = cost_no_line(bl.root, view, iid, shared, all_lines, keep)
     rep["restored"] = sorted(({w["item"] for w in lines} | {iid}) & set(restored))
     if sprint:
@@ -817,6 +817,19 @@ def cost_split_text(split, view):
     return out
 
 
+def cost_open_text(o, view):
+    """The lines of `cost --rework` for the sessions still open (`rep["open"]`): none when no open session has work
+    in the scope."""
+    if not o["sessions"]:
+        return []
+    out = [f"open session figures (the session has not closed: provisional until it does): {o['sessions']} open "
+           f"session(s) with work in this scope, {o['prompts']} prompt(s) read from their spool, not in the "
+           f"figures above, {o['missing']} window prompt(s) without a usage row yet"]
+    if not o["prompts"]:
+        out.append("no figure yet: the zeros mean the open session has no usage rows to read, not that no work happened")
+    return out + ["  " + x for x in cost_split_text(o["split"], view)]
+
+
 def cmd_cost(bl, a):
     if a.research:
         if a.id or a.runs or a.rework:
@@ -856,6 +869,9 @@ def cmd_cost(bl, a):
         if rep["no_line"]["kind"] != "shared":  # no line of any kind: every figure is 0, and no table of zeros follows
             for x in cost_apart(rep, view, work=False):
                 say(x)
+            if a.rework:  # the sessions still open are the figures the sidecars lack
+                for x in cost_open_text(rep["open"], view):
+                    say(x)
             return 0
     for x in cost_block(rep, ""):
         say(x)
@@ -864,15 +880,8 @@ def cmd_cost(bl, a):
     if a.rework:
         for x in cost_split_text(rep["rework_split"], view):
             say(x)
-        o = rep["open"]
-        if o["sessions"]:
-            say(f"open session figures (the session has not closed: provisional until it does): {o['sessions']} open "
-                f"session(s) with work in this scope, {o['prompts']} prompt(s) read from their spool, not in the "
-                f"figures above, {o['missing']} window prompt(s) without a usage row yet")
-            if not o["prompts"]:
-                say("no figure yet: the zeros mean the open session has no usage rows to read, not that no work happened")
-            for x in cost_split_text(o["split"], view):
-                say("  " + x)
+        for x in cost_open_text(rep["open"], view):
+            say(x)
     if rep["items"] not in ([], [iid]):
         say("by item:")
         for i in rep["items"]:
