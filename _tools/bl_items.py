@@ -316,14 +316,13 @@ def cmd_answer(bl, a):
         if g["kind"] == "blocking" and a.by != "operator":
             raise Refused(f"gate {a.gate} of {bl.label(iid)} is blocking: only the operator answers it")
         options = [o for o in g.get("options") or [] if isinstance(o, str)]
-        text = a.answer.strip()
-        if options and not free and text not in options:  # a mistyped answer is never recorded as someone's decision
+        if options and not free and a.answer not in options:  # a mistyped answer is never recorded as someone's decision
             raise Rejected(f"gate {a.gate} of {bl.label(iid)}: --answer {a.answer!r} is none of its options "
                            f"({'; '.join(repr(o) for o in options)}); answer one of them exactly, or pass --free "
                            "when a free answer is meant")
-        g.update(answer=text if text in options else a.answer, by=a.by)
+        g.update(answer=a.answer, by=a.by)
         if a.record:
-            record_decision(bl, iid, a.gate, g["answer"], a.by)
+            record_decision(bl, iid, a.gate, a.answer, a.by)
     bl.save(it)
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     if a.record:
