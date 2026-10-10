@@ -2,7 +2,7 @@
   "id": "TK-ye4msgps",
   "kind": "task",
   "title": "land's no-work-rows warning tells a late row from a missing one and names an undelivered store",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-bhkdqaku",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "kb-worker-ye4msgps"
 }
