@@ -89,6 +89,40 @@
       "class": "agents-rule",
       "answer": "only rows that name one of the sprint's items",
       "by": "operator"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "What does backlog.py ops ID do for an id that holds an item file but is no sprint (a story, a bug, an epic)?",
+      "options": [
+        "refuse it, exit 2, naming its kind",
+        "print the rows of the item and its descendants"
+      ],
+      "recommendation": "refuse it, exit 2, naming its kind",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "The item's first check plants its items under kb/_self/backlog of a root that holds no backlog.json, whose item_dir defaults to _backlog, so no implementation of ops can pass it (exit 2, no item): how is the check amended?",
+      "options": [
+        "the check writes {\"item_dir\": \"kb/_self/backlog\"} to backlog.json at the planted root, before it runs ops",
+        "the check plants the items under _backlog of the root",
+        "leave the check and make item_dir default to kb/_self/backlog"
+      ],
+      "recommendation": "the check writes {\"item_dir\": \"kb/_self/backlog\"} to backlog.json at the planted root, before it runs ops",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g6",
+      "kind": "blocking",
+      "question": "Does backlog.py ops print every row whose item is one of the sprint's items, or only the four events the goal names (land.step, land.end, done.refused, agent.run)?",
+      "options": [
+        "every row that names one of the sprint's items",
+        "only land.step, land.end, done.refused and agent.run"
+      ],
+      "recommendation": "every row that names one of the sprint's items",
+      "class": "agents-rule"
     }
   ],
   "notes": "Premise: backlog.py ops is an invalid choice (exit 2). .claude/settings.json already allows Bash(python3 _tools/backlog.py *). A closed sprint's items come from git history as bl_cost restores them; the check plants an open sprint only. Backlog triage 2026-10-10: its dependency ST-fd33riif “The committed ops sidecars hold no fixture landing” was dropped; the ops reader filters rows by the sprint's own items, so fixture rows in past sidecars do not reach it. Premise run 2026-10-10: backlog.py ops SP is 'invalid choice' (exit 2), reproduces. The goal named worker.run, which is no event of ql_capture.OPS_EVENTS: a worker's run is an agent.run row, so the goal says so; the rows of a spool and a sidecar are read by bl_stall.ops_rows (agent.run rows of a closed session come from the sidecar, land and done rows from the spool too).",
