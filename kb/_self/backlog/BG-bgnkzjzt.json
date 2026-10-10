@@ -2,7 +2,7 @@
   "id": "BG-bgnkzjzt",
   "kind": "bug",
   "title": "backlog.py's usage text for set omits --clause and --add-clause, and for precheck omits the goal clause map",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-x5gjv4r7",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   ],
   "touches": [
     "_tools/backlog.py"
-  ]
+  ],
+  "claimed_by": "orchestrator-x5gjv4r7"
 }
