@@ -1,0 +1,16 @@
+{
+  "id": "BG-fay4tani",
+  "kind": "bug",
+  "title": "A full tests.py run takes 22 to 24 s on this darwin host, over the 20 s ceiling, with the suite at 83 tests",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A whole-suite python3 _tools/tests.py run on the darwin host finishes within the seconds ceiling of _tools/tests_ceiling.json (20 s), or the ceiling is raised by the operator's recorded answer; measured 2026-10-10 on a worker's worktree: 23 s and 22 s with 85 tests, 24 s with 83 (-k not heldout_reword), host load unknown.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  }
+}
