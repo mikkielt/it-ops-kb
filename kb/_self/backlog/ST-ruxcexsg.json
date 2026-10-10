@@ -1,0 +1,13 @@
+{
+  "id": "ST-ruxcexsg",
+  "kind": "story",
+  "title": "Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item whose goal adds a rule that tells an agent to run a command (a backlog.py subcommand with a term or flag) carries one check that runs the command form the rule's text gives, on a planted input or this clone, beside its doc-text check. Answers the SP-4jfepy6u close: ST-pogg4knc's check read only the phrase 'removed or renamed flag', and the rule's command, backlog.py referrers --add-touch, exits 2 (BG-sq2qycqc, found by the review).",
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}
