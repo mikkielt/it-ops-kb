@@ -2,7 +2,7 @@
   "id": "ST-nlxo2zv5",
   "kind": "story",
   "title": "A sprint worker's /kb-verify run does not run tests.py --changed, which its brief forbids",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
@@ -60,5 +60,27 @@
     "parked: SP-flkl5gom close"
   ],
   "notes": "Checks are planned when a sprint commits it. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: kb-verify step 5 runs tests.py --changed with no exception for a sprint worker, and kb-worker.md names neither kb-verify nor --changed (ran at planning, 2026-10-10: the pack of the question is weak, kb lacks kb-verify; grep of kb-worker.md finds none): reproduces. The first check wants kb-verify to name the sprint worker (or kb-worker) and kb-worker.md to name kb-verify and --changed.",
-  "claimed_by": "worker-ST-nlxo2zv5"
+  "evidence": {
+    "commit": "c8a43a50d34b282bfffe68bd5683b1c268c14fa6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;v=open(\".claude/skills/kb-verify/SKILL.md\",encoding=\"utf-8\").read();w=open(\".claude/agents/kb-worker.md\",encoding=\"utf-8\").read();a=\"sprint worker\" in v or \"kb-worker\" in v;b=\"kb-verify\" in w and \"--changed\" in w;print(\"kb-verify names the sprint worker:\",a,\"; kb-worker names kb-verify and --changed:\",b);sys.exit(0 if a and b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ffc0306a1c162e56"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([\"python3\",\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",\"does a sprint worker running kb-verify run tests.py --changed\"],capture_output=True,text=True);o=r.stdout;ok=r.returncode==0 and \"coverage: good\" in o and \"kb-verify\" in o and \"worker\" in o;print(\"packs good with the worker rule:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "00009dab4a7a3eab"
+      }
+    ]
+  }
 }
