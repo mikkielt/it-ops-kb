@@ -2,7 +2,7 @@
   "id": "ST-5rd3hshg",
   "kind": "story",
   "title": "Review sprint: Real lookup misses answered: the stranded query-log findings leave no-fix and the research queue empties",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-flkl5gom",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator"
 }
