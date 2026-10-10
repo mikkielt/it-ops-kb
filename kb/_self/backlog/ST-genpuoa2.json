@@ -2,7 +2,7 @@
   "id": "ST-genpuoa2",
   "kind": "story",
   "title": "agents/codebase-mapping.md gives Cargo's full rustc lookup order, rustup proxy included, and the rustc info cache's off cases",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5x5ut5ko",
   "priority": "P3",
   "rank": 0,

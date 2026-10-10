@@ -2,7 +2,7 @@
   "id": "BG-n4el7pmd",
   "kind": "bug",
   "title": "factdiff anchors --stale lists stale anchors in api-limits and messages-api (9 at filing, 5 at 2026-10-10)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-owuunsvl",
   "kind": "story",
   "title": "gitlab/job-log-timestamps cites the runner source that maps FF_TIMESTAMPS to UseTimestamps",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,

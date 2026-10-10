@@ -2,7 +2,7 @@
   "id": "SP-5x5ut5ko",
   "kind": "sprint",
   "title": "Fitness 1: kb content fixes and the held-out guard",
-  "status": "planned",
+  "status": "active",
   "goal": "A landing whose range changes lookup_eval.csv or lookup_heldout.csv refuses a held-out row that rewords a tuned row; agent-caching.md gives OpenAI's 1.35x write-plus-reuse only at the 0.1x read rate; factdiff anchors --stale prints stale=0; dataverse-mcp-server.md cites each fact to the page that states it; job-log-timestamps cites the runner source mapping FF_TIMESTAMPS to UseTimestamps; stdlib-windows-portability.md gives copy_file_range's EXDEV with its kernel condition and POSIX link's cross-filesystem rule as permissive; codebase-mapping.md gives Cargo's full rustc lookup order and the rustc info cache's off cases; the test-suite gap entry no longer lists the quarantine deadlines the article states; the working-directory lock and launcher breakaway gaps are closed with the recorded Windows runs",
   "gates": [
     {

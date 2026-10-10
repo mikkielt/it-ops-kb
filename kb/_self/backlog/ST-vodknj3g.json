@@ -2,7 +2,7 @@
   "id": "ST-vodknj3g",
   "kind": "story",
   "title": "python/stdlib-windows-portability.md states os.copy_file_range's EXDEV with its kernel condition and POSIX link's cross-filesystem rule as permissive",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
