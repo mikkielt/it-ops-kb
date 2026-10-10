@@ -19,5 +19,20 @@
   "touches": [
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Remove the perfcheck row's claim of tests that do not exist, or add those tests within the ceiling?",
+      "options": [
+        "remove-claim: drop the parenthetical from the perfcheck row of tools.md",
+        "add-tests: write the three planted-failure tests within _tools/tests_ceiling.json"
+      ],
+      "recommendation": "remove-claim: drop the parenthetical from the perfcheck row of tools.md",
+      "class": "design",
+      "answer": "remove-claim: drop the parenthetical from the perfcheck row of tools.md",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "kb-worker-dpw7o726"
 }
