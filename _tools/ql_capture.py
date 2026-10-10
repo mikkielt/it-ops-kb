@@ -39,7 +39,8 @@ AGENT_ACTIONS = ("agent-start", "agent-stop")  # the `work` rows of a subagent's
 AGENT_SALT_NAME = "agent.salt"  # beside the spool, never committed: what a hash of an agent id is salted with
 AGENT_HASH_CHARS = 12
 WORK_BRANCH_REF = "ref: refs/heads/work/"
-WORK_REFUSED_EXIT = 1  # the exit code of a refused backlog.py command (its Refused; bad usage exits 2)
+GIT_TIMEOUT = 10  # seconds a git process of pushed_status may take: a hook never waits longer
+WORK_REFUSED_EXIT = 1 # the exit code of a refused backlog.py command (its Refused; bad usage exits 2)
 WORK_ITEM = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")  # backlog.py's ID_RE
 WORK_LAUNCHER = re.compile(r"(?:sh|bash|python[\d.]*|py)(?:\.exe)?|kbpy|-[\w.-]+|[A-Za-z_]\w*=\S*", re.I)  # beside backlog.py
 WORK_VALUE_FLAGS = ("--by", "--trailer", "--root", "--branch", "--why", "--wait-merge")  # backlog.py options that take a value
@@ -696,13 +697,35 @@ def launched_in_background(args, resp):
     return args.get("run_in_background") is True or (isinstance(resp, dict) and bool(resp.get("backgroundTaskId")))
 
 
+def pushed_status(root, item):
+    """The `status` the item file `kb/_self/backlog/<item>.json` has on the integration main of the clone at `root`
+    (`<remote>/main` as last fetched or pushed, else the local `main` of a clone with no such ref), else None: what a
+    landing that pushed left there, whatever the checkout's own file says. A few short git processes, started only
+    for an item with a pending row; any failure is None."""
+    import subprocess
+    import kbpublic
+    if not WORK_ITEM.fullmatch(item):
+        return None
+    try:
+        for ref in (f"refs/remotes/{kbpublic.integration_remote(root)}/main", "refs/heads/main"):
+            p = subprocess.run(["git", "-C", str(root), "show", f"{ref}:kb/_self/backlog/{item}.json"],
+                               capture_output=True, timeout=GIT_TIMEOUT)
+            if p.returncode == 0:
+                data = json.loads(p.stdout.decode("utf-8"))
+                return data.get("status") if isinstance(data, dict) else None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        pass
+    return None
+
+
 def settle_pending(spool, sid, event, pid):
     """The `done` rows written for the session's background landings that have landed since: an item with a
     `done-pending` row (a `land`, `merge` or `done` launched in the background, capture) and no `done` or `release`
-    row after it gets a `done` row on this event's prompt once its file in the checkout at the event's directory
-    (git_head) says `"status": "done"`, so the window closes at the first hook after the landing succeeded and a
-    landing that stopped or was refused leaves it open. The pending row's `agent_id` is kept; a file read, never a
-    process."""
+    row after it gets a `done` row on this event's prompt once its file on the integration main (pushed_status)
+    says `"status": "done"`, so the window closes at the first hook after the landing pushed. A landing that stopped,
+    was refused or is still running (`land` commits the done on the item's `work/<id>` branch in the checkout
+    before its checks and its push, git_head: the file there reads `done` while it may still fail) leaves it open,
+    and so does a checkout on that branch, whatever main says. The pending row's `agent_id` is kept."""
     if not (isinstance(sid, str) and SAFE_SESSION.fullmatch(sid)):
         return []
     pending = {}
@@ -717,8 +740,9 @@ def settle_pending(spool, sid, event, pid):
     found = git_head(event.get("cwd")) if pending else None
     if found is None:
         return []
+    mid_land = work_branch_item(event.get("cwd"))
     return [record("work", sid, prompt_id=pid, agent_id=agent, item=item, action="done")
-            for item, agent in pending.items() if item_status(found[0], item) == "done"]
+            for item, agent in pending.items() if item != mid_land and pushed_status(found[0], item) == "done"]
 
 
 def agent_row(event, sid):
