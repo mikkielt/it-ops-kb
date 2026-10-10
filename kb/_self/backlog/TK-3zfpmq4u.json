@@ -74,7 +74,9 @@
         "no: only the repository worktrees exist and the worker has no workspace worktree"
       ],
       "recommendation": "yes: the workspace worktree is made as today (the worker's working directory, role file, _tools and item file live there) and each required repository gets one more at <worktree_dir>/<id>/<repo>",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes: the workspace worktree is made as today (the worker's working directory, role file, _tools and item file live there) and each required repository gets one more at <worktree_dir>/<id>/<repo>",
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -85,7 +87,9 @@
         "yes: git's default for a remote-tracking start point, upstream origin/<default>"
       ],
       "recommendation": "no: --no-track, no upstream, as the workspace's own worktree has none",
-      "class": "push"
+      "class": "push",
+      "answer": "no: --no-track, no upstream, as the workspace's own worktree has none",
+      "by": "operator"
     }
   ],
   "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. Orchestrator at dispatch: kb/_self/code.md (mapped to the changed bl_ modules) joins the touches; a new backlog.json setting needs its key in the committed backlog.json, which test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults requires of every setting (TK-g4c5kxsc met the same). Orchestrator at dispatch: .claude/skills/kb-sprint/SKILL.md joins the touches in case run step 3 needs a line for multi-repository worktrees: edit it only through a staging copy in your scratch directory, which the orchestrator copies back; leave it alone when it stays correct. The research facts on git worktree add from a fetched remote default branch are in kb/public/gitlab/git-test-repositories.md.",
