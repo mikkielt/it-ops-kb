@@ -32,5 +32,24 @@
     "ST-qgnjxiol",
     "ST-zt4fdewi"
   ],
-  "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here. Premise run 2026-10-10 on this clone: backlog.py cost ST-izba5564 printed the no item line explanation and then four tables of zeros (direct, attributed, shared, session total), exit 0. The explanatory line exists; the zero tables after it and the missing spool-level distinction are the defect. Order in SP-befc6yqr: last, after ST-zt4fdewi (shared test file and kb-sprint skill). Its selector collects no test until the work adds it to _tools/test_backlog_portable.py."
+  "gates": [
+    {
+      "id": "wording",
+      "kind": "blocking",
+      "question": "How does cost word the two no-capture cases, and what does --json print for them?",
+      "options": [
+        "text: 'no capture: <spool path> holds no usage rows on this clone' when the spool has none, else the existing no item line naming that the spool has usage rows but none in a window of the item; --json keeps its shape with no_line.kind 'no-capture' for the first case and no tables",
+        "one line for both cases, telling them apart only in --json"
+      ],
+      "recommendation": "text: 'no capture: <spool path> holds no usage rows on this clone' when the spool has none, else the existing no item line naming that the spool has usage rows but none in a window of the item; --json keeps its shape with no_line.kind 'no-capture' for the first case and no tables",
+      "do": {
+        "text: 'no capture: <spool path> holds no usage rows on this clone' when the spool has none, else the existing no item line naming that the spool has usage rows but none in a window of the item; --json keeps its shape with no_line.kind 'no-capture' for the first case and no tables": "ST-izba5564",
+        "one line for both cases, telling them apart only in --json": "ST-izba5564"
+      },
+      "class": "agents-rule",
+      "answer": "text: 'no capture: <spool path> holds no usage rows on this clone' when the spool has none, else the existing no item line naming that the spool has usage rows but none in a window of the item; --json keeps its shape with no_line.kind 'no-capture' for the first case and no tables",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here. Premise run 2026-10-10 on this clone: backlog.py cost ST-izba5564 printed the no item line explanation and then four tables of zeros (direct, attributed, shared, session total), exit 0. The explanatory line exists; the zero tables after it and the missing spool-level distinction are the defect. Order in SP-befc6yqr: last, after ST-zt4fdewi (shared test file and kb-sprint skill). Its selector collects no test until the work adds it to _tools/test_backlog_portable.py. Premise rerun 2026-10-10 on the orchestrator's worktree: still reproduces (the no item line, then three zero tables, exit 0)."
 }
