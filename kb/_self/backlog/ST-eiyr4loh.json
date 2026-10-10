@@ -1,0 +1,27 @@
+{
+  "id": "ST-eiyr4loh",
+  "kind": "story",
+  "title": "The orchestrator's worker-branch gate route and the reviewer's launch run under the allow rules",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint run step 4.1 (ST-mxuwtgqx) has the orchestrator commit an item file with git -C <worktree> add and commit, and review step 4 (ST-2ldhug4l) launches the reviewer with a raw claude -p in a subshell; .claude/settings.json allows git -C * status, log, fetch, worktree add and push only, and no claude -p, so a session in permission mode default is refused these steps. The routes run under the allow rules (a backlog.py command for each, as dispatch is for a worker, or allow rules the operator adds); the settings are the operator's. Found by the SP-qg7ncs6d review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;k=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();s=open('.claude/settings.json',encoding='utf-8').read();bad=[c for c,r in (('git -C <worktree> add','Bash(git -C * add'),('( cd <worktree> &&','Bash(claude -p')) if c in k and r not in s];print('skill routes with no allow rule:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d review"
+  ]
+}

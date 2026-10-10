@@ -1,0 +1,28 @@
+{
+  "id": "ST-jvxsxq4y",
+  "kind": "story",
+  "title": "kb-verify's eval and lint steps and kb-sprint's rule that workers never run them agree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-verify steps 3 and 4 (rag.py eval, the contract lint) still apply to a sprint worker, while kb-sprint run step 4 says workers never run the eval or the lint (and backlog.md says a subagent in a worktree cannot run the eval as a Bash command); ST-nlxo2zv5 exempted only tests.py --changed in step 5. kb-verify and kb-worker.md name the same exception for the eval and the lint, so a worker following both does what kb-sprint says. Found by the SP-qg7ncs6d review and the ST-nlxo2zv5 worker.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;v=open('.claude/skills/kb-verify/SKILL.md',encoding='utf-8').read().splitlines();s=[l for l in v if l.startswith(('3. ','4. '))];ok=len(s)==2 and all('worker' in l for l in s);print('kb-verify steps 3 and 4 name the sprint worker:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-verify/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d review"
+  ]
+}

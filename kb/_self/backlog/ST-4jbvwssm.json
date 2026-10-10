@@ -1,0 +1,28 @@
+{
+  "id": "ST-4jbvwssm",
+  "kind": "story",
+  "title": "The baseline route kb-worker names (git stash, a scratch clone it deletes) runs under the worker's allow rules",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-worker.md rule 2 and the bl_dispatch.py WORKER_RULES brief rule (ST-yztru4mz) send a worker's baseline run to git stash push -u or a scratch clone it deletes, while .claude/settings.json has no allow rule for git stash, git clone or rm, so a headless worker in permission mode default is refused both and has no baseline route at all. The route the role file and the brief name is one the worker's permissions allow (a route through allowed commands, or allow rules the operator adds); the settings are the operator's. Found by the SP-qg7ncs6d review (S2).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;w=open('.claude/agents/kb-worker.md',encoding='utf-8').read();s=open('.claude/settings.json',encoding='utf-8').read();bad=[c for c in ('git stash','git clone') if c in w and 'Bash('+c not in s];print('baseline commands kb-worker names with no allow rule:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d review"
+  ]
+}

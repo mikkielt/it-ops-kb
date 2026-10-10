@@ -1,0 +1,27 @@
+{
+  "id": "ST-5355vswc",
+  "kind": "story",
+  "title": "kb-worker's relayed-answer command names --answer TEXT and backlog.md cites rule 3 for the referrers rule",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Two slips the SP-qg7ncs6d review found: kb-worker.md rule 6 names the orchestrator's route as backlog.py --root <worktree> answer ID GATE --by operator, which exits 1 without --answer TEXT (ST-mxuwtgqx); kb/_self/backlog.md, Running a sprint, cites kb-worker.md rule 6 for the referrers rule, which is in rule 3 (ST-p3uah3o3). Both name what the tool and the role file hold.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;w=open('.claude/agents/kb-worker.md',encoding='utf-8').read();i=w.index('relayed answer');ok='--answer' in w[i:i+600];print('relayed route names --answer:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d review"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-xgup6zt3",
+  "kind": "story",
+  "title": "backlog.md and kb-item say which sessions start with git worktree add, apart from sprint workers",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md (Working on items: each session works in its own git worktree from its first command, git worktree add) and .claude/skills/kb-item/SKILL.md still tell every session to start with git worktree add, while kb-worker.md rule 2 and the dispatch brief now say a sprint worker never runs it (ST-yztru4mz). The two rules name their sessions, so a sprint worker reading either does not add a worktree. Found by the SP-qg7ncs6d review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();i=t.index('from its first command');ok='worker' in t[i-300:i+300];print('backlog.md worktree rule names the sprint worker:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-item/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-qg7ncs6d review"
+  ]
+}
