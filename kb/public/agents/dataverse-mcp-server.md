@@ -11,18 +11,19 @@ status: complete
 
 ## Summary
 - Microsoft Dataverse can act as an MCP server that gives MCP clients access to tables and records; Microsoft names Copilot Studio agents, GitHub Copilot in Visual Studio Code, GitHub Copilot CLI, Claude desktop and Claude Code as clients. [DOC S-f6atlxlo]
-- The remote server URL has the form `https://{dataverseOrgName}.crm.dynamics.com/api/mcp`; each environment has its own server and its own allowed-client list. [DOC S-f6atlxlo, S-oxdtvzaw]
+- The remote server URL has the form `https://{dataverseOrgName}.crm.dynamics.com/api/mcp`. [DOC S-f6atlxlo]
+- Each environment can have its own server configuration, and the allowed-client list is set in that environment's settings in the Power Platform admin center. [DOC S-oxdtvzaw, S-lv2haaxp]
 - Before a client other than Copilot Studio can connect, a Power Platform administrator must allow that client for the environment in the Power Platform admin center; Copilot Studio is allowed by default. [DOC S-lv2haaxp]
 - Three connection routes are documented: the Copilot Studio tool picker, a remote MCP entry in GitHub Copilot (VS Code or CLI), and, for non-Microsoft clients, either the `@microsoft/dataverse` local proxy or a direct connection with a custom Microsoft Entra app. [DOC S-f6atlxlo, S-odxayrvf, S-evcdmlat, S-z3p44lkf]
 
 ## Facts
 
 ### What the server is
-- Microsoft describes the Dataverse MCP server as a centrally hosted, managed remote service, in contrast to local MCP setups that need an SDK, a proxy and manual environment access. [DOC S-f6atlxlo]
+- The Dataverse MCP server is a remote server addressed by an environment URL ending in `/api/mcp`; non-Microsoft clients can reach it directly with a custom Microsoft Entra app, or through the `@microsoft/dataverse` local proxy that runs on the client machine. [DOC S-f6atlxlo, S-z3p44lkf]
 - The tool list on the overview page has fifteen tools: `search_data`, `search`, `create_record`, `update_record`, `delete_record`, `create_table`, `update_table`, `delete_table`, `read_query`, `describe`, `upsert_skill`, `delete_skill`, `init_file_upload`, `commit_file_upload`, `file_download`. [DOC S-f6atlxlo]
 - `search_data` searches structured and unstructured data; `search` searches table schemas and business skills by keyword; `read_query` runs supported Dataverse SQL `SELECT` queries; `describe` returns details from search results for tables, records, schemas, skills and apps. [DOC S-f6atlxlo]
 - `delete_record` and `delete_table` are described as deleting only after explicit user approval. [DOC S-f6atlxlo]
-- `describe_table`, `list_tables` and `fetch` were removed and replaced by `describe`; the former `search` tool over data was renamed `search_data`, and the current `search` tool searches metadata. A client that keeps allow or deny lists by tool name must be updated. [DOC S-f6atlxlo, S-oxdtvzaw]
+- `describe_table`, `list_tables` and `fetch` were removed and replaced by `describe`; the former `search` tool over data was renamed `search_data`, and the current `search` tool searches metadata. Microsoft tells clients that keep allow or deny lists by tool name to review them so the new names reflect the intended permissions. [DOC S-f6atlxlo, S-oxdtvzaw]
 - `search_data` appears only when Dataverse search is enabled for the environment. [DOC S-oxdtvzaw]
 - The server respects Dataverse security roles and row-level security: a user reaches only the tables and records their role permits, and no extra MCP-specific access control is needed. [DOC S-oxdtvzaw]
 - Each environment can have its own server configuration; a client connects to several environments with one entry per environment URL, and Copilot Studio's MCP onboarding wizard can connect an agent to Dataverse MCP servers across environments. [DOC S-oxdtvzaw]

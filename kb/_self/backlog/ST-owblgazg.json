@@ -32,6 +32,19 @@
   "depends_on": [
     "BG-qbkqreaq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Line 21 'centrally hosted managed remote service vs local MCP setups' is stated only by the 2025wave2 release-plan page, which has no source row: add a row for it, or reword the fact to what S-f6atlxlo and S-z3p44lkf state? Adding a row raises the topic's source count, which regenerates _coverage.csv and _coverage.md, both outside this item's touches.",
+      "options": [
+        "reword to S-f6atlxlo/S-z3p44lkf, no new source row",
+        "add a source row for the release-plan page and cite it"
+      ],
+      "recommendation": "reword to S-f6atlxlo/S-z3p44lkf, no new source row",
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-vayhvwfy review"
   ],
