@@ -1,7 +1,10 @@
 """The worker's brief and its start (kb/_self/backlog.md, Running a sprint; kb/_self/tools.md): `backlog.py brief ID`
 prints the brief a sprint worker is given, and `backlog.py dispatch ID` makes the worker's worktree and scratch
 directory, writes the brief there and starts the headless session from it, recording the session's pid and id on the
-item's claim. `--dry-run` prints what it would run and writes and starts nothing.
+item's claim. In a workspace whose backlog.json declares `repositories`, dispatch also makes a worktree of each
+repository the item's `repos` names at `<worktree_dir>/<id>/<repo>`, on the same branch name from that repository's
+fetched origin default branch; a repository whose fetch fails refuses the dispatch naming it, and `repos_if_needed`
+gets none. `--dry-run` prints what it would run and writes and starts nothing.
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
@@ -24,8 +27,9 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (RESEARCH_KINDS, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, need,
-                     research_touches, say, scope, scratch_dir, setting, touches_overlap, withhold, worker_dir)
+from bl_base import (RESEARCH_KINDS, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, item_repos,
+                     need, repositories, research_touches, say, scope, scratch_dir, setting, split_touch,
+                     touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
@@ -101,6 +105,23 @@ def scratch_path(root, iid):
     return clone_top(root).joinpath(*scratch_dir(), iid)
 
 
+def repos_dir(root, iid):
+    """The directory of an item's repository worktrees in a multi-repository workspace: `<worktree_dir>/<id>/`."""
+    return clone_top(root).joinpath(*worker_dir(), iid)
+
+
+def repo_worktree_path(root, iid, name):
+    """The worktree of repository NAME for the item: `<worktree_dir>/<id>/<name>`, beside the workspace's own."""
+    return repos_dir(root, iid) / name
+
+
+def repo_checkouts(bl, iid, key="repos"):
+    """[(name, checkout)] of the repositories the item's `repos` (`repos_if_needed` with KEY) names: the checkout is
+    the repository's path under the workspace in backlog.json's `repositories` map. [] with no map or no names."""
+    declared = repositories()
+    return [(n, Path(bl.root) / declared[n]) for n in item_repos(bl.items[iid], key)]
+
+
 def worker_branch(iid):
     return WORK_PREFIX + iid
 
@@ -119,11 +140,12 @@ def max_turns(bl, iid):
 
 
 def staged_files(bl, iid):
-    """The repository paths under `.claude/` that the item's touches name, as files: a session in permission mode
-    default or acceptEdits cannot write there, so its brief names a staging copy of each (a glob names no file)."""
+    """The paths under `.claude/` that the item's touches name, as files (`<repository>/.claude/x` in a workspace
+    with a repositories map): a session in permission mode default or acceptEdits cannot write there, so its brief
+    names a staging copy of each (a glob names no file)."""
     out = []
     for g in scope(bl, iid):
-        if g.startswith(".claude/") and not re.search(r"[*?\[]", g) and g not in out:
+        if split_touch(g)[1].startswith(".claude/") and not re.search(r"[*?\[]", g) and g not in out:
             out.append(g)
     return out
 
@@ -255,6 +277,24 @@ def rules_section(bl, iid):
     return [f"No docs map is set for this project ({why}): follow the role file and the item's touches."]
 
 
+def repo_lines(bl, iid, branch):
+    """The brief's lines for a multi-repository workspace: the worktree of each repository the item requires (on the
+    same branch name, from that repository's fetched origin default branch), and the ones it may need, which dispatch
+    makes none for. [] when the item names no declared repository: its one worktree is the workspace's."""
+    required = repo_checkouts(bl, iid)
+    if not required:
+        return []
+    out = [f"The worktree above is the workspace's own (its files, `_tools/`, the item file); one worktree for each "
+           f"repository the item changes, on `{branch}` from that repository's fetched origin default branch, work "
+           f"only in these (made for you):"]
+    out += [f"- {n}: {repo_worktree_path(bl.root, iid, n)}" for n, _ in required]
+    optional = item_repos(bl.items[iid], "repos_if_needed")
+    if optional:
+        out.append(f"Repositories the item may change if the work needs it: {', '.join(optional)}. None has a "
+                   "worktree: say in your report which one you need and why, never make a worktree of your own.")
+    return out
+
+
 def compose_brief(bl, iid, known=(), probe=None):
     """The brief for ITEM's worker, as text. Reads the backlog and runs the rules pack; writes nothing."""
     it = bl.items[iid]
@@ -269,6 +309,7 @@ def compose_brief(bl, iid, known=(), probe=None):
     out = [f"You are a sprint worker for this project's backlog. Your role file is `{ROLE_FILE}`: read it first and "
            "follow it.", "",
            f"Worktree (work only here): {wt}, on branch `{branch}` (made for you; the item is already claimed).",
+           *repo_lines(bl, iid, branch),
            f"Scratch directory for throwaway files: {scratch}/ (never /tmp, never the worktree).", "",
            "## Item", head, "", "```json", canonical(it).rstrip("\n"), "```", "",
            "Its goal text (`python3 _tools/backlog.py goal " + iid + "`):", goal_text(bl, iid), ""]
@@ -303,9 +344,11 @@ def compose_brief(bl, iid, known=(), probe=None):
 
 def claude_argv(bl, iid, model=None, turns=None):
     """The headless session's argument list: the brief goes on stdin, never as a trailing prompt argument, which
-    `--add-dir` swallows (it takes several paths)."""
+    `--add-dir` swallows (it takes several paths: the scratch directory and, for an item with required repositories,
+    the directory of their worktrees)."""
+    dirs = [scratch_path(bl.root, iid)] + ([repos_dir(bl.root, iid)] if repo_checkouts(bl, iid) else [])
     return ["claude", "-p", "--model", model or DEFAULT_MODEL, "--effort", EFFORT, "--output-format", "json",
-            "--add-dir", str(scratch_path(bl.root, iid)), "--max-turns", str(turns or max_turns(bl, iid))]
+            "--add-dir", *map(str, dirs), "--max-turns", str(turns or max_turns(bl, iid))]
 
 
 def write_text(path, text):
@@ -349,13 +392,65 @@ def make_worktree(root, iid, wt):
         raise Refused(f"dispatch: {shlex.join(argv)} failed: {(p.stderr or p.stdout).strip()}")
 
 
+def git_in(checkout, *args):
+    return subprocess.run(["git", "-C", str(checkout), *args], capture_output=True, text=True, encoding="utf-8",
+                          errors="replace")
+
+
+def fetch_default_branch(name, checkout):
+    """The default branch of repository NAME's origin, after `git fetch origin` in its CHECKOUT: read from the
+    remote itself (`ls-remote --symref origin HEAD`), since a local `refs/remotes/origin/HEAD` is made once and never
+    updated. A fetch that fails, a remote with no default branch or one not fetched refuses the dispatch naming the
+    repository."""
+    def refuse(why):
+        raise Refused(f"dispatch: repository {name!r} ({checkout}): {why}")
+    p = git_in(checkout, "fetch", "origin")
+    if p.returncode:
+        refuse(f"git fetch origin failed: {(p.stderr or p.stdout).strip()}")
+    p = git_in(checkout, "ls-remote", "--symref", "origin", "HEAD")
+    found = re.search(r"^ref: refs/heads/(\S+)\tHEAD$", p.stdout, re.M) if p.returncode == 0 else None
+    if found is None:
+        refuse(f"git ls-remote --symref origin HEAD gave no default branch: {(p.stderr or p.stdout).strip()}")
+    if git_in(checkout, "rev-parse", "-q", "--verify", f"refs/remotes/origin/{found.group(1)}").returncode:
+        refuse(f"the default branch {found.group(1)!r} is not among the refs the fetch made")
+    return found.group(1)
+
+
+def make_repo_worktree(name, checkout, wt, iid, default):
+    """Make repository NAME's worktree at WT on `work/<id>`, branched from `origin/<default>` of its CHECKOUT with
+    no upstream (as the workspace's own, which has none); reuse the one already there, or the branch when it exists."""
+    if wt.is_dir():
+        return
+    branch = worker_branch(iid)
+    exists = git_in(checkout, "rev-parse", "-q", "--verify", f"refs/heads/{branch}").returncode == 0
+    argv = ["git", "-C", str(checkout), "worktree", "add"]
+    argv += [str(wt), branch] if exists else ["-b", branch, "--no-track", str(wt), f"origin/{default}"]
+    wt.parent.mkdir(parents=True, exist_ok=True)
+    p = subprocess.run(argv, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if p.returncode:
+        raise Refused(f"dispatch: repository {name!r}: {shlex.join(argv)} failed: {(p.stderr or p.stdout).strip()}")
+
+
+def repo_defaults(bl, iid):
+    """{name: default branch} of each required repository that has no worktree yet, fetched: every fetch runs
+    before dispatch makes any worktree, so one that fails leaves nothing made."""
+    return {n: fetch_default_branch(n, co) for n, co in repo_checkouts(bl, iid)
+            if not repo_worktree_path(bl.root, iid, n).is_dir()}
+
+
 def stage_copies(bl, iid, wt):
-    """Copy each `.claude/` file the touches name from the worker's worktree (else this checkout) to its staging
-    path in the scratch directory, unless a copy is already there (the worker's edits are kept)."""
-    scratch = scratch_path(bl.root, iid)
+    """Copy each `.claude/` file the touches name from the worker's worktree of its repository (the workspace's:
+    WT) else this checkout to its staging path in the scratch directory, unless a copy is already there (the
+    worker's edits are kept)."""
+    scratch, declared = scratch_path(bl.root, iid), repositories()
     for p in staged_files(bl, iid):
         dest = scratch.joinpath(STAGING, *p.split("/"))
-        src = next((c for c in (wt / p, Path(bl.root) / p) if c.is_file()), None)
+        repo, rest = split_touch(p)
+        if repo in declared:
+            cands = (repo_worktree_path(bl.root, iid, repo) / rest, Path(bl.root) / declared[repo] / rest)
+        else:
+            cands = (wt / rest, Path(bl.root) / rest)
+        src = next((c for c in cands if c.is_file()), None)
         if src is not None and not dest.exists():
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dest)
@@ -377,6 +472,10 @@ def cmd_dispatch(bl, a):
     if a.dry_run:
         say(f"dispatch {bl.label(iid)} (dry run: nothing made, written or started)")
         say(f"worktree: {wt} (" + ("exists" if wt.is_dir() else f"would be made on {worker_branch(iid)} from HEAD") + ")")
+        for n, _ in repo_checkouts(bl, iid):
+            rwt = repo_worktree_path(bl.root, iid, n)
+            say(f"worktree of {n}: {rwt} (" + ("exists" if rwt.is_dir() else f"would be made on {worker_branch(iid)} "
+                                                  "from its fetched origin default branch") + ")")
         say(f"scratch: {scratch}")
         say(f"brief: {brief} (stdin)")
         say(f"cwd: {wt}")
@@ -387,7 +486,10 @@ def cmd_dispatch(bl, a):
     if shutil.which(argv[0]) is None:
         raise Rejected(f"dispatch: {argv[0]} is not on PATH")
     text = compose_brief(bl, iid, a.known, a.probe)
+    defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
+    for n, co in repo_checkouts(bl, iid):
+        make_repo_worktree(n, co, repo_worktree_path(bl.root, iid, n), iid, defaults.get(n))
     scratch.mkdir(parents=True, exist_ok=True)
     stage_copies(bl, iid, wt)
     write_text(brief, text)  # the worker needs the paths as they are: no name guard

@@ -216,6 +216,17 @@ def repositories():
     return setting("repositories")
 
 
+def item_repos(it, key="repos"):
+    """[name] of the declared repositories an item's `repos` (or, with KEY `repos_if_needed`, its optional ones) names,
+    in the order written, each once; [] with no `repositories` map, so a project with none has one worktree."""
+    declared, named = repositories(), it.get(key)
+    out = []
+    for n in named if isinstance(named, list) else ():
+        if isinstance(n, str) and n in declared and n not in out:
+            out.append(n)
+    return out
+
+
 def review_checks():
     """The review story's checks, run once before review."""
     return setting("review_checks")

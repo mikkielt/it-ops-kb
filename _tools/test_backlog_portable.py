@@ -246,7 +246,7 @@ def test_backlog_external_ids_trailer_is_accepted_by_check_trailers_and_a_malfor
     assert code == 1 and "not a trailer: 'KB-Ref: PROJ-123'" in out
 
 
-def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_nothing(tmp_path):
+def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_nothing_and_multirepo_dispatch_makes_a_worktree_per_required_repository(tmp_path, monkeypatch):
     (tmp_path / "repo").mkdir()
     root = Repo(tmp_path / "repo")
     root.git("init", "-q", "-b", "main")
@@ -298,6 +298,85 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
     assert "--model other-model " in dry(ids["work"], "--model", "other-model")["argv"]
     assert not (Path(root.path) / "_cache").exists()  # nothing made, written or started
     assert not (Path(root.path) / ".claude" / "worktrees").exists()
+
+    # multirepo_dispatch: a worktree per required repository at <worktree_dir>/<id>/<repo>, from the fetched default
+    import bl_dispatch
+    ws = tmp_path / "ws"
+    ws.mkdir()
+    Repo(ws).git("init", "-q", "-b", "main")
+    names = {"api": "repos/api", "web": "repos/web", "docs": "repos/docs"}  # docs is only in repos_if_needed
+    clones = {}
+    for name, path in names.items():
+        origin, clones[name] = tmp_path / "origins" / f"{name}.git", Repo(ws / path)
+        origin.mkdir(parents=True)
+        Repo(origin).git("init", "-q", "--bare", "-b", "trunk")
+        (ws / path).mkdir(parents=True)
+        clones[name].git("init", "-q", "-b", "trunk")
+        clones[name].git("remote", "add", "origin", str(origin))
+        clones[name].write("a.txt", f"{name}\n")
+        clones[name].git("add", "a.txt")
+        clones[name].git("commit", "-q", "-m", "first")
+        clones[name].git("push", "-q", "origin", "trunk")
+        clones[name].git("checkout", "-q", "-b", "side")  # the checkout's own HEAD is not origin's default branch
+        clones[name].write("c.txt", "local\n")
+        clones[name].git("add", "c.txt")
+        clones[name].git("commit", "-q", "-m", "local only")
+    other = Repo(tmp_path / "other")  # a newer commit on origin's default branch that the checkout has not fetched
+    Repo(tmp_path).git("clone", "-q", str(tmp_path / "origins" / "api.git"), str(other.path))
+    other.write("b.txt", "newer\n")
+    other.git("add", "b.txt")
+    other.git("commit", "-q", "-m", "newer")
+    other.git("push", "-q", "origin", "HEAD:trunk")
+    newest = other.rev("HEAD")
+    assert clones["api"].rev("origin/trunk") != newest
+
+    monkeypatch.setattr(bl_base, "_LOADED", [])  # this workspace's settings, for this test only
+    (ws / "backlog.json").write_text(json.dumps({"repositories": names}), encoding="utf-8")
+    bl_base.load_settings(ws, env={})
+    wbl, iid = bl_base.Backlog(ws), "TK-aaaaaaaa"
+    wbl.items = {iid: {"id": iid, "kind": "task", "status": "doing", "title": "t", "goal": "g", "touches": ["api/a.txt"],
+                       "repos": ["api", "web"], "repos_if_needed": ["docs"]}}
+    item_dir = ws / ".claude" / "worktrees" / iid
+
+    def run_dispatch(**kw):
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd = bl_dispatch.cmd_dispatch(wbl, argparse.Namespace(id=iid, dry_run=True, model=None, max_turns=None,
+                                                                   known=[], probe=None, **kw))
+        assert cmd == 0
+        return buf.getvalue().replace("\\", "/")
+
+    dry = run_dispatch()
+    assert f"/worktrees/{iid}/api (would be made" in dry and f"/worktrees/{iid}/web (would be made" in dry  # head withheld
+    assert "worktree of docs" not in dry and not item_dir.exists()  # a dry run makes nothing; repos_if_needed none
+    brief = bl_dispatch.compose_brief(wbl, iid).replace("\\", "/")
+    assert f"- api: {item_dir.as_posix()}/api" in brief and "may change if the work needs it: docs" in brief
+    assert bl_dispatch.claude_argv(wbl, iid)[8:11] == ["--add-dir", str(bl_dispatch.scratch_path(ws, iid)),
+                                                       str(bl_dispatch.repos_dir(ws, iid))]  # the worktrees' directory
+    assert bl_dispatch.repo_defaults(wbl, iid) == {"api": "trunk", "web": "trunk"}  # origin's HEAD, after a fetch
+    assert clones["api"].rev("origin/trunk") == newest
+    for name, co in bl_dispatch.repo_checkouts(wbl, iid):
+        bl_dispatch.make_repo_worktree(name, co, bl_dispatch.repo_worktree_path(ws, iid, name), iid, "trunk")
+    for name in ("api", "web"):
+        made = Repo(item_dir / name)
+        assert made.git("symbolic-ref", "--short", "HEAD").strip() == f"work/{iid}"
+        assert made.rev("HEAD") == clones[name].rev("origin/trunk") and made.rev("HEAD") != clones[name].rev("side")
+        assert made.run_git("rev-parse", "--abbrev-ref", "@{upstream}").returncode != 0  # no upstream, as the workspace's
+    assert (item_dir / "api" / "b.txt").is_file() and not (item_dir / "docs").exists()
+    assert "(exists)" in run_dispatch()  # a second dispatch reuses the worktrees and fetches nothing
+
+    # a repository whose fetch fails refuses the dispatch naming it, and no worktree is made
+    wbl.items["TK-bbbbbbbb"] = {**wbl.items[iid], "id": "TK-bbbbbbbb", "repos": ["api", "web"]}
+    os.replace(tmp_path / "origins" / "web.git", tmp_path / "origins" / "web.moved")
+    with pytest.raises(bl_base.Refused, match=r"dispatch: repository 'web' .*git fetch origin failed"):
+        bl_dispatch.repo_defaults(wbl, "TK-bbbbbbbb")
+    assert not (ws / ".claude" / "worktrees" / "TK-bbbbbbbb").exists()
+
+    # multirepo_default: no repositories map, the one worktree as today
+    (ws / "backlog.json").write_text("{}", encoding="utf-8")
+    bl_base.load_settings(ws, env={})
+    assert bl_dispatch.repo_checkouts(wbl, iid) == [] and "worktree of" not in run_dispatch()
+    assert bl_dispatch.repo_lines(wbl, iid, "work/x") == []
 
 
 def test_backlog_brief_rules_are_the_mapped_docs_headings_or_the_kb_roots_fact_lines(tmp_path):
