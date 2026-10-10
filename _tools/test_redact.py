@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-import census, factdiff, kbcommon, kbfacts, kbid, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
-from conftest import KB, TOOLS
+import census, factdiff, kbcommon, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
+from conftest import KB, TOOLS, git_env
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
 RUN_REL = "2026-09/20260928T130000Z-0000beef.jsonl"
@@ -426,21 +426,23 @@ def census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp
     text = go("run", "--date", "2099-01-02", "--dry-run")
     assert seen == []
     assert [ln.split(":")[0] for ln in text.splitlines() if ln.startswith("step ")] == [
-        "step 1/6 detect", "step 2/6 apply", "step 3/6 check", "step 4/6 index", "step 5/6 commit", "step 6/6 summary"]
+        "step 1/7 detect", "step 2/7 apply", "step 3/7 check", "step 4/7 repin", "step 5/7 index", "step 6/7 commit",
+        "step 7/7 summary"]
     assert "factdiff.py detect --date 2099-01-02 --sitemaps" in text and "apply kb/public/_census/factdiff-2099-01-02.csv" in text
     assert "--factdiff kb/public/_census/factdiff-2099-01-02.csv" in text and "--trailer" not in text
+    assert "repin kb/public/_census/2099-01-02.csv --date 2099-01-02 --commit" in text
     # every step runs in order; detect's exit 1 is no failure; the run ends with the summary
     go("run", "--date", "2099-01-02")
-    assert seen == ["detect", "apply", "check", "index", "commit", "summary"]
+    assert seen == ["detect", "apply", "check", "repin", "index", "commit", "summary"]
     # planted failure: check exits 3: the run stops with that code and names the step and the command that resumes it
     text = go("run", "--date", "2099-01-02", code=3, check=3)
     assert seen == ["detect", "apply", "check"]
-    assert "step 3/6 check failed with exit 3; resume from it:" in text and "run --date 2099-01-02 --resume" in text
+    assert "step 3/7 check failed with exit 3; resume from it:" in text and "run --date 2099-01-02 --resume" in text
     # --resume skips the steps whose output exists
     monkeypatch.setattr(census, "output_exists", lambda rel: "factdiff-" in rel)
     monkeypatch.setattr(census, "apply_committed", lambda log, date: True)
     text = go("run", "--date", "2099-01-02", "--resume")
-    assert seen == ["check", "index", "commit", "summary"] and "step 1/6 detect: skipped" in text
+    assert seen == ["check", "repin", "index", "commit", "summary"] and "step 1/7 detect: skipped" in text
     # a log that holds phase-2 outcomes is not overwritten without --resume
     log = tmp_path / "2099-01-02.csv"
     log.write_text(",".join(census.COLS) + "\n", encoding="utf-8")
@@ -729,7 +731,158 @@ def census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_
         assert got["S9990002"]["bucket"] == "NEEDS-READING"
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date(tmp_path, monkeypatch, capsys):
+def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path, monkeypatch, capsys):
+    def git(cwd, *args):
+        return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", env=git_env(),
+                              check=True).stdout.strip()
+
+    up = tmp_path / "up"
+    up.mkdir(parents=True)
+    git(up, "init", "-q", "-b", "main")
+    files = {"f.md": "# Nightly jobs\n\nThe Orion scheduler restarts every night at three o'clock. The restart takes about five minutes.\n\n"
+                     "Quartz retention defaults to thirty days on new installs.\n",
+             "g.md": "# Limits\n\nThe Falcon gateway accepts at most forty connections per node.\n\nCobalt tokens expire after twelve hours.\n",
+             "h.md": "# Cache\n\nNimbus caches answers for ten minutes.\n",
+             "i.md": "# Logs\n\nHelium logs rotate daily.\n"}
+    (up / "docs").mkdir()
+    for name, text in files.items():
+        (up / "docs" / name).write_text(text, encoding="utf-8")
+    git(up, "add", ".")
+    git(up, "commit", "-q", "-m", "one")
+    c1 = git(up, "rev-parse", "HEAD")
+    git(up, "tag", "1.0.0")
+    (up / "docs" / "f.md").write_text(files["f.md"] + "\nA later paragraph about Zephyr exports.\n", encoding="utf-8")
+    (up / "docs" / "g.md").write_text(files["g.md"].replace("twelve", "six"), encoding="utf-8")
+    (up / "docs" / "i.md").write_text(files["i.md"] + "\nUnrelated note.\n", encoding="utf-8")
+    git(up, "commit", "-q", "-am", "two")
+    c2 = git(up, "rev-parse", "HEAD")
+    git(up, "tag", "1.0.1")
+    repos = tmp_path / "repos"
+    clone = repos / "github.com__Org__Repo.git"
+    repos.mkdir()
+    git(tmp_path, "clone", "-q", "--bare", str(up), str(clone))
+
+    root = tmp_path / "public"
+    (root / "dsc").mkdir(parents=True)
+    (root / "_retrieval" / "doc2query").mkdir(parents=True)
+    (root / "_root.md").write_text("---\nroot: public\nid_prefix: S\nvisibility: public\ndescription: scratch\n---\n", encoding="utf-8")
+    raw = "https://raw.githubusercontent.com/Org/Repo/"
+    urls = {"S9001": f"{raw}{c1}/docs/f.md", "S9002": f"{raw}{c1}/docs/g.md", "S9003": f"{raw}{c1}/docs/h.md",
+            "S9004": f"{raw}1.0.0/docs/i.md", "S9005": "https://github.com/Org/Repo/releases/tag/1.0.0"}
+    cols = ["id", "url", "title", "publisher", "licence", "reuse", "retrieved_utc", "version_or_date", "artifact_sha256", "used_in",
+            "superseded_by"]
+    kbcommon.write_csv(str(root / "_sources.csv"), cols, [
+        {c: "" for c in cols} | {"id": sid, "url": u, "title": f"{Path(u).name} at {c1[:12]}", "publisher": "Org", "licence": "MIT",
+                                 "reuse": "copy", "retrieved_utc": "2026-09-26", "used_in": "dsc/d.md"} for sid, u in urls.items()])
+    facts = {"fA": ("The Orion scheduler restarts every night at three o'clock.", "S9001"),
+             "fB": ("Quartz retention defaults to thirty days on new installs.", "S9001"),
+             "gA": ("The Falcon gateway accepts at most forty connections per node.", "S9002"),
+             "gB": ("Cobalt tokens expire after twelve hours.", "S9002"),
+             "hA": ("Nimbus caches answers for ten minutes.", "S9003"),
+             "iA": ("Helium logs rotate daily.", "S9004"), "iB": ("Helium logs rotate daily since 1.0.0.", "S9004")}
+    article = root / "dsc" / "d.md"
+    article.write_text("---\ntopic: dsc/d\npriority: P1\nretrieved_utc: 2026-09-26\nsources: [S9001, S9002, S9003, S9004, S9005]\n"
+                       "status: complete\n---\n# D\n\n## Facts\n"
+                       + "".join(f"- {t} [CODE {sid}]\n" for t, sid in facts.values()), encoding="utf-8")
+    keys = {n: kbfacts.fact_key(f"{t} [CODE {sid}]") for n, (t, sid) in facts.items()}
+    (root / "_retrieval" / "doc2query" / "expansions.csv").write_text(f"key,question\n{keys['fA']},When does Orion restart\n",
+                                                                       encoding="utf-8")
+    log_rows = []
+    for sid, u in urls.items():
+        c = census.classify(u)
+        log_rows.append(census_row(sid, url=u, kind=c["kind"], repo=c["repo"], pin=c["pin"], path=c["path"], used_in="dsc/d.md",
+                                   bucket="NEWER-VERSION" if sid in ("S9004", "S9005") else "CHANGED",
+                                   proof=f"main@{c2[:12]}" if sid in ("S9001", "S9002", "S9003") else "",
+                                   note="newer=1.0.1" if sid in ("S9004", "S9005") else f"latest={c2}"))
+    log = tmp_path / "2099-01-02.csv"
+    kbcommon.write_csv(str(log), census.COLS, log_rows)
+    new_url = f"{raw}{c2}/docs/f.md"
+    new_id = kbid.source_id(new_url)
+    committed = []
+    real_git = census.g
+
+    def fake_git(d, *args, **kw):  # the commit goes to a record, never to this repository
+        if d == kbcommon.HOME and args[:1] in (("add",), ("commit",)):
+            committed.append(args)
+            return 0, "", ""
+        return real_git(d, *args, **kw)
+
+    def no_network(*a, **k):
+        raise AssertionError("repin touched the network")
+
+    with monkeypatch.context() as m:
+        public = kbcommon.load_root(str(root))
+        for mod, name, value in ((kbcommon, "_ROOTS", [public]), (kbcommon, "KB", str(root)), (census, "KB", str(root)),
+                                 (factdiff, "ROOT", public), (factdiff, "CACHE", str(tmp_path / "cache")),
+                                 (census, "REPOS", str(repos)), (census, "repo_dir", lambda repo, base=None: (str(clone), "")),
+                                 (census, "g", fake_git), (kbfacts, "clone_home", lambda: str(tmp_path / "no-clone"))):
+            m.setattr(mod, name, value)
+        m.setattr(socket.socket, "connect", no_network)
+        anchors = {}
+        for sid, name in (("S9001", "f.md"), ("S9002", "g.md"), ("S9004", "i.md")):
+            old = provider.doc_text(files[name].encode(), "text/plain", urls[sid])  # the file as it was at the pin
+            for r in factdiff.anchor_rows(sid, [(keys[n], "dsc/d.md", 0, f"{t} [CODE {s}]") for n, (t, s) in facts.items() if s == sid],
+                                          {"status": 200, "text": old}, "copy", "2026-09-26"):
+                assert r["status"] == "located", r
+                anchors[(r["fact"], r["path"], r["source_id"])] = r
+        factdiff.write_anchors(anchors)  # S9003 has none: nothing was ever located in it
+        rows = census.read_log(str(log))
+        # before: the pinned file with a fact not found, and the one whose fact names the pinned tag, queue only those facts
+        items = census.repin_items(census.phase2_rows(rows))
+        assert sorted(items) == ["S9002", "S9004"] and [i["fact"].split(" [")[0] for i in items["S9002"]] == [facts["gB"][0]]
+        assert "twelve hours" in items["S9002"][0]["old"] and "six hours" in items["S9002"][0]["new"]
+        assert items["S9004"][0]["note"].startswith("the fact names the pinned version at ")
+        queue = {q["id"]: q for q in census.reading_queue(rows, [])}
+        assert [(i, queue[i]["mode"], queue[i]["items"]) for i in sorted(queue)] == [
+            ("S9001", "document", 0), ("S9002", "review", 1), ("S9003", "document", 0), ("S9004", "review", 1), ("S9005", "document", 0)]
+
+        def state():
+            return {p.name: p.read_bytes() for p in (root / "_sources.csv", root / "_anchors.csv", article, log,
+                                                      root / "_retrieval" / "doc2query" / "expansions.csv")}
+
+        def repin(dry=False, commit=False):
+            code = census.cmd_repin(argparse.Namespace(log=str(log), date="2099-01-03", dry_run=dry, commit=commit), Counter())
+            return code, capsys.readouterr().out
+
+        before = state()
+        code, text = repin(dry=True)
+        assert code == 0 and state() == before and committed == []
+        assert f"would add source {new_id} {new_url}" in text and "would re-point 2 fact(s) of S9001" in text
+        assert "repin S9002: stays in the queue: 1 of 2 fact(s) not found word for word" in text
+        assert "repin S9003: stays in the queue: no located anchors" in text
+        assert "repin S9004: stays in the queue: 1 of 2 fact(s) not found word for word" in text
+        assert "repin S9005: stays in the queue: the url names a release, not a file" in text
+        code, text = repin(commit=True)
+        assert code == 0 and f"repin S9001: re-pinned to {new_id}: {c1[:12]} -> {c2[:12]}, 2 fact(s) found word for word" in text
+        srcs = {r["id"]: r for r in csv.DictReader(open(root / "_sources.csv", encoding="utf-8", newline=""))}
+        assert srcs["S9001"]["superseded_by"] == new_id and srcs[new_id]["url"] == new_url and srcs[new_id]["used_in"] == "dsc/d.md"
+        assert srcs[new_id]["retrieved_utc"] == "2099-01-03" and srcs[new_id]["title"] == f"f.md at {c2[:12]}"
+        assert srcs[new_id]["version_or_date"].startswith(f"commit {c2}; re-pinned 2099-01-03 from S9001")
+        assert [srcs[i]["superseded_by"] for i in ("S9002", "S9003", "S9004", "S9005")] == [""] * 4
+        body = article.read_text(encoding="utf-8")
+        assert f"sources: [S9002, S9003, S9004, S9005, {new_id}]" in body and body.count(f"[CODE {new_id}]") == 2
+        assert "[CODE S9001]" not in body and body.count("[CODE S9002]") == 2
+        moved = {k: kbfacts.fact_key(f"{facts[n][0]} [CODE {new_id}]") for n, k in (("fA", "fA"), ("fB", "fB"))}
+        got = factdiff.read_anchors()
+        assert {(moved[n], "dsc/d.md", new_id) for n in moved} <= set(got) and got[(moved["fA"], "dsc/d.md", new_id)]["verified_utc"] == "2099-01-03"
+        assert not any(k[2] == "S9001" for k in got) and len(got) == len(anchors)
+        assert (root / "_retrieval" / "doc2query" / "expansions.csv").read_text(encoding="utf-8") == \
+            f"key,question\n{moved['fA']},When does Orion restart\n"
+        out = {r["id"]: (r["outcome"], r["outcome_note"]) for r in census.read_log(str(log))}
+        assert out["S9001"] == ("superseded", f"re-pinned to {new_id}: {c1[:12]} -> {c2[:12]}, 2 fact(s) found word for word")
+        assert [out[i] for i in ("S9002", "S9003", "S9004", "S9005")] == [("", "")] * 4
+        assert [a[0] for a in committed] == ["add", "commit"] and "KB-Verified: 2099-01-03" in committed[1]
+        assert any(x.endswith("d.md") for x in committed[0]) and "re-pin 1 source(s)" in committed[1][committed[1].index("-m") + 1]
+        # a second run finds no candidate for the row it settled and writes the same bytes
+        done = state()
+        code, text = repin(commit=True)
+        assert code == 0 and state() == done and len(committed) == 2 and "superseded=0" in text
+        rows = census.read_log(str(log))
+        assert sorted(q["id"] for q in census.reading_queue(rows, [])) == ["S9002", "S9003", "S9004", "S9005"]
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word(tmp_path, monkeypatch, capsys):
+    census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
     census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
