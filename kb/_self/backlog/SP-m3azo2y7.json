@@ -2,7 +2,7 @@
   "id": "SP-m3azo2y7",
   "kind": "sprint",
   "title": "backlog.py fixes: land, drop, precheck and usage text",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py's touches_overlap re-export names no users it lacks; the selectors usage line names the done items of an active sprint and bug repros; done --dry-run writes no gone evidence, so a dry run then --commit leaves a clean tree; prune_reopened_refs keeps the ref of an item present on origin/main, with a planted test; drop of a planned sprint takes its research and review stories, so check prints errors=0; precheck runs a bug's repro and warns of a time-windowed detector; precheck's trailers date says the window follows main's tip, not the calendar",
   "gates": [
     {

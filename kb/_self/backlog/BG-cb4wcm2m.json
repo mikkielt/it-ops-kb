@@ -2,7 +2,7 @@
   "id": "BG-cb4wcm2m",
   "kind": "bug",
   "title": "precheck skips a bug's repro, so a bug whose repro is the intake --status of a time-windowed detector gets no warning",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m3azo2y7",
   "priority": "P2",
   "rank": 0,

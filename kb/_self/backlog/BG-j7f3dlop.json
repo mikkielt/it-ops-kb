@@ -2,7 +2,7 @@
   "id": "BG-j7f3dlop",
   "kind": "bug",
   "title": "drop SP deletes a planned sprint but leaves its research and review stories naming it, so check errors and set --clear sprint refuses",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,

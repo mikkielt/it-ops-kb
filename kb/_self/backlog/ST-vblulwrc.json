@@ -2,7 +2,7 @@
   "id": "ST-vblulwrc",
   "kind": "story",
   "title": "prune_reopened_refs judges a gone item file against the integration main, not the checkout it runs in",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-6cq4zeai",
   "kind": "bug",
   "title": "backlog.py's touches_overlap re-export says bl_view's held and tests use it; neither does",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m3azo2y7",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-rn4pt6bb",
   "kind": "bug",
   "title": "precheck names the trailers detector's first passing date from the wall clock, but its window follows main's tip time",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,

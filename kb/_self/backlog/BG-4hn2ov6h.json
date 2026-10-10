@@ -2,7 +2,7 @@
   "id": "BG-4hn2ov6h",
   "kind": "bug",
   "title": "backlog.py's usage text says selectors reads only the checks of open items",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,
