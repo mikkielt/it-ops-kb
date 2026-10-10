@@ -6,6 +6,8 @@
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked hosts, and the size of phase 2's reading queue
+  census.py groups LOG [--factdiff FLOG]           phase 2: the rows to read split into owner groups, as JSON
+  census.py brief LOG --group G [--part N] [--factdiff FLOG]   phase 2: a group's brief, filled in
   census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
   census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
 
@@ -54,6 +56,22 @@ passages (fact, old and new passage) of a row the fact diff log holds items for 
 else _census/factdiff-<date>.csv beside LOG), and else the whole document held in _cache/factdiff, counted `not cached`
 when the cache holds none (a linked worktree reads the clone's main worktree's cache).
 
+groups prints, as JSON, the queue's rows (the same rows) split by owner group, with no network and no model: a row goes
+to the domain (first directory under the root) of the files naming it in the tree (`rag.py src --cited`; the lines of a
+ledger or root-level file count for no domain; a row no line names falls back to the files of the log's `used_in`, else
+the group `_uncited`), the domain with most of its citing lines when two cite it, the first by name on a tie, its other
+files listed as foreign. Each group has `files` (its domain's files that name its rows), `foreign` (file, domain, row
+ids), `queue` (rows, facts, items, chars, tokens as `summary` counts them), `parts` and `rows` (id, url, bucket,
+evidence, used_in, mode, facts, items, chars). The output depends only on the log, the fact diff log and the tree.
+brief prints one group's phase-2 brief as the kb-census skill words it, filled in: the files to edit and the foreign
+ones, each row (id, url, bucket, evidence, used_in), the lines of the kb that cite it (`path:line` and text, as
+`rag.py src --cited` finds them), its fact diff review items inline (fact, old and new passage: the queue's own
+passages) or, for the other rows, the command that reads it (`git show` and `git diff` in the census clone for a pinned
+file, the fetch route of the provider for a page), the outcomes and the result JSON shape. A brief is at most
+BRIEF_CHARS characters: a group over it is split by whole rows, in id order, into numbered parts (`--part N`, the first
+line says `part N of M`), each with the files citing its rows; a row alone over it is a part of its own. Both exit 2 for
+a missing log, an unknown group or a part out of range.
+
 check, record and confirm (not confirm --dry-run) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
@@ -80,7 +98,7 @@ from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import build_index, factdiff, kbcommon, kbfacts, kbid, kbusage, ql_capture  # noqa: E402
+import build_index, factdiff, kbcommon, kbfacts, kbid, kbusage, provider, ql_capture  # noqa: E402
 
 KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the cache stays in the repository
 
@@ -180,6 +198,11 @@ _clone_locks = defaultdict(threading.Lock)
 _ready = {}
 
 
+def clone_name(repo):
+    """The directory name (without `.git`) of the bare clone of https://<repo> under REPOS."""
+    return re.sub(r"[^\w.-]+", "__", repo.strip("/"))
+
+
 def repo_dir(repo, base=None):
     """(bare blobless clone of https://<repo>, error). `repo` may also be a local path (tests)."""
     base = base or REPOS
@@ -187,7 +210,7 @@ def repo_dir(repo, base=None):
     # a local path's clone is named by its last part and a hash: its whole path in the name, under a long base, would
     # pass Windows' 260-character path limit inside the clone
     name = (f"{os.path.basename(os.path.normpath(repo))}-{hashlib.sha1(repo.encode()).hexdigest()[:8]}" if local
-            else re.sub(r"[^\w.-]+", "__", repo.strip("/")))
+            else clone_name(repo))
     d = os.path.join(base, name + ".git")
     with _clone_locks[d]:
         if d in _ready:
@@ -787,19 +810,32 @@ def factdiff_log_rows(rows, log, given=None):
     return [r for p in paths if os.path.isfile(p) for r in factdiff.read_log(p)]
 
 
-def reading_queue(rows, fd_rows):
-    """What phase 2 must read, measured with no network and no model: one record per row whose bucket is not OK, whose
-    note is not `blocked` and that has no outcome yet: id, host, `facts` (the kb lines naming it, `rag.py src --cited`),
-    `mode` (`review`: the fact diff items of `fd_rows` with their passages; `document`: the whole document of
-    _cache/factdiff), `chars` read, `items` and `partial` (review items with no old or no new passage), `cached`."""
-    todo = [r for r in rows if r["bucket"] != "OK" and r["note"] != BLOCKED and not r["outcome"]]
-    if not todo:
-        return []
-    ids = {r["id"] for r in todo}
-    cited = kbfacts.cited_lines(ids)
+def phase2_rows(rows):
+    """The rows phase 2 reads: bucket not OK, note not `blocked`, no outcome yet."""
+    return [r for r in rows if r["bucket"] != "OK" and r["note"] != BLOCKED and not r["outcome"]]
+
+
+def review_by_source(ids, fd_rows):
+    """{source id: [review item]}: the fact diff items of `fd_rows` for `ids`, each with its old and new passage, read
+    with no network (`factdiff.review_items`, offline)."""
     items = defaultdict(list)
     for it in factdiff.review_items(fd_rows, factdiff.sources(), ids, offline=True):
         items[it["source_id"]].append(it)
+    return items
+
+
+def reading_queue(rows, fd_rows, items=None, cited=None):
+    """What phase 2 must read, measured with no network and no model: one record per row whose bucket is not OK, whose
+    note is not `blocked` and that has no outcome yet: id, host, `facts` (the kb lines naming it, `rag.py src --cited`),
+    `mode` (`review`: the fact diff items of `fd_rows` with their passages; `document`: the whole document of
+    _cache/factdiff), `chars` read, `items` and `partial` (review items with no old or no new passage), `cached`.
+    `items` (`review_by_source`) and `cited` (`kbfacts.cited_lines`) are the lookups a caller already made."""
+    todo = phase2_rows(rows)
+    if not todo:
+        return []
+    ids = {r["id"] for r in todo}
+    cited = kbfacts.cited_lines(ids) if cited is None else cited
+    items = review_by_source(ids, fd_rows) if items is None else items
     out = []
     for r in todo:
         got, rec = items.get(r["id"]), {"id": r["id"], "host": urlparse(r["url"]).netloc.lower() or "-",
@@ -860,6 +896,245 @@ def cmd_summary(a, tally):
           + (" ".join(f"{h}={n}" for h, n in sorted(blocked.items())) or "none"))
     print(f"confirmed (phase 3 would date): {sum(1 for r in rows if confirmed(r))}")
     print("\n".join(queue_lines(reading_queue(rows, factdiff_log_rows(rows, a.log, a.factdiff)))))
+    return 0
+
+
+# ---------------------------------------------------------------- groups, brief: phase 2 split by owner
+
+BRIEF_CHARS = 30_000  # characters of one brief part, head and rules included; a source alone over it is a part of its own
+UNCITED = "_uncited"  # the group of the rows no domain file names (a domain never starts with `_`)
+
+BRIEF_RULES = """\
+For each source with review items below: judge each item as supported, contradicted or not enough information from its old \
+and new passage, and read the page only when they do not settle it. For a source gone with no successor (`dead` facts, \
+nothing moved), report it: the orchestrator runs `python3 _tools/factdiff.py dead {flog} --source <id>`, which turns the \
+facts that cited only it into `[UNK]`, adds the `_gaps.md` entries and marks the row dead with its last Wayback capture.
+For each other source: read it in full as it is now with the command under it. Then check every fact in your files that \
+cites it (the lines listed under it).
+- All facts still hold: outcome `confirmed`.
+- A fact changed: rewrite it from the new text (same tag). A live page: keep the id, outcome `updated`. A pinned file or \
+release: propose a new row for the new pinned url (the orchestrator writes it with `python3 _tools/kbid.py add`; \
+`python3 _tools/kbid.py url <URL>` gives its id), re-point the facts you re-verified, outcome `superseded` with the new \
+id in the note.
+- Gone or withdrawn: mark the facts `[UNK]`, outcome `gone`, and give a `_gaps.md` bullet (what, where you looked, \
+ending `(topic: <domain>/<slug>)`).
+- Cannot read it: outcome `unconfirmed` with the reason; change nothing.
+- Sources that now disagree with a kb fact you cannot settle: give a `_conflicts.md` bullet ending \
+`(topic: <domain>/<slug>)`.
+Update each edited article's `sources:` header and `status`. Do not touch `_sources.csv`, `_gaps.md`, `_conflicts.md`, \
+the index or any file outside your list, and do not commit. Facts in foreign files that need an edit: describe them.
+Return JSON only: {{"outcomes": [{{"id", "outcome", "note"}}], "new_rows": [{{all _sources.csv columns}}], \
+"superseded": {{"old id": "new id"}}, "gaps": [{{"topic", "text"}}], "conflicts": [{{"topic", "text"}}], \
+"foreign_edits": [{{"file", "line", "change"}}]}}."""
+
+
+def domain_of(rel):
+    """The domain of a file path relative to the root (its first directory); None for a root-level file (a ledger) or a
+    directory named `_*` or `.*`."""
+    head, sep, _ = rel.partition("/")
+    return head if sep and not head.startswith(("_", ".")) else None
+
+
+def citing_files(r, cited, root):
+    """{file relative to the root: [line]} of the domain files naming the row: the tree's lines (`rag.py src --cited`),
+    else, for a row no line names, the files of the log's `used_in` (no lines)."""
+    out = defaultdict(set)
+    for qpath, n in cited.get(r["id"], []):
+        top, _, rel = qpath.partition("/")
+        if top == root and domain_of(rel):
+            out[rel].add(n)
+    if not out:
+        for rel in filter(None, r["used_in"].split(";")):
+            if domain_of(rel):
+                out[rel]
+    return {rel: sorted(ns) for rel, ns in sorted(out.items())}
+
+
+def owner_of(files):
+    """The group owning a row: the domain with most of its citing lines (a file with no line counts once), the first
+    by name on a tie; UNCITED when no domain file names it."""
+    weight = Counter()
+    for rel, ns in files.items():
+        weight[domain_of(rel)] += len(ns) or 1
+    return min(weight, key=lambda d: (-weight[d], d)) if weight else UNCITED
+
+
+def phase2_context(rows, log, flog=None):
+    """What groups and brief share, with no network and no model: the date, the rows phase 2 reads by owner group
+    (`members`: group -> [(row, citing files, queue record)]), the fact diff items, the cited lines and the providers."""
+    todo = phase2_rows(rows)
+    ids = {r["id"] for r in todo}
+    fd_rows = factdiff_log_rows(rows, log, flog) if ids else []
+    cited = kbfacts.cited_lines(ids) if ids else {}
+    items = review_by_source(ids, fd_rows) if ids else {}
+    queue = {q["id"]: q for q in reading_queue(rows, fd_rows, items, cited)}
+    root, members = os.path.basename(KB), defaultdict(list)
+    for r in sorted(todo, key=lambda r: r["id"]):
+        files = citing_files(r, cited, root)
+        members[owner_of(files)].append((r, files, queue[r["id"]]))
+    date = ql_capture.phase_date(path=log)
+    flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else census_path(f"factdiff-{date}.csv")
+    return {"date": date, "root": root, "members": dict(sorted(members.items())), "items": items, "flog": flog_rel,
+            "providers": provider.providers(factdiff.ROOT)}
+
+
+def foreign_files(group, members):
+    """{file: [row id]} of the files outside the group's domain that cite its rows."""
+    out = defaultdict(set)
+    for r, files, _ in members:
+        for rel in files:
+            if domain_of(rel) != group:
+                out[rel].add(r["id"])
+    return {rel: sorted(ids) for rel, ids in sorted(out.items())}
+
+
+def owned_files(group, members):
+    return sorted({rel for _, files, _ in members for rel in files if domain_of(rel) == group})
+
+
+def read_commands(r, ctx):
+    """The lines that read a source in full: git show and git diff of a pinned file in the census clone, else the fetch
+    route of its page (Learn: microsoft_docs_fetch; otherwise the provider's raw form of the url)."""
+    if r["kind"] in ("raw-pin", "gh-pin") and r["repo"] and r["pin"] and r["path"]:
+        clone = kbcommon.repo_rel(os.path.join(REPOS, clone_name(r["repo"]) + ".git"), kbcommon.HOME)
+        found = re.search(r"@([0-9a-f]{12})", f"{r['evidence']} {r['proof']}")
+        tip = found.group(1) if found else "HEAD"
+        moved = r["note"][len("renamed="):] if r["note"].startswith("renamed=") else r["path"]
+        out = [f"git -C {clone} show {tip}:{moved}",
+               f"git -C {clone} diff {r['pin']}:{r['path']} {tip}:{moved}" if moved != r["path"]
+               else f"git -C {clone} diff {r['pin']} {tip} -- {r['path']}"]
+        if r["note"] == "memdocs":
+            out.append("MicrosoftDocs/memdocs is archived: re-source to the live Learn page (microsoft_docs_fetch), "
+                       "outcome `superseded` with its new row")
+        return out
+    if r["kind"] == "learn" or urlparse(r["url"]).netloc.lower() == "learn.microsoft.com":
+        return [f"microsoft_docs_fetch {r['url']}"]
+    url, headers = provider.raw_url(r["url"], provider.for_url(r["url"], ctx["providers"]))
+    return [f"fetch {url}" + "".join(f" (header {k}: {v})" for k, v in headers.items())]
+
+
+def row_block(r, files, q, group, ctx):
+    """The brief's text for one source: its row, the lines of the kb that cite it, then its review items or the
+    commands that read it."""
+    root = ctx["root"]
+    out = [f"### {r['id']}  {r['bucket']}", f"- url: {r['url']}", f"- evidence: {r['evidence']}",
+           f"- used_in: {r['used_in'] or '-'}"]
+    lines = [(rel, n) for rel, ns in files.items() for n in ns]
+    if lines:
+        out.append(f"- cited by (`python3 _tools/rag.py src {r['id']} --cited`):")
+        texts = {}
+        for rel, n in lines:
+            if rel not in texts:
+                texts[rel] = (kbfacts.read(f"{root}/{rel}") or "").splitlines()
+            text = texts[rel][n - 1].strip() if n <= len(texts[rel]) else ""
+            if text.startswith("sources:"):
+                text = "(front matter `sources:`; keep it in step with the facts)"  # a list of ids, not a fact
+            out.append(f"  - {kbcommon.repo_rel(rel)}:{n}{' (foreign)' if domain_of(rel) != group else ''} {text}")
+    else:
+        out.append("- cited by: no domain file names it in the tree"
+                   + (f"; the log's used_in lists {r['used_in']}" if r["used_in"] else ""))
+    got = ctx["items"].get(r["id"]) if q["mode"] == "review" else None
+    if got:
+        out.append("- review items (judge each: supported | contradicted | not enough information):")
+        for n, it in enumerate(got, 1):
+            out += [f"  {n}. {it['outcome']} {kbcommon.repo_rel(it['path'])}:{it['where'].rpartition(':')[2]}"
+                    f" ({it['verdict']}; {it['note']})",
+                    f"     fact: {factdiff.fact_text(it['fact'])}",
+                    f"     old ({it['old_from']}): {it['old'] or '-'}",
+                    f"     new ({it['new_from'] or '-'}): {it['new'] or '-'}"]
+    else:
+        out += ["- read:"] + [f"  {c}" for c in read_commands(r, ctx)]
+    return "\n".join(out)
+
+
+def brief_head(group, part, parts, files, foreign, ctx, n):
+    out = [f"You re-verify it-ops-kb sources for the census of {ctx['date']}. Group {group}, part {part} of {parts}: "
+           f"{n} source(s), at most {BRIEF_CHARS} characters a part (a source alone over it is a part of its own); the "
+           "parts of a group share its files, so run them one after another."]
+    out.append("Your files (edit only these): " + (", ".join(kbcommon.repo_rel(f) for f in files) or "none"))
+    if foreign:
+        out.append("Foreign files (cite your sources, not yours to edit): "
+                   + ", ".join(kbcommon.repo_rel(f) for f in foreign))
+    out.append("Sources, each with its row (id, url, bucket, evidence, used_in), the lines of the kb that cite it and how "
+               "to read it; no lookup call is needed to start:")
+    return "\n".join(out)
+
+
+def brief_parts(group, members, ctx):
+    """The group's brief as a list of texts, each at most BRIEF_CHARS (a source alone over it is a part of its own):
+    the skill's phase-2 brief filled in. A part holds whole sources, in id order; its files are those citing them."""
+    rules = BRIEF_RULES.format(flog=ctx["flog"])
+    blocks = [(m, row_block(m[0], m[1], m[2], group, ctx)) for m in members]
+    fixed = len(brief_head(group, 99, 99, owned_files(group, members), foreign_files(group, members), ctx, 999)) \
+        + len(rules) + 4
+    packed, cur, size = [], [], fixed
+    for b in blocks:
+        if cur and size + len(b[1]) + 2 > BRIEF_CHARS:
+            packed.append(cur)
+            cur, size = [], fixed
+        cur.append(b)
+        size += len(b[1]) + 2
+    packed.append(cur)
+    out = []
+    for i, part in enumerate(packed, 1):
+        mem = [m for m, _ in part]
+        out.append("\n\n".join([brief_head(group, i, len(packed), owned_files(group, mem), foreign_files(group, mem), ctx,
+                                            len(part)), *(text for _, text in part), rules]))
+    return out
+
+
+def group_records(ctx):
+    """The groups of `census.py groups`: per group its rows, owned files, foreign files, queue size and brief parts."""
+    out = []
+    for group, members in ctx["members"].items():
+        qs = [q for _, _, q in members]
+        chars = sum(q["chars"] for q in qs)
+        out.append({"group": group, "files": owned_files(group, members),
+                    "foreign": [{"file": f, "domain": domain_of(f), "rows": ids} for f, ids in foreign_files(group, members).items()],
+                    "queue": {"rows": len(members), "facts": sum(q["facts"] for q in qs), "items": sum(q["items"] for q in qs),
+                              "chars": chars, "tokens": chars // kbusage.CHARS_PER_TOKEN},
+                    "parts": len(brief_parts(group, members, ctx)),
+                    "rows": [{"id": r["id"], "url": r["url"], "bucket": r["bucket"], "evidence": r["evidence"],
+                              "used_in": [f for f in r["used_in"].split(";") if f], "mode": q["mode"], "facts": q["facts"],
+                              "items": q["items"], "chars": q["chars"]} for r, _, q in members]})
+    return out
+
+
+def phase2_args(a):
+    """(rows, error): the log's rows, or None and the reason a groups or brief run refuses (exit 2)."""
+    if not os.path.isfile(a.log):
+        return None, f"no census log {a.log}"
+    if a.factdiff and not os.path.isfile(a.factdiff):
+        return None, f"no fact diff log {a.factdiff}"
+    return read_log(a.log), ""
+
+
+def cmd_groups(a, tally):
+    rows, err = phase2_args(a)
+    if err:
+        print(err)
+        return 2
+    ctx = phase2_context(rows, a.log, a.factdiff)
+    print(json.dumps({"log": os.path.relpath(os.path.abspath(a.log), kbcommon.HOME).replace(os.sep, "/"),
+                      "date": ctx["date"], "root": ctx["root"], "brief_chars": BRIEF_CHARS,
+                      "rows": sum(len(m) for m in ctx["members"].values()), "groups": group_records(ctx)}, indent=1))
+    return 0
+
+
+def cmd_brief(a, tally):
+    rows, err = phase2_args(a)
+    if err:
+        print(err)
+        return 2
+    ctx = phase2_context(rows, a.log, a.factdiff)
+    if a.group not in ctx["members"]:
+        print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["members"]) or "none"))
+        return 2
+    parts = brief_parts(a.group, ctx["members"][a.group], ctx)
+    if not 1 <= a.part <= len(parts):
+        print(f"group {a.group} has {len(parts)} part(s); --part {a.part} is out of range")
+        return 2
+    print(parts[a.part - 1])
     return 0
 
 
@@ -1086,6 +1361,16 @@ def main():
     m.add_argument("log")
     m.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default: the "
                                                       "log the census's evidence names, else factdiff-<date>.csv beside LOG)")
+    gp = sub.add_parser("groups", help="phase 2: the rows to read split into owner groups, as JSON")
+    gp.add_argument("log")
+    gp.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default as for "
+                                                       "summary)")
+    bp = sub.add_parser("brief", help="phase 2: one group's brief, filled in with its rows, cited facts and review items")
+    bp.add_argument("log")
+    bp.add_argument("--group", required=True, help="a group name `groups` prints")
+    bp.add_argument("--part", type=int, default=1, help=f"the part of a group over {BRIEF_CHARS} characters (default 1)")
+    bp.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the brief prints (default as "
+                                                       "for summary)")
     u = sub.add_parser("run", help="phases 0-1 as one command: fact diff, apply, check, index, the phase-1 commit, summary")
     u.add_argument("--date", help="census date (default today)")
     u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")
@@ -1106,7 +1391,8 @@ def main():
     factdiff.ROOT = here[0]
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
-    cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary, "run": cmd_run, "finish": cmd_finish}
+    cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary, "groups": cmd_groups, "brief": cmd_brief,
+            "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):
         sys.exit(ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None))))
