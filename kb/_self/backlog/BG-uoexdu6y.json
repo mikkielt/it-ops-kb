@@ -2,7 +2,7 @@
   "id": "BG-uoexdu6y",
   "kind": "bug",
   "title": "backlog.py reads backlog.json from the tool's own root at import, so with --root another project only config and check use that project's settings",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-befc6yqr",
   "priority": "P1",
@@ -80,5 +80,28 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "kb-worker-uoexdu6y"
+  "evidence": {
+    "commit": "8b0b507a6cc97886bfe485a8d660b71fb3919b44",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "backlog_config"
+        ],
+        "exit": 0,
+        "sha256": "a41afc8ffd9975d0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,subprocess,sys,tempfile,pathlib;d=pathlib.Path(tempfile.mkdtemp());subprocess.run(['git','init','-q',str(d)]);(d/'backlog.json').write_text(json.dumps({'item_dir':'work/items'}));subprocess.run([sys.executable,'_tools/backlog.py','--root',str(d),'new','story','--title','probe','--goal','probe'],capture_output=True);sys.exit(0 if (d/'work/items').is_dir() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
