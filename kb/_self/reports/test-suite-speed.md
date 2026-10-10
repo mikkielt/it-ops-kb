@@ -112,7 +112,7 @@ The four end-to-end scenarios hold most of the worker time (sync 13.6 s, land 13
 
 One full `python3 _tools/tests.py` at `96c30c7` (54 tests, 11 files, 8 workers), run while an elevated session recorded Defender for 180 s: `New-MpPerformanceRecording -RecordTo <file.etl> -Seconds 180`, then `Get-MpPerformanceReport -Path <file.etl>` with `-TopProcesses`, `-TopExtensions`, `-TopFiles` and `-TopScans 20000` (`kb/public/defender/asr-and-antivirus.md`). Defender platform 4.18.26090.9, real-time protection on with no exclusions. The suite passed in 97.5 s (pytest's time) against 84-88 s for the same suite on the quiet host the same day (`kb/_self/reports/windows-run.md`), the recording's own load included.
 
-The recording holds 9,106 scans and 84.2 s of scan time. Scan time is summed over the scans, which the 8 workers make at once, so it is not wall time. The report's durations are counts of 100 ns intervals in its `-Raw` output (`kb/public/defender/asr-and-antivirus.md`); the figures here are those durations in seconds.
+The recording holds 9,106 scans and 84.2 s of scan time. Scan time is summed over the scans, which the 8 workers make at once, so it is not wall time. The cmdlet page states the 100 ns unit only for the durations of `-Raw` output (`kb/public/defender/asr-and-antivirus.md`); the recorded command has no `-Raw`, so the figures below are the report's formatted TimeSpans, in seconds.
 
 | scanned files under | scans | scan seconds |
 |---|---|---|
@@ -120,7 +120,7 @@ The recording holds 9,106 scans and 84.2 s of scan time. Scan time is summed ove
 | the clone the suite runs in (its worktree) | 4,046 | 38.0 |
 | other Temp, Python and uv, the main checkout, the rest | 1,416 | 2.0 |
 
-The third row's seconds are the total less the first two rows (the recording is not in the repository); the per-process split gives the same remainder (84.2 - 70.4 - 11.7 = 2.1 s, within rounding).
+The third row's seconds are derived: the total less the first two rows, 84.2 - 44.2 - 38.0 = 2.0 (the recording is not in the repository).
 
 - By process: `python.exe` 7,668 scans, 70.4 s; `python3.exe` 703, 11.7 s; every other process under 0.6 s.
 - By extension: `.md` 1,752 scans, 32.3 s; `.txt` 790, 19.3 s; `.json` 863, 9.0 s; `.csv` 608, 7.8 s; `.py` 353, 5.1 s; `.jsonl` 413, 4.5 s; `.pyc` 2,810, 1.7 s; the other extensions hold the remaining 4.5 s.
