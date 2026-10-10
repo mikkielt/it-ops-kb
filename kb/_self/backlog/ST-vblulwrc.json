@@ -70,7 +70,9 @@
         "keep it until origin/main drops the file"
       ],
       "recommendation": "delete it: an item this checkout holds or held (in HEAD or the merge base) is gone by its own removal, and only an item filed on main since is kept",
-      "class": "push"
+      "class": "push",
+      "answer": "delete it: an item this checkout holds or held (in HEAD or the merge base) is gone by its own removal, and only an item filed on main since is kept",
+      "by": "operator"
     }
   ],
   "links": [
