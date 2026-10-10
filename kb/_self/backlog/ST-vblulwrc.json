@@ -21,6 +21,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-matmvkn6 review"
-  ]
+    "parked: SP-matmvkn6 review",
+    "merged: ST-6cp6uvmv"
+  ],
+  "notes": "Merged from ST-6cp6uvmv “A planted test proves close and drop prune the reopen refs of removed items and keep those of live items” at the 2026-10-10 backlog triage: No test names prune_reopened_refs or kb-reopened (grep of _tools: only bl_land.py and bl_items.py). It is the test half of the same function whose fix is ST-vblulwrc, and both carry the same `-k reopened_refs` check, so one item does fix plus planted test. Its goal: Found by the fresh-context review of SP-matmvkn6, item ST-ihtjygip (Sprint close and drop delete the refs/kb-reopened ref of each item they remove): no test names kb-reopened or prune_reopened_refs, so removing the call in cmd_close (_tools/bl_land.py) or cmd_drop (_tools/bl_items.py) passes every gate; ST-ihtjygip's check read only the clone's ref state, which the worker pruned by calling the function by hand. One planted-failure test in _tools/test_land_e2e.py, within the ceiling in _tools/tests_ceiling.json, runs close or drop in an isolated git repo and asserts a removed item's ref is gone, a live item's ref kept, and a drop inside a sprint prunes nothing. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"reopened_refs\"]} Its touches: _tools/test_land_e2e.py, _tools/tests_ceiling.json"
 }

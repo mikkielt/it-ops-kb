@@ -20,6 +20,9 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-7y6dk257 review"
-  ]
+    "parked: SP-7y6dk257 review",
+    "merged: BG-wamgfo7s",
+    "merged: ST-calar7s7"
+  ],
+  "notes": "Merged from BG-wamgfo7s “Two pool eval rows stay path-only: BP-005970a5's fact line answers neither part, and BP-2413ce41 needs a check no single regex gives” at the 2026-10-10 backlog triage: Same class as BG-wcdbq563: committed pool rows whose check does not answer (fact_for picks :38 for BP-005970a5). Repro reproduces: both rows are path-only, 2 of 25 path-only pool rows in 130. No multi-part --replies feature is needed: hand-set a single-regex check (the LSASS GUID from asr-rules.csv:3; `Edm\\.Boolean` for BP-2413ce41), which cached_checks keeps across rebuilds. Its goal: BP-005970a5 (which ASR rules support Warn mode, and the LSASS rule's GUID) and BP-2413ce41 (the type of the Graph beta device property isManagementRestricted) hold a check of the fact that answers them, not only an article path. BP-005970a5: fact_for picks defender/asr-and-antivirus.md:38 (rule groups), while :35 names the two rules without Warn mode and defender/asr-rules.csv:3 holds the GUID. BP-2413ce41: the answer is Edm.Boolean (graph/csdl-device.properties.csv:59); the model's bare Boolean is too broad for the guard, and pool build --replies reads only a row's first check, so a two-part check (the property and its type) cannot be given. Found in SP-7y6dk257 by ST-2p5ywkam's paid redo. Its touches: _tools/bench_pool.py, _tools/test_bench.py, kb/public/_retrieval/bench_pool.csv, kb/_self/tools.md"
 }

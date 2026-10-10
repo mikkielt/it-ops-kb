@@ -22,6 +22,8 @@
     "kb/_self/code.md"
   ],
   "links": [
-    "parked: SP-x7ger6vu run"
-  ]
+    "parked: SP-x7ger6vu run",
+    "merged: ST-o2jd35m2"
+  ],
+  "notes": "Merged from ST-o2jd35m2 “The pool report marks an Opus cell that ran only the sanity subset, read from its planned_kinds row” at the 2026-10-10 backlog triage: `--kinds all` is refused ('unknown all') while the help says 'default: all'; I ran it with --dry-run. That one-line help fix belongs to BG-wapzksub (same file, _tools/benchmarks.py). The table marking of the Opus subset is dropped: the prose note already tells it and the Opus arm ran once. Its goal: bench_report.py marks in the pool tables each cell of an arm label whose planned_kinds row names fewer kinds than the pool (the opus-5-5 sanity subset of ST-7tl6pbqf), for example with its row count, so a future subset record is told apart from a full one without the prose note; and the --kinds help text of benchmarks.py no longer says default all where --kinds all is refused as an unknown kind (found by the SP-x7ger6vu review: ST-7tl6pbqf's table-marking clause was met by a prose note, as bench_report.py was outside its touches) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"bench\"]} Its touches: _tools/bench_report.py, _tools/benchmarks.py, _tools/test_bench.py, kb/_self/reports/benchmarks.md, kb/_self/tools.md, kb/_self/code.md"
 }

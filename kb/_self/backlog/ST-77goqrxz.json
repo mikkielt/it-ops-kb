@@ -20,6 +20,9 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-kjqdiudr close"
-  ]
+    "parked: SP-kjqdiudr close",
+    "merged: ST-dufjnho5",
+    "merged: ST-fumnrmll"
+  ],
+  "notes": "Merged from ST-dufjnho5 “A goal figure names the run it was measured on, and the planning premise measures it that way” at the 2026-10-10 backlog triage: A figure measured on a different run than the premise is the same clause-versus-measurement slip as ST-77goqrxz. ST-77goqrxz must add one sentence: a goal's time or share figure names the run (profiled or not, host, warm or cold) and the premise measures that run. Its goal: Sprint planning (/kb-sprint plan step 6 and kb/_self/backlog.md, Sprints) states that a goal's time or share figure names the run it was measured on (profiled or not, which host, warm or cold) and that the premise measures the same run, so the done check compares like with like; SP-yzgetyu2: ST-s6tqojsw's 'about a third of today's 6.3 s' took a cProfile baseline while the work was timed unprofiled (3.97 s to 2.2 s), and the review found the goal unmet by its own words (accepted at the SP-yzgetyu2 close) Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
 }

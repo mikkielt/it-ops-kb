@@ -22,5 +22,13 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
-  "notes": "The check passes before the work: planning repoints it to a run of backlog.py check on a planted item whose only check greps _tools/ code, which must warn."
+  "links": [
+    "merged: ST-6rgawaxs",
+    "merged: ST-k3ehh2py",
+    "merged: ST-jrmfgjkt",
+    "merged: ST-pafsvtfs",
+    "merged: ST-rcfxvexc",
+    "merged: ST-42nkqcpd"
+  ],
+  "notes": "The check passes before the work: planning repoints it to a run of backlog.py check on a planted item whose only check greps _tools/ code, which must warn. Merged from ST-6rgawaxs “Planning puts a test file an item's notes say the work adds to in the item's touches” at the 2026-10-10 backlog triage: bl_check.py has goal_path_warnings for kb/ paths only and no warning for a _tools/test_*.py file named in notes; same planning rule as the older P2 ST-a5q6vaji ('the test file it extends is in its touches before the start gate, check warns'). Its goal: backlog.py check warns, for an open item of a planned sprint, of a _tools/test_*.py file its notes or goal name as where the work's test goes that no touch covers, naming the file and set ID --add-touch, so the worker's done is not refused for it. Answers SP-evkj4avq, where ST-pvtfs43r's done was refused for _tools/test_land_e2e.py and ST-r7cftjex had to add _tools/test_sync_e2e.py, both named in notes but not in touches. Its checks: {\"run\": [\"python3\", \"_tools/backlog.py\", \"check\"]} Its touches: _tools/bl_check.py, kb/_self/backlog.md Merged from ST-jrmfgjkt “A check that bounds a tool's git calls counts every git process, not one helper's calls” at the 2026-10-10 backlog triage: Same rule family as ST-a5q6vaji: planned checks test behaviour, never source text. ST-a5q6vaji must add that a check bounding a tool's git calls counts every git process (subprocess.Popen of git), not one helper's calls. Its goal: A planned check or test that bounds the git calls of a tool (ST-nkg2ucxq's check counted only kg_merge.git, while the cat-file --batch reader and a git config read go around it, so its limit of 6 would pass 8 real processes) counts subprocess.Popen of git instead; kb/_self/backlog.md's rule for checks that measure a count says to measure the real thing (found by the SP-yzgetyu2 review) Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: kb/_self/backlog.md, .claude/skills/kb-sprint/SKILL.md"
 }

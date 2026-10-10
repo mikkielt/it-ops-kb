@@ -20,6 +20,9 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-vayhvwfy close"
-  ]
+    "parked: SP-vayhvwfy close",
+    "merged: ST-4hwqtzjy",
+    "merged: ST-mylfhlhj"
+  ],
+  "notes": "Merged from ST-4hwqtzjy “kb-sprint review names the headless reviewer's launch: cwd, scratch dir, --max-turns, stdin brief, read-only” at the 2026-10-10 backlog triage: Premise holds: SKILL.md review step 4 (line 90) names no --max-turns, cwd, scratch dir or read-only rule, and the item's check exits 1. It is the same review-step-4 reviewer launch as ST-2ldhug4l (reviewer in a worktree of its own), so one commit carries both. Its goal: Found in the SP-d3hybrlv review: review step 4 starts the fresh-context reviewer as a headless session 'as run step 3 starts a worker', but run step 3's fixed brief parts are by item kind, so the reviewer has no --max-turns, no named cwd (the intake hook may leave drafts in the main clone), no scratch dir and no read-only rule. SKILL.md review step 4 and backlog.md name them. Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();r=t.split('## review SP')[1].split('## close SP')[0];ok='--max-turns' in r and 'read-only' in r;print('reviewer launch:',ok);sys.exit(0 if ok else 1)\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md Merged from ST-mylfhlhj “The review runs tests.py only after the fresh-context reviewer has returned, so its load does not push the suite over the ceiling” at the 2026-10-10 backlog triage: One-sentence wording fix in review step 4 (tests.py whole run only after the reviewer returns); item's check is selfdoc check only. Same step and files as ST-2ldhug4l's reviewer-worktree clause, so it rides there. Its goal: Review step 4 and the review story's checks order the whole tests.py run after the reviewer subagent or headless session returns (it loads the host), since a concurrent run took 21 s against the 20 s darwin ceiling and failed while the same suite took 19.1 s on an idle host (SP-rvslem3h). Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
 }

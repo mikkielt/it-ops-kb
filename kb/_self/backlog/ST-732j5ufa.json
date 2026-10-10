@@ -23,6 +23,8 @@
     "kb/_self/querylog.md"
   ],
   "links": [
-    "parked: SP-rvslem3h review"
-  ]
+    "parked: SP-rvslem3h review",
+    "merged: ST-i3diqinm"
+  ],
+  "notes": "Merged from ST-i3diqinm “apply's rules anchor comes from the part of the lead passage the pack prints, and a no-fix record names the eval failure” at the 2026-10-10 backlog triage: Same lead-passage path as ST-732j5ufa: ql_apply.anchor_phrases still takes candidates from the whole line (rules_one line 428) and not from the pack's printed clip; same files, fixture and doc. Must absorb: anchor only from the printed clip of the lead, and a no-fix record names the eval failure (text or anchor). Its goal: ql_apply.anchor_phrases takes candidates only from the text the pack prints of the lead or answer line, so a correct lead whose rarest phrase sits past the clip (the AGENTS.md/README.md gate question, lead kb/_self/tools.md:72, failed=text) yields a row that passes; and a no-fix record names the row's eval failure (text or anchor) rather than only 'eval fails' and an unchanged mean pack. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"_tools/test_redact.py\"]} Its touches: _tools/ql_apply.py, _tools/test_redact.py, _tools/fixtures/querylog/store/**, kb/_self/querylog.md"
 }

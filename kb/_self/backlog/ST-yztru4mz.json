@@ -20,6 +20,8 @@
     ".claude/skills/kb-sprint/SKILL.md"
   ],
   "links": [
-    "parked: SP-caqrexqw close"
-  ]
+    "parked: SP-caqrexqw close",
+    "merged: ST-xpursuq4"
+  ],
+  "notes": "Merged from ST-xpursuq4 “kb-worker.md names the worker's _cache/scratch/<id>/ as the staging-copy directory” at the 2026-10-10 backlog triage: Valid (kb-worker.md:22 says 'the orchestrator's scratch directory' and has no _cache/scratch/; its check fails) but a one-sentence edit to the same file as ST-yztru4mz. Its goal: Found in the SP-d3hybrlv review: .claude/agents/kb-worker.md says the .claude/ staging copies sit in 'the orchestrator's scratch directory', while kb-sprint run step 3 and backlog.md now name the worker's _cache/scratch/<id>/ for both throwaway files and staging copies. kb-worker.md says the same. Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();ok='_cache/scratch/' in t;print('kb-worker scratch:',ok);sys.exit(0 if ok else 1)\"]} Its touches: .claude/agents/kb-worker.md"
 }

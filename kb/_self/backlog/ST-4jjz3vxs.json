@@ -32,6 +32,8 @@
     "kb/_self/map.csv"
   ],
   "links": [
-    "memory: GitHub is the kb's public home, gitlab.com the private dev and CI; a gh arm serves the publish side later"
-  ]
+    "memory: GitHub is the kb's public home, gitlab.com the private dev and CI; a gh arm serves the publish side later",
+    "merged: BG-iq52pvdl"
+  ],
+  "notes": "Merged from BG-iq52pvdl “forge_project is half-honoured: land lists merge requests by the remote URL's project but reads and rewrites descriptions by the setting's” at the 2026-10-10 backlog triage: Premise holds: bl_land.py:814 and :2035 read forge_project, ql_deliver.forge_list:77 re-derives the project from the URL, and bl_intake.py has no forge_project. The single forge module of ST-4jjz3vxs removes the split by construction; the repro (forge_project absent from bl_intake.py) still fails. Its goal: With backlog.json forge_project set, every forge call of land, merge, red-pipeline and ql_deliver uses the same project: forge_list (ql_deliver.py:77) re-derives the project from the URL while read_merge_request and the description PUT (bl_land.py:796) use the setting, so a wrong request's description can be overwritten; bl_intake.py:1199 and ql_deliver ignore it. Found by the SP-befc6yqr review (S2 of ST-qgnjxiol). Its touches: _tools/bl_land.py, _tools/ql_deliver.py, _tools/bl_intake.py, kb/_self/backlog.md"
 }
