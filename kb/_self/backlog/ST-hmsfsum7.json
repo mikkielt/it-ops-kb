@@ -1,0 +1,25 @@
+{
+  "id": "ST-hmsfsum7",
+  "kind": "story",
+  "title": "kb-sprint run names backlog.py dispatch as the way to start a worker, and that it waits for the worker to exit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5i4itd2d retrospective: kb-sprint run step 3 describes starting claude -p by hand (scratch, --add-dir, stdin brief, worktree add), while backlog.py dispatch does all of it and blocks until the worker exits; the orchestrator found it only through backlog.py --help, and a foreground dispatch overran the Bash tool's 2-minute default and was moved to the background. The skill and backlog.md name dispatch, its --probe and --known options, and that it is a long command to start in the background.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how does the orchestrator start a worker with backlog.py dispatch','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d close"
+  ]
+}

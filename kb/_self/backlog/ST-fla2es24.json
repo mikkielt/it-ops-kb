@@ -1,0 +1,25 @@
+{
+  "id": "ST-fla2es24",
+  "kind": "story",
+  "title": "The sprint review confirms a provisional answer only after the fresh-context reviewer has read the work it allowed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5i4itd2d retrospective: the review confirmed BG-wcdbq563 gate g1 (extend four committed pool checks by hand) at step 1, before the reviewer of step 4 found the BP-df64045a extension accepts a non-answer (BG-i7q4cjpb). kb-sprint review gives each provisional answer to the reviewer with the diff it allowed, and asks for its confirmation after the reviewer's report, so a gap in it becomes a changed answer, not a later draft.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','when does the review confirm a provisional answer relative to the reviewer report','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-e6v5v4dt",
+  "kind": "story",
+  "title": "The sprint reviewer's brief forbids paid model calls, and pool build makes none without an explicit flag",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5i4itd2d retrospective: the read-only fresh-context reviewer ran benchmarks.py pool build --out to a scratch path to test a plain rebuild and made one paid Sonnet call (about 0.055 USD), since the scratch file had no cached checks. The reviewer brief (kb-sprint review step 4) names paid commands (pool build without --dry-run, bench runs) as not allowed, or pool build asks the model only with an explicit flag.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may the sprint reviewer make paid model calls','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "_tools/bench_pool.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d close"
+  ]
+}

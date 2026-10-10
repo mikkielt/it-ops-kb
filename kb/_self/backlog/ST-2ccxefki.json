@@ -1,0 +1,25 @@
+{
+  "id": "ST-2ccxefki",
+  "kind": "story",
+  "title": "Planning checks each kb line a goal names as an answer with rag.py show before the start gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5i4itd2d retrospective: BG-wcdbq563's goal named mecm/cmpivot.md:14 as the line answering the CMPivot timeout rows, and the worker made fact_for pick it; the line states no timeout (the review found it on :17 and :43, BG-i7q4cjpb). kb-sprint plan step 6 runs rag.py show on each path:line a committed goal names as an answer and records in the item's notes that the line answers, or corrects the goal.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how does planning check a kb line a goal names as the answer','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d close"
+  ]
+}

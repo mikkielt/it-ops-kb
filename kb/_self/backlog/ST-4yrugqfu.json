@@ -1,0 +1,25 @@
+{
+  "id": "ST-4yrugqfu",
+  "kind": "story",
+  "title": "An item that widens a parser or matcher carries a check that an input outside its target is unchanged",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5i4itd2d retrospective: two items' checks passed on work that regressed inputs outside their goal: ST-z5uh6oj7's VERSION_ID read a SID's digits as a version (BG-bvyblfnp) and ST-vlkxprhy's range clamp stopped refusing a citation far past a file's end (BG-676tplds); each check planted only the target input. Planning (kb-sprint plan step 6) names, for a committed item that widens a tokenizer, regex or citation parser, one negative check of an input the change must leave as it was, as it already does for attribution rules.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','what negative check does an item that widens a parser carry','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5i4itd2d close"
+  ]
+}
