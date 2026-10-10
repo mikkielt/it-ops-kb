@@ -54,7 +54,9 @@
         "object keyed by tracker name, each {pattern, url} only: the KB-Ref trailer value is always the id as stored": "ST-vkqndn5e",
         "list of {name, pattern, url} objects": "ST-vkqndn5e"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "object keyed by tracker name, each {pattern, url, ref}: pattern a regex the whole id matches, url a template with {id}, ref an optional template with {id} for the KB-Ref trailer value (default {id})",
+      "by": "operator"
     },
     {
       "id": "helper",
@@ -71,7 +73,9 @@
         "a new bl_external.py that bl_base cannot import at load": "ST-vkqndn5e",
         "bl_dispatch.py, created by this item": "ST-vkqndn5e"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "bl_base.py, beside the settings it reads and commit_written, which every bl_ module imports",
+      "by": "operator"
     },
     {
       "id": "mrwrite",
@@ -86,7 +90,9 @@
         "after sync --push opened the code/ branch request, land finds it and sets its description through glab api (a failed call is said, never a failed land)": "ST-vkqndn5e",
         "a merge_request.description push option built in kg_sync.py, which needs the touches widened": "ST-vkqndn5e"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "after sync --push opened the code/ branch request, land finds it and sets its description through glab api (a failed call is said, never a failed land)",
+      "by": "operator"
     },
     {
       "id": "mrtext",
@@ -101,7 +107,9 @@
         "a block headed 'Tracker references (KB-Ref):' with one line per id of the form '- TRACKER REF: URL', no closing or trigger keyword, replacing an earlier block of land's own": "ST-vkqndn5e",
         "one 'Related to REF' line per id": "ST-vkqndn5e"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "a block headed 'Tracker references (KB-Ref):' with one line per id of the form '- TRACKER REF: URL', no closing or trigger keyword, replacing an earlier block of land's own",
+      "by": "operator"
     },
     {
       "id": "refusal",
@@ -116,7 +124,9 @@
         "one error per id naming the item, the tracker, the id and the tracker's pattern; for a tracker the file does not name, the trackers it does name (or that backlog.json names none)": "ST-vkqndn5e",
         "one generic error per item: external ids invalid": "ST-vkqndn5e"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "one error per id naming the item, the tracker, the id and the tracker's pattern; for a tracker the file does not name, the trackers it does name (or that backlog.json names none)",
+      "by": "operator"
     }
   ],
   "notes": "Order in SP-befc6yqr: second, after ST-qgnjxiol, which creates _tools/test_backlog_portable.py (the one new test file of the epic, within the 15-file ceiling); its -k external_ids test goes into that file. Its selector collects no test until the work adds it. 2026-10-10 orchestrator (operator-delegated): the clause 'brief prints them' moved to ST-nq5z6whn, since brief is created there, after this story; this story prints them in show through one helper the brief will call.",
