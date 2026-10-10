@@ -2,7 +2,7 @@
   "id": "ST-habqocav",
   "kind": "story",
   "title": "Research sprint goal: Headless sprint loop 1: worker brief and role file",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qg7ncs6d",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planning ran the goal's questions through rag.py pack -q (resume of a headless session by id, --max-turns in print mode, worktree isolation and cleanup, SessionStart hooks in a -p run): all four coverage good (public/claude/cli-flags.csv:16, :5; ci-and-headless.md:39; skills-and-subagents.md:76; hooks.md:89,108). Its done needs 'No outside facts: the pack answers each goal question good, the sprint edits project rules and tool wording only' as a note; no gap entry or kb fact is needed."
+  "notes": "Planning ran the goal's questions through rag.py pack -q (resume of a headless session by id, --max-turns in print mode, worktree isolation and cleanup, SessionStart hooks in a -p run): all four coverage good (public/claude/cli-flags.csv:16, :5; ci-and-headless.md:39; skills-and-subagents.md:76; hooks.md:89,108). Its done needs 'No outside facts: the pack answers each goal question good, the sprint edits project rules and tool wording only' as a note; no gap entry or kb fact is needed.",
+  "claimed_by": "orch-qg7ncs6d"
 }
