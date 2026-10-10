@@ -1,0 +1,26 @@
+{
+  "id": "BG-7ivc4owm",
+  "kind": "bug",
+  "title": "The sync gate's held-out reword check does not run when a landing changes only doc2query expansions.csv",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py's heldout_rewordings compares held-out rows against the doc2query expansions of the expected articles too, but kg_sync.heldout_checks triggers only on lookup_eval.csv and lookup_heldout.csv, so a landing that adds an expansion rewording a held-out row passes the gate (SP-5x5ut5ko review gap G2, ST-wjm2ipaf). A range that changes a root's _retrieval/doc2query/expansions.csv runs the held-out reword check too.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kg_sync;r=kg_sync.heldout_checks(['kb/public/_retrieval/doc2query/expansions.csv']);print('held-out check on an expansions-only range:',r);sys.exit(0 if r else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko review"
+  ]
+}

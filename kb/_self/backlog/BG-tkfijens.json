@@ -1,0 +1,24 @@
+{
+  "id": "BG-tkfijens",
+  "kind": "bug",
+  "title": "kb/public/_answers.md gives the os.copy_file_range EXDEV mapping without its Linux kernel older than 5.3 condition",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The _answers.md entry on os.link across filesystems (about line 2604) says the os page states the EXDEV mapping only for os.copy_file_range, without the page's condition 'In Linux kernel older than 5.3'; ST-vodknj3g fixed the article and the _gaps.md entry, not this answer (SP-5x5ut5ko review gap G3). The entry gives the condition as the page states it.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;ls=[l for l in open('kb/public/_answers.md',encoding='utf-8') if 'copy_file_range' in l and 'EXDEV' in l];bad=[l[:80] for l in ls if '5.3' not in l];print('answer lines without the 5.3 condition:',bad or 'none');sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "kb content: the defect is the article text itself, so reading the text is the behaviour",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko review"
+  ]
+}

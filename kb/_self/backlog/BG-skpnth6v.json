@@ -1,0 +1,26 @@
+{
+  "id": "BG-skpnth6v",
+  "kind": "bug",
+  "title": "agents/codebase-mapping.md omits an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER from the rustc info cache's fingerprint-error cases",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "codebase-mapping.md:90 lists the causes of a rustc fingerprint error that turns the .rustc_info.json cache off, but omits a RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER that cannot be resolved or stat'ed: rustc_fingerprint in src/cargo/util/rustc.rs at the pinned Cargo sha 797e8a9b calls hash_exe on each wrapper with ? (SP-5x5ut5ko review gap G4, ST-genpuoa2). The fact names the wrappers among the cases, read again at the pinned sha.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;ls=[l for l in open('kb/public/agents/codebase-mapping.md',encoding='utf-8') if '.rustc_info.json' in l and 'fingerprint' in l];ok=bool(ls) and all('WRAPPER' in l for l in ls);print('fingerprint fact names the wrappers:',ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "kb content: the defect is the article text itself, so reading the text is the behaviour",
+  "touches": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko review"
+  ]
+}
