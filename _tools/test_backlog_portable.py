@@ -2,12 +2,14 @@
 each value's source, the kb's committed backlog.json holds the kb's own values, and a file with an unknown key or a
 wrong type is refused naming the key; `brief` prints the worker's brief, with the rules of the project's own docs
 (`docs_map`, `kb_root`), and `dispatch --dry-run` its argv without starting a session; `cost` on an item no capture
-names says so and prints no table of zeros.
+names says so and prints no table of zeros, and it counts a planted headless worker session's prompts on its item while
+the orchestrator's prompts outside the item's window stay out of the item's own figure.
 
 The settings files are throwaway directories under tmp_path; the one real file read is the repository's backlog.json."""
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -15,6 +17,8 @@ from pathlib import Path
 import pytest
 
 import bl_base
+import kbusage
+import ql_distill
 from conftest import TOOLS, Repo
 
 
@@ -333,6 +337,93 @@ def test_backlog_cost_no_capture_names_the_spool_and_prints_no_table_of_zeros(tm
     assert "no item line" not in out and "no capture" not in out
     assert "direct (main):" in out and "session total (direct + attributed + shared):" in out
     assert "claude-sonnet-5-5  requests 2  in 10  cr 5  out 7 | cw 0" in out
+
+
+def test_backlog_headless_worker_cost_is_its_items_and_orchestrator_cost_not_attributed_outside_its_window(
+        tmp_path, monkeypatch):
+    """A headless worker session in a worktree the orchestrator made (the `branch` row of `work/<id>` on its first
+    prompt, a `usage` row on each) and the orchestrator's session of the same item (`claim` and `done` rows, with
+    prompts before the claim and after the done): `cost ID` and `cost --rework SP` count the worker's prompts and
+    tokens on the item, once its session is closed and distilled, and of the orchestrator's prompts only those from
+    its claim to its done; the others are its session's shared figure, not the item's own."""
+    (tmp_path / "repo").mkdir()
+    root = Repo(tmp_path / "repo")
+    root.git("init", "-q", "-b", "main")
+    data = tmp_path / "data"
+    qdir = data / "querylog"
+    spool = qdir / "spool"
+    spool.mkdir(parents=True)
+    (qdir / "config.json").write_text(json.dumps({"mode": "local"}), encoding="utf-8")
+    env = {**root.env, "CLAUDE_PLUGIN_DATA": str(data), "CLAUDE_PLUGIN_ROOT": str(bl_base.ROOT)}
+
+    def bl(*args):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
+        assert "Traceback" not in p.stderr and p.returncode == 0, p.stdout + p.stderr
+        return p.stdout
+
+    def made(kind, title, *more):
+        return re.search(r"[A-Z]{2}-[a-z2-7]{8}", bl("new", kind, "--title", title, "--goal", "Goal", *more)).group(0)
+
+    sprint = made("sprint", "Worker cost sprint")
+    story = made("story", "Worker cost story", "--sprint", sprint)
+    task = made("task", "Worker cost task", "--parent", story, "--touch", "a.txt", "--check", "python3 -c pass")
+    model = "claude-sonnet-5-5"
+    clock = iter(range(1, 60))
+
+    def row(sid, pid, surface, **fields):
+        n = next(clock)
+        return {"id": f"row{n}", "ts": f"2026-10-10T10:{n:02d}:00.000Z", "surface": surface, "v": 1,
+                "session_id": sid, "prompt_id": pid, **fields}
+
+    def plant(sid, prompts):  # (prompt id, work action or None, input tokens): each prompt's rows, then its usage
+        rows = []
+        for pid, action, tokens in prompts:
+            rows.append(row(sid, pid, "prompt"))
+            if action:
+                rows.append(row(sid, pid, "work", item=task, action=action))
+            counts = {"requests": 2, "in": tokens, "cw": 0, "cw1h": 0, "cr": 0, "out": 1}
+            rows.append(row(sid, pid, "usage", reader=kbusage.READER_VERSION, usage={"main": {model: counts}, "start": 0}))
+        (spool / f"{sid}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+    def closed_and_distilled(sid, run_id):
+        """The session's end marker, then one distill over the clone's backlog, its sidecar where cost reads it."""
+        (spool / f"{sid}.end").touch()
+        monkeypatch.setattr(ql_distill, "HOME", Path(root.path))  # the item files its windows are checked against
+        rc = ql_distill.distill(qdir=qdir, cfg=qdir / "config.json", haiku=lambda prompt: pytest.fail("no kb prompt"),
+                                run_id=run_id, kb_commit="0" * 40, out=lambda s: None)
+        assert rc == 0
+        shutil.copytree(qdir / "store" / "work", Path(root.path) / "kb" / "_querylog" / "work", dirs_exist_ok=True)
+
+    def report(*args):
+        return json.loads(bl("cost", *args, "--format", "json"))
+
+    plant("worker-session", [("w1", "branch", 100), ("w2", None, 200), ("w3", None, 400)])
+    plant("orchestrator-session", [("o0", None, 1000), ("o1", "claim", 2000), ("o2", None, 4000), ("o3", "done", 8000),
+                                   ("o4", None, 16000)])
+
+    # both sessions still open: no sidecar line, the open block holds the worker's and the window's prompts only
+    rep = report("--rework", sprint)
+    assert rep["runs"] == 0 and rep["prompts"] == 0 and rep["open_sessions"]["sessions"] == 2
+    assert rep["open_sessions"]["prompts"] == 6  # w1-w3 and o1-o3, not o0 and o4
+    assert rep["open_sessions"]["rework_split"]["work"]["direct"][model]["in"] == 700 + 14000
+
+    # the worker's session closed and distilled: its runs and tokens are the item's, the orchestrator's are not yet
+    closed_and_distilled("worker-session", "20261010T110000Z-aaaa0001")
+    for rep in (report(task), report("--rework", sprint)):
+        assert rep["runs"] == 1 and rep["prompts"] == 3 and rep["items"] == [task]
+        assert rep["direct"][model]["in"] == 700 and rep["by_item"][task]["prompts"] == 3
+        assert rep["shared"] == {}
+
+    # the orchestrator's closed too: its claim-to-done prompts join the item's line, the two outside it are shared
+    closed_and_distilled("orchestrator-session", "20261010T120000Z-aaaa0002")
+    for rep in (report(task), report("--rework", sprint)):
+        assert rep["runs"] == 2 and rep["prompts"] == 6 and rep["items"] == [task]
+        assert rep["direct"][model]["in"] == 700 + 14000  # 1000 (o0) and 16000 (o4) are not in it
+        assert rep["shared_prompts"] == 2 and rep["shared"][model]["in"] == 1000 + 16000
+        assert rep["session_total"][model]["in"] == 700 + 14000 + 17000
+    split = report("--rework", sprint)["rework_split"]
+    assert split["work"]["prompts"] == 6 and split["rework"]["prompts"] == 0 and split["items"] == []
 
 
 def orphan_in(cwd, log, seconds=60):
