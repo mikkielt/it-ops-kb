@@ -49,8 +49,8 @@ def test_backlog_config_prints_each_setting_with_its_source(tmp_path):
 def test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults():
     values, sources, path, problems = bl_base.read_settings(bl_base.ROOT, env={})
     assert path.name == "backlog.json" and problems == []
-    assert set(sources.values()) == {"file"}
-    assert values == {k: d for k, (_, d) in bl_base.SETTINGS.items()}
+    assert {k for k, s in sources.items() if s == "default"} == {"hooks"}  # the kb's own hook entries take no setting
+    assert values =={k: d for k, (_, d) in bl_base.SETTINGS.items()}
 
 
 def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default_and_multirepo_held(
@@ -649,7 +649,7 @@ def unparameterised(text):
     return bad + re.findall(r"\bkb/|\.claude/|AGENTS\.md|_cache/", text)
 
 
-def test_plugin_sprint_ships_the_skills_and_the_worker_parameterised_by_the_plugin_root_and_lists_them():
+def test_plugin_sprint_ships_the_skills_and_the_worker_parameterised_by_the_plugin_root_and_lists_them_and_plugin_sprint_hooks_opt_in(tmp_path):
     top = Path(TOOLS).parent
     manifest = json.loads((top / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
     skills = {n: top / "skills" / n / "SKILL.md" for n in ("sprint", "item", "backlog")}
@@ -664,6 +664,37 @@ def test_plugin_sprint_ships_the_skills_and_the_worker_parameterised_by_the_plug
         assert ("name: kb-worker" in front) == (path == agent) and ("name:" in front) == (path == agent), (path, front)
     assert unparameterised("python3 _tools/backlog.py show X") != []  # the planted failure: a bare kb path is found
     assert unparameterised("see kb/_self/backlog.md") != []
+    # the plugin's backlog hook entries all carry --opt-in, and the manifest names the key that turns them on
+    commands = [h["command"] for group in manifest["hooks"]["SessionStart"] for h in group["hooks"]
+                if "backlog.py" in h["command"]]
+    assert sorted(c.split("backlog.py ")[1] for c in commands) == ["horizon --hook --opt-in",
+                                                                    "intake --file --hook --opt-in"], commands
+    assert "hooks key" in manifest["description"]
+    root = tmp_path / "project"
+    root.mkdir()
+
+    def hook(*argv):  # (exit code, stdout) of `backlog.py --root ROOT ARGV`
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", str(root), *argv],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace")
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout
+
+    def turn_on(*names):
+        (root / "backlog.json").write_text(json.dumps({"hooks": list(names)}), encoding="utf-8")
+
+    assert hook("horizon", "--hook", "--opt-in") == (0, "")  # default []: nothing printed, nothing filed
+    assert hook("intake", "--file", "--hook", "--opt-in") == (0, "") and list(root.iterdir()) == []
+    assert "backlog:" in hook("horizon", "--hook")[1]  # without the flag (the kb's own entries) it runs as before
+    turn_on("horizon")
+    assert hook("horizon", "--hook", "--opt-in")[1].count("backlog:") >= 1
+    turn_on("intake")  # each hook is named on its own
+    assert hook("horizon", "--hook", "--opt-in") == (0, "")
+    assert hook("horizon", "--opt-in")[0] == 1  # the flag belongs to the hook form
+    for bad in (["horizn"], "horizon"):  # the planted failure: an unknown value, a string for a list
+        (root / "backlog.json").write_text(json.dumps({"hooks": bad}), encoding="utf-8")
+        values, _, _, problems = bl_base.read_settings(root, env={})
+        assert values["hooks"] == [] and any("'hooks'" in x for x in problems), problems
+        assert hook("config")[0] == 2 and hook("horizon", "--hook", "--opt-in") == (0, "")
 
 
 def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugins(tmp_path):

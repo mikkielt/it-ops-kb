@@ -429,6 +429,8 @@ def args_held(p):
 def args_horizon(p):
     p.add_argument("--sprint")
     p.add_argument("--hook", action="store_true")
+    p.add_argument("--opt-in", action="store_true",
+                   help="with --hook: do nothing unless backlog.json's `hooks` setting names horizon (the plugin's entry)")
 
 
 bl_cli.register("similar", cmd_similar, args_similar)

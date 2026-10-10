@@ -219,6 +219,8 @@ def args_intake(p):
                    help="also run the detectors that call the network (ci: the newest pipeline of main, as red-pipeline reads it)")
     p.add_argument("--hook", action="store_true",
                    help="the async SessionStart form: silent, bounded, exit 0 always; with --file it writes the drafts uncommitted")
+    p.add_argument("--opt-in", action="store_true",
+                   help="with --hook: do nothing unless backlog.json's `hooks` setting names intake (the plugin's entry)")
 
 
 bl_cli.register("red-pipeline", cmd_red_pipeline, args_red_pipeline)

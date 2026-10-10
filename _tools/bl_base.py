@@ -20,6 +20,7 @@ CONFIG_NAME = "backlog.json"  # at the repository root
 CONFIG_ENV = "KB_BACKLOG_CONFIG"  # a path in the environment: read from there instead of the root's file
 KIND_NAMES = ("epic", "story", "task", "subtask", "bug", "sprint")
 TRACKER_NAME_RE = re.compile(r"[a-z][a-z0-9_-]*")  # a tracker's name in backlog.json's trackers and an item's external
+HOOK_NAMES = ("horizon", "intake")  # the SessionStart hooks of the plugin that a project's `hooks` setting turns on
 # One place lists the settings: key -> (type, the kb's current value). A type is a TYPES name; a key not here is refused
 # in backlog.json, and a key the file leaves out takes its value from here.
 SETTINGS = {
@@ -45,6 +46,10 @@ SETTINGS = {
     # the repositories of a multi-repository workspace: name -> checkout path under the workspace, which an item's
     # `repos` and `repos_if_needed` name; {} = the project is the one repository the root is
     "repositories": ("repositories", {}),
+    # the plugin's SessionStart hook entries (`horizon --hook --opt-in`, `intake --file --hook --opt-in`) that run in
+    # this project: they do nothing unless their command is named here; [] = none (the kb's own settings.json entries
+    # run without the flag)
+    "hooks": ("hooks", []),
 }
 WORKSPACE_NAME = "workspace"  # the name the workspace's own files take in a touch, so no repository's
 
@@ -76,6 +81,9 @@ def _type_problem(kind, v):
         return None if strs(v) else "a list of strings"
     if kind == "argv":
         return None if strs(v) else "a list of strings (the command's arguments; [] for no step)"
+    if kind == "hooks":
+        ok = strs(v) and set(v) <= set(HOOK_NAMES)
+        return None if ok else "a list of hook names, each " + " or ".join(f'"{n}"' for n in HOOK_NAMES) + " ([] for none)"
     if kind == "checks":
         ok = isinstance(v, list) and all(
             isinstance(c, dict) and strs(c.get("run")) and c["run"] and set(c) <= {"run", "exit", "match"}

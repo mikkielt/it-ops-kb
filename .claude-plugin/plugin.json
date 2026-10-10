@@ -1,7 +1,7 @@
 {
   "name": "it-ops-kb",
   "displayName": "it-ops-kb",
-  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, identity, Presidio) and on MCP, Claude Code and AI agents: the kb MCP server, /kb-lookup, /kb-review-workspace, /kb-gap (drafts a gap report to paste), the kb-lookup and kb-reviewer agents and the kb: prompt hook; and for a project with a backlog.json, /sprint, /item and /backlog with the kb-worker agent, which run backlog.py from the plugin against the project's backlog",
+  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, identity, Presidio) and on MCP, Claude Code and AI agents: the kb MCP server, /kb-lookup, /kb-review-workspace, /kb-gap (drafts a gap report to paste), the kb-lookup and kb-reviewer agents and the kb: prompt hook; and for a project with a backlog.json, /sprint, /item and /backlog with the kb-worker agent, which run backlog.py from the plugin against the project's backlog (its SessionStart horizon and intake hooks run only when backlog.json's hooks key names them)",
   "author": {
     "name": "mikkielt",
     "url": "https://gitlab.com/mikkielt"
@@ -173,6 +173,22 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/querylog.py digest --hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/backlog.py intake --file --hook --opt-in",
+            "async": true,
+            "timeout": 60
+          }
+        ]
+      },
+      {
+        "matcher": "startup|resume|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PLUGIN_ROOT}/_tools/kbpy\" _tools/backlog.py horizon --hook --opt-in",
             "timeout": 10
           }
         ]
