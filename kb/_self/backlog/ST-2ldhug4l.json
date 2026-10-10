@@ -2,7 +2,7 @@
   "id": "ST-2ldhug4l",
   "kind": "story",
   "title": "Worker briefs and gate questions give measured figures with the command that measured them, and the sprint reviewer runs in a worktree of its own",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,6 @@
     "merged: ST-4hwqtzjy",
     "merged: ST-mylfhlhj"
   ],
-  "notes": "Merged from ST-4hwqtzjy (reviewer launch named in review step 4) and ST-mylfhlhj (tests.py whole run only after the reviewer returns) at the 2026-10-10 backlog triage; their full text is in git (git show <commit>^:kb/_self/backlog/<id>.json). Premise: SKILL.md review step 4 names no --max-turns, cwd, scratch dir or read-only rule and the skill has no 'measured' rule; the item's check exits 1 on the base. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts."
+  "notes": "Merged from ST-4hwqtzjy (reviewer launch named in review step 4) and ST-mylfhlhj (tests.py whole run only after the reviewer returns) at the 2026-10-10 backlog triage; their full text is in git (git show <commit>^:kb/_self/backlog/<id>.json). Premise: SKILL.md review step 4 names no --max-turns, cwd, scratch dir or read-only rule and the skill has no 'measured' rule; the item's check exits 1 on the base. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 4 of 13, \"Headless sprint loop 1: worker brief and role file\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts.",
+  "claimed_by": "worker-ST-2ldhug4l"
 }
