@@ -2,7 +2,7 @@
   "id": "BG-vbxxncz4",
   "kind": "bug",
   "title": "The Defender section of test-suite-speed.md ties its figures to -Raw output the run never used and backs its derived third row with an unrelated remainder",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-55ddkrrx",
   "priority": "P3",
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-kyvu526t review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the repro run 2026-10-10 prints 'misleading wording present: True' and exits 1: reproduces."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the repro run 2026-10-10 prints 'misleading wording present: True' and exits 1: reproduces.",
+  "claimed_by": "worker-BG-vbxxncz4"
 }
