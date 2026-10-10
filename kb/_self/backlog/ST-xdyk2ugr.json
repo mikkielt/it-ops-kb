@@ -2,7 +2,7 @@
   "id": "ST-xdyk2ugr",
   "kind": "story",
   "title": "land moves the intake drafts in the checkout it runs in aside, as it does for a worker's worktree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,
@@ -52,5 +52,6 @@
   "links": [
     "parked: SP-2vhfsn4o close"
   ],
-  "notes": "The work extends test_land_e2e.py with a planted draft in the checkout land runs in (the test name land_moves_own_checkout_drafts is the check's selector, a test yet to write: tests.py exits 2 until the work adds it; the former check, the lint e2e test, passed before the work and proved nothing). SP-2vhfsn4o evidence: the orchestrator moved intake drafts out of its checkout before each landing, and one landing (ST-dku4a6ob) stopped at clean tree on two drafts a session start filed meanwhile. Orders after ST-gdcn5467, which moves INTAKE_ASIDE to bl_intake.py. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run at planning (2026-10-10): _tools/bl_land.py land_once opens with git status --porcelain and refuses at step clean tree on any line, with no call of intake_drafts or set_aside_drafts before it: reproduces. The planted test also plants one non-draft untracked file and expects the refusal at clean tree."
+  "notes": "The work extends test_land_e2e.py with a planted draft in the checkout land runs in (the test name land_moves_own_checkout_drafts is the check's selector, a test yet to write: tests.py exits 2 until the work adds it; the former check, the lint e2e test, passed before the work and proved nothing). SP-2vhfsn4o evidence: the orchestrator moved intake drafts out of its checkout before each landing, and one landing (ST-dku4a6ob) stopped at clean tree on two drafts a session start filed meanwhile. Orders after ST-gdcn5467, which moves INTAKE_ASIDE to bl_intake.py. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run at planning (2026-10-10): _tools/bl_land.py land_once opens with git status --porcelain and refuses at step clean tree on any line, with no call of intake_drafts or set_aside_drafts before it: reproduces. The planted test also plants one non-draft untracked file and expects the refusal at clean tree.",
+  "claimed_by": "kb-worker-xdyk2ugr"
 }
