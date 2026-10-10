@@ -2,7 +2,7 @@
   "id": "ST-hxe4bekb",
   "kind": "story",
   "title": "Review sprint: Planning rules 2: plan-time warnings and probes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-avwlotax",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-avwlotax"
 }
