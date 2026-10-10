@@ -33,6 +33,25 @@
   "depends_on": [
     "TK-p7ajxp72"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which sentence leaves AGENTS.md so the line that says where the sprint skills and worker live fits its cap?",
+      "options": [
+        "cut the SNIPPET: sentence (`SNIPPET:` lines are tagged code examples.): AGENTS.md is 4091 bytes by wc -c",
+        "cut the --format detailed / response_format sentence (full text, urls) and keep the SNIPPET: one: AGENTS.md is 4076 bytes by wc -c"
+      ],
+      "recommendation": "cut the SNIPPET: sentence (`SNIPPET:` lines are tagged code examples.): AGENTS.md is 4091 bytes by wc -c",
+      "do": {
+        "cut the SNIPPET: sentence (`SNIPPET:` lines are tagged code examples.): AGENTS.md is 4091 bytes by wc -c": "TK-7nnd2bdm",
+        "cut the --format detailed / response_format sentence (full text, urls) and keep the SNIPPET: one: AGENTS.md is 4076 bytes by wc -c": "TK-7nnd2bdm"
+      },
+      "class": "agents-rule",
+      "answer": "cut the SNIPPET: sentence (`SNIPPET:` lines are tagged code examples.): AGENTS.md is 4091 bytes by wc -c",
+      "by": "operator"
+    }
+  ],
   "notes": "Research ST-m6uyo6rw (landed c8d551aac): a <skill-name> folder entry under .claude/skills/ may be a symlink, read from its target (kb/public/claude/skills-and-subagents.md:65); no page says a symlinked SKILL.md file or a symlinked agent file under .claude/agents is followed (gap in _gaps.md); claude plugin validate counts a linked entry as one a session would load (plugins.md:43). A worktree with no .claude/skills at its root reads the main checkout (skills-and-subagents.md:69-76). Orchestrator at dispatch: the suite stands at 99 of 100 test ids after TK-p7ajxp72 (_tools/tests_ceiling.json), and the full suite sits near the 20 s darwin ceiling: the plugin_sprint_one_set check fits by extending an existing test or replacing one, not by adding several. A headless worker cannot write under .claude/: make no staging copies of the four files; say in the report which symlinks to make (link path and relative target), and the orchestrator makes them in the worktree and runs the checks. The docs say only that a symlinked skill folder is followed: if a file-level SKILL.md link is not proven to load (a claude -p probe in the scratch directory may show it), record that as a gate on the item.",
   "claimed_by": "worker-TK-7nnd2bdm"
 }
