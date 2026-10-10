@@ -219,6 +219,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           drafts, never commits or pushes
   backlog.py stalled [--json]               each claimed or ready item with its stall signals (bl_stall.py), read
                                           only
+  backlog.py config                         the project settings (backlog.json at the root, or the file
+                                          KB_BACKLOG_CONFIG names) with each value's source, file or default; a
+                                          file with an unknown key or a wrong type is refused naming it, exit 2
 
 claim, done, new, start and close take --commit [--trailer 'KEY: VALUE']...: after the command succeeds, commit the
 item files it wrote or deleted and nothing else (`git commit --only`: what was staged before stays staged), subject
@@ -252,7 +255,7 @@ import bl_items  # noqa: F401 - registers the item writers (new, fmt, claim, ...
 import bl_land  # noqa: F401 - registers its commands
 import bl_plan  # noqa: F401 - registers its commands
 import bl_view  # noqa: F401 - registers its commands
-from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, trailer_problem, withhold
+from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, trailer_problem, withhold
 from bl_base import canonical, in_scope, waits  # noqa: F401 - tests read them as backlog.NAME
 from bl_check import item_files_only, validate  # noqa: F401 - tests read them as backlog.NAME
 from bl_land import run_check, own_failure  # noqa: F401 - tests read them as backlog.NAME
@@ -275,11 +278,14 @@ import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_selfcheck  # noqa: F401 - registers `selfcheck`
 
+# `config` reads the settings bl_base holds, which imports no bl_cli: the handler is bl_base's, registered here
+bl_cli.register("config", cmd_config, help="print the project settings with each value's source")
+
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
          "host-check", "close", "tidy", "horizon", "goal", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled",
-         "selfcheck")
+         "selfcheck", "config")
 bl_cli.order(USAGE)
 
 

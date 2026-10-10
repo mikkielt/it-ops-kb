@@ -8,7 +8,7 @@ import argparse
 import re
 import sys
 
-from bl_base import COMMITS
+from bl_base import COMMITS, KINDS
 
 COMMANDS = {}  # subcommand name -> (handler, add_arguments, help), in registration order
 
@@ -54,7 +54,7 @@ def build_parser(description, root, registry=None):
     return ap
 
 
-ID_SHAPE = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")
+ID_SHAPE = re.compile("(?:" + "|".join(KINDS.values()) + r")-[a-z2-7]{8}")  # the project's id prefixes
 ID_LIST_OPTIONS = ("--depends", "--add-depends", "--relates", "--add-relates")  # one id per flag in the parsers
 # A command agents reach for that the backlog does not have: what to run instead.
 NO_COMMAND = {

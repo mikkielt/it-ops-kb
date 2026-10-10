@@ -3,25 +3,29 @@ each value's source, the kb's committed backlog.json holds the kb's own values, 
 wrong type is refused naming the key.
 
 The settings files are throwaway directories under tmp_path; the one real file read is the repository's backlog.json."""
-import argparse
 import json
+import os
+import subprocess
+import sys
 
 import pytest
 
 import bl_base
-from bl_base import Backlog, Rejected, cmd_config
+from conftest import TOOLS
 
 
-def config(root, capsys):
-    """(exit code, stdout) of the `config` command's handler on the repository at ROOT."""
-    code = cmd_config(Backlog(root), argparse.Namespace(root=str(root)))
-    return code, capsys.readouterr().out
+def config(root):
+    """(exit code, stdout, stderr) of `backlog.py --root ROOT config`."""
+    p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", str(root), "config"],
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert "Traceback" not in p.stderr, p.stderr
+    return p.returncode, p.stdout, p.stderr
 
 
-def test_backlog_config_prints_each_setting_with_its_source(tmp_path, capsys):
+def test_backlog_config_prints_each_setting_with_its_source(tmp_path):
     (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "lane_module": "mylane"}),
                                            encoding="utf-8")
-    code, out = config(tmp_path, capsys)
+    code, out, _ = config(tmp_path)
     assert code == 0
     lines = out.splitlines()
     assert lines[0].startswith("backlog.json: read")
@@ -39,8 +43,7 @@ def test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults():
 
 
 @pytest.mark.parametrize("data, key", [({"item_dri": "x"}, "item_dri"), ({"always_in_scope": "kb/**"}, "always_in_scope")])
-def test_backlog_config_refuses_an_unknown_key_and_a_wrong_type_naming_the_key(tmp_path, capsys, data, key):
+def test_backlog_config_refuses_an_unknown_key_and_a_wrong_type_naming_the_key(tmp_path, data, key):
     (tmp_path / "backlog.json").write_text(json.dumps(data), encoding="utf-8")
-    with pytest.raises(Rejected, match=key):
-        config(tmp_path, capsys)
-    assert any(key in e for e in Backlog(tmp_path).load_errors)
+    code, out, err = config(tmp_path)
+    assert code == 2 and out == "" and key in err
