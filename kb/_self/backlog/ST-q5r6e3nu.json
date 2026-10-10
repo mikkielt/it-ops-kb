@@ -2,7 +2,7 @@
   "id": "ST-q5r6e3nu",
   "kind": "story",
   "title": "Sprint planning probes a query-log finding with pack --root _self before naming it off the kb's domains",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
     "gap F-6f7e881cdca1",
     "gap F-071ee8797647"
   ],
-  "notes": "Checks are planned when a sprint commits it (a tested _self question that packs good from the plan rule). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: kb/_self/_retrieval/lookup_eval.csv has no row with 'query-log finding' in a kb-sprint:plan set and the plan step names no probe of a finding (the item's check). Run at plan 2026-10-10: exit 1, False on the base, so the premise reproduces. The row lands through land --wait-merge, since that file is code lane (_tools/kblane.py), not done --commit."
+  "notes": "Checks are planned when a sprint commits it (a tested _self question that packs good from the plan rule). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: kb/_self/_retrieval/lookup_eval.csv has no row with 'query-log finding' in a kb-sprint:plan set and the plan step names no probe of a finding (the item's check). Run at plan 2026-10-10: exit 1, False on the base, so the premise reproduces. The row lands through land --wait-merge, since that file is code lane (_tools/kblane.py), not done --commit.",
+  "claimed_by": "worker-ST-q5r6e3nu"
 }
