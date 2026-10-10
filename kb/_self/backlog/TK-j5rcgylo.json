@@ -2,7 +2,7 @@
   "id": "TK-j5rcgylo",
   "kind": "task",
   "title": "A project whose backlog.json names no item_dir keeps its item files in _backlog/ at the repository root",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,
@@ -28,5 +28,6 @@
     "TK-p7ajxp72",
     "TK-cagohpbu"
   ],
-  "notes": "Orchestrator: the suite is at the 100-id ceiling: plugin_sprint_item_dir_default extends or replaces an existing test, adding no id."
+  "notes": "Orchestrator: the suite is at the 100-id ceiling: plugin_sprint_item_dir_default extends or replaces an existing test, adding no id.",
+  "claimed_by": "worker-TK-j5rcgylo"
 }
