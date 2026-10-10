@@ -1,7 +1,7 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
 shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
 Planted values are assembled at run time."""
-import argparse, csv, json, os, re, shutil, socket, subprocess, sys, types
+import argparse, csv, json, os, re, shutil, socket, subprocess, sys, types, urllib.error
 from collections import Counter
 from pathlib import Path
 
@@ -575,7 +575,87 @@ def census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_pat
     fail = False
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result(tmp_path, monkeypatch, capsys):
+def census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys):
+    url = "https://docs.example.com/page"
+    errors = {
+        "dns": urllib.error.URLError(socket.gaierror(8, "nodename nor servname provided, or not known")),
+        "connect": urllib.error.URLError(ConnectionRefusedError(61, "Connection refused")),
+        "slow": TimeoutError("timed out"),
+        "blocked": urllib.error.URLError(OSError("Tunnel connection failed: 403 Forbidden")),
+        "http": urllib.error.HTTPError(url, 503, "unavailable", None, None),
+    }
+    tries, pauses = [], []
+
+    class Page:
+        status = 200
+        headers = {}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def read(self, n=-1):
+            return b"<html>Last updated: 2026-01-02</html>"
+
+        def geturl(self):
+            return url
+
+    def urlopen(req, **kw):
+        step = script.pop(0)
+        tries.append(step)
+        if step == "page":
+            return Page()
+        raise errors[step]
+
+    with monkeypatch.context() as m:
+        m.setattr(census.urllib.request, "urlopen", urlopen)
+        m.setattr(census.time, "sleep", pauses.append)
+        m.setattr(ql_capture, "record_request", lambda *a, **k: None)
+        m.setattr(census, "sitemap_lastmod", lambda u: None)
+        m.setattr(census, "_ctx", object())
+
+        def check(*steps):
+            script[:] = steps
+            tries.clear()
+            pauses.clear()
+            return census.check_live(url, "2026-01-01", "")
+
+        script = []
+        st, res = check("dns", "page")  # a transient resolver failure: the second try answers
+        assert (st, res["bucket"], res["note"]) == (200, "CHANGED", "") and tries == ["dns", "page"] and pauses == [census.RETRY_PAUSE]
+        for kind in ("dns", "connect", "slow"):  # failing twice: noted apart, in the same run, tried exactly twice
+            st, res = check(kind, kind)
+            note = "dns" if kind == "dns" else "connect"
+            assert res["bucket"] == "NEEDS-READING" and res["note"] == note and st.startswith(f"{note}: "), (kind, st, res)
+            assert tries == [kind, kind] and pauses == [census.RETRY_PAUSE] and res["evidence"].endswith("(tried twice)")
+        for kind, note in (("blocked", "blocked"), ("http", "")):  # a denied host and an HTTP error are not retried
+            st, res = check(kind)
+            assert (res["bucket"], res["note"], tries, pauses) == ("NEEDS-READING", note, [kind], []), (kind, st, res)
+        script[:] = ["dns", "dns"]  # a Learn page without a source repo goes through the same fetch
+        assert census.check_learn_page(url, "2026-01-01")[1]["note"] == "dns"
+
+    rows = [census_row(f"S999000{n}", bucket="NEEDS-READING", note=note, url=u, http_status=hs)
+            for n, (note, u, hs) in enumerate([
+                ("dns", "https://a.example.com/1", "dns: x"), ("dns", "https://a.example.com/2", "dns: x"),
+                ("connect", "https://b.example.com/1", "connect: x"), ("blocked", "https://c.example.com/1", "blocked"),
+                ("", "https://d.example.com/1", "503"), ("", "https://d.example.com/2", "200")], 1)]
+    log = tmp_path / "retry.csv"
+    kbcommon.write_csv(str(log), census.COLS, rows)
+    with monkeypatch.context() as m:
+        m.setattr(census, "reading_queue", lambda rows, fd_rows: [])  # the queue block is another test's
+        assert census.cmd_summary(argparse.Namespace(log=str(log), factdiff=None), Counter()) == 0
+    out = capsys.readouterr().out
+    assert "needs-reading by note: -=2 blocked=1 connect=1 dns=2\n" in out
+    assert "blocked hosts (denied by this environment's network policy, their sources stay unconfirmed): c.example.com=1\n" in out
+    assert "dns hosts (name resolution failed twice, a pause apart): a.example.com=2\n" in out
+    assert "connect hosts (connection failed twice, a pause apart): b.example.com=1\n" in out
+    assert "HTTP errors (a status other than 200 that left the source to read): 1\n" in out
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once(tmp_path, monkeypatch, capsys):
+    census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
     census_phases_write_one_ops_row_each(tmp_path)

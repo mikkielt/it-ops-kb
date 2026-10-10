@@ -25,6 +25,47 @@
     "kb/_self/code.md",
     "kb/_self/web-sources.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How long is the pause before census.py check retries a fetch that failed with a name-resolution or connection error (the pause sits outside the per-host semaphore, one worker thread waits)?",
+      "options": [
+        "2 seconds",
+        "10 seconds"
+      ],
+      "recommendation": "2 seconds",
+      "class": "design",
+      "answer": "2 seconds",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which fetch errors count as a connection error (note connect) that census.py check retries once?",
+      "options": [
+        "refused, reset, unreachable and timed out",
+        "refused, reset and unreachable only; a timeout stays a plain error"
+      ],
+      "recommendation": "refused, reset, unreachable and timed out",
+      "class": "design",
+      "answer": "refused, reset, unreachable and timed out",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Do rows noted dns or connect stay in the phase-2 reading queue (as blocked rows do not)?",
+      "options": [
+        "stay in the queue: a reader can fetch them another way, as the 2026-09-26 readers did with curl --resolve",
+        "leave the queue like blocked rows"
+      ],
+      "recommendation": "stay in the queue: a reader can fetch them another way, as the 2026-09-26 readers did with curl --resolve",
+      "class": "design",
+      "answer": "stay in the queue: a reader can fetch them another way, as the 2026-09-26 readers did with curl --resolve",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 10 live rows with evidence 'HTTP error: [Errno 8] nodename nor servname provided' went to phase 2 (7 updated, 3 confirmed), so a reader fetched pages the check could not. A host that still fails after the retry stays a counted dns row; the tool does not change resolvers.",
   "claimed_by": "worker-ST-6d4mvn7z"
 }

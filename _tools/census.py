@@ -5,7 +5,7 @@
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
-  census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked hosts, and the size of phase 2's reading queue
+  census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked, dns and connect hosts, and the size of phase 2's reading queue
   census.py groups LOG [--factdiff FLOG]           phase 2: the rows to read split into owner groups, as JSON
   census.py brief LOG --group G [--part N] [--factdiff FLOG]   phase 2: a group's brief, filled in
   census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
@@ -28,8 +28,11 @@ bucket:
   CHANGED       the file or page changed since retrieval (evidence: commits or date)
   GONE          404/410, the file was deleted, the commit or tag vanished
   NEWER-VERSION a newer release of the pinned one exists and the cited file differs there
-  NEEDS-READING nothing mechanical decides it: no date on the page, an HTTP error, or the host is denied here
-                (note `blocked`), or MicrosoftDocs/memdocs (archived: re-source to the live Learn page)
+  NEEDS-READING nothing mechanical decides it: no date on the page, an HTTP error, the host is denied here
+                (note `blocked`), the host did not resolve or accept a connection (note `dns` or `connect`: a fetch that
+                fails with a name-resolution or connection error is tried once more after RETRY_PAUSE seconds, in the
+                same run, and the note is set only when the second try fails too), or MicrosoftDocs/memdocs (archived:
+                re-source to the live Learn page)
 Git work uses bare blobless clones in _cache/census/repos/ (git over https; api.github.com is never called).
 --factdiff LOG takes the verdicts of the census's first stage (factdiff.py detect, _census/factdiff-<date>.csv) for the
 sources it covers: unchanged, or every fact found word for word, against a text no newer than retrieved_utc -> OK; gone or soft 404 with nothing moved -> GONE;
@@ -50,7 +53,8 @@ Superseded, gone, unconfirmed and unread sources keep their dates: a date is onl
 sample (phase 4) prints a CSV of ids for the independent re-check: a fraction of the sources whose facts phase 2
 changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcome confirmed), seeded, at least one each.
 
-summary also prints the queue phase 2 must read, with no network and no model: the rows whose bucket is not OK, whose
+summary prints the hosts of the rows noted `blocked`, `dns` and `connect` apart, and the count of HTTP errors
+(NEEDS-READING rows with a numeric status other than 200). It also prints the queue phase 2 must read, with no network and no model: the rows whose bucket is not OK, whose
 note is not `blocked` and that have no outcome yet, the lines of the kb naming them (`rag.py src --cited`), and what a
 model would read, in characters and in tokens (characters / 4, kb/_self/usage.md), by host: the fact diff review items'
 passages (fact, old and new passage) of a row the fact diff log holds items for (FLOG; else the log its evidence names,
@@ -110,7 +114,7 @@ Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 ba
 run, finish and apply: the exit code of the step that failed.
 """
 import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, shutil, ssl, subprocess, sys
-import tempfile, threading, types
+import socket, tempfile, threading, time, types
 import urllib.error, urllib.request
 from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
@@ -127,7 +131,9 @@ BUCKETS = ("OK", "CHANGED", "GONE", "NEWER-VERSION", "NEEDS-READING")
 OUTCOMES = ("confirmed", "updated", "superseded", "gone", "unconfirmed")
 SHA = re.compile(r"[0-9a-f]{40}")
 BLOCKED = "blocked"
-UA = "it-ops-kb-census/1.0 (read-only link check)"
+DNS, CONNECT = "dns", "connect"  # a fetch that failed to resolve the host, or to connect to it: retried once, then a note
+RETRY_PAUSE = 2  # seconds before that one retry
+UA ="it-ops-kb-census/1.0 (read-only link check)"
 # Learn url path (after /en-us/) -> (public source repo, path prefix): the page is <prefix><rest>.md or <rest>/index.md
 LEARN_MAP = [
     ("entra/", "MicrosoftDocs/entra-docs", "docs/"),
@@ -433,8 +439,38 @@ def ssl_ctx():
     return _ctx
 
 
+NO_HOST = re.compile(r"(?i)nodename nor servname|name or service not known|temporary failure in name resolution|"
+                     r"getaddrinfo failed|no address associated")
+NO_CONNECTION = re.compile(r"(?i)timed out|unreachable|no route to host")
+
+
+def net_failure(e):
+    """DNS for a name-resolution error, CONNECT for a connection error (refused, reset, timed out, unreachable), else ''."""
+    reason = getattr(e, "reason", e)
+    if isinstance(reason, socket.gaierror) or NO_HOST.search(str(reason)):
+        return DNS
+    if isinstance(reason, (ConnectionError, TimeoutError, socket.timeout)) or NO_CONNECTION.search(str(reason)):
+        return CONNECT
+    return ""
+
+
+def net_note(st):
+    """`dns` or `connect` for the status of a fetch that failed on the network (`fetch` writes `dns: ...`), else ''."""
+    kind = st.partition(":")[0] if isinstance(st, str) else ""
+    return kind if kind in (DNS, CONNECT) else ""
+
+
 def fetch(url, timeout=25, limit=1_000_000):
-    """(status or 'blocked' or 'error: ...', text, final url)."""
+    """(status or 'blocked' or 'dns: ...' or 'connect: ...' or 'error: ...', text, final url). A name-resolution or
+    connection error is tried once more after RETRY_PAUSE seconds: the status that stays is the second try's."""
+    got = fetch_once(url, timeout, limit)
+    if net_note(got[0]):
+        time.sleep(RETRY_PAUSE)
+        got = fetch_once(url, timeout, limit)
+    return got
+
+
+def fetch_once(url, timeout, limit):
     with _host_sem[urlparse(url).netloc]:
         req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
         try:
@@ -449,10 +485,23 @@ def fetch(url, timeout=25, limit=1_000_000):
         except (urllib.error.URLError, OSError) as e:
             ql_capture.record_request(url, "error")
             msg = str(getattr(e, "reason", e))
-            return (BLOCKED if re.search(r"(?i)tunnel|403 forbidden", msg) else f"error: {msg[:60]}"), "", url
+            if re.search(r"(?i)tunnel|403 forbidden", msg):
+                return BLOCKED, "", url
+            return f"{net_failure(e) or 'error'}: {msg[:60]}", "", url
         except Exception as e:  # noqa: BLE001 - a link check must never stop the census
             ql_capture.record_request(url, "error")
             return f"error: {type(e).__name__}", "", url
+
+
+def unreached(st):
+    """The NEEDS-READING verdict of a fetch status that no page answered (the note says why: `blocked` by this
+    environment's network policy, `dns` or `connect` after the retry), else None."""
+    if st == BLOCKED:
+        return verdict("NEEDS-READING", "host denied by this environment's network policy", "", BLOCKED)
+    note = net_note(st)
+    if note:
+        return verdict("NEEDS-READING", f"{st} (tried twice)", "", note)
+    return None
 
 
 def sitemap_lastmod(url):
@@ -515,8 +564,8 @@ def check_learn_page(url, since):
     """A Learn page without a readable source repo: its `updated_at` meta (the build's last content update, not
     `ms.date`, the author's review date, which lags) against retrieval."""
     st, body, final = fetch(url)
-    if st == BLOCKED:
-        return st, verdict("NEEDS-READING", "host denied by this environment's network policy", "", "blocked")
+    if res := unreached(st):
+        return st, res
     if st in (404, 410):
         return st, verdict("GONE", f"HTTP {st}")
     m = LEARN_UPDATED.search(body) if st == 200 else None
@@ -537,8 +586,8 @@ def check_live(url, since, rec):
         if res:
             return st, res
     st, body, final = fetch(url)
-    if st == BLOCKED:
-        return st, verdict("NEEDS-READING", "host denied by this environment's network policy", "", "blocked")
+    if res := unreached(st):
+        return st, res
     if st in (404, 410):
         return st, verdict("GONE", f"HTTP {st}")
     if st != 200:
@@ -916,9 +965,14 @@ def cmd_summary(a, tally):
     print(f"sources={len(rows)} " + " ".join(f"{k}={b[k]}" for k in BUCKETS))
     print("outcomes: " + " ".join(f"{k}={v}" for k, v in sorted(o.items())))
     print("needs-reading by note: " + " ".join(f"{k}={v}" for k, v in sorted(nr.items())))
-    blocked = Counter(urlparse(r["url"]).netloc.lower() or "-" for r in rows if r["note"] == BLOCKED)
+    hosts = lambda note: Counter(urlparse(r["url"]).netloc.lower() or "-" for r in rows if r["note"] == note)  # noqa: E731
+    named = lambda c: " ".join(f"{h}={n}" for h, n in sorted(c.items())) or "none"  # noqa: E731
     print("blocked hosts (denied by this environment's network policy, their sources stay unconfirmed): "
-          + (" ".join(f"{h}={n}" for h, n in sorted(blocked.items())) or "none"))
+          + named(hosts(BLOCKED)))
+    print("dns hosts (name resolution failed twice, a pause apart): " + named(hosts(DNS)))
+    print("connect hosts (connection failed twice, a pause apart): " + named(hosts(CONNECT)))
+    print("HTTP errors (a status other than 200 that left the source to read): "
+          + str(sum(1 for r in rows if r["bucket"] == "NEEDS-READING" and r["http_status"].isdigit() and r["http_status"] != "200")))
     print(f"confirmed (phase 3 would date): {sum(1 for r in rows if confirmed(r))}")
     print("\n".join(queue_lines(reading_queue(rows, factdiff_log_rows(rows, a.log, a.factdiff)))))
     return 0
