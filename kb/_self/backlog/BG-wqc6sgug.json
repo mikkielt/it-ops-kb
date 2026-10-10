@@ -1,0 +1,25 @@
+{
+  "id": "BG-wqc6sgug",
+  "kind": "bug",
+  "title": "The intake hook re-files a draft that land set aside in a linked worktree outside .claude/worktrees/, since land writes under its own root and the hook reads only the main worktree's set-aside directory",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found in the SP-lyfnpu37 review (bl_land.py:765 and :1395, bl_intake.py:361): land moves its own checkout's drafts to _cache/intake-drafts/ under the root it runs in, while set_aside_fingerprints reads only the clone's main worktree's _cache/intake-drafts/, so in a linked worktree outside .claude/worktrees/ the next SessionStart files the same finding again (ST-gdcn5467's clause 'files once'). A draft land sets aside in any checkout of the clone is one the hook skips.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_intake.py',encoding='utf-8').read();sys.exit('Path(bl_base.main_worktree(root)).joinpath(*INTAKE_ASIDE).glob' in t)"
+    ]
+  },
+  "repro_reason": "found by reading; the case needs a linked worktree outside .claude/worktrees/ and a second SessionStart",
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_intake.py"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 review"
+  ]
+}

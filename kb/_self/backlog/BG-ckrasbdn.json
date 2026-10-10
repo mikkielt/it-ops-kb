@@ -1,0 +1,26 @@
+{
+  "id": "BG-ckrasbdn",
+  "kind": "bug",
+  "title": "Query-log delivery stops for good once learn writes a gap entry citing kb/public/_gaps.md, which check.py refuses, so no usage or work sidecar reaches main and cost reads no figure",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found in the SP-lyfnpu37 review: the automatic commit 'query log apply 20261010T064624Z-4efaf809' in _cache/querylog/worktree adds _gaps.md entries made from logged prompts that were backlog goals or research-queue briefs (F-44cf8da28cdf, F-7850c16a27a2), one citing kb/public/_gaps.md:1058; check.py refuses it ('cites kb/public/_gaps.md:1058, a file that is not in root public') and doc2query stale fails, so every apply --push since 2026-10-10 06:52Z exits 1 (72 'sync exit 1' lines in distill.log), the committed store's newest run stays 2026-10-08, and backlog.py cost reads 'no item line' for every item of the sprint. A gap entry apply writes passes check.py, a prompt that is a backlog goal or worker brief files no kb gap, and a delivery that fails its gate says so where the orchestrator reads it (selfcheck or land).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,pathlib;sys.exit(0 if any(pathlib.Path('kb/_querylog/work/2026-10').glob('20261010T*.jsonl')) else 1)"
+    ]
+  },
+  "repro_reason": "the stuck commit lives in the local query-log worktree; the committed store missing every run of 2026-10-10 shows its effect",
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/ql_deliver.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 review"
+  ]
+}

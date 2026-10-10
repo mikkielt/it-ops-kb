@@ -1,0 +1,24 @@
+{
+  "id": "BG-pz55phko",
+  "kind": "bug",
+  "title": "ql_capture.py WORK_REFUSED_EXIT lost the second space before its inline comment",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found in the SP-lyfnpu37 review: BG-45zpw2go's commit changed _tools/ql_capture.py:43 to one space before its inline comment, a whitespace-only change to a line the item did not need (PEP 8 inline comments take two spaces).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit('WORK_REFUSED_EXIT = 1 #' in open('_tools/ql_capture.py',encoding='utf-8').read())"
+    ]
+  },
+  "repro_reason": "whitespace in one line",
+  "touches": [
+    "_tools/ql_capture.py"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 review"
+  ]
+}

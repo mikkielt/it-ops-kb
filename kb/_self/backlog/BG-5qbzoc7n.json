@@ -1,0 +1,24 @@
+{
+  "id": "BG-5qbzoc7n",
+  "kind": "bug",
+  "title": "land's refusal after the 60 s hook wait still says to end a session-end hook that may wait up to 600 s on the usage lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found in the SP-lyfnpu37 review (bl_land.py:823): after HOOK_GRACE_S a refusal naming a session-end hook says 'end it', and selfcheck fails orphans for it, though a distill started with a transcript waits up to USAGE_LOCK_WAIT_S (600 s, ql_distill.py:37) for the lock, as one did for about 8 minutes in this sprint. The refusal tells the operator the hook may still be waiting for the lock and to land again later rather than end it.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read();sys.exit('end it (the worker ends every background command and monitor it started)' in t and 'usage lock' not in t)"
+    ]
+  },
+  "repro_reason": "wording; the case needs a distill holding the usage lock past 60 s",
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 review"
+  ]
+}
