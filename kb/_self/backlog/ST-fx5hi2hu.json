@@ -2,7 +2,7 @@
   "id": "ST-fx5hi2hu",
   "kind": "story",
   "title": "Research sprint goal: Fitness 2: pack ranking and pool eval correctness",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5i4itd2d",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-5i4itd2d"
 }
