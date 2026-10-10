@@ -2,7 +2,7 @@
   "id": "ST-qm34zvhd",
   "kind": "story",
   "title": "Review sprint: Orchestration features: ops rows, goal clause map, rescope, query log apply",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x5gjv4r7",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-x5gjv4r7"
+  "evidence": {
+    "commit": "7bb3686fe9aedcd25cb351293b5567220ca716dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b4690c8f3eb150e6"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "23e68f4d3c0bf610"
+      }
+    ]
+  }
 }
