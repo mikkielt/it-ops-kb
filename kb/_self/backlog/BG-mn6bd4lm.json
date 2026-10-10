@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "tools.md's intake row does not say a drift check's tests.py run writes its test.run row to the clone's spool",
   "status": "draft",
+  "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",

@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "The sprint's questions are all about this repository's own tools (a perfcheck id baseline, a unit cache key, a test fixture backlog, doc rows, a call-row budget). The pack for -q pytest collect-only ids -q git grep at HEAD gave coverage good on both. Its done needs No outside facts: every question is answered by the kb and the repository's own code."
 }

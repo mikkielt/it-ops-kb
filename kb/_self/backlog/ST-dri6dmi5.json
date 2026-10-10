@@ -4,6 +4,7 @@
   "title": "The land e2e scenario uses a fixture backlog, so an invalid live backlog item cannot fail the suite",
   "status": "draft",
   "parent": "EP-hlnsqx4f",
+  "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,
   "goal": "_tools/test_land_e2e.py's scenarios build their kb/_self/backlog/ from fixture items instead of copying the live backlog, so a planning slip in a live item (a story with no checks) no longer fails backlog.py check inside the scenario and the land e2e test with it. Answers the SP-caqrexqw close: the review story's tests.py check refused because three just-filed parked stories lacked checks.",
@@ -15,15 +16,42 @@
         "-k",
         "land_runs_lint"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/test_land_e2e.py',encoding='utf-8').read();sys.exit(0 if 'fixture' in t.lower() else 1)"
+      ]
     }
   ],
   "touches": [
     "_tools/test_land_e2e.py",
     "_tools/conftest.py",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the land e2e scenario get its fixture backlog items?",
+      "options": [
+        "test-local: planned() in test_land_e2e.py replaces the clone's live items with fixture items; the shared seed in conftest.py stays",
+        "seed-level: conftest.py gives every scenario a fixture backlog instead of the live items"
+      ],
+      "recommendation": "test-local: planned() in test_land_e2e.py replaces the clone's live items with fixture items; the shared seed in conftest.py stays",
+      "do": {
+        "test-local: planned() in test_land_e2e.py replaces the clone's live items with fixture items; the shared seed in conftest.py stays": "ST-dri6dmi5",
+        "seed-level: conftest.py gives every scenario a fixture backlog instead of the live items": "ST-dri6dmi5"
+      },
+      "class": "agents-rule",
+      "answer": "test-local: planned() in test_land_e2e.py replaces the clone's live items with fixture items; the shared seed in conftest.py stays",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-caqrexqw close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts. Premise: planned() clones a seed built from the live working tree (conftest.seed_files), so the scenario's kb/_self/backlog/ is the live items; test_land_e2e.py names no fixture backlog (grep -c -i fixture gives 0). Run 2026-10-10: reproduces. The added second check fails until the file builds its sprint from fixture items. Precheck: the tests.py -k land_runs_lint check passes before the work by design: it pins that the scenario still lands after the change. The fixture-text check is the one that fails until the work is done."
 }

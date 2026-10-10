@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "committed_calls keeps the oldest call rows within its read budget, so the repeats detector's latest closed week is the first cut",
   "status": "draft",
+  "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -19,5 +20,24 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which rows does committed_calls keep when the call rows pass its read budget?",
+      "options": [
+        "newest-rows: keep the newest REPEAT_ROWS_MAX rows and count the older ones in over",
+        "latest-week: read only the weeks the repeats detector judges"
+      ],
+      "recommendation": "newest-rows: keep the newest REPEAT_ROWS_MAX rows and count the older ones in over",
+      "do": {
+        "newest-rows: keep the newest REPEAT_ROWS_MAX rows and count the older ones in over": "BG-4tvqk5tp",
+        "latest-week: read only the weeks the repeats detector judges": "BG-4tvqk5tp"
+      },
+      "class": "agents-rule",
+      "answer": "newest-rows: keep the newest REPEAT_ROWS_MAX rows and count the older ones in over",
+      "by": "operator"
+    }
   ]
 }

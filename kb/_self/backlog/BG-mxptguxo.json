@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "_tools/test_ids_baseline.txt still lists the land e2e test ST-urfa4ntj renamed, so perfcheck ids --against reports it MISSING",
   "status": "draft",
+  "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -16,6 +17,9 @@
       "_tools/test_ids_baseline.txt"
     ]
   },
+  "touches": [
+    "_tools/test_ids_baseline.txt"
+  ],
   "links": [
     "parked: SP-caqrexqw review"
   ],

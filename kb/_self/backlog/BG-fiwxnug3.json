@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "perfcheck names_successor still lets a dropped test excuse itself by its class, full id or bare parametrized name",
   "status": "draft",
+  "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,7 +17,8 @@
   },
   "touches": [
     "_tools/perfcheck.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-matmvkn6 review"
