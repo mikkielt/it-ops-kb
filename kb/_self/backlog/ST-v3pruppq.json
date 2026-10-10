@@ -2,7 +2,7 @@
   "id": "ST-v3pruppq",
   "kind": "story",
   "title": "factdiff.py detect decides a Learn page that maps to a public MicrosoftDocs repository by that repository's git history, and fetches only the changed pages",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ilje65fa",
   "priority": "P2",
