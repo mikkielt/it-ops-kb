@@ -1,0 +1,25 @@
+{
+  "id": "ST-bvmqojkw",
+  "kind": "story",
+  "title": "Learn sources that answer a redirect at every detect run are re-sourced to their final url",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A tool lists the live sources whose url answered a redirect at the last detect run (729 learn.microsoft.com sources on 2026-10-10), and /kb-refresh re-points them to the final url with a superseded_by row, so detect makes one request each instead of following a redirect every run.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/public/**"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}

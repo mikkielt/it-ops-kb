@@ -1,0 +1,25 @@
+{
+  "id": "ST-5zcl2sof",
+  "kind": "story",
+  "title": "The test suite has room under its id ceiling and its darwin time limit, so a story adds a test of its own instead of merging into another",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The test ceiling in _tools/tests_ceiling.json and the darwin time limit leave room for the next sprint's tests (the suite ran 100 of 100 ids in 21.0 to 21.3 s against 22 s through SP-ilje65fa, and four stories merged their tests into one census test id): either the ceiling and limit are raised by an operator gate or the suite is made faster, measured before and after.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests_ceiling.json",
+    "_tools/tests.py",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}

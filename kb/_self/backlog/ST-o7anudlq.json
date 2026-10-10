@@ -1,0 +1,25 @@
+{
+  "id": "ST-o7anudlq",
+  "kind": "story",
+  "title": "The kb-census skill's report names the dns and connect hosts beside the blocked ones and gives detect's measured wall time",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-census skill's report line names the hosts census.py summary counts as dns and connect, apart from blocked, and phase 0 gives factdiff.py detect --sitemaps the measured 31 to 33 minutes of 2026-10-10 (the fact-diff report) instead of about 45.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-census/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}

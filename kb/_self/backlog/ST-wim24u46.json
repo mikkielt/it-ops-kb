@@ -1,0 +1,28 @@
+{
+  "id": "ST-wim24u46",
+  "kind": "story",
+  "title": "LEARN_MAP maps the large Learn docsets to their public MicrosoftDocs repositories, so detect decides most Learn pages by git history",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py LEARN_MAP gains entries, each checked against the page's github_feedback_content_git_url, for the most common unmapped Learn path prefixes (intune 134, api 80, windows 75, azure 70 on 2026-10-10), and a detect --sitemaps run measured before and after on the same day shows the wall time fall, recorded in kb/_self/reports/fact-diff.md.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "factdiff_learn_git"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/reports/fact-diff.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}

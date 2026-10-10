@@ -1,0 +1,27 @@
+{
+  "id": "BG-f3d6lirf",
+  "kind": "bug",
+  "title": "factdiff resolve and review_items call Doc.locate with cites=1, so a data row anchored with several citations may not relocate",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Every caller of Doc.locate (factdiff.py resolve and review_items, census.py) passes the fact's real citation count, as anchoring does, so a data row located by the second look relocates on a changed page as modified instead of falling to not-found or score.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys; sys.exit(1 if re.search(r'd\\.locate\\(fact_text\\((fact|text)\\)\\)', open('_tools/factdiff.py').read()) else 0)"
+    ]
+  },
+  "repro_reason": "found by reading factdiff.py in the SP-ilje65fa review; it shows only on a changed source whose cited data row has several citations, so the repro reads the calls that pass no citation count",
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/census.py",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}

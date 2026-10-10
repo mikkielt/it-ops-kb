@@ -1,0 +1,26 @@
+{
+  "id": "ST-7ibioci3",
+  "kind": "story",
+  "title": "Each census and factdiff item check selects its own test, not one combined test whose id carries six selectors",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "census_retry, census_baseline, census_repin, census_github_page, factdiff_learn_git and factdiff_anchor each select a test that exercises only that item's behaviour, within the test ceiling in _tools/tests_ceiling.json (raise it with the operator's gate if the ceiling is what forces the merge), so a passing check proves its own item.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "selectors"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_redact.py",
+    "_tools/tests_ceiling.json"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}

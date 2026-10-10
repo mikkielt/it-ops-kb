@@ -1,0 +1,26 @@
+{
+  "id": "BG-rxdpo5g5",
+  "kind": "bug",
+  "title": "census.py repin plans each source from the facts and anchors read once, so a fact citing two pinned sources loses its anchor after the first is re-pointed",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "cmd_repin re-reads, or re-keys in memory, the facts and anchors after each re-point, so a second pinned source cited by the same fact still finds its anchor in the same run, and --dry-run prints the same outcome as the real run.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; s=open('_tools/census.py').read(); sys.exit(1 if 'facts, anchors = factdiff.cited_facts(), factdiff.read_anchors()' in s else 0)"
+    ]
+  },
+  "repro_reason": "found by reading census.py cmd_repin in the SP-ilje65fa review; no kb fact today cites two pinned sources that both qualify, so the repro reads the single read of facts and anchors before the loop",
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-ilje65fa review"
+  ]
+}
