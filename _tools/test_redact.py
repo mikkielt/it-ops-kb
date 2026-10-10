@@ -881,7 +881,136 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
         assert sorted(q["id"] for q in census.reading_queue(rows, [])) == ["S9002", "S9003", "S9004", "S9005"]
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word(tmp_path, monkeypatch, capsys):
+def census_github_page_signals_decide_a_page_without_a_reader(tmp_path, monkeypatch):
+    def git(cwd, *args, when=""):
+        env = git_env(**({"GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when} if when else {}))
+        return subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", env=env, check=True).stdout.strip()
+
+    def write(d, files):
+        for name, text in files.items():
+            (d / name).write_text(text, encoding="utf-8")
+
+    home, wiki = tmp_path / "home", tmp_path / "wiki"
+    for d, files in ((home, {"README.md": "# Repo\n", "LICENSE": "MIT\n"}),
+                     (wiki, {"Home.md": "# Wiki\n", "Page-One.md": "One.\n", "Page-Two.md": "Two.\n"})):
+        d.mkdir(parents=True)
+        git(d, "init", "-q", "-b", "main")
+        write(d, files)
+        git(d, "add", ".")
+        git(d, "commit", "-q", "-m", "one", when="2026-01-01T10:00:00Z")
+    write(home, {"src.txt": "code\n"})  # a commit after retrieval that touches neither the README nor the licence
+    git(home, "add", ".")
+    git(home, "commit", "-q", "-m", "two", when="2026-09-01T10:00:00Z")
+    write(wiki, {"Page-Two.md": "Two, edited.\n"})
+    git(wiki, "commit", "-q", "-am", "two", when="2026-09-01T10:00:00Z")
+    clones = {}
+
+    def clone(name, src):
+        dest = tmp_path / f"{name}.git"
+        git(tmp_path, "clone", "-q", "--bare", str(src), str(dest))
+        return str(dest)
+
+    clones["github.com/Org/Repo"], clones["github.com/Org/Repo.wiki"] = clone("home1", home), clone("wiki1", wiki)
+    pages, asked = {}, []
+
+    def fetch(url, **kw):
+        asked.append(url)
+        status, body, final = pages.get(url, (404, "", url))
+        return status, body, final
+
+    html = lambda *stamps: "<html><body>" + "".join(f'<relative-time datetime="{t}"></relative-time>' for t in stamps) + "</body></html>"  # noqa: E731
+    base = "https://github.com/Org/Repo"
+    since = "2026-06-01"
+
+    def verdict(url, **kw):
+        asked.clear()
+        c = census.classify(url)
+        st, res = census.check_one({"url": url, "retrieved_utc": since}, c)
+        return res
+
+    with monkeypatch.context() as m:
+        m.setattr(census, "repo_dir", lambda repo, base=None: (clones[repo], "") if repo in clones else (None, f"clone failed: {repo}"))
+        m.setattr(census, "fetch", fetch)
+        m.setattr(provider, "request", lambda *a, **k: (_ for _ in ()).throw(AssertionError("a github page was fetched by a signal that needs no page")))
+        # a repository home: the README and the licence have no commit since retrieval, though HEAD moved
+        pages[base] = (200, "<html><p>Repo</p></html>", base)
+        res = verdict(base)
+        assert res["bucket"] == "OK" and "README README.md and the licence have no commit since 2026-06-01" in res["evidence"], res
+        # ... the archived banner dated after retrieval, and one dated before it
+        pages[base] = (200, "<p>This repository has been archived by the owner on Aug 5, 2026. It is now read-only.</p>", base)
+        assert verdict(base)["bucket"] == "CHANGED"
+        pages[base] = (200, "<p>This repository has been archived by the owner on Jan 5, 2026. It is now read-only.</p>", base)
+        assert verdict(base)["bucket"] == "OK"
+        pages[base] = (200, "<p>Repo</p>", base)
+        # ... a release tag after retrieval, a README commit after it (a planted failure for each), a page that moved
+        git(home, "tag", "v1.0.0")
+        clones["github.com/Org/Repo"] = clone("home2", home)
+        res = verdict(base)
+        assert res["bucket"] == "CHANGED" and "release tag(s) created on or after retrieval 2026-06-01: v1.0.0" in res["evidence"], res
+        write(home, {"README.md": "# Repo, rewritten\n"})
+        git(home, "commit", "-q", "-am", "three", when="2026-09-02T10:00:00Z")
+        clones["github.com/Org/Repo"] = clone("home3", home)
+        res = verdict(base)
+        assert res["bucket"] == "CHANGED" and res["evidence"].startswith("README README.md: 1 commit(s) since 2026-06-01"), res
+        pages[base] = (200, "<p>Repo</p>", "https://github.com/Org/Other")
+        assert verdict(base)["evidence"] == "redirected to https://github.com/Org/Other"
+        # a wiki page by the commits of its file in the wiki's repository; a wiki's own git url by its newest commit
+        for page, want in (("Page-One", "OK"), ("Page-Two", "CHANGED"), ("Home", "OK"), ("Missing", "NEEDS-READING")):
+            url = f"{base}/wiki/{page}"
+            pages[url] = (200, "<p>page</p>", url)
+            assert verdict(url)["bucket"] == want, (page, verdict(url))
+        pages[f"{base}/wiki"] = (200, "<p>page</p>", f"{base}/wiki")
+        assert verdict(f"{base}/wiki")["bucket"] == "OK"
+        assert verdict(f"{base}.wiki.git")["bucket"] == "CHANGED" and asked == []
+        # an issue or a discussion by the latest timestamp of its timeline
+        for url, stamps, want in ((f"{base}/issues/7", ("2026-03-01T10:00:00Z", "2026-05-01T10:00:00Z"), "OK"),
+                                  (f"{base}/issues/8", ("2026-03-01T10:00:00Z", "2026-07-01T10:00:00Z"), "CHANGED"),
+                                  (f"{base}/issues/9", (), "NEEDS-READING"),
+                                  ("https://github.com/orgs/Org/discussions/3", ("2026-04-02T10:00:00Z",), "OK")):
+            pages[url] = (200, html(*stamps), url)
+            assert verdict(url)["bucket"] == want, (url, verdict(url))
+        pages[f"{base}/issues/10"] = (404, "", f"{base}/issues/10")
+        assert verdict(f"{base}/issues/10")["bucket"] == "GONE"
+        # api.github.com is not called, and a page no signal fits goes to reading
+        res = verdict("https://api.github.com/repos/Org/Repo/issues?state=open")
+        assert (res["bucket"], res["note"], asked) == ("NEEDS-READING", "github page", [])
+        assert verdict(f"{base}/releases")["bucket"] == "NEEDS-READING"
+        # factdiff.detect: the stored version id decides; a baseline of the text alone is dated against the signal
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+        m.setattr(factdiff, "madeup_text", lambda url: None)
+
+        def document(url, row=None, etag="", lastmod=""):
+            raw = pages[url][1]
+            keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
+            text = provider.doc_text(raw.encode(), "text/html", url)
+            return {"status": 200, "final": url, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": len(raw), "raw": raw,
+                    "version": provider.version_of(raw, keys), "text": text, "ctype": "text/html",
+                    "sha": hashlib.sha256(text.encode()).hexdigest()}
+
+        m.setattr(provider, "document", document)
+        rows = provider.providers()
+
+        def detect(url, **state):
+            return factdiff.detect_source("S9990001", {"url": url}, state, rows)
+
+        page = f"{base}/wiki/Page-One"
+        verdict_, signal, ev, new, _, _ = detect(page)
+        assert (verdict_, new["version"]) == ("new", census.gh_page_id(page, "")) and len(new["version"]) == 16
+        assert detect(page, version=new["version"])[:2] == ("unchanged", "version")
+        assert detect(page, version="0" * 16, doc_sha256="x")[:2] == ("changed", "version")
+        old = {"doc_sha256": "x", "detected_utc": "2026-06-01T00:00:00Z"}
+        assert detect(page, **old)[:2] == ("unchanged", "git")
+        assert detect(f"{base}/wiki/Page-Two", **old)[:2] == ("changed", "version")
+        issue = f"{base}/issues/7"
+        v, signal, ev, new, _, _ = detect(issue, **old)
+        assert (v, signal, new["version"]) == ("unchanged", "version", "2026-05-01T10:00:00Z") and ev.startswith("timeline 2026-05-01")
+        assert detect(f"{base}/issues/8", **old)[:2] == ("changed", "version")
+        assert factdiff.content_date({"version": {"timeline": "2026-05-01T10:00:00Z"}}) == "2026-05-01"
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_github_page_signals_decide_a_page_without_a_reader(tmp_path, monkeypatch, capsys):
+    census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
     census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
