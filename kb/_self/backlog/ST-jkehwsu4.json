@@ -1,0 +1,36 @@
+{
+  "id": "ST-jkehwsu4",
+  "kind": "story",
+  "title": "Haiku 5.5 is measured against the current model on the census's single-call judging steps, and takes each step where it loses nothing that matters",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-yojt6y7v",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "For each census step that is one model call with no tools (the batch judge of factdiff review items and the phase-4 checker's passage judgments), a held-out labelled set is judged by claude-haiku-5-5 and by the step's current model, with the full model names pinned [DOC S-ezqg74ki] and the same prompt and schema: the labels come from recorded census outcomes, not from either model (a fact the census rewrote is changed, a fact of a source confirmed with no edit and agreed in phase 4 is unchanged), and the set is split before any prompt is tuned, the held-out half judged once. Haiku becomes the step's default only when, on the held-out half, its false confirms (a changed fact judged supported, the error that dates a stale fact) are no more than the current model's and its overall agreement with the labels is within 5 points of it; otherwise the step keeps its model and the result says which bar failed. Each run is a --dry-run estimate first with --max-budget-usd set from it; per step and model, the agreement, false confirms, tokens, USD from total_cost_usd and wall time are recorded in kb/_self/reports/fact-diff.md with the commands that produced them, and a kb/_self/_retrieval/lookup_eval.csv row asks which model each census step runs on and packs good to that section.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lookup_eval"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/reports/fact-diff.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-xy2euufe",
+    "ST-yiq2heb5",
+    "ST-kbrsd24q"
+  ],
+  "notes": "Why: the census's model-run steps run on the orchestrator's model today (Agent-tool subagents inherit it), and list prices per million tokens are Opus 5.5  in /  out, Sonnet 5.5  / , Haiku 4.5  /  (public/claude/ci-and-headless.md:88-89, S2131); Haiku 5.5's price is not in the kb on 2026-10-10 (rag.py pack 'Haiku 5.5 list price per million tokens' gives only its effort and id lines, ci-and-headless.md:83, :85), so the sprint's research story fills it before the comparison is priced. The haiku alias resolves to Haiku 5.5 from Claude Code v2.1.293 and moves over time, so runs pin claude-haiku-5-5 (ci-and-headless.md:85, S-ezqg74ki). Haiku 5.5's default effort is medium and thinking cannot be turned off (ci-and-headless.md:83-84): the comparison holds effort equal across models and records it. Reuse the benchmark tooling's pricing (bench_core list_usd; ST-rtmwsqgj fixes its dated-key KeyError) rather than a second price table. Quality premise: the held-out half is judged once, after the prompt is fixed on the tuning half, as the planning rules ask of a goal that names a quality of answers. The 5-point bar and the false-confirm rule are the session's proposal for 'no meaningful loss', open to change at the start gate."
+}

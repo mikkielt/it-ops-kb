@@ -1,0 +1,36 @@
+{
+  "id": "ST-v3pruppq",
+  "kind": "story",
+  "title": "factdiff.py detect decides a Learn page that maps to a public MicrosoftDocs repository by that repository's git history, and fetches only the changed pages",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-ilje65fa",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "factdiff.py detect, for a learn.microsoft.com source whose page maps through census.py's LEARN_MAP to a file in a public MicrosoftDocs repository, fetches that repository once into the shared blobless clone cache and decides the source unchanged when the file has no commit since the baseline, with no HTTP request to Learn; only mapped sources with commits since, and unmapped ones, take the HTTP route; the map lookup is shared between census.py and factdiff.py, not copied. The detect wall time of a full --sitemaps run (about 45 minutes today, most of it Learn at one request per 1.1 s) is measured before and after on the same day and recorded in kb/_self/reports/fact-diff.md with the command that measured it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "factdiff_learn_git"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/census.py",
+    "_tools/provider.py",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/reports/fact-diff.md"
+  ],
+  "depends_on": [
+    "ST-ai2xlm7x"
+  ],
+  "notes": "Premise: .claude/skills/kb-census/SKILL.md phase 0 gives factdiff.py detect --sitemaps about 45 minutes at one request per 1.1 s per host, Learn being most of it; 1395 of 2990 live sources are learn.microsoft.com on 2026-10-10. census.py check already decides a mapped Learn page by commits in its MicrosoftDocs repository (LEARN_MAP, _tools/census.py:69), so the map exists and the clone cache is shared; factdiff.py does not use it. The before figure is measured at the start of the work on the same day as the after figure, not taken from the skill's estimate. A request against a public repository by git over https stays read-only and pins nothing."
+}

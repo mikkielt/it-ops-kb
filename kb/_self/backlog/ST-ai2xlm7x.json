@@ -1,0 +1,36 @@
+{
+  "id": "ST-ai2xlm7x",
+  "kind": "story",
+  "title": "github.com issue, discussion, wiki and repository pages get a provider signal, so the census decides them without reading",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-ilje65fa",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "providers.csv carries measured rows (through /kb-probe) for github.com page kinds the census now sends to reading as 'a github.com page (issues, wiki, home) or API call': a wiki page by the wiki's git repository in the bare clone cache, a repository home by its README blob at the default branch, an issue or discussion by the latest timeline time or a hash of its normalized rendered text; census.py check and factdiff.py detect use that signal, so an unchanged page gets bucket OK or factdiff unchanged and a changed one gets review items for its facts; api.github.com stays uncalled. The 2026-09-26 census read 50 such pages, 32 of them confirmed unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_github_page"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/providers.csv",
+    "_tools/provider.py",
+    "_tools/census.py",
+    "_tools/factdiff.py",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-wfvkk6jn"
+  ],
+  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 50 rows of kind gh-page or api-other with note 'github page' went to phase 2: 32 confirmed, 16 updated, 2 superseded. 85 live github.com non-raw sources on 2026-10-10. The signals are measured through /kb-probe before code uses them; a page kind no signal fits stays in the queue. Fact for the no-api rule: census.py's docstring says api.github.com is never called."
+}

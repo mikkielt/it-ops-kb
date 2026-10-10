@@ -1,0 +1,22 @@
+{
+  "id": "SP-4phd36pa",
+  "kind": "sprint",
+  "title": "Research: GitLab project operations by API for an agent-run estate",
+  "status": "planned",
+  "goal": "The kb answers, from official GitLab docs, how an agent operates projects by API rather than the UI: opening and merging merge requests by API (merge_when_pipeline_succeeds and auto-merge, detailed_merge_status values and which never resolve by waiting, merge methods and squash settings, source branch deletion), the project settings subset that encodes a merge regime (only_allow_merge_if_pipeline_succeeds, remove_source_branch_after_merge, merge_method, lfs_enabled, shared_runners_enabled, public_jobs, container registry and merge request visibility), protected tags' create_access_levels against protected branches' push_access_levels, deploy keys and deploy tokens and group access tokens (scopes, per-group versus per-project, expiry ceilings), project webhooks (X-Gitlab-Token, event kinds, push payload fields), runner registration by authentication token, playing a pipeline schedule, tag pipelines on protected v* tags, and the PyPI, generic and container registries of a group (publish, pin by digest, visibility).",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

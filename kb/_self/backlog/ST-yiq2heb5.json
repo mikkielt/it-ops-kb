@@ -1,0 +1,35 @@
+{
+  "id": "ST-yiq2heb5",
+  "kind": "story",
+  "title": "The phase-4 sample hands its checker each sampled fact with its current passage, and rows whose facts are all word for word are agreed by tool",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-yojt6y7v",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py sample LOG --brief prints, for each sampled source, its citing facts with the anchor passage found in the source's current text (the factdiff document cache, or a fetch), marks a row whose every fact is found word for word as agreed by tool with that proof, and prints for the rest the fact, the passage and the read command; the fresh checker of phase 4 judges only the rows not agreed by tool, from the passages, opening a page only when a passage does not settle a fact; the counts checked, agreed by tool, agreed by the checker, disagreed are what the report gives; the checker is still a context that did not do phase 2.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_sample_brief"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_census_route.py",
+    ".claude/skills/kb-census/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-xy2euufe"
+  ],
+  "notes": "Premise: .claude/skills/kb-census/SKILL.md phase 4 step 2 has a fresh subagent read each sampled source in full and its citing facts; census.py sample prints ids only (its -h: 'prints a CSV of ids'). A word-for-word match of a fact in the source's current text is the same proof factdiff apply already dates sources on with no model, so agreeing such rows by tool keeps the check's meaning for the rows it was built for: the ones a reader judged."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "SP-wwacrsqr",
+  "kind": "sprint",
+  "title": "Research: Python shell with a Rust core, one package, bundled Postgres",
+  "status": "planned",
+  "goal": "The kb answers, from official sources, how one Python package with a Rust core is built, pinned and operated: uv workspaces, uv.lock and a uv-managed pinned CPython, maturin and PyO3 abi3 wheels and the linux amd64 and arm64 and macOS arm64 matrix, publishing wheels and an sdist to a private GitLab PyPI registry and pinning them by version and digest, ruff and mypy --strict and clippy -D warnings as gates, pytest with testcontainers Postgres and criterion benchmarks, bundled PostgreSQL binaries shipped as a wheel and run by the package (init, start, stop, upgrade by dump and restore), SQLAlchemy 2 async with asyncpg, Alembic expand-and-contract migrations across a minor, Postgres advisory locks as single-writer invariants, pgvector, pgcrypto, canonical dumps that hash byte-identically, nightly age-encrypted dumps and git bundles to S3-compatible storage with restore tested in CI, Typer CLIs that never prompt without a TTY and print JSON, FastAPI capability-per-route decorators, SSE streams with cursors, per-caller rate limits with Retry-After, and a single-process service composing roles by flag.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

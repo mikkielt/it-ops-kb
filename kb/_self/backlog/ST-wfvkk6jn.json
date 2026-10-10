@@ -1,0 +1,35 @@
+{
+  "id": "ST-wfvkk6jn",
+  "kind": "story",
+  "title": "A pinned file whose cited passages are word for word at the newer commit or release is re-pinned and its facts re-pointed with no model",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-ilje65fa",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "For a source of kind raw-pin, raw-ref or release in bucket CHANGED or NEWER-VERSION, the census resolves each citing fact's anchor against the file at the newer commit or release from the bare clone (git show, no network beyond the clone fetch); when every citing fact is found word for word, census.py writes the new pinned row through kbid.py add, sets superseded_by on the old row, re-points the citations and records outcome superseded with the proof (old and new commit, facts matched), all in the factdiff apply style with --dry-run and a KB-Verified commit; a source with any fact not found stays in the phase-2 queue with only those facts in its review items. A pinned file with no located anchors stays in the queue unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_repin"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/factdiff.py",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-qo3kicix",
+    "ST-ylxsns5t"
+  ],
+  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 13 NEWER-VERSION rows (9 raw-ref at newer=2.2.364, 4 api-repo) and 7 CHANGED raw-pin or raw-ref rows went to phase 2, and all but two came back confirmed, so the model read whole files to find the cited lines unchanged. factdiff.py detect marks pinned sources 'pinned url: its text cannot change' and leaves them to census.py check, so neither tool compares the citing facts against the newer file today."
+}

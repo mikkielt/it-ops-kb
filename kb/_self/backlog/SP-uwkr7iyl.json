@@ -1,0 +1,22 @@
+{
+  "id": "SP-uwkr7iyl",
+  "kind": "sprint",
+  "title": "Census deterministic 1: measured baseline, one driver, phase-2 bookkeeping by tool",
+  "status": "planned",
+  "goal": "census.py records each phase's wall time, rows and reading volume and prints the phase-2 reading queue's size and estimated tokens before any reading; census.py run and finish carry phases 0, 1 and 3 with no agent turn between their steps; census.py groups, brief and apply group the phase-2 rows, print each group's filled brief with its review passages and cited facts, and apply a group's JSON result (new source rows, superseded_by, gap and conflict bullets, outcomes, re-anchoring, index) with a dry run; the kb-census skill drives the census through those commands.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

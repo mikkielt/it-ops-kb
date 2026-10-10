@@ -1,0 +1,22 @@
+{
+  "id": "SP-ilje65fa",
+  "kind": "sprint",
+  "title": "Census deterministic 2: fewer sources need reading",
+  "status": "planned",
+  "goal": "A census decides by tool the source kinds the 2026-09-26 census sent to reading although nothing had changed: pinned files whose cited passages are word for word at the newer commit or release are re-pinned and re-pointed with no model; unpinned live pages without a page date are decided by a detection baseline that phase 3 records for every confirmed source; github.com issue, wiki and repository pages get a provider signal; Learn pages that map to a public MicrosoftDocs repository are detected by its git history instead of one HTTP request each; a name-resolution error is retried once and counted apart; and more facts carry a located anchor, at no loss of anchor precision.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

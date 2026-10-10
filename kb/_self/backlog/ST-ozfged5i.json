@@ -1,0 +1,26 @@
+{
+  "id": "ST-ozfged5i",
+  "kind": "story",
+  "title": "Review sprint: Research: GitLab project operations by API for an agent-run estate",
+  "status": "draft",
+  "sprint": "SP-4phd36pa",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

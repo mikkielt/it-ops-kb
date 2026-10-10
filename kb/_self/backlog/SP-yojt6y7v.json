@@ -1,0 +1,22 @@
+{
+  "id": "SP-yojt6y7v",
+  "kind": "sprint",
+  "title": "Census deterministic 3: cheaper reading",
+  "status": "planned",
+  "goal": "What a census still hands a model is judged at the lowest cost that keeps its sample agreement: factdiff review items (a fact with its old and new passage) are judged in batches by a no-tool structured-output call that settles supported facts without an agent; the remaining phase-2 groups run as capped headless sessions on a smaller model whose JSON result census.py apply takes; the phase-4 sample hands its checker passages, not pages, with word-for-word rows agreed by tool; and one domain's census, run end to end on the new route, is measured against the sprint-1 baseline in model-read rows, tokens, USD and wall time.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-e4x326oy",
+  "kind": "story",
+  "title": "Research sprint goal: Census deterministic 1: measured baseline, one driver, phase-2 bookkeeping by tool",
+  "status": "draft",
+  "sprint": "SP-uwkr7iyl",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-e4x326oy"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}

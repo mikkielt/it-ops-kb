@@ -1,0 +1,22 @@
+{
+  "id": "SP-ajcomz6d",
+  "kind": "sprint",
+  "title": "Research: Linux host configuration management and hardening by a pull agent",
+  "status": "planned",
+  "goal": "The kb answers, from official sources, how a pull agent converges and grades Linux hosts of four families (Debian, Ubuntu, Alpine, AlmaLinux): CIS Benchmark Level 1 and Level 2 server profiles and their per-family content, OpenSCAP with the SCAP Security Guide profiles and Lynis where none exists, nftables rulesets, auditd rules, sshd hardening, time sync, unattended-upgrade timers off and package pins by snapshot date, point release or index hash, Docker as a role with secrets as /run mounts never env, WireGuard hub-and-spoke meshes rendered from an inventory, cloudflared tunnel replicas and Cloudflare Access for an admin path, Incus machine containers as a test bed for cookbooks, a static agent binary that fetches a git main and refuses a backwards version, idempotent typed steps with check and apply and dry-run, and dead-man monitors on a second provider.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

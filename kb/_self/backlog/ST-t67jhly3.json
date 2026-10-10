@@ -1,0 +1,39 @@
+{
+  "id": "ST-t67jhly3",
+  "kind": "story",
+  "title": "One domain's census, run end to end on the deterministic route, is measured against the sprint-1 baseline in model-read rows, tokens, USD and wall time",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-yojt6y7v",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A census of one domain chosen by its source count (census.py run with a topic or directory selection, then groups, judge, dispatch, apply, finish and the phase-4 sample) runs after a --dry-run whose estimated tokens and USD set the run's --max-budget-usd; kb/_self/reports/fact-diff.md gains a section with, for that domain, the rows handed to a model, the facts judged by the batch call and by agent groups, tokens, USD, wall time per phase from the census.phase ops rows, and the phase-4 sample's agreement, set against the same domain's share of the 2026-09-26 census as the queue block measured it, with the commands that produced each figure; a kb/_self/_retrieval/lookup_eval.csv row asks what a census of a domain costs on this route and packs good to that section; a sample disagreement is filed as a bug of the step that caused it, not fixed in this story.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lookup_eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/fact-diff.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/token-efficiency.md",
+    "kb/public/_census/**",
+    "kb/public/_sources.csv",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "ST-jlezjp6k",
+    "ST-yiq2heb5",
+    "ST-ylxsns5t",
+    "ST-wfvkk6jn",
+    "ST-7yh6lbh6",
+    "ST-zdfghdlb"
+  ],
+  "notes": "The domain is picked at the sprint's planning by the research story (a mid-sized domain with Learn, live and pinned sources, such as entra, which fact-diff.md's dry run already measured); its article glob (kb/public/<domain>/**) is then added to touches with backlog.py set --add-touch before the start, since phase 2 edits articles. This is a paid run: a --dry-run estimate first, and --max-budget-usd from it (planning rule: dry-run every paid run a goal names). Baseline for the comparison comes from ST-w3jhowin's queue block on kb/public/_census/2026-09-26.csv, filtered to the domain's sources. It runs each step on the model ST-jkehwsu4 and ST-zdfghdlb chose, so its figures are those of the cheapest route that held the bars."
+}

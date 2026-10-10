@@ -1,0 +1,38 @@
+{
+  "id": "ST-zdfghdlb",
+  "kind": "story",
+  "title": "Haiku 5.5 is measured against the current model on the census's agentic steps, the phase-2 reader groups and the kb-census orchestrator, and takes each where it loses nothing that matters",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-yojt6y7v",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Two agentic census steps are run on claude-haiku-5-5 and on their current model with pinned full names [DOC S-ezqg74ki], from the same brief, caps and permission rules: (1) census.py dispatch on held-out phase-2 groups whose outcomes the census already recorded, each result checked by census.py apply --dry-run (schema-valid, ids known, files owned) and compared per source with the recorded outcome (confirmed, updated, superseded, gone), a false confirm (confirmed where the census changed a fact) counting as the critical error; (2) the kb-census skill's orchestrator on a census of one small selection after sprints 1 and 2, compared on whether it ran the commands in the skill's order, stopped where the skill says, applied every group and reported the counts the skill's Report section asks for. Haiku becomes the step's default (dispatch's --model default; the model the kb-census skill names for its orchestrator, if the skill can name one) only when it has no more false confirms or skipped steps than the current model, its outcome agreement is within 5 points, and its turns stay under the cap; otherwise the step keeps its model and the result names the failing bar. Each run is a --dry-run estimate first with --max-budget-usd from it; per step and model, agreement, critical errors, turns, tokens, USD from total_cost_usd and wall time are recorded in kb/_self/reports/fact-diff.md beside the single-call steps' section, with the commands that produced them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lookup_eval"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    ".claude/skills/kb-census/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/reports/fact-diff.md",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-jlezjp6k",
+    "ST-jkehwsu4"
+  ],
+  "notes": "Same pricing, pinning and effort facts as ST-jkehwsu4 (public/claude/ci-and-headless.md:83-89). The agentic comparison costs more than the single-call one, so it runs after ST-jkehwsu4 and on few groups: the count is set from the dry-run estimate, and the groups are drawn from the held-out half ST-jkehwsu4 split. A smaller orchestrator matters only once sprints 1 and 2 have moved most of its work into census.py commands; before that its turns are mostly reading and editing, the work this comparison would penalise Haiku for. AGENTS.md is reviewed, not edited (its 4 KB cap). The 5-point bar is the session's proposal, open to change at the start gate."
+}

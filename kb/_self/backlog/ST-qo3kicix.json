@@ -1,0 +1,35 @@
+{
+  "id": "ST-qo3kicix",
+  "kind": "story",
+  "title": "census.py apply takes a group's phase-2 JSON result and does the bookkeeping the orchestrator now does by hand",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-uwkr7iyl",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "census.py apply LOG --group G --from RESULTS.json [--dry-run] validates RESULTS.json against a committed JSON Schema of the phase-2 result (outcomes, new_rows, superseded, gaps, conflicts, foreign_edits) and refuses, naming each, an unknown source id, a file outside the group's owned files, an outcome outside the five, or a new row that kbid.py would refuse; then it adds each new row through kbid.py add (never a CSV writer), sets superseded_by on the old rows, writes the gap and conflict bullets under their topic headings in _gaps.md and _conflicts.md, records the outcomes as census.py record does, runs factdiff.py anchor --file on each edited article, build_index.py and doc2query.py stale, and prints the foreign edits for the orchestrator without applying them; --dry-run prints every write and changes nothing. The schema file is the one the phase-2 brief names and that a headless reader can be given with claude -p --json-schema [DOC S1800].",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_apply"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/census_result.schema.json",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-6ljkrwt2"
+  ],
+  "notes": "Premise run 2026-10-10: census.py has no apply command (census.py groups, the same parser, exits 2 with invalid choice), and phase 2 step 3 of .claude/skills/kb-census/SKILL.md has the orchestrator run kbid.py add once per new row, set superseded_by, edit _gaps.md and _conflicts.md, run census.py record, factdiff.py anchor, build_index.py and doc2query.py stale by hand; the 2026-09-26 census superseded 144 sources, so 144 kbid.py add calls were model turns. kb/_self/map.csv gains the schema file's row. The work keeps kbid.py the only writer of _sources.csv rows."
+}

@@ -1,0 +1,35 @@
+{
+  "id": "ST-ylxsns5t",
+  "kind": "story",
+  "title": "Every confirmed unpinned source carries a detection baseline after phase 3, so a live page without a date is decided by its text hash at the next census",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-ilje65fa",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py confirm (phase 3) writes, for each confirmed unpinned source that has none, the detection baseline factdiff.py detect reads (the provider's ETag or Last-Modified, version id, or the hash of the normalized text from the document phase 2 or factdiff fetched), never a baseline from a text no one compared; census.py check with --factdiff then takes factdiff's unchanged verdict for a live page with no last-updated date instead of bucket NEEDS-READING; a new command or flag lists the live unpinned sources with no baseline (count by host, exit 1 when any) so the gap is visible before a census starts. The 2026-09-26 census sent about 200 live pages to reading for having no date, and most came back confirmed unchanged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_baseline"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/factdiff.py",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-ywxl7ulm",
+    "ST-6d4mvn7z"
+  ],
+  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): NEEDS-READING rows with evidence 'HTTP 200, no last-updated date' (with or without a redirect note) number about 205; phase 2 recorded about 163 of them confirmed, 36 updated, 10 superseded. On 2026-10-10, of 2990 live sources in kb/public/_sources.csv, 461 have no row in _fetch_state.csv (206 raw.githubusercontent.com pins, which need none; 94 learn.microsoft.com, 53 gitlab.com, the rest a long tail) and 58 have a row with no ETag, Last-Modified, version id or text hash (techcommunity.microsoft.com 14). The listing command the goal names makes that count a tool output instead of a one-off script."
+}

@@ -1,0 +1,22 @@
+{
+  "id": "SP-qjn563cf",
+  "kind": "sprint",
+  "title": "Research: CPU-only text analysis, rules as data and self-hosted observability for a corpus service",
+  "status": "planned",
+  "goal": "The kb answers, from official sources, what a corpus service runs without a GPU or an LLM: spaCy pinned to one patch with a model packaged in a private registry and a stamp of its inputs, a morphological analyser as the lemma authority (Morfeusz for Polish) with a degraded arm, ONNX Runtime CPU inference inside a Rust core (ort crate, pinned model artifacts with licence fields, refusing GPU providers at build), zero-shot NER and relation models (GLiNER, GLiREL) and multilingual sentence embeddings (MMLW-e5 family) with pgvector, coreference options, Datalog engines embeddable in Rust for closure and contradiction rules, Oxigraph as an embedded read-only RDF store with named graphs and SPARQL, GoRules JSON Decision Models executed by zen-engine with JavaScript nodes refused and versioned by effective date, Fluent (FTL) catalogues with generated typed accessors for Rust, Python and TypeScript and a literal lint, content-addressed line ids and JSON Lines transcripts, and the self-hosted observability stack (OTLP collector, Prometheus, Loki, Tempo, Grafana with short retention) with JSON logs to stdout and a /metrics route.",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

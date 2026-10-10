@@ -1,0 +1,41 @@
+{
+  "id": "ST-6ljkrwt2",
+  "kind": "story",
+  "title": "census.py groups and brief split the phase-2 rows into owner groups and print each group's filled brief with its review passages and cited facts",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-uwkr7iyl",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "census.py groups LOG prints, as JSON, the phase-2 rows grouped by the domain of the files citing them with the skill's owner rule (a source cited in two groups goes to the group with most of its citations, its other files listed as foreign), each group with its rows, owned files, foreign files and queue size, deterministic for a given log and tree; census.py brief LOG --group G prints that group's phase-2 brief as the skill words it today, filled in: the rows with id, url, bucket, evidence and used_in, each row's citing facts as rag.py src --cited gives them (path:line and text), the factdiff review items inline for rows whose evidence names factdiff.py review, the read command for each other row (git show and git diff for a pinned file, the fetch route for a page), and the result JSON shape, so the reader needs no lookup call to start; the brief stays under a size bound the command states and splits a group over it into numbered parts.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_groups"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/census.py",
+        "groups",
+        "kb/public/_census/2026-09-26.csv"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-w3jhowin",
+    "ST-ywxl7ulm"
+  ],
+  "notes": "Premise run 2026-10-10: python3 _tools/census.py groups kb/public/_census/2026-09-26.csv exits 2 with invalid choice. Today phase 2 steps 1 and 2 of .claude/skills/kb-census/SKILL.md have the orchestrator group the rows by hand and fill the brief by hand, and each subagent then calls rag.py src --cited and factdiff.py review itself; the brief carries them instead. The size bound keeps a brief inside one reader's context; fact-diff.md's entra dry run gives the scale: 43 review items came to 24,212 characters."
+}

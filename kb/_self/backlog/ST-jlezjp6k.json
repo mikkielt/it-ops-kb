@@ -1,0 +1,40 @@
+{
+  "id": "ST-jlezjp6k",
+  "kind": "story",
+  "title": "census.py dispatch runs a phase-2 group as a capped headless session on a smaller model and writes the result census.py apply takes",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-yojt6y7v",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py dispatch LOG --group G [--model M] [--max-turns N] [--max-budget-usd X] [--dry-run] starts claude -p with the group's census.py brief on stdin, --output-format json and --json-schema of the phase-2 result [DOC S1800], the turn and dollar caps [DOC S1824], a scratch directory of its own and permission rules that let it read and edit only the group's owned files; it writes the structured_output to the group's RESULTS.json and the run's total_cost_usd, tokens and wall time to the census.phase ops row; a run that hits a cap or returns invalid JSON leaves the group unapplied and says so; the default model is the one the research story's measurement supports, not the orchestrator's; the kb-census skill dispatches groups with it in place of Agent-tool subagents, which keep the orchestrator's model; the suite tests it with a stub claude on PATH, never a paid run.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_dispatch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_census_route.py",
+    ".claude/skills/kb-census/SKILL.md",
+    ".claude/settings.json",
+    "AGENTS.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-xy2euufe",
+    "ST-bi5q3jux",
+    "ST-yiq2heb5",
+    "ST-jkehwsu4"
+  ],
+  "notes": "Product facts: claude -p --output-format json with --json-schema delivers structured_output and total_cost_usd (public/claude/ci-and-headless.md:34, :72, S1800); --max-budget-usd and --max-turns cap print mode, subagent spend counting toward the budget (public/agents/headless-agent-runtimes.md:52, S1824). The kb-sprint skill already dispatches headless Sonnet workers with a scratch directory and turn cap (kb/_self/backlog.md, Running a sprint), and ST-nq5z6whn (backlog.py brief and dispatch) builds the same launch for backlog items: reuse its launcher if it has landed rather than writing a second one. The command starts a program against this repository, so it gets the one guard test the planning rules ask for: claude found on PATH and not in the current directory, the child environment passed explicitly, the read and edit rules limited to the group's files. .claude/settings.json gains allow rules only for a read-only command the skill runs; dispatch writes, so likely none. Its default model is provisional: ST-zdfghdlb measures Haiku 5.5 against it on held-out groups and switches the default when Haiku holds the bars."
+}

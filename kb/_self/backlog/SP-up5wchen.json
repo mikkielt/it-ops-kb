@@ -1,0 +1,22 @@
+{
+  "id": "SP-up5wchen",
+  "kind": "sprint",
+  "title": "Research: secrets, identities and signed requests for a small self-managed fleet",
+  "status": "planned",
+  "goal": "The kb answers, from official sources, how a small fleet keeps secrets without a secrets service: age identities and sops files (recipients per file, key groups and shamir_threshold, rotation by re-encryption, what git history keeps), Shamir secret sharing of a root identity among K of N holders and the tools that split and recombine it, credential ceilings and rotation by minting at the issuer then verifying by use (GitLab, Cloudflare, Discord, R2 as issuers), BuildKit secret mounts against build args, protected-ref-only CI variables, Ed25519 request signing over HTTP (key derivation from an age identity, timestamp windows, replay), short-lived single-use enrolment tokens, Discord OAuth2 with PKCE for a public client and OIDC id_token claims, UUIDv7 ids, and envelope encryption of columns in Postgres with blind indexes (pgcrypto, per-site data keys).",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

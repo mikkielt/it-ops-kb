@@ -1,0 +1,44 @@
+{
+  "id": "ST-w3jhowin",
+  "kind": "story",
+  "title": "census.py summary prints the phase-2 reading queue's size and estimated tokens, and each census phase records an ops row with its wall time and counts",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "sprint": "SP-uwkr7iyl",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "census.py summary LOG adds a queue block computed with no network and no model: the rows phase 2 must read (bucket not OK, note not blocked, no outcome yet), the facts citing them (rag.py src --cited counts), the characters of their factdiff review passages and, for rows without review items, of the whole documents held in _cache/factdiff (a not-cached count when absent), and the tokens estimated at characters/4, split by provider host; census.py check, record and confirm and factdiff.py detect, apply and review each write one ops row census.phase (phase, date, ms, rows per bucket or outcome, exit) through ql_capture.record as tests.py writes test.run, and the digest's ops block counts them; the 2026-09-26 log's queue figure is recorded in kb/_self/reports/fact-diff.md as the census baseline.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/census.py",
+        "summary",
+        "kb/public/_census/2026-09-26.csv"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/factdiff.py",
+    "_tools/ql_capture.py",
+    "_tools/ql_report.py",
+    "_tools/test_census_route.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "kb/_self/reports/fact-diff.md"
+  ],
+  "notes": "Premise run 2026-10-10: python3 _tools/census.py summary kb/public/_census/2026-09-26.csv printed bucket, outcome and needs-reading-by-note counts and the confirmed count, and nothing about the size of what phase 2 reads (no facts, characters or tokens); no census.phase ops row exists (git grep census.phase in _tools finds nothing). This story sets the baseline the epic's later stories are measured against, so it lands first. Its test selector collects no test until the work adds _tools/test_census.py. The tokens estimate follows kb/_self/usage.md's characters/4 convention."
+}
