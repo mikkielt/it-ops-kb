@@ -4,24 +4,48 @@
   "title": "A bug filed into an active sprint without touches is refused or warned at new",
   "status": "draft",
   "parent": "EP-6iiony54",
+  "sprint": "SP-qxcj7fgy",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py new bug --sprint SP of an active sprint without --touch exits 2 naming --touch (or files it with a warning that done will refuse every file), so a worker's filed bug is ready to claim. Answers SP-evkj4avq, where BG-rqkc66vj and BG-6i6pdahh were filed into the sprint with no touches and the orchestrator added them before the claim.",
+  "goal": "backlog.py new bug --sprint SP of an active sprint without --touch exits 2 naming --touch, and files nothing (the bug is filed unsprinted or with --touch; gate g1), so a worker's filed bug is ready to claim. Answers SP-evkj4avq, where BG-rqkc66vj and BG-6i6pdahh were filed into the sprint with no touches and the orchestrator added them before the claim.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/backlog.py",
-        "check"
+        "-c",
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/kb/_self/backlog\"); open(t+\"/kb/_self/backlog/SP-testtest.json\",\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"active\",\"goal\":\"g\"})); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"b\",\"--severity\",\"S3\",\"--repro\",\"python3 -c \\\"import sys; sys.exit(1)\\\"\",\"--sprint\",\"SP-testtest\"],capture_output=True,text=True); sys.exit(0 if p.returncode==2 and \"--touch\" in p.stderr+p.stdout and os.listdir(t+\"/kb/_self/backlog\")==[\"SP-testtest.json\"] else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/bl_items.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-7avb5uo6"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does new bug --sprint do for an active sprint when no --touch is given?",
+      "options": [
+        "refuse with exit 2 naming --touch; the bug is filed unsprinted or with --touch",
+        "file it with a warning that done refuses every file"
+      ],
+      "recommendation": "refuse with exit 2 naming --touch; the bug is filed unsprinted or with --touch",
+      "do": {
+        "refuse with exit 2 naming --touch; the bug is filed unsprinted or with --touch": "ST-dt6xl537",
+        "file it with a warning that done refuses every file": "ST-dt6xl537"
+      },
+      "class": "agents-rule",
+      "answer": "refuse with exit 2 naming --touch; the bug is filed unsprinted or with --touch",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-evkj4avq close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): new bug --sprint of an active sprint with no --touch files the bug, exit 0: reproduces."
 }

@@ -3,27 +3,68 @@
   "kind": "story",
   "title": "An unanswered gate its session just added can be reworded or removed with a backlog.py command",
   "status": "draft",
+  "sprint": "SP-qxcj7fgy",
   "priority": "P3",
   "rank": 0,
-  "goal": "From the SP-matmvkn6 close retrospective: the ST-tudbg2a6 research worker's gate question named gitlab, which classed it as a push gate only the operator answers; with no command to edit or remove a gate it reverted the item file and added the gate again. backlog.py removes or rewords an unanswered gate (re-classing it), refusing an answered one.",
+  "goal": "From the SP-matmvkn6 close retrospective: the ST-tudbg2a6 research worker's gate question named gitlab, which classed it as a push gate only the operator answers; with no command to edit or remove a gate it reverted the item file and added the gate again. backlog.py gate remove ID GATE removes an unanswered gate, refusing an answered one and the sprint's start gate; a gate of class secrets, push or agents-rule is removed only with --by operator and otherwise refused naming the class (gate g2), so a worker cannot clear a gate only the operator answers; a reword is remove then gate add (gate g1), and kb/_self/backlog.md's rule that a gate is never reworded to change its class says what that allows.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "gate_remove"
+        "-c",
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/kb/_self/backlog\"); open(t+\"/kb/_self/backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"goal\":\"g\",\"touches\":[\"x.md\"]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); add=lambda g,q: r(\"gate\",\"add\",\"ST-testtest\",\"--id\",g,\"--kind\",\"provisional\",\"--question\",q,\"--option\",\"alpha\",\"--option\",\"beta\",\"--recommendation\",\"alpha\"); gates=lambda: json.loads(open(t+\"/kb/_self/backlog/ST-testtest.json\").read()).get(\"gates\",[]); add(\"g8\",\"one?\"); add(\"g9\",\"two?\"); r(\"answer\",\"ST-testtest\",\"g9\",\"--answer\",\"alpha\",\"--by\",\"agent\"); open(t+\"/kb/_self/backlog/SP-testtest.json\",\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"planned\",\"goal\":\"g\",\"gates\":[{\"id\":\"start\",\"kind\":\"blocking\",\"question\":\"q?\",\"options\":[\"approve\",\"change\"],\"recommendation\":\"approve\"}]})); x=r(\"gate\",\"remove\",\"ST-testtest\",\"g8\"); y=r(\"gate\",\"remove\",\"ST-testtest\",\"g9\"); z=r(\"gate\",\"remove\",\"SP-testtest\",\"start\"); add(\"g7\",\"Should the kb be pushed to origin?\"); u=r(\"gate\",\"remove\",\"ST-testtest\",\"g7\"); kept=[g[\"id\"] for g in gates()]; v=r(\"gate\",\"remove\",\"ST-testtest\",\"g7\",\"--by\",\"operator\"); sys.exit(0 if x.returncode==0 and y.returncode!=0 and z.returncode!=0 and u.returncode!=0 and \"g7\" in kept and v.returncode==0 and [g[\"id\"] for g in gates()]==[\"g9\"] and \"start\" in open(t+\"/kb/_self/backlog/SP-testtest.json\").read() else 1)"
       ]
     }
   ],
   "touches": [
-    "_tools/bl_gates.py",
+    "_tools/bl_items.py",
+    "_tools/test_authority.py",
     "_tools/backlog.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-zvpffogs"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which commands change an unanswered gate?",
+      "options": [
+        "gate remove ID GATE only; a reword is remove then gate add, which classes the new text again",
+        "gate remove and gate reword ID GATE with --question and --option, which classes it again"
+      ],
+      "recommendation": "gate remove ID GATE only; a reword is remove then gate add, which classes the new text again",
+      "do": {
+        "gate remove ID GATE only; a reword is remove then gate add, which classes the new text again": "ST-myhtzlb3",
+        "gate remove and gate reword ID GATE with --question and --option, which classes it again": "ST-myhtzlb3"
+      },
+      "class": "agents-rule",
+      "answer": "gate remove ID GATE only; a reword is remove then gate add, which classes the new text again",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which unanswered gates may gate remove remove, given that kb/_self/backlog.md says a gate is never reworded to change its class?",
+      "options": [
+        "a gate whose class is outside secrets, push and agents-rule; one of those classes only with --by operator, naming the class otherwise",
+        "any unanswered gate, and the removal is recorded in the item's notes"
+      ],
+      "recommendation": "a gate whose class is outside secrets, push and agents-rule; one of those classes only with --by operator, naming the class otherwise",
+      "do": {
+        "a gate whose class is outside secrets, push and agents-rule; one of those classes only with --by operator, naming the class otherwise": "ST-myhtzlb3",
+        "any unanswered gate, and the removal is recorded in the item's notes": "ST-myhtzlb3"
+      },
+      "class": "secrets",
+      "answer": "a gate whose class is outside secrets, push and agents-rule; one of those classes only with --by operator, naming the class otherwise",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-matmvkn6 close",
     "parked: SP-2vhfsn4o close"
   ],
-  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): backlog.py gate offers only add; gate remove exits 2 'invalid choice': reproduces."
 }
