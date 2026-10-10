@@ -35,7 +35,10 @@ SETTINGS = {
     "land_stale": ("argv", ["_tools/selfdoc.py", "stale", "--since"]),  # + the integration main; [] = no such step
     "land_eval": ("argv", ["_tools/rag.py", "eval"]),
     "land_lint": ("argv", [".claude/skills/kb-verify/lint.py"]),
-    "lane_module": ("module", "kblane"),  # the module that says which lane a path belongs to
+    "lane_module": ("optmodule", "kblane"),  # the module that says which lane a path belongs to; "" = no code lane
+    # the landing's push, the argv of the command (a first element ending in .py runs under this interpreter, any
+    # other is the program) that sends the landed work to the integration main; the kb's is its gate script's sync
+    "land_push": ("command", ["_tools/kbgit.py", "sync", "--push"]),
     "worktree_dir": ("path", ".claude/worktrees"),  # a worker's worktrees, under the clone's main checkout
     "scratch_dir": ("path", "_cache/scratch"),  # + /<id>/: a worker's throwaway files and staging copies, under the clone's top
     "forge": ("forge", "gitlab"),  # the integration remote's forge: gitlab (read with glab) or github (read with gh)
@@ -76,8 +79,10 @@ def _type_problem(kind, v):
     if kind == "rootname":
         ok = isinstance(v, str) and (v == "" or re.fullmatch(r"_?[a-z0-9][a-z0-9-]*", v) is not None)
         return None if ok else "a kb root's name: lower case letters, digits and hyphens, `_self` allowed (\"\" for none)"
-    if kind == "module":
-        return None if isinstance(v, str) and v.isidentifier() else "a Python module name"
+    if kind == "optmodule":
+        return None if isinstance(v, str) and (v == "" or v.isidentifier()) else "a Python module name (\"\" for none)"
+    if kind == "command":
+        return None if strs(v) and v else "a non-empty list of strings (the command's arguments)"
     if kind == "strs":
         return None if strs(v) else "a list of strings"
     if kind == "argv":
