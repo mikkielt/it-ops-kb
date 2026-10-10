@@ -2,7 +2,7 @@
   "id": "ST-koznprpg",
   "kind": "story",
   "title": "An orchestrator whose main checkout another session uses moves to its own worktree before its first claim, and land and dispatch accept worker worktrees under it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -38,5 +38,6 @@
   "links": [
     "parked: SP-befc6yqr close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: for a clone that is a linked worktree, bl_land.worker_dirs names only its own .claude/worktrees, selfcheck's checkout check fails it, and the run step 2 does not name the move (the story's check and its tasks' checks). Run at plan 2026-10-10: all four exit 1 on the base, so the premise reproduces. Split into tasks TK-lwihhcmj (land), TK-wddzrzod (selfcheck) and TK-tbbknjul (the skill), run in that order. dispatch makes its worktree under the toplevel of the clone it runs in, which land accepts, so the story's check pins that and no dispatch task is planned. The earlier check, backlog.py check, passed on the base and proved nothing, so it was replaced."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: for a clone that is a linked worktree, bl_land.worker_dirs names only its own .claude/worktrees, selfcheck's checkout check fails it, and the run step 2 does not name the move (the story's check and its tasks' checks). Run at plan 2026-10-10: all four exit 1 on the base, so the premise reproduces. Split into tasks TK-lwihhcmj (land), TK-wddzrzod (selfcheck) and TK-tbbknjul (the skill), run in that order. dispatch makes its worktree under the toplevel of the clone it runs in, which land accepts, so the story's check pins that and no dispatch task is planned. The earlier check, backlog.py check, passed on the base and proved nothing, so it was replaced.",
+  "claimed_by": "orch-avwlotax"
 }
