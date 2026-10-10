@@ -2,7 +2,7 @@
   "id": "ST-myhtzlb3",
   "kind": "story",
   "title": "An unanswered gate its session just added can be reworded or removed with a backlog.py command",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qxcj7fgy",
   "priority": "P3",
   "rank": 0,
@@ -66,5 +66,6 @@
     "parked: SP-matmvkn6 close",
     "parked: SP-2vhfsn4o close"
   ],
-  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): backlog.py gate offers only add; gate remove exits 2 'invalid choice': reproduces."
+  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise run 2026-10-10 (plan SP-qxcj7fgy): backlog.py gate offers only add; gate remove exits 2 'invalid choice': reproduces.",
+  "claimed_by": "worker-ST-myhtzlb3"
 }
