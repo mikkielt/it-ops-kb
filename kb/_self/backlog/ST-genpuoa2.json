@@ -2,7 +2,7 @@
   "id": "ST-genpuoa2",
   "kind": "story",
   "title": "agents/codebase-mapping.md gives Cargo's full rustc lookup order, rustup proxy included, and the rustc info cache's off cases",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-vayhvwfy review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise (2026-10-10, base origin/main): both checks exit 1 now: codebase-mapping.md:89-90 and the QK-cargo-metadata-no-deps-invoke-rustc entry name no rustup toolchain rustc fallback and no CARGO_CACHE_RUSTC_INFO=0 case. The source claim (get_tool at Cargo 797e8a9b) is the review's reading: the worker re-reads util/context/mod.rs at the pinned sha before stating it."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise (2026-10-10, base origin/main): both checks exit 1 now: codebase-mapping.md:89-90 and the QK-cargo-metadata-no-deps-invoke-rustc entry name no rustup toolchain rustc fallback and no CARGO_CACHE_RUSTC_INFO=0 case. The source claim (get_tool at Cargo 797e8a9b) is the review's reading: the worker re-reads util/context/mod.rs at the pinned sha before stating it. Orchestrator 2026-10-10 (from this sprint's workers): factdiff.py anchor --file also rewrites verified_utc on unrelated _anchors.csv rows and modifies _fetch_state.csv (outside the touches): keep only the anchor rows of the facts you changed and restore _fetch_state.csv with git restore before you return (git checkout -- is denied). A tag citing two sources gives each its own kind ([CODE S-a: path; CODE S-b: path]); [CODE S-a: path; S-b: path] parses only S-a.",
+  "claimed_by": "kb-worker-genpuoa2"
 }
