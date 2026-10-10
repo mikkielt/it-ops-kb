@@ -71,6 +71,7 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-research:r
 - Record each product's or feature's status as the vendor states it (GA, preview, beta, deprecated, end of support) in the fact itself. A preview feature can be recorded, but say "preview" in the fact and never present it as the recommended path.
 - Blogs, forums, vendor marketing and AI-generated wikis are `COMMUNITY`: a lead, never the only evidence for a `DOC` fact. Integrations that a third party claims but the vendor does not document are `COMMUNITY` or `UNK`.
 - Compare what you find with the existing facts. A disagreement goes to `_conflicts.md` with both sources. Do not overwrite an older fact without recording why.
+- A fact you correct in a figure (a price, limit, size, date, version or id) is repeated elsewhere in the root more often than not. Before step 4 ends, `python3 _tools/rag.py search "<old value>" --root <root> --index -k 30` on the old value as written and on its other spellings with the product's name beside it (`--index` adds `_answers.md`, `_gaps.md` and `_conflicts.md`; the `.csv` data tables are searched with the articles). Each place that repeats the old figure is updated in the same change (same tag, the source you read) or filed with its `path:line` as a backlog bug (`/kb-backlog`); a dated resolution that states the old figure as history stays. The report lists each place and what became of it.
 - Never call `submit_feedback`, sign up for anything, install software, or run a vendor CLI that changes state. Reading public docs only.
 
 ## 4. Write
@@ -114,5 +115,6 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
 - What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on; rows added to `signals.csv`, `aliases.csv` or `lookup_eval.csv`.
 - Where each fact went (extended topic or new topic) and why, per step 2's rules.
 - The answer to the question in a few lines, with the vendor status (GA/preview) of every product or feature it relies on.
+- For each corrected figure, the places that repeated the old one and whether each was updated or filed.
 - Open items (`UNK`), conflicts found, and anything the user must decide.
 - Do not commit unless asked.
