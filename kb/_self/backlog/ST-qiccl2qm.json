@@ -2,7 +2,7 @@
   "id": "ST-qiccl2qm",
   "kind": "story",
   "title": "Research sprint goal: Sprint tooling 1: config layer, external ids, brief and dispatch, rules in the brief, cost without capture",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-befc6yqr",
   "goal_research": true,
   "priority": "P1",
@@ -37,5 +37,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "kb-worker-qiccl2qm"
+  "evidence": {
+    "commit": "f7df50788a4494b9389152fd1d2f23c3aedd8e5a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-qiccl2qm"
+        ],
+        "exit": 0,
+        "sha256": "bf219a0bc0815030"
+      }
+    ]
+  }
 }
