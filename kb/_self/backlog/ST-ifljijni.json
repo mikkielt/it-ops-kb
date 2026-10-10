@@ -2,7 +2,7 @@
   "id": "ST-ifljijni",
   "kind": "story",
   "title": "An operator can rescope a sprint's goal, and close --summary maps clauses to the sprint's own items",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-x5gjv4r7",
   "priority": "P3",
   "rank": 0,
@@ -108,5 +108,45 @@
     "merged: ST-27vxkvm6"
   ],
   "notes": "Premise (2026-10-10, run): goal_clause_lines for the sprint goal 'the alpha reader works; passing' prints '2. passing: unmet, carried by ST-2' for an open item elsewhere (the second check prints it), and bl_items.py:472 refuses set --goal on a sprint ('a sprint takes notes, links and delegates only'); move --sprint none prints only 'moved ... to no sprint' (the fourth check prints it). The first check plants a --root repo, so it does not break when a live sprint closes. The third and fourth checks read the wording 'similar open item outside the sprint' and 'set SP-... --goal ... --by operator': rename in the check if the work words them otherwise. Merged from ST-27vxkvm6 at the 2026-10-10 backlog triage (its goal is folded into this goal): move --sprint none out of a planned sprint prints the clause left behind and names set SP --goal G --by operator.",
-  "claimed_by": "kb-worker-ifljijni"
+  "evidence": {
+    "commit": "deca000bd5cf9b79dd48e52ce81c6e05971653e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile,os,json,shutil;t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,os.getcwd()+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S','--goal','old goal clause').stdout.split()[2];goal=lambda:json.load(open(f'{t}/_backlog/{sp}.json',encoding='utf-8-sig')).get('goal');a=run('set',sp,'--goal','rescoped goal clause');ga=goal();b2=run('set',sp,'--goal','rescoped goal clause','--by','operator');gb=goal();shutil.rmtree(t,ignore_errors=True);print('no --by: exit',a.returncode,'goal',repr(ga),'| --by operator: exit',b2.returncode,'goal',repr(gb),(b2.stderr or b2.stdout).strip()[:100]);sys.exit(0 if a.returncode!=0 and ga=='old goal clause' and b2.returncode==0 and gb=='rescoped goal clause' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "33796b2d8a1dd657"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import bl_land;it={'SP-a':{'kind':'sprint','goal':'the alpha reader works; passing'},'ST-1':{'kind':'story','status':'done','title':'Alpha reader','goal':'the alpha reader works'},'ST-2':{'kind':'story','status':'todo','title':'Checks passing','goal':'make passing stable'}};bl=types.SimpleNamespace(items=it,label=lambda i:i);out=bl_land.goal_clause_lines(bl,'SP-a',['ST-1']);print(out);sys.exit(0 if 'ST-1' in ' '.join(out) and 'ST-2' not in ' '.join(out) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8fcd499c71eacf09"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types\nsys.path.insert(0,\"_tools\")\nimport bl_land\nit={\"SP-a\":{\"kind\":\"sprint\",\"goal\":\"the alpha reader works; checks stay passing stable\"},\n    \"ST-1\":{\"kind\":\"story\",\"status\":\"done\",\"title\":\"Alpha reader\",\"goal\":\"the alpha reader works\"},\n    \"ST-2\":{\"kind\":\"story\",\"status\":\"todo\",\"title\":\"Checks passing\",\"goal\":\"make passing stable\"}}\nbl=types.SimpleNamespace(items=it,label=lambda i:i)\nout=bl_land.goal_clause_lines(bl,\"SP-a\",[\"ST-1\"])\nprint(out)\nln=[l for l in out if \"checks stay passing\" in l]\nsys.exit(0 if ln and \"ST-2\" in ln[0] and \"similar open item outside the sprint\" in ln[0] and \"carried by\" not in ln[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0660c6057230c424"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys,tempfile,os,shutil\nt=tempfile.mkdtemp()\ns.run([\"git\",\"init\",\"-q\",t],check=True)\nos.makedirs(t+\"/kb/_self/backlog\")\nb=[sys.executable,os.getcwd()+\"/_tools/backlog.py\",\"--root\",t]\nrun=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t)\nsp=run(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"the alpha reader works; the beta writer works\").stdout.split()[2]\nst=run(\"new\",\"story\",\"--title\",\"Beta writer\",\"--sprint\",sp,\"--goal\",\"the beta writer works\",\"--check\",\"python3 -c 1/0\").stdout.split()[2]\nr=run(\"move\",st,\"--sprint\",\"none\")\nout=r.stdout+r.stderr\nshutil.rmtree(t,ignore_errors=True)\nprint(\"move exit\",r.returncode,out.strip()[:300])\nsys.exit(0 if r.returncode==0 and \"beta writer works\" in out and \"set \"+sp+\" --goal\" in out and \"--by operator\" in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "78f144bb6410f905"
+      }
+    ]
+  }
 }
