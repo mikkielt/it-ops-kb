@@ -2,7 +2,7 @@
   "id": "ST-twcrlq7n",
   "kind": "story",
   "title": "Planning puts doc2query expansions.csv in the touches of research and refresh items that may reword facts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4jfepy6u",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "links": [
     "parked: SP-caqrexqw close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: none of the three planning docs names expansions.csv today; the item's check (a doc-text read, since it adds a planning rule) fails until each does. Premise run on the base 2026-10-10: its check prints False for the three docs, exit 1."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: none of the three planning docs names expansions.csv today; the item's check (a doc-text read, since it adds a planning rule) fails until each does. Premise run on the base 2026-10-10: its check prints False for the three docs, exit 1.",
+  "claimed_by": "kb-worker-twcrlq7n"
 }
