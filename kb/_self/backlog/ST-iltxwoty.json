@@ -2,7 +2,7 @@
   "id": "ST-iltxwoty",
   "kind": "story",
   "title": "land waits for a finished headless worker's SessionEnd hook before refusing a live process in its worktree",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lyfnpu37",
   "priority": "P3",
   "rank": 0,

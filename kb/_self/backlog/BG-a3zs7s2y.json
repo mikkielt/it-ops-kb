@@ -2,7 +2,7 @@
   "id": "BG-a3zs7s2y",
   "kind": "bug",
   "title": "cost --rework drops the no-capture or no-item line whenever an open session is in scope, so the review still prints zero tables",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",

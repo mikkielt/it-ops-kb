@@ -2,7 +2,7 @@
   "id": "BG-dnojxemz",
   "kind": "bug",
   "title": "kb-sprint and backlog.md say land moves intake drafts aside from a worktree made outside .claude/worktrees/, which land refuses to release",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lyfnpu37",
   "priority": "P3",
   "rank": 0,

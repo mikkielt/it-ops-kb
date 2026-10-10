@@ -2,7 +2,7 @@
   "id": "BG-45zpw2go",
   "kind": "bug",
   "title": "A background land closes its window once land's own checkout holds the done commit, though the landing may still fail",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,

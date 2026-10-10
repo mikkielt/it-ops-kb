@@ -2,7 +2,7 @@
   "id": "ST-gdcn5467",
   "kind": "story",
   "title": "The SessionStart intake hook files a finding once, whatever checkout or session starts, and respects the open-draft cap",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lyfnpu37",
   "priority": "P2",
   "rank": 0,

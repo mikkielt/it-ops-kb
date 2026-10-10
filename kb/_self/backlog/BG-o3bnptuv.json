@@ -2,7 +2,7 @@
   "id": "BG-o3bnptuv",
   "kind": "bug",
   "title": "kb-sprint review step 2 says zeros beside open session figures mean no usage rows yet, while the rows exist and only their sidecars are undistilled",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
   "sprint": "SP-lyfnpu37",
   "priority": "P3",
