@@ -1,0 +1,22 @@
+{
+  "id": "ST-gq4hw43t",
+  "kind": "story",
+  "title": "A story whose goal makes a tool work in another project has a check that runs it with --root on a throwaway project",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-befc6yqr: ST-qgnjxiol's checks ran config and a test on the kb's own root and KB_BACKLOG_CONFIG only, and passed while every command but config and check ignored another project's backlog.json (the review's S1, fixed as BG-uoexdu6y). Planning gives each portability story of EP-4fawjprq a check that runs at least one changed command with --root on a throwaway git project and asserts the project's own setting took effect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-befc6yqr close"
+  ]
+}

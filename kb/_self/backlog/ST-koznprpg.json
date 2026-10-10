@@ -1,0 +1,21 @@
+{
+  "id": "ST-koznprpg",
+  "kind": "story",
+  "title": "An orchestrator whose main checkout another session uses moves to its own worktree before its first claim, and land and dispatch accept worker worktrees under it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-befc6yqr: another session left untracked sprint files in the shared main checkout, so land refused the clean tree; the orchestrator moved to a linked worktree, where land refused workers made under the main checkout's .claude/worktrees (they had to be moved with git worktree move) and selfcheck's checkout check fails for a linked worktree. The kb-sprint run step names how an orchestrator that finds foreign files in its checkout moves (a linked worktree it starts from, or a clone), selfcheck tells that case from a linked worktree whose workers land fine, and land names the worktree it expects.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-befc6yqr close"
+  ]
+}

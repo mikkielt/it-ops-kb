@@ -1,0 +1,21 @@
+{
+  "id": "ST-pogg4knc",
+  "kind": "story",
+  "title": "Planning puts every reader of a symbol a goal changes into the item's touches, so workers do not stop or widen touches themselves",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-befc6yqr: ST-qgnjxiol stopped on the backlog.py registration and bl_land/bl_cli readers outside its touches (a resume round trip), and BG-uoexdu6y's worker widened its own touches by six bl_ modules that import the constants it changed. Planning (kb-sprint plan step 2, /kb-backlog bug) runs backlog.py referrers on each symbol or constant an item's goal changes and on a new subcommand's facade registration, and adds the files it lists to touches before the claim.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-befc6yqr close"
+  ]
+}

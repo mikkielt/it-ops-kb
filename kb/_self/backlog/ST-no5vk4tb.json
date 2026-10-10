@@ -1,0 +1,21 @@
+{
+  "id": "ST-no5vk4tb",
+  "kind": "story",
+  "title": "Planning checks that no goal clause needs a deliverable a later item of the sprint creates",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-befc6yqr: ST-vkqndn5e's goal said brief prints the external ids while brief was created by ST-nq5z6whn, ordered after it; the orchestrator moved the clause by hand mid-sprint. kb-sprint plan step 4 (or backlog.py check) compares each committed item's goal with the commands or files its sprint siblings create and the order the notes give, and a clause that needs a later sibling's deliverable is moved before the start gate.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-befc6yqr close"
+  ]
+}
