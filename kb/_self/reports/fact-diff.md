@@ -33,7 +33,23 @@ A labelled sample: 72 fact-source pairs drawn at random, 12 per band of cover (t
 
 Precision is flat at about 92% from 0.40 up (55 of 60) and falls to 75% below it, so `min_cover` is 0.40, with `min_shared` 3 terms, windows of up to 3 units and a cover cost of 0.05 per extra unit. The wrong ones were an image tag (now skipped as a unit), two derivations whose words sit in a related sentence, and a fact about a different service limit on the same page. A wrong anchor can only re-date a fact whose true passage was not checked; it can never change a fact.
 
-## Snapshots of copy sources
+### Second look at data rows, 2026-10-10
+
+`python3 _tools/factdiff.py anchors --breakdown` lists the pairs whose source returned text by provider host and tag kind. Before the change 5,098 pairs were no-match (of 11,696 with text); 1,838 of the 5,105 on the document cache were CSV rows (`column=value; ...`), scored with their column names, source columns and source ids as if page text, so a row that cites several sources held at most a fraction of its weight on any one page (`security/settings-crosswalk.csv` alone: 709 no-match against 123 located). DER pairs were 21% located and `learn.microsoft.com` held 2,836 no-match.
+
+The rule now gives a row the plain rule leaves unlocated a second look: scored on its values alone, a term the page lacks counted 1/sources, accepted where the window holds at least 0.35 of its own term weight (`row_min_density`; a blob of unrelated sentences holds any row's terms) and the row's first two cells are found in it or its headings to 0.75 (`row_min_identity`). A second look for Markdown facts that cite several sources (the page's missing terms counted 1/sources, a density cut of 0.4 and at least 0.3 of the fact's terms on the page) was tried and left out: 5 of 20 and then 5 of 12 hand-checked anchors were wrong, pages that merely share a topic.
+
+| measure | before | after |
+|---|---|---|
+| sources the pass started with (2,527 cached documents), pairs with text | 11,707 | 11,707 |
+| located | 6,602 (56.4%) | 6,795 (58.0%) |
+| all 3,017 sources of the root now (490 cited since the start, fetched in the same pass), pairs with text | 13,365 | 13,365 |
+| located | 7,324 (54.8%) | 7,518 (56.3%) |
+| located by the plain rule that the new one loses | | 0 |
+
+Both columns are the same documents, the rules run over them by `factdiff.py anchor --max-age 30` (after) and the committed rule at `HEAD` of the item's base (before). The sprint-start value was 6,588 of 11,676 (56.4%); the pairs of the 490 newer sources locate at a lower share, so the whole-root share is 56.3%.
+
+**Precision.** A fresh sample: 60 of the 194 pairs located only by the new rule (drawn with `random.Random(99).shuffle`, the first 60), each read against its window and marked as the right backing passage (a partial one counted as right, as in "Anchor thresholds") or a wrong one: 58 right, 2 wrong, 96.7% (the wrong ones: a class declaration that lists a property but not the row's value, and a table of configuration properties that holds only the row's property name). Earlier samples tuned the cut-offs and are not counted: the second look without the density and identity cuts was right in 13 of 20 rows; with density 0.25, identity 0.5 and the Markdown look it was 52 of 60; with density 0.35 and identity 0.5, 49 of 60 on the larger source set, whose wrong ones were a module description (3), page titles (2) and URL lines (2).
 
 `python3 _tools/factdiff.py snapshot --dry-run` over the public root: 792 live `copy` sources are cited; 758 would be kept, 30 returned no text (404, 403, 429, 202, timeouts) and 4 are JSON API answers or pages over the 500 KB cap (the NVD CVE API answer alone is 6.2 MB and changes daily). The 758 files hold 11.4 MB of text, about 2.4 MB compressed; the repository's tracked files were 16 MB with a 45 MB `.git` before them. Learn pages under MIT or CC BY mirrors are 6.9 MB of it.
 
