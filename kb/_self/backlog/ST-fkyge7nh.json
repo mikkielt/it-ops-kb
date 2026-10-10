@@ -2,7 +2,7 @@
   "id": "ST-fkyge7nh",
   "kind": "story",
   "title": "Research sprint goal: backlog.py fixes: land, drop, precheck and usage text",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m3azo2y7",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "No outside facts: the goal's questions are about this repo's own tools, read from _tools and kb/_self; the one outside fact (refs are shared by every worktree of a clone, git-test-repositories.md:70, git-refs.md) came back coverage good in the pack run at planning on 2026-10-10, and the precheck-calendar question is internal to bl_land and bl_intake."
+  "notes": "No outside facts: the goal's questions are about this repo's own tools, read from _tools and kb/_self; the one outside fact (refs are shared by every worktree of a clone, git-test-repositories.md:70, git-refs.md) came back coverage good in the pack run at planning on 2026-10-10, and the precheck-calendar question is internal to bl_land and bl_intake.",
+  "claimed_by": "orchestrator-m3azo2y7"
 }
