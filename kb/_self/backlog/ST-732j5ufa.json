@@ -2,7 +2,7 @@
   "id": "ST-732j5ufa",
   "kind": "story",
   "title": "apply's lead-passage row is refused when the lead does not answer: no route miss, the lead line holds most of the question's key words",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-6iiony54",
   "sprint": "SP-x5gjv4r7",
   "priority": "P2",
@@ -55,5 +55,6 @@
     "parked: SP-rvslem3h review",
     "merged: ST-i3diqinm"
   ],
-  "notes": "Premise: ql_apply.from_lead is true for a weak finding with observed route miss, and a lead that holds none of the question's key words is applied when the gates pass (2026-10-10: the first check of this item prints 'applied' for both). Merged from ST-i3diqinm at the 2026-10-10 backlog triage (anchor only from the clip the pack prints; a no-fix record names the eval failure): its goal is folded into this goal. Gate.measure returns failed ids only (rag.run_eval rows carry failed=text|anchor), so the second check reads a why {id: [failed words]} key beside failed: rename the key in that check if the work names it otherwise. The last check passes before the work: it pins test_redact.py green. The fourth check reads a second test_ function with lead in its name. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 13 of 13, \"Orchestration features: ops rows, goal clause map, rescope, query log apply\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. The planted test is one added test id: run python3 _tools/tests.py --ceiling before landing."
+  "notes": "Premise: ql_apply.from_lead is true for a weak finding with observed route miss, and a lead that holds none of the question's key words is applied when the gates pass (2026-10-10: the first check of this item prints 'applied' for both). Merged from ST-i3diqinm at the 2026-10-10 backlog triage (anchor only from the clip the pack prints; a no-fix record names the eval failure): its goal is folded into this goal. Gate.measure returns failed ids only (rag.run_eval rows carry failed=text|anchor), so the second check reads a why {id: [failed words]} key beside failed: rename the key in that check if the work names it otherwise. The last check passes before the work: it pins test_redact.py green. The fourth check reads a second test_ function with lead in its name. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 13 of 13, \"Orchestration features: ops rows, goal clause map, rescope, query log apply\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. The planted test is one added test id: run python3 _tools/tests.py --ceiling before landing.",
+  "claimed_by": "kb-worker-732j5ufa"
 }
