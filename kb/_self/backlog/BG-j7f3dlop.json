@@ -2,7 +2,7 @@
   "id": "BG-j7f3dlop",
   "kind": "bug",
   "title": "drop SP deletes a planned sprint but leaves its research and review stories naming it, so check errors and set --clear sprint refuses",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,6 @@
       "by": "operator"
     }
   ],
-  "notes": "parked link: found by the operator's triage of 2026-10-07 while parking SP-kan6spiy, not by a sprint review; promote only when a sprint needs to drop a planned sprint again. No rule in kb/_self/backlog.md says how a planned sprint is cancelled (a miss of this session: asked as how is a planned sprint cancelled or dropped before it starts). Premise: its repro. Run at planning on 2026-10-10: exit 1, 'backlog check: items=2 errors=2' after drop of a new sprint in a scratch root. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13)."
+  "notes": "parked link: found by the operator's triage of 2026-10-07 while parking SP-kan6spiy, not by a sprint review; promote only when a sprint needs to drop a planned sprint again. No rule in kb/_self/backlog.md says how a planned sprint is cancelled (a miss of this session: asked as how is a planned sprint cancelled or dropped before it starts). Premise: its repro. Run at planning on 2026-10-10: exit 1, 'backlog check: items=2 errors=2' after drop of a new sprint in a scratch root. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13).",
+  "claimed_by": "kb-worker-j7f3dlop"
 }
