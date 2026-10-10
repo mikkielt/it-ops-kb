@@ -147,6 +147,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
+| `gitlab/issue-closing-patterns` | P3 | complete | `gitlab/issue-closing-patterns.md` | 5 |
+| `gitlab/jira-issue-keys-in-commits` | P3 | partial | `gitlab/jira-issue-keys-in-commits.md` | 3 |
 | `gitlab/job-log-timestamps` | P3 | complete | `gitlab/job-log-timestamps.md` | 5 |
 | `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 9 |
 | `gitlab/work-items-planning` | P3 | complete | `gitlab/work-items-planning.md` | 11 |

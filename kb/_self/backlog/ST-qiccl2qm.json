@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the Jira smart-commit facts and the GitLab closing-pattern facts go: two new topics in public/gitlab/, one new topic, or a new top-level domain?",
+      "options": [
+        "two new topics in public/gitlab/ (gitlab/issue-closing-patterns, gitlab/jira-issue-keys-in-commits)",
+        "one combined topic in public/gitlab/",
+        "a new top-level domain for Jira"
+      ],
+      "recommendation": "two new topics in public/gitlab/ (gitlab/issue-closing-patterns, gitlab/jira-issue-keys-in-commits)",
+      "class": "push"
+    }
+  ],
   "claimed_by": "kb-worker-qiccl2qm"
 }

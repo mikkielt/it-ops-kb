@@ -2626,3 +2626,22 @@ _Agent: kb-research_
 - See python/stdlib-cprofile-pstats.md.
 
 _Agent: kb-research_
+
+## QK-jira-issue-key-commit-message-trailer. What does a Jira issue key in a commit message and a trailer line do for Jira smart commits and the tracker's link?
+- The key is two or more uppercase letters, a hyphen and a number (`JRA-123`); lowercase is not recognised, and a key anywhere in a commit message, branch name or pull request title links it to the work item's development panel. [DOC S-kzztizwv, S-hmqwtvjy]
+- A smart commit reads one line of the message: `<ISSUE_KEY>` then, after any ignored text, `#comment`, `#time` or `#<transition>`; several keys and several commands may share a line, and a command never spans lines. [DOC S-kzztizwv]
+- Neither Atlassian page mentions git trailers or a trailer block. [UNK]
+- Conclusion: a `KB-Ref: PROJ-123` trailer line is read by the line rule, not by a trailer rule: its key links the commit, and it triggers no smart commit action unless a `#command` follows the key on that line. [DER S-kzztizwv, S-hmqwtvjy]
+- Open: what Jira does with a trailer line is not documented; nobody tested it against a Jira site. [UNK]
+- See gitlab/jira-issue-keys-in-commits.md, gitlab/git-trailers-and-hooks.md.
+
+_Agent: kb-research_
+
+## QK-gitlab-close-reference-issues-merge-request. How does GitLab close and reference issues from a merge request description or commit message: closing patterns, Closes #N and cross-project forms?
+- A closing keyword (`Close`, `Fix`, `Resolve`, `Implement` in their listed forms) followed by `#123`, `group/project#123` or a full issue or work item URL closes the issue when the commit is pushed to, or the commit or merge request is merged into, the default branch. [DOC S-qxksc6ah]
+- A mention with no keyword (`Related to #5`, `Ref #123`, `GL-123`) links without closing; `project#123` and `namespace/project!123` are the cross-project forms of an issue and a merge request. [DOC S-qxksc6ah, S-a57i2q6g, S-ww5ecjfc]
+- A project can turn auto-closing off and an administrator of a Self-Managed instance can change the pattern; the merging user's permission to close is checked at merge. [DOC S-qxksc6ah, S-xdfirawc]
+- Conclusion: for a merge request description, `Closes #N` closes on merge into the default branch, and any other wording only links; the matching is a regular expression over the text, so a negated sentence that holds `fix #12` still matches. [DER S-qxksc6ah, S-xdfirawc]
+- See gitlab/issue-closing-patterns.md.
+
+_Agent: kb-research_
