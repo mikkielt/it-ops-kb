@@ -2,7 +2,7 @@
   "id": "BG-na2uirn5",
   "kind": "bug",
   "title": "A touch of the plugin's skills/ or agents/ files is not class agents-rule, so a gate on an item that edits the sprint skills' text is not operator-only",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ciqk6gt6",
   "priority": "P2",
@@ -22,5 +22,18 @@
     "kb/_self/backlog.md"
   ],
   "notes": "Orchestrator: moved into SP-ciqk6gt6, since TK-7nnd2bdm made skills/ and agents/ at the plugin root the one set of the sprint rules, so the agents-rule guard must cover them in the same sprint. The suite is at the 100-id ceiling: extend test_authority's existing test, add no id.",
-  "claimed_by": "worker-BG-na2uirn5"
+  "evidence": {
+    "commit": "9b681c8f06b23dd4f79c2ad8bd42d57071bc730f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import bl_authority as a; sys.exit(0 if a.derived_class({'touches': ['skills/sprint/SKILL.md', 'agents/worker.md']}, {'id': 'g1', 'question': 'which name', 'options': []}) == 'agents-rule' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
