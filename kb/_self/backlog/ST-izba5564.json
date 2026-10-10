@@ -59,7 +59,9 @@
         "the time kinds win and no-capture is only for items with no time reason; everything after the line is dropped"
       ],
       "recommendation": "no-capture wins over the time kinds; a shared line's tables and a sprint's overhead with runs stay printed",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no-capture wins over the time kinds; a shared line's tables and a sprint's overhead with runs stay printed",
+      "by": "operator"
     }
   ],
   "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here. Premise run 2026-10-10 on this clone: backlog.py cost ST-izba5564 printed the no item line explanation and then four tables of zeros (direct, attributed, shared, session total), exit 0. The explanatory line exists; the zero tables after it and the missing spool-level distinction are the defect. Order in SP-befc6yqr: last, after ST-zt4fdewi (shared test file and kb-sprint skill). Its selector collects no test until the work adds it to _tools/test_backlog_portable.py. Premise rerun 2026-10-10 on the orchestrator's worktree: still reproduces (the no item line, then three zero tables, exit 0).",
