@@ -32,6 +32,68 @@
     "kb/_self/code.md",
     "_tools/bench_pool.py"
   ],
+  "gates": [
+    {
+      "id": "dry-run-no-plan",
+      "kind": "provisional",
+      "question": "run SCENARIO --dry-run for a scenario with no plan: refuse it, or print that scenario's plan?",
+      "options": [
+        "refuse with exit 2 naming the scenarios that have a plan",
+        "print that scenario's plan and start no run"
+      ],
+      "recommendation": "refuse with exit 2 naming the scenarios that have a plan",
+      "do": {
+        "refuse with exit 2 naming the scenarios that have a plan": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "host-lookups",
+          "--dry-run"
+        ],
+        "print that scenario's plan and start no run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "--help"
+        ]
+      },
+      "class": "design",
+      "answer": "refuse with exit 2 naming the scenarios that have a plan",
+      "by": "agent"
+    },
+    {
+      "id": "kinds-all-help",
+      "kind": "provisional",
+      "question": "--kinds all is refused as an unknown kind while the help says default all: accept all, or reword the help?",
+      "options": [
+        "reword the help to name the default as every kind",
+        "accept all as every kind"
+      ],
+      "recommendation": "reword the help to name the default as every kind",
+      "do": {
+        "reword the help to name the default as every kind": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "--help"
+        ],
+        "accept all as every kind": [
+          "python3",
+          "_tools/benchmarks.py",
+          "run",
+          "pool",
+          "--kinds",
+          "all",
+          "--dry-run",
+          "--out",
+          "/dev/null"
+        ]
+      },
+      "class": "design",
+      "answer": "reword the help to name the default as every kind",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-x7ger6vu run",
     "merged: ST-o2jd35m2"
