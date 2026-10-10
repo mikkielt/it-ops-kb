@@ -2,7 +2,7 @@
   "id": "TK-tbbknjul",
   "kind": "task",
   "title": "kb-sprint run step 2 and the Self-check checkout line name the move to a linked worktree before the first claim",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-koznprpg",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,18 @@
     "TK-wddzrzod",
     "ST-nu5b6zqm"
   ],
-  "claimed_by": "worker-TK-tbbknjul"
+  "evidence": {
+    "commit": "23791271e01394838d26cdc9f03188f34b09971e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();l=[x for x in t.split(chr(10)) if x.strip().startswith('2. `git status --short`')][0];c=[x for x in t.split(chr(10)) if x.startswith('- `checkout`')][0];ok='git worktree add' in l and 'first claim' in l and 'use a standalone' not in c;print('run step 2 names the worktree move and the checkout line is updated:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a957482a63b32a4e"
+      }
+    ]
+  }
 }
