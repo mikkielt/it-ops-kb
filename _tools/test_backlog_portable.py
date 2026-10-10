@@ -42,14 +42,24 @@ def test_backlog_config_prints_each_setting_with_its_source(tmp_path):
     assert lines[0].startswith("backlog.json: read")
     assert 'item_dir = "work/items"  (file)' in lines
     assert 'lane_module = "mylane"  (file)' in lines
+    assert 'land_push = ["_tools/kbgit.py", "sync", "--push"]  (default)' in lines
     assert 'worktree_dir = ".claude/worktrees"  (default)' in lines
     assert [line.split(" = ")[0] for line in lines[1:]] == list(bl_base.SETTINGS)
+    # a host's own push and no code lane: an empty lane_module is a value, an empty land_push is not
+    push = ["git", "push", "origin", "HEAD:main"]
+    (tmp_path / "backlog.json").write_text(json.dumps({"lane_module": "", "land_push": push}), encoding="utf-8")
+    lines = config(tmp_path)[1].splitlines()
+    assert 'lane_module = ""  (file)' in lines and f"land_push = {json.dumps(push)}  (file)" in lines
+    (tmp_path / "backlog.json").write_text(json.dumps({"land_push": []}), encoding="utf-8")
+    problems = bl_base.read_settings(tmp_path, env={})[3]
+    assert len(problems) == 1 and "key 'land_push' must be a non-empty list of strings" in problems[0]
 
 
 def test_backlog_config_of_the_kb_is_its_committed_file_and_plugin_sprint_item_dir_default_is_backlog_at_the_root(tmp_path):
     values, sources, path, problems = bl_base.read_settings(bl_base.ROOT, env={})
     assert path.name == "backlog.json" and problems == []
-    assert {k for k, s in sources.items() if s == "default"} == {"hooks"}  # the kb's own hook entries take no setting
+    # the kb's own hook entries take no setting, and its landing's push is the default (the kb's gate script's sync)
+    assert {k for k, s in sources.items() if s == "default"} == {"hooks", "land_push"}
     defaults = {k: d for k, (_, d) in bl_base.SETTINGS.items()}
     # the file names the two settings whose default is no longer the kb's value; every other value is the default
     assert values == {**defaults, "item_dir": "kb/_self/backlog",

@@ -118,10 +118,13 @@ class TestLandedItem:
 
 
 class TestStoppedLand:
-    def test_land_runs_lint_on_content_item_then_planted_failures(self, scenario):
+    def test_land_runs_lint_on_content_item_then_planted_failures(self, scenario, tmp_path):
         article = "kb/public/agents/codebase-mapping.md"
-        repo, sp, (bad, lint) = planned(scenario, ("bad", "kb/_self/bad.md", "python3 _tools/backlog.py show ST-00000000"),
-                                        ("lint", article, "python3 _tools/backlog.py list --kind sprint"))
+        nested = "kb/_self/lane/host.md"  # a code-lane path of the kb's lanes
+        repo, sp, (bad, lint, host) = planned(
+            scenario, ("bad", "kb/_self/bad.md", "python3 _tools/backlog.py show ST-00000000"),
+            ("lint", article, "python3 _tools/backlog.py list --kind sprint"),
+            ("host", nested, "python3 _tools/backlog.py list --kind sprint"))
         moved = origin_main(scenario)
 
         work(repo, bad, "kb/_self/bad.md")
@@ -151,6 +154,31 @@ class TestStoppedLand:
         assert code != 0 and "land stopped at step lint" in out, out
         assert "CODE tag without a path#symbol pointer" in out and f"lint.py {article[3:]} exited 1" in out, out
         assert origin_main(scenario) == moved and item(scenario, lint)["status"] == "doing"
+
+        # a host project of the plugin: no code lane (`lane_module` empty: a commit of a code path lands as content,
+        # no merge request) and its own push (`land_push`); a push that exits 3 stops land at that step, `done` already
+        # made, and the same landing with a working push lands the item
+        repo.git("checkout", "-q", "-b", f"work/{host}", "main")
+        repo.write(nested, f"# {host}\n\nWork of the item.\n")
+        repo.git("add", nested)
+        repo.git("commit", "-q", "-m", f"docs(kb): {host} work", "-m", f"KB-Work: {host}")
+        repo.git("checkout", "-q", "main")
+        settings = json.loads(Path(repo.file("backlog.json")).read_text(encoding="utf-8"))
+        settings.update(lane_module="", land_stale=[], land_eval=[], land_lint=[])
+
+        def land_host(push):
+            cfg = tmp_path / "backlog.json"
+            cfg.write_text(json.dumps({**settings, "land_push": push}), encoding="utf-8")
+            p = repo.tool("backlog.py", "land", host, env={**NOSYNC, "KB_BACKLOG_CONFIG": str(cfg)})
+            return p.returncode, p.stdout + p.stderr
+
+        code, out = land_host(["python3", "-c", "import sys; sys.exit(3)"])
+        assert code != 0 and "land stopped at step python3 -c" in out and "exited 3" in out, out
+        assert "No such file" not in out and origin_main(scenario) == moved and item(scenario, host)["status"] == "doing"
+        code, out = land_host(["git", "push", "--no-verify", "origin", "HEAD:main"])
+        assert code == 0 and "landed" in out, out
+        assert "merge request" not in out and item(scenario, host)["status"] == "done", out
+        assert scenario.origin.git("show", f"main:{nested}").startswith(f"# {host}") and origin_main(scenario) != moved
 
 
 class TestOwnCheckoutDrafts:

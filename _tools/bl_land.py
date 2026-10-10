@@ -44,10 +44,13 @@ def unlanded_code(root, ids):
     ancestors of refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"]
     when the ref is missing and there is a code-lane commit. The owners are the ids the late commits name, first seen
     first, for the code/<id> branches sync opened. Content-lane commits never count; a commit's paths are
-    kblane.commit_paths', which leaves out a .gitattributes change confined to the pinned block."""
+    kblane.commit_paths', which leaves out a .gitattributes change confined to the pinned block. A project whose
+    `lane_module` is empty has no code lane: every commit is content, and nothing is late."""
     import kbpublic
-    kblane = importlib.import_module(setting("lane_module"))
     remote = kbpublic.integration_remote(root)
+    if not setting("lane_module"):
+        return [], remote, []
+    kblane = importlib.import_module(setting("lane_module"))
     code = []
     for sha, paths in item_commits(root, ids).items():
         lane_paths = kblane.commit_paths(root, sha)
@@ -411,7 +414,12 @@ def land_heavy():
     return tuple(step for step in (land_eval(), land_lint()) if step[1])
 
 
-LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
+def land_push():
+    """The push step: the project's `land_push` command, named by its program (`kbgit.py sync --push` for the kb)."""
+    argv = setting("land_push")
+    return (" ".join([Path(argv[0]).name, *argv[1:]]), argv)
+
+
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
 
 
@@ -544,12 +552,15 @@ def land_stop(step, why):
     return Refused(f"land stopped at step {step}: {why}")
 
 
-def land_run(root, step, argv, whole=False):
-    """Run one landing step; its output (the tail of it, unless WHOLE or it failed) goes through say()."""
+def land_run(root, step, argv, whole=False, program=False):
+    """Run one landing step; its output (the tail of it, unless WHOLE or it failed) goes through say(). The steps
+    are Python scripts run under this interpreter; with PROGRAM an ARGV whose first element does not end in `.py` is
+    the program to run itself (the push step's `git push ...`)."""
     say(f"land: {step}")
     ops_mark(step)
+    own = not program or argv[0].endswith(".py")
     try:
-        p = subprocess.run([sys.executable, *argv], cwd=root, capture_output=True, text=True, encoding="utf-8",
+        p = subprocess.run([sys.executable, *argv] if own else argv, cwd=root, capture_output=True, text=True, encoding="utf-8",
                            errors="replace", env=colourless_env())
         code, out = p.returncode, ANSI_RE.sub("", (p.stdout or "") + (p.stderr or "")).rstrip()
     except OSError as e:
@@ -560,7 +571,7 @@ def land_run(root, step, argv, whole=False):
         say("\n".join(shown))
     LAND_OPS["exit"] = code if isinstance(code, int) else 1
     if code != 0:
-        raise land_stop(step, f"python3 {shlex.join(argv)} exited {code}")
+        raise land_stop(step, f"{'python3 ' if own else ''}{shlex.join(argv)} exited {code}")
 
 
 def land_git_network(root, step, *args):
@@ -1689,7 +1700,7 @@ def land_once(bl, a):
             lint = land_lint()
             if articles and lint[1]:
                 land_run(root, lint[0], [*lint[1], *articles])
-        land_run(root, *LAND_SYNC, whole=True)
+        land_run(root, *land_push(), whole=True, program=True)
         if late:
             # the request sync opened by push options: this pass's one read of it
             describe_merge_request(bl, iid, read_code_request(root, code_branch))
