@@ -1,0 +1,23 @@
+{
+  "id": "BG-sq2qycqc",
+  "kind": "bug",
+  "title": "The planning rule to run a removed or renamed flag through referrers as a term gives a command that exits 2: a term starting with -- needs a -- separator",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "skills/sprint/SKILL.md plan step 2, skills/backlog/SKILL.md and kb/_self/backlog.md Sprints, where they say a removed or renamed flag is run through backlog.py referrers as a term, show the form that runs (referrers -- --flag), or referrers accepts a flag-like term without the separator. Found in the SP-4jfepy6u review: backlog.py referrers --add-touch exits 2 with 'the following arguments are required: terms'; ST-pogg4knc's check read only the phrase.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "referrers",
+      "--add-touch"
+    ]
+  },
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "skills/backlog/SKILL.md",
+    "kb/_self/backlog.md"
+  ]
+}
