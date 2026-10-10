@@ -5,11 +5,13 @@ item's claim. `--dry-run` prints what it would run and writes and starts nothing
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
-tests the orchestrator names, the fixed worker rules and the rules of the docs the item's touches map to
-(`rules_section`, the one function that builds that part). Standard library only; imports `bl_base`, `bl_cli`,
+tests the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
+one function that builds that part: backlog.json's `kb_root` gives the cited fact lines of a kb root, its `docs_map`
+the docs and `##` headings the item's touches map to). Standard library only; imports `bl_base`, `bl_cli`,
 `bl_items` (for the `goal` text) and `bl_land` (the worker's branch and worktree names), never `backlog`."""
 import argparse
 import contextlib
+import csv
 import io
 import json
 import os
@@ -22,7 +24,8 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import ID_RE, Refused, Rejected, canonical, external_lines, git, need, research_touches, say, scope, withhold
+from bl_base import (ID_RE, Refused, Rejected, canonical, external_lines, git, need, research_touches, say, scope,
+                     setting, touches_overlap, withhold)
 from bl_land import WORK_PREFIX, WORKER_DIR, WORKER_NAME
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
@@ -39,6 +42,10 @@ TURNS = {"task": 60, "subtask": 60, "bug": 100, "story": 100, "epic": 100, "spri
 RESEARCH_TURNS = 200  # a research story or an investigation bug
 INVESTIGATION_RE = re.compile(r"investigat", re.I)  # a bug whose title or goal says so is an investigation bug
 PACK_TIMEOUT_S = 120
+SELF_ROOT = "_self"  # the kb root of the kb's own rule docs: the one `rag.py pack --item` serves
+PACK_BUDGET = "600"
+RULES_DOCS_MAX = 12  # a mapped project's rules section names this many docs, then counts the rest
+RULES_HEADINGS_MAX = 30  # ... and this many `##` headings of one doc
 
 WORKER_RULES = (
     "Run the item's own checks; you may run `python3 _tools/tests.py`, which takes the host test lock and waits its "
@@ -146,25 +153,98 @@ def goal_text(bl, iid):
     return buf.getvalue().rstrip("\n")
 
 
-def rules_section(bl, iid):
-    """The brief's rules of the docs the item's touches map to, as lines: the kb's own source is `rag.py pack --root
-    _self --item ID --budget 600` of the project's checkout. A project without that tool gets a line saying so, and
-    a pack that fails one naming why: the brief is still written."""
-    tool = Path(bl.root) / "_tools" / "rag.py"
-    if not tool.is_file():
-        return ["No rules pack in this project (no `_tools/rag.py`): follow the role file and the item's touches."]
-    argv = [sys.executable, str(tool), "pack", "--root", "_self", "--item", iid, "--budget", "600"]
+def rag_tool(root, kb_root):
+    """The rag.py that serves KB_ROOT for the project at ROOT: the project's own `_tools/rag.py`, else, for a root
+    other than `_self` (the rule docs of the project that holds the tool), the one beside this module, the installed
+    plugin's, whose kb serves the project's root. None when there is none."""
+    own = Path(root) / "_tools" / "rag.py"
+    if own.is_file():
+        return own
+    here = Path(__file__).resolve().with_name("rag.py")
+    return here if kb_root != SELF_ROOT and here.is_file() else None
+
+
+def pack_lines(bl, iid, tool, kb_root):
+    """The cited fact lines (`path:line`, tag) of KB_ROOT for the item, as lines: `rag.py pack --root _self --item
+    ID` for the kb's own rule docs, else `pack --root ROOT` on the item's title and goal (`--item` serves `_self`
+    only). A tool that fails gives one line naming why: the brief is still written."""
+    item = bl.items[iid]
+    shown = "_tools/rag.py" if Path(tool) == Path(bl.root) / "_tools" / "rag.py" else str(tool)
+    ask = f"python3 {shown} pack --root {kb_root}"
+    if kb_root == SELF_ROOT:
+        argv_tail, again = ["--item", iid], f"{ask} --item {iid} --budget {PACK_BUDGET}"
+        hint = (f"(`{ask} --set kb-worker` before the first step; any other rule: `{ask} \"<question>\"`.)")
+    else:
+        argv_tail, again = [f"{item.get('title', '')}. {item.get('goal', '')}".strip()], f"{ask} \"<question>\""
+        hint = f"(the cited fact lines of the kb root `{kb_root}` for this item; any other rule: `{again}`.)"
+    argv = [sys.executable, str(tool), "pack", "--root", kb_root, "--budget", PACK_BUDGET, *argv_tail]
     try:
         p = subprocess.run(argv, cwd=str(bl.root), capture_output=True, text=True, encoding="utf-8",
                            errors="replace", timeout=PACK_TIMEOUT_S)
     except (OSError, subprocess.SubprocessError) as e:
-        return [f"The rules pack could not run ({e}): ask for it with `python3 _tools/rag.py pack --root _self "
-                f"--item {iid} --budget 600`."]
+        return [hint, f"The rules pack could not run ({e}): ask for it with `{again}`."]
     if p.returncode:
         why = (p.stderr or p.stdout).strip().splitlines()[:1]
-        return [f"The rules pack exited {p.returncode}" + (f" ({why[0]})" if why else "")
-                + f": ask for it with `python3 _tools/rag.py pack --root _self --item {iid} --budget 600`."]
-    return p.stdout.rstrip("\n").splitlines() or ["The rules pack printed nothing for this item."]
+        return [hint, f"The rules pack exited {p.returncode}" + (f" ({why[0]})" if why else "")
+                + f": ask for it with `{again}`."]
+    return [hint, *(p.stdout.rstrip("\n").splitlines() or ["The rules pack printed nothing for this item."])]
+
+
+def doc_headings(path):
+    """[(line, text)] of the `## ` headings of the Markdown file at PATH, fenced code left out; [] when unreadable."""
+    out, fenced = [], False
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return out
+    for n, ln in enumerate(lines, 1):
+        if ln.lstrip().startswith(("```", "~~~")):
+            fenced = not fenced
+        elif not fenced and ln.startswith("## "):
+            out.append((n, ln[3:].strip()))
+    return out
+
+
+def mapped_lines(bl, iid, docs_map):
+    """The docs DOCS_MAP (a `doc,pattern` CSV, repository-relative paths) maps to the item's touches, as lines: each
+    doc's path with its `##` headings and their lines, so the worker reads those sections and not the whole doc."""
+    try:
+        with open(Path(bl.root) / docs_map, encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+    except (OSError, ValueError, csv.Error) as e:
+        return [f"The docs map `{docs_map}` could not be read ({e}): follow the role file and the item's touches."]
+    touches = scope(bl, iid)
+    docs = sorted({r["doc"].strip() for r in rows if (r.get("doc") or "").strip() and (r.get("pattern") or "").strip()
+                   and any(touches_overlap(r["pattern"].strip(), t, ()) for t in touches)})
+    if not docs:
+        return [f"No doc of the docs map `{docs_map}` maps to this item's touches: follow the role file."]
+    out = [f"(from the docs map `{docs_map}`: read these sections of the docs your touches map to, not the whole doc)"]
+    for d in docs[:RULES_DOCS_MAX]:
+        heads = doc_headings(Path(bl.root) / d)
+        shown = "; ".join(f"## {t} (line {n})" for n, t in heads[:RULES_HEADINGS_MAX])
+        more = f"; +{len(heads) - RULES_HEADINGS_MAX} more" if len(heads) > RULES_HEADINGS_MAX else ""
+        out.append(f"- {d}: " + (shown + more if heads else "no `##` heading" if (Path(bl.root) / d).is_file()
+                                 else "not in this checkout"))
+    if len(docs) > RULES_DOCS_MAX:
+        out.append(f"+{len(docs) - RULES_DOCS_MAX} more docs in `{docs_map}`.")
+    return out
+
+
+def rules_section(bl, iid):
+    """The brief's rules of the project's own docs, as lines. backlog.json's `kb_root` names the kb root whose cited
+    fact lines the worker gets (`pack_lines`); else its `docs_map` the docs, with their `##` headings, the item's
+    touches map to (`mapped_lines`); a project with neither one gets one line saying no docs map is set."""
+    docs_map, kb_root = setting("docs_map"), setting("kb_root")
+    if kb_root:
+        tool = rag_tool(bl.root, kb_root)
+        if tool is not None:
+            return pack_lines(bl, iid, tool, kb_root)
+    if docs_map and (Path(bl.root) / docs_map).is_file():
+        return mapped_lines(bl, iid, docs_map)
+    named = [f"docs_map `{docs_map}` is no file" if docs_map else "", f"kb_root `{kb_root}` has no `rag.py` here"
+             if kb_root else ""]
+    why = "; ".join(n for n in named if n) or "docs_map and kb_root are empty in backlog.json"
+    return [f"No docs map is set for this project ({why}): follow the role file and the item's touches."]
 
 
 def compose_brief(bl, iid, known=(), probe=None):
@@ -206,9 +286,7 @@ def compose_brief(bl, iid, known=(), probe=None):
     out += (kf + ["A failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
     out += ["", "## Fixed rules", *[f"- {r.format(id=iid, branch=branch)}" for r in WORKER_RULES], "",
-            "## Rules of the docs your touches map to",
-            f"(`python3 _tools/rag.py pack --root _self --set kb-worker` before the first step; any other rule: "
-            f"`python3 _tools/rag.py pack --root _self \"<question>\"`.)", *rules_section(bl, iid), "",
+            "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
             "## Report", REPORT]
     return "\n".join(out) + "\n"
 

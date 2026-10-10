@@ -1,7 +1,7 @@
 """backlog.py's project settings (kb/_self/backlog.md, Project settings): `config` prints the effective settings with
 each value's source, the kb's committed backlog.json holds the kb's own values, and a file with an unknown key or a
-wrong type is refused naming the key; `brief` prints the worker's brief and `dispatch --dry-run` its argv without
-starting a session.
+wrong type is refused naming the key; `brief` prints the worker's brief, with the rules of the project's own docs
+(`docs_map`, `kb_root`), and `dispatch --dry-run` its argv without starting a session.
 
 The settings files are throwaway directories under tmp_path; the one real file read is the repository's backlog.json."""
 import json
@@ -171,7 +171,7 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
     assert f"- {ids['work']} \u201cwork item\u201d" not in out
     assert "- `tests/test_x.py::test_y`: BG-aaaaaaaa" in out
     assert f"KB-Work: {ids['work']}" in out and "never `tests.py --changed`" in out
-    assert "No rules pack in this project" in out  # the throwaway repository holds no _tools/rag.py
+    assert "No docs map is set for this project" in out  # the throwaway repository has no docs map and no _tools/rag.py
 
     def dry(item, *more):
         code, out = bl("dispatch", "--dry-run", item, *more)
@@ -186,3 +186,58 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
     assert "--model other-model " in dry(ids["work"], "--model", "other-model")["argv"]
     assert not (Path(root.path) / "_cache").exists()  # nothing made, written or started
     assert not (Path(root.path) / ".claude" / "worktrees").exists()
+
+
+def test_backlog_brief_rules_are_the_mapped_docs_headings_or_the_kb_roots_fact_lines(tmp_path):
+    repo, fx = tmp_path / "repo", tmp_path / "fx"
+    for d in (repo / "docs", fx / "print"):
+        d.mkdir(parents=True)
+    (repo / "docs" / "style.md").write_text(
+        "# Style\n\n## Naming\ntext\n\n```\n## not a heading\n```\n\n## Layout\n", encoding="utf-8")
+    (repo / "docs" / "ops.md").write_text("# Ops\n\n## Deploy\n", encoding="utf-8")
+    (repo / "docs" / "map.csv").write_text("doc,pattern\ndocs/style.md,src/*.py\ndocs/ops.md,deploy/*\n", encoding="utf-8")
+    sid = "FXT-" + "a" * 8  # a team's kb root, served from outside the repository (KB_ROOTS)
+    (fx / "_root.md").write_text("---\nroot: fixture\nid_prefix: FXT\nvisibility: internal\ndescription: a test root\n"
+                                 "---\n", encoding="utf-8")
+    (fx / "print" / "queues.md").write_text(
+        "---\ntopic: print/queues\npriority: P1\napplies_to: \"PL-SRV-0042 print servers\"\nretrieved_utc: 2026-09-26\n"
+        f"sources: [{sid}]\nstatus: partial\n---\n\n# Print queues\n\n## Summary\nKept 14 days.\n\n## Facts\n"
+        f"- Finished jobs are kept for 14 days. [DOC {sid}]\n\n## Reference\n\n## Examples\n", encoding="utf-8")
+    (fx / "_sources.csv").write_text("id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,"
+                                     "artifact_sha256,used_in,superseded_by\n", encoding="utf-8")
+    for name in ("_answers.md", "_conflicts.md", "_gaps.md"):
+        (fx / name).write_text("# " + name + "\n", encoding="utf-8")
+    root = Repo(repo)
+    root.git("init", "-q", "-b", "main")
+    cfg = tmp_path / "cfg.json"
+
+    def bl(*args, settings):
+        cfg.write_text(json.dumps(settings), encoding="utf-8")
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           env={**root.env, "KB_BACKLOG_CONFIG": str(cfg), "KB_ROOTS": str(fx),
+                                "KB_INDEX": str(tmp_path / "idx")})
+        assert "Traceback" not in p.stderr, p.stderr
+        assert p.returncode == 0, p.stdout + p.stderr
+        return p.stdout
+
+    def made(kind, title, *more):
+        out = bl("new", kind, "--title", title, "--goal", "How long are finished print jobs kept?", *more, settings={})
+        return re.search(r"[A-Z]{2}-[a-z2-7]{8}", out).group(0)
+
+    story = made("story", "Print queue retention")
+    task = made("task", "Finished jobs retention", "--parent", story, "--touch", "src/a.py", "--check", "python3 -c pass")
+
+    def rules(**settings):
+        out = bl("brief", task, settings=settings)
+        return out.split("## Rules of the docs your touches map to\n", 1)[1].split("\n## Report", 1)[0]
+
+    mapped = rules(docs_map="docs/map.csv", kb_root="")  # the docs the touches map to, with their `##` headings
+    assert "- docs/style.md: ## Naming (line 3); ## Layout (line 10)" in mapped
+    assert "docs/ops.md" not in mapped and "not a heading" not in mapped
+    cited = rules(docs_map="docs/map.csv", kb_root="fixture")  # a kb root: its cited fact lines, in place of the map
+    assert "fixture/print/queues.md:16 Finished jobs are kept for 14 days. [DOC " in cited
+    assert "docs/style.md" not in cited
+    assert rules(docs_map="", kb_root="").strip().splitlines() == [
+        "No docs map is set for this project (docs_map and kb_root are empty in backlog.json): follow the role file "
+        "and the item's touches."]
