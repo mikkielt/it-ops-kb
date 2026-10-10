@@ -1,0 +1,28 @@
+{
+  "id": "ST-qa3rcaux",
+  "kind": "story",
+  "title": "land's per-repository evidence names the request's own merge, not an unrelated later merge, for a fast-forwarded or rebased request",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.merge_commit names the request's own merge (or the branch tip for a fast-forward) even when an unrelated merge landed on the default branch after it; found by the SP-dqkf3i42 review at _tools/bl_land.py:961-974 (rev-list --merges --ancestry-path --reverse tip..upstream takes the oldest merge descending from the tip, which for a fast-forwarded tip is any later merge)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "multirepo_land"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}

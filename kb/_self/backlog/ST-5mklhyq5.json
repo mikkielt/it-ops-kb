@@ -1,0 +1,28 @@
+{
+  "id": "ST-5mklhyq5",
+  "kind": "story",
+  "title": "The kb-sprint and kb-item skills read a code request through backlog.py, not a hand-run glab mr view with the remote URL",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The skills read a code/<id> request's state through a backlog.py verb that uses bl_forge with forge and forge_project, not glab mr view -R <project url> by hand; found by the SP-dqkf3i42 review at .claude/skills/kb-sprint/SKILL.md:78 and .claude/skills/kb-item/SKILL.md:52",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1 if any('glab mr view' in open(f, encoding='utf-8').read() for f in ('.claude/skills/kb-sprint/SKILL.md', '.claude/skills/kb-item/SKILL.md')) else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}

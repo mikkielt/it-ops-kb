@@ -1,0 +1,26 @@
+{
+  "id": "ST-scbu2zyn",
+  "kind": "story",
+  "title": "backlog.py's usage names set's repository flags, dispatch's scratch setting and land's multi-repository steps",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The usage text of _tools/backlog.py lists set --repos, --repos-if-needed, --add-repos and --add-repos-if-needed, says dispatch's scratch directory is the scratch_dir setting (not a fixed _cache/scratch/ID/), and names land's requests and repositories steps; found by the SP-dqkf3i42 review at _tools/backlog.py:76, :169 and :175",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if '--repos' in open('_tools/backlog.py', encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/backlog.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}

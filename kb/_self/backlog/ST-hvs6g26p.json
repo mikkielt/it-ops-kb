@@ -1,0 +1,25 @@
+{
+  "id": "ST-hvs6g26p",
+  "kind": "story",
+  "title": "The kb-worker role file names the scratch directory through the scratch_dir setting, not a fixed _cache/scratch",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A worker's role file names its scratch directory as the brief gives it (the scratch_dir setting), so a project that sets scratch_dir gets the right path; found by the SP-dqkf3i42 review at .claude/agents/kb-worker.md:22",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1 if '_cache/scratch/<id>/' in open('.claude/agents/kb-worker.md', encoding='utf-8').read() else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}

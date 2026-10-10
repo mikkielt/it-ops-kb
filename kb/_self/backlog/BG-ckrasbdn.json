@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-lyfnpu37 review"
   ],
-  "notes": "SP-lyfnpu37 close: every landing of the sprint warned 'landed with no work rows', and cost --rework SP read 'no item line' at the review and again at the close, because no delivery reached origin/main after 2026-10-10 06:52Z."
+  "notes": "SP-lyfnpu37 close: every landing of the sprint warned 'landed with no work rows', and cost --rework SP read 'no item line' at the review and again at the close, because no delivery reached origin/main after 2026-10-10 06:52Z. SP-dqkf3i42 review (2026-10-10): cost --rework read 0 runs for every story while worker sessions of hours before still counted as open; the review's distill on a spool copy wrote no usage or work sidecar (only open sessions were left in the spool)."
 }

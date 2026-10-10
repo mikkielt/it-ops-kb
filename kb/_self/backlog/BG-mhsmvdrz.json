@@ -1,0 +1,27 @@
+{
+  "id": "BG-mhsmvdrz",
+  "kind": "bug",
+  "title": "stalled and selfcheck have no total deadline on their forge reads, so a slow forge holds them for minutes",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py stalled and selfcheck bound their forge reads by one total deadline, after which every unread item is unknown:forge, so a slow but answering forge cannot hold them past it; found by the SP-dqkf3i42 review at _tools/bl_stall.py:292 (60 s per call, two calls per open request, sequential over the claimed items)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'deadline' in open('_tools/bl_stall.py', encoding='utf-8').read().lower() else 1)"
+    ]
+  },
+  "repro_reason": "a slow forge cannot be reproduced offline; the text shows no total bound",
+  "touches": [
+    "_tools/bl_stall.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "BG-hdvzvy7l",
+  "kind": "bug",
+  "title": "bl_forge.target applies forge_project to every repository of a multi-repository workspace, so land can read the workspace's request as each repository's",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "In a workspace whose backlog.json declares repositories, a repository checkout's request read names that repository's own project (its origin URL), never forge_project, or check refuses forge_project beside a repositories map; found by the SP-dqkf3i42 review at _tools/bl_forge.py:259 (target, called from _tools/bl_land.py:998): with forge_project team/workspace and repos [api, web], land reads each repository's <id>: request in the workspace project, can take the workspace's merged request for theirs and remove their clean worktrees",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'repositor' in open('_tools/bl_forge.py', encoding='utf-8').read() else 1)"
+    ]
+  },
+  "repro_reason": "the failure needs a forge with two projects; the text shows bl_forge.target has no per-repository branch",
+  "touches": [
+    "_tools/bl_forge.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}

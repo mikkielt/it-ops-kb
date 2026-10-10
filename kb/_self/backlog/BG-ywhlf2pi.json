@@ -1,0 +1,25 @@
+{
+  "id": "BG-ywhlf2pi",
+  "kind": "bug",
+  "title": "The path setting type accepts a Windows drive path and backslash dot-dot, so scratch_dir can leave the clone on Windows",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_base's path type refuses a drive-letter path (C:/x), a backslash path and a .. segment written with backslashes, as it refuses / and .. today; found by the SP-dqkf3i42 review at _tools/bl_base.py:64",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_base; sys.exit(1 if bl_base._type_problem('path', 'C:/x') is None else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 review"
+  ]
+}
