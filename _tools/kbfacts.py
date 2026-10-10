@@ -1171,6 +1171,7 @@ def key_terms(text):
 
 CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
 NUMBER = re.compile(r"\d+(?:\.\d+)+")  # a decimal or dotted number: its dot parts alone do not match it
+VERSION_ID = re.compile(r"(?<![\d.])(\d)-(\d)(?![\d.])")  # a version a model id spells with a hyphen: claude-opus-5-5 is 5.5
 
 
 def terms(text, camel=True):
@@ -1183,6 +1184,7 @@ def terms(text, camel=True):
         parts = [t] + ([p for p in re.split(r"[.\-]", t) if p] if ("-" in t or "." in t) else [])
         if "-" in t:
             parts += [p for p in t.split("-") if NUMBER.fullmatch(p)]
+            parts += [f"{m[1]}.{m[2]}" for m in VERSION_ID.finditer(t)]
         if camel and ("_" in w or re.search(r"[a-z][A-Z]", w)):
             parts += [p.lower() for seg in re.split(r"[_.\-]", w) for p in CAMEL.findall(seg)]
         out += [stem(p) for p in dict.fromkeys(parts) if p not in STOP and len(p) > 1]
@@ -2506,7 +2508,14 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             order.append(art)
         by_art[art].append((s, u))
     best = scored[0][0] if scored else 0
-    order = [a for a in order if by_art[a][0][0] >= (0.5 if a.endswith(".md") else 0.65) * best][:max_articles]
+    order = [a for a in order if by_art[a][0][0] >= (0.5 if a.endswith(".md") else 0.65) * best]
+    # the article whose one unit holds the most informative key words leads, the others keep their score order: a data
+    # row that holds the question's words (a model's row of models.csv) outranks prose facts that each hold a rare
+    # word or two, and no tie or lead of the score changes
+    held = {a: max(sum(1 for t in informative if has(u, t)) for s, u in by_art[a] if s >= 0.4 * best) for a in order}
+    if order:
+        lead = max(order, key=lambda a: held[a])
+        order = ([lead] + [a for a in order if a != lead])[:max_articles]
     # an off-domain question (VMware Horizon, SAP GUI): its product is a rare name the kb mentions in passing, and no
     # line the pack could print holds it, whatever the other words match
     if verdict != "none":
@@ -2553,8 +2562,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         if rules:
             picked = taken[art]
         else:
-            picked = sorted(sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6],
-                            key=lambda x: x[1]["line"])
+            picked = sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]
+            if not art.endswith(".csv"):  # facts read in article order; rows of a table go by score, so the budget cuts the weakest
+                picked.sort(key=lambda x: x[1]["line"])
         items = []
         one_section = len({u["section"] for _, u in picked}) == 1  # rule docs: the heading once, else on each line
         for s, u in picked:
