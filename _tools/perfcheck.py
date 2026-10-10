@@ -340,12 +340,30 @@ def dropped_warnings(root, text, only=None):
 RETIRED_PHRASE = "live-module calls went with"  # a retired feature's dropped tests: the live module's calls went too
 
 
+def own_names(ids):
+    """Every form the dropped IDS name themselves by: the whole id, the id without its parametrization, and each of its
+    parts (the file path and its basename, the class, the test function)."""
+    out = set()
+    for i in ids:
+        base = i.partition("[")[0]
+        parts = base.split("::")
+        out |= {i, base, *parts, parts[0].rsplit("/", 1)[-1]}
+    return out
+
+
+def is_own(tok, own):
+    """True when TOK, a reason's token, is one of the OWN names of the dropped ids, with or without a parametrization,
+    or an id built only of such parts."""
+    base = tok.partition("[")[0]
+    return tok in own or base in own or all(p in own or p.rsplit("/", 1)[-1] in own for p in base.split("::"))
+
+
 def names_removed(reason, root, code, skip=()):
-    """True when REASON names a file that no longer exists, or a symbol or flag the code no longer holds; a token whose
-    last path part is in SKIP (the dropped ids' own files and tests) names nothing."""
+    """True when REASON names a file that no longer exists, or a symbol or flag the code no longer holds; a token that
+    is one of SKIP (the dropped ids' own names, see own_names) names nothing."""
     for m in REASON_TOKEN.finditer(reason or ""):
         tok = next(g for g in m.groups() if g)
-        if m.group(5) or tok.rsplit("/", 1)[-1] in skip:
+        if m.group(5) or is_own(tok, skip):
             continue
         if tok.endswith(".py"):
             if not (Path(root) / tok).exists() and not (Path(root) / "_tools" / Path(tok).name).exists():
@@ -360,14 +378,15 @@ def names_successor(reason, ids, root, code):
     not one of the dropped ids' own, or a test file (`test_*.py`) that exists and is not the dropped one; or it says the
     live module's calls went with a retired feature (RETIRED_PHRASE) and names a removed module, file or symbol that is
     not one of the dropped ids' own file or test. A reason that names only the dropped test or its file, with or without
-    that phrase, or a removed module without that phrase, excuses nothing."""
-    gone = {i.split("::")[-1] for i in ids} | {i.split("::")[0].rsplit("/", 1)[-1] for i in ids}
+    that phrase, or a removed module without that phrase, excuses nothing; a dropped id's own names are its file, its
+    class, its test, its whole id and the test's name without its parametrization."""
+    gone = own_names(ids)
     if RETIRED_PHRASE in (reason or "") and names_removed(reason, root, code, gone):
         return True  # a retired feature: its live modules' calls went with the removed code the reason names
     for m in REASON_TOKEN.finditer(reason or ""):
         tok = next(g for g in m.groups() if g)
         name = tok.rsplit("/", 1)[-1]
-        if name in gone:
+        if is_own(tok, gone):
             continue
         if m.group(5) and re.search(rf"\bdef {re.escape(tok)}|\bclass {re.escape(tok)}", code):
             return True
