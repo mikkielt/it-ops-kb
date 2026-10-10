@@ -1,0 +1,27 @@
+{
+  "id": "ST-4oe42lzk",
+  "kind": "story",
+  "title": "backlog.py check warns of an item whose goal adds a backlog.json setting or routes calls through another module without that file in its touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "check warns, for an open item, when its goal names a new setting and its touches lack backlog.json, or names a module its calls go through (such as bl_forge) that its touches lack, or changes a _tools module whose kb/_self/map.csv docs (kb/_self/code.md) its touches lack; in SP-dqkf3i42 five of nine tasks had touches widened at dispatch and two workers stopped on a gate or a patch for a file outside them (TK-g4c5kxsc backlog.json, TK-uwu2lgvo bl_forge.py, ST-zmepvwav test_backlog_portable.py)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_touches_setting_module"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 close"
+  ]
+}

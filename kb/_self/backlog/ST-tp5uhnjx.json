@@ -1,0 +1,25 @@
+{
+  "id": "ST-tp5uhnjx",
+  "kind": "story",
+  "title": "Plan runs a premise for each task goal clause that names behaviour the tree already has",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Plan step 6 runs a premise for each committed task whose goal names existing behaviour it changes (such as claim's refusal of a held path), not only for stories, so a clause the tree does not have is reshaped before the start; in SP-dqkf3i42 TK-mzssxnf6's goal named claim's refusal of a held path, which claim never had, and the worker had to gate it (g2) to drop the clause",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'premise for each committed task' in open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 close"
+  ]
+}

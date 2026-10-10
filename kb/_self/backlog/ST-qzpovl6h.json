@@ -1,0 +1,28 @@
+{
+  "id": "ST-qzpovl6h",
+  "kind": "story",
+  "title": "A worker whose gate the class rule makes blocking goes on with the recommendation and the landing waits for the operator's answer",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When gate add makes a worker's open choice blocking by its class (push, agents-rule) and the worker's recommendation is implementable, the worker finishes the work on the recommendation and land refuses until the operator answers, instead of the worker stopping; in SP-dqkf3i42 workers stopped or recorded blocking gates on seven tasks (TK-uwu2lgvo twice, TK-g4c5kxsc, TK-7k2p3vif, TK-mialzcmq, TK-d556hzob, TK-mzssxnf6, TK-3zfpmq4u, TK-g67asvm5) and three needed a resumed session only to carry out a plan the orchestrator then approved unchanged",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "blocking_gate_worker_goes_on"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/bl_land.py",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 close"
+  ]
+}

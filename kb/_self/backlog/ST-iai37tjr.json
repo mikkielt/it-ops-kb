@@ -1,0 +1,26 @@
+{
+  "id": "ST-iai37tjr",
+  "kind": "story",
+  "title": "precheck warns when a sprint's committed selectors that collect no test outnumber the ids the test ceiling has left",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py precheck SP counts the committed items' check selectors that collect no test yet and the free ids of _tools/tests_ceiling.json, and warns before the start gate when the selectors outnumber them, so the plan decides up front which tests extend existing ones; SP-dqkf3i42 started with 97 of 100 ids used and nine selectors to collect, and the orchestrator had to tell every open task mid-run to rename and extend tests instead",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'tests_ceiling' in open('_tools/bl_plan.py', encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 close"
+  ]
+}

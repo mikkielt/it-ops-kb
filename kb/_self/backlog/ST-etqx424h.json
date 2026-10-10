@@ -1,0 +1,28 @@
+{
+  "id": "ST-etqx424h",
+  "kind": "story",
+  "title": "dispatch's turn cap for a code task that creates a module or edits bl_land.py fits the work",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "dispatch's default --max-turns for a task reflects its size (a new module with tests and docs, or an edit of a large module such as bl_land.py), so a task worker does not stop at the cap with its work uncommitted; in SP-dqkf3i42 TK-g4c5kxsc stopped at 60 turns with staged gates and was resumed, and every later task was dispatched at 100 by hand (TK-mialzcmq used 102, TK-g67asvm5 122 over two passes)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dispatch_turn_cap"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-dqkf3i42 close"
+  ]
+}
