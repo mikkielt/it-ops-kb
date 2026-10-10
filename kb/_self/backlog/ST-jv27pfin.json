@@ -2,7 +2,7 @@
   "id": "ST-jv27pfin",
   "kind": "story",
   "title": "precheck says which part of a check fails, and planning checks pool rows with bench_pool's own predicates",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "priority": "P2",
   "rank": 0,
@@ -73,5 +73,27 @@
     "parked: SP-yzgetyu2 close"
   ],
   "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: backlog.py precheck SP prints nothing for a failing check (the item's first check, which runs a throwaway sprint whose story's check prints 1234567 and exits 1). Run at plan 2026-10-10: exit 1, 1234567 is absent from precheck's output on the base, so the premise reproduces; the second check reads the plan section for bench_pool and path_only and fails on the base too. Selector: no test is named, so the check is a behavioural probe and a worker may add a test. 2026-10-10 run: the worker found precheck's code in _tools/bl_land.py (cmd_precheck, precheck_rows), not bl_items.py; bl_land.py added to touches. It waits for TK-lwihhcmj (same file) to land, then the same worker resumes.",
-  "claimed_by": "worker-ST-jv27pfin"
+  "evidence": {
+    "commit": "952949e09149e53435efd7c4f0280b2e81fd9894",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys,tempfile;d=tempfile.mkdtemp();R=lambda*a:subprocess.run([sys.executable,'_tools/backlog.py','--root',d,*a],capture_output=True,text=True);subprocess.run(['git','init','-q',d],check=True);s=re.search(r'SP-\\w{8}',R('new','sprint','--title','T','--goal','G').stdout).group(0);R('new','story','--title','P','--goal','G','--sprint',s,'--touch','x.txt','--check','python3 -c \"import sys;print(1234567);sys.exit(1)\"');p=R('precheck',s);ok='1234567' in p.stdout+p.stderr;print('precheck prints the output of a failing check:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "af9a7cba9e72d53c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();p=t.split('## plan')[1].split('## start SP')[0];ok='bench_pool' in p and 'path_only' in p;print('plan step names the pool predicates:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "16dba22261a2610c"
+      }
+    ]
+  }
 }
