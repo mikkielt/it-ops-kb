@@ -2,7 +2,7 @@
   "id": "ST-3nzrmjkh",
   "kind": "story",
   "title": "Research sprint goal: Planning rules 2: plan-time warnings and probes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-avwlotax",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Goal questions packed at plan 2026-10-10 (rag.py pack -q): (1) what git rev-parse --git-common-dir returns in a linked worktree: good, public/gitlab/git-test-repositories.md:70,74,78; (2) where Claude Code creates a subagent's isolation worktree: good, public/claude/skills-and-subagents.md:76,78 (its location under the main checkout's .claude/worktrees was observed in SP-befc6yqr, not a kb fact). Every other clause changes _tools, skills or kb/_self rules. Its done needs 'No outside facts: the sprint changes _tools, skills and kb/_self rules; the two outside questions pack good'."
+  "notes": "No outside facts: the sprint changes _tools, skills and kb/_self rules; the two outside questions pack good. Pack run 2026-10-10: Q1 (git rev-parse --git-common-dir in a linked worktree) good, public/gitlab/git-test-repositories.md; Q2 (where Claude Code creates a subagent's isolation worktree) good, public/claude/skills-and-subagents.md.",
+  "claimed_by": "orch-avwlotax"
 }
