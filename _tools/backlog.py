@@ -158,9 +158,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py tidy [--apply]               list the clone's merged work/*, worktree-agent-* and orch/* branches and
                                           its clean agent-* worktrees, each other one with why it stays; --apply
                                           removes the listed ones (never --force)
-  backlog.py horizon [--sprint ID] [--hook]   how far each active sprint can go without the operator: reachable
+  backlog.py horizon [--sprint ID] [--hook [--opt-in]]   how far each active sprint can go without the operator: reachable
                                           items, what waits on which gate or trigger, the critical path, the
-                                          knowledge state of the next item's asks and refs (--hook runs no pack)
+                                          knowledge state of the next item's asks and refs (--hook runs no pack;
+                                          --opt-in: only when backlog.json's `hooks` names horizon)
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope; then
                                           the answered gates of its parent chain, which its work keeps to
   backlog.py brief ID [--known TEST=BUG]... [--probe TEXT]
@@ -224,7 +225,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           unverified (naming any gate jobs) or unreadable; a bug's repro is --status
                                           --job <its first failed job> when its script ran, else --status. --hook:
                                           the async SessionStart form, silent
-  backlog.py intake [--file [--hook] | --status FINGERPRINT] [--network]
+  backlog.py intake [--file [--hook [--opt-in]] | --status FINGERPRINT] [--network]
                                           the candidates of every detector in bl_intake.DETECTORS (deterministic: the
                                           repository's files, no network, no model; --network adds the `ci` detector,
                                           which reads main's newest pipeline as red-pipeline does and files the same
@@ -245,7 +246,8 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           --file --hook, offline): silent, exit 0 always, runs drift after the other
                                           detectors, stops waiting for them after
                                           INTAKE_HOOK_BUDGET_S and files what the finished ones found, as uncommitted
-                                          drafts, never commits or pushes
+                                          drafts, never commits or pushes. --opt-in (the plugin's entry): nothing
+                                          runs unless backlog.json's `hooks` names intake
   backlog.py stalled [--json]               each claimed or ready item with its stall signals (bl_stall.py), read
                                           only
   backlog.py config                         the project settings (backlog.json at the root, or the file
@@ -287,7 +289,7 @@ import bl_land  # noqa: F401 - registers its commands
 import bl_plan  # noqa: F401 - registers its commands
 import bl_view  # noqa: F401 - registers its commands
 from bl_base import Backlog, COMMITS, OUTPUT_ROOT, ROOT, Refused, Rejected, cmd_config, load_settings, rel_dir
-from bl_base import trailer_problem, withhold
+from bl_base import setting, trailer_problem, withhold
 from bl_base import canonical, in_scope, waits  # noqa: F401 - tests read them as backlog.NAME
 from bl_check import item_files_only, validate  # noqa: F401 - tests read them as backlog.NAME
 from bl_land import run_check, own_failure  # noqa: F401 - tests read them as backlog.NAME
@@ -332,6 +334,8 @@ def main(argv=None):
     OUTPUT_ROOT[0] = a.root
     for s in (sys.stdout, sys.stderr):  # refusals go to stderr; on Windows a pipe defaults to the ANSI code page
         s.reconfigure(encoding="utf-8")
+    if a.cmd in ("horizon", "intake") and a.hook and a.opt_in and a.cmd not in setting("hooks"):
+        return 0  # the plugin's entry in a project whose backlog.json leaves the hook off: nothing printed, nothing filed
     if a.cmd == "red-pipeline" and a.hook:  # async SessionStart: files a bug at most, prints nothing, never fails
         try:
             cmd_red_pipeline(Backlog(a.root), a)
@@ -350,6 +354,8 @@ def main(argv=None):
             return 0
     bl = Backlog(a.root)
     try:
+        if getattr(a, "opt_in", False) and not a.hook:
+            raise Refused("--opt-in goes with --hook")
         if a.cmd in COMMITS + ("land",):  # before the command writes anything
             if a.trailer and not getattr(a, "commit", True):
                 raise Refused("--trailer goes with --commit")
