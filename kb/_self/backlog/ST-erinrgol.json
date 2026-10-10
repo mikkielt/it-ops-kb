@@ -1,0 +1,27 @@
+{
+  "id": "ST-erinrgol",
+  "kind": "story",
+  "title": "A sprint's goal can be rewritten by the operator when a gate re-answer narrows a clause",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-qxcj7fgy: the operator re-answered ST-yn3fa5ts gate g2 at the start so release keeps classing push, but set refuses goal on a sprint, so the sprint goal and close --summary still name a clause (a bare release no longer classes push) that the sprint deliberately does not deliver, recorded only in the sprint's notes. set SP --goal G --by operator rewrites a planned or active sprint's goal, or close --summary marks a clause narrowed by a gate answer recorded in the sprint's notes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); f=t+\"/_backlog/SP-testtest.json\"; open(f,\"w\").write(json.dumps({\"id\":\"SP-testtest\",\"kind\":\"sprint\",\"title\":\"t\",\"status\":\"active\",\"goal\":\"old\"})); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"set\",\"SP-testtest\",\"--goal\",\"new\",\"--by\",\"operator\"],capture_output=True,text=True); sys.exit(0 if p.returncode==0 and json.load(open(f))[\"goal\"]==\"new\" else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-qxcj7fgy close"
+  ]
+}

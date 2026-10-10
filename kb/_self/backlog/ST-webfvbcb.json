@@ -1,0 +1,26 @@
+{
+  "id": "ST-webfvbcb",
+  "kind": "story",
+  "title": "backlog.py new bug refuses a repro whose program check refuses",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retrospective of SP-qxcj7fgy: ST-7avb5uo6's worker filed BG-77i2lwmr with a grep repro; new accepted it, the worker's backlog.py check ran before the filing, and land stopped at the sync gate (backlog.py check errors=1, and three test_land_e2e tests that copy the backlog) until the orchestrator rewrote the repro on the branch. new bug, set --repro and set --check refuse a program that bl_intake.check_program_refusal refuses, with exit 2 and nothing written, so a worker's filed bug never fails the landing gate.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"b\",\"--severity\",\"S3\",\"--goal\",\"g\",\"--repro\",\"grep -q zzzzqqqq _tools/backlog.py\",\"--repro-reason\",\"the defect is a docstring line\"],capture_output=True,text=True); sys.exit(0 if p.returncode==2 and os.listdir(t+\"/_backlog\")==[] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-qxcj7fgy close"
+  ]
+}

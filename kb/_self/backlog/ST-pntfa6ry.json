@@ -1,0 +1,26 @@
+{
+  "id": "ST-pntfa6ry",
+  "kind": "story",
+  "title": "An item that adds or changes a backlog.py verb, flag or refusal carries the facade's usage text and the skills that run that command in its touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-qxcj7fgy: three workers added verbs or flags (gate remove, gate host-unchecked, answer --free) or a refusal (new --sprint without --touch) with the usage docstring of _tools/backlog.py and the skills that run the command outside their touches, so they filed BG-5orqmy7i and BG-77i2lwmr for the usage text and the review found ST-j743ue7u and ST-tvnxvfjp for the skills. backlog.py check warns of an item whose goal names a new backlog.py verb or flag, or a new refusal, without _tools/backlog.py and the skills that run that command (backlog.py referrers) in its touches, as plan step 2 asks for every consumer of a changed tool route.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); open(t+\"/_backlog/ST-testtest.json\",\"w\").write(json.dumps({\"id\":\"ST-testtest\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"priority\":\"P3\",\"goal\":\"backlog.py gate retitle ID GATE is a new verb that rewords a gate\",\"touches\":[\"_tools/bl_items.py\"],\"checks\":[{\"run\":[\"python3\",\"_tools/backlog.py\",\"check\"]}]})); r=lambda *a: subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,*a],capture_output=True,text=True); r(\"fmt\"); p=r(\"check\"); sys.exit(0 if any(\"ST-testtest\" in l and \"touches\" in l and \"_tools/backlog.py\" in l for l in (p.stdout+p.stderr).splitlines()) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-qxcj7fgy close"
+  ]
+}
