@@ -89,6 +89,17 @@
       },
       "answer": "only with two or more shared words, labelled similar open item outside the sprint",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does move print the goal clause an item leaves behind for every move out of a sprint (planned or active, to none or to another sprint), or only for --sprint none out of a planned sprint?",
+      "options": [
+        "every move out of a sprint",
+        "only --sprint none out of a planned sprint"
+      ],
+      "recommendation": "every move out of a sprint",
+      "class": "agents-rule"
     }
   ],
   "links": [
