@@ -32,7 +32,10 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "_tools/backlog.py",
+    "_tools/bl_land.py",
+    "_tools/bl_cli.py"
   ],
   "gates": [
     {
@@ -67,6 +70,36 @@
       },
       "class": "agents-rule",
       "answer": "backlog.json at the repository root, KB_BACKLOG_CONFIG in the environment overrides the path; nothing under .claude/, which headless sessions cannot write in default or acceptEdits mode",
+      "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does backlog.py config print the settings, and what does it exit with on a refused backlog.json?",
+      "options": [
+        "one line per key as 'key = JSON value  (file|default)' after a line naming the file read, exit 0; a refused file exits 2 naming each key, printing no settings",
+        "a JSON object of key, value and source, exit 0; a refused file exits 1"
+      ],
+      "recommendation": "one line per key as 'key = JSON value  (file|default)' after a line naming the file read, exit 0; a refused file exits 2 naming each key, printing no settings",
+      "class": "agents-rule",
+      "answer": "one line per key as 'key = JSON value  (file|default)' after a line naming the file read, exit 0; a refused file exits 2 naming each key, printing no settings",
+      "by": "operator"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Which keys does backlog.json have for the land steps, the lane module, the worktree directory and the forge project, which bl_land does not read yet?",
+      "options": [
+        "land_stale, land_eval and land_lint each an argv list (empty for no such step), lane_module a module name, worktree_dir a relative path, forge_project a string (empty: read from the integration remote's URL)",
+        "one land_steps object keyed stale, eval and lint, and the lane, worktree and forge settings nested under a project object"
+      ],
+      "recommendation": "land_stale, land_eval and land_lint each an argv list (empty for no such step), lane_module a module name, worktree_dir a relative path, forge_project a string (empty: read from the integration remote's URL)",
+      "do": {
+        "land_stale, land_eval and land_lint each an argv list (empty for no such step), lane_module a module name, worktree_dir a relative path, forge_project a string (empty: read from the integration remote's URL)": "ST-qgnjxiol",
+        "one land_steps object keyed stale, eval and lint, and the lane, worktree and forge settings nested under a project object": "ST-qgnjxiol"
+      },
+      "class": "push",
+      "answer": "land_stale, land_eval and land_lint each an argv list (empty for no such step), lane_module a module name, worktree_dir a relative path, forge_project a string (empty: read from the integration remote's URL)",
       "by": "operator"
     }
   ],

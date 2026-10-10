@@ -1,18 +1,123 @@
-"""The shared ground of backlog.py's modules (kb/_self/backlog.md): the constants, the two refusals, the Backlog class
-that reads and writes the item files, git and the command runner, the scope helpers, the host and user name guard
-behind everything the tool prints, the helpers that commit the item files a command wrote, and what an item waits on
-(`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
+"""The shared ground of backlog.py's modules (kb/_self/backlog.md): the project settings (`SETTINGS`, read once from
+backlog.json by `read_settings`, with the kb's current values as the defaults) and the constants made from them, the
+two refusals, the Backlog class that reads and writes the item files, git and the command runner, the scope helpers,
+the host and user name guard behind everything the tool prints, the helpers that commit the item files a command
+wrote, and what an item waits on (`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
-import base64, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile
+import base64, copy, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-REL_DIR = "kb/_self/backlog"
-KINDS = {"epic": "EP", "story": "ST", "task": "TK", "subtask": "SB", "bug": "BG", "sprint": "SP"}
+
+# ------------------------------------------------------------------ project settings
+
+CONFIG_NAME = "backlog.json"  # at the repository root
+CONFIG_ENV = "KB_BACKLOG_CONFIG"  # a path in the environment: read from there instead of the root's file
+KIND_NAMES = ("epic", "story", "task", "subtask", "bug", "sprint")
+# One place lists the settings: key -> (type, the kb's current value). A type is a TYPES name; a key not here is refused
+# in backlog.json, and a key the file leaves out takes its value from here.
+SETTINGS = {
+    "item_dir": ("path", "kb/_self/backlog"),  # the item files, under the root
+    "id_prefixes": ("prefixes", {"epic": "EP", "story": "ST", "task": "TK", "subtask": "SB", "bug": "BG",
+                                 "sprint": "SP"}),
+    "always_in_scope": ("strs", ["kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md"]),  # any item's
+    "review_checks": ("checks", [{"run": ["python3", "_tools/backlog.py", "check"]},
+                                 {"run": ["python3", "_tools/tests.py"]}]),  # the review story's, once
+    "research_checks": ("checks", [{"run": ["python3", "_tools/backlog.py", "researched", "{id}"]}]),  # `{id}`: the story
+    "land_stale": ("argv", ["_tools/selfdoc.py", "stale", "--since"]),  # + the integration main; [] = no such step
+    "land_eval": ("argv", ["_tools/rag.py", "eval"]),
+    "land_lint": ("argv", [".claude/skills/kb-verify/lint.py"]),
+    "lane_module": ("module", "kblane"),  # the module that says which lane a path belongs to
+    "worktree_dir": ("path", ".claude/worktrees"),  # a worker's worktrees, under the clone's main checkout
+    "forge_project": ("str", ""),  # the forge project of the integration remote; "" = read from the remote's URL
+}
+
+
+class ConfigError(Exception):
+    """backlog.json (or the file KB_BACKLOG_CONFIG names) cannot be read or holds a key `read_settings` refuses."""
+
+
+def _type_problem(kind, v):
+    """Why V is no value of the settings type KIND (the type names SETTINGS uses), or None."""
+    def strs(x):
+        return isinstance(x, list) and all(isinstance(s, str) for s in x)
+    if kind == "str":
+        return None if isinstance(v, str) else "a string"
+    if kind == "path":
+        ok = isinstance(v, str) and v != "" and not v.startswith("/") and ".." not in v.split("/")
+        return None if ok else "a non-empty path with forward slashes, relative to the root, with no `..`"
+    if kind == "module":
+        return None if isinstance(v, str) and v.isidentifier() else "a Python module name"
+    if kind == "strs":
+        return None if strs(v) else "a list of strings"
+    if kind == "argv":
+        return None if strs(v) else "a list of strings (the command's arguments; [] for no step)"
+    if kind == "checks":
+        ok = isinstance(v, list) and all(
+            isinstance(c, dict) and strs(c.get("run")) and c["run"] and set(c) <= {"run", "exit", "match"}
+            and type(c.get("exit", 0)) is int and isinstance(c.get("match", ""), str) for c in v)
+        return None if ok else 'a list of checks, each {"run": [argv], "exit": N, "match": REGEX} with a non-empty run'
+    if kind == "prefixes":
+        ok = (isinstance(v, dict) and set(v) == set(KIND_NAMES)
+              and all(isinstance(p, str) and re.fullmatch(r"[A-Z]{2}", p) for p in v.values())
+              and len(set(v.values())) == len(v))
+        return None if ok else ("an object with one distinct two-capital-letter prefix for each of "
+                                + ", ".join(KIND_NAMES))
+    raise ValueError(f"unknown settings type {kind!r}")
+
+
+def config_path(root, env=None):
+    env = os.environ if env is None else env
+    given = env.get(CONFIG_ENV)
+    return Path(given) if given else Path(root) / CONFIG_NAME
+
+
+def read_settings(root, env=None):
+    """(values, sources, path, problems): the effective project settings of the repository at ROOT. Each key of
+    SETTINGS takes the file's value (source "file") or the kb's own (source "default"); a key the file holds wrongly
+    keeps its default and gives a problem naming it. No file at the root is no problem (all defaults); a
+    KB_BACKLOG_CONFIG that names no file is."""
+    env = os.environ if env is None else env
+    path = config_path(root, env)
+    values = {k: copy.deepcopy(d) for k, (_, d) in SETTINGS.items()}
+    sources = dict.fromkeys(SETTINGS, "default")
+    problems = []
+    named = path.name if path.parent == Path(root) else str(path)
+    if path.is_file():
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("not a JSON object")
+        except (OSError, ValueError) as e:  # json.JSONDecodeError is a ValueError
+            data, problems = {}, [f"{named}: {e}"]
+        for k, v in data.items():
+            if k not in SETTINGS:
+                problems.append(f"{named}: unknown key {k!r} (keys: {', '.join(SETTINGS)})")
+                continue
+            why = _type_problem(SETTINGS[k][0], v)
+            if why:
+                problems.append(f"{named}: key {k!r} must be {why}")
+                continue
+            values[k], sources[k] = v, "file"
+    elif env.get(CONFIG_ENV):
+        problems.append(f"{CONFIG_ENV} names {path}, which is no file")
+    return values, sources, path, problems
+
+
+def setting(name):
+    """The effective value of one project setting, as read when this module loaded (the repository root's, or
+    KB_BACKLOG_CONFIG's, backlog.json): the one function the other modules read a setting through."""
+    return copy.deepcopy(_LOADED[0][name])
+
+
+_LOADED = read_settings(ROOT)
+REL_DIR = setting("item_dir")
+KINDS = {k: setting("id_prefixes")[k] for k in KIND_NAMES}
 PREFIX_KIND = {v: k for k, v in KINDS.items()}
-ID_RE = re.compile(r"\b(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}\b")
+ID_RE = re.compile(r"\b(?:" + "|".join(KINDS.values()) + r")-[a-z2-7]{8}\b")
+
 STATUSES = ("draft", "todo", "doing", "done", "dropped")
 WORKED = ("todo", "doing", "done")  # statuses an item of a planned sprint cannot have: it stays draft until start
 SPRINT_STATUSES = ("planned", "active")
@@ -34,7 +139,7 @@ ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_re
          "links", "notes", "delegates", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
 # files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
-ALWAYS_IN_SCOPE = ("kb/_self/backlog/**", "kb/*/_coverage.csv", "kb/*/_coverage.md")
+ALWAYS_IN_SCOPE = tuple(setting("always_in_scope"))
 CHECK_TIMEOUT_S = 1800
 ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]|\x1b\][^\x07]*\x07")  # colour and title codes a check prints
 TEXT_MAX = 2000  # one field's text; a longer one is an essay, not a work item
@@ -43,7 +148,7 @@ APPROVALS = ("approve", "approved", "yes")  # the start gate's answers that let 
 # horizon's cause for the items of a sprint the operator approved but nobody started: backlog.py start is what remains,
 # not a question for the operator (a "change" or "cancel" answer is no approval and stays the operator's question)
 STARTS = "the sprint's start: approved, not started; run python3 _tools/backlog.py start "
-SPRINT_ID_RE = re.compile(r"SP-[a-z2-7]{8}")
+SPRINT_ID_RE = re.compile(KINDS["sprint"] + r"-[a-z2-7]{8}")
 OPEN = ("draft", "todo", "doing")
 # similar and new: an open item whose title and goal hold at least SIMILAR_MIN of the query's words, and at least
 # SIMILAR_WORDS of them, is a near-duplicate; words are lowercased runs of letters and digits, stop words left out
@@ -53,11 +158,11 @@ SIMILAR_SHOWN = 10
 STOP_WORDS = frozenset("""a an and are as at be by for from has have in into is it its of on or that the their them
     then there these this those to was were what when which with without""".split())
 RECURRING_MIN = 2  # start: an open P1 item with this many sprint ids in its recurs list belongs in the sprint
-REVIEW_CHECKS = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]  # once, before review
+REVIEW_CHECKS = setting("review_checks")  # once, before review
 # the goal research story's: its research is written (a work commit naming it, or its notes' `No outside facts:`), so
 # it fails until then; `new sprint` fills RESEARCH_ID with the story's id
 RESEARCH_ID = "{id}"
-RESEARCH_CHECKS = [{"run": ["python3", "_tools/backlog.py", "researched", RESEARCH_ID]}]
+RESEARCH_CHECKS = setting("research_checks")
 
 
 class Refused(Exception):
@@ -87,6 +192,7 @@ class Backlog:
         self.items, self.raw, self.load_errors = {}, {}, []
         self.withheld = set()  # items holding a piece of a host or user name: label() never prints their title
         self.written = []  # repository paths of the item files this run wrote or deleted, first first (--commit)
+        self.load_errors += read_settings(self.root)[3]  # a backlog.json `check` refuses naming its key
         if self.dir.is_dir():
             for p in sorted(self.dir.glob("*.json")):
                 text = p.read_text(encoding="utf-8")
@@ -474,6 +580,20 @@ def need(bl, iid):
     if iid not in bl.items:
         raise KeyError(iid)
     return iid
+
+
+def cmd_config(bl, a):
+    """`config`: the effective project settings of the repository, one line each with its value and where it came
+    from (file: backlog.json or the KB_BACKLOG_CONFIG file; default: the kb's own value). A file with a problem is
+    refused, each problem naming its key (exit 2), and nothing is printed of the settings."""
+    values, sources, path, problems = read_settings(bl.root)
+    if problems:
+        raise Rejected("\n".join(problems))
+    shown = path.name if path.parent == Path(bl.root) else str(path)
+    say(f"{shown}: " + ("read" if path.is_file() else "absent, every value is the default"))
+    for k in SETTINGS:
+        say(f"{k} = {json.dumps(values[k], ensure_ascii=False)}  ({sources[k]})")
+    return 0
 
 
 # ------------------------------------------------------------------ readiness

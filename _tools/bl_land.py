@@ -10,14 +10,14 @@ time windows of the detectors that `precheck` names) and never `backlog`. The br
 `kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `researched`, `land`, `merge` and `close` with `bl_cli` itself when
 imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
-import argparse, datetime, hashlib, json, os, re, shlex, shutil, subprocess, sys, time
+import argparse, datetime, hashlib, importlib, json, os, re, shlex, shutil, subprocess, sys, time
 from pathlib import Path
 
 import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, ID_RE, REL_DIR, colourless_env, run_check, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
-    need, run, say, scope, waits,
+    need, run, say, scope, setting, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 
@@ -43,7 +43,8 @@ def unlanded_code(root, ids):
     when the ref is missing and there is a code-lane commit. The owners are the ids the late commits name, first seen
     first, for the code/<id> branches sync opened. Content-lane commits never count; a commit's paths are
     kblane.commit_paths', which leaves out a .gitattributes change confined to the pinned block."""
-    import kblane, kbpublic
+    import kbpublic
+    kblane = importlib.import_module(setting("lane_module"))
     remote = kbpublic.integration_remote(root)
     code = []
     for sha, paths in item_commits(root, ids).items():
@@ -370,11 +371,12 @@ def cmd_done(bl, a):
 
 
 # land: the steps after a worker's branch comes back, each a command run from the clone's root with this interpreter
-LAND_STALE = ("stale", ["_tools/selfdoc.py", "stale", "--since"])  # + the integration main; seconds, so it runs first
+# each step's command is a project setting (backlog.json); an empty one is a step the project does not have
+LAND_STALE = ("stale", setting("land_stale"))  # + the integration main; seconds, so it runs first
+LAND_EVAL = ("rag.py eval", setting("land_eval"))
+LAND_LINT = ("lint", setting("land_lint"))  # a landing that changes articles and not _tools/ runs it on those articles' paths only
 # run once, when the landing changes _tools/; the full tests.py is no step here: it runs once at the sprint's review story
-LAND_HEAVY = (("rag.py eval", ["_tools/rag.py", "eval"]),
-              ("lint", [".claude/skills/kb-verify/lint.py"]))
-LAND_LINT = LAND_HEAVY[1]  # a landing that changes articles and not _tools/ runs it on those articles' paths only
+LAND_HEAVY = tuple(step for step in (LAND_EVAL, LAND_LINT) if step[1])
 LAND_SYNC = ("kbgit.py sync --push", ["_tools/kbgit.py", "sync", "--push"])
 LAND_TAIL = 30  # output lines shown of a step that passed (sync's report is shown whole)
 
@@ -532,7 +534,7 @@ def checked_out_elsewhere(root, branch):
 
 # the lock Claude Code puts on a subagent's worktree, which outlives the agent when it left background work running
 WORKER_LOCK = "claude agent"
-WORKER_DIR = (".claude", "worktrees")  # under the clone's main checkout
+WORKER_DIR = tuple(setting("worktree_dir").split("/"))  # under the clone's main checkout
 WORKER_NAME = "agent-"  # how the Agent tool names a worker's isolation worktree: an unlocked one is removed only so
 WORK_PREFIX = "work/"  # the local branch a worker commits on: land deletes it once it has landed
 AGENT_BRANCH = "worktree-"  # + the worktree's name: the branch the Agent tool made the worker's worktree on
@@ -793,6 +795,7 @@ def stuck_merge_request(root, remote, branch):
     forge, host, project = origin_forge(url)
     if forge != "gitlab":
         return None
+    project = setting("forge_project") or project
     quoted = urllib.parse.quote(project, safe="")
     listed, _, _ = forge_list(url, run, None, lambda p: (
         f"projects/{p}/merge_requests?state=opened&source_branch={urllib.parse.quote(branch, safe='')}"
@@ -1314,12 +1317,13 @@ def land_once(bl, a):
             land_checks(bl, iid)
         changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
-            land_run(root, LAND_STALE[0], [*LAND_STALE[1], upstream])  # a missing Self-Reviewed fails in seconds
+            if LAND_STALE[1]:
+                land_run(root, LAND_STALE[0], [*LAND_STALE[1], upstream])  # a missing Self-Reviewed fails in seconds
             for step, argv in LAND_HEAVY:
                 land_run(root, step, argv)
         else:  # lint.py takes qualified article paths: the changed articles only, before sync --push
             articles = changed_articles(changed)
-            if articles:
+            if articles and LAND_LINT[1]:
                 land_run(root, LAND_LINT[0], [*LAND_LINT[1], *articles])
         land_run(root, *LAND_SYNC, whole=True)
         if late:
@@ -1956,6 +1960,7 @@ def merge_target(bl, iid):
     forge, host, project = origin_forge(url)
     if forge != "gitlab":
         raise Refused(f"the integration remote {remote} is on {forge}, not GitLab")
+    project = setting("forge_project") or project
     return f"code/{iid}", f"https://{host}/{project}"
 
 

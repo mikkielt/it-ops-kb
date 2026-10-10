@@ -1,0 +1,56 @@
+{
+  "item_dir": "kb/_self/backlog",
+  "id_prefixes": {
+    "epic": "EP",
+    "story": "ST",
+    "task": "TK",
+    "subtask": "SB",
+    "bug": "BG",
+    "sprint": "SP"
+  },
+  "always_in_scope": [
+    "kb/_self/backlog/**",
+    "kb/*/_coverage.csv",
+    "kb/*/_coverage.md"
+  ],
+  "review_checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "research_checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "{id}"
+      ]
+    }
+  ],
+  "land_stale": [
+    "_tools/selfdoc.py",
+    "stale",
+    "--since"
+  ],
+  "land_eval": [
+    "_tools/rag.py",
+    "eval"
+  ],
+  "land_lint": [
+    ".claude/skills/kb-verify/lint.py"
+  ],
+  "lane_module": "kblane",
+  "worktree_dir": ".claude/worktrees",
+  "forge_project": ""
+}
