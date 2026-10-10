@@ -876,67 +876,34 @@ def delete_landed_branch(root, branch, upstream, who="land", prefixes=None):
 STUCK_PIPELINES = ("skipped",)
 
 
-def mr_stuck(mr):
-    """True for a GitLab merge request, as the single-request API (`projects/:id/merge_requests/:iid`) answers it,
-    that is open, mergeable (`detailed_merge_status` mergeable; `merge_status` can_be_merged on a GitLab without the
-    detailed field), set to auto-merge, and whose head pipeline ended in a state in STUCK_PIPELINES: auto-merge waits
-    for a pipeline to succeed, which a skipped one never does, so the request sits until someone merges it."""
-    if not isinstance(mr, dict):
-        return False
-    pipe = mr.get("head_pipeline") if isinstance(mr.get("head_pipeline"), dict) else {}
-    detailed = mr.get("detailed_merge_status")
-    mergeable = detailed == "mergeable" if detailed is not None else mr.get("merge_status") == "can_be_merged"
-    return (mr.get("state") == "opened" and mr.get("merge_when_pipeline_succeeds") is True and mergeable
-            and pipe.get("status") in STUCK_PIPELINES)
+def mr_stuck(request):
+    """True for a merge request (a `bl_forge.Request`) that is open, mergeable, set to auto-merge, and whose head
+    pipeline ended in a state in STUCK_PIPELINES: auto-merge waits for a pipeline to succeed, which a skipped one never
+    does, so the request sits until someone merges it."""
+    return (request is not None and request.state == "opened" and request.auto_merge and request.mergeable
+            and request.pipeline in STUCK_PIPELINES)
 
 
-def branch_requests(root, remote, branch):
-    """(host, url-quoted project, [iid]) of the open merge requests of BRANCH into main on REMOTE's GitLab; None, and
-    nothing said, when REMOTE names no GitLab (a local path, another forge) or the list cannot be read."""
-    import urllib.parse
-    from ql_deliver import forge_list, origin_forge
-    code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
-    url = (url or "").strip()
-    if code or not url or url.lower().startswith("file:") or Path(url).exists():
-        return None  # a local remote names no forge
-    forge, host, project = origin_forge(url)
-    if forge != "gitlab":
-        return None
-    project = setting("forge_project") or project
-    listed, _, _ = forge_list(url, run, None, lambda p: (
-        f"projects/{p}/merge_requests?state=opened&source_branch={urllib.parse.quote(branch, safe='')}"
-        f"&target_branch=main&per_page=20"))
-    iids = [s.get("iid") for s in listed or [] if isinstance(s, dict) and isinstance(s.get("iid"), int)]
-    return host, urllib.parse.quote(project, safe=""), iids
-
-
-def read_merge_request(host, quoted, iid):
-    """The merge request `projects/:id/merge_requests/:iid` answers as a dict, or None."""
-    code, out, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/merge_requests/{iid}"])
+def read_code_request(root, branch):
+    """The `bl_forge.Request` of BRANCH on the integration remote's forge project, read once for a land pass and used
+    by every step of it. None, and nothing said, when there is no request, the remote names no forge project (a local
+    path) or the forge cannot be read (a CLI not signed in, a failed or unreadable call): land cannot tell."""
+    import bl_forge
     try:
-        mr = json.loads(out) if code == 0 else None
-    except ValueError:
-        mr = None
-    return mr if isinstance(mr, dict) else None
-
-
-def stuck_merge_request(root, remote, branch):
-    """The line land adds while it waits for the merge request of BRANCH: when an open request of BRANCH into main on
-    REMOTE's GitLab is stuck (`mr_stuck`), it names the request and the command that merges it. None when no request
-    is stuck, and also, saying nothing, when it cannot tell: a remote that is a local path, a forge that is not GitLab,
-    glab not signed in, a failed or unreadable call."""
-    found = branch_requests(root, remote, branch)
-    if found is None:
+        return bl_forge.read_request(root, branch=branch, run=run)
+    except (Refused, bl_forge.ForgeError):
         return None
-    host, quoted, iids = found
-    for iid in iids:
-        mr = read_merge_request(host, quoted, iid)
-        if mr_stuck(mr):
-            status = mr["head_pipeline"].get("status")
-            return (f"land: merge request !{iid} ({mr.get('web_url') or branch}) is mergeable and set to auto-merge, "
-                    f"but its pipeline was {status}, so auto-merge will not fire: merge it with "
-                    f"python3 _tools/backlog.py merge {branch[len('code/'):] if branch.startswith('code/') else branch}")
-    return None
+
+
+def stuck_merge_request(request, branch):
+    """The line land adds while it waits for the merge request of BRANCH: when REQUEST is stuck (`mr_stuck`), it names
+    the request and the command that merges it. None when it is not, or when `forge` is not gitlab: the gh arm merges
+    nothing, so no command would carry the line out."""
+    if not mr_stuck(request) or setting("forge") != "gitlab":
+        return None
+    return (f"land: merge request !{request.iid} ({request.url or branch}) is mergeable and set to auto-merge, "
+            f"but its pipeline was {request.pipeline}, so auto-merge will not fire: merge it with "
+            f"python3 _tools/backlog.py merge {branch[len('code/'):] if branch.startswith('code/') else branch}")
 
 
 def family_external(bl, iid):
@@ -951,29 +918,25 @@ def family_external(bl, iid):
     return {t: ids for t, ids in out.items() if ids}
 
 
-def describe_merge_request(bl, iid, remote, branch):
-    """Put the item's external ids and their urls (`bl_base.external_description`) into the description of the open
-    merge request of BRANCH on REMOTE's GitLab, after what it holds and in place of a block of land's own from an
-    earlier run (REF_HEADER to the end). Says one line for each request it changed; a request it cannot read or change
-    is said and never fails the landing, and a remote with no GitLab, or an item with no external id, says nothing."""
+def describe_merge_request(bl, iid, request):
+    """Put the item's external ids and their urls (`bl_base.external_description`) into the description of REQUEST,
+    the open merge request `read_code_request` read, after what it holds and in place of a block of land's own from an
+    earlier run (REF_HEADER to the end). Says one line when it changed it; a request it cannot change is said and
+    never fails the landing, and no request, or an item with no external id, says nothing."""
     block = external_description({"external": family_external(bl, iid)})
-    found = branch_requests(bl.root, remote, branch) if block else None
-    if found is None:
+    if not block or request is None or request.state != "opened":
         return
-    host, quoted, iids = found
-    for n in iids:
-        mr = read_merge_request(host, quoted, n)
-        if mr is None:
-            say(f"land: could not read merge request !{n}, so it carries no tracker references")
-            continue
-        have = mr.get("description") or ""
-        text = (have.partition(REF_HEADER)[0].rstrip() + "\n\n" + block).strip()
-        if text == have.strip():
-            continue
-        code, _, err = run(["glab", "api", "--hostname", host, "--method", "PUT",
-                            f"projects/{quoted}/merge_requests/{n}", "-f", f"description={text}"])
-        say(f"land: merge request !{n} description holds the tracker references of {iid}" if code == 0
-            else f"land: could not set the description of merge request !{n}: {(err or '').strip()[:200]}")
+    import bl_forge
+    have = request.description or ""
+    text = (have.partition(REF_HEADER)[0].rstrip() + "\n\n" + block).strip()
+    if text == have.strip():
+        return
+    try:
+        ok, err = bl_forge.set_description(bl.root, request, text, run=run)
+    except (Refused, bl_forge.ForgeError) as e:
+        ok, err = False, str(e)
+    say(f"land: merge request !{request.iid} description holds the tracker references of {iid}" if ok
+        else f"land: could not set the description of merge request !{request.iid}: {err[:200]}")
 
 
 LAND_REF = "refs/land"  # refs/land/<id>: the done commit land made, kept until the landing is verified
@@ -1452,8 +1415,9 @@ def land_once(bl, a):
                 say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                     f"pushed with this content): merge it, then run backlog.py land {iid} again")
                 LAND_OPS["pending"] = ([git(root, "rev-parse", tracking).strip()], code_branch)
-                describe_merge_request(bl, iid, remote, code_branch)
-                stuck = stuck_merge_request(root, remote, code_branch)
+                request = read_code_request(root, code_branch)  # the pass's one read of the request
+                describe_merge_request(bl, iid, request)
+                stuck = stuck_merge_request(request, code_branch)
                 if stuck:
                     say(stuck)
                 return 0
@@ -1493,7 +1457,8 @@ def land_once(bl, a):
                 land_run(root, lint[0], [*lint[1], *articles])
         land_run(root, *LAND_SYNC, whole=True)
         if late:
-            describe_merge_request(bl, iid, remote, code_branch)  # the request sync opened by push options
+            # the request sync opened by push options: this pass's one read of it
+            describe_merge_request(bl, iid, read_code_request(root, code_branch))
             tip = pushed_tip(root, remote, code_branch)
             LAND_OPS["pending"] = (tip, code_branch) if tip else None
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "
@@ -2114,69 +2079,42 @@ def args_land(p):
 
 
 def merge_target(bl, iid):
-    """(branch, project url) `backlog.py merge ID` merges: the item's own code/ID on the integration remote's GitLab
-    project; Refused for an unknown item or a remote that names no GitLab project."""
-    import kbpublic
-    from ql_deliver import origin_forge
+    """(branch, project url) `backlog.py merge ID` merges: the item's own code/ID on the integration remote's forge
+    project (`bl_forge.target`: `forge_project`, else the remote's URL); Refused for an unknown item or a remote that
+    names no forge project."""
+    import bl_forge
     need(bl, iid)
-    remote = kbpublic.integration_remote(bl.root)
-    code, url, _ = run(["git", "remote", "get-url", remote], cwd=bl.root)
-    url = (url or "").strip()
-    if code or not url or url.lower().startswith("file:") or Path(url).exists():
-        raise Refused(f"the integration remote {remote} names no GitLab project ({url or 'no url'})")
-    forge, host, project = origin_forge(url)
-    if forge != "gitlab":
-        raise Refused(f"the integration remote {remote} is on {forge}, not GitLab")
-    project = setting("forge_project") or project
-    return f"code/{iid}", f"https://{host}/{project}"
+    t = bl_forge.target(bl.root, run)
+    return f"code/{iid}", f"https://{t.host}/{t.project}"
 
 
 def cmd_merge(bl, a):
-    """Merge the item's own code/ID merge request on the integration remote's project, now (`glab mr merge
-    --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no `glab mr merge`.
-    Another item's branch and another project are refused (exit 2). Its state is read first (`glab mr view -F json`):
-    one auto-merge already merged is reported merged, exit 0, so land runs next; a closed one is exit 1; only an open
-    one is merged (glab refuses a merged one before any call). A branch with more than one request, which `mr view`
-    refuses, is read from `glab mr list --source-branch BRANCH --all`, newest first: an open one is merged by its
-    number, else a merged one is reported merged, else exit 1."""
+    """Merge the item's own code/ID merge request on the integration remote's project, now (`bl_forge.merge_own`:
+    `glab mr merge --auto-merge=false --yes`): the one way an agent merges, since .claude/settings.json allows no
+    `glab mr merge`. Another item's branch and another project are refused (exit 2), and so is every merge on the gh
+    arm. Its state is read first: one auto-merge already merged is reported merged, exit 0, so land runs next; a
+    closed one, no request of the branch and a forge that cannot be read are exit 1; only an open one is merged, by its
+    number, the newest open one when the branch has several."""
+    import bl_forge
     branch, project = merge_target(bl, a.id)
-    # its state first: auto-merge may have merged it seconds before, and glab then refuses with no open request
-    vcode, vout, _ = run(["glab", "mr", "view", branch, "-F", "json", "-R", project], cwd=bl.root)
     try:
-        view = json.loads(vout) if not vcode else {}
-    except ValueError:
-        view = {}
-    state = view.get("state") if isinstance(view, dict) else None
-    target = branch
-    if state is None:
-        # several requests on the branch: mr view refuses it, so read the list
-        lcode, lout, _ = run(["glab", "mr", "list", "--source-branch", branch, "--all", "-F", "json", "-R", project],
-                             cwd=bl.root)
-        try:
-            listed = json.loads(lout) if not lcode else []
-        except ValueError:
-            listed = []
-        listed = sorted((m for m in listed if isinstance(m, dict) and m.get("source_branch", branch) == branch),
-                        key=lambda m: m.get("iid") or 0, reverse=True)
-        for want in ("opened", "merged", "closed"):
-            found = next((m for m in listed if m.get("state") == want), None)
-            if found:
-                view, state = found, want
-                if want == "opened":
-                    target = str(found["iid"])
-                break
-    if state == "merged":
-        say(f"merge {branch} ({project}): already merged" + (f" at {view['merged_at']}" if view.get("merged_at") else ""))
+        outcome, request, text = bl_forge.merge_own(bl.root, branch, run=run)
+    except bl_forge.ForgeError as e:
+        say(f"merge {branch} ({project}): could not read the merge request: {e}")
+        return 1
+    if outcome == "already":
+        say(f"merge {branch} ({project}): already merged" + (f" at {request.merged_at}" if request.merged_at else ""))
         return 0
-    if state == "closed":
+    if outcome == "closed":
         say(f"merge {branch} ({project}): the merge request is closed, not merged")
         return 1
-    code, out, err = run(["glab", "mr", "merge", target, "--auto-merge=false", "--yes", "-R", project], cwd=bl.root)
-    say(f"merge {branch} ({project}): {'merged' if code == 0 else 'failed'}")
-    text = (out or err or "").strip()
+    if outcome == "none":
+        say(f"merge {branch} ({project}): no merge request of the branch")
+        return 1
+    say(f"merge {branch} ({project}): {outcome}")
     if text:
         say(text[-600:])
-    return 0 if code == 0 else 1
+    return 0 if outcome == "merged" else 1
 
 
 def args_merge(p):
