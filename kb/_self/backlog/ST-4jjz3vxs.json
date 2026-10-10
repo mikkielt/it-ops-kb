@@ -31,9 +31,6 @@
     "kb/_self/git.md",
     "kb/_self/map.csv"
   ],
-  "depends_on": [
-    "ST-qgnjxiol"
-  ],
   "links": [
     "memory: GitHub is the kb's public home, gitlab.com the private dev and CI; a gh arm serves the publish side later"
   ]

@@ -33,10 +33,7 @@
     "kb/_self/backlog.md"
   ],
   "depends_on": [
-    "ST-nq5z6whn",
-    "ST-zt4fdewi",
-    "ST-4jjz3vxs",
-    "ST-izba5564"
+    "ST-4jjz3vxs"
   ],
   "gates": [
     {
@@ -65,10 +62,6 @@
         ".claude/backlog/: beside the project's Claude files, protected-path prompts in headless runs accepted"
       ],
       "recommendation": "_backlog/ at the repository root: outside .claude/, so a headless worker can write item files there in default or acceptEdits mode",
-      "do": {
-        "_backlog/ at the repository root: outside .claude/, so a headless worker can write item files there in default or acceptEdits mode": "ST-qgnjxiol",
-        ".claude/backlog/: beside the project's Claude files, protected-path prompts in headless runs accepted": "ST-qgnjxiol"
-      },
       "class": "agents-rule",
       "answer": "_backlog/ at the repository root: outside .claude/, so a headless worker can write item files there in default or acceptEdits mode",
       "by": "operator"
