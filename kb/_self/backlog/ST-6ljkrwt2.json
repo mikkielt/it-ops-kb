@@ -48,7 +48,9 @@
         "10000 characters a part; a source alone over it is a part of its own"
       ],
       "recommendation": "30000 characters a part; a source alone over it is a part of its own",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "30000 characters a part; a source alone over it is a part of its own",
+      "by": "operator"
     },
     {
       "id": "g2",
