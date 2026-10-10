@@ -1,9 +1,9 @@
 {
-  "decision": "D-776rvpx2",
+  "decision": "D-7ngv63af",
   "max_files": 15,
   "max_ids": 100,
   "max_seconds": {
-    "darwin": 20,
+    "darwin": 22,
     "linux": 60,
     "win32": 150
   }
