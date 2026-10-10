@@ -2,7 +2,7 @@
   "id": "ST-vlkxprhy",
   "kind": "story",
   "title": "check.py checks every line of a ledger path:line range citation, not only its first",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,

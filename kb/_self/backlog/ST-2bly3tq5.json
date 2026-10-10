@@ -2,7 +2,7 @@
   "id": "ST-2bly3tq5",
   "kind": "story",
   "title": "check.py validates the kb path:line citations in _tools comments, so a fact inserted above them cannot shift them silently",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-dj2zgvh3",
   "kind": "story",
   "title": "too_broad judges every alternative of a regenerated check, not only bare words, so a phrase found across the kb is refused",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-hytkzabh",
   "kind": "bug",
   "title": "pool build keeps a redone regex whose alternatives match nothing in the kb: BP-9e209bb8 holds Assert-M365DSCTenantDrift and Test-M365DSCDrift, two cmdlet names microsoft365dsc.md never states",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,

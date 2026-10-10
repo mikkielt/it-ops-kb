@@ -2,7 +2,7 @@
   "id": "BG-wcdbq563",
   "kind": "bug",
   "title": "fact_for picks a line that does not answer for 10 committed eval rows, skips fact lines that name a backticked file, and still picks table header rows",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
