@@ -9193,6 +9193,8 @@ fc093c46784d,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026
 5b974aabd403,python/stdlib-windows-portability.md,S-ew7mucsg,located,,fileexistserror;already;mkdir;exist;rais;error;directory;file,e460b7968a6e23bd,".. function:: mkdir(path, mode=0o777, , dirfd=None) Create a directory named path with numeric mode mode. If the directory already exists, :exc:FileExistsError is raised.",2026-09-28
 5ce2042281ca,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-08
 6bc94643544b,python/stdlib-windows-portability.md,S-dabwnzz5,located,,3.1;process_group;group;posix;process,c3a67b2d0de60f11,.. availability:: POSIX .. versionchanged:: 3.11 processgroup was added.,2026-09-28
+91406b95a1ed,python/stdlib-windows-portability.md,S-ujjrcinq,unlocated:no-match,,,,,2026-10-10
+91406b95a1ed,python/stdlib-windows-portability.md,S-ymqlfpgy,unlocated:no-match,,,,,2026-10-10
 99d886ec74a4,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-09-28
 9ef4f42a9a05,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶ > File Descriptor Operations¶,5.3;errno.exdev;exdev;older;resid;errno;otherwis;kernel,c0a4ec1d6a9c1140,"In Linux kernel older than 5.3, the files pointed to by src and dst must reside in the same filesystem, otherwise an OSError is raised",2026-10-10
 a73e750819c7,python/stdlib-windows-portability.md,S-dabwnzz5,located,,start;posix;child,79cac77bff5379a1,If startnewsession is true the setsid() system call will be made in the child process prior to the execution of the subprocess. .. availability:: POSIX,2026-09-28
