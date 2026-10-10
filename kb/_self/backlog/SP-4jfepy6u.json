@@ -2,7 +2,7 @@
   "id": "SP-4jfepy6u",
   "kind": "sprint",
   "title": "Planning rules 1: checks that run behaviour, touches that hold every reader",
-  "status": "planned",
+  "status": "active",
   "goal": "A code item is planned with a check that runs its behaviour and the test it extends in its touches (ST-a5q6vaji); its touches hold every reader of a symbol, flag or new module its goal changes (ST-pogg4knc); a goal clause naming a constant or a run figure is read against what it bounds and the run measured (ST-77goqrxz); a new refusal is probed against today's main, and map.csv maps tests.py and bl_base.py to querylog.md (ST-e3o4muan); research and refresh items that may reword facts carry doc2query expansions.csv in touches (ST-twcrlq7n); Running a sprint names the shared kb/_self doc exception to items that share a file run one after another (BG-gqftybuq)",
   "gates": [
     {

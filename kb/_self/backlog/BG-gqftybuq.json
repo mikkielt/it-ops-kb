@@ -2,7 +2,7 @@
   "id": "BG-gqftybuq",
   "kind": "bug",
   "title": "backlog.md Running a sprint still says items that share a file run one after another, though a shared kb/_self doc no longer orders them",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4jfepy6u",
   "priority": "P3",
   "rank": 0,
