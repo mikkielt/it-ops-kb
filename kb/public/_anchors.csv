@@ -9191,6 +9191,7 @@ fc093c46784d,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026
 5ce2042281ca,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-08
 6bc94643544b,python/stdlib-windows-portability.md,S-dabwnzz5,located,,3.1;process_group;group;posix;process,c3a67b2d0de60f11,.. availability:: POSIX .. versionchanged:: 3.11 processgroup was added.,2026-09-28
 99d886ec74a4,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-09-28
+9ef4f42a9a05,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶ > File Descriptor Operations¶,5.3;errno.exdev;exdev;older;resid;errno;otherwis;kernel,c0a4ec1d6a9c1140,"In Linux kernel older than 5.3, the files pointed to by src and dst must reside in the same filesystem, otherwise an OSError is raised",2026-10-10
 a73e750819c7,python/stdlib-windows-portability.md,S-dabwnzz5,located,,start;posix;child,79cac77bff5379a1,If startnewsession is true the setsid() system call will be made in the child process prior to the execution of the subprocess. .. availability:: POSIX,2026-09-28
 a9df22e1bd5e,python/stdlib-windows-portability.md,S-ntbllsvy,located,,fail;creation;exclusiv;already;exist;open;file,b9cc58808515e18e,"'x' open for exclusive creation, failing if the file already exists",2026-09-28
 aef7cb26c281,python/stdlib-windows-portability.md,S-ntbllsvy,located,,linesep;os.linesep;newlin;writ;none;default,40ec9a086434ce45,"When writing output to the stream, if newline is None, any '\n' characters written are translated to the system default line separator, :data:os.linesep.",2026-09-28
@@ -9202,6 +9203,10 @@ d56521463bda,python/stdlib-windows-portability.md,S-ntbllsvy,unlocated:no-match,
 de7bd78973b9,python/stdlib-windows-portability.md,S743,unlocated:no-match,,,,,2026-10-08
 e90124b1d293,python/stdlib-windows-portability.md,S-dabwnzz5,unlocated:no-match,,,,,2026-09-28
 e909fa2f5021,python/stdlib-windows-portability.md,S-dabwnzz5,located,,create_new_consol;cannot;parent;inherit;consol;3.7;creat;valu,f306f01f431f3e13,will not inherit its parent's console. This value cannot be used with CREATENEWCONSOLE. .. versionadded:: 3.7,2026-09-28
+f3b8e0966502,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10
+f3b8e0966502,python/stdlib-windows-portability.md,S-edjp43o7,unlocated:no-match,,,,,2026-10-10
+f3b8e0966502,python/stdlib-windows-portability.md,S-ip5ugdeb,unlocated:no-match,,,,,2026-10-10
+f3b8e0966502,python/stdlib-windows-portability.md,S-oqrlzkwe,unlocated:no-match,,,,,2026-10-10
 fc7962c5b134,python/stdlib-windows-portability.md,S-dabwnzz5,located,,breakaway;create_breakaway_from_job;job;creationflag;creat;process,4a2f67de8110c3eb,.. data:: CREATEBREAKAWAYFROMJOB A :class:Popen creationflags parameter to specify that a new process,2026-09-28
 05125dd840fa,python/uv-projects.md,S-7xvirecf,unlocated:no-match,,,,,2026-09-28
 086e44df1374,python/uv-projects.md,S-ixzgi6xe,located,Managing dependencies > Development dependencies,cased;special;special-ca;no-dev;only-dev;no-default-group;disabl;default,c0ca3909c4d672da,"The dev group is special-cased; there are --dev, --only-dev, and --no-dev flags to toggle inclusion or exclusion of its dependencies. See --no-default-groups to disable all",2026-09-28
