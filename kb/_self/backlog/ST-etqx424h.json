@@ -24,5 +24,6 @@
   ],
   "links": [
     "parked: SP-dqkf3i42 close"
-  ]
+  ],
+  "notes": "Seen at SP-x5gjv4r7 (2026-10-10): the ST-732j5ufa worker (a story editing ql_apply.py and test_redact.py) ended at exactly 100 turns, its cap, and ST-ylje2dxh (bl_land, bl_base, bl_check, bl_items) reported 116 turns."
 }

@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-qxcj7fgy close"
-  ]
+  ],
+  "notes": "Recurred at SP-x5gjv4r7 (2026-10-10): once item_dir defaulted to _backlog, the planted-root checks of three committed items (ST-xuhig3u6 check 1, ST-ylje2dxh checks 1 and 3, ST-ifljijni check 1) planted items under kb/_self/backlog of a root with no backlog.json and failed on a missing file or no item before any work; two workers stopped on it, and the orchestrator repointed the checks (backlog.json planted, or _backlog/ read)."
 }

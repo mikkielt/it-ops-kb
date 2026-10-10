@@ -1,0 +1,26 @@
+{
+  "id": "BG-i6vjrbng",
+  "kind": "bug",
+  "title": "A code item's land.end row says lane=content, and ops prints land.end before the last land.step it shares a timestamp with",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found in backlog.py ops SP-x5gjv4r7 at the review: each code item landed with --wait-merge (ST-yeymcu7l, ST-732j5ufa, ST-xuhig3u6, ST-ylje2dxh, BG-bgnkzjzt, ST-ifljijni, ST-mti4zrzz) has one land.end row with lane=content, the lane of its second pass (bl_land sets LAND_OPS lane per pass), so the row does not say the item's code went through a code/<id> merge request; and for ST-mbqowj5u and ST-ylje2dxh the land.end row and the final kbgit.py-sync-push land.step carry the same timestamp and ops prints the end first. A wait-merge landing's land.end names the code lane, and ops keeps a run's end after its steps.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read();sys.exit(1 if 'LAND_OPS[\"lane\"] = \"code\" if late else \"content\"' in t else 0)"
+    ]
+  },
+  "repro_reason": "the lane is set in the second pass of a land run, which is reached only after a forge merge request merges; no planted root reaches it offline",
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_ops.py"
+  ],
+  "links": [
+    "parked: SP-x5gjv4r7 close"
+  ]
+}

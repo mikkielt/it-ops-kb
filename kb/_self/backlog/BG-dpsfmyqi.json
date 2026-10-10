@@ -1,0 +1,24 @@
+{
+  "id": "BG-dpsfmyqi",
+  "kind": "bug",
+  "title": "close --summary credits a goal clause to a bug filed from the story that carried it, because the bug's title mirrors the clause",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found at the SP-x5gjv4r7 close: goal_clause_lines (bl_land.py) names the one done item whose title and goal hold the largest share of a clause's words, so clause 3 ('precheck maps each goal clause to the check that reads it ...') was credited to BG-bgnkzjzt, a usage-text bug the ST-ylje2dxh worker filed, not to ST-ylje2dxh, which delivered the clause; the close commit's delivered-by list then names the follow-up. The clause line names the item that carried the clause (the mechanism is left open: every item over CLAUSE_COVER, or a story before a bug filed from it).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types,json,subprocess;sys.path.insert(0,\"_tools\");import bl_land\ng=lambda i:json.loads(subprocess.run([\"git\",\"show\",\"eb70b55938:kb/_self/backlog/\"+i+\".json\"],capture_output=True,text=True,check=True).stdout)\nit={i:g(i) for i in (\"SP-x5gjv4r7\",\"ST-ylje2dxh\",\"BG-bgnkzjzt\")}\nbl=types.SimpleNamespace(items=it,label=lambda i:i)\nout=bl_land.goal_clause_lines(bl,\"SP-x5gjv4r7\",[\"ST-ylje2dxh\",\"BG-bgnkzjzt\"])\nln=[l for l in out if \"precheck maps\" in l];print(ln)\nsys.exit(0 if ln and \"ST-ylje2dxh\" in ln[0] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-x5gjv4r7 close"
+  ]
+}
