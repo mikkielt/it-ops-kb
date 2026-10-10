@@ -2,12 +2,12 @@
   "id": "ST-e4x326oy",
   "kind": "story",
   "title": "Research sprint goal: Census deterministic 1: measured baseline, one driver, phase-2 bookkeeping by tool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uwkr7iyl",
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The sprint goal's questions are about this project's own tools (census.py phases, the ops row tests.py writes, the kb-census skill's commands) and are answered from the code and kb/_self/, not from outside sources; the one outside question, how tokens are estimated from characters, has coverage good in the public kb (public/claude/agent-sdk.md), and kb/_self/usage.md already fixes the characters/4 convention the stories follow. No kb facts or gap entries are needed.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,7 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Goal questions packed 2026-10-10: 'what does census phase 2 read and how is it grouped by owner', 'how does tests.py write the test.run ops row', 'what does the kb-census skill run in phase 3' are weak in --root _self and are read from the code by the stories themselves; 'how many characters per token does Claude count, token counting estimate' is good in the public kb. No outside facts: every question is about the project's own tools, answered from its code and kb/_self/, and the one outside question is covered (coverage good).",
+  "claimed_by": "orchestrator"
 }
