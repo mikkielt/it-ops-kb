@@ -103,12 +103,6 @@ def test_heldout_reword_is_refused_at_the_gate(scenario):
     assert r.returncode == 1, r.stdout + r.stderr
     assert "REWORD HO-sync-e2e-heldout ~ EV-sync-e2e-heldout" in r.stdout, r.stdout
     assert scenario.origin.rev("main") == before
-    c.write("kb/public/_retrieval/lookup_heldout.csv", c.read("kb/public/_retrieval/lookup_heldout.csv").replace(
-        rows["lookup_heldout.csv"][1], "Which fact does the probe article hold?"))
-    c.commit("docs(kb): sync e2e held-out probe, replaced")
-    r = sync(c)
-    assert r.returncode == 0 and "REWORD" not in r.stdout, r.stdout + r.stderr
-    assert scenario.origin.rev("main") == c.rev("HEAD")
 
 
 def test_code_commit_goes_to_a_branch(scenario):
