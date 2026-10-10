@@ -2,7 +2,7 @@
   "id": "ST-o4narxhv",
   "kind": "story",
   "title": "A goal research story whose rows land in kb/_self/_retrieval/lookup_eval.csv is landed with land, not done, since that file is code lane",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-rvslem3h close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: python3 _tools/backlog.py new sprint writes a research story goal with no mention of lookup_eval.csv or backlog.py land, and the plan step names neither (the item's check, a throwaway store). Run at plan 2026-10-10: exit 1, False on the base, so the premise reproduces. The earlier check, selfdoc.py check, passed on the base and proved nothing, so it was replaced."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise: python3 _tools/backlog.py new sprint writes a research story goal with no mention of lookup_eval.csv or backlog.py land, and the plan step names neither (the item's check, a throwaway store). Run at plan 2026-10-10: exit 1, False on the base, so the premise reproduces. The earlier check, selfdoc.py check, passed on the base and proved nothing, so it was replaced.",
+  "claimed_by": "worker-ST-o4narxhv"
 }
