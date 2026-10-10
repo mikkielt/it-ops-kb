@@ -30,7 +30,10 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/git.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/backlog.py",
+    "backlog.json",
+    "kb/_self/map.csv"
   ],
   "depends_on": [
     "ST-qgnjxiol"
