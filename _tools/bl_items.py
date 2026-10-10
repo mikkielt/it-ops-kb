@@ -683,6 +683,40 @@ MEASURED_SIZE_RE = re.compile(r"\b\d[\d,]*\s*bytes\b", re.I)
 
 
 def cmd_gate(bl, a):
+    """gate add or gate remove, by the verb."""
+    return (gate_remove if a.verb == "remove" else gate_add)(bl, a)
+
+
+def gate_remove(bl, a):
+    """gate remove: an unanswered gate, never the sprint's start gate; one of a class only the operator answers needs
+    --by operator, so an agent cannot clear a gate that is not its to answer."""
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
+    if g is None:
+        raise Rejected(f"gate remove: {bl.label(iid)} has no gate {a.gate}")
+    if a.gate == START_GATE:
+        raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is the sprint's start gate, which "
+                       "`answer` answers")
+    if "answer" in g:
+        raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is answered ({g['answer']!r} by "
+                       f"{g.get('by')}), and a gate's answer is not taken back")
+    cls = bl_authority.gate_class(it, g)
+    if cls in bl_authority.OPERATOR_CLASSES and a.by != "operator":
+        raise Rejected(f"gate remove refuses gate {a.gate} of {bl.label(iid)}: it is class {cls}, which only the "
+                       "operator answers, so only the operator removes it (--by operator)")
+
+    def edit(new):
+        new["gates"] = [x for x in new.get("gates", []) if x.get("id") != a.gate]
+        if not new["gates"]:
+            del new["gates"]
+
+    changed_item(bl, iid, edit)
+    say(f"gate {a.gate} ({g.get('kind')}, class {cls}) removed from {bl.label(iid)}: {g.get('question')}")
+    return 0
+
+
+def gate_add(bl, a):
     """gate add: a gate with its question, options and recommendation."""
     iid = need(bl, a.id)
     it = bl.items[iid]
@@ -1013,6 +1047,12 @@ def args_gate(p):
     p.add_argument("--do", action="append", metavar="OPTION=CMD|ID",
                    help="the command that carries OPTION out, or the id of the item whose work adds it (repeatable)")
     p.add_argument("--host-check", help="a command that exits 0 when the host setup the answer names holds here")
+    p = gsub.add_parser("remove")
+    p.add_argument("id")
+    p.add_argument("gate")
+    p.add_argument("--by", choices=["operator"],
+                   help="operator: removes a gate of class secrets, push or agents-rule, passed only after the "
+                        "operator said so")
 
 
 def args_fire(p):

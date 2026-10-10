@@ -114,6 +114,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           unanswered blocking gate with none
                                           --host-check CMD: the command that proves the setup the gate's answer names
                                           holds on this host (exit 0), kept on the gate; `host-check` runs it
+  backlog.py gate remove ID GATE [--by operator]
+                                          remove an unanswered gate; an answered gate and a sprint's start gate are
+                                          refused, and so is a gate of class secrets, push or agents-rule without --by
+                                          operator (naming the class), so an agent cannot clear a gate only the
+                                          operator answers; a reword is remove, then gate add, which classes the new
+                                          text again (exit 2 for each refusal, the item file unchanged)
   backlog.py host-check SPRINT            run the host check of each answered gate of the sprint's open items, on this
                                           host, before the start gate is asked, and record each result on the gate
                                           (host_checked: ok, exit); exit 1, naming each gate and the command's output
@@ -266,7 +272,7 @@ Several ids after one --depends, --add-depends, --relates or --add-relates are t
 --root DIR (before the command) runs against another clone or project, with that root's backlog.json settings (item
 directory, id prefixes, trackers, worktree directory); without it the tool's own checkout, or, for a tool installed as a
 plugin, the working directory's git root. Exit: 0 ok, 1 a refused command or check errors,
-2 bad arguments, an unknown id, or a refused `set` or `gate add`.
+2 bad arguments, an unknown id, or a refused `set`, `gate add` or `gate remove`.
 
 Knowledge state (show, next, horizon): one line `knowledge <state> ask|ref: <text>` per ask and per ref of an item's
 `knowledge`, each run through kbfacts.pack (no network, no model) and reported as one of sufficient (coverage good, no

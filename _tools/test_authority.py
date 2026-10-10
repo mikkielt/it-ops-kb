@@ -101,6 +101,20 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
     code, out = bl(tmp_path, "answer", iid, "g", "--answer", "c", "--free", "--by", "operator")
     assert code == 0, out
     assert gate(tmp_path, iid)["answer"] == "c"
+    # `gate remove` of the same class: an agent cannot clear it, the operator can, and an answered gate stays
+    code, out = bl(tmp_path, "gate", "add", iid, "--id", "g2", "--question", "Which other name?", "--option", "a",
+                   "--option", "b", "--recommendation", "a")
+    assert code == 0, out
+    before = path(tmp_path, iid).read_bytes()
+    code, out = bl(tmp_path, "gate", "remove", iid, "g2")
+    assert code == 2 and "push" in out and "--by operator" in out, out
+    assert path(tmp_path, iid).read_bytes() == before
+    code, out = bl(tmp_path, "gate", "remove", iid, "g", "--by", "operator")
+    assert code == 2 and "answered" in out, out
+    assert path(tmp_path, iid).read_bytes() == before
+    code, out = bl(tmp_path, "gate", "remove", iid, "g2", "--by", "operator")
+    assert code == 0, out
+    assert [g["id"] for g in json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))["gates"]] == ["g"]
 
 
 def test_an_agent_cannot_confirm_an_operator_gate(tmp_path):
