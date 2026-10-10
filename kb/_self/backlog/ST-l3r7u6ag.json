@@ -2,7 +2,7 @@
   "id": "ST-l3r7u6ag",
   "kind": "story",
   "title": "Research sprint goal: Sprint tooling 2: one forge module, dispatch scratch setting, multi-repository items",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-dqkf3i42",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-dqkf3i42"
 }
