@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "backlog.md Running a sprint still says items that share a file run one after another, though a shared kb/_self doc no longer orders them",
   "status": "draft",
+  "sprint": "SP-4jfepy6u",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -21,5 +22,5 @@
   "links": [
     "parked: SP-ktup3cha review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the sentence 'Items that share a file run one after another.' is in kb/_self/backlog.md unqualified. Run on the base 2026-10-10: repro prints 'unqualified sentence present: True', exit 1."
 }

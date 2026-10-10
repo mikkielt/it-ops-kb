@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Answer the questions of the sprint goal whose pack coverage is weak: (1) how sprint planning proves a code item's check runs its behaviour, and (2) which files an item's touches must hold when its goal changes a symbol, a flag or a module. Both are rules of this repository (the planning docs and the code), not facts of an outside source; the third question, what happens to doc2query expansions when a fact is reworded, is good (SS2-044).",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: both open questions are about this repository's own planning rules and tools, which the kb/_self docs and the code state; no outside source or live doc holds them. Pack run 2026-10-10: Q1 weak, Q2 weak on kb/public (and on _self: the rule is what this sprint's items write), Q3 good (SS2-044, kb/_self/content-rules.md:72)."
 }
