@@ -2,7 +2,7 @@
   "id": "ST-pjw3wdwy",
   "kind": "story",
   "title": "Review sprint: Fitness 2: pack ranking and pool eval correctness",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5i4itd2d",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-5i4itd2d"
 }
