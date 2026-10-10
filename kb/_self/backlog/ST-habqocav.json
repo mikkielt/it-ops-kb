@@ -1,0 +1,24 @@
+{
+  "id": "ST-habqocav",
+  "kind": "story",
+  "title": "Research sprint goal: Headless sprint loop 1: worker brief and role file",
+  "status": "draft",
+  "sprint": "SP-qg7ncs6d",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-habqocav"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}
