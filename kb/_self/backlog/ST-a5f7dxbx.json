@@ -2,7 +2,7 @@
   "id": "ST-a5f7dxbx",
   "kind": "story",
   "title": "Research sprint goal: Benchmarks: no unplanned paid run, dated model keys, report wording",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-55ddkrrx",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Pack of 2026-10-10 (3 questions): Haiku 4.5 list prices (ci-and-headless.md:88) and effort levels per model (:81, :83, :84) are good; the modelUsage key naming is covered only by a 'check:' line (no cited line says dated or alias ids), so it is the one open question.",
-  "claimed_by": "worker-ST-a5f7dxbx"
+  "evidence": {
+    "commit": "77986ff8c6f9cc173e945955a43950866be4d7a1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-a5f7dxbx"
+        ],
+        "exit": 0,
+        "sha256": "fdebe8b2a3029a72"
+      }
+    ]
+  }
 }
