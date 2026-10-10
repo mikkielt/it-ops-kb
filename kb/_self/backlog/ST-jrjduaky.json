@@ -2,7 +2,7 @@
   "id": "ST-jrjduaky",
   "kind": "story",
   "title": "Review sprint: Planning rules 1: checks that run behaviour, touches that hold every reader",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4jfepy6u",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-4jfepy6u"
+  "evidence": {
+    "commit": "5e33da0b10792f8acb502b19dad926320bcdd337",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "4a2271e54ed8abac"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8d51ecebaa87729b"
+      }
+    ]
+  }
 }
