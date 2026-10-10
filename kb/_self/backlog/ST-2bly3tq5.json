@@ -2,7 +2,7 @@
   "id": "ST-2bly3tq5",
   "kind": "story",
   "title": "check.py validates the kb path:line citations in _tools comments, so a fact inserted above them cannot shift them silently",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,19 @@
     "parked: SP-7y6dk257 close"
   ],
   "notes": "Premise: run at planning (SP-5i4itd2d): check.py reads no _tools comment (its citation rules cover _answers.md and _gaps.md only) and tests.py -k code_kb_citations collects no test: reproduces; bench_core.py holds 10 kb path:line citations in comments. The -k selector names the test this item adds: it collects none until then and exits 2, which is its failing state. Order: after ST-vlkxprhy (same check.py). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
-  "claimed_by": "worker-ST-2bly3tq5"
+  "evidence": {
+    "commit": "33fd7c05fa08adbc612b1a444450c831df94c302",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "code_kb_citations"
+        ],
+        "exit": 0,
+        "sha256": "18dd399186552bb9"
+      }
+    ]
+  }
 }
