@@ -54,7 +54,9 @@
         "re-pointed like any fact found word for word"
       ],
       "recommendation": "read: counts as not found, the source stays in phase 2",
-      "class": "push"
+      "class": "push",
+      "answer": "read: counts as not found, the source stays in phase 2",
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -91,7 +93,9 @@
         "search the whole tree of the newer release"
       ],
       "recommendation": "leave it in the queue, reason named in the output",
-      "class": "push"
+      "class": "push",
+      "answer": "leave it in the queue, reason named in the output",
+      "by": "operator"
     }
   ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 13 NEWER-VERSION rows (9 raw-ref at newer=2.2.364, 4 api-repo) and 7 CHANGED raw-pin or raw-ref rows went to phase 2, and all but two came back confirmed, so the model read whole files to find the cited lines unchanged. factdiff.py detect marks pinned sources 'pinned url: its text cannot change' and leaves them to census.py check, so neither tool compares the citing facts against the newer file today.",
