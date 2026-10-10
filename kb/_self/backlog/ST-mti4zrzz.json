@@ -21,7 +21,8 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/maintaining.md",
-    "AGENTS.md"
+    "AGENTS.md",
+    "skills/sprint/SKILL.md"
   ],
   "depends_on": [
     "ST-xuhig3u6",

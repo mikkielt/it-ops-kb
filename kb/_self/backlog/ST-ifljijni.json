@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess as s,sys,tempfile,os,json,shutil;t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,os.getcwd()+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S','--goal','old goal clause').stdout.split()[2];goal=lambda:json.load(open(f'{t}/kb/_self/backlog/{sp}.json',encoding='utf-8-sig')).get('goal');a=run('set',sp,'--goal','rescoped goal clause');ga=goal();b2=run('set',sp,'--goal','rescoped goal clause','--by','operator');gb=goal();shutil.rmtree(t,ignore_errors=True);print('no --by: exit',a.returncode,'goal',repr(ga),'| --by operator: exit',b2.returncode,'goal',repr(gb),(b2.stderr or b2.stdout).strip()[:100]);sys.exit(0 if a.returncode!=0 and ga=='old goal clause' and b2.returncode==0 and gb=='rescoped goal clause' else 1)"
+        "import subprocess as s,sys,tempfile,os,json,shutil;t=tempfile.mkdtemp();s.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,os.getcwd()+'/_tools/backlog.py','--root',t];run=lambda *a:s.run(b+list(a),capture_output=True,text=True,cwd=t);sp=run('new','sprint','--title','S','--goal','old goal clause').stdout.split()[2];goal=lambda:json.load(open(f'{t}/_backlog/{sp}.json',encoding='utf-8-sig')).get('goal');a=run('set',sp,'--goal','rescoped goal clause');ga=goal();b2=run('set',sp,'--goal','rescoped goal clause','--by','operator');gb=goal();shutil.rmtree(t,ignore_errors=True);print('no --by: exit',a.returncode,'goal',repr(ga),'| --by operator: exit',b2.returncode,'goal',repr(gb),(b2.stderr or b2.stdout).strip()[:100]);sys.exit(0 if a.returncode!=0 and ga=='old goal clause' and b2.returncode==0 and gb=='rescoped goal clause' else 1)"
       ]
     },
     {
@@ -45,7 +45,8 @@
     "kb/_self/code.md",
     ".claude/skills/kb-sprint/SKILL.md",
     "AGENTS.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "skills/sprint/SKILL.md"
   ],
   "depends_on": [
     "ST-ylje2dxh"
