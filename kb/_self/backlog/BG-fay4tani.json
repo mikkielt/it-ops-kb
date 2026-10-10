@@ -2,7 +2,7 @@
   "id": "BG-fay4tani",
   "kind": "bug",
   "title": "test_heldout_reword_is_refused_at_the_gate adds about 8.5 s to the full tests.py run, over the 20 s darwin ceiling",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,17 @@
     "kb/_self/code.md"
   ],
   "notes": "Moved into SP-5x5ut5ko by the orchestrator at the sprint review (2026-10-10): the review story's tests.py check fails on it, so the sprint cannot close without it. The worker that filed it measured under parallel-worker load and named host load; the idle-host runs above show the cause. Raising the ceiling is an operator decision and was not taken (conservative choice under the operator's delegated policy).",
-  "claimed_by": "kb-worker-fay4tani"
+  "evidence": {
+    "commit": "f0d927b9e203833afb3246c51c8f121125b9deaf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "806c7586f848bbeb"
+      }
+    ]
+  }
 }
