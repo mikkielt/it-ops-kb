@@ -1907,16 +1907,39 @@ def merged_into(root, rev, upstream):
 REOPENED_REFS = "refs/kb-reopened/"  # reopen keeps a done item's file there, one ref per item id (bl_items)
 
 
+def tree_item_ids(root, rev, rel):
+    """The ids of the item files in directory REL of REV's tree (empty when REV or REL cannot be read)."""
+    code, out, _ = run(["git", "ls-tree", "--name-only", f"{rev}:{rel}"], cwd=root)
+    return set() if code else {n[:-len(".json")] for n in out.split() if n.endswith(".json")}
+
+
 def prune_reopened_refs(bl):
     """Delete each refs/kb-reopened/<id> whose item file <id>.json no longer exists in the backlog directory: close and
     drop outside a sprint call it after their deletions, so the clone keeps no reopen mark of a removed item, the
-    items they remove now and any left by earlier removals alike. A ref of an existing item stays. Returns the ids
-    whose ref was deleted."""
-    code, out, _ = run(["git", "for-each-ref", "--format=%(refname)", REOPENED_REFS], cwd=bl.root)
+    items they remove now and any left by earlier removals alike. The refs are shared by every worktree of the
+    clone, so the checkout alone does not judge: a ref of an item the integration main holds that this checkout
+    never held (its file is on `<remote>/main`, in neither HEAD nor the merge base) is kept, since it was filed on
+    main after the checkout branched; and with no `<remote>/main` to read, every ref is kept. A ref of an existing
+    item stays. Returns the ids whose ref was deleted."""
+    import kbpublic
+    root = bl.root
+    code, out, _ = run(["git", "for-each-ref", "--format=%(refname)", REOPENED_REFS], cwd=root)
+    refs = [] if code else out.split()
+    main = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
+    if not refs or not has_ref(root, main):
+        return []
+    rel = bl.dir.relative_to(root).as_posix()
+    known = tree_item_ids(root, "HEAD", rel)
+    code, base, _ = run(["git", "merge-base", "HEAD", main], cwd=root)
+    if not code and base.strip():
+        known |= tree_item_ids(root, base.strip(), rel)
+    filed_since = tree_item_ids(root, main, rel) - known
     gone = []
-    for ref in ([] if code else out.split()):
+    for ref in refs:
         iid = ref[len(REOPENED_REFS):]
-        if iid and not (bl.dir / f"{iid}.json").exists() and not run(["git", "update-ref", "-d", ref], cwd=bl.root)[0]:
+        if not iid or iid in filed_since or (bl.dir / f"{iid}.json").exists():
+            continue
+        if not run(["git", "update-ref", "-d", ref], cwd=root)[0]:
             gone.append(iid)
     if gone:
         say(f"deleted {len(gone)} reopen mark(s) of removed items: {', '.join(gone)}")
