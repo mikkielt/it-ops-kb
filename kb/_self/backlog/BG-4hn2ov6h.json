@@ -2,7 +2,7 @@
   "id": "BG-4hn2ov6h",
   "kind": "bug",
   "title": "backlog.py's usage text says selectors reads only the checks of open items",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-m3azo2y7",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,18 @@
     "BG-6cq4zeai"
   ],
   "notes": "Premise: its repro, repointed at planning from backlog.USAGE (a tuple of command names, so the first repro raised ValueError) to backlog.__doc__, the usage text. Run on 2026-10-10: exit 1, the selectors entry still says 'in the checks of open items'. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13).",
-  "claimed_by": "kb-worker-4hn2ov6h"
+  "evidence": {
+    "commit": "1d240fc366159e17ccba23bc0f4075293404b2bc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import backlog;t=backlog.__doc__;i=t.index('backlog.py selectors');s=t[i:t.index('backlog.py list',i)];print(s);sys.exit(0 if 'done' in s and 'repro' in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "45a34f8b48755031"
+      }
+    ]
+  }
 }
