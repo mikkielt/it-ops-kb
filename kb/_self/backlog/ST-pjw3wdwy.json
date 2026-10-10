@@ -2,7 +2,7 @@
   "id": "ST-pjw3wdwy",
   "kind": "story",
   "title": "Review sprint: Fitness 2: pack ranking and pool eval correctness",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5i4itd2d",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-5i4itd2d"
+  "evidence": {
+    "commit": "b002a49e4eb537ddea2c1c62cdc277e4f44736d0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5d52f12f7b65ca71"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "e874bcfdc3c33c43"
+      }
+    ]
+  }
 }
