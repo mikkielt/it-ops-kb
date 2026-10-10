@@ -13,7 +13,7 @@
       "run": [
         "python3",
         "-c",
-        "import os,sys,json,subprocess as sp,tempfile,shutil\nfrom pathlib import Path\nt=Path(tempfile.mkdtemp())\nos.environ[\"CLAUDE_PLUGIN_DATA\"]=str(t/\"d\")\nos.environ[\"CLAUDE_PLUGIN_ROOT\"]=str(Path.cwd())\nsys.path.insert(0,\"_tools\")\nimport ql_capture as q\nb=t/\"r/kb/_self/backlog\"\nb.mkdir(parents=True)\nit=lambda i,k,**kw:(b/(i+\".json\")).write_text(json.dumps({\"id\":i,\"kind\":k,\"title\":\"t \"+i,\"status\":\"done\",\"goal\":\"g\",\"priority\":\"P3\",\"rank\":0,**kw}))\nit(\"SP-aaaaaaaa\",\"sprint\",status=\"active\")\nit(\"ST-bbbbbbbb\",\"story\",sprint=\"SP-aaaaaaaa\")\nit(\"ST-cccccccc\",\"story\",sprint=\"SP-aaaaaaaa\")\nit(\"ST-dddddddd\",\"story\")\nq.record(\"ops\",event=\"land.end\",item=\"ST-bbbbbbbb\",exit=0,ms=5)\nq.record(\"ops\",event=\"land.step\",item=\"ST-bbbbbbbb\",step=\"rebase\",exit=0,ms=5)\nq.record(\"ops\",event=\"done.refused\",item=\"ST-cccccccc\",reasons=[\"check-failed\"],ms=5)\nq.record(\"ops\",event=\"agent.run\",item=\"ST-bbbbbbbb\",group=\"kbworker\",ms=5)\nq.record(\"ops\",event=\"agent.run\",group=\"nonitem\",ms=5)\nq.record(\"ops\",event=\"land.end\",item=\"ST-dddddddd\",exit=0,ms=5)\nq.record(\"ops\",event=\"land.step\",item=\"ST-dddddddd\",step=\"outsider\",exit=0,ms=5)\nr=sp.run([sys.executable,\"_tools/backlog.py\",\"--root\",str(t/\"r\"),\"ops\",\"SP-aaaaaaaa\"],capture_output=True,text=True)\nshutil.rmtree(t)\no=r.stdout\nok=r.returncode==0 and all(w in o for w in (\"land.end\",\"land.step\",\"rebase\",\"done.refused\",\"check-failed\",\"agent.run\",\"kbworker\",\"ST-bbbbbbbb\",\"ST-cccccccc\")) and not any(w in o for w in (\"ST-dddddddd\",\"outsider\",\"nonitem\"))\nprint(\"ops rc\",r.returncode,\"stdout lines\",len(o.splitlines()),\"stderr\",r.stderr.strip()[-60:])\nsys.exit(0 if ok else 1)"
+        "import os,sys,json,subprocess as sp,tempfile,shutil\nfrom pathlib import Path\nt=Path(tempfile.mkdtemp())\nos.environ[\"CLAUDE_PLUGIN_DATA\"]=str(t/\"d\")\nos.environ[\"CLAUDE_PLUGIN_ROOT\"]=str(Path.cwd())\nsys.path.insert(0,\"_tools\")\nimport ql_capture as q\nb=t/\"r/kb/_self/backlog\"\nb.mkdir(parents=True)\n(t/\"r/backlog.json\").write_text(json.dumps({\"item_dir\":\"kb/_self/backlog\"}))\nit=lambda i,k,**kw:(b/(i+\".json\")).write_text(json.dumps({\"id\":i,\"kind\":k,\"title\":\"t \"+i,\"status\":\"done\",\"goal\":\"g\",\"priority\":\"P3\",\"rank\":0,**kw}))\nit(\"SP-aaaaaaaa\",\"sprint\",status=\"active\")\nit(\"ST-bbbbbbbb\",\"story\",sprint=\"SP-aaaaaaaa\")\nit(\"ST-cccccccc\",\"story\",sprint=\"SP-aaaaaaaa\")\nit(\"ST-dddddddd\",\"story\")\nq.record(\"ops\",event=\"land.end\",item=\"ST-bbbbbbbb\",exit=0,ms=5)\nq.record(\"ops\",event=\"land.step\",item=\"ST-bbbbbbbb\",step=\"rebase\",exit=0,ms=5)\nq.record(\"ops\",event=\"done.refused\",item=\"ST-cccccccc\",reasons=[\"check-failed\"],ms=5)\nq.record(\"ops\",event=\"agent.run\",item=\"ST-bbbbbbbb\",group=\"kbworker\",ms=5)\nq.record(\"ops\",event=\"agent.run\",group=\"nonitem\",ms=5)\nq.record(\"ops\",event=\"land.end\",item=\"ST-dddddddd\",exit=0,ms=5)\nq.record(\"ops\",event=\"land.step\",item=\"ST-dddddddd\",step=\"outsider\",exit=0,ms=5)\nr=sp.run([sys.executable,\"_tools/backlog.py\",\"--root\",str(t/\"r\"),\"ops\",\"SP-aaaaaaaa\"],capture_output=True,text=True)\nshutil.rmtree(t)\no=r.stdout\nok=r.returncode==0 and all(w in o for w in (\"land.end\",\"land.step\",\"rebase\",\"done.refused\",\"check-failed\",\"agent.run\",\"kbworker\",\"ST-bbbbbbbb\",\"ST-cccccccc\")) and not any(w in o for w in (\"ST-dddddddd\",\"outsider\",\"nonitem\"))\nprint(\"ops rc\",r.returncode,\"stdout lines\",len(o.splitlines()),\"stderr\",r.stderr.strip()[-60:])\nsys.exit(0 if ok else 1)"
       ]
     },
     {
@@ -99,7 +99,9 @@
         "print the rows of the item and its descendants"
       ],
       "recommendation": "refuse it, exit 2, naming its kind",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "refuse it, exit 2, naming its kind",
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -111,7 +113,9 @@
         "leave the check and make item_dir default to kb/_self/backlog"
       ],
       "recommendation": "the check writes {\"item_dir\": \"kb/_self/backlog\"} to backlog.json at the planted root, before it runs ops",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the check writes {\"item_dir\": \"kb/_self/backlog\"} to backlog.json at the planted root, before it runs ops",
+      "by": "operator"
     },
     {
       "id": "g6",
@@ -122,7 +126,9 @@
         "only land.step, land.end, done.refused and agent.run"
       ],
       "recommendation": "every row that names one of the sprint's items",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "every row that names one of the sprint's items",
+      "by": "operator"
     }
   ],
   "notes": "Premise: backlog.py ops is an invalid choice (exit 2). .claude/settings.json already allows Bash(python3 _tools/backlog.py *). A closed sprint's items come from git history as bl_cost restores them; the check plants an open sprint only. Backlog triage 2026-10-10: its dependency ST-fd33riif “The committed ops sidecars hold no fixture landing” was dropped; the ops reader filters rows by the sprint's own items, so fixture rows in past sidecars do not reach it. Premise run 2026-10-10: backlog.py ops SP is 'invalid choice' (exit 2), reproduces. The goal named worker.run, which is no event of ql_capture.OPS_EVENTS: a worker's run is an agent.run row, so the goal says so; the rows of a spool and a sidecar are read by bl_stall.ops_rows (agent.run rows of a closed session come from the sidecar, land and done rows from the spool too).",
