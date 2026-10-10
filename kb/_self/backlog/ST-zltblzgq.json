@@ -55,7 +55,9 @@
         "fold it into test_empty_selection_refused_and_gone_once, the existing test of the same gone-once rule, renamed to carry done_dry_run_gone": "ST-zltblzgq",
         "replace another test of the suite with it": "ST-zltblzgq"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "fold it into test_empty_selection_refused_and_gone_once, the existing test of the same gone-once rule, renamed to carry done_dry_run_gone",
+      "by": "operator"
     }
   ],
   "links": [
