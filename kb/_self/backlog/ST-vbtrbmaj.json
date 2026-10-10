@@ -2,7 +2,7 @@
   "id": "ST-vbtrbmaj",
   "kind": "story",
   "title": "Review sprint: Sprint tooling 2: one forge module, dispatch scratch setting, multi-repository items",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-dqkf3i42",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-dqkf3i42"
+  "evidence": {
+    "commit": "63a9231c23f1a82d8ad282b6e6759aadd6be2414",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "495bec33f429ce0e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f9ab687413eea70f"
+      }
+    ]
+  }
 }
