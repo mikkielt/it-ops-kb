@@ -17,7 +17,7 @@ An offline knowledge base of facts from official sources on Windows endpoint man
 
 ## Tags
 
-Every fact ends in a tag with ids from its root's `_sources.csv`: `DOC` (official), `CODE` (source code at a pinned commit: implementation, not a promise), `DER` (derived), `COMMUNITY` (non-official), `UNK` (not confirmed), `DECISION` (`[DECISION <decision id>]`: `decided` is the operator's call, cite its id; `proposed` is never an answer). `UNK`, `COMMUNITY`: leads, never the answer alone. `SNIPPET:` lines are tagged code examples. Cite `path:line`, the tag and the source url.
+Every fact ends in a tag with ids from its root's `_sources.csv`: `DOC` (official), `CODE` (source code at a pinned commit: implementation, not a promise), `DER` (derived), `COMMUNITY` (non-official), `UNK` (not confirmed), `DECISION` (`[DECISION <decision id>]`: `decided` is the operator's call, cite its id; `proposed` is never an answer). `UNK`, `COMMUNITY`: leads, never the answer alone. Cite `path:line`, the tag and the source url.
 
 ## Live documentation (only when the kb lacks it)
 
@@ -25,7 +25,7 @@ Three remote servers, no authentication, urls in `.claude-plugin/it-ops-kb-docs/
 
 ## Skills
 
-`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`; planned work: `/kb-backlog`, `/kb-sprint`, `/kb-item`.
+`/kb-lookup`, `/kb-review-workspace` and `/kb-gap` (read-only). **A request to change the kb goes through its skill**, not freehand (a hook names it): `/kb-setup`, `/kb-research`, `/kb-refresh`, `/kb-add-topic`, `/kb-add-root`, `/kb-ingest`, `/kb-census`, `/kb-probe`, `/kb-verify`, `/kb-git-sync`, `/kb-self`; planned work: `/kb-backlog`, `/kb-sprint`, `/kb-item` (links to the plugin's `skills/`; `kb-worker`, to its `agents/`).
 
 ## Agent conduct
 

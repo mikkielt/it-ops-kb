@@ -4,6 +4,7 @@ AGENTS.md,_tools/kb_ask.py
 AGENTS.md,_tools/kb_hook.py
 AGENTS.md,.claude-plugin/it-ops-kb-docs/.mcp.json
 AGENTS.md,.claude/skills/*/SKILL.md
+AGENTS.md,skills/*/SKILL.md
 AGENTS.md,.claude/hooks/kb_change_router.py
 README.md,kb/_self/design.md
 kb/_self/README.md,kb/_self/map.csv
@@ -12,6 +13,7 @@ kb/_self/README.md,.claude/skills/kb-self/SKILL.md
 kb/_self/maintaining.md,.claude/hooks/*
 kb/_self/maintaining.md,.claude/settings.json
 kb/_self/maintaining.md,.claude/skills/*/SKILL.md
+kb/_self/maintaining.md,skills/*/SKILL.md
 kb/_self/maintaining.md,_tools/tests.py
 kb/_self/maintaining.md,pyproject.toml
 kb/_self/code.md,_tools/*.py
@@ -55,6 +57,7 @@ kb/_self/git.md,.github/workflows/*
 kb/_self/runners.md,.gitlab-ci.yml
 kb/_self/plugin.md,.claude-plugin/**
 kb/_self/plugin.md,.claude/agents/*.md
+kb/_self/plugin.md,agents/worker.md
 kb/_self/plugin.md,.claude/skills/kb-lookup/SKILL.md
 kb/_self/plugin.md,.claude/skills/kb-review-workspace/SKILL.md
 kb/_self/plugin.md,.claude/skills/kb-gap/SKILL.md
@@ -75,6 +78,7 @@ kb/_self/token-efficiency.md,_tools/kb_hook.py
 kb/_self/token-efficiency.md,_tools/kb_ask.py
 kb/_self/token-efficiency.md,_tools/rag.py
 kb/_self/token-efficiency.md,.claude/agents/*.md
+kb/_self/token-efficiency.md,agents/worker.md
 kb/_self/token-efficiency.md,.claude/skills/kb-lookup/SKILL.md
 kb/_self/token-efficiency.md,.claude/hooks/*
 kb/_self/token-efficiency.md,.claude-plugin/**
@@ -90,6 +94,9 @@ kb/_self/backlog.md,_tools/bl_*.py
 kb/_self/backlog.md,.claude/skills/kb-backlog/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-sprint/SKILL.md
 kb/_self/backlog.md,.claude/skills/kb-item/SKILL.md
+kb/_self/backlog.md,skills/backlog/SKILL.md
+kb/_self/backlog.md,skills/sprint/SKILL.md
+kb/_self/backlog.md,skills/item/SKILL.md
 kb/_self/tools.md,_tools/backlog.py
 kb/_self/tools.md,_tools/bl_*.py
 kb/_self/backlog.md,backlog.json

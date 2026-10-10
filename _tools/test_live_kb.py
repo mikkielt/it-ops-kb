@@ -1,16 +1,21 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
-(the generated index), the lookup eval (rag.py eval), and the pack format. Each gate also fails on a planted input. The pack index's unit cache is pinned on
-a planted fixture root, not on the live kb."""
+(the generated index), the lookup eval (rag.py eval), and the pack format, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
+index's unit cache is pinned on a planted fixture root, not on the live kb."""
 import csv, os, re, sqlite3, subprocess, sys, time
-
+from pathlib import Path
 
 import pytest
 
-import kbcommon, kbfacts, kbid
+import kbcommon, kbfacts, kbid, selfdoc
 from conftest import TOOLS, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
 SID = "FXT-" + "a" * 8  # not a source of the fixture root's _sources.csv
+# the kb's entries for the sprint skills and the worker, each a link to the plugin's file: the text exists once
+ONE_SET = {".claude/skills/kb-sprint/SKILL.md": "skills/sprint/SKILL.md",
+           ".claude/skills/kb-item/SKILL.md": "skills/item/SKILL.md",
+           ".claude/skills/kb-backlog/SKILL.md": "skills/backlog/SKILL.md",
+           ".claude/agents/kb-worker.md": "agents/worker.md"}
 
 
 def eval_rows():
@@ -289,3 +294,36 @@ def test_unit_cache_equals_a_fresh_weighing_re_weighs_on_each_key_input_and_find
         "kept for 14 days.", "kept for 14 days, then purged by the sweeper."))
     out = pack()
     assert re.search(r"^coverage: good\b", out, re.M) and re.search(r"queues\.md:\d+ .*sweeper.*\[DOC ", out), out[:1500]
+
+
+def one_set_problems(top, docs):
+    """Why the plugin's four files are not the one set: an entry that is no relative link to its file (a checkout
+    without symlink rights holds the target as the file's text), a file beside the link in its skill folder, or a
+    plugin file the map does not describe by the docs that described the entry."""
+    bad = []
+    for link, target in ONE_SET.items():
+        entry, want = top / link, os.path.relpath(top / target, (top / link).parent).replace(os.sep, "/")
+        if entry.is_symlink():
+            got = os.readlink(entry).replace(os.sep, "/")
+        elif sys.platform == "win32" and entry.is_file() and entry.stat().st_size < 200:
+            got = entry.read_text(encoding="utf-8").strip()
+        else:
+            got = None
+        if got != want:
+            bad.append(f"{link} is not a link to {want}")
+        if entry.parent.parent.name == "skills" and list(entry.parent.iterdir()) != [entry]:
+            bad.append(f"{entry.parent.name} holds a file beside the link")
+        lost = set(selfdoc.describing(docs, [link])) - set(selfdoc.describing(docs, [target]))
+        if lost:
+            bad.append(f"{target} is not mapped to {sorted(lost)}")
+    return bad
+
+
+def test_plugin_sprint_one_set_the_kb_claude_entries_link_to_the_plugins_files_and_the_map_keeps_their_docs(tmp_path):
+    assert one_set_problems(Path(kbcommon.HOME), selfdoc.load_map()) == []
+    for link in ONE_SET:  # the planted failure: each entry a copy of the text, and a map that names only the old paths
+        write(tmp_path / link, "the text of a skill\n" * 20)
+    docs = {"AGENTS.md": [".claude/skills/*/SKILL.md"], "kb/_self/plugin.md": [".claude/agents/*.md"]}
+    bad = one_set_problems(tmp_path, docs)
+    assert all(f"{link} is not a link to " in " ".join(bad) for link in ONE_SET), bad
+    assert any(b.endswith("is not mapped to ['AGENTS.md']") for b in bad) and any("plugin.md" in b for b in bad), bad
