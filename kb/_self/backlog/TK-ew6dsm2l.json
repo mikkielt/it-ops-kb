@@ -30,7 +30,8 @@
   ],
   "depends_on": [
     "ST-wrsuz64a",
-    "BG-axfywrrd"
+    "BG-axfywrrd",
+    "BG-rqxspwtb"
   ],
   "claimed_by": "orchestrator-SP-ciqk6gt6"
 }
