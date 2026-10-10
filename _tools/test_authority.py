@@ -53,7 +53,8 @@ def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_
     plain = {"id": "g", "question": "Which name?", "options": ["a", "b"]}
     for touches, cls in ((["_tools/kbgit.py"], "push"), ([".claude/skills/*.md"], "agents-rule"),
                          ([".claude"], "agents-rule"), (["_tools/"], "push"),(["src/credentials.json"], "secrets"),
-                         (["src/a.py"], "design")):
+                         (["skills/sprint/SKILL.md"], "agents-rule"), (["agents/worker.md"], "agents-rule"),
+                         (["src/skills/a.py", "kb/public/agents/a.md"], "design"), (["src/a.py"], "design")):
         assert ba.derived_class({"touches": touches}, plain) == cls, touches
     pushing = {**plain, "question": "May we publish the tree?"}
     assert ba.derived_class({"touches": ["src/a.py"]}, pushing) == "push"
