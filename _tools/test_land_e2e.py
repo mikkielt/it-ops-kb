@@ -9,7 +9,11 @@ which ran on that article's path alone. Three: the checkout `land` runs in holds
 refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there. The fourth class,
 on a throwaway repository: a finished worker's worktree that a session-end hook's run (its parent gone, its standard
 output the clone's distill.log) still holds is waited for and then removed; the wait is bounded by
-`bl_procs.HOOK_GRACE_S` and skipped for a process whose parent lives."""
+`bl_procs.HOOK_GRACE_S` and skipped for a process whose parent lives; the same class holds the landing of a
+multi-repository item (`multirepo_land`): each repository's request read once, a request that is not merged refused by
+repository and state, a dirty, locked or live-process worktree refused by name with none removed, the clean ones
+removed, the branches on the default branch deleted, each merge commit written as evidence, and the leftovers close
+removes."""
 import json
 import os
 import re
@@ -303,7 +307,8 @@ def orphan_in(cwd, log, seconds):
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
 class TestHookWait:
-    def test_land_waits_hook_of_a_finished_session_then_removes_its_worktree(self, tmp_path, capsys):
+    def test_land_waits_hook_of_a_finished_session_then_removes_its_worktree_and_multirepo_land_cleans_per_repository(
+            self, tmp_path, capsys, monkeypatch):
         """The step of `land` that frees a finished worker's worktree, on a real worktree whose only process is a run
         its session's end hook started: it waits for it, removes the worktree, and says so."""
         import bl_land
@@ -327,6 +332,138 @@ class TestHookWait:
         said = capsys.readouterr().out
         assert why is None and not worker.exists(), (why, said)
         assert "land: waited " in said and "for the session-end hook to end" in said, said
+        self.multirepo_land(tmp_path / "multi", capsys, monkeypatch)
+
+    def multirepo_land(self, base, capsys, monkeypatch):
+        """multirepo_land, on throwaway repositories: a workspace holding one item and three repositories, each with
+        the worktree dispatch makes at `<worker dir>/<id>/<repo>` on `work/<id>`: api merged with a merge commit, web
+        fast-forwarded, docs fast-forwarded and then given a commit its default branch lacks. The forge answers each
+        repository's request from a table; `land_repositories` is `land`'s step of that name."""
+        import argparse
+
+        import bl_base
+        import bl_forge
+        import bl_land
+        iid = "ST-aaaaaaaa"
+        ws, names = Repo(base / "ws"), {"api": "repos/api", "web": "repos/web", "docs": "repos/docs"}
+        os.makedirs(ws.path)
+        ws.git("init", "-q", "-b", "main")
+        ws.git("config", "user.name", "t")
+        ws.git("config", "user.email", "t@example.com")
+        item = {"id": iid, "kind": "story", "title": "Multi", "status": "doing", "goal": "Merged in each repository.",
+                "checks": [{"run": ["python3", "-c", "print('checked')"]}], "claimed_by": "t",
+                "touches": [f"{n}/{n}.txt" for n in names], "repos": list(names)}
+        ws.write(f"kb/_self/backlog/{iid}.json", json.dumps(item, indent=2) + "\n")
+        ws.commit("plan")
+        config = base / "config.json"
+        config.write_text(json.dumps({"repositories": names}), encoding="utf-8")
+        monkeypatch.setattr(bl_base, "_LOADED", [])  # this workspace's settings, for this test only
+        bl_base.load_settings(Path(ws.path), env={"KB_BACKLOG_CONFIG": str(config)})
+        checkouts, trees = {}, {}
+        for name, rel in names.items():
+            origin = base / "origins" / f"{name}.git"
+            origin.mkdir(parents=True)
+            Repo(origin).git("init", "-q", "--bare", "-b", "main")
+            checkouts[name] = Repo(Path(ws.path) / rel)
+            os.makedirs(checkouts[name].path)
+            checkouts[name].git("init", "-q", "-b", "main")
+            checkouts[name].git("remote", "add", "origin", str(origin))
+            checkouts[name].write("a.txt", "a\n")
+            checkouts[name].commit("first")
+            checkouts[name].git("push", "-q", "origin", "main")
+            trees[name] = Repo(Path(ws.path) / ".claude" / "worktrees" / iid / name)
+            checkouts[name].git("worktree", "add", "-q", "-b", f"work/{iid}", trees[name].path, "main")
+            trees[name].write(f"{name}.txt", "work\n")
+            trees[name].commit(f"{iid}: {name} work")
+        states, seen = {}, []
+
+        def request(root, branch=None, title_prefix=None, run=None):
+            name = Path(root).name
+            seen.append((name, title_prefix))
+            return None if name not in states else bl_forge.Request(
+                states[name], 7, f"{iid}: work", f"work/{iid}", f"https://gitlab.example.com/grp/{name}/-/merge_requests/7",
+                None, None, False, False, None, "")
+
+        monkeypatch.setattr(bl_forge, "read_request", request)
+        bl = bl_base.Backlog(Path(ws.path))
+
+        def refused(**states_now):
+            states.clear()
+            states.update(states_now)
+            seen.clear()
+            capsys.readouterr()
+            with pytest.raises(bl_base.Refused) as e:
+                bl_land.land_repositories(bl, iid)
+            return str(e.value)
+
+        # one request open and one missing: refused at `requests`, naming each repository and its state
+        why = refused(api="merged", web="opened")
+        assert "land stopped at step requests" in why and "nothing was removed or changed" in why, why
+        assert "repository 'web': merge request !7" in why and "is opened, not merged" in why, why
+        assert f"repository 'docs': no merge request titled '{iid}:' (state none)" in why and "'api'" not in why, why
+        assert sorted(seen) == [(n, f"{iid}:") for n in sorted(names)], seen  # each request read once
+        assert all(Path(t.path).is_dir() for t in trees.values())
+
+        # the forge merges: api with a merge commit, web and docs by fast-forward; docs' worktree commits once more
+        checkouts["api"].git("merge", "-q", "--no-ff", "-m", f"Merge branch 'work/{iid}' into 'main'", f"work/{iid}")
+        checkouts["api"].git("push", "-q", "origin", "main")
+        for n in ("web", "docs"):
+            checkouts[n].git("merge", "-q", "--ff-only", f"work/{iid}")
+            checkouts[n].git("push", "-q", "origin", "main")
+        trees["docs"].write("extra.txt", "after the merge\n")
+        trees["docs"].commit(f"{iid}: docs more")
+        merged = {n: "merged" for n in names}
+        trees["web"].git("worktree", "lock", "--reason", "another tool", trees["web"].path)
+        trees["api"].write("dirty.txt", "uncommitted\n")
+        holder = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], cwd=trees["docs"].path)
+        try:  # a dirty, a locked and a live-process worktree (a session that still runs): each named, none removed
+            why = refused(**merged)
+        finally:
+            holder.kill()
+            holder.wait()
+        assert "land stopped at step repositories" in why and "nothing was removed" in why, why
+        assert "repository 'api': its worktree" in why and "has uncommitted changes" in why, why
+        assert "repository 'web': its worktree" in why and "locked (another tool)" in why, why
+        assert "repository 'docs': its worktree" in why and f"pid {holder.pid}" in why, why
+        assert all(Path(t.path).is_dir() for t in trees.values()), why
+        trees["web"].git("worktree", "unlock", trees["web"].path)
+        Path(trees["api"].file("dirty.txt")).unlink()
+
+        states.update(merged)
+        seen.clear()
+        repos = bl_land.land_repositories(bl, iid)
+        assert [r.name for r in repos] == list(names) and len(seen) == 3, (repos, seen)
+        assert not any(Path(t.path).exists() for t in trees.values())
+        assert sorted(r.name for r in repos if r.tip) == sorted(names)
+        bl_land.delete_repo_branches(repos, iid)  # after the landing: the branches whose tip the default branch has
+        for n in ("api", "web"):
+            assert checkouts[n].git("branch", "--list", f"work/{iid}").strip() == "", n
+        assert checkouts["docs"].git("branch", "--list", f"work/{iid}").strip() != ""
+        said = capsys.readouterr().out
+        assert "repository docs: kept work/" in said and "repository docs: no merge commit found" in said, said
+        evidence = bl_land.repo_evidence(repos)
+        assert evidence == {n: {"request": f"https://gitlab.example.com/grp/{n}/-/merge_requests/7",
+                                "commit": checkouts[n].rev("origin/main") if n != "docs" else ""} for n in names}
+        assert len(checkouts["api"].git("rev-list", "--parents", "-1", "origin/main").split()) == 3  # a merge commit
+
+        # done: the work is merged in the repositories, so land's evidence stands in for a commit of the workspace
+        args = dict(id=iid, commit=True, trailer=[])
+        with pytest.raises(bl_base.Refused, match=r"merged in its repositories.*run land"):
+            bl_land.cmd_done(bl, argparse.Namespace(dry_run=True, **args))
+        capsys.readouterr()
+        assert bl_land.cmd_done(bl, argparse.Namespace(dry_run=False, repositories=evidence, **args)) == 0
+        saved = json.loads(ws.git("show", f"HEAD:kb/_self/backlog/{iid}.json"))
+        assert saved["status"] == "done" and saved["evidence"]["repositories"] == evidence, saved
+        assert ws.git("log", "-1", "--format=%s").startswith(f"chore(backlog): done {iid}")
+
+        # close's helper: a clean worktree on a merged branch goes with its branch, a dirty one stays and is named
+        for n in ("web", "api"):
+            checkouts[n].git("worktree", "add", "-q", "-b", f"work/{iid}", trees[n].path, "origin/main")
+        trees["api"].write("dirty.txt", "uncommitted\n")
+        kept = bl_land.clean_repository_leftovers(Path(ws.path), iid, [(n, Path(checkouts[n].path)) for n in names])
+        assert kept == 2 and not Path(trees["web"].path).exists() and Path(trees["api"].path).is_dir()  # api, docs
+        assert checkouts["web"].git("branch", "--list", f"work/{iid}").strip() == ""
+        assert "close: kept" in capsys.readouterr().out
 
     def test_land_waits_hook_at_most_the_bound_and_not_for_a_process_whose_parent_lives(self, monkeypatch):
         import bl_land

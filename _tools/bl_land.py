@@ -11,14 +11,15 @@ time windows of the detectors that `precheck` names) and never `backlog`. The br
 imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
 import argparse, datetime, hashlib, importlib, json, os, re, shlex, shutil, subprocess, sys, time
+from collections import namedtuple
 from pathlib import Path
 
 import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
-    ANSI_RE, Backlog, REF_HEADER, colourless_env, run_check, Refused, commit_written, external_description,
-    git, id_re, in_scope, item_file, line, main_worktree_spool, need, rel_dir, run, say, scope, setting, waits,
-    worker_dir,
+    ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, external_description,
+    git, id_re, in_scope, item_file, item_repos, line, main_worktree_spool, need, rel_dir, repositories, run, say,
+    scope, setting, split_touch, waits, worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 
@@ -90,6 +91,20 @@ def out_of_scope(root, commits, globs):
             if not in_scope(p, globs):
                 first.setdefault(p, sha)
     return [(sha, p) for p, sha in first.items() if blob_id(root, f"{sha}^", p) != blob_id(root, "HEAD", p)]
+
+
+def own_globs(globs):
+    """GLOBS (touches) as they read in the workspace's own tree: with a `repositories` map, `workspace/<glob>` without
+    its prefix and the repositories' touches left out (their files are in other repositories, which land reads
+    through their merge requests); the globs as given in a project with no map."""
+    out = []
+    for g in globs:
+        repo, rest = split_touch(g)
+        if repo is None:
+            out.append(g)
+        elif repo == WORKSPACE:
+            out.append(rest)
+    return out
 
 
 def stale_since(root, commits):
@@ -282,24 +297,28 @@ def cmd_done(bl, a):
                     problems.append(f"provisional answer to confirm: {bl.label(s)} gate {g['id']}: {g['answer']}")
                     reasons.append("provisional-answer")
     globs = scope(bl, iid)
+    repos = getattr(a, "repositories", None)  # land's {repository: {request, commit}}: the work merged in each
     if not globs and kind != "epic" and not it.get("review"):  # start's rule, for an item filed into a running sprint
         problems.append("no touches of its own or under it: a work item needs a scope (backlog.py set ID --touch "
                         "GLOB, or tasks that have touches), which start requires of every work item")
         reasons.append("not-ready")
     if globs:
+        mine = own_globs(globs)  # this tree's: a multi-repository item's other touches are in its repositories
         dirty = [ln[3:] for ln in git(bl.root, "status", "--porcelain").splitlines()
-                 if in_scope(ln[3:].strip('"'), globs) and not in_scope(ln[3:].strip('"'), ())]
+                 if in_scope(ln[3:].strip('"'), mine) and not in_scope(ln[3:].strip('"'), ())]
         if dirty:
             problems.append("uncommitted changes in scope (checks run on HEAD): " + ", ".join(dirty[:5]))
             reasons.append("uncommitted")
         family = [iid] + bl.descendants(iid)
-        if (it.get("touches") and not research_without_facts(it)
+        if (it.get("touches") and not research_without_facts(it) and not repos
                 and not item_commits(bl.root, [iid] + bl.descendants(iid))):
             reasons.append("no-work-commit")
             problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
                             "and changes a file other than item files (git reads a trailer only in the message's last "
                             "paragraph, with the others; a claim or planning commit is not the work; a goal research story "
-                            "needing no outside facts says so in its notes: No outside facts: <reason>)")
+                            "needing no outside facts says so in its notes: No outside facts: <reason>)"
+                            + ("; the work of an item with `repos` is merged in its repositories, which land reads "
+                               "through their merge requests: run land" if item_repos(it) else ""))
         late, remote, owners = unlanded_code(bl.root, family)
         if late:
             reasons.append("unlanded-code")
@@ -312,7 +331,7 @@ def cmd_done(bl, a):
                             f"opened for them (branch {branch}, named for the first KB-Work id of the range sync "
                             f"pushes), fetch {remote} and run done again")
         commits = item_commits(bl.root, family)
-        for sha, path in out_of_scope(bl.root, commits, globs):
+        for sha, path in out_of_scope(bl.root, commits, mine):
             problems.append(f"commit {sha[:10]} changed {path}, outside touches (revert it, or widen touches)")
             reasons.append("outside-touches")
         try:
@@ -363,7 +382,7 @@ def cmd_done(bl, a):
         say(f"{bl.label(iid)} would be done")
         return 0
     head = git(bl.root, "rev-parse", "HEAD").strip()
-    it.update(status="done", evidence={"commit": head, "checks": results})
+    it.update(status="done", evidence={"commit": head, "checks": results, **({"repositories": repos} if repos else {})})
     it.pop("claimed_by", None)
     bl.save(it)
     say(f"done {bl.label(iid)} at {head[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
@@ -771,7 +790,7 @@ def set_aside_drafts(root, path, drafts):
     return moved
 
 
-def release_worker_worktree(root, path, lock, branch=None):
+def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only=False):
     """Remove the finished worker's worktree PATH that holds the branch land needs, with `git worktree remove` (never
     --force), unlocking it first when Claude Code locked it: agents' shells may not remove a worktree
     (.claude/settings.json denies it), so land, a process of its own, does. Only a worktree under the clone's
@@ -785,20 +804,33 @@ def release_worker_worktree(root, path, lock, branch=None):
     unlocked, named as the Agent tool names a worker's (WORKER_NAME, `agent-*`; the test
     land_removes_clean_unlocked_worker_worktree) or by the item id of BRANCH (`work/<id>`; the test
     land_removes_worker_worktree_of_a_linked_clone_named_by_item_id). Returns None once it is removed,
-    else why it was left as it was (a remove that fails puts the lock back)."""
-    def run_git(*args, cwd=root):
-        p = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    else why it was left as it was (a remove that fails puts the lock back). REPO is the checkout of a repository of a
+    multi-repository workspace whose worktree PATH is (`<worker dir>/<id>/<repository>`, `repo_worktree`): the
+    worktree commands run there, any lock refuses it (no Claude Code agent made it), and the name rule is the
+    directory's, the item id. With CHECK_ONLY it only answers: None means every rule above holds and `land` would
+    remove it, and nothing is moved, unlocked or removed."""
+    home = Path(repo) if repo is not None else Path(root)
+
+    def run_git(*args, cwd=None):
+        p = subprocess.run(["git", *args], cwd=cwd or home, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
         return p.returncode, (p.stdout if not p.returncode else (p.stderr or p.stdout)).strip()
 
     state = "not locked" if lock is None else f"locked ({lock})"
-    if lock is not None and not lock.startswith(WORKER_LOCK):
-        return f"it is locked ({lock or 'no reason given'}), not by a Claude Code agent"
-    if path.resolve().parent not in worker_dirs(root):
+    item_id = branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None
+    if lock is not None and (repo is not None or not lock.startswith(WORKER_LOCK)):
+        return f"it is locked ({lock or 'no reason given'})" + ("" if repo is not None else
+                                                                ", not by a Claude Code agent")
+    parent = path.resolve().parent
+    if repo is not None:  # <worker dir>/<id>/<repository>
+        outside = parent.parent not in worker_dirs(root) or parent.name != item_id
+    else:
+        outside = parent not in worker_dirs(root)
+    if outside:
         return f"it is {state} but not under {'/'.join(worker_dir())}/ of the clone"
     if path.resolve() == Path(root).resolve():
         return f"it is {state} and is the worktree land runs in"
-    item_id = branch[len(WORK_PREFIX):] if branch and branch.startswith(WORK_PREFIX) else None
-    if lock is None and not path.name.startswith(WORKER_NAME) and path.name != item_id:
+    if repo is None and lock is None and not path.name.startswith(WORKER_NAME) and path.name != item_id:
         return f"it is not locked and not a worker's ({WORKER_NAME}*)"
     if branch:
         code, out = run_git("symbolic-ref", "-q", "HEAD", cwd=path)
@@ -829,8 +861,11 @@ def release_worker_worktree(root, path, lock, branch=None):
         if held:
             return (f"it is {state} and could not be moved ({held}): a process may still run there, its working "
                     f"directory in it ({unchecked}, so land cannot name it); end it, then run land again")
-        say(f"land: could not check {path} for live processes ({unchecked}); it could be renamed and back, so "
-            "no process holds it; removing it as a clean worker's")
+        if not check_only:
+            say(f"land: could not check {path} for live processes ({unchecked}); it could be renamed and back, so "
+                "no process holds it; removing it as a clean worker's")
+    if check_only:
+        return None
     kept = set_aside_drafts(root, path, drafts)
 
     def put_back():
@@ -870,6 +905,199 @@ def delete_landed_branch(root, branch, upstream, who="land", prefixes=None):
     code, out, err = run(["git", "branch", "-D", branch], cwd=root)
     say(f"{who}: deleted the landed branch {branch}" if not code else f"{who}: kept {branch}: {(err or out).strip()}")
     return not code
+
+
+RepoLand = namedtuple("RepoLand", "name checkout worktree upstream tip evidence")
+# a repository of a multi-repository item that land has read: its checkout, its worktree (None when none is made),
+# the default branch's remote ref after a fetch, the tip of its work/<id> branch ("" when it has none) and its
+# evidence, {"request": the merge request's url or !iid, "commit": the merge commit ("" when none is found)}
+
+
+def repo_worktree(root, iid, name):
+    """The worktree dispatch makes of repository NAME for item IID: `<worker dir>/<id>/<repository>`."""
+    return next(iter(worker_dirs(root))) / iid / name
+
+
+def repo_stop(name, why):
+    return land_stop("repositories", f"repository {name!r}: {why}")
+
+
+def repo_network(name, checkout, *args):
+    """The standard output of a git network call (fetch, ls-remote) in the repository's CHECKOUT, with the bounded
+    wait of kg_lock.run_git_bounded; a failure or a timeout stops the land naming the repository."""
+    import kg_lock
+    try:
+        p = kg_lock.run_git_bounded(args, checkout, "repositories")
+    except kg_lock.GitNetworkTimeout as e:
+        raise repo_stop(name, str(e)) from None
+    if p.returncode:
+        raise repo_stop(name, f"git {' '.join(args)} failed: {(p.stderr or p.stdout).strip()}")
+    return p.stdout
+
+
+def repo_default_ref(name, checkout):
+    """`refs/remotes/origin/<default branch>` of the repository's CHECKOUT after `git fetch origin`: the default branch
+    is read from the remote itself (`ls-remote --symref origin HEAD`), since a local `origin/HEAD` is made once and never
+    moves (dispatch reads it the same way)."""
+    repo_network(name, checkout, "fetch", "--quiet", "origin")
+    found = re.search(r"^ref: refs/heads/(\S+)\tHEAD$", repo_network(name, checkout, "ls-remote", "--symref", "origin",
+                                                                      "HEAD"), re.M)
+    if found is None:
+        raise repo_stop(name, "git ls-remote --symref origin HEAD gave no default branch")
+    ref = f"refs/remotes/origin/{found.group(1)}"
+    if not has_ref(checkout, ref):
+        raise repo_stop(name, f"the default branch {found.group(1)!r} is not among the refs the fetch made")
+    return ref
+
+
+def local_default_ref(checkout):
+    """`refs/remotes/origin/<default>` as the checkout has it (`origin/HEAD`, else origin's main or master), or None;
+    nothing is fetched (close reads it)."""
+    p = subprocess.run(["git", "symbolic-ref", "-q", "refs/remotes/origin/HEAD"], cwd=checkout, capture_output=True,
+                       text=True, encoding="utf-8", errors="replace")
+    for ref in ([p.stdout.strip()] if p.returncode == 0 else []) + [f"refs/remotes/origin/{b}" for b in ("main", "master")]:
+        if ref and has_ref(checkout, ref):
+            return ref
+    return None
+
+
+def merge_commit(checkout, tip, upstream, request_iid):
+    """The commit that merged a request into UPSTREAM, "" when none is found: the first merge commit on the path from
+    the branch's TIP up to UPSTREAM (a merge made with a merge commit), TIP itself when it is on UPSTREAM with no merge
+    commit above it (a fast-forward), else, with no branch or a squashed one, the newest first-parent commit of UPSTREAM
+    that GitLab's message `See merge request <project>!<iid>` names."""
+    def out(*args):
+        p = subprocess.run(["git", *args], cwd=checkout, capture_output=True, text=True, encoding="utf-8",
+                           errors="replace")
+        return p.stdout.strip() if p.returncode == 0 else ""
+
+    if tip and subprocess.run(["git", "merge-base", "--is-ancestor", tip, upstream], cwd=checkout,
+                              capture_output=True).returncode == 0:
+        merges = out("rev-list", "--merges", "--ancestry-path", "--topo-order", "--reverse", f"{tip}..{upstream}")
+        return merges.splitlines()[0] if merges else tip
+    return out("log", "-1", "--first-parent", "--format=%H", f"--grep=See merge request .*!{request_iid}$", upstream)
+
+
+def land_repositories(bl, iid):
+    """The repositories of a multi-repository item (`bl_base.item_repos`) as land finds them, [RepoLand] in the order
+    the item names them; [] for an item with none, whose one worktree and branch land handles as ever. Each
+    repository's merge request, the one titled `<id>:`, is read once through bl_forge in its own checkout; one that is
+    not merged (or none, or one that cannot be read) stops the land at step `requests` naming the repository and its
+    state, every repository in one message. When all are merged, each repository's origin is fetched and its default
+    branch read, every worktree dispatch made (`repo_worktree`) is checked first (a dirty, locked or live-process one
+    stops the land at step `repositories` naming it, with nothing removed) and then removed, never with --force; the
+    branches are deleted once the item has landed (`delete_repo_branches`)."""
+    names = item_repos(bl.items[iid])
+    if not names:
+        return []
+    import bl_forge
+    root = bl.root
+    say(f"land: requests: {iid}: of {', '.join(names)}")
+    ops_mark("requests")
+    found, bad = [], []
+    for name in names:
+        checkout = Path(root) / repositories()[name]
+        try:
+            request = bl_forge.read_request(checkout, title_prefix=f"{iid}:", run=run)
+        except (Refused, bl_forge.ForgeError) as e:
+            bad.append(f"repository {name!r} ({checkout}): the merge request cannot be read: {e}")
+            continue
+        found.append((name, checkout, request))
+        if request is None:
+            bad.append(f"repository {name!r}: no merge request titled '{iid}:' (state none)")
+        elif request.state != "merged":
+            bad.append(f"repository {name!r}: merge request !{request.iid} ({request.url or 'no url'}) is "
+                       f"{request.state}, not merged")
+    if bad:
+        raise land_stop("requests", "; ".join(bad) + "; nothing was removed or changed: merge each, then run land again")
+    ops_mark("repositories")
+    out, held = [], []
+    branch = WORK_PREFIX + iid
+    for name, checkout, request in found:
+        upstream = repo_default_ref(name, checkout)
+        tip = subprocess.run(["git", "rev-parse", "-q", "--verify", f"refs/heads/{branch}"], cwd=checkout,
+                             capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.strip()
+        say(f"land: repository {name}: merge request {request.url or '!' + str(request.iid)} is {request.state} "
+            f"on {upstream[len('refs/remotes/'):]}")
+        wt = repo_worktree(root, iid, name)
+        entry = next((e for e in worktree_entries(checkout) if e["path"] == wt.resolve()), None)
+        why = release_worker_worktree(root, entry["path"], entry["lock"], branch, repo=checkout,
+                                      check_only=True) if entry else None
+        if why:
+            held.append(f"repository {name!r}: its worktree {wt} {why}")
+        commit = merge_commit(checkout, tip, upstream, request.iid)
+        if not commit:
+            say(f"land: repository {name}: no merge commit found for the request (its branch is gone or squashed): "
+                "its evidence names the request only")
+        out.append(RepoLand(name, checkout, entry["path"] if entry else None, upstream, tip,
+                            {"request": request.url or f"!{request.iid}", "commit": commit}))
+    if held:
+        raise land_stop("repositories", "; ".join(held) + "; nothing was removed: end or commit what is there, then "
+                                                          "run land again")
+    for r in out:
+        if r.worktree is None:
+            continue
+        entry = next((e for e in worktree_entries(r.checkout) if e["path"] == r.worktree), None)
+        why = release_worker_worktree(root, r.worktree, entry["lock"] if entry else None, branch, repo=r.checkout)
+        if why:
+            raise repo_stop(r.name, f"its worktree {r.worktree} {why}")
+    return out
+
+
+def repo_evidence(repos):
+    """The `repositories` of an item's evidence: {name: {request, commit}} of `land_repositories`'s RepoLand list."""
+    return {r.name: dict(r.evidence) for r in repos}
+
+
+def delete_repo_branches(repos, iid):
+    """Delete each repository's `work/<id>` once the item has landed, when `git cherry` shows every commit of it on the
+    repository's default branch (delete_landed_branch: a squashed or unmerged one is kept, and said)."""
+    for r in repos:
+        if r.tip:
+            delete_landed_branch(r.checkout, WORK_PREFIX + iid, r.upstream, who=f"land: repository {r.name}")
+
+
+def clean_repository_leftovers(root, iid, checkouts):
+    """What `land` left of the item IID's repositories CHECKOUTS ([(name, checkout)]), for close: each worktree
+    dispatch made (`repo_worktree`) that is clean, unlocked, free of processes and has every commit on the
+    repository's default branch as the checkout has it last fetched (the directory `<worker dir>/<id>` goes with the
+    last one), then the `work/<id>` branch when every commit of it is there. Anything else is kept and `close: kept
+    ...: why` says why. Returns the number kept."""
+    kept, branch = 0, WORK_PREFIX + iid
+
+    def keep(what, why):
+        nonlocal kept
+        kept += 1
+        say(f"close: kept {what}: {why}")
+
+    for name, checkout in checkouts:
+        wt = repo_worktree(root, iid, name)
+        if not (checkout / ".git").exists():
+            if wt.is_dir():
+                keep(wt, f"repository {name!r} has no checkout at {checkout}")
+            continue
+        upstream = local_default_ref(checkout)
+        entry = next((e for e in worktree_entries(checkout) if e["path"] == wt.resolve()), None)
+        if upstream is None:
+            if entry or has_ref(checkout, f"refs/heads/{branch}"):
+                keep(f"repository {name!r}", "no default branch of its origin as fetched to compare against")
+            continue
+        if entry:
+            if not merged_into(checkout, entry["head"], upstream):
+                keep(wt, f"it has commits {upstream} lacks")
+                continue
+            why = release_worker_worktree(root, entry["path"], entry["lock"], branch, repo=checkout)
+            if why:
+                keep(wt, why)
+                continue
+        if has_ref(checkout, f"refs/heads/{branch}") and not delete_landed_branch(checkout, branch, upstream,
+                                                                                  who=f"close: repository {name}"):
+            kept += 1
+    try:  # the item's directory of repository worktrees, once nothing is left in it
+        repo_worktree(root, iid, "x").parent.rmdir()
+    except OSError:
+        pass
+    return kept
 
 
 # head pipeline states after which GitLab's auto-merge ("merge when the pipeline succeeds") never fires
@@ -1362,6 +1590,7 @@ def land_once(bl, a):
         raise land_stop("clean tree", "uncommitted changes: commit or stash them first (git status --short)")
     if not has_ref(root, f"refs/heads/{branch}"):
         raise land_stop("branch", f"no local branch {branch} (--branch names another)")
+    repos = land_repositories(bl, iid)  # a multi-repository item: each repository's request merged, worktrees removed
     other = checked_out_elsewhere(root, branch)
     agent_branch = None
     if other:  # a finished worker's clean worktree, locked by Claude Code or an unlocked agent-*, is removed
@@ -1431,12 +1660,13 @@ def land_once(bl, a):
                 say("land: done --commit")
                 ops_mark("done")
                 try:
-                    cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer))
+                    cmd_done(bl, argparse.Namespace(id=iid, dry_run=False, commit=True, trailer=a.trailer,
+                                                    repositories=repo_evidence(repos)))
                 except Refused as e:
                     raise land_stop("done", str(e)) from None
                 land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         if late:  # the code lane pushes an auto-merging merge request: its proof runs before that, not after
-            stray = out_of_scope(root, item_commits(root, family), scope(bl, iid))
+            stray = out_of_scope(root, item_commits(root, family), own_globs(scope(bl, iid)))
             if stray:  # done's scope rule, read before the merge request opens rather than after it merged
                 raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
                                          "refuse it once the merge request merged; nothing was pushed: "
@@ -1486,6 +1716,7 @@ def land_once(bl, a):
                 for done_branch in (branch, agent_branch):
                     if done_branch and start_ref != f"refs/heads/{done_branch}":
                         delete_landed_branch(root, done_branch, upstream)
+                delete_repo_branches(repos, iid)
 
 
 def pushed_tip(root, remote, code_branch):
@@ -1676,7 +1907,8 @@ def prune_reopened_refs(bl):
 
 def clean_worker_leftovers(root, sid, ids):
     """Remove what the closed sprint SID's workers left in the clone ROOT, as a process of its own because agents'
-    shells may not run `git worktree remove` or `git branch -D` (.claude/settings.json): the clean `agent-*` worktrees
+    shells may not run `git worktree remove` or `git branch -D` (.claude/settings.json; the repositories of a
+    multi-repository item are cleaned by `clean_repository_leftovers`): the clean `agent-*` worktrees
     of the sprint's items IDS (on `work/<id>`, or detached at a commit whose KB-Work trailer names one), the sprint's
     `work/<id>` branches and the `worktree-agent-*` branches whose tip is on the integration main (one whose
     `agent-<x>` worktree, read before any removal, is another sprint's worker is kept). Worktrees go before branches;
@@ -1954,6 +2186,9 @@ def cmd_close(bl, a):
             say(f"dropped {'; '.join(cut)} from {bl.label(i)}")
     for i, gate, opt, target in cleanup_gate_do(bl, dead):  # a gate's do names an item by id too
         say(f"dropped gate {gate} do {opt!r} (item {target}) from {bl.label(i)}")
+    declared = repositories()  # each item's repositories, read before the deletion
+    in_repos = {i: [(n, Path(bl.root) / declared[n]) for n in item_repos(bl.items[i])] for i in sorted(gone)
+                if item_repos(bl.items[i])}
     for i in gone:
         bl.delete(i)
     label = bl.label(sid)
@@ -1964,6 +2199,8 @@ def cmd_close(bl, a):
     commit_written(bl, a, "close", sid, body="\n".join(summary), title=title)
     try:  # the workers' leftovers go last, and whatever goes wrong there never undoes or fails the close
         clean_worker_leftovers(bl.root, sid, sorted(gone))
+        for i, checkouts in in_repos.items():  # what land left of a multi-repository item's repositories
+            clean_repository_leftovers(bl.root, i, checkouts)
     except Exception as e:  # noqa: BLE001
         say(f"close: kept the worker leftovers of {sid}: {e}")
     return 0
