@@ -2,7 +2,7 @@
   "id": "ST-hxe4bekb",
   "kind": "story",
   "title": "Review sprint: Planning rules 2: plan-time warnings and probes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-avwlotax"
+  "evidence": {
+    "commit": "cc90dd64f34db74f4a0c3cae2aea4a41aaa5f1e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "30beed6917e40f9e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a414392cb3bae318"
+      }
+    ]
+  }
 }
