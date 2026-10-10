@@ -1,6 +1,7 @@
-"""bl_forge.py (kb/_self/backlog.md, Project settings): the one read of a merge request and of a pipeline, the merge
-of the item's own request and the description it carries, through a glab arm and a gh arm chosen by the `forge` setting
-and aimed at `forge_project`; land and merge (`bl_land`) call it with that one project.
+"""bl_forge.py (kb/_self/backlog.md, Project settings): the one read of a merge request and of a pipeline, its jobs
+and a job's log, the merge of the item's own request and the description it carries, through a glab arm and a gh arm
+chosen by the `forge` setting and aimed at `forge_project`; land and merge (`bl_land`), the intake's CI detector
+(`bl_intake.latest_pipeline`) and the query log's CI check (`ql_deliver.ci_pipeline`) call it with that one project.
 The forge is a recorded one: answers of the shapes `glab api` and `gh pr list` / `gh run list` give (the gh ones as
 `gh pr list --json` printed them on a merged pull request of a public repository, trimmed), served by a runner that
 records each call; nothing here reaches a network or a CLI.
@@ -68,7 +69,7 @@ def run_check(name, status="COMPLETED", conclusion="SUCCESS"):
             "workflowName": "Tests", "detailsUrl": "https://github.com/group/kb/actions/runs/1/job/2"}
 
 
-def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary(settings):
+def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary_forge_pipeline(settings):
     # glab arm: the project is forge_project, the open request is the one read, whatever else its branch has
     root = settings(forge_project="other/proj")
     listed = [mr(3, "closed"), mr(4, "merged", merged_at="2026-10-09T14:47:45Z"), mr(5, "opened")]
@@ -104,6 +105,45 @@ def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary(settings):
     assert all(c[0] == "gh" and c[c.index("-R") + 1] == "github.com/group/kb" for c in run.forge_calls())
     with pytest.raises(bl_forge.ForgeError, match="gh pr list failed"):
         bl_forge.read_request(root, branch=BRANCH, run=Recorded(GITHUB_URL))
+
+    # the intake's CI detector and the delivery's CI check read pipelines, jobs and a log through the arm, with the
+    # one forge_project (GitLab: a retried job counts by its newest attempt; no `auth status` call, no job list for
+    # a pipeline whose status says failed)
+    import bl_intake
+    import ql_deliver
+    fail = {"name": "lint", "status": "failed", "failure_reason": "script_failure", "started_at": "2026-10-09"}
+    pipes = [{"id": 78, "sha": "0" * 40, "status": "success", "web_url": "https://git.corp.example.com/p/78"}]
+    root = settings(forge_project="other/proj")
+    run = Recorded(GITLAB_URL, [("jobs/5/trace", "FAILED a.py::t - boom\n"),
+                                ("pipelines/78/jobs", [dict(fail, id=6, name="kb-tests", status="success"), dict(fail, id=5),
+                                                     dict(fail, id=4, name="kb-tests")]),
+                                ("pipelines?ref=main", pipes), ("pipelines?sha=", pipes)])
+    got, note = bl_intake.latest_pipeline(root, None, run)
+    assert (got["id"], got["red"], got["jobs"], got["failure"], got["calls"], note) == (
+        78, True, ["lint"], "a.py::t", 1, "glab on git.corp.example.com")
+    assert all("projects/other%2Fproj/" in " ".join(c) for c in run.forge_calls())
+    verdict, detail, pipe = ql_deliver.ci_pipeline(GITLAB_URL, "0" * 40, run)
+    assert (verdict, pipe["id"]) == ("red", 78) and "script failed in lint" in detail
+    assert ql_deliver.pipeline_failure(GITLAB_URL, pipe, run)[0] == "a.py::t" and pipe["job"] == "lint"
+    assert not any("auth" in c for c in run.forge_calls())
+    assert bl_intake.latest_pipeline(root, "kb-tests", run)[0]["red"] is False  # the newest attempt succeeded
+    assert ql_deliver.ci_pipeline(GITLAB_URL, "0" * 40, Recorded(GITLAB_URL))[0] == "skip"  # not signed in
+
+    # GitHub: a failed run's jobs are GitLab-shaped, its log is read through gh api, and a project with no setting
+    # reads the remote's url (github.com is GitHub, its project the url's)
+    root = settings()
+    jobs = {"jobs": [{"databaseId": 9, "name": "build", "status": "completed", "conclusion": "failure",
+                      "startedAt": "2026-10-09T14:00:00Z"}]}
+    runs = [{"databaseId": 31, "headSha": "1" * 40, "status": "completed", "conclusion": "failure",
+             "url": "https://github.com/group/kb/actions/runs/31"}]
+    run = Recorded(GITHUB_URL, [("actions/jobs/9/logs", "Traceback (most recent call last)\n"),
+                                ("gh run view", jobs), ("gh run list", runs)])
+    got, note = bl_intake.latest_pipeline(root, None, run)
+    assert (got["id"], got["red"], got["jobs"], got["first"], got["calls"], note) == (
+        31, True, ["build"], "build", 1, "gh on github.com")
+    assert all(c[c.index("-R") + 1] == "github.com/group/kb" for c in run.forge_calls() if "-R" in c)
+    assert ql_deliver.ci_pipeline(GITHUB_URL, "1" * 40, run)[:2] == ("red", "gh on github.com: failed")
+    assert bl_intake.latest_pipeline(root, "build", run)[0]["red"] is True
 
 
 def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project(settings, monkeypatch, capsys):
