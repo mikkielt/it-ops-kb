@@ -53,6 +53,7 @@
   "lane_module": "kblane",
   "worktree_dir": ".claude/worktrees",
   "scratch_dir": "_cache/scratch",
+  "forge": "gitlab",
   "forge_project": "",
   "trackers": {},
   "docs_map": "kb/_self/map.csv",
