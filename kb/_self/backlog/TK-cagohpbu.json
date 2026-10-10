@@ -2,7 +2,7 @@
   "id": "TK-cagohpbu",
   "kind": "task",
   "title": "The plugin's horizon --hook and intake hook entries run only when the host project's backlog.json key turns them on",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,
@@ -66,5 +66,19 @@
     }
   ],
   "notes": "Orchestrator at dispatch: the suite is at 100 of 100 test ids (_tools/tests_ceiling.json) and near the 20 s darwin ceiling: plugin_sprint_hooks_opt_in replaces or extends an existing test (e.g. a plugin_sprint_* test of test_backlog_portable.py renamed to cover both), adding no id.",
-  "claimed_by": "worker-TK-cagohpbu"
+  "evidence": {
+    "commit": "05dca81eb7db5006e8c7e22fff2a12d1e030cc14",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "plugin_sprint_hooks_opt_in"
+        ],
+        "exit": 0,
+        "sha256": "ac2eb30ae6d70d35"
+      }
+    ]
+  }
 }
