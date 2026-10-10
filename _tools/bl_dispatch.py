@@ -27,12 +27,14 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (RESEARCH_KINDS, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, item_repos,
+from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, item_repos,
                      need, repositories, research_touches, say, scope, scratch_dir, setting, split_touch,
                      touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
+PLUGIN_ROLE_FILE = "agents/worker.md"  # the plugin's, under PLUGIN_ROOT (the directory of the tool scripts): the file
+# the brief names when the project has no ROLE_FILE
 BRIEF_NAME = "brief.md"
 RESULT_NAME = "result.json"  # the session's --output-format json output
 STDERR_NAME = "stderr.log"
@@ -295,6 +297,18 @@ def repo_lines(bl, iid, branch):
     return out
 
 
+def role_file_line(root):
+    """The brief's opening sentence for the project at ROOT: its own role file when it has one, else the plugin's
+    `agents/worker.md` by its full path, with what `${CLAUDE_PLUGIN_ROOT}` in it means (the Bash tool does not set the
+    variable and a plain file read substitutes none, so the brief says the path)."""
+    head = "You are a sprint worker for this project's backlog. "
+    if (Path(root) / ROLE_FILE).is_file():
+        return head + f"Your role file is `{ROLE_FILE}`: read it first and follow it."
+    plugin = PLUGIN_ROOT.as_posix()
+    return (head + f"Your role file is the plugin's, `{plugin}/{PLUGIN_ROLE_FILE}`: read it first and follow it. "
+            f"`${{CLAUDE_PLUGIN_ROOT}}` in it is `{plugin}`: write that path where a command shows the variable.")
+
+
 def compose_brief(bl, iid, known=(), probe=None):
     """The brief for ITEM's worker, as text. Reads the backlog and runs the rules pack; writes nothing."""
     it = bl.items[iid]
@@ -306,8 +320,7 @@ def compose_brief(bl, iid, known=(), probe=None):
         if value:
             facts.append(f"{label} {bl.label(value)}")
     head = f"{bl.label(iid)} ({', '.join(facts)})"
-    out = [f"You are a sprint worker for this project's backlog. Your role file is `{ROLE_FILE}`: read it first and "
-           "follow it.", "",
+    out = [role_file_line(bl.root), "",
            f"Worktree (work only here): {wt}, on branch `{branch}` (made for you; the item is already claimed).",
            *repo_lines(bl, iid, branch),
            f"Scratch directory for throwaway files: {scratch}/ (never /tmp, never the worktree).", "",

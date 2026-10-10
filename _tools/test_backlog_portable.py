@@ -273,7 +273,8 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
         assert bl("claim", ids[name], "--by", "tester")[0] == 0
     code, out = bl("brief", ids["work"], "--known", "tests/test_x.py::test_y=BG-aaaaaaaa")
     assert code == 0, out
-    assert ".claude/agents/kb-worker.md" in out and f"_cache/scratch/{ids['work']}/" in out
+    assert "agents/worker.md" in out and ".claude/agents/kb-worker.md" not in out  # no role file here: the plugin's
+    assert f"_cache/scratch/{ids['work']}/" in out
     assert f'"id": "{ids["work"]}"' in out and "Goal of work item" in out  # the item's JSON and its goal text
     assert "external jira PROJ-123 https://jira.corp.example.com/browse/PROJ-123" in out
     assert f"- {ids['sibling']} \u201csibling item\u201d: b.txt" in out  # the in-flight sibling and its files
@@ -635,3 +636,45 @@ def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stra
                 os.kill(pid, 15)
             except OSError:
                 pass
+
+
+PLUGIN_VAR = "${CLAUDE_PLUGIN_ROOT}"
+
+
+def unparameterised(text):
+    """What a plugin skill or agent text holds that only the kb has: a tool script without the plugin root before it,
+    or a path of the kb's own tree."""
+    bad = re.findall(r"(?<!\$\{CLAUDE_PLUGIN_ROOT\}/_tools/)\b[a-z_]+\.py\b", text)
+    bad += re.findall(r"(?<!\$\{CLAUDE_PLUGIN_ROOT\}/)\b_tools/", text)
+    return bad + re.findall(r"\bkb/|\.claude/|AGENTS\.md|_cache/", text)
+
+
+def test_plugin_sprint_ships_the_skills_and_the_worker_parameterised_by_the_plugin_root_and_lists_them():
+    top = Path(TOOLS).parent
+    manifest = json.loads((top / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8"))
+    skills = {n: top / "skills" / n / "SKILL.md" for n in ("sprint", "item", "backlog")}
+    agent = top / "agents" / "worker.md"
+    assert {f"./skills/{n}" for n in skills} <= set(manifest["skills"]), manifest["skills"]
+    assert "./agents/worker.md" in manifest["agents"], manifest["agents"]
+    for path in (*skills.values(), agent):
+        text = path.read_text(encoding="utf-8")
+        assert f"python3 {PLUGIN_VAR}/_tools/backlog.py" in text and unparameterised(text) == [], (path, unparameterised(text))
+        front = text.split("---")[1]
+        # a skill's name is its directory's, so a link under another name serves it; an agent's name is required
+        assert ("name: kb-worker" in front) == (path == agent) and ("name:" in front) == (path == agent), (path, front)
+    assert unparameterised("python3 _tools/backlog.py show X") != []  # the planted failure: a bare kb path is found
+    assert unparameterised("see kb/_self/backlog.md") != []
+
+
+def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugins(tmp_path):
+    import bl_dispatch
+    plugin = bl_dispatch.PLUGIN_ROOT
+    assert (plugin / bl_dispatch.PLUGIN_ROLE_FILE).is_file()  # the plugin's role file is where the brief says
+    line = bl_dispatch.role_file_line(tmp_path)  # a project with none: the plugin's, and what the variable stands for
+    assert f"`{plugin.as_posix()}/agents/worker.md`" in line and f"`{PLUGIN_VAR}` in it is `{plugin.as_posix()}`" in line
+    assert ".claude/agents/kb-worker.md" not in line, line
+    own = tmp_path / ".claude" / "agents" / "kb-worker.md"
+    own.parent.mkdir(parents=True)
+    own.write_text("# the project's own role file\n", encoding="utf-8", newline="\n")
+    line = bl_dispatch.role_file_line(tmp_path)  # a project with its own keeps it
+    assert "Your role file is `.claude/agents/kb-worker.md`" in line and "plugin" not in line.split("backlog. ")[1], line

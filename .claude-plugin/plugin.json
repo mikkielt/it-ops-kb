@@ -1,7 +1,7 @@
 {
   "name": "it-ops-kb",
   "displayName": "it-ops-kb",
-  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, identity, Presidio) and on MCP, Claude Code and AI agents: the kb MCP server, /kb-lookup, /kb-review-workspace, /kb-gap (drafts a gap report to paste), the kb-lookup and kb-reviewer agents and the kb: prompt hook",
+  "description": "Read-only access to it-ops-kb: cited facts from official sources on Windows endpoint management (DSC v3, ConfigMgr, Intune, Autopilot, Entra ID, AD, Graph, GPO, Defender, SQL Server, Power BI, GitLab CI, Ansible, Python tooling, baselines, identity, Presidio) and on MCP, Claude Code and AI agents: the kb MCP server, /kb-lookup, /kb-review-workspace, /kb-gap (drafts a gap report to paste), the kb-lookup and kb-reviewer agents and the kb: prompt hook; and for a project with a backlog.json, /sprint, /item and /backlog with the kb-worker agent, which run backlog.py from the plugin against the project's backlog",
   "author": {
     "name": "mikkielt",
     "url": "https://gitlab.com/mikkielt"
@@ -10,8 +10,8 @@
   "repository": "git@gitlab.com:mikkielt/it-ops-kb.git",
   "license": "Apache-2.0 AND CC-BY-4.0",
   "keywords": ["windows", "endpoint-management", "intune", "configmgr", "entra-id", "dsc", "mcp", "claude-code", "knowledge-base"],
-  "skills": ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace", "./.claude/skills/kb-gap"],
-  "agents": ["./.claude/agents/kb-lookup.md", "./.claude/agents/kb-reviewer.md"],
+  "skills": ["./.claude/skills/kb-lookup", "./.claude/skills/kb-review-workspace", "./.claude/skills/kb-gap", "./skills/sprint", "./skills/item", "./skills/backlog"],
+  "agents": ["./.claude/agents/kb-lookup.md", "./.claude/agents/kb-reviewer.md", "./agents/worker.md"],
   "mcpServers": {
     "kb": {
       "command": "python3",
