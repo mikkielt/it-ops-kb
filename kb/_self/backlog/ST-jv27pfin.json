@@ -63,7 +63,9 @@
         "no: print only the last 20 lines"
       ],
       "recommendation": "yes: one clause on the check's line when the output holds Traceback (most recent call last)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes: one clause on the check's line when the output holds Traceback (most recent call last)",
+      "by": "operator"
     }
   ],
   "links": [
