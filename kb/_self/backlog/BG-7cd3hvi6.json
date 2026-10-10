@@ -2,7 +2,7 @@
   "id": "BG-7cd3hvi6",
   "kind": "bug",
   "title": "backlog.py's usage text for precheck omits a bug's repro and the time-windowed detector warning",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m3azo2y7",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/backlog.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "kb-worker-7cd3hvi6"
 }
