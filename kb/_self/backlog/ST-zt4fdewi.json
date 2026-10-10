@@ -2,7 +2,7 @@
   "id": "ST-zt4fdewi",
   "kind": "story",
   "title": "A brief carries the rules of the project's own docs from backlog.json's docs map, and a project that is a kb root gets them as cited fact lines",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-befc6yqr",
   "priority": "P2",
@@ -88,5 +88,19 @@
     ".claude/skills/kb-add-root/SKILL.md and kb-ingest: a repository becomes a kb root with CODE and DOC facts"
   ],
   "notes": "Order in SP-befc6yqr: fourth, after ST-nq5z6whn. Its -k brief_rules test goes into _tools/test_backlog_portable.py and collects nothing until added.",
-  "claimed_by": "kb-worker-zt4fdewi"
+  "evidence": {
+    "commit": "effc59efd4254334b9e915db1afa528f03b991db",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "brief_rules"
+        ],
+        "exit": 0,
+        "sha256": "5772ddad6a507462"
+      }
+    ]
+  }
 }
