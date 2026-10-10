@@ -71,7 +71,9 @@
         "skipped: [] is a step land skips, as for land_stale, land_eval and land_lint"
       ],
       "recommendation": "refused: land_push must be a non-empty argv, since a landing with no push cannot be verified as landed",
-      "class": "push"
+      "class": "push",
+      "answer": "refused: land_push must be a non-empty argv, since a landing with no push cannot be verified as landed",
+      "by": "operator"
     }
   ],
   "notes": "Found by the second-project run of TK-ew6dsm2l (findings 16 and 17): land stopped at step kbgit.py sync --push: python3 _tools/kbgit.py sync --push exited 2 (can't open file .../project/_tools/kbgit.py), after land: checks ran because kblane classed src/greet.py as code. The suite is at the 100-id ceiling and the 20 s darwin ceiling (BG-ucwq6kga): extend an existing land or portable test, add no id. The rerun of the second project's land after this lands is TK-ew6dsm2l's.",
