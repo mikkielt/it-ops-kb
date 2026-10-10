@@ -2,7 +2,7 @@
   "id": "ST-4jjz3vxs",
   "kind": "story",
   "title": "One forge module answers merge request and pipeline state for land, merge, red-pipeline and stalled, with a glab arm and a gh arm",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-dqkf3i42",
   "priority": "P2",
@@ -41,5 +41,38 @@
     "merged: BG-iq52pvdl"
   ],
   "notes": "Merged from BG-iq52pvdl “forge_project is half-honoured: land lists merge requests by the remote URL's project but reads and rewrites descriptions by the setting's” at the 2026-10-10 backlog triage (its goal is folded into this goal; found by the SP-befc6yqr review, S2 of ST-qgnjxiol). Premise: bl_land.py:814 and :2035 read forge_project, ql_deliver.forge_list:77 re-derives the project from the URL, and bl_intake.py has no forge_project; the single forge module removes the split by construction. Premise run at planning (SP-dqkf3i42, 2026-10-10): python3 -c \"import sys; sys.exit('forge_project' not in open('_tools/bl_intake.py').read())\" exits 1 on the base, so it reproduces; _tools/bl_forge.py is absent. selfcheck's main check reads ci.pipeline ops rows and makes no forge call itself, so the story names it only as a reader of the rows red-pipeline writes. Its tests go in the new _tools/test_forge.py (the first task creates it; git add it before a test run). The -k selectors collect NONE on the base: tests yet to write.",
-  "claimed_by": "orch-dqkf3i42"
+  "evidence": {
+    "commit": "894ef550ed1f4400e605467467580f555bbe631a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "forge"
+        ],
+        "exit": 0,
+        "sha256": "35eb24dea32973c2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "forge_one_project"
+        ],
+        "exit": 0,
+        "sha256": "238853b1291f86b6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(1 if any('\"glab\"' in open('_tools/' + f, encoding='utf-8').read() for f in ('bl_land.py', 'bl_intake.py', 'bl_ci.py', 'bl_stall.py', 'bl_selfcheck.py', 'ql_deliver.py')) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
