@@ -2,7 +2,7 @@
   "id": "ST-w3jhowin",
   "kind": "story",
   "title": "census.py summary prints the phase-2 reading queue's size and estimated tokens, and each census phase records an ops row with its wall time and counts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",
@@ -95,5 +95,29 @@
     }
   ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py summary kb/public/_census/2026-09-26.csv printed bucket, outcome and needs-reading-by-note counts and the confirmed count, and nothing about the size of what phase 2 reads (no facts, characters or tokens); no census.phase ops row exists (git grep census.phase in _tools finds nothing). This story sets the baseline the epic's later stories are measured against, so it lands first. Its test selector collects no test until the work adds _tools/test_census.py. The tokens estimate follows kb/_self/usage.md's characters/4 convention.",
-  "claimed_by": "kb-worker-ST-w3jhowin"
+  "evidence": {
+    "commit": "467680da21b8f29275ebc8ebfe7b85bb8ba8bf2e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_queue"
+        ],
+        "exit": 0,
+        "sha256": "11d4a0aa65aa0c50"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/census.py",
+          "summary",
+          "kb/public/_census/2026-09-26.csv"
+        ],
+        "exit": 0,
+        "sha256": "11032a8cec6e8704"
+      }
+    ]
+  }
 }
