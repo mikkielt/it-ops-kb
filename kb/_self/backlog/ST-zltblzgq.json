@@ -41,6 +41,21 @@
       "class": "agents-rule",
       "answer": "record gone checks only on a run that commits, never under --dry-run",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "The suite sits at its 100-id ceiling: how does the planted done_dry_run_gone test fit under it?",
+      "options": [
+        "fold it into test_empty_selection_refused_and_gone_once, the existing test of the same gone-once rule, renamed to carry done_dry_run_gone",
+        "replace another test of the suite with it"
+      ],
+      "recommendation": "fold it into test_empty_selection_refused_and_gone_once, the existing test of the same gone-once rule, renamed to carry done_dry_run_gone",
+      "do": {
+        "fold it into test_empty_selection_refused_and_gone_once, the existing test of the same gone-once rule, renamed to carry done_dry_run_gone": "ST-zltblzgq",
+        "replace another test of the suite with it": "ST-zltblzgq"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [
