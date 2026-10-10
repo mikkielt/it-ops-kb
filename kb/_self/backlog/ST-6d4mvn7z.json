@@ -2,7 +2,7 @@
   "id": "ST-6d4mvn7z",
   "kind": "story",
   "title": "census.py check retries a name-resolution or connection error once and counts it apart from a blocked host",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ilje65fa",
   "priority": "P3",
@@ -25,5 +25,6 @@
     "kb/_self/code.md",
     "kb/_self/web-sources.md"
   ],
-  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 10 live rows with evidence 'HTTP error: [Errno 8] nodename nor servname provided' went to phase 2 (7 updated, 3 confirmed), so a reader fetched pages the check could not. A host that still fails after the retry stays a counted dns row; the tool does not change resolvers."
+  "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 10 live rows with evidence 'HTTP error: [Errno 8] nodename nor servname provided' went to phase 2 (7 updated, 3 confirmed), so a reader fetched pages the check could not. A host that still fails after the retry stays a counted dns row; the tool does not change resolvers.",
+  "claimed_by": "worker-ST-6d4mvn7z"
 }
