@@ -60,6 +60,17 @@
       "class": "agents-rule",
       "answer": "fold it into an existing close or drop scenario of _tools/test_land_e2e.py, renamed to carry reopened_refs",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "An item this command removes still has its file on origin/main until the removal is pushed: does the prune keep its reopen ref until then, as it keeps one of an item filed on main after the checkout branched?",
+      "options": [
+        "delete it: an item this checkout holds or held (in HEAD or the merge base) is gone by its own removal, and only an item filed on main since is kept",
+        "keep it until origin/main drops the file"
+      ],
+      "recommendation": "delete it: an item this checkout holds or held (in HEAD or the merge base) is gone by its own removal, and only an item filed on main since is kept",
+      "class": "push"
     }
   ],
   "links": [
