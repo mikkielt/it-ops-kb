@@ -2,7 +2,7 @@
   "id": "BG-4tvqk5tp",
   "kind": "bug",
   "title": "committed_calls keeps the oldest call rows within its read budget, so the repeats detector's latest closed week is the first cut",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,6 @@
       "answer": "newest-rows: keep the newest REPEAT_ROWS_MAX rows and count the older ones in over",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "kb-worker-4tvqk5tp"
 }
