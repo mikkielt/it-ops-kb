@@ -6,8 +6,8 @@ work; kb/_self/tools.md; the kb-sprint skill, Stalled work).
   stalled --json               the same as one JSON object
 
 The signals are read from the claims (item files), git and the ops rows of the query log's spool and committed ops
-sidecars (`ql_store` readers; a row's closed keys only, never event text), and never from the network or from a
-process's arguments:
+sidecars (`ql_store` readers; a row's closed keys only, never event text), never from a process's arguments, and, for
+`mr-dead` only, from one read of each claimed item's request through `bl_forge`, the one network call:
 
   claim-no-commit     a claim with no work commit past CLAIM_NO_COMMIT_S
   returned-no-commit  a worker's worktree with no live process, no work commit and a claim older than
@@ -17,11 +17,16 @@ process's arguments:
   done-refused        DONE_REFUSED_N `done.refused` rows of the item
   check-timeout       CHECK_TIMEOUT_N refused dones whose `ms` reached CHECK_TIMEOUT_S: a check ran out of its time
   land-same-step      LAND_SAME_STEP_N failed `land.step` rows of one step of the item
+  mr-dead             the item's `code/<id>` request (claimed items) is not merged and will not merge by waiting: its
+                      head pipeline failed, was canceled, skipped or is manual (MR_DEAD_PIPELINE), or its detailed
+                      merge status is one of MR_DEAD_MERGE
   red-main            the newest `ci.pipeline` row is red (claimed items)
   lock-wait           the host test lock has been held, by a live process, for HOST_LOCK_WAIT_S (claimed items)
 
-A signal whose input cannot be read is `unknown:<what>`, never a guess. Standard library only; imports `bl_base` and
-`bl_cli` at load and never `backlog` (a layer rule); the query log, `tests` and `bl_procs` are imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
+A signal whose input cannot be read is `unknown:<what>`, never a guess: a request read that fails, a forge CLI not
+signed in or a remote that names no forge project is `unknown:forge`. Standard library only; imports `bl_base` and
+`bl_cli` at load and never `backlog` (a layer rule); the query log, `tests`, `bl_procs`, `bl_forge` and `kg_lane` are
+imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
 import datetime
 import json
@@ -43,8 +48,21 @@ LAND_SAME_STEP_N = 2  # failed rows of one `land` step of one item that make the
 HOST_LOCK_WAIT_S = 1800  # seconds the host test lock may be held before the runs waiting for it are a stall
 LOCK_NAME = "kb-tests.lock"  # tests.py's host lock file (tests.HOST_LOCK_NAME), read for its holder and start
 
+# Head pipeline words of a request that never become `success` by waiting: the pipeline ended without it, or holds at a
+# manual job.
+MR_DEAD_PIPELINE = ("failed", "canceled", "skipped", "manual")
+# Detailed merge statuses (GitLab's `detailed_merge_status`, kb/public/gitlab/automated-merge-requests.md) that no
+# wait clears: each needs a push, a rebase, an approval, a resolved thread, an unlocked path, a finished external
+# check or another request's merge. `conflict` is left out: the status names it also while the conflict check is still
+# computing, and the request read carries no raw merge status to tell the two apart. A status not listed (`checking`,
+# `unchecked`, `preparing`, `ci_still_running`, `merge_time`, ...) is no signal.
+MR_DEAD_MERGE = ("not_open", "draft_status", "need_rebase", "commits_status", "discussions_not_resolved",
+                 "not_approved", "requested_changes", "ci_must_pass", "jira_association_missing", "locked_paths",
+                 "locked_lfs_files", "title_regex", "security_policy_violations", "status_checks_must_pass",
+                 "merge_request_blocked")
+
 SIGNALS = ("claim-no-commit", "returned-no-commit", "returned-staged", "done-refused", "check-timeout",
-           "land-same-step", "red-main", "lock-wait")
+           "land-same-step", "mr-dead", "red-main", "lock-wait")
 ROW_KEYS = ("id", "ts", "surface", "v")  # the spool row's own keys, which ops_problems does not read
 
 
@@ -263,15 +281,42 @@ def claim_signals(root, iid, now):
     return out, unknown
 
 
+def request_dead(request):
+    """Whether a `bl_forge.Request` will not merge by waiting. None (no request), a merged one (its `not_open` is the
+    goal reached) and a status not listed in MR_DEAD_MERGE are no signal."""
+    if request is None or request.state == "merged":
+        return False
+    return request.pipeline in MR_DEAD_PIPELINE or request.merge_status in MR_DEAD_MERGE
+
+
+def forge_reads(root, ids, run=None):
+    """{item id: whether its `code/<id>` request is dead} for the ids read, one `bl_forge` request read for each. The
+    first read that fails (a CLI not installed or signed in, a failed call, a remote that names no forge project)
+    ends the reads, as the rest would fail the same way: an id left out is `unknown:forge`."""
+    import bl_forge
+    from kg_lane import CODE_BRANCH_PREFIX
+    dead = {}
+    if not ids:
+        return dead
+    try:
+        arm = bl_forge.arm(root, run)
+        for iid in ids:
+            dead[iid] = request_dead(arm.request(branch=CODE_BRANCH_PREFIX + iid))
+    except Exception:  # noqa: BLE001 - a read that fails is unknown:forge, never an error of the listing
+        pass
+    return dead
+
+
 def ready_items(bl):
     """The ready items (`next`'s list: todo, nothing it waits on, in an active sprint) in work order."""
     return sorted((i for i in bl.items if bl.items[i].get("status") == "todo" and not bl_base.waits(bl, i)),
                   key=bl.order_key)
 
 
-def collect(bl, now=None):
-    """{main, lock, rows, items}: the stall signals of every claimed or ready item. `items` is a list of {id, label,
-    state, claimed_by, signals, unknown} in work order, only items with a signal or an unknown."""
+def collect(bl, now=None, run=None):
+    """{main, lock, ops_rows, forge_reads, items}: the stall signals of every claimed or ready item. `items` is a list
+    of {id, label, state, claimed_by, signals, unknown} in work order, only items with a signal or an unknown. RUN is
+    `bl_base.run`'s shape, the runner of the forge reads (the default is `bl_base.run`)."""
     now = now_epoch() if now is None else now
     root = str(bl.root)
     try:
@@ -284,12 +329,17 @@ def collect(bl, now=None):
     held_long = lock == "held" and lock_detail["age"] > HOST_LOCK_WAIT_S
     doing = [i for i, it in bl.items.items() if it.get("status") == "doing" and it.get("claimed_by")
              and it.get("kind") != "sprint"]
+    dead = forge_reads(root, sorted(doing, key=bl.order_key), run)
     out = []
     for iid in sorted(set(doing) | set(ready_items(bl)), key=bl.order_key):
         signals, unknown = list(from_rows.get(iid, [])), []
         if iid in doing:
             more, unknown = claim_signals(root, iid, now)
             signals += more
+            if iid not in dead:
+                unknown.append("unknown:forge")
+            elif dead[iid]:
+                signals.append("mr-dead")
             if main == "red":
                 signals.append("red-main")
             if held_long:
@@ -301,7 +351,7 @@ def collect(bl, now=None):
             out.append({"id": iid, "label": bl.label(iid), "state": "doing" if iid in doing else "ready",
                         "claimed_by": bl.items[iid].get("claimed_by"), "signals": signals, "unknown": unknown})
     return {"main": {"state": main, "ts": main_ts}, "lock": {"state": lock, "detail": lock_detail},
-            "ops_rows": None if rows is None else len(rows), "items": out}
+            "ops_rows": None if rows is None else len(rows), "forge_reads": len(dead), "items": out}
 
 
 # ---------------------------------------------------------------- the command

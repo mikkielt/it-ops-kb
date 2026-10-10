@@ -20,16 +20,18 @@ The seven checks, each independent and each a result {name, state, detail, remed
   host         the 5-minute load average is under LOAD_PER_CORE times the cores, no host lock (`kb-tests.lock`,
                `kb-main.lock`) has a live holder older than `bl_stall.HOST_LOCK_WAIT_S` (pid and clone named; a
                holder that is gone is cleared by the next taker and is no failure)
-  claims       no `doing` item shows `claim-no-commit`, `returned-no-commit` or `returned-staged` (`bl_stall.collect`'s
-               signals, read from the claims, git and the worktrees' processes)
+  claims       no `doing` item shows `claim-no-commit`, `returned-no-commit`, `returned-staged` or `mr-dead`
+               (`bl_stall.collect`'s signals, read from the claims, git, the worktrees' processes and one read of
+               each claimed item's `code/<id>` request through `bl_forge`, the one network call of this command; a
+               read that fails is `unknown:forge`, no failure)
   orphans      no process in a checkout of the clone runs on after its parent is gone (`bl_procs.snapshot`'s
                `orphan`: a background run a session left behind, named, never signaled; a foreign process is a live
                session's and no failure, nor is a `hook`, a session-end run of the query log's distill younger than
                `bl_procs.HOOK_GRACE_S`, named with its age in the result's detail); `unknown` on a host that cannot
                list working directories
   main         the newest `ci.pipeline` row (`bl_stall.main_state`, the row `red-pipeline` writes) is not red;
-               `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (the one network
-               call, never made here, so the check is offline and fast)
+               `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (this check reads
+               the rows only and makes no forge call of its own)
 
 The output is capped: each check prints at most one line of at most LINE_MAX characters, a list in it names its first
 SHOW entries and a count of the rest (`+K more`), and the whole is under MAX_CHARS characters, whole lines dropped
@@ -53,7 +55,7 @@ LOAD_PER_CORE = 1.5  # the 5-minute load average, per core, above which the host
 SHOW = 3  # entries of a list a line names; the rest is `+K more`
 LINE_MAX = 330  # characters of one line
 MAX_CHARS = 1500  # characters of the whole output; whole lines past it are dropped and counted
-CLAIM_SIGNALS = ("claim-no-commit", "returned-no-commit", "returned-staged")  # the stall signals of a stale claim
+CLAIM_SIGNALS = ("claim-no-commit", "returned-no-commit", "returned-staged", "mr-dead")  # the stall signals of a claim
 LOCKS = ("kb-tests.lock", "kb-main.lock")  # the host's locks, in tests.HOST_LOCK_NAME and kg_lock.LOCK_NAME
 
 # The commands the skills run (the kb-sprint, kb-item, kb-backlog and kb-verify skills, the runbook's Working on items
@@ -100,7 +102,7 @@ REMEDY = {
     "host-lock": "wait for the holder or narrow the tests to a `-k` selection; end the holder only when it is yours "
                  "and stuck",
     "claims": "ask its worker, or release it (`backlog.py release ID`) and dispatch it again with the failure named in "
-              "the brief",
+              "the brief; for mr-dead its work is pushed, so read its request first",
     "orphans": "end it if it is yours (`python3 _tools/backlog.py procs` lists each with its pid and checkout); "
                "nothing ends it for you",
     "main": "file the red pipeline as a bug (`backlog.py red-pipeline`) and take the next ready item",

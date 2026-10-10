@@ -146,7 +146,8 @@ def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary_forge_pipeli
     assert bl_intake.latest_pipeline(root, "build", run)[0]["red"] is True
 
 
-def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project(settings, monkeypatch, capsys):
+def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project_forge_stalled(settings, monkeypatch,
+                                                                                         capsys):
     root = settings(forge_project="other/proj")
     single = mr(5, "opened", detailed_merge_status="mergeable", head_pipeline={"id": 77, "status": "success"})
     run = Recorded(GITLAB_URL, [("merge_requests/5", single), ("merge_requests?source_branch", [mr(5, "opened")]),
@@ -218,3 +219,46 @@ def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project(sett
     monkeypatch.setattr(bl_land, "merged_on_main", lambda root, remote, shas: next(seen))
     assert bl_land.wait_merge(root, "origin", ["a" * 40], 600, sleep=slept.append) == 3
     assert slept == [bl_land.WAIT_POLL, bl_land.WAIT_POLL]
+
+    # stalled reads each claimed item's code/<id> request once through the arm, with the one forge_project, and names
+    # mr-dead for a pipeline that failed, was canceled, skipped or is manual, or a merge status waiting never clears;
+    # a status not listed (a conflict still computing too), a merged request and no request are no signal; a read
+    # that fails is unknown:forge, never a signal, and ends the reads; selfcheck's claims check lists mr-dead
+    import bl_selfcheck
+    import bl_stall
+    monkeypatch.setattr(bl_stall, "ops_rows", lambda root: [])
+    monkeypatch.setattr(bl_stall, "lock_state", lambda now: ("none", None))
+    monkeypatch.setattr(bl_stall, "claim_signals", lambda root, iid, now: ([], []))
+    cases = {"TK-aaaaaaaa": ("opened", "mergeable", "skipped"), "TK-bbbbbbbb": ("opened", "ci_still_running", "running"),
+             "TK-cccccccc": ("opened", "discussions_not_resolved", "success"), "TK-dddddddd": ("merged", "not_open", None),
+             "TK-eeeeeeee": ("opened", "conflict", "success"), "TK-ffffffff": ("opened", "mergeable", "manual")}
+    answers = []
+    for n, (iid, (state, merge_status, pipeline)) in enumerate(cases.items(), start=31):
+        branch = f"code/{iid}"
+        listed = mr(n, state, branch=branch, detailed_merge_status=merge_status)
+        answers += [(f"merge_requests/{n}", mr(n, state, branch=branch, detailed_merge_status=merge_status,
+                                               head_pipeline={"id": n, "status": pipeline}))]
+        answers += [(f"merge_requests?source_branch=code%2F{iid}", [listed])]
+    answers += [("merge_requests?source_branch=code%2FTK-gggggggg", [])]
+    ids = [*cases, "TK-gggggggg"]
+    root = settings(forge_project="other/proj")
+    bl = SimpleNamespace(root=root, items={i: {"status": "doing", "claimed_by": "orch", "kind": "task"} for i in ids},
+                         order_key=lambda i: i, label=lambda i: i)
+    run = Recorded(GITLAB_URL, answers)
+    report = bl_stall.collect(bl, now=0, run=run)
+    assert {r["id"]: (r["signals"], r["unknown"]) for r in report["items"]} == {
+        "TK-aaaaaaaa": (["mr-dead"], []), "TK-cccccccc": (["mr-dead"], []), "TK-ffffffff": (["mr-dead"], [])}
+    reads = [c for c in run.forge_calls() if "merge_requests?" in c[-1]]
+    assert report["forge_reads"] == len(ids) == len(reads)
+    assert all("projects/other%2Fproj/" in c[-1] for c in run.forge_calls())
+    claims = bl_selfcheck.check_claims(report)
+    assert claims["state"] == "fail" and "TK-aaaaaaaa mr-dead" in claims["detail"]
+    down = Recorded(GITLAB_URL)  # no recorded answer: a CLI not signed in
+    report = bl_stall.collect(bl, now=0, run=down)
+    assert [(r["signals"], r["unknown"]) for r in report["items"]] == [([], ["unknown:forge"])] * len(ids)
+    assert report["forge_reads"] == 0 and len(down.forge_calls()) == 1
+    assert bl_selfcheck.check_claims(report)["state"] == "ok"
+    root = settings(forge="github")
+    run = Recorded(GITHUB_URL, [("gh pr list", [pr(5, "OPEN", [run_check("build", conclusion="FAILURE")])])])
+    bl = SimpleNamespace(root=root, items={"TK-aaaaaaaa": bl.items["TK-aaaaaaaa"]}, order_key=lambda i: i, label=lambda i: i)
+    assert bl_stall.collect(bl, now=0, run=run)["items"][0]["signals"] == ["mr-dead"]
