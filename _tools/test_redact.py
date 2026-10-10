@@ -1,13 +1,13 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
 shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
 Planted values are assembled at run time."""
-import argparse, csv, json, os, re, shutil, socket, subprocess, sys
+import argparse, csv, json, os, re, shutil, socket, subprocess, sys, types
 from collections import Counter
 from pathlib import Path
 
 import pytest
 
-import census, factdiff, kbcommon, kbfacts, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
+import census, factdiff, kbcommon, kbfacts, kbid, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
 from conftest import KB, TOOLS
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -343,6 +343,7 @@ def census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_pat
         assert f"git -C _cache/census/repos/github.com__Org__Repo.git diff {pin} {tip} -- src/f.rs" in text
         assert "microsoft_docs_fetch https://learn.microsoft.com/en-us/entra/x" in text
         assert "fetch https://code.claude.com/docs/en/hooks.md" in text and 'Return JSON only: {"outcomes"' in text
+        assert f"valid against the JSON Schema `{census.SCHEMA_REL}`" in text and "census.py apply " in text
         assert "kb/public/mecm/b.md:7 (foreign) - Foreign fact." in census.brief_parts("auth", ctx["members"]["auth"], ctx)[0]
         # a group over the bound is split by whole rows into numbered parts, each within the bound
         m.setattr(census, "BRIEF_CHARS", len(text) - 200)
@@ -464,8 +465,119 @@ def census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp
     assert seen == ["confirm", "sweep", "index", "commit"]
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step(tmp_path, monkeypatch, capsys):
+def census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_path, monkeypatch, capsys):
+    root = tmp_path / "public"
+    for rel, text in (("dsc/d.md", "- Pinned. [CODE S9990001]\n"), ("auth/a.md", "- Other. [DOC S9990003]\n"),
+                      ("_gaps.md", "# Gaps\n\n## dsc/d\n\n- An old gap. (topic: dsc/d)\n\n## auth/a\n\n- Auth gap. (topic: auth/a)\n"),
+                      ("_conflicts.md", "# Conflicts\n")):
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        (root / rel).write_text(text, encoding="utf-8")
+    cols = ["id", "url", "title", "publisher", "licence", "reuse", "retrieved_utc", "version_or_date", "artifact_sha256",
+            "used_in", "superseded_by"]
+    rows = [{c: "" for c in cols} | {"id": f"S999000{n}", "url": f"https://docs.example.com/p{n}", "title": f"Page {n}",
+                                     "publisher": "Example", "licence": "MIT", "reuse": "copy", "retrieved_utc": "2026-09-26"}
+            for n in range(1, 5)]
+    kbcommon.write_csv(str(root / "_sources.csv"), cols, rows)
+    log = tmp_path / "2099-01-02.csv"
+    kbcommon.write_csv(str(log), census.COLS, [census_row(f"S999000{n}", used_in="dsc/d.md") for n in (1, 2, 3)]
+                       + [census_row("S9990004", bucket="OK")])
+    cited = {"S9990001": [("public/dsc/d.md", 1), ("public/dsc/d.md", 2), ("public/auth/a.md", 1)],
+             "S9990002": [("public/dsc/d.md", 3)], "S9990003": [("public/auth/a.md", 1)]}
+    steps = []
+    monkeypatch.setattr(census, "head_cited_lines", lambda ids: {i: cited[i] for i in ids if i in cited})
+    monkeypatch.setattr(census, "run_step", lambda s: (steps.append((s["name"], s["argv"])) or (3 if s["name"] == "stale" and fail else 0), ""))
+    for mod, name, value in ((census, "KB", str(root)), (kbcommon, "KB", str(root)),
+                             (factdiff, "ROOT", types.SimpleNamespace(path=str(root), name="public", id_prefix="S"))):
+        monkeypatch.setattr(mod, name, value)
+    fail = False
+    pin = "https://raw.githubusercontent.com/Org/Repo/" + "a" * 40 + "/f.md"
+    new_id = kbid.source_id(pin)
+    good = {"outcomes": [{"id": "S9990001", "outcome": "superseded", "note": f"re-pinned: {new_id}"},
+                         {"id": "S9990002", "outcome": "gone", "note": "withdrawn"}],
+            "new_rows": [{"url": pin, "title": "File at the new commit", "publisher": "Org", "licence": "MIT", "reuse": "copy",
+                          "version_or_date": "main@aaaaaaaaaaaa", "used_in": "dsc/d.md"}],
+            "superseded": {"S9990001": new_id},
+            "gaps": [{"topic": "dsc/d", "text": "Nobody states the limit."}, {"topic": "dsc/d", "text": "A second gap (topic: dsc/d)"}],
+            "conflicts": [{"topic": "auth/a", "text": "Two pages disagree.\nSecond line."}],
+            "foreign_edits": [{"file": "kb/public/auth/a.md", "line": 1, "change": "reword the fact"}],
+            "edited_files": [kbcommon.repo_rel("dsc/d.md")]}
+    result = tmp_path / "result.json"
+
+    def apply(res, *, dry=False, group="dsc"):
+        result.write_text(json.dumps(res), encoding="utf-8")
+        steps.clear()
+        code = census.cmd_apply(argparse.Namespace(log=str(log), group=group, from_json=str(result), dry_run=dry), Counter())
+        out = capsys.readouterr()
+        return code, out.out + out.err
+
+    def state():
+        return {p.name: p.read_bytes() for p in (root / "_sources.csv", root / "_gaps.md", root / "_conflicts.md", log)}
+
+    before = state()
+    schema = json.loads(Path(census.RESULT_SCHEMA).read_text(encoding="utf-8"))
+    assert schema["properties"]["outcomes"]["items"]["properties"]["outcome"]["enum"] == list(census.OUTCOMES)
+    # --dry-run prints every write and step, runs no step and changes nothing
+    code, text = apply(good, dry=True)
+    assert code == 0 and steps == [] and state() == before, text
+    for said in (f"would add source {new_id} {pin}", f"would set superseded_by of S9990001 to {new_id}",
+                 "would write under `## dsc/d` in _gaps.md: - Nobody states the limit. (topic: dsc/d)",
+                 "would write under `## auth/a` in _conflicts.md: - Two pages disagree. Second line. (topic: auth/a)",
+                 "would record 2 outcome(s)", "(not taken from the row: used_in)",
+                 "foreign edit (not applied): kb/public/auth/a.md:1 reword the fact"):
+        assert said in text
+    assert "step 1/3 anchor: python3 _tools/factdiff.py anchor --file dsc/d.md" in text
+    # planted failures: each problem is named, nothing is written
+    bad = {**good, "outcomes": [{"id": "S9990009", "outcome": "confirmed", "note": ""},
+                                {"id": "S9990003", "outcome": "confirmed", "note": ""},
+                                {"id": "S9990004", "outcome": "confirmed", "note": ""},
+                                {"id": "S9990002", "outcome": "kept", "note": ""}],
+           "new_rows": [{"url": "https://docs.example.com/p2", "title": "Other title", "publisher": "Example", "licence": "MIT",
+                         "reuse": "copy"},
+                        {"url": "https://docs.example.com/new", "title": "T", "publisher": "P", "licence": "L", "reuse": "bogus"}],
+           "superseded": {"S9990001": "S-aaaaaaaa"}, "edited_files": ["auth/a.md"],
+           "gaps": [{"topic": "dsc/nope", "text": "x"}]}
+    code, text = apply(bad)
+    assert code == 2 and state() == before and steps == []
+    for said in ("outcomes[3].outcome: 'kept' is not one of confirmed, updated, superseded, gone, unconfirmed",):
+        assert said in text
+    code, text = apply({**bad, "outcomes": bad["outcomes"][:3]})
+    assert code == 2 and state() == before
+    for said in ("outcomes[0]: unknown source id S9990009", "outcomes[1]: S9990003 is a row of group auth, not of dsc",
+                 "outcomes[2]: S9990004 is no phase-2 row", "new_rows[0] https://docs.example.com/p2: refused: S9990002 is already",
+                 "new_rows[1] https://docs.example.com/new: refused: reuse 'bogus' is not one of",
+                 "superseded S9990001: unknown source id S-aaaaaaaa", "edited_files: auth/a.md is outside the files group dsc owns",
+                 "gaps[0]: topic dsc/nope is no article"):
+        assert said in text
+    code, text = apply({**good, "extra": 1, "gaps": [{"topic": "Bad Topic", "text": ""}]})
+    assert code == 2 and "$: unexpected extra" in text and "$.gaps[0].topic" in text and "$.gaps[0].text: is empty" in text
+    code, text = apply(good, group="nope")
+    assert code == 2 and "no group 'nope'" in text and "groups: auth, dsc" in text
+    # the write: the row through kbid, superseded_by, the bullets under their headings, the outcomes, the steps
+    code, text = apply(good)
+    assert code == 0 and [n for n, _ in steps] == ["anchor", "index", "stale"] and "foreign edit (not applied)" in text
+    assert steps[0][1][-2:] == ["--file", "dsc/d.md"]
+    srcs = {r["id"]: r for r in csv.DictReader(open(root / "_sources.csv", encoding="utf-8", newline=""))}
+    assert srcs["S9990001"]["superseded_by"] == new_id and srcs[new_id]["url"] == pin and srcs[new_id]["used_in"] == ""
+    assert srcs[new_id]["version_or_date"] == "main@aaaaaaaaaaaa" and srcs[new_id]["retrieved_utc"] != ""
+    assert list(srcs)[-1] == new_id and len(srcs) == 5
+    gaps = (root / "_gaps.md").read_text(encoding="utf-8")
+    assert gaps.index("- An old gap.") < gaps.index("- Nobody states the limit. (topic: dsc/d)") < gaps.index("## auth/a")
+    assert gaps.count("A second gap (topic: dsc/d)") == 1
+    assert (root / "_conflicts.md").read_text(encoding="utf-8").endswith("\n## auth/a\n\n- Two pages disagree. Second line. (topic: auth/a)\n")
+    got = {r["id"]: (r["outcome"], r["outcome_note"]) for r in census.read_log(str(log))}
+    assert got["S9990001"][0] == "superseded" and got["S9990002"] == ("gone", "withdrawn") and got["S9990003"] == ("", "")
+    # a second apply writes the same bytes; a failing step stops the run with its code and names the step
+    done = state()
+    assert apply(good)[0] == 0 and state() == done
+    fail = True
+    code, text = apply(good)
+    assert code == 3 and "step 3/3 stale failed with exit 3; resume from it: python3 _tools/census.py apply" in text
+    fail = False
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result(tmp_path, monkeypatch, capsys):
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
     census_phases_write_one_ops_row_each(tmp_path)
+    census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_path / "apply", monkeypatch, capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)

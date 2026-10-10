@@ -36,6 +36,7 @@ kb/_self/tools.md,_tools/census.py
 kb/_self/tools.md,_tools/selfdoc.py
 kb/_self/tools.md,_tools/tests.py
 kb/_self/tools.md,_tools/tests_ceiling.json
+kb/_self/tools.md,_tools/census_result.schema.json
 kb/_self/tools.md,_tools/perfcheck.py
 kb/_self/tools.md,_tools/conftest.py
 kb/_self/tools.md,_tools/kbcommon.py

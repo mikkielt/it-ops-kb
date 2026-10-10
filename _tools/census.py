@@ -8,6 +8,7 @@
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked hosts, and the size of phase 2's reading queue
   census.py groups LOG [--factdiff FLOG]           phase 2: the rows to read split into owner groups, as JSON
   census.py brief LOG --group G [--part N] [--factdiff FLOG]   phase 2: a group's brief, filled in
+  census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
   census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
   census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
 
@@ -72,6 +73,22 @@ BRIEF_CHARS characters: a group over it is split by whole rows, in id order, int
 line says `part N of M`), each with the files citing its rows; a row alone over it is a part of its own. Both exit 2 for
 a missing log, an unknown group or a part out of range.
 
+apply takes one group's phase-2 result and does the bookkeeping the orchestrator did by hand. RESULTS.json is valid
+against _tools/census_result.schema.json (the file the phase-2 brief names, which `claude -p --json-schema` takes):
+the six sections of the brief's result and `edited_files`, the files of the group's own list that it edited.
+Refused first (exit 2, every problem named, nothing written): a result that breaks the schema (an outcome outside the
+five, a missing or unexpected key); a source id the census log or _sources.csv does not know, or that belongs to another
+group (groups as `groups` gives them, owners read from the tree at HEAD, so a worker's own edits move no row); a
+`superseded` outcome and a `superseded` entry without each other, or an old row already superseded by another id; a new
+row that kbid.add_source (what `kbid.py add` writes) refuses, tried on a scratch copy of _sources.csv; an edited file
+outside the files the group owns; a gap or conflict topic that is no article. Then, in order: each new row through
+kbid.add_source (never a CSV writer; a url already there is kept), superseded_by on the old rows, each gap and
+conflict bullet under its `## <topic>` heading of _gaps.md and _conflicts.md (a new heading at the end; a bullet
+already there is skipped), the outcomes as `record` writes them, `factdiff.py anchor --file` for the edited files,
+build_index.py and `doc2query.py stale` (exit 1, stale keys, is no failure), each a step of its own as run and finish
+have them; the foreign edits are printed, never applied. --dry-run prints every write and step and changes nothing;
+a second apply of the same result writes the same bytes.
+
 check, record and confirm (not confirm --dry-run) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
@@ -89,10 +106,11 @@ A failing step stops the run with its exit code and names the step and the comma
 outside the root under census (and, for finish, the decision ledgers) refuse the run before its first step and its
 commit (exit 2); nothing is ever pushed. --dry-run prints each step's argv and runs nothing.
 
-Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments, or run/finish refused;
-run and finish: the exit code of the step that failed.
+Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments, or run/finish/apply refused;
+run, finish and apply: the exit code of the step that failed.
 """
-import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, ssl, subprocess, sys, threading
+import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, shutil, ssl, subprocess, sys
+import tempfile, threading, types
 import urllib.error, urllib.request
 from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
@@ -694,14 +712,10 @@ def write_log(path, rows):
     kbcommon.write_csv(path, COLS, rows, atomic=True)
 
 
-def cmd_record(a, tally):
-    rows = read_log(a.log)
+def set_outcomes(rows, items, tally):
+    """Set outcome and outcome_note on the rows of the log for each {id, outcome, note} of `items`; the number of items
+    skipped (an unknown id or an outcome outside OUTCOMES, each printed)."""
     by_id = {r["id"]: r for r in rows}
-    if a.from_json:
-        with open(a.from_json, encoding="utf-8") as f:
-            items = json.load(f)
-    else:
-        items = [{"id": a.id, "outcome": a.outcome, "note": a.note or ""}]
     bad = 0
     for it in items:
         if it.get("id") not in by_id or it.get("outcome") not in OUTCOMES:
@@ -712,6 +726,17 @@ def cmd_record(a, tally):
         by_id[it["id"]]["outcome"] = it["outcome"]
         tally[it["outcome"]] += 1
         by_id[it["id"]]["outcome_note"] = (it.get("note") or "").replace("\n", " ")[:300]
+    return bad
+
+
+def cmd_record(a, tally):
+    rows = read_log(a.log)
+    if a.from_json:
+        with open(a.from_json, encoding="utf-8") as f:
+            items = json.load(f)
+    else:
+        items = [{"id": a.id, "outcome": a.outcome, "note": a.note or ""}]
+    bad = set_outcomes(rows, items, tally)
     write_log(a.log, rows)
     print(f"recorded {len(items) - bad} outcome(s)" + (f", skipped {bad}" if bad else ""))
     return 1 if bad else 0
@@ -903,6 +928,8 @@ def cmd_summary(a, tally):
 
 BRIEF_CHARS = 30_000  # characters of one brief part, head and rules included; a source alone over it is a part of its own
 UNCITED = "_uncited"  # the group of the rows no domain file names (a domain never starts with `_`)
+RESULT_SCHEMA = os.path.join(kbcommon.TOOLS, "census_result.schema.json")  # what a phase-2 group returns; `apply` takes it
+SCHEMA_REL = kbcommon.repo_rel(RESULT_SCHEMA)
 
 BRIEF_RULES = """\
 For each source with review items below: judge each item as supported, contradicted or not enough information from its old \
@@ -925,7 +952,9 @@ Update each edited article's `sources:` header and `status`. Do not touch `_sour
 the index or any file outside your list, and do not commit. Facts in foreign files that need an edit: describe them.
 Return JSON only: {{"outcomes": [{{"id", "outcome", "note"}}], "new_rows": [{{all _sources.csv columns}}], \
 "superseded": {{"old id": "new id"}}, "gaps": [{{"topic", "text"}}], "conflicts": [{{"topic", "text"}}], \
-"foreign_edits": [{{"file", "line", "change"}}]}}."""
+"foreign_edits": [{{"file", "line", "change"}}], "edited_files": [every file of yours that you edited]}}, valid against \
+the JSON Schema `{schema}`; the orchestrator applies it with `python3 _tools/census.py apply {log} --group {group} \
+--from <your result>`."""
 
 
 def domain_of(rel):
@@ -975,6 +1004,7 @@ def phase2_context(rows, log, flog=None):
     date = ql_capture.phase_date(path=log)
     flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else census_path(f"factdiff-{date}.csv")
     return {"date": date, "root": root, "members": dict(sorted(members.items())), "items": items, "flog": flog_rel,
+            "log": os.path.relpath(os.path.abspath(log), kbcommon.HOME).replace(os.sep, "/"),
             "providers": provider.providers(factdiff.ROOT)}
 
 
@@ -1063,7 +1093,7 @@ def brief_head(group, part, parts, files, foreign, ctx, n):
 def brief_parts(group, members, ctx):
     """The group's brief as a list of texts, each at most BRIEF_CHARS (a source alone over it is a part of its own):
     the skill's phase-2 brief filled in. A part holds whole sources, in id order; its files are those citing them."""
-    rules = BRIEF_RULES.format(flog=ctx["flog"])
+    rules = BRIEF_RULES.format(flog=ctx["flog"], schema=SCHEMA_REL, log=ctx["log"], group=group)
     blocks = [(m, row_block(m[0], m[1], m[2], group, ctx)) for m in members]
     fixed = len(brief_head(group, 99, 99, owned_files(group, members), foreign_files(group, members), ctx, 999)) \
         + len(rules) + 4
@@ -1142,6 +1172,263 @@ def cmd_brief(a, tally):
 
 TOOLS_REL = kbcommon.repo_rel(kbcommon.TOOLS, kbcommon.HOME)  # `_tools`: the steps run from the repository's root
 LEDGER = re.compile(r"kb/[^/]+/_decisions\.csv")  # what kbdecide.py sweep writes, in every root and in kb/_self
+
+
+# ---------------------------------------------------------------- apply: a group's phase-2 result, by tool
+
+JSON_TYPES = {"object": dict, "array": list, "string": str, "integer": int}
+IGNORED_COLS = ("retrieved_utc", "used_in", "superseded_by")  # new_rows columns `kbid.py add` and `kbgit.py fix` own
+
+
+def schema_errors(value, schema, where="$"):
+    """The errors of `value` against `schema`, one string each naming where (`$.outcomes[2].outcome`). The subset of
+    JSON Schema census_result.schema.json uses: type, enum, minLength, minimum, pattern, required, properties,
+    additionalProperties (false or a schema) and items."""
+    want = schema.get("type")
+    if want and (not isinstance(value, JSON_TYPES[want]) or (want == "integer" and isinstance(value, bool))):
+        return [f"{where}: want {want}, got {type(value).__name__}"]
+    out = []
+    if "enum" in schema and value not in schema["enum"]:
+        out.append(f"{where}: {value!r} is not one of {', '.join(map(str, schema['enum']))}")
+    if isinstance(value, str):
+        if len(value) < schema.get("minLength", 0):
+            out.append(f"{where}: is empty")
+        if "pattern" in schema and not re.search(schema["pattern"], value):
+            out.append(f"{where}: {value!r} does not match {schema['pattern']}")
+    if isinstance(value, int) and not isinstance(value, bool) and value < schema.get("minimum", value):
+        out.append(f"{where}: {value} is below {schema['minimum']}")
+    if isinstance(value, dict):
+        props, extra = schema.get("properties", {}), schema.get("additionalProperties", True)
+        out += [f"{where}: missing {k}" for k in schema.get("required", []) if k not in value]
+        for k, v in value.items():
+            if k in props:
+                out += schema_errors(v, props[k], f"{where}.{k}")
+            elif extra is False:
+                out.append(f"{where}: unexpected {k}")
+            elif isinstance(extra, dict):
+                out += schema_errors(v, extra, f"{where}.{k}")
+    if isinstance(value, list) and "items" in schema:
+        for i, v in enumerate(value):
+            out += schema_errors(v, schema["items"], f"{where}[{i}]")
+    return out
+
+
+def head_cited_lines(ids):
+    """`kbfacts.cited_lines` as the files stand at HEAD: {id: [(qualified path, line)]}. A group's rows are the same
+    before and after its worker rewrote the facts (a fact re-pointed to a new row no longer names the old id), so the
+    owner of a row is read from the tree the worker started from, as `git grep` finds it; the working tree when git
+    cannot say."""
+    if not ids:
+        return {}
+    kb = kbcommon.repo_rel(kbcommon.KB_DIR, kbcommon.HOME)
+    code, out, _ = g(kbcommon.HOME, "grep", "-n", "-I", "-E", "|".join(sorted(map(re.escape, ids))), "HEAD", "--", kb)
+    if code not in (0, 1):
+        return kbfacts.cited_lines(ids)
+    found = defaultdict(list)
+    for ln in out.splitlines():
+        path, _, rest = ln.removeprefix("HEAD:").partition(":")
+        n, _, text = rest.partition(":")
+        if n.isdigit() and path.startswith(kb + "/"):
+            for i in set(kbfacts.ID.findall(text)) & set(ids):
+                found[i].append((path[len(kb) + 1:], int(n)))
+    return found
+
+
+def group_scope(rows, cited=None):
+    """{group: [(row, citing files)]} of every row phase 2 reads, whether or not it has an outcome yet (a second apply
+    finds its group again), owners as the tree at HEAD gives them."""
+    scope = [r for r in rows if r["bucket"] != "OK" and r["note"] != BLOCKED]
+    cited = head_cited_lines({r["id"] for r in scope}) if cited is None else cited
+    root, groups = os.path.basename(KB), defaultdict(list)
+    for r in sorted(scope, key=lambda r: r["id"]):
+        files = citing_files(r, cited, root)
+        groups[owner_of(files)].append((r, files))
+    return dict(sorted(groups.items()))
+
+
+def owned_shown(group, scope):
+    """{path as the brief prints it (relative to the repository): path relative to the root} of the files `group` owns."""
+    return {kbcommon.repo_rel(rel): rel for _, files in scope.get(group, []) for rel in files if domain_of(rel) == group}
+
+
+def trial_rows(new_rows, root, today=None):
+    """([problem], [id]): the rows of `new_rows` added with `kbid.add_source`, what `kbid.py add` writes, to a scratch
+    copy of the root's _sources.csv, so what it would refuse is named and nothing is written. `today` as for add_source."""
+    out, ids = [], []
+    with tempfile.TemporaryDirectory() as tmp:
+        shutil.copy(os.path.join(root.path, kbcommon.SOURCES), tmp)
+        scratch = types.SimpleNamespace(path=tmp, name=root.name, id_prefix=root.id_prefix)
+        for n, row in enumerate(new_rows):
+            sid, why = add_new_row(scratch, row, today)
+            ids.append(sid)
+            if why:
+                out.append(f"new_rows[{n}] {row.get('url')}: {why}")
+    return out, ids
+
+
+def add_new_row(root, row, today=None):
+    """(id, '') after adding the row through `kbid.add_source` (the id is the one already there when it is), else
+    ('', what kbid refused)."""
+    try:
+        sid, _ = kbid.add_source(root, row["url"], row["title"], row["publisher"], row["licence"], row["reuse"],
+                                 row.get("version_or_date", ""), row.get("artifact_sha256", ""), today)
+    except ValueError as e:
+        return "", f"refused: {e}"
+    if row.get("id") and row["id"] != sid:
+        return sid, f"id {row['id']} is not the id kbid.py gives the url ({sid})"
+    return sid, ""
+
+
+def result_problems(res, group, scope, log, sources, root, today=None):
+    """([problem], [new row id]) of a result that matches the schema, each problem naming what it found: a source id
+    the log or `_sources.csv` does not know or another group's, an outcome without its pair, a new row `kbid.py add`
+    refuses, an edited file outside the group's owned files, a gap or conflict topic that is no article. Nothing is
+    written."""
+    out = []
+    mine = {r["id"] for r, _ in scope.get(group, [])}
+    owner = {r["id"]: grp for grp, ms in scope.items() for r, _ in ms}
+    shown = owned_shown(group, scope)
+    new_problems, new_ids = trial_rows(res["new_rows"], root, today)
+    out += new_problems
+    known = set(sources) | set(new_ids)
+    seen = set()
+    for i, o in enumerate(res["outcomes"]):
+        sid = o["id"]
+        if sid not in log:
+            out.append(f"outcomes[{i}]: unknown source id {sid} (not in the census log)")
+        elif sid not in mine:
+            out.append(f"outcomes[{i}]: {sid} is " + (f"a row of group {owner[sid]}, not of {group}" if sid in owner
+                                                       else "no phase-2 row of the log (bucket OK or blocked)"))
+        if sid in seen:
+            out.append(f"outcomes[{i}]: a second outcome for {sid}")
+        seen.add(sid)
+    for old, new in res["superseded"].items():
+        if old not in sources or old not in mine:
+            out.append(f"superseded {old}: unknown source id" if old not in sources else f"superseded {old}: not a row of group {group}")
+        elif not any(o["id"] == old and o["outcome"] == "superseded" for o in res["outcomes"]):
+            out.append(f"superseded {old}: the outcomes hold no `superseded` outcome for it")
+        elif sources[old].get("superseded_by") not in ("", None, new):
+            out.append(f"superseded {old}: already superseded by {sources[old]['superseded_by']}")
+        if new not in known:
+            out.append(f"superseded {old}: unknown source id {new} (not in _sources.csv, not a new row)")
+    out += [f"outcomes: {o['id']} is `superseded` and `superseded` has no entry for it" for o in res["outcomes"]
+            if o["outcome"] == "superseded" and o["id"] not in res["superseded"]]
+    for f in res["edited_files"]:
+        if f not in shown and f not in shown.values():
+            out.append(f"edited_files: {f} is outside the files group {group} owns"
+                       + (f" ({', '.join(sorted(shown))})" if shown else " (it owns none)"))
+    for kind in ("gaps", "conflicts"):
+        for i, e in enumerate(res[kind]):
+            if not os.path.isfile(os.path.join(KB, e["topic"] + ".md")):
+                out.append(f"{kind}[{i}]: topic {e['topic']} is no article ({e['topic']}.md)")
+    return out, new_ids
+
+
+def edited_rel(res, group, scope):
+    """The root-relative paths of the result's `edited_files` (each given as the brief printed it, or relative to the
+    root), sorted, once each."""
+    shown = owned_shown(group, scope)
+    return sorted({shown.get(f, f) for f in res["edited_files"]})
+
+
+def ledger_with(text, entries):
+    """`text` of a ledger (_gaps.md, _conflicts.md) with each (topic, bullet) added under its `## <topic>` heading, after
+    the heading's last line, or under a new heading at the end; a bullet already in the file is skipped, so a second run
+    writes the same bytes."""
+    lines = text.rstrip("\n").split("\n")
+    for topic, bullet in entries:
+        if bullet in lines:
+            continue
+        head = f"## {topic}"
+        if head in lines:
+            at = lines.index(head) + 1
+            end = next((i for i in range(at, len(lines)) if lines[i].startswith("## ")), len(lines))
+            while end > at and not lines[end - 1].strip():
+                end -= 1
+            lines[end:end] = ["", bullet] if end == at else [bullet]
+        else:
+            lines += ["", head, "", bullet]
+    return "\n".join(lines) + "\n"
+
+
+def bullet_of(entry):
+    """The ledger bullet of a gap or conflict entry: its text on one line, ending `(topic: <topic>)`."""
+    text = " ".join(entry["text"].split()).removeprefix("- ")
+    return "- " + (text if f"(topic: {entry['topic']})" in text else f"{text} (topic: {entry['topic']})")
+
+
+def foreign_lines(res):
+    return [f"foreign edit (not applied): {e['file']}:{e['line']} {e['change']}" for e in res["foreign_edits"]]
+
+
+def plan_apply(root, edited):
+    """The steps of `census.py apply` after its writes: the anchors of the edited articles, the index, the stale
+    expansion keys (`doc2query.py stale` exits 1 for some: no failure, `prune` removes them)."""
+    ra = root_args(root)
+    anchor = [step("anchor", "factdiff.py", *ra, "anchor", *[x for f in edited for x in ("--file", f)])] if edited else []
+    return [*anchor, step("index", "build_index.py", *ra), step("stale", "doc2query.py", *ra, "stale", ok=(0, 1))]
+
+
+def cmd_apply(a, tally):
+    """census.py apply: validate the result, then write it; the exit code (0, 2 refused, else the failing step's)."""
+    fail = lambda msg: print(msg, file=sys.stderr) or 2  # noqa: E731
+    if not os.path.isfile(a.log):
+        return fail(f"no census log {a.log}")
+    try:
+        with open(a.from_json, encoding="utf-8") as f:
+            res = json.load(f)
+        with open(RESULT_SCHEMA, encoding="utf-8") as f:
+            schema = json.load(f)
+    except (OSError, ValueError) as e:
+        return fail(f"cannot read {a.from_json} or the schema {SCHEMA_REL}: {e}")
+    rows, root = read_log(a.log), factdiff.ROOT
+    scope = group_scope(rows)
+    if a.group not in scope:
+        return fail(f"no group {a.group!r} in {a.log}; groups: " + (", ".join(scope) or "none"))
+    problems = schema_errors(res, schema)
+    sources = {r["id"]: r for r in read_sources()}
+    new_ids = []
+    if not problems:
+        problems, new_ids = result_problems(res, a.group, scope, {r["id"]: r for r in rows}, sources, root)
+    if problems:
+        return fail(f"refused: {len(problems)} problem(s) in {a.from_json}, nothing written:\n" + "\n".join(f"  {p}" for p in problems))
+    dry, say = a.dry_run, lambda msg: print(("would " if a.dry_run else "") + msg, flush=True)  # noqa: E731
+    for row, sid in zip(res["new_rows"], new_ids):
+        extra = [c for c in IGNORED_COLS if row.get(c)]
+        if sid in sources:
+            say(f"keep source {sid} {row['url']}: already in _sources.csv")
+            continue
+        say(f"add source {sid} {row['url']}" + (f" (not taken from the row: {', '.join(extra)})" if extra else ""))
+        if not dry:
+            add_new_row(root, row)
+    if res["superseded"]:
+        for old, new in sorted(res["superseded"].items()):
+            say(f"set superseded_by of {old} to {new}")
+        if not dry:
+            path = os.path.join(KB, kbcommon.SOURCES)
+            header, srcs = kbcommon.parse_csv(kbcommon.SOURCES, kbcommon.read(path, newline="", strict=True), ("id",))
+            for r in srcs:
+                r["superseded_by"] = res["superseded"].get(r["id"], r["superseded_by"])
+            kbcommon.write_csv(path, header, srcs, atomic=True)
+    for kind, name in (("gaps", kbcommon.GAPS), ("conflicts", kbcommon.CONFLICTS)):
+        entries = [(e["topic"], bullet_of(e)) for e in res[kind]]
+        for topic, bullet in entries:
+            say(f"write under `## {topic}` in {name}: {bullet[:100]}")
+        if entries and not dry:
+            path = os.path.join(KB, name)
+            text = kbcommon.read(path, newline="", strict=True) or ""
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                f.write(ledger_with(text, entries))
+    counts = Counter(o["outcome"] for o in res["outcomes"])
+    say(f"record {len(res['outcomes'])} outcome(s) in {a.log}: " + (", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "none"))
+    if not dry and res["outcomes"]:
+        set_outcomes(rows, res["outcomes"], tally)
+        write_log(a.log, rows)
+    print("\n".join(foreign_lines(res)) or "no foreign edits")
+    root_name = os.path.basename(KB)
+    rerun = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(root_name), "apply", a.log, "--group", a.group, "--from", a.from_json])
+    code, _ = drive(plan_apply(root_name, edited_rel(res, a.group, scope)), kbcommon.repo_rel("."), False, dry, rerun)
+    return code
 
 
 def step(name, script, *args, ok=(0,), skip="", capture=False):
@@ -1371,6 +1658,12 @@ def main():
     bp.add_argument("--part", type=int, default=1, help=f"the part of a group over {BRIEF_CHARS} characters (default 1)")
     bp.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the brief prints (default as "
                                                        "for summary)")
+    ay = sub.add_parser("apply", help="phase 2: validate a group's JSON result and do its bookkeeping")
+    ay.add_argument("log")
+    ay.add_argument("--group", required=True, help="the group `groups` prints whose result this is")
+    ay.add_argument("--from", dest="from_json", required=True, metavar="RESULTS.json",
+                    help=f"the group's result, valid against {SCHEMA_REL}")
+    ay.add_argument("--dry-run", action="store_true", help="print every write and step, change nothing")
     u = sub.add_parser("run", help="phases 0-1 as one command: fact diff, apply, check, index, the phase-1 commit, summary")
     u.add_argument("--date", help="census date (default today)")
     u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")
@@ -1392,7 +1685,7 @@ def main():
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
     cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary, "groups": cmd_groups, "brief": cmd_brief,
-            "run": cmd_run, "finish": cmd_finish}
+            "apply": cmd_apply, "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):
         sys.exit(ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None))))
