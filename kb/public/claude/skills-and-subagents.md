@@ -2,8 +2,8 @@
 topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-09-26"
-retrieved_utc: 2026-10-06
-sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay]
+retrieved_utc: 2026-10-10
+sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy]
 status: complete
 ---
 
@@ -55,6 +55,25 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - Claude Code watches skill directories for live edits (add/edit/remove) except in bare mode, picking up changes
   within the running session with no restart; a newly created top-level skills directory needs `/reload-skills`
   because it isn't watched yet. [DOC S2158]
+- `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PROJECT_DIR}` are substituted in two places: the skill's markdown content and the
+  Bash rules of its `allowed-tools` frontmatter (`${CLAUDE_PROJECT_DIR}` requires v2.1.196+); in a plugin skill
+  `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are substituted in the same two places, and only in plugin skills.
+  [DOC S2158]
+- In a plugin skill `${CLAUDE_SKILL_DIR}` is the skill's own subdirectory inside the plugin, not the plugin root; use
+  `${CLAUDE_PLUGIN_ROOT}` for a file shared between the plugin's skills. Claude Code replaces the `${CLAUDE_*}`
+  variables after it inserts the invocation's arguments. [DOC S2158]
+- A `<skill-name>` entry in the enterprise, personal or project location can be a symlink to a directory elsewhere on
+  disk: Claude Code reads `SKILL.md` from the target and loads the skill once even when several locations point at the
+  same target. The page does not say whether a symlinked `SKILL.md` file inside a real skill folder is followed;
+  plugin skills handle symlinks by the plugin rules in `claude/plugins.md`. [DOC S2158]
+- A linked git worktree searches parent directories for project skills only up to the worktree root; from v2.1.277,
+  when the worktree checkout has no `.claude/skills` directory at its root (for example because it is gitignored),
+  the session loads the main checkout's project skills instead, and a worktree with its own `.claude/skills` loads
+  only that copy. [DOC S2158, S-j22fjuka]
+- A plugin's skills load in a worktree session when the plugin is installed at project scope from the main checkout
+  (`claude/plugins.md`): such plugins also load in worktrees of the same repository without a reinstall (v2.1.200+).
+  The worktrees page lists this separately from the `.claude/skills` read-through above, which names project
+  skills only. [DOC S-j22fjuka]
 
 ### Subagents
 - Subagent frontmatter fields use camelCase (e.g. `maxTurns`, `disallowedTools`) and must match exactly; an
@@ -121,6 +140,26 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - A subagent's file is watched for live edits (few seconds to apply, no restart) except: the first agent file in a
   brand-new `agents` directory (needs restart), agents under `--add-dir` (not watched, needs restart), and sessions
   started with `--disable-slash-commands` (no watching at all). [DOC S2157]
+- `claude --agent <name>` runs the whole session as that subagent: the main thread takes its tool restrictions and
+  model, a custom subagent's non-empty prompt replaces the default Claude Code system prompt (as `--system-prompt`
+  does), `CLAUDE.md` files still load, the startup header shows `@<name>`, and the choice is restored on resume. The
+  flag overrides the `agent` setting; `agent` in `.claude/settings.json` makes the agent the default for every session
+  of the project. The CLI reference lists `--agent` with no print-mode restriction and no page shows it together with
+  `-p`. [DOC S2157, S1824]
+- A plugin's subagent is selected by its bare name (`claude --agent security-reviewer`); when several plugins provide
+  the same name, pass the scoped name `plugin:agent` (`my-plugin:security-reviewer`), and `plugin:folder:agent` when
+  the plugin keeps the agent in a subfolder of its `agents/` directory. The same scoped names appear in the `@` typeahead
+  and work as `@agent-my-plugin:code-reviewer`. [DOC S2157]
+- An agent run as the main session by `--agent` or the `agent` setting: `omitClaudeMd` is ignored, `initialPrompt` is
+  auto-submitted as the first turn (ignored for plugin subagents), the `Agent(agent_type)` allowlist in `tools` limits
+  which subagent types it may spawn (ignored in a spawned subagent's own definition), and an agent with an empty
+  `prompt` and no `memory` leaves the session's system prompt unchanged (empty `prompt` requires v2.1.281+). [DOC S2157]
+- A linked worktree reads `.claude/agents` and `.claude/commands` through to the main checkout the way it reads
+  `.claude/skills`: when the worktree checkout has no such directory at its root the main checkout's is loaded, and
+  a worktree with its own directory loads only that copy (for skills from v2.1.277). [DOC S-j22fjuka]
+- Whether a symlinked agent file under `.claude/agents/` is followed is not stated on the sub-agents page; the nearest
+  statement is `claude plugin validate`, which skips a linked entry inside an `agents`, `skills` or `commands` directory
+  and counts it as an entry "a session would load" (`claude/plugins.md`). [DOC S-gxuoqjzy]
 
 ### Agent teams (experimental)
 - Disabled by default; enabled only by setting `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (env or `settings.json`).

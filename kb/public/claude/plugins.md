@@ -2,8 +2,8 @@
 topic: claude/plugins
 priority: P2
 applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-26)"
-retrieved_utc: 2026-09-28
-sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs, S-cgtbvuug, S-3yod3u7q]
+retrieved_utc: 2026-10-10
+sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs, S-cgtbvuug, S-3yod3u7q, S2158, S-j22fjuka]
 status: complete
 files: [claude/plugins.csv]
 ---
@@ -38,6 +38,11 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 - `--plugin-url <zip-url>` downloads a `.zip` plugin archive at startup for one session (repeat the flag or space-separate URLs for several); `CLAUDE_CODE_PLUGIN_DIRS` (v2.1.280+) lists absolute plugin-dir paths for a session where flags can't be passed; project/local settings can't set that variable. [DOC S-3peuisvr]
 - Symlinks in a plugin: within the plugin's own directory, preserved as relative symlinks in the cache; elsewhere in the same marketplace, dereferenced and copied; outside the marketplace, skipped. A local-path or `command`-source (copy mode) install preserves only symlinks resolving inside the plugin's own directory. [DOC S-pelzabjq]
 - A rejected component path (points outside the plugin root, a symlink leading outside it, or on macOS/Linux a backslash anywhere in the path) surfaces as `path escapes plugin directory`, and the plugin loads without that component. [DOC S-toe7z3kj]
+- Where `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` and `${CLAUDE_PROJECT_DIR}` resolve inline: hook `command` and `args` (anywhere), monitor `command`, MCP stdio `command`/`args`/`env`, MCP http/sse/ws `url`/`headers`/`headersHelper`, LSP `command`/`args`/`env`/`workspaceFolder`, and, for skill, command and agent content, anywhere in the Markdown body (substituted inline when the content loads, nothing exported). So `${CLAUDE_PLUGIN_ROOT}` in a plugin skill's `SKILL.md` or an agent's Markdown body is substituted; the docs name the body, not the frontmatter, for agents (a skill's `allowed-tools` is a second place, `claude/skills-and-subagents.md`). [DOC S-3xyywfcr, S2158]
+- The three variables are not in the environment of commands Claude runs through the Bash tool, in the main session or in a subagent; a hook, MCP stdio or LSP process receives `CLAUDE_PLUGIN_ROOT` and `CLAUDE_PLUGIN_DATA` as environment variables (a hook or LSP process also `CLAUDE_PROJECT_DIR`), a monitor command none. [DOC S-3xyywfcr]
+- `claude plugin validate` does not follow symlinks inside the directory it checks: a linked `skills`, `agents` or `commands` directory warns that nothing in it was read; a linked entry inside one of those directories is skipped, with a warning per directory counting the entries "a session would load"; naming a `skills`/`agents`/`commands` directory that is itself a symlink, or whose `.claude` parent is, is an error and nothing is checked. [DOC S-gxuoqjzy]
+- A plugin installed at project scope from the main checkout also loads in git worktrees of the same repository without reinstalling (v2.1.200+). [DOC S-j22fjuka]
+- A plugin's skills, agents and hooks follow the plugin's enabled state: `enabledPlugins` `"<name>@<marketplace>": false` in any settings file turns the whole plugin off; a project-enabled plugin is opted out on one machine by setting its id to `false` in `.claude/settings.local.json` (higher precedence than the project file); a `--plugin-dir` plugin is turned off, or kept from shadowing a marketplace copy, with `"<name>@inline": false`. [DOC S-toe7z3kj]
 
 ### Marketplace.json fields and reserved names
 - `marketplace.json` lives at `.claude-plugin/marketplace.json`; the marketplace root is the directory containing `.claude-plugin/`, and every relative plugin `source` resolves from that root, not from inside `.claude-plugin/`. [DOC S-4m2kbuls, S-r3nam2zs]

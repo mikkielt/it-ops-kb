@@ -292,3 +292,6 @@ EV-claude-code-bash-permission-rule-wildcard,Claude Code Bash permission rule wi
 EV-detailed-merge-status-values-never-mergeable,Which GitLab merge request detailed_merge_status values never become mergeable by waiting?,gitlab/automated-merge-requests.md,good,
 EV-gh-pr-view-json-mergestatestatus-statuscheckrollup,"Which fields does gh pr view --json give for a pull request merge state and checks: mergeStateStatus, statusCheckRollup",gitlab/automated-merge-requests.md,good,
 EV-git-worktree-add-remote-default-branch-fetched,"How does git worktree add branch a new worktree from a remote default branch fetched in another repository, origin/HEAD",gitlab/git-test-repositories.md,good,
+EV-worktree-session-project-load-plugin-skills,does a worktree session of a project load the plugin's skills,claude/skills-and-subagents.md;claude/plugins.md,good,
+EV-plugin-hook-entry-turned-off-project,"can a plugin's hook entry be turned off by a project setting, or only by its own command doing nothing",claude/hooks.md,good,
+EV-claude-p-select-plugin-agent-agent,how does claude -p select a plugin's agent with --agent name,claude/skills-and-subagents.md,good,

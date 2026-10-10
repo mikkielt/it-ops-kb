@@ -93,7 +93,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |
 | `claude/data-retention` | P1 | complete | `claude/data-retention.md` | 6 |
 | `claude/elicitation` | P1 | complete | `claude/elicitation.md` | 5 |
-| `claude/hooks` | P1 | complete | `claude/hooks.md` | 23 |
+| `claude/hooks` | P1 | complete | `claude/hooks.md` | 25 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
 | `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 10 |
 | `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 7 |
@@ -102,9 +102,9 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 10 |
 | `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 17 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 8 |
-| `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 14 |
+| `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 16 |
 | `claude/settings-and-scopes` | P2 | complete | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 14 |
-| `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 7 |
+| `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 9 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 8 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 3 |
 | `claude/powershell-tool` | P3 | partial | `claude/powershell-tool.md` | 6 |
