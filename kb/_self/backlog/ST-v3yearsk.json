@@ -2,7 +2,7 @@
   "id": "ST-v3yearsk",
   "kind": "story",
   "title": "The rules questions 'which planned sprint starts next when several are approved' and 'what logs does the kb tooling keep' pack good from kb/_self through tested questions",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5i4itd2d",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,6 @@
     "parked: SP-flkl5gom review",
     "merged: ST-qfea7pvk"
   ],
-  "notes": "Review gap G1 (S2): F-6f7e881cdca1 and F-071ee8797647 were real user lookups (query log), rejected as off the kb's domains, though pack --root _self leads with kb/_self/backlog.md:143 (weak) for the first. Merged from ST-qfea7pvk at the 2026-10-10 backlog triage (its goal is folded into this goal): one commit adds all four rows. Found in SP-d3hybrlv: --item ST-7yahfn3j gave coverage none, so both sections were read by hand. Premise: run at planning (SP-5i4itd2d): pack --root _self is coverage weak for 'which planned sprint starts next when several are approved', 'how are the _self rule questions tested' and the researched question: reproduces. rag.py eval passes before the work and stays in as a guard that the new rows leave the set passing; the pack checks are the ones that fail now. Order: after ST-z5uh6oj7, whose ranking change can move _self verdicts. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Review gap G1 (S2): F-6f7e881cdca1 and F-071ee8797647 were real user lookups (query log), rejected as off the kb's domains, though pack --root _self leads with kb/_self/backlog.md:143 (weak) for the first. Merged from ST-qfea7pvk at the 2026-10-10 backlog triage (its goal is folded into this goal): one commit adds all four rows. Found in SP-d3hybrlv: --item ST-7yahfn3j gave coverage none, so both sections were read by hand. Premise: run at planning (SP-5i4itd2d): pack --root _self is coverage weak for 'which planned sprint starts next when several are approved', 'how are the _self rule questions tested' and the researched question: reproduces. rag.py eval passes before the work and stays in as a guard that the new rows leave the set passing; the pack checks are the ones that fail now. Order: after ST-z5uh6oj7, whose ranking change can move _self verdicts. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
+  "claimed_by": "worker-ST-v3yearsk"
 }
