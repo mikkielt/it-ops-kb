@@ -42,7 +42,9 @@
         "README blob, licence blob, version-like release tags created since retrieval, and the page's archived banner"
       ],
       "recommendation": "README blob, licence blob, version-like release tags created since retrieval, and the page's archived banner",
-      "class": "push"
+      "class": "push",
+      "answer": "README blob, licence blob, version-like release tags created since retrieval, and the page's archived banner",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -66,7 +68,9 @@
         "every page kind with a signal is decided by both tools, and the retrieval day is CHANGED for every signal"
       ],
       "recommendation": "a wiki's own git url is decided by the census check only (its newest commit) and fact diff keeps its path; a releases list and a pull request stay in the reading queue; a commit on the retrieval day is CHANGED and a timeline timestamp on it is OK, as check_ref and check_live already read it",
-      "class": "push"
+      "class": "push",
+      "answer": "a wiki's own git url is decided by the census check only (its newest commit) and fact diff keeps its path; a releases list and a pull request stay in the reading queue; a commit on the retrieval day is CHANGED and a timeline timestamp on it is OK, as check_ref and check_live already read it",
+      "by": "operator"
     }
   ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 50 rows of kind gh-page or api-other with note 'github page' went to phase 2: 32 confirmed, 16 updated, 2 superseded. 85 live github.com non-raw sources on 2026-10-10. The signals are measured through /kb-probe before code uses them; a page kind no signal fits stays in the queue. Fact for the no-api rule: census.py's docstring says api.github.com is never called.",
