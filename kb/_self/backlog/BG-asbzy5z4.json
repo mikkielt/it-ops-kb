@@ -1,0 +1,17 @@
+{
+  "id": "BG-asbzy5z4",
+  "kind": "bug",
+  "title": "new crashes with a shlex traceback on a --repro or --check command with an unclosed quote instead of a usage error",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py new with a --repro or --check value whose command has an unclosed quote (such as an apostrophe in a word) exits 2 with a usage error naming the option, and writes no item, instead of a ValueError traceback from shlex.split in bl_items.parse_cmd; set already does this. Found while fixing BG-4iaxny3s.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"t\",\"--severity\",\"S3\",\"--goal\",\"g\",\"--repro\",\"echo it\"+chr(39)+\"s\"],capture_output=True,text=True); sys.exit(1 if \"Traceback\" in p.stderr or p.returncode != 2 else 0)"
+    ]
+  }
+}
