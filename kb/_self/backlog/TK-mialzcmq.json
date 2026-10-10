@@ -2,7 +2,7 @@
   "id": "TK-mialzcmq",
   "kind": "task",
   "title": "stalled reads a claimed item's request through bl_forge and names mr-dead",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,

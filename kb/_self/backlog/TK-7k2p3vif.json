@@ -2,7 +2,7 @@
   "id": "TK-7k2p3vif",
   "kind": "task",
   "title": "red-pipeline, the intake ci detector and ql_deliver read pipelines through bl_forge with the configured project",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,

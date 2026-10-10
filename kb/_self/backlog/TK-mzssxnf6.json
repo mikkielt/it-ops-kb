@@ -2,7 +2,7 @@
   "id": "TK-mzssxnf6",
   "kind": "task",
   "title": "held --overlaps, claim and the plan's overlap warnings compare touches by repository and glob",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ik5xhaix",
   "priority": "P2",
   "rank": 0,

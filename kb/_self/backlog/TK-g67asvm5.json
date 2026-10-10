@@ -2,7 +2,7 @@
   "id": "TK-g67asvm5",
   "kind": "task",
   "title": "land reads each repository's request once and cleans per repository, and close removes what land left",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ik5xhaix",
   "priority": "P2",
   "rank": 0,

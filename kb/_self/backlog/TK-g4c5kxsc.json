@@ -2,7 +2,7 @@
   "id": "TK-g4c5kxsc",
   "kind": "task",
   "title": "bl_forge.py reads merge request and pipeline state and merges, through a glab arm and a gh arm, from the configured forge and project",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,

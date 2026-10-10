@@ -2,7 +2,7 @@
   "id": "TK-d556hzob",
   "kind": "task",
   "title": "backlog.json repositories map and an item's repos and repos_if_needed, validated by check and set by set",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ik5xhaix",
   "priority": "P2",
   "rank": 0,

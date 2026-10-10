@@ -2,7 +2,7 @@
   "id": "TK-uwu2lgvo",
   "kind": "task",
   "title": "land and merge read the request and merge it through bl_forge, with one project and one read per pass",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-4jjz3vxs",
   "priority": "P2",
   "rank": 0,

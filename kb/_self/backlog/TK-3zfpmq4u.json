@@ -2,7 +2,7 @@
   "id": "TK-3zfpmq4u",
   "kind": "task",
   "title": "dispatch makes one worktree per required repository from its fetched default branch",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ik5xhaix",
   "priority": "P2",
   "rank": 0,
