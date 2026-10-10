@@ -3,21 +3,36 @@
   "kind": "story",
   "title": "rag.py pack ranks a table's rows before its budget cut",
   "status": "draft",
+  "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
-  "goal": "pack prints a CSV article's matching rows by score, not in file order, before it cuts at the character budget, so a question about one model reaches its row of kb/public/claude/models.csv; today a Claude Opus 5.5 model question never reaches models.csv although its row is on line 4, and ST-dtqlqjs7 moved the Haiku 5.5 row to the first data row to be cited. Found in SP-hm4qgf3t's run and confirmed by its review.",
+  "goal": "pack prints a CSV article's matching rows by score, not in file order, before it cuts at the character budget, so a question about one model reaches its row of claude/models.csv; today a Claude Opus 5.5 model question never reaches models.csv although its row is on line 4, and ST-dtqlqjs7 moved the Haiku 5.5 row to the first data row to be cited. Absorbed from ST-wj6acdro: the false-good question 'Claude Sonnet 5.5 model release capabilities pricing context window' packs with claude/models.csv in the lead (today it leads with ci-and-headless.md), as the pack ranks a data table's rows as it ranks article facts. Found in SP-hm4qgf3t's run and confirmed by its review.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys; p=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Opus 5.5 model id context window max output'],capture_output=True,text=True); sys.exit(0 if p.returncode==0 and 'models.csv' in p.stdout else 1)"
+        "import subprocess,sys; p=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Opus 5.5 model id context window max output'],capture_output=True,text=True); sys.exit(0 if p.returncode==0 and '## public/claude/models.csv' in p.stdout else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Sonnet 5.5 model release capabilities pricing context window','--budget','300'],capture_output=True,text=True).stdout;lead=o.split('## ',1)[-1].split(chr(10),1)[0];print('lead:',lead[:80]);sys.exit(0 if 'models.csv' in lead else 1)"
       ]
     }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-hm4qgf3t review",
     "merged: ST-wj6acdro"
   ],
-  "notes": "Merged from ST-wj6acdro “The pack can lead with a fact held only in a data table, so a question answered by claude/models.csv packs it first” at the 2026-10-10 backlog triage: Same defect as ST-z5uh6oj7 (pack does not surface a claude/models.csv row for a model question); its Sonnet 5.5 pack still leads with ci-and-headless.md, not models.csv. Its goal: Found in SP-vayhvwfy (ST-hcc7a3fd, gate g1): the false-good question 'Claude Sonnet 5.5 model release capabilities pricing context window' is answered by claude/models.csv, but rag.py pack leads with agents/agent-caching.md; an eval row expecting the csv fails on its path and doc2query expands only .md facts, so no eval row or expansion could fix it. The pack ranks a data table's rows as it ranks article facts (or an expansion route exists for them), and that question packs with models.csv in the lead. Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;o=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Sonnet 5.5 model release capabilities pricing context window','--budget','300'],capture_output=True,text=True).stdout;lead=o.split('## ',1)[-1].split(chr(10),1)[0];print('lead:',lead[:80]);sys.exit(0 if 'models.csv' in lead else 1)\"]} Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv)."
+  "notes": "Merged from ST-wj6acdro “The pack can lead with a fact held only in a data table, so a question answered by claude/models.csv packs it first” at the 2026-10-10 backlog triage: Same defect as ST-z5uh6oj7 (pack does not surface a claude/models.csv row for a model question); its Sonnet 5.5 pack still leads with ci-and-headless.md, not models.csv. Its goal: Found in SP-vayhvwfy (ST-hcc7a3fd, gate g1): the false-good question 'Claude Sonnet 5.5 model release capabilities pricing context window' is answered by claude/models.csv, but rag.py pack leads with agents/agent-caching.md; an eval row expecting the csv fails on its path and doc2query expands only .md facts, so no eval row or expansion could fix it. The pack ranks a data table's rows as it ranks article facts (or an expansion route exists for them), and that question packs with models.csv in the lead. Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;o=subprocess.run([sys.executable,'_tools/rag.py','pack','Claude Sonnet 5.5 model release capabilities pricing context window','--budget','300'],capture_output=True,text=True).stdout;lead=o.split('## ',1)[-1].split(chr(10),1)[0];print('lead:',lead[:80]);sys.exit(0 if 'models.csv' in lead else 1)\"]} Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv). Premise run at planning (SP-5i4itd2d): pack 'Claude Opus 5.5 model id context window max output' prints messages-api.md and ci-and-headless.md and no claude/models.csv section; the item's first check passed only on the text 'models.csv' in messages-api.md:146, so it now asks for the '## public/claude/models.csv' section. The Sonnet 5.5 question leads with ci-and-headless.md, then agent-caching.md: reproduces."
 }

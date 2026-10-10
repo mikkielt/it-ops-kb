@@ -3,10 +3,18 @@
   "kind": "story",
   "title": "check.py checks every line of a ledger path:line range citation, not only its first",
   "status": "draft",
+  "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
   "goal": "check.py's ledger citation rule (ST-ctomsu4i, 815428cd1) refuses a range citation such as x.md:7-9 in a root's _answers.md or _gaps.md when any line of the range names no line of a tagged fact, not only when its first line does; found by the SP-caqrexqw review.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,os,tempfile,types; sys.path.insert(0,'_tools'); import check; d=tempfile.mkdtemp(); os.mkdir(d+'/a'); n=chr(10); open(d+'/a/x.md','w').write(n.join(['# T','','- Fact one. [DOC S1]','','## Reference','','| a | b |',''])); open(d+'/_answers.md','w').write(n.join(['# A','','- see a/x.md:3-7',''])); e=check.ledger_citation_errors(types.SimpleNamespace(path=d,name='fx')); print(e); sys.exit(0 if e else 1)"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -16,8 +24,17 @@
       ]
     }
   ],
+  "touches": [
+    "_tools/check.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-z5uh6oj7"
+  ],
   "links": [
     "parked: SP-caqrexqw review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Premise: run at planning (SP-5i4itd2d): LEDGER_CITE on 'a/x.md:7-9' yields line 7 only, the range end is never read, and the first check (a ledger citing a/x.md:3-7 whose line 7 is a table row) finds no error: reproduces. The -k ledger_citation check passes before the work and stays in as a guard that the first-line rule holds (the existing test). Order: after ST-z5uh6oj7 (test_live_kb.py) and before ST-2bly3tq5 (check.py). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

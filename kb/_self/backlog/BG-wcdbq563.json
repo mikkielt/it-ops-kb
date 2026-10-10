@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "fact_for picks a line that does not answer for 10 committed eval rows, skips fact lines that name a backticked file, and still picks table header rows",
   "status": "draft",
+  "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "bench_pool.fact_for picks, for each committed eval and near-miss row, a line that answers its question (BP-4f71647e: ansible/dsc3-module.md:18, not :19; BP-d306eaa8: mecm/cmpivot.md:14, not the permission line :49; and BP-34d1ec62, BP-78d6bbfe, BP-c552cb0f, BP-df64045a, BP-9cdc47a9, BP-6b791ed3, BP-8f566d80, BP-70d0bf39); POINTER skips a line only when it does nothing but point to another file (mecm/cmpivot.md:14, claude/hooks.md:148, windows/windows-update-management.md:14 and intune/ios-android-management.md:13 state facts); a markdown table header row and lines inside a code block are never picked. A plain rebuild still moves no committed row; a later --redo then asks the model about the right line. Found by the SP-7y6dk257 review.",
+  "goal": "bench_pool.fact_for picks, for each committed eval and near-miss row, a line that answers its question (BP-4f71647e: ansible/dsc3-module.md:18, not :19; BP-d306eaa8: mecm/cmpivot.md:14, not the permission line :49; and BP-34d1ec62, BP-78d6bbfe, BP-c552cb0f, BP-df64045a, BP-9cdc47a9, BP-6b791ed3, BP-8f566d80, BP-70d0bf39); POINTER skips a line only when it does nothing but point to another file (mecm/cmpivot.md:14, claude/hooks.md:148, windows/windows-update-management.md:14 and intune/ios-android-management.md:13 state facts); a markdown table header row and lines inside a code block are never picked. A plain rebuild still moves no committed row; a later --redo then asks the model about the right line. Absorbed: BP-005970a5 (ASR rules with Warn mode, the LSASS rule's GUID in defender/asr-rules.csv:3) and BP-2413ce41 (the type of Graph beta isManagementRestricted, Edm.Boolean in graph/csdl-device.properties.csv:59) hold a hand-set single-regex check of the fact that answers them, which cached_checks keeps across rebuilds, not only an article path; pool check warns for each eval and near-miss row whose committed check matches no line fact_for picks now. Found by the SP-7y6dk257 review.",
   "repro": {
     "run": [
       "python3",
@@ -14,15 +15,43 @@
       "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','build','--redo','BP-4f71647e','--dry-run'],capture_output=True,text=True).stdout; print(o); sys.exit(0 if 'dsc3-module.md:18' in o else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re,json; sys.path.insert(0,'_tools'); import bench_pool as bp; cases={'lookup_eval.csv:'+c['id']:c for c in bp.read_csv('kb/public/_retrieval/lookup_eval.csv')}; rows=[(r,cases[r['source']]) for r in bp.read_csv('kb/public/_retrieval/bench_pool.csv') if r['source'] in cases and r['checks']]; bad=sorted({r['id'] for r,c in rows for f in [bp.fact_for('.',c)] if f and not any(re.search(x,f[2],re.I) for x in json.loads(r['checks']))}); print(len(bad),bad); sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_check_reports_stale_pick"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,json,re,sys; rows={r['id']:r for r in csv.DictReader(open('kb/public/_retrieval/bench_pool.csv',newline=''))}; bad=[i for i in ('BP-005970a5','BP-2413ce41') if any(re.search(chr(92)+'.(md|csv)$',c) for c in json.loads(rows[i]['checks']))]; print('path-only:',bad); sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/bench_pool.py",
     "_tools/test_bench.py",
+    "kb/public/_retrieval/bench_pool.csv",
     "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-fx5hi2hu"
   ],
   "links": [
     "parked: SP-7y6dk257 review",
     "merged: BG-wamgfo7s",
     "merged: ST-calar7s7"
   ],
-  "notes": "Merged from BG-wamgfo7s “Two pool eval rows stay path-only: BP-005970a5's fact line answers neither part, and BP-2413ce41 needs a check no single regex gives” at the 2026-10-10 backlog triage: Same class as BG-wcdbq563: committed pool rows whose check does not answer (fact_for picks :38 for BP-005970a5). Repro reproduces: both rows are path-only, 2 of 25 path-only pool rows in 130. No multi-part --replies feature is needed: hand-set a single-regex check (the LSASS GUID from asr-rules.csv:3; `Edm\\.Boolean` for BP-2413ce41), which cached_checks keeps across rebuilds. Its goal: BP-005970a5 (which ASR rules support Warn mode, and the LSASS rule's GUID) and BP-2413ce41 (the type of the Graph beta device property isManagementRestricted) hold a check of the fact that answers them, not only an article path. BP-005970a5: fact_for picks defender/asr-and-antivirus.md:38 (rule groups), while :35 names the two rules without Warn mode and defender/asr-rules.csv:3 holds the GUID. BP-2413ce41: the answer is Edm.Boolean (graph/csdl-device.properties.csv:59); the model's bare Boolean is too broad for the guard, and pool build --replies reads only a row's first check, so a two-part check (the property and its type) cannot be given. Found in SP-7y6dk257 by ST-2p5ywkam's paid redo. Its touches: _tools/bench_pool.py, _tools/test_bench.py, kb/public/_retrieval/bench_pool.csv, kb/_self/tools.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Merged from BG-wamgfo7s and ST-calar7s7 at the 2026-10-10 backlog triage (their goals are folded into this goal). BP-005970a5: fact_for picks defender/asr-and-antivirus.md:38 (rule groups); :35 names the two rules without Warn mode and defender/asr-rules.csv:3 holds the GUID. BP-2413ce41: the answer is Edm.Boolean (graph/csdl-device.properties.csv:59); the model's bare Boolean is too broad for the guard and pool build --replies reads only a row's first check, so hand-set a single regex. Found in SP-7y6dk257 by ST-2p5ywkam's paid redo. Premise: run at planning (SP-5i4itd2d): the repro fails (pool build --redo BP-4f71647e --dry-run asks ansible/dsc3-module.md:19) and BP-005970a5 and BP-2413ce41 hold an article-path-only check: reproduces. Order: after ST-fx5hi2hu, before ST-dj2zgvh3 and BG-hytkzabh (same bench_pool.py, test_bench.py). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. The -k pool_check_reports_stale_pick selector names the test the item adds (none collected until then, exit 2)."
 }

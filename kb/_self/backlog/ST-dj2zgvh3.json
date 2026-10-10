@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "too_broad judges every alternative of a regenerated check, not only bare words, so a phrase found across the kb is refused",
   "status": "draft",
+  "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
   "goal": "bench_pool.too_broad refuses a regenerated check any of whose alternatives matches more than COMMON_ARTICLES articles, a phrase or pattern as well as a bare word; BP-f454bc83 (AWX license and release) and its three variants hold Apache[-\\s]?2\\.0|24\\.6\\.1, whose first alternative matches 28 articles, so an answer about another Apache-2.0 project passes. Found by the SP-7y6dk257 review.",
@@ -29,8 +30,11 @@
     "kb/public/_retrieval/bench_pool.csv",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "BG-wcdbq563"
+  ],
   "links": [
     "parked: SP-7y6dk257 review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Premise: run at planning (SP-5i4itd2d): the first check fails (too_broad('Apache[-\\s]?2\\.0|24\\.6\\.1') returns '' against the kb's articles): reproduces. pool check passes before the work and stays in as a guard that the committed rows stay valid (the stricter judge applies to regenerated checks only). Order: after BG-wcdbq563 (same bench_pool.py, test_bench.py and bench_pool.csv). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The rules questions 'which planned sprint starts next when several are approved' and 'what logs does the kb tooling keep' pack good from kb/_self through tested questions",
   "status": "draft",
+  "sprint": "SP-5i4itd2d",
   "priority": "P3",
   "rank": 0,
-  "goal": "python3 _tools/rag.py pack --root _self 'which planned sprint starts next when several are approved' packs coverage good with the backlog runbook's rule on which approved sprint starts next as its answering line, through a tested question in the _self lookup eval set (the query-log finding F-6f7e881cdca1, rejected in SP-flkl5gom as off the kb's domains although the _self docs answer it); 'what logs does the kb tooling keep' (F-071ee8797647) gets the same if a _self line answers it, else the reason it stays rejected is noted; rag.py eval passes.",
+  "goal": "python3 _tools/rag.py pack --root _self 'which planned sprint starts next when several are approved' packs coverage good with the backlog runbook's rule on which approved sprint starts next as its answering line, through a tested question in the _self lookup eval set (the query-log finding F-6f7e881cdca1, rejected in SP-flkl5gom as off the kb's domains although the _self docs answer it); 'what logs does the kb tooling keep' (F-071ee8797647) gets the same if a _self line answers it, else the reason it stays rejected is noted; rag.py eval passes. Absorbed from ST-qfea7pvk (same commit adds all four rows): 'how are the _self rule questions tested' and 'what does backlog.py researched check for a goal research story with no outside facts' pack coverage good through rows of kb/_self/_retrieval/lookup_eval.csv (both weak today; found in SP-d3hybrlv).",
   "checks": [
     {
       "run": [
@@ -17,17 +18,35 @@
     {
       "run": [
         "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how are the _self rule questions tested','--budget','200'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good')))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','what does backlog.py researched check for a goal research story with no outside facts','--budget','200'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good')))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
         "_tools/rag.py",
         "eval"
       ]
     }
   ],
   "touches": [
-    "kb/_self/_retrieval/lookup_eval.csv"
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-z5uh6oj7"
   ],
   "links": [
     "parked: SP-flkl5gom review",
     "merged: ST-qfea7pvk"
   ],
-  "notes": "Review gap G1 (S2): F-6f7e881cdca1 and F-071ee8797647 were real user lookups (query log), rejected as off the kb's domains, though pack --root _self leads with kb/_self/backlog.md:143 (weak) for the first. Merged from ST-qfea7pvk “_self rule questions cover what backlog.py researched needs and how the rule questions are tested” at the 2026-10-10 backlog triage: Premise reproduces (pack --root _self: 'how are the _self rule questions tested' and the researched question are both coverage weak today), but it is the same kind of work as ST-v3yearsk: rows in kb/_self/_retrieval/lookup_eval.csv. One commit adds all four rows. Its goal: Found in SP-d3hybrlv: rag.py pack --root _self gave weak for 'what does backlog.py researched check for a goal research story with no outside facts' (orchestrator) and 'how are the _self rule questions tested' (a worker), and --item ST-7yahfn3j gave coverage none, so both read sections by hand. Rows in kb/_self/_retrieval/lookup_eval.csv answer both with coverage good. Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how are the _self rule questions tested','--budget','200'],capture_output=True,text=True);o=r.stdout;print(o.splitlines()[0] if o else r.stderr[:200]);sys.exit(r.returncode or int(not o.startswith('coverage: good')))\"]} Its touches: kb/_self/_retrieval/lookup_eval.csv, kb/_self/backlog.md Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Review gap G1 (S2): F-6f7e881cdca1 and F-071ee8797647 were real user lookups (query log), rejected as off the kb's domains, though pack --root _self leads with kb/_self/backlog.md:143 (weak) for the first. Merged from ST-qfea7pvk at the 2026-10-10 backlog triage (its goal is folded into this goal): one commit adds all four rows. Found in SP-d3hybrlv: --item ST-7yahfn3j gave coverage none, so both sections were read by hand. Premise: run at planning (SP-5i4itd2d): pack --root _self is coverage weak for 'which planned sprint starts next when several are approved', 'how are the _self rule questions tested' and the researched question: reproduces. rag.py eval passes before the work and stays in as a guard that the new rows leave the set passing; the pack checks are the ones that fail now. Order: after ST-z5uh6oj7, whose ranking change can move _self verdicts. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }
