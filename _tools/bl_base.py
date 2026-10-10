@@ -36,6 +36,7 @@ SETTINGS = {
     "lane_module": ("module", "kblane"),  # the module that says which lane a path belongs to
     "worktree_dir": ("path", ".claude/worktrees"),  # a worker's worktrees, under the clone's main checkout
     "scratch_dir": ("path", "_cache/scratch"),  # + /<id>/: a worker's throwaway files and staging copies, under the clone's top
+    "forge": ("forge", "gitlab"),  # the integration remote's forge: gitlab (read with glab) or github (read with gh)
     "forge_project": ("str", ""),  # the forge project of the integration remote; "" = read from the remote's URL
     # the external trackers an item's `external` ids may name: tracker -> {pattern, url, ref?}; {} = none accepted
     "trackers": ("trackers", {}),
@@ -54,6 +55,8 @@ def _type_problem(kind, v):
         return isinstance(x, list) and all(isinstance(s, str) for s in x)
     if kind == "str":
         return None if isinstance(v, str) else "a string"
+    if kind == "forge":
+        return None if v in ("gitlab", "github") else '"gitlab" or "github"'
     if kind == "path":
         ok = isinstance(v, str) and v != "" and not v.startswith("/") and ".." not in v.split("/")
         return None if ok else "a non-empty path with forward slashes, relative to the root, with no `..`"
