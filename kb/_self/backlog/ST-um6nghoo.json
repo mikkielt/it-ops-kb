@@ -27,5 +27,5 @@
     "parked: SP-5x5ut5ko close",
     "parked: SP-qg7ncs6d close"
   ],
-  "notes": "SP-qg7ncs6d close, 2026-10-10: again on ST-yztru4mz: land stopped at step branch because pid 73924 (querylog.py distill --settle 2, started from the worker worktree's _tools) still ran there about 3 minutes after the worker session exited; the orchestrator waited for it to end and land went through on the second run."
+  "notes": "SP-qg7ncs6d close, 2026-10-10: again on ST-yztru4mz: land stopped at step branch because pid 73924 (querylog.py distill --settle 2, started from the worker worktree's _tools) still ran there about 3 minutes after the worker session exited; the orchestrator waited for it to end and land went through on the second run. Recurrence SP-m3azo2y7 (2026-10-10): land of BG-6cq4zeai stopped at step branch because a session-end querylog.py distill (of an earlier, ended orchestrator session) ran on in the worker worktree for about 6 minutes, queued behind three other distills on the delivery lock."
 }

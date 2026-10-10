@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-dqkf3i42 close"
   ],
-  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm; the later items (TK-cagohpbu, TK-j5rcgylo, BG-axfywrrd, BG-rqxspwtb, BG-na2uirn5) each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch."
+  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm; the later items (TK-cagohpbu, TK-j5rcgylo, BG-axfywrrd, BG-rqxspwtb, BG-na2uirn5) each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch. Recurrence SP-m3azo2y7 (2026-10-10): ST-zltblzgq and ST-vblulwrc each needed a planted test with the suite at 100 of 100 ids; ST-zltblzgq stopped mid-work on blocking gate g2 to ask where the test goes, and the orchestrator asked ST-vblulwrc g2 before its claim."
 }

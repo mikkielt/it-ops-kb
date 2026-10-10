@@ -1,0 +1,25 @@
+{
+  "id": "ST-piqs2azs",
+  "kind": "story",
+  "title": "gate add --do accepts an option whose text holds '=', such as a tests-ceiling answer",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-m3azo2y7 close: gate add on BG-b5vvixda refused --do 'tests-ceiling ids=100 ...=BG-b5vvixda' with 'OPTION one of the --option values', because --do splits OPTION=CMD at the first '=' and the tests-ceiling answer form (kb/_self/code.md) holds several; the gate was filed without its do entries. --do splits at the '=' after the longest --option value it starts with (or at the last '='), so every option of the documented answer forms can name its item.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,tempfile,os;live=os.getcwd();t=tempfile.mkdtemp();subprocess.run(['git','init','-q',t],check=True);os.makedirs(t+'/kb/_self/backlog');b=[sys.executable,live+'/_tools/backlog.py','--root',t];i=subprocess.run(b+['new','story','--title','S','--goal','g'],capture_output=True,text=True,cwd=t).stdout.split()[2];r=subprocess.run(b+['gate','add',i,'--question','q','--option','x ids=1','--option','y','--recommendation','x ids=1','--do','x ids=1='+i],capture_output=True,text=True,cwd=t);print(r.stdout,r.stderr);sys.exit(r.returncode)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 close"
+  ]
+}

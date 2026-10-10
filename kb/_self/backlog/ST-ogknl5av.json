@@ -1,0 +1,25 @@
+{
+  "id": "ST-ogknl5av",
+  "kind": "story",
+  "title": "The e2e scenario that folds the gone-once, dry-run and reopened_refs checks runs fast enough for the suite to fit the 20 s darwin ceiling again",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Found at the SP-m3azo2y7 close: the review story's done was refused 31 times on the 20 s darwin ceiling, every run passing all 100 tests in 20.18-21.08 s, 21 of them at load 1.47-1.76; the sprint folded two planted scenarios into test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs (_tools/test_land_e2e.py), which runs about 11 s alone, so the operator raised darwin to 22 s (D-7ngv63af, BG-b5vvixda). The scenario's git and backlog.py calls are cut (shared fixture, fewer subprocesses) until a full tests.py run on darwin takes under 20 s at load under 2, with every assertion kept; the ceiling then goes back only through the operator's recorded answer.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "reopened_refs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-hsnqfwtc",
+  "kind": "story",
+  "title": "Planning reads a goal that judges state on origin/main against the command's own unpushed commits, so the clause is not left to a mid-work gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-m3azo2y7 close: ST-vblulwrc's goal said prune_reopened_refs keeps the ref of an item present on origin/main and also that a removed item's ref is gone, but close and drop commit locally, so origin/main still holds every file they just removed; the worker stopped on blocking gate g3 mid-work to ask which clause wins. kb-sprint plan step 4 or 6 has the planner read a goal clause that judges state on the integration main against the commits the command itself makes before any push, and ask the choice as a gate before the start.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'unpushed' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-abiuyhl3",
+  "kind": "story",
+  "title": "A worker that files a bug gives it touches with new bug --touch, as the role file says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-m3azo2y7 close: the BG-cb4wcm2m worker filed BG-7cd3hvi6 with no touches, reporting that set has no touches flag, though new bug --touch and set --add-touch both exist; the orchestrator had to add them before the bug could join the sprint (move refuses an item with no touches into an active sprint). .claude/agents/kb-worker.md (and the plugin's worker role file) names new bug --touch PATH for each file the fix would change when a worker files a bug.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();sys.exit(0 if 'new bug' in t and '--touch' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 close"
+  ]
+}
