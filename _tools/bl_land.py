@@ -842,7 +842,7 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
             return f"it is {state} but not on {branch}"
     code, out = run_git("status", "--porcelain", "-uall", cwd=path)
     dirty = out.splitlines()
-    drafts = [] if code else intake_drafts(path, dirty, branch)
+    drafts = [] if code or repo is not None else intake_drafts(path, dirty, branch)  # a repository holds no intake
     if code or len(drafts) < len(dirty):
         return f"it is {state} and has uncommitted changes: commit or discard them there, then run land again"
     procs, unchecked = live_processes(path)
@@ -944,10 +944,7 @@ def repo_default_ref(name, checkout):
                                                                       "HEAD"), re.M)
     if found is None:
         raise repo_stop(name, "git ls-remote --symref origin HEAD gave no default branch")
-    ref = f"refs/remotes/origin/{found.group(1)}"
-    if not has_ref(checkout, ref):
-        raise repo_stop(name, f"the default branch {found.group(1)!r} is not among the refs the fetch made")
-    return ref
+    return f"refs/remotes/origin/{found.group(1)}"
 
 
 def local_default_ref(checkout):
@@ -1011,36 +1008,43 @@ def land_repositories(bl, iid):
     if bad:
         raise land_stop("requests", "; ".join(bad) + "; nothing was removed or changed: merge each, then run land again")
     ops_mark("repositories")
-    out, held = [], []
+    staged, held = [], []
     branch = WORK_PREFIX + iid
     for name, checkout, request in found:
         upstream = repo_default_ref(name, checkout)
-        tip = subprocess.run(["git", "rev-parse", "-q", "--verify", f"refs/heads/{branch}"], cwd=checkout,
-                             capture_output=True, text=True, encoding="utf-8", errors="replace").stdout.strip()
+        p = subprocess.run(["git", "for-each-ref", "--format=%(refname) %(objectname)", f"refs/heads/{branch}", upstream],
+                           cwd=checkout, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        refs = dict(ln.split(" ", 1) for ln in p.stdout.splitlines() if " " in ln)
+        if upstream not in refs:
+            raise repo_stop(name, f"the default branch {upstream[len('refs/remotes/origin/'):]!r} is not among the "
+                                  "refs the fetch made")
         say(f"land: repository {name}: merge request {request.url or '!' + str(request.iid)} is {request.state} "
             f"on {upstream[len('refs/remotes/'):]}")
         wt = repo_worktree(root, iid, name)
-        entry = next((e for e in worktree_entries(checkout) if e["path"] == wt.resolve()), None)
+        entry = next((e for e in worktree_entries(checkout) if e["path"] == wt.resolve()), None) if wt.is_dir() else None
         why = release_worker_worktree(root, entry["path"], entry["lock"], branch, repo=checkout,
                                       check_only=True) if entry else None
         if why:
             held.append(f"repository {name!r}: its worktree {wt} {why}")
+        staged.append((name, checkout, request, upstream, refs.get(f"refs/heads/{branch}", ""),
+                       entry["path"] if entry else None))
+    if held:
+        raise land_stop("repositories", "; ".join(held) + "; nothing was removed: end or commit what is there, then "
+                                                          "run land again")
+    out = []
+    for name, checkout, request, upstream, tip, worktree in staged:
         commit = merge_commit(checkout, tip, upstream, request.iid)
         if not commit:
             say(f"land: repository {name}: no merge commit found for the request (its branch is gone or squashed): "
                 "its evidence names the request only")
-        out.append(RepoLand(name, checkout, entry["path"] if entry else None, upstream, tip,
+        if worktree is not None:  # clean, unlocked and free of processes as checked above: git itself refuses a dirty one
+            p = subprocess.run(["git", "worktree", "remove", str(worktree)], cwd=checkout, capture_output=True,
+                               text=True, encoding="utf-8", errors="replace")
+            if p.returncode:
+                raise repo_stop(name, f"its worktree {worktree}: git worktree remove: {(p.stderr or p.stdout).strip()}")
+            say(f"land: repository {name}: removed its worktree {worktree}")
+        out.append(RepoLand(name, checkout, worktree, upstream, tip,
                             {"request": request.url or f"!{request.iid}", "commit": commit}))
-    if held:
-        raise land_stop("repositories", "; ".join(held) + "; nothing was removed: end or commit what is there, then "
-                                                          "run land again")
-    for r in out:
-        if r.worktree is None:
-            continue
-        entry = next((e for e in worktree_entries(r.checkout) if e["path"] == r.worktree), None)
-        why = release_worker_worktree(root, r.worktree, entry["lock"] if entry else None, branch, repo=r.checkout)
-        if why:
-            raise repo_stop(r.name, f"its worktree {r.worktree} {why}")
     return out
 
 
@@ -1051,10 +1055,10 @@ def repo_evidence(repos):
 
 def delete_repo_branches(repos, iid):
     """Delete each repository's `work/<id>` once the item has landed, when `git cherry` shows every commit of it on the
-    repository's default branch (delete_landed_branch: a squashed or unmerged one is kept, and said)."""
-    for r in repos:
-        if r.tip:
-            delete_landed_branch(r.checkout, WORK_PREFIX + iid, r.upstream, who=f"land: repository {r.name}")
+    repository's default branch (delete_landed_branch: a squashed or unmerged one is kept, and said). Returns the
+    names of the repositories whose branch it deleted."""
+    return [r.name for r in repos if r.tip and delete_landed_branch(r.checkout, WORK_PREFIX + iid, r.upstream,
+                                                                    who=f"land: repository {r.name}")]
 
 
 def clean_repository_leftovers(root, iid, checkouts):

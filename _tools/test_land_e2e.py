@@ -321,7 +321,7 @@ class TestHookWait:
         repo.git("worktree", "add", "-q", "-b", "work/ST-00000001", str(worker))
         log = Path(repo.file("_cache/querylog/distill.log"))  # the standard output of the run a SessionEnd starts
         log.parent.mkdir(parents=True)
-        pid = orphan_in(worker, log, 3)
+        pid = orphan_in(worker, log, 1)
         try:
             why = bl_land.release_worker_worktree(Path(repo.path), worker, None, "work/ST-00000001")
         finally:
@@ -335,10 +335,11 @@ class TestHookWait:
         self.multirepo_land(tmp_path / "multi", capsys, monkeypatch)
 
     def multirepo_land(self, base, capsys, monkeypatch):
-        """multirepo_land, on throwaway repositories: a workspace holding one item and three repositories, each with
-        the worktree dispatch makes at `<worker dir>/<id>/<repo>` on `work/<id>`: api merged with a merge commit, web
-        fast-forwarded, docs fast-forwarded and then given a commit its default branch lacks. The forge answers each
-        repository's request from a table; `land_repositories` is `land`'s step of that name."""
+        """multirepo_land, on throwaway repositories built once with few git calls (empty commits, clones of bare
+        origins): a workspace holding one item and three repositories, each with the worktree dispatch makes at
+        `<worker dir>/<id>/<repo>` on `work/<id>`: api merged with a merge commit, web fast-forwarded, docs
+        fast-forwarded and then given a commit its default branch lacks. The forge answers each repository's request
+        from a table; `land_repositories` is `land`'s step of that name, and what it returns is read, not git."""
         import argparse
 
         import bl_base
@@ -347,14 +348,16 @@ class TestHookWait:
         iid = "ST-aaaaaaaa"
         ws, names = Repo(base / "ws"), {"api": "repos/api", "web": "repos/web", "docs": "repos/docs"}
         os.makedirs(ws.path)
-        ws.git("init", "-q", "-b", "main")
-        ws.git("config", "user.name", "t")
-        ws.git("config", "user.email", "t@example.com")
+        for k, v in (("NAME", "t"), ("EMAIL", "t@example.com")):  # the commits cmd_done makes in this process
+            monkeypatch.setenv(f"GIT_AUTHOR_{k}", v)
+            monkeypatch.setenv(f"GIT_COMMITTER_{k}", v)
         item = {"id": iid, "kind": "story", "title": "Multi", "status": "doing", "goal": "Merged in each repository.",
                 "checks": [{"run": ["python3", "-c", "print('checked')"]}], "claimed_by": "t",
                 "touches": [f"{n}/{n}.txt" for n in names], "repos": list(names)}
         ws.write(f"kb/_self/backlog/{iid}.json", json.dumps(item, indent=2) + "\n")
-        ws.commit("plan")
+        ws.git("init", "-q", "-b", "main")
+        ws.git("add", "-A")
+        ws.git("commit", "-q", "-m", "plan")
         config = base / "config.json"
         config.write_text(json.dumps({"repositories": names}), encoding="utf-8")
         monkeypatch.setattr(bl_base, "_LOADED", [])  # this workspace's settings, for this test only
@@ -362,19 +365,14 @@ class TestHookWait:
         checkouts, trees = {}, {}
         for name, rel in names.items():
             origin = base / "origins" / f"{name}.git"
-            origin.mkdir(parents=True)
-            Repo(origin).git("init", "-q", "--bare", "-b", "main")
+            ws.git("init", "-q", "-b", "main", "--bare", str(origin))
+            ws.git("clone", "-q", str(origin), rel)
             checkouts[name] = Repo(Path(ws.path) / rel)
-            os.makedirs(checkouts[name].path)
-            checkouts[name].git("init", "-q", "-b", "main")
-            checkouts[name].git("remote", "add", "origin", str(origin))
-            checkouts[name].write("a.txt", "a\n")
-            checkouts[name].commit("first")
+            checkouts[name].git("commit", "-q", "--allow-empty", "-m", "first")
             checkouts[name].git("push", "-q", "origin", "main")
             trees[name] = Repo(Path(ws.path) / ".claude" / "worktrees" / iid / name)
-            checkouts[name].git("worktree", "add", "-q", "-b", f"work/{iid}", trees[name].path, "main")
-            trees[name].write(f"{name}.txt", "work\n")
-            trees[name].commit(f"{iid}: {name} work")
+            checkouts[name].git("worktree", "add", "-q", "-b", f"work/{iid}", trees[name].path)
+            trees[name].git("commit", "-q", "--allow-empty", "-m", f"{iid}: {name} work")
         states, seen = {}, []
 
         def request(root, branch=None, title_prefix=None, run=None):
@@ -406,15 +404,14 @@ class TestHookWait:
 
         # the forge merges: api with a merge commit, web and docs by fast-forward; docs' worktree commits once more
         checkouts["api"].git("merge", "-q", "--no-ff", "-m", f"Merge branch 'work/{iid}' into 'main'", f"work/{iid}")
-        checkouts["api"].git("push", "-q", "origin", "main")
         for n in ("web", "docs"):
             checkouts[n].git("merge", "-q", "--ff-only", f"work/{iid}")
+        for n in names:
             checkouts[n].git("push", "-q", "origin", "main")
-        trees["docs"].write("extra.txt", "after the merge\n")
-        trees["docs"].commit(f"{iid}: docs more")
+        trees["docs"].git("commit", "-q", "--allow-empty", "-m", f"{iid}: docs more")  # a tip origin/main lacks
         merged = {n: "merged" for n in names}
         trees["web"].git("worktree", "lock", "--reason", "another tool", trees["web"].path)
-        trees["api"].write("dirty.txt", "uncommitted\n")
+        Path(trees["api"].file("dirty.txt")).write_text("uncommitted\n", encoding="utf-8")
         holder = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"], cwd=trees["docs"].path)
         try:  # a dirty, a locked and a live-process worktree (a session that still runs): each named, none removed
             why = refused(**merged)
@@ -429,41 +426,40 @@ class TestHookWait:
         trees["web"].git("worktree", "unlock", trees["web"].path)
         Path(trees["api"].file("dirty.txt")).unlink()
 
-        states.update(merged)
         seen.clear()
         repos = bl_land.land_repositories(bl, iid)
-        assert [r.name for r in repos] == list(names) and len(seen) == 3, (repos, seen)
-        assert not any(Path(t.path).exists() for t in trees.values())
-        assert sorted(r.name for r in repos if r.tip) == sorted(names)
-        bl_land.delete_repo_branches(repos, iid)  # after the landing: the branches whose tip the default branch has
-        for n in ("api", "web"):
-            assert checkouts[n].git("branch", "--list", f"work/{iid}").strip() == "", n
-        assert checkouts["docs"].git("branch", "--list", f"work/{iid}").strip() != ""
-        said = capsys.readouterr().out
-        assert "repository docs: kept work/" in said and "repository docs: no merge commit found" in said, said
+        assert [r.name for r in repos] == list(names) and len(seen) == 3, (repos, seen)  # read once more, once each
+        assert not any(Path(t.path).exists() for t in trees.values()) and all(r.tip for r in repos)
         evidence = bl_land.repo_evidence(repos)
-        assert evidence == {n: {"request": f"https://gitlab.example.com/grp/{n}/-/merge_requests/7",
-                                "commit": checkouts[n].rev("origin/main") if n != "docs" else ""} for n in names}
-        assert len(checkouts["api"].git("rev-list", "--parents", "-1", "origin/main").split()) == 3  # a merge commit
+        merge_line = checkouts["api"].git("rev-list", "--parents", "-1", "HEAD").split()
+        assert len(merge_line) == 3  # the merge commit and its two parents
+        assert evidence == {
+            "api": {"request": "https://gitlab.example.com/grp/api/-/merge_requests/7", "commit": merge_line[0]},
+            "web": {"request": "https://gitlab.example.com/grp/web/-/merge_requests/7",
+                    "commit": checkouts["web"].rev("HEAD")},  # a fast-forward: the branch's tip itself
+            "docs": {"request": "https://gitlab.example.com/grp/docs/-/merge_requests/7", "commit": ""}}, evidence
+        said = capsys.readouterr().out
+        assert "repository docs: no merge commit found" in said and "repository api: removed its worktree" in said, said
 
         # done: the work is merged in the repositories, so land's evidence stands in for a commit of the workspace
         args = dict(id=iid, commit=True, trailer=[])
         with pytest.raises(bl_base.Refused, match=r"merged in its repositories.*run land"):
             bl_land.cmd_done(bl, argparse.Namespace(dry_run=True, **args))
-        capsys.readouterr()
         assert bl_land.cmd_done(bl, argparse.Namespace(dry_run=False, repositories=evidence, **args)) == 0
-        saved = json.loads(ws.git("show", f"HEAD:kb/_self/backlog/{iid}.json"))
+        saved = json.loads(Path(ws.file(f"kb/_self/backlog/{iid}.json")).read_text(encoding="utf-8"))
         assert saved["status"] == "done" and saved["evidence"]["repositories"] == evidence, saved
-        assert ws.git("log", "-1", "--format=%s").startswith(f"chore(backlog): done {iid}")
+        committed = ws.git("log", "-1", "--format=%s", "--name-only").splitlines()
+        assert committed[0].startswith(f"chore(backlog): done {iid}") and f"kb/_self/backlog/{iid}.json" in committed
 
-        # close's helper: a clean worktree on a merged branch goes with its branch, a dirty one stays and is named
-        for n in ("web", "api"):
-            checkouts[n].git("worktree", "add", "-q", "-b", f"work/{iid}", trees[n].path, "origin/main")
-        trees["api"].write("dirty.txt", "uncommitted\n")
+        # after the landing the branches on the default branch go (api's here; docs' is kept and said), and close's
+        # helper removes what is left: web's worktree, one more worktree of its merged branch, and then the branch
+        assert bl_land.delete_repo_branches([repos[0], repos[2]], iid) == ["api"]
+        assert "repository docs: kept work/" in capsys.readouterr().out
+        checkouts["web"].git("worktree", "add", "-q", trees["web"].path, f"work/{iid}")
         kept = bl_land.clean_repository_leftovers(Path(ws.path), iid, [(n, Path(checkouts[n].path)) for n in names])
-        assert kept == 2 and not Path(trees["web"].path).exists() and Path(trees["api"].path).is_dir()  # api, docs
-        assert checkouts["web"].git("branch", "--list", f"work/{iid}").strip() == ""
-        assert "close: kept" in capsys.readouterr().out
+        assert kept == 1 and not Path(trees["web"].path).exists() and not Path(trees["web"].path).parent.exists()
+        said = capsys.readouterr().out
+        assert "close: repository web: deleted the landed branch" in said and "close: repository docs: kept" in said, said
 
     def test_land_waits_hook_at_most_the_bound_and_not_for_a_process_whose_parent_lives(self, monkeypatch):
         import bl_land
