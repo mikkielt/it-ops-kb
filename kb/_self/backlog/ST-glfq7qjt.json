@@ -1,0 +1,21 @@
+{
+  "id": "ST-glfq7qjt",
+  "kind": "story",
+  "title": "cost reads a host project's own query log and attributes its workers' usage (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py cost in a host project reads that project's usage rows and item files, names no kb item, and counts its headless workers' sessions",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cost_host_project"
+      ]
+    }
+  ],
+  "notes": "Run findings 24 and 25: cost: no item file and no git history for ST-m6uyo6rw, TK-7nnd2bdm, TK-p7ajxp72: left out of every sum; 0 run(s), 0 item(s) with work lines; land: ST-... landed with no work rows (missing). Relates BG-h7t2ez7n."
+}

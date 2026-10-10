@@ -1,0 +1,21 @@
+{
+  "id": "ST-hlpvqc2h",
+  "kind": "story",
+  "title": "A worker's brief gives it its session id for the Session trailer (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "dispatch names the worker's session id (or the way to read it) in the brief, so the worker's commits carry the Session trailer the role file lists",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_names_session_id"
+      ]
+    }
+  ],
+  "notes": "Run finding 20: the worker reported no Session: trailer, since my brief gave no session id; its commit carried Co-Authored-By, Self-Reviewed and KB-Work only."
+}

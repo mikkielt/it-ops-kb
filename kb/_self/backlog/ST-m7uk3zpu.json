@@ -1,0 +1,21 @@
+{
+  "id": "ST-m7uk3zpu",
+  "kind": "story",
+  "title": "done's docs check is skipped when docs_map is empty (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "done in a project whose docs_map is empty runs no docs check and prints no warning about kb/_self/map.csv",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_docs_map_empty"
+      ]
+    }
+  ],
+  "notes": "Run finding 9: warning: the docs check could not run: cannot read kb/_self/map.csv: No such file or directory (docs_map = \"\")."
+}

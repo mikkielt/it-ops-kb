@@ -1,0 +1,19 @@
+{
+  "id": "BG-5gqy7hln",
+  "kind": "bug",
+  "title": "selfcheck fails allow-rules and hooks in a host project, on the kb's glab, core.hooksPath and .claude-plugin checks (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "selfcheck in a host project checks only what that project's backlog.json and settings name: no FAIL for the kb's glab commands, core.hooksPath or a .claude-plugin/plugin.json the host does not have",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys,tempfile; d=tempfile.mkdtemp(); subprocess.run(['git','init','-q',d]); o=subprocess.run([sys.executable,'_tools/backlog.py','--root',d,'selfcheck'],capture_output=True,text=True).stdout; sys.exit(1 if 'FAIL hooks' in o or 'FAIL allow-rules' in o else 0)"
+    ]
+  },
+  "notes": "Run finding 6: FAIL allow-rules: 6 of 31 not covered: git worktree add path -b branch origin/main, glab mr view code/ST-00000000 -F json, tool Agent +3 more; FAIL hooks: core.hooksPath is not set; .claude-plugin/plugin.json is missing or not JSON."
+}

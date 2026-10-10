@@ -1,0 +1,21 @@
+{
+  "id": "ST-siqol7pe",
+  "kind": "story",
+  "title": "The Agent-tool fallback works in a host project whose worktrees sit under .claude/ (second-project run)",
+  "status": "draft",
+  "parent": "EP-4fawjprq",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A host project's Agent-tool fallback worker can edit its worktree's files: the default worktree_dir is outside .claude/, or the skill says which setting the host changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_fallback_worktree"
+      ]
+    }
+  ],
+  "notes": "Run findings 12 and 13: Edit on src/greet.py in .claude/worktrees/agent-... was refused: requested permissions to edit ... which is a sensitive file."
+}
