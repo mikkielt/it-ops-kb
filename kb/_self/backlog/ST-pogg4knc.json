@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys\nr = lambda p: open(p, encoding='utf-8').read()\nsp, bk, doc = r('.claude/skills/kb-sprint/SKILL.md'), r('.claude/skills/kb-backlog/SKILL.md'), r('kb/_self/backlog.md')\ngot = {'sprint plan names a removed or renamed flag': 'removed or renamed flag' in sp,\n       'sprint plan names a facade registration': 'facade registration' in sp,\n       'sprint plan names the benchmarks results file and README.md': 'benchmarks.csv' in sp and 'README.md' in sp,\n       'kb-backlog names a new _tools module': 'adding a new `_tools/` module' in bk,\n       'backlog.md Sprints names both': 'removed or renamed flag' in doc and 'adding a new `_tools/` module' in doc}\nprint(got)\nsys.exit(0 if all(got.values()) else 1)\n"
+        "import sys\nr = lambda p: open(p, encoding='utf-8').read()\nsp, bk, doc = r('.claude/skills/kb-sprint/SKILL.md'), r('.claude/skills/kb-backlog/SKILL.md'), r('kb/_self/backlog.md')\ngot = {'sprint plan names a removed or renamed flag': 'removed or renamed flag' in sp,\n       'sprint plan names a facade registration': 'facade registration' in sp,\n       'sprint plan names the benchmarks results file and README.md': 'benchmarks.csv' in sp and 'README.md' in sp,\n       'kb-backlog names a new tool module': 'adding a new tool module' in bk,\n       'backlog.md Sprints names both': 'removed or renamed flag' in doc and 'adding a new `_tools/` module' in doc}\nprint(got)\nsys.exit(0 if all(got.values()) else 1)\n"
       ]
     }
   ],
@@ -36,7 +36,9 @@
         "Keep the check and exempt the phrase in the portability test"
       ],
       "recommendation": "Change the check's kb-backlog clause to the plugin-safe phrase 'adding a new tool module'; backlog.md keeps the _tools/ wording",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Change the check's kb-backlog clause to the plugin-safe phrase 'adding a new tool module'; backlog.md keeps the _tools/ wording",
+      "by": "operator"
     }
   ],
   "links": [
