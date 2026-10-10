@@ -36,6 +36,8 @@ SETTINGS = {
     "forge_project": ("str", ""),  # the forge project of the integration remote; "" = read from the remote's URL
     # the external trackers an item's `external` ids may name: tracker -> {pattern, url, ref?}; {} = none accepted
     "trackers": ("trackers", {}),
+    "docs_map": ("optpath", "kb/_self/map.csv"),  # a doc,pattern CSV: the docs a brief lists for an item's touches; "" = none
+    "kb_root": ("rootname", "_self"),  # the kb root whose cited fact lines a brief carries; "" = the project is no root
 }
 
 
@@ -52,6 +54,12 @@ def _type_problem(kind, v):
     if kind == "path":
         ok = isinstance(v, str) and v != "" and not v.startswith("/") and ".." not in v.split("/")
         return None if ok else "a non-empty path with forward slashes, relative to the root, with no `..`"
+    if kind == "optpath":
+        return None if v == "" or _type_problem("path", v) is None else \
+            "a path with forward slashes, relative to the root, with no `..` (\"\" for none)"
+    if kind == "rootname":
+        ok = isinstance(v, str) and (v == "" or re.fullmatch(r"_?[a-z0-9][a-z0-9-]*", v) is not None)
+        return None if ok else "a kb root's name: lower case letters, digits and hyphens, `_self` allowed (\"\" for none)"
     if kind == "module":
         return None if isinstance(v, str) and v.isidentifier() else "a Python module name"
     if kind == "strs":

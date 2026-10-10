@@ -53,5 +53,7 @@
   "lane_module": "kblane",
   "worktree_dir": ".claude/worktrees",
   "forge_project": "",
-  "trackers": {}
+  "trackers": {},
+  "docs_map": "kb/_self/map.csv",
+  "kb_root": "_self"
 }

@@ -1,0 +1,17 @@
+{
+  "id": "BG-s4fah7jp",
+  "kind": "bug",
+  "title": "rag.py pack --item refuses every root but _self, so a brief for a project's own kb root needs the item's title and goal as a question",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "rag.py pack --root ROOT --item ID serves a kb root other than _self: the question is the item's title and goal, as for _self, so backlog.py brief calls one command for every root.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess, sys; p = subprocess.run([sys.executable, '_tools/rag.py', 'pack', '--root', 'public', '--item', 'BG-aaaaaaaa'], capture_output=True, text=True); sys.exit(1 if 'needs --root' in p.stderr else 0)"
+    ]
+  }
+}
