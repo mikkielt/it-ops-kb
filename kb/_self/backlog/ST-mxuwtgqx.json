@@ -2,7 +2,7 @@
   "id": "ST-mxuwtgqx",
   "kind": "story",
   "title": "The orchestrator records an operator's gate answer on a worker branch by a documented route",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
@@ -55,5 +55,6 @@
       "by": "operator"
     }
   ],
-  "notes": "The check passes before the work: the change is rule text; planning gives it a tested rule question in set kb-sprint:run (as ST-cjizqzhq did) as its check. Premise (replaces 'the check passes before the work'): the pack of the check's question is coverage weak on the base, with no line naming the --root route for a gate that exists on a worker branch (ran at planning, 2026-10-10); both checks exit 1 now. The row for the question goes in lookup_eval.csv with sets kb-sprint:run."
+  "notes": "The check passes before the work: the change is rule text; planning gives it a tested rule question in set kb-sprint:run (as ST-cjizqzhq did) as its check. Premise (replaces 'the check passes before the work'): the pack of the check's question is coverage weak on the base, with no line naming the --root route for a gate that exists on a worker branch (ran at planning, 2026-10-10); both checks exit 1 now. The row for the question goes in lookup_eval.csv with sets kb-sprint:run.",
+  "claimed_by": "worker-ST-mxuwtgqx"
 }
