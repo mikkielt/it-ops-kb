@@ -2,7 +2,7 @@
   "id": "TK-ew6dsm2l",
   "kind": "task",
   "title": "The second project's run of one item on the plugin's sprint files each retrospective finding about the tooling as a kb bug or story under the epic, and a report records the run",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-tyzcqzfo",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,28 @@
     "BG-axfywrrd",
     "BG-rqxspwtb"
   ],
-  "claimed_by": "orchestrator-SP-ciqk6gt6"
+  "evidence": {
+    "commit": "d28b32796b6843fa2470fbc00d905151bdc6bd71",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "find",
+          "(second-project run)"
+        ],
+        "exit": 0,
+        "sha256": "25b4f8b81f73b3ff"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit(0 if pathlib.Path(\"kb/_self/reports/plugin-sprint-second-project.md\").is_file() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
