@@ -6,6 +6,7 @@
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked, dns and connect hosts, and the size of phase 2's reading queue
+  census.py baselines [--list]                     the live unpinned sources with no detection baseline, counted by host (exit 1 when any)
   census.py groups LOG [--factdiff FLOG]           phase 2: the rows to read split into owner groups, as JSON
   census.py brief LOG --group G [--part N] [--factdiff FLOG]   phase 2: a group's brief, filled in
   census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
@@ -49,6 +50,15 @@ and sets checked_utc in _fetch_state.csv (fetch columns untouched: the census co
 every article (front matter with sources:) whose listed sources were all confirmed, or added by the census (rows not
 in LOG with retrieved_utc D), gets retrieved_utc D.
 Superseded, gone, unconfirmed and unread sources keep their dates: a date is only moved by real confirmation.
+Each confirmed unpinned source whose _fetch_state.csv row holds no detection baseline (ETag, Last-Modified, version id or
+text hash: what factdiff.py detect compares its next fetch with) gets one from the document factdiff fetched and kept in
+_cache/factdiff, when it is a 200 with text for the source's url and was fetched from the log's date to D: a text
+fetched before the census or after its confirmation was compared with nothing, so it is no baseline. Nothing is fetched
+here. The next `check --factdiff` then takes detect's `unchanged` verdict (a baseline no later than the source's
+retrieved_utc) for a live page with no last-updated date, instead of bucket NEEDS-READING.
+
+baselines prints how many live (not superseded) unpinned sources hold no detection baseline, and the count by host (the
+QUEUE_HOSTS with most; --list: every host, each with its ids and urls); no network, no model; exit 1 when any, 0 when none.
 
 sample (phase 4) prints a CSV of ids for the independent re-check: a fraction of the sources whose facts phase 2
 changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcome confirmed), seeded, at least one each.
@@ -841,11 +851,18 @@ def cmd_confirm(a, tally):
             state = {r["id"]: r for r in csv.DictReader(f)}
     stamp = f"{date}T00:00:00Z"
     urls = {r["id"]: r["url"] for r in rows}
+    since, prov, n_base = ql_capture.phase_date(path=a.log), provider.providers(factdiff.ROOT), 0
     for sid, lr in log.items():
         if confirmed(lr):
-            state[sid] = {**state.get(sid, {"id": sid}), "id": sid, "url": urls[sid], "checked_utc": stamp, "error": ""}
-    tally.update(confirmed=n_src, added=len(fresh) - n_src, articles=len(articles))
-    print(f"confirm {date}: {n_src} source(s) confirmed, {len(fresh) - n_src} row(s) added by the census, {len(articles)} article(s) re-dated")
+            row = {**state.get(sid, {"id": sid}), "id": sid, "url": urls[sid], "checked_utc": stamp, "error": ""}
+            if not factdiff.has_baseline(row) and not provider.is_pinned(urls[sid]):
+                got = factdiff.census_baseline(sid, urls[sid], since, date, prov)
+                n_base += bool(got)
+                row.update(got)
+            state[sid] = row
+    tally.update(confirmed=n_src, added=len(fresh) - n_src, articles=len(articles), baselines=n_base)
+    print(f"confirm {date}: {n_src} source(s) confirmed, {len(fresh) - n_src} row(s) added by the census, {len(articles)} article(s) re-dated, "
+          f"{n_base} detection baseline(s) written")
     if a.dry_run:
         print("dry run: nothing written")
         return 0
@@ -855,6 +872,30 @@ def cmd_confirm(a, tally):
             f.write(new)
     kbcommon.write_csv(state_path, state_cols, sorted(state.values(), key=lambda r: kbid.sort_key(r["id"])), atomic=True)
     return 0
+
+
+def cmd_baselines(a, tally):
+    """The live unpinned sources whose _fetch_state.csv row holds no detection baseline, counted by host (the QUEUE_HOSTS
+    with most, unless --list): no network and no model; exit 1 when any, so the gap shows before a census starts. A page
+    with no date and no baseline is a row for a reader."""
+    srcs = factdiff.sources()
+    gap = factdiff.baseline_gap(srcs, factdiff.read_state())
+    by_host = defaultdict(list)
+    for sid in gap:
+        by_host[urlparse(srcs[sid]["url"]).netloc.lower()].append(sid)
+    hosts = sorted(by_host, key=lambda h: (-len(by_host[h]), h))
+    shown = hosts if a.list else hosts[:QUEUE_HOSTS]
+    print(f"baselines: {len(gap)} of {len(factdiff.live_unpinned(srcs))} live unpinned source(s) hold no detection baseline "
+          "(no ETag, Last-Modified, version id or text hash in _fetch_state.csv)")
+    for h in shown:
+        print(f"  {h}: {len(by_host[h])}")
+        if a.list:
+            for sid in by_host[h]:
+                print(f"    {sid} {srcs[sid]['url']}")
+    rest = hosts[len(shown):]
+    if rest:
+        print(f"  {len(rest)} other host(s): {sum(len(by_host[h]) for h in rest)}")
+    return 1 if gap else 0
 
 
 def cmd_sample(a, tally):
@@ -1698,6 +1739,8 @@ def main():
     s.add_argument("--changed", type=float, default=0.10, help="fraction of the changed sources (default 0.10)")
     s.add_argument("--ok", type=float, default=0.05, help="fraction of the confirmed sources (default 0.05)")
     s.add_argument("--seed", type=int, default=1)
+    bs = sub.add_parser("baselines", help="the live unpinned sources with no detection baseline, counted by host (exit 1 when any)")
+    bs.add_argument("--list", action="store_true", help="every host, each with its source ids and urls")
     m = sub.add_parser("summary", help="counts per bucket and outcome, and the size of phase 2's reading queue")
     m.add_argument("log")
     m.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default: the "
@@ -1738,7 +1781,7 @@ def main():
     factdiff.ROOT = here[0]
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
-    cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary, "groups": cmd_groups, "brief": cmd_brief,
+    cmds = {**PHASES, "sample": cmd_sample, "baselines": cmd_baselines, "summary": cmd_summary, "groups": cmd_groups, "brief": cmd_brief,
             "apply": cmd_apply, "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):
