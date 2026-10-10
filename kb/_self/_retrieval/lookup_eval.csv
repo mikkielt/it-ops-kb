@@ -259,6 +259,11 @@ SS3-092,when may the census tag be created,git.md,good,yes,only after a full ver
 SS3-093,what does the census tag say about the kb,git.md,good,yes,confirmed current as of this date,kb-census:phase4
 SS3-094,what does the census tag message count,git.md,good,yes,the tag message counts the sources,kb-census:phase4
 SS3-095,how is the census tag pushed,git.md,good,yes,`git push origin census-YYYY-MM-DD`,kb-census:phase4
+SS3-096,what does census.py run chain for phases 0 and 1,tools.md,good,yes,chains phases 0 and 1 with no agent turn between the steps,kb-census:phase0;kb-census:phase1
+SS3-097,what does census.py finish chain for phase 3,tools.md,good,yes,chains phase 3,kb-census:phase3
+SS3-098,what does census.py apply do with a group's phase-2 result,tools.md,good,yes,takes one group's phase-2 result and does the bookkeeping,kb-census:phase2
+SS3-099,what does census.py brief print for a group,tools.md,good,yes,prints that group's phase-2 brief,kb-census:phase2
+SS3-100,what does census.py summary print about the phase-2 reading queue,tools.md,good,yes,the size of the phase-2 reading queue,kb-census:phase2
 SS4-001,what does exit 1 of kbgit.py sync mean and what is fixed,git.md,good,yes,"fixes the cause, never the baseline",kb-commit
 SS4-002,which command pushes my own commits to the integration main,git.md,good,yes,pushes it with `sync --push`,kb-commit
 SS4-003,may I use a plain git push instead of sync,git.md,good,yes,Prefer `sync --push`,kb-commit
