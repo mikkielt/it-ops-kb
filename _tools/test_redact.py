@@ -40,7 +40,8 @@ def small_known(monkeypatch):
     return k
 
 
-def test_redact_replaces_every_class_of_value_and_a_second_pass_changes_nothing():
+def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_pass_changes_nothing():
+    assert redact.redact(ORDINARY) == ORDINARY
     out = redact.redact(TEXT)
     for kind, value in PLANTED.items():
         assert value not in out, kind
@@ -49,10 +50,6 @@ def test_redact_replaces_every_class_of_value_and_a_second_pass_changes_nothing(
         assert placeholder in out, placeholder
     assert redact.redact(out) == out
     assert redact.scan(out) == []
-
-
-def test_redact_leaves_ordinary_text_and_placeholders_as_they_are():
-    assert redact.redact(ORDINARY) == ORDINARY
 
 
 def test_redact_scan_exits_1_on_a_leak_and_0_on_ordinary_text(tmp_path, capsys):
@@ -215,10 +212,36 @@ def test_apply_anchors_a_weak_rules_miss_on_the_lead_passage_and_the_committed_o
     assert eid == states[done]["observed"]["eval"] and eid.startswith(ql_apply.RULES_ID) and question == lead["question"]
     assert (doc, verdict, weak, sets) == ("widgets.md", "good", "yes", "") and phrase in first and 4 <= len(phrase.split()) <= 6
     failed = next(i for i in ids if i != done)
-    assert states[failed]["state"] == "no-fix" and states[failed]["observed"] == {"gate": ["no anchor phrase in the lead passage"]}
-    # a finding with a missing key word, a none verdict or an answer line is no lead finding: it waits for a person
+    assert states[failed]["state"] == "no-fix" and states[failed]["observed"] == {"gate": ["the lead passage holds 0 of 3 key words of the question"]}
+    # a finding with a missing key word, a none verdict, a route miss or an answer line is no lead finding: it waits for a person
     miss = {"id": "F-0", "observed": {"verdict": "weak", "key_missing": ["kbfacts"]}}
     assert ql_apply.rules_one(miss, lead, gate, None) == (None, True)
     assert not ql_apply.from_lead({"observed": {"verdict": "none"}}) and ql_apply.from_lead({"observed": {"verdict": "weak"}})
+    assert not ql_apply.from_lead({"observed": {"verdict": "weak", "route": "miss"}})
     said.clear()
     assert ql_apply.apply(store=store, gate=gate, hold=held, out=said.append, kb_commit="0" * 40) == 0 and said == ["apply: nothing to apply"]
+
+
+def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from_the_printed_text(tmp_path):
+    line = "The zqxwidget plomkinator frobnicator quuxifies every plomkin on commit."
+    shown = "The zqxwidget plomkinator frobnicator quuxifies every"
+    asked, off = "which zqxwidget plomkinator frobnicator quuxifies every", "how are laptops enrolled into autopilot at provisioning"
+    printed = f"coverage: weak\n\n## kb/_self/widgets.md\n- kb/_self/widgets.md:7 {shown}\n"
+    gate = LeadGate(tmp_path, {asked: printed, off: printed}, {"kb/_self/widgets.md:7": ("widgets.md", line)})
+    gate.token_counts = lambda: {w.lower(): 50 for w in shown.split()}  # the words past the clip are the rarest
+    weak = {"id": "F-1", "kind": "rules", "observed": {"verdict": "weak"}}
+    # planted failure: the lead passes the gates (anchor in its doc, phrase in the pack) and answers none of the question
+    rec, human = ql_apply.rules_one(weak, {"question": off}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
+    assert not human and rec["state"] == "no-fix" and rec["observed"] == {"gate": ["the lead passage holds 0 of 4 key words of the question"]}
+    assert not gate.eval.exists()
+    # the lead that answers is applied, its phrase cut from what the pack prints of the line, not from the whole line
+    rec, human = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
+    assert not human and rec["state"] == "applied"
+    with open(gate.eval, encoding="utf-8", newline="") as f:
+        phrase = list(csv.reader(f))[1][5]
+    assert phrase in shown and phrase in line
+    # a failed row names why it failed
+    gate.eval.unlink()
+    gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["SQ-x"], "why": {"SQ-x": ["text"]}, "chars": {"EV-x": 100}, "offkb_good": 0}
+    rec, _ = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
+    assert rec["state"] == "no-fix" and rec["observed"] == {"gate": ["eval fails: SQ-x (text)"]}

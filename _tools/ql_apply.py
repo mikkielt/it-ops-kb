@@ -25,7 +25,7 @@ SPECIFIC_ONE_IN = 15  # a specific word is in at most one article in this many
 RULES_ID = "SQ-"  # a rules eval row's id: this and the slug of its question, as a public row's `EV-` id
 ANCHOR_WORDS = (4, 6)  # the words an anchor phrase has, at least and at most
 ANCHOR_CANDIDATES = 5  # phrases of the answering line tried for the anchor, rarest first
-PASSAGE = re.compile(r"^- (kb/_self/\S+?\.md:\d+) ", re.M)  # a passage line of `pack --root _self`, as it prints it
+PASSAGE = re.compile(r"^- (kb/_self/\S+?\.md:\d+) (.*)$", re.M)  # a passage line of `pack --root _self`, as it prints it
 CSV_HEADERS = {"eval": ["id", "question", "expect_paths", "expect_verdict", "allow_weak"],
                "aliases": ["term", "canonical"], "expansions": ["key", "question"]}
 
@@ -45,7 +45,8 @@ class Gate:
         return kbfacts.pack(question, fmt="concise")
 
     def measure(self):
-        """{n, passed, failed, chars {eval id: pack characters}, offkb_good} on the working tree."""
+        """{n, passed, failed, why {failed id: [failed words: text, anchor, ...]}, chars {eval id: pack characters},
+        offkb_good} on the working tree."""
         import kbcommon, kbfacts, rag
         self.fresh()
         res = rag.run_eval()
@@ -56,6 +57,7 @@ class Gate:
                 qs = [q for q in p.read_text(encoding="utf-8").splitlines() if q.strip()]
                 good += sum(kbfacts.pack(q, fmt="concise")["verdict"] == "good" for q in qs)
         return {"n": res["n"], "passed": res["passed"], "failed": [r["id"] for r in res["rows"] if not r["ok"]],
+                "why": {r["id"]: r["failed"] for r in res["rows"] if not r["ok"] and r["failed"]},
                 "chars": {r["id"]: r["chars"] for r in res["rows"]}, "offkb_good": good}
 
     def rules_eval(self):
@@ -282,12 +284,14 @@ def try_fix(fix, eval_row, targets, gate, base):
     m = gate.measure()
     problems = []
     if m["passed"] != m["n"]:
-        problems.append(f"eval fails: {', '.join(m['failed'][:3])}")
+        why = m.get("why") or {}
+        named = [f"{i} ({', '.join(why[i])})" if why.get(i) else i for i in m["failed"][:3]]
+        problems.append(f"eval fails: {', '.join(named)}")
     ids = [i for i in base["chars"] if i in m["chars"]]
     before = sum(base["chars"][i] for i in ids) / max(len(ids), 1)
     after = sum(m["chars"][i] for i in ids) / max(len(ids), 1)
     if after > before:
-        problems.append(f"mean pack grows: {before:.0f} -> {after:.0f} characters")
+        problems.append(f"mean pack grows: {before:.2f} -> {after:.2f} characters")
     if m["offkb_good"] > base["offkb_good"]:
         problems.append(f"off-kb good rises: {base['offkb_good']} -> {m['offkb_good']}")
     if problems:
@@ -350,11 +354,13 @@ def bare_token(t):
     return re.sub(r"^\W+|\W+$", "", t).lower()
 
 
-def anchor_phrases(line, counts):
+def anchor_phrases(line, counts, shown=None):
     """The phrases of 4 to 6 consecutive words of `line`, as written (single spaces, no `;`, no punctuation at either
     end), rarest first, at most ANCHOR_CANDIDATES: the fewest occurrences per word across the docs (`counts`), then the
-    longer, then the earlier. A window holding a token with no letter or digit (a table bar) is no phrase."""
-    toks = line.split()
+    longer, then the earlier. A window holding a token with no letter or digit (a table bar) is no phrase. With `shown`
+    (the text the pack prints of the line) the windows are cut from it, and a phrase stays only when `line` holds it
+    too: the eval row's phrase has to be in the pack's text, which prints no more than that."""
+    toks = (line if shown is None else shown).split()
     found = {}
     for n in range(ANCHOR_WORDS[0], ANCHOR_WORDS[1] + 1):
         for i in range(len(toks) - n + 1):
@@ -384,15 +390,29 @@ def rules_alias_rows(f, gate):
 
 def lead_passage(res):
     """The `kb/_self/<doc>.md:<line>` reference of the first passage a `pack --root _self` result prints, or None."""
+    return lead_printed(res)[0]
+
+
+def lead_printed(res):
+    """(the reference of the first passage a `pack --root _self` result prints, the text it prints of it), or (None, "")."""
     m = PASSAGE.search(res.get("text") or "")
-    return m.group(1) if m else None
+    return (m.group(1), m.group(2)) if m else (None, "")
+
+
+def lead_share(line, question):
+    """(key words of `question` that `line` holds, key words of `question`), as the pack counts them (`key_terms`)."""
+    import kbfacts
+    keys = set(kbfacts.key_terms(question))
+    return len(keys & set(kbfacts.key_terms(line))), len(keys)
 
 
 def from_lead(f):
-    """Whether an open `rules` finding is a weak miss that names no line and no missing key word: every key word of its
-    question is in some printed passage, so the pack's lead passage is the line to try."""
+    """Whether an open `rules` finding is a weak miss that names no line and no missing key word, and whose reader did
+    not judge the pack a miss (route `miss`): every key word of its question is in some printed passage, so the pack's
+    lead passage is the line to try."""
     obs = f.get("observed") or {}
-    return obs.get("verdict") == "weak" and not obs.get("answer_lines") and not obs.get("key_missing")
+    return (obs.get("verdict") == "weak" and not obs.get("answer_lines") and not obs.get("key_missing")
+            and obs.get("route") != "miss")
 
 
 def rules_one(f, entry, gate, base):
@@ -401,9 +421,10 @@ def rules_one(f, entry, gate, base):
     whole `rag.py eval`, the pack size, off-kb `good`), `applied`; else the finding is `no-fix` with the failed gates in
     `observed`. With a `pair` on the finding (learn's), its aliases.csv rows go in with the eval row and stay only with
     it. A weak finding with no answer line and no missing key word (`from_lead`) takes the first passage
-    `pack --root _self` prints as the line, a guess the same gates check (`observed` then has `lead`); any other finding
-    with no answer line is left open and reported (a word pair for aliases.csv is then a person's to pick); a question
-    the file already holds gets nothing (learn records it)."""
+    `pack --root _self` prints as the line when that line holds more than half of the question's key words, its anchor
+    phrase cut from the text the pack prints of it, a guess the same gates check (`observed` then has `lead`); any
+    other finding with no answer line (a `route` `miss` too) is left open and reported (a word pair for aliases.csv is
+    then a person's to pick); a question the file already holds gets nothing (learn records it)."""
     import kbid
     refs = (f.get("observed") or {}).get("answer_lines") or []
     question = entry["question"]
@@ -419,20 +440,26 @@ def rules_one(f, entry, gate, base):
     if eid in taken:
         problems.append(f"eval id {eid} is taken by another question")
     else:
+        shown = None
         if lead:
-            ref = lead_passage(gate.rules_pack(question))
+            ref, shown = lead_printed(gate.rules_pack(question))
             refs = [ref] if ref else []
         counts = gate.token_counts()
         for ref in refs:
             got = gate.rule_line(ref)
-            for phrase in anchor_phrases(got[1], counts) if got else []:
+            if lead and got:
+                held, keys = lead_share(got[1], question)
+                if held * 2 <= keys:
+                    problems.append(f"the lead passage holds {held} of {keys} key words of the question")
+                    break
+            for phrase in anchor_phrases(got[1], counts, shown) if got else []:
                 cand = [eid, question, got[0], "good", "yes", phrase, ""]
                 if gate.anchored(cand):
                     row = cand
                     break
             if row:
                 break
-        if row is None:
+        if row is None and not problems:
             problems.append("no anchor phrase in the " + ("lead passage" if lead else "quoted lines"))
     if row is not None:
         pair = rules_alias_rows(f, gate)
