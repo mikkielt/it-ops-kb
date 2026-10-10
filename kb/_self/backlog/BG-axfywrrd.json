@@ -2,7 +2,7 @@
   "id": "BG-axfywrrd",
   "kind": "bug",
   "title": "dispatch's brief names python3 _tools/backlog.py and the kb's tests.py rules, which a host project of the plugin does not have",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ciqk6gt6",
   "priority": "P1",
@@ -30,5 +30,6 @@
   "relates_to": [
     "ST-wrsuz64a"
   ],
-  "notes": "Found by the worker of TK-p7ajxp72, which made only the role file line plugin-aware (bl_dispatch.role_file_line). The suite stands at 99 of 100 test ids after TK-p7ajxp72: no new test; prove the fix by the repro and a dispatch --dry-run brief read for a host project in ST-tyzcqzfo."
+  "notes": "Found by the worker of TK-p7ajxp72, which made only the role file line plugin-aware (bl_dispatch.role_file_line). The suite stands at 99 of 100 test ids after TK-p7ajxp72: no new test; prove the fix by the repro and a dispatch --dry-run brief read for a host project in ST-tyzcqzfo. Orchestrator at dispatch: the suite is at the 100-id ceiling and at the 20 s darwin ceiling (BG-ucwq6kga): extend an existing plugin_sprint_* test of test_backlog_portable.py for the brief text, add no id. A host-project brief can be read with dispatch --dry-run against a scratch root with a backlog.json, and TK-p7ajxp72's role_file_line shows how the plugin path is named.",
+  "claimed_by": "worker-BG-axfywrrd"
 }
