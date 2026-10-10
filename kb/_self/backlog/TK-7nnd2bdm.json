@@ -1,0 +1,36 @@
+{
+  "id": "TK-7nnd2bdm",
+  "kind": "task",
+  "title": "The kb's .claude kb-sprint, kb-item, kb-backlog and kb-worker entries link to the plugin's files, so one set exists and a clone without the plugin still runs its sprint",
+  "status": "draft",
+  "parent": "ST-wrsuz64a",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Each of .claude/skills/kb-sprint/SKILL.md, .claude/skills/kb-item/SKILL.md, .claude/skills/kb-backlog/SKILL.md and .claude/agents/kb-worker.md is a relative symlink to the plugin's skills/sprint/SKILL.md, skills/item/SKILL.md, skills/backlog/SKILL.md and agents/worker.md (the gate on a clone without the plugin: the text exists once, the kb-* names keep serving the clone's own sprint); no other file under those four holds a copy of the text; kb/_self/map.csv maps the plugin's files to the docs it mapped the .claude ones to, so selfdoc stale and the brief's docs list keep working; the docs that name the old paths (AGENTS.md, maintaining.md, backlog.md) say where the files are, AGENTS.md within its 4 KB cap",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_one_set"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    ".claude/skills/kb-item/SKILL.md",
+    ".claude/skills/kb-backlog/SKILL.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/map.csv",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "_tools/test_live_kb.py"
+  ],
+  "depends_on": [
+    "TK-p7ajxp72"
+  ]
+}

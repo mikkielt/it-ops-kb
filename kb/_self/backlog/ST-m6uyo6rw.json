@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, writing kb facts and gap entries through the kb skills, the sprint goal's questions the kb answers weakly or not at all: (1) is ${CLAUDE_PLUGIN_ROOT} substituted in a plugin skill's SKILL.md and agent markdown text, not only in hook and MCP configs; (2) does Claude Code follow a symlinked SKILL.md under .claude/skills and a symlinked agent file under .claude/agents; (3) how does claude -p select a plugin's agent (--agent name) and does a worktree session of a project load the plugin's skills; (4) can a plugin's hook entry be turned off by a project setting, or only by its own command doing nothing. The questions the kb already answers with a good pack (the plugin layout and component directories, a skill's name defaulting to its directory, a plugin agent ignoring hooks, mcpServers and permissionMode) are not researched again.",
   "checks": [
     {
       "run": [

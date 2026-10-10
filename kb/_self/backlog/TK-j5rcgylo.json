@@ -1,0 +1,31 @@
+{
+  "id": "TK-j5rcgylo",
+  "kind": "task",
+  "title": "A project whose backlog.json names no item_dir keeps its item files in _backlog/ at the repository root",
+  "status": "draft",
+  "parent": "ST-wrsuz64a",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "SETTINGS' item_dir default is _backlog/ (per the gate on the default item directory): a project with no backlog.json, or one without item_dir, creates and reads its items in _backlog/ at its root, and a worker's git worktree can write there; the kb's own backlog.json already names kb/_self/backlog, so its items, and every setting the file names, are unchanged; the config doc and backlog.py config print the new default",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_item_dir_default"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-7nnd2bdm",
+    "TK-p7ajxp72",
+    "TK-cagohpbu"
+  ]
+}

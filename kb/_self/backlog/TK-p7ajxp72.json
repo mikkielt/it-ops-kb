@@ -1,0 +1,62 @@
+{
+  "id": "TK-p7ajxp72",
+  "kind": "task",
+  "title": "skills/sprint, item and backlog and agents/worker.md exist at the plugin root, parameterised by ${CLAUDE_PLUGIN_ROOT}, and plugin.json lists them",
+  "status": "draft",
+  "parent": "ST-wrsuz64a",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "skills/sprint, skills/item and skills/backlog at the plugin root and agents/worker.md are the kb's kb-sprint, kb-item, kb-backlog and kb-worker with every backlog.py command run as python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py and no kb-only path in their text; a skill's name is its directory's, so a link under another name serves it; .claude-plugin/plugin.json lists them; the worker role file is read from the plugin when the project has none; plugin.json and kb/_self/plugin.md say what the plugin now ships. The kb's own .claude copies are linked in the next task, not left beside these.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_ships"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plugin_sprint_role_file"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "skills/item/SKILL.md",
+    "skills/backlog/SKILL.md",
+    "agents/worker.md",
+    ".claude-plugin/plugin.json",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "README.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How do the plugin's skills and agent carry the steps only the kb has (kbgit.py sync, the code lane, kb_pack, the _self rules packs)?",
+      "options": [
+        "settings-guarded: the text says each such step runs when the project's backlog.json names it (land_stale, land_eval, land_lint, lane_module, kb_root, docs_map) and is skipped, said so, when it does not; one text for every project",
+        "kb appendix: the plugin's text is generic and the kb-only steps sit in a file under skills/sprint/ that only a clone with kb_root set reads"
+      ],
+      "recommendation": "settings-guarded: the text says each such step runs when the project's backlog.json names it (land_stale, land_eval, land_lint, lane_module, kb_root, docs_map) and is skipped, said so, when it does not; one text for every project",
+      "do": {
+        "settings-guarded: the text says each such step runs when the project's backlog.json names it (land_stale, land_eval, land_lint, lane_module, kb_root, docs_map) and is skipped, said so, when it does not; one text for every project": "TK-p7ajxp72",
+        "kb appendix: the plugin's text is generic and the kb-only steps sit in a file under skills/sprint/ that only a clone with kb_root set reads": "TK-p7ajxp72"
+      },
+      "class": "agents-rule",
+      "answer": "settings-guarded: the text says each such step runs when the project's backlog.json names it (land_stale, land_eval, land_lint, lane_module, kb_root, docs_map) and is skipped, said so, when it does not; one text for every project",
+      "by": "operator"
+    }
+  ]
+}

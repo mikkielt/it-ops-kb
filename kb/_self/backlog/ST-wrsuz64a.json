@@ -4,9 +4,10 @@
   "title": "The plugin ships /sprint, /item and /backlog and a worker agent that run backlog.py from the plugin root against the host project's backlog.json",
   "status": "draft",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-ciqk6gt6",
   "priority": "P1",
   "rank": 6,
-  "goal": "A project that installs the it-ops-kb plugin and writes a backlog.json gets the skills sprint, item and backlog and the agent worker, each a parameterised copy of the kb's kb-sprint, kb-item, kb-backlog and kb-worker whose commands run python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py in the host project; the kb keeps one set of these skills (its own are the plugin's, run with the kb's backlog.json) and no duplicate; the plugin's hooks for horizon --hook and intake are opt-in by a backlog.json key, off by default; plugin.json, README.md and kb/_self/plugin.md say what the plugin now does, within AGENTS.md's 4 KB cap; a kb clone with the plugin not installed still runs its own sprint from .claude/.",
+  "goal": "A project that installs the it-ops-kb plugin and writes a backlog.json gets the skills sprint, item and backlog and the agent worker, each a parameterised copy of the kb's kb-sprint, kb-item, kb-backlog and kb-worker whose commands run python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py in the host project, its item files in _backlog/ at the root unless its backlog.json names item_dir; the kb keeps one set of these skills (its own are the plugin's, run with the kb's backlog.json) and no duplicate; the plugin's hooks for horizon --hook and intake are opt-in by a backlog.json key, off by default; plugin.json, README.md and kb/_self/plugin.md say what the plugin now does, within AGENTS.md's 4 KB cap; a kb clone with the plugin not installed still runs its own sprint from .claude/.",
   "checks": [
     {
       "run": [
@@ -16,21 +17,6 @@
         "plugin_sprint"
       ]
     }
-  ],
-  "touches": [
-    ".claude-plugin/plugin.json",
-    ".claude/skills/kb-sprint/SKILL.md",
-    ".claude/skills/kb-item/SKILL.md",
-    ".claude/skills/kb-backlog/SKILL.md",
-    ".claude/agents/kb-worker.md",
-    ".claude/settings.json",
-    "README.md",
-    "AGENTS.md",
-    "_tools/test_backlog_portable.py",
-    "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md",
-    "kb/_self/maintaining.md",
-    "kb/_self/backlog.md"
   ],
   "depends_on": [
     "ST-4jjz3vxs"
@@ -65,11 +51,29 @@
       "class": "agents-rule",
       "answer": "_backlog/ at the repository root: outside .claude/, so a headless worker can write item files there in default or acceptEdits mode",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "With one set of the skills and the agent in the plugin, how does a kb clone with the plugin not installed still run its own sprint from .claude/?",
+      "options": [
+        "links: .claude/skills/kb-sprint, kb-item and kb-backlog and .claude/agents/kb-worker.md are relative symlinks to the plugin's skills/sprint, skills/item, skills/backlog and agents/worker.md: one file each, the kb-* names keep working in a clone, a worker's worktree and a plugin-less session",
+        "install: .claude/settings.json enables the plugin for the kb from its own marketplace, and a clone without it installed has no sprint skills until the contributor installs it (the goal's last clause is dropped)"
+      ],
+      "recommendation": "links: .claude/skills/kb-sprint, kb-item and kb-backlog and .claude/agents/kb-worker.md are relative symlinks to the plugin's skills/sprint, skills/item, skills/backlog and agents/worker.md: one file each, the kb-* names keep working in a clone, a worker's worktree and a plugin-less session",
+      "do": {
+        "links: .claude/skills/kb-sprint, kb-item and kb-backlog and .claude/agents/kb-worker.md are relative symlinks to the plugin's skills/sprint, skills/item, skills/backlog and agents/worker.md: one file each, the kb-* names keep working in a clone, a worker's worktree and a plugin-less session": "TK-7nnd2bdm",
+        "install: .claude/settings.json enables the plugin for the kb from its own marketplace, and a clone without it installed has no sprint skills until the contributor installs it (the goal's last clause is dropped)": "ST-wrsuz64a"
+      },
+      "class": "design",
+      "answer": "links: .claude/skills/kb-sprint, kb-item and kb-backlog and .claude/agents/kb-worker.md are relative symlinks to the plugin's skills/sprint, skills/item, skills/backlog and agents/worker.md: one file each, the kb-* names keep working in a clone, a worker's worktree and a plugin-less session",
+      "by": "operator"
     }
   ],
   "links": [
     "public/claude/plugins.md:26 skills/, agents/, hooks/hooks.json, settings.json sit at the plugin root, only plugin.json inside .claude-plugin/ [DOC S-3peuisvr, S-3xyywfcr]",
     "public/claude/plugins.md:29 manifest skills adds to the skills/ scan; agents replaces its default location; hooks and mcpServers merge [DOC S-3xyywfcr]",
     "public/claude/settings-and-scopes.md:71 an Edit(.claude/**) allow rule does not pre-approve protected-path writes [DOC S-zcuxapgb]"
-  ]
+  ],
+  "notes": "Planned 2026-10-10 in SP-ciqk6gt6. Premise: none claimed (a new capability, not a bug); the story check tests.py -k plugin_sprint ran at planning and exited 2 (collects no test yet), so it fails until TK-p7ajxp72, TK-7nnd2bdm, TK-cagohpbu and TK-j5rcgylo add their plugin_sprint_* tests. Split in four tasks, ordered because they share plugin.json, bl_base.py and test_backlog_portable.py: ships, links (gate g3), hooks opt-in, item_dir default (gate g2). A plugin agent ignores hooks, mcpServers and permissionMode (public/claude/skills-and-subagents.md:86), so the worker permission mode comes from the dispatch command, not the role file."
 }
