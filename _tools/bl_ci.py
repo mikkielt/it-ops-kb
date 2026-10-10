@@ -176,11 +176,13 @@ def hook_intake(bl, a, budget=None):
     (INTAKE_HOOK_SLOW, on what is left of the budget), then the network ones (only with `--network`), and stops
     waiting after `budget` seconds (default INTAKE_HOOK_BUDGET_S); what the detectors that finished by then found is
     filed, so a slow one costs only its own findings. It writes each new candidate as an uncommitted draft item as
-    `--file` does, prints nothing, never commits or pushes, and returns 0 whatever happens. With `--file` in a
-    worker's linked worktree (in_worker_worktree) it files nothing and prints one line on stderr saying so: the
-    drafts would be untracked files there that `land` refuses."""
+    `--file` does (bl_intake.file_hook: none for a fingerprint an open item or a set-aside draft holds, none at the
+    open-drafts cap, no near-duplicate merge), prints nothing, never commits or pushes, and returns 0 whatever
+    happens. With `--file` in a worker's linked worktree (in_worker_worktree) it files nothing and prints one line on
+    stderr naming the worktree: the drafts would be untracked files there that `land` refuses."""
     if a.file and in_worker_worktree(bl.root):
-        print("intake: files nothing in a worker's worktree (a linked worktree under the worktree directory)", file=sys.stderr)
+        print(f"intake: files nothing in the worktree {Path(bl.root).resolve().name}, a linked worktree under "
+              f"{'/'.join(worker_dir())}/", file=sys.stderr)
         return 0
     budget = INTAKE_HOOK_BUDGET_S if budget is None else budget
     names = sorted(bl_intake.DETECTORS, key=lambda n: (n in bl_intake.NETWORK_DETECTORS, n in INTAKE_HOOK_SLOW, n))
@@ -199,12 +201,7 @@ def hook_intake(bl, a, budget=None):
     t.start()
     t.join(budget)
     if a.file:
-        seen = set()
-        for c in list(found):
-            if c.fp in seen or bl_intake.open_with_fingerprint(bl.items, c.fp) or bl_intake.named_by(bl.items, c):
-                continue
-            seen.add(c.fp)
-            bl.save(bl_intake.item_of(c, new_id(c.kind)))
+        bl_intake.file_hook(bl, list(found), new_id)
     return 0
 
 

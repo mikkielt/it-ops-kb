@@ -2,6 +2,8 @@
 python3 on a _tools/ script (or inline code) may run, and drift's detector runs only its read-only scripts. A refused
 command is reported and never started. Also here: check.py's refusal of a kb citation in a tool's comment that a
 fact inserted above has moved."""
+import argparse
+import json
 import shlex
 import subprocess
 import sys
@@ -10,6 +12,7 @@ from pathlib import Path
 import pytest
 
 import bl_base
+import bl_ci
 import bl_intake
 import check
 from conftest import requires_git
@@ -127,3 +130,36 @@ def test_drift_never_runs_the_whole_suite(tmp_path, monkeypatch):
     drift, started, ids = drift_run(monkeypatch, tmp_path, [*whole, part])
     assert started == [part]
     assert drift.heavy == sorted(ids[:3]) and not drift.refused
+
+
+def test_intake_hook_no_refile_held_fingerprints_and_the_cap(tmp_path, monkeypatch):
+    """`intake --file --hook` files a finding once: none for a fingerprint an open item of the checkout or a draft
+    set aside under the clone's _cache/intake-drafts/ holds, none past the open-drafts cap, and no near-duplicate
+    merge (the hook never runs `similar`)."""
+    def cand(key):
+        return bl_intake.Candidate(kind="bug", title=f"finding {key}", goal=f"goal {key}", key=key,
+                                   detector="trailers", fp=bl_intake.fingerprint("trailers", key))
+
+    cands = [cand(k) for k in ("one", "two", "three", "four")]
+    monkeypatch.setattr(bl_intake, "collect",
+                        lambda root, only=None, **kw: (list(cands) if only == "trailers" else [], []))
+    monkeypatch.setattr(bl_intake, "near_duplicates", lambda *a: pytest.fail("the hook merges no near-duplicate"))
+    backlog = tmp_path / "kb" / "_self" / "backlog"
+    backlog.mkdir(parents=True)
+    aside = tmp_path / "_cache" / "intake-drafts" / "agent-ST-aaaaaaaa"
+    aside.mkdir(parents=True)
+    (aside / "BG-aaaaaaaa.json").write_text(json.dumps(bl_intake.item_of(cands[1], "BG-aaaaaaaa")), encoding="utf-8")
+    held = bl_intake.item_of(cands[2], "BG-bbbbbbbb")
+    held["status"] = "todo"  # a committed item: open, not a draft
+    (backlog / "BG-bbbbbbbb.json").write_text(json.dumps(held), encoding="utf-8")
+
+    def hook():
+        bl_ci.hook_intake(bl_base.Backlog(tmp_path), argparse.Namespace(file=True, network=False, hook=True))
+        return sorted(p.name for p in backlog.glob("*.json"))
+
+    first = hook()
+    assert len(first) == 3  # BG-bbbbbbbb, and drafts for "one" and "four" only
+    assert hook() == first  # a second session files nothing
+    monkeypatch.setattr(bl_intake, "OPEN_DRAFTS_MAX", 2)
+    cands.append(cand("five"))
+    assert hook() == first  # two open drafts: at the cap

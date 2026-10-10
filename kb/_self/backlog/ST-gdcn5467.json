@@ -70,6 +70,19 @@
       "class": "agents-rule",
       "answer": "items and set-aside directory",
       "by": "operator"
+    },
+    {
+      "id": "held",
+      "kind": "blocking",
+      "question": "Which committed items' fingerprints stop the SessionStart intake hook from filing a draft?",
+      "options": [
+        "open items only",
+        "open, done and dropped items"
+      ],
+      "recommendation": "open items only",
+      "class": "agents-rule",
+      "answer": "open items only",
+      "by": "operator"
     }
   ],
   "links": [
