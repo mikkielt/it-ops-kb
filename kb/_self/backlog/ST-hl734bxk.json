@@ -2,7 +2,7 @@
   "id": "ST-hl734bxk",
   "kind": "story",
   "title": "A change to how a benchmark run is counted or priced lands with one small real probe run whose stream is kept",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-2vhfsn4o close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: neither .claude/agents/kb-worker.md nor kb/_self/backlog.md says 'real probe' (grep 2026-10-10: reproduces); the planted-stream tests of _tools/test_bench.py are what lands a benchmark change today. A rule-guarding item (.claude/agents/): its open choices are asked as gates before the start."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: neither .claude/agents/kb-worker.md nor kb/_self/backlog.md says 'real probe' (grep 2026-10-10: reproduces); the planted-stream tests of _tools/test_bench.py are what lands a benchmark change today. A rule-guarding item (.claude/agents/): its open choices are asked as gates before the start.",
+  "claimed_by": "worker-ST-hl734bxk"
 }
