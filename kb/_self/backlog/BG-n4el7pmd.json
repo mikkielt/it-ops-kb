@@ -2,7 +2,7 @@
   "id": "BG-n4el7pmd",
   "kind": "bug",
   "title": "factdiff anchors --stale lists stale anchors in api-limits and messages-api (9 at filing, 5 at 2026-10-10)",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,19 @@
     "ST-tjaxw22f"
   ],
   "notes": "Premise (2026-10-10, base origin/main): factdiff.py anchors --stale prints stale=5 (api-limits.csv 4 anchors, messages-api.md 1), exit 1; the agent-caching.md anchors the bug named are current. Runs last in the sprint's chain: the content items that reword facts re-anchor their own file first, so stale=0 is the sprint's end state. Re-anchoring needs the sources' pages (network, documents cached in _cache/factdiff/). Orchestrator 2026-10-10, before claim: factdiff.py anchors --stale still prints stale=5, the same five (api-limits.csv 4, messages-api.md 1); every other content item of the sprint has landed. From this sprint's workers: factdiff.py anchor --file also rewrites verified_utc on unrelated _anchors.csv rows and modifies _fetch_state.csv (outside the touches): keep the anchor rows this bug's goal names, and restore _fetch_state.csv with git restore before you return.",
-  "claimed_by": "kb-worker-n4el7pmd"
+  "evidence": {
+    "commit": "7caf5b8851322489eecd4598ed2f135acd934c2e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/factdiff.py",
+          "anchors",
+          "--stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
