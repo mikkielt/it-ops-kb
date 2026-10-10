@@ -43,6 +43,23 @@
       "class": "push",
       "answer": "keep every reopen ref and prune nothing",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "The suite sits at its 100-id ceiling: how does the planted reopened_refs test fit under it?",
+      "options": [
+        "fold it into an existing close or drop scenario of _tools/test_land_e2e.py, renamed to carry reopened_refs",
+        "replace another test of the suite with it"
+      ],
+      "recommendation": "fold it into an existing close or drop scenario of _tools/test_land_e2e.py, renamed to carry reopened_refs",
+      "do": {
+        "fold it into an existing close or drop scenario of _tools/test_land_e2e.py, renamed to carry reopened_refs": "ST-vblulwrc",
+        "replace another test of the suite with it": "ST-vblulwrc"
+      },
+      "class": "agents-rule",
+      "answer": "fold it into an existing close or drop scenario of _tools/test_land_e2e.py, renamed to carry reopened_refs",
+      "by": "operator"
     }
   ],
   "links": [
