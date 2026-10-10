@@ -2,7 +2,7 @@
   "id": "ST-m6uyo6rw",
   "kind": "story",
   "title": "Research sprint goal: Sprint tooling 3: plugin skills and a second project end to end",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ciqk6gt6",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker-ST-m6uyo6rw"
 }
