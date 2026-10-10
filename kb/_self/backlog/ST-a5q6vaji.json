@@ -2,7 +2,7 @@
   "id": "ST-a5q6vaji",
   "kind": "story",
   "title": "Sprint planning gives a code item a check that runs its behaviour, with the test it extends in touches",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4jfepy6u",
   "priority": "P2",
   "rank": 0,
@@ -69,5 +69,6 @@
     "merged: ST-rcfxvexc",
     "merged: ST-42nkqcpd"
   ],
-  "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-6rgawaxs, ST-k3ehh2py, ST-jrmfgjkt, ST-pafsvtfs, ST-rcfxvexc, ST-42nkqcpd; their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"). Premise: backlog.py check on a planted clone, with a story of a planned sprint whose touches name _tools/bl_check.py and whose only check reads that file's text, prints no warning of it, and none for a _tools/test_*.py file its notes name. Run on the base 2026-10-10: no warning for either, so the item's check, which plants that clone and runs backlog.py check, exits 1 now. The check runs the tool, not source text."
+  "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-6rgawaxs, ST-k3ehh2py, ST-jrmfgjkt, ST-pafsvtfs, ST-rcfxvexc, ST-42nkqcpd; their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"). Premise: backlog.py check on a planted clone, with a story of a planned sprint whose touches name _tools/bl_check.py and whose only check reads that file's text, prints no warning of it, and none for a _tools/test_*.py file its notes name. Run on the base 2026-10-10: no warning for either, so the item's check, which plants that clone and runs backlog.py check, exits 1 now. The check runs the tool, not source text.",
+  "claimed_by": "kb-worker-a5q6vaji"
 }
