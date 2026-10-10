@@ -63,6 +63,17 @@ def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_
     assert ba.gate_class(item, low) == "push" and ba.lowered(item, low) == "design"
     assert ba.lowered(item, {**plain, "class": "push"}) is None
     assert {"secrets", "push", "agents-rule"} == set(ba.OPERATOR_CLASSES)
+    # the bare word `rule` classes agents-rule only beside a rule-guarding touch or path; `release` classes push anywhere
+    for touches, question, cls in ((["kb/public/x.md"], "Which distill rows count by rule?", "design"),
+                                   (["kb/public/x.md"], "Do the agents follow which rule?", "design"),
+                                   (["kb/public/x.md"], "Which rule does AGENTS.md carry?", "agents-rule"),
+                                   (["kb/public/x.md"], "Which rule is in _tools/bl_items.py?", "agents-rule"),
+                                   ([".claude/skills/kb-sprint/SKILL.md"], "Which rule?", "agents-rule"),
+                                   (["kb/public/x.md"], "How is the Sonnet 5.5 release question dispositioned?", "push")):
+        got = ba.class_reasons({"touches": touches}, {**plain, "question": question})
+        assert got[0] == cls, (question, got)
+    named = ba.class_reasons({"touches": []}, {**plain, "question": "Which rule in AGENTS.md?"})[1]
+    assert any("'rule'" in r for r in named), named
 
 
 def test_gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):
