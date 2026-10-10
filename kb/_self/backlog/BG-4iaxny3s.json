@@ -2,7 +2,7 @@
   "id": "BG-4iaxny3s",
   "kind": "bug",
   "title": "gate add crashes with a shlex traceback on a --do command with an unclosed quote instead of a usage error",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qxcj7fgy",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-7y6dk257 close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise run 2026-10-10 (plan SP-qxcj7fgy): gate add with --do A=it's exits 1 with ValueError: No closing quotation from shlex.split: reproduces. No open choice: the usage error is raised where gate add parses --do and --host-check."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise run 2026-10-10 (plan SP-qxcj7fgy): gate add with --do A=it's exits 1 with ValueError: No closing quotation from shlex.split: reproduces. No open choice: the usage error is raised where gate add parses --do and --host-check.",
+  "claimed_by": "worker-BG-4iaxny3s"
 }
