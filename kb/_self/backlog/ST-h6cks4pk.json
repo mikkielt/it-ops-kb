@@ -2,7 +2,7 @@
   "id": "ST-h6cks4pk",
   "kind": "story",
   "title": "Research sprint goal: Test suite and tools docs fixes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yzs3bj6f",
   "goal_research": true,
   "priority": "P1",
@@ -21,6 +21,20 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "The sprint's questions are all about this repository's own tools (a perfcheck id baseline, a unit cache key, a test fixture backlog, doc rows, a call-row budget). The pack for -q pytest collect-only ids -q git grep at HEAD gave coverage good on both. Its done needs No outside facts: every question is answered by the kb and the repository's own code.",
-  "claimed_by": "orch-yzs3bj6f"
+  "notes": "The sprint's questions are all about this repository's own tools (a perfcheck id baseline, a unit cache key, a test fixture backlog, doc rows, a call-row budget). The pack for -q pytest collect-only ids -q git grep at HEAD gave coverage good on both. Its done needs No outside facts: every question is answered by the kb and the repository's own code. No outside facts: every question is about this repository's own tools, answered by the code and kb/_self docs (pack 2026-10-10): pytest collect-only and parametrized ids, coverage good in public/python/pytest.md; git grep at HEAD, coverage good; the ids baseline, names_successor, _unit_key, the land e2e seed and committed_calls are read from _tools/perfcheck.py, _tools/kbfacts.py, _tools/conftest.py and _tools/bl_intake.py, with tools.md's perfcheck and intake rows. The live docs add no fact to these.",
+  "evidence": {
+    "commit": "a469023a6b5765673ead676b2ccc2ba83519b013",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-h6cks4pk"
+        ],
+        "exit": 0,
+        "sha256": "8227a5fdb1a11d8f"
+      }
+    ]
+  }
 }
