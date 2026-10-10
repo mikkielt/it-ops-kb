@@ -1,0 +1,20 @@
+{
+  "id": "SP-ciqk6gt6",
+  "kind": "sprint",
+  "title": "Sprint tooling 3: plugin skills and a second project end to end",
+  "status": "planned",
+  "goal": "The plugin ships the sprint, item and backlog skills and a worker agent that run backlog.py from the plugin root against a host project's backlog.json, the kb keeping one set of them with no duplicate; a second project runs one item end to end (claimed, dispatched, landed, closed) on the plugin's sprint skill, and the run's retrospective findings are filed as kb items",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
