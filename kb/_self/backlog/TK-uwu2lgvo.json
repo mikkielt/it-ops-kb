@@ -28,7 +28,8 @@
     "_tools/bl_land.py",
     "_tools/test_forge.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/bl_forge.py"
   ],
   "depends_on": [
     "TK-g4c5kxsc"
@@ -47,7 +48,9 @@
         "widen the item's touches by _tools/bl_forge.py: Request gains description, both arms gain set_description (the gh arm refuses like its merge), bl_land.describe_merge_request goes through it": "TK-uwu2lgvo",
         "leave bl_forge.py alone and drop the description PUT from this item (it stays a glab call in bl_land.py, so the item's second check cannot pass and the story's third check waits on a new task)": "TK-uwu2lgvo"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "widen the item's touches by _tools/bl_forge.py: Request gains description, both arms gain set_description (the gh arm refuses like its merge), bl_land.describe_merge_request goes through it",
+      "by": "operator"
     }
   ],
   "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. The parent story ST-4jjz3vxs checks -k forge_one_project, which no task names: this task proves every call names forge_project, so its test name carries forge_one_project too.",
