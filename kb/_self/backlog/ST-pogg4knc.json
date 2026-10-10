@@ -2,7 +2,7 @@
   "id": "ST-pogg4knc",
   "kind": "story",
   "title": "Planning puts every reader of a symbol a goal changes into the item's touches, so workers do not stop or widen touches themselves",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4jfepy6u",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,18 @@
     "merged: ST-qhb46g6a"
   ],
   "notes": "Merged at the 2026-10-10 backlog triage (full text in git history): ST-yjq7extd (a one-clause planning touches rule, not new code: map.csv has no bench_report.py or benchmarks.csv row and bl_check.py never reads map.csv), ST-4is62mak, ST-qhb46g6a; their scope is in the goal. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the three planning docs (kb-sprint and kb-backlog SKILL.md, backlog.md Sprints) lack the wording the goal adds; the item's check reads them for it and fails now. Docs-only item, so its check reads doc text by nature. Premise run on the base 2026-10-10: its check prints all five wording tests False, exit 1.",
-  "claimed_by": "kb-worker-pogg4knc"
+  "evidence": {
+    "commit": "24a18260bc049dbe659edd23d48919c88d203743",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nr = lambda p: open(p, encoding='utf-8').read()\nsp, bk, doc = r('.claude/skills/kb-sprint/SKILL.md'), r('.claude/skills/kb-backlog/SKILL.md'), r('kb/_self/backlog.md')\ngot = {'sprint plan names a removed or renamed flag': 'removed or renamed flag' in sp,\n       'sprint plan names a facade registration': 'facade registration' in sp,\n       'sprint plan names the benchmarks results file and README.md': 'benchmarks.csv' in sp and 'README.md' in sp,\n       'kb-backlog names a new tool module': 'adding a new tool module' in bk,\n       'backlog.md Sprints names both': 'removed or renamed flag' in doc and 'adding a new `_tools/` module' in doc}\nprint(got)\nsys.exit(0 if all(got.values()) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "bb84fc1dff2d04a6"
+      }
+    ]
+  }
 }
