@@ -38,6 +38,47 @@
   "depends_on": [
     "ST-w3jhowin"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "May census.py run without --resume overwrite a census log that already holds phase-2 outcomes? (check rewrites the log with empty outcomes; a dry run only notes it)",
+      "options": [
+        "refuse with exit 2 and name --resume",
+        "overwrite it"
+      ],
+      "recommendation": "refuse with exit 2 and name --resume",
+      "class": "design",
+      "answer": "refuse with exit 2 and name --resume",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which tracked changes refuse census.py run and finish, before the first step and before the commit?",
+      "options": [
+        "any outside the root under census (for finish also the decision ledgers kb/*/_decisions.csv); untracked files do not count, as for kbgit.py sync",
+        "any tracked change at all"
+      ],
+      "recommendation": "any outside the root under census (for finish also the decision ledgers kb/*/_decisions.csv); untracked files do not count, as for kbgit.py sync",
+      "class": "design",
+      "answer": "any outside the root under census (for finish also the decision ledgers kb/*/_decisions.csv); untracked files do not count, as for kbgit.py sync",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does a stopped census.py finish resume, and what does --dry-run run? (the spec gives finish no --resume)",
+      "options": [
+        "finish has no --resume: its steps write the same bytes a second time and a stopped one runs again whole; --dry-run of either command runs no step and prints each argv",
+        "finish gets --resume and --dry-run runs confirm and sweep in their own dry-run form"
+      ],
+      "recommendation": "finish has no --resume: its steps write the same bytes a second time and a stopped one runs again whole; --dry-run of either command runs no step and prints each argv",
+      "class": "design",
+      "answer": "finish has no --resume: its steps write the same bytes a second time and a stopped one runs again whole; --dry-run of either command runs no step and prints each argv",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py groups kb/public/_census/2026-09-26.csv exits 2 with invalid choice (check, record, confirm, sample, summary only); run and finish are missing the same way. Today the kb-census skill has the orchestrator run phases 0, 1 and 3 as about a dozen separate commands, each a model turn on the orchestrator's model. The second check runs the dry run, which writes nothing. Whether run commits by itself or prints the commit for the orchestrator is left to the work, within kb/_self/git.md's commit rules (KB-Verified trailer, never a push). Test ceiling (2026-10-10, ST-w3jhowin gate ceiling, answered replace-two-ids-and-a-file by operator): the suite is at max_ids 100 and max_files 15 of _tools/tests_ceiling.json, which stays as it is. Add no new test file; a new test id goes into an existing test file and replaces one (merge two tests of the same unit into one id keeping every assertion), so tests.py stays within the ceiling.",
   "claimed_by": "kb-worker-ST-ywxl7ulm"
 }
