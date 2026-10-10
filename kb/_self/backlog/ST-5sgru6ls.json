@@ -1,0 +1,25 @@
+{
+  "id": "ST-5sgru6ls",
+  "kind": "story",
+  "title": "A planted test proves drop of a sprint takes its research and review stories and refuses while a live or claimed item remains",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-m3azo2y7 review of BG-j7f3dlop: no suite test covers drop of a sprint; the only proof was the item's repro, which close deletes, so a regression in sprint_leftovers, its refusal on a non-dropped item or a claimed story, or the 'i not in gone' save guard (_tools/bl_items.py) passes every gate. One planted-failure test, within the ceiling in _tools/tests_ceiling.json (fold into an existing scenario while the suite sits at 100 ids), runs drop on a planned sprint in an isolated git repo and asserts check errors=0, and asserts the two refusals.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "drop_sprint"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 review"
+  ]
+}

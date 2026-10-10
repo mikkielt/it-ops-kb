@@ -1,0 +1,24 @@
+{
+  "id": "BG-icnbtxdf",
+  "kind": "bug",
+  "title": "tools.md's precheck row says the trailers detector reads the last TRAILER_WINDOW_DAYS days of main, a calendar reading",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found by the SP-m3azo2y7 review of BG-rn4pt6bb: kb/_self/tools.md's precheck row says trailers reads the last TRAILER_WINDOW_DAYS days of main, while bl_intake.trailer_findings reads the commits within TRAILER_WINDOW_DAYS of main's tip (no clock), as kb/_self/backlog.md and precheck's own warning now say. The row says the window is counted back from main's tip.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'days of main' in t and \"main's tip\" not in t[t.index('backlog.py precheck'):][:3000] else 0)"
+    ]
+  },
+  "repro_reason": "a doc wording defect: the text is the behaviour",
+  "touches": [
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 review"
+  ]
+}

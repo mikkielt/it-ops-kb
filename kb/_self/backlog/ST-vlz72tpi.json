@@ -1,0 +1,25 @@
+{
+  "id": "ST-vlz72tpi",
+  "kind": "story",
+  "title": "precheck's windowed-detector warning has a test that reads the printed line, not the source text",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-m3azo2y7 review of BG-rn4pt6bb and BG-cb4wcm2m: nothing in the suite names precheck or windowed_detector, and BG-rn4pt6bb's repro slices bl_land.py from def windowed_detector to def cmd_precheck, a slice whose docstring already holds \"main's tip\", so reverting the warning string alone passes it. One planted-failure assertion, within the ceiling in _tools/tests_ceiling.json (folded into an existing scenario while the suite sits at 100 ids), runs precheck on a sprint whose bug's repro is the intake --status of the trailers detector and asserts the warning line names the bug and says the window follows main's tip.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_windowed"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 review"
+  ]
+}

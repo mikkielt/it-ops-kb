@@ -1,0 +1,26 @@
+{
+  "id": "BG-rrutf5bf",
+  "kind": "bug",
+  "title": "drop SP deletes an active sprint whose items are all dropped, bypassing close's ops row and worker cleanup",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found by the SP-m3azo2y7 review of BG-j7f3dlop: sprint_leftovers and cmd_drop (_tools/bl_items.py) never read the sprint's status, though kb/_self/backlog.md says drop is for a sprint that has not run; an active sprint whose items are all dropped and whose review story is todo is deleted by drop, which skips close's record_close ops row and the work/<id> worktree and branch cleanup. drop of a sprint that has started refuses and names close; a planned sprint drops as now.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/bl_items.py',encoding='utf-8').read();s=t[t.index('def sprint_leftovers'):t.index('def cmd_drop')];sys.exit(0 if 'active' in s or 'planned' in s else 1)"
+    ]
+  },
+  "repro_reason": "the defect needs a started sprint in a scratch git repo with workers' leftovers; the text check pins that the leftover rule reads the sprint's status",
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 review"
+  ]
+}

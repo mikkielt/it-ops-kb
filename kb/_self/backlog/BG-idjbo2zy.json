@@ -1,0 +1,25 @@
+{
+  "id": "BG-idjbo2zy",
+  "kind": "bug",
+  "title": "The sprint skill's plan step 5 says precheck runs only the checks, not a bug's repro or the windowed-detector warning",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found by the SP-m3azo2y7 review of BG-cb4wcm2m: plan step 5 of skills/sprint/SKILL.md and .claude/skills/kb-sprint/SKILL.md says precheck runs each committed item's checks once on the base, but precheck now runs a bug's repro too and warns of a check or repro that is the intake --status of a time-windowed detector, so a planner following the skill learns neither. The step names both.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.index('backlog.py precheck SP');s=t[i:t.index(')',i)];sys.exit(0 if 'repro' in s else 1)"
+    ]
+  },
+  "repro_reason": "a skill wording defect: the text is the behaviour",
+  "touches": [
+    "skills/sprint/SKILL.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-m3azo2y7 review"
+  ]
+}
