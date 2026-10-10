@@ -84,7 +84,9 @@ def cmd_new(bl, a):
               "status": "draft", "sprint": it["id"], "goal_research": True, "priority": "P1", "rank": 0,
               "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for "
                       "the gaps, and the findings are written as kb facts and gap entries through the kb skills, so "
-                      "each committed item can name the knowledge it needs.",
+                      "each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/"
+                      "lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands "
+                      "through backlog.py land ID --wait-merge SECONDS, not done --commit.",
               "checks": [{**c, "run": [rid if w == RESEARCH_ID else w for w in c["run"]]} for c in research_checks()],
               "touches": ["kb/public/**"]}
         bl.save(rs)
