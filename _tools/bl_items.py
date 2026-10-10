@@ -94,6 +94,10 @@ def cmd_new(bl, a):
         return 0
     if a.sprint and kind not in IN_SPRINT:
         raise Rejected(f"new {kind} refuses --sprint: only stories and bugs name a sprint; a {kind} follows its parent's")
+    if a.sprint and not a.touch and bl.items.get(a.sprint, {}).get("status") == "active":
+        raise Rejected(f"new {kind} refuses sprint {a.sprint}: the sprint is active and the item has no --touch, "
+                       "which start requires of every work item; file it with --touch GLOB, or without --sprint "
+                       "and make it ready later with backlog.py move ID --sprint SP")
     it.update(status="todo" if kind in ("task", "subtask") else "draft", priority=a.priority, rank=a.rank)
     for k in ("parent", "sprint", "goal"):
         if getattr(a, k):
