@@ -2,7 +2,7 @@
   "id": "ST-qo5varc2",
   "kind": "story",
   "title": "The open test-suite gap entry in kb/public/_gaps.md no longer lists quarantine deadlines the article now states",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-flkl5gom review"
   ],
-  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise (2026-10-10, base origin/main): the first check exits 1: _gaps.md:1233 still says 'Also not found: ... quarantine deadlines in GitLab's testing guide' while test-suite-size-and-agent-overengineering.md:46 states them from S-jg2qnt5d. check.py passes before the work: it pins that the edited ledger stays valid, it proves nothing alone."
+  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise (2026-10-10, base origin/main): the first check exits 1: _gaps.md:1233 still says 'Also not found: ... quarantine deadlines in GitLab's testing guide' while test-suite-size-and-agent-overengineering.md:46 states them from S-jg2qnt5d. check.py passes before the work: it pins that the edited ledger stays valid, it proves nothing alone.",
+  "claimed_by": "kb-worker-qo5varc2"
 }
