@@ -64,11 +64,16 @@ WORKER_RULES = (
     "A stacked item (its base holds another item's commits not yet landed): each commit names in its own "
     "`Self-Reviewed` trailer every doc `selfdoc.py stale --since <the item's base>` lists for its change, not the "
     "stack's.",
-    "A choice the goal leaves open: record a provisional gate with your recommendation (`python3 _tools/backlog.py "
-    "gate add {id} --kind provisional ...`), answer it `--provisional` and commit it with the work, never prose in "
-    "the report only; a choice only the operator can make: a blocking gate with its options and your "
-    "recommendation, commit it, and stop. `gate add` prints the class it gives the gate; never reword a gate to "
-    "change its class.",
+    "A choice the goal leaves open (a name, a default, a width, an opt-in, a limit, a price): record a provisional "
+    "gate with your recommendation (`python3 _tools/backlog.py gate add {id} --kind provisional ...`), answer it "
+    "`--provisional` and commit it with the work, never prose in the report only: a choice your report names and no "
+    "gate on `{branch}` records sends the item back. A choice only the operator can make, or any choice on an item "
+    "whose touches are rule-guarding: a blocking gate with its options and your recommendation, commit it, and "
+    "stop. `gate add` prints the class it gives the gate; never reword a gate to change its class; one that prints "
+    "`made blocking` is committed as printed, and you stop with a report.",
+    "A change to what a function returns or takes runs `python3 _tools/backlog.py referrers SYMBOL --item {id}` "
+    "first and covers every consumer it lists in the same item; a consumer outside the touches stops the work with "
+    "a report.",
     "Never write the operator's decisions into docs or code.",
     "Make no git worktree of your own, never `git worktree add`: `git worktree remove` is denied to agents, so one "
     "you add is left for the operator. A baseline run uses `git stash push -u -m <tag>` (apply it by its sha and drop "
