@@ -29,7 +29,7 @@ A staged family adds its row here. A WebFetch on a host whose row's avoid cell n
 Stage a host (or a set of hosts one vendor runs) when any of these holds, and name the trigger in the commit body. The query log's `learn` reports hosts that meet the Share or Failures trigger (its numbers in `_tools/querylog.py` are tested against the ones here):
 
 1. **Share.** It backs at least 25 rows of a root's `_sources.csv`, or at least 5% of them (count hosts with Python's `csv` and `urllib.parse`).
-2. **Failures.** Three or more failures on the host across `_fetch_state.csv` (`error`), census `NEEDS-READING` verdicts and `_gaps.md` notes (403, bot pages, title-only or empty WebFetch results, truncated pages).
+2. **Failures.** Three or more failures on the host across `_fetch_state.csv` (`error`), census `NEEDS-READING` verdicts (a row noted `dns` or `connect` counts too: the census tried its fetch twice in its run, so a resolver blip that the second try cleared is no verdict) and `_gaps.md` notes (403, bot pages, title-only or empty WebFetch results, truncated pages).
 3. **Extraction.** Generic `_PageText` fails the acceptance check below on a sample page: page chrome in the text, body text missing, or no text at all.
 4. **Planned.** A new root, or research planned around one vendor (a team moving to Oracle, say), will cite the host heavily: stage before the bulk research, not after it.
 
