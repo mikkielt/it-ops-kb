@@ -58,7 +58,9 @@
         "dispatch makes it when absent: git worktree add <worktree_dir>/agent-ID -b work/ID from this checkout's HEAD (a branch that exists is checked out instead), and reuses one that is there": "ST-nq5z6whn",
         "dispatch requires it: it refuses an absent worktree (exit 2) naming the git worktree add command, and the orchestrator keeps making it by hand": "ST-nq5z6whn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "dispatch makes it when absent: git worktree add <worktree_dir>/agent-ID -b work/ID from this checkout's HEAD (a branch that exists is checked out instead), and reuses one that is there",
+      "by": "operator"
     },
     {
       "id": "session",
@@ -73,7 +75,9 @@
         "foreground: dispatch waits until the session exits, writes its --output-format json output to SCRATCH/result.json and stderr to SCRATCH/stderr.log, and exits 0 only when the session exited 0 without is_error; the orchestrator starts dispatch as a background command and is told at its exit": "ST-nq5z6whn",
         "detached: dispatch starts the session as a child that outlives it, same output files, and returns at once; the orchestrator polls the recorded pid": "ST-nq5z6whn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "foreground: dispatch waits until the session exits, writes its --output-format json output to SCRATCH/result.json and stderr to SCRATCH/stderr.log, and exits 0 only when the session exited 0 without is_error; the orchestrator starts dispatch as a background command and is told at its exit",
+      "by": "operator"
     },
     {
       "id": "claimrecord",
@@ -90,7 +94,9 @@
         "item-file fields beside claimed_by, committed with the item: needs bl_base ORDER, bl_check, bl_items and bl_land, outside this item's touches, and puts a GUID-shaped session id into published item files": "ST-nq5z6whn",
         "a dispatch.json in the scratch directory, apart from the claim": "ST-nq5z6whn"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the clone's claims ledger in the git dir (kb-backlog-claims.json, which claim writes and git never commits), on the item's record: worker_pid when the session starts, worker_session when it exits",
+      "by": "operator"
     },
     {
       "id": "turns-epic",
@@ -107,7 +113,9 @@
         "200, the cap of a research story or an investigation bug": "ST-nq5z6whn",
         "60, the cap of a task": "ST-nq5z6whn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "100, the cap of a bug or an untasked story: an epic's worker breaks it down into stories as an untasked story's does",
+      "by": "operator"
     },
     {
       "id": "investigation",
@@ -122,7 +130,9 @@
         "a story is a research story when it is the goal research story or its scope is kb content only (bl_base.research_touches); a bug is an investigation bug when its title or goal holds the word investigat; dispatch --max-turns N overrides the cap for any other": "ST-nq5z6whn",
         "dispatch --max-turns N only: the orchestrator names 200 itself and the kind gives 60 or 100": "ST-nq5z6whn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a story is a research story when it is the goal research story or its scope is kb content only (bl_base.research_touches); a bug is an investigation bug when its title or goal holds the word investigat; dispatch --max-turns N overrides the cap for any other",
+      "by": "operator"
     },
     {
       "id": "format",
@@ -137,7 +147,9 @@
         "Markdown text in sections (item with its JSON and goal text, external ids, staging copies, in-flight siblings, known failing tests, fixed rules, rules of the docs, report); brief prints it through the name guard, dispatch writes it unguarded to SCRATCH/brief.md so the paths stay usable; --probe TEXT adds an unproven bug's probe result": "ST-nq5z6whn",
         "a JSON object with one key per part, which the session reads as data": "ST-nq5z6whn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Markdown text in sections (item with its JSON and goal text, external ids, staging copies, in-flight siblings, known failing tests, fixed rules, rules of the docs, report); brief prints it through the name guard, dispatch writes it unguarded to SCRATCH/brief.md so the paths stay usable; --probe TEXT adds an unproven bug's probe result",
+      "by": "operator"
     },
     {
       "id": "dryrun",
@@ -152,7 +164,9 @@
         "it only prints the worktree, scratch, brief path and argv, and makes and writes nothing (brief prints the text)": "ST-nq5z6whn",
         "it writes SCRATCH/brief.md and makes the scratch directory so the brief can be read at the printed path, and makes no worktree and starts nothing": "ST-nq5z6whn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "it only prints the worktree, scratch, brief path and argv, and makes and writes nothing (brief prints the text)",
+      "by": "operator"
     }
   ],
   "links": [
