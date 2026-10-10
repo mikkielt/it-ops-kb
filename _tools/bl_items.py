@@ -683,8 +683,40 @@ MEASURED_SIZE_RE = re.compile(r"\b\d[\d,]*\s*bytes\b", re.I)
 
 
 def cmd_gate(bl, a):
-    """gate add or gate remove, by the verb."""
-    return (gate_remove if a.verb == "remove" else gate_add)(bl, a)
+    """gate add, gate remove or gate host-unchecked, by the verb."""
+    return {"remove": gate_remove, "host-unchecked": gate_host_unchecked}.get(a.verb, gate_add)(bl, a)
+
+
+def gate_host_unchecked(bl, a):
+    """gate host-unchecked: the reason a gate that names a host setup cannot be checked on a host, kept on the gate as
+    `host_unchecked`, so `start` no longer warns of it; a gate with a `host_check` has no use for one."""
+    iid = need(bl, a.id)
+    it = bl.items[iid]
+    if it.get("status") in ("done", "dropped"):
+        raise Rejected(f"gate host-unchecked refuses {bl.label(iid)}: it is {it['status']}, so no start warns of it")
+    g = next((g for g in it.get("gates", []) if g.get("id") == a.gate), None)
+    if g is None:
+        raise Rejected(f"gate host-unchecked: {bl.label(iid)} has no gate {a.gate}")
+    if a.gate == START_GATE:
+        raise Rejected(f"gate host-unchecked refuses gate {a.gate} of {bl.label(iid)}: it is the sprint's start gate, "
+                       "which names no host setup")
+    if "host_check" in g:
+        raise Rejected(f"gate host-unchecked refuses gate {a.gate} of {bl.label(iid)}: it has a host_check, which "
+                       "proves the setup on a host")
+    reason = " ".join(a.reason.split())
+    if not reason:
+        raise Rejected("gate host-unchecked: --reason TEXT must not be empty")
+    if len(reason) > TEXT_MAX:
+        raise Rejected(f"gate host-unchecked: --reason is {len(reason)} characters, at most {TEXT_MAX}")
+
+    def edit(new):
+        next(x for x in new["gates"] if x.get("id") == a.gate)["host_unchecked"] = reason
+
+    if not changed_item(bl, iid, edit):
+        say(f"gate {a.gate} of {bl.label(iid)}: unchanged")
+        return 0
+    say(f"gate {a.gate} of {bl.label(iid)}: host_unchecked set ({reason})")
+    return 0
 
 
 def gate_remove(bl, a):
@@ -1053,6 +1085,10 @@ def args_gate(p):
     p.add_argument("--by", choices=["operator"],
                    help="operator: removes a gate of class secrets, push or agents-rule, passed only after the "
                         "operator said so")
+    p = gsub.add_parser("host-unchecked")
+    p.add_argument("id")
+    p.add_argument("gate")
+    p.add_argument("--reason", required=True, help="why the setup the gate names cannot be checked on a host")
 
 
 def args_fire(p):

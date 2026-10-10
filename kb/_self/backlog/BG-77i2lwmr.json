@@ -1,0 +1,21 @@
+{
+  "id": "BG-77i2lwmr",
+  "kind": "bug",
+  "title": "backlog.py's module usage text omits the gate host-unchecked verb",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py's module usage text lists gate host-unchecked ID GATE --reason TEXT beside gate add and gate remove",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if 'gate host-unchecked' in open('_tools/backlog.py', encoding='utf-8').read() else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the module docstring's text, which no command prints back verbatim; the grep names only the line the fix adds",
+  "touches": [
+    "_tools/backlog.py"
+  ]
+}

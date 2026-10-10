@@ -251,7 +251,9 @@ def host_gates(bl, sid, answered=True):
 
 # Words that name a host setup in a gate's question or options (the operator's list): such a gate carries a
 # --host-check command, or `host_unchecked`, the reason it cannot be checked; start warns of one with neither.
-HOST_WORDS = re.compile(r"\b(?:hosts?|services?|daemons?|credentials?|logins?|installed|enabled)\b", re.I)
+# `host` in another sense is no host setup: `host-bound`, a routed host, a web host, a url's host.
+HOST_WORDS = re.compile(r"\b(?:(?<!routed )(?<!web )(?<!url )(?<!url's )hosts?(?!-bound)"
+                        r"|services?|daemons?|credentials?|logins?|installed|enabled)\b", re.I)
 
 
 def free_text_host_gates(bl, sid):
