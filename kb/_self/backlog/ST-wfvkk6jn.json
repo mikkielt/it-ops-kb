@@ -30,6 +30,70 @@
   "depends_on": [
     "ST-ylxsns5t"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the no-model re-pin live: a new census.py subcommand repin LOG [--date D] [--dry-run] [--commit] chained into run after check (own KB-Verified commit), or inside check?",
+      "options": [
+        "repin subcommand, chained in run after check",
+        "inside check",
+        "repin subcommand, not chained in run"
+      ],
+      "recommendation": "repin subcommand, chained in run after check",
+      "class": "design",
+      "answer": "repin subcommand, chained in run after check",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "A fact that names the pinned tag (or a tag of the pinned commit) in its text: is it re-pointed when its anchor is found word for word at the newer release, or read by a model?",
+      "options": [
+        "read: counts as not found, the source stays in phase 2",
+        "re-pointed like any fact found word for word"
+      ],
+      "recommendation": "read: counts as not found, the source stays in phase 2",
+      "class": "push"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "The url of the new pinned row: for NEWER-VERSION the file at the newer tag, for CHANGED (a pin or a branch ref) the file at the newer commit's full sha, or always the commit sha?",
+      "options": [
+        "newer tag url for NEWER-VERSION, commit sha url for CHANGED",
+        "commit sha url for both"
+      ],
+      "recommendation": "newer tag url for NEWER-VERSION, commit sha url for CHANGED",
+      "class": "design",
+      "answer": "newer tag url for NEWER-VERSION, commit sha url for CHANGED",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "A re-point reword changes a fact's key: do anchors and doc2query expansions follow it and the old id leave the article's sources: header, or are they left to anchor, doc2query prune and the next lint?",
+      "options": [
+        "re-key the anchors and expansions and drop the old id from sources: when nothing else names it",
+        "leave them to factdiff.py anchor and doc2query.py prune"
+      ],
+      "recommendation": "re-key the anchors and expansions and drop the old id from sources: when nothing else names it",
+      "class": "design",
+      "answer": "re-key the anchors and expansions and drop the old id from sources: when nothing else names it",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "A row of kind release (its url is a release page, not a file): leave it in the queue with the reason, or search the release's tree for the cited passages?",
+      "options": [
+        "leave it in the queue, reason named in the output",
+        "search the whole tree of the newer release"
+      ],
+      "recommendation": "leave it in the queue, reason named in the output",
+      "class": "push"
+    }
+  ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 13 NEWER-VERSION rows (9 raw-ref at newer=2.2.364, 4 api-repo) and 7 CHANGED raw-pin or raw-ref rows went to phase 2, and all but two came back confirmed, so the model read whole files to find the cited lines unchanged. factdiff.py detect marks pinned sources 'pinned url: its text cannot change' and leaves them to census.py check, so neither tool compares the citing facts against the newer file today.",
   "claimed_by": "worker-ST-wfvkk6jn"
 }

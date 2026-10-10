@@ -2,6 +2,7 @@
 """Census: confirm that every source in _sources.csv is still current (stdlib only). /kb-census drives it.
 
   census.py check [--date D] [--out PATH] [--jobs N] [--source ID ...] [--factdiff LOG]   phases 0-1: one verdict per source
+  census.py repin LOG [--date D] [--dry-run] [--commit]   phase 1: a pinned file whose facts are word for word at the newer commit is re-pinned
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
@@ -38,6 +39,20 @@ Git work uses bare blobless clones in _cache/census/repos/ (git over https; api.
 --factdiff LOG takes the verdicts of the census's first stage (factdiff.py detect, _census/factdiff-<date>.csv) for the
 sources it covers: unchanged, or every fact found word for word, against a text no newer than retrieved_utc -> OK; gone or soft 404 with nothing moved -> GONE;
 facts to review -> CHANGED, the evidence naming `factdiff.py review`. Pinned and errored sources are checked here.
+
+repin (no judgment, no network beyond the clone's own fetch) takes each row of kind raw-pin or raw-ref (and release, whose
+url names no file and so stays) in bucket CHANGED or NEWER-VERSION that has no outcome, and reads the file at the newer
+commit (the one the verdict's evidence names) or release (note `newer=`) from the census clone, `git cat-file blob`. Each
+fact citing the source is looked up by its anchor (`_anchors.csv`, the passage's hash): found word for word in that file,
+or not. A fact that names the pinned tag (or a tag of the pinned commit) is about that version and counts as not found.
+When every fact is found, `repin` adds the new row (`kbid.add_source`: the file at the newer tag, or at the newer commit's
+sha; a url already there is kept), sets `superseded_by` on the old row, re-points the facts (`factdiff.repoint`, their
+anchors and doc2query expansions follow, and the old id leaves the article's `sources:` when nothing else names it) and
+records outcome `superseded` whose note holds the proof: old and new commit, the facts matched. --dry-run prints every
+write and changes nothing; --commit commits it with a `KB-Verified` trailer, as `factdiff.py apply --commit` does. A
+source with a fact not found stays in phase 2, and `summary`, `groups` and `brief` give its review items only the facts
+not found (old passage from the clone at the old commit, new one at the newer); one with no located anchor stays
+unchanged. A second run writes the same bytes: a row with an outcome is no candidate.
 
 record fills outcome/outcome_note after phase 2 read a source in full:
   confirmed (the facts still hold), updated (facts rewritten, same source), superseded (a new row replaced it; the note
@@ -103,14 +118,14 @@ build_index.py and `doc2query.py stale` (exit 1, stale keys, is no failure), eac
 have them; the foreign edits are printed, never applied. --dry-run prints every write and step and changes nothing;
 a second apply of the same result writes the same bytes.
 
-check, record and confirm (not confirm --dry-run) each append one ops row `census.phase` to the query log (phase, date,
+check, record, confirm and repin (not their --dry-run) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
 run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
 row is its own), with no agent turn between them:
   run:    factdiff.py detect --sitemaps (exit 1, facts to review, is no failure), factdiff.py apply --commit (its
-          KB-Verified commit), check --factdiff, build_index.py, the commit of the census log (and of what the steps changed
-          in the root), then summary with the queue block and the blocked hosts. --resume skips detect when
+          KB-Verified commit), check --factdiff, repin --commit (its KB-Verified commit), build_index.py, the commit of the
+          census log (and of what the steps changed in the root), then summary with the queue block and the blocked hosts. --resume skips detect when
           _census/factdiff-<D>.csv exists, apply when its commit is in the history, check when _census/<D>.csv exists;
           without --resume a log that holds phase-2 outcomes is never overwritten (exit 2).
   finish: confirm, kbdecide.py sweep, build_index.py, the commit `docs(kb): census <D>: confirmed dates` with a
@@ -120,14 +135,15 @@ A failing step stops the run with its exit code and names the step and the comma
 outside the root under census (and, for finish, the decision ledgers) refuse the run before its first step and its
 commit (exit 2); nothing is ever pushed. --dry-run prints each step's argv and runs nothing.
 
-Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments, or run/finish/apply refused;
+Exit: 0 ok; 1 check could not write, confirm/record found an unknown id, or repin could not re-point a fact; 2 bad
+arguments, a missing log, or run/finish/apply refused;
 run, finish and apply: the exit code of the step that failed.
 """
 import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, shutil, ssl, subprocess, sys
 import socket, tempfile, threading, time, types
 import urllib.error, urllib.request
 from collections import Counter, defaultdict
-from urllib.parse import unquote, urlparse
+from urllib.parse import quote, unquote, urlparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_index, factdiff, kbcommon, kbfacts, kbid, kbusage, provider, ql_capture  # noqa: E402
@@ -939,6 +955,12 @@ def review_by_source(ids, fd_rows):
     return items
 
 
+def with_repin_items(items, todo):
+    """`items` (`review_by_source`) with the review items `repin_items` gives for the pinned files of `todo` that the fact
+    diff holds none for."""
+    return {**repin_items(todo, have=items), **items}
+
+
 def reading_queue(rows, fd_rows, items=None, cited=None):
     """What phase 2 must read, measured with no network and no model: one record per row whose bucket is not OK, whose
     note is not `blocked` and that has no outcome yet: id, host, `facts` (the kb lines naming it, `rag.py src --cited`),
@@ -950,7 +972,7 @@ def reading_queue(rows, fd_rows, items=None, cited=None):
         return []
     ids = {r["id"] for r in todo}
     cited = kbfacts.cited_lines(ids) if cited is None else cited
-    items = review_by_source(ids, fd_rows) if items is None else items
+    items = with_repin_items(review_by_source(ids, fd_rows), todo) if items is None else items
     out = []
     for r in todo:
         got, rec = items.get(r["id"]), {"id": r["id"], "host": urlparse(r["url"]).netloc.lower() or "-",
@@ -1090,7 +1112,7 @@ def phase2_context(rows, log, flog=None):
     ids = {r["id"] for r in todo}
     fd_rows = factdiff_log_rows(rows, log, flog) if ids else []
     cited = kbfacts.cited_lines(ids) if ids else {}
-    items = review_by_source(ids, fd_rows) if ids else {}
+    items = with_repin_items(review_by_source(ids, fd_rows), todo) if ids else {}
     queue = {q["id"]: q for q in reading_queue(rows, fd_rows, items, cited)}
     root, members = os.path.basename(KB), defaultdict(list)
     for r in sorted(todo, key=lambda r: r["id"]):
@@ -1263,9 +1285,341 @@ def cmd_brief(a, tally):
     return 0
 
 
+# ---------------------------------------------------------------- repin: a pinned file word for word at the newer commit
+
+REPIN_KINDS = ("raw-pin", "raw-ref", "release")  # the kinds whose cited file a newer commit or release can be read for
+REPIN_BUCKETS = ("CHANGED", "NEWER-VERSION")
+
+
+def repin_clone(repo):
+    """The census clone of `repo` as it stands, with no fetch (a linked worktree reads the clone's main worktree's), or
+    None when there is none."""
+    name = clone_name(repo) + ".git"
+    for base in (REPOS, os.path.join(kbfacts.clone_home(), "_cache", "census", "repos")):
+        if os.path.isdir(os.path.join(base, name)):
+            return os.path.join(base, name)
+    return None
+
+
+def rev(d, name):
+    """The full commit id that `name` (a tag, a branch or an abbreviated sha) names in the clone, or ''."""
+    return g(d, "rev-parse", "-q", "--verify", f"{name}^{{commit}}")[1]
+
+
+def blob_at(d, commit, path):
+    """The bytes of `path` at `commit` in the clone (`cat-file blob`, never `show`: kb/_self/code.md), or None."""
+    try:
+        p = subprocess.run(["git", "cat-file", "blob", f"{commit}:{path}"], cwd=d, capture_output=True, timeout=300)
+    except (subprocess.TimeoutExpired, OSError):
+        return None
+    return p.stdout if p.returncode == 0 else None
+
+
+def retarget(url, ref_parts, new_ref, new_path=None):
+    """The raw file url `url` whose ref (`ref_parts` path segments) is `new_ref`, and whose file is `new_path` when the
+    file moved."""
+    u = urlparse(url)
+    segs = u.path.split("/")
+    start = 3 if u.netloc.lower() == "raw.githubusercontent.com" else next(
+        i + 2 for i in range(len(segs) - 1) if segs[i:i + 2] == ["-", "raw"])
+    segs[start:start + ref_parts] = [new_ref]
+    if new_path:
+        segs[start + 1:] = [quote(p) for p in new_path.split("/")]
+    return u._replace(path="/".join(segs)).geturl()
+
+
+def names_pin(text, names):
+    """Whether a fact's text names one of `names` (the pinned tag and the tags of the pinned commit) as a whole word."""
+    return any(re.search(rf"(?<![\w.]){re.escape(n)}(?!\w|\.\w)", text) for n in names)
+
+
+def repin_plan(r, d, facts, anchors):
+    """What re-pinning one log row amounts to, read from the census clone `d` with no network and no model, or None for a
+    row that is no candidate (a kind outside REPIN_KINDS, a bucket outside REPIN_BUCKETS). A dict with `reason` (why
+    nothing can be judged: a release page, no newer commit in the clone, no located anchor), else `matched` and
+    `missing`: the facts citing the row (`factdiff.cited_facts` tuples) whose anchor is, or is not, found word for
+    word in the file at the newer commit or release (`missing` holds (fact, why)); a fact that names the pinned tag is
+    about that version and is `missing` whatever the file says. `ok` is True when nothing is missing."""
+    c = classify(r["url"])
+    if c["kind"] not in REPIN_KINDS or r["bucket"] not in REPIN_BUCKETS:
+        return None
+    plan = {"ok": False, "reason": "", "matched": [], "missing": [], "doc": None}
+    if not c["path"]:
+        plan["reason"] = "the url names a release, not a file of the repository"
+        return plan
+    if c["kind"] == "raw-pin":
+        ref, path, old = c["pin"], c["path"], c["pin"]
+    else:
+        ref, path = split_ref(d, c["refparts"])
+        old = rev(d, f"refs/tags/{ref}")
+    npath, new, nref = path, "", ""
+    if r["bucket"] == "NEWER-VERSION":
+        tag = r["note"][len("newer="):] if r["note"].startswith("newer=") else ""
+        new, nref = (rev(d, f"refs/tags/{tag}"), tag) if tag else ("", "")
+    else:
+        at = re.search(r"@([0-9a-f]{7,40})$", r["proof"] or "")
+        new = rev(d, at.group(1)) if at else (tip_for(d, ref)[0] if c["kind"] == "raw-pin" else rev(d, f"refs/heads/{ref}"))
+        nref = new
+        if r["note"].startswith("renamed="):
+            npath = r["note"][len("renamed="):]
+    plan.update(path=path, new_path=npath, old=old, new=new, ref=ref, new_ref=nref, parts=len(ref.split("/")))
+    if not new or not nref:
+        plan["reason"] = "the newer commit or release is not in the clone"
+        return plan
+    data = blob_at(d, new, npath)
+    if data is None:
+        plan["reason"] = f"{npath} is not in the clone at {new[:12]}"
+        return plan
+    plan["url"] = retarget(r["url"], plan["parts"], nref, npath if npath != path else None)
+    plan["sha256"] = hashlib.sha256(data).hexdigest()
+    text = provider.doc_text(data, "text/plain", plan["url"])
+    if text is None:
+        plan["reason"] = "the file at the newer commit is not text"
+        return plan
+    mine = facts.get(r["id"], [])
+    known = lambda f: anchors.get((f[0], f[1], r["id"])) or {}  # noqa: E731
+    if not any(known(f).get("status") == "located" for f in mine):
+        plan["reason"] = "no located anchors"
+        return plan
+    names = {ref, *(g(d, "tag", "--points-at", old)[1].split() if old else [])}
+    names |= {n[1:] for n in names if re.match(r"v\d", n)}
+    doc = plan["doc"] = factdiff.Doc(text)
+    for f in mine:
+        a = known(f)
+        if a.get("status") != "located":
+            plan["missing"].append((f, "no located anchor"))
+        elif names_pin(factdiff.fact_text(f[3]), names):
+            plan["missing"].append((f, "the fact names the pinned version"))
+        elif a.get("sha") in doc.shas:
+            plan["matched"].append(f)
+        else:
+            plan["missing"].append((f, "not found word for word"))
+    plan["ok"] = not plan["missing"]
+    return plan
+
+
+def repin_item(r, plan, f, why, anchors, d):
+    """The review item (`factdiff.review_items` shape) of one fact of a row that stays in the queue: its old passage
+    from the file at the old commit (else the anchor's quote) and its new one from the file at the newer commit."""
+    key, rel, line, text = f
+    a = anchors.get((key, rel, r["id"])) or {}
+    old, old_from = None, ""
+    if a.get("status") == "located" and plan["old"]:
+        data = blob_at(d, plan["old"], plan["path"])
+        od = factdiff.Doc(provider.doc_text(data, "text/plain", r["url"]) if data is not None else "")
+        if a["sha"] in od.shas:
+            old, old_from = od.window(*od.shas[a["sha"]]), f"{plan['old'][:12]}:{plan['path']} in the census clone"
+    if old is None and a.get("quote"):
+        old, old_from = a["quote"], "anchor quote"
+    doc, claim = plan["doc"], factdiff.fact_text(text)
+    win = (doc.locate(claim)[0] or doc.score(claim)[0]) if doc is not None else None
+    new = doc.window(*win) if win else None
+    found = len(plan["matched"])
+    note = f"{why} at {plan['new'][:12]}; {found} of {found + len(plan['missing'])} fact(s) of the source found word for word"
+    outcome = "unanchored" if why == "no located anchor" else "modified" if new is not None else "not-found"
+    return {"outcome": outcome, "source_id": r["id"], "url": r["url"], "verdict": "changed", "note": note, "fact": text,
+            "where": f"{factdiff.ROOT.name}/{rel}:{line}", "key": key, "path": rel, "old": old, "old_from": old_from,
+            "new": new, "new_from": f"{plan['new'][:12]}:{plan['new_path']} in the census clone" if new is not None else ""}
+
+
+def repin_candidates(rows):
+    """The log rows a repin may resolve: a kind in REPIN_KINDS, a bucket in REPIN_BUCKETS, no outcome, not blocked."""
+    return [r for r in rows if r["kind"] in REPIN_KINDS and r["bucket"] in REPIN_BUCKETS and not r["outcome"]
+            and r["note"] != BLOCKED and r["repo"]]
+
+
+def repin_items(rows, have=()):
+    """{source id: [review item]} for the candidates among `rows` (the ids in `have` excepted) that stay in the queue
+    with some facts found word for word at the newer commit or release: only the facts not found, each with its old and
+    new passage, read from the census clone with no fetch. A candidate with no clone, no located anchor or nothing
+    found has none (the whole document stands); one with every fact found is for `repin` to apply."""
+    cand = [r for r in repin_candidates(rows) if r["id"] not in have]
+    out, ctx = {}, None
+    for r in cand:
+        d = repin_clone(r["repo"])
+        if not d:
+            continue
+        ctx = ctx or (factdiff.cited_facts(), factdiff.read_anchors())
+        plan = repin_plan(r, d, *ctx)
+        if plan and not plan["reason"] and plan["missing"] and plan["matched"]:
+            out[r["id"]] = [repin_item(r, plan, f, why, ctx[1], d) for f, why in plan["missing"]]
+    return out
+
+
+def fact_key_at(rel, line):
+    """The fact key of the unit at `line` of a root file as it stands, or None."""
+    for u in kbfacts.units(kbcommon.qualify(factdiff.ROOT, rel)):
+        if u["line"] == line and kbfacts.bare(u["path"]) == rel:
+            return kbfacts.fact_key(u["text"])
+    return None
+
+
+def unlist_source(rel, sid):
+    """Drop `sid` from the inline `sources:` list of a root file's front matter when no other line of the file names it;
+    True when the file changed."""
+    path = os.path.join(KB, rel)
+    text = kbcommon.read(path, newline="")
+    lines = (text or "").split("\n")
+    end = next((k for k, ln in enumerate(lines[1:40], 1) if ln == "---"), None) if lines[0] == "---" else None
+    if end is None:
+        return False
+    pat = re.compile(rf"(?<![\w-]){re.escape(sid)}(?![\w-])")
+    if any(pat.search(ln) for ln in lines[end + 1:]):
+        return False
+    for k, ln in enumerate(lines[:end]):
+        m = re.match(r"^(sources:\s*\[)(.*)(\]\s*)$", ln)
+        if m and pat.search(m.group(2)):
+            kept = [x.strip() for x in m.group(2).split(",") if x.strip() and x.strip() != sid]
+            lines[k] = m.group(1) + ", ".join(kept) + m.group(3)
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                f.write("\n".join(lines))
+            return True
+    return False
+
+
+def repin_title(title, plan):
+    """The title of the new row: the old one with its tag or commit replaced by the new one's, else `<title> at <new>`."""
+    label = plan["new_ref"] if not SHA.fullmatch(plan["new_ref"]) else plan["new_ref"][:12]
+    for s in (plan["ref"], plan["ref"][:12]):
+        if s and s in title:
+            return title.replace(s, label)
+    return f"{title} at {label}"
+
+
+def cmd_repin(a, tally):
+    """census.py repin LOG: for each pinned file the census marked CHANGED or NEWER-VERSION (raw-pin, raw-ref, release),
+    read the newer commit or release from the census clone and, when every fact citing it is found word for word
+    there, write the new row (`kbid.add_source`), set `superseded_by` on the old one, re-point the facts and record
+    `superseded` with the proof. The rest stays in the phase-2 queue. Exit 0, or 1 when a fact could not be re-pointed,
+    2 for a missing log."""
+    if not os.path.isfile(a.log):
+        print(f"no census log {a.log}")
+        return 2
+    date, root = a.date or today(), factdiff.ROOT
+    rows, srcs = read_log(a.log), {r["id"]: r for r in read_sources()}
+    say = lambda msg: print(("would " if a.dry_run else "") + msg, flush=True)  # noqa: E731
+    facts, anchors = factdiff.cited_facts(), factdiff.read_anchors()
+    by_url = {kbid.normalize_url(s["url"]): s for s in srcs.values()}
+    ids_of = {}  # new url -> the id its row has, or will have
+    log = {r["id"]: r for r in rows}
+    exp_path = kbcommon.data_path("doc2query/expansions.csv")
+    exp_head, exp_rows = kbcommon.load_csv(exp_path, ("key", "question")) if os.path.isfile(exp_path) else (None, [])
+    exp_before = [dict(r) for r in exp_rows]
+    n_sup = n_queued = n_new = n_facts = failed = 0
+    files, superseded, added = set(), {}, {}
+    for r in sorted(repin_candidates(rows), key=lambda r: kbid.sort_key(r["id"])):
+        sid = r["id"]
+        if sid not in srcs or (srcs[sid].get("superseded_by") or "").strip():
+            continue
+        d, err = repo_dir(r["repo"])
+        plan = repin_plan(r, d, facts, anchors) if d else {"reason": err, "missing": [], "matched": []}
+        if plan is None:
+            continue
+        if plan["reason"] or plan["missing"]:
+            n_queued += 1
+            why = plan["reason"] or f"{len(plan['missing'])} of {len(plan['missing']) + len(plan['matched'])} fact(s) not found word for word"
+            print(f"repin {sid}: stays in the queue: {why}")
+            continue
+        url = plan["url"]
+        there = by_url.get(kbid.normalize_url(url))
+        if there and (there.get("superseded_by") or "").strip():
+            n_queued += 1
+            print(f"repin {sid}: stays in the queue: {there['id']} ({url}) is itself superseded")
+            continue
+        new_id = there["id"] if there else ids_of.get(url) or kbid.source_id(url, root.id_prefix)
+        old_l, new_l = (plan["old"] or plan["ref"])[:12], plan["new"][:12]
+        proof = f"re-pinned to {new_id}: {old_l} -> {new_l}, {len(plan['matched'])} fact(s) found word for word"
+        if not there and url not in ids_of:
+            row = {"url": url, "title": repin_title(srcs[sid]["title"], plan), "publisher": srcs[sid]["publisher"],
+                   "licence": srcs[sid]["licence"], "reuse": srcs[sid]["reuse"],
+                   "artifact_sha256": plan["sha256"] if (srcs[sid].get("artifact_sha256") or "").strip() else "",
+                   "version_or_date": (f"{plan['new_ref']}; " if not SHA.fullmatch(plan["new_ref"]) else "")
+                   + f"commit {plan['new']}; re-pinned {date} from {sid}: {len(plan['matched'])} fact(s) found word for word"}
+            say(f"add source {new_id} {url}")
+            if not a.dry_run:
+                got, why = add_new_row(root, row, date)
+                if why:
+                    n_queued += 1
+                    print(f"repin {sid}: stays in the queue: {why}")
+                    continue
+                new_id = got
+                n_new += 1
+            else:
+                n_new += 1
+        ids_of[url] = new_id
+        say(f"re-point {len(plan['matched'])} fact(s) of {sid} to {new_id}: {old_l} -> {new_l}")
+        if a.dry_run:
+            n_sup += 1
+            n_facts += len(plan["matched"])
+            continue
+        moved, bad = set(), 0
+        for key, rel, line, text in plan["matched"]:
+            cur = fact_key_at(rel, line) or key  # an earlier source's re-pointing may have reworded this fact
+            if not factdiff.repoint(rel, cur, sid, new_id):
+                bad += 1
+                print(f"repin {sid}: {rel}:{line} could not be re-pointed")
+                continue
+            nkey = fact_key_at(rel, line)
+            for (k, p, s), arow in list(anchors.items()):
+                if k == cur and p == rel:
+                    del anchors[(k, p, s)]
+                    if nkey:
+                        moved_row = {**arow, "fact": nkey, "source_id": new_id if s == sid else s}
+                        if s == sid:
+                            moved_row["verified_utc"] = date
+                        anchors[(nkey, p, moved_row["source_id"])] = moved_row
+            for e in exp_rows:
+                if nkey and e["key"] == cur:
+                    e["key"] = nkey
+            moved.add(rel)
+            n_facts += 1
+        for rel in sorted(moved):
+            unlist_source(rel, sid)
+        files |= moved
+        failed += bad
+        if not bad:
+            superseded[sid] = new_id
+            added.setdefault(new_id, set()).update(moved)
+            log[sid]["outcome"], log[sid]["outcome_note"] = "superseded", proof[:300]
+            n_sup += 1
+            print(f"repin {sid}: {proof}")
+    tally.update({"superseded": n_sup, "queued": n_queued, "new-rows": n_new, "facts": n_facts})
+    print(f"repin {date}: sources superseded={n_sup} left in the queue={n_queued} new source rows={n_new} facts re-pointed={n_facts}"
+          + (" (dry run: nothing written)" if a.dry_run else ""))
+    if a.dry_run:
+        return 0
+    if superseded:
+        hdr, srows = kbcommon.load_csv(kbcommon.SOURCES, ("id",))
+        for s in srows:
+            if s["id"] in superseded:
+                s["superseded_by"] = superseded[s["id"]]
+            if s["id"] in added:
+                s["used_in"] = ";".join(sorted({*filter(None, s["used_in"].split(";")), *added[s["id"]]}))
+        kbcommon.write_csv(os.path.join(KB, kbcommon.SOURCES), hdr, srows, atomic=True)
+        write_log(a.log, rows)
+    if files:
+        factdiff.write_anchors(anchors)
+    if exp_rows != exp_before:
+        kbcommon.write_csv(exp_path, exp_head, exp_rows, atomic=True)
+    if a.commit and superseded:
+        paths = [os.path.join(KB, p) for p in (kbcommon.SOURCES, kbcommon.ANCHORS, kbcommon.data_rel("doc2query/expansions.csv"))]
+        paths += [os.path.abspath(a.log)] + [os.path.join(KB, p) for p in sorted(files)]
+        if g(kbcommon.HOME, "add", "--", *[p for p in paths if os.path.exists(p)])[0]:
+            print("git add failed; nothing committed")
+            return 1
+        msg = (f"docs(kb): census {date}: re-pin {len(superseded)} source(s)\n\ncensus.py repin on "
+               f"{os.path.relpath(os.path.abspath(a.log), kbcommon.HOME)}: {n_facts} fact(s) found word for word at the newer "
+               f"commit or release and re-pointed to {len(set(superseded.values()))} source row(s); no model read them.\n")
+        if g(kbcommon.HOME, "commit", "-q", "-m", msg, "--trailer", f"KB-Verified: {date}")[0]:
+            print("git commit failed (hooks or nothing to commit)")
+            return 1
+        print("committed with KB-Verified: " + date)
+    return 1 if failed else 0
+
+
 # ---------------------------------------------------------------- run, finish: the phases no model decides
 
-TOOLS_REL = kbcommon.repo_rel(kbcommon.TOOLS, kbcommon.HOME)  # `_tools`: the steps run from the repository's root
+TOOLS_REL =kbcommon.repo_rel(kbcommon.TOOLS, kbcommon.HOME)  # `_tools`: the steps run from the repository's root
 LEDGER = re.compile(r"kb/[^/]+/_decisions\.csv")  # what kbdecide.py sweep writes, in every root and in kb/_self
 
 
@@ -1573,6 +1927,7 @@ def plan_run(root, date, resume, exists, applied):
              skip="its commit is in the history" if resume and applied(flog, date) else ""),
         step("check", "census.py", *ra, "check", "--date", date, "--factdiff", flog,
              skip=f"{log} exists" if resume and exists(log) else ""),
+        step("repin", "census.py", *ra, "repin", log, "--date", date, "--commit"),
         step("index", "build_index.py", *ra),
         commit_step(f"docs(kb): census {date} phase 1 verdicts",
                     "census.py run: the fact diff, the mechanical verdicts and the index; no model read them.", [log, flog]),
@@ -1709,7 +2064,7 @@ def cmd_finish(a, tally):
     return code
 
 
-PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm}  # each writes a census.phase ops row
+PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin}  # each writes a census.phase ops row
 
 
 def main():
@@ -1765,6 +2120,11 @@ def main():
     u.add_argument("--date", help="census date (default today)")
     u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")
     u.add_argument("--dry-run", action="store_true", help="print each step's argv, run nothing")
+    rp = sub.add_parser("repin", help="phase 1: re-pin the pinned files whose cited facts are word for word at the newer commit")
+    rp.add_argument("log")
+    rp.add_argument("--date", help="date of the new rows (default today)")
+    rp.add_argument("--dry-run", action="store_true", help="print every write, change nothing")
+    rp.add_argument("--commit", action="store_true", help="commit the result with a KB-Verified trailer")
     z = sub.add_parser("finish", help="phase 3 as one command: confirm, decision sweep, index, the confirmed-dates commit")
     z.add_argument("log")
     z.add_argument("--date", help="confirmation date (default today)")
