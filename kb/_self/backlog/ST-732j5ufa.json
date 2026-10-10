@@ -51,6 +51,49 @@
     "_tools/fixtures/querylog/store/findings/2026-09/20260928T130002Z-45799d46.jsonl",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How many of the question's key words must a lead passage's line hold before apply tries a row on it?",
+      "options": [
+        "more than half (2*held > keys)",
+        "every key word",
+        "at least three"
+      ],
+      "recommendation": "more than half (2*held > keys)",
+      "class": "design",
+      "answer": "more than half (2*held > keys)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the added lead test fit the tests ceiling (100 ids, at the ceiling)?",
+      "options": [
+        "fold the one-assertion redact ordinary-text test into the redact test beside it",
+        "raise the ceiling",
+        "put the planted failure into the existing lead test"
+      ],
+      "recommendation": "fold the one-assertion redact ordinary-text test into the redact test beside it",
+      "class": "querylog",
+      "answer": "fold the one-assertion redact ordinary-text test into the redact test beside it",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How many decimals does a no-fix record's 'mean pack grows' message print for the two means?",
+      "options": [
+        "two decimals",
+        "whole characters (as before)"
+      ],
+      "recommendation": "two decimals",
+      "class": "design",
+      "answer": "two decimals",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rvslem3h review",
     "merged: ST-i3diqinm"
