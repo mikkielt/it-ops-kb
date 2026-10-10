@@ -1074,7 +1074,7 @@ def factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and
     assert cloned == ["github.com/MicrosoftDocs/entra-docs"]
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history(tmp_path, monkeypatch, capsys):
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
     census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
@@ -1086,8 +1086,7 @@ def test_census_queue_and_census_groups_are_sized_without_network_each_phase_wri
     census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path / "baseline", monkeypatch, capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)
 
-
-def test_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_leaves_a_blob_unlocated():
+    # a data row is anchored on its values, never its column names; a row whose own name is not on the page stays unlocated
     page = factdiff.Doc("## Variables\n\n### SMSInstallUpdateTarget\n\nApplies to the Install Software Updates step.\n\n"
                         "Specifies whether the step installs all updates or only the mandatory ones.\n\n"
                         "## Other\n\n" + " ".join(f"word{i}" for i in range(80)) + " target install updates mandatory.")

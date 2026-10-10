@@ -427,7 +427,7 @@ def anchor_rows(sid, facts, doc, reuse, when, cites=None):
                 row["status"] = "unlocated:no-match"
             else:
                 passage = d.window(*win)
-                row.update(status="located", heading=d.units[win[0]][0][:200], terms=";".join(shared[:TERMS]),
+                row.update(status="located", heading=d.units[win[0]][0][:200], terms=";".join([t for t in shared if not LEAKY.search(t)][:TERMS]),
                            sha=sha(passage), quote=quote_of(passage, reuse))
         out.append(row)
     return out
