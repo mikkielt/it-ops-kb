@@ -99,7 +99,9 @@
         "only --sprint none out of a planned sprint"
       ],
       "recommendation": "every move out of a sprint",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "every move out of a sprint",
+      "by": "operator"
     }
   ],
   "links": [
