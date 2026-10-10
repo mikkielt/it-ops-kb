@@ -47,6 +47,36 @@
       "class": "push",
       "answer": "only the values the findings list as never mergeable by waiting; an unlisted value is no signal",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "bl_stall.collect now reads each claimed item's request through bl_forge, and selfcheck shares collect so its claims check can list mr-dead: does selfcheck make that forge read (one network call for each claimed item, a failed read is unknown:forge), or stay offline and never see mr-dead?",
+      "options": [
+        "selfcheck shares collect and makes the forge read; a failed read is unknown, no failure",
+        "selfcheck stays offline: collect takes a switch that selfcheck turns off, so mr-dead never shows there"
+      ],
+      "recommendation": "selfcheck shares collect and makes the forge read; a failed read is unknown, no failure",
+      "do": {
+        "selfcheck shares collect and makes the forge read; a failed read is unknown, no failure": "TK-mialzcmq",
+        "selfcheck stays offline: collect takes a switch that selfcheck turns off, so mr-dead never shows there": "TK-mialzcmq"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Is the merge status 'conflict' one mr-dead counts: the findings list it as never mergeable by waiting once GitLab's merge status is cannot_be_merged, but the request read carries only detailed_merge_status, which also names 'conflict' while the conflict check is still computing?",
+      "options": [
+        "left out: a status the read cannot tell from a conflict still computing is unlisted, so no signal",
+        "counted: every 'conflict' is mr-dead, a conflict still computing too"
+      ],
+      "recommendation": "left out: a status the read cannot tell from a conflict still computing is unlisted, so no signal",
+      "do": {
+        "left out: a status the read cannot tell from a conflict still computing is unlisted, so no signal": "TK-mialzcmq",
+        "counted: every 'conflict' is mr-dead, a conflict still computing too": "TK-mialzcmq"
+      },
+      "class": "push"
     }
   ],
   "notes": "Test ceiling at dispatch (orchestrator, 2026-10-10): 97 of 100 ids used and nine new -k selectors still to collect (forge_land, forge_pipeline, forge_stalled, forge_one_project, multirepo_fields, multirepo_held, multirepo_dispatch, multirepo_land, multirepo_default). Add no new test function unless the ceiling still has room after the ones planned; prefer extending an existing test in the same file and renaming it so its name carries your selector beside the ones it already carries (every older selector must still collect it). Raising max_ids is the operator decision D-776rvpx2 and not this item's. Orchestrator at dispatch: kb/_self/code.md (mapped to bl_stall.py and bl_selfcheck.py) and .claude/skills/kb-sprint/SKILL.md (its Stalled work list names every signal) join the touches; edit the skill only through a staging copy in your scratch directory, which the orchestrator copies back. The parent story ST-4jjz3vxs checks that bl_selfcheck.py holds no \"glab\" string (bl_selfcheck.py:88 names glab mr view among the allow-rule commands): this task is the last of the story that touches it. The research findings for mr-dead are in kb/public/gitlab/automated-merge-requests.md (detailed_merge_status).",
