@@ -6,6 +6,9 @@ names says so and prints no table of zeros, and it counts a planted headless wor
 the orchestrator's prompts outside the item's window stay out of the item's own figure.
 
 The settings files are throwaway directories under tmp_path; the one real file read is the repository's backlog.json."""
+import argparse
+import contextlib
+import io
 import json
 import os
 import re
@@ -50,7 +53,8 @@ def test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults():
     assert values == {k: d for k, (_, d) in bl_base.SETTINGS.items()}
 
 
-def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default(tmp_path):
+def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default_and_multirepo_held(
+        tmp_path, monkeypatch):
     prefixes = {"epic": "AA", "story": "BB", "task": "CC", "subtask": "DD", "bug": "EE", "sprint": "FF"}
     (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes,
                                                        "worktree_dir": "wt/agents", "trackers": TRACKERS}),
@@ -96,6 +100,44 @@ def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_t
         (tmp_path / "backlog.json").write_text(json.dumps({"repositories": bad}), encoding="utf-8")
         values, _, _, problems = bl_base.read_settings(tmp_path, env={})
         assert values["repositories"] == {} and any("'repositories'" in p for p in problems)
+
+    # multirepo_held: touches are <repo>/<glob>, listed per checkout, and meet only inside one repository
+    import bl_plan
+    import bl_view
+    monkeypatch.setattr(bl_base, "_LOADED", [])  # this root's settings, for this test only
+    (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes}), encoding="utf-8")
+    bl_base.load_settings(tmp_path, env={})
+    assert bl_plan.touch_files(tmp_path) == bl_plan.tracked_files(tmp_path)  # no map: the listing as before
+    (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes,
+                                                       "repositories": {"api": "repos/api", "web": "repos/web"}}),
+                                           encoding="utf-8")
+    bl_base.load_settings(tmp_path, env={})
+    for name in ("api", "web"):  # two checkouts under the workspace, each with a tracked a.py
+        (tmp_path / "repos" / name).mkdir(parents=True)
+        (tmp_path / "repos" / name / "a.py").write_text("x = 1\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(tmp_path), "add", "repos"], check=True)
+    files = bl_plan.touch_files(tmp_path)
+    assert sorted(f for f in files if f.endswith("a.py")) == ["api/a.py", "web/a.py"]
+    assert bl_base.touches_overlap("api/*.py", "api/a*", files) and not bl_base.touches_overlap("api/*.py", "web/a*", files)
+    assert not bl_base.touches_overlap("api/**", "web/**", files)  # two repositories share no path
+    assert bl_base.touches_overlap("**", "api/a.py", ())  # a touch naming no repository is compared whole
+    assert bl_plan.touches_meet("api/*.py", "api/a*", files) and not bl_plan.touches_meet("api/*.py", "web/a.py", files)
+    assert not bl_plan.touches_meet("workspace/kb/_self/x.md", "workspace/kb/_self/*.md", files)  # a doc, inside its repository
+    bl = bl_base.Backlog(tmp_path)
+    task = {"kind": "task", "status": "todo", "sprint": "FF-sprint", "repos": ["api"]}
+    bl.items = {"FF-sprint": {"id": "FF-sprint", "kind": "sprint", "status": "active"},
+                "CC-mine": {**task, "id": "CC-mine", "touches": ["api/*.py"]},
+                "CC-same": {**task, "id": "CC-same", "status": "doing", "claimed_by": "w1", "touches": ["api/a*"]},
+                "CC-other": {**task, "id": "CC-other", "status": "doing", "claimed_by": "w2",
+                             "touches": ["web/*.py", "workspace/**"]}}
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        code = bl_view.cmd_held(bl, argparse.Namespace(ref=None, overlaps="CC-mine"))
+    held = buf.getvalue().splitlines()
+    assert code == 1 and len(held) == 1 and held[0].startswith("api/a*  CC-same") and held[0].endswith("meets api/*.py"), held
+    warned = bl_plan.unordered_overlap_warnings(bl)  # the same a.py name in two repositories is no common path
+    assert len(warned) == 1 and "CC-mine" in warned[0] and "CC-same" in warned[0] and "api/a.py" in warned[0]
+    assert not any("web/a.py" in w for w in warned)
 
 
 def test_backlog_scratch_setting_places_the_workers_scratch_and_refuses_an_absolute_or_dotdot_path(tmp_path,

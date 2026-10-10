@@ -9,10 +9,12 @@ the usage order."""
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import bl_cli
 from bl_base import (
-    APPROVALS, CHECK_TIMEOUT_S, OPEN, RECURRING_MIN, Refused, START_GATE, commit_written, glob_re, id_re, in_scope, need, say, scope,
+    APPROVALS, CHECK_TIMEOUT_S, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written, glob_re, id_re, in_scope,
+    need, repositories, say, scope, split_touch, within_repository,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -40,6 +42,20 @@ def tracked_files(root):
     except (OSError, subprocess.SubprocessError):
         return []
     return r.stdout.splitlines() if r.returncode == 0 else []
+
+
+def touch_files(root):
+    """The tracked paths touches are expanded over and compared against: tracked_files(ROOT), and under a repositories
+    map each repository's own tracked files as `<name>/<path>` (git's listing in its checkout path under ROOT) and the
+    workspace's as `workspace/<path>`, those inside a checkout left to its repository."""
+    files, names = tracked_files(root), repositories()
+    if not names:
+        return files
+    inside = tuple(p + "/" for p in names.values())
+    out = [f"{WORKSPACE}/{f}" for f in files if not f.startswith(inside)]
+    for name, path in sorted(names.items()):
+        out += [f"{name}/{f}" for f in tracked_files(Path(root) / path)]
+    return out
 
 
 def dependents(bl, iid):
@@ -373,7 +389,9 @@ SHARED_FILE_MIN = 3
 def shared_doc(path):
     """True for a kb/_self doc, kb/_self/<name>.md (or a glob that names only such docs, kb/_self/*.md): two items
     that share one run at once, since a landing's rebase merges their doc hunks and the stale check still runs, so
-    it is no overlap for `held --overlaps` or check's unordered-overlap warning, and no shared-file finding."""
+    it is no overlap for `held --overlaps` or check's unordered-overlap warning, and no shared-file finding. Under a
+    repositories map the doc is read inside its repository (`workspace/kb/_self/x.md`)."""
+    path = split_touch(path)[1]
     rest = path[len(SHARED_DOC_DIR):] if path.startswith(SHARED_DOC_DIR) else ""
     return rest.endswith(".md") and "/" not in rest
 
@@ -381,9 +399,12 @@ def shared_doc(path):
 def touches_meet(a, b, files):
     """True when two touches globs can name one path that is not a kb/_self doc (shared_doc): either, read as a path,
     matches the other, or a tracked file of FILES that is no such doc matches both. The serializing overlap of `held
-    --overlaps`; touches_overlap without the doc exception."""
-    if shared_doc(a) or shared_doc(b):
+    --overlaps`; touches_overlap without the doc exception. Under a repositories map two touches meet only inside
+    one repository (bl_base.within_repository), FILES being `<repository>/<path>` (touch_files)."""
+    scoped = within_repository(a, b, files)
+    if scoped is None or shared_doc(a) or shared_doc(b):
         return False
+    a, b, files = scoped
     ra, rb = glob_re(a), glob_re(b)
     return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files if not shared_doc(f)))
 
@@ -435,7 +456,7 @@ def unordered_overlap_warnings(bl):
         ids = sorted(i for i in bl.sprint_items(sid) if bl.items[i].get("status") in OPEN_STATUSES
                      and not bl.items[i].get("review") and bl.items[i].get("touches"))
         if files is None and any(re.search(r"[*?]", t) for i in ids for t in bl.items[i]["touches"] if isinstance(t, str)):
-            files = tracked_files(bl.root)
+            files = touch_files(bl.root)
         paths = {i: touch_paths(bl.items[i], files or [], []) for i in ids}
         deps = {i: dependencies(bl, i) for i in ids}
         for n, a in enumerate(ids):

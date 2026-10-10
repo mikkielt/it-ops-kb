@@ -610,9 +610,41 @@ def item_file(path):
     return path.startswith(base + "/") and path.endswith(".json") and "/" not in path[len(base) + 1:]
 
 
+WORKSPACE = "workspace"  # the first segment of a touch of the workspace's own files, under a repositories map
+
+
+def split_touch(touch):
+    """(repository, glob) of a touch under a `repositories` map: its first segment names a declared repository, or
+    WORKSPACE for the workspace's own files, and the rest is the glob inside it. (None, touch) with no map and for a
+    touch whose first segment names neither, which is then compared whole as written."""
+    names = repositories()
+    head, _, rest = touch.partition("/")
+    if rest and names and (head in names or head == WORKSPACE):
+        return head, rest
+    return None, touch
+
+
+def within_repository(a, b, files):
+    """(a, b, files) for the comparison of two touches: with a repositories map and both touches naming one
+    repository, each without its repository prefix and FILES (`<repository>/<path>`, as bl_plan.touch_files gives
+    them) cut to that repository's paths; None when they name two repositories, which share no path; as given
+    otherwise."""
+    (ra, ga), (rb, gb) = split_touch(a), split_touch(b)
+    if ra is None or rb is None:
+        return a, b, files
+    if ra != rb:
+        return None
+    return ga, gb, [f[len(ra) + 1:] for f in files if f.startswith(ra + "/")]
+
+
 def touches_overlap(a, b, files):
     """True when two touches globs can name one path: either, read as a path, matches the other (`_tools/**` and
-    `_tools/x.py`), or a tracked file matches both (`_tools/*.py` and `_tools/back*`)."""
+    `_tools/x.py`), or a tracked file matches both (`_tools/*.py` and `_tools/back*`). With a repositories map the
+    touches are `<repository>/<glob>` and are compared only inside one repository (within_repository)."""
+    scoped = within_repository(a, b, files)
+    if scoped is None:
+        return False
+    a, b, files = scoped
     ra, rb = glob_re(a), glob_re(b)
     return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files))
 
