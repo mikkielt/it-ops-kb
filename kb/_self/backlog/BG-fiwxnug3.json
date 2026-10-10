@@ -2,7 +2,7 @@
   "id": "BG-fiwxnug3",
   "kind": "bug",
   "title": "perfcheck names_successor still lets a dropped test excuse itself by its class, full id or bare parametrized name",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzs3bj6f",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-matmvkn6 review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
+  "claimed_by": "kb-worker-fiwxnug3"
 }
