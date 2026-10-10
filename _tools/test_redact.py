@@ -1085,3 +1085,18 @@ def test_census_queue_and_census_groups_are_sized_without_network_each_phase_wri
     census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_path / "apply", monkeypatch, capsys)
     census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path / "baseline", monkeypatch, capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)
+
+
+def test_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_leaves_a_blob_unlocated():
+    page = factdiff.Doc("## Variables\n\n### SMSInstallUpdateTarget\n\nApplies to the Install Software Updates step.\n\n"
+                        "Specifies whether the step installs all updates or only the mandatory ones.\n\n"
+                        "## Other\n\n" + " ".join(f"word{i}" for i in range(80)) + " target install updates mandatory.")
+    row = ("variable=SMSInstallUpdateTarget; read_only_or_settable=settable (input); type=string; default=(none); "
+           "purpose=Install Software Updates step target: All or Mandatory.; source_id=S-lydse5ww")
+    assert factdiff.row_parts("a plain sentence; not a row") is None
+    values, ident = factdiff.row_parts(row)
+    assert "settable" in values and "read_only_or_settable" not in values and "S-lydse5ww" not in values
+    win, _cover, _shared = page.locate(row, 1)
+    assert win is not None and "SMSInstallUpdateTarget" in page.units[win[0]][0] + " ".join(u for _, u in page.units[win[0]:win[0] + win[1]])
+    other = row.replace("SMSInstallUpdateTarget", "OSDDomainName")
+    assert page.locate(other, 1)[0] is None  # the row's own name is not on the page: no anchor, never a guess

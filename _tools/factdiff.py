@@ -8,8 +8,9 @@
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
       measure the cut-offs of _tools/factdiff.toml on real history (consecutive page versions in a documentation
       repository) or on live hosts (made-up sibling urls); prints JSON with the suggested cut and its accuracy
-  factdiff.py [--root NAME] anchors [--unlocated] [--stale] [--source ID]
-      list anchors: counts by status, the unlocated facts, or the anchors whose fact text is gone (exit 1 when any)
+  factdiff.py [--root NAME] anchors [--unlocated] [--stale] [--breakdown] [--source ID]
+      list anchors: counts by status, the unlocated facts, the anchors whose fact text is gone (exit 1 when any), or
+      the no-match and located pairs by provider host and tag kind
 
 SELECTION is fetch.py's: --topic T, --dir D, --file F, --source ID (repeatable, a union); none = every source.
 
@@ -65,6 +66,8 @@ MIN_COVER = _CFG.get("anchor", {}).get("min_cover", 0.4)  # share of the fact's 
 MIN_SHARED = _CFG.get("anchor", {}).get("min_shared", 3)  # and at least this many of its terms
 SPAN = _CFG.get("anchor", {}).get("span", 3)  # a backing passage is 1 to SPAN consecutive units
 WINDOW_COST = _CFG.get("anchor", {}).get("window_cost", 0.05)  # cover an extra unit of the window must earn
+ROW_DENSITY = _CFG.get("anchor", {}).get("row_min_density", 0.35)  # second look at a data row: the window's own weight
+ROW_IDENTITY = _CFG.get("anchor", {}).get("row_min_identity", 0.75)  # ... and the share of its first cells' terms found
 MODIFIED_MIN = _CFG.get("resolve", {}).get("modified_min", 0.6)  # unit_sim: an edited passage, below: not found
 SOFT404_MIN = _CFG.get("dead", {}).get("soft404_min", 0.8)  # jaccard to a made-up sibling url's page: a soft 404
 ZOMBIE_MAX = _CFG.get("dead", {}).get("zombie_max", 0.6)  # simhash_sim to the previous version: replaced content
@@ -137,6 +140,22 @@ def numbers(text):
     return {n.replace(",", "") for n in NUM.findall(text) if len(n.replace(",", "")) > 1}
 
 
+ROW_CELL = re.compile(r"[A-Za-z_]\w*=")
+ROW_SPLIT = re.compile(r";\s+(?=[A-Za-z_]\w*=)")
+
+
+def row_parts(text):
+    """(values, identity) of a data-row fact, `column=value; column=value` as kbfacts.csv_units writes a CSV row: the
+    cells' values without their column names, source columns and source ids (none of them is page text), and the first
+    two cells' values, which name what the row is about. None for any other fact."""
+    cells = ROW_SPLIT.split(text)
+    if len(cells) < 3 or not all(ROW_CELL.match(c) for c in cells):
+        return None
+    pairs = [c.split("=", 1) for c in cells]
+    values = " ; ".join(kbid.SOURCE_ID.sub(" ", v) for k, v in pairs if "source" not in k.lower())
+    return values, kbid.SOURCE_ID.sub(" ", " ; ".join(v for _, v in pairs[:2]))
+
+
 def fact_text(text):
     """A fact's claim: its text without tags, `SNIPPET:` framing and the `context:`/`checked:` notes."""
     t = kbfacts.TAG.sub(" ", text)
@@ -169,14 +188,15 @@ class Doc:
     def window(self, i, k):
         return " ".join(u for _, u in self.units[i:i + k])
 
-    def score(self, fact):
-        """(best window (i, k) or None, cover, anchor unit cover, shared terms rarest first)."""
+    def score(self, fact, unknown=0.5):
+        """(best window (i, k) or None, cover, anchor unit cover, shared terms rarest first). `unknown` is the weight of a
+        fact term the page lacks entirely."""
         want = term_set(fact)
         known = {t for t in want if t in self.idf}
         if not known:
             return None, 0.0, 0.0, []
         w = {t: self.idf[t] for t in known}
-        total = sum(w.values()) + 0.5 * len(want - known)  # a fact term the page lacks entirely still counts against
+        total = sum(w.values()) + unknown * len(want - known)  # a fact term the page lacks entirely still counts against
         nums = numbers(fact) & self.nums
         best = (None, 0.0, 0.0, [])
         for i, ts in enumerate(self.terms):
@@ -197,13 +217,34 @@ class Doc:
                     best = ((i, k), cover, own, sorted(shared, key=lambda t: (-w[t], t)))
         return best
 
-    def locate(self, fact):
-        """(window (i, k), cover, shared terms) of the fact's backing passage, or (None, cover, shared) below the cut."""
+    def density(self, win, shared):
+        """The share of the window's term weight that the fact's shared terms hold: a long blob of unrelated sentences
+        (a package feed, a JSON listing) holds any fact's terms and a small share of its own."""
+        held = set().union(*self.terms[win[0]:win[0] + win[1]])
+        return sum(self.idf[t] for t in shared) / (sum(self.idf[t] for t in held) or 1.0)
+
+    def locate(self, fact, cites=1):
+        """(window (i, k), cover, shared terms) of the fact's backing passage, or (None, cover, shared) below the cut.
+        A data row the cut leaves unlocated gets a second look, since its column names and source ids are not page text
+        and its page may back only some of its cells (`cites`, the sources the row cites: a term the page lacks counts
+        1/cites): scored on its values alone, accepted where the window is dense in the row's terms and holds its first
+        two cells' terms."""
         win, cover, own, shared = self.score(fact)
         need = min(MIN_SHARED, max(2, len(term_set(fact) & set(self.idf))))
-        if win is None or cover < MIN_COVER or len(shared) < need:
+        if win is not None and cover >= MIN_COVER and len(shared) >= need:
+            return win, cover, shared
+        row = row_parts(fact)
+        if row is None:
             return None, cover, shared
-        return win, cover, shared
+        win2, cover2, _, shared2 = self.score(row[0], 0.5 / max(1, cites))
+        need2 = min(MIN_SHARED, max(2, len(term_set(row[0]) & set(self.idf))))
+        if win2 is None or cover2 < MIN_COVER or len(shared2) < need2 or self.density(win2, shared2) < ROW_DENSITY:
+            return None, cover, shared
+        ident = term_set(row[1])
+        seen = set().union(*self.terms[win2[0]:win2[0] + win2[1]]) | term_set(self.units[win2[0]][0])
+        if ident and len(ident & seen) < ROW_IDENTITY * len(ident):
+            return None, cover, shared
+        return win2, cover2, shared2
 
 
 # ---------------------------------------------------------------- similarity
@@ -363,8 +404,9 @@ def write_anchors(rows):
     kbcommon.write_csv(root_path(ANCHORS), COLS, sorted(rows.values(), key=key), atomic=True)
 
 
-def anchor_rows(sid, facts, doc, reuse, when):
-    """The anchor rows of one source's facts against its fetched document."""
+def anchor_rows(sid, facts, doc, reuse, when, cites=None):
+    """The anchor rows of one source's facts against its fetched document. `cites` is {(fact key, path): the number of
+    sources the fact cites} (Doc.locate)."""
     out = []
     status = None
     if doc is None or doc.get("error") or not doc.get("status"):
@@ -380,7 +422,7 @@ def anchor_rows(sid, facts, doc, reuse, when):
         row = {"fact": key, "path": rel, "source_id": sid, "status": status or "", "heading": "", "terms": "", "sha": "",
                "quote": "", "verified_utc": when}
         if d is not None:
-            win, _cover, shared = d.locate(fact_text(text))
+            win, _cover, shared = d.locate(fact_text(text), (cites or {}).get((key, rel), 1))
             if win is None:
                 row["status"] = "unlocated:no-match"
             else:
@@ -400,8 +442,9 @@ def cmd_anchor(a):
     anchors = read_anchors()
     when = today()
     counts = collections.Counter()
+    cites = collections.Counter((k, rel) for fs in facts.values() for k, rel, _, _ in fs)
     for sid in ids:
-        for row in anchor_rows(sid, facts[sid], docs.get(sid), (srcs[sid].get("reuse") or "").strip(), when):
+        for row in anchor_rows(sid, facts[sid], docs.get(sid), (srcs[sid].get("reuse") or "").strip(), when, cites):
             k = (row["fact"], row["path"], row["source_id"])
             old = anchors.get(k)
             if old and old["status"] == "located" and row["status"].startswith("unlocated:fetch"):
@@ -1400,6 +1443,29 @@ def select_ids(a, srcs):
     return fetch.select(ns, srcs, {})
 
 
+def print_breakdown(anchors):
+    """Located and no-match pairs by provider host and by tag kind (the pairs whose source returned text), most
+    no-match first: where an anchoring rule has most to gain."""
+    srcs = sources()
+    kinds = collections.defaultdict(set)
+    for u in kbfacts.units(ROOT.name):
+        for part in u["tags"]:
+            for sid in part["ids"] if part["kind"] != "UNK" else ():
+                kinds[(kbfacts.fact_key(u["text"]), kbfacts.bare(u["path"]), sid)].add(part["kind"])
+    by = {"host": collections.defaultdict(collections.Counter), "kind": collections.defaultdict(collections.Counter)}
+    for k, r in anchors.items():
+        if r["status"] not in ("located", "unlocated:no-match") or k[2] not in srcs:
+            continue
+        status = "located" if r["status"] == "located" else "no-match"
+        by["host"][urllib.parse.urlsplit(srcs[k[2]]["url"]).netloc][status] += 1
+        by["kind"]["+".join(sorted(kinds.get(k, {"?"})))][status] += 1
+    for name, groups in by.items():
+        print(f"by {name}: no-match, located, located share")
+        for g, c in sorted(groups.items(), key=lambda kv: (-kv[1]["no-match"], kv[0]))[:25 if name == "host" else None]:
+            print(f"  {g:<40} {c['no-match']:>5} {c['located']:>5} {100 * c['located'] // (c['located'] + c['no-match']):>3}%")
+    return 0
+
+
 def cmd_anchors(a):
     anchors = read_anchors()
     if a.source:
@@ -1411,6 +1477,8 @@ def cmd_anchors(a):
             print(f"STALE {k[1]} {k[0]} {k[2]}")
         print(f"stale={len(stale)}")
         return 1 if stale else 0
+    if a.breakdown:
+        return print_breakdown(anchors)
     if a.unlocated:
         facts = cited_facts()
         text = {(k, rel, sid): (line, t) for sid, fs in facts.items() for k, rel, line, t in fs}
@@ -1490,6 +1558,7 @@ def main():
     ls = sub.add_parser("anchors", help="list anchors: counts, --unlocated, --stale")
     ls.add_argument("--unlocated", action="store_true")
     ls.add_argument("--stale", action="store_true")
+    ls.add_argument("--breakdown", action="store_true", help="no-match and located pairs by provider host and tag kind")
     ls.add_argument("--source", action="append", default=[])
     a = ap.parse_args()
     try:

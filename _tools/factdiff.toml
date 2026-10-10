@@ -10,6 +10,12 @@ min_cover = 0.4
 min_shared = 3
 span = 3
 window_cost = 0.05
+# A second look at a data row (`column=value; ...`) the cut leaves unlocated: scored on its values alone (column names
+# and source ids are not page text; a term the page lacks counts 1/sources). The window must hold `row_min_density` of
+# its own term weight (a blob of unrelated sentences holds any row's terms) and the row's first two cells must be found
+# in it or its headings to `row_min_identity`.
+row_min_density = 0.35
+row_min_identity = 0.75
 
 [resolve]
 # A passage not found verbatim: its best candidate in the new text (by shared terms) counts as the same passage
