@@ -1,0 +1,26 @@
+{
+  "id": "ST-jrjduaky",
+  "kind": "story",
+  "title": "Review sprint: Planning rules 1: checks that run behaviour, touches that hold every reader",
+  "status": "draft",
+  "sprint": "SP-4jfepy6u",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
