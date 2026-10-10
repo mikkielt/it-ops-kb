@@ -2,7 +2,7 @@
   "id": "ST-agxrnaoo",
   "kind": "story",
   "title": "Research sprint goal: Headless sprint loop 2: intake drafts, land windows and worker cost",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lyfnpu37",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "kb-worker-agxrnaoo"
+  "evidence": {
+    "commit": "933008b5f57da8d37b7430b27e574fbe6adef6a4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-agxrnaoo"
+        ],
+        "exit": 0,
+        "sha256": "609505583feff3d6"
+      }
+    ]
+  }
 }
