@@ -2,7 +2,7 @@
   "id": "ST-wjm2ipaf",
   "kind": "story",
   "title": "A landing whose range changes lookup_eval.csv or lookup_heldout.csv refuses a held-out row that rewords a tuned row",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "priority": "P1",
   "rank": 0,
@@ -63,5 +63,6 @@
   "links": [
     "parked: SP-vayhvwfy review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv). Premise (2026-10-10, base origin/main): rag.py eval --file lookup_heldout.csv prints REWORD lines only when run by hand: heldout_rewordings is called from the eval command alone (rag.py:517), and bl_land.py and kg_sync.py name no held-out file, so both checks exit 1 now. Code lane: done and the push to main come after the code/<id> merge request merges. Planned the guard as a land or sync step, not a change to rag.py's eval; the tests the checks read go in test_land_e2e.py or test_sync_e2e.py. Orchestrator at plan review 2026-10-10: the two text checks only read source; the added check runs the sync e2e test the work adds (named with heldout_reword), which selects no test and fails until then, so the refusal itself is proved."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv). Premise (2026-10-10, base origin/main): rag.py eval --file lookup_heldout.csv prints REWORD lines only when run by hand: heldout_rewordings is called from the eval command alone (rag.py:517), and bl_land.py and kg_sync.py name no held-out file, so both checks exit 1 now. Code lane: done and the push to main come after the code/<id> merge request merges. Planned the guard as a land or sync step, not a change to rag.py's eval; the tests the checks read go in test_land_e2e.py or test_sync_e2e.py. Orchestrator at plan review 2026-10-10: the two text checks only read source; the added check runs the sync e2e test the work adds (named with heldout_reword), which selects no test and fails until then, so the refusal itself is proved.",
+  "claimed_by": "kb-worker-wjm2ipaf"
 }
