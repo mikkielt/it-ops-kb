@@ -2,7 +2,7 @@
   "id": "ST-mxuwtgqx",
   "kind": "story",
   "title": "The orchestrator records an operator's gate answer on a worker branch by a documented route",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
@@ -56,5 +56,27 @@
     }
   ],
   "notes": "The check passes before the work: the change is rule text; planning gives it a tested rule question in set kb-sprint:run (as ST-cjizqzhq did) as its check. Premise (replaces 'the check passes before the work'): the pack of the check's question is coverage weak on the base, with no line naming the --root route for a gate that exists on a worker branch (ran at planning, 2026-10-10); both checks exit 1 now. The row for the question goes in lookup_eval.csv with sets kb-sprint:run.",
-  "claimed_by": "worker-ST-mxuwtgqx"
+  "evidence": {
+    "commit": "ed484d12c9ade00d115c1d4fa13ae6139e7ec639",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([\"python3\",\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",\"how does the orchestrator record an answer the operator gave in its session to a gate that exists only on a worker branch\"],capture_output=True,text=True);o=r.stdout;ok=r.returncode==0 and \"coverage: good\" in o and \"--root\" in o and \"--by operator\" in o and \"work/\" in o;print(\"packs good with the route:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7092c886f7c3c5a5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;w=open(\".claude/agents/kb-worker.md\",encoding=\"utf-8\").read();ok=\"relayed\" in w and \"--by operator\" in w;print(\"kb-worker hands a relayed operator answer back:\",ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "83cddb299006e166"
+      }
+    ]
+  }
 }
