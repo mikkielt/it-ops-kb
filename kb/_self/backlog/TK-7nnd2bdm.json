@@ -32,5 +32,6 @@
   ],
   "depends_on": [
     "TK-p7ajxp72"
-  ]
+  ],
+  "notes": "Research ST-m6uyo6rw (landed c8d551aac): a <skill-name> folder entry under .claude/skills/ may be a symlink, read from its target (kb/public/claude/skills-and-subagents.md:65); no page says a symlinked SKILL.md file or a symlinked agent file under .claude/agents is followed (gap in _gaps.md); claude plugin validate counts a linked entry as one a session would load (plugins.md:43). A worktree with no .claude/skills at its root reads the main checkout (skills-and-subagents.md:69-76)."
 }
