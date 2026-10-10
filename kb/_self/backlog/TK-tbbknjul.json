@@ -2,7 +2,7 @@
   "id": "TK-tbbknjul",
   "kind": "task",
   "title": "kb-sprint run step 2 and the Self-check checkout line name the move to a linked worktree before the first claim",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-koznprpg",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   "depends_on": [
     "TK-wddzrzod",
     "ST-nu5b6zqm"
-  ]
+  ],
+  "claimed_by": "worker-TK-tbbknjul"
 }
