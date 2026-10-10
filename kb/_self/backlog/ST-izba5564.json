@@ -2,7 +2,7 @@
   "id": "ST-izba5564",
   "kind": "story",
   "title": "backlog.py cost says when no usage capture exists instead of printing zeros",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-befc6yqr",
   "priority": "P2",
@@ -65,5 +65,19 @@
     }
   ],
   "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here. Premise run 2026-10-10 on this clone: backlog.py cost ST-izba5564 printed the no item line explanation and then four tables of zeros (direct, attributed, shared, session total), exit 0. The explanatory line exists; the zero tables after it and the missing spool-level distinction are the defect. Order in SP-befc6yqr: last, after ST-zt4fdewi (shared test file and kb-sprint skill). Its selector collects no test until the work adds it to _tools/test_backlog_portable.py. Premise rerun 2026-10-10 on the orchestrator's worktree: still reproduces (the no item line, then three zero tables, exit 0).",
-  "claimed_by": "kb-worker-izba5564"
+  "evidence": {
+    "commit": "f59a343683b0db2d62334dce9b0af8211a429bc4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "cost_no_capture"
+        ],
+        "exit": 0,
+        "sha256": "4ae7a0f1a51be3c0"
+      }
+    ]
+  }
 }
