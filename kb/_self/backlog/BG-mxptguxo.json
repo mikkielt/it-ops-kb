@@ -2,7 +2,7 @@
   "id": "BG-mxptguxo",
   "kind": "bug",
   "title": "_tools/test_ids_baseline.txt still lists the land e2e test ST-urfa4ntj renamed, so perfcheck ids --against reports it MISSING",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",
   "rank": 0,
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-caqrexqw review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
+  "claimed_by": "kb-worker-mxptguxo"
 }
