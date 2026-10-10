@@ -2,7 +2,7 @@
   "id": "BG-b5vvixda",
   "kind": "bug",
   "title": "The full suite runs 20.2-21.1 s at 100 ids on darwin, over its 20 s ceiling at any load, so the SP-m3azo2y7 review cannot finish",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-m3azo2y7",
   "priority": "P1",
   "rank": 0,
@@ -34,5 +34,6 @@
       "answer": "tests-ceiling ids=100 files=15 seconds=darwin:22,linux:60,win32:150",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-m3azo2y7"
 }
