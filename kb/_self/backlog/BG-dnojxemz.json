@@ -2,7 +2,7 @@
   "id": "BG-dnojxemz",
   "kind": "bug",
   "title": "kb-sprint and backlog.md say land moves intake drafts aside from a worktree made outside .claude/worktrees/, which land refuses to release",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lyfnpu37",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,18 @@
     "ST-xdyk2ugr"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Orders after ST-xdyk2ugr, which changes what land does with drafts in the checkout it runs in: the wording describes the behaviour after that change.",
-  "claimed_by": "kb-worker-dnojxemz"
+  "evidence": {
+    "commit": "398eea20a6ae0934b642665c10be7d4b22bca22c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys;t=pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8');bad='a worktree made elsewhere still gets them, and `land` moves them aside itself' in t;print('backlog.md claims land moves drafts from a worktree made elsewhere:',bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "65002fe1cba3fe75"
+      }
+    ]
+  }
 }
