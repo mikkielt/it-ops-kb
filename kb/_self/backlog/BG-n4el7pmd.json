@@ -1,12 +1,13 @@
 {
   "id": "BG-n4el7pmd",
   "kind": "bug",
-  "title": "factdiff anchors --stale lists 9 stale anchors in agent-caching, api-limits and messages-api",
+  "title": "factdiff anchors --stale lists stale anchors in api-limits and messages-api (9 at filing, 5 at 2026-10-10)",
   "status": "draft",
+  "sprint": "SP-5x5ut5ko",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "python3 _tools/factdiff.py anchors --stale prints stale=0: the anchors of agents/agent-caching.md (S2130, S2131), claude/api-limits.csv (S-3pftmimx, S-5uxkh3j5) and claude/messages-api.md (S-3pftmimx, S-eu3n3hyf) are re-anchored with factdiff.py anchor --file",
+  "goal": "python3 _tools/factdiff.py anchors --stale prints stale=0: the anchors of claude/api-limits.csv (S-3pftmimx, S-5uxkh3j5) and claude/messages-api.md (S-3pftmimx) are re-anchored with factdiff.py anchor --file, after the other content items of the sprint that reword facts have re-anchored theirs (the agent-caching.md and S-eu3n3hyf anchors the bug first named were current at the 2026-10-10 planning: stale=5)",
   "repro": {
     "run": [
       "python3",
@@ -14,5 +15,14 @@
       "anchors",
       "--stale"
     ]
-  }
+  },
+  "touches": [
+    "kb/public/_anchors.csv",
+    "kb/public/claude/api-limits.csv",
+    "kb/public/claude/messages-api.md"
+  ],
+  "depends_on": [
+    "ST-tjaxw22f"
+  ],
+  "notes": "Premise (2026-10-10, base origin/main): factdiff.py anchors --stale prints stale=5 (api-limits.csv 4 anchors, messages-api.md 1), exit 1; the agent-caching.md anchors the bug named are current. Runs last in the sprint's chain: the content items that reword facts re-anchor their own file first, so stale=0 is the sprint's end state. Re-anchoring needs the sources' pages (network, documents cached in _cache/factdiff/)."
 }

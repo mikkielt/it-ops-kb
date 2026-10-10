@@ -3,10 +3,18 @@
   "kind": "story",
   "title": "The open test-suite gap entry in kb/public/_gaps.md no longer lists quarantine deadlines the article now states",
   "status": "draft",
+  "sprint": "SP-5x5ut5ko",
   "priority": "P3",
   "rank": 0,
   "goal": "The open _gaps.md entry (about kb/public/_gaps.md:1233, dated 2026-10-06) that says 'Also not found: ... quarantine deadlines in GitLab's testing guide' is updated with a dated note that the GitLab handbook (S-jg2qnt5d) states the deadlines the agents test-suite-size article now carries, keeping only what is still not found (SP-flkl5gom review G3); check.py and lint pass.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/public/_gaps.md\",encoding=\"utf-8\").read();s=t.split(\"Whether monitoring or logs can stand in for a regression test\",1)[1].split(\"\\n- **\",1)[0];bad=\"quarantine deadlines in GitLab\" in s;print(\"gap entry still lists quarantine deadlines:\",bad);sys.exit(1 if bad else 0)"
+      ]
+    },
     {
       "run": [
         "python3",
@@ -17,8 +25,11 @@
   "touches": [
     "kb/public/_gaps.md"
   ],
+  "depends_on": [
+    "ST-vodknj3g"
+  ],
   "links": [
     "parked: SP-flkl5gom review"
   ],
-  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise (2026-10-10, base origin/main): the first check exits 1: _gaps.md:1233 still says 'Also not found: ... quarantine deadlines in GitLab's testing guide' while test-suite-size-and-agent-overengineering.md:46 states them from S-jg2qnt5d. check.py passes before the work: it pins that the edited ledger stays valid, it proves nothing alone."
 }

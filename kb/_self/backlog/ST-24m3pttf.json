@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Answer the goal questions the kb covers weakly, with the pinned runner source and the recorded Windows run, and write the findings as kb facts or gap entries through the kb skills: (1) which gitlab-runner source file maps the UseTimestamps feature flag to FF_TIMESTAMPS (helpers/featureflags/flags.go at the pinned runner commit, for ST-owuunsvl); (2) which error a rename returns on Windows when a live process has the directory as its working directory (the recorded run of SP-kjqdiudr, for ST-tjaxw22f). The other goal questions (OpenAI cache-write cost, Dataverse MCP wording, copy_file_range EXDEV, Cargo's rustc order, quarantine deadlines) are good in the kb; the items correct their wording.",
   "checks": [
     {
       "run": [

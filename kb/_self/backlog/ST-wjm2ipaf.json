@@ -3,26 +3,56 @@
   "kind": "story",
   "title": "A landing whose range changes lookup_eval.csv or lookup_heldout.csv refuses a held-out row that rewords a tuned row",
   "status": "draft",
+  "sprint": "SP-5x5ut5ko",
   "priority": "P1",
   "rank": 0,
-  "goal": "S2 gap found by the SP-vayhvwfy review: a821b9a5d (ST-hcc7a3fd) landed four lookup_eval.csv rows identical to or rewording lookup_heldout.csv rows; backlog.py land ran rag.py eval and the contract lint and passed, and only rag.py eval --file kb/public/_retrieval/lookup_heldout.csv prints the REWORD lines (BG-mtyaxud3 removed the rows). A landing or sync gate whose range changes either file runs the held-out reword check and refuses on a REWORD line.",
+  "goal": "S2 gap found by the SP-vayhvwfy review: a821b9a5d (ST-hcc7a3fd) landed four lookup_eval.csv rows identical to or rewording lookup_heldout.csv rows; backlog.py land ran rag.py eval and the contract lint and passed, and only rag.py eval --file on lookup_heldout.csv prints the REWORD lines (BG-mtyaxud3 removed the rows). A landing or sync gate whose range changes either file runs the held-out reword check and refuses on a REWORD line.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read()+open('_tools/kg_sync.py',encoding='utf-8').read();ok='lookup_heldout' in t;print('land or sync gate reads lookup_heldout:',ok);sys.exit(0 if ok else 1)"
+        "import sys;t=open(\"_tools/kg_sync.py\",encoding=\"utf-8\").read();ok=\"lookup_heldout\" in t;print(\"sync gate reads lookup_heldout:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"_tools/test_sync_e2e.py\",encoding=\"utf-8\").read();ok=\"REWORD\" in t and \"lookup_heldout\" in t;print(\"a sync test plants a reworded held-out row:\",ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
   "touches": [
-    "_tools/bl_land.py",
     "_tools/kg_sync.py",
-    "kb/_self/backlog.md",
-    "kb/_self/git.md"
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "where",
+      "kind": "blocking",
+      "question": "Where does the held-out reword check run: in the sync gate only (every landing reaches it through sync --push), as a land step and in the sync gate, or as a land step only?",
+      "options": [
+        "sync gate only",
+        "land step and sync gate",
+        "land step only"
+      ],
+      "recommendation": "sync gate only",
+      "do": {
+        "sync gate only": "ST-wjm2ipaf",
+        "land step and sync gate": "ST-wjm2ipaf",
+        "land step only": "ST-wjm2ipaf"
+      },
+      "class": "push",
+      "answer": "sync gate only",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-vayhvwfy review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv)."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv). Premise (2026-10-10, base origin/main): rag.py eval --file lookup_heldout.csv prints REWORD lines only when run by hand: heldout_rewordings is called from the eval command alone (rag.py:517), and bl_land.py and kg_sync.py name no held-out file, so both checks exit 1 now. Code lane: done and the push to main come after the code/<id> merge request merges. Planned the guard as a land or sync step, not a change to rag.py's eval; the tests the checks read go in test_land_e2e.py or test_sync_e2e.py."
 }

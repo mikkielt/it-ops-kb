@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The working-directory lock and launcher breakaway gaps are closed with the sprint's recorded Windows runs",
   "status": "draft",
+  "sprint": "SP-5x5ut5ko",
   "priority": "P3",
   "rank": 0,
   "goal": "/kb-refresh records, from the recorded Windows runs of SP-kjqdiudr (BG-nlp5aat5's notes: a rename of a process's working directory fails with WinError 32; the Windows run report's SessionEnd launcher section: the distill outlived the session), the facts the three UNK entries in kb/public/_gaps.md ask for, each tagged by what it rests on, and marks those gaps resolved or narrowed; found by the SP-kjqdiudr review (ST-yw3o73tm).",
@@ -13,13 +14,28 @@
         "-c",
         "import re,sys;t=open('kb/public/_gaps.md',encoding='utf-8').read();s=t.split('Which error a rename or delete returns',1);ok=len(s)==2 and 'Resolved' in s[1].split('\\n- **',1)[0];print('working-directory gap resolved:',ok);sys.exit(0 if ok else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/public/_gaps.md\",encoding=\"utf-8\").read();ks=(\"when the caller\\u0027s job does not allow breakaway\",\"acts on the process being created\");bs=[t.split(k,1)[1].split(\"\\n- **\",1)[0] if k in t else \"\" for k in ks];ok=[any(m in b for m in (\"Resolved 2026-10\",\"Tried 2026-10\",\"Narrowed 2026-10\")) for b in bs];print(\"breakaway entries with a dated note:\",ok);sys.exit(0 if all(ok) else 1)"
+      ]
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/_gaps.md",
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-genpuoa2",
+    "ST-qo5varc2"
   ],
   "links": [
     "parked: SP-kjqdiudr review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers. Premise (2026-10-10, base origin/main): both checks exit 1 now: the working-directory entry (_gaps.md:1058) is [UNK] with no Resolved note, and the two breakaway entries (:1059, :1060) carry no 2026-10 dated note. The recorded run named in the goal is BG-nlp5aat5's (Windows host, 2026-10-08: a rename of a worktree with a live child process failed with the sharing violation, WinError 32; read it from git: git log --all --oneline -- kb/_self/backlog/BG-nlp5aat5.json). Where a recorded run does not settle an entry, narrow it with a dated note saying what the run showed and what is still missing, tagged by what it rests on; never state more than the run shows."
 }
