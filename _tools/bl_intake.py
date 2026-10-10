@@ -24,6 +24,9 @@ the detectors and the filing of their candidates:
   would pass OPEN_DRAFTS_MAX open drafts is refused with the cap message on stderr and exit 1, and so is every later
   one; the rest are saved as drafts. This is the one part that writes the backlog's files, through the `Backlog` it
   is given;
+- `file_hook(bl, found, new_id)`: what the SessionStart form `intake --file --hook` files: the same drafts, but none
+  for a fingerprint that an open item of the checkout or a draft set aside under INTAKE_ASIDE of the clone's main
+  worktree holds (`set_aside_fingerprints`), none at OPEN_DRAFTS_MAX open drafts, and no near-duplicate merge;
 - the `drift` detector (`scan_drift`, `drift_detector`): items whose state disagrees with their commits. Its item
   checks run within a total budget (DRIFT_BUDGET_S, each check at most CHECK_TIMEOUT_S), the items taken in id order
   started after the last item the previous run reached (`rotated`, `read_cursor`, `write_cursor`; the commit count of
@@ -346,6 +349,46 @@ def file_found(bl, found, failures, say, new_id, withhold=str):
     say(f"intake: {len(found)} candidate(s), {new} new filed, {skipped} skipped"
         + (f", {refused} refused" if refused else "") if found else "intake: no candidates")
     return 1 if failures or refused else 0
+
+
+INTAKE_ASIDE = ("_cache", "intake-drafts")  # under the clone's main worktree (gitignored): <worktree name>/<draft file>
+
+
+def set_aside_fingerprints(root):
+    """The fingerprints that the drafts set aside under INTAKE_ASIDE of the clone's main worktree (`land` moves a
+    worker's untracked intake drafts there) carry in their links; a file that does not read as an item is skipped."""
+    out = set()
+    for p in Path(bl_base.main_worktree(root)).joinpath(*INTAKE_ASIDE).glob("*/*.json"):
+        try:
+            item = json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        links = item.get("links") if isinstance(item, dict) else None
+        for link in links if isinstance(links, list) else []:
+            fp = link[len(FP_LINK):] if isinstance(link, str) and link.startswith(FP_LINK) else ""
+            if FP_RE.fullmatch(fp):
+                out.add(fp)
+    return out
+
+
+def file_hook(bl, found, new_id):
+    """`intake --file --hook`: saves a draft for each candidate of FOUND that no open item of this checkout (an
+    untracked draft or a committed item) and no draft set aside under INTAKE_ASIDE of the clone's main worktree
+    already holds by fingerprint, nor an item that names its lead link, and none once OPEN_DRAFTS_MAX open drafts are
+    filed (the cap `file_draft` enforces), with no near-duplicate merge. Prints nothing; returns the ids saved."""
+    held = set_aside_fingerprints(bl.root)
+    n = open_drafts(bl.items)
+    filed = []
+    for c in found:
+        if n >= OPEN_DRAFTS_MAX:
+            break
+        if c.fp in held or open_with_fingerprint(bl.items, c.fp) or named_by(bl.items, c):
+            continue
+        draft = item_of(c, new_id(c.kind))
+        bl.save(draft)  # open_with_fingerprint now holds c.fp, so a candidate repeated in FOUND files once
+        filed.append(draft["id"])
+        n += 1
+    return filed
 
 
 # ------------------------------------------------------------------ the drift detector

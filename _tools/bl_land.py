@@ -654,9 +654,6 @@ def intake_draft_re():
     return re.compile(r"\?\? (" + re.escape(rel_dir()) + r"/[^/\"]+\.json)")
 
 
-INTAKE_ASIDE = ("_cache", "intake-drafts")  # under the clone land runs in (gitignored): <worktree name>/<draft file>
-
-
 def intake_drafts(path, status_lines, branch=None):
     """[relative path] of the untracked kb/_self/backlog/*.json files in `git status --porcelain -uall` STATUS_LINES of
     the worktree PATH that no commit of BRANCH (or of the worktree's HEAD) names: the drafts the SessionStart intake
@@ -674,12 +671,12 @@ def intake_drafts(path, status_lines, branch=None):
 
 
 def set_aside_drafts(root, path, drafts):
-    """Move the DRAFTS (relative paths) of the worker's worktree PATH to INTAKE_ASIDE of ROOT, under the worktree's
-    name, never over a file there. Returns [(source, destination)] of those moved."""
+    """Move the DRAFTS (relative paths) of the worker's worktree PATH to `bl_intake.INTAKE_ASIDE` of ROOT, under the
+    worktree's name, never over a file there. Returns [(source, destination)] of those moved."""
     moved = []
     for rel in drafts:
         src = Path(path) / rel
-        dest = Path(root).joinpath(*INTAKE_ASIDE, Path(path).name, src.name)
+        dest = Path(root).joinpath(*bl_intake.INTAKE_ASIDE, Path(path).name, src.name)
         dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists():
             dest = dest.with_name(f"{dest.stem}-{int(time.time())}{dest.suffix}")
