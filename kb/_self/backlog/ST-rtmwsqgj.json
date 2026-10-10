@@ -4,6 +4,7 @@
   "title": "list_usd prices a dated modelUsage key such as claude-haiku-4-5-20251001 at its pinned model instead of raising KeyError",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-55ddkrrx",
   "priority": "P2",
   "rank": 0,
   "goal": "A run whose modelUsage names a dated model id (claude-haiku-4-5-20251001, as Claude Code reported on 2026-09-26) is priced at its pinned model's row (bench_pool.py near 909, bench_core.PRICE), or stops with a named error before any paid run, never a KeyError mid-scenario; found by the SP-2vhfsn4o review",
@@ -11,9 +12,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "bench_pool"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bench_pool as bp;u={'uncached':1000,'cache_write':0,'write_1h':0,'cache_read':0,'out':100};r={'requests':[],'model_usage':{'claude-haiku-4-5-20251001':u},'out':100}\ntry:\n    v=bp.list_usd(r)\nexcept KeyError:\n    sys.exit(1)\nexcept Exception:\n    sys.exit(0)\nsys.exit(0 if abs(v-0.0015)<1e-9 else 1)"
       ]
     }
   ],
@@ -21,10 +21,14 @@
     "_tools/bench_pool.py",
     "_tools/bench_core.py",
     "_tools/test_bench.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-wapzksub"
   ],
   "links": [
     "parked: SP-2vhfsn4o review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: bench_pool.list_usd({'requests':[],'model_usage':{'claude-haiku-4-5-20251001':{uncached,cache_write,write_1h,cache_read,out}},'out':N}) raises KeyError \"no price for model 'claude-haiku-4-5-20251001'\" (bench_pool.py:969), run 2026-10-10: reproduces. The check prices that run at 0.0015 USD (1000 uncached, 100 out at claude-haiku-4-5) or accepts a named non-KeyError stop."
 }

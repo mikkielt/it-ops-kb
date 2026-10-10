@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Answer with the kb tools first and the live docs for the gap, writing kb facts or a gap entry through the kb skills: does Claude Code's result event name a model in modelUsage by its dated id (claude-haiku-4-5-20251001) or by its alias (claude-haiku-4-5), and which model ids does it use for the kb-lookup agent's Haiku calls? The kb has models.csv's dated id row and the modelUsage entry fields, not the key naming. The questions on Haiku 4.5's list prices and on effort levels per model are good in the kb (pack 2026-10-10) and need no research.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Pack of 2026-10-10 (3 questions): Haiku 4.5 list prices (ci-and-headless.md:88) and effort levels per model (:81, :83, :84) are good; the modelUsage key naming is covered only by a 'check:' line (no cited line says dated or alias ids), so it is the one open question."
 }

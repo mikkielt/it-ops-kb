@@ -4,6 +4,7 @@
   "title": "design.md's effort-low row cites Sonnet 5.5's pool figures for the Haiku kb-lookup agent too",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-55ddkrrx",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -22,5 +23,5 @@
   "links": [
     "parked: SP-x7ger6vu review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: the repro run 2026-10-10 fails (the effort-low row of kb/_self/design.md has no '13%'): reproduces."
 }
