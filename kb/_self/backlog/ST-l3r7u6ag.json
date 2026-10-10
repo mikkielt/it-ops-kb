@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "Answer, with the live docs for the gaps, the sprint goal's questions the kb covers weakly or not at all, and write the findings as kb facts and gap entries through the kb skills: (1) which GitLab merge request detailed_merge_status values never become mergeable by waiting, with the values the API returns (the pack's good verdict is false: detailed_merge_status is not in the kb); (2) which fields gh pr view and gh run list --json give for a GitHub pull request's merge state and checks (mergeStateStatus, statusCheckRollup: none in the kb); (3) how git worktree add branches a new worktree from a remote's default branch fetched in another repository (weak: fetched, origin not covered). The pipeline status values and the clean-worktree removal rules are good and need no research.",
   "checks": [
     {
       "run": [

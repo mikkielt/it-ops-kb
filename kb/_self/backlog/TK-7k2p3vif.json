@@ -1,0 +1,39 @@
+{
+  "id": "TK-7k2p3vif",
+  "kind": "task",
+  "title": "red-pipeline, the intake ci detector and ql_deliver read pipelines through bl_forge with the configured project",
+  "status": "draft",
+  "parent": "ST-4jjz3vxs",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_intake.latest_pipeline, its job traces and ql_deliver.forge_list, the job-list read and the CI check of querylog apply read the forge through bl_forge, with the forge and forge_project settings (ql_deliver and bl_intake no longer re-derive the project from the URL); neither module runs glab or gh itself; a project with no setting reads the remote's URL as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "forge_pipeline"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1 if any('\"glab\"' in open(f, encoding='utf-8').read() for f in ('_tools/bl_intake.py', '_tools/ql_deliver.py')) else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_intake.py",
+    "_tools/bl_ci.py",
+    "_tools/ql_deliver.py",
+    "_tools/test_forge.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "TK-uwu2lgvo"
+  ]
+}

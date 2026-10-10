@@ -1,0 +1,36 @@
+{
+  "id": "TK-uwu2lgvo",
+  "kind": "task",
+  "title": "land and merge read the request and merge it through bl_forge, with one project and one read per pass",
+  "status": "draft",
+  "parent": "ST-4jjz3vxs",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_land.py runs no glab itself: the request read of land's rerun, the description PUT of describe_merge_request and merge's view, list and merge all go through bl_forge with the one forge_project (forge_project set: every call names it); a land pass reads the request state once and reuses it; land --wait-merge sleeps and re-reads at its long interval, no loop a session writes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "forge_land"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1 if '\"glab\"' in open('_tools/bl_land.py', encoding='utf-8').read() else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_forge.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-g4c5kxsc"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "TK-g67asvm5",
+  "kind": "task",
+  "title": "land reads each repository's request once and cleans per repository, and close removes what land left",
+  "status": "draft",
+  "parent": "ST-ik5xhaix",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "land reads the merge request titled <id>: of each repository of the item once (through bl_forge), refuses naming the repository and the state when one is not merged, and when all are: removes each clean worktree (refusing a dirty, locked or live-process one by name), deletes the branches whose tip is on the default branch, writes each repository's merge commit as evidence, marks the item done and commits the item file in the workspace; close removes what land left; a project with no repositories map lands as today",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "multirepo_land"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_procs.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-mzssxnf6",
+    "TK-3zfpmq4u"
+  ]
+}

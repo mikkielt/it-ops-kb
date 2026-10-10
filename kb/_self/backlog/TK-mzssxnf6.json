@@ -1,0 +1,32 @@
+{
+  "id": "TK-mzssxnf6",
+  "kind": "task",
+  "title": "held --overlaps, claim and the plan's overlap warnings compare touches by repository and glob",
+  "status": "draft",
+  "parent": "ST-ik5xhaix",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "with a repositories map an item's touches are <repo>/<glob> (workspace/<glob> for workspace files): bl_base.touches_overlap, held --overlaps, claim's refusal of a held path and the plan's unordered-overlap warning compare two items' touches only within one repository, and a project with no map compares them as before",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "multirepo_held"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "_tools/bl_view.py",
+    "_tools/bl_plan.py",
+    "_tools/bl_items.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-d556hzob"
+  ]
+}

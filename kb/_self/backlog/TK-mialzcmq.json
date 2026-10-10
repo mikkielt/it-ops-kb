@@ -1,0 +1,50 @@
+{
+  "id": "TK-mialzcmq",
+  "kind": "task",
+  "title": "stalled reads a claimed item's request through bl_forge and names mr-dead",
+  "status": "draft",
+  "parent": "ST-4jjz3vxs",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py stalled reads the code/<id> request of a claimed item through bl_forge, once per run, and adds the signal mr-dead when its pipeline failed, was canceled, skipped or is manual, or its detailed merge status is one the research story's findings list as never mergeable by waiting (an unlisted status is no signal); a read that fails or a forge with no CLI signed in is unknown:forge, never a signal; selfcheck's claims check lists it among the claim signals",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "forge_stalled"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_stall.py",
+    "_tools/bl_selfcheck.py",
+    "_tools/test_forge.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-uwu2lgvo",
+    "TK-7k2p3vif"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which merge request merge statuses does the mr-dead signal count as dead: only the detailed_merge_status values the research story's findings list as never mergeable by waiting, or every value other than mergeable and the ones that wait on a running check?",
+      "options": [
+        "only the values the findings list as never mergeable by waiting; an unlisted value is no signal",
+        "every value except mergeable and the checking and waiting ones"
+      ],
+      "recommendation": "only the values the findings list as never mergeable by waiting; an unlisted value is no signal",
+      "do": {
+        "only the values the findings list as never mergeable by waiting; an unlisted value is no signal": "TK-mialzcmq",
+        "every value except mergeable and the checking and waiting ones": "TK-mialzcmq"
+      },
+      "class": "push",
+      "answer": "only the values the findings list as never mergeable by waiting; an unlisted value is no signal",
+      "by": "operator"
+    }
+  ]
+}

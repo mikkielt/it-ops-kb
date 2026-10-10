@@ -1,0 +1,47 @@
+{
+  "id": "TK-g4c5kxsc",
+  "kind": "task",
+  "title": "bl_forge.py reads merge request and pipeline state and merges, through a glab arm and a gh arm, from the configured forge and project",
+  "status": "draft",
+  "parent": "ST-4jjz3vxs",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/bl_forge.py holds one read of a merge request (by title prefix or branch: merged, opened with pipeline status and detailed merge status, closed) and of the newest pipeline of a ref, each with a glab arm and a gh arm chosen by a new backlog.json setting forge (gitlab by default) and the one project of forge_project (else the integration remote's URL), and the merge of the item's own request on the glab arm only (the gh arm reads state and its merge verb refuses, so no agent merges on the public home); the gh arm is tested on recorded fixtures only, the glab arm on fixtures of the same shape",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "forge_arms"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_forge.py",
+    "_tools/bl_base.py",
+    "_tools/test_forge.py",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the gh arm of bl_forge merge a pull request, or only read state?",
+      "options": [
+        "read only: the gh arm reads state and the merge verb refuses on github, so no agent merges on the public home",
+        "read and merge with gh pr merge, which needs an allow rule in .claude/settings.json"
+      ],
+      "recommendation": "read only: the gh arm reads state and the merge verb refuses on github, so no agent merges on the public home",
+      "do": {
+        "read only: the gh arm reads state and the merge verb refuses on github, so no agent merges on the public home": "TK-g4c5kxsc",
+        "read and merge with gh pr merge, which needs an allow rule in .claude/settings.json": "TK-g4c5kxsc"
+      },
+      "class": "push",
+      "answer": "read only: the gh arm reads state and the merge verb refuses on github, so no agent merges on the public home",
+      "by": "operator"
+    }
+  ]
+}

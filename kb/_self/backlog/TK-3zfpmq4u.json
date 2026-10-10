@@ -1,0 +1,66 @@
+{
+  "id": "TK-3zfpmq4u",
+  "kind": "task",
+  "title": "dispatch makes one worktree per required repository from its fetched default branch",
+  "status": "draft",
+  "parent": "ST-ik5xhaix",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "dispatch makes, for each repository of the item's repos, a worktree at <worktree_dir>/<id>/<repo> branched from that repository's fetched origin default branch (a repository of repos_if_needed only when the worker asks: none by default); a repository whose fetch fails refuses the dispatch naming it; with no repositories map dispatch makes the one worktree as today",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "multirepo_dispatch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_base.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "TK-mzssxnf6"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does a repository's worktree go under the configured worktree directory?",
+      "options": [
+        "<worktree_dir>/<id>/<repo>: one directory per item, one subdirectory per repository",
+        "<worktree_dir>/<id>-<repo>: one sibling directory per repository"
+      ],
+      "recommendation": "<worktree_dir>/<id>/<repo>: one directory per item, one subdirectory per repository",
+      "do": {
+        "<worktree_dir>/<id>/<repo>: one directory per item, one subdirectory per repository": "TK-3zfpmq4u",
+        "<worktree_dir>/<id>-<repo>: one sibling directory per repository": "TK-3zfpmq4u"
+      },
+      "class": "agents-rule",
+      "answer": "<worktree_dir>/<id>/<repo>: one directory per item, one subdirectory per repository",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Does dispatch make a worktree for a repository of repos_if_needed?",
+      "options": [
+        "no: only the required repositories, and the worker asks for another when it needs it",
+        "yes: every repository of repos_if_needed too"
+      ],
+      "recommendation": "no: only the required repositories, and the worker asks for another when it needs it",
+      "do": {
+        "no: only the required repositories, and the worker asks for another when it needs it": "TK-3zfpmq4u",
+        "yes: every repository of repos_if_needed too": "TK-3zfpmq4u"
+      },
+      "class": "agents-rule",
+      "answer": "no: only the required repositories, and the worker asks for another when it needs it",
+      "by": "operator"
+    }
+  ]
+}
