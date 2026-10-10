@@ -2,7 +2,7 @@
   "id": "ST-mti4zrzz",
   "kind": "story",
   "title": "kb-sprint review and close read backlog.py ops",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ajw3oywi",
   "sprint": "SP-x5gjv4r7",
   "priority": "P2",
@@ -47,5 +47,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (2026-10-10, run): the review and close sections of .claude/skills/kb-sprint/SKILL.md name no backlog.py ops, and backlog.py ops is not a command yet (ST-xuhig3u6 adds it, which this item waits on); the check prints both sections as missing. It also reads one close line naming refused dones and land steps beside backlog.py ops, and backlog.md naming it. Gate g1: AGENTS.md stays unchanged."
+  "notes": "Premise (2026-10-10, run): the review and close sections of .claude/skills/kb-sprint/SKILL.md name no backlog.py ops, and backlog.py ops is not a command yet (ST-xuhig3u6 adds it, which this item waits on); the check prints both sections as missing. It also reads one close line naming refused dones and land steps beside backlog.py ops, and backlog.md naming it. Gate g1: AGENTS.md stays unchanged.",
+  "claimed_by": "orchestrator-x5gjv4r7"
 }
