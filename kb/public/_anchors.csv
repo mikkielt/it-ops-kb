@@ -5153,6 +5153,8 @@ c33fe1769bc8,gitlab/hosted-runners-windows.md,S-klcfyqim,located,Machine types a
 c606a12f9cbb,gitlab/hosted-runners-windows.md,S-lfuz2ssn,located,Instance runners > Compute minute usage > Compute usage calculation,creat;pend;second;time;duration;status;job;cost,ef134e0b6ee8c8e0,"Your compute minute usage for each job is calculated using this formula: Job duration / 60 Cost factor Job duration: The time, in seconds, that",2026-09-28
 caec5be709cb,gitlab/hosted-runners-windows.md,S-klcfyqim,located,Machine types available for Windows > Supported shell,section;configur;command;power;powershell;script;shell,b3c7d464fdda1692,Hosted runners on Windows have PowerShell configured as the shell. The script section of your .gitlab-ci.yml file therefore requires PowerShell commands.,2026-09-28
 df4e7a7a4cb3,gitlab/hosted-runners-windows.md,S-4ph3gylm,located,,v19;v19.3.0;gitlab-runner;lab;gitlab;runner;git,cba05af78e8705a1,"'exepath': 'C:\GitLab-Runner\gitlab-runner.exe', 'version': 'v19.3.0',",2026-09-28
+7646cb083e39,gitlab/job-log-timestamps.md,S-4pm7parz,unlocated:no-match,,,,,2026-10-10
+7646cb083e39,gitlab/job-log-timestamps.md,S-k3j6wjbx,located,,usetimestamp;timestamp;flag;featur,835c8ff2c49dd203,"Timestamping: b.IsFeatureFlagOn(featureflags.UseTimestamps),",2026-10-10
 00d106cba9f1,gitlab/mr-approvals.md,S442,located,Add an approval rule > Eligible approvers > Group approvers,own;count;author;default;eligibl;approver,fc192095e3ef7721,Merge request authors do not count as eligible approvers on their own merge requests by default.,2026-09-28
 1502bb8768dc,gitlab/mr-approvals.md,S440,unlocated:no-match,,,,,2026-09-28
 2978239fb642,gitlab/mr-approvals.md,S441,unlocated:no-match,,,,,2026-09-28
