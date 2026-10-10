@@ -43,6 +43,21 @@
       "class": "push",
       "answer": "read only: the gh arm reads state and the merge verb refuses on github, so no agent merges on the public home",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "The new forge setting needs its key in the kb's committed backlog.json, which test_backlog_config_of_the_kb_is_its_committed_file_and_its_defaults requires of every setting, and neither backlog.json nor _tools/test_backlog_portable.py is in this item's touches: which does the item do?",
+      "options": [
+        "widen the item's touches by backlog.json and add \"forge\": \"gitlab\" there (one line; the test then passes unchanged)",
+        "leave backlog.json alone and widen the touches by _tools/test_backlog_portable.py to let that test accept a setting the committed file leaves out"
+      ],
+      "recommendation": "widen the item's touches by backlog.json and add \"forge\": \"gitlab\" there (one line; the test then passes unchanged)",
+      "do": {
+        "widen the item's touches by backlog.json and add \"forge\": \"gitlab\" there (one line; the test then passes unchanged)": "TK-g4c5kxsc",
+        "leave backlog.json alone and widen the touches by _tools/test_backlog_portable.py to let that test accept a setting the committed file leaves out": "TK-g4c5kxsc"
+      },
+      "class": "push"
     }
   ],
   "claimed_by": "orch-dqkf3i42"
