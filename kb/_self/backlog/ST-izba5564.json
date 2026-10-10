@@ -2,11 +2,12 @@
   "id": "ST-izba5564",
   "kind": "story",
   "title": "backlog.py cost says when no usage capture exists instead of printing zeros",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-befc6yqr",
   "priority": "P2",
   "rank": 7,
-  "goal": "backlog.py cost on a project or clone whose query log spool holds no usage rows for the id prints one line, no capture: tokens unavailable, with the spool path it read, exits 0 and prints no token figure; the kb-sprint review step says the same words when it sees that line, so a review never records zeros as a sprint's cost (SP-fvztfmtm closed with zeros because no work sidecar had been delivered). A project with capture is unchanged.",
+  "goal": "backlog.py cost on a project or clone whose query log spool holds no usage rows for the id prints its one explanatory line (today: no item line: because no work sidecar names it ...) and then nothing else: no direct, attributed, shared or session-total tables of zeros, exit 0; and the line tells a spool with no usage rows at all (no capture on this clone, with the spool path it read) from a spool with rows that name no window of the item (the session ran without the capture hooks or its rows were not delivered); the kb-sprint review step quotes that line when it sees it, so a review never records zeros as a sprint's cost (SP-fvztfmtm closed with zeros because no work sidecar had been delivered). A project with capture rows for the item is unchanged.",
   "checks": [
     {
       "run": [
@@ -23,10 +24,13 @@
     ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ],
   "depends_on": [
-    "ST-qgnjxiol"
+    "ST-qgnjxiol",
+    "ST-zt4fdewi"
   ],
-  "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here."
+  "notes": "Premise: python3 _tools/backlog.py cost ST-izba5564 on this clone, an item no session has worked, prints token figures of zero and exits 0 instead of saying no capture exists for it; run before the sprint commits the story and record the output here. Premise run 2026-10-10 on this clone: backlog.py cost ST-izba5564 printed the no item line explanation and then four tables of zeros (direct, attributed, shared, session total), exit 0. The explanatory line exists; the zero tables after it and the missing spool-level distinction are the defect. Order in SP-befc6yqr: last, after ST-zt4fdewi (shared test file and kb-sprint skill). Its selector collects no test until the work adds it to _tools/test_backlog_portable.py."
 }

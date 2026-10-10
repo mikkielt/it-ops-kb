@@ -2,8 +2,9 @@
   "id": "ST-qgnjxiol",
   "kind": "story",
   "title": "backlog.py reads its project settings from a backlog.json at the repository root, with the kb's current values as the default",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-befc6yqr",
   "priority": "P1",
   "rank": 1,
   "goal": "bl_base.py's constants (the item directory, the always-in-scope globs, the review and research checks, the land steps that run (stale, eval, lint), the lane module, the id prefixes, the worktree directory, the forge project) are read from one backlog.json at the repository root through one function, with the kb's current values as the file the kb commits, so every existing command and test behaves as before on the kb; python3 _tools/backlog.py config prints the effective settings with each value's source (file or default) and exits 0, and a backlog.json with an unknown key or a wrong type is refused naming the key. No bl_ module imports backlog or kbgit.",
@@ -13,6 +14,14 @@
         "python3",
         "_tools/backlog.py",
         "config"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "backlog_config"
       ]
     }
   ],
@@ -63,5 +72,6 @@
   ],
   "links": [
     "kb/_self/code.md: standard library, flat prefixed modules behind a CLI facade, import direction"
-  ]
+  ],
+  "notes": "Order in SP-befc6yqr: first. Creates _tools/test_backlog_portable.py, the epic's one new test file (13 of 15 files used before it); its -k backlog_config test collects nothing until the work adds it. Premise: python3 _tools/backlog.py config exits 2 today (no such command), and bl_base.py:12,20,37,56,60 hold the constants as literals."
 }

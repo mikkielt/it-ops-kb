@@ -2,7 +2,7 @@
   "id": "SP-befc6yqr",
   "kind": "sprint",
   "title": "Sprint tooling 1: config layer, external ids, brief and dispatch, rules in the brief, cost without capture",
-  "status": "planned",
+  "status": "active",
   "goal": "backlog.py reads a backlog.json at the repository root with the kb's values as the default and prints the effective config; an item carries typed external tracker ids that backlog.json validates and commits and merge requests carry; backlog.py brief ID prints the worker's brief and dispatch ID starts the headless worker from it on stdin with its scratch directory and turn cap; a brief carries the rules of the project's docs map or of its kb root; and backlog.py cost says no capture instead of printing zeros",
   "gates": [
     {
@@ -14,7 +14,9 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
   ]
 }

@@ -2,8 +2,9 @@
   "id": "ST-nq5z6whn",
   "kind": "story",
   "title": "backlog.py brief ID prints the worker's brief and dispatch ID starts the headless worker from it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
+  "sprint": "SP-befc6yqr",
   "priority": "P1",
   "rank": 2,
   "goal": "python3 _tools/backlog.py brief ID prints the brief the kb-sprint skill's run step 3 now composes by hand: the item's JSON and goal text, the role file path, the scratch directory, the in-flight sibling items with the files their touches change, the known failing tests the orchestrator names (--known TEST=BUG), the fixed worker rules (own checks, no tests.py --changed, the test ceiling, commit on work/<id> with KB-Work, never push, foreground tests, file bugs outside the item, gates for open choices) and the rules of the docs its touches map to (rag.py pack --root _self --item ID on the kb). python3 _tools/backlog.py dispatch ID makes the scratch directory _cache/scratch/<id>/, writes the brief there and starts claude -p --model sonnet --effort high --output-format json --add-dir <scratch> --max-turns <by kind: 60 task or subtask, 100 bug or untasked story, 200 research story or investigation bug> with the brief on stdin, never as a prompt argument (SP-d3hybrlv), records the session id and the pid on the item's claim, and with --dry-run prints the argv and the brief path without starting; --model names another model only when given. The kb-sprint skill's run step 3 shrinks to the two commands.",
@@ -40,12 +41,14 @@
     "AGENTS.md"
   ],
   "depends_on": [
-    "ST-qgnjxiol"
+    "ST-qgnjxiol",
+    "ST-vkqndn5e"
   ],
   "links": [
     "public/claude/ci-and-headless.md:39 --max-turns exits with an error at the limit, no default [DOC S1824]",
     "public/claude/settings-and-scopes.md:68 --add-dir extends access, same permission rules as the launch directory [DOC S-pmhgjvef]",
     "public/claude/settings-and-scopes.md:70 claude -p with acceptEdits and --add-dir edits under the added directory without a prompt; protected paths deny [DER S-zcuxapgb]",
     "SP-d3hybrlv: a trailing prompt argument is swallowed by --add-dir; the brief goes on stdin"
-  ]
+  ],
+  "notes": "Order in SP-befc6yqr: third, after ST-vkqndn5e (both edit _tools/bl_dispatch.py and _tools/test_backlog_portable.py). Its selector collects no test until the work adds it to that file."
 }
