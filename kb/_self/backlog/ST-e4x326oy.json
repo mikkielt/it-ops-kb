@@ -2,7 +2,7 @@
   "id": "ST-e4x326oy",
   "kind": "story",
   "title": "Research sprint goal: Census deterministic 1: measured baseline, one driver, phase-2 bookkeeping by tool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uwkr7iyl",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Goal questions packed 2026-10-10: 'what does census phase 2 read and how is it grouped by owner', 'how does tests.py write the test.run ops row', 'what does the kb-census skill run in phase 3' are weak in --root _self and are read from the code by the stories themselves; 'how many characters per token does Claude count, token counting estimate' is good in the public kb. No outside facts: every question is about the project's own tools, answered from its code and kb/_self/, and the one outside question is covered (coverage good).",
-  "claimed_by": "orchestrator"
+  "evidence": {
+    "commit": "0130409be24ab052b6d769df49e0efdba8b8d386",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-e4x326oy"
+        ],
+        "exit": 0,
+        "sha256": "89bebdea9458a306"
+      }
+    ]
+  }
 }
