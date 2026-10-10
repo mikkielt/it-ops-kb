@@ -1,0 +1,30 @@
+{
+  "id": "ST-tlqcchsu",
+  "kind": "story",
+  "title": "kb-sprint review says how a gap without a repro command is parked",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint review step 5 says a non-S1 gap with no repro command yet is parked as a draft story (or a bug with --repro-reason), since new bug needs --repro; answers SP-uwkr7iyl, where nine review gaps were refused as bugs and filed as stories.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "--root",
+        "_self",
+        "--set",
+        "kb-sprint:review"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl close"
+  ],
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+}

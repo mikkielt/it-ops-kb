@@ -1,0 +1,30 @@
+{
+  "id": "ST-hcnh5zy3",
+  "kind": "story",
+  "title": "kb-sprint run says backlog.py dispatch blocks until its worker ends and is started in the background with a long timeout",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-sprint skill's run step names backlog.py dispatch as a long command that returns only when the headless worker exits, to start with the Bash tool's run_in_background and timeout 7200000 ms as land is, with its log outside _cache/ of a fresh worktree; answers SP-uwkr7iyl, where a foreground dispatch was moved to the background with a 10-minute cap and the orchestrator killed and resumed the worker to save it, and a log redirect into the orchestrator worktree's missing _cache/ failed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "--root",
+        "_self",
+        "--set",
+        "kb-sprint:run"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl close"
+  ],
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+}

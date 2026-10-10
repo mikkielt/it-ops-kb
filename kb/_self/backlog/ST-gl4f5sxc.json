@@ -1,0 +1,26 @@
+{
+  "id": "ST-gl4f5sxc",
+  "kind": "story",
+  "title": "backlog.py check does not refuse a touch whose file a branch added and removed before it reached main",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py check's moved-or-deleted touch rule counts a path as gone only when origin/main's history has it, not a work branch's own add and remove; answers SP-uwkr7iyl, where ST-w3jhowin's branch added and removed _tools/test_census_route.py, check refused 12 items in four sprints at the landing gate, and the orchestrator repointed their touches by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl close"
+  ],
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-vd3boyx5",
+  "kind": "story",
+  "title": "Sprint planning reads the test ceiling's headroom against the tests its stories add",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-sprint plan compares the test ids and files the committed stories plan to add with the headroom tests.py --ceiling reports, and plans the ids each replaces before the start gate; answers SP-uwkr7iyl, where four census stories each planned a new _tools/test_census_route.py on a suite at 100 of 100 ids, ST-w3jhowin stopped on a blocking ceiling gate mid-work, and the census tests ended in _tools/test_redact.py, a file of another subject.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "--ceiling"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl close"
+  ],
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-4axaho25",
+  "kind": "story",
+  "title": "A test rename that drops a done item's selector is refused by the worker's own checks, not first at the landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A worker whose change renames a test runs backlog.py selectors (or its brief names the selectors of done items that collect that test), so a rename that drops one is caught on the branch; answers SP-uwkr7iyl, where ST-6ljkrwt2 renamed the shared census test, dropped census_queue, and land stopped at sync's selectors gate.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "selectors"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "_tools/bl_brief.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl close"
+  ],
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+}
