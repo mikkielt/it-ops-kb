@@ -1,0 +1,24 @@
+{
+  "id": "BG-dyaikht3",
+  "kind": "bug",
+  "title": "backlog.py's set usage says a sprint takes notes and links only, though a sprint's goal is set with --by operator",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Found by the fresh-context review of SP-x5gjv4r7, item ST-ifljijni: the facade's set usage text (_tools/backlog.py) still says 'a sprint takes notes and links only' and names no --by operator beside --goal, while bl_items.cmd_set accepts set SP --goal G --by operator and --delegate; the usage names the sprint's goal rule.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import backlog;sys.exit(1 if 'a sprint takes notes and links only' in backlog.__doc__ else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the usage text itself: backlog.__doc__ is what --help prints, so reading it is running the behaviour",
+  "touches": [
+    "_tools/backlog.py"
+  ],
+  "links": [
+    "parked: SP-x5gjv4r7 review"
+  ]
+}

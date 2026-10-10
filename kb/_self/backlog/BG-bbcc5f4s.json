@@ -1,0 +1,24 @@
+{
+  "id": "BG-bbcc5f4s",
+  "kind": "bug",
+  "title": "apply's lead share check reads the whole source line, so a long line's clipped passage that does not answer is still applied",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found by the fresh-context review of SP-x5gjv4r7, item ST-732j5ufa: ql_apply's key-word share gate (more than half of the question's key words) reads the whole kb/_self line, while the anchor phrase and the eval's text gate read the clipped passage pack prints, so a long line (the tools.md row of tests.py, 5608 characters) holding the key words past the clip passes the share and a passage that does not answer (the tests.py CI command text, 0 of 5 key words for 'how does the test lock wait for another holder') becomes an SQ- row. The share is read from the printed passage, as the anchor is.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile,pathlib,types\nsys.path.insert(0,\"_tools\")\nimport ql_apply as a\nCLIP=\"The zqxwidget runner installs pytest-xdist through uv run frozen on every build\"\nLEAD=CLIP+\" and much later the plomkinator frobnicator quuxifies every plomkin on commit.\"\nt=pathlib.Path(tempfile.mkdtemp())\ng=types.SimpleNamespace(fresh=lambda:None,measure=lambda:{\"n\":1,\"passed\":1,\"failed\":[],\"chars\":{\"EV-x\":100},\"offkb_good\":0},rules_eval=lambda:t/\"e.csv\",rules_aliases=lambda:t/\"a.csv\",rules_pack=lambda x:{\"text\":\"coverage: weak\\n\\n## kb/_self/w.md\\n- kb/_self/w.md:7 \"+CLIP+\"\\n\"},rule_line=lambda r:(\"w.md\",LEAD),token_counts=lambda:{},anchored=lambda row:row[5] in LEAD,alias_terms=lambda rules=True:{})\nr,human=a.rules_one({\"id\":\"F-1\",\"kind\":\"rules\",\"observed\":{\"verdict\":\"weak\"}},{\"question\":\"which plomkinator frobnicator quuxifies every plomkin\"},g,{\"chars\":{\"EV-x\":100},\"offkb_good\":0})\nstate=(r or {}).get(\"state\");print(\"state of a lead whose printed passage holds none of the key words:\",state)\nsys.exit(0 if state!=\"applied\" else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_apply.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-x5gjv4r7 review"
+  ]
+}

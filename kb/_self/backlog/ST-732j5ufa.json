@@ -64,7 +64,7 @@
       "recommendation": "more than half (2*held > keys)",
       "class": "design",
       "answer": "more than half (2*held > keys)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -78,7 +78,7 @@
       "recommendation": "fold the one-assertion redact ordinary-text test into the redact test beside it",
       "class": "querylog",
       "answer": "fold the one-assertion redact ordinary-text test into the redact test beside it",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -91,7 +91,7 @@
       "recommendation": "two decimals",
       "class": "design",
       "answer": "two decimals",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

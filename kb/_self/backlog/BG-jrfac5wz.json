@@ -1,0 +1,24 @@
+{
+  "id": "BG-jrfac5wz",
+  "kind": "bug",
+  "title": "move's clause-left-behind line counts the sprint's review and goal research stories as carriers, so it stays silent",
+  "status": "draft",
+  "parent": "EP-ajw3oywi",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Found by the fresh-context review of SP-x5gjv4r7, item ST-ifljijni: bl_land.clauses_left_behind treats the sprint's review story and goal research story as carriers of a goal clause, while goal_clause_lines (close --summary) leaves them out, so move --sprint none prints no 'goal clause left' line when the research story's goal shares the clause's words (on SP-x5gjv4r7 it returned [] for ST-732j5ufa, ST-xuhig3u6, ST-ifljijni and ST-mti4zrzz). clauses_left_behind leaves out the review and goal_research stories as goal_clause_lines does.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import bl_land\nit={'SP-a':{'kind':'sprint','goal':'ops prints a sprint operational rows; the beta writer works'},\n 'ST-r':{'kind':'story','status':'done','goal_research':True,'title':'Research sprint goal','goal':'which operational rows ops prints for a sprint','sprint':'SP-a'},\n 'ST-o':{'kind':'story','status':'todo','title':'ops prints operational rows','goal':'ops prints a sprint operational rows','sprint':'SP-a'}}\nbl=types.SimpleNamespace(items=it,sprint_items=lambda s:[i for i,d in it.items() if d.get('sprint')==s],descendants=lambda i:[])\nleft=bl_land.clauses_left_behind(bl,'SP-a','ST-o');print('left behind:',left)\nsys.exit(0 if left==['ops prints a sprint operational rows'] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-x5gjv4r7 review"
+  ]
+}
