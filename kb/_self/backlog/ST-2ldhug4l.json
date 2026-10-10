@@ -42,6 +42,23 @@
       "class": "agents-rule",
       "answer": "a git worktree of its own under .claude/worktrees, as a worker's",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How is the sprint reviewer's own worktree made under .claude/worktrees?",
+      "options": [
+        "detached at HEAD, named agent-<review id>",
+        "on a work/<review id> branch, named agent-<review id>"
+      ],
+      "recommendation": "detached at HEAD, named agent-<review id>",
+      "do": {
+        "detached at HEAD, named agent-<review id>": "ST-2ldhug4l",
+        "on a work/<review id> branch, named agent-<review id>": "ST-2ldhug4l"
+      },
+      "class": "agents-rule",
+      "answer": "detached at HEAD, named agent-<review id>",
+      "by": "operator"
     }
   ],
   "links": [
