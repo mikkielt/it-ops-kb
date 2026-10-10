@@ -24,7 +24,8 @@
     "kb/_self/code.md",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "backlog.json"
   ],
   "gates": [
     {
@@ -57,7 +58,43 @@
         "widen the item's touches by backlog.json and add \"forge\": \"gitlab\" there (one line; the test then passes unchanged)": "TK-g4c5kxsc",
         "leave backlog.json alone and widen the touches by _tools/test_backlog_portable.py to let that test accept a setting the committed file leaves out": "TK-g4c5kxsc"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "widen the item's touches by backlog.json and add \"forge\": \"gitlab\" there (one line; the test then passes unchanged)",
+      "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How many merge requests does one bl_forge read list to find the request of a branch or a title prefix?",
+      "options": [
+        "100, newest first (LIST_LIMIT)",
+        "the CLIs' own default of 20 to 30"
+      ],
+      "recommendation": "100, newest first (LIST_LIMIT)",
+      "do": {
+        "100, newest first (LIST_LIMIT)": "TK-g4c5kxsc",
+        "the CLIs' own default of 20 to 30": "TK-g4c5kxsc"
+      },
+      "class": "push",
+      "answer": "100, newest first (LIST_LIMIT)",
+      "by": "operator"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "In what words does the gh arm answer a pull request's pipeline and merge state: translated to the glab arm's words, or as gh prints them?",
+      "options": [
+        "the glab arm's words for the pipeline (running, pending, failed, canceled, manual, skipped, success), mergeStateStatus lower case as merge_status, and mergeable true for CLEAN, UNSTABLE and HAS_HOOKS",
+        "gh's own words: status and conclusion as gh prints them, mergeStateStatus as it is"
+      ],
+      "recommendation": "the glab arm's words for the pipeline (running, pending, failed, canceled, manual, skipped, success), mergeStateStatus lower case as merge_status, and mergeable true for CLEAN, UNSTABLE and HAS_HOOKS",
+      "do": {
+        "the glab arm's words for the pipeline (running, pending, failed, canceled, manual, skipped, success), mergeStateStatus lower case as merge_status, and mergeable true for CLEAN, UNSTABLE and HAS_HOOKS": "TK-g4c5kxsc",
+        "gh's own words: status and conclusion as gh prints them, mergeStateStatus as it is": "TK-g4c5kxsc"
+      },
+      "class": "agents-rule",
+      "answer": "the glab arm's words for the pipeline (running, pending, failed, canceled, manual, skipped, success), mergeStateStatus lower case as merge_status, and mergeable true for CLEAN, UNSTABLE and HAS_HOOKS",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-dqkf3i42"
