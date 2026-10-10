@@ -2,7 +2,7 @@
   "id": "BG-hytkzabh",
   "kind": "bug",
   "title": "pool build keeps a redone regex whose alternatives match nothing in the kb: BP-9e209bb8 holds Assert-M365DSCTenantDrift and Test-M365DSCDrift, two cmdlet names microsoft365dsc.md never states",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5i4itd2d",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   "links": [
     "parked: SP-7y6dk257 run"
   ],
-  "notes": "Premise: run at planning (SP-5i4itd2d): the repro fails (too_broad('Export-Cmd|Invented-Cmd', ...) returns '' for an alternative no kb text holds): reproduces. The repro calls too_broad, which has the articles' texts, so the guard sits there (usable holds only the model's own fact line). Order: after ST-dj2zgvh3, which edits the same function. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
+  "notes": "Premise: run at planning (SP-5i4itd2d): the repro fails (too_broad('Export-Cmd|Invented-Cmd', ...) returns '' for an alternative no kb text holds): reproduces. The repro calls too_broad, which has the articles' texts, so the guard sits there (usable holds only the model's own fact line). Order: after ST-dj2zgvh3, which edits the same function. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence.",
+  "claimed_by": "worker-BG-hytkzabh"
 }
