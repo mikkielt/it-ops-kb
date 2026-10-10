@@ -169,14 +169,18 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     assert [s for s in now if now[s] != was[s]] == [evrows[0]["source"]]  # one new regex passes the guards
     assert len(json.loads(now[evrows[0]["source"]])) == 1 and re.fullmatch(r"value\d+", json.loads(now[evrows[0]["source"]])[0])
     assert [s for s, _ in kept] == [r["source"] for r in evrows[1:5]] and (
-        [w for _, w in kept][-2][:19], [w for _, w in kept][-1][:11]) == ("`Setting` is in 24 ", "it matches ")  # the others keep the committed check
+        [w for _, w in kept][-2][:19], [w for _, w in kept][-1][:16]) == ("`Setting` is in 24 ", "`value\\d+` is in")  # the others keep the committed check; a pattern found across the articles is refused as a word is
+    rows_of = {"own": ("a", "q"), "x": ("b", "value1"), "y": ("c", "value2"), "z": ("d", "value3"), "same": ("a", "value4")}
+    assert bp.too_broad(r"value\d+", "own", rows_of, []) == "it matches 3 other eval rows"  # the row on the fact line of its own is not another
+    assert bp.too_broad(r"value\d+|Setting", "own", {"own": ("a", "q")}, ["value1 Setting"] * 11).startswith("`value\\d+` is in 11 ")  # the phrase or pattern is judged too
+    assert bp.too_broad(r"value\d+|(", "own", {"own": ("a", "q")}, ["value1"] * 10) == ""  # ten articles are not common; an alternative that does not compile is skipped
     with pytest.raises(bp.PoolError):
         bp.build_public(tmp_path, 3, redo_ask, out, ["EV-nope"])
     replies = tmp_path / "replies.csv"
     bp.write_csv(replies, [{**r, "checks": json.dumps([r"value\d+"])} for r in rows])
     kept2 = []
     assert bp.build_public(tmp_path, 3, bp.csv_replies(replies), out, names[:1], kept2) == rows and [w[:10] for _, w in kept2] == [
-        "it matches"]  # a csv answers without a model, and the guards judge its reply
+        "`value\\d+`"]  # a csv answers without a model, and the guards judge its reply
     prompts = []
     monkeypatch.setattr(bp, "sonnet_json", lambda prompt, cwd: (prompts.append(prompt), ([], 0.0))[1])
     monkeypatch.setenv("BENCH_SCRATCH", str(tmp_path / "scratch"))

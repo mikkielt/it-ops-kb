@@ -52,9 +52,10 @@ REGEX_ASK = ("For each numbered item below (a question, then the fact line of th
              'Reply with only a JSON array: [{"i": 0, "regex": "..."}, ...].\n\n')
 REDO_ASK = ("These items are asked a second time because an earlier regex was refused as too broad. A regex is refused unless "
             "every alternative is specific to its fact: a named setting, a number, a product or command name, or a multi-word "
-            "phrase. A bare single word that is common across the kb is refused (one found in more than {articles} of its "
-            "articles, such as other, timeout, clear, outbound or duplicate), and so is a regex that also matches the fact "
-            "or question of more than {rows} other items. The regex must match its own fact line as written.\n\n")
+            "phrase. An alternative that is common across the kb is refused, a bare single word or a phrase alike (one "
+            "found in more than {articles} of its articles, such as other, timeout, clear, outbound, duplicate or a "
+            "licence name), and so is a regex that also matches the fact or question of more than {rows} other items. "
+            "The regex must match its own fact line as written.\n\n")
 
 
 class PoolError(Exception):
@@ -306,16 +307,21 @@ def alternatives(rx):
 
 
 def too_broad(rx, own, texts, articles):
-    """Why a regenerated regex would pass almost any answer, else "": one alternative is a bare word (letters, digits,
-    `-`, `_`) found in more than COMMON_ARTICLES articles of the kb (`articles`: their texts), or the regex matches the
-    fact or question of more than BREADTH other eval rows (`texts`: {source: (fact place, text)}; a row on the same
-    fact line as `own` is not another)."""
+    """Why a regenerated regex would pass almost any answer, else "": one alternative, a bare word (letters, digits,
+    `-`, `_`) or a phrase or pattern, is found in more than COMMON_ARTICLES articles of the kb (`articles`: their
+    texts), or the regex matches the fact or question of more than BREADTH other eval rows (`texts`: {source: (fact
+    place, text)}; a row on the same fact line as `own` is not another)."""
     for alt in alternatives(rx):
         if BARE.fullmatch(alt):
             word = re.compile(r"\b" + re.escape(alt.replace("\\b", "")) + r"\b", re.I)
-            n = sum(1 for a in articles if word.search(a))
-            if n > COMMON_ARTICLES:
-                return f"`{alt}` is in {n} articles"
+        else:
+            try:
+                word = re.compile(alt, re.I)
+            except re.error:
+                continue
+        n = sum(1 for a in articles if word.search(a))
+        if n > COMMON_ARTICLES:
+            return f"`{alt}` is in {n} articles"
     hit = [src for src, (place, text) in texts.items() if src != own and place != texts[own][0] and re.search(rx, text, re.I)]
     return f"it matches {len(hit)} other eval rows" if len(hit) > BREADTH else ""
 
