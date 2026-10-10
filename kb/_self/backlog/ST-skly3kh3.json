@@ -2,7 +2,7 @@
   "id": "ST-skly3kh3",
   "kind": "story",
   "title": "A review's parked draft is filed with a check, so backlog.py check has no error and the land e2e test stays green",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,6 @@
   "links": [
     "parked: SP-d3hybrlv close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts. Premise: the review section of the kb-sprint skill and the Sprints review step of backlog.md say nothing of a check on a parked draft (the item's two checks). Run at plan 2026-10-10: both exit 1 on the base, so the premise reproduces."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts. Premise: the review section of the kb-sprint skill and the Sprints review step of backlog.md say nothing of a check on a parked draft (the item's two checks). Run at plan 2026-10-10: both exit 1 on the base, so the premise reproduces.",
+  "claimed_by": "worker-ST-skly3kh3"
 }
