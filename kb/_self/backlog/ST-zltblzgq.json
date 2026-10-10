@@ -2,7 +2,7 @@
   "id": "ST-zltblzgq",
   "kind": "story",
   "title": "A review's done --dry-run writes no gone evidence that its --commit run then leaves uncommitted",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-6iiony54",
   "sprint": "SP-m3azo2y7",
   "priority": "P2",
@@ -64,5 +64,19 @@
     "parked: SP-evkj4avq review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13, \"backlog.py fixes: land, drop, precheck and usage text\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: python3 -c: in bl_land.cmd_done the rerun_done_checks call (its bl.save of gone evidence) sits before the 'if a.dry_run:' return. Run at planning on 2026-10-10: True. Check selector -k done_dry_run_gone names the planted test this item writes, so it selects nothing until then (a failing check now).",
-  "claimed_by": "kb-worker-zltblzgq"
+  "evidence": {
+    "commit": "880db3bbd5d5ca7941804c28800ec62999699ed5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_dry_run_gone"
+        ],
+        "exit": 0,
+        "sha256": "816259d7ed1c3edb"
+      }
+    ]
+  }
 }
