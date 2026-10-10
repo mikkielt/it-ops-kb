@@ -92,6 +92,45 @@ def cost_lines(root, ids, rework=False):
 OPEN_RUN = "open-"  # the run name of a line read from an open session's spool (`open_lines`), never a sidecar's
 
 
+def spool_dirs(root):
+    """[spool directory] the clone's capture writes to and, when it is another directory, the main worktree's, where a
+    session started in the main checkout writes the rows of the clone it orchestrates; None when capture writes
+    nothing (`ql_capture.spool_dir`: mode off or the DISABLED marker)."""
+    import ql_capture
+    own = ql_capture.spool_dir()
+    if own is None:
+        return None
+    spools = [Path(own)]
+    main = bl_base.main_worktree_spool(root)
+    if main is not None and os.path.realpath(main) != os.path.realpath(spools[0]) and not (
+            spools[0].exists() and main.exists() and os.path.samefile(spools[0], main)):
+        spools.append(main)
+    return spools
+
+
+def spool_state(root, scope):
+    """{off, paths, usage_rows, windowed} of what the spool directories (`spool_dirs`) hold now, read-only: `off` when
+    capture writes nothing, `paths` the directories read (as text), `usage_rows` the `usage` rows of every session in
+    them (a session in both once, from the clone's own), and `windowed` whether any session's rows open a work
+    window of an id in `scope` (distill's windows, `ql_distill.work_windows`): rows of the item not yet distilled."""
+    import time
+
+    import ql_distill
+    dirs = spool_dirs(root)
+    if dirs is None:
+        return {"off": True, "paths": [], "usage_rows": 0, "windowed": False}
+    known = ql_distill.item_finder(Path(root) / REL_DIR)
+    seen, rows, windowed = set(), 0, False
+    for d in dirs:
+        for sid, s in ql_distill.read_spool(d, time.time())[0].items():
+            if sid in seen:
+                continue
+            seen.add(sid)
+            rows += sum(1 for r in s["rows"] if r.get("surface") == "usage")
+            windowed = windowed or bool(ql_distill.work_windows(s["rows"], known)[1] & set(scope))
+    return {"off": False, "paths": [str(d) for d in dirs], "usage_rows": rows, "windowed": windowed}
+
+
 def open_lines(root, rework=True):
     """([line], [{session, worked, missing}]): the work of the sessions whose spool has no end marker and is not idle
     (`ql_distill.read_spool`: not closed), computed from their spool rows with the pure work-window code distill
@@ -109,15 +148,10 @@ def open_lines(root, rework=True):
     import time
 
     import ql_base
-    import ql_capture
     import ql_distill
-    own = ql_capture.spool_dir()
-    if own is None:
+    spools = spool_dirs(root)
+    if spools is None:
         return [], []
-    spools = [Path(own)]
-    main = bl_base.main_worktree_spool(root)  # a session started in the main checkout writes its rows there
-    if main is not None and not (spools[0].exists() and main.exists() and os.path.samefile(spools[0], main)):
-        spools.append(main)
     sessions, ledger = {}, {}
     for d in (d for d in spools if d.is_dir()):
         for sid, s in ql_distill.read_spool(d, time.time())[0].items():
@@ -333,7 +367,7 @@ def cost_report(bl, iid, rework=False):
         rep["open"] = {"sessions": len(mine), "missing": sum(o["missing"] for o in mine),
                        "prompts": cost_sum(own)["prompts"], "split": cost_split(own)}
     if not lines and not (rework and rep["open"]["sessions"]):  # an open session's block below says why it reads 0
-        rep["no_line"] = cost_no_line(bl.root, view, iid, shared, all_lines)
+        rep["no_line"] = cost_no_line(bl.root, view, iid, shared, all_lines, keep)
     rep["restored"] = sorted(({w["item"] for w in lines} | {iid}) & set(restored))
     if sprint:
         res = cost_sum([w for w in lines if w["item"] in research])
@@ -430,9 +464,11 @@ def cost_overhead(root, sid):
     return out
 
 
-# `cost ID`, no item line: an item that reads 0 prompts says why, in one line with `because` and no figure of its own, so
-# 0 is never shown with no reason and no shared or other item's figure is moved into the item. The reason is read from
-# what the committed store holds and, only for an item no work sidecar names, from git. A shared line names the item: its
+# `cost ID`, no item line: an item that reads 0 prompts says why, in one line and no figure of its own, so 0 is never
+# shown with no reason and no shared or other item's figure is moved into the item, and a report with no line prints
+# that line and no table of zeros (a shared line's figures, the session's, are real and stay). The reason is read from
+# what the committed store holds and, only for an item no work sidecar names, from the spool (`spool_state`: no usage
+# row in it at all is `no-capture`, the others say what it holds) and from git. A shared line names the item: its
 # session's run and prompts are given as the session's, outside any window or on the sprint's line where windows
 # overlapped (`ql_distill.work_lines_of`), never split per item. No sidecar names it: git is asked once for the time of
 # the commit that last set the item's file `done` (`item_done_time`; a reopened item is dated by its last done) and the
@@ -483,11 +519,14 @@ def item_done_time(root, iid):
     return max(times) if times else None
 
 
-def cost_no_line(root, view, iid, shared, all_lines):
-    """{kind, reason[, runs]} for an item with no item line (`cost_report` calls it only then): `reason` is one line with
-    `because`. kind `shared`: `shared` (the shared lines naming the scope) are the session's prompts, `runs` each
-    shared line's run and prompts and the prompts of the item's sprint line in the same run; `before-first-sidecar`,
-    `after-newest-run` and `unnamed` as the comment above says. No figure is added to the item."""
+def cost_no_line(root, view, iid, shared, all_lines, keep=()):
+    """{kind, reason[, runs][, spool]} for an item with no item line (`cost_report` calls it only then): `reason` is one
+    line, `no item line: because ...` except for `no-capture`. kind `shared`: `shared` (the shared lines naming the
+    scope) are the session's prompts, `runs` each shared line's run and prompts and the prompts of the item's sprint
+    line in the same run. Otherwise the spool (`spool_state`, `spool` in the result: `paths` and `usage_rows`) is read
+    first: kind `no-capture` when it holds no usage row at all (or capture writes none), else `before-first-sidecar`,
+    `after-newest-run` and `unnamed` as the comment above says, each naming that the spool has usage rows and none in a
+    window of the item (rows in one: the item's session is not distilled yet). No figure is added to the item."""
     if shared:
         sprint = view.sprint_of(iid)
         runs = [{"run": w["run"], "prompts": w["prompts"],
@@ -500,20 +539,34 @@ def cost_no_line(root, view, iid, shared, all_lines):
                 "reason": "no item line: because its session counted its prompts as the session's, not as the item's: "
                           "outside any window, or on the sprint's line when windows overlapped, never split per item "
                           f"({'; '.join(parts)})"}
+    spool = spool_state(root, keep or {iid})
+    seen = {"paths": spool["paths"], "usage_rows": spool["usage_rows"]}
+    where = ", ".join(spool["paths"])
+    if spool["off"]:
+        return {"kind": "no-capture", "spool": seen,
+                "reason": "no capture: the query log writes no spool on this clone (mode off or the DISABLED marker)"}
+    if not spool["usage_rows"]:
+        return {"kind": "no-capture", "spool": seen,
+                "reason": f"no capture: {where} {'holds' if len(spool['paths']) == 1 else 'hold'} no usage rows on "
+                          "this clone"}
+    many = len(spool["paths"]) > 1
+    tail = (f"; the spool{'s' if many else ''} {where} {'have' if many else 'has'} " + (
+            "rows in a window of the item: its session is not distilled yet (`cost --rework` prints a session still "
+            "open)" if spool["windowed"] else "usage rows but none in a window of the item"))
     done, runs = item_done_time(root, iid), store_runs(root)
     if done is not None and runs and done < runs[0][0]:
-        return {"kind": "before-first-sidecar",
+        return {"kind": "before-first-sidecar", "spool": seen,
                 "reason": f"no item line: because it was done {epoch_iso(done)}, before the first work sidecar "
                           f"(first run {runs[0][1]}): the likely cause is that no session had the capture hooks "
-                          "yet; a host with capture off reads the same"}
+                          f"yet; a host with capture off reads the same{tail}"}
     if done is not None and runs and done > runs[-1][0]:
-        return {"kind": "after-newest-run",
+        return {"kind": "after-newest-run", "spool": seen,
                 "reason": f"no item line: because it was done {epoch_iso(done)}, after the newest run "
                           f"(newest run {runs[-1][1]}): the likely cause is that its rows are not distilled or "
-                          "delivered yet; a host with capture off reads the same"}
-    return {"kind": "unnamed",
+                          f"delivered yet; a host with capture off reads the same{tail}"}
+    return {"kind": "unnamed", "spool": seen,
             "reason": "no item line: because no work sidecar names it: its session's rows were not delivered or the "
-                      "session ran without the capture hooks, the store not saying which"}
+                      f"session ran without the capture hooks, the store not saying which{tail}"}
 
 
 def epoch_iso(t):
@@ -700,10 +753,12 @@ def cost_block(part, indent):
     return out
 
 
-def cost_apart(rep, view):
-    """The lines of a sprint's research and overhead, apart from the item work above them (none for any other id)."""
+def cost_apart(rep, view, work=True):
+    """The lines of a sprint's research and overhead, apart from the item work above them (none for any other id).
+    Without `work` (a report with no item line) the research block, all zeros, and an overhead with no run are left
+    out; an overhead with runs, or unresolved, is kept: it is no figure of the item."""
     out = []
-    if "research" in rep:
+    if "research" in rep and work:
         res = rep["research"]
         out.append(f"research ({len(res['items'])} item(s), {res['prompts']} prompt(s); in none of the figures above"
                    + (": " + ", ".join(view.label(i) for i in res["items"]) if res["items"] else "") + "):")
@@ -712,8 +767,8 @@ def cost_apart(rep, view):
             out += cost_figures(res[key], "    ")
         out.append("  total (direct + attributed):")
         out += cost_figures(res["total"], "    ")
-    if "overhead" in rep:
-        ov = rep["overhead"]
+    ov = rep.get("overhead")
+    if ov and (work or not ov["resolved"] or ov["runs"]):
         if not ov["resolved"]:
             out.append(f"system overhead: unresolved ({ov['reason']})")
         else:
@@ -798,6 +853,10 @@ def cmd_cost(bl, a):
         say("from git history (item file deleted): " + ", ".join(view.label(i) for i in rep["restored"]))
     if "no_line" in rep:
         say(rep["no_line"]["reason"])
+        if rep["no_line"]["kind"] != "shared":  # no line of any kind: every figure is 0, and no table of zeros follows
+            for x in cost_apart(rep, view, work=False):
+                say(x)
+            return 0
     for x in cost_block(rep, ""):
         say(x)
     for x in cost_apart(rep, view):
