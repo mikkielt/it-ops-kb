@@ -70,6 +70,9 @@ WORKER_RULES = (
     "recommendation, commit it, and stop. `gate add` prints the class it gives the gate; never reword a gate to "
     "change its class.",
     "Never write the operator's decisions into docs or code.",
+    "Make no git worktree of your own, never `git worktree add`: `git worktree remove` is denied to agents, so one "
+    "you add is left for the operator. A baseline run uses `git stash push -u -m <tag>` (apply it by its sha and drop "
+    "it by tag) or a clone under your scratch directory that you delete yourself.",
     "Run each shell command on its own (no `;`, `&&`, pipes), from your worktree directory; never `git push`, "
     "`backlog.py done`, `land` or `dispatch`: the orchestrator lands.",
 )
