@@ -17,8 +17,8 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md",
-    ".claude/skills/kb-backlog/SKILL.md",
+    "skills/sprint/SKILL.md",
+    "skills/backlog/SKILL.md",
     "kb/_self/backlog.md",
     "AGENTS.md",
     "kb/_self/maintaining.md"
