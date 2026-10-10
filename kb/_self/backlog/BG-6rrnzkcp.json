@@ -1,0 +1,17 @@
+{
+  "id": "BG-6rrnzkcp",
+  "kind": "bug",
+  "title": "A blocking gate classes the ops-row value shape 'phase token' as secrets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A gate whose text says token only as the name of the ops-row value shape (a phase token, a closed token) is classed design, not secrets, so a worker's provisional gate on an ops row is not made blocking; a gate naming a credential, an API key or a bearer token stays secrets.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_authority as a; c, _ = a.class_reasons({'touches': []}, {'id': 'g9', 'question': 'Which phase token does the ops row carry?', 'options': ['apply', 'record']}); sys.exit(c == 'secrets')"
+    ]
+  }
+}
