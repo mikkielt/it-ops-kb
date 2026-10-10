@@ -1,0 +1,25 @@
+{
+  "id": "BG-s4lnuekm",
+  "kind": "bug",
+  "title": "kbfacts.parse_tag reads only the first source of [CODE S-a: path; S-b: path], so the second id of such tags is not cited",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "SP-5x5ut5ko retrospective (ST-owuunsvl's worker): parse_tag splits a tag on ';' and drops a part with no kind, so [CODE S-a: path; S-b: path] cites S-a only; kb/public/agents/codebase-mapping.md:62, :75, :87, :88, :127 and others use that form, so their second sources have no citation and no anchor. Each source of such a tag is cited, by the parser or by the tags rewritten with a kind per part, and check.py or the lint names the form.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.parse_tag('[CODE S-sipjyeoi: internal/a.go; S-gfjnysog: internal/b.go]');ids=[i for x in p for i in x['ids']];print('ids parsed:',ids);sys.exit(0 if 'S-gfjnysog' in ids else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko close"
+  ]
+}

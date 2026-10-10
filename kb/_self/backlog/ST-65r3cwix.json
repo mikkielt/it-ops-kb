@@ -1,0 +1,26 @@
+{
+  "id": "ST-65r3cwix",
+  "kind": "story",
+  "title": "factdiff.py anchor --file writes only the anchor rows of the facts that changed and leaves _fetch_state.csv alone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5x5ut5ko retrospective: every content worker of the sprint (BG-qbkqreaq, ST-owblgazg, ST-owuunsvl, ST-vodknj3g, ST-genpuoa2, ST-tjaxw22f, BG-n4el7pmd) found that factdiff.py anchor --file rewrites verified_utc on unrelated _anchors.csv rows (361 rows once) and modifies kb/public/_fetch_state.csv, outside its touches; each narrowed the rows by hand, and one left _fetch_state.csv modified because git checkout -- was denied, which the orchestrator restored before land. Re-anchoring a file changes only the rows of the facts whose text changed, or the tool offers a mode that does, and does not write _fetch_state.csv.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_file_writes_only_changed"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko close"
+  ]
+}

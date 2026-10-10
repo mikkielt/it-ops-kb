@@ -1,0 +1,29 @@
+{
+  "id": "ST-gfbdylpc",
+  "kind": "story",
+  "title": "A whole-suite run the sync gate makes for a landing applies the darwin seconds ceiling, so a test that pushes the suite over it is refused at its landing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5x5ut5ko retrospective: ST-wjm2ipaf landed a sync e2e test that took the full suite from 14 s to 23 s on darwin, over the 20 s ceiling; its landing's gate ran tests.py --changed (the whole suite) and passed, because tests.py checks the seconds only in mode full (tests.py:904), and the overrun was found only by the review story's tests.py check (BG-fay4tani). A landing whose gate runs the whole suite refuses a run over the seconds ceiling, or names it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_sync_e2e.py",
+        "-k",
+        "seconds_ceiling"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests.py",
+    "_tools/kg_sync.py",
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko close"
+  ]
+}

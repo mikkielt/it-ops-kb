@@ -1,0 +1,27 @@
+{
+  "id": "ST-qqerasi3",
+  "kind": "story",
+  "title": "A content item that may add a source row can change the generated _coverage.csv and _coverage.md without a touches refusal",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5x5ut5ko retrospective: two workers (ST-owblgazg, ST-tjaxw22f) found an official page that states a fact, added its source row, then dropped it because the topic's source count regenerates kb/public/_coverage.csv and _coverage.md, outside their touches; the fact went in as an UNK lead or a reword instead. Planning puts the generated coverage files in a content item's touches when it may add a source, or done treats the files build_index.py regenerates from an in-scope article as in scope.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coverage_regenerated_in_scope"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko close"
+  ]
+}

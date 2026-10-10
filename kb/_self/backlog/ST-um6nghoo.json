@@ -1,0 +1,29 @@
+{
+  "id": "ST-um6nghoo",
+  "kind": "story",
+  "title": "A headless worker's session hooks leave no query log distill process in its worktree that makes land refuse it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5x5ut5ko retrospective: the first two headless workers each left five or six querylog.py distill --settle processes running in their worktree (distills of other sessions' transcripts waiting up to USAGE_LOCK_WAIT_S, 600 s, for the distill lock); land refused both branches at step branch until they exited (about 9 minutes). A worker's hooks start such distills outside its worktree, or land tells a distill waiting on the lock from a worker's own process.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_distill_outside_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/querylog.py",
+    "_tools/bl_land.py",
+    "kb/_self/usage.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko close"
+  ]
+}

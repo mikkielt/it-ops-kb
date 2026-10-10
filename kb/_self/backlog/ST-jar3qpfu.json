@@ -1,0 +1,27 @@
+{
+  "id": "ST-jar3qpfu",
+  "kind": "story",
+  "title": "A gate a content worker records is not classed as a push gate because its wording names a remote MCP server",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-5x5ut5ko retrospective: ST-owblgazg's worker recorded a provisional gate about citing a release-plan page; gate add made it blocking with class push because its question said 'remote MCP server' (bl_authority's remote pattern fails closed), so the item waited for the orchestrator to answer it as the operator. A gate whose options change only kb content is not classed push for a word in its question, or the worker brief tells workers how the class is read.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_authority.py",
+        "-k",
+        "content_gate_not_push"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5x5ut5ko close"
+  ]
+}
