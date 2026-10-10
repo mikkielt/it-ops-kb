@@ -2,7 +2,7 @@
   "id": "ST-skly3kh3",
   "kind": "story",
   "title": "A review's parked draft is filed with a check, so backlog.py check has no error and the land e2e test stays green",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-avwlotax",
   "priority": "P3",
   "rank": 0,
@@ -55,5 +55,27 @@
     "parked: SP-d3hybrlv close"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts. Premise: the review section of the kb-sprint skill and the Sprints review step of backlog.md say nothing of a check on a parked draft (the item's two checks). Run at plan 2026-10-10: both exit 1 on the base, so the premise reproduces.",
-  "claimed_by": "worker-ST-skly3kh3"
+  "evidence": {
+    "commit": "18e7d4f916f42ed01504023d25b815d23bc82e24",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();r=t.split('## review SP')[1].split('## close SP')[0];ok='--check' in r;print('parked draft check:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "558db51ea48b00d0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read().split('every other gap is parked')[1].split('\\n')[0];ok='--check' in t;print('backlog.md review step: parked draft filed with a check:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "cfa8869870ec0ea4"
+      }
+    ]
+  }
 }
