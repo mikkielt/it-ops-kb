@@ -2,7 +2,7 @@
   "id": "ST-e3o4muan",
   "kind": "story",
   "title": "Sprint planning probes a new refusal against today's main, and map.csv maps tests.py and bl_base.py to querylog.md",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4jfepy6u",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
   "depends_on": [
     "ST-77goqrxz"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"). Premise: selfdoc.py map _tools/tests.py and _tools/bl_base.py name kb/_self/querylog.md for neither today (its first check), and the plan step and Sprints have no wording that probes a new refusal against today's main (its second check, a doc-text read since the item adds a planning rule). Premise run on the base 2026-10-10: the doc wording test prints False for both files, exit 1; the map test fails too (selfdoc map names kb/_self/querylog.md for neither file; precheck passing=0)."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 11 of 13, \"Planning rules 1: checks that run behaviour, touches that hold every reader\"). Premise: selfdoc.py map _tools/tests.py and _tools/bl_base.py name kb/_self/querylog.md for neither today (its first check), and the plan step and Sprints have no wording that probes a new refusal against today's main (its second check, a doc-text read since the item adds a planning rule). Premise run on the base 2026-10-10: the doc wording test prints False for both files, exit 1; the map test fails too (selfdoc map names kb/_self/querylog.md for neither file; precheck passing=0).",
+  "claimed_by": "kb-worker-e3o4muan"
 }
