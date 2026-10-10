@@ -13,8 +13,9 @@
                                             on the --arms (default bench_pool.DEFAULT_ARMS, and opus-5-5 when named, on
                                             its sanity subset of four kinds unless --kinds or --arm-kinds name others;
                                             --arm-kinds opus-5-5=all runs every row),
-                                            the --kinds (default all) and the --effort levels (default low,default) and replaces the rows of the
-                                            arms it ran; --dry-run prints its plan and starts no model; --shape
+                                            the --kinds (default every kind) and the --effort levels (default low,default) and replaces the rows of the
+                                            arms it ran; --dry-run prints its plan and starts no model, and with any other
+                                            scenario, or none named, exits 2 naming those that have a plan; --shape
                                             session runs the pool in groups of six questions, each group in one
                                             session (the kb arms haiku-5-5 and sonnet-5-5, seed --seed) and records
                                             per position the marginal input and the cache-read share; --jobs N
@@ -119,6 +120,7 @@ SCENARIOS = {  # name: (report section, function)
     "navigation": ("Finding the code", s_navigation),
     "pool": ("A question pool over the kb, router, hook and web arms", bench_pool.s_pool),
 }
+PLANNED = ("pool",)  # the scenarios that read `b.dry`: they print a plan and start no model, the others have no plan
 
 
 def main(argv=None):
@@ -132,18 +134,18 @@ def main(argv=None):
     r.add_argument("--out")
     r.add_argument("--arms", help="the arms of `pool`, comma separated (default: " + ",".join(bench_pool.DEFAULT_ARMS) + "; also "
                    + ",".join(bench_pool.OPT_IN) + ", named here only)")
-    r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: all; the opus-5-5 arm: its sanity subset, "
+    r.add_argument("--kinds", help="the pool kinds `pool` runs, comma separated (default: every kind; the opus-5-5 arm: its sanity subset, "
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
                    + ",".join(bench_pool.EFFORTS) + ")")
-    r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model")
+    r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model (another scenario has no plan: exit 2)")
     r.add_argument("--shape", default="fresh",
                    help="`pool`: a fresh session per question, or groups of six questions in one session, or both, comma "
                    "separated (default: fresh)")
     r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
     r.add_argument("--jobs", type=int, default=1, help="`pool`: runs at once (default: 1)")
     r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs cost this many US dollars")
-    r.add_argument("--sample", type=int, help="`pool`: keep this many rows of each kind, drawn with --seed (default: all)")
+    r.add_argument("--sample", type=int, help="`pool`: keep this many rows of each kind, drawn with --seed (default: every row)")
     r.add_argument("--arm-reps", action="append", metavar="ARM=N",
                    help="`pool`: the reps of an arm (ARM/session: of the session shape), comma separated or repeated; the arms "
                    "not named take --reps")
@@ -201,6 +203,12 @@ def main(argv=None):
     unknown = [n for n in names if n not in SCENARIOS]
     if unknown:
         print(f"unknown scenario: {', '.join(unknown)} (benchmarks.py list)", file=sys.stderr)
+        return 2
+    if a.dry_run and (not a.scenarios or any(n not in PLANNED for n in a.scenarios)):
+        # a scenario that never reads b.dry would start its paid runs
+        unplanned = ", ".join(n for n in a.scenarios if n not in PLANNED)
+        what = f"no plan for {unplanned}" if unplanned else "no scenario named, so every one would run"
+        print(f"--dry-run: {what}; the scenarios that have one: {', '.join(PLANNED)}", file=sys.stderr)
         return 2
     if a.jobs < 1 or (a.max_usd is not None and a.max_usd <= 0):
         print("--jobs needs 1 or more, --max-usd more than 0", file=sys.stderr)
