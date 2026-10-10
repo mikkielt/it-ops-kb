@@ -26,5 +26,5 @@
   "links": [
     "parked: SP-uwkr7iyl close"
   ],
-  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands. Recurred in SP-ilje65fa (2026-10-10): a dispatch piped into cut ran in the foreground, was moved to the background with a 10-minute cap and was killed and restarted; a background dispatch with timeout 7200000 also shares the Bash task's process group, so a worker running past two hours would be killed with it: the orchestrator started later dispatches detached (start_new_session) and waited on the pid."
 }

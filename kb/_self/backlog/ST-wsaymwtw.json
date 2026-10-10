@@ -1,0 +1,25 @@
+{
+  "id": "ST-wsaymwtw",
+  "kind": "story",
+  "title": "Sprint planning runs a speed goal's premise as a measure of how much of the work the mechanism reaches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A committed story whose goal promises a wall-time or request saving from a mechanism (a map, a cache, a signal) has as its premise a count of the sources the mechanism reaches today, recorded before the start gate; answers SP-ilje65fa, where ST-v3pruppq promised a shorter detect run by LEARN_MAP and found after the work that the map reaches 140 of 1388 Learn sources, so the wall time did not fall.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa close"
+  ]
+}

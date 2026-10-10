@@ -1,0 +1,25 @@
+{
+  "id": "ST-ejnfrw6f",
+  "kind": "story",
+  "title": "A story that changes a figure kb/_self docs quote carries those docs in its touches when it is planned",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning finds the kb/_self docs that quote a figure a story's goal changes (an anchored share, a wall time, a count) with selfdoc.py stale's map and a search for the figure, and puts them in the story's touches before the start; answers SP-ilje65fa, where ST-kbrsd24q changed the anchored share the design doc quotes, outside its touches, and the orchestrator added the doc at landing.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa close"
+  ]
+}

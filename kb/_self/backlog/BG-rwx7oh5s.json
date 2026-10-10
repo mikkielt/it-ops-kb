@@ -13,5 +13,6 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.derived_class({}, {'question':'A clone with no integration-remote main ref: does the hook fall back to the local main or settle nothing?','options':['fall back','settle nothing']});print(c);sys.exit(1 if c=='push' else 0)"
     ]
-  }
+  },
+  "notes": "Seen again in SP-ilje65fa (2026-10-10): five worker gates were made blocking class push only because their questions named a release, a releases list or github.com (ST-wfvkk6jn g2 and g5, ST-ai2xlm7x g1 and g3, ST-v3pruppq g2); none pushed anything, and the ST-v3pruppq worker stopped mid-work on one. Filed as ST draft beside this bug. Filed beside it at the SP-ilje65fa close: ST-gvf6yca7, which keeps the class rule and lets the worker go on."
 }

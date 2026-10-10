@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-lyfnpu37 close"
-  ]
+  ],
+  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all its work staged and no commit; the orchestrator resumed the session with 60 more turns, and it committed in 6."
 }

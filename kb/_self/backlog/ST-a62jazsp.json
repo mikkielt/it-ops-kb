@@ -1,0 +1,28 @@
+{
+  "id": "ST-a62jazsp",
+  "kind": "story",
+  "title": "factdiff.py anchors can fail below a located share, so a goal's share figure is read by a check",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchors takes a minimum located share of the pairs whose source returned text (and an optional fixed source set) and exits 1 below it, so an item whose goal raises the share has a check that reads the figure; answers SP-ilje65fa, where ST-kbrsd24q's check factdiff.py anchors exited 0 whatever the share and the whole-root share ended below the sprint-start figure.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "factdiff_anchor"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa close"
+  ]
+}

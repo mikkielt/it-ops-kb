@@ -1,0 +1,27 @@
+{
+  "id": "ST-gvf6yca7",
+  "kind": "story",
+  "title": "A worker whose design gate is classed push only by a word in its question goes on with a recommendation that pushes nothing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The push class rule stays as it is (operator-only classes are never weakened); a worker whose gate gate add makes blocking class push, where no option pushes, publishes or tags, goes on with its recommendation and the landing waits for the operator's answer, so the worker does not stop mid-work; answers SP-ilje65fa, where five gates were made blocking for naming a release, a releases list or github.com, and the ST-v3pruppq worker stopped mid-work on one. Related: ST-qzpovl6h, BG-rwx7oh5s.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_authority.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ilje65fa close"
+  ]
+}
