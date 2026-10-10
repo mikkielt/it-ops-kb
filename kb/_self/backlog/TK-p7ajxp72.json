@@ -2,7 +2,7 @@
   "id": "TK-p7ajxp72",
   "kind": "task",
   "title": "skills/sprint, item and backlog and agents/worker.md exist at the plugin root, parameterised by ${CLAUDE_PLUGIN_ROOT}, and plugin.json lists them",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,

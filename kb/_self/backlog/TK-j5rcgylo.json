@@ -2,7 +2,7 @@
   "id": "TK-j5rcgylo",
   "kind": "task",
   "title": "A project whose backlog.json names no item_dir keeps its item files in _backlog/ at the repository root",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,

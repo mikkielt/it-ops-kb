@@ -2,7 +2,7 @@
   "id": "TK-7nnd2bdm",
   "kind": "task",
   "title": "The kb's .claude kb-sprint, kb-item, kb-backlog and kb-worker entries link to the plugin's files, so one set exists and a clone without the plugin still runs its sprint",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,

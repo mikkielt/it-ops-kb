@@ -2,7 +2,7 @@
   "id": "ST-wrsuz64a",
   "kind": "story",
   "title": "The plugin ships /sprint, /item and /backlog and a worker agent that run backlog.py from the plugin root against the host project's backlog.json",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
   "sprint": "SP-ciqk6gt6",
   "priority": "P1",

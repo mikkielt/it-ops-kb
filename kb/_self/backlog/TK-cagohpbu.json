@@ -2,7 +2,7 @@
   "id": "TK-cagohpbu",
   "kind": "task",
   "title": "The plugin's horizon --hook and intake hook entries run only when the host project's backlog.json key turns them on",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-wrsuz64a",
   "priority": "P1",
   "rank": 0,
