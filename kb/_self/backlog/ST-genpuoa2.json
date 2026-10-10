@@ -2,7 +2,7 @@
   "id": "ST-genpuoa2",
   "kind": "story",
   "title": "agents/codebase-mapping.md gives Cargo's full rustc lookup order, rustup proxy included, and the rustc info cache's off cases",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5x5ut5ko",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,27 @@
     "parked: SP-vayhvwfy review"
   ],
   "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise (2026-10-10, base origin/main): both checks exit 1 now: codebase-mapping.md:89-90 and the QK-cargo-metadata-no-deps-invoke-rustc entry name no rustup toolchain rustc fallback and no CARGO_CACHE_RUSTC_INFO=0 case. The source claim (get_tool at Cargo 797e8a9b) is the review's reading: the worker re-reads util/context/mod.rs at the pinned sha before stating it. Orchestrator 2026-10-10 (from this sprint's workers): factdiff.py anchor --file also rewrites verified_utc on unrelated _anchors.csv rows and modifies _fetch_state.csv (outside the touches): keep only the anchor rows of the facts you changed and restore _fetch_state.csv with git restore before you return (git checkout -- is denied). A tag citing two sources gives each its own kind ([CODE S-a: path; CODE S-b: path]); [CODE S-a: path; S-b: path] parses only S-a.",
-  "claimed_by": "kb-worker-genpuoa2"
+  "evidence": {
+    "commit": "fa15290bd29d0846068a4f3534d12a75a68ba8df",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/agents/codebase-mapping.md',encoding='utf-8').read();miss=[w for w in ('CARGO_CACHE_RUSTC_INFO','toolchains/') if w not in t];print('missing:',miss or 'none');sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "a4d424a9f2f7792e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/public/_answers.md\",encoding=\"utf-8\").read();s=t.split(\"## QK-cargo-metadata-no-deps-invoke-rustc\",1)[1].split(\"\\n## \",1)[0];miss=[w for w in (\"rustup\",\"CARGO_CACHE_RUSTC_INFO\") if w not in s];print(\"answer entry missing:\",miss or \"none\");sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "5479037bfedd0686"
+      }
+    ]
+  }
 }
