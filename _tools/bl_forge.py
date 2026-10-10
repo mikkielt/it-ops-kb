@@ -1,8 +1,8 @@
 """The one place `backlog.py` reads a forge (kb/_self/backlog.md, Project settings; kb/_self/tools.md): a merge request
 by branch or title prefix (merged, opened with its pipeline status and detailed merge status, closed), the newest
-pipeline of a ref, and the merge of the item's own `code/<id>` request. The forge is the `forge` setting of
-backlog.json (`gitlab`, read and merged through glab; `github`, read through gh, whose merge verb refuses, so no agent
-merges on the public home) and the project is `forge_project`, else the integration remote's URL. Both arms answer in
+pipeline of a ref, the merge of the item's own `code/<id>` request and the description it carries. The forge is the `forge` setting of
+backlog.json (`gitlab`, read, merged and described through glab; `github`, read through gh, whose merge and
+description verbs refuse, so no agent writes on the public home) and the project is `forge_project`, else the integration remote's URL. Both arms answer in
 GitLab's words (`opened`, `merged`, `closed`; a pipeline `success`, `failed`, `canceled`, `skipped`, `manual`,
 `running`, `pending`), so a caller reads one vocabulary. A read that cannot be made raises `ForgeError`; no such
 request or pipeline is None. Standard library only; imports `bl_base` at load, and `ql_deliver` (the remote url's
@@ -17,14 +17,16 @@ from bl_base import Refused, setting
 
 LIST_LIMIT = 100  # merge requests read to find one: newest first
 STATE_ORDER = ("opened", "merged", "closed")  # which request of a branch with several answers: an open one, else a merged one
-GH_REQUEST_FIELDS = "number,title,headRefName,state,url,mergedAt,mergeStateStatus,autoMergeRequest,statusCheckRollup"
+GH_REQUEST_FIELDS = "number,title,body,headRefName,state,url,mergedAt,mergeStateStatus,autoMergeRequest,statusCheckRollup"
 GH_MERGEABLE = ("CLEAN", "UNSTABLE", "HAS_HOOKS")  # mergeStateStatus values of a pull request that can merge now
 GH_STATES = {"OPEN": "opened", "MERGED": "merged", "CLOSED": "closed"}
 
 Target = namedtuple("Target", "forge host project")
 # state: opened, merged or closed; pipeline: the status of the request's head pipeline or None; merge_status: the
-# forge's own word (GitLab's detailed_merge_status, GitHub's mergeStateStatus); mergeable: it can merge now
-Request = namedtuple("Request", "state iid title branch url pipeline merge_status mergeable auto_merge merged_at")
+# forge's own word (GitLab's detailed_merge_status, GitHub's mergeStateStatus); mergeable: it can merge now;
+# description: its text, "" for none
+Request = namedtuple("Request",
+                     "state iid title branch url pipeline merge_status mergeable auto_merge merged_at description")
 Pipeline = namedtuple("Pipeline", "id sha status url ref")
 
 
@@ -61,8 +63,9 @@ def newest_request(found, key):
 
 
 class Glab:
-    """GitLab, through `glab api` for reads and `glab mr merge` for the merge."""
+    """GitLab, through `glab api` for reads and the description and `glab mr merge` for the merge."""
     merge_refusal = None
+    write_refusal = None
 
     def __init__(self, target, run, cwd=None):
         self.target, self.run, self.cwd = target, run, cwd
@@ -91,13 +94,21 @@ class Glab:
             state=mr.get("state"), iid=mr.get("iid"), title=mr.get("title"), branch=mr.get("source_branch"),
             url=mr.get("web_url"), pipeline=pipe.get("status"), merge_status=merge_status,
             mergeable=mr.get("state") == "opened" and merge_status in ("mergeable", "can_be_merged"),
-            auto_merge=mr.get("merge_when_pipeline_succeeds") is True, merged_at=mr.get("merged_at"))
+            auto_merge=mr.get("merge_when_pipeline_succeeds") is True, merged_at=mr.get("merged_at"),
+            description=mr.get("description") or "")
 
     def pipeline(self, ref):
         listed = self.api(f"projects/{self.quoted}/pipelines?ref={urllib.parse.quote(ref, safe='')}"
                           f"&order_by=id&sort=desc&per_page=1", list)
         p = next((p for p in listed if isinstance(p, dict)), None)
         return None if p is None else Pipeline(p.get("id"), p.get("sha"), p.get("status"), p.get("web_url"), ref)
+
+    def set_description(self, request, text):
+        """(ok, output) of the PUT of TEXT as the description of REQUEST."""
+        code, out, err = self.run(["glab", "api", "--hostname", self.target.host, "--method", "PUT",
+                                   f"projects/{self.quoted}/merge_requests/{request.iid}", "-f", f"description={text}"],
+                                  cwd=self.cwd)
+        return code == 0, (err or out or "").strip()
 
     def merge(self, request):
         """(merged, output) of `glab mr merge IID --auto-merge=false --yes`: at once, never queued behind the pipeline."""
@@ -142,8 +153,9 @@ def rollup_status(checks):
 
 
 class Gh:
-    """GitHub, through `gh pr list` and `gh run list`; it reads, and its merge verb refuses."""
+    """GitHub, through `gh pr list` and `gh run list`; it reads, and its merge and description verbs refuse."""
     merge_refusal = "the gh arm only reads state: no agent merges on the public home, merge the pull request by hand"
+    write_refusal = "the gh arm only reads state: no agent writes on the public home, edit the pull request by hand"
 
     def __init__(self, target, run, cwd=None):
         self.target, self.run, self.cwd = target, run, cwd
@@ -166,7 +178,8 @@ class Gh:
             state=pr["state"], iid=pr["number"], title=pr.get("title"), branch=pr.get("headRefName"),
             url=pr.get("url"), pipeline=rollup_status(checks), merge_status=merge_status and merge_status.lower(),
             mergeable=pr["state"] == "opened" and merge_status in GH_MERGEABLE,
-            auto_merge=bool(pr.get("autoMergeRequest")), merged_at=pr.get("mergedAt"))
+            auto_merge=bool(pr.get("autoMergeRequest")), merged_at=pr.get("mergedAt"),
+            description=pr.get("body") or "")
 
     def pipeline(self, ref):
         code, out, err = self.run(["gh", "run", "list", "--branch", ref, "-L", "1", "-R", self.repo, "--json",
@@ -175,6 +188,9 @@ class Gh:
         if r is None:
             return None
         return Pipeline(r.get("databaseId"), r.get("headSha"), gh_status(*check_state(r)), r.get("url"), ref)
+
+    def set_description(self, request, text):
+        raise Refused(self.write_refusal)
 
     def merge(self, request):
         raise Refused(self.merge_refusal)
@@ -218,6 +234,12 @@ def read_request(root, branch=None, title_prefix=None, run=None):
 def read_pipeline(root, ref, run=None):
     """The newest Pipeline of REF, or None when it has none. Errors as `read_request`."""
     return arm(root, run).pipeline(ref)
+
+
+def set_description(root, request, text, run=None):
+    """(ok, output) of setting REQUEST's description to TEXT. Refused on the gh arm, before any call; errors as
+    `read_request` for a root whose remote names no forge project."""
+    return arm(root, run).set_description(request, text)
 
 
 def merge_own(root, branch, run=None):

@@ -1,5 +1,6 @@
-"""bl_forge.py (kb/_self/backlog.md, Project settings): the one read of a merge request and of a pipeline, and the merge
-of the item's own request, through a glab arm and a gh arm chosen by the `forge` setting and aimed at `forge_project`.
+"""bl_forge.py (kb/_self/backlog.md, Project settings): the one read of a merge request and of a pipeline, the merge
+of the item's own request and the description it carries, through a glab arm and a gh arm chosen by the `forge` setting
+and aimed at `forge_project`; land and merge (`bl_land`) call it with that one project.
 The forge is a recorded one: answers of the shapes `glab api` and `gh pr list` / `gh run list` give (the gh ones as
 `gh pr list --json` printed them on a merged pull request of a public repository, trimmed), served by a runner that
 records each call; nothing here reaches a network or a CLI.
@@ -71,15 +72,15 @@ def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary(settings):
     # glab arm: the project is forge_project, the open request is the one read, whatever else its branch has
     root = settings(forge_project="other/proj")
     listed = [mr(3, "closed"), mr(4, "merged", merged_at="2026-10-09T14:47:45Z"), mr(5, "opened")]
-    single = mr(5, "opened", detailed_merge_status="mergeable", merge_when_pipeline_succeeds=True,
+    single = mr(5, "opened", detailed_merge_status="mergeable", merge_when_pipeline_succeeds=True, description="Body",
                 head_pipeline={"id": 77, "status": "skipped", "web_url": "https://git.corp.example.com/p/77"})
     run = Recorded(GITLAB_URL, [("merge_requests/5", single), ("merge_requests?source_branch=code%2FTK", listed),
                                 ("merge_requests?search=chore", [mr(4, "merged", merged_at="2026-10-09T14:47:45Z")]),
                                 ("pipelines?ref=main", [{"id": 78, "sha": "0" * 40, "status": "failed", "ref": "main",
                                                          "web_url": "https://git.corp.example.com/p/78"}])])
     req = bl_forge.read_request(root, branch=BRANCH, run=run)
-    assert (req.state, req.iid, req.pipeline, req.merge_status, req.mergeable, req.auto_merge) == (
-        "opened", 5, "skipped", "mergeable", True, True)
+    assert (req.state, req.iid, req.pipeline, req.merge_status, req.mergeable, req.auto_merge, req.description) == (
+        "opened", 5, "skipped", "mergeable", True, True, "Body")
     assert all("projects/other%2Fproj/" in c[-1] for c in run.forge_calls())
     by_title = bl_forge.read_request(root, title_prefix="chore(backlog): work", run=run)
     assert (by_title.state, by_title.merged_at) == ("merged", "2026-10-09T14:47:45Z")
@@ -91,12 +92,12 @@ def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary(settings):
     # gh arm: a failed check in the rollup is a failed pipeline, a blocked pull request is not mergeable
     root = settings(forge="github")
     listed = [pr(4, "MERGED", [run_check("lint", conclusion="SKIPPED")], merge_state="UNKNOWN", mergedAt="2026-10-09T14:47:45Z"),
-              pr(5, "OPEN", [run_check("lint"), run_check("build", conclusion="FAILURE")])]
+              pr(5, "OPEN", [run_check("lint"), run_check("build", conclusion="FAILURE")], body="Body")]
     runs = [{"databaseId": 31, "headSha": "1" * 40, "status": "in_progress", "conclusion": "", "url": "https://github.com/group/kb/actions/runs/31"}]
     run = Recorded(GITHUB_URL, [("gh pr list", listed), ("gh run list", runs)])
     req = bl_forge.read_request(root, branch=BRANCH, run=run)
-    assert (req.state, req.iid, req.pipeline, req.merge_status, req.mergeable, req.auto_merge) == (
-        "opened", 5, "failed", "blocked", False, False)
+    assert (req.state, req.iid, req.pipeline, req.merge_status, req.mergeable, req.auto_merge, req.description) == (
+        "opened", 5, "failed", "blocked", False, False, "Body")
     merged = bl_forge.read_request(root, title_prefix="chore(backlog): work", run=Recorded(GITHUB_URL, [("gh pr list", listed[:1])]))
     assert (merged.state, merged.pipeline, merged.merged_at) == ("merged", "skipped", "2026-10-09T14:47:45Z")
     assert bl_forge.read_pipeline(root, "main", run=run)[:3] == (31, "1" * 40, "running")
@@ -105,7 +106,7 @@ def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary(settings):
         bl_forge.read_request(root, branch=BRANCH, run=Recorded(GITHUB_URL))
 
 
-def test_forge_arms_merge_on_the_glab_arm_only(settings):
+def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project(settings, monkeypatch, capsys):
     root = settings(forge_project="other/proj")
     single = mr(5, "opened", detailed_merge_status="mergeable", head_pipeline={"id": 77, "status": "success"})
     run = Recorded(GITLAB_URL, [("merge_requests/5", single), ("merge_requests?source_branch", [mr(5, "opened")]),
@@ -136,3 +137,44 @@ def test_forge_arms_merge_on_the_glab_arm_only(settings):
         bl_forge.read_pipeline(root, "main", run=Recorded(GITHUB_URL))
     problems = bl_base.read_settings(settings(forge="bitbucket"), env={})[3]
     assert len(problems) == 1 and "'forge'" in problems[0]
+
+    # land and merge call it, with the one forge_project and one read of the request for each pass of land
+    import bl_land
+    from types import SimpleNamespace
+    root = settings(forge_project="other/proj")
+    single = mr(5, "opened", detailed_merge_status="mergeable", merge_when_pipeline_succeeds=True, description="Body",
+                head_pipeline={"id": 77, "status": "skipped"})
+    run = Recorded(GITLAB_URL, [("--method PUT", {}), ("merge_requests/5", single),
+                                ("merge_requests?source_branch", [mr(5, "opened")]), ("glab mr merge", "Merged!")])
+    monkeypatch.setattr(bl_land, "run", run)
+    monkeypatch.setattr(bl_land, "need", lambda bl, iid: iid)
+    bl = SimpleNamespace(root=root, items={"TK-aaaaaaaa": {"external": {"jira": ["PL-1"]}}}, descendants=lambda i: [])
+    request = bl_land.read_code_request(root, BRANCH)  # the pass's one read, shared by both steps
+    bl_land.describe_merge_request(bl, "TK-aaaaaaaa", request)
+    line = bl_land.stuck_merge_request(request, BRANCH)
+    assert "!5" in line and "skipped" in line and "backlog.py merge TK-aaaaaaaa" in line
+    put = [c for c in run.forge_calls() if "PUT" in c]
+    assert len(put) == 1 and put[0][-1].startswith("description=Body\n\n") and "jira PL-1" in put[0][-1]
+    reads = [c for c in run.forge_calls() if "PUT" not in c]
+    assert len(reads) == 2 and all("projects/other%2Fproj/" in " ".join(c) for c in run.forge_calls())
+    run.calls.clear()
+    assert bl_land.cmd_merge(bl, SimpleNamespace(id="TK-aaaaaaaa")) == 0
+    assert all("other%2Fproj" in " ".join(c) or c[-1].endswith("/other/proj") for c in run.forge_calls())
+    assert run.forge_calls()[-1][:4] == ["glab", "mr", "merge", "5"]
+    assert "merged" in capsys.readouterr().out
+
+    # a github remote's request is read, its description is refused with a line, and its merge exits 2 from the arm
+    root = settings(forge="github")
+    run = Recorded(GITHUB_URL, [("gh pr list", [pr(5, "OPEN", [run_check("lint")], merge_state="CLEAN", body="Body")])])
+    monkeypatch.setattr(bl_land, "run", run)
+    bl = SimpleNamespace(root=root, items=bl.items, descendants=lambda i: [])
+    bl_land.describe_merge_request(bl, "TK-aaaaaaaa", bl_land.read_code_request(root, BRANCH))
+    assert "could not set the description" in capsys.readouterr().out and len(run.forge_calls()) == 1
+    with pytest.raises(bl_base.Refused, match="only reads state"):
+        bl_land.cmd_merge(bl, SimpleNamespace(id="TK-aaaaaaaa"))
+
+    # land --wait-merge sleeps WAIT_POLL between reads of the integration main, no loop of a session's own
+    seen, slept = iter([False, False, True]), []
+    monkeypatch.setattr(bl_land, "merged_on_main", lambda root, remote, shas: next(seen))
+    assert bl_land.wait_merge(root, "origin", ["a" * 40], 600, sleep=slept.append) == 3
+    assert slept == [bl_land.WAIT_POLL, bl_land.WAIT_POLL]
