@@ -27,5 +27,6 @@
     "TK-7nnd2bdm",
     "TK-p7ajxp72",
     "TK-cagohpbu"
-  ]
+  ],
+  "notes": "Orchestrator: the suite is at the 100-id ceiling: plugin_sprint_item_dir_default extends or replaces an existing test, adding no id."
 }
