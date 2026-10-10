@@ -14,7 +14,9 @@ The seven checks, each independent and each a result {name, state, detail, remed
                a `Bash(PATTERN)` rule covers a command that PATTERN matches whole, `*` standing for any text and a
                trailing ` *` also for no arguments, as Claude Code reads it; a `deny` rule is not read; a bare `Bash` rule covers every command
   checkout     the clone is no linked worktree of another checkout (`git rev-parse --git-common-dir` is its own
-               `--git-dir`): workers dispatched there get their isolation worktrees in that other checkout
+               `--git-dir`), or is one whose workers `land` accepts (`bl_land.main_worker_dir`: the other checkout's
+               `.claude/worktrees/`, named with the clone's own in the detail); a linked worktree whose workers it
+               refuses fails, and one git cannot be read for is `unknown`
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
                and each hook script is there; the plugin manifest parses and the files it names exist
   host         the 5-minute load average is under LOAD_PER_CORE times the cores, no host lock (`kb-tests.lock`,
@@ -36,8 +38,8 @@ The seven checks, each independent and each a result {name, state, detail, remed
 The output is capped: each check prints at most one line of at most LINE_MAX characters, a list in it names its first
 SHOW entries and a count of the rest (`+K more`), and the whole is under MAX_CHARS characters, whole lines dropped
 from the end with a last line that says how many; `--full` lifts the cap. Standard library only; imports `bl_base`,
-`bl_cli`, `bl_procs` and `bl_stall` at load and never `backlog` (a layer rule); `tests` and `kg_hooks` are imported where
-used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
+`bl_cli`, `bl_procs` and `bl_stall` at load and never `backlog` (a layer rule); `tests`, `kg_hooks` and `bl_land` are
+imported where used. It registers its own subcommand when imported, so `backlog.py` carries only the import.
 """
 import json
 import os
@@ -49,7 +51,7 @@ from pathlib import Path
 import bl_cli
 import bl_procs
 import bl_stall
-from bl_base import Rejected, say
+from bl_base import Refused, Rejected, say, worker_dir
 
 LOAD_PER_CORE = 1.5  # the 5-minute load average, per core, above which the host is too busy to take more workers
 SHOW = 3  # entries of a list a line names; the rest is `+K more`
@@ -183,19 +185,21 @@ def linked_worktree_of(root):
     return dirs[0].parent if dirs[0] != dirs[1] else None
 
 
-def linked_worktree_message(root):
-    """What is wrong when ROOT is a linked worktree of another checkout, else None."""
+def check_checkout(root):
     other = linked_worktree_of(root)
     if other is None:
-        return None
-    return f"this clone is a linked worktree of the checkout {other}, so its workers' worktrees land there"
-
-
-def check_checkout(root):
-    msg = linked_worktree_message(root)
-    if msg:
-        return result("checkout", "fail", msg, REMEDY["checkout"])
-    return result("checkout", "ok", "the clone is not a linked worktree")
+        return result("checkout", "ok", "the clone is not a linked worktree")
+    import bl_land  # the directories `land` accepts a worker under are its own
+    try:
+        own = sorted(bl_land.worker_dirs(root))
+        main = bl_land.main_worker_dir(root)
+    except Refused as e:
+        return result("checkout", "unknown", f"the worker directories `land` expects cannot be read: {e}")
+    if main is None:
+        return result("checkout", "fail", f"this clone is a linked worktree of the checkout {other}, whose "
+                      f"{'/'.join(worker_dir())} `land` does not accept a worker under", REMEDY["checkout"])
+    return result("checkout", "ok", f"the clone is a linked worktree of {other}: `land` of one item's branch "
+                  f"accepts a worker's worktree under {main} or {' or '.join(str(d) for d in own)}")
 
 
 # ---------------------------------------------------------------- the commit hooks and the plugin
