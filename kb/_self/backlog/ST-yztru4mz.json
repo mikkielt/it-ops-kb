@@ -2,7 +2,7 @@
   "id": "ST-yztru4mz",
   "kind": "story",
   "title": "Worker briefs and kb-worker.md forbid making git worktrees outside the one the orchestrator gives",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qg7ncs6d",
   "priority": "P2",
   "rank": 0,

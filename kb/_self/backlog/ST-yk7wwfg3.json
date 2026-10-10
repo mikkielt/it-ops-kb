@@ -2,7 +2,7 @@
   "id": "ST-yk7wwfg3",
   "kind": "story",
   "title": "kb-sprint run resumes a headless worker with claude -p --resume, not SendMessage, in the land and retry steps",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,

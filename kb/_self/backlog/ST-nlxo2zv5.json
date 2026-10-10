@@ -2,7 +2,7 @@
   "id": "ST-nlxo2zv5",
   "kind": "story",
   "title": "A sprint worker's /kb-verify run does not run tests.py --changed, which its brief forbids",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qg7ncs6d",
   "priority": "P3",
   "rank": 0,
