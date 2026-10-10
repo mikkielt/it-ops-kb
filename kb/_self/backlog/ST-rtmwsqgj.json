@@ -2,7 +2,7 @@
   "id": "ST-rtmwsqgj",
   "kind": "story",
   "title": "list_usd prices a dated modelUsage key such as claude-haiku-4-5-20251001 at its pinned model instead of raising KeyError",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-55ddkrrx",
   "priority": "P2",
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-2vhfsn4o review"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: bench_pool.list_usd({'requests':[],'model_usage':{'claude-haiku-4-5-20251001':{uncached,cache_write,write_1h,cache_read,out}},'out':N}) raises KeyError \"no price for model 'claude-haiku-4-5-20251001'\" (bench_pool.py:969), run 2026-10-10: reproduces. The check prices that run at 0.0015 USD (1000 uncached, 100 out at claude-haiku-4-5) or accepts a named non-KeyError stop."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence. Premise: bench_pool.list_usd({'requests':[],'model_usage':{'claude-haiku-4-5-20251001':{uncached,cache_write,write_1h,cache_read,out}},'out':N}) raises KeyError \"no price for model 'claude-haiku-4-5-20251001'\" (bench_pool.py:969), run 2026-10-10: reproduces. The check prices that run at 0.0015 USD (1000 uncached, 100 out at claude-haiku-4-5) or accepts a named non-KeyError stop.",
+  "claimed_by": "worker-ST-rtmwsqgj"
 }
