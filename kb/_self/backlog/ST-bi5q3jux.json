@@ -2,7 +2,7 @@
   "id": "ST-bi5q3jux",
   "kind": "story",
   "title": "The kb-census skill drives a census through census.py run, groups, brief, apply and finish instead of step-by-step commands",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",

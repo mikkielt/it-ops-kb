@@ -2,7 +2,7 @@
   "id": "ST-6ljkrwt2",
   "kind": "story",
   "title": "census.py groups and brief split the phase-2 rows into owner groups and print each group's filled brief with its review passages and cited facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",

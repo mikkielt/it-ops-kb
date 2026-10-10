@@ -2,7 +2,7 @@
   "id": "ST-qo3kicix",
   "kind": "story",
   "title": "census.py apply takes a group's phase-2 JSON result and does the bookkeeping the orchestrator now does by hand",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",

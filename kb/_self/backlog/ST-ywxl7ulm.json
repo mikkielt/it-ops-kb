@@ -2,7 +2,7 @@
   "id": "ST-ywxl7ulm",
   "kind": "story",
   "title": "census.py run carries phases 0 and 1 and census.py finish carries phase 3, each as one command that stops only where a model or the operator is needed",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-uwkr7iyl",
   "priority": "P1",
