@@ -1,0 +1,29 @@
+{
+  "id": "BG-wl36adcq",
+  "kind": "bug",
+  "title": "ci-and-headless.md's modelUsage-key facts say a pinned undated claude-haiku-4-5 key was never observed, while benchmarks.csv's router-pinned rows show it, and tag repo observations DER on doc sources",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The modelUsage-key facts of kb/public/claude/ci-and-headless.md (from :94), and their _answers.md and _gaps.md entries, state what the repo's own benchmark rows show: benchmarks.csv's route-by-verdict rows of 2026-09-29 (Claude Code 2.1.284, arm router-pinned, reader run with --model claude-haiku-4-5) are keyed claude-haiku-4-5 undated, and the dated claude-haiku-4-5-20251001 key appears on 2.1.282 and 2.1.284 too, not only 2.1.283; the observed-key facts cite a source that holds the rows (not S-fksbud2r and S-eu3n3hyf alone), and the frontmatter-alias branch 'else on the version the alias names' is stated only as far as its source (skills-and-subagents.md:102 states it for CLAUDE_CODE_SUBAGENT_MODEL). Found by the SP-55ddkrrx review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/claude/ci-and-headless.md',encoding='utf-8').read();sys.exit(1 if 'or for a pinned undated' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a fact's wording against the repo's benchmark rows; no command runs it",
+  "touches": [
+    "kb/public/claude/ci-and-headless.md",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_coverage.csv",
+    "kb/public/_coverage.md"
+  ],
+  "links": [
+    "parked: SP-55ddkrrx review"
+  ]
+}

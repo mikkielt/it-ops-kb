@@ -1,0 +1,28 @@
+{
+  "id": "BG-dolvqr5i",
+  "kind": "bug",
+  "title": "The paid-run sizing rule in backlog.md and the kb-sprint plan step names BG-wapzksub and calls a bug this sprint fixed still open",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/backlog.md's Plan bullet on paid runs (near :216) and .claude/skills/kb-sprint/SKILL.md plan step 6 no longer say 'every benchmarks.py scenario but pool, BG-wapzksub' has no --dry-run estimate: since BG-wapzksub, run SCENARIO --dry-run exits 2 for a scenario with no plan, so the rule says that refusal is the 'no estimate' case and names no backlog id in the rule text. Found by the SP-55ddkrrx review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;a=open('kb/_self/backlog.md',encoding='utf-8').read();b=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(1 if 'but pool, BG-wapzksub' in a+b else 0)"
+    ]
+  },
+  "repro_reason": "the defect is rule wording; no command runs it",
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-55ddkrrx review"
+  ]
+}
