@@ -1,0 +1,29 @@
+{
+  "id": "ST-xe6ury3c",
+  "kind": "story",
+  "title": "census.py run and finish commit every tracked change under the root, not only what their steps wrote",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py run_commit (_tools/census.py:1531) stages only the paths its steps wrote, so an operator's uncommitted article edit is never swept into the phase-1 or the KB-Verified confirmed-dates commit; found by the SP-uwkr7iyl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

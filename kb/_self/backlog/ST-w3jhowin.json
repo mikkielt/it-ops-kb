@@ -65,7 +65,7 @@
       "recommendation": "passages-else-cached-document",
       "class": "design",
       "answer": "passages-else-cached-document",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "flogfind",
@@ -78,7 +78,7 @@
       "recommendation": "flag-then-evidence-then-same-date",
       "class": "design",
       "answer": "flag-then-evidence-then-same-date",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "ceiling",

@@ -1,0 +1,29 @@
+{
+  "id": "ST-4zufzrar",
+  "kind": "story",
+  "title": "The digest counts factdiff.py detect's exit 1 (facts need review) as a failed census.phase",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "ql_report.py's ops block (_tools/ql_report.py:179) reads a census.phase row of factdiff.py detect that exited 1 because facts need review as a success, not a failure; found by the SP-uwkr7iyl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_report.py",
+    "_tools/census.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

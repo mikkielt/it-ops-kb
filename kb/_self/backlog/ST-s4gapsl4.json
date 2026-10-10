@@ -1,0 +1,30 @@
+{
+  "id": "ST-s4gapsl4",
+  "kind": "story",
+  "title": "kb-census skill tells factdiff.py dead to take the census log, which needs the fact diff log",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb-census SKILL.md phase 2 (line 50) names the fact diff log, not the census log, as factdiff.py dead's argument; with the census log dead fails with CsvError lacks column(s) source_id; found by the SP-uwkr7iyl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "--root",
+        "_self",
+        "--set",
+        "kb-census:phase2"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-census/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

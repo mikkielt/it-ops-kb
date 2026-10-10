@@ -1,0 +1,29 @@
+{
+  "id": "ST-3xyi2rjo",
+  "kind": "story",
+  "title": "The census.phase ops row records no reading volume, which only summary prints",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Each census.phase ops row records the reading volume (characters and estimated tokens) the sprint goal names beside wall time and rows, or the goal is reworded to say summary prints it; found by the SP-uwkr7iyl review at _tools/census.py:1617.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "kb/_self/querylog.md",
+    "_tools/ql_capture.py"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

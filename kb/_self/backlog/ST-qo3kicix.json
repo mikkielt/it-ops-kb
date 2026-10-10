@@ -43,7 +43,7 @@
       "recommendation": "a required edited_files list in the result (the schema's seventh key)",
       "class": "design",
       "answer": "a required edited_files list in the result (the schema's seventh key)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",

@@ -64,7 +64,7 @@
       "recommendation": "citing lines in the tree; tie to the first domain by name; fall back to used_in, else _uncited",
       "class": "design",
       "answer": "citing lines in the tree; tie to the first domain by name; fall back to used_in, else _uncited",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -78,7 +78,7 @@
       "recommendation": "offline: the passages the queue summary counts; a passage only the network could give prints as -",
       "class": "design",
       "answer": "offline: the passages the queue summary counts; a passage only the network could give prints as -",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -92,7 +92,7 @@
       "recommendation": "domain files' lines with their text; a front matter sources: line named without its list; no ledger lines",
       "class": "design",
       "answer": "domain files' lines with their text; a front matter sources: line named without its list; no ledger lines",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -106,7 +106,7 @@
       "recommendation": "--part N on brief, default 1; parts count in the groups output",
       "class": "design",
       "answer": "--part N on brief, default 1; parts count in the groups output",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise run 2026-10-10: python3 _tools/census.py groups kb/public/_census/2026-09-26.csv exits 2 with invalid choice. Today phase 2 steps 1 and 2 of .claude/skills/kb-census/SKILL.md have the orchestrator group the rows by hand and fill the brief by hand, and each subagent then calls rag.py src --cited and factdiff.py review itself; the brief carries them instead. The size bound keeps a brief inside one reader's context; fact-diff.md's entra dry run gives the scale: 43 review items came to 24,212 characters. Test ceiling (2026-10-10, ST-w3jhowin gate ceiling, answered replace-two-ids-and-a-file by operator): the suite is at max_ids 100 and max_files 15 of _tools/tests_ceiling.json, which stays as it is. Add no new test file; a new test id goes into an existing test file and replaces one (merge two tests of the same unit into one id keeping every assertion), so tests.py stays within the ceiling.",

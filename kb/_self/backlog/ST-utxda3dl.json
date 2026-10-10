@@ -1,0 +1,29 @@
+{
+  "id": "ST-utxda3dl",
+  "kind": "story",
+  "title": "census.py brief carries none of the rules that hold throughout phase 2 (paraphrase, placeholders only, no submit_feedback, read the full page)",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The brief census.py brief prints (BRIEF_RULES, _tools/census.py:934) carries the rules kb-census SKILL.md says hold throughout phase 2: paraphrase Learn text with quotes of 25 words or fewer, placeholders only, never call a docs server's submit_feedback, and when to read the full page, so a subagent briefed only by the tool keeps them; found by the SP-uwkr7iyl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    ".claude/skills/kb-census/SKILL.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S2 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

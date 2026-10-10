@@ -1,0 +1,30 @@
+{
+  "id": "ST-odidbteq",
+  "kind": "story",
+  "title": "census.py apply writes no census.phase ops row, so phase 2's outcomes are never measured",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py apply writes a census.phase ops row (apply joins PHASES, _tools/census.py:1617, with its phase name in the closed shape kb/_self/querylog.md names), since the skill no longer calls census.py record and phase 2 otherwise leaves no row; ST-qo3kicix gate g2 left it out of that item; found by the SP-uwkr7iyl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

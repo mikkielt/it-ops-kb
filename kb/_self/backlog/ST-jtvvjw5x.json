@@ -1,0 +1,30 @@
+{
+  "id": "ST-jtvvjw5x",
+  "kind": "story",
+  "title": "kb-census skill's --resume argument is not mapped to census.py run --resume",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-census SKILL.md (line 40) maps the skill's --resume argument to census.py run --resume, so a resumed census does not exit 2 on a log that already holds phase-2 outcomes; found by the SP-uwkr7iyl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "pack",
+        "--root",
+        "_self",
+        "--set",
+        "kb-census:phase2"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-census/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}

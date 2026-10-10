@@ -1,0 +1,28 @@
+{
+  "id": "ST-wwcn5iij",
+  "kind": "story",
+  "title": "census.py finish drops the sweep's invalidation and relink lines when a later step fails",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py finish prints kbdecide.py sweep's invalidation and relink lines even when a later step (index, commit) fails, so the report keeps them (a rerun prints invalidated=0); found by the SP-uwkr7iyl review at _tools/census.py:1546 drive.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_queue"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-uwkr7iyl review"
+  ],
+  "notes": "Review severity S3 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+}
