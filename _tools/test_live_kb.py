@@ -61,11 +61,12 @@ def test_check_py_names_a_ledger_citation_of_a_line_that_is_no_fact(tmp_path):
     fixture_root(root, SID)
     lines = (root / "print" / "queues.md").read_text(encoding="utf-8").split("\n")
     fact, heading = (lines.index(x) + 1 for x in (f"- Finished jobs are kept for 14 days. [DOC {SID}]", "## Reference"))
-    write(root / "_answers.md", f"# _answers.md\n\n- Jobs are kept 14 days. (`print/queues.md:{fact}`, `:{heading}`) [DOC {SID}]\n")
+    write(root / "_answers.md", f"# _answers.md\n\n- Jobs are kept 14 days. (`print/queues.md:{fact}`, `:{heading}`) [DOC {SID}]\n"
+          f"- Jobs are kept 14 days. (`print/queues.md:{fact}-{fact}`, `print/queues.md:{fact}-{heading}`) [DOC {SID}]\n")
     env = {**os.environ, "KB_ROOTS": str(root)}
     code, out = tool("check.py", "--root", "fixture", env=env)
     cited = re.findall(r"^ERROR fixture/_answers\.md:(\d+) cites (\S+)", out, re.M)
-    assert code == 1 and cited == [("3", f"print/queues.md:{heading},")], out[-2000:]
+    assert code == 1 and cited == [("3", f"print/queues.md:{heading},"), ("4", f"print/queues.md:{fact}-{heading},")], out[-2000:]
 
 
 def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag(tmp_path):
