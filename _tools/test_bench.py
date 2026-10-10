@@ -307,6 +307,9 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     summary = agent_bench.result_of(pool_stream("value1", final_out=200, cost=0.0326, billed=fetch), "", 5.0)
     assert summary["out"] == 12_200 and summary["web_searches"] == 1  # 0.0106 the session, 0.0220 the Haiku call and its search
     assert abs(bp.list_usd(summary, "sonnet") - summary["cost"]) <= 0.2 * summary["cost"]
+    usage = {m.replace("haiku-5-5", "haiku-5-5-20260301"): u for m, u in summary["model_usage"].items()}
+    dated = {**summary, "model_usage": usage}
+    assert "claude-haiku-5-5-20260301" in usage and bp.list_usd(dated, "sonnet") == bp.list_usd(summary, "sonnet")  # a dated key is priced at its pinned model
     search = {"claude-haiku-5-5": {"inputTokens": 20_180, "webSearchRequests": 1}}
     kb_search = agent_bench.result_of(pool_stream("value1", model="claude-haiku-5-5", final_out=4000, cost=0.0144, billed=search), "", 5.0)
     assert kb_search["web_searches"] == 1 and kb_search["searches"] == 0

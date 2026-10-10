@@ -27,6 +27,25 @@
   "depends_on": [
     "BG-wapzksub"
   ],
+  "gates": [
+    {
+      "id": "probe",
+      "kind": "blocking",
+      "question": "ST-hl734bxk's rule (landed during this sprint, after this item was planned) asks a capped real probe of a change to how a bench_* module prices a run; this item's goal names none. Make one before landing?",
+      "options": [
+        "no-probe: land on the item check and the test_bench assertion; the change maps a dated modelUsage key onto its pinned model's existing row, no new price or shape",
+        "probe: one capped real fresh run pinned to claude-haiku-4-5, stream kept under _cache/, list cost within 20% of billed"
+      ],
+      "recommendation": "no-probe: land on the item check and the test_bench assertion; the change maps a dated modelUsage key onto its pinned model's existing row, no new price or shape",
+      "do": {
+        "no-probe: land on the item check and the test_bench assertion; the change maps a dated modelUsage key onto its pinned model's existing row, no new price or shape": "ST-rtmwsqgj",
+        "probe: one capped real fresh run pinned to claude-haiku-4-5, stream kept under _cache/, list cost within 20% of billed": "ST-rtmwsqgj"
+      },
+      "class": "agents-rule",
+      "answer": "no-probe: land on the item check and the test_bench assertion; the change maps a dated modelUsage key onto its pinned model's existing row, no new price or shape",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-2vhfsn4o review"
   ],
