@@ -2,7 +2,7 @@
   "id": "ST-24m3pttf",
   "kind": "story",
   "title": "Research sprint goal: Fitness 1: kb content fixes and the held-out guard",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5x5ut5ko",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "kb-worker-24m3pttf"
 }
