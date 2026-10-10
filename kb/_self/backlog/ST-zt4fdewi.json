@@ -24,7 +24,8 @@
     "_tools/test_backlog_portable.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "backlog.json"
   ],
   "depends_on": [
     "ST-nq5z6whn"
