@@ -292,3 +292,4 @@ SQ-planned-sprint-starts-next-several-approved,which planned sprint starts next 
 SQ-logs-kb-tooling-keep,what logs does the kb tooling keep,querylog.md;content-rules.md,good,yes,"leaves a redacted, judged record in the repository;may keep one private CSV of observed signals",
 SQ-rule-questions-tested,how are the _self rule questions tested,content-rules.md,good,yes,a row passes when its anchor exists,
 SQ-researched-check-goal-research-story-outside-facts,what does backlog.py researched check for a goal research story with no outside facts,tools.md,good,yes,exit 0 once the research is written by `done`'s own rules,
+EV-sprint-worker-running-kb-verify-run,does a sprint worker running kb-verify run tests.py --changed,backlog.md,good,yes,A sprint worker running `/kb-verify` skips its `tests.py --changed` step,kb-verify;kb-worker
