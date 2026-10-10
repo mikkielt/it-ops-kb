@@ -1,0 +1,23 @@
+{
+  "id": "BG-yoxnm654",
+  "kind": "bug",
+  "title": "check's read-only-checks and named-test-file warnings: docs say story, task or bug and any code, the code also warns subtasks and reads only _tools/ paths",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/tools.md (the check row) and kb/_self/backlog.md Sprints name the item kinds the two ST-a5q6vaji warnings of _tools/bl_check.py cover (subtasks included), and skills/sprint/SKILL.md plan step 6 does not promise a check warning for code outside the paths the code reads (only _tools/ code and _tools/test_*.py files), or the code reads a project's code paths from its config. Found in the SP-4jfepy6u review: tools.md:64 and backlog.md:212 say story, task or bug; the plugin skill says touches that name code.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(0 if 'subtask' in t.split('only read files')[0][-400:]+t.split('only read files')[1][:400] else 1)"
+    ]
+  },
+  "repro_reason": "the defect is doc wording against the warning's item kinds; the code is right",
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md"
+  ]
+}
