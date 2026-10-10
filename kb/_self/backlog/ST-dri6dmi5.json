@@ -24,5 +24,6 @@
   ],
   "links": [
     "parked: SP-caqrexqw close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts."
 }

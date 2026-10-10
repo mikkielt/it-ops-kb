@@ -20,5 +20,5 @@
   "links": [
     "parked: SP-flkl5gom review"
   ],
-  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook."
+  "notes": "Review gap G3 (S3): stale, not false; the entry names GitLab's testing guide, the deadlines came from the handbook. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

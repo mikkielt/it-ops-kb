@@ -20,5 +20,6 @@
   ],
   "links": [
     "parked: SP-7y6dk257 close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

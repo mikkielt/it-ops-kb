@@ -27,5 +27,5 @@
   "links": [
     "parked: SP-2vhfsn4o close"
   ],
-  "notes": "The check passes before the work on purpose: it is the land e2e test the work extends with a planted main-checkout draft; planning adds the failing assertion's selector or repoints the check before the sprint starts. SP-2vhfsn4o evidence: the orchestrator moved intake drafts out of its checkout before each landing, and one landing (ST-dku4a6ob) stopped at clean tree on two drafts a session start filed meanwhile."
+  "notes": "The check passes before the work on purpose: it is the land e2e test the work extends with a planted main-checkout draft; planning adds the failing assertion's selector or repoints the check before the sprint starts. SP-2vhfsn4o evidence: the orchestrator moved intake drafts out of its checkout before each landing, and one landing (ST-dku4a6ob) stopped at clean tree on two drafts a session start filed meanwhile. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 5 of 13, \"Headless sprint loop 2: intake drafts, land windows and worker cost\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
 }

@@ -25,5 +25,5 @@
     "parked: SP-matmvkn6 close",
     "parked: SP-2vhfsn4o close"
   ],
-  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou)."
+  "notes": "SP-2vhfsn4o evidence: three workers added a gate the classifier made blocking with no command to remove it; one hand-edited the item JSON to drop it (BG-ovvvqtxf), one stopped with a stray g2 its repro added (BG-jj2nc5ou). Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 8 of 13, \"Gates: commands, classing and host checks\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F2: a content sprint from the research queue lands on headless Sonnet workers."
 }

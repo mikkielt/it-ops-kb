@@ -26,5 +26,5 @@
     "parked: SP-7y6dk257 close",
     "parked: SP-yzgetyu2 close"
   ],
-  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so."
+  "notes": "SP-yzgetyu2 close (2026-10-09), accepted by the operator: ST-s6tqojsw's planned call-count check failed at plan on ModuleNotFoundError (runpy.run_path puts no _tools on sys.path), and precheck counted it as failing before the work, so the premise proved nothing and the check was fixed mid-run; a check that fails on an exception or traceback at plan is a broken check, not a failing premise, and precheck says so. Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 12 of 13, \"Planning rules 2: plan-time warnings and probes\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

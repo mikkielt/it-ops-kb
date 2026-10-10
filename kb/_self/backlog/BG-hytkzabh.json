@@ -17,5 +17,6 @@
   "repro_reason": "the defect is a guard that is missing and the fix adds a rule to usable; a planted regex in a test would show it, and no command runs the guard today",
   "links": [
     "parked: SP-7y6dk257 run"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 2 of 13, \"Fitness 2: pack ranking and pool eval correctness\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

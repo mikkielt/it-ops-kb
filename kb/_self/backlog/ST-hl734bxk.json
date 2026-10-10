@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-2vhfsn4o close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 3 of 13, \"Benchmarks: no unplanned paid run, dated model keys, report wording\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

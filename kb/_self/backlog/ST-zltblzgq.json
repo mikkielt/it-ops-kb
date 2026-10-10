@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-evkj4avq review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 10 of 13, \"backlog.py fixes: land, drop, precheck and usage text\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }

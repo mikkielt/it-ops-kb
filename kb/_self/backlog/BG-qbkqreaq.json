@@ -17,5 +17,6 @@
   "repro_reason": "The defect is a fact's wording in a kb article: the 1.35x figure is not limited to the 0.1x read rate it holds for, so only the line's text can show it",
   "links": [
     "parked: SP-caqrexqw review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 1 of 13, \"Fitness 1: kb content fixes and the held-out guard\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F1: the held-out answer rate (lookup_heldout.csv)."
 }

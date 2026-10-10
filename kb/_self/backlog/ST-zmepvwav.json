@@ -26,5 +26,6 @@
   ],
   "links": [
     "parked: SP-befc6yqr review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 6 of 13, \"Sprint tooling 2: one forge module, dispatch scratch setting, multi-repository items\"); it blocks no fitness test and no real user reported it, so it sits in a late sprint of the sequence."
 }
