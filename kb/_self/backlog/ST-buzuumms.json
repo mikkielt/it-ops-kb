@@ -1,0 +1,26 @@
+{
+  "id": "ST-buzuumms",
+  "kind": "story",
+  "title": "A worker near its turn cap commits its work in progress instead of exiting with staged changes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retrospective of SP-lyfnpu37: the TK-ye4msgps worker (a code task: bl_land.py, an e2e test and two docs) hit its 60-turn cap (error_max_turns, 61 turns) with its change staged and not committed, so the orchestrator had to resume it for 10 more turns to commit and record its gate. A worker that nears its cap commits what it has on work/<id> with KB-Work and reports what is left, and a code task's cap fits work that adds an e2e test and docs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();sys.exit(0 if 'work in progress' in t and 'turn cap' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 close"
+  ]
+}

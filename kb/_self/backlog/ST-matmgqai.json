@@ -1,0 +1,25 @@
+{
+  "id": "ST-matmgqai",
+  "kind": "story",
+  "title": "rag.py pack --item gives rules for land, procs and selfcheck items instead of coverage none",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-lyfnpu37: the ST-iltxwoty worker got coverage none from rag.py pack --root _self --item for an item touching bl_land.py, bl_procs.py and bl_selfcheck.py and read the Landing, Processes left running and Self-check sections by hand; the BG-dnojxemz worker's item pack printed 'not in kb: st-ocfkanth'. An item pack for such touches names the tested rule questions of those sections.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how long does land wait for a finished session-end hook before it refuses a worktree'],capture_output=True,text=True);sys.exit(0 if 'coverage: good' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 close"
+  ]
+}

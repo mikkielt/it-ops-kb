@@ -12,5 +12,6 @@
       "python3",
       "_tools/tests.py"
     ]
-  }
+  },
+  "notes": "SP-lyfnpu37 (2026-10-10): with four headless workers on the host, full tests.py runs took 23-40 s against the 20 s darwin ceiling and exited 1 though every test passed (BG-a3zs7s2y, ST-gdcn5467, ST-agxrnaoo, BG-45zpw2go workers); alone the suite ran 19.1-19.9 s with 93-94 ids, so it sits at the ceiling even unloaded."
 }

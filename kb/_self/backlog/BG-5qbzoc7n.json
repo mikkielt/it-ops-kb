@@ -20,5 +20,6 @@
   ],
   "links": [
     "parked: SP-lyfnpu37 review"
-  ]
+  ],
+  "notes": "SP-lyfnpu37 evidence: land of BG-a3zs7s2y stopped at step branch because a SessionEnd distill (querylog.py distill --settle 2 --session ..., stdout distill.log) of a closed earlier session ran about 8 minutes in the worker's worktree waiting on the usage lock; the orchestrator waited for the pid and landed again."
 }

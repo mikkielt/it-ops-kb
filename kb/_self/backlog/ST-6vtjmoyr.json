@@ -1,0 +1,26 @@
+{
+  "id": "ST-6vtjmoyr",
+  "kind": "story",
+  "title": "Implementation choices on rule-guarding items reach the operator before the worker stops, not as blocking gates found at landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retrospective of SP-lyfnpu37: three items with agents-rule touches stopped on or omitted a choice the plan could not foresee: ST-gdcn5467's worker chose open-items-only fingerprints without a gate (sent back to record gate held), TK-ye4msgps g1 and ST-iltxwoty g2 (poll interval) were made blocking by gate add mid-work, and BG-45zpw2go g2 was classed push for the word 'remote'. Each waited for the orchestrator after the work; in an unattended run that is a resume per item. Planning or the brief names the kinds of implementation choice a worker may take provisionally on rule-guarding touches, and which stay the operator's.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'implementation choice' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-lyfnpu37 close"
+  ]
+}
