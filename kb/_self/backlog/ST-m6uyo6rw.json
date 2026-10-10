@@ -2,7 +2,7 @@
   "id": "ST-m6uyo6rw",
   "kind": "story",
   "title": "Research sprint goal: Sprint tooling 3: plugin skills and a second project end to end",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ciqk6gt6",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "worker-ST-m6uyo6rw"
+  "evidence": {
+    "commit": "36b2f9baddf7ef361c945f6c642e49ff552dac67",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-m6uyo6rw"
+        ],
+        "exit": 0,
+        "sha256": "226356933fc30a8a"
+      }
+    ]
+  }
 }
