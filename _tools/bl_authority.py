@@ -24,10 +24,11 @@ PATHS = {
     "push": ("_tools/kbgit.py", "_tools/kbpublic.py", "_tools/kg_", "_tools/kblane.py", ".gitlab-ci.yml", ".github/",
              ".githooks/"),
     "querylog": ("kb/_querylog/",),
-    # the rules agents run under, and the code that guards them: the gate classes, the self-check, the hook script and
-    # the decision record, and the code the tests run (the bl_ modules, the test runner and its conftest)
+    # the rules agents run under (the plugin's `skills/` and `agents/` at its root are the one set the `.claude` entries
+    # link to), and the code that guards them: the gate classes, the self-check, the hook script and the decision
+    # record, and the code the tests run (the bl_ modules, the test runner and its conftest)
     "agents-rule": ("AGENTS.md", "CLAUDE.md", ".claude/agents/", ".claude/skills/", ".claude/hooks/",
-                    ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/",
+                    ".claude/settings.json", ".claude/settings.local.json", ".claude-plugin/", "skills/", "agents/",
                     "_tools/bl_", "_tools/tests.py", "_tools/conftest.py", "_tools/kb_hook.py", "_tools/kbdecide.py",
                     "_tools/backlog.py", "_tools/kbpy"),
 }
