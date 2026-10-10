@@ -59,7 +59,7 @@
       },
       "class": "design",
       "answer": "refuse with exit 2 naming the scenarios that have a plan",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "kinds-all-help",
@@ -91,7 +91,7 @@
       },
       "class": "design",
       "answer": "reword the help to name the default as every kind",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
