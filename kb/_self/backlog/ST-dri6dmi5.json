@@ -2,7 +2,7 @@
   "id": "ST-dri6dmi5",
   "kind": "story",
   "title": "The land e2e scenario uses a fixture backlog, so an invalid live backlog item cannot fail the suite",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-hlnsqx4f",
   "sprint": "SP-yzs3bj6f",
   "priority": "P2",
@@ -53,5 +53,6 @@
   "links": [
     "parked: SP-caqrexqw close"
   ],
-  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts. Premise: planned() clones a seed built from the live working tree (conftest.seed_files), so the scenario's kb/_self/backlog/ is the live items; test_land_e2e.py names no fixture backlog (grep -c -i fixture gives 0). Run 2026-10-10: reproduces. The added second check fails until the file builds its sprint from fixture items. Precheck: the tests.py -k land_runs_lint check passes before the work by design: it pins that the scenario still lands after the change. The fixture-text check is the one that fails until the work is done."
+  "notes": "Planned at the 2026-10-10 whole-backlog triage, which the operator asked to end with every draft planned into a sprint or dropped (sprint 9 of 13, \"Test suite and tools docs fixes\"); the triage reviewer found it serves the EP-gzr4mmkm fitness test F3: a sprint review files its gaps as parked drafts. Premise: planned() clones a seed built from the live working tree (conftest.seed_files), so the scenario's kb/_self/backlog/ is the live items; test_land_e2e.py names no fixture backlog (grep -c -i fixture gives 0). Run 2026-10-10: reproduces. The added second check fails until the file builds its sprint from fixture items. Precheck: the tests.py -k land_runs_lint check passes before the work by design: it pins that the scenario still lands after the change. The fixture-text check is the one that fails until the work is done.",
+  "claimed_by": "kb-worker-dri6dmi5"
 }
