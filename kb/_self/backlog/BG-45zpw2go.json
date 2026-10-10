@@ -54,7 +54,9 @@
         "settle nothing without the remote ref"
       ],
       "recommendation": "fall back to the local main",
-      "class": "push"
+      "class": "push",
+      "answer": "fall back to the local main",
+      "by": "operator"
     }
   ],
   "links": [
