@@ -1,0 +1,28 @@
+{
+  "id": "BG-mub4dmj2",
+  "kind": "bug",
+  "title": "dispatch stages a copy of a .claude/ touch that is a symlink to a plugin file outside .claude/, and done refuses the plugin file the copy-back changes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A touch naming a .claude/ path that is a symlink to a file outside .claude/ (the kb-sprint, kb-item and kb-backlog skills and the kb-worker agent link to the plugin's skills/*/SKILL.md and agents/worker.md) is read as its target: dispatch's staged_files names no staging copy for it (the worker edits the plugin file directly, as kb/_self/backlog.md says), and done's scope check counts a change to the target as inside the touch, or check warns of a touch that names such a link and names the target. Found in SP-4jfepy6u: ST-a5q6vaji's worker edited a staging copy of .claude/skills/kb-sprint/SKILL.md; the orchestrator's copy-back changed skills/sprint/SKILL.md, outside the item's touches, so its touches had to be widened by hand; and the copy-back's text named _tools/ paths, which test_backlog_portable refuses in a plugin skill, so the landing gate failed once, a failure the worker's own tests.py run could not see while it edited only the copy.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,inspect;sys.path.insert(0,'_tools');import bl_dispatch as d;link=os.path.islink('.claude/skills/kb-sprint/SKILL.md');src=inspect.getsource(d.staged_files);print('kb-sprint skill is a link:',link,'staged_files reads links:','realpath' in src or 'islink' in src);sys.exit(1 if link and not ('realpath' in src or 'islink' in src) else 0)"
+    ]
+  },
+  "repro_reason": "staged_files needs a loaded backlog and an item to run; the defect is that it never resolves a link, which its source shows",
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4jfepy6u run"
+  ]
+}
