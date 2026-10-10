@@ -4,7 +4,7 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
 
   backlog.py new KIND --title T [--parent ID] [--sprint ID] [--priority P1|P2|P3] [--rank N] [--goal TEXT]
                  [--severity S1..S4] [--check CMD]... [--touch GLOB]... [--depends ID]... [--repro CMD]
-                 [--repro-reason TEXT]
+                 [--repro-reason TEXT] [--external TRACKER=ID]...
                                           a new item (KIND: epic, story, task, subtask, bug, sprint); prints its id
                                           and title. A bug's --repro must fail now, and for the defect: one that
                                           cannot start, dies of a SyntaxError in its own code, gets a usage error
@@ -37,10 +37,12 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py list [--kind K] [--status S] [--sprint ID]   one line per item: id, kind, status, priority, title
   backlog.py tree [ID] [--sprint ID] [--open]  the hierarchy under an item, a sprint or everything (--open: no done or
                                           dropped item)
-  backlog.py find WORD...                 the open items whose title or goal holds every word (case-insensitive), each
-                                          with its parent chain; no match prints one line and exits 1
-  backlog.py show ID                      one item, its parent chain, children, the knowledge state of each ask and
-                                          ref of its `knowledge` and what it waits on; an item whose file was
+  backlog.py find WORD...                 the open items whose title, goal or external ids hold every word
+                                          (case-insensitive), each with its parent chain; no match prints one
+                                          line and exits 1
+  backlog.py show ID                      one item, its parent chain, children, an `external TRACKER REF URL` line
+                                          for each external id, the knowledge state of each ask and ref of its
+                                          `knowledge` and what it waits on; an item whose file was
                                           deleted (a closed sprint's) prints its last version from git history
   backlog.py next [--sprint ID] [--any] [--all]   the ready item to work on first (--all: every ready item in
                                           order; --any: items outside an active sprint too, for single-item work),
@@ -75,12 +77,14 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                  [--relates ID]... [--priority P1|P2|P3] [--rank N] [--sprint ID] [--title T] [--goal T]
                  [--repro CMD] [--repro-reason T] [--severity S1..S4] [--parent ID]
                  [--delegate NAME --by operator] [--add-notes T]... [--add-link T]... [--add-touch GLOB]...
-                 [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--clear FIELD]...
+                 [--add-check CMD]... [--add-depends ID]... [--add-relates ID]... [--external TRACKER=ID]...
+                 [--add-external TRACKER=ID]... [--clear FIELD]...
                                           change an item after new: each list option replaces its list, and its
                                           --add-<option> twin appends what is missing to it, so a second run changes
                                           nothing (--add-notes appends the text unless the notes hold it); a call
                                           that names both for one field is refused, naming it. --clear FIELD
-                                          removes one.
+                                          removes one. --external replaces the external ids whole, and only a
+                                          tracker backlog.json's trackers names takes an id its pattern matches.
                                           The result is validated as check does and written only when it adds no
                                           error; title, goal and parent, and a bug's repro (one that fails now, as
                                           new bug's), repro_reason and severity are replaced whole; status,

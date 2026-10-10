@@ -52,5 +52,6 @@
   ],
   "lane_module": "kblane",
   "worktree_dir": ".claude/worktrees",
-  "forge_project": ""
+  "forge_project": "",
+  "trackers": {}
 }

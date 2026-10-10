@@ -44,6 +44,7 @@ MAX_IDS = 40  # more values than this: "N ids (see diff)" instead of the list
 KEYS = ("KB-Topics", "KB-Sources-Added", "KB-Sources-Changed", "KB-Sources-Superseded", "KB-Answers")
 VERIFIED = "KB-Verified"
 AUTO = "KB-Auto"  # querylog.py's automatic commits (kb/_self/querylog.md, Delivery)
+REF = "KB-Ref"  # an external tracker id of a backlog item (backlog.py claim and done --commit): one per line, one word
 AUTO_VALUES = ("querylog", "eval", "alias", "expansion", "gap", "research", "revert")
 WORK = kg_lane.WORK  # the backlog items a commit works on (kb/_self/backlog.md); written by the agent, never computed
 WORK_ID = re.compile(r"(?:EP|ST|TK|SB|BG|SP)-[a-z2-7]{8}")
@@ -240,7 +241,7 @@ def trailer_lines(computed, verified=None):
 def parse_trailers(text):
     """{canonical key: [values]} of the KB-* trailers in `git log %(trailers:only,unfold)` output."""
     out = {}
-    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK)}
+    canon = {k.lower(): k for k in KEYS + (VERIFIED, AUTO, WORK, REF)}
     for ln in (text or "").splitlines():
         k, sep, v = ln.partition(":")
         if sep and k.strip().lower() in canon:
@@ -438,6 +439,8 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
             auto = have.get(AUTO)
             if auto and (len(auto) > 1 or not all(x.strip() in AUTO_VALUES for x in auto[0].split(","))):
                 wrong.append(AUTO)
+            if any(re.fullmatch(r"\S+", x) is None for x in have.get(REF, [])):
+                wrong.append(REF)
             work = have.get(WORK)
             state = []
             paths = changes[sha][1] if sha in changes else changed_paths(first_parent(sha), sha)
@@ -457,7 +460,8 @@ def trailer_audit(rng, quiet=False, work_state_on=True):
                 lines += [f"    not a trailer: {ln!r}" for ln in stray] + ([f"    {STRAY}"] if stray else [])
                 for k in wrong:
                     exp = next((ln for ln in trailer_lines(want) if ln.startswith(k + ":")), {VERIFIED: "YYYY-MM-DD, once", AUTO: "once, of " + "|".join(AUTO_VALUES),
-                                                                                                     WORK: "once, backlog item ids that exist at the commit or its parent"}.get(k, f"(no {k})"))
+                                                                                                     WORK: "once, backlog item ids that exist at the commit or its parent",
+                                                                                                     REF: "one tracker id on each line, with no space"}.get(k, f"(no {k})"))
                     lines.append(f"    {k}: has {', '.join(have.get(k, [])) or '(none)'}; expected {exp}")
                 for why in state:
                     lines.append(f"    {WORK}: {why}" + ("" if why in FORM_ONLY else
@@ -475,7 +479,7 @@ STRAY = ("git reads trailers only in the message's last paragraph (a blank line 
          "that paragraph, one block with Co-Authored-By and the other trailers")
 STRAY_WORK = STRAY  # the name kbgit.py re-exports
 REVIEWED = "Self-Reviewed"  # selfdoc.py's trailer; kg_trailers does not import selfdoc
-TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
+TRAILER_KEYS = (*KEYS, VERIFIED, AUTO, WORK, REF, REVIEWED)  # the trailers of ours: a prose line like `kb-sprint:` is none
 STRAY_KEY = re.compile(r"(" + "|".join(re.escape(k) for k in TRAILER_KEYS) + r")[ \t]*:[ \t]*\S", re.I)  # by key, any case
 
 

@@ -19,7 +19,7 @@ import bl_intake
 from bl_base import (
     ALWAYS_IN_SCOPE, APPROVALS, FIELDS, GATE_KINDS, ID_RE, IN_SPRINT, KINDS, NEEDS_CHECKS, NEEDS_TOUCHES, PARENTS,
     PREFIX_KIND, PRIORITIES, Refused, SEVERITIES, SPRINT_ID_RE, SPRINT_STATUSES, START_GATE, STATUSES, TEXT_MAX, WORKED,
-    canonical, REL_DIR, glob_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
+    canonical, REL_DIR, external_problems, glob_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
     touches_overlap, withhold_names,
 )
 from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches, unordered_overlap_warnings
@@ -561,6 +561,11 @@ def validate(bl, pieces=None):
                 e(_text_problem(f, it[f]))
         if "links" in it and not (isinstance(it["links"], list) and all(_text_ok(x) for x in it["links"])):
             e("links must be a list of texts (each non-empty, at most TEXT_MAX)")
+        if "external" in it:
+            if kind == "sprint":
+                e("external ids are a work item's, not a sprint's")
+            for why in external_problems(it["external"]):
+                e(why)
         if bl.raw.get(iid) != canonical(it):
             e("not in canonical form (python3 _tools/backlog.py fmt)")
         if kind == "sprint":
