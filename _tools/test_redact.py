@@ -325,6 +325,76 @@ def census_phases_write_one_ops_row_each(tmp_path):
     assert out[0] == "ops: 3 rows (census.phase 3)" and out[1].startswith("  census.phase: 3, failed 1, median ")
 
 
-def test_census_queue_is_sized_without_network_and_each_phase_writes_one_ops_row_the_digest_counts(tmp_path, monkeypatch):
+def census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys):
+    seen = []
+    for mod, name in ((census, "KB"), (kbcommon, "KB"), (factdiff, "ROOT")):  # main() sets them: restored after the test
+        monkeypatch.setattr(mod, name, getattr(mod, name))
+
+    def go(*argv, code=0, **patch):
+        """Run census.py ARGV in this process with its steps replaced, so no tool, git or network is touched."""
+        seen.clear()
+        codes = {"detect": 1, **patch}  # detect exits 1 when facts need review: no failure
+
+        def run_step(s):
+            seen.append(s["name"])
+            return codes.get(s["name"], 0), "D-1\tinvalidated\tpublic\tsource S1 superseded\nD-2\trelink\tpublic\tfact:K\tkb/public/x.md:3\ttext\n"
+
+        monkeypatch.setattr(census, "run_step", run_step)
+        monkeypatch.setattr(census, "run_commit", lambda s, root_rel, finish: (seen.append("commit") or 0, ""))
+        monkeypatch.setattr(sys, "argv", ["census.py", *argv])
+        with pytest.raises(SystemExit) as e:
+            census.main()
+        out = capsys.readouterr()
+        assert e.value.code == code
+        return out.out + out.err
+
+    monkeypatch.setattr(census, "tracked_dirty", lambda: [])
+    monkeypatch.setattr(census, "output_exists", lambda rel: False)
+    monkeypatch.setattr(census, "apply_committed", lambda log, date: False)
+    # a dry run prints each step's argv, in order, and runs nothing
+    text = go("run", "--date", "2099-01-02", "--dry-run")
+    assert seen == []
+    assert [ln.split(":")[0] for ln in text.splitlines() if ln.startswith("step ")] == [
+        "step 1/6 detect", "step 2/6 apply", "step 3/6 check", "step 4/6 index", "step 5/6 commit", "step 6/6 summary"]
+    assert "factdiff.py detect --date 2099-01-02 --sitemaps" in text and "apply kb/public/_census/factdiff-2099-01-02.csv" in text
+    assert "--factdiff kb/public/_census/factdiff-2099-01-02.csv" in text and "--trailer" not in text
+    # every step runs in order; detect's exit 1 is no failure; the run ends with the summary
+    go("run", "--date", "2099-01-02")
+    assert seen == ["detect", "apply", "check", "index", "commit", "summary"]
+    # planted failure: check exits 3: the run stops with that code and names the step and the command that resumes it
+    text = go("run", "--date", "2099-01-02", code=3, check=3)
+    assert seen == ["detect", "apply", "check"]
+    assert "step 3/6 check failed with exit 3; resume from it:" in text and "run --date 2099-01-02 --resume" in text
+    # --resume skips the steps whose output exists
+    monkeypatch.setattr(census, "output_exists", lambda rel: "factdiff-" in rel)
+    monkeypatch.setattr(census, "apply_committed", lambda log, date: True)
+    text = go("run", "--date", "2099-01-02", "--resume")
+    assert seen == ["check", "index", "commit", "summary"] and "step 1/6 detect: skipped" in text
+    # a log that holds phase-2 outcomes is not overwritten without --resume
+    log = tmp_path / "2099-01-02.csv"
+    log.write_text(",".join(census.COLS) + "\n", encoding="utf-8")
+    monkeypatch.setattr(census, "output_exists", lambda rel: True)
+    monkeypatch.setattr(census, "read_log", lambda path: [census_row("S9990001", outcome="confirmed")])
+    text = go("run", "--date", "2099-01-02", code=2)
+    assert seen == [] and "holds 1 phase-2 outcome" in text
+    # finish: confirm, sweep, index, commit; it prints the sweep's invalidation and relink lines for the report
+    text = go("finish", str(log), "--date", "2099-01-02")
+    assert seen == ["confirm", "sweep", "index", "commit"]
+    assert text.index("for the report") < text.index("D-1\tinvalidated") < text.index("D-2\trelink")
+    assert "--trailer" in go("finish", str(log), "--date", "2099-01-02", "--dry-run")
+    text = go("finish", str(log), "--date", "2099-01-02", code=1, sweep=1)
+    assert seen == ["confirm", "sweep"] and "step 2/4 sweep failed with exit 1" in text
+    # planted failure: a tracked change outside the root refuses the run before its first step; a decision ledger
+    # is one finish writes, run does not
+    assert census.foreign(["kb/public/_sources.csv", "kb/_self/_decisions.csv", "kb/_self/code.md"], "kb/public", True) == ["kb/_self/code.md"]
+    monkeypatch.setattr(census, "tracked_dirty", lambda: ["kb/_self/_decisions.csv"])
+    text = go("run", "--date", "2099-01-02", "--resume", code=2)
+    assert seen == [] and "refused: tracked changes outside kb/public/: kb/_self/_decisions.csv" in text
+    go("finish", str(log), "--date", "2099-01-02")
+    assert seen == ["confirm", "sweep", "index", "commit"]
+
+
+def test_census_queue_is_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step(tmp_path, monkeypatch, capsys):
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_phases_write_one_ops_row_each(tmp_path)
+    census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)

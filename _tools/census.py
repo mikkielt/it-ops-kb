@@ -5,7 +5,9 @@
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
-  census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, and the size of phase 2's reading queue
+  census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked hosts, and the size of phase 2's reading queue
+  census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
+  census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
 
 census.py --root NAME <command> works on that root of this repository's kb/ (default public): its _sources.csv,
 _fetch_state.csv, articles and _census/ log. The clone cache (_cache/census/repos) is shared: a repository at a
@@ -55,9 +57,24 @@ when the cache holds none (a linked worktree reads the clone's main worktree's c
 check, record and confirm (not confirm --dry-run) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
-Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments.
+run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
+row is its own), with no agent turn between them:
+  run:    factdiff.py detect --sitemaps (exit 1, facts to review, is no failure), factdiff.py apply --commit (its
+          KB-Verified commit), check --factdiff, build_index.py, the commit of the census log (and of what the steps changed
+          in the root), then summary with the queue block and the blocked hosts. --resume skips detect when
+          _census/factdiff-<D>.csv exists, apply when its commit is in the history, check when _census/<D>.csv exists;
+          without --resume a log that holds phase-2 outcomes is never overwritten (exit 2).
+  finish: confirm, kbdecide.py sweep, build_index.py, the commit `docs(kb): census <D>: confirmed dates` with a
+          KB-Verified trailer; it prints the sweep's invalidation and relink lines for the report. Every step writes the
+          same bytes a second time, so a stopped finish is run again whole.
+A failing step stops the run with its exit code and names the step and the command that resumes it. Tracked changes
+outside the root under census (and, for finish, the decision ledgers) refuse the run before its first step and its
+commit (exit 2); nothing is ever pushed. --dry-run prints each step's argv and runs nothing.
+
+Exit: 0 ok; 1 check could not write, or confirm/record found an unknown id; 2 bad arguments, or run/finish refused;
+run and finish: the exit code of the step that failed.
 """
-import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, ssl, subprocess, sys, threading
+import argparse, concurrent.futures as cf, csv, datetime, functools, hashlib, io, json, os, random, re, shlex, ssl, subprocess, sys, threading
 import urllib.error, urllib.request
 from collections import Counter, defaultdict
 from urllib.parse import unquote, urlparse
@@ -838,9 +855,201 @@ def cmd_summary(a, tally):
     print(f"sources={len(rows)} " + " ".join(f"{k}={b[k]}" for k in BUCKETS))
     print("outcomes: " + " ".join(f"{k}={v}" for k, v in sorted(o.items())))
     print("needs-reading by note: " + " ".join(f"{k}={v}" for k, v in sorted(nr.items())))
+    blocked = Counter(urlparse(r["url"]).netloc.lower() or "-" for r in rows if r["note"] == BLOCKED)
+    print("blocked hosts (denied by this environment's network policy, their sources stay unconfirmed): "
+          + (" ".join(f"{h}={n}" for h, n in sorted(blocked.items())) or "none"))
     print(f"confirmed (phase 3 would date): {sum(1 for r in rows if confirmed(r))}")
     print("\n".join(queue_lines(reading_queue(rows, factdiff_log_rows(rows, a.log, a.factdiff)))))
     return 0
+
+
+# ---------------------------------------------------------------- run, finish: the phases no model decides
+
+TOOLS_REL = kbcommon.repo_rel(kbcommon.TOOLS, kbcommon.HOME)  # `_tools`: the steps run from the repository's root
+LEDGER = re.compile(r"kb/[^/]+/_decisions\.csv")  # what kbdecide.py sweep writes, in every root and in kb/_self
+
+
+def step(name, script, *args, ok=(0,), skip="", capture=False):
+    """One step of a driver: its argv (printed with `python3`, run with this interpreter), the exit codes that are no
+    failure, the reason a resumed run skips it (empty: it runs) and whether its output is kept for the report."""
+    return {"name": name, "argv": ["python3", f"{TOOLS_REL}/{script}", *args], "ok": ok, "skip": skip, "capture": capture}
+
+
+def commit_step(subject, body, add, *trailers):
+    """The step that commits: `add` are the files it adds besides the tracked changes of the root (the census logs)."""
+    argv = ["git", "commit", "-q", "-m", subject, "-m", body]
+    for t in trailers:
+        argv += ["--trailer", t]
+    return {"name": "commit", "argv": argv, "ok": (0,), "skip": "", "capture": False, "add": add}
+
+
+def root_args(root):
+    return [] if root == "public" else ["--root", root]
+
+
+def census_path(name):
+    return kbcommon.repo_rel(f"{kbcommon.CENSUS_DIR}/{name}")
+
+
+def output_exists(rel):
+    return os.path.exists(os.path.join(kbcommon.HOME, rel))
+
+
+def apply_committed(flog, date):
+    """True when `factdiff.py apply --commit` of this log and date is already in the history (its commit message names
+    both: apply writes nothing a rerun could tell it by, and a rerun with nothing to commit fails)."""
+    path = os.path.relpath(os.path.join(kbcommon.HOME, flog), kbcommon.HOME)
+    return bool(g(kbcommon.HOME, "log", "-1", "--format=%H", "--fixed-strings", "--all-match",
+                  f"--grep=fact diff {date}: confirm", f"--grep={path}")[1])
+
+
+def plan_run(root, date, resume, exists, applied):
+    """The steps of `census.py run`: phase 0 (the fact diff and what it settles), phase 1 (the mechanical verdicts), the
+    index and the phase-1 commit, then the summary. `exists(path)` and `applied(log, date)` say whether the output of
+    a step for this date is there; `resume` skips the steps whose output is."""
+    flog, log = census_path(f"factdiff-{date}.csv"), census_path(f"{date}.csv")
+    ra = root_args(root)
+    return [
+        step("detect", "factdiff.py", *ra, "detect", "--date", date, "--sitemaps", ok=(0, 1),
+             skip=f"{flog} exists" if resume and exists(flog) else ""),
+        step("apply", "factdiff.py", *ra, "apply", flog, "--date", date, "--commit",
+             skip="its commit is in the history" if resume and applied(flog, date) else ""),
+        step("check", "census.py", *ra, "check", "--date", date, "--factdiff", flog,
+             skip=f"{log} exists" if resume and exists(log) else ""),
+        step("index", "build_index.py", *ra),
+        commit_step(f"docs(kb): census {date} phase 1 verdicts",
+                    "census.py run: the fact diff, the mechanical verdicts and the index; no model read them.", [log, flog]),
+        step("summary", "census.py", *ra, "summary", log, "--factdiff", flog),
+    ]
+
+
+def plan_finish(root, log, date):
+    """The steps of `census.py finish`: phase 3 (dates), the sweep of the decisions whose context it broke, the index
+    and the confirmed-dates commit with its KB-Verified trailer."""
+    ra = root_args(root)
+    return [
+        step("confirm", "census.py", *ra, "confirm", log, "--date", date),
+        step("sweep", "kbdecide.py", "sweep", "--date", date, capture=True),
+        step("index", "build_index.py", *ra),
+        commit_step(f"docs(kb): census {date}: confirmed dates",
+                    "census.py finish: sources, articles and fetch state dated by script; decisions swept.", [],
+                    f"KB-Verified: {date}"),
+    ]
+
+
+def tracked_dirty():
+    """The tracked paths that differ from HEAD or from the index (untracked files do not count, as for `kbgit.py sync`)."""
+    out = set()
+    for extra in ([], ["--cached"]):
+        out.update(p for p in g(kbcommon.HOME, "diff", "--name-only", "-z", *extra)[1].split("\0") if p)
+    return sorted(out)
+
+
+def foreign(paths, root_rel, finish):
+    """The paths a driver does not write: outside the root under census and, for `finish`, no decision ledger."""
+    return [p for p in paths if not p.startswith(root_rel + "/") and not (finish and LEDGER.fullmatch(p))]
+
+
+def run_step(s):
+    """(exit code, stdout kept for a `capture` step else '') of one step, run from the repository's root."""
+    p = subprocess.run([sys.executable, *s["argv"][1:]], cwd=kbcommon.HOME, text=True, encoding="utf-8",
+                       stdout=subprocess.PIPE if s["capture"] else None)
+    return p.returncode, p.stdout or ""
+
+
+def run_commit(s, root_rel, finish):
+    """(exit code, '') of the commit step: add the census logs and the tracked changes of the root (and, for `finish`,
+    of the ledgers), then commit when the index differs from HEAD; a tracked change outside them refuses it (exit 2).
+    Never pushes."""
+    dirty = tracked_dirty()
+    bad = foreign(dirty, root_rel, finish)
+    if bad:
+        print(f"refused: tracked changes outside {root_rel}/: {', '.join(bad[:5])}", file=sys.stderr)
+        return 2, ""
+    add = sorted({*dirty, *(p for p in s["add"] if output_exists(p))})
+    if add and g(kbcommon.HOME, "add", "--", *add)[0]:
+        print("git add failed; nothing committed", file=sys.stderr)
+        return 1, ""
+    if g(kbcommon.HOME, "diff", "--cached", "--quiet")[0] == 0:
+        print("nothing to commit")
+        return 0, ""
+    code, _, err = g(kbcommon.HOME, *s["argv"][1:])
+    if code:
+        print(f"git commit failed (hooks or nothing to commit): {err.splitlines()[-1] if err else code}", file=sys.stderr)
+        return 1, ""
+    print(f"committed: {s['argv'][s['argv'].index('-m') + 1]}")
+    return 0, ""
+
+
+def drive(steps, root_rel, finish, dry_run, rerun):
+    """Run `steps` in order, one at a time, with no agent turn between them: (0, kept) when all pass, else (the exit
+    code of the step that failed, kept); the failing step's name and `rerun`, the command that resumes it, are
+    printed. A dry run prints each step's argv and runs nothing. `kept` is the output of each `capture` step by name."""
+    n, kept = len(steps), {}
+    for i, s in enumerate(steps, 1):
+        head = f"step {i}/{n} {s['name']}"
+        if dry_run:
+            print(f"{head}: {shlex.join(s['argv'])}" + (f"  (--resume skips it: {s['skip']})" if s["skip"] else ""))
+        elif s["skip"]:
+            print(f"{head}: skipped, {s['skip']}")
+        else:
+            print(f"{head}: {shlex.join(s['argv'])}", flush=True)
+            code, kept[s["name"]] = run_commit(s, root_rel, finish) if s["name"] == "commit" else run_step(s)
+            if code not in s["ok"]:
+                if kept[s["name"]]:
+                    print(kept[s["name"]].rstrip("\n"), file=sys.stderr)
+                print(f"{head} failed with exit {code}; resume from it: {rerun}", file=sys.stderr)
+                return code, kept
+    return 0, kept
+
+
+def refusals(root_rel, finish, extra=()):
+    """What stops a driver before its first step: `extra`, and tracked changes it does not write."""
+    bad = foreign(tracked_dirty(), root_rel, finish)
+    scope = f"{root_rel}/" + (" and the decision ledgers" if finish else "")
+    return [*extra, *([f"tracked changes outside {scope}: {', '.join(bad[:5])}" + (f" (+{len(bad) - 5} more)" if len(bad) > 5 else "")
+                       + "; commit or set them aside, as `kbgit.py sync` requires too"] if bad else [])]
+
+
+def start(why, dry_run):
+    """None to go on, else the exit code: a dry run only notes what would refuse a run, a run is refused (exit 2)."""
+    for w in why:
+        print(("note: a run would be refused: " if dry_run else "refused: ") + w, file=sys.stdout if dry_run else sys.stderr)
+    return 2 if why and not dry_run else None
+
+
+def cmd_run(a, tally):
+    date, root, root_rel = a.date or today(), os.path.basename(KB), kbcommon.repo_rel(".")
+    log, extra = census_path(f"{date}.csv"), []
+    if not a.resume and output_exists(log):
+        n = sum(1 for r in read_log(os.path.join(kbcommon.HOME, log)) if r["outcome"])
+        if n:
+            extra.append(f"{log} holds {n} phase-2 outcome(s) that check would overwrite; --resume continues from it")
+    refused = start(refusals(root_rel, False, extra), a.dry_run)
+    if refused:
+        return refused
+    rerun = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(root), "run", "--date", date, "--resume"])
+    code, _ = drive(plan_run(root, date, a.resume, output_exists, apply_committed), root_rel, False, a.dry_run, rerun)
+    if code == 0 and not a.dry_run:
+        print(f"next: phase 2 reads the queue above; phase 3 is `census.py finish {log} --date {date}`")
+    return code
+
+
+def cmd_finish(a, tally):
+    date, root, root_rel = a.date or today(), os.path.basename(KB), kbcommon.repo_rel(".")
+    if not os.path.isfile(a.log):
+        print(f"no census log {a.log}", file=sys.stderr)
+        return 2
+    log = os.path.relpath(os.path.abspath(a.log), kbcommon.HOME).replace(os.sep, "/")
+    refused = start(refusals(root_rel, True), a.dry_run)
+    if refused:
+        return refused
+    rerun = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(root), "finish", log, "--date", date])
+    code, kept = drive(plan_finish(root, log, date), root_rel, True, a.dry_run, rerun)
+    if code == 0 and not a.dry_run:
+        print("for the report (kbdecide.py sweep: the invalidations and the relink lines, which `kbdecide.py relink` repoints):")
+        print(kept.get("sweep", "").rstrip("\n") or "(no output)")
+    return code
 
 
 PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm}  # each writes a census.phase ops row
@@ -877,6 +1086,14 @@ def main():
     m.add_argument("log")
     m.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default: the "
                                                       "log the census's evidence names, else factdiff-<date>.csv beside LOG)")
+    u = sub.add_parser("run", help="phases 0-1 as one command: fact diff, apply, check, index, the phase-1 commit, summary")
+    u.add_argument("--date", help="census date (default today)")
+    u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")
+    u.add_argument("--dry-run", action="store_true", help="print each step's argv, run nothing")
+    z = sub.add_parser("finish", help="phase 3 as one command: confirm, decision sweep, index, the confirmed-dates commit")
+    z.add_argument("log")
+    z.add_argument("--date", help="confirmation date (default today)")
+    z.add_argument("--dry-run", action="store_true", help="print each step's argv, run nothing")
     a = ap.parse_args()
     kbd = os.path.realpath(kbcommon.KB_DIR)
     try:
@@ -889,7 +1106,7 @@ def main():
     factdiff.ROOT = here[0]
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
-    cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary}
+    cmds = {**PHASES, "sample": cmd_sample, "summary": cmd_summary, "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):
         sys.exit(ql_capture.census_phase(a.cmd, run, ql_capture.phase_date(getattr(a, "date", None), getattr(a, "log", None))))
