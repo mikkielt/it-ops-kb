@@ -1,8 +1,9 @@
 """The shared ground of backlog.py's modules (kb/_self/backlog.md): the project settings (`SETTINGS`, read once from
 backlog.json by `read_settings`, with the kb's current values as the defaults) and the constants made from them, the
 two refusals, the Backlog class that reads and writes the item files, git and the command runner, the scope helpers,
-the host and user name guard behind everything the tool prints, the helpers that commit the item files a command
-wrote, and what an item waits on (`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
+the host and user name guard behind everything the tool prints, the external tracker id helpers (`external_problems`,
+`external_refs`, `external_lines`, `external_trailers`, `external_description`), the helpers that commit the item files a
+command wrote, and what an item waits on (`waits`, `open_gates`) with the one-line `line` that names it. Standard library only;
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
@@ -16,6 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CONFIG_NAME = "backlog.json"  # at the repository root
 CONFIG_ENV = "KB_BACKLOG_CONFIG"  # a path in the environment: read from there instead of the root's file
 KIND_NAMES = ("epic", "story", "task", "subtask", "bug", "sprint")
+TRACKER_NAME_RE = re.compile(r"[a-z][a-z0-9_-]*")  # a tracker's name in backlog.json's trackers and an item's external
 # One place lists the settings: key -> (type, the kb's current value). A type is a TYPES name; a key not here is refused
 # in backlog.json, and a key the file leaves out takes its value from here.
 SETTINGS = {
@@ -32,6 +34,8 @@ SETTINGS = {
     "lane_module": ("module", "kblane"),  # the module that says which lane a path belongs to
     "worktree_dir": ("path", ".claude/worktrees"),  # a worker's worktrees, under the clone's main checkout
     "forge_project": ("str", ""),  # the forge project of the integration remote; "" = read from the remote's URL
+    # the external trackers an item's `external` ids may name: tracker -> {pattern, url, ref?}; {} = none accepted
+    "trackers": ("trackers", {}),
 }
 
 
@@ -65,6 +69,22 @@ def _type_problem(kind, v):
               and len(set(v.values())) == len(v))
         return None if ok else ("an object with one distinct two-capital-letter prefix for each of "
                                 + ", ".join(KIND_NAMES))
+    if kind == "trackers":
+        def tracker_ok(name, t):
+            if not (isinstance(name, str) and TRACKER_NAME_RE.fullmatch(name) and isinstance(t, dict)):
+                return False
+            if not {"pattern", "url"} <= set(t) <= {"pattern", "url", "ref"} or not all(
+                    isinstance(x, str) and x for x in t.values()):
+                return False
+            ref = t.get("ref", "{id}")
+            try:
+                re.compile(t["pattern"])
+            except re.error:
+                return False
+            return "{id}" in t["url"] and "{id}" in ref and re.search(r"\s", ref) is None
+        ok = isinstance(v, dict) and all(tracker_ok(n, t) for n, t in v.items())
+        return None if ok else ('an object of tracker name (lower case) to {"pattern": a regex the whole id matches, '
+                                '"url": a template with {id}, "ref": an optional template with {id} and no space}')
     raise ValueError(f"unknown settings type {kind!r}")
 
 
@@ -136,7 +156,7 @@ NEEDS_CHECKS = ("story", "bug", "task")
 NEEDS_TOUCHES = ("task", "subtask")
 ORDER = ("id", "kind", "title", "status", "parent", "sprint", "review", "goal_research", "priority", "rank", "severity", "goal",
          "repro", "repro_reason", "checks", "touches", "depends_on", "relates_to", "gates", "trigger", "knowledge",
-         "links", "notes", "delegates", "recurs", "claimed_by", "evidence")
+         "links", "external", "notes", "delegates", "recurs", "claimed_by", "evidence")
 FIELDS = set(ORDER)
 # files any item's commits may change besides its `touches`: the tracker itself and what build_index.py regenerates
 ALWAYS_IN_SCOPE = tuple(setting("always_in_scope"))
@@ -499,6 +519,81 @@ def touches_overlap(a, b, files):
     return bool(ra.match(b) or rb.match(a) or any(ra.match(f) and rb.match(f) for f in files))
 
 
+# ------------------------------------------------------------------ external tracker ids
+
+REF_TRAILER = "KB-Ref"  # one commit trailer per external id, its value the tracker's ref form of the id
+REF_VERBS = ("claim", "done")  # the --commit verbs whose commits carry the item's KB-Ref trailers
+REF_HEADER = "Tracker references (KB-Ref):"  # the line that heads land's block in a merge request description
+
+
+def external_problems(external, trackers=None):
+    """[why] an item's `external` (tracker name -> list of ids) is refused against the project's TRACKERS (default:
+    backlog.json's trackers key): not a map of lists, a tracker the file does not name (a project without a trackers
+    key names none, so accepts none), an id that has a space or that the tracker's pattern does not match whole, or
+    one listed twice. [] when it is sound."""
+    trackers = setting("trackers") if trackers is None else trackers
+    if not isinstance(external, dict) or not external:
+        return ["external must be a map of tracker name to a list of ids (set ID --external TRACKER=ID)"]
+    out = []
+    for name, ids in external.items():
+        if name not in trackers:
+            named = ", ".join(sorted(trackers)) or "none: its trackers key is absent or empty"
+            out.append(f"external names tracker {name!r}, which backlog.json does not name (it names {named})")
+            continue
+        if not isinstance(ids, list) or not ids or not all(isinstance(x, str) and x for x in ids):
+            out.append(f"external {name}: ids must be a non-empty list of texts")
+            continue
+        pattern = trackers[name]["pattern"]
+        for i, x in enumerate(ids):
+            if x in ids[:i]:
+                out.append(f"external {name}: id {x!r} is listed twice")
+            elif re.search(r"\s", x) or re.fullmatch(pattern, x) is None:
+                out.append(f"external {name}: id {x!r} does not match the tracker's pattern {pattern!r} "
+                           f"(backlog.json, trackers.{name}.pattern)")
+    return out
+
+
+def external_refs(it, trackers=None):
+    """[(tracker, id, ref, url)] for the external ids of an item: tracker names sorted, each one's ids in the order
+    stored. `ref` is the form a commit trailer and a merge request description carry (the tracker's ref template, by
+    default the id), `url` the tracker's url template filled in; an id of a tracker the file does not name has its
+    id for ref and no url (`check` refuses it). Shapes `external_problems` refuses are skipped, never raised on."""
+    trackers = setting("trackers") if trackers is None else trackers
+    ext = it.get("external")
+    out = []
+    for name in sorted(ext) if isinstance(ext, dict) else ():
+        t = trackers.get(name)
+        for x in ext[name] if isinstance(ext[name], list) else ():
+            if isinstance(x, str) and x:
+                out.append((name, x, t.get("ref", "{id}").replace("{id}", x) if t else x,
+                            t["url"].replace("{id}", x) if t else ""))
+    return out
+
+
+def external_lines(it, indent="", trackers=None):
+    """One line for each external id of an item, `external TRACKER REF URL`: what `show` prints, and the helper the
+    worker's brief calls for the item's tracker ids with their urls. [] for an item with none."""
+    return [f"{indent}external {name} {ref}" + (f" {url}" if url else "")
+            for name, _, ref, url in external_refs(it, trackers)]
+
+
+def external_trailers(it, trackers=None):
+    """[`KB-Ref: REF`] one for each distinct ref of an item's external ids, in external_refs' order: the trailer lines
+    the claim and done commits carry (a Jira key anywhere in a commit message links the commit to the issue)."""
+    refs = list(dict.fromkeys(ref for _, _, ref, _ in external_refs(it, trackers)))
+    return [f"{REF_TRAILER}: {r}" for r in refs]
+
+
+def external_description(it, trackers=None):
+    """The block land writes into a merge request description: REF_HEADER, then `- TRACKER REF: URL` for each external
+    id (no URL after a bare ref). It holds no closing keyword (a GitLab closing pattern, a Jira trigger word), so
+    merging the request closes no issue. "" for an item with no external ids."""
+    rows = external_refs(it, trackers)
+    if not rows:
+        return ""
+    return "\n".join([REF_HEADER] + [f"- {name} {ref}" + (f": {url}" if url else "") for name, _, ref, url in rows])
+
+
 # ------------------------------------------------------------------ output and commits
 
 OUTPUT_ROOT = [ROOT]  # the backlog main() reads: its remotes give the paths withhold() leaves alone
@@ -527,11 +622,12 @@ TRAILER_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*:[ \t]*\S[^\r\n]*\Z")
 
 def trailer_problem(t):
     """Why a --trailer value is refused, or None: one `Key: value` line whose key is not a KB-* one (KB-Work is the
-    command's own, the others are the commit-msg hook's)."""
+    command's own, KB-Ref the item's external ids', the others are the commit-msg hook's)."""
     if not TRAILER_RE.fullmatch(t):
         return f"--trailer {t!r} is not one `Key: value` line"
     if t.split(":", 1)[0].strip().upper().startswith("KB-"):
-        return f"--trailer {t!r}: KB-* trailers are written by backlog.py (KB-Work) and the commit-msg hook"
+        return (f"--trailer {t!r}: KB-* trailers are written by backlog.py (KB-Work, KB-Ref) and the commit-msg "
+                "hook")
     return None
 
 
@@ -562,7 +658,9 @@ def commit_written(bl, a, verb, iid, ids=None, body="", title=None):
     if title is None:
         title = bl.items.get(iid, {}).get("title", "")
     subject = withhold(f'chore(backlog): {verb} {iid} "{title}"' if title else f"chore(backlog): {verb} {iid}")
-    msg = commit_message(subject, ids or [iid], getattr(a, "trailer", None) or (), withhold(body) if body else "")
+    refs = external_trailers(bl.items[iid]) if verb in REF_VERBS and iid in bl.items else []  # KB-Ref: one per id
+    msg = commit_message(subject, ids or [iid], refs + list(getattr(a, "trailer", None) or ()),
+                         withhold(body) if body else "")
     p = subprocess.run(["git", "commit", "-q", "-F", "-", "--only", "--", *paths], cwd=bl.root, input=msg,
                        capture_output=True, text=True, encoding="utf-8", errors="replace")
     if p.returncode != 0:

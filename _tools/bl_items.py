@@ -12,8 +12,8 @@ import bl_authority
 import bl_cli
 from bl_base import (
     IN_SPRINT, KINDS, PRIORITIES, REL_DIR, RESEARCH_CHECKS, RESEARCH_ID, REVIEW_CHECKS, Refused, Rejected, SEVERITIES, START_GATE, TEXT_MAX, canonical,
-    commit_message, commit_written, git, in_scope, item_file, need, new_id, research_in_planned, say, scope,
-    trailer_problem, waits, withhold,
+    commit_message, commit_written, external_problems, git, in_scope, item_file, need, new_id, research_in_planned, say,
+    scope, trailer_problem, waits, withhold,
 )
 from bl_check import (
     ITEM_FILES_ROUTE, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
@@ -33,10 +33,39 @@ def parse_cmd(s):
     return shlex.split(s, posix=True)
 
 
+def parse_external(values, flag="--external"):
+    """{tracker: [ids]} of `TRACKER=ID` values, ids in the order given and repeats dropped; Rejected for a value that
+    is not one."""
+    out = {}
+    for v in values:
+        name, sep, ident = v.partition("=")
+        if not sep or not name.strip() or not ident.strip():
+            raise Rejected(f"{flag} {v!r} is not TRACKER=ID (an id of a tracker backlog.json's trackers names)")
+        ids = out.setdefault(name.strip(), [])
+        if ident.strip() not in ids:
+            ids.append(ident.strip())
+    return out
+
+
+def merged_external(old, added):
+    """The `external` map OLD (any shape) with the ids of ADDED appended per tracker, repeats dropped."""
+    out = {t: list(ids) if isinstance(ids, list) else [ids] for t, ids in (old if isinstance(old, dict) else {}).items()}
+    for t, ids in added.items():
+        out[t] = appended(out.get(t, []), ids)
+    return out
+
+
 # ------------------------------------------------------------------ commands
 
 def cmd_new(bl, a):
     kind = a.kind
+    external = parse_external(a.external) if a.external else None
+    if external is not None:
+        if kind == "sprint":
+            raise Rejected("new refuses --external on a sprint: external ids are a work item's")
+        problems = external_problems(external)
+        if problems:
+            raise Rejected("new refuses --external: " + "; ".join(problems))
     it = {"id": new_id(kind), "kind": kind, "title": a.title.strip()}
     if kind == "sprint":
         it.update(status="planned", goal=a.goal or a.title,
@@ -104,6 +133,8 @@ def cmd_new(bl, a):
             warns.append(ITEM_FILES_ROUTE)
     if a.depends:
         it["depends_on"] = a.depends
+    if external:
+        it["external"] = external
     bl.save(it)
     errs = [x for x in validate(bl) if x.startswith(it["id"])]
     say(f"new {kind} {bl.label(it['id'])}")
@@ -354,14 +385,14 @@ SET_LISTS = ("links", "touches", "checks", "depends_on", "relates_to")
 # (--add-check of --check), so an append names its field and never reaches another one in the same call
 SET_APPEND = {"notes": ("--add-notes", "TEXT"), "links": ("--add-link", "TEXT"), "touches": ("--add-touch", "GLOB"),
               "checks": ("--add-check", "CMD"), "depends_on": ("--add-depends", "ID"),
-              "relates_to": ("--add-relates", "ID")}
+              "relates_to": ("--add-relates", "ID"), "external": ("--add-external", "TRACKER=ID")}
 
 
 def replace_flag(field):
     """The flag that replaces `field`, the twin of its append flag (--check for --add-check)."""
     return "--" + SET_APPEND[field][0].removeprefix("--add-")
 SET_FIELDS = ("notes", "priority", "rank", "sprint", "title", "goal", "repro", "repro_reason", "severity",
-              "parent", "delegates") + SET_LISTS  # what set changes; the others are refused
+              "parent", "delegates", "external") + SET_LISTS  # what set changes; the others are refused
 SET_REFUSED = {  # a field set refuses, with the rule it states
     "status": "changes only through claim, release, start, close, drop and done",
     "claimed_by": "changes only through claim and release",
@@ -423,7 +454,11 @@ def cmd_set(bl, a):
                                      if not any(d.get("name") == n for d in have)]
     given.update({f: getattr(a, f) for f in SET_LISTS})
     given = {f: v for f, v in given.items() if v is not None}
+    if a.external is not None:  # a map, not a list: the pairs replace the whole field
+        given["external"] = parse_external(a.external)
     adds = {f: getattr(a, "add_" + f) for f in SET_APPEND if getattr(a, "add_" + f, None) is not None}
+    if "external" in adds:
+        adds["external"] = parse_external(adds["external"], "--add-external")
     mixed = sorted(set(given) & set(adds))
     if mixed:
         raise Rejected("set: " + ", ".join(f"{replace_flag(f)} and {SET_APPEND[f][0]}" for f in mixed) + " together: "
@@ -440,6 +475,11 @@ def cmd_set(bl, a):
     if it.get("status") == "done" and {"checks", "touches", "goal", "repro", "repro_reason"} & set(named):
         raise Rejected(f"set refuses {', '.join(sorted({'checks', 'touches', 'goal', 'repro', 'repro_reason'} & set(named)))} "
                        f"on {bl.label(iid)}: it is done, and its evidence proves the goal, repro, checks and touches it had")
+    if "external" in given or "external" in adds:  # the result must hold as `check` reads it: say why, naming the flag
+        problems = external_problems(given["external"] if "external" in given
+                                     else merged_external(it.get("external"), adds["external"]))
+        if problems:
+            raise Rejected(f"set refuses external for {bl.label(iid)}: " + "; ".join(problems))
     if "title" in given:
         given["title"] = given["title"].strip()
         if not given["title"]:
@@ -492,6 +532,8 @@ def cmd_set(bl, a):
                 for note in v:
                     old = new.get("notes", "")
                     new[f] = old if note in old else f"{old} {note}".strip()
+            elif f == "external":
+                new[f] = merged_external(new.get(f), v)
             else:
                 new[f] = appended(new.get(f, []) if isinstance(new.get(f, []), list) else [], v)
         for f in a.clear:
@@ -875,6 +917,8 @@ def args_new(p):
     p.add_argument("--depends", action="append")
     p.add_argument("--repro")
     p.add_argument("--repro-reason", help="why a repro that only matches text in a file cannot run the behaviour")
+    p.add_argument("--external", action="append", metavar="TRACKER=ID",
+                   help="an id in a tracker backlog.json's trackers names (repeatable)")
 
 
 def args_claim(p):
@@ -907,6 +951,8 @@ def args_set(p):
     p.add_argument("--check", dest="checks", action="append")
     p.add_argument("--depends", dest="depends_on", action="append")
     p.add_argument("--relates", dest="relates_to", action="append")
+    p.add_argument("--external", action="append", metavar="TRACKER=ID",
+                   help="replace the external ids with these (repeatable; --add-external appends)")
     p.add_argument("--priority")
     p.add_argument("--rank", type=int)
     p.add_argument("--sprint")

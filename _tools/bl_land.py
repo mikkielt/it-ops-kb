@@ -16,8 +16,8 @@ from pathlib import Path
 import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
-    ANSI_RE, Backlog, ID_RE, REL_DIR, colourless_env, run_check, Refused, commit_written, git, in_scope, item_file, line, main_worktree_spool,
-    need, run, say, scope, setting, waits,
+    ANSI_RE, Backlog, ID_RE, REF_HEADER, REL_DIR, colourless_env, run_check, Refused, commit_written, external_description,
+    git, in_scope, item_file, line, main_worktree_spool, need, run, say, scope, setting, waits,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 
@@ -781,11 +781,9 @@ def mr_stuck(mr):
             and pipe.get("status") in STUCK_PIPELINES)
 
 
-def stuck_merge_request(root, remote, branch):
-    """The line land adds while it waits for the merge request of BRANCH: when an open request of BRANCH into main on
-    REMOTE's GitLab is stuck (`mr_stuck`), it names the request and the command that merges it. None when no request
-    is stuck, and also, saying nothing, when it cannot tell: a remote that is a local path, a forge that is not GitLab,
-    glab not signed in, a failed or unreadable call."""
+def branch_requests(root, remote, branch):
+    """(host, url-quoted project, [iid]) of the open merge requests of BRANCH into main on REMOTE's GitLab; None, and
+    nothing said, when REMOTE names no GitLab (a local path, another forge) or the list cannot be read."""
     import urllib.parse
     from ql_deliver import forge_list, origin_forge
     code, url, _ = run(["git", "remote", "get-url", remote], cwd=root)
@@ -796,25 +794,77 @@ def stuck_merge_request(root, remote, branch):
     if forge != "gitlab":
         return None
     project = setting("forge_project") or project
-    quoted = urllib.parse.quote(project, safe="")
     listed, _, _ = forge_list(url, run, None, lambda p: (
         f"projects/{p}/merge_requests?state=opened&source_branch={urllib.parse.quote(branch, safe='')}"
         f"&target_branch=main&per_page=20"))
-    for summary in listed or []:
-        iid = summary.get("iid") if isinstance(summary, dict) else None
-        if not isinstance(iid, int):
-            continue
-        code, out, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/merge_requests/{iid}"])
-        try:
-            mr = json.loads(out) if code == 0 else None
-        except ValueError:
-            mr = None
+    iids = [s.get("iid") for s in listed or [] if isinstance(s, dict) and isinstance(s.get("iid"), int)]
+    return host, urllib.parse.quote(project, safe=""), iids
+
+
+def read_merge_request(host, quoted, iid):
+    """The merge request `projects/:id/merge_requests/:iid` answers as a dict, or None."""
+    code, out, _ = run(["glab", "api", "--hostname", host, f"projects/{quoted}/merge_requests/{iid}"])
+    try:
+        mr = json.loads(out) if code == 0 else None
+    except ValueError:
+        mr = None
+    return mr if isinstance(mr, dict) else None
+
+
+def stuck_merge_request(root, remote, branch):
+    """The line land adds while it waits for the merge request of BRANCH: when an open request of BRANCH into main on
+    REMOTE's GitLab is stuck (`mr_stuck`), it names the request and the command that merges it. None when no request
+    is stuck, and also, saying nothing, when it cannot tell: a remote that is a local path, a forge that is not GitLab,
+    glab not signed in, a failed or unreadable call."""
+    found = branch_requests(root, remote, branch)
+    if found is None:
+        return None
+    host, quoted, iids = found
+    for iid in iids:
+        mr = read_merge_request(host, quoted, iid)
         if mr_stuck(mr):
             status = mr["head_pipeline"].get("status")
             return (f"land: merge request !{iid} ({mr.get('web_url') or branch}) is mergeable and set to auto-merge, "
                     f"but its pipeline was {status}, so auto-merge will not fire: merge it with "
                     f"python3 _tools/backlog.py merge {branch[len('code/'):] if branch.startswith('code/') else branch}")
     return None
+
+
+def family_external(bl, iid):
+    """The `external` map of the item and its descendants together (tracker -> ids, first seen first): the references
+    its merge request carries. A shape `check` refuses is left out."""
+    out = {}
+    for i in [iid] + bl.descendants(iid):
+        ext = bl.items[i].get("external")
+        for tracker, ids in (ext.items() if isinstance(ext, dict) else ()):
+            have = out.setdefault(tracker, [])
+            have += [x for x in ids if isinstance(x, str) and x and x not in have] if isinstance(ids, list) else []
+    return {t: ids for t, ids in out.items() if ids}
+
+
+def describe_merge_request(bl, iid, remote, branch):
+    """Put the item's external ids and their urls (`bl_base.external_description`) into the description of the open
+    merge request of BRANCH on REMOTE's GitLab, after what it holds and in place of a block of land's own from an
+    earlier run (REF_HEADER to the end). Says one line for each request it changed; a request it cannot read or change
+    is said and never fails the landing, and a remote with no GitLab, or an item with no external id, says nothing."""
+    block = external_description({"external": family_external(bl, iid)})
+    found = branch_requests(bl.root, remote, branch) if block else None
+    if found is None:
+        return
+    host, quoted, iids = found
+    for n in iids:
+        mr = read_merge_request(host, quoted, n)
+        if mr is None:
+            say(f"land: could not read merge request !{n}, so it carries no tracker references")
+            continue
+        have = mr.get("description") or ""
+        text = (have.partition(REF_HEADER)[0].rstrip() + "\n\n" + block).strip()
+        if text == have.strip():
+            continue
+        code, _, err = run(["glab", "api", "--hostname", host, "--method", "PUT",
+                            f"projects/{quoted}/merge_requests/{n}", "-f", f"description={text}"])
+        say(f"land: merge request !{n} description holds the tracker references of {iid}" if code == 0
+            else f"land: could not set the description of merge request !{n}: {(err or '').strip()[:200]}")
 
 
 LAND_REF = "refs/land"  # refs/land/<id>: the done commit land made, kept until the landing is verified
@@ -1289,6 +1339,7 @@ def land_once(bl, a):
                 say(f"land: {bl.label(iid)} waits for its merge request (branch {code_branch} on {remote}, already "
                     f"pushed with this content): merge it, then run backlog.py land {iid} again")
                 LAND_OPS["pending"] = ([git(root, "rev-parse", tracking).strip()], code_branch)
+                describe_merge_request(bl, iid, remote, code_branch)
                 stuck = stuck_merge_request(root, remote, code_branch)
                 if stuck:
                     say(stuck)
@@ -1327,6 +1378,7 @@ def land_once(bl, a):
                 land_run(root, LAND_LINT[0], [*LAND_LINT[1], *articles])
         land_run(root, *LAND_SYNC, whole=True)
         if late:
+            describe_merge_request(bl, iid, remote, code_branch)  # the request sync opened by push options
             tip = pushed_tip(root, remote, code_branch)
             LAND_OPS["pending"] = (tip, code_branch) if tip else None
             say(f"land: {bl.label(iid)} is not done yet: its code goes as the merge request of branch {code_branch}; "

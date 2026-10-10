@@ -11,7 +11,8 @@ import json, re, subprocess
 import bl_cli
 from bl_base import (
     IN_SPRINT, OPEN, REL_DIR, SIMILAR_MIN, SIMILAR_SHOWN, SIMILAR_WORDS, STARTS, START_GATE, STOP_WORDS, Backlog,
-    KINDS, Refused, Rejected, canonical, git, line, need, open_gates, say, scope, waits, withhold,
+    KINDS, Refused, Rejected, canonical, external_lines, external_refs, git, line, need, open_gates, say, scope,
+    waits, withhold,
 )
 from bl_check import knowledge_lines
 from bl_plan import start_approved, touches_meet, tracked_files, where_outside
@@ -72,9 +73,12 @@ def cmd_find(bl, a):
     want = [w.lower() for w in a.words if w.strip()]
     if not want:
         raise Refused("find: give at least one word")
+    def text(it):  # the title and goal, and the external ids and their refs as words of the title
+        ids = " ".join(f"{x} {ref}" for _, x, ref, _ in external_refs(it))
+        return f"{it.get('title', '')} {it.get('goal', '')} {ids}".lower()
+
     hits = sorted((i for i, it in bl.items.items() if it.get("kind") != "sprint" and it.get("status") in OPEN
-                   and all(w in f"{it.get('title', '')} {it.get('goal', '')}".lower() for w in want)),
-                  key=bl.order_key)
+                   and all(w in text(it) for w in want)), key=bl.order_key)
     if not hits:
         say(f"find: no open item holds {' '.join(want)}")
         return 1
@@ -121,6 +125,8 @@ def cmd_show(bl, a):
         say(f"sprint: {bl.label(sp)}")
     for c in bl.children(iid):
         say(f"child: {line(bl, c)}")
+    for x in external_lines(bl.items[iid]):
+        say(x)
     for x in knowledge_lines(bl, iid, indent=""):
         say(x)
     w = waits(bl, iid)
