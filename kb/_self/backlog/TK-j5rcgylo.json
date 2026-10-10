@@ -28,6 +28,19 @@
     "TK-p7ajxp72",
     "TK-cagohpbu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which glob does always_in_scope's default hold for the item files, now that item_dir defaults to _backlog?",
+      "options": [
+        "_backlog/** replaces kb/_self/backlog/** as the default's first glob (a project naming another item_dir names always_in_scope too)",
+        "the accessor adds <item_dir>/** to any always_in_scope, so the item files are always in scope whatever item_dir is"
+      ],
+      "recommendation": "_backlog/** replaces kb/_self/backlog/** as the default's first glob (a project naming another item_dir names always_in_scope too)",
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Orchestrator: the suite is at the 100-id ceiling: plugin_sprint_item_dir_default extends or replaces an existing test, adding no id.",
   "claimed_by": "worker-TK-j5rcgylo"
 }
