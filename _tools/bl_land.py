@@ -212,7 +212,7 @@ def gone_checks(it):
     return [list(g) for g in ev.get("gone", []) if isinstance(g, list)] if isinstance(ev, dict) else []
 
 
-def rerun_done_checks(bl, sid):
+def rerun_done_checks(bl, sid, record=True):
     """[(item id, check, exit code)] of each check and bug repro of the sprint's done items, the review story left
     out, that fails when run once more on the checkout as it is (the sprint's tip): a check that passed when its item
     was done and fails now (another item broke it, or it never passed on main) is named before the sprint closes. One
@@ -220,7 +220,8 @@ def rerun_done_checks(bl, sid):
     not counted, since a done item's check cannot be repointed to a run that passes; a new item's done still refuses
     such a selection as malformed (land_checks). A gone check is found once per sprint: it is recorded in its item's
     evidence (`gone`, saved: the review's done commits it with its own record, close names it in its summary) and is
-    not run again at the sprint's next landing."""
+    not run again at the sprint's next landing. RECORD false (a `done --dry-run`) writes no evidence, so the run that
+    commits finds the check gone again and commits its record with the review's."""
     out = []
     for i in sorted(bl.sprint_items(sid)):
         it = bl.items[i]
@@ -234,9 +235,10 @@ def rerun_done_checks(bl, sid):
             ok, code, text = run_check(bl.root, c)
             if not ok and selected_nothing(code, text):
                 say(f"gone rerun {i}: {shlex.join(c['run'])} selects no test (a later change deleted it); not counted")
-                gone.append([str(x) for x in c["run"]])
-                it["evidence"] = {**(it["evidence"] if isinstance(it.get("evidence"), dict) else {}), "gone": gone}
-                bl.save(it)
+                if record:
+                    gone.append([str(x) for x in c["run"]])
+                    it["evidence"] = {**(it["evidence"] if isinstance(it.get("evidence"), dict) else {}), "gone": gone}
+                    bl.save(it)
                 continue
             say(f"{'ok  ' if ok else 'FAIL'} rerun {i}: {shlex.join(c['run'])}")
             if not ok:
@@ -373,9 +375,10 @@ def cmd_done(bl, a):
     except Refused as e:
         refuse_done(iid, t0, ["no-op-proof"], str(e), [c["run"] for c, out in passed if noop_output(out)])
     if it.get("review"):  # every done item's proof, once more on the sprint's tip: one that fails here does not close
-        stale = rerun_done_checks(bl, bl.sprint_of(iid))
+        stale = rerun_done_checks(bl, bl.sprint_of(iid), record=not a.dry_run)
         if stale:  # the gone checks it recorded are committed first, so the next landing does not run them again
-            commit_written(bl, a, "record gone checks for", iid)
+            if not a.dry_run:
+                commit_written(bl, a, "record gone checks for", iid)
             refuse_done(iid, t0, ["check-failed"], f"{bl.label(iid)} is not done: {len(stale)} check(s) of done items "
                         "fail on the sprint's tip:\n  " + "\n  ".join(f"{bl.label(i)}: `{shlex.join(c['run'])}` exits "
                                                                      f"{code}" for i, c, code in stale)
