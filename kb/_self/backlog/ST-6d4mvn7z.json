@@ -37,7 +37,7 @@
       "recommendation": "2 seconds",
       "class": "design",
       "answer": "2 seconds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -50,7 +50,7 @@
       "recommendation": "refused, reset, unreachable and timed out",
       "class": "design",
       "answer": "refused, reset, unreachable and timed out",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -63,7 +63,7 @@
       "recommendation": "stay in the queue: a reader can fetch them another way, as the 2026-09-26 readers did with curl --resolve",
       "class": "design",
       "answer": "stay in the queue: a reader can fetch them another way, as the 2026-09-26 readers did with curl --resolve",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise from kb/public/_census/2026-09-26.csv (tally run 2026-10-10): 10 live rows with evidence 'HTTP error: [Errno 8] nodename nor servname provided' went to phase 2 (7 updated, 3 confirmed), so a reader fetched pages the check could not. A host that still fails after the retry stays a counted dns row; the tool does not change resolvers.",

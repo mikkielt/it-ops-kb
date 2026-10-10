@@ -44,7 +44,7 @@
       "recommendation": "Move detected_utc up to the run time (as a 304 does): the file had no commit since the old day, so the text equals the baseline text and the next history read stays short",
       "class": "design",
       "answer": "Move detected_utc up to the run time (as a 304 does): the file had no commit since the old day, so the text equals the baseline text and the next history read stays short",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",

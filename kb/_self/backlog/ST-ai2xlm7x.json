@@ -57,7 +57,7 @@
       "recommendation": "match takes * for a path segment and a trailing $ for the url's end; one row for each page kind; a new signal name git (a file in a repository of the clone cache) and a version key timeline (the page's latest timestamp)",
       "class": "design",
       "answer": "match takes * for a path segment and a trailing $ for the url's end; one row for each page kind; a new signal name git (a file in a repository of the clone cache) and a version key timeline (the page's latest timestamp)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",

@@ -43,7 +43,7 @@
       "recommendation": "repin subcommand, chained in run after check",
       "class": "design",
       "answer": "repin subcommand, chained in run after check",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -69,7 +69,7 @@
       "recommendation": "newer tag url for NEWER-VERSION, commit sha url for CHANGED",
       "class": "design",
       "answer": "newer tag url for NEWER-VERSION, commit sha url for CHANGED",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -82,7 +82,7 @@
       "recommendation": "re-key the anchors and expansions and drop the old id from sources: when nothing else names it",
       "class": "design",
       "answer": "re-key the anchors and expansions and drop the old id from sources: when nothing else names it",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
