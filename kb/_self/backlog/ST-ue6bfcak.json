@@ -2,7 +2,7 @@
   "id": "ST-ue6bfcak",
   "kind": "story",
   "title": "Review sprint: Gates: commands, classing and host checks",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qxcj7fgy",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-qxcj7fgy"
+  "evidence": {
+    "commit": "5b3bf850c8e56960b19e799bd8296f65f47608cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9650c3fe70edc7a9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "863ee9fb00fdb221"
+      }
+    ]
+  }
 }
