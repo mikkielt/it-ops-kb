@@ -1120,6 +1120,62 @@ def goal_path_warnings(bl):
     return out
 
 
+TEST_FILE = re.compile(r"(?<![\w./:-])_tools/test_\w+\.py\b")  # a test file named by its path; a `test_*.py` glob is not
+
+
+def code_touches(it):
+    """The touches of an item that name code under _tools/."""
+    return [t for t in it.get("touches") or [] if isinstance(t, str) and t.startswith("_tools/")]
+
+
+def read_only_check_warnings(bl):
+    """check's warnings: an open story, task or bug of a planned sprint whose touches name _tools/ code and whose every
+    check, with its repro, only reads files (text_only_repro): it passes on a change that does not work, so the plan
+    adds one that runs the behaviour (SP-gkbtjjce, where five items were committed with checks that grepped
+    bl_land.py). A bug with a repro_reason says why its repro cannot run the behaviour and is left out, and so are the
+    review and research stories."""
+    out = []
+    for sid, sp in sorted(bl.items.items()):
+        if sp.get("kind") != "sprint" or sp.get("status") != "planned":
+            continue
+        for iid in sorted(bl.sprint_items(sid)):
+            it = bl.items[iid]
+            if it.get("status") not in OPEN_STATUSES or it.get("review") or it.get("goal_research") \
+                    or it.get("repro_reason") or not code_touches(it):
+                continue
+            parts = list(it.get("checks") or []) + ([it["repro"]] if it.get("repro") else [])
+            if not parts or not all(_check_ok(p) for p in parts):
+                continue
+            why = [text_only_repro(p["run"]) for p in parts]
+            if all(why):
+                out.append(f"{bl.label(iid)}: its touches name _tools/ code and its checks only read files ({why[0]}), "
+                           "so they can pass on a change that does not work: add a check that runs the changed "
+                           "behaviour (a test selection it extends, or the tool run on a planted input)")
+    return out
+
+
+def named_test_file_warnings(bl):
+    """check's warnings: an open item whose notes or goal name a _tools/test_*.py file that no touch of its scope (its
+    own and its descendants') covers, naming the file and the command that adds it: done refuses a commit that changes
+    a file outside the touches (SP-evkj4avq, where _tools/test_land_e2e.py was named in notes and not in touches). An
+    item with no touches yet is left to planning, as is a goal research story."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES or it.get("goal_research"):
+            continue
+        globs = scope(bl, iid)
+        if not globs:
+            continue
+        for field in ("notes", "goal"):
+            text = it.get(field) if isinstance(it.get(field), str) else ""
+            for tok in dict.fromkeys(TEST_FILE.findall(text)):
+                if not goal_path_covered(tok, globs):
+                    out.append(f"{bl.label(iid)}: {tok} is named in its {field} and no touch covers it: add the test "
+                               f"file the work extends before the start (set {iid} --add-touch {tok}), or reword "
+                               "when the file is not the item's to change")
+    return out
+
+
 def is_test_run(argv):
     """True when a check runs tests: tests.py or pytest, so it exercises the code it proves."""
     return any(Path(x).name == "tests.py" for x in argv[1:3]) or "pytest" in argv[:3]
@@ -1204,7 +1260,8 @@ def cmd_check(bl, a):
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) \
         + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl) \
-        + facade_touch_warnings(bl) + gone_path_warnings(bl) + unordered_overlap_warnings(bl) + goal_path_warnings(bl)
+        + facade_touch_warnings(bl) + gone_path_warnings(bl) + unordered_overlap_warnings(bl) + goal_path_warnings(bl) \
+        + read_only_check_warnings(bl) + named_test_file_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
     say(f"backlog check: items={len(bl.items)} errors={len(errs)} stale={len(stale)} warnings={len(warns)}")
