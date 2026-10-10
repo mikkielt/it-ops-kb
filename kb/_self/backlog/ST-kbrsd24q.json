@@ -2,7 +2,7 @@
   "id": "ST-kbrsd24q",
   "kind": "story",
   "title": "More fact-source pairs carry a located anchor, so fewer facts of a changed page go to a reader, at no loss of anchor precision",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-ilje65fa",
   "priority": "P2",
@@ -56,5 +56,28 @@
     }
   ],
   "notes": "Premise run 2026-10-10: python3 _tools/factdiff.py anchors printed anchors=13571 of 15152 fact-source pairs; located=6588 unlocated:fetch-error=90 unlocated:gone=12 unlocated:no-match=5088 unlocated:not-text=1793. kb/_self/reports/fact-diff.md gives located share by tag (DOC 59%, COMMUNITY 56%, CODE 47%, DER 29% of pairs with text) and by provider (github.com pages 28%, docs.gitlab.com 36%, long tail 33%), and anchor precision about 92% at min_cover 0.40 on 60 checked anchors. Quality premise: the precision probe is a fresh hand-checked sample of anchors the change newly locates, not the 60 the cut-offs were tuned on. A fact with no located anchor on a changed source goes to a reader with its whole page, so each newly located pair moves a fact from page reading to passage review or no model. kb/public/_anchors.csv is rewritten by factdiff.py anchor, never by hand.",
-  "claimed_by": "worker-ST-kbrsd24q"
+  "evidence": {
+    "commit": "a9e17d583ab4076e69639ac16f7bb06cf4e3d90e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/factdiff.py",
+          "anchors"
+        ],
+        "exit": 0,
+        "sha256": "a5a783cf99c4a5c1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "factdiff_anchor"
+        ],
+        "exit": 0,
+        "sha256": "ef117036d583c7c0"
+      }
+    ]
+  }
 }
