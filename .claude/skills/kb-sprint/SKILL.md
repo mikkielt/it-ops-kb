@@ -121,17 +121,17 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-sprint:clo
    3. `close` cleans only the clone it ran in: when a worker ran in another clone or a container, name that clone in the report for the operator (its `git worktree list` shows what is left).
 
 ## Self-check
-`python3 _tools/backlog.py selfcheck` (read only, no network, capped) opens every pass of `run`, before `stalled`: one line when all of seven checks hold, else a line for each that failed (`FAIL`, exit 1) or could not be read (`UNKNOWN`, never a failure: read that input by hand), with its remedy. Act on a failure before dispatching, or record why you cannot (a gate). The checks and what each does on failure:
+`python3 _tools/backlog.py selfcheck` (read only, capped; its one network call is the read of each claimed item's `code/<id>` request, `unknown:forge` when it fails) opens every pass of `run`, before `stalled`: one line when all of seven checks hold, else a line for each that failed (`FAIL`, exit 1) or could not be read (`UNKNOWN`, never a failure: read that input by hand), with its remedy. Act on a failure before dispatching, or record why you cannot (a gate). The checks and what each does on failure:
 - `allow-rules`: a command the skills run, or a tool the loop calls, has no allow rule in `.claude/settings.json`: ask the operator; the settings are the operator's, a run never edits them, and the item that needs the refused command is released and the command named.
 - `checkout`: the orchestrator's clone is a linked worktree of another checkout, so its workers' worktrees land there: use a standalone `git clone` as the orchestrator's clone.
 - `hooks`: the commit hooks or the plugin are not installed: run `/kb-setup` (`python3 _tools/kbgit.py install-hooks`) before any commit.
 - `host`: the load is over its per-core limit, or a host lock has been held past `HOST_LOCK_WAIT_S` by a live process: dispatch fewer workers; a worker waits its turn for the host test lock, and a `tests.py -k NAME` selection takes none; end a lock's holder only when it is yours and stuck.
-- `claims`: a claimed item shows `claim-no-commit`, `returned-no-commit` or `returned-staged`: act on it as Stalled work says.
+- `claims`: a claimed item shows `claim-no-commit`, `returned-no-commit`, `returned-staged` or `mr-dead`: act on it as Stalled work says.
 - `orphans`: a process in a checkout of the clone runs on after its parent is gone (`procs` lists each with its pid and checkout): end it if it is yours, or ask the session that left it; nothing ends it for you.
 - `main`: the newest `ci.pipeline` row is red: file it as a bug (`python3 _tools/backlog.py red-pipeline`) and take the next ready item; with no row the check is `UNKNOWN`: `python3 _tools/backlog.py red-pipeline --status` reads the forge.
 
 ## Stalled work
-Stalled work is claimed or ready work that makes no progress, or is hampered. `python3 _tools/backlog.py stalled` lists it (read only, exit 0, no network, `--json` for one object): each claimed or ready item, its id and title together, with its signals. Run it at step 1 of every pass of `run`, before claiming. Its named limits (`CLAIM_NO_COMMIT_S`, `RETURNED_GRACE_S`, `DONE_REFUSED_N`, `CHECK_TIMEOUT_N`, `LAND_SAME_STEP_N`, `HOST_LOCK_WAIT_S`) are in `_tools/bl_stall.py` and `kb/_self/backlog.md`. A signal whose input cannot be read shows as `unknown:<what>`: read that input by hand, never assume it is fine.
+Stalled work is claimed or ready work that makes no progress, or is hampered. `python3 _tools/backlog.py stalled` lists it (read only, exit 0, `--json` for one object; its one network call is the read of each claimed item's `code/<id>` request): each claimed or ready item, its id and title together, with its signals. Run it at step 1 of every pass of `run`, before claiming. Its named limits (`CLAIM_NO_COMMIT_S`, `RETURNED_GRACE_S`, `DONE_REFUSED_N`, `CHECK_TIMEOUT_N`, `LAND_SAME_STEP_N`, `HOST_LOCK_WAIT_S`) are in `_tools/bl_stall.py` and `kb/_self/backlog.md`. A signal whose input cannot be read shows as `unknown:<what>`: read that input by hand, never assume it is fine.
 
 The signals:
 - `claim-no-commit`: a claim with no work commit past the limit.
@@ -140,6 +140,7 @@ The signals:
 - `done-refused`: `done` refused repeatedly.
 - `check-timeout`: a check ran out of its time twice.
 - `land-same-step`: `land` stopped at the same step twice.
+- `mr-dead`: a claimed item's `code/<id>` merge request is not merged and will not merge by waiting: its pipeline failed, was canceled, skipped or is manual, or its merge status needs a push, a rebase, an approval or a resolved thread. Its work is pushed: read the request and what holds it before any release. A read that fails shows as `unknown:forge`, never as this signal.
 - `red-main`: the newest pipeline row is red.
 - `lock-wait`: the host test lock held past the limit.
 
