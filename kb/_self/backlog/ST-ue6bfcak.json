@@ -2,7 +2,7 @@
   "id": "ST-ue6bfcak",
   "kind": "story",
   "title": "Review sprint: Gates: commands, classing and host checks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qxcj7fgy",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-qxcj7fgy"
 }
