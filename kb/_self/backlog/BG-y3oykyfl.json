@@ -1,0 +1,28 @@
+{
+  "id": "BG-y3oykyfl",
+  "kind": "bug",
+  "title": "arch/fluent-rust-typescript covers typed accessors and a literal lint for Rust and TypeScript but not Python, and no gap records the Python side",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The kb answers the sprint clause on generated typed accessors and a literal lint for Python's Fluent runtime (fluent.runtime): a cited fact in arch/fluent-rust-typescript.md or arch/texts-catalogue-formats.md, or a _gaps.md entry naming what is unpublished (found by the SP-qjn563cf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/arch/fluent-rust-typescript.md').read_text()+pathlib.Path('kb/public/arch/texts-catalogue-formats.md').read_text()+pathlib.Path('kb/public/_gaps.md').read_text(); sys.exit(not any('fluent.runtime' in l and 'accessor' in l for l in t.splitlines()))"
+    ]
+  },
+  "repro_reason": "a missing fact in kb articles: no tool behaviour to run, only the articles' text",
+  "touches": [
+    "kb/public/arch/fluent-rust-typescript.md",
+    "kb/public/arch/texts-catalogue-formats.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qjn563cf review"
+  ]
+}

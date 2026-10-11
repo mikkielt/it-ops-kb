@@ -1,0 +1,27 @@
+{
+  "id": "BG-vdhzlmv3",
+  "kind": "bug",
+  "title": "agents/onnx-runtime-rust-ort answers how a build refuses GPU providers only by not enabling them, without Cargo's additive feature unification that lets a dependency enable ort/cuda",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "agents/onnx-runtime-rust-ort.md states, from the Cargo reference, that features are unified across the dependency graph so a transitive dependency can enable an ort provider feature (the manifest maps cuda to ort-sys/cuda), and what the docs offer to detect or refuse that at build (cargo tree -e features or none found, as a _gaps.md entry) (found by the SP-qjn563cf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/agents/onnx-runtime-rust-ort.md').read_text()+pathlib.Path('kb/public/_gaps.md').read_text(); sys.exit(not any('ort' in l and ('additive' in l or 'unification' in l or 'unified' in l) for l in t.splitlines()))"
+    ]
+  },
+  "repro_reason": "a missing fact in kb articles: no tool behaviour to run, only the articles' text",
+  "touches": [
+    "kb/public/agents/onnx-runtime-rust-ort.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qjn563cf review"
+  ]
+}

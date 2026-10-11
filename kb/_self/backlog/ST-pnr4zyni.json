@@ -33,7 +33,7 @@
       "recommendation": "anchor-domain: each topic in the domain of the existing article that links to it (privacy, agents, arch, logs)",
       "class": "design",
       "answer": "anchor-domain: each topic in the domain of the existing article that links to it (privacy, agents, arch, logs)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

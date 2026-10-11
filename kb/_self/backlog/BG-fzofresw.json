@@ -1,0 +1,25 @@
+{
+  "id": "BG-fzofresw",
+  "kind": "bug",
+  "title": "agents/onnx-runtime-rust-ort says every Windows row of dist.tsv includes directml, though rc.13 has an x86_64-pc-windows-msvc row with webgpu only",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/agents/onnx-runtime-rust-ort.md line 31 no longer says every Windows row includes directml: per ort-sys dist.tsv at v2.0.0-rc.13 one x86_64-pc-windows-msvc row has the feature set webgpu only (asset ms@1.28.0/x86_64-pc-windows-msvc+webgpu.tar.lzma2); a default Windows build still takes the first (directml) row (found by the SP-qjn563cf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit('every Windows row includes' in pathlib.Path('kb/public/agents/onnx-runtime-rust-ort.md').read_text())"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/agents/onnx-runtime-rust-ort.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qjn563cf review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "BG-a22yrzap",
+  "kind": "bug",
+  "title": "privacy/gliner-glirel-zero-shot recommends gline-rs, which pins ort =2.0.0-rc.9, while agents/onnx-runtime-rust-ort tells a service to pin =2.0.0-rc.13, and neither names the clash",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "privacy/gliner-glirel-zero-shot.md (lines 52 and 67) or agents/onnx-runtime-rust-ort.md says that gline-rs's exact ort pin =2.0.0-rc.9 cannot resolve beside a service's own =2.0.0-rc.13 pin in one Cargo build, as a DER from the two cited manifests (found by the SP-qjn563cf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/privacy/gliner-glirel-zero-shot.md').read_text()+pathlib.Path('kb/public/agents/onnx-runtime-rust-ort.md').read_text(); sys.exit(not any('gline-rs' in l and 'rc.13' in l for l in t.splitlines()))"
+    ]
+  },
+  "repro_reason": "a wording defect across kb articles: no tool behaviour to run, only the articles' text",
+  "touches": [
+    "kb/public/privacy/gliner-glirel-zero-shot.md",
+    "kb/public/agents/onnx-runtime-rust-ort.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qjn563cf review"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "BG-l22a5sfd",
+  "kind": "bug",
+  "title": "The observability research answers JSON logs to stdout for the Collector, Loki, Tempo and Grafana but not for the corpus service's own Python and Rust code",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The kb answers how a Python and a Rust service write JSON log lines to stdout from their official docs (Python logging or a documented formatter, Rust tracing-subscriber's JSON format), in logs/otel-collector-otlp-pipeline.md or a linked article, or a _gaps.md entry records what is unpublished (found by the SP-qjn563cf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit(not any('tracing-subscriber' in p.read_text() for p in pathlib.Path('kb/public').rglob('*.md')))"
+    ]
+  },
+  "repro_reason": "a missing fact in kb articles: no tool behaviour to run, only the articles' text",
+  "touches": [
+    "kb/public/logs/otel-collector-otlp-pipeline.md",
+    "kb/public/logs/loki-tempo-grafana-retention.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qjn563cf review"
+  ]
+}
