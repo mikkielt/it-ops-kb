@@ -100,7 +100,7 @@ auth/enrolment-tokens,P3,complete,auth/enrolment-tokens.md,7
 auth/http-message-signatures,P3,partial,auth/http-message-signatures.md,7
 auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,16
 auth/oauth-pkce-oidc-id-token,P3,partial,auth/oauth-pkce-oidc-id-token.md,6
-auth/postgres-column-encryption,P3,partial,auth/postgres-column-encryption.md,5
+auth/postgres-column-encryption,P3,partial,auth/postgres-column-encryption.md,6
 auth/shamir-secret-sharing,P3,partial,auth/shamir-secret-sharing.md,9
 auth/sops-age-recipients,P3,complete,auth/sops-age-recipients.md,3
 autopilot/device-identity,P1,complete,autopilot/device-identity.md,12
