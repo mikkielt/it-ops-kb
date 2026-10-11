@@ -1,0 +1,25 @@
+{
+  "id": "BG-lmp4mxmo",
+  "kind": "bug",
+  "title": "The pipeline schedule play lines say at most once a minute under DOC, though the source says it of the UI run only",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The QK answer line in kb/public/_answers.md tags DOC that POST /projects/:id/pipeline_schedules/:id/play runs with the caller's permissions at most once a minute, and kb/public/gitlab/pipelines-rules.md:32 reads the same way; S448 says the minute limit of the UI manual run only, and the play page names no answer for a call inside the interval (pipelines-rules.md:34, its _gaps.md entry). Attach the limit to the UI run in pipelines-rules.md and tag the QK line's permissions part DER or drop the minute limit there (found by the SP-4phd36pa review).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! grep -qF 'with the caller'\\''s permissions, at most once a minute. [DOC' kb/public/_answers.md"
+    ]
+  },
+  "repro_reason": "a wording and tag defect in kb facts: no tool behaviour to run, only the facts' text",
+  "touches": [
+    "kb/public/gitlab/pipelines-rules.md",
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-4phd36pa review"
+  ]
+}

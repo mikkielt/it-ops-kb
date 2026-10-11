@@ -1,0 +1,25 @@
+{
+  "id": "BG-az4r47gd",
+  "kind": "bug",
+  "title": "gitlab/deploy-keys-and-tokens says a deploy token never reaches the REST API, though package registry endpoints accept it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/gitlab/deploy-keys-and-tokens.md (summary line 13 and the Facts line 57) and the QK answer in kb/public/_answers.md say a deploy token reaches no REST API; the article's cited source S-5imiypdp and gitlab/package-registries.md say it works with the package registry endpoints /api/v4/projects/<id>/packages/<format>/... Reword all three, from the cited lines, to: not the GitLab public API, except the package registry endpoints (found by the SP-4phd36pa review).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! grep -qF 'never the REST API' kb/public/gitlab/deploy-keys-and-tokens.md"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/gitlab/deploy-keys-and-tokens.md",
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-4phd36pa review"
+  ]
+}

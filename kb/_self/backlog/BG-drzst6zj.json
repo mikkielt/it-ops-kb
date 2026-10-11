@@ -1,0 +1,24 @@
+{
+  "id": "BG-drzst6zj",
+  "kind": "bug",
+  "title": "gitlab/project-settings-api says every attribute appears in both the create and update tables, though three do not",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/gitlab/project-settings-api.md:17 says every attribute it lists appears in both the POST /projects and PUT /projects/:id tables of S-4yvdwu5c; container_registry_access_level and merge_requests_access_level come from the page's shared project feature visibility level table, and automatic_rebase_enabled is in the update table only. Reword the line from the cited page (found by the SP-4phd36pa review).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! grep -qF 'every attribute below appears in both tables' kb/public/gitlab/project-settings-api.md"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/gitlab/project-settings-api.md"
+  ],
+  "links": [
+    "parked: SP-4phd36pa review"
+  ]
+}

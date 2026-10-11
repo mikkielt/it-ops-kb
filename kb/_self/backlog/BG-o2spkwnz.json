@@ -1,0 +1,25 @@
+{
+  "id": "BG-o2spkwnz",
+  "kind": "bug",
+  "title": "gitlab/package-registries cites the unpinned pipeline security page for its digest pin fact",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/gitlab/package-registries.md:39 cites S-sxp3exzp, the unpinned https://docs.gitlab.com/ci/pipeline_security/ page, for image: python@sha256:..., while the article applies to master @9f1632e2. Add a source row for doc/ci/pipeline_security/_index.md pinned at that commit and cite it, keeping the fact as the page states it (found by the SP-4phd36pa review).",
+  "repro": {
+    "run": [
+      "sh",
+      "-c",
+      "! sed -n 39p kb/public/gitlab/package-registries.md | grep -qF S-sxp3exzp"
+    ]
+  },
+  "repro_reason": "a citation defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/gitlab/package-registries.md",
+    "kb/public/_sources.csv"
+  ],
+  "links": [
+    "parked: SP-4phd36pa review"
+  ]
+}
