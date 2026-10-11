@@ -32,7 +32,9 @@
         "Message Batches API with an API key"
       ],
       "recommendation": "claude -p --json-schema, no tools, claude-sonnet-5-5 until ST-jkehwsu4 measures Haiku 5.5",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "claude -p --json-schema, no tools, claude-sonnet-5-5 until ST-jkehwsu4 measures Haiku 5.5",
+      "by": "operator"
     },
     {
       "id": "g2",
