@@ -2,8 +2,8 @@
 topic: claude/messages-api
 priority: P1
 applies_to: "Claude API (platform.claude.com/docs), Messages API, Message Batches API, Files API, Token Counting API, MCP connector (mcp-client-2025-11-20 beta), retrieved 2026-09-26"
-retrieved_utc: 2026-09-28
-sources: [S-osulh6sh, S-eu3n3hyf, S-5uxkh3j5, S-3pftmimx, S-wbsmegvl, S-b4bqwu2v, S-jrsntqfg, S-qpqoaaqj, S-qso6o6wu, S1847]
+retrieved_utc: 2026-10-11
+sources: [S-osulh6sh, S-eu3n3hyf, S-5uxkh3j5, S-3pftmimx, S-wbsmegvl, S-b4bqwu2v, S-jrsntqfg, S-qpqoaaqj, S-qso6o6wu, S1847, S-bcbpadtc]
 status: complete
 files: [claude/models.csv, claude/api-limits.csv]
 ---
@@ -91,13 +91,22 @@ repeat prompt caching (`agents/agent-caching.md`) or the HTTP/tool-pairing error
 - Discount: 50% off standard Messages pricing; prompt-caching discounts stack with the batch discount, but cache
   hits inside a batch are best-effort (30-98% observed hit rates, since batch requests run asynchronously and
   concurrently) [DOC S-3pftmimx].
+- Batch prices per million tokens, input / output: Haiku 5.5 $0.05 / $0.25 for prompts up to 100,000 tokens and
+  $0.25 / $1.25 over; Sonnet 5.5 and Sonnet 5 $1 / $5; Haiku 4.5 $0.50 / $2.50; Opus 5.5 $2 / $10. They are half the
+  standard prices, so a batch call of Haiku 5.5 costs half of the prices in `claude/ci-and-headless.md` [DOC
+  S-3pftmimx].
+- Credentials: a request carries `Authorization: Bearer <token>`, where the token is an API key or a short-lived
+  access token from Workload Identity Federation, or the legacy `x-api-key` header; the batch page's examples all send
+  `x-api-key`, and the overview's header table names no Claude Code subscription login among the credentials [DOC
+  S-bcbpadtc, S-3pftmimx].
 - `processing_status` values: `in_progress` -> `ended` (or `canceling` -> `ended` after a cancel request; canceled
   batches may contain partial results for requests already processed) [DOC S-3pftmimx].
 - Endpoints: create (`POST /v1/messages/batches`), retrieve, list, cancel (`POST
   /v1/messages/batches/{id}/cancel`) — poll `processing_status` on the retrieval endpoint until `ended` [DOC
   S-3pftmimx].
 - `output-300k-2026-03-24` beta header raises the batch `max_tokens` cap to 300,000 (standard cap 128k) on Claude
-  Opus 5.5, Opus 5, Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 5.5, Sonnet 5, and Sonnet 4.6 [DOC S-3pftmimx, S-eu3n3hyf].
+  Opus 5.5, Opus 5, Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 5.5, Sonnet 5, Sonnet 4.6, and Haiku 5.5; extended output is
+  available on the Message Batches API only, not on the synchronous Messages API [DOC S-3pftmimx, S-eu3n3hyf].
 - Batch requests still count toward the shared Message Batches API rate limits (RPM to all Batches endpoints, plus
   a cap on batch requests in the processing queue) — see `claude/api-limits.csv` [DOC S-5uxkh3j5].
 

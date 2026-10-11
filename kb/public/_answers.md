@@ -2710,3 +2710,14 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md, python/stdlib-urllib-errors.md.
 
 _Agent: kb-research_
+
+## QK-route-judges-many-census-review-items. Which route judges many census review items in one model call on a clone with no API key, and what does a Haiku 5.5 print-mode call cost per item?
+- Haiku 5.5 list prices per million tokens are $0.10 input, $0.50 output, $0.125 (5-minute) or $0.20 (1-hour) cache write and $0.01 cache read for a prompt of up to 100,000 tokens, and $0.50, $2.50, $0.625 or $1 and $0.05 over that (`claude/ci-and-headless.md:91`); on the Batches API they are half: $0.05 / $0.25 and $0.25 / $1.25 (`claude/messages-api.md:94`). [DOC S2131, S-3pftmimx]
+- The Batches API's bearer credential is an API key or a Workload Identity Federation token, and its examples send `x-api-key`; `claude -p` has no batch mode, and `--bare` never reads OAuth credentials, so a clone holding only a Claude Code subscription login has `claude -p --json-schema` as its route (`agents/headless-agent-runtimes.md:66`). [DER S-bcbpadtc, S-3pftmimx, S-fvspfpxd, S1800]
+- Measured on Claude Code 2.1.296 with `claude-haiku-5-5` and a subscription login: the call's start is 6,207 tokens ($0.0012 as a cold 1-hour write), a 10-item prompt cost $0.0025 (about $0.00025 an item, 4.2 s) and an 11-item prompt $0.0021 (about $0.00019 an item, 5.4 s), on synthetic items (`agents/headless-agent-runtimes.md:61-62`). [DER S2131, S1800]
+- No page bounds the items or the size of a `--json-schema` result; the bound that exists is the 100,000-token prompt above which Haiku 5.5's prices rise, about 230 items of 400 tokens a call (`agents/headless-agent-runtimes.md:63`). [DER S2131, S-eu3n3hyf]
+- Conclusion: for ST-xy2euufe the route is `claude -p --json-schema` with the items in one prompt and no tools, on a pinned model id; Haiku 5.5 costs a twentieth of Sonnet 5.5 per item (`agents/headless-agent-runtimes.md:64`), so the model choice is a quality question for the held-out measurement, not a cost one. [DER S2131, S1800, S-bcbpadtc]
+- Open: the retry count and any size limit of the structured result, and whether a subscription token is refused by the API in so many words, are not stated by the docs; accuracy of Haiku 5.5's verdicts on real review items is unmeasured. [UNK: see `_gaps.md`, claude/ci-and-headless]
+- See agents/headless-agent-runtimes.md, claude/ci-and-headless.md, claude/messages-api.md.
+
+_Agent: kb-research_

@@ -36,7 +36,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/docs-maintenance-agents` | P2 | complete | `agents/docs-maintenance-agents.md` | 30 |
 | `agents/genai-telemetry` | P2 | complete | `agents/genai-telemetry.md` | 5 |
 | `agents/github-copilot-admin` | P2 | complete | `agents/github-copilot-admin.md` | 12 |
-| `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 18 |
+| `agents/headless-agent-runtimes` | P2 | complete | `agents/headless-agent-runtimes.md` | 26 |
 | `agents/hybrid-retrieval` | P2 | complete | `agents/hybrid-retrieval.md` | 38 |
 | `agents/mcp-server-lifecycle` | P2 | complete | `agents/mcp-server-lifecycle.md` | 5 |
 | `agents/microsoft-agent-framework` | P2 | complete | `agents/microsoft-agent-framework.md` | 21 |
@@ -95,7 +95,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/elicitation` | P1 | complete | `claude/elicitation.md` | 5 |
 | `claude/hooks` | P1 | complete | `claude/hooks.md` | 25 |
 | `claude/managed-mcp` | P1 | complete | `claude/managed-mcp.md` | 2 |
-| `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 10 |
+| `claude/messages-api` | P1 | complete | `claude/messages-api.md`, `claude/models.csv`, `claude/api-limits.csv` | 11 |
 | `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 7 |
 | `claude/permissions-mcp` | P1 | complete | `claude/permissions-mcp.md` | 5 |
 | `claude/tool-output-limits` | P1 | complete | `claude/tool-output-limits.md` | 3 |

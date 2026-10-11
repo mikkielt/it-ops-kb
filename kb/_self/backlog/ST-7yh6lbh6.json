@@ -21,5 +21,33 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Route and default model for ST-xy2euufe's batch judge on a clone with no ANTHROPIC_API_KEY (findings: agents/headless-agent-runtimes.md:61-66; the Batches API has no documented subscription credential; Haiku 5.5 costs about 1/20 of Sonnet 5.5 per item but is unmeasured on review items)?",
+      "options": [
+        "claude -p --json-schema, no tools, claude-sonnet-5-5 until ST-jkehwsu4 measures Haiku 5.5",
+        "claude -p --json-schema, no tools, claude-haiku-5-5",
+        "Message Batches API with an API key"
+      ],
+      "recommendation": "claude -p --json-schema, no tools, claude-sonnet-5-5 until ST-jkehwsu4 measures Haiku 5.5",
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which domain does ST-t67jhly3's end-to-end census run on (mid-sized by live source count: median about 76 of 27 domains; baseline read rows from kb/public/_census/2026-09-26.csv)?",
+      "options": [
+        "logs: 72 sources (45 Learn, 23 pinned, 4 live), 9 rows read in the 2026-09-26 census (6 superseded, 3 confirmed), 7 articles",
+        "entra: 86 sources (69 Learn, 17 pinned), 0 rows read in the 2026-09-26 census, nothing for the judge or dispatch to read",
+        "claude: 104 sources (97 live, 7 pinned), 20 rows read in the 2026-09-26 census"
+      ],
+      "recommendation": "logs: 72 sources (45 Learn, 23 pinned, 4 live), 9 rows read in the 2026-09-26 census (6 superseded, 3 confirmed), 7 articles",
+      "class": "design",
+      "answer": "logs: 72 sources (45 Learn, 23 pinned, 4 live), 9 rows read in the 2026-09-26 census (6 superseded, 3 confirmed), 7 articles",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "worker-ST-7yh6lbh6"
 }
