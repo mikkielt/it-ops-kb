@@ -2,7 +2,7 @@
   "id": "ST-mrcl674w",
   "kind": "story",
   "title": "Review sprint: Research: secrets, identities and signed requests for a small self-managed fleet",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-up5wchen",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-up5wchen"
 }
