@@ -9,9 +9,9 @@
   "goal": "kb/public/gitlab/deploy-keys-and-tokens.md (summary line 13 and the Facts line 57) and the QK answer in kb/public/_answers.md say a deploy token reaches no REST API; the article's cited source S-5imiypdp and gitlab/package-registries.md say it works with the package registry endpoints /api/v4/projects/<id>/packages/<format>/... Reword all three, from the cited lines, to: not the GitLab public API, except the package registry endpoints (found by the SP-4phd36pa review).",
   "repro": {
     "run": [
-      "sh",
+      "python3",
       "-c",
-      "! grep -qF 'never the REST API' kb/public/gitlab/deploy-keys-and-tokens.md"
+      "import pathlib,sys; sys.exit('never the REST API' in pathlib.Path('kb/public/gitlab/deploy-keys-and-tokens.md').read_text())"
     ]
   },
   "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
