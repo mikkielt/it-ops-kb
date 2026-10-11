@@ -9,11 +9,9 @@
   "goal": "census.py run accepts the selection factdiff.py detect takes (--topic, --dir, --file or --source) and runs its steps (detect, apply, check, repin, index, the phase-1 commit, summary) on those sources only, with the census log covering them alone; a run with no selection is unchanged",
   "repro": {
     "run": [
-      "grep",
-      "-n",
-      "-e",
-      "--dir",
-      "_tools/census.py"
+      "python3",
+      "-c",
+      "import sys; sys.exit(0 if '--dir' in open('_tools/census.py').read() else 1)"
     ]
   },
   "repro_reason": "argparse rejects an unknown option with a usage error, which tests nothing; the grep matches once census.py's run parser names the --dir selection"
