@@ -2,7 +2,7 @@
   "id": "ST-bivdc2fa",
   "kind": "story",
   "title": "Research sprint goal: Research: GitLab project operations by API for an agent-run estate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4phd36pa",
   "goal_research": true,
   "priority": "P1",
@@ -49,5 +49,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "kb-worker-ST-bivdc2fa"
+  "evidence": {
+    "commit": "bbd2b8e105a60ff9dd5cdd77b27037d989a77264",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-bivdc2fa"
+        ],
+        "exit": 0,
+        "sha256": "a301da83b173e07e"
+      }
+    ]
+  }
 }
