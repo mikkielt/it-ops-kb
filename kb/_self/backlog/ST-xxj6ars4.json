@@ -2,7 +2,7 @@
   "id": "ST-xxj6ars4",
   "kind": "story",
   "title": "Research sprint goal: Research: Python shell with a Rust core, one package, bundled Postgres",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wwacrsqr",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-wwacrsqr"
 }
