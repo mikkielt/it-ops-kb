@@ -1,0 +1,16 @@
+{
+  "id": "BG-pe32oxfm",
+  "kind": "bug",
+  "title": "test_land_waits_hook_of_a_finished_session fails in a whole-suite run on a loaded host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A whole-suite tests.py run passes on a loaded host, as the test does alone: observed 2026-10-11 in a 12-worker run that took 193 s, where test_land_e2e.TestHookWait.test_land_waits_hook_of_a_finished_session_then_removes_its_worktree_and_multirepo_land_cleans_per_repository saw 'land: waited 2s ... for a process whose parent had exited to end' where it expects 'for the session-end hook to end'; the same test alone passed in 18 s. The run also exceeded the darwin ceiling (193 s against 22 s), which load alone may explain.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  }
+}
