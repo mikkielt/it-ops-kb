@@ -14,5 +14,8 @@
       "import sys; sys.exit(0 if '--dir' in open('_tools/census.py').read() else 1)"
     ]
   },
-  "repro_reason": "argparse rejects an unknown option with a usage error, which tests nothing; the grep matches once census.py's run parser names the --dir selection"
+  "repro_reason": "argparse rejects an unknown option with a usage error, which tests nothing; the grep matches once census.py's run parser names the --dir selection",
+  "links": [
+    "parked: SP-yojt6y7v run"
+  ]
 }

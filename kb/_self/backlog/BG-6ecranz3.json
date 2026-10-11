@@ -14,5 +14,8 @@
       "import sys; sys.exit(0 if 'worktrees' in open('_tools/census.py').read() else 1)"
     ]
   },
-  "repro_reason": "the denial shows only in a paid headless claude -p session under --permission-mode dontAsk: its reply's permission_denials names the Edit of an owned file while the dry run prints a rule that looks right; found on 2026-10-11 in the logs census of ST-t67jhly3 (both dispatch replies, two foreign edits in the second) and reproduced with a haiku session on a scratch file: an Edit allowed by an absolute //path rule is denied at .../.claude/worktrees/w/a.txt and done at .../plain/a.txt; the grep matches only once census.py handles that path form"
+  "repro_reason": "the denial shows only in a paid headless claude -p session under --permission-mode dontAsk: its reply's permission_denials names the Edit of an owned file while the dry run prints a rule that looks right; found on 2026-10-11 in the logs census of ST-t67jhly3 (both dispatch replies, two foreign edits in the second) and reproduced with a haiku session on a scratch file: an Edit allowed by an absolute //path rule is denied at .../.claude/worktrees/w/a.txt and done at .../plain/a.txt; the grep matches only once census.py handles that path form",
+  "links": [
+    "parked: SP-yojt6y7v run"
+  ]
 }
