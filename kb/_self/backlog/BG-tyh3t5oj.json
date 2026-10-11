@@ -1,0 +1,18 @@
+{
+  "id": "BG-tyh3t5oj",
+  "kind": "bug",
+  "title": "census.py dispatch fails on the real claude CLI: the result schema's $schema (2020-12) is rejected by --json-schema",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "census_result.schema.json holds no $schema key (the test census_dispatch compares the passed text with the file, so it passes unchanged), so claude -p --json-schema takes it instead of failing with: no schema with key or ref https://json-schema.org/draft/2020-12/schema; every census.py dispatch run until then ends UNAPPLIED",
+  "repro": {
+    "run": [
+      "python3",
+      "-I",
+      "-c",
+      "import json,sys; sys.exit(1 if '$schema' in json.load(open('_tools/census_result.schema.json')) else 0)"
+    ]
+  }
+}
