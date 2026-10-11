@@ -2,7 +2,7 @@
   "id": "ST-7yh6lbh6",
   "kind": "story",
   "title": "Research sprint goal: Census deterministic 3: cheaper reading",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yojt6y7v",
   "goal_research": true,
   "priority": "P1",
@@ -51,5 +51,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "worker-ST-7yh6lbh6"
+  "evidence": {
+    "commit": "1bbfa7bed0292390f163056ed085179cc5257b4e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-7yh6lbh6"
+        ],
+        "exit": 0,
+        "sha256": "889df6c710940e25"
+      }
+    ]
+  }
 }
