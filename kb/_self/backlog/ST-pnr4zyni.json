@@ -2,7 +2,7 @@
   "id": "ST-pnr4zyni",
   "kind": "story",
   "title": "Research sprint goal: Research: CPU-only text analysis, rules as data and self-hosted observability for a corpus service",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qjn563cf",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-qjn563cf"
 }
