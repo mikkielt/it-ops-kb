@@ -2735,3 +2735,20 @@ _Agent: kb-research_
 - See gitlab/project-settings-api.md, gitlab/protected-branches-tags.md, gitlab/deploy-keys-and-tokens.md, gitlab/webhooks.md, gitlab/runner-registration.md, gitlab/pipelines-rules.md, gitlab/package-registries.md, gitlab/automated-merge-requests.md.
 
 _Agent: kb-research_
+
+## QK-deterministic-retrieval-experts. Which retrieval mechanisms make fact lookup more accurate, and which can run as a deterministic toolset routed like a mixture of experts?
+- RRF fuses rankings without training or score calibration, one list at a time; its authors found it "almost invariably improved on the best of the combined results", with `k` = 60 near-optimal but not critical. [DOC S-g2bbx2bz]
+- Per-query selection over several retrievers beats any single one: MoR's 0.8B-parameter mixture outperforms every individual retriever by +10.8% on average, and RouterRetriever's routing to domain experts gains +2.1 nDCG@10 on BEIR over a general model, with experts added or removed without training. [DOC S-hxd4fjjl, S-gcgkws5h]
+- BM25 is a robust zero-shot baseline; rerankers and late interaction lead on average at high computational cost. [DOC S-w2g2bnsw, S-f2sg2wfn]
+- Inference-free learned sparse retrieval keeps query time a lexical lookup at 1.1 times BM25's latency. [DOC S-e6qw2drp]
+- Typos: fuzzy matching within at most 2 Damerau-Levenshtein edits, or n-gram indexing at a storage cost. [DOC S-qsdk3esx]
+- GraphRAG's LLM-built graph serves global questions about a corpus. [DOC S-dmhfxnon, S-eow7dyxc]
+- BRIGHT's reasoning-intensive queries defeat both lexical and dense retrievers, and reasoning about the query helps there. [DOC S-zrpjwjip]
+- In the pool record of 2026-10-09 (Claude Code 2.1.293), `pack` with no model missed every `count`, `decision` and `conflict` row and 3 of 5 `gap` rows; the router also missed the `decision` and `conflict` rows. [DER S-hxd4fjjl, S-gcgkws5h]
+- QPP predictors vary most with the collection, do not generalize across collections, and gave only marginal gains when used to choose how to process a query. [DOC S-lsfxdurw]
+- An offline probe on 2026-10-11 (Python 3.13.2, no model) routed the pool's rows by kind to the existing tools: `count` 0 to 3 of 3, `decision` 0 to 2 of 2, `gap` 2 to 5 of 5, `conflict` unchanged until the ledger entry is printed whole; `pack` already passed 10 of 10 typo variants. No single QPP-style feature separated the off-kb list's false `good` verdicts from eval `good` ones, and 3 of those 15 are questions the kb now answers. [DER S-hxd4fjjl, S-gcgkws5h, S-lsfxdurw]
+- Conclusion: the deterministic analogue of a mixture of experts is a question-kind router that hands counts, decisions, conflicts, gaps and citations to the tools that already answer them and fuses the lists by RRF; models stay for reasoning-intensive queries and for answering from the packed facts. A typo leg and a generic QPP threshold are not supported by the kb's own data; a QPP signal has to be calibrated on the kb's labelled sets and used as a `check:` note rather than a verdict change. Dense, late-interaction and cross-encoder legs need a model at query time and fall outside a standard-library toolset. [DER S-g2bbx2bz, S-hxd4fjjl, S-gcgkws5h, S-lsfxdurw, S-zrpjwjip]
+- Open: the router's gain on paid arms is unmeasured until the pool is re-run; the off-kb list's labels need a re-check against the grown kb before its false-`good` count is a target. [UNK]
+- See agents/hybrid-retrieval.md, agents/agent-evaluation.md.
+
+_Agent: kb-research_
