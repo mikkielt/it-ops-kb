@@ -5,7 +5,7 @@
   census.py repin LOG [--date D] [--dry-run] [--commit]   phase 1: a pinned file whose facts are word for word at the newer commit is re-pinned
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
-  census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
+  census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N] [--brief [--max-age DAYS]]   phase 4: the sources an independent check re-reads
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked, dns and connect hosts, and the size of phase 2's reading queue
   census.py baselines [--list]                     the live unpinned sources with no detection baseline, counted by host (exit 1 when any)
   census.py judge LOG [--factdiff FLOG] [--model M] [--batch-size N] [--dry-run]   phase 2: review items judged in batches by a no-tool model call
@@ -84,6 +84,15 @@ QUEUE_HOSTS with most; --list: every host, each with its ids and urls); no netwo
 
 sample (phase 4) prints a CSV of ids for the independent re-check: a fraction of the sources whose facts phase 2
 changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcome confirmed), seeded, at least one each.
+--brief prints instead the checker's brief for the same rows: for each sampled source its citing facts (a superseded
+source: those of the row that replaced it), each with the passage its anchor names in the source's current text, from
+the document cache of _cache/factdiff (--max-age days, default 7) or else a fetch, which it caches. A source whose every
+fact has its anchor's passage word for word in that text (the proof `factdiff.py apply` dates a source on) is listed
+under "Agreed by tool" with that proof (the facts, the url, the document's fetch time) and the checker never sees it; a
+source with a fact whose passage is not there, a source whose page could not be read and a source no fact cites go under
+"For the checker" with each fact, its passage (the anchor's, else the best window, marked) and the command that reads the
+source. The counts `checked`, `agreed by tool` and `for the checker` head the lists; the checker's own agree and
+disagree counts complete the report. The checker is a context that did not do phase 2, and changes nothing.
 
 summary prints the hosts of the rows noted `blocked`, `dns` and `connect` apart, and the count of HTTP errors
 (NEEDS-READING rows with a numeric status other than 200). It also prints the queue phase 2 must read, with no network and no model: the rows whose bucket is not OK, whose
@@ -1131,17 +1140,116 @@ def cmd_baselines(a, tally):
     return 1 if gap else 0
 
 
-def cmd_sample(a, tally):
-    rows = read_log(a.log)
+def sampled(rows, a):
+    """[(group, row)] of the phase-4 sample, in the order the CSV lists them: `changed` (outcome updated, superseded or
+    gone) and `ok` (bucket OK with no outcome, or confirmed), each a seeded fraction of at least one row, by id."""
     rnd = random.Random(a.seed)
     changed = [r for r in rows if r["outcome"] in ("updated", "superseded", "gone")]
     ok = [r for r in rows if (r["bucket"] == "OK" and not r["outcome"]) or r["outcome"] == "confirmed"]
     pick = lambda xs, rate: rnd.sample(xs, min(len(xs), max(1, round(len(xs) * rate)))) if xs else []  # noqa: E731
+    out = []
+    for group, xs in (("changed", pick(changed, a.changed)), ("ok", pick(ok, a.ok))):
+        out += [(group, r) for r in sorted(xs, key=lambda r: r["id"])]
+    return out
+
+
+WORD = "word for word"  # the anchor's passage is in the source's current text: the proof factdiff apply dates a source on
+SAMPLE_RULES = """\
+You are the independent check of the census of {date}: a context that did not do phase 2. Change nothing: edit, record and \
+commit nothing.
+A source under "Agreed by tool" has every fact that cites it found word for word in its current text: it is not yours.
+For each source under "For the checker": judge each of its facts from the passage printed under it, supported or not. Open \
+the page (its `read:` line) only when a passage does not settle a fact: no passage, or one that does not say what the fact \
+says. A source no fact cites: judge its outcome (gone: the page is gone; superseded: its facts cite the successor).
+Answer `agree` for a source whose every fact is supported, else `disagree` with the fact (`path:line`) and why.
+One line per source of "For the checker": its id, `agree` or `disagree`, and the reason."""
+
+
+def successor(sid, srcs):
+    """The id a chain of `superseded_by` from `sid` ends at: the row whose facts replaced it (`sid` when none did)."""
+    seen = {sid}
+    while True:
+        nxt = ((srcs.get(sid) or {}).get("superseded_by") or "").strip()
+        if not nxt or nxt in seen or nxt not in srcs:
+            return sid
+        seen.add(nxt)
+        sid = nxt
+
+
+def current_passage(doc, anchor, claim):
+    """(passage, how) of a fact in the source's current text `doc` (`factdiff.Doc`): the anchor's own passage when it is
+    there word for word (`WORD`), else the best window `Doc.locate` or `Doc.score` gives (`best match`); (None, '') when
+    the page holds none."""
+    if doc is None:
+        return None, ""
+    if anchor and anchor.get("status") == "located" and anchor.get("sha") in doc.shas:
+        return doc.window(*doc.shas[anchor["sha"]]), WORD
+    win = doc.locate(claim)[0] or doc.score(claim)[0]
+    return (doc.window(*win), "best match") if win else (None, "")
+
+
+def sample_brief(picked, log, a):
+    """The phase-4 brief of the sample `picked` ([(group, row)]): per source its citing facts, each with the passage of
+    the source's current text (the factdiff document cache, or a fetch) its anchor names; a source whose every fact is
+    found word for word is agreed by tool, with that proof, and the rest go to the checker with the fact, the passage and
+    the command that reads the source. Returns (text, counts)."""
+    srcs, facts, anchors = {r["id"]: r for r in read_sources()}, factdiff.cited_facts(), factdiff.read_anchors()
+    plan = {r["id"]: successor(r["id"], srcs) for _, r in picked}
+    need = sorted({t for t in plan.values() if facts.get(t) and t in srcs})
+    docs = factdiff.fetch_all(need, srcs, a.max_age) if need else {}
+    ctx, tool, check = {"providers": provider.providers(factdiff.ROOT)}, [], []
+    for group, r in picked:
+        tid = plan[r["id"]]
+        d = docs.get(tid)
+        doc = factdiff.Doc(d["text"]) if d and d.get("status") == 200 and d.get("text") else None
+        got = []
+        for key, rel, line, text in facts.get(tid, []):
+            claim = factdiff.fact_text(text)
+            anchor = anchors.get((key, rel, tid))
+            passage, how = current_passage(doc, anchor, claim)
+            got.append({"at": f"{kbcommon.repo_rel(rel)}:{line}", "claim": claim, "passage": passage, "how": how,
+                        "anchor": "located" if anchor and anchor.get("status") == "located" else "not located"})
+        head = f"{r['id']}  {group}, outcome {r['outcome'] or '-'}, bucket {r['bucket']}"
+        if got and doc is not None and all(g["how"] == WORD for g in got):
+            tool.append(f"- {head}: {len(got)} fact(s) found word for word in the current text of "
+                        f"{srcs[tid]['url']} (document {tid}, fetched {(d.get('fetched_utc') or '-')[:19]}): "
+                        + ", ".join(g["at"] for g in got))
+            continue
+        out = [f"### {head}", f"- url: {r['url']}"]
+        if tid != r["id"]:
+            out.append(f"- superseded by {tid}: the facts citing it are checked against {srcs[tid]['url']}")
+        if not got:
+            out.append(f"- cited by: no fact (outcome {r['outcome'] or 'none'})")
+        elif doc is None:
+            out.append(f"- current text: not read ({'HTTP ' + str(d['status']) if d and d.get('status') else 'no document'})")
+        for n, g in enumerate(got, 1):
+            out += [f"  {n}. {g['at']} ({g['anchor']} anchor)", f"     fact: {g['claim']}",
+                    f"     passage ({g['how'] or 'none found'}): {g['passage'] or '-'}"]
+        out += ["- read:"] + [f"  {c}" for c in read_commands(r, ctx)]
+        check.append("\n".join(out))
+    n = len(picked)
+    date = ql_capture.phase_date(path=log)
+    text = "\n\n".join([SAMPLE_RULES.format(date=date),
+                         f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}",
+                         "## Agreed by tool\n" + ("\n".join(tool) or "none"),
+                         "## For the checker\n\n" + ("\n\n".join(check) or "none")])
+    return text, {"checked": n, "agreed by tool": len(tool), "for the checker": len(check)}
+
+
+def cmd_sample(a, tally):
+    if not os.path.isfile(a.log):
+        print(f"no census log {a.log}")
+        return 2
+    picked = sampled(read_log(a.log), a)
+    if a.brief:
+        text, counts = sample_brief(picked, a.log, a)
+        print(text)
+        tally.update(counts)
+        return 0
     w = csv.writer(sys.stdout, lineterminator="\n")
     w.writerow(["group", "id", "url", "bucket", "outcome", "evidence", "outcome_note", "used_in"])
-    for group, xs in (("changed", pick(changed, a.changed)), ("ok", pick(ok, a.ok))):
-        for r in sorted(xs, key=lambda r: r["id"]):
-            w.writerow([group, r["id"], r["url"], r["bucket"], r["outcome"], r["evidence"], r["outcome_note"], r["used_in"]])
+    for group, r in picked:
+        w.writerow([group, r["id"], r["url"], r["bucket"], r["outcome"], r["evidence"], r["outcome_note"], r["used_in"]])
     return 0
 
 
@@ -2398,8 +2506,12 @@ def main():
     f.add_argument("log")
     f.add_argument("--date", help="confirmation date (default today)")
     f.add_argument("--dry-run", action="store_true", help="report, write nothing")
-    s = sub.add_parser("sample", help="phase 4: the ids an independent check re-reads, as CSV")
+    s = sub.add_parser("sample", help="phase 4: the sources an independent check re-reads, as CSV, or with --brief as its brief")
     s.add_argument("log")
+    s.add_argument("--brief", action="store_true", help="the checker's brief: each source's citing facts with their passage in "
+                                                        "the current text; a source whose every fact is word for word is agreed by tool")
+    s.add_argument("--max-age", type=float, default=7, help="--brief reuses cached documents up to DAYS old, else fetches "
+                                                            "(default 7, as factdiff.py anchor)")
     s.add_argument("--changed", type=float, default=0.10, help="fraction of the changed sources (default 0.10)")
     s.add_argument("--ok", type=float, default=0.05, help="fraction of the confirmed sources (default 0.05)")
     s.add_argument("--seed", type=int, default=1)
