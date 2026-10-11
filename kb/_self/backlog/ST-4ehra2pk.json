@@ -2,7 +2,7 @@
   "id": "ST-4ehra2pk",
   "kind": "story",
   "title": "Research sprint goal: Research: secrets, identities and signed requests for a small self-managed fleet",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-up5wchen",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-up5wchen"
 }
