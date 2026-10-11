@@ -2,7 +2,7 @@
   "id": "ST-ce6lnv2v",
   "kind": "story",
   "title": "Review sprint: Research: Python shell with a Rust core, one package, bundled Postgres",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wwacrsqr",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-wwacrsqr"
 }
