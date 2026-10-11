@@ -361,6 +361,127 @@ def census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_pat
         assert [g["group"] for g in json.loads(capsys.readouterr().out)["groups"]] == list(groups)
 
 
+def census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups(tmp_path, monkeypatch, capsys):
+    """`census.py judge` with a stub in place of the model call: no test makes a paid call."""
+    def item(sid, mark, new="The service restarts on the second Tuesday of each month.", n=1):
+        return {"outcome": "modified", "source_id": sid, "url": f"https://docs.example.com/{sid}", "verdict": "changed",
+                "note": "n", "fact": f"- Fact {n} {mark}. [DOC {sid}]", "where": f"public/dsc/d.md:{n}", "key": f"k{sid[-1]}{n}",
+                "path": "dsc/d.md", "old": "the old passage", "old_from": "snapshot at HEAD", "new": new, "new_from": "https://docs.example.com/"}
+
+    by = {"S9990001": [item("S9990001", "HOLDS", n=1), item("S9990001", "HOLDS", n=2)],  # every fact supported: confirmed
+          "S9990002": [item("S9990002", "HOLDS", n=1), item("S9990002", "CONFLICT", n=2)],  # one is left to a reader
+          "S9990003": [item("S9990003", "HOLDS", new=None)],  # no new passage: never sent
+          "S9990004": [item("S9990004", "VAGUE")]}  # supported with a sentence the page lacks: not believed
+    rows = [census_row(sid, evidence="fact diff: changed; review modified=1 (factdiff.py review factdiff-2099-01-03.csv)")
+            for sid in by] + [census_row("S9990005", kind="raw-pin", repo="github.com/Org/Repo")]  # a pinned file is never sent
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    log = tmp_path / "2099-01-03.csv"
+    kbcommon.write_csv(str(log), census.COLS, rows)
+    sent = []
+
+    def stub(prompt, model, cap):
+        sent.append((prompt, model, cap))
+        out = []
+        for n, block in enumerate(prompt.split("### ")[1:], 1):
+            fact, new = re.search(r"fact: (.*)", block).group(1), re.search(r"new: (.*)", block).group(1)
+            out.append({"n": n, "verdict": "contradicted" if "CONFLICT" in fact else "supported",
+                        "sentence": new if "VAGUE" not in fact else "A sentence the page never had."})
+        return {"verdicts": out, "cost_usd": 0.0123, "usage": {"input-tokens": 100, "output-tokens": 20}, "error": ""}
+
+    def args(**kw):
+        return argparse.Namespace(log=str(log), factdiff=None, model=factdiff.JUDGE_MODEL, batch_size=2, max_budget_usd=None, jobs=1,
+                                  dry_run=False, **kw)
+
+    def refuse(*a, **k):
+        raise AssertionError("a test made a model call")
+
+    with monkeypatch.context() as m:
+        m.setattr(socket.socket, "connect", refuse)
+        m.setattr(subprocess, "run", refuse)  # the real call is a subprocess: only the stub answers
+        m.setattr(factdiff, "judge_call", stub)
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(kbfacts, "cited_lines", lambda ids: {i: [("public/dsc/d.md", 2)] for i in ids})
+        m.setattr(kbfacts, "read", lambda qpath: "\n".join(["", "- A fact. [DOC S9990002]"]))
+        m.setattr(census, "review_by_source", lambda ids, fd: {i: by[i] for i in ids if i in by})
+        # the dry run asks nothing and says the batches, the tokens and the USD (the queue's passages, a call's own overhead)
+        assert census.cmd_judge(argparse.Namespace(**{**vars(args()), "dry_run": True}), Counter()) == 0
+        said = capsys.readouterr().out
+        assert "batches=3 items=5 " in said and "model=claude-sonnet-5-5" in said and "usd~0." in said and not sent
+        # no batch is a line, not an error, and a model with no rate in factdiff.JUDGE_PRICE has no USD estimate
+        assert "batches=0 items=0 " in factdiff.estimate_lines(factdiff.judge_estimate([]), factdiff.JUDGE_MODEL, "none")[0]
+        assert "no rate for other-model" in factdiff.estimate_lines(factdiff.judge_estimate([[by["S9990001"][0]]], "other-model"),
+                                                                    "other-model", "one")[0]
+        # the run: three calls of at most two items, the verdicts counted, the cost and tokens summed into the ops row
+        tally = Counter()
+        assert census.cmd_judge(args(), tally) == 0
+        assert len(sent) == 3 and all(p.count("### ") <= 2 and mod == factdiff.JUDGE_MODEL and cap >= 0.05 for p, mod, cap in sent)
+        assert all("old: the old passage" in p and "fact: - Fact " in p for p, _, _ in sent)
+        assert (tally["supported"], tally["contradicted"], tally["not enough information"]) == (3, 1, 1)
+        assert (tally["calls"], tally["failed"], tally["input-tokens"], tally["output-tokens"], tally["cost-usd-micro"]) == (3, 0, 300, 60, 36900)
+        out = census.read_log(str(log))
+        assert {r["id"]: r["outcome"] for r in out} == {"S9990001": "confirmed", "S9990002": "", "S9990003": "", "S9990004": "",
+                                                        "S9990005": ""}
+        assert "2 fact(s) judged supported by claude-sonnet-5-5" in out[0]["outcome_note"]
+        kept = {(r["source_id"], r["fact"]): (r["verdict"], r["note"]) for r in census.kbcommon.load_csv(census.judge_path(str(log)), census.JUDGE_COLS)[1]}
+        assert kept[("S9990004", "k41")] == ("not enough information", "supported without a sentence of the new passage")
+        assert kept[("S9990002", "k22")][0] == "contradicted" and ("S9990003", "k31") not in kept
+        # groups and the brief read only what is left: the supported fact of a source is out, the confirmed source is gone
+        ctx = census.phase2_context(out, str(log))
+        assert [i["key"] for i in ctx["items"]["S9990002"]] == ["k22"] and "S9990001" not in ctx["items"]
+        assert sorted(r["id"] for ms in ctx["members"].values() for r, _, _ in ms) == ["S9990002", "S9990003", "S9990004", "S9990005"]
+        assert "1 more were judged supported by a model call and are left out" in census.brief_parts("dsc", ctx["members"]["dsc"], ctx)[0]
+        capsys.readouterr()
+        census.cmd_summary(argparse.Namespace(log=str(log), factdiff=None), Counter())
+        assert "review passages: rows=3 items=3 without a passage=1 " in capsys.readouterr().out
+        # a second run asks for nothing and writes the same bytes
+        before = (log.read_bytes(), Path(census.judge_path(str(log))).read_bytes())
+        sent.clear()
+        assert census.cmd_judge(args(), Counter()) == 0 and not sent
+        assert before == (log.read_bytes(), Path(census.judge_path(str(log))).read_bytes())
+        # planted failure: a call that errors leaves its items unjudged, exits 1 and names why; nothing is confirmed
+        Path(census.judge_path(str(log))).unlink()
+        kbcommon.write_csv(str(log), census.COLS, rows)
+        m.setattr(factdiff, "judge_call", lambda *a: {"verdicts": None, "cost_usd": 0.0, "usage": {}, "error": "Budget limit reached"})
+        tally = Counter()
+        assert census.cmd_judge(args(), tally) == 1 and "call 1 failed: Budget limit reached" in capsys.readouterr().out
+        assert tally["failed"] == 3 and not any(r["outcome"] for r in census.read_log(str(log))) and not os.path.exists(census.judge_path(str(log)))
+        # the ops row of the phase names only closed tokens
+        seen = []
+        m.setattr(ql_capture, "record", lambda surface, **kw: seen.append(kw))
+        m.setattr(factdiff, "judge_call", stub)
+        assert ql_capture.census_phase("judge", lambda t: census.cmd_judge(args(), t), "2099-01-03") == 0
+        row = seen[0]
+        assert (row["event"], row["phase"], row["exit"]) == ("census.phase", "judge", 0) and not ql_capture.ops_problems(row)
+        assert {"name": "cost-usd-micro", "n": 36900} in row["rows"] and {"name": "not-enough-information", "n": 1} in row["rows"]
+    # the call itself: no tools, a schema, a cap; a result is read from structured_output, else from its text; an error names why
+    argv = factdiff.judge_argv("claude-sonnet-5-5", 0.12)
+    assert argv[argv.index("--tools") + 1] == "" and argv[argv.index("--max-budget-usd") + 1] == "0.12"
+    assert argv[argv.index("--output-format") + 1] == "json" and json.loads(argv[argv.index("--json-schema") + 1]) == factdiff.JUDGE_SCHEMA
+    ok = {"type": "result", "subtype": "success", "total_cost_usd": 0.5, "usage": {"input_tokens": 7, "output_tokens": 3, "cache_read_input_tokens": 0}}
+    v = [{"n": 1, "verdict": "supported", "sentence": "x"}]
+    got = factdiff.judge_result(json.dumps({**ok, "result": "", "structured_output": {"verdicts": v}}))
+    assert got == {"verdicts": v, "cost_usd": 0.5, "usage": {"input-tokens": 7, "output-tokens": 3}, "error": ""}
+    assert factdiff.judge_result(json.dumps({**ok, "result": 'Here: {"verdicts": ' + json.dumps(v) + "}"}))["verdicts"] == v
+    err = factdiff.judge_result(json.dumps({**ok, "subtype": "error_max_budget_usd", "is_error": True, "errors": ["Budget limit reached"]}))
+    assert err["verdicts"] is None and err["error"] == "Budget limit reached" and err["cost_usd"] == 0.5
+    assert factdiff.judge_result("not json")["error"] and factdiff.judge_result(json.dumps(ok))["error"] == "the result holds no verdicts"
+    # factdiff.py review --judge judges the same items, a dry run asks nothing
+    flog = tmp_path / "factdiff-2099-01-03.csv"
+    flog.write_text(",".join(factdiff.LOG_COLS) + "\n", encoding="utf-8")
+    with monkeypatch.context() as m:
+        m.setattr(factdiff, "review_items", lambda *a, **k: iter(by["S9990002"]))
+        m.setattr(factdiff, "sources", lambda: {})
+        m.setattr(factdiff, "judge_call", stub)
+        sent.clear()
+        ns = argparse.Namespace(log=str(flog), source=[], json=False, judge=True, model=factdiff.JUDGE_MODEL, batch_size=None,
+                                max_budget_usd=None, dry_run=False)
+        assert factdiff.cmd_review(ns, Counter()) == 0
+        shown = capsys.readouterr().out
+        assert "- judged: supported (The service restarts" in shown and "- judged: contradicted (" in shown and len(sent) == 1
+        assert factdiff.cmd_review(argparse.Namespace(**{**vars(ns), "dry_run": True}), Counter()) == 0 and len(sent) == 1
+        assert "batches=1 items=2 " in capsys.readouterr().out
+
+
 def census_phases_write_one_ops_row_each(tmp_path):
     data = tmp_path / "data"
     (data / "querylog").mkdir(parents=True)
@@ -646,7 +767,7 @@ def census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_a
     log = tmp_path / "retry.csv"
     kbcommon.write_csv(str(log), census.COLS, rows)
     with monkeypatch.context() as m:
-        m.setattr(census, "reading_queue", lambda rows, fd_rows: [])  # the queue block is another test's
+        m.setattr(census, "reading_queue", lambda rows, fd_rows, *a: [])  # the queue block is another test's
         assert census.cmd_summary(argparse.Namespace(log=str(log), factdiff=None), Counter()) == 0
     out = capsys.readouterr().out
     assert "needs-reading by note: -=2 blocked=1 connect=1 dns=2\n" in out
@@ -1074,7 +1195,7 @@ def factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and
     assert cloned == ["github.com/MicrosoftDocs/entra-docs"]
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names(tmp_path, monkeypatch, capsys):
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
     census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
@@ -1082,6 +1203,7 @@ def test_census_queue_and_census_groups_are_sized_without_network_each_phase_wri
     census_queue_is_sized_without_network(tmp_path, monkeypatch)
     census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_path, monkeypatch, capsys)
     census_phases_write_one_ops_row_each(tmp_path)
+    census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups(tmp_path / "judge", monkeypatch, capsys)
     census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_path / "apply", monkeypatch, capsys)
     census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path / "baseline", monkeypatch, capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)
