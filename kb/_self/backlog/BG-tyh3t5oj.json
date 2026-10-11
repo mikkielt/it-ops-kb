@@ -2,7 +2,7 @@
   "id": "BG-tyh3t5oj",
   "kind": "bug",
   "title": "census.py dispatch fails on the real claude CLI: the result schema's $schema (2020-12) is rejected by --json-schema",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     "_tools/census_result.schema.json",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orchestrator-yojt6y7v"
 }
