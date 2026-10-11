@@ -1414,3 +1414,58 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## auth/postgres-column-encryption
 - **Whether key arguments to pgcrypto functions can reach server logs or statistics views.** Looked 2026-10-11 in the pgcrypto page (S-alffetzh: cleartext transit, NULL handling, side channels) and the encryption options page (S-byvcl63n: plaintext and key present on the server briefly): neither mentions statement logging or `pg_stat_statements`. Needs the logging and statistics chapters of the PostgreSQL manual read for this question. [UNK] (topic: auth/postgres-column-encryption)
+
+## python/uv-projects
+- **Whether a uv workspace root without a `[project]` table is documented as a "virtual root" tied to `package = false`.** Looked 2026-10-11 in the workspaces page (S-4odritdm) and the configuration page (S-qo6uqong): the source schema allows a root with only `[tool.uv.workspace]` and `tool.uv.package = false` is a separate per-project switch, but no sentence joins them. Needs a uv statement. [UNK] (topic: python/uv-projects)
+- **What `uv lock` does with `--package` and whether a workspace keeps a lock per member.** Looked 2026-10-11 in S-4odritdm: it says one lockfile for the workspace and nothing on `--package` for lock; the CLI reference page returned 404 at the pinned tag, so the flags rest on source (S-2xpbl25y). Needs the CLI reference at a tag that has it. [UNK] (topic: python/uv-projects)
+
+## python/maturin-pyo3-wheels
+- **macOS `universal2` wheels with maturin.** Looked 2026-10-11 in the maturin guide pages at 1.15.0 (distribution, platform support, configuration): not mentioned. Needs the maturin CLI help or a release note. [UNK] (topic: python/maturin-pyo3-wheels)
+- **The wheel tags maturin gives the linux arm64 and macOS arm64 jobs.** Looked 2026-10-11 in the same pages: only examples, one of which shows a stale macOS tag; the tags in the article are inferred. Needs a built wheel's filename from a run. [UNK] (topic: python/maturin-pyo3-wheels)
+- **A GitLab CI recipe for the build matrix.** Looked 2026-10-11 in the maturin guide and the maturin-action README (S-sne3yj7b): `generate-ci` emits GitHub Actions only. Needs maturin or GitLab documentation. [UNK] (topic: python/maturin-pyo3-wheels)
+
+## python/testcontainers-postgres-pytest
+- **Whether the Ryuk reaper starts under GitLab `docker:dind` with a TCP `DOCKER_HOST`.** Looked 2026-10-11 in the testcontainers-python docs at v4.15.0 (S-ld5hflyc, S-futhpvg4) and GitLab's Docker-in-Docker page (S-bb3uummy): no page covers the combination. Needs a run on a runner. [UNK] (topic: python/testcontainers-postgres-pytest)
+- **A documented pytest fixture pattern for `PostgresContainer`.** Looked 2026-10-11 in the quickstart and module pages (S-y6d7rxoj, S-geebp6gt): none; the fixture in the article is derived. [UNK] (topic: python/testcontainers-postgres-pytest)
+
+## python/sqlalchemy-asyncio-asyncpg
+- **Whether SQLAlchemy's `prepared_statement_cache_size=0` alone avoids PgBouncer prepared-statement errors.** Looked 2026-10-11 in the dialect docstring (S-4eztl5ck) and the asyncpg FAQ (S-4dfwedi7): the documented workaround combines `NullPool`, a unique statement-name function and `DISCARD`, or asyncpg's `statement_cache_size=0`. Needs a run behind PgBouncer. [UNK] (topic: python/sqlalchemy-asyncio-asyncpg)
+
+## python/alembic-migrations
+- **An Alembic page on expand and contract or zero-downtime migrations.** Looked 2026-10-11 in the rel_1_20_0 tutorial, autogenerate, cookbook, offline and branches pages: none. The name rests on Fowler's Parallel Change page only (S-5mw7raax). [UNK] (topic: python/alembic-migrations)
+- **`lock_timeout` guidance for `ALTER TABLE` during a migration, and running `alembic upgrade` from several instances at once.** Not read: the PostgreSQL pages used (S-hqy2uu3t, S-xf26uevo) say which lock each command takes, not how to bound the wait. Needs the runtime-config pages and an Alembic statement. [UNK] (topic: python/alembic-migrations)
+
+## arch/postgres-advisory-locks
+- **How a SQLAlchemy or asyncpg pool treats a session-level advisory lock when the connection is returned or reset.** Looked 2026-10-11 in the PostgreSQL pages (S-xf26uevo, S-utkuhqw3) and PgBouncer's features page (S-zwhssqbz): none speaks of client-side pools. The article derives "use a dedicated connection". Needs the pool docs read for this question. [UNK] (topic: arch/postgres-advisory-locks)
+
+## arch/postgres-bundled-binaries
+- **The byte limit of the unix-socket directory path.** Looked 2026-10-11 in the runtime-config, server-start and creating-cluster pages (S-qudkq4hc, S-ltydjlxa, S-4o7okj5l): none states a number; only a comment in `pqcomm.h` (S-f3p4t6bi) speaks of "100 or so bytes". [UNK] (topic: arch/postgres-bundled-binaries)
+- **Whether the executable bit of a binary inside a wheel's package tree survives an install.** Looked 2026-10-11 in the binary distribution format spec (S-ewbubv2q): it names the bit only for `scripts/`. Needs an installer's documentation or a test. [UNK] (topic: arch/postgres-bundled-binaries)
+
+## arch/postgres-dump-canonical-hash
+- **Row order of table data in a `pg_dump`.** Looked 2026-10-11 in the pg_dump page (S-vykvhstk) and the dump source (S-vor6jmfj): COPY runs without ORDER BY and no sentence promises an order. Needs the PostgreSQL statement or a clustered-table test. [UNK] (topic: arch/postgres-dump-canonical-hash)
+- **Whether `-Z` gzip output of a plain dump is byte-stable.** Not checked; the article advises hashing the uncompressed output. [UNK] (topic: arch/postgres-dump-canonical-hash)
+
+## arch/postgres-backup-age-s3-git-bundle
+- **Object Lock, versioning, additional checksums and multipart minimums on S3-compatible stores other than Amazon S3.** Looked 2026-10-11 in the Amazon S3 user guide pages (S-wec2qrob, S-2faaoioj, S-izv6sxd6, S-srrxgn7s): they document Amazon S3 only; no official compatibility page for another store was read. [UNK] (topic: arch/postgres-backup-age-s3-git-bundle)
+- **Streaming an upload from stdin with the AWS CLI, and its part size.** Not read from a fetched page; the article's snippet writes files first. [UNK] (topic: arch/postgres-backup-age-s3-git-bundle)
+- **Exit code of `git bundle create` for an incremental range with no new commits.** Looked 2026-10-11 in the git-bundle page (S-vh25ss57): only the refusal for an unresolvable range is shown. [UNK] (topic: arch/postgres-backup-age-s3-git-bundle)
+
+## python/typer-cli
+- **A Typer page for a `--yes` confirmation flag, `NO_COLOR` handling and `rich_markup_mode`.** Looked 2026-10-11 in the Typer docs and source at 0.27.3 (S-2qjh4vyl, S-tustm6ll): no page documents them; Typer's colour handling reads `FORCE_COLOR` and a few other variables only. [UNK] (topic: python/typer-cli)
+
+## python/fastapi-capability-dependencies
+- **Whether 403 or 401 is recommended for a missing scope, and any documented use of `asyncio.create_task` in a lifespan.** Looked 2026-10-11 in the FastAPI security and events pages (S-a67xbp56, S-taoszxoo, S-fwvusq4t): the example answers 401 and no page recommends 403 or documents the task pattern. [UNK] (topic: python/fastapi-capability-dependencies)
+
+## arch/sse-last-event-id-cursors
+- **Maximum length of an event `id` and any replay window.** Looked 2026-10-11 in the HTML Standard server-sent events page (S-6r5cdtdk): neither is stated. [UNK] (topic: arch/sse-last-event-id-cursors)
+
+## arch/http-rate-limit-429-retry-after
+- **An official FastAPI or Starlette rate-limit guide.** Looked 2026-10-11 in the FastAPI and Starlette docs (S-e5yw2g7y, S-ciivqlqu) for "rate limit": none found. The article uses the third-party slowapi (S-l7o2xn5e) as COMMUNITY. [UNK] (topic: arch/http-rate-limit-429-retry-after)
+
+## python/mypy-strict
+- **mypy exit codes in the documentation.** Looked 2026-10-11 in the command-line, configuration and running pages at v2.4.0 (S-butt7tqv, S-itulia5o, S-djet36tw): none states them; the article cites the source (S-2ial3y55). The strict flag list is generated at build time, so it rests on source too. [UNK] (topic: python/mypy-strict)
+- **CI cache restore guidance for the mypy cache.** The remote-cache page returned 404 at v2.4.0; only `--cache-dir` and `MYPY_CACHE_DIR` are documented. [UNK] (topic: python/mypy-strict)
+
+## arch/rust-clippy-criterion-gates
+- **Whether a Criterion "Performance has regressed" result changes the process exit status.** Looked 2026-10-11 in the getting-started, command-line options, FAQ and known-limitations pages (S-ba2xucuh, S-hqm43pk6, S-luxqgdxs, S-n33p6asx): none says; a regression gate is therefore unconfirmed. [UNK] (topic: arch/rust-clippy-criterion-gates)

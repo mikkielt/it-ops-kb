@@ -686,3 +686,41 @@ uuidv7,arch/uuidv7-identifiers
 uuid_extract_timestamp,arch/uuidv7-identifiers
 pgp_sym_encrypt,auth/postgres-column-encryption
 pgcrypto,auth/postgres-column-encryption
+tool.uv.workspace,python/uv-projects
+--all-packages,python/uv-projects
+maturin,python/maturin-pyo3-wheels
+abi3-py39,python/maturin-pyo3-wheels
+maturin generate-ci,python/maturin-pyo3-wheels
+PostgresContainer,python/testcontainers-postgres-pytest
+TESTCONTAINERS_RYUK_DISABLED,python/testcontainers-postgres-pytest
+create_async_engine,python/sqlalchemy-asyncio-asyncpg
+async_sessionmaker,python/sqlalchemy-asyncio-asyncpg
+postgresql+asyncpg,python/sqlalchemy-asyncio-asyncpg
+alembic_version,python/alembic-migrations
+alembic check,python/alembic-migrations
+autocommit_block,python/alembic-migrations
+transaction_per_migration,python/alembic-migrations
+pg_try_advisory_lock,arch/postgres-advisory-locks
+pg_advisory_xact_lock,arch/postgres-advisory-locks
+pixeltable-pgserver,arch/postgres-bundled-binaries
+initdb,arch/postgres-bundled-binaries
+pg_ctl,arch/postgres-bundled-binaries
+--restrict-key,arch/postgres-dump-canonical-hash
+\restrict,arch/postgres-dump-canonical-hash
+git bundle create,arch/postgres-backup-age-s3-git-bundle
+pyrage,arch/postgres-backup-age-s3-git-bundle
+typer.Exit,python/typer-cli
+typer.testing.CliRunner,python/typer-cli
+SecurityScopes,python/fastapi-capability-dependencies
+dependency_overrides,python/fastapi-capability-dependencies
+EventSourceResponse,arch/sse-last-event-id-cursors
+Last-Event-ID,arch/sse-last-event-id-cursors
+slowapi,arch/http-rate-limit-429-retry-after
+RateLimit-Policy,arch/http-rate-limit-429-retry-after
+mypy --strict,python/mypy-strict
+warn_unused_ignores,python/mypy-strict
+stubtest,python/mypy-strict
+cargo clippy,arch/rust-clippy-criterion-gates
+CARGO_BUILD_WARNINGS,arch/rust-clippy-criterion-gates
+criterion_group!,arch/rust-clippy-criterion-gates
+--save-baseline,arch/rust-clippy-criterion-gates

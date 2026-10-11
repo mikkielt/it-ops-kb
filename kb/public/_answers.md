@@ -3042,3 +3042,101 @@ _Agent: kb-research_
 - See auth/postgres-column-encryption.md.
 
 _Agent: kb-research_
+
+## QK-uv-workspaces-maturin-pyo3-abi3-wheels-build-matrix. How do uv workspaces share one lock across members, and how are maturin and PyO3 abi3 wheels built for linux amd64, linux arm64 and macOS arm64?
+- A uv workspace is `[tool.uv.workspace]` with `members` and optional `exclude` globs; all members share one `uv.lock`, depend on each other with `workspace = true` and are editable; one `requires-python` is enforced as the intersection of the members'. [DOC S-4odritdm]
+- `uv sync`, `uv run` and `uv build` take `--package NAME` or `--all-packages`; the flags conflict and a missing member is an error. [CODE S-2xpbl25y: crates/uv-cli/src/lib.rs]
+- PyO3's `abi3-pyXY` feature (for example `abi3-py39`) gives one wheel per OS and architecture for that Python and newer GIL-enabled CPython, at the price of some stable-ABI limits. [DOC S-pyhwnq4g]
+- linux amd64 builds in a manylinux container; linux arm64 uses `--target aarch64-unknown-linux-gnu --zig` or manylinux-cross containers through maturin-action; macOS arm64 builds natively on an arm64 macOS runner; `maturin generate-ci github` emits that matrix for GitHub Actions only. [DOC S-c6fbhzyz, S-sne3yj7b, S-hisnadiu]
+- Conclusion: one abi3 wheel per platform from three jobs (linux amd64, linux arm64, macOS arm64) covers every newer CPython; the manylinux and macOS wheel tags for the arm64 jobs are inferred from examples, and no GitLab CI generator exists. [DER S-pyhwnq4g, S-c6fbhzyz, S-sne3yj7b]
+- Open: macOS `universal2`, the exact arm64 wheel tags and a GitLab CI recipe are not stated by the pages read. [UNK]
+- See python/uv-projects.md, python/maturin-pyo3-wheels.md.
+
+_Agent: kb-research_
+
+## QK-pytest-testcontainers-postgres-sqlalchemy-asyncio-asyncpg. How does pytest use testcontainers-python with a Postgres container, and how is SQLAlchemy 2 used with asyncio and asyncpg?
+- `PostgresContainer` (module `testcontainers.community.postgres` at v4.15.0) is a context manager whose `get_connection_url()` returns `postgresql+<driver>://...` for the mapped port; readiness is checked by `psql` inside the container. [CODE S-2ibe4s6m, S-iastzky2]
+- testcontainers needs a Docker-API compatible runtime; the Ryuk reaper starts with the first container and `TESTCONTAINERS_RYUK_DISABLED=true` turns it off. [DOC S-qx4duaky, S-futhpvg4]
+- On GitLab CI the documented Docker-in-Docker setup is a privileged runner with the `docker:dind` service and `DOCKER_HOST`. [DOC S-bb3uummy]
+- SQLAlchemy 2: `create_async_engine("postgresql+asyncpg://...")` with `async_sessionmaker(..., expire_on_commit=False)`; no implicit lazy loading, so use `selectinload` or `AsyncAttrs`; one `AsyncSession` per concurrent task. [DOC S-4zo5mcqa]
+- The asyncpg dialect keeps a prepared-statement cache and the pool class is `AsyncAdaptedQueuePool`; behind PgBouncer the cache must be disabled or names made unique. [CODE S-4eztl5ck, S-xhpt3onl; DOC S-4dfwedi7]
+- Conclusion: a session-scoped fixture around the container and an async engine built from its URL with `driver="asyncpg"` is the derived pattern; no testcontainers page documents a pytest fixture. [DER S-2ibe4s6m, S-4zo5mcqa]
+- Open: Ryuk under GitLab `docker:dind` with a TCP `DOCKER_HOST` is not confirmed. [UNK]
+- See python/testcontainers-postgres-pytest.md, python/sqlalchemy-asyncio-asyncpg.md.
+
+_Agent: kb-research_
+
+## QK-alembic-expand-contract-advisory-locks-single-writer. How do Alembic migrations run as expand-and-contract on PostgreSQL, and how do advisory locks serve as single-writer invariants?
+- Alembic's own docs (rel_1_20_0) do not define expand and contract; the name is recorded only from Fowler's Parallel Change page. [COMMUNITY S-5mw7raax]
+- On PostgreSQL Alembic runs transactional DDL by default; `transaction_per_migration` gives one transaction per revision and `autocommit_block()` runs statements outside one. [CODE S-4k3e652e, S-zcvw2nun, S-h2z7tktj]
+- PostgreSQL 18: `ADD COLUMN` with a non-volatile default needs no rewrite, `NOT VALID` then `VALIDATE CONSTRAINT` takes a weaker lock, and `CREATE INDEX CONCURRENTLY` cannot run in a transaction block. [DOC S-hqy2uu3t, S-qh5ieidx, S-xf26uevo]
+- `alembic check` runs the autogenerate comparison and fails when a revision would have operations, so it can gate CI. [DOC S-772ppm55]
+- A session-level advisory lock is held until unlocked or the session ends and a rollback does not release it; `pg_try_advisory_lock` returns at once, so a service can assert one writer. [DOC S-xf26uevo, S-utkuhqw3; DER]
+- Advisory locks are per server and not carried to a standby; PgBouncer supports session-level ones only in session pooling. [DOC S-5oeurmkp, S-o45hawqq, S-zwhssqbz]
+- Conclusion: expand (additive revision), dual-write and backfill, validate, then contract (drop) as separate revisions, with the writer holding a session advisory lock on a dedicated connection. [DER S-hqy2uu3t, S-qh5ieidx, S-xf26uevo, S-utkuhqw3]
+- Open: Alembic has no official zero-downtime guidance, and lock handling by SQLAlchemy and asyncpg pools was not read. [UNK]
+- See python/alembic-migrations.md, arch/postgres-advisory-locks.md.
+
+_Agent: kb-research_
+
+## QK-bundled-postgresql-binaries-wheel-initdb-pg-ctl-major-upgrade. How can PostgreSQL binaries be bundled in a Python wheel and run by the package: initdb, pg_ctl start and stop, and a major upgrade by dump and restore?
+- `initdb` must run as the unprivileged owner, refuses a non-empty directory, and enables data checksums by default in PostgreSQL 18; default local auth is `trust`. [DOC S-nmcdzdpf, S-4o7okj5l]
+- `pg_ctl start` waits by default and `-o` passes server options; `stop -m fast` is the default and `status` exits 3 when the server is not running. [DOC S-rqvdmzku, S-qudkq4hc]
+- Minor releases reuse the data directory; a major release changes the storage format and `PG_VERSION` holds the major number; upgrade is a dump of the old cluster restored into the new one, or `pg_upgrade`, which needs both versions' binaries. [DOC S-zwrjh2bl, S-czyjfw3k, S-yz6be5ru]
+- pixeltable-pgserver 0.6.0 ships platform wheels with PG 16 and 18 and starts the server with `initdb` and `pg_ctl -w` on a unix socket directory. [CODE S-p3k7q3uv, S-c243glba; COMMUNITY S-clzjtcjg]
+- The PostgreSQL licence permits redistribution with the notice; a wheel with native executables needs a platform tag, not `any`. [DOC S-6kqqnivq; DER S-piorrsz5, S-ewbubv2q]
+- Conclusion: start-up is check `PG_VERSION` against the bundled major, `initdb` if empty, `pg_ctl start -w` on a unix socket, and `stop -m fast`; a major upgrade needs the old binaries or a dump taken before the package's major changes. [DER S-nmcdzdpf, S-rqvdmzku, S-zwrjh2bl, S-czyjfw3k]
+- Open: the socket path length limit is not in the docs, and the executable bit of binaries inside a wheel is not stated by the wheel spec. [UNK]
+- See arch/postgres-bundled-binaries.md.
+
+_Agent: kb-research_
+
+## QK-canonical-pg-dump-hash-age-s3-git-bundle-restore-ci. How can a pg_dump be made to hash byte-identically, and how are nightly age-encrypted dumps and git bundles sent to S3-compatible storage with the restore tested in CI?
+- Plain format has no embedded creation time, while custom and directory headers write one; PostgreSQL 18 plain dumps carry a random `\restrict` key unless `--restrict-key` is given, which the docs say is for repeatable output. [CODE S-aae3vzxi, S-v246rdbb; DOC S-vykvhstk]
+- Row order of table data is not promised by the docs. [UNK; CODE S-vor6jmfj]
+- age streams stdin to stdout, encrypts to public recipients and detects truncation by the final chunk; `git bundle create` writes a full backup and `git bundle verify` checks one. [DOC S-ax3gmu7j, S-bi6fdfos, S-vh25ss57]
+- S3 limits are single PUT up to 5 GB and multipart with 10,000 parts; Object Lock needs versioning; these are documented for Amazon S3 only. [DOC S-tvr6yltg, S-srrxgn7s, S-wec2qrob, S-2faaoioj]
+- Restore test: `pg_restore --exit-on-error --single-transaction` for an archive or `psql -v ON_ERROR_STOP=1 -1` for a plain dump into a throwaway database. [DOC S-gmljtlvr, S-oo2r576d]
+- Conclusion: plain format, no `-v`, no compression, fixed flags and a fixed restrict key, versions pinned, then hash; the age and upload pipeline and the CI restore are derived and untested. [DER S-vykvhstk, S-aae3vzxi, S-v246rdbb, S-ax3gmu7j]
+- Open: row-order stability, S3-compatible stores' Object Lock and multipart minimums, and streaming upload from stdin. [UNK]
+- See arch/postgres-dump-canonical-hash.md, arch/postgres-backup-age-s3-git-bundle.md.
+
+_Agent: kb-research_
+
+## QK-typer-no-prompt-without-tty-fastapi-capability-roles-flag. How does a Typer CLI avoid prompting without a TTY and print JSON, how does FastAPI enforce per-route capabilities, and how does one process compose roles by flag?
+- Typer prompts call `input()` without an `isatty` check and raise `Abort` (exit 1) on EOF; the prompt text goes to stdout unless `err=True`. [CODE S-2qjh4vyl, S-tustm6ll]
+- JSON output is not a Typer feature: `json.dumps` to stdout, diagnostics to stderr, failure by exit code. [DER S-syffw7l6, S-zzvrhdyd]
+- Per-route capability: `Security(check, scopes=[...])` with a dependency taking `SecurityScopes`; dependencies may sit at app, router, `include_router` or decorator level; tests use `app.dependency_overrides`. [DOC S-a67xbp56, S-uhdkuqjs, S-ayprwh67, S-7ows5rub]
+- The docs' scopes example answers 401 with `WWW-Authenticate` for a missing scope and never 403. [CODE S-fwvusq4t: docs_src/security/tutorial005_an_py310.py]
+- Roles by flag: call `include_router` conditionally on a settings flag; a lifespan can start and cancel a task, not documented; `--workers N` runs the lifespan per worker. [DER S-uhdkuqjs, S-taoszxoo, S-dnaai5ya]
+- Conclusion: test `sys.stdin.isatty()` or take an explicit `--yes` before prompting and exit non-zero otherwise; one process with conditional routers gives a role by flag. [DER S-2qjh4vyl, S-uhdkuqjs]
+- Open: `--yes` and `NO_COLOR` are not documented for Typer, and 401 versus 403 for a missing scope is not settled by the pages read. [UNK]
+- See python/typer-cli.md, python/fastapi-capability-dependencies.md.
+
+_Agent: kb-research_
+
+## QK-sse-last-event-id-cursors-429-retry-after-per-caller. How do SSE streams use Last-Event-ID cursors outside MCP, and how do per-caller server-side rate limits answer 429 with Retry-After?
+- On reconnect `EventSource` sends `Last-Event-ID` when its last event ID string is non-empty; HTTP 204 or a non-`text/event-stream` response stops reconnecting. [DOC S-6r5cdtdk]
+- `EventSource` takes only a URL and `withCredentials`, so a browser cannot add an `Authorization` header. [DER S-6r5cdtdk]
+- FastAPI 0.135.0 and later ships `EventSourceResponse` and reads `Last-Event-ID` as a header parameter; it sets `X-Accel-Buffering: no`. [DOC S-e5yw2g7y, S-6nbqywql]
+- MCP 2026-07-28 dropped `Last-Event-ID` resumability, so cursors outside MCP are an application convention. [DOC S-l4qgsnr4]
+- RFC 6585 defines 429 and says it MAY carry `Retry-After`; RFC 9110 defines `Retry-After` as seconds or an HTTP-date; the `RateLimit` header fields are an Internet-Draft only. [DOC S-uhsdbxii, S-wct3uoax, S-fdye2dae]
+- slowapi (third party) sends `Retry-After` only with `headers_enabled=True` and defaults to in-memory storage. [CODE S-455diive]
+- Conclusion: a monotonic integer `id` resumed with `WHERE seq > :last_event_id`, and a limiter keyed on the authenticated caller whose counters live in the database when more than one worker runs. [DER S-6r5cdtdk, S-e5yw2g7y, S-uhsdbxii, S-455diive]
+- Open: maximum `id` length, event retention, and any official FastAPI or Starlette rate-limit guide. [UNK]
+- See arch/sse-last-event-id-cursors.md, arch/http-rate-limit-429-retry-after.md.
+
+_Agent: kb-research_
+
+## QK-clippy-warnings-mypy-strict-ci-gates-ruff-criterion. How do cargo clippy with warnings denied, mypy --strict and ruff work as CI gates, and how are criterion benchmarks used beside them?
+- `mypy --strict` or `strict = true` enables a set of 13 flags that may change between mypy versions, so the mypy version is pinned; per-module `[[tool.mypy.overrides]]` outrank command-line flags. [CODE S-2ial3y55; DOC S-butt7tqv, S-itulia5o]
+- mypy exits 0 for a clean run or notes only, 1 for errors and 2 for blocking errors; the docs read do not state the codes. [CODE S-2ial3y55]
+- Ruff is a linter, not a type checker, and its FAQ recommends running a type checker beside it. [DOC S-3zldz37q]
+- A PyO3 module is typed by a `.pyi` stub and a `py.typed` marker; maturin adds `py.typed` itself only for a pure-Rust project. [DOC S-hec62m7j, S-dsu27qym]
+- Clippy turns warnings into errors with `CARGO_BUILD_WARNINGS=deny` since Cargo 1.97 or `-- -D warnings`; `-D warnings` also fails on rustc warnings; `cargo fmt --all -- --check` exits 1 when changes are needed. [DOC S-ly5mrvjt, S-beipcwki, S-4cuivnem]
+- Criterion runs on stable Rust with `harness = false`; `--save-baseline` and `--baseline` compare runs; its FAQ advises against relying on results from cloud CI. [DOC S-ba2xucuh, S-hqm43pk6, S-luxqgdxs]
+- Conclusion: ruff, mypy `--strict` and `cargo clippy` with warnings denied are exit-code gates; criterion is a measurement run, and its regression exit status is undocumented, so it is not a gate by default. [DER S-ly5mrvjt, S-butt7tqv, S-luxqgdxs]
+- Open: whether a Criterion regression changes the exit status. [UNK]
+- See python/mypy-strict.md, arch/rust-clippy-criterion-gates.md, python/ruff.md.
+
+_Agent: kb-research_
