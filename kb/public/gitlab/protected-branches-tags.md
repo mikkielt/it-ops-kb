@@ -1,9 +1,9 @@
 ---
 topic: gitlab/protected-branches-tags
 priority: P0
-applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-29
-sources: [S444, S445, S446, S-lu25cylz, S-mi3mmhpi, S450, S-4o7kkuoi]
+applies_to: "GitLab 19.5 docs (master @56c82a97); protected branches and protected tags API pages @9f1632e2 (2026-09-27)"
+retrieved_utc: 2026-10-11
+sources: [S444, S445, S446, S-lu25cylz, S-mi3mmhpi, S450, S-4o7kkuoi, S-r2hatifx, S-ozrs7es3]
 status: complete
 ---
 
@@ -34,6 +34,19 @@ status: complete
 - CODEOWNERS, which ties an approval requirement to file paths, is Premium and Ultimate. [DOC S450]
 - A Free GitLab project (self-managed included) can therefore enforce "merge request only" for a whole branch (Allowed to push and merge: No one) but not "merge request only for these paths": path rules are Premium (push rules, Code Owners) or need an administrator's server hook, so a rule that code paths take merge requests while content paths take direct pushes is enforced by the client and by a CI check after the push. [DER S444, S450, S-lu25cylz, S-mi3mmhpi: tier and scope of each mechanism]
 - A protected-branch push mirror sends only the protected branches (**Only mirror protected branches**) and has no path filter. [DOC S-4o7kkuoi]
+- Wildcard protected tags: `v*` matches `v1.0.0` and also `version-9.1`; when two wildcards match the same tag (`*-stable` and `production-*` on `production-stable`) a setting such as **Allowed to create** on any one of them applies to the tag. [DOC S445]
+- A protected tag rule with **Allowed to create** set to **No one** stops tags from being created under a branch's name while branches can still be created; after a pattern is unprotected any user with the Developer, Maintainer or Owner role can delete the tags matching it, and protected tags can be deleted only through GitLab's UI or API, not through local Git commands. [DOC S445]
+- So with a `v*` rule whose **Allowed to create** is Maintainers, a Developer can neither create a `v1.0.0` tag nor start or run a pipeline for it, and the same rule also covers a tag named `version-9.1`. [DER S445: the create and pipeline rules and the wildcard table]
+- The protected-tag API accepts the access levels `0` (No access), `30` (Developer) and `40` (Maintainer); the protected-branch API adds `60` (Administrator, GitLab Self-Managed only). [DOC S-r2hatifx, S-ozrs7es3]
+- A protected tag is created with `POST /projects/:id/protected_tags`: `name` (a tag or a wildcard), `allowed_to_create` (an array of `{user_id}`, `{group_id}`, `{deploy_key_id}` or `{access_level}` hashes; `user_id`, `group_id` and `access_level` are Premium and Ultimate only) and `create_access_level` (integer, default `40`). The response lists `create_access_levels`, each with `id`, `access_level`, `access_level_description`, `user_id`, `group_id` and `deploy_key_id`. [DOC S-r2hatifx]
+- The tags API has list, get, protect and unprotect (`DELETE /projects/:id/protected_tags/:name`, `204`) and no update call. [DOC S-r2hatifx]
+- A protected branch is created with `POST /projects/:id/protected_branches`: `name`, `push_access_level`, `merge_access_level` and `unprotect_access_level` (integers, default `40`, and `0` is invalid for unprotect), or the arrays `allowed_to_push`, `allowed_to_merge` and `allowed_to_unprotect` of `{user_id}`, `{group_id}`, `{member_role_id}` or `{access_level}` hashes (`allowed_to_push` alone also takes `{deploy_key_id}`), plus `allow_force_push` and, in Premium and Ultimate, `code_owner_approval_required`. The response carries `push_access_levels`, `merge_access_levels` and `unprotect_access_levels`. [DOC S-ozrs7es3]
+- An existing branch rule is changed with `PUT /projects/:id/protected_branches/:name`, naming an access-level record by its `id` and removing it with `_destroy: true`; `id` must not be sent on creation (an unknown `id` answers `404`). [DOC S-ozrs7es3]
+- In the API several access levels can be set at once and the most permissive decides who may act, unlike the user interface, which clears the other roles when **No one** is chosen. [DOC S-ozrs7es3]
+- A group in `allowed_to_create`, `allowed_to_push` or `allowed_to_merge` must have the project shared with it (for a branch with the Developer, Maintainer or Owner role in the project), and a user must have access to the project; for tags the project must be shared with the group directly, membership inherited from a parent group is not enough. [DOC S-r2hatifx, S-ozrs7es3, S445]
+- A deploy key can be named in `allowed_to_create` (tags) and `allowed_to_push` (branches) only, never in a merge or unprotect list; it must be enabled for the project with write access, its owner needs at least read access to the project and must be a member; the setting moved from Premium to Free in GitLab 18.10 (introduced in 17.5). [DOC S-r2hatifx, S-ozrs7es3, S444, S445]
+- So `create_access_levels` of a protected tag and `push_access_levels` of a protected branch have one element shape (`access_level`, `access_level_description`, `user_id`, `group_id`, `deploy_key_id`, `id`), but a tag has one list (who may create, which also gates its pipelines) while a branch separates push from merge and unprotect, and only branch lists take `member_role_id` (a custom role, Ultimate, generally available in 19.4) and `60`. [DER S-r2hatifx, S-ozrs7es3: the two response tables and valid access levels]
+- The page for protected branches words the default of an unset **Allowed to push and merge** two ways: its table says that when not configured no one can push, and a note under the strategies says that when it is not configured it does not restrict push access and **No one** must be set explicitly. The kb's earlier facts on this setting follow the table; the note is recorded in `_conflicts.md`. [DOC S444]
 
 ## Reference
 | Feature | Tier | Source |
@@ -46,7 +59,7 @@ status: complete
 | Push rules (commit message, branch name, file name, size) | Premium | S-lu25cylz |
 | Server hooks (`pre-receive`, `update`) | Free, Self-Managed only | S-mi3mmhpi |
 
-See also `gitlab/github-branch-rules-and-auto-merge.md` (the GitHub counterpart), `gitlab/detecting-mr-merges-in-ci.md` (telling a merge request merge from a direct push after the fact), `gitlab/repository-mirroring.md` (mirrors of protected branches).
+See also `gitlab/github-branch-rules-and-auto-merge.md` (the GitHub counterpart), `gitlab/detecting-mr-merges-in-ci.md` (telling a merge request merge from a direct push after the fact), `gitlab/repository-mirroring.md` (mirrors of protected branches), `gitlab/deploy-keys-and-tokens.md` (deploy keys in push and create rules), `gitlab/project-settings-api.md` (merge method, squash and pipeline settings of the project).
 
 ## Examples
 Protected tag wildcard `release-*`, Allowed to create: Maintainers. Protected tag `v*`, Allowed to create: Maintainers.

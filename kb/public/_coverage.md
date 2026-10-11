@@ -136,10 +136,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `entra/pim-and-governance` | P2 | complete | `entra/pim-and-governance.md` | 16 |
 | `gitlab/codeowners` | P0 | complete | `gitlab/codeowners.md` | 4 |
 | `gitlab/mr-approvals` | P0 | complete | `gitlab/mr-approvals.md` | 7 |
-| `gitlab/pipelines-rules` | P0 | complete | `gitlab/pipelines-rules.md` | 6 |
-| `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 7 |
+| `gitlab/pipelines-rules` | P0 | partial | `gitlab/pipelines-rules.md` | 7 |
+| `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 9 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
-| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 51 |
+| `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 52 |
+| `gitlab/deploy-keys-and-tokens` | P3 | partial | `gitlab/deploy-keys-and-tokens.md` | 10 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 7 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
@@ -150,7 +151,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/issue-closing-patterns` | P3 | complete | `gitlab/issue-closing-patterns.md` | 5 |
 | `gitlab/jira-issue-keys-in-commits` | P3 | partial | `gitlab/jira-issue-keys-in-commits.md` | 3 |
 | `gitlab/job-log-timestamps` | P3 | complete | `gitlab/job-log-timestamps.md` | 6 |
+| `gitlab/package-registries` | P3 | partial | `gitlab/package-registries.md` | 11 |
+| `gitlab/project-settings-api` | P3 | complete | `gitlab/project-settings-api.md` | 7 |
 | `gitlab/repository-mirroring` | P3 | complete | `gitlab/repository-mirroring.md` | 9 |
+| `gitlab/runner-registration` | P3 | partial | `gitlab/runner-registration.md` | 5 |
+| `gitlab/webhooks` | P3 | complete | `gitlab/webhooks.md` | 4 |
 | `gitlab/work-items-planning` | P3 | complete | `gitlab/work-items-planning.md` | 11 |
 | `gpo/admx-central-store` | P1 | complete | `gpo/admx-central-store.md` | 8 |
 | `gpo/dsc-group-policy-adapter` | P2 | complete | `gpo/dsc-group-policy-adapter.md` | 3 |

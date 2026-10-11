@@ -1,10 +1,10 @@
 ---
 topic: gitlab/pipelines-rules
 priority: P0
-applies_to: "GitLab 19.5 docs (master @56c82a97)"
-retrieved_utc: 2026-09-28
-sources: [S446, S447, S448, S451, S453, S-zh7oqkup]
-status: complete
+applies_to: "GitLab 19.5 docs (master @56c82a97); pipeline schedules API @9f1632e2 (2026-09-27)"
+retrieved_utc: 2026-10-11
+sources: [S446, S447, S448, S451, S453, S-zh7oqkup, S-aibu3bke]
+status: partial
 ---
 
 # Merge-request pipelines, `rules:`, scheduled pipelines, release jobs
@@ -29,6 +29,12 @@ status: complete
 - Creating or editing needs the Developer role or higher. Protected branches need merge permission, and protected tags need create permission. [DOC S448]
 - If the owner is blocked or removed, the schedule becomes inactive. A Maintainer or Owner can **Take ownership**. [DOC S448]
 - `CI_PIPELINE_SOURCE` tells rules which pipeline type is running: `merge_request_event` (MR created or updated; needed for MR pipelines, merged results and merge trains), `push` (Git push, branches and tags), `schedule`, `web`, `api`, `trigger`, `parent_pipeline`, `pipeline` and others; the values match the `source` field of the pipelines API. [DOC S453]
+- A schedule can be run by hand once per minute; the **Run** button in the user interface and the API call below both start it at once. [DOC S448, S-aibu3bke]
+- `POST /projects/:id/pipeline_schedules/:pipeline_schedule_id/play` runs a pipeline schedule immediately and leaves the next scheduled run unaffected; its only parameters are the project (ID or URL-encoded path) and the schedule's ID, and the example response is `{"message": "201 Created"}`. [DOC S-aibu3bke]
+- The play page names no required role, no status other than that example and no answer for a call inside the one-minute interval, and none of the pages read says which permission a token's user needs to play a schedule that targets a protected branch or tag. [UNK: not stated on S-aibu3bke or S448]
+- A schedule is created with `POST /projects/:id/pipeline_schedules`: `cron`, `description` and `ref` are required (a short ref such as `main` is expanded to the full ref unless it could be a branch or a tag), `active` (default `true`), `cron_timezone` (default `UTC`) and `inputs` (name and value pairs, generally available in 18.1); the creating user becomes the `owner` in the response. [DOC S-aibu3bke]
+- `POST .../pipeline_schedules/:pipeline_schedule_id/take_ownership` makes the caller the owner, `GET .../pipelines` lists the pipelines a schedule triggered, and schedule variables are created, read, updated and deleted under `.../variables`. [DOC S-aibu3bke]
+- So an automation that must start a scheduled job now plays the schedule instead of creating a pipeline, and the run uses the permissions of the user whose token calls `play`, not those of the schedule owner; which `CI_PIPELINE_SOURCE` value a played run carries is not stated. [DER S448, S-aibu3bke: manual runs use the caller's permissions; the play endpoint is the API form of the Run button]
 - Releases tier: Free, Premium, Ultimate. Release Metrics: Ultimate. [DOC S451]
 - The `release` job needs `glab` on `$PATH`. It creates the release with `glab release create`. The release-cli image `v0.24.0` contains glab `v1.58.0`. [DOC S447,S451]
 - The documented release job pattern uses `rules: - if: $CI_COMMIT_TAG` and `tag_name: '$CI_COMMIT_TAG'`. [DOC S451]

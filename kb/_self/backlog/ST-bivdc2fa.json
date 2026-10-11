@@ -21,5 +21,29 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which topic slugs hold the new GitLab research facts: one article per subject under gitlab/?",
+      "options": [
+        "five new articles: gitlab/project-settings-api, gitlab/deploy-keys-and-tokens, gitlab/webhooks, gitlab/runner-registration, gitlab/package-registries; protected tags and schedule play extend existing articles",
+        "no new article: every fact extends gitlab/automated-merge-requests.md or gitlab/protected-branches-tags.md"
+      ],
+      "recommendation": "five new articles: gitlab/project-settings-api, gitlab/deploy-keys-and-tokens, gitlab/webhooks, gitlab/runner-registration, gitlab/package-registries; protected tags and schedule play extend existing articles",
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Should gitlab/webhooks name the GitLab Duo flow event, given that naming it turns the off-kb eval row EV-duo-authentication-windows-logon-handle-offline from none to weak?",
+      "options": [
+        "omit the vendor name: list it as a flow callback event, so the off-kb eval row stays none",
+        "name it as the vendor does, and give that eval row an allowed verdict or expansion"
+      ],
+      "recommendation": "omit the vendor name: list it as a flow callback event, so the off-kb eval row stays none",
+      "class": "push"
+    }
+  ],
   "claimed_by": "kb-worker-ST-bivdc2fa"
 }
