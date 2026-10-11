@@ -2,7 +2,7 @@
   "id": "ST-ozfged5i",
   "kind": "story",
   "title": "Review sprint: Research: GitLab project operations by API for an agent-run estate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4phd36pa",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-SP-4phd36pa"
 }
