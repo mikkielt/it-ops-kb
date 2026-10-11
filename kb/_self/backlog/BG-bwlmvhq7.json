@@ -1,0 +1,24 @@
+{
+  "id": "BG-bwlmvhq7",
+  "kind": "bug",
+  "title": "security/linux-nftables calls a flush ruleset file one idempotent step without saying it clears the tables other roles own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/security/linux-nftables.md (the DER at line 29 and the example near line 46) calls a ruleset file that begins with flush ruleset a single idempotent step for a pull agent, but never says flush ruleset removes every table, including those other roles (Docker, WireGuard) own. Add, from the nftables wiki's Atomic rule replacement page (https://wiki.nftables.org/wiki-nftables/index.php/Atomic_rule_replacement), the contrast between flush table and flush ruleset, and scope the DER and the example to the agent's own table (found by the SP-ajcomz6d review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/security/linux-nftables.md').read_text(); sys.exit('other roles' not in t and 'every table' not in t)"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/security/linux-nftables.md"
+  ],
+  "links": [
+    "parked: SP-ajcomz6d review"
+  ]
+}

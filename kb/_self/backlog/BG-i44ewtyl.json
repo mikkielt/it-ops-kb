@@ -1,0 +1,26 @@
+{
+  "id": "BG-i44ewtyl",
+  "kind": "bug",
+  "title": "security/linux-cis-ssg-openscap leaves AlmaLinux 8 and 10 scanning unanswered: SSG's rhel8 and rhel10 CIS profiles are not named and no gap is logged",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/public/security/linux-cis-ssg-openscap.md (lines 21 and 40) says SSG has no AlmaLinux 8 or 10 product, which is true, but the same products/ listing has rhel8 and rhel10, and products/rhel10/profiles carries cis.profile, cis_server_l1.profile, cis_workstation_l1.profile and cis_workstation_l2.profile. Add the rhel8 and rhel10 CIS profiles as CODE facts from the pinned commit and either an official statement on scanning AlmaLinux 8 and 10 with the RHEL data streams or a _gaps.md entry saying none was found (found by the SP-ajcomz6d review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit('rhel10' not in pathlib.Path('kb/public/security/linux-cis-ssg-openscap.md').read_text())"
+    ]
+  },
+  "repro_reason": "a missing fact in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/security/linux-cis-ssg-openscap.md",
+    "kb/public/_gaps.md",
+    "kb/public/_sources.csv"
+  ],
+  "links": [
+    "parked: SP-ajcomz6d review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-xyxwfiu6",
+  "kind": "bug",
+  "title": "security/linux-sshd-hardening's summary calls two sshd recommendations Level 2 Server only, though 5.1.8 and 5.1.9 are also Level 1 Workstation",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/security/linux-sshd-hardening.md summary (line 13) says two of the 22 sshd recommendations are Level 2 Server only; in the SSG controls/cis_debian12.yml the article cites, 5.1.8 and 5.1.9 carry l1_workstation and l2_server, as the article's own fact line says. Reword the summary from that fact line (found by the SP-ajcomz6d review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit('Level 2 Server only' in pathlib.Path('kb/public/security/linux-sshd-hardening.md').read_text())"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/security/linux-sshd-hardening.md"
+  ],
+  "links": [
+    "parked: SP-ajcomz6d review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-ab3tndhy",
+  "kind": "bug",
+  "title": "security/linux-cis-ssg-openscap's summary says SSG ships CIS profiles for Debian 11 to 13 and Ubuntu 22.04 to 26.04, though debian11 and ubuntu2604 have none",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/public/security/linux-cis-ssg-openscap.md summary (line 13) says the SCAP Security Guide ships CIS-aligned profiles for Debian 11 to 13 and Ubuntu 22.04 to 26.04; at the pinned ComplianceAsCode commit products/debian11/profiles holds only default, standard and ANSSI, and products/ubuntu2604/profiles only default.profile, as the article's own table (lines 38-39) says. Reword the summary from the table's cited lines so it names only the products that carry a CIS profile (found by the SP-ajcomz6d review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit('Debian 11 to 13, Ubuntu 22.04 to 26.04' in pathlib.Path('kb/public/security/linux-cis-ssg-openscap.md').read_text())"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/security/linux-cis-ssg-openscap.md"
+  ],
+  "links": [
+    "parked: SP-ajcomz6d review"
+  ]
+}
