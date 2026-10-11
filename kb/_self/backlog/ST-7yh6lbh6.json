@@ -2,7 +2,7 @@
   "id": "ST-7yh6lbh6",
   "kind": "story",
   "title": "Research sprint goal: Census deterministic 3: cheaper reading",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yojt6y7v",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker-ST-7yh6lbh6"
 }
