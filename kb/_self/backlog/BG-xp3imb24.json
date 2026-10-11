@@ -1,0 +1,18 @@
+{
+  "id": "BG-xp3imb24",
+  "kind": "bug",
+  "title": "A gate whose question names a constant such as DISPATCH_BASE_TOKENS is classed secrets by the word token inside the identifier",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "class_reasons does not read the word token inside an upper-case identifier (DISPATCH_BASE_TOKENS, MAX_TOKENS) as a secret, so a gate about a token-count constant gets the class its touches and other words give",
+  "repro": {
+    "run": [
+      "python3",
+      "-I",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import bl_authority as a; sys.exit(0 if a.class_reasons({'touches':['_tools/census.py']},{'id':'g9','question':'What is census.DISPATCH_BASE_TOKENS?','options':[]})[0]=='design' else 1)"
+    ]
+  }
+}
