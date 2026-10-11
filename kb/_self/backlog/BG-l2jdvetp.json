@@ -1,0 +1,18 @@
+{
+  "id": "BG-l2jdvetp",
+  "kind": "bug",
+  "title": "census.py dispatch grants no Learn fetch tool to a memdocs pin row whose brief tells the reader to re-source to the live Learn page",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "dispatch_plan puts a raw-pin or gh-pin row whose note is memdocs in plan[learn], so the session's allow rules hold the Learn fetch tool and its --mcp-config; a dispatched reader of such a row no longer answers unconfirmed with 'microsoft_docs_fetch is not available in this run'",
+  "repro": {
+    "run": [
+      "python3",
+      "-I",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import census; r={'id':'S1','kind':'raw-pin','repo':'MicrosoftDocs/memdocs','pin':'a'*40,'path':'x.md','evidence':'','proof':'','note':'memdocs','url':'https://raw.githubusercontent.com/MicrosoftDocs/memdocs/'+'a'*40+'/x.md'}; p=census.dispatch_plan('g',[(r,{},{})],{'providers':[]}); sys.exit(0 if p['learn']==['S1'] else 1)"
+    ]
+  }
+}
