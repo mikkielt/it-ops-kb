@@ -2,7 +2,7 @@
   "id": "ST-yiq2heb5",
   "kind": "story",
   "title": "The phase-4 sample hands its checker each sampled fact with its current passage, and rows whose facts are all word for word are agreed by tool",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
@@ -31,5 +31,6 @@
   "depends_on": [
     "ST-xy2euufe"
   ],
-  "notes": "Premise: .claude/skills/kb-census/SKILL.md phase 4 step 2 has a fresh subagent read each sampled source in full and its citing facts; census.py sample prints ids only (its -h: 'prints a CSV of ids'). A word-for-word match of a fact in the source's current text is the same proof factdiff apply already dates sources on with no model, so agreeing such rows by tool keeps the check's meaning for the rows it was built for: the ones a reader judged."
+  "notes": "Premise: .claude/skills/kb-census/SKILL.md phase 4 step 2 has a fresh subagent read each sampled source in full and its citing facts; census.py sample prints ids only (its -h: 'prints a CSV of ids'). A word-for-word match of a fact in the source's current text is the same proof factdiff apply already dates sources on with no model, so agreeing such rows by tool keeps the check's meaning for the rows it was built for: the ones a reader judged.",
+  "claimed_by": "worker-ST-yiq2heb5"
 }
