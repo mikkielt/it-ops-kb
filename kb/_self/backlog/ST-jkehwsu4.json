@@ -80,7 +80,9 @@
         "factdiff.JUDGE_MODEL itself, which census.py judge read before"
       ],
       "recommendation": "census.STEP_MODELS in census.py: census.py judge defaults to it and sample --brief names the checker's model; factdiff.JUDGE_MODEL (factdiff.py review --judge) and the kb-census skill text are left for a follow-up bug",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "census.STEP_MODELS in census.py: census.py judge defaults to it and sample --brief names the checker's model; factdiff.JUDGE_MODEL (factdiff.py review --judge) and the kb-census skill text are left for a follow-up bug",
+      "by": "operator"
     },
     {
       "id": "g5",
