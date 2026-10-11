@@ -2,7 +2,7 @@
   "id": "ST-ozfged5i",
   "kind": "story",
   "title": "Review sprint: Research: GitLab project operations by API for an agent-run estate",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4phd36pa",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-SP-4phd36pa"
+  "evidence": {
+    "commit": "d90481b790dfa549dc47872f6e3142fcc88c9ba6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "c2a165112c95c573"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "489077c51c65fe6c"
+      }
+    ]
+  }
 }
