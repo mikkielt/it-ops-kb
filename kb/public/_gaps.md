@@ -1291,3 +1291,35 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## gitlab/deploy-keys-and-tokens
 - **A maximum lifetime for deploy tokens and deploy keys.** Looked 2026-10-11 in the deploy token and deploy key pages and their API pages (S-5imiypdp, S-ksmw56nm, S-muzlee2k, S-zsu6jh7l) and the account and limit settings page (S-swggstpk): the deploy pages give no limit, and the "Limit the lifetime of access tokens" setting names personal, group and project access tokens; SSH keys have their own lifetime setting, and whether it covers deploy keys is not stated. Needs a lab instance with both lifetime settings set and a deploy token and a deploy key created beyond them. [UNK] (topic: gitlab/deploy-keys-and-tokens)
+
+## security/linux-cis-ssg-openscap
+- **A CIS Benchmark, an SSG product or confirmed Lynis support for Alpine Linux.** Looked 2026-10-11 in the CIS benchmarks index (S1485: AlmaLinux listed, no Alpine entry), a web search for an Alpine benchmark (none found), the SSG `products/` directory at ComplianceAsCode/content@4d34fc6c (S-c3ytabe2: no Alpine product) and the Lynis README (S-v6qk7hcn: names Linux, macOS and BSD, not Alpine). Needs the Alpine row of CIS WorkBench or a CIS statement that none exists, and a Lynis run on an Alpine host. [UNK] (topic: security/linux-cis-ssg-openscap)
+- **Datastream file names of the Debian and Ubuntu SSG packages, the Ubuntu Security Guide's subscription requirement and the file format of the CIS-CAT content.** Looked 2026-10-11 in the OpenSCAP manual (S-afsk2gm4: only the `ssg-rhel8-ds.xml` example), the Canonical profile page (S-ovklfzvf: profile names and the install command only) and the three CIS pages (S-dibgi2xt, S-2yuq6xw2, S-kbvw7lhl: CIS-CAT members only, no format). Needs the distribution package file lists, Canonical's USG requirements page and a CIS SecureSuite sample. [UNK] (topic: security/linux-cis-ssg-openscap)
+
+## security/linux-nftables
+- **The `nft` syntax-check-only option and how each family loads its ruleset file at boot.** Looked 2026-10-11 in the nftables wiki pages Atomic rule replacement, Sets and Scripting (S-nvc4ejpk, S-oz7g4upk, S-h3233m5r): they cover `nft -f`, sets and includes, not a dry-run flag or the distributions' `nftables.service` and `/etc/nftables.conf`. Needs the `nft(8)` manual and each distribution's package documentation. [UNK] (topic: security/linux-nftables)
+
+## security/linux-auditd
+- **`auditd.conf` options and the rule fragments each distribution's audit package installs.** Looked 2026-10-11 in the augenrules, auditctl and audit.rules manual pages (S-5anwnaht, S-inxocyfb, S-pay33npd), which cover the merge and `-e`, not `auditd.conf` or packaged defaults. Needs the `auditd.conf(5)` page at the same commit and the package file lists. [UNK] (topic: security/linux-auditd)
+
+## security/linux-sshd-hardening
+- **The CIS benchmark's own per-option values and Level assignment for sshd.** Looked 2026-10-11: the grades in the article are the SSG project's mapping of CIS Debian 12 v1.1.0 (S-ycjp6jnv); the CIS PDF is not read and CIS terms allow paraphrase only (S-dibgi2xt). Needs the PDF of the current Debian, Ubuntu and AlmaLinux benchmarks, behind CIS registration. [UNK] (topic: security/linux-sshd-hardening)
+
+## security/linux-patching-and-pins
+- **A pin by repository index hash for apt, dnf or apk.** Looked 2026-10-11 in the APT Periodic script and unattended-upgrades README (S-4npfgqu6, S-jv7bm5xz), the DNF Automatic page (S-ha4j7gxc), the snapshot pages (S-jc64e5xb, S-e5dd7vv5) and the Alpine wiki (S-mt66jy4n, S-6w34pn5d): none describes pinning by a hash of an index or Release file. Needs apt's `Release` handling in `apt-secure(8)`, dnf's `repo` options and `apk-repositories(5)`. [UNK] (topic: security/linux-patching-and-pins)
+- **The AlmaLinux vault path layout and the dnf setting that keeps a host on one minor release.** Looked 2026-10-11 in the Foundation's vault announcement (S-l6wf2hvq), which names the endpoint and the rsync move only; a third-party guide shows a `<minor>/BaseOS/x86_64/os/` path but is not an official source. Needs the AlmaLinux wiki page on the vault and dnf's `releasever` documentation. [UNK] (topic: security/linux-patching-and-pins)
+
+## arch/wireguard-hub-and-spoke
+- **The kernel forwarding setting a hub needs to relay spoke-to-spoke traffic.** Looked 2026-10-11 in the wg-quick and wg manual pages (S-fqnfqney, S-lyyx35bw): they describe `AllowedIPs` routing and `PostUp` hooks, not `net.ipv4.ip_forward`. Needs the WireGuard site's quick start or the kernel's IP forwarding documentation. [UNK] (topic: arch/wireguard-hub-and-spoke)
+
+## arch/cloudflare-tunnel-replicas-ssh-access
+- **Access policy syntax for an SSH application and the credential a replica uses to join a tunnel.** Looked 2026-10-11 in the Tunnel availability page (S-cs6tyx3d) and the SSH overview page (S-dbxfjxtf), which compare methods and name the products; the setup pages of each method and "Deploy cloudflared replicas" were not read. Needs those pages. [UNK] (topic: arch/cloudflare-tunnel-replicas-ssh-access)
+
+## arch/incus-test-bed
+- **Which `images:` names exist for Ubuntu, AlmaLinux and Alpine, and a pin of an image by fingerprint.** Looked 2026-10-11 in the Incus create and remote-image pages (S-ffguw2vw, S-24r24rv2): only `images:debian/12` is shown. Needs the image server's listing page and the Incus image-handling reference. [UNK] (topic: arch/incus-test-bed)
+
+## arch/heartbeat-dead-man-monitors
+- **Heartbeat features of other providers and a documented reason for a second provider.** Looked 2026-10-11 only in the Healthchecks docs (S-fgzitvvz, S-agjtc4hy, S-mwxrr7ac); Cronitor, Better Stack, UptimeRobot and Alertmanager's Watchdog were not read, and the second-provider rule is derived. Needs those vendors' heartbeat pages. [UNK] (topic: arch/heartbeat-dead-man-monitors)
+
+## prior-art/drift-detection
+- **A static pull agent that compares git commit ancestry before applying.** Looked 2026-10-11 in the ansible-pull page (S-wbcdphyr: `-C`, `-o`, `--verify-commit`, no ancestry rule) and the TUF specification (S-im2mzbgr: version rule for metadata, not git); no source read documents `git merge-base --is-ancestor` or `pull --ff-only` as a rollback guard. Needs the git manual pages for both commands. [UNK] (topic: prior-art/drift-detection)

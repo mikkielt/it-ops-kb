@@ -56,6 +56,11 @@ arch/sql-auth-containers,P1,complete,arch/sql-auth-containers.md,9
 arch/texts-catalogue-formats,P1,complete,arch/texts-catalogue-formats.md,13
 arch/twelve-factor-readiness,P1,complete,arch/twelve-factor-readiness.md,12
 arch/workload-identity-onprem-k8s,P1,complete,arch/workload-identity-onprem-k8s.md,6
+arch/cloudflare-tunnel-replicas-ssh-access,P3,partial,arch/cloudflare-tunnel-replicas-ssh-access.md,2
+arch/docker-secrets-run-secrets,P3,complete,arch/docker-secrets-run-secrets.md,2
+arch/heartbeat-dead-man-monitors,P3,partial,arch/heartbeat-dead-man-monitors.md,3
+arch/incus-test-bed,P3,partial,arch/incus-test-bed.md,4
+arch/wireguard-hub-and-spoke,P3,complete,arch/wireguard-hub-and-spoke.md,2
 auth/configmgr-rbac-auth,P0,complete,auth/configmgr-rbac-auth.md,11
 auth/flows,P0,complete,auth/flows.md;auth/flows.csv,28
 auth/gitlab-ci-identity,P0,complete,auth/gitlab-ci-identity.md,4
@@ -227,7 +232,7 @@ powerbi/on-prem-gateway-sql,P2,complete,powerbi/on-prem-gateway-sql.md,8
 powerbi/row-level-security,P2,complete,powerbi/row-level-security.md,2
 powerbi/scheduled-refresh,P2,complete,powerbi/scheduled-refresh.md,4
 prior-art/device-identity-correlation,P2,complete,prior-art/device-identity-correlation.md,7
-prior-art/drift-detection,P2,complete,prior-art/drift-detection.md,8
+prior-art/drift-detection,P2,partial,prior-art/drift-detection.md,10
 prior-art/layered-settings-resolution,P2,complete,prior-art/layered-settings-resolution.md,4
 prior-art/log-collection-normalization,P2,complete,prior-art/log-collection-normalization.md,8
 prior-art/mcp-microsoft-endpoint-mgmt,P2,complete,prior-art/mcp-microsoft-endpoint-mgmt.md,5
@@ -280,6 +285,12 @@ security/framework-control-map,P2,complete,security/framework-control-map.md;sec
 security/privacy-compliance,P2,complete,security/privacy-compliance.md,20
 security/threat-model-inputs,P2,complete,security/threat-model-inputs.md;security/artifacts/mitre/attack-subset.csv;security/artifacts/mitre/attack-subset.md,12
 security/vulnerability-prioritization,P2,complete,security/vulnerability-prioritization.md;security/vuln-data-apis.csv,18
+security/linux-auditd,P3,complete,security/linux-auditd.md,4
+security/linux-cis-ssg-openscap,P3,partial,security/linux-cis-ssg-openscap.md,16
+security/linux-nftables,P3,complete,security/linux-nftables.md,4
+security/linux-patching-and-pins,P3,partial,security/linux-patching-and-pins.md,10
+security/linux-sshd-hardening,P3,complete,security/linux-sshd-hardening.md,3
+security/linux-time-sync,P3,complete,security/linux-time-sync.md,4
 sqlserver/insert-only-audit,P0,complete,sqlserver/insert-only-audit.md,7
 sqlserver/linux-container,P0,complete,sqlserver/linux-container.md;sqlserver/mssql-server-tags.json,8
 sqlserver/sp-getapplock,P0,complete,sqlserver/sp-getapplock.md,1
