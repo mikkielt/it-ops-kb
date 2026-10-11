@@ -2,7 +2,7 @@
   "id": "ST-bivdc2fa",
   "kind": "story",
   "title": "Research sprint goal: Research: GitLab project operations by API for an agent-run estate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4phd36pa",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "kb-worker-ST-bivdc2fa"
 }
