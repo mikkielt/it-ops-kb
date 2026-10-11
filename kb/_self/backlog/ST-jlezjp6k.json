@@ -2,7 +2,7 @@
   "id": "ST-jlezjp6k",
   "kind": "story",
   "title": "census.py dispatch runs a phase-2 group as a capped headless session on a smaller model and writes the result census.py apply takes",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",

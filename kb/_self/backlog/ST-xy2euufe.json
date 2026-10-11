@@ -2,7 +2,7 @@
   "id": "ST-xy2euufe",
   "kind": "story",
   "title": "factdiff review items are judged in batches by a no-tool structured-output call, and only contradicted or undecided facts go to an agent group",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
