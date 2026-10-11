@@ -2,7 +2,7 @@
   "id": "ST-pnr4zyni",
   "kind": "story",
   "title": "Research sprint goal: Research: CPU-only text analysis, rules as data and self-hosted observability for a corpus service",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qjn563cf",
   "goal_research": true,
   "priority": "P1",
@@ -36,5 +36,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-qjn563cf"
+  "evidence": {
+    "commit": "1a18c8576e5c0f8d7bc53723906372c5f1232816",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-pnr4zyni"
+        ],
+        "exit": 0,
+        "sha256": "4fae7b1dc6275e39"
+      }
+    ]
+  }
 }
