@@ -1,0 +1,28 @@
+{
+  "id": "ST-gkrivybp",
+  "kind": "story",
+  "title": "A worker or reviewer in a worktree reads its own worktree's kb, not the main checkout's, through the kb MCP server",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb_mcp.py answers from the checkout the session runs in (its working directory's clone), or the worker and reviewer briefs tell a worktree session to use rag.py there, so a session in a worktree does not read a main checkout that is behind origin/main; seen in the SP-wwacrsqr review, where the kb server, registered at local scope with the main checkout's absolute _tools/kb_mcp.py path, served a checkout 33 commits behind and missed the sprint's new articles until the reviewer fell back to rag.py (SP-wwacrsqr retrospective).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_mcp_reads_session_checkout"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-wwacrsqr close"
+  ]
+}

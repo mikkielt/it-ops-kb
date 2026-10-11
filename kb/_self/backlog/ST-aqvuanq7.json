@@ -1,0 +1,28 @@
+{
+  "id": "ST-aqvuanq7",
+  "kind": "story",
+  "title": "selfcheck's host check, and the review's done before its whole-suite run, name a host too loaded for the suite to meet its seconds ceiling",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "selfcheck's host check fails, and a review story's done says so before it starts the whole suite, when the host's load would put a whole-suite tests.py run over the darwin seconds ceiling; seen in the SP-wwacrsqr review, where selfcheck passed at a 5-minute load near 10 on 14 cores (under LOAD_PER_CORE 1.5) while another application held the CPU, and the review's done then ran the suite for 168 s against the 22 s ceiling and refused after three minutes (SP-wwacrsqr retrospective).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "selfcheck_host_load_suite_ceiling"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_selfcheck.py",
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-wwacrsqr close"
+  ]
+}

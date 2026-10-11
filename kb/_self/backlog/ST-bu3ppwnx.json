@@ -1,0 +1,28 @@
+{
+  "id": "ST-bu3ppwnx",
+  "kind": "story",
+  "title": "kbid.py add keeps every row when parallel research agents add sources at once",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbid.py add holds an exclusive lock over its read, insert and atomic write of a root's sources file, so concurrent adds from parallel research subagents neither drop a row nor leave a torn one; seen in the SP-wwacrsqr research story, where eight subagents adding sources at once left garbage rows at the end of the public root's sources file and dropped seven rows the worker had to rebuild by hand (SP-wwacrsqr retrospective).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kbid_parallel_add"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbid.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "links": [
+    "parked: SP-wwacrsqr close"
+  ]
+}
