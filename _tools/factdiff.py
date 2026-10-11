@@ -1208,7 +1208,7 @@ def review_items(log, srcs, only=None, offline=False):
 
 # ---------------------------------------------------------------- judge: review items in batches, one tool-less call each
 
-JUDGE_MODEL = "claude-sonnet-5-5"  # the default model of `review --judge` and `census.py judge`; --model overrides it
+JUDGE_MODEL = "claude-haiku-5-5"  # the default model of `review --judge`, the one census.STEP_MODELS["judge"] names; --model overrides it
 JUDGE_VERDICTS = ("supported", "contradicted", "not enough information")
 JUDGE_BATCH = 20  # items one call judges
 JUDGE_BATCH_CHARS = 24_000  # characters of passages one call holds (about 6k tokens); an item alone over it is a batch
