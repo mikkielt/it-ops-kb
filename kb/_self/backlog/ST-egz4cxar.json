@@ -1,0 +1,25 @@
+{
+  "id": "ST-egz4cxar",
+  "kind": "story",
+  "title": "A goal research worker's alias rows reach the kb, though a research item's touches may never name _tools/aliases.csv",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-research skill, run as a sprint's goal research worker (a research item whose touches lie inside one kb root, never _tools/), says where the alias rows for a new topic's other names go so they land: a per-root aliases file under the root's _retrieval/ that rag.py reads, or a follow-up item the worker files with the rows. SP-qjn563cf: ST-pnr4zyni wrote 48 alias rows for 14 new topics, found _tools/aliases.csv outside its touches, restored it and left the rows in scratch; ST-zrysu6ri carries them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'aliases.csv' in t and 'research item' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-research/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qjn563cf close"
+  ]
+}

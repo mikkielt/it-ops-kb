@@ -1,0 +1,25 @@
+{
+  "id": "ST-dfmj76rf",
+  "kind": "story",
+  "title": "dispatch bounds a headless worker's spend, not only its turns, since subagent work escapes --max-turns",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py dispatch passes a spend cap to the headless worker (claude -p --max-budget-usd, which the kb cites as a print-mode cap) from a setting or flag the operator sets, and the brief names it, so a worker that fans out to subagents stops at a known cost. SP-qjn563cf: the goal research worker ST-pnr4zyni used 54 of its 200 turns but cost 38.89 USD per its result JSON, against about 4 USD for the 301-turn SP-ajcomz6d research worker; the cap's value is the operator's call, asked as a gate when the item is planned.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bl_dispatch.py',encoding='utf-8').read();sys.exit(0 if 'max-budget-usd' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qjn563cf close"
+  ]
+}

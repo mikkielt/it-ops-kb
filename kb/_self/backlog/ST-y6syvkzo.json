@@ -24,5 +24,6 @@
   ],
   "links": [
     "parked: SP-ajcomz6d close"
-  ]
+  ],
+  "notes": "SP-qjn563cf run (2026-10-11): selfcheck failed its orphans check again on two python3 processes (pids 32577, 32579) of another session's checkout; procs read 0 orphans 30 minutes later."
 }

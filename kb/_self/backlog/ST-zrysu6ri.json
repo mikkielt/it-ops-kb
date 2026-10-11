@@ -1,0 +1,25 @@
+{
+  "id": "ST-zrysu6ri",
+  "kind": "story",
+  "title": "_tools/aliases.csv maps the other names of the SP-qjn563cf research topics (ort, MMLW, Fluent, Oxigraph, zen-engine, OTel, JSON Lines, GLiNER, Morfeusz)",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/aliases.csv holds the 48 term,canonical rows the SP-qjn563cf goal research worker wrote for its 14 new topics and could not land (outside its touches); the rows are in this item's notes, each checked against the canonical term its article uses, and a pack for an alias names the topic's article.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/aliases.csv',encoding='utf-8').read();sys.exit(0 if all(r in t for r in ('ort crate,onnxruntime','mmlw,mmlw-e5','jsonl,json lines','zen engine,zen-engine','otelcol,opentelemetry collector')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ],
+  "links": [
+    "parked: SP-qjn563cf close"
+  ],
+  "notes": "Rows (term,canonical): mmlw,mmlw-e5; polish embeddings,mmlw-e5; pirb,polish information retrieval benchmark; fluent-rs,fluent; fluent.js,fluent; ftl,fluent; fluent translation list,fluent; rdf store,oxigraph; sparql store,oxigraph; triple store,oxigraph; quad store,oxigraph; named graph,oxigraph; oxigraph server,oxigraph; tsdb,prometheus; openmetrics,prometheus; jdm,json decision model; zen engine,zen-engine; gorules zen,zen-engine; zen expression language,zen-expression; brms,business rules management system; coreference resolution,coreference; anaphora resolution,coreference; coref,coreference; ort crate,onnxruntime; ort-rs,onnxruntime; pykeio ort,onnxruntime; onnx runtime,onnxruntime; grafana loki,loki; grafana tempo,tempo; otlp,opentelemetry protocol; otel collector,opentelemetry collector; otelcol,opentelemetry collector; ocb,opentelemetry collector builder; jsonl,json lines; ndjson,json lines; newline-delimited json,json lines; jcs,json canonicalization scheme; content-addressed,content addressing; sha-256,sha256; zero-shot ner,gliner; zero-shot relation extraction,glirel; gliner multi,gliner_multi-v2.1; gliner-x,gliner-x-base; morfeusz 2,morfeusz; sgjp,morfeusz; polimorf,morfeusz; lemmatization,lemmatisation; lematyzacja,lemmatisation. Broad ones (tsdb, named graph, sha-256, brms) may route unrelated questions: drop any a pack shows misrouting."
+}

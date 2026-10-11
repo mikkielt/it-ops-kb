@@ -24,5 +24,6 @@
   ],
   "links": [
     "parked: SP-qg7ncs6d review"
-  ]
+  ],
+  "notes": "SP-qjn563cf (2026-10-11): the goal research worker made a baseline clone in _cache/scratch/ST-pnr4zyni/baseline and its rm -rf was denied; the orchestrator's rm -rf of it was denied too, so the clone stays in scratch."
 }

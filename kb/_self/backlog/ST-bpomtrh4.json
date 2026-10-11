@@ -20,5 +20,5 @@
   "links": [
     "parked: SP-4phd36pa close"
   ],
-  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned. SP-ajcomz6d close (2026-10-11): the sprint again reached its start with the research goal not narrowed; the orchestrator ran the pack questions and narrowed it in the start commit."
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned. SP-ajcomz6d close (2026-10-11): the sprint again reached its start with the research goal not narrowed; the orchestrator ran the pack questions and narrowed it in the start commit. SP-qjn563cf (2026-10-11): the sprint again reached its start with the research goal not narrowed; the orchestrator narrowed it to twelve questions in the start commit."
 }
