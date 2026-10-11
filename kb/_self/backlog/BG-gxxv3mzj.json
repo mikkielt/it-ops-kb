@@ -1,0 +1,53 @@
+{
+  "id": "BG-gxxv3mzj",
+  "kind": "bug",
+  "title": "MicrosoftDocs/memdocs answers 404, but doc-lookup-sources.md says it is archived and four live sources still point into it",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Through /kb-refresh of agents/doc-lookup-sources and agents/doc-change-detection: the facts that rest on MicrosoftDocs/memdocs (that it is archived, its licence terms, its redirection files, a ConfigMgr page's commit resolving in it) say what holds now that the repository answers 404 on the API, on github.com and for raw files, or become [UNK] with a _gaps.md entry; the four live rows S2196, S-pcy7cqea, S-rgpijsmb and S-yuwxbqz3 are marked dead with their last Wayback capture by factdiff.py dead, or superseded where a live successor states the same; the repro then reports no dead fact.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/factdiff.py",
+      "detect",
+      "--no-save",
+      "--source",
+      "S2196",
+      "--source",
+      "S-pcy7cqea",
+      "--source",
+      "S-yuwxbqz3"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "kb:public/agents/doc-lookup-sources.md"
+  ],
+  "notes": "Observed 2026-10-11: api.github.com/repos/MicrosoftDocs/memdocs, github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404 (the GitHub API's remaining unauthenticated budget was 31 of 60, so not a rate limit); the repro reports gone=2 pinned=1, facts dead=5. 114 of the repository's 118 source rows were already superseded by Learn pages. doc-lookup-sources.md:52 says the repository is archived (last push 2026-09-02, S2196 confirmed 2026-09-26)."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "ST-7wzollio",
+  "kind": "story",
+  "title": "A free freshness benchmark revalidates the pool's cited sources and reports the share of current, moved and source-dated lines and the time per question",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py run freshness (no model, no paid run) runs the lookup revalidation over the pool's answerable questions and records per provider host and over all: printed DOC lines current, moved, not found and source-dated only, wall time per question (median and p95) and requests made; the scenario's rows go to benchmarks.csv and its section to kb/_self/reports/benchmarks.md, with README.md's figures where the report summarises them; --dry-run prints the sources and requests it would make.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "bench_freshness"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/bench_retrieval.py",
+    "_tools/bench_report.py",
+    "_tools/test_bench.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/reports/benchmarks.csv",
+    "README.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-mq7we5r2"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "EP-lk5qdhah",
+  "kind": "epic",
+  "title": "Facts carry their freshness at lookup: a pack says how current each cited fact is and can revalidate it against its source",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Every pack (rag.py pack, kb_pack, the kb: hook) prints, offline, when each cited source and fact was last confirmed and by which signal; on request, or for a source past its freshness lifetime, a lookup revalidates only the pack's cited sources and resolves only the printed lines' anchors, reporting each line current, moved (with its new passage), not found or source-dated only, with no model tokens until something changed; pinned sources are checked for availability; hash-only hosts are compared per section; lookups stay read-only (revalidation writes only _cache/, the census dates); and a free benchmark measures the share of current, moved and source-dated lines and the time per question. Rests on agents/doc-change-detection.md, Freshness at question time, and QK-fact-freshness-at-lookup.",
+  "links": [
+    "kb:public/_answers.md#QK-fact-freshness-at-lookup",
+    "decision:D-tvjml75q",
+    "decision:D-gmrjivyw"
+  ],
+  "notes": "Operator decisions, 2026-10-11: D-tvjml75q (a lookup stays read-only: revalidation writes only _cache/, the census and refresh date) and D-gmrjivyw (an offline stamp on every pack; network only on request or for a source past its freshness lifetime; the kb: hook stays offline). Evidence: public/agents/doc-change-detection.md, Freshness at question time; QK-fact-freshness-at-lookup. Not needed: a stale-answer detector for _answers.md (no answer cites a superseded source on 2026-10-11, 0 of 82, and the done ST-nu5b6zqm searches the root for a refreshed figure)."
+}

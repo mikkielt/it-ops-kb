@@ -1,0 +1,46 @@
+{
+  "id": "ST-jqwqdj2g",
+  "kind": "story",
+  "title": "Each source has a freshness lifetime from its own change history, and a lookup revalidates only sources past it",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A source's freshness lifetime is computed with no network from its own history: the Poisson rate of its observed changes (the changed_utc values across the git history of _fetch_state.csv, or its mapped Learn file's commits) where it has two or more, else a fraction (RFC 9111's typical 10%) of the time since its content date, else its provider's default; fetch.py --status prints each source's lifetime and age; kb_pack and kb_ask.py revalidate a cited source automatically only when its age exceeds its lifetime, printing the stale stamp meanwhile (stale-while-revalidate, D-gmrjivyw); the hook stays offline; the suite tests the estimate on a planted history.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "freshness_lifetime"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/fetch.py",
+    "_tools/factdiff.py",
+    "_tools/provider.py",
+    "_tools/providers.csv",
+    "_tools/kbfacts.py",
+    "_tools/kb_mcp.py",
+    "_tools/kb_ask.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/design.md",
+    "kb/_self/embedding.md",
+    "AGENTS.md"
+  ],
+  "depends_on": [
+    "ST-mq7we5r2"
+  ],
+  "links": [
+    "kb:public/agents/doc-change-detection.md"
+  ],
+  "notes": "Premise: no tool estimates a source's change rate today; _fetch_state.csv keeps only the latest checked_utc and changed_utc, so the history lives in git (git log -p kb/public/_fetch_state.csv). The first step measures, per host, how many sources have two or more recorded changes, and states the share the Poisson estimate can serve before the fallback. Sources: RFC 9111 heuristic freshness (S-ods72iyh), RFC 5861 stale-while-revalidate (S-m7xkty3c), the Poisson change model (S-7uckhkxr), all in public/agents/doc-change-detection.md, Freshness at question time. Decision D-gmrjivyw."
+}

@@ -1,0 +1,75 @@
+{
+  "id": "BG-rtqshnro",
+  "kind": "bug",
+  "title": "Facts citing five code.claude.com pages no longer match them: a detect run finds modified and not-found passages",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Through /kb-refresh of the sources S743, S-av5665nf, S1800, S1824 and S-fmj24q2u: every fact citing them whose passage detect reports modified or not found is re-checked against the current page and reworded, re-pointed or made [UNK] with a _gaps.md entry, the unanchored ones get anchors where the page states them, and the new baselines are saved, so the repro reports no modified or not-found fact.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/factdiff.py",
+      "detect",
+      "--no-save",
+      "--source",
+      "S743",
+      "--source",
+      "S-av5665nf",
+      "--source",
+      "S1800",
+      "--source",
+      "S1824",
+      "--source",
+      "S-fmj24q2u"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/agents/headless-agent-runtimes.md",
+    "kb/public/claude/agent-sdk-options.csv",
+    "kb/public/claude/agent-sdk.md",
+    "kb/public/claude/ci-and-headless.md",
+    "kb/public/claude/cli-flags.csv",
+    "kb/public/claude/elicitation.md",
+    "kb/public/claude/hooks.md",
+    "kb/public/claude/otel-monitoring.md",
+    "kb/public/claude/permissions-mcp.md",
+    "kb/public/claude/powershell-tool.md",
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/claude/skills-and-subagents.md",
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/security/logging-monitoring.md",
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "relates_to": [
+    "BG-3bjktw5x"
+  ],
+  "links": [
+    "kb:public/agents/doc-change-detection.md"
+  ],
+  "notes": "Observed 2026-10-11 (Python 3.13.2): the repro reported changed=5 with facts verbatim=134, modified=8, not-found=5, unanchored=65 at one run and modified=12, not-found=1 at a run minutes later, so the pages are moving; the refresh reads the current pages, not these counts. BG-3bjktw5x (the stale cost-cap conflict entry) rests on S1824, one of these sources."
+}
