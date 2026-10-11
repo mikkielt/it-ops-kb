@@ -29,5 +29,7 @@ status: complete
 ## Reference
 See `gliner-models.csv` (columns: model_id, hf_sha, last_modified, licence, licence_link, languages, base_model, labels_documented, label_examples, gated, source_ids).
 
+The GLiNER library, the general (non-PII) multilingual cards, ONNX export and loading, the input limit and GLiREL are in `privacy/gliner-glirel-zero-shot.md`.
+
 ## Examples
 Not applicable.

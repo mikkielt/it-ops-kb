@@ -43,6 +43,8 @@ agents/coding-agent-codebase-context,P3,complete,agents/coding-agent-codebase-co
 agents/decision-records,P3,partial,agents/decision-records.md;agents/decision-records.csv,10
 agents/doc-change-detection,P3,complete,agents/doc-change-detection.md,57
 agents/langgraph,P3,complete,agents/langgraph.md,11
+agents/mmlw-e5-polish-embeddings,P3,partial,agents/mmlw-e5-polish-embeddings.md,31
+agents/onnx-runtime-rust-ort,P3,partial,agents/onnx-runtime-rust-ort.md,37
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17
 ansible/dsc3-module,P3,complete,ansible/dsc3-module.md,6
@@ -57,9 +59,14 @@ arch/texts-catalogue-formats,P1,complete,arch/texts-catalogue-formats.md,13
 arch/twelve-factor-readiness,P1,complete,arch/twelve-factor-readiness.md,12
 arch/workload-identity-onprem-k8s,P1,complete,arch/workload-identity-onprem-k8s.md,6
 arch/cloudflare-tunnel-replicas-ssh-access,P3,partial,arch/cloudflare-tunnel-replicas-ssh-access.md,2
+arch/content-addressed-ids-jsonl,P3,partial,arch/content-addressed-ids-jsonl.md,30
+arch/datalog-engines-rust,P3,partial,arch/datalog-engines-rust.md,15
 arch/docker-secrets-run-secrets,P3,complete,arch/docker-secrets-run-secrets.md,2
+arch/fluent-rust-typescript,P3,partial,arch/fluent-rust-typescript.md,49
+arch/gorules-zen-engine,P3,partial,arch/gorules-zen-engine.md,35
 arch/heartbeat-dead-man-monitors,P3,partial,arch/heartbeat-dead-man-monitors.md,3
 arch/incus-test-bed,P3,partial,arch/incus-test-bed.md,4
+arch/oxigraph-embedded-rdf,P3,partial,arch/oxigraph-embedded-rdf.md,24
 arch/wireguard-hub-and-spoke,P3,complete,arch/wireguard-hub-and-spoke.md,2
 auth/configmgr-rbac-auth,P0,complete,auth/configmgr-rbac-auth.md,11
 auth/flows,P0,complete,auth/flows.md;auth/flows.csv,28
@@ -198,7 +205,10 @@ logs/otel-log-semconv,P1,complete,logs/otel-log-semconv.md;logs/otel-semconv-log
 logs/sources,P1,complete,logs/sources.md;logs/sources.csv,19
 logs/azure-monitor-agent,P2,complete,logs/azure-monitor-agent.md,16
 logs/microsoft-sentinel,P2,complete,logs/microsoft-sentinel.md,25
+logs/loki-tempo-grafana-retention,P3,partial,logs/loki-tempo-grafana-retention.md,37
+logs/otel-collector-otlp-pipeline,P3,partial,logs/otel-collector-otlp-pipeline.md,34
 logs/otel-collector-receivers,P3,complete,logs/otel-collector-receivers.md;logs/otel-filelogreceiver.config.csv;logs/otel-windowseventlogreceiver.config.csv;logs/otel-filelogreceiver.metadata.yaml;logs/otel-windowseventlogreceiver.metadata.yaml,5
+logs/prometheus-retention-exposition,P3,partial,logs/prometheus-retention-exposition.md,29
 mcp/authorization,P1,complete,mcp/authorization.md,3
 mcp/deprecations,P1,complete,mcp/deprecations.md,3
 mcp/elicitation,P1,complete,mcp/elicitation.md,6
@@ -248,6 +258,10 @@ privacy/presidio-evaluator,P0,complete,privacy/presidio-evaluator.md,4
 privacy/presidio-operators-deanonymize,P0,complete,privacy/presidio-operators-deanonymize.md,13
 privacy/presidio-recognizer-yaml,P0,complete,privacy/presidio-recognizer-yaml.md;privacy/presidio-recognizer-registry.schema.json;privacy/presidio-example_recognizers.yaml,9
 privacy/spacy-model-licence,P0,complete,privacy/spacy-model-licence.md,5
+privacy/coreference-resolution-options,P3,partial,privacy/coreference-resolution-options.md,51
+privacy/gliner-glirel-zero-shot,P3,partial,privacy/gliner-glirel-zero-shot.md,44
+privacy/morfeusz-polish-lemmatisation,P3,partial,privacy/morfeusz-polish-lemmatisation.md,27
+privacy/spacy-pipeline-pinning,P3,partial,privacy/spacy-pipeline-pinning.md,27
 python/pytest,P2,complete,python/pytest.md,14
 python/pytest-xdist,P2,complete,python/pytest-xdist.md,6
 python/ruff,P2,complete,python/ruff.md,13

@@ -21,5 +21,20 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "placement",
+      "kind": "provisional",
+      "question": "Which domain directory holds each new topic of this research sprint (no new top-level domain may be created)?",
+      "options": [
+        "anchor-domain: each topic in the domain of the existing article that links to it (privacy, agents, arch, logs)",
+        "agents-only: all new topics in agents/"
+      ],
+      "recommendation": "anchor-domain: each topic in the domain of the existing article that links to it (privacy, agents, arch, logs)",
+      "class": "design",
+      "answer": "anchor-domain: each topic in the domain of the existing article that links to it (privacy, agents, arch, logs)",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-qjn563cf"
 }

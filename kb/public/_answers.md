@@ -2778,3 +2778,182 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-stable-content-addressed-id-built-json. How is a stable content-addressed id built for a JSON Lines record?
+- JSON Lines needs UTF-8 (no BOM), one valid JSON value per line, `\n` terminators and may use `.jsonl`; NDJSON 1.0.0 frames lines the same way, allows parsers to skip empty lines and names `.ndjson` and `application/x-ndjson`; neither media type is in the IANA `application` registry file of 2026-10-11. [DOC S-wux7hanj, S-5m7fpuo3]
+- JSON itself leaves duplicate names and number precision to implementations: names SHOULD be unique, IEEE 754 binary64 and integers within +/-(2**53)-1 interoperate. [DOC S-4rjxcq6v]
+- RFC 8785 (JCS, Informational) gives the canonical bytes for hashing: I-JSON input, no whitespace, ECMAScript string and number serialisation, properties sorted by UTF-16 code units, UTF-8 output. [DOC S-wtlhziak]
+- SHA-256 (FIPS 180-4) and SHA3-256 (FIPS 202) both have 256-bit digests and 128 bits of collision strength; truncation keeps the leftmost bits and cuts collision resistance to half the kept length, and SP 800-107 Rev. 1 asks that hash and truncation be unambiguous (NIST planning notes: FIPS 180-4 to be revised, FIPS 202 to be updated, SP 800-107 Rev. 1 to be withdrawn). [DOC S-c5k5fslm, S-tvrordiw, S-ndrgfovo, S-y6p3nnub, S-6icauyji, S-5p5nwact]
+- BLAKE3 1.8.7: 256-bit default output, CC0 1.0 or Apache-2.0, Rust crate `blake3`; `sha2` 0.11.0 is MIT OR Apache-2.0; Python 3.14 `hashlib` has sha256, sha3_256, blake2b, blake2s and `file_digest` but no BLAKE3. [DOC S-y6i5zuly, S-zf4axfjq, S-22wqxchx, S-7lqazmox]
+- Self-describing forms: multihash (`<fn code><size><digest>`, sha2-256 0x12, blake3 0x1e draft), CIDv1 with a multibase prefix (`b` base32, `f` base16), Git's 40-hex SHA-1 or 64-hex SHA-256 object names; RFC 4648 defines base16, base32, base32hex and base64url. [DOC S-dgbl4wgb, S-eperpanz, S-silsshto, S-za3ghpu4, S-3yvyv65p, S-h7eqeryo]
+- Conclusion: serialise the record as JCS bytes, hash with SHA-256, encode the 32 bytes as 64 lowercase hex or 52 unpadded base32 characters, keep an algorithm tag beside it and store the full digest; Python's stdlib `json` matches JCS only for records without floats and with keys in the BMP (observed on Python 3.13.2), so a Rust core and a Python shell need a shared test set. [DER S-wtlhziak, S-c5k5fslm, S-h7eqeryo, S-ndrgfovo, S-zzvrhdyd]
+- Open: the ECMA-262 number algorithm text and any Rust or Python JCS library were not read; no Rust crate for JCS was checked. [UNK]
+- See arch/content-addressed-ids-jsonl.md.
+
+_Agent: kb-research_
+
+## QK-coreference-resolution-options-run-cpu-only. Which coreference resolution options run CPU-only and offline for Polish and English text, and what do their sources state about status, languages, licence and spaCy version?
+- spaCy's own `coref` and `span_resolver` live in the `spacy-experimental` package (`experimental_coref`, `experimental_span_resolver`), documented as experimental; the newest release is 0.6.4 (2023-11-02) with `spacy>=3.3.0,<3.8.0`, and the only pretrained pipeline is the English demonstration pipeline `en_coreference_web_trf` (MIT, spaCy `<3.5.0`). [DOC S-2icfoxql, S-5twstxnc, S-ocgbnk4i] [CODE S-zymyxmg5: setup.cfg#options.install_requires]
+- fastcoref (MIT, English cards) runs on CPU when no CUDA device exists; PyPI's newest release is 2.1.6 (2023-05-26) and the default branch (2.2.3, 2026-05-21) is unreleased on PyPI and needs Python 3.11 or newer and spaCy 3.8.14 or newer. [DOC S-ygt5635t, S-xf7ynxdt] [CODE S-oetpt5t7: fastcoref/modeling.py#CorefModel._set_device]
+- coreferee 1.5.0 (MIT, 2026-09-15) states it is "maintained for compatibility with current spaCy releases" and supports English, French, German and Polish; Polish models exist for `pl_core_news_lg` and `md`, trained on the Polish Coreference Corpus. [DOC S-mxdbr2k2, S-yydpfutu]
+- Herference (IPI PAN, Polish only) has GPL-3.0 code and CC BY-NC 4.0 weights; CorPipe 24 is multilingual including Polish with a CC BY-NC-SA 4.0 model and a script that asserts GPUs; AllenNLP and neuralcoref are archived and English only. [DOC S-vfwwrhjc, S-6wb3kouw, S-uznr3g4z, S-c6kvn3ps, S-36nisfrm] [CODE S-ukgogmmx: corpipe24.py#ModelEnsemble.__init__]
+- Conclusion: Polish support is stated by coreferee, Herference, CorPipe 24 and the IPI PAN tools Ruler and Bartek; every option that loads weights by a hub id, a GitHub branch or a first-import download needs a pre-fetched local copy to run offline, and CPU speed is not stated by any source. [DER S-mxdbr2k2, S-vfwwrhjc, S-uznr3g4z, S-oetpt5t7, S-p6ormh2r, S-6qgprb3q, S-oa5ipfj6: language and fetch statements compared]
+- Open: CPU throughput of each option, whether PCC's non-commercial term reaches Coreferee's Polish weights, and an offline route to CorPipe's CoNLL-U input. [UNK]
+- See privacy/coreference-resolution-options.md.
+
+_Agent: kb-research_
+
+## QK-embeddable-datalog-engines-rust-compute-closure. Which embeddable Datalog engines for Rust compute closure and contradiction rules over a fact base, and are their rules fixed at compile time?
+- Crepe 0.2.0 (`MIT OR Apache-2.0`, crates.io 2025-12-14) is a procedural macro with semi-naive evaluation and stratified negation; a negation inside a dependency cycle is a macro error. [DOC S-vebfsq3a, S-lpnwfh7p] [CODE S-tnv3dwqy: src/lib.rs#Context::new]
+- Ascent 0.8.1 (`MIT`, crates.io 2026-08-29) is a macro-embedded Datalog extension with lattices, stratified negation, aggregation (`sum`, `min`, `max`, `count`, `mean`), `ascent_run!`, parallel `ascent_par!` and custom data structures (BYODS); its CC 2022 paper describes semi-naive evaluation. [DOC S-qwtlpuec, S-o2h35tvo, S-gixrekn4]
+- Datafrog 2.0.1 (`Apache-2.0/MIT`, crates.io 2019-01-02) is a library, not a macro: sorted `Relation`, monotonic `Variable`, a hand-written `Iteration` loop, anti-join against a fixed relation; polonius-engine depends on it. [DOC S-34fj2zgp, S-tmiyxzib] [CODE S-wn6nwfee: src/lib.rs#Variable::from_antijoin; S-4mwzuy4t: polonius-engine/Cargo.toml#dependencies]
+- Result order: Crepe returns `HashSet`s from `run()` (random seed), Datafrog returns sorted `Relation`s, Ascent's serial relations are `Vec`s with fixed-hash indices and no stated order promise. [CODE S-tnv3dwqy: src/lib.rs#run; S-wn6nwfee: src/lib.rs#Variable::complete; S-kneimuih: ascent/src/rel.rs#rel]
+- Rules are fixed at compile time in all three: macro input for Crepe and Ascent, Rust statements for Datafrog; no README describes runtime rule loading. [DER S-vebfsq3a, S-qwtlpuec, S-34fj2zgp: macros expand at build time; Datafrog "has no runtime"]
+- Conclusion: all three run in process on the CPU with no service; for rules kept as data none fits directly, and a conflict report that must be reproducible needs an explicit sort except with Datafrog. [DER S-vebfsq3a, S-qwtlpuec, S-34fj2zgp, S-tnv3dwqy, S-wn6nwfee: the engine facts above]
+- Open: whether Ascent promises a stable row order and whether any of the three plans runtime-loaded rules. [UNK]
+- See arch/datalog-engines-rust.md.
+
+_Agent: kb-research_
+
+## QK-official-sources-say-about-fluent-rust. What do the official sources say about Fluent for Rust and TypeScript: versions, licences, error handling, thread safety, typed accessors and FTL linting?
+- Rust: crates.io lists `fluent` 0.17.0, `fluent-bundle` 0.16.0, `fluent-syntax` 0.12.0, `fluent-fallback` 0.7.2, `fluent-resmgr` 0.0.8 and `fluent-langneg` 0.14.2, all `Apache-2.0 OR MIT`; there is no `fluent-resource` crate (the type lives in fluent-bundle). [DOC S-pkdj2ggv, S-3zcwxrkd, S-2msclknw, S-ewnl7di2, S-f67paqny, S-ihysyyjh, S-ueumbn4x]
+- TypeScript: `@fluent/bundle` 0.19.1 (Apache-2.0, bundled `.d.ts`, UMD `index.js` plus an `esm/` build, Node 18 or later), `@fluent/syntax` 0.19.0 and `@fluent/langneg` 0.7.0. [DOC S-yf4y3ooe, S-zqefeiow, S-qucwxqjo, S-v5hog4zh]
+- Errors: Rust `FluentResource::try_new` returns the resource together with its parse errors, and `format_pattern` pushes resolver errors into a caller-supplied vector; JS `formatPattern` fills an `errors` array or throws the first error when none is passed, and the JS runtime parser reports no syntax errors at all. [CODE S-v5arxcqi, S-vktfavae, S-lj3rgbhb, S-ngxalogc]
+- Threads: the default Rust memoizer is neither `Send` nor `Sync`; `concurrent::FluentBundle` (Mutex-based memoizer, `new_concurrent`) is the shareable variant. [DOC S-adkxxbxo, S-sui7jilt, S-xxelwvq6; CODE S-6dmythvr]
+- Typed accessors: none in the projectfluent organisation or its packages; community generators exist (`fluent-typed` MIT, `i18n-embed-fl` MIT, `fluent-ts` MIT). [DER S-edmvqoen, S-zsnubksc, S-ey42zwsk; COMMUNITY S-jm4q5smn, S-5bmxcoy4, S-nqeg3xk3]
+- Linting: both official syntax parsers report invalid entries (`Junk`, `ParserError`); the only FTL linter found is Mozilla's `moz-fluent-linter` (MPL-2.0, ID/CO/TE/SY/GC/RC/VC/PS rules, YAML config, exit 1 on findings). [CODE S-fi73q2gh, S-fnbm2hx6, S-wo2rtyeb, S-2viytftj; DOC S-ejm4457f, S-tj5gqic5]
+- Conclusion: a Python shell over a Rust core can read one FTL catalogue in both layers, validate it at load with `try_new`'s error vector, use one bundle per locale and the concurrent variant across threads, and turn isolation marks off for machine output; key typing and a literal-in-source lint are project-side or community work. [DER S-v5arxcqi, S-vktfavae, S-adkxxbxo, S-sui7jilt, S-edmvqoen]
+- Open: which Fluent Syntax version the Rust crates state, and whether an ESLint or Clippy rule for hard-coded user-visible strings is documented officially. [UNK]
+- See fluent-rust-typescript.md.
+
+_Agent: kb-research_
+
+## QK-gliner-multilingual-onnx-models-glirel-offer. What do GLiNER, its multilingual and ONNX models and GLiREL offer for CPU-only zero-shot NER and relation extraction on Polish and English text?
+- GLiNER 0.2.29 (Apache-2.0) takes labels as call-time strings, defaults to CPU, and cuts input to the first `max_len` word tokens (384 by default, per checkpoint) with only a warning; it does not window long text. [DOC S-7bjdu5bv, S-y42nqxiw, S-sislku4q]
+- Among the general cards read only `knowledgator/gliner-x-small|base|large` (Apache-2.0, mT5 encoders) names Polish; `urchade/gliner_multi-v2.1` (mDeBERTa-v3-base, Apache-2.0) says only "multilingual". [DOC S-7p4fya6x, S-7ke3sttd, S-pvemvpkp]
+- The library exports to ONNX (`export_to_onnx`) and loads it with `runtime="onnxruntime"` on CPU; it still requires `torch`. `gline-rs` 1.1.0 runs GLiNER ONNX files from Rust. [DOC S-hfifhdhx, S-7bjdu5bv, S-hesowhet]
+- `gliner-x-*` repos ship `onnx/model.onnx` and `onnx/model_quantized.onnx`; `onnx-community/gliner_multi-v2.1` declares no licence. [DOC S-zeyni7ox, S-7w6x3tvz]
+- GLiREL 1.2.1 classifies relations between given entity spans; its licence is stated as CC BY-NC-SA 4.0 (README, card text) and as Apache-2.0 (pyproject, PyPI); it has no ONNX path and no language statement. [DOC S-ngy65th6, S-uu7ov3pw, S-pjp4rzor, S-w6u6mtcx]
+- `knowledgator/gliner-relex-multi-v1.0` (Apache-2.0) does joint entity and relation extraction with the GLiNER library; no language is stated. [DOC S-ulch3bqh]
+- Conclusion: for a CPU-only Polish and English service the documented candidate is the `gliner-x` family through ONNX Runtime (Python with torch installed, or `gline-rs`); long texts need the service's own windowing, and relation extraction needs `gliner-relex` or GLiREL after a licence decision. [DER S-7p4fya6x, S-hfifhdhx, S-y42nqxiw, S-ngy65th6]
+- Open: Polish quality of every model, whether the shipped ONNX files load in the Python library, and GLiREL's licence and long-input behaviour. [UNK]
+- See privacy/gliner-glirel-zero-shot.md.
+
+_Agent: kb-research_
+
+## QK-gorules-zen-engine-refuse-javascript-function. Can GoRules ZEN Engine refuse JavaScript function nodes, and does it version decisions by effective date?
+- A JDM decision is a JSON object with `nodes` and `edges`; a function node is `type` `functionNode` with a JavaScript `source`, and the Rust node enum has eight variants including an undocumented `customNode`. [DOC S-xfsmauei, S-cdmzxvsn] [CODE S-heikuvcn: core/types/src/decision/mod.rs#DecisionNodeKind]
+- Function nodes run in QuickJS with a default 5000 ms timeout and can import an `http` module that calls out over the network (through a native HTTP client unless a host callback is registered). [DOC S-kwehxqwf] [CODE S-wgtknkrb: core/engine/src/nodes/function/v2/module/http/mod.rs#execute_http]
+- At zen-engine 2.1.3 the crate features are `default = []`, `bindgen` and `arbitrary_precision`, the engine settings are `nodes_in_context`, `function_timeout_millis` and `http_auth`, node dispatch is a fixed `match`, and the Python binding's options are `loader` and `customHandler` only. [CODE S-5jpgqrfy: core/engine/Cargo.toml#features] [CODE S-su332252: core/engine/src/config.rs#ZenConfig] [CODE S-ltzwimxf: core/engine/src/decision_graph/graph.rs#DecisionGraph] [CODE S-2fdfhonb: bindings/python/zen.pyi#ZenEngineOptions]
+- The expression language has no I/O function, but `rand` and `d()` (current time) make an expression depend on more than its input. [DOC S-5dy4gz6x] [CODE S-ccvh7i4b: core/expression/src/functions/internal.rs#rand]
+- The model type `GraphContent` has `nodes`, `edges`, `imports` and caches and no version or date field; versioned releases (semantic versions, environments) exist in the BRMS, and a standalone user stores and versions the JDM files. [CODE S-q6ajn7wa: core/engine/src/model/decision_content.rs#GraphContent] [DOC S-3tbh2eg2, S-dxo62u4b]
+- Conclusion: no engine-side switch to refuse function nodes was found, so the caller refuses them by scanning each node's `type` (and `customNode`, and sub-decisions) before loading, and effective dating must be kept outside the engine, for example in the host's own manifest of rule-set id, valid-from date and file hash. [DER S-5jpgqrfy, S-su332252, S-ltzwimxf, S-q6ajn7wa, S-3tbh2eg2: absence over the manifest, config, dispatch and model read]
+- Open: whether any later release, the BRMS or the Agent can disable function nodes or schedule a release by date; the docs' claim of a complete JDM JSON Schema in the repository was not found at the tag. [UNK]
+- See arch/gorules-zen-engine.md.
+
+_Agent: kb-research_
+
+## QK-loki-tempo-grafana-retention-single-binary. How do Loki, Tempo and Grafana handle retention, single-binary local storage, provisioning and JSON log output?
+- Loki retention is applied by the compactor: `compactor.retention_enabled` (default false) plus `limits_config.retention_period` (default `0s`, keep forever) or `retention_stream`; it needs a 24h index period, `delete_request_store` is required, and chunks are swept after `retention_delete_delay` (default 2h). [DOC S-olwlij2r, S-yz3o3jci]
+- Loki single binary is `-target=all`; with the filesystem store retention deletes by period only, never by disk usage, and Grafana Labs does not support filesystem storage for production. [DOC S-g36sus36, S-gsjmowie]
+- Tempo 3.x deletes blocks by age: `block_retention` default `336h`, now set under `backend_worker.compaction` (the `compactor` section was removed in 3.0; in 2.x it was `compactor.compaction.block_retention`). [DOC S-f2cwt6i6, S-a6zoom3b, S-j4cjdcxk, S-ypvcpeth]
+- Tempo monolithic mode (`-target=all`, no Kafka) supports `storage.trace.backend: local`, OTLP gRPC 4317 and HTTP 4318 on localhost by default, HTTP API on 3200. [DOC S-26xpxrvu, S-f2cwt6i6]
+- Grafana provisions data sources from YAML in `provisioning/datasources`, ships Prometheus, Loki and Tempo as core data sources, reads `GF_<SECTION>_<KEY>` overrides, listens on 3000 and defaults to SQLite; anonymous access is off by default. [DOC S-drqcqer6, S-clqrp4oy, S-rmnhrvck; CODE S-47axdg7z]
+- JSON logs: Loki `log_format: json` (`-log.format`), Tempo `server.log_format: json`, Grafana `[log.console] format = json`; Loki and Tempo write to stderr, Grafana console to stdout. [DOC S-yz3o3jci, S-rmnhrvck; CODE S-minmacwi, S-42oztc6t, S-kx3xmf4o]
+- Conclusion: a CPU-only single host can run all three as one process each on local disk with retention set explicitly for Loki (Tempo defaults to 14 days), at the vendors' stated non-production status for local and filesystem storage. [DER S-olwlij2r, S-a6zoom3b, S-gsjmowie, S-f2cwt6i6]
+- Open: the default Grafana data directory of a Linux package install is not stated on the pages read. [UNK]
+- See logs/loki-tempo-grafana-retention.md.
+
+_Agent: kb-research_
+
+## QK-official-sources-say-about-mmlw-e5. What do the official sources say about the MMLW-e5 Polish embedding models: sizes, dimensions, pooling, query and passage prefixes, licence, library, ONNX status and pgvector fit?
+- MMLW is the Polish phrase "muszę mieć lepszą wiadomość" (the cards give no English gloss); MMLW-e5 small, base and large are distilled from English BGE teachers over 60 million Polish-English pairs, starting from multilingual E5 checkpoints, and output 384, 768 and 1024 dimensional vectors. [DOC S-jwdbazk2, S-rd6qosor, S-pxbj347n, S-mskmsg2n, S-glyyxkhx, S-7chuxblv]
+- Pooling is CLS with no Normalize module (multilingual-e5 uses mean pooling plus Normalize), `max_seq_length` is 512, and the base models are `intfloat/multilingual-e5-small` (BERT, 12 layers) and `-base`, `-large` (XLM-RoBERTa, 12 and 24 layers). [DOC S-mskmsg2n, S-glyyxkhx, S-7chuxblv, S-mu7bkyzy, S-m4jimv5l, S-lbvzxugb, S-gh576tom, S-pbbsyo47, S-m6getpdd, S-4ptfxskc]
+- Queries take `query: ` and passages `passage: `; the cards give no symmetric-task rule, while the multilingual-e5 FAQ says `query: ` for symmetric tasks and features. [DOC S-jwdbazk2, S-rd6qosor, S-pxbj347n, S-7v4o3ypv]
+- Licence Apache-2.0 for the MMLW-e5 repos and MIT for `multilingual-e5-*`; the cards use `sentence-transformers` with no version, the E5 cards pin `~=2.2.2`. [DOC S-rd6qosor, S-dgww3las, S-fncwoz4o, S-tmatlfei, S-7v4o3ypv, S-c6piuw5s]
+- No ONNX or quantised file in the MMLW-e5 repos at the pinned shas; `multilingual-e5-*` ship `onnx/` (fp32, `model_O4`, int8) and `openvino/` with the original E5 weights. [DER S-dgww3las, S-fncwoz4o, S-tmatlfei; DOC S-c6piuw5s, S-vk2qahbe, S-qhb5i45k]
+- pgvector indexes `vector` columns up to 2,000 dimensions, so 384, 768 and 1024 fit; the kb's earlier pgvector line gives only the 16,000 type maximum. [DOC S-524t5qtl; DER S-rd6qosor]
+- Conclusion: the MMLW-e5 repos fit a CPU-only, offline service as pinned files used through Python `sentence-transformers`, with the prefix, CLS pooling and dimension recorded as part of the index; a Rust core would need its own ONNX export, and the retrieval-tuned `mmlw-retrieval-e5-*` repos are the measured retrieval candidates. [DER S-sbuv7mtf, S-62hqvrkt, S-dgww3las, S-fncwoz4o, S-tmatlfei, S-524t5qtl]
+- Open: the symmetric-task prefix rule for MMLW weights, training-corpus licences, CPU latency per size and English-text quality are not stated by the cards or the paper. [UNK: see `_gaps.md`, topic agents/mmlw-e5-polish-embeddings]
+- See agents/mmlw-e5-polish-embeddings.md, agents/hybrid-retrieval.md.
+
+_Agent: kb-research_
+
+## QK-morfeusz-2-consumer-use-lemma-output. What is Morfeusz 2, how does a consumer use its lemma output and licence, and what does a CPU-only service fall back to without it (spaCy `pl_core_news_*`, licences, versions)?
+- Morfeusz 2 is IPI PAN's dictionary-based analyser and generator for Polish with no unknown-word guesser; `analyse()` returns `(start, end, (form, lemma, tag, name, labels))` edges of an analysis graph, all interpretations, no disambiguation; unknown segments get tag `ign` and lemma equal to the form. [DOC S-v6tu47om]
+- Lemmas of homonyms carry a colon suffix (`piec:S`, `pływak:Sm1`, `napaść:Vp~dnę`); 76,530 of 387,398 distinct SGJP lemmas (2026-08-24 export) have one, and the punctuation lemma `:` and emoticons keep a colon as part of the lemma. [DER S-te5pgsg3, S-v6tu47om]
+- Program and SGJP and Polimorf inflection data are 2-clause BSD; SIaT stays on its older terms; the wheel ships no licence file. [DOC S-lbstvu2m]
+- `morfeusz2` 1.99.15 (PyPI, 2026-06-01) is wheel-only: `cp310-abi3` for macOS universal2, manylinux_2_28 x86_64 and Windows x86_64, with the SGJP dictionary embedded; no sdist, no aarch64. [DOC S-caclcxya]
+- Without it, `pl_core_news_sm/md/lg` 3.8.0 (spaCy `>=3.8.0,<3.9.0`, 19 / 47 / 547 MB) lemmatise with `trainable_lemmatizer` (lemma accuracy 93.02 / 93.71 / 94.19) and are licensed GNU GPL 3.0. [DOC S-haoeqge5, S-pxcitvg3, S-sirpm4j2]
+- spaCy's `PolishLemmatizer` (default mode `pos_lookup`, tables from `spacy-lookups-data` 1.0.5 built from Polimorf and SGJP 2020.05.03) needs a POS tag, so it cannot lemmatise raw text alone. [CODE S-ohpwxaqx: spacy/lang/pl/lemmatizer.py#PolishLemmatizer.pos_lookup_lemmatize]
+- Conclusion: a Morfeusz arm and a spaCy arm can both run offline on CPU, but they differ in licence (BSD notices against GPL-3.0), lemma convention and dictionary date, and one lemma per token needs a tagger plus a tag mapping. [DER S-lbstvu2m, S-haoeqge5, S-caclcxya]
+- Open: whether the two arms give the same lemma for the same word, and throughput, memory and SIaT terms. [UNK]
+- See privacy/morfeusz-polish-lemmatisation.md.
+
+_Agent: kb-research_
+
+## QK-ort-crate-stable-release-candidate-onnx. `ort` (ONNX Runtime for Rust): is it stable, where do its ONNX Runtime binaries come from, how is a build kept CPU-only and offline, which session options give predictable CPU inference, and how are model files pinned by hash?
+- Status: crates.io has no stable `ort` version; the only unyanked versions are `2.0.0-rc.0` to `2.0.0-rc.13` (rc.13 published 2026-07-28, MSRV 1.88, `MIT OR Apache-2.0`), and the docs call rc.13 "production-ready" and pin it with `=2.0.0-rc.13`. [DOC S-msk5qtcf, S-gs7u2ou5]
+- ONNX Runtime pairing: `ort` v2.0.0 and later targets ONNX Runtime 1.28 (the downloaded archives are `ms@1.28.0`); a minor `ort` release may move the ONNX Runtime version, so pin the minor. [DOC S-3mftdvfg]
+- Binaries: `download-binaries` and `tls-native` are default features; the build script downloads a SHA-256-checked, statically linked archive from `cdn.pyke.io` into a cache (`ORT_CACHE_DIR`), unless `load-dynamic` (`ORT_DYLIB_PATH`, `ort::init_from`), `ORT_LIB_PATH`/`ORT_LIB_LOCATION` or the skip variables (`ORT_OFFLINE`, `ORT_SKIP_DOWNLOAD`, `CARGO_NET_OFFLINE`) are used. [DOC S-m5r2fcso, S-mw6rc3qq; CODE S-cxzftyij: ort-sys/build/main.rs#main; CODE S-u3hzriiy: ort-sys/build/vars.rs#SKIP_DOWNLOAD]
+- CPU-only: no accelerator feature is default, provider types exist only with their feature, `ep::CPU` always exists, and a failed registration falls back to the CPU unless `error_on_failure()` is set; the downloaded Windows and macOS builds still contain DirectML and CoreML, the Linux `none` build does not. [CODE S-pwbxp7jw: Cargo.toml#features; CODE S-ktoxup5h: src/ep/mod.rs#ExecutionProviderDispatch; CODE S-togouwq3: ort-sys/build/download/dist.tsv#x86_64-unknown-linux-gnu]
+- Session options: intra-op threads default to one per physical core, execution is sequential and graph optimisation is `ORT_ENABLE_ALL`; `SetDeterministicCompute` is documented for GPU kernels only. [DOC S-i65jlupl, S-ujreltcp, S-gzswlsft]
+- Model pinning: ONNX has producer, version and `metadata_props` fields but no content hash; the Hugging Face API gives the repository commit and a per-file `lfs.sha256`, which equals the Git LFS pointer `oid`. [DOC S-hmcb2gfz, S-ixcjfodz, S-anwc4b5l]
+- Conclusion: pin `ort` to `=2.0.0-rc.13` with `default-features = false` and `load-dynamic`, take the ONNX Runtime CPU archive from the upstream release and check its digest, register `ep::CPU` with `error_on_failure()`, and verify a model file's sha256 before `commit_from_memory`; this removes the build-time download and any accelerator code path. [DER S-pwbxp7jw, S-atc7uhx5, S-ktoxup5h, S-ixcjfodz, S-6z4pv23l: features, release digests, provider gating, Hub digests, loader methods read together]
+- Open: bit-identical CPU outputs across thread counts or CPU types, whether the vendor's CPU binary uses OpenMP, and a tested offline build with a filled cache are not confirmed. [UNK]
+- See agents/onnx-runtime-rust-ort.md.
+
+_Agent: kb-research_
+
+## QK-opentelemetry-collector-s-otlp-receiver-memory. How do the OpenTelemetry Collector's OTLP receiver, memory_limiter and batch processors, and Prometheus, Loki and Tempo exporters fit together, and what do the Collector's own telemetry and logs offer?
+- OTLP is Stable for traces, metrics and logs in the specification and in the Collector's `otlp` receiver and `otlp_grpc` / `otlp_http` exporters (alpha for profiles); defaults are gRPC 4317, HTTP 4318 and paths `/v1/traces`, `/v1/metrics`, `/v1/logs`, bound to localhost unless configured. [DOC S-v2wnj4qk, S-oodxsnls, S-ixy3elbb]
+- Processor order: `memory_limiter` first (refuses data above its soft limit, so receivers retry), sampling and enrichment next, `batch` last; the processor README prefers the exporter's own `sending_queue.batch` when available. [DOC S-zgo6e6dk, S-ypu7twsm, S-ix5z63av, S-h52nhp55]
+- Metrics to Prometheus three ways: the `prometheus` exporter (scrape `/metrics`), `prometheus_remote_write` (needs Prometheus's remote-write receiver, TLS by default, drops non-cumulative monotonic, histogram and summary), or Prometheus's own OTLP receiver at `/api/v1/otlp/v1/metrics` behind `--web.enable-otlp-receiver` (off by default). [DOC S-o36nadfz, S-e4bf6k75, S-5tvo6y34, S-one7nth5]
+- Loki takes OTLP logs natively over HTTP at `/otlp` through the `otlphttp` exporter (the Loki exporter was removed in contrib v0.131.0); Tempo's distributor takes OTLP on 4317 and 4318, localhost by default. [DOC S-j7chz4co, S-a6ldut5r, S-su2aihea, S-f2cwt6i6]
+- The Collector's own telemetry: Prometheus metrics on 8888 (levels none, basic, normal default, detailed; `address` ignored since v0.123.0) and logs on stderr (`encoding` console or json, `level` INFO, `output_paths`); the `debug` exporter (alpha) prints data through that logger. [DOC S-42ulxlwb, S-jdyoyfwa]
+- Conclusion: one Collector can take the service's OTLP and push metrics, logs and traces to self-hosted Prometheus, Loki and Tempo with `memory_limiter` then `batch`; the scrape path needs no Prometheus receiver flag, and JSON logs to stdout need `encoding: json` plus `output_paths: [stdout]` because the default is stderr. [DER S-o36nadfz, S-j7chz4co, S-42ulxlwb, S-2blrcu72: documented endpoints and defaults combined]
+- Open: whether Prometheus accepts OTLP logs or traces, and whether Loki's OTLP endpoint accepts gRPC; neither is stated on the pages read. [UNK]
+- See logs/otel-collector-otlp-pipeline.md.
+
+_Agent: kb-research_
+
+## QK-oxigraph-embedded-rdf. Can Oxigraph serve as an embedded RDF store with named graphs and SPARQL from a Python shell over a Rust core, and what are its status, build needs and guarantees?
+- Oxigraph is a SPARQL graph database in Rust on RocksDB; its own README says it is "in heavy development" and not optimized; the newest `oxigraph` release is 0.5.11 with no 1.x on crates.io; licence MIT OR Apache-2.0; `pyoxigraph` is tagged Alpha on PyPI. [DOC S-z4kbze7e, S-uohdppyd, S-45qncmsz]
+- Embedding: `Store::new()` is in-memory, `Store::open(path)` is the single read-write RocksDB store, `Store::open_read_only(path)` opens read-only (undefined behaviour while another process writes); pyoxigraph has `Store(path=None)` and `Store.read_only(path)`. [DOC S-bfv5hqkn] [CODE S-nxnd5tsp: python/src/store.rs#PyStore]
+- Build: the `rocksdb` feature is on by default and can be switched off with `default-features = false`; with it, RocksDB is compiled as C++20 and Clang is needed for the bindings; `pkg-config` links a system RocksDB >= 9.10.0. [DOC S-bytyyxb4, S-3qbz2t4u] [CODE S-rw3phgvf: oxrocksdb-sys/build.rs#build_rocksdb]
+- Named graphs: a quad store with one default graph and named graphs; a query's default graph is the store default graph unless `set_default_graph_as_union()` (Rust) or `use_default_graph_as_union=True` (Python) is set; `FROM`, `FROM NAMED` and `GRAPH` follow SPARQL 1.1. [DOC S-fi3wa4vw, S-axwbq3bp, S-a5hei6wa] [CODE S-nxnd5tsp: python/src/store.rs#PyStore]
+- SPARQL: 1.1 Query, Update and Federated Query claimed; property paths are in the parser's algebra; SERVICE needs the `http-client` feature or a custom handler; no library query timeout, only `CancellationToken` (CLI has `--timeout-s`); 1.2 is behind `rdf-12` and called preliminary. [DOC S-z4kbze7e, S-guwnayzo, S-ifojpzaw, S-dcliqq63]
+- Formats: Turtle, TriG, N-Triples, N-Quads, N3, RDF/XML and JSON-LD (1.1 since 0.5.5) through `oxrdfio`; parser `spargebra`, results `sparesults`, evaluator `spareval`. [DOC S-z2qagps6, S-dcliqq63, S-z4kbze7e]
+- Concurrency: "repeatable read" isolation, atomic in-memory transactions, one read-write store; `flush()` may lag; no ACID claim. [DOC S-bfv5hqkn]
+- Conclusion: it fits an offline, CPU-only service as an embedded quad store reached through `pyoxigraph` wheels or the Rust crate, with a named graph per source or rule version and a build without `http-client` making no network calls; plan for a pinned version, an N-Quads dump as the rebuild path, one writer process and a 0.x, "heavy development" status. [DER S-45qncmsz, S-5ty62hy3, S-guwnayzo, S-bfv5hqkn, S-uohdppyd: wheels, default features, feature-gated HTTP client, single writer, 0.x versions]
+- Open: a 1.0 milestone or stability promise, the behaviour of `SERVICE` without a handler, and an ACID or crash-safety statement are not confirmed by the pages read. [UNK: see `_gaps.md`, topic arch/oxigraph-embedded-rdf]
+- See arch/oxigraph-embedded-rdf.md.
+
+_Agent: kb-research_
+
+## QK-long-prometheus-keep-samples-size-time. How long does Prometheus keep samples, how do size and time retention interact, and what do the text exposition format and scrape config require of a Python or Rust service?
+- Samples are kept in two-hour blocks plus a WAL; `--storage.tsdb.retention.time` defaults to `15d` only when no size limit is set, `--storage.tsdb.retention.size` is off by default, and when both are set whichever triggers first applies; only fully expired blocks are removed and size accounting counts WAL and head chunks. [DOC S-cgscrv4s, S-one7nth5]
+- In v3.15.0 both flags are marked deprecated in favour of `storage.tsdb.retention.time` and `storage.tsdb.retention.size` in the configuration file, which take precedence and apply on reload. [DOC S-one7nth5, S-fpf6c56i]
+- A target serves `text/plain; version=0.0.4` (or `application/openmetrics-text; version=1.0.0` ending in `# EOF`) with `# HELP` and `# TYPE` lines; since 3.0 a missing or invalid `Content-Type` fails the scrape. [DOC S-fauxu5ws, S-4hvb3m5w]
+- A scrape job defaults to `metrics_path: /metrics`, `scheme: http`, `scrape_interval: 1m`, `honor_labels: false`, with `static_configs` targets. [DOC S-fpf6c56i]
+- Python `prometheus_client` 0.26.0 offers `start_http_server` and `make_wsgi_app` (listener bound to `0.0.0.0` by default); Rust `prometheus` and `prometheus-client` only encode text, while `metrics-exporter-prometheus` 0.18.3 runs a listener on `0.0.0.0:9000` by default. [CODE S-3ylk7y4h: prometheus_client/exposition.py#start_wsgi_server; CODE S-4dcfdr4h: metrics-exporter-prometheus/src/exporter/builder.rs#with_http_listener]
+- Prometheus documents no authentication on `/metrics`; TLS and basic auth through `--web.config.file` are experimental, and the OTLP receiver (`--web.enable-otlp-receiver`) is off by default. [DOC S-ptmbzpgw, S-42nwx5i6, S-one7nth5]
+- Conclusion: a CPU-only Python-over-Rust service can be scraped by a local Prometheus with a loopback listener, a `static_configs` target and a retention pair (`15d` or a size cap) sized from samples per second times 1 to 2 bytes. [DER S-cgscrv4s, S-fpf6c56i, S-3ylk7y4h, S-4dcfdr4h: defaults and the sizing formula above]
+- Open: whether the TiKV `prometheus` crate appends `_total` or unit suffixes and rewrites invalid names was not read. [UNK]
+- See logs/prometheus-retention-exposition.md.
+
+_Agent: kb-research_
+
+## QK-spacy-trained-pipeline-pinned-one-patch. How is a spaCy trained pipeline pinned to one patch version, packaged as a wheel and installed from a private index?
+- A pipeline package version `a.b.c` is spaCy major, spaCy minor and model version; spaCy's own patch number is not in it, and PyPI lists 3.8.0 to 3.8.16 as the patches of minor 3.8. [DOC S-7dzxtyeg, S-ix7uqv2r]
+- `spacy package <input_dir> <output_dir> --build wheel --name N --version V --meta-path meta.json --force` writes `<lang>_<name>-<version>/` with `meta.json`, `setup.py`, `MANIFEST.in`, README, the package directory and `dist/`; the build runs `python -m build`. [DOC S-pmc3phpi; CODE S-afy77hze: spacy/cli/package.py#package]
+- The meta's `spacy_version` defaults to `>=<packaging spaCy's full version>,<next minor>` (spaCy 3.8.16 writes `>=3.8.16,<3.9.0`); a value already in the `meta.json` file overrides it. [DOC S-yo4p2wby; CODE S-eem3ebzg: spacy/util.py#get_minor_version_range]
+- On load a mismatch is warning W095, not an error; `spacy validate` returns exit code 1 for an incompatible installed package. [CODE S-eem3ebzg: spacy/util.py#load_meta; DOC S-pmc3phpi]
+- Narrower pin: `"spacy_version": "==3.8.16"` in the `meta.json`; packaging then adds `spacy==3.8.16` to `requirements`, which pip enforces through `install_requires`, while the loader still only warns. [DER S-afy77hze, S-eem3ebzg: `about.__title__ + meta["spacy_version"]`; load_meta warns]
+- No digest of training data, config or weights is recorded; `_sourced_vectors_hashes` is a Python `hash()` compared during initialisation and removed, and `spacy project` asset checksums and `project.lock` entries are MD5. [DER S-tzx4jroa, S-yo4p2wby: no hash field in the schema; CODE S-szqctyjx: weasel/util/hashing.py#get_checksum]
+- Install: from an internal PyPI by name, or by `name @ <wheel url>`; pip's `--index-url` names the index, `--extra-index-url` risks dependency confusion, `--no-index --find-links <dir>` installs offline, and `--hash=sha256:...` with `--require-hashes` binds the bytes (all requirements and dependencies hashed and pinned). [DOC S-kcn56y7v, S-fpqwvm77, S-kzxs7o5q]
+- Conclusion: pin three things, spaCy itself (`==` plus hash), the pipeline's `requirements` entry and `spacy_version` (the last only warns), and take the wheel's sha256 with `pip hash` after the build, since spaCy stamps no content of the pipeline. [DER S-afy77hze, S-eem3ebzg, S-kzxs7o5q, S-umcvzek3]
+- Open: whether `python -m build` needs network for build requirements, whether two builds give the same wheel, whether patch releases change output, and whether `spacy project assets` exits non-zero on a checksum mismatch. [UNK]
+- See privacy/spacy-pipeline-pinning.md.
+
+_Agent: kb-research_

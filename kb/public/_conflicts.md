@@ -747,3 +747,39 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## gitlab/protected-branches-tags
 
 - Re-read 2026-10-11 at master @9f1632e2 of the conflict recorded above under this heading: the Push and merge permissions table and the note under the protection strategies of S444 are unchanged and still disagree on an unset **Allowed to push and merge**; the Protected branches API page (S-ozrs7es3) gives `40` as the default `push_access_level` of a rule created without one and does not say how that default relates to an unset list in the interface. (topic: gitlab/protected-branches-tags)
+
+## privacy/coreference-resolution-options
+
+- **Licence of the Polish Coreference Corpus: CC BY-NC 4.0 or CC BY 3.0.** The IPI PAN corpus page (S-kdsj7amh, last edited 2023-04-24) says it "offers the official Creative Commons Attribution-NonCommercial 4.0 International License release" and lists `License: CC BY-NC 4.0`. The CorefUD v1.4 licence page (S-el226szq, dated 2026-02-18) lists `CorefUD_Polish-PCC` as CC BY 3.0, with each corpus under its own licence in its directory. Read 2026-10-11. The pages describe two distributions (the IPI PAN release and its CorefUD conversion), so both may be right for their own copy; no source states which terms govern models trained on either. Not settled by a source: the article records both. [DOC S-kdsj7amh vs S-el226szq] (topic: privacy/coreference-resolution-options)
+
+## arch/fluent-rust-typescript
+
+- **fluent-bundle README example vs the 0.16.0 API.** The README at tag `fluent-bundle@0.16.0` (S-pz6n3xzv) reads the message value as a field, `msg.value.expect(...)`, while `message.rs` at the same tag (S-2xwgfues) defines `FluentMessage` with a private `node` field and a `value()` method, and the crate-level and `FluentBundle` doc examples (S-vktfavae) call `msg.value()`. Read 2026-10-11. The code is the API; the README snippet does not compile against 0.16.0. [CODE S-2xwgfues, S-vktfavae vs DOC S-pz6n3xzv] (topic: arch/fluent-rust-typescript)
+- **`eslint-plugin-i18next` licence.** The repository LICENSE file at tag `v6.1.5` is the MIT text, while `package.json` at the same tag (S-nmwvmitf) and the npm registry metadata declare `ISC`. Read 2026-10-11. Not settled by the project; the article records MIT from the LICENSE file and notes the mismatch. [COMMUNITY S-l53lrqoz vs S-nmwvmitf] (topic: arch/fluent-rust-typescript)
+
+## privacy
+- GLiREL licence: the README at v1.2.1 and the `jackboyla/glirel-large-v0` card text say CC BY-NC-SA 4.0 (S-ngy65th6, S-w6u6mtcx), while `pyproject.toml` at v1.2.1 and the PyPI metadata say Apache-2.0 (S-uu7ov3pw, S-pjp4rzor); the repository has no `LICENSE` file at v1.2.1 or on main and the model card has no licence field. The kb states both and does not choose. (topic: privacy/gliner-glirel-zero-shot)
+- `urchade/gliner_large-v2.1` language: the card front matter (and HF tags) say `multilingual`, while the same card's model table lists it as English and its config names `microsoft/deberta-v3-large`, not the multilingual mDeBERTa encoder of `gliner_multi-v2.1` (S-dwg2wis7, S-2fmzqhdr). The kb reports the table and the encoder, and the front matter as a tag only. (topic: privacy/gliner-glirel-zero-shot)
+- `urchade/gliner_multi-v2.1` size: the card table gives 209M parameters (S-7ke3sttd), the HF API safetensors metadata gives 288,949,504 F32 parameters in a 1,155,830,112-byte file (S-wrx2q5ya). The kb states both; the API value matches the file size. (topic: privacy/gliner-glirel-zero-shot)
+
+## arch/gorules-zen-engine
+
+- **`passThrough` default on table, expression and decision nodes: docs say true, the Rust struct reads as false.** The node-types page (S-cdmzxvsn, read raw 2026-10-11) lists `passThrough` with default `true`; `TransformAttributes` at zen-engine-v2.1.3 (S-heikuvcn) declares `#[serde(default)] pub pass_through: bool`, which is false when the key is absent, and the handlers branch on `self.pass_through`. Files saved by the editor write the key, so the difference shows only for hand-written JDM. Not run, so not settled: a hand-written file should set `passThrough` explicitly. [DOC S-cdmzxvsn vs CODE S-heikuvcn: core/types/src/decision/mod.rs#TransformAttributes] (topic: arch/gorules-zen-engine)
+
+## agents/mmlw-e5-polish-embeddings
+
+- **Reported PIRB NDCG@10 of the `mmlw-e5-large` distilled model.** The model card (S-pxbj347n, repo sha a7d9af002b46) states NDCG@10 of 56.09 on the Polish Information Retrieval Benchmark; the PIRB paper's Table 3 (S-sbuv7mtf, arXiv v2) lists 56.00 for the distilled multilingual-e5 (large) student with `bge-large-en` as teacher before fine-tuning. For small (47.64) and base (53.56) card and paper agree to the digit. Not settled which run the card's figure comes from; a difference of 0.09. [DOC S-pxbj347n vs DOC S-sbuv7mtf, unresolved] (topic: agents/mmlw-e5-polish-embeddings)
+
+## privacy
+- spaCy `pl_core_news_*` versions: GitHub releases have 3.8.0 (2024-09-30, S-haoeqge5, S-pxcitvg3, S-sirpm4j2, spaCy `>=3.8.0,<3.9.0`). The Hugging Face repos were last modified 2023-10-10 with card version 3.7.0 (spaCy `>=3.7.0,<3.8.0`, S-tzw22ffl for sm). Both say GPL-3.0. (topic: privacy/morfeusz-polish-lemmatisation)
+
+## agents/onnx-runtime-rust-ort
+
+- The default API level of `ort` 2.0.0-rc.13. The Multiversioning page (S-o3nqheje) says the latest API version, `api-28`, "is enabled by default"; the manifest at the same tag (S-pwbxp7jw) lists `api-27` in `default` and carries `api-28` as an opt-in feature. The source at the tag decides what a build gets (`api-27`), so a build that needs a method marked `api-28` sets that feature itself; a later release or a docs fix settles which one is meant. [DOC S-o3nqheje vs CODE S-pwbxp7jw, unresolved] (topic: agents/onnx-runtime-rust-ort)
+- The `default-features = false` example. The Multiversioning page (S-o3nqheje) shows features `std`, `ndarray`, `download-binaries` and `api-20`; the build script of `ort-sys` at the same tag (S-7srl2gyq) stops with a `compile_error!` when `download-binaries` is on and no `tls-*` feature is, and the Cargo features page (S-m5r2fcso) says a TLS feature is required. By the code the example as printed stops at that check (not built here); the code is the authority. [DOC S-o3nqheje vs CODE S-7srl2gyq, unresolved] (topic: agents/onnx-runtime-rust-ort)
+
+## logs/otel-collector-otlp-pipeline
+- **Number of official Collector distributions: five or six.** The opentelemetry.io page on building a custom Collector (S-iylg5wv4, site vers 0.162.0) says the Collector "has five official distributions", while the distributions repository README at v0.162.0 (S-vnjcetlc) lists six: `otelcol`, `otelcol-contrib`, `otelcol-k8s`, `otelcol-otlp`, `otelcol-prometheus` and `otelcol-ebpf-profiler`. The kb states the repository list as the current one in `logs/otel-collector-otlp-pipeline`; the page's count is probably stale. (topic: logs/otel-collector-otlp-pipeline)
+
+## privacy/spacy-pipeline-pinning
+- spaCy `download --url` at release-v3.8.16: the CLI table describes the option as "Download from a mirror repository at the given url" (S-pmc3phpi), but `download_model` in `spacy/cli/download.py` (S-kmhasvx6) raises `ValueError` when the joined URL does not start with `about.__download_url__` (the GitHub releases prefix), and replaces a `--url` value without a trailing slash by that prefix, so a mirror on another host is not reachable through it in the code read. Both read 2026-10-11 at the same tag; installing a mirrored wheel with a direct `pip install <url>` is unaffected. (topic: privacy/spacy-pipeline-pinning)

@@ -51,6 +51,7 @@ is the closest thing to a format with tooling on more than one of the four consu
 - Python: `fluent.runtime.FluentLocalization(["en-US"], ["catalogue.ftl"], loader)`.
 - PowerShell: `Import-LocalizedData -BindingVariable Strings` reading `en-US/catalogue.psd1`.
 - Power BI: TMDL `cultures/en-US.tmdl` mapping object refs to translated `translatedCaption`.
+- Fluent in Rust (fluent-rs crates) and TypeScript (`@fluent/bundle`), typed accessors and FTL linters: [fluent-rust-typescript.md](fluent-rust-typescript.md).
 
 ## Examples
 - A device-drift label like "compliant" would need: an FTL message `status-compliant = Compliant`

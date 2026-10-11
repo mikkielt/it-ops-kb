@@ -29,5 +29,11 @@ status: complete
 | GitHub explosion/spacy-models release | 3.8.0 | MIT |
 | Hugging Face spacy/en_core_web_lg | 3.7.1 (2023-11) | MIT |
 
+See also `privacy/spacy-pipeline-pinning.md` (spaCy version range, `spacy package`, meta and install pinning).
+
+See also `privacy/morfeusz-polish-lemmatisation.md` (Morfeusz 2 for Polish lemmas and the `pl_core_news_*` fallback, whose licence is GPL-3.0).
+
+See also `privacy/coreference-resolution-options.md` (coreference options for Polish and English text: spaCy experimental, fastcoref, coreferee, Herference, CorPipe 24).
+
 ## Examples
 Not applicable.

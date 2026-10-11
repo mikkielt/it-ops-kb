@@ -151,6 +151,8 @@ choice (Presidio + spaCy `en_core_web_lg`, in-process) is not itself re-argued h
 | Google Sensitive Data Protection | not found | n/a (cloud API) | not found | commercial, metered (per GB) |
 | GLiNER (ONNX export) | yes, self-hosted, any runtime | n/a (self-hosted) | not published (deployer-defined) | model-card dependent |
 
+Running an ONNX export from Rust (the `ort` crate: binaries, CPU-only builds, session options, file pinning): `agents/onnx-runtime-rust-ort.md`.
+
 ## Examples
 A hypothetical shared endpoint serving both an example project's agent and another team's agent, presented with the fixture
 text "engineer jan.kowalski opened a case for PL-LT-00123 at corp.example.com", would need the same API

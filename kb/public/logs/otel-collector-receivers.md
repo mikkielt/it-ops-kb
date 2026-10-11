@@ -40,6 +40,7 @@ stability **alpha**, Windows only). Full option tables are saved as CSV beside t
 ## Reference
 - `otel-filelogreceiver.config.csv` (51 fields), `otel-windowseventlogreceiver.config.csv` (29 fields): field, default, description (Apache-2.0, from the README at v0.161.0).
 - `otel-filelogreceiver.metadata.yaml`, `otel-windowseventlogreceiver.metadata.yaml`: verbatim, Apache-2.0, © OpenTelemetry Authors.
+- Where these receivers' data goes next (OTLP receiver and exporters, `memory_limiter`, `batch`, Prometheus, Loki and Tempo, the Collector's own telemetry): `logs/otel-collector-otlp-pipeline`.
 
 ## Examples
 - SNIPPET: configure a filelog receiver for CCM logs and a windowseventlog receiver for a DSC channel; context: opentelemetry-collector-contrib v0.161.0; checked: no [DOC S961, S-dnzkxk4b: filelog `include`/`start_at`/`encoding`/`include_file_path`/`storage` and windowseventlog `channel`/`start_at`/`storage` options]

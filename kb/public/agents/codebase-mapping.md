@@ -189,7 +189,7 @@ language server. The per-language cookbook is `agents/codebase-mapping.csv`; Pow
 - cargo metadata: https://doc.rust-lang.org/cargo/commands/cargo-metadata.html; rustup overrides: https://rust-lang.github.io/rustup/overrides.html
 - global.json: https://learn.microsoft.com/en-us/dotnet/core/tools/global-json; MSBuild evaluation: https://learn.microsoft.com/en-us/visualstudio/msbuild/evaluate-items-and-properties
 - MSBuild response files: https://learn.microsoft.com/en-us/visualstudio/msbuild/msbuild-response-files; how MSBuild builds projects: https://learn.microsoft.com/en-us/visualstudio/msbuild/build-process-overview; project SDK resolution: https://learn.microsoft.com/en-us/visualstudio/msbuild/how-to-use-project-sdk
-- Universal Ctags JSON: https://docs.ctags.io/en/latest/man/ctags-json-output.5.html
+- Universal Ctags JSON: https://docs.ctags.io/en/latest/man/ctags-json-output.5.html; storing a mapper's JSON Lines output under stable content-addressed ids (JSON Lines and NDJSON framing, RFC 8785 canonical JSON, SHA-256 and BLAKE3, digest encodings): `arch/content-addressed-ids-jsonl.md`
 - LSP 3.18: https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/
 - Claude Code code intelligence: https://code.claude.com/docs/en/plugins/code-intelligence
 - Related: `agents/repository-ingestion.md` (which files to leave out, pinned urls); `windows/powershell-static-analysis.md`; `python/uv-projects.md`, `python/ruff.md`; `claude/plugins.md` (`lspServers`); `agents/agent-overuse-patterns.md` (code navigation is a symbol-table lookup, not an agent task).
