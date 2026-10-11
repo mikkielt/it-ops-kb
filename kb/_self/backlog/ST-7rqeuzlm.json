@@ -20,5 +20,5 @@
   "links": [
     "parked: SP-4phd36pa close"
   ],
-  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned."
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned. SP-ajcomz6d close (2026-10-11): close --summary again printed every clause unmet, and its 'similar open item' hints named unrelated items by shared words (ST-3mkvezil for per-family content, ST-2nvlf6jo for Lynis, BG-3bjktw5x for the static agent binary, BG-hoy65wor for idempotent steps, ST-t2j24bhx for dead-man monitors)."
 }

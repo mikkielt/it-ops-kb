@@ -20,5 +20,5 @@
   "links": [
     "parked: SP-4phd36pa close"
   ],
-  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned."
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned. SP-ajcomz6d close (2026-10-11): researched passed on the first work commit; only the fresh-context review found two S2 gaps (BG-ab3tndhy, a summary contradicting its own table; BG-i44ewtyl, AlmaLinux 8 and 10 half-answered with no gap) and two S3."
 }

@@ -16,5 +16,5 @@
   "links": [
     "parked: SP-yojt6y7v run"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): the full run took 22 s against the 22 s darwin ceiling at the review story's done (refused once, passed on the rerun), and the research worker reported one run 1 s over."
+  "notes": "SP-4phd36pa close (2026-10-11): the full run took 22 s against the 22 s darwin ceiling at the review story's done (refused once, passed on the rerun), and the research worker reported one run 1 s over. SP-ajcomz6d close (2026-10-11): the review story's done refused once again, the full run 100 passed in 21.85 s reported as 22 s against the 22 s darwin ceiling at load 3.6 on 14 cores; the rerun passed."
 }

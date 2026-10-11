@@ -1,0 +1,28 @@
+{
+  "id": "ST-y6syvkzo",
+  "kind": "story",
+  "title": "selfcheck's orphans check tells a session-end distill run still at work from a stuck one, instead of failing on any past HOOK_GRACE_S",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py selfcheck failed its orphans check at the start of the SP-ajcomz6d run on two querylog.py distill --settle 2 processes of other sessions' ends (parent pid 1, 1 min 32 s old), which finished on their own minutes later; bl_procs.HOOK_GRACE_S (60 s) is shorter than a distill of a long orchestrator transcript. The orphans check fails only on a distill run that is stuck, read from its own progress or lock rather than a fixed 60 s, so an orchestrator acts on no false failure (found by the SP-ajcomz6d close).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "_tools/bl_selfcheck.py",
+    "kb/_self/backlog.md",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-ajcomz6d close"
+  ]
+}
