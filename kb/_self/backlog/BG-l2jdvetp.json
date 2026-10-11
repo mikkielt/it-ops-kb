@@ -2,7 +2,7 @@
   "id": "BG-l2jdvetp",
   "kind": "bug",
   "title": "census.py dispatch grants no Learn fetch tool to a memdocs pin row whose brief tells the reader to re-source to the live Learn page",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
   "rank": 0,
@@ -22,5 +22,18 @@
     "kb/_self/code.md",
     "kb/_self/web-sources.md"
   ],
-  "claimed_by": "worker-BG-l2jdvetp"
+  "evidence": {
+    "commit": "d3ad94ab7fe439f8678250b537b49372b9ddeaf1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import census; r={'id':'S1','kind':'raw-pin','repo':'MicrosoftDocs/memdocs','pin':'a'*40,'path':'x.md','evidence':'','proof':'','note':'memdocs','url':'https://raw.githubusercontent.com/MicrosoftDocs/memdocs/'+'a'*40+'/x.md'}; p=census.dispatch_plan('g',[(r,{},{})],{'providers':[]}); sys.exit(0 if p['learn']==['S1'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
