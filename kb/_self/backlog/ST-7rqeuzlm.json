@@ -1,0 +1,24 @@
+{
+  "id": "ST-7rqeuzlm",
+  "kind": "story",
+  "title": "close --summary credits a research sprint's goal clauses to its goal research story",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py close --summary names, for each goal clause of a research sprint, the goal research story whose narrowed goal or kb/public touches carry it, instead of unmet: at the SP-4phd36pa close every clause printed unmet (some with an unrelated similar open item), though ST-bivdc2fa answered all of them and the fresh-context review read each as met.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_land_e2e.py",
+        "-k",
+        "close_summary_credits_goal_research_story"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-4phd36pa close"
+  ],
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned."
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-e44xoxkg",
+  "kind": "story",
+  "title": "A goal research story's check reads its narrowed questions' coverage, not only that a work commit exists",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The check of a goal research story reads each question its narrowed goal names (rag.py pack coverage, or a gap entry for it), so done refuses research that left a question unanswered: at SP-4phd36pa, backlog.py researched ST-bivdc2fa proved only a work commit, and only the fresh-context review read the seven clauses (it found four S3 wording gaps, BG-az4r47gd, BG-lmp4mxmo, BG-drzst6zj, BG-o2spkwnz).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_backlog_portable.py",
+        "-k",
+        "researched_reads_narrowed_coverage"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-4phd36pa close"
+  ],
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned."
+}

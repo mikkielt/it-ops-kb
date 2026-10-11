@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-qxcj7fgy close"
-  ]
+  ],
+  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once."
 }

@@ -1,0 +1,24 @@
+{
+  "id": "ST-bpomtrh4",
+  "kind": "story",
+  "title": "A sprint filed in a batch planning commit has its research story narrowed and its goal clauses mapped before the start gate is asked",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A sprint filed outside /kb-sprint plan (SP-4phd36pa was filed in the batch commit 0bcb147d2 with its start gate approved) reaches its start with plan step 1 (the research story's goal narrowed to the questions whose pack coverage is weak or none) and step 3 (each goal clause mapped to an item) done, or start warns that they were not: at SP-4phd36pa the orchestrator narrowed the goal itself at start.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_backlog_portable.py",
+        "-k",
+        "start_warns_unnarrowed_research_goal"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-4phd36pa close"
+  ],
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned."
+}

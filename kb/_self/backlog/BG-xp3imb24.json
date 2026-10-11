@@ -19,5 +19,6 @@
   ],
   "links": [
     "parked: SP-yojt6y7v run"
-  ]
+  ],
+  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens."
 }
