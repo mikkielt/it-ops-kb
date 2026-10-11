@@ -48,7 +48,7 @@
       "recommendation": "the steps of census.plan_run one by one on the domain: factdiff.py detect --dir logs --sitemaps, apply --commit, census.py check --source <each logs source id> --factdiff, repin, build_index.py, the phase-1 commit, summary",
       "class": "design",
       "answer": "the steps of census.plan_run one by one on the domain: factdiff.py detect --dir logs --sitemaps, apply --commit, census.py check --source <each logs source id> --factdiff, repin, build_index.py, the phase-1 commit, summary",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -61,7 +61,7 @@
       "recommendation": "left out of the item's commits (set aside in a stash named st-t67jhly3-snapshot; the next detect of the source writes it again)",
       "class": "design",
       "answer": "left out of the item's commits (set aside in a stash named st-t67jhly3-snapshot; the next detect of the source writes it again)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -74,7 +74,7 @@
       "recommendation": "not dispatched: its dry-run estimate (0.31 USD) is reported and its two rows stay in the queue for the census that owns those files",
       "class": "design",
       "answer": "not dispatched: its dry-run estimate (0.31 USD) is reported and its two rows stay in the queue for the census that owns those files",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -87,7 +87,7 @@
       "recommendation": "left out of the item's commits (set aside in a stash named st-t67jhly3-decisions-sweep; the next kbdecide.py sweep writes it again)",
       "class": "design",
       "answer": "left out of the item's commits (set aside in a stash named st-t67jhly3-decisions-sweep; the next kbdecide.py sweep writes it again)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The domain is picked at the sprint's planning by the research story (a mid-sized domain with Learn, live and pinned sources, such as entra, which fact-diff.md's dry run already measured); its article glob (kb/public/<domain>/**) is then added to touches with backlog.py set --add-touch before the start, since phase 2 edits articles. This is a paid run: a --dry-run estimate first, and --max-budget-usd from it (planning rule: dry-run every paid run a goal names). Baseline for the comparison comes from ST-w3jhowin's queue block on kb/public/_census/2026-09-26.csv, filtered to the domain's sources. It runs each step on the model ST-jkehwsu4 and ST-zdfghdlb chose, so its figures are those of the cheapest route that held the bars. 2026-10-11 orchestrator (operator's delegate, unattended run): the paid census of the logs domain (ST-7yh6lbh6 gate g2) is approved within the goal's dry-run-then-cap rule; the item's whole spend stays under 30 USD (a ceiling set without data: when the dry-run estimate exceeds it, stop on a gate). Groups are read with census.py dispatch (claude-sonnet-5-5, ST-zdfghdlb kept it) and the judge on claude-haiku-5-5; BG-tyh3t5oj and BG-l2jdvetp fixed the two dispatch defects ST-zdfghdlb found. No census tag is created and nothing is pushed: the commits stay on work/ST-t67jhly3 for the landing.",

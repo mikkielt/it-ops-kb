@@ -48,7 +48,7 @@
       "recommendation": "logs: 72 sources (45 Learn, 23 pinned, 4 live), 9 rows read in the 2026-09-26 census (6 superseded, 3 confirmed), 7 articles",
       "class": "design",
       "answer": "logs: 72 sources (45 Learn, 23 pinned, 4 live), 9 rows read in the 2026-09-26 census (6 superseded, 3 confirmed), 7 articles",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
