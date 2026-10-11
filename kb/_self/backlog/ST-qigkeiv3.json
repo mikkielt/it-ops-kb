@@ -1,0 +1,29 @@
+{
+  "id": "ST-qigkeiv3",
+  "kind": "story",
+  "title": "The phase-4 sample draws judge-confirmed sources at a rate that bounds stale confirms, and the report states their agreement",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "census.py sample draws the sources the batch judge confirmed at a rate that bounds the expected stale confirms (the judge's measured false confirms were 3 of 29 changed units), and the census report states their sample agreement apart from the other confirmed sources.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-census/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

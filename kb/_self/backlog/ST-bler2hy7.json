@@ -1,0 +1,28 @@
+{
+  "id": "ST-bler2hy7",
+  "kind": "story",
+  "title": "A failed batch judge call keeps its raw reply and an empty verdict list is refused",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A failed factdiff judge call keeps its raw reply beside the judge file, JUDGE_SCHEMA or the call refuses an empty verdicts list, and a failed call is retried once or reported with its cause (the logs census of 2026-10-11 lost 20 items to one call that answered 'no entry matched an item').",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

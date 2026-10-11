@@ -1,0 +1,25 @@
+{
+  "id": "ST-2c4om47e",
+  "kind": "story",
+  "title": "kb/_self/reports/fact-diff.md keeps its measurements without task or environment markers",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/fact-diff.md's sprint-3 sections keep their measurements and drop the task and environment markers (the item's paid runs, the 25 USD ceiling, 'filed as a bug').",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/fact-diff.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

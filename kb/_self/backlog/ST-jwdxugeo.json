@@ -1,0 +1,28 @@
+{
+  "id": "ST-jwdxugeo",
+  "kind": "story",
+  "title": "sample --brief agrees a fact by tool only when its anchor predates the census's phase-2 edits",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "census.py sample --brief agrees a fact by tool only when its anchor's verified_utc predates the census's phase-2 edits (or the fact line is unchanged since phase 1); every fact re-anchored in phase 2 goes to the checker with its passage, so a reader's rewrite is never agreed by the anchor it wrote.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

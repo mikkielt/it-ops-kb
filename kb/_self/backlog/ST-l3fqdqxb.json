@@ -1,0 +1,26 @@
+{
+  "id": "ST-l3fqdqxb",
+  "kind": "story",
+  "title": "census.py's usage header lists compare and the full judge options",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/census.py's module usage header lists compare and the judge command's --max-budget-usd and --jobs, as kb/_self/tools.md does.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

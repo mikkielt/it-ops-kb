@@ -1,0 +1,27 @@
+{
+  "id": "ST-4vwzfzca",
+  "kind": "story",
+  "title": "The one-domain census cost bullet states the rows dispatched, the rows left and that the census was not complete",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/token-efficiency.md's one-domain census bullet and its lookup_eval.csv row SQ-census-one-domain-cost state the 22 dispatched rows, the 2 undispatched rows with their 0.31 USD estimate, and that the logs census of 2026-10-11 was not complete (unread and unconfirmed sources, no tag).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lookup_eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/token-efficiency.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

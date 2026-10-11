@@ -1,0 +1,26 @@
+{
+  "id": "ST-2hicbnzh",
+  "kind": "story",
+  "title": "census.py compare and census.py score are covered by a suite test with a stub model call",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A suite test with a stub model call covers census.labelled_set (split parity, labels), compare_scores, compare_decide (both bars and the missing-result line) and score_lines, within the test ceiling.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

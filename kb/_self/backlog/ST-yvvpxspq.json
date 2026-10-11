@@ -1,0 +1,27 @@
+{
+  "id": "ST-yvvpxspq",
+  "kind": "story",
+  "title": "The kb-census skill runs the batch judge before it groups phase 2",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The kb-census skill's phase 2 runs census.py judge --dry-run, then census.py judge, before census.py groups, and its Report lists the judge's counts (supported, contradicted, not enough information, sources confirmed with no agent).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-census/SKILL.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}

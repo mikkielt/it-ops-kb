@@ -1,0 +1,30 @@
+{
+  "id": "ST-tef5gzq7",
+  "kind": "story",
+  "title": "The phase-4 checker's passage judgments run on the model census.STEP_MODELS names, or the docs stop saying so",
+  "status": "draft",
+  "parent": "EP-mkzkd7in",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Either a census.py command runs the passage judgments of sample --brief on census.STEP_MODELS['check'] and the kb-census skill's phase 4 uses it, or the brief header, kb/_self/web-sources.md and kb/_self/token-efficiency.md stop saying the checker runs on Haiku 5.5.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    ".claude/skills/kb-census/SKILL.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v review"
+  ]
+}
