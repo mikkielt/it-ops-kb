@@ -2762,3 +2762,16 @@ _Agent: kb-research_
 - See security/linux-cis-ssg-openscap.md, security/linux-nftables.md, security/linux-auditd.md, security/linux-sshd-hardening.md, security/linux-time-sync.md, security/linux-patching-and-pins.md, arch/docker-secrets-run-secrets.md, arch/wireguard-hub-and-spoke.md, arch/cloudflare-tunnel-replicas-ssh-access.md, arch/incus-test-bed.md, arch/heartbeat-dead-man-monitors.md, prior-art/drift-detection.md.
 
 _Agent: kb-research_
+
+## QK-fact-freshness-at-lookup. Can a kb lookup tell, accurately and with few tokens, whether a fact still matches its source when it is asked?
+- HTTP caching's rule fits: a stored answer is fresh while its age (time since it was last validated) is under its freshness lifetime, a lifetime can be a heuristic fraction (typically 10%) of the time since the content last changed, and stale-while-revalidate serves the stale copy while it revalidates without blocking. [DOC S-ods72iyh, S-m7xkty3c]
+- Change-frequency work models a page's changes as a Poisson process with rate 1/Δ estimated per page, so check schedules follow each page's own history. [DOC S-7uckhkxr]
+- Every model tested on FreshQA struggles with fast-changing knowledge, which is the case a freshness signal is for. [DOC S-rcaeqaft]
+- The kb already has each piece offline: per source a change baseline (ETag, Last-Modified, version id, text hash, or a git route for mapped Learn pages) and per fact-source pair a located passage hash with its `verified_utc`; the cheapest live check is one conditional request per source, none for a pinned file. [DER S-ods72iyh: the kb's change-detection facts above read as a revalidation path]
+- A page-level change alone is a poor signal: the kb's replay found 82 of 94 anchored facts on changed `entra` pages word for word; the passage check separates the few that changed. [DER S-wcrrjfwh, S-ods72iyh]
+- An offline probe on 2026-10-11 (Python 3.13.2, no model) revalidated one pack's sources in 0.2 s (pinned), 1.9 s (Learn) and 7.3 s (`code.claude.com`, hash only), found 8 modified and 5 not-found facts among the 212 citing those Claude Code pages, and found 77% of the DOC lines `pack` prints anchored on every source they cite. [DER S-ods72iyh, S-7uckhkxr]
+- Conclusion: yes for most printed facts, at no model tokens until something changed: the pack can stamp each source with its age offline, and a live revalidation of only the pack's cited sources, resolving only the printed lines' anchors, reports unchanged or word-for-word facts as current and hands the asking model just the new passage of a fact that moved (about 140 tokens per item by the `entra` replay's review size). Unanchored and untagged lines can only be dated at source level. [DER S-ods72iyh, S-m7xkty3c, S-7uckhkxr]
+- Open: whether a lookup may write what it revalidated beyond the cache (census dates only what it confirmed), and the change rate of each host, which the kb has never estimated from its own history. [UNK]
+- See agents/doc-change-detection.md.
+
+_Agent: kb-research_
