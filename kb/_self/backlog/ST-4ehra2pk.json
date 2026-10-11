@@ -2,7 +2,7 @@
   "id": "ST-4ehra2pk",
   "kind": "story",
   "title": "Research sprint goal: Research: secrets, identities and signed requests for a small self-managed fleet",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-up5wchen",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orch-up5wchen"
+  "evidence": {
+    "commit": "85119d07d8e0b63b1e8552614896380f02f4fd33",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-4ehra2pk"
+        ],
+        "exit": 0,
+        "sha256": "e625322341ccfc91"
+      }
+    ]
+  }
 }
