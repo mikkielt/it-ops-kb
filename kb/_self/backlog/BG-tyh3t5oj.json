@@ -2,7 +2,8 @@
   "id": "BG-tyh3t5oj",
   "kind": "bug",
   "title": "census.py dispatch fails on the real claude CLI: the result schema's $schema (2020-12) is rejected by --json-schema",
-  "status": "draft",
+  "status": "todo",
+  "sprint": "SP-yojt6y7v",
   "priority": "P2",
   "rank": 0,
   "severity": "S1",
@@ -14,5 +15,9 @@
       "import json,sys; sys.exit(1 if '$schema' in json.load(open('_tools/census_result.schema.json')) else 0)"
     ]
   },
-  "repro_reason": "the defect is a key in the schema file that the real claude CLI rejects; a repro may not run the real CLI (a paid call), and the suite's stub accepts any schema"
+  "repro_reason": "the defect is a key in the schema file that the real claude CLI rejects; a repro may not run the real CLI (a paid call), and the suite's stub accepts any schema",
+  "touches": [
+    "_tools/census_result.schema.json",
+    "kb/_self/tools.md"
+  ]
 }

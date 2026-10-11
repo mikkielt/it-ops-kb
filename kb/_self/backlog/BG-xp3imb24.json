@@ -13,5 +13,11 @@
       "-c",
       "import sys; sys.path.insert(0,'_tools'); import bl_authority as a; sys.exit(0 if a.class_reasons({'touches':['_tools/census.py']},{'id':'g9','question':'What is census.DISPATCH_BASE_TOKENS?','options':[]})[0]=='design' else 1)"
     ]
-  }
+  },
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v run"
+  ]
 }
