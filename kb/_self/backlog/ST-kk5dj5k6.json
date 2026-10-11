@@ -2,7 +2,7 @@
   "id": "ST-kk5dj5k6",
   "kind": "story",
   "title": "Research sprint goal: Research: Linux host configuration management and hardening by a pull agent",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ajcomz6d",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "worker-kk5dj5k6"
 }
