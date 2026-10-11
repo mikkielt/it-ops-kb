@@ -2,7 +2,7 @@
   "id": "BG-pzgeq5t4",
   "kind": "bug",
   "title": "factdiff.py review --judge still defaults to Sonnet 5.5 while census.py judge defaults to Haiku 5.5",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yojt6y7v",
   "priority": "P3",
   "rank": 0,
@@ -20,5 +20,6 @@
     "_tools/test_redact.py",
     "kb/_self/tools.md",
     "_tools/census.py"
-  ]
+  ],
+  "claimed_by": "orchestrator-yojt6y7v"
 }
