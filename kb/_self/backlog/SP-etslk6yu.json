@@ -1,0 +1,20 @@
+{
+  "id": "SP-etslk6yu",
+  "kind": "sprint",
+  "title": "Freshness lifetimes, a free freshness benchmark and census hints from lookups",
+  "status": "planned",
+  "goal": "Each source has a freshness lifetime from its own change history and a lookup revalidates only sources past it; a free benchmark measures the share of current, moved, not-found and source-dated lines and the time per question; and the census and refresh skip re-fetching a source a lookup revalidated within its provider's pacing, dating only what they confirm",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
