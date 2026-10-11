@@ -1,0 +1,45 @@
+{
+  "id": "ST-iyrixezt",
+  "kind": "story",
+  "title": "pack adds a check: note to a good verdict whose top hits are scattered and weak, calibrated on the eval set against the off-kb list",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "pack, with its verdict unchanged, adds a check: note when a good verdict's top three articles span two or more domains and its top BM25 score is under a threshold calibrated on lookup_eval.csv's good rows against the off-kb list's good ones (a query performance prediction signal fitted to this collection, never a generic predictor); the calibration and its counts (off-kb goods flagged, eval goods flagged) are printed by the verdict benchmark; rag.py eval keeps passing every row, since a check: note changes no verdict; lookup_heldout.csv's rows are not used to tune it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_scatter_check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/bench_retrieval.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-efyc4jiw"
+  ],
+  "links": [
+    "kb:public/agents/hybrid-retrieval.md"
+  ],
+  "notes": "Premise: an offline probe on 2026-10-11 found no single feature (NQC-style spread of the top ten BM25 scores, rarest key word's IDF, top score, key-word count, domains of the top three articles) that flags any of the 15 off-kb goods without flagging an eval good; the pair (top three articles in two or more domains, top score under 18) flagged 12 of 15 off-kb goods and 10 of 205 eval goods, so it is a note, not a verdict change. QPP research: predictors vary most with the collection and do not generalize, and QPP-driven selective processing gives marginal gains (public/agents/hybrid-retrieval.md, Query performance prediction, S-lsfxdurw); hence calibration on this kb's labelled sets. Depends on ST-efyc4jiw so the off-kb labels are right first."
+}

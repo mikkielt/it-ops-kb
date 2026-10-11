@@ -1,0 +1,47 @@
+{
+  "id": "ST-b27c527d",
+  "kind": "story",
+  "title": "pack, kb_ask and the kb: hook route a question by its kind to the tool that answers it, and fuse the lists by RRF",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kbfacts recognises a question's kind by deterministic cues and answers it from the tool that already holds the answer: a count or list of articles from rag.py audit's totals, a decision id from the decisions ledger (kbdecide list's row), a 'which sources disagree' question from the whole _conflicts.md entry with its source ids (search alone cuts it), a 'what does the kb say about' question that hits a _gaps.md entry as kb lacks with that entry, and a citation question from src --cited; when more than one expert answers, their ranked lists are fused by reciprocal rank fusion (k = 60, no score calibration); pack, kb_pack, kb_ask.py and the kb: hook print the routed answer with its path:line; every other question ranks as today, so rag.py eval keeps passing all its rows; the pool's hook arm, rerun free with no model, is right on its count, decision, conflict and gap rows.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_routes_kind"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/kb_ask.py",
+    "_tools/rag.py",
+    "_tools/kb_hook.py",
+    "_tools/test_live_kb.py",
+    "kb/public/_retrieval/lookup_eval.csv",
+    "AGENTS.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/plugin.md",
+    "kb/_self/content-rules.md"
+  ],
+  "links": [
+    "kb:public/agents/hybrid-retrieval.md",
+    "kb:public/_answers.md#QK-deterministic-retrieval-experts"
+  ],
+  "notes": "Premise: python3 _tools/rag.py pack 'How many articles does the kb hold in the intune domain?' prints no article count, while python3 _tools/rag.py audit intune ends articles=23. An offline probe on 2026-10-11 (no model) routed the pool's rows by kind: count 0 to 3 of 3, decision 0 to 2 of 2, gap 2 to 5 of 5, conflict 0 of 2 until the entry is printed whole (rag.py search cuts _conflicts.md:171 before [DOC S1800,S1801,S1802]); the pool record of 2026-10-09 had the hook arm 0 of 3 count, 0 of 2 decision, 0 of 2 conflict, 2 of 5 gap and the router 0 of 2 decision and conflict. Facts: public/agents/hybrid-retrieval.md (Rank fusion: the original RRF paper; Mixture of retrievers; How these map onto a deterministic toolset), QK-deterministic-retrieval-experts. A typo leg is out: pack passed 10 of 10 typo variants and a closest-word fixer broke the 24H2 false_good row. The hook arm rerun is benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap with --out in a scratch directory (no paid run)."
+}

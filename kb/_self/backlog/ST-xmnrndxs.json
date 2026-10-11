@@ -1,0 +1,36 @@
+{
+  "id": "ST-xmnrndxs",
+  "kind": "story",
+  "title": "factdiff.py anchor takes the researcher's verbatim quote for a fact, and kb-verify warns of a new DOC fact whose quote the page does not hold",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "factdiff.py anchor --file F accepts the quote each new fact rests on (a --quotes CSV of fact line and quote, at most 25 words, as kb-research's report already lists them) and locates the anchor by that quote in the fetched normalized text before trying the fact's own words; kb-verify's lint warns of a DOC fact added in the change, cited to a text source, whose given quote the page does not hold (a no-match or a quote missing for a non-Microsoft source), and stays silent on facts the change did not add, so the 37% of existing anchors that are no-match raise nothing; kb-research and kb-add-topic pass their quotes; the suite tests a found quote, a missing one and an untouched old fact.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_quote"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/content-rules.md",
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/skills/kb-add-topic/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/skills/kb-verify/SKILL.md"
+  ],
+  "links": [
+    "kb:public/agents/hybrid-retrieval.md"
+  ],
+  "notes": "Premise (2026-10-11, kb/public/_anchors.csv): 6,630 anchors located (49%), 5,102 unlocated:no-match (37%), 1,801 not-text (13%); quote is filled only as anchoring's output (6,563 located rows), never taken from the researcher. Anchoring this session's new facts in agents/hybrid-retrieval.md left correctly paraphrased DOC facts no-match, so a gate on anchors alone would refuse good facts; the researcher's quote is the reliable key. The lint rule runs over the live repository before the sprint commits the story and must warn of nothing in files the change did not touch."
+}

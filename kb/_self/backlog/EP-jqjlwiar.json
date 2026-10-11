@@ -1,0 +1,13 @@
+{
+  "id": "EP-jqjlwiar",
+  "kind": "epic",
+  "title": "Model work to tools: lookups, research and refresh send a model only what no tool decides",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The work a model now does by reading or by hand in lookups, research and refresh is done by standard-library tools where the kb's own data decides it: a lookup's question kind picks the tool that answers it (counts, decisions, conflicts, gaps, citations) and the lists fuse by RRF; the off-kb list and the eval set never label one question two ways, and a good verdict whose hits are scattered and weak carries a calibrated check note; a new source's licence and reuse come from the source's own licence record; a cited page is read by its route with matching lines printed and searched through the provider's own API before WebSearch; a new fact is anchored by the researcher's verbatim quote; and the query log's and refresh's mechanical judgements are made by code. Out of scope: dense, late-interaction or cross-encoder legs (a model at query time), GraphRAG, a typo leg and a verdict-changing QPP threshold, which the kb's own data does not support (agents/hybrid-retrieval.md, QK-deterministic-retrieval-experts).",
+  "relates_to": [
+    "EP-mkzkd7in"
+  ],
+  "notes": "Related: EP-mkzkd7in (the census decides by tool: re-pin, MicrosoftDocs git history, detection baselines, the diff side refresh shares). Considered and not filed (agents/hybrid-retrieval.md, QK-deterministic-retrieval-experts): a typo leg (pack 10 of 10 typo variants; a fixer broke 24H2), a verdict-changing QPP threshold (no feature separates without eval loss), dense, late-interaction and reranker legs (model at query time), GraphRAG (the kb is already structured), more learned sparse weighting (doc2query showed no gain on fresh questions)."
+}

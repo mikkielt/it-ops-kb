@@ -1,0 +1,37 @@
+{
+  "id": "ST-nkr6cpvs",
+  "kind": "story",
+  "title": "provider.py search NAME TERMS queries a provider's own search API before a session uses WebSearch",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "provider.py search NAME TERMS [--max N] queries the search_api of a provider row (Learn's api/search, the arXiv export API's search_query, GitHub's repository and code search, PyPI's JSON for a project name) and prints title, url and date per hit, cached for 7 days like docs_search; providers.csv gains the arXiv, GitHub and PyPI search_api values; kb-research step 3 tries it for a vendor or project with a row before WebSearch; the suite tests each provider's request and parsing with stubbed responses.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "provider_search"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/provider.py",
+    "_tools/providers.csv",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/web-sources.md",
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/settings.json"
+  ],
+  "depends_on": [
+    "ST-7zkw23ca"
+  ],
+  "links": [
+    "kb:public/agents/hybrid-retrieval.md"
+  ],
+  "notes": "Premise: _tools/providers.csv has a search_api only on its learn row (2026-10-11); this session's research found arXiv papers through export.arxiv.org/api/query?search_query=ti:... with no WebSearch call. Depends on ST-7zkw23ca for the provider rows and cache it adds."
+}
