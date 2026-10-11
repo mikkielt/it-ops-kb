@@ -31,7 +31,9 @@
         "no new article: every fact extends gitlab/automated-merge-requests.md or gitlab/protected-branches-tags.md"
       ],
       "recommendation": "five new articles: gitlab/project-settings-api, gitlab/deploy-keys-and-tokens, gitlab/webhooks, gitlab/runner-registration, gitlab/package-registries; protected tags and schedule play extend existing articles",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "five new articles: gitlab/project-settings-api, gitlab/deploy-keys-and-tokens, gitlab/webhooks, gitlab/runner-registration, gitlab/package-registries; protected tags and schedule play extend existing articles",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -42,7 +44,9 @@
         "name it as the vendor does, and give that eval row an allowed verdict or expansion"
       ],
       "recommendation": "omit the vendor name: list it as a flow callback event, so the off-kb eval row stays none",
-      "class": "push"
+      "class": "push",
+      "answer": "omit the vendor name: list it as a flow callback event, so the off-kb eval row stays none",
+      "by": "operator"
     }
   ],
   "claimed_by": "kb-worker-ST-bivdc2fa"
