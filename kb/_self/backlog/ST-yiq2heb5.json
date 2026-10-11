@@ -42,7 +42,9 @@
         "no cache: always fetch"
       ],
       "recommendation": "7 days, as factdiff.py anchor",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "7 days, as factdiff.py anchor",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -53,7 +55,9 @@
         "none: the row goes to the checker with no fact, to be read in full"
       ],
       "recommendation": "the facts citing the row that replaced it (superseded_by), with the successor's current text",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the facts citing the row that replaced it (superseded_by), with the successor's current text",
+      "by": "operator"
     }
   ],
   "notes": "Premise: .claude/skills/kb-census/SKILL.md phase 4 step 2 has a fresh subagent read each sampled source in full and its citing facts; census.py sample prints ids only (its -h: 'prints a CSV of ids'). A word-for-word match of a fact in the source's current text is the same proof factdiff apply already dates sources on with no model, so agreeing such rows by tool keeps the check's meaning for the rows it was built for: the ones a reader judged.",
