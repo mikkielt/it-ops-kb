@@ -165,3 +165,64 @@ The same with `--model claude-sonnet-5-5` for the judge's baseline, and `--step 
 **Spend.** All paid runs of the item, pilots, a two-batch diagnostic of raw replies and the held-out half: 1.35 USD, each call under its `--max-budget-usd` cap; no call failed.
 
 **Not measured.** The checker opens a page when a passage does not settle a fact; that tool use was not part of the call, so Haiku 5.5 is the default of the passage judgments only, and a read of a page stays with the orchestrator's model. The `factdiff.py review --judge` entry point and `kb-census`'s skill text are unchanged by this measurement.
+
+## Haiku 5.5 on the census's agentic steps, 2026-10-11
+
+Two census steps run tools and edit files: a phase-2 group read by `census.py dispatch` (default `claude-sonnet-5-5`, `census.DISPATCH_MODEL`) and the `kb-census` skill's orchestrator (the session's model, `claude-opus-5-5` on the census sessions, since the skill names none). `claude-haiku-5-5` was run against each from the same brief, caps and permission rules. Haiku 5.5 became the default of neither: dispatch failed two bars, the orchestrator one; the result is a single run per model and small sets, so it says Haiku 5.5 lost something the sets can see, not that the gaps are large.
+
+**Setup.** Both steps ran on throwaway clones under a scratch directory, never on the repository's tree: the clone's public root restored to the commit before phase 2 of the 2026-09-26 census (`df9030ac7`, the ledger given the `reuse` column the current tools require), the tools of the working tree, copy-on-write copies of the census repository clones and of the document cache, no remote. Pages were read live on 2026-10-11, not as on the census day.
+
+### Phase-2 groups, held-out half
+
+Rows: the held-out half of the 2026-09-26 census log (`census.half_of`, the split of the single-call steps), the rows with a recorded outcome other than `unconfirmed` and no `techcommunity` host (the kb host cannot resolve its name here), in 18 owner groups: 114 sources, 40 of which the census recorded as `updated` (19) or `superseded` (21), the other 74 as `confirmed`. A tune half was not used. Each group's brief part is `census.py brief`'s, run by `census.py dispatch` in the clone with the log reduced to these rows and their outcomes blanked; `security` has 6 brief parts and `claude` 2, so the 18 groups are 24 runs per model.
+
+```
+python3 _tools/census.py dispatch <held-out log> --group G [--part N] --model MODEL --dry-run
+python3 _tools/census.py dispatch <held-out log> --group G [--part N] --model MODEL --max-budget-usd CAP
+python3 _tools/census.py apply <held-out log> --group G --from RESULTS[-N].json --dry-run
+python3 _tools/census.py score <the census log> --from RESULTS.json ...
+```
+
+`CAP` is `factdiff.call_cap` of the dry run's `usd` (3 times it, at least 0.25 USD); a part that hit its cap was rerun once at 1.00 USD, as the skill says. The dry run's estimate was 15.61 USD for Sonnet 5.5's 24 runs and 2.38 for Haiku 5.5's; the runs cost 6.20 and 1.88 (the estimate is a list-price figure with generous turn and page allowances, never a bound). A result counts when `apply --dry-run` takes it (schema-valid, ids known, files owned); a source of a run that returned nothing usable counts as a disagreement and as unconfirmed. A false confirm is `confirmed` where the census recorded `updated`, `superseded` or `gone`.
+
+| model | runs usable | sources answered | agreement | false confirms (of which `updated`) | unconfirmed | turns (most in a run) | tokens in / out | total_cost_usd | wall time (4 groups at a time) |
+|---|---|---|---|---|---|---|---|---|---|
+| claude-sonnet-5-5 (current) | 21 of 24 | 97 of 114 | 53, 46.5% | 4 of 40 (1) | 45 | 434 (59) | 12,334,086 / 122,211 | 6.1966 | 1,158 s summed |
+| claude-haiku-5-5 | 18 of 24 | 80 of 114 | 25, 21.9% | 4 of 40 (4) | 70 | 490 (96) | 14,007,252 / 351,256 | 1.8827 | 1,827 s summed |
+
+Tokens in count cache writes, cache reads and uncached input. The unusable runs: Sonnet 5.5 `auth`, `claude` part 1 and `logs` (a `new_rows` entry whose `reuse` is no allowed class, with the `superseded` pointer to the id nobody then added, or a gap or conflict whose topic is no article); Haiku 5.5 `arch`, `auth`, `dsc`, `prior-art`, `security` part 3 and `claude` part 1 (the same two kinds), after its first `claude` attempt had also hit the 0.25 USD cap (0.51 USD). On the 78 sources both models answered they gave the same outcome for 45. Where a source was unread by both, the causes are the harness's and the same for both: a live page that no longer exists, a page that renders client-side, a PDF, and memdocs pins whose brief names the Learn tool the run is not given, a gap `dispatch` has.
+
+**Bars** (`false confirms no more than the current model's`, `skipped steps no more`, `agreement within 5 points`, `turns under the 150 cap`): false confirms 4 against 4 (met, though 4 of Haiku 5.5's are rewritten facts against 1); usable runs 18 against 21, 6 unusable against 3 (FAILED); agreement 21.9% against 46.5%, 24.6 points under (FAILED); most turns in a run 96 (met). `census.DISPATCH_MODEL` stays `claude-sonnet-5-5`. At 0.30 of Sonnet 5.5's spend Haiku 5.5 read the same sources, but gave up more of them and produced results `apply` refuses more often.
+
+### The kb-census orchestrator
+
+A census of one small selection in a scratch clone: 8 sources of the held-out half in 5 owner groups plus one `blocked` row (so a correct run reports a host and creates no tag), the log, an empty fact diff log and the fact diff's commit in place, so the skill's `--resume` runs the repin, the index, the phase-1 commit and the summary. Each orchestrator was one headless session with the skill's command as the prompt, the project's settings, `--permission-mode dontAsk` with `python3 _tools/*`, `git add|commit|status|diff|log|show|tag`, `Read`, `Edit`, `Write`, `Grep`, `Glob`, `Agent` and `Skill` allowed, `--max-turns 150` and `--max-budget-usd 5.76` (the list-price estimate of an Opus 5.5 session of about 70 turns, 1.92 USD, tripled), the groups it dispatched read by `census.py dispatch` on its default model for both.
+
+```
+claude -p "/kb-census 2026-09-26 --resume" --model MODEL --output-format stream-json --verbose --no-session-persistence --max-turns 150 --max-budget-usd 5.76 --permission-mode dontAsk --strict-mcp-config --setting-sources project,local --allowedTools <the list above>
+```
+
+| step of the skill | claude-opus-5-5 (current) | claude-haiku-5-5 |
+|---|---|---|
+| conduct rules, then each phase's rule set before its phase | phases 1 and 2 asked, phase 0 not | phases 0 to 3 asked (3 before its phase) |
+| `census.py run --date D --resume`, queue block reported | yes, yes | yes, no |
+| `groups`, then `dispatch` of each of the 5 groups (not an Agent subagent) | yes, 5 of 5 | yes, 5 of 5 |
+| `apply` of each group | 4 of 5 (held one whose reader left a fact unchecked) | 5 of 5 |
+| the gate per group (`check.py`, `build_index.py --check`, `kbgit.py fix --check`, `tests.py`, `doc2query.py prune`) | `check.py` only | all but `tests.py` |
+| one commit per group with `KB-Verified` | 4 of 5 | 0 of 5 (stopped on the red gate) |
+| `finish`, phase 4 sample and checker | not reached | not reached |
+| tag: not created, reason named (blocked host, unconfirmed source) | yes | yes |
+| report: queue, buckets, outcomes per group, decisions, sample, hosts, commits, tag | 6 of 8 | 4 of 8 |
+
+| measure | claude-opus-5-5 | claude-haiku-5-5 |
+|---|---|---|
+| steps not done (the rows above that say no, not reached or less than all) | 6 | 5 |
+| group outcomes against the recorded ones (7 sources) | 5 agree, 1 false confirm | 4 agree, 0 false confirms |
+| turns (cap 150) | 31 | 31 |
+| tokens in / out (orchestrator only) | 1,459,068 / 10,951 | 1,994,108 / 16,456 |
+| total_cost_usd (orchestrator, then the 5 dispatches inside it) | 0.9460, 0.4500 | 0.0433, 0.4671 |
+| wall time (the session) | 89.5 s | 108.9 s |
+
+Both stopped before phase 3, asking the operator what to do; Opus 5.5 held the one group whose reader left a fact unchecked, Haiku 5.5 stopped on a red gate (`check.py` fails on the scratch clone's cut-down root in both runs: its anchors cite articles the restored tree lacks) before any commit. Neither ran `--force`, `--no-verify`, `submit_feedback` or a push. **Bars:** false confirms 0 against 1 and skipped steps 5 against 6 (met); turns 31 (met); outcome agreement 57.1% against 71.4%, 14.3 points under (FAILED: one flipped source of 7 is 14.3 points, and both orchestrators' groups were read by the same dispatch model, so the gap is the groups' reading run to run and no orchestrator's). The step keeps its model; the skill names none. One run each is what the 25 USD ceiling and a log of one selection allowed: it shows that Haiku 5.5 followed the skill as far as Opus 5.5 did at a 22nd of the orchestrator's spend, not that it follows it better or worse.
+
+**Spend.** The comparison cost about 14 USD in all: the two dispatch sets 8.1 (6.20 and 1.88), a first pass of 15 groups and the finished parts of a second under a setup that denied `git` on a symlinked clone cache and was thrown away (2.36 and 1.41 USD, plus sessions stopped before they reported), and the orchestrators 1.9. Each paid run followed its `--dry-run` estimate (dispatch) or the list-price estimate above (orchestrator). **Found on the way:** the result schema's `$schema` (2020-12) makes every real `claude -p --json-schema` call fail (`no schema with key or ref`), which the stub the suite uses hides; the runs above passed the schema text without the key, from a patched copy in the clone, so the commands here reproduce only with the key removed from `_tools/census_result.schema.json`.
