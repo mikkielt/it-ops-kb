@@ -1,0 +1,27 @@
+{
+  "id": "ST-si4peqq2",
+  "kind": "story",
+  "title": "A repro the backlog check refuses is refused when the bug is filed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py new bug and set --repro refuse a repro that backlog.py check refuses (a program other than python3 on a _tools/ script or inline code, such as python3 -I or grep), naming bl_intake.check_program_refusal's reason, so a bug a worker files never stops the landing's sync gate (SP-yojt6y7v: ST-zdfghdlb's and ST-t67jhly3's landings stopped at backlog.py check on five worker-filed repros).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_intake.py",
+    "_tools/test_check_programs.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v close"
+  ]
+}

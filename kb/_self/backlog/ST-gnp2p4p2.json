@@ -1,0 +1,25 @@
+{
+  "id": "ST-gnp2p4p2",
+  "kind": "story",
+  "title": "Sprint planning maps a new command's skill consumer into an item",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When a committed item adds a command a skill should run (census.py judge for /kb-census), planning puts that skill in some item's touches with a clause that the skill runs it (SP-yojt6y7v's review found the kb-census skill never runs the batch judge, so the end-to-end census ran it by hand).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v close"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-bt2hsuru",
+  "kind": "story",
+  "title": "A worker sets changes aside in its scratch directory, never in the shared git stash",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-worker role file tells a worker to set aside a change outside its touches as a patch in its scratch directory, never with git stash, whose stack every worktree shares (ST-t67jhly3 left two stash entries, st-t67jhly3-snapshot and st-t67jhly3-decisions-sweep, in the clone's shared stack).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v close"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-haaifrfk",
+  "kind": "story",
+  "title": "Sprint start names each committed item with rule-guarding touches and no gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start (or check before it) lists each committed item whose touches are agents-rule paths and that has no gate yet, so the choices its goal leaves open are asked as blocking gates before the first claim (SP-yojt6y7v: ST-yiq2heb5, ST-jkehwsu4 and ST-zdfghdlb each stopped on blocking gates their workers recorded after the code).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v close"
+  ]
+}

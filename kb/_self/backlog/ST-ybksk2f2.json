@@ -1,0 +1,25 @@
+{
+  "id": "ST-ybksk2f2",
+  "kind": "story",
+  "title": "An item whose code starts claude -p proves one capped real call before done",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "An item whose code builds a claude -p command line (a dispatch, a judge) carries a check or a done note of one capped real call on the cheapest model, beside the suite's stub, so a flag or schema the real CLI rejects is found before landing (BG-tyh3t5oj: the suite's stub accepted a $schema key the CLI refused, so every census.py dispatch run ended UNAPPLIED after ST-jlezjp6k was done).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-yojt6y7v close"
+  ]
+}
