@@ -2,7 +2,7 @@
   "id": "ST-zdfghdlb",
   "kind": "story",
   "title": "Haiku 5.5 is measured against the current model on the census's agentic steps, the phase-2 reader groups and the kb-census orchestrator, and takes each where it loses nothing that matters",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
@@ -34,5 +34,6 @@
     "ST-jlezjp6k",
     "ST-jkehwsu4"
   ],
-  "notes": "Same pricing, pinning and effort facts as ST-jkehwsu4 (public/claude/ci-and-headless.md:83-89). The agentic comparison costs more than the single-call one, so it runs after ST-jkehwsu4 and on few groups: the count is set from the dry-run estimate, and the groups are drawn from the held-out half ST-jkehwsu4 split. A smaller orchestrator matters only once sprints 1 and 2 have moved most of its work into census.py commands; before that its turns are mostly reading and editing, the work this comparison would penalise Haiku for. AGENTS.md is reviewed, not edited (its 4 KB cap). The 5-point bar is the session's proposal, open to change at the start gate. 2026-10-11 orchestrator (operator's delegate, unattended run): paid comparison runs are approved within the goal's dry-run-then-cap rule; the item's whole spend stays under 25 USD (a ceiling set without data: when the estimate for the planned set exceeds it, shrink the set and say so in the report, or stop on a gate). The orchestrator comparison (2) runs on a throwaway clone under the scratch directory: no kb content it writes is committed, only the measurements and the commands. ST-jlezjp6k landed census.py dispatch with DISPATCH_MODEL claude-sonnet-5-5 and caps 150 turns, 5.00 USD per part (its gates g1, g3)."
+  "notes": "Same pricing, pinning and effort facts as ST-jkehwsu4 (public/claude/ci-and-headless.md:83-89). The agentic comparison costs more than the single-call one, so it runs after ST-jkehwsu4 and on few groups: the count is set from the dry-run estimate, and the groups are drawn from the held-out half ST-jkehwsu4 split. A smaller orchestrator matters only once sprints 1 and 2 have moved most of its work into census.py commands; before that its turns are mostly reading and editing, the work this comparison would penalise Haiku for. AGENTS.md is reviewed, not edited (its 4 KB cap). The 5-point bar is the session's proposal, open to change at the start gate. 2026-10-11 orchestrator (operator's delegate, unattended run): paid comparison runs are approved within the goal's dry-run-then-cap rule; the item's whole spend stays under 25 USD (a ceiling set without data: when the estimate for the planned set exceeds it, shrink the set and say so in the report, or stop on a gate). The orchestrator comparison (2) runs on a throwaway clone under the scratch directory: no kb content it writes is committed, only the measurements and the commands. ST-jlezjp6k landed census.py dispatch with DISPATCH_MODEL claude-sonnet-5-5 and caps 150 turns, 5.00 USD per part (its gates g1, g3).",
+  "claimed_by": "worker-ST-zdfghdlb"
 }
