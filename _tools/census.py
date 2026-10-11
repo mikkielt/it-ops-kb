@@ -1924,6 +1924,10 @@ def owned_files(group, members):
     return sorted({rel for _, files, _ in members for rel in files if domain_of(rel) == group})
 
 
+MEMDOCS_LINE = ("MicrosoftDocs/memdocs is archived: re-source to the live Learn page (microsoft_docs_fetch), "
+                "outcome `superseded` with its new row")  # the line of a memdocs pin row that sends the reader to Learn
+
+
 def read_commands(r, ctx):
     """The lines that read a source in full: git show and git diff of a pinned file in the census clone, else the fetch
     route of its page (Learn: microsoft_docs_fetch; otherwise the provider's raw form of the url)."""
@@ -1936,8 +1940,7 @@ def read_commands(r, ctx):
                f"git -C {clone} diff {r['pin']}:{r['path']} {tip}:{moved}" if moved != r["path"]
                else f"git -C {clone} diff {r['pin']} {tip} -- {r['path']}"]
         if r["note"] == "memdocs":
-            out.append("MicrosoftDocs/memdocs is archived: re-source to the live Learn page (microsoft_docs_fetch), "
-                       "outcome `superseded` with its new row")
+            out.append(MEMDOCS_LINE)
         return out
     if r["kind"] == "learn" or urlparse(r["url"]).netloc.lower() == "learn.microsoft.com":
         return [f"microsoft_docs_fetch {r['url']}"]
@@ -2761,7 +2764,7 @@ def dispatch_plan(group, members, ctx):
             git, page = re.match(r"git -C (\S+) (?:show|diff) ", line), FETCH_LINE.fullmatch(line)
             if git:
                 clones.add(os.path.join(kbcommon.HOME, git.group(1)))
-            elif line.startswith("microsoft_docs_fetch "):
+            elif line.startswith("microsoft_docs_fetch ") or line == MEMDOCS_LINE:
                 learn.add(r["id"])
             elif page:
                 heads = HEADER.findall(page.group(2))
