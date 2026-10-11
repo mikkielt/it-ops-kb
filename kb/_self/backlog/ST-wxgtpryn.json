@@ -2,7 +2,7 @@
   "id": "ST-wxgtpryn",
   "kind": "story",
   "title": "Review sprint: Census deterministic 3: cheaper reading",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yojt6y7v",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orchestrator-yojt6y7v"
 }
