@@ -2,7 +2,7 @@
   "id": "BG-l2jdvetp",
   "kind": "bug",
   "title": "census.py dispatch grants no Learn fetch tool to a memdocs pin row whose brief tells the reader to re-source to the live Learn page",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/tools.md",
     "kb/_self/code.md",
     "kb/_self/web-sources.md"
-  ]
+  ],
+  "claimed_by": "worker-BG-l2jdvetp"
 }
