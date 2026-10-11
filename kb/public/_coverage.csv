@@ -58,6 +58,7 @@ arch/sql-auth-containers,P1,complete,arch/sql-auth-containers.md,9
 arch/texts-catalogue-formats,P1,complete,arch/texts-catalogue-formats.md,13
 arch/twelve-factor-readiness,P1,complete,arch/twelve-factor-readiness.md,12
 arch/workload-identity-onprem-k8s,P1,complete,arch/workload-identity-onprem-k8s.md,6
+arch/buildkit-build-secrets,P3,complete,arch/buildkit-build-secrets.md,4
 arch/cloudflare-tunnel-replicas-ssh-access,P3,partial,arch/cloudflare-tunnel-replicas-ssh-access.md,2
 arch/content-addressed-ids-jsonl,P3,partial,arch/content-addressed-ids-jsonl.md,30
 arch/datalog-engines-rust,P3,partial,arch/datalog-engines-rust.md,15
@@ -67,6 +68,7 @@ arch/gorules-zen-engine,P3,partial,arch/gorules-zen-engine.md,35
 arch/heartbeat-dead-man-monitors,P3,partial,arch/heartbeat-dead-man-monitors.md,3
 arch/incus-test-bed,P3,partial,arch/incus-test-bed.md,4
 arch/oxigraph-embedded-rdf,P3,partial,arch/oxigraph-embedded-rdf.md,24
+arch/uuidv7-identifiers,P3,complete,arch/uuidv7-identifiers.md,3
 arch/wireguard-hub-and-spoke,P3,complete,arch/wireguard-hub-and-spoke.md,2
 auth/configmgr-rbac-auth,P0,complete,auth/configmgr-rbac-auth.md,11
 auth/flows,P0,complete,auth/flows.md;auth/flows.csv,28
@@ -83,7 +85,7 @@ auth/ad-jit-membership,P1,complete,auth/ad-jit-membership.md,9
 auth/audit-events,P1,complete,auth/audit-events.md;auth/audit-events.csv,27
 auth/entra-intune-rbac,P1,complete,auth/entra-intune-rbac.md,7
 auth/group-claims,P1,complete,auth/group-claims.md,4
-auth/key-management-options,P1,complete,auth/key-management-options.md,19
+auth/key-management-options,P1,complete,auth/key-management-options.md,20
 auth/propagation-latency,P1,complete,auth/propagation-latency.md;auth/propagation-latency.csv,27
 auth/revocation,P1,complete,auth/revocation.md,17
 auth/role-source-options,P1,complete,auth/role-source-options.md,7
@@ -94,6 +96,13 @@ auth/delegation-kcd-obo,P2,complete,auth/delegation-kcd-obo.md,16
 auth/enterprise-access-model,P2,complete,auth/enterprise-access-model.md,7
 auth/threats,P2,complete,auth/threats.md;auth/threats.csv,11
 auth/transport-crypto,P2,complete,auth/transport-crypto.md,14
+auth/enrolment-tokens,P3,complete,auth/enrolment-tokens.md,7
+auth/http-message-signatures,P3,partial,auth/http-message-signatures.md,7
+auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,16
+auth/oauth-pkce-oidc-id-token,P3,partial,auth/oauth-pkce-oidc-id-token.md,6
+auth/postgres-column-encryption,P3,partial,auth/postgres-column-encryption.md,5
+auth/shamir-secret-sharing,P3,partial,auth/shamir-secret-sharing.md,9
+auth/sops-age-recipients,P3,complete,auth/sops-age-recipients.md,3
 autopilot/device-identity,P1,complete,autopilot/device-identity.md,12
 autopilot/device-preparation,P1,complete,autopilot/device-preparation.md;autopilot/v1-vs-v2.csv,21
 autopilot/lifecycle,P1,complete,autopilot/lifecycle.md,5

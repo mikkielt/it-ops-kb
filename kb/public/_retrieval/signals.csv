@@ -659,3 +659,30 @@ is_compatible_version,privacy/spacy-pipeline-pinning
 ModelMetaSchema,privacy/spacy-pipeline-pinning
 load_model_from_init_py,privacy/spacy-pipeline-pinning
 spacy_models,privacy/spacy-pipeline-pinning
+.sops.yaml,auth/sops-age-recipients
+creation_rules,auth/sops-age-recipients
+key_groups,auth/sops-age-recipients
+shamir_threshold,auth/sops-age-recipients
+sops updatekeys,auth/sops-age-recipients
+age-keygen,auth/sops-age-recipients
+secret-share-split,auth/shamir-secret-sharing
+secret-share-combine,auth/shamir-secret-sharing
+python-shamir-mnemonic,auth/shamir-secret-sharing
+SLIP-0039,auth/shamir-secret-sharing
+personal_access_tokens/:id/rotate,auth/issuer-token-rotation
+/user/tokens/verify,auth/issuer-token-rotation
+cfat_,auth/issuer-token-rotation
+Signature-Input,auth/http-message-signatures
+Content-Digest,auth/http-message-signatures
+RFC 9421,auth/http-message-signatures
+kubeadm token create,auth/enrolment-tokens
+bootstrap.kubernetes.io/token,auth/enrolment-tokens
+code_challenge,auth/oauth-pkce-oidc-id-token
+code_verifier,auth/oauth-pkce-oidc-id-token
+id_token,auth/oauth-pkce-oidc-id-token
+RUN --mount=type=secret,arch/buildkit-build-secrets
+--mount=type=secret,arch/buildkit-build-secrets
+uuidv7,arch/uuidv7-identifiers
+uuid_extract_timestamp,arch/uuidv7-identifiers
+pgp_sym_encrypt,auth/postgres-column-encryption
+pgcrypto,auth/postgres-column-encryption

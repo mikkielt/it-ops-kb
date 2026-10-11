@@ -2957,3 +2957,88 @@ _Agent: kb-research_
 - See privacy/spacy-pipeline-pinning.md.
 
 _Agent: kb-research_
+
+## QK-sops-age-recipients-rotation-git-history. With sops and age, how do `.sops.yaml` creation_rules, key_groups and shamir_threshold choose recipients, what do `updatekeys` and `rotate` change, and what does git history keep after a rotation?
+- `creation_rules` are matched in order on the file's path relative to the `.sops.yaml` (first match wins, a rule without `path_regex` is the catch-all); `age` takes public keys, and `key_groups` with `shamir_threshold` (0 or at least 2, default the number of groups) splits the data key so a threshold of groups, each opened by any one key, is needed. [DOC S-r3t6wvk5]
+- `sops updatekeys` applies a changed recipient list and keeps the data key; `sops rotate` makes a new data key and re-encrypts every value. [DOC S-r3t6wvk5]
+- For a compromised key the documented order is remove it, `updatekeys`, `rotate --in-place`, commit, and only then rotate the secrets inside. [DOC S-r3t6wvk5]
+- An age identity is 32 random bytes in Bech32 (`AGE-SECRET-KEY-`), the recipient is its X25519 public key (`age1...`); ssh-ed25519 and ssh-rsa keys also work. [DOC S-bi6fdfos, S-ax3gmu7j]
+- Conclusion: earlier commits stay encrypted to their own recipient set and data key, so a removed recipient can still read the versions committed while it was a recipient; removal is access control going forward and only new secret values make old commits useless. [DER S-r3t6wvk5: rotation order and the "may have had access in the past" warning]
+- Open: sops support for post-quantum age recipients. [UNK]
+- See auth/sops-age-recipients.md, auth/key-management-options.md.
+
+_Agent: kb-research_
+
+## QK-shamir-split-root-identity-holders-tools. How is a root identity shared among K of N holders with Shamir secret sharing, and which maintained tools split and recombine it?
+- Shamir's scheme gives confidentiality only: holders cannot verify shares, and raw sharing needs a uniformly random secret; sss wraps the secret in an AEAD, SLIP-0039 adds an RS1024 checksum and a digest, Vault's package adds a one-byte tag and no check. [DOC S-tmotj3si, S-ujdydznw; CODE S-pidk4hju: shamir/shamir.go#Combine]
+- `sss` and `sss-cli` (MIT, not archived, last pushed 2025-08-18 and 2025-10-26) split and combine on the command line; SLIP-0039's reference implementation `python-shamir-mnemonic` (MIT, last pushed 2024-05-16) adds two-level groups and a passphrase. [DOC S-eb3lde4q, S-qt5gzwb2, S-pkor3bz3, S-kanbehag]
+- sops key groups share the per-file data key instead of an identity, so no identity is ever recombined. [DOC S-r3t6wvk5]
+- Conclusion: a 32-byte age identity fits every tool's secret size; sharing the data key through sops key groups avoids a recombination step and replaces a holder with `updatekeys` and `rotate`, while splitting the identity needs a recombination on one host for each use. [DER S-bi6fdfos, S-tmotj3si, S-ujdydznw, S-r3t6wvk5]
+- Open: resharing to a new K or N without recombining. [UNK]
+- See auth/shamir-secret-sharing.md, auth/sops-age-recipients.md.
+
+_Agent: kb-research_
+
+## QK-issuer-token-lifetime-rotate-roll-reset. What are the lifetime ceilings and rotation calls of GitLab access tokens, Cloudflare API tokens, R2 S3 credentials and a Discord bot token, and how is a rotation verified?
+- GitLab access tokens default to 365 days, 400 days is the flagged maximum from 17.6, and `rotate` revokes the old token at once and issues one that expires after a week unless `expires_at` is set; an expired token cannot rotate itself. [DOC S-mhouxzvy, S-tef353hj, S-pu7alvhx]
+- Cloudflare tokens take an optional `not_before` and `expires_on`; "Roll" (`PUT /user/tokens/{id}/value`) invalidates the old value and keeps the permissions; `GET /user/tokens/verify` checks a token. [DOC S-pj2f4zxz, S-mk66h6ri, S-34drdif4, S-i7k2yzu3]
+- An R2 key pair is the token's `id` and the SHA-256 of its value, and temporary credentials derive from it with a TTL. [DOC S-xaij2xlf, S-azsoi3uw]
+- Discord's bot token is replaced with "Reset Token" on the Bot page. [DOC S-jnot5rsp]
+- Conclusion: all four rotations are cut-overs, not overlaps; an overlap needs a second credential, and the check is a read-only call with the new value before the old one is deleted. [DER S-tef353hj, S-mk66h6ri, S-xaij2xlf: old value invalidated by the call]
+- Open: Cloudflare TTL bounds and whether Discord's old bot token dies at reset. [UNK]
+- See auth/issuer-token-rotation.md.
+
+_Agent: kb-research_
+
+## QK-buildkit-secret-mounts-build-args-history. How do BuildKit secret mounts differ from build arguments, and what does image history keep?
+- `RUN --mount=type=secret` exposes a secret from `--secret` to one instruction (default `/run/secrets/<id>`, mode 0400) without baking it into the image. [DOC S-k2cfmmuo, S-iuwgvvo2]
+- A build argument is visible in `docker history` and in `max` provenance attestations; an `ENV` persists in containers. [DOC S-iuwgvvo2, S-wt5ys5zb]
+- Conclusion: a value that was passed as `ARG` or `ENV` and pushed is readable from the image or its attestation, so it is revoked at the issuer, not just rebuilt without. [DER S-wt5ys5zb, S-iuwgvvo2]
+- See arch/buildkit-build-secrets.md, arch/docker-secrets-run-secrets.md.
+
+_Agent: kb-research_
+
+## QK-ed25519-http-signature-created-expires-nonce-age. How are requests signed with Ed25519 over HTTP under RFC 9421 (created, expires, nonce, replay), and can an Ed25519 key be derived from an age X25519 identity?
+- `Signature-Input` names the covered components and the parameters `created`, `expires`, `nonce`, `keyid`, `alg`, `tag`; `ed25519` applies RFC 8032 Ed25519 to the signature base. [DOC S-vm4x5dhi]
+- The RFC sets no replay window: a maximum age from `created`, rejection past `expires`, nonce uniqueness and required covered headers are application requirements. [DOC S-vm4x5dhi]
+- age converts Ed25519 to X25519 for ssh-ed25519 keys; libsodium documents the same direction and recommends distinct keys for signing and encryption. [CODE S-xzzrbowg: agessh/agessh.go; DOC S-n3swpr6x]
+- Conclusion: an age identity does not yield its matching Ed25519 key, because the Montgomery `u` coordinate drops the sign of the Edwards `x`; keep an Ed25519 key as the root (age reads ssh-ed25519) or give the signer its own key. [DER S-s3lqlvdi, S-n3swpr6x, S-xzzrbowg]
+- Open: no documented key-separated derivation. [UNK]
+- See auth/http-message-signatures.md.
+
+_Agent: kb-research_
+
+## QK-single-use-enrolment-tokens-gitlab-runner-kubernetes. Are GitLab runner and Kubernetes bootstrap tokens short-lived and single-use enrolment tokens?
+- A Kubernetes bootstrap token has an optional `expiration`, a 24-hour default TTL under kubeadm (`--ttl 0` never expires), usages and groups, and no use counter. [DOC S-gblkbdxn, S-x6ikrxdb, S-ionrxcnv]
+- A GitLab runner authentication token can expire 5 minutes to 15 days after creation, is reusable across hosts, and is replaced with `reset_authentication_token`. [DOC S-fsqu2grq, S-ssfsxd2n, S-ytnvr75r]
+- Conclusion: neither is single-use; one token per host with the shortest TTL, deleted after the join, is the nearest, and a true one-time token is enforced by the enrolling service. [DER S-gblkbdxn, S-x6ikrxdb, S-fsqu2grq]
+- See auth/enrolment-tokens.md, gitlab/runner-registration.md.
+
+_Agent: kb-research_
+
+## QK-discord-oauth2-pkce-public-client-oidc-id-token. How does Discord OAuth2 with PKCE work for a public client, and how is an OIDC id_token validated?
+- RFC 7636: a 43 to 128 character verifier, `S256` challenge, `code_verifier` in the token request, `invalid_grant` on mismatch; `plain` is the default when the method is omitted. [DOC S-cc7tmfsl]
+- Discord documents PKCE in the Social SDK (code challenge at authorize, verifier at `GetToken`, **Public Client** enabled) and not on its OAuth2 topic page. [DOC S-btzqf4mj, S-fhpwukk7, S-utofkpju]
+- OIDC Core: `iss` exact, `aud` contains the client id, signature, `exp`, optional `iat` limit, `nonce` equal, and `iss` plus `sub` as the user key; Discord as relying party adds `kid`, `sub`, an `iat` within 7 days and no HMAC algorithms. [DOC S-z7jhscsu, S-xrzcvqcp]
+- Open: PKCE parameters on the plain HTTP authorize endpoint and the claims of a Discord-issued id_token. [UNK]
+- See auth/oauth-pkce-oidc-id-token.md.
+
+_Agent: kb-research_
+
+## QK-uuidv7-rfc-9562-layout-monotonicity-postgres. What is the UUIDv7 layout in RFC 9562, how is monotonicity obtained, and what does PostgreSQL's `uuidv7()` guarantee?
+- 48-bit millisecond timestamp, 4-bit version, 12-bit `rand_a`, 2-bit variant, 62-bit `rand_b`; within one millisecond order needs a counter or extra clock bits. [DOC S-chjxpvbv]
+- PostgreSQL 18's `uuidv7([shift])` uses 12 bits for a sub-millisecond fraction and each backend keeps the last timestamp it returned. [DOC S-a6c5zane; CODE S-5rgjgp6v: src/backend/utils/adt/uuid.c#get_real_time_ns_ascending]
+- Conclusion: values are strictly increasing within one session and clock-ordered across sessions; the id is not a secret and shows its creation time. [DER S-5rgjgp6v, S-chjxpvbv]
+- See arch/uuidv7-identifiers.md.
+
+_Agent: kb-research_
+
+## QK-postgres-envelope-encryption-pgcrypto-blind-index-leakage. How are Postgres columns envelope-encrypted with pgcrypto and per-site data keys, and what do blind indexes (HMAC under a separate key) leak?
+- pgcrypto runs inside the server, so key and plaintext are visible to the server's administrator; an untrusted server needs client-side encryption. [DOC S-alffetzh, S-byvcl63n]
+- Envelope encryption: a DEK per scope wrapped by a KEK kept outside the database, the wrapped DEK stored near the data; KEK rotation rewraps DEKs only. [DOC S-yvalenhr]
+- A blind index is a truncated keyed hash; it leaks equality and frequency, bounded by `C = R / 2^(sum min(L_i, K_i))` and worst for small domains. [DOC S-qt7piebc]
+- Conclusion: per-site DEKs and a separate blind-index key, both wrapped outside the database; index only high-entropy fields and keep the output short. [DER S-yvalenhr, S-qt7piebc]
+- Open: key arguments in server logs. [UNK]
+- See auth/postgres-column-encryption.md.
+
+_Agent: kb-research_

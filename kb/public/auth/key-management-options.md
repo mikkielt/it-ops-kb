@@ -3,7 +3,7 @@ topic: auth/key-management-options
 priority: P1
 applies_to: "Windows 11/Server 2025, SQL Server 2022/2025, mssql-python (main branch 2026-09), pyodbc + ODBC Driver 18, age/sops (pure-Python)"
 retrieved_utc: 2026-09-27
-sources: [S1340, S1341, S1342, S1343, S1349, S1350, S1351, S1000, S1001, S-53ajdzoj, S402, S-kqm5iv43, S-3acopzkn, S-sp6pux45, S-ax3gmu7j, S-duamtyj7, S-ftk5lzj7, S-wk6ahp72, S-zb4abl74]
+sources: [S1340, S1341, S1342, S1343, S1349, S1350, S1351, S1000, S1001, S-53ajdzoj, S402, S-kqm5iv43, S-3acopzkn, S-sp6pux45, S-ax3gmu7j, S-duamtyj7, S-ftk5lzj7, S-wk6ahp72, S-zb4abl74, S-r3t6wvk5]
 status: complete
 ---
 
@@ -74,6 +74,7 @@ Windows.
   mechanism, so a membership change (e.g. removal from a role group) does not by itself revoke a
   previously-decrypted vault key -- revocation requires re-encrypting to a new recipient list and
   distributing it, exactly as for any static-recipient scheme. [DER S1000,S1001]
+- A recipient removed from an age and sops file can still read the versions committed while it was a recipient: `updatekeys` changes who can open the file from now on, `rotate` replaces its data key, and only new secret values make older commits useless; the per-file detail, key groups and the compromised-key order are in [[sops-age-recipients]] (`auth/sops-age-recipients.md`). [DER S-r3t6wvk5: sops rotation order and its "may have had access in the past" warning]
 - The Microsoft Platform Crypto Provider key storage provider (`MS_PLATFORM_CRYPTO_PROVIDER`) keeps private
   keys in the TPM so they cannot be extracted, and is used through CNG (`NCryptOpenStorageProvider`). [DOC S-kqm5iv43]
 - SQL Server symmetric keys: to open one the caller needs some permission on the key, must not be denied
