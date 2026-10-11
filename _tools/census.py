@@ -104,7 +104,7 @@ when the cache holds none (a linked worktree reads the clone's main worktree's c
 
 judge (phase 2, before groups) sends the fact diff review items of the queue's rows, each a fact with its old and new
 passage, in batches to one model call each: `claude -p --output-format json --json-schema` with no tools and
-`--max-budget-usd` (factdiff.JUDGE_MODEL by default, factdiff.JUDGE_BATCH items or JUDGE_BATCH_CHARS characters a
+`--max-budget-usd` (STEP_MODELS['judge'] by default, factdiff.JUDGE_BATCH items or JUDGE_BATCH_CHARS characters a
 call). A call gives supported, contradicted or not enough information per fact with the sentence of the new passage
 that decides it; a `supported` whose sentence is not in the new passage is not believed. The verdicts are written to
 _census/judge-<D>.csv beside LOG (one row per fact: source_id, fact, path, verdict, sentence, model, note; a fact
@@ -116,6 +116,22 @@ tokens and USD (queue block's passages, factdiff.JUDGE_PRICE) and asks nothing. 
 `judge`) holds the verdict counts, `calls`, `failed`, the tokens of each kind and `cost-usd-micro`, the calls'
 total_cost_usd summed in millionths of a dollar. Exit 1 when a call failed (its items stay unjudged), 2 for bad
 arguments.
+
+compare measures a model against a judging step's model on a labelled set built from the log's recorded outcomes, with
+no model call until --half is given: the items are the lines the commits --from..--to rewrote whose old claim cites a
+source recorded `updated` (label changed) and the facts of sources recorded `confirmed` whose claim stands word for word
+in the file at --from and at HEAD (label unchanged), each with its passage in the source's current text from the fact diff
+cache, split by the sha256 of the source id into `tune` and `held` before any prompt is read against it. --step judge
+sends the items to the batch judge's prompt and schema (factdiff.judge_prompt, JUDGE_SCHEMA); --step check sends each
+source with its facts to the phase-4 checker's passage judgments (CHECK_TASK, the same schema): no tools, `--effort
+medium` for every model, the full model name pinned. A `supported` verdict is the prediction unchanged; the counts are
+the agreement with the labels, the false confirms (a changed unit judged supported) and the false rejects. --dry-run
+prints the set's counts and the estimated tokens and USD (factdiff.JUDGE_PRICE, else bench_core.PRICE); each call's cap is
+--max-budget-usd; the result of a run (verdicts, tokens, total_cost_usd, seconds, the model `modelUsage` names) is written
+to _cache/census/compare/ and a held-out half is judged once per model (--again overrides). --decide reads the two held-out
+results of the step's baseline model (BASELINE_MODELS) and --model and says whether the model becomes the step's default
+(STEP_MODELS): its false confirms no more than the baseline's and its agreement within COMPARE_POINTS points of it, else
+which bar failed. Exit 2 for bad arguments, a missing result or a held-out half judged already, 1 when a call failed.
 
 groups prints, as JSON, the queue's rows (the same rows) split by owner group, with no network and no model: a row goes
 to the domain (first directory under the root) of the files naming it in the tree (`rag.py src --cited`; the lines of a
@@ -183,6 +199,11 @@ KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the c
 
 REPOS = os.path.join(kbcommon.HOME, "_cache", "census", "repos")
 JUDGE_COLS = ["source_id", "fact", "path", "verdict", "sentence", "model", "note"]  # _census/judge-<date>.csv
+HAIKU_MODEL = "claude-haiku-5-5"  # pinned: the `haiku` alias moves over time (claude/ci-and-headless.md)
+BASELINE_MODELS = {"judge": factdiff.JUDGE_MODEL, "check": "claude-opus-5-5"}  # step: the model it ran on before its comparison
+# (the checker's was the orchestrator's, the model the census sessions run on)
+STEP_MODELS = {"judge": HAIKU_MODEL, "check": HAIKU_MODEL}  # step: the model it runs on now: Haiku 5.5 where it held both
+# bars on the held-out half (kb/_self/reports/fact-diff.md, "Haiku 5.5 on the census's judging steps")
 COLS = ["id", "url", "kind", "repo", "pin", "path", "retrieved_utc", "http_status", "bucket", "evidence", "proof", "note",
         "used_in", "outcome", "outcome_note"]
 BUCKETS = ("OK", "CHANGED", "GONE", "NEWER-VERSION", "NEEDS-READING")
@@ -1230,7 +1251,8 @@ def sample_brief(picked, log, a):
     n = len(picked)
     date = ql_capture.phase_date(path=log)
     text = "\n\n".join([SAMPLE_RULES.format(date=date),
-                         f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}",
+                         f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}; the checker's passage judgments "
+                         f"run on {STEP_MODELS['check']}",
                          "## Agreed by tool\n" + ("\n".join(tool) or "none"),
                          "## For the checker\n\n" + ("\n\n".join(check) or "none")])
     return text, {"checked": n, "agreed by tool": len(tool), "for the checker": len(check)}
@@ -1450,6 +1472,331 @@ def cmd_judge(a, tally):
                      {(i["source_id"], i["key"], i["path"]) for i in items})
     print(f"judge: {len(srcs)} source(s), {len(items)} review item(s): " + ", ".join(f"{k}={counts[k]}" for k in factdiff.JUDGE_VERDICTS)
           + f", unjudged={len(items) - sum(counts.values())}; {len(confirmed_ids)} source(s) confirmed with no agent")
+    print("\n".join(factdiff.judge_lines(calls)))
+    return 1 if any(c["error"] for c in calls) else 0
+
+
+# ---------------------------------------------------------------- compare: a model against a judging step's current one
+
+COMPARE_EFFORT = "medium"  # held equal across models: the Claude Code default of Haiku 5.5, Sonnet 5.5 and Opus 5.5
+COMPARE_POINTS = 5  # percentage points of agreement a candidate may lose against the current model
+COMPARE_UNCHANGED = 1  # unchanged items of each kind (word for word, best match) drawn for each changed item
+COMPARE_FACTS = 4  # facts of one source in a `check` unit
+COMPARE_COVER = 0.30  # least cover of a best-match passage an item holds: the lowest band of factdiff's labelled anchor sample
+COMPARE_DIR = os.path.join(kbcommon.HOME, "_cache", "census", "compare")  # one result file per step, model and half
+CHECK_TASK = """\
+You are the independent check of a census of knowledge-base facts: a context that did not rewrite them. Each numbered \
+source gives its facts, each with the passage of the source's current text that best matches it. Judge from these \
+passages only; you have no page and no tool.
+- supported: every fact of the source is stated by its passage: the same claim, wording may differ.
+- contradicted: a passage states something that conflicts with a fact.
+- not enough information: a passage neither states nor contradicts a fact, or you cannot settle it from it. When in \
+doubt choose this: a wrong `supported` is the one error that costs.
+`sentence` is the one sentence of a passage that decides the source, copied exactly. Return JSON only: \
+{"verdicts": [{"n": 1, "verdict": "supported", "sentence": "..."}]}, one entry per source."""
+
+
+def rewritten_pairs(base, end):
+    """[(path, old line, new line)] of the Markdown and CSV lines the commits `base`..`end` replaced by a line (a hunk of
+    as many removed as added lines, paired in order), paths relative to the root under census (a layout with the root
+    at the repository's top is read too); ledgers, README.md and dot files left out. Raises ValueError on a bad revision."""
+    code, out, err = g(kbcommon.HOME, "diff", "-U0", "--no-color", "--no-renames", base, end, "--", "*.md", "*.csv")
+    if code:
+        raise ValueError(err or f"git diff {base} {end} failed")
+    prefix = kbcommon.repo_rel(KB).rstrip("/") + "/"
+    pairs, path, minus, plus = [], None, [], []
+
+    def close():
+        if path and minus and len(minus) == len(plus):
+            pairs.extend((path, a, b) for a, b in zip(minus, plus))
+
+    for line in out.splitlines():
+        if line.startswith("+++ "):
+            close()
+            minus, plus = [], []
+            path = line[6:] if line.startswith("+++ b/") else None
+            path = path[len(prefix):] if path and path.startswith(prefix) else path
+            if path and (path == "README.md" or any(p.startswith(("_", ".")) for p in path.split("/"))):
+                path = None
+        elif line.startswith("@@"):
+            close()
+            minus, plus = [], []
+        elif line.startswith("-") and not line.startswith("---"):
+            minus.append(line[1:])
+        elif line.startswith("+"):
+            plus.append(line[1:])
+    close()
+    return pairs
+
+
+def half_of(sid):
+    """`tune` or `held` for a source id: the parity of the first byte of its sha256, so a source's facts stay in one half
+    and the split exists before any prompt is read against it."""
+    return "held" if hashlib.sha256(sid.encode("utf-8")).digest()[0] & 1 else "tune"
+
+
+def labelled_set(rows, base, end, seed=1):
+    """The labelled items, from recorded census outcomes only, each `{source_id, key, path, fact, old, new, how, label,
+    half}` shaped as a fact diff review item (`fact`, `old`, `new`):
+    - changed: a line the commits `base`..`end` rewrote, whose old claim cites a source the census log records `updated`
+      (the old claim, the passage of that source's current text it best matches, at COMPARE_COVER at least);
+    - unchanged: a fact of a source recorded `confirmed` whose claim stands word for word in its file at `base`, as it
+      does at HEAD: its anchor's passage found word for word in the source's current text, or the best match (as
+      `current_passage`); for each changed item COMPARE_UNCHANGED of each kind, drawn by a seeded hash.
+    The documents are the fact diff cache's: no network, no model."""
+    upd = {r["id"] for r in rows if r["outcome"] == "updated"}
+    conf = {r["id"] for r in rows if r["outcome"] == "confirmed"}
+    docs = {}
+
+    def doc(sid):
+        if sid not in docs:
+            d = factdiff.load_json(factdiff.cache_path(sid, shared=True)) or {}
+            docs[sid] = factdiff.Doc(d["text"]) if d.get("status") == 200 and d.get("text") else None
+        return docs[sid]
+
+    def passage_of(sid, anchor, claim):
+        """(passage, how) as `current_passage`, with a best match below COMPARE_COVER given up."""
+        got, how = current_passage(doc(sid), anchor, claim)
+        return (None, "") if got and how != WORD and doc(sid).score(claim)[1] < COMPARE_COVER else (got, how)
+
+    changed, seen = [], set()
+    for path, old, new in rewritten_pairs(base, end):
+        claim = factdiff.fact_text(old)
+        if len(claim.split()) < 6 or claim == factdiff.fact_text(new):
+            continue
+        for sid in sorted(set(kbid.SOURCE_ID.findall(old)) & upd):
+            passage, how = passage_of(sid, None, claim)
+            key = kbfacts.fact_key(old)
+            if passage and (sid, path, key) not in seen:
+                seen.add((sid, path, key))
+                changed.append({"source_id": sid, "key": key, "path": path, "fact": claim, "old": None, "new": passage,
+                                "how": how, "label": "changed"})
+                break
+    prefix = kbcommon.repo_rel(KB).rstrip("/") + "/"
+    at_base = {}
+
+    def text_at_base(path):
+        if path not in at_base:
+            got = next((o for c, o, _ in (g(kbcommon.HOME, "show", f"{base}:{p}") for p in (prefix + path, path)) if c == 0), "")
+            at_base[path] = " ".join(kbfacts.TAG.sub(" ", got).split())
+        return at_base[path]
+
+    facts, anchors, pool = factdiff.cited_facts(), factdiff.read_anchors(), []
+    for sid in sorted(conf):
+        for key, rel, _line, text in facts.get(sid, []):
+            claim = factdiff.fact_text(text)
+            if len(claim.split()) < 6 or " ".join(claim.split()) not in text_at_base(rel):
+                continue
+            passage, how = passage_of(sid, anchors.get((key, rel, sid)), claim)
+            if passage:
+                pool.append({"source_id": sid, "key": key, "path": rel, "fact": claim, "old": None, "new": passage,
+                             "how": how, "label": "unchanged"})
+    pool.sort(key=lambda it: hashlib.sha256(f"{seed}:{it['source_id']}:{it['key']}".encode("utf-8")).hexdigest())
+    n = COMPARE_UNCHANGED * len(changed)
+    out = changed + [it for how in (WORD, "best match") for it in [p for p in pool if p["how"] == how][:n]]
+    for it in out:
+        it["half"] = half_of(it["source_id"])
+    return sorted(out, key=lambda it: (it["label"], kbid.sort_key(it["source_id"]), it["path"], it["key"]))
+
+
+def check_units(items):
+    """One unit per source of `items` for the `check` step: its first COMPARE_FACTS facts (by key) with their passages,
+    shaped as a review item whose `fact` and `new` hold them; the source's label and half are its items'."""
+    by = defaultdict(list)
+    for it in items:
+        by[it["source_id"]].append(it)
+    out = []
+    for sid, its in sorted(by.items(), key=lambda kv: kbid.sort_key(kv[0])):
+        its = sorted(its, key=lambda i: i["key"])[:COMPARE_FACTS]
+        out.append({"source_id": sid, "key": sid, "path": its[0]["path"], "label": its[0]["label"], "half": its[0]["half"],
+                    "facts": [(i["fact"], i["new"]) for i in its], "fact": " ".join(i["fact"] for i in its), "old": None,
+                    "new": "\n".join(i["new"] for i in its)})
+    return out
+
+
+def check_prompt(batch):
+    """The `check` step's whole input: the task, then each source as `### n` with its facts and passages."""
+    parts = [CHECK_TASK]
+    for n, u in enumerate(batch, 1):
+        parts.append(f"### {n}\n" + "\n".join(f"fact {k}: {f}\npassage {k}: {p}" for k, (f, p) in enumerate(u["facts"], 1)))
+    return "\n\n".join(parts)
+
+
+def compare_rate(model):
+    """(USD per MTok in, out) of `model`: factdiff.JUDGE_PRICE, else the benchmark tooling's table (bench_core.PRICE,
+    the first tier), else None."""
+    if model in factdiff.JUDGE_PRICE:
+        return factdiff.JUDGE_PRICE[model]
+    try:
+        import bench_core
+        return tuple(bench_core.PRICE[model][0][1:3])
+    except (ImportError, KeyError):
+        return None
+
+
+def compare_estimate(batches, prompt_of, model):
+    """`factdiff.judge_estimate`'s record for `batches` of units whose call text is `prompt_of(batch)`, priced by
+    `compare_rate`: no network, no model."""
+    cpt, rate = kbusage.CHARS_PER_TOKEN, compare_rate(model)
+    ins = [len(prompt_of(b)) // cpt + factdiff.JUDGE_CALL_TOKENS for b in batches]
+    outs = [len(b) * factdiff.JUDGE_REPLY_TOKENS for b in batches]
+    cost = [(i * rate[0] + o * rate[1]) / 1e6 for i, o in zip(ins, outs)] if rate else []
+    return {"batches": len(batches), "items": sum(len(b) for b in batches), "input_tokens": sum(ins), "output_tokens": sum(outs),
+            "usd": round(sum(cost), 4) if rate else None, "cap_usd": factdiff.call_cap(max(cost)) if cost else None}
+
+
+def compare_call(prompt, model, cap_usd):
+    """`factdiff.judge_call` at COMPARE_EFFORT: the `judge_result` of one tool-less call, with the seconds it took and the
+    models its `modelUsage` names (the model actually served, not the one asked for)."""
+    t0, models = time.monotonic(), []
+    with tempfile.TemporaryDirectory() as cwd:
+        try:
+            p = subprocess.run([*factdiff.judge_argv(model, cap_usd), "--effort", COMPARE_EFFORT], input=prompt, cwd=cwd,
+                               capture_output=True, text=True, encoding="utf-8", timeout=factdiff.JUDGE_TIMEOUT_S)
+        except (OSError, subprocess.SubprocessError) as e:
+            return {"verdicts": None, "cost_usd": 0.0, "usage": {}, "error": f"{type(e).__name__}: {e}"[:200],
+                    "wall_s": round(time.monotonic() - t0, 1), "models": []}
+    got = factdiff.judge_result(p.stdout)
+    try:
+        use = json.loads(p.stdout).get("modelUsage")
+        models = sorted(use) if isinstance(use, dict) else []
+    except (ValueError, AttributeError):
+        pass
+    if got["error"] and not p.stdout.strip():
+        got["error"] = (p.stderr.strip().splitlines() or [f"claude -p exited {p.returncode}"])[-1][:200]
+    return {**got, "wall_s": round(time.monotonic() - t0, 1), "models": models}
+
+
+def compare_run(units, prompt_of, model, size, jobs, cap_usd, call=None):
+    """(verdicts, calls) of `units` judged in batches of one call each: `verdicts` is {index in `units`: {verdict,
+    sentence, note}} (`factdiff.judge_verdicts`, so a `supported` needs its sentence in the passage), `calls` one record per
+    batch: {items, cost_usd, usage, error, wall_s, models}. `call` replaces compare_call."""
+    call = call or compare_call
+    at, batches = 0, []
+    for b in factdiff.judge_batches(units, size):
+        batches.append((at, b))
+        at += len(b)
+
+    def one(job):
+        return call(prompt_of(job[1]), model, cap_usd or compare_estimate([job[1]], prompt_of, model)["cap_usd"]
+                    or factdiff.JUDGE_CAP_FLOOR_USD)
+
+    with cf.ThreadPoolExecutor(max(1, min(jobs, len(batches) or 1))) as ex:
+        replies = list(ex.map(one, batches))
+    verdicts, calls = {}, []
+    for (start, b), reply in zip(batches, replies):
+        got = factdiff.judge_verdicts(b, reply["verdicts"] or [])
+        verdicts.update({start + k: v for k, v in got.items()})
+        calls.append({"items": len(b), "cost_usd": reply["cost_usd"], "usage": reply["usage"], "wall_s": reply.get("wall_s", 0),
+                      "models": reply.get("models", []), "error": reply["error"] or ("" if got or not b else "no entry matched an item")})
+    return verdicts, calls
+
+
+def compare_scores(units, verdicts):
+    """The agreement of `verdicts` with the units' labels: a `supported` is the prediction `unchanged`, anything else
+    (including no verdict: the unit goes to a reader) `changed`. Counts: units, changed, unchanged, agree, false_confirms
+    (a changed unit judged supported, the error that dates a stale fact), false_rejects, unjudged."""
+    s = Counter(units=len(units))
+    for i, u in enumerate(units):
+        v = (verdicts.get(i) or {}).get("verdict")
+        predicted = "unchanged" if v == "supported" else "changed"
+        s[u["label"]] += 1
+        s["agree"] += predicted == u["label"]
+        s["false_confirms"] += predicted == "unchanged" and u["label"] == "changed"
+        s["false_rejects"] += predicted == "changed" and u["label"] == "unchanged"
+        s["unjudged"] += v is None
+    return {k: s[k] for k in ("units", "changed", "unchanged", "agree", "false_confirms", "false_rejects", "unjudged")}
+
+
+def compare_path(step, model, half):
+    return os.path.join(COMPARE_DIR, f"{step}-{model}-{half}.json")
+
+
+def compare_decide(step, model):
+    """(lines, default model) of the two held-out results of `step`: the step's current model and `model`. The candidate
+    becomes the default only when its false confirms are no more than the current model's and its agreement is within
+    COMPARE_POINTS of it; else the line names the bar that failed."""
+    cur, res = BASELINE_MODELS[step], {}
+    for m in (cur, model):
+        try:
+            with open(compare_path(step, m, "held"), encoding="utf-8") as f:
+                res[m] = json.load(f)
+        except (OSError, ValueError):
+            return [f"no held-out result of {step} for {m}: run `compare --step {step} --model {m} --half held` first"], None
+    c, n = res[cur]["scores"], res[model]["scores"]
+    pct = lambda r: 100.0 * r["agree"] / r["units"] if r["units"] else 0.0  # noqa: E731
+    fc_ok = n["false_confirms"] <= c["false_confirms"]
+    ag_ok = pct(c) - pct(n) <= COMPARE_POINTS
+    out = [f"{step}: {m} agreement {r['agree']}/{r['units']} = {pct(r):.1f}%, false confirms {r['false_confirms']}/{r['changed']}, "
+           f"usd {sum(x['cost_usd'] for x in res[m]['calls']):.4f}" for m, r in ((cur, c), (model, n))]
+    out.append(f"bar false confirms no more than {cur}'s: {'met' if fc_ok else 'FAILED'} ({n['false_confirms']} vs {c['false_confirms']})")
+    out.append(f"bar agreement within {COMPARE_POINTS} points of {cur}: {'met' if ag_ok else 'FAILED'} "
+               f"({pct(n) - pct(c):+.1f} points)")
+    ok = fc_ok and ag_ok
+    out.append(f"{step}: default {model}" if ok else f"{step}: keeps {cur}: " + " and ".join(
+        b for b, met in (("false confirms above the current model's", fc_ok), (f"agreement more than {COMPARE_POINTS} points below it", ag_ok))
+        if not met))
+    return out, model if ok else cur
+
+
+def cmd_compare(a, tally):
+    if a.step not in BASELINE_MODELS:
+        print(f"--step: one of {', '.join(BASELINE_MODELS)}")
+        return 2
+    if a.decide:
+        lines, default = compare_decide(a.step, a.model)
+        print("\n".join(lines))
+        return 0 if default else 2
+    if not os.path.isfile(a.log):
+        print(f"no census log {a.log}")
+        return 2
+    if not a.half or not a.base or not a.end:
+        print("compare needs --half, --from and --to (or --decide)")
+        return 2
+    size = a.batch_size or factdiff.JUDGE_BATCH
+    if size < 1 or a.max_budget_usd is not None and a.max_budget_usd <= 0:
+        print("--batch-size and --max-budget-usd must be positive")
+        return 2
+    try:
+        items = labelled_set(read_log(a.log), a.base, a.end, a.seed)
+    except ValueError as e:
+        print(f"bad revision: {e}")
+        return 2
+    units = [u for u in (check_units(items) if a.step == "check" else items) if u["half"] == a.half]
+    prompt_of = check_prompt if a.step == "check" else factdiff.judge_prompt
+    counts = Counter((it["half"], it["label"]) for it in (check_units(items) if a.step == "check" else items))
+    print(f"labelled set ({a.step}, seed {a.seed}, {a.base}..{a.end}): " + ", ".join(
+        f"{h} {lab}={counts[(h, lab)]}" for h in ("tune", "held") for lab in ("changed", "unchanged")))
+    est = compare_estimate(factdiff.judge_batches(units, size), prompt_of, a.model)
+    if a.dry_run:
+        print("\n".join(factdiff.estimate_lines(est, a.model, f"{a.step} step, {a.half} half, {len(units)} unit(s)")))
+        return 0
+    if a.max_budget_usd is None and est["cap_usd"] is None:
+        print(f"no price for {a.model}: pass --max-budget-usd")
+        return 2
+    out = compare_path(a.step, a.model, a.half)
+    if a.half == "held" and os.path.exists(out) and not a.again:
+        print(f"the held-out half was judged once by {a.model} for {a.step} ({kbcommon.repo_rel(out)}): --again judges it again")
+        return 2
+    t0 = time.monotonic()
+    verdicts, calls = compare_run(units, prompt_of, a.model, size, a.jobs, a.max_budget_usd)
+    wall = round(time.monotonic() - t0, 1)
+    scores = compare_scores(units, verdicts)
+    factdiff.judge_tally(tally, verdicts, calls)
+    served = sorted({m for c in calls for m in c["models"]})
+    record = {"step": a.step, "model": a.model, "served": served, "effort": COMPARE_EFFORT, "half": a.half, "base": a.base,
+              "end": a.end, "seed": a.seed, "batch": size, "jobs": a.jobs, "wall_s": wall, "scores": scores, "calls": calls,
+              "verdicts": [{"source_id": u["source_id"], "key": u["key"], "label": u["label"],
+                            "verdict": (verdicts.get(i) or {}).get("verdict", ""), "note": (verdicts.get(i) or {}).get("note", "")}
+                           for i, u in enumerate(units)]}
+    os.makedirs(COMPARE_DIR, exist_ok=True)
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(record, f, indent=1)
+    s = scores
+    print(f"compare step={a.step} model={a.model} served={','.join(served) or '-'} effort={COMPARE_EFFORT} half={a.half}: "
+          f"units={s['units']} changed={s['changed']} unchanged={s['unchanged']} agree={s['agree']}/{s['units']} "
+          f"({100.0 * s['agree'] / s['units'] if s['units'] else 0:.1f}%) false-confirms={s['false_confirms']}/{s['changed']} "
+          f"false-rejects={s['false_rejects']} unjudged={s['unjudged']} wall={wall}s jobs={a.jobs}")
     print("\n".join(factdiff.judge_lines(calls)))
     return 1 if any(c["error"] for c in calls) else 0
 
@@ -2525,11 +2872,28 @@ def main():
                                       "fact supported is confirmed with no agent")
     jd.add_argument("log")
     jd.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items are judged (default as for summary)")
-    jd.add_argument("--model", default=factdiff.JUDGE_MODEL, help=f"the model of each call (default {factdiff.JUDGE_MODEL})")
+    jd.add_argument("--model", default=STEP_MODELS["judge"], help=f"the model of each call (default {STEP_MODELS['judge']})")
     jd.add_argument("--batch-size", type=int, metavar="N", help=f"items per call (default {factdiff.JUDGE_BATCH})")
     jd.add_argument("--max-budget-usd", type=float, metavar="USD", help="each call's cap (default: its estimate, tripled)")
     jd.add_argument("--jobs", type=int, default=4, help="parallel calls (default 4)")
     jd.add_argument("--dry-run", action="store_true", help="print the batch count and the estimated tokens and USD, ask nothing")
+    cp = sub.add_parser("compare", help="a model against a judging step's current one on a labelled set built from the log's "
+                                        "recorded outcomes (paid unless --dry-run or --decide)")
+    cp.add_argument("log")
+    cp.add_argument("--step", required=True, choices=list(BASELINE_MODELS),
+                    help="judge: the batch judge of review items; check: the phase-4 checker's passage judgments")
+    cp.add_argument("--model", default=HAIKU_MODEL, help=f"the model asked (default {HAIKU_MODEL}); --decide compares it "
+                                                         "with the step's baseline model")
+    cp.add_argument("--half", choices=("tune", "held"), help="the half of the split to judge: the held-out half is judged once")
+    cp.add_argument("--from", dest="base", metavar="REV", help="the revision before the census's phase-2 edits")
+    cp.add_argument("--to", dest="end", metavar="REV", help="the revision after them")
+    cp.add_argument("--seed", type=int, default=1, help="the seed of the unchanged items' draw (default 1)")
+    cp.add_argument("--batch-size", type=int, metavar="N", help=f"units per call (default {factdiff.JUDGE_BATCH})")
+    cp.add_argument("--max-budget-usd", type=float, metavar="USD", help="each call's cap (default: its estimate, tripled)")
+    cp.add_argument("--jobs", type=int, default=4, help="parallel calls (default 4)")
+    cp.add_argument("--dry-run", action="store_true", help="print the set's counts and the estimated tokens and USD, ask nothing")
+    cp.add_argument("--again", action="store_true", help="judge a held-out half a model already judged")
+    cp.add_argument("--decide", action="store_true", help="read the two held-out results and print which bar the model meets")
     gp = sub.add_parser("groups", help="phase 2: the rows to read split into owner groups, as JSON")
     gp.add_argument("log")
     gp.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default as for "
@@ -2572,6 +2936,7 @@ def main():
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
     cmds = {**PHASES, "sample": cmd_sample, "baselines": cmd_baselines, "summary": cmd_summary, "groups": cmd_groups, "brief": cmd_brief,
+            "compare": cmd_compare,
             "apply": cmd_apply, "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):

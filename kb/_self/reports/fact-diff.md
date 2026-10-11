@@ -126,3 +126,42 @@ Both runs read 3,013 sources on 191 hosts. Exit 1 is facts to review, no failure
 **Verdicts agree.** Of the 98 decided by git, 97 were `unchanged` (version id) before and 1 was `changed` (version id) with no commit of its file since the baseline day; the log's other differences are the 16 above, none a Learn source. The 24 github.com pages with signal `git` in both logs are the clone-cache signal of the github.com wiki and repository-home rows, unchanged by this work.
 
 **What a request costs now.** The per-source cost of the git route is one `ls-tree` and one `git log --since` in the clone: the verdicts of all 140 mapped sources took 3.3 s in the warm clones, against about 154 s of requests at one per 1.1 s. The route's reach is the map's: more entries in `LEARN_MAP` move more sources off the 1.1 s per request path, and a docset with no public repository (intune: `MicrosoftDocs/memdocs` is archived) stays on it.
+
+## Haiku 5.5 on the census's judging steps, 2026-10-11
+
+Two census steps are one model call with no tools: the batch judge of fact diff review items (`census.py judge`, step `judge`) and the phase-4 checker's passage judgments (`census.py sample --brief`, step `check`). Haiku 5.5 (`claude-haiku-5-5`) was measured against the model each step ran on, `claude-sonnet-5-5` for the judge and `claude-opus-5-5` (the model the census sessions run on) for the checker, and became the default of both: `census.STEP_MODELS`. `factdiff.py review --judge` keeps `factdiff.JUDGE_MODEL`.
+
+**Labelled set.** Built by `census.labelled_set` from the committed 2026-09-26 census log and its history, with no model: the label is the recorded outcome, not either model's reading.
+
+| label | what it is | count |
+|---|---|---|
+| changed | a line the commits `df9030ac7..ece4bf732` (phase 1 verdicts to the readers' edits) rewrote whose old claim cites a source the log records `updated`, with the passage of that source's cached current text it best matches (cover 0.30 at least) | 48 |
+| unchanged | a fact of a source the log records `confirmed` whose claim stands word for word in its file at `df9030ac7` and at HEAD, so no phase-4 fix or later audit rewrote it: 48 with the anchor's passage found word for word in the current text, 48 with the best match | 96 |
+
+The set is split by the parity of the first byte of the sha256 of the source id (a source's facts stay in one half) before any prompt was read against it: `tune` 19 changed and 56 unchanged facts, `held` 29 and 40; for the checker one unit is a source with up to 4 of its facts, `tune` 12 sources changed and 38 unchanged, `held` 19 and 26. The held-out half was judged once per model (`compare` refuses a second run without `--again`); the tune half was run for a pilot, and the set's definition changed once after the first pilot: the first unchanged items were best matches only, and every model judged every checker source not supported, so the check had no variance; the draw now takes the word-for-word and the best-match items in equal numbers. The prompts and schema were not edited after that. Limits: the passages are those of the cached documents of 2026-10-11, not of the census day; the models see no old passage (`old: -`), which a production review item carries; a rewritten claim and a best-match passage are often only lexically close, so both models answer `not enough information` for most unchanged facts that are a synthesis of a page (the false rejects below), which the labels do not call errors of the page; `agreed in phase 4` is not recorded per source (the commits give counts only), so `unchanged` is "confirmed and never rewritten since", a proxy that cannot see a checker's silent agreement.
+
+**Run.** Prompt and schema as the steps use them: `factdiff.judge_prompt` and `JUDGE_SCHEMA` for the judge; `census.CHECK_TASK`, the checker's rules for passages alone, and the same schema for the checker; batches of 20 units; `claude -p --tools "" --effort medium --output-format json --json-schema --max-budget-usd` with hooks, plugins and MCP off, in an empty directory, 4 calls at a time; effort `medium` is the Claude Code default of Haiku 5.5, Sonnet 5.5 and Opus 5.5 and was passed to all three. Each result's `modelUsage` named the model asked for. A `supported` verdict counts only when its sentence is in the passage, as in `census.py judge`; a unit with no verdict counts as not supported (none occurred).
+
+```
+python3 _tools/census.py compare kb/public/_census/2026-09-26.csv --step judge --model claude-haiku-5-5 --half held --from df9030ac7 --to ece4bf732 --dry-run
+python3 _tools/census.py compare kb/public/_census/2026-09-26.csv --step judge --model claude-haiku-5-5 --half held --from df9030ac7 --to ece4bf732 --max-budget-usd 0.10
+python3 _tools/census.py compare kb/public/_census/2026-09-26.csv --step judge --model claude-haiku-5-5 --decide
+```
+
+The same with `--model claude-sonnet-5-5` for the judge's baseline, and `--step check` with `claude-haiku-5-5` and `claude-opus-5-5` (`--max-budget-usd 0.20`, the dry run's cap per call 0.19); `claude-sonnet-5-5` also ran on the check as a reference. Each paid run followed its `--dry-run`; the estimates were 0.005 USD (Haiku) and 0.10 (Sonnet) for the judge's held-out half and 0.15 for the Opus check.
+
+**Held-out half, judged once.** False confirms are changed units judged supported (the error that dates a stale fact); false rejects are unchanged units not judged supported. Tokens: cache-write plus cache-read plus uncached input, then output.
+
+| step | model | units (changed / unchanged) | agreement | false confirms | false rejects | tokens in / out | total_cost_usd | wall time (4 calls at a time) |
+|---|---|---|---|---|---|---|---|---|
+| judge | claude-sonnet-5-5 (baseline) | 69 (29 / 40) | 41 of 69, 59.4% | 3 of 29 | 25 | 25,928 / 4,706 | 0.1338 | 9.5 s |
+| judge | claude-haiku-5-5 | 69 (29 / 40) | 46 of 69, 66.7% | 3 of 29 | 20 | 29,030 / 15,665 | 0.0128 | 22.1 s |
+| check | claude-opus-5-5 (baseline) | 45 (19 / 26) | 19 of 45, 42.2% | 3 of 19 | 23 | 21,961 / 4,957 | 0.2494 | 23.9 s |
+| check | claude-haiku-5-5 | 45 (19 / 26) | 21 of 45, 46.7% | 3 of 19 | 21 | 23,717 / 17,705 | 0.0130 | 30.8 s |
+| check | claude-sonnet-5-5 (reference) | 45 (19 / 26) | 22 of 45, 48.9% | 3 of 19 | 20 | 21,385 / 3,703 | 0.1099 | 10.4 s |
+
+**Bars.** `census.py compare ... --decide` prints, for the judge: false confirms 3 against 3 (met), agreement +7.2 points against Sonnet 5.5 (met), default `claude-haiku-5-5`; for the checker: 3 against 3 (met), +4.4 points against Opus 5.5 (met), default `claude-haiku-5-5`. Haiku 5.5 held both bars on both steps at about a tenth of the judge's spend and a nineteenth of the checker's. It was slower: thinking cannot be turned off, and it wrote 3 to 5 times the output tokens of the others, so the wall time was 2.3 times Sonnet 5.5's on the judge and 1.3 times Opus 5.5's on the checker. The sets are small: a gap of 3 false confirms in 29 or in 19 units is inside the noise, and the agreement gaps are 5 and 2 units, so the result says that Haiku 5.5 lost nothing the set can see, not that the models are equal. The tune-half pilots (two sets, the same models) gave 0 to 2 false confirms for every model and 28 to 48% agreement.
+
+**Spend.** All paid runs of the item, pilots, a two-batch diagnostic of raw replies and the held-out half: 1.35 USD, each call under its `--max-budget-usd` cap; no call failed.
+
+**Not measured.** The checker opens a page when a passage does not settle a fact; that tool use was not part of the call, so Haiku 5.5 is the default of the passage judgments only, and a read of a page stays with the orchestrator's model. The `factdiff.py review --judge` entry point and `kb-census`'s skill text are unchanged by this measurement.

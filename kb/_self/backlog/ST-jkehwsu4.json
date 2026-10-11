@@ -31,6 +31,73 @@
     "ST-xy2euufe",
     "ST-yiq2heb5"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What stands for 'agreed in phase 4' in the unchanged label, since the census records the sample's counts and no per-source result?",
+      "options": [
+        "A fact of a source recorded confirmed whose claim stands word for word in its file before the census's phase-2 edits and at HEAD (no phase-4 fix or later audit rewrote it)",
+        "Only facts of sources a seeded census.py sample would pick, re-judged by a fresh checker now"
+      ],
+      "recommendation": "A fact of a source recorded confirmed whose claim stands word for word in its file before the census's phase-2 edits and at HEAD (no phase-4 fix or later audit rewrote it)",
+      "class": "design",
+      "answer": "A fact of a source recorded confirmed whose claim stands word for word in its file before the census's phase-2 edits and at HEAD (no phase-4 fix or later audit rewrote it)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How is the labelled set composed and split, and which cover and effort are held?",
+      "options": [
+        "Changed: lines the phase-2 commits rewrote citing an updated source, passage cover 0.30 at least; unchanged: one word-for-word and one best-match fact of confirmed sources per changed item; split by sha256 parity of the source id; effort medium for every model",
+        "Changed and unchanged by item rather than by source, cover 0.40 (the anchor cut), effort high"
+      ],
+      "recommendation": "Changed: lines the phase-2 commits rewrote citing an updated source, passage cover 0.30 at least; unchanged: one word-for-word and one best-match fact of confirmed sources per changed item; split by sha256 parity of the source id; effort medium for every model",
+      "class": "design",
+      "answer": "Changed: lines the phase-2 commits rewrote citing an updated source, passage cover 0.30 at least; unchanged: one word-for-word and one best-match fact of confirmed sources per changed item; split by sha256 parity of the source id; effort medium for every model",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which model is the phase-4 checker's current model, which the census never pinned?",
+      "options": [
+        "claude-opus-5-5, the model the census sessions run on (Agent-tool subagents inherit the orchestrator's)",
+        "claude-sonnet-5-5, the default Sonnet"
+      ],
+      "recommendation": "claude-opus-5-5, the model the census sessions run on (Agent-tool subagents inherit the orchestrator's)",
+      "class": "design",
+      "answer": "claude-opus-5-5, the model the census sessions run on (Agent-tool subagents inherit the orchestrator's)",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Where does a step's default model live when Haiku 5.5 holds the bars, given factdiff.py is outside the item's touches?",
+      "options": [
+        "census.STEP_MODELS in census.py: census.py judge defaults to it and sample --brief names the checker's model; factdiff.JUDGE_MODEL (factdiff.py review --judge) and the kb-census skill text are left for a follow-up bug",
+        "factdiff.JUDGE_MODEL itself, which census.py judge read before"
+      ],
+      "recommendation": "census.STEP_MODELS in census.py: census.py judge defaults to it and sample --brief names the checker's model; factdiff.JUDGE_MODEL (factdiff.py review --judge) and the kb-census skill text are left for a follow-up bug",
+      "class": "agents-rule",
+      "answer": "census.STEP_MODELS in census.py: census.py judge defaults to it and sample --brief names the checker's model; factdiff.JUDGE_MODEL (factdiff.py review --judge) and the kb-census skill text are left for a follow-up bug",
+      "by": "operator"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How is a phase-4 checker unit built and scored in the comparison, and how is a unit with no verdict counted?",
+      "options": [
+        "One unit per source with its first 4 facts by key and their passages, one prompt (census.CHECK_TASK) and the batch judge's schema; supported means agree; a unit with no verdict counts as not supported",
+        "One unit per fact, scored like the batch judge"
+      ],
+      "recommendation": "One unit per source with its first 4 facts by key and their passages, one prompt (census.CHECK_TASK) and the batch judge's schema; supported means agree; a unit with no verdict counts as not supported",
+      "class": "design",
+      "answer": "One unit per source with its first 4 facts by key and their passages, one prompt (census.CHECK_TASK) and the batch judge's schema; supported means agree; a unit with no verdict counts as not supported",
+      "by": "agent"
+    }
+  ],
   "notes": "Why: the census's model-run steps run on the orchestrator's model today (Agent-tool subagents inherit it), and list prices per million tokens are Opus 5.5  in /  out, Sonnet 5.5  / , Haiku 4.5  /  (public/claude/ci-and-headless.md:88-89, S2131); Haiku 5.5's price is not in the kb on 2026-10-10 (rag.py pack 'Haiku 5.5 list price per million tokens' gives only its effort and id lines, ci-and-headless.md:83, :85), so the sprint's research story fills it before the comparison is priced. The haiku alias resolves to Haiku 5.5 from Claude Code v2.1.293 and moves over time, so runs pin claude-haiku-5-5 (ci-and-headless.md:85, S-ezqg74ki). Haiku 5.5's default effort is medium and thinking cannot be turned off (ci-and-headless.md:83-84): the comparison holds effort equal across models and records it. Reuse the benchmark tooling's pricing (bench_core list_usd; ST-rtmwsqgj fixes its dated-key KeyError) rather than a second price table. Quality premise: the held-out half is judged once, after the prompt is fixed on the tuning half, as the planning rules ask of a goal that names a quality of answers. The 5-point bar and the false-confirm rule are the session's proposal for 'no meaningful loss', open to change at the start gate. 2026-10-11 orchestrator (operator's delegate, unattended run): paid comparison runs are approved; each run keeps the goal's dry-run estimate and --max-budget-usd cap, and the item's whole spend stays under 15 USD (a ceiling set without data: stop and record a gate if the estimate exceeds it). Haiku 5.5 list prices are in the kb since ST-7yh6lbh6 (public/claude/ci-and-headless.md:91).",
   "claimed_by": "worker-ST-jkehwsu4"
 }
