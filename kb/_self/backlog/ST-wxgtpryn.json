@@ -2,7 +2,7 @@
   "id": "ST-wxgtpryn",
   "kind": "story",
   "title": "Review sprint: Census deterministic 3: cheaper reading",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yojt6y7v",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orchestrator-yojt6y7v"
+  "evidence": {
+    "commit": "5ab546a8a04dc4f6b1a431d1d142cbd8d4e704f6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "5c4e3873c3b68334"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c9fb3722bdb32c91"
+      }
+    ]
+  }
 }
