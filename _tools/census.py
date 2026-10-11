@@ -14,6 +14,7 @@
   census.py dispatch LOG --group G [--part N] [--model M] [--max-turns N] [--max-budget-usd X] [--dry-run]   phase 2: a group's brief
                                                    part as a capped headless session, its result written for apply
   census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
+  census.py score LOG --from RESULTS.json ...      phase 2: results against the outcomes a census recorded in LOG, source by source
   census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
   census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
 
@@ -180,7 +181,13 @@ _cache/census/dispatch/<D>/<group>/RESULTS.json (RESULTS-<N>.json for part N of 
 that applies it is printed; a run that hits a cap, errors, times out or returns no valid result writes none (an earlier
 one is removed), prints `UNAPPLIED` with the reason and exits 1. The raw reply is kept beside it. The ops row
 `census.phase` (phase `dispatch`) holds `runs`, `ok` or `failed`, `turns`, the tokens of each kind and `cost-usd-micro`;
-its `ms` is the command's wall time. --dry-run starts nothing and prints the caps, the rules and the argv.
+its `ms` is the command's wall time. --dry-run starts nothing and prints the caps, the rules and the argv, and an estimate
+of the run (turns, tokens, USD at list price, and the --max-budget-usd to pass: factdiff.call_cap of the USD).
+
+score takes a census log that holds the outcomes a census recorded and the results of a model's runs (each a RESULTS.json
+`dispatch` wrote) and prints, per source a result names, the recorded outcome beside the result's, then the counts:
+sources, agreement, false confirms (`confirmed` where the census changed a fact: updated, superseded or gone, the error
+that dates a stale fact) of the changed sources, unconfirmed. It reads, writes nothing and asks no model.
 
 check, record, confirm, repin, judge and dispatch (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
 date, ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
@@ -2672,8 +2679,8 @@ def cmd_apply(a, tally):
 
 # ---------------------------------------------------------------- dispatch: a group's brief part as a capped headless session
 
-DISPATCH_MODEL = "claude-sonnet-5-5"  # pinned; no smaller model is measured on a whole phase-2 group yet (`compare` measured
-# the single-call steps), so the default is the one such a group is known to be read on, not the orchestrator's
+DISPATCH_MODEL = "claude-sonnet-5-5"  # pinned; Haiku 5.5 was measured against it on held-out phase-2 groups and met neither
+# the agreement bar nor the usable-result bar (kb/_self/reports/fact-diff.md), so a group is read on this, not the orchestrator's
 DISPATCH_TURNS = 150  # --max-turns of one brief part's session (print mode: an error at the limit, no limit by default)
 DISPATCH_BUDGET_USD = 5.0  # --max-budget-usd of one brief part's session (a hard cap, subagent spend included)
 DISPATCH_TIMEOUT_S = 3600  # the session is stopped after this long and its group stays unapplied
@@ -2682,6 +2689,10 @@ DISPATCH_ENV_DROP = ("CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_DATA", "CLAUDE_PROJECT
 DISPATCH_STOPS = {"error_max_turns": "hit the turn cap (--max-turns)",
                   "error_max_budget_usd": "hit the dollar cap (--max-budget-usd)",
                   "error_max_structured_output_retries": "gave no result that fits the schema"}
+DISPATCH_BASE_TOKENS = 15_000  # what a headless session holds before the brief: its system prompt, tool definitions, run context
+DISPATCH_PAGE_CHARS = 26_000  # a whole document no cache holds (the 2026-09-26 queue's mean: 9,739,477 characters, 367 rows)
+DISPATCH_TURNS_PER_ROW = 4  # a source takes about a fetch, a read of each citing file, an edit and a note
+DISPATCH_REPLY_TOKENS = 800  # output of one turn, its thinking included (Haiku 5.5 cannot turn thinking off)
 DOCS_MCP = os.path.join(kbcommon.HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
 LEARN_SERVER, LEARN_TOOL = "microsoft-learn", "mcp__microsoft-learn__microsoft_docs_fetch"
 FETCHABLE = re.compile(r"[A-Za-z0-9._~:/?#@&+=%,;-]+")  # a url a Bash permission rule holds as written
@@ -2699,6 +2710,30 @@ def claude_exe(path=None):
             if os.path.isabs(d) and os.path.realpath(d) != here]
     found = shutil.which("claude", path=os.pathsep.join(dirs))
     return found if found and os.path.dirname(os.path.realpath(found)) != here else None
+
+
+def dispatch_estimate(prompt_chars, queue, model, turns):
+    """What one brief part's session reads and costs, with no network and no model: {turns, input_tokens,
+    output_tokens, usd, cap_usd}, `usd` and `cap_usd` None for a model with no price (bench_core.PRICE). `queue` is the
+    part's records of `reading_queue`: a review row counts its passages, a document row its cached text or, for a
+    document no cache holds, DISPATCH_PAGE_CHARS. The pages are written to the cache once and the context is read back
+    on every turn at half its final size, so the figure is one run's list price, not a bound: `cap_usd` is
+    factdiff.call_cap of it, the --max-budget-usd a run takes."""
+    cpt = kbusage.CHARS_PER_TOKEN
+    pages = sum((q["chars"] if q["cached"] or q["mode"] == "review" else DISPATCH_PAGE_CHARS) // cpt for q in queue)
+    start = DISPATCH_BASE_TOKENS + prompt_chars // cpt
+    n = max(1, min(turns, 2 + DISPATCH_TURNS_PER_ROW * len(queue)))
+    est = {"turns": n, "input_tokens": start + pages + n * (start + pages // 2), "output_tokens": n * DISPATCH_REPLY_TOKENS,
+           "usd": None, "cap_usd": None}
+    try:
+        import bench_core
+        p = bench_core.PRICE[model][bench_core.tier_of(model, start + pages)]
+    except (ImportError, KeyError):
+        return est
+    est["usd"] = round(((start + pages) * bench_core.write_rate(p) + n * (start + pages // 2) * p[4]
+                        + est["output_tokens"] * p[2]) / 1e6, 4)
+    est["cap_usd"] = factdiff.call_cap(est["usd"])
+    return est
 
 
 def dispatch_env():
@@ -2896,9 +2931,13 @@ def cmd_dispatch(a, tally):
         allow, tools = dispatch_rules(plan, "<scratch>")
         argv = dispatch_argv(exe or "claude", a.model, a.max_turns, a.max_budget_usd, "<schema>", allow, tools, mcp and "<mcp-config>")
         prompt = dispatch_prompt(brief, plan, "<scratch>")
+        est = dispatch_estimate(len(prompt), [q for _, _, q in members], a.model, a.max_turns)
         print(f"dispatch dry run (nothing started): {label}: model={a.model} max-turns={a.max_turns} "
               f"max-budget-usd={a.max_budget_usd:.2f} rows={len(members)} prompt chars={len(prompt)} "
               f"tokens~{len(prompt) // kbusage.CHARS_PER_TOKEN}")
+        print(f"estimate: turns~{est['turns']} input tokens~{est['input_tokens']} output tokens~{est['output_tokens']} "
+              + (f"usd~{est['usd']:.4f} cap~{est['cap_usd']:.2f} (--max-budget-usd)" if est["usd"] is not None
+                 else f"usd unknown (no price for {a.model} in bench_core.PRICE)"))
         print(f"claude: {exe or 'not on PATH'}; schema: {SCHEMA_REL}; result: {shown}; then: {apply_cmd}")
         print("argv: " + shlex.join(argv))
         return 0
@@ -2936,6 +2975,55 @@ def cmd_dispatch(a, tally):
         json.dump(reply["result"], f, indent=1)
         f.write("\n")
     print(f"result: {shown} ({len(reply['result']['outcomes'])} outcome(s)); then: {apply_cmd}")
+    return 0
+
+
+CHANGING = ("updated", "superseded", "gone")  # the outcomes of a source whose facts the census changed
+
+
+def score_lines(recorded, results):
+    """(lines, counts) of `results` (each a phase-2 result's outcomes list) against `recorded` ({source id: outcome} of
+    a census log): one line per source a result names that the log holds an outcome for, in id order, and the counts
+    `sources`, `agree`, `false_confirms` (confirmed where the census changed a fact), `false_confirms_updated` (of
+    them, where it rewrote one: outcome `updated`), `changed` (sources the census changed), `unconfirmed` and `unrecorded` (named by a result, no outcome in the log)."""
+    got, n = {}, Counter()
+    for outcomes in results:
+        for o in outcomes:
+            got[o["id"]] = o["outcome"]
+    lines = []
+    for sid in sorted(got):
+        want = recorded.get(sid, "")
+        if not want:
+            n["unrecorded"] += 1
+            continue
+        n["sources"] += 1
+        n["changed"] += want in CHANGING
+        n["agree"] += got[sid] == want
+        n["unconfirmed"] += got[sid] == "unconfirmed"
+        fc = got[sid] == "confirmed" and want in CHANGING
+        n["false_confirms"] += fc
+        n["false_confirms_updated"] += fc and want == "updated"
+        lines.append(f"{sid}: recorded {want}, result {got[sid]}" + (" FALSE CONFIRM" if fc else "" if got[sid] == want else " differs"))
+    return lines, n
+
+
+def cmd_score(a, tally):
+    """census.py score LOG --from RESULTS.json ...: what a model's phase-2 results say, source by source, against the
+    outcomes a census recorded in LOG (read-only). Exit 0, 2 refused."""
+    try:
+        recorded = {r["id"]: r["outcome"] for r in read_log(a.log)}
+        results = []
+        for path in a.from_json:
+            with open(path, encoding="utf-8") as f:
+                results.append(json.load(f)["outcomes"])
+    except (OSError, ValueError, KeyError, TypeError) as e:
+        print(f"cannot read the log or a result: {e}", file=sys.stderr)
+        return 2
+    lines, n = score_lines(recorded, results)
+    print("\n".join(lines))
+    pct = 100.0 * n["agree"] / n["sources"] if n["sources"] else 0.0
+    print(f"score: results={len(results)} sources={n['sources']} agree={n['agree']} ({pct:.1f}%) "
+          f"false-confirms={n['false_confirms']}/{n['changed']} (updated {n['false_confirms_updated']}) unconfirmed={n['unconfirmed']} unrecorded={n['unrecorded']}")
     return 0
 
 
@@ -3218,6 +3306,11 @@ def main():
     dp.add_argument("--max-budget-usd", type=float, metavar="USD", default=DISPATCH_BUDGET_USD,
                     help=f"dollar cap (default {DISPATCH_BUDGET_USD:.2f})")
     dp.add_argument("--dry-run", action="store_true", help="print the model, caps, rules and argv, start nothing")
+    sc = sub.add_parser("score", help="phase 2: results of a model, source by source, against the outcomes a census recorded "
+                                      "(read-only)")
+    sc.add_argument("log", help="the census log that holds the recorded outcomes")
+    sc.add_argument("--from", dest="from_json", action="append", required=True, metavar="RESULTS.json",
+                    help="a group's result (repeatable: the parts and groups of one model's run)")
     u = sub.add_parser("run", help="phases 0-1 as one command: fact diff, apply, check, index, the phase-1 commit, summary")
     u.add_argument("--date", help="census date (default today)")
     u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")
@@ -3244,7 +3337,7 @@ def main():
     if a.cmd == "record" and not a.from_json and not (a.id and a.outcome):
         ap.error("record needs --from FILE, or --id and --outcome")
     cmds = {**PHASES, "sample": cmd_sample, "baselines": cmd_baselines, "summary": cmd_summary, "groups": cmd_groups, "brief": cmd_brief,
-            "compare": cmd_compare,
+            "compare": cmd_compare, "score": cmd_score,
             "apply": cmd_apply, "run": cmd_run, "finish": cmd_finish}
     run = lambda tally: cmds[a.cmd](a, tally)  # noqa: E731
     if a.cmd in PHASES and not getattr(a, "dry_run", False):

@@ -34,6 +34,52 @@
     "ST-jlezjp6k",
     "ST-jkehwsu4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does a dispatch run's --max-budget-usd come from in the comparison?",
+      "options": [
+        "3 times the dry run's estimate (factdiff.call_cap), at least 0.25 USD; a capped group rerun once at 1.00 USD, as the skill's rule says",
+        "the default census.DISPATCH_BUDGET_USD (5.00) for every run"
+      ],
+      "recommendation": "3 times the dry run's estimate (factdiff.call_cap), at least 0.25 USD; a capped group rerun once at 1.00 USD, as the skill's rule says",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Under which caps and permission rules does each model run the kb-census orchestrator in the comparison?",
+      "options": [
+        "150 turns and 5.76 USD (3 times the list-price estimate of an Opus 5.5 session of about 70 turns), dontAsk with python3 _tools/*, git add/commit/status/diff/log/show/tag, Read, Edit, Write, Grep, Glob, Agent and Skill allowed, the same for both models",
+        "the 60 and 5.00 USD of a dispatched worker, the same allow list"
+      ],
+      "recommendation": "150 turns and 5.76 USD (3 times the list-price estimate of an Opus 5.5 session of about 70 turns), dontAsk with python3 _tools/*, git add/commit/status/diff/log/show/tag, Read, Edit, Write, Grep, Glob, Agent and Skill allowed, the same for both models",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which sources does the dispatch comparison score, and what is a false confirm and a skipped group?",
+      "options": [
+        "the held-out half's rows with a recorded outcome other than unconfirmed and no techcommunity host (114 sources, 18 groups); a false confirm is confirmed where the census recorded updated, superseded or gone; a result apply --dry-run refuses or a run that returned none counts as unconfirmed and as a skipped group",
+        "only rows the census recorded updated or confirmed; a false confirm is confirmed against updated alone"
+      ],
+      "recommendation": "the held-out half's rows with a recorded outcome other than unconfirmed and no techcommunity host (114 sources, 18 groups); a false confirm is confirmed where the census recorded updated, superseded or gone; a result apply --dry-run refuses or a run that returned none counts as unconfirmed and as a skipped group",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "What do the estimate constants of census.py dispatch --dry-run and the command that scores results against a census log look like?",
+      "options": [
+        "census.DISPATCH_BASE_TOKENS 15000, DISPATCH_PAGE_CHARS 26000, DISPATCH_TURNS_PER_ROW 4, DISPATCH_REPLY_TOKENS 800, the cap 3 times the USD (factdiff.call_cap); a read-only census.py score LOG --from RESULTS.json ... command",
+        "no estimate in dispatch --dry-run and the scoring kept out of the repository"
+      ],
+      "recommendation": "census.DISPATCH_BASE_TOKENS 15000, DISPATCH_PAGE_CHARS 26000, DISPATCH_TURNS_PER_ROW 4, DISPATCH_REPLY_TOKENS 800, the cap 3 times the USD (factdiff.call_cap); a read-only census.py score LOG --from RESULTS.json ... command",
+      "class": "secrets"
+    }
+  ],
   "notes": "Same pricing, pinning and effort facts as ST-jkehwsu4 (public/claude/ci-and-headless.md:83-89). The agentic comparison costs more than the single-call one, so it runs after ST-jkehwsu4 and on few groups: the count is set from the dry-run estimate, and the groups are drawn from the held-out half ST-jkehwsu4 split. A smaller orchestrator matters only once sprints 1 and 2 have moved most of its work into census.py commands; before that its turns are mostly reading and editing, the work this comparison would penalise Haiku for. AGENTS.md is reviewed, not edited (its 4 KB cap). The 5-point bar is the session's proposal, open to change at the start gate. 2026-10-11 orchestrator (operator's delegate, unattended run): paid comparison runs are approved within the goal's dry-run-then-cap rule; the item's whole spend stays under 25 USD (a ceiling set without data: when the estimate for the planned set exceeds it, shrink the set and say so in the report, or stop on a gate). The orchestrator comparison (2) runs on a throwaway clone under the scratch directory: no kb content it writes is committed, only the measurements and the commands. ST-jlezjp6k landed census.py dispatch with DISPATCH_MODEL claude-sonnet-5-5 and caps 150 turns, 5.00 USD per part (its gates g1, g3).",
   "claimed_by": "worker-ST-zdfghdlb"
 }
