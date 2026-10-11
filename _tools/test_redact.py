@@ -406,7 +406,7 @@ def census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_
         # the dry run asks nothing and says the batches, the tokens and the USD (the queue's passages, a call's own overhead)
         assert census.cmd_judge(argparse.Namespace(**{**vars(args()), "dry_run": True}), Counter()) == 0
         said = capsys.readouterr().out
-        assert "batches=3 items=5 " in said and "model=claude-sonnet-5-5" in said and "usd~0." in said and not sent
+        assert "batches=3 items=5 " in said and f"model={factdiff.JUDGE_MODEL}" in said and "usd~0." in said and not sent
         # no batch is a line, not an error, and a model with no rate in factdiff.JUDGE_PRICE has no USD estimate
         assert "batches=0 items=0 " in factdiff.estimate_lines(factdiff.judge_estimate([]), factdiff.JUDGE_MODEL, "none")[0]
         assert "no rate for other-model" in factdiff.estimate_lines(factdiff.judge_estimate([[by["S9990001"][0]]], "other-model"),
@@ -421,7 +421,7 @@ def census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_
         out = census.read_log(str(log))
         assert {r["id"]: r["outcome"] for r in out} == {"S9990001": "confirmed", "S9990002": "", "S9990003": "", "S9990004": "",
                                                         "S9990005": ""}
-        assert "2 fact(s) judged supported by claude-sonnet-5-5" in out[0]["outcome_note"]
+        assert f"2 fact(s) judged supported by {factdiff.JUDGE_MODEL}" in out[0]["outcome_note"]
         kept = {(r["source_id"], r["fact"]): (r["verdict"], r["note"]) for r in census.kbcommon.load_csv(census.judge_path(str(log)), census.JUDGE_COLS)[1]}
         assert kept[("S9990004", "k41")] == ("not enough information", "supported without a sentence of the new passage")
         assert kept[("S9990002", "k22")][0] == "contradicted" and ("S9990003", "k31") not in kept

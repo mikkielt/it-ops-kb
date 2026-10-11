@@ -200,7 +200,7 @@ KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the c
 REPOS = os.path.join(kbcommon.HOME, "_cache", "census", "repos")
 JUDGE_COLS = ["source_id", "fact", "path", "verdict", "sentence", "model", "note"]  # _census/judge-<date>.csv
 HAIKU_MODEL = "claude-haiku-5-5"  # pinned: the `haiku` alias moves over time (claude/ci-and-headless.md)
-BASELINE_MODELS = {"judge": factdiff.JUDGE_MODEL, "check": "claude-opus-5-5"}  # step: the model it ran on before its comparison
+BASELINE_MODELS = {"judge": "claude-sonnet-5-5", "check": "claude-opus-5-5"}  # step: the model it ran on before its comparison
 # (the checker's was the orchestrator's, the model the census sessions run on)
 STEP_MODELS = {"judge": HAIKU_MODEL, "check": HAIKU_MODEL}  # step: the model it runs on now: Haiku 5.5 where it held both
 # bars on the held-out half (kb/_self/reports/fact-diff.md, "Haiku 5.5 on the census's judging steps")
