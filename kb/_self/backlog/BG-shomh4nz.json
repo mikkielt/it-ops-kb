@@ -1,0 +1,27 @@
+{
+  "id": "BG-shomh4nz",
+  "kind": "bug",
+  "title": "arch/python-single-package-extras says workspace members are always editable while python/uv-projects says uv sync's --no-editable opts out, and no conflict entry links them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/arch/python-single-package-extras.md line 37 says workspace members are always editable [DOC S1706]; kb/public/python/uv-projects.md says uv sync installs members as editable and --no-editable opts out [DOC S-wmmyfoun]; uv's own dependencies.md says both. A kb/public/_conflicts.md entry links the two lines and the extras article says editable by default (found by the SP-wwacrsqr review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/arch/python-single-package-extras.md').read_text(); sys.exit('workspace members are always editable' in t)"
+    ]
+  },
+  "repro_reason": "a contradiction between two kb articles: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/arch/python-single-package-extras.md",
+    "kb/public/python/uv-projects.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-wwacrsqr review"
+  ]
+}

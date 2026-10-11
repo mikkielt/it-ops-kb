@@ -1,0 +1,26 @@
+{
+  "id": "BG-mkw4awdu",
+  "kind": "bug",
+  "title": "python/maturin-pyo3-wheels' abi3 matrix derivation names manylinux_2_28 tags, though maturin's documented default and the generated workflow's manylinux auto give manylinux2014/2_17",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/public/python/maturin-pyo3-wheels.md's DER fact for a Linux x86_64, Linux aarch64 and macOS arm64 abi3 matrix (and its QK answer in kb/public/_answers.md) gives manylinux_2_28_x86_64 and manylinux_2_28_aarch64 as example tags; maturin's distribution.md (S-c6fbhzyz) says the default is manylinux2014/manylinux_2_17 without --compatibility, and the article's own CODE fact says the generated workflow uses manylinux: auto. The derivation names the documented default tag, or says 2_28 applies only with manylinux: 2_28, and marks macosx_11_0_arm64 as inferred from the macos-deployment-target example (found by the SP-wwacrsqr review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/python/maturin-pyo3-wheels.md').read_text(); sys.exit('for example `manylinux_2_28_x86_64`' in t)"
+    ]
+  },
+  "repro_reason": "a wrong derivation in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/python/maturin-pyo3-wheels.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-wwacrsqr review"
+  ]
+}
