@@ -1,7 +1,7 @@
 ---
 topic: logs/otel-collector-receivers
 priority: P3
-applies_to: "opentelemetry-collector-contrib v0.161.0 (released 2026-09-15)"
+applies_to: "opentelemetry-collector-contrib v0.161.0 receiver files (released 2026-09-15); latest release v0.162.0 (2026-09-29)"
 retrieved_utc: 2026-09-26
 sources: [S960, S961, S962, S964, S-dnzkxk4b]
 status: complete
@@ -16,7 +16,7 @@ Both receivers ship in the contrib distribution (filelog also in k8s). In v0.161
 stability **alpha**, Windows only). Full option tables are saved as CSV beside this file; `metadata.yaml` files are saved verbatim.
 
 ## Facts
-- Latest contrib release at retrieval: `v0.161.0`, published 2026-09-15. [DOC S960]
+- Latest contrib release at 2026-10-11: `v0.162.0`, published 2026-09-29; the receiver facts below were taken from the v0.161.0 files (released 2026-09-15) and the v0.162.0 Windows Event Log README. [DOC S960]
 - File log receiver: type `file_log`, deprecated type `filelog`, stability beta (logs), distributions contrib and k8s. [DOC S962]
 - Windows Event Log receiver: type `windows_event_log`, deprecated type `windowseventlog`, stability alpha (logs), distribution contrib, unsupported on darwin and linux. [DOC S964]
 - The deprecated type `windowseventlog` is still accepted in configuration. [DOC S-dnzkxk4b]

@@ -150,9 +150,9 @@ tables are in `defender/advanced-hunting.md`.
   example `ASimAuthenticationEventLogs`, `ASimDnsActivityLogs`, `ASimNetworkSessionLogs`, `ASimProcessEventLogs`,
   `ASimRegistryEventLogs`, `ASimFileEventLogs`, `ASimDhcpEventLogs`, `ASimAuditEventLogs`,
   `ASimUserManagementActivityLogs`, `ASimWebSessionLogs`). [DOC S-etccrdda]
-- Twelve ASIM normalized schemas: Agent Event, Alert Event, Audit Event, Authentication Event, DHCP Activity, DNS
-  Activity, File Activity, Network Session, Process Event, Registry Event, User Management, Web Session; plus a
-  separate Asset Entity schema for normalizing asset inventories and change feeds. [DOC S-etccrdda]
+- Thirteen ASIM normalized schemas: Agent Event, Alert Event, Audit Event, Authentication Event, DHCP Activity, DNS
+  Activity, Email Event, File Activity, Network Session, Process Event, Registry Event, User Management, Web
+  Session; plus a separate Asset Entity schema for normalizing asset inventories and change feeds. [DOC S-etccrdda]
 - Query-time parsers avoid modifying source data (parser fixes apply retroactively to existing data) but can slow
   queries on large datasets; this is why ASIM complements them with ingest-time normalization for the schemas
   listed above. [DOC S-etccrdda]
