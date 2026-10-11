@@ -2,7 +2,7 @@
   "id": "ST-ce6lnv2v",
   "kind": "story",
   "title": "Review sprint: Research: Python shell with a Rust core, one package, bundled Postgres",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wwacrsqr",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-wwacrsqr"
+  "evidence": {
+    "commit": "255250b1344cf9032c59b6fde29bbe6600bbf3e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "1ddf5401ca346509"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a0e5c580fb115c25"
+      }
+    ]
+  }
 }
