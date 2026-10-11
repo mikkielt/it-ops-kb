@@ -2,7 +2,7 @@
   "id": "ST-mrcl674w",
   "kind": "story",
   "title": "Review sprint: Research: secrets, identities and signed requests for a small self-managed fleet",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-up5wchen",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-up5wchen"
+  "evidence": {
+    "commit": "b12b20d73f9334d5a5289798de7668d8e1b19205",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b379fc83aa9b07e2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7ad87aa69edd5a28"
+      }
+    ]
+  }
 }
