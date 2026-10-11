@@ -2,7 +2,7 @@
 topic: logs/otel-log-data-model
 priority: P1
 applies_to: "OpenTelemetry specification (main, CHANGELOG top v1.61.0 2026-09-14), Logs Data Model status Stable"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-11
 sources: [S639]
 status: complete
 ---

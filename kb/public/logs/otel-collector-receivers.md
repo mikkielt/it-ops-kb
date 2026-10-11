@@ -2,7 +2,7 @@
 topic: logs/otel-collector-receivers
 priority: P3
 applies_to: "opentelemetry-collector-contrib v0.161.0 receiver files (released 2026-09-15); latest release v0.162.0 (2026-09-29)"
-retrieved_utc: 2026-09-26
+retrieved_utc: 2026-10-11
 sources: [S960, S961, S962, S964, S-dnzkxk4b]
 status: complete
 files: [logs/otel-filelogreceiver.config.csv, logs/otel-windowseventlogreceiver.config.csv, logs/otel-filelogreceiver.metadata.yaml, logs/otel-windowseventlogreceiver.metadata.yaml]
