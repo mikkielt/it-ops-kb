@@ -10,9 +10,9 @@
   "repro": {
     "run": [
       "python3",
-      "-I",
       "-c",
       "import json,sys; sys.exit(1 if '$schema' in json.load(open('_tools/census_result.schema.json')) else 0)"
     ]
-  }
+  },
+  "repro_reason": "the defect is a key in the schema file that the real claude CLI rejects; a repro may not run the real CLI (a paid call), and the suite's stub accepts any schema"
 }

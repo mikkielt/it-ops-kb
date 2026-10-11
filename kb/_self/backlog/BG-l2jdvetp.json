@@ -10,7 +10,6 @@
   "repro": {
     "run": [
       "python3",
-      "-I",
       "-c",
       "import sys; sys.path.insert(0,'_tools'); import census; r={'id':'S1','kind':'raw-pin','repo':'MicrosoftDocs/memdocs','pin':'a'*40,'path':'x.md','evidence':'','proof':'','note':'memdocs','url':'https://raw.githubusercontent.com/MicrosoftDocs/memdocs/'+'a'*40+'/x.md'}; p=census.dispatch_plan('g',[(r,{},{})],{'providers':[]}); sys.exit(0 if p['learn']==['S1'] else 1)"
     ]
