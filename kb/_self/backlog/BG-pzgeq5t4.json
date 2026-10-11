@@ -1,0 +1,22 @@
+{
+  "id": "BG-pzgeq5t4",
+  "kind": "bug",
+  "title": "factdiff.py review --judge still defaults to Sonnet 5.5 while census.py judge defaults to Haiku 5.5",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "factdiff.JUDGE_MODEL names the model census.STEP_MODELS['judge'] names, so factdiff.py review --judge and census.py judge run the same step on the same default model, the tests that pass factdiff.JUDGE_MODEL explicitly still pass, and kb/_self/tools.md's factdiff.py row says which model it defaults to",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import census, factdiff; sys.exit(0 if factdiff.JUDGE_MODEL == census.STEP_MODELS['judge'] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md"
+  ]
+}
