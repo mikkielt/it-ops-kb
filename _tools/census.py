@@ -11,6 +11,8 @@
   census.py judge LOG [--factdiff FLOG] [--model M] [--batch-size N] [--dry-run]   phase 2: review items judged in batches by a no-tool model call
   census.py groups LOG [--factdiff FLOG]           phase 2: the rows to read split into owner groups, as JSON
   census.py brief LOG --group G [--part N] [--factdiff FLOG]   phase 2: a group's brief, filled in
+  census.py dispatch LOG --group G [--part N] [--model M] [--max-turns N] [--max-budget-usd X] [--dry-run]   phase 2: a group's brief
+                                                   part as a capped headless session, its result written for apply
   census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
   census.py run [--date D] [--resume] [--dry-run]  phases 0-1 as one command: factdiff detect and apply, check, the index, the phase-1 commit, summary
   census.py finish LOG [--date D] [--dry-run]      phase 3 as one command: confirm, kbdecide sweep, the index, the confirmed-dates commit
@@ -165,7 +167,22 @@ build_index.py and `doc2query.py stale` (exit 1, stale keys, is no failure), eac
 have them; the foreign edits are printed, never applied. --dry-run prints every write and step and changes nothing;
 a second apply of the same result writes the same bytes.
 
-check, record, confirm, repin and judge (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
+dispatch runs one brief part of a group as a headless session in place of an Agent-tool subagent, which keeps the
+orchestrator's model: `claude -p --model M` (DISPATCH_MODEL by default) with the part's brief on stdin behind a few lines
+that name the repository root and what the run may do, `--output-format json` and `--json-schema` of
+_tools/census_result.schema.json, `--max-turns` (DISPATCH_TURNS) and `--max-budget-usd` (DISPATCH_BUDGET_USD), no hooks,
+user settings or MCP server but the Microsoft Learn one, and `--permission-mode dontAsk` with rules that allow Read and
+Edit of the group's owned files alone (absolute paths; the working directory is a scratch directory of its own, removed
+after the run), `git show` and `git diff` in the census clones the part's rows read, each page's own `curl` line and
+`kbid.py url`. The child's environment is passed explicitly and `claude` is taken from PATH, never from the current
+directory. The `structured_output` of the reply, when it is valid against the schema, is written to
+_cache/census/dispatch/<D>/<group>/RESULTS.json (RESULTS-<N>.json for part N of a group of several) and the command
+that applies it is printed; a run that hits a cap, errors, times out or returns no valid result writes none (an earlier
+one is removed), prints `UNAPPLIED` with the reason and exits 1. The raw reply is kept beside it. The ops row
+`census.phase` (phase `dispatch`) holds `runs`, `ok` or `failed`, `turns`, the tokens of each kind and `cost-usd-micro`;
+its `ms` is the command's wall time. --dry-run starts nothing and prints the caps, the rules and the argv.
+
+check, record, confirm, repin, judge and dispatch (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
 date, ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
 run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
@@ -1970,9 +1987,9 @@ def brief_head(group, part, parts, files, foreign, ctx, n):
     return "\n".join(out)
 
 
-def brief_parts(group, members, ctx):
-    """The group's brief as a list of texts, each at most BRIEF_CHARS (a source alone over it is a part of its own):
-    the skill's phase-2 brief filled in. A part holds whole sources, in id order; its files are those citing them."""
+def brief_packs(group, members, ctx):
+    """(packed, rules): the group's `members` packed into parts of at most BRIEF_CHARS (a source alone over it is a part
+    of its own), each a list of (member, its block's text) in id order, and the rules text every part ends with."""
     rules = BRIEF_RULES.format(flog=ctx["flog"], schema=SCHEMA_REL, log=ctx["log"], group=group)
     blocks = [(m, row_block(m[0], m[1], m[2], group, ctx)) for m in members]
     fixed = len(brief_head(group, 99, 99, owned_files(group, members), foreign_files(group, members), ctx, 999)) \
@@ -1985,12 +2002,22 @@ def brief_parts(group, members, ctx):
         cur.append(b)
         size += len(b[1]) + 2
     packed.append(cur)
-    out = []
-    for i, part in enumerate(packed, 1):
-        mem = [m for m, _ in part]
-        out.append("\n\n".join([brief_head(group, i, len(packed), owned_files(group, mem), foreign_files(group, mem), ctx,
-                                            len(part)), *(text for _, text in part), rules]))
-    return out
+    return packed, rules
+
+
+def part_text(group, packed, rules, ctx, i):
+    """The text of part `i` (from 1) of `brief_packs`'s `packed`."""
+    part = packed[i - 1]
+    mem = [m for m, _ in part]
+    return "\n\n".join([brief_head(group, i, len(packed), owned_files(group, mem), foreign_files(group, mem), ctx, len(part)),
+                        *(text for _, text in part), rules])
+
+
+def brief_parts(group, members, ctx):
+    """The group's brief as a list of texts, each at most BRIEF_CHARS (a source alone over it is a part of its own):
+    the skill's phase-2 brief filled in. A part holds whole sources, in id order; its files are those citing them."""
+    packed, rules = brief_packs(group, members, ctx)
+    return [part_text(group, packed, rules, ctx, i) for i in range(1, len(packed) + 1)]
 
 
 def group_records(ctx):
@@ -2643,6 +2670,275 @@ def cmd_apply(a, tally):
     return code
 
 
+# ---------------------------------------------------------------- dispatch: a group's brief part as a capped headless session
+
+DISPATCH_MODEL = "claude-sonnet-5-5"  # pinned; no smaller model is measured on a whole phase-2 group yet (`compare` measured
+# the single-call steps), so the default is the one such a group is known to be read on, not the orchestrator's
+DISPATCH_TURNS = 150  # --max-turns of one brief part's session (print mode: an error at the limit, no limit by default)
+DISPATCH_BUDGET_USD = 5.0  # --max-budget-usd of one brief part's session (a hard cap, subagent spend included)
+DISPATCH_TIMEOUT_S = 3600  # the session is stopped after this long and its group stays unapplied
+DISPATCH_DIR = os.path.join(kbcommon.HOME, "_cache", "census", "dispatch")  # <date>/<group>/: RESULTS.json, the reply, stderr
+DISPATCH_ENV_DROP = ("CLAUDE_PLUGIN_ROOT", "CLAUDE_PLUGIN_DATA", "CLAUDE_PROJECT_DIR", "KB_INDEX")  # as bench_core.no_plugin_env
+DISPATCH_STOPS = {"error_max_turns": "hit the turn cap (--max-turns)",
+                  "error_max_budget_usd": "hit the dollar cap (--max-budget-usd)",
+                  "error_max_structured_output_retries": "gave no result that fits the schema"}
+DOCS_MCP = os.path.join(kbcommon.HOME, ".claude-plugin", "it-ops-kb-docs", ".mcp.json")
+LEARN_SERVER, LEARN_TOOL = "microsoft-learn", "mcp__microsoft-learn__microsoft_docs_fetch"
+FETCHABLE = re.compile(r"[A-Za-z0-9._~:/?#@&+=%,;-]+")  # a url a Bash permission rule holds as written
+FETCH_HEADER = re.compile(r"[A-Za-z0-9._/+=;,: -]+")  # a `Name: value` header a rule holds as written
+FETCH_LINE = re.compile(r"fetch (\S+)((?: \(header [^:()]+: [^()]*\))*)")  # the line `read_commands` prints for a page
+HEADER = re.compile(r"\(header ([^:()]+): ([^()]*)\)")
+
+
+def claude_exe(path=None):
+    """The `claude` on PATH ($PATH, else `path`), never one in the current directory: only absolute entries other than
+    the current directory count (a relative or empty entry names a directory of the working tree; Windows tries the
+    current directory first). None when none is found."""
+    here = os.path.realpath(os.getcwd())
+    dirs = [d for d in (os.environ.get("PATH", "") if path is None else path).split(os.pathsep)
+            if os.path.isabs(d) and os.path.realpath(d) != here]
+    found = shutil.which("claude", path=os.pathsep.join(dirs))
+    return found if found and os.path.dirname(os.path.realpath(found)) != here else None
+
+
+def dispatch_env():
+    """The child's environment, passed explicitly: this process's without the plugin and project variables."""
+    return {k: v for k, v in os.environ.items() if k not in DISPATCH_ENV_DROP}
+
+
+def docs_mcp_config():
+    """The `--mcp-config` JSON of the Microsoft Learn server alone (from the docs plugin's `.mcp.json`), else None."""
+    try:
+        with open(DOCS_MCP, encoding="utf-8") as f:
+            server = json.load(f)["mcpServers"][LEARN_SERVER]
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    return json.dumps({"mcpServers": {LEARN_SERVER: server}}, separators=(",", ":"))
+
+
+def dispatch_plan(group, members, ctx):
+    """What one brief part's session may touch, from the part's rows: {files: the group's owned files in it (absolute),
+    clones: the census clones its `git show` and `git diff` commands read, fetch: {row id: the `curl` argv of its page},
+    learn: [row id] read with the Learn tool, skipped: [row id] whose page no permission rule can name exactly}."""
+    clones, fetch, learn, skipped = set(), {}, set(), []
+    for r, _, _ in members:
+        for line in read_commands(r, ctx):
+            git, page = re.match(r"git -C (\S+) (?:show|diff) ", line), FETCH_LINE.fullmatch(line)
+            if git:
+                clones.add(os.path.join(kbcommon.HOME, git.group(1)))
+            elif line.startswith("microsoft_docs_fetch "):
+                learn.add(r["id"])
+            elif page:
+                heads = HEADER.findall(page.group(2))
+                if FETCHABLE.fullmatch(page.group(1)) and all(FETCH_HEADER.fullmatch(f"{k}: {v}") for k, v in heads):
+                    fetch[r["id"]] = ["curl", "-sSL", *[x for k, v in heads for x in ("-H", f"{k}: {v}")], page.group(1)]
+                else:
+                    skipped.append(r["id"])
+    return {"files": [os.path.join(KB, rel) for rel in owned_files(group, members)], "clones": sorted(clones),
+            "fetch": fetch, "learn": sorted(learn), "skipped": skipped}
+
+
+def dispatch_rules(plan, scratch):
+    """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
+    owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
+    (the working directory is the empty scratch directory, and `dontAsk` denies the rest); Bash holds only the clone's
+    `git show` and `git diff`, each page's own `curl` line and `kbid.py url`."""
+    def at(tool, path, tail=""):
+        return f"{tool}(//{path.replace(os.sep, '/').lstrip('/')}{tail})"
+
+    allow = []
+    for path in plan["files"]:
+        allow += [at("Read", path), at("Edit", path)]
+    allow += [at(tool, scratch, "/**") for tool in ("Read", "Edit", "Write")]
+    for clone in plan["clones"]:
+        allow += [f"Bash({shlex.join(['git', '-C', clone, verb])} *)" for verb in ("show", "diff")]
+    allow += sorted({f"Bash({shlex.join(argv)})" for argv in plan["fetch"].values()})
+    allow.append(f"Bash({shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} *)")
+    if plan["learn"]:
+        allow.append(LEARN_TOOL)
+    return allow, ["Read", "Edit", "Write", "Grep", "Bash"]
+
+
+def dispatch_argv(exe, model, turns, usd, schema_text, allow, tools, mcp):
+    """The `claude -p` argument list of a part's session: no hooks, user settings or MCP servers but the Learn one,
+    nothing saved, `--output-format json` with `--json-schema` (the result as `structured_output`), the turn and
+    dollar caps, `dontAsk` (a tool no rule allows is denied: nobody is there to answer) and the rules last, as
+    `--allowedTools` takes every argument after it. The brief goes on stdin."""
+    return [exe, "-p", "--model", model, *kbcommon.NO_HOOKS, "--setting-sources", "project,local", "--strict-mcp-config",
+            *(["--mcp-config", mcp] if mcp else []), "--no-session-persistence", "--output-format", "json",
+            "--json-schema", schema_text, "--max-turns", str(turns), "--max-budget-usd", f"{usd:.2f}",
+            "--permission-mode", "dontAsk", "--tools", ",".join(tools), "--allowedTools", *allow]
+
+
+def dispatch_prompt(brief, plan, scratch):
+    """The session's stdin: what the run allows (the brief's paths are relative to the repository root, and its
+    `fetch` and `git` lines are the commands below), then the brief."""
+    out = ["Run context (census.py dispatch; not part of the brief below):",
+           f"- The repository root is {kbcommon.HOME}: every path in the brief is relative to it, so give each tool "
+           f"the absolute path. Your working directory is {scratch}, an empty scratch directory: write throwaway "
+           "files only there.",
+           "- You run unattended in permission mode dontAsk: a tool, file or command not named here is denied. Do "
+           "not look for another route: record that source as `unconfirmed` with the reason.",
+           "- Files you may read and edit: " + (", ".join(plan["files"]) or "none") + ".", "- Commands you may run:"]
+    out += [f"  - {shlex.join(['git', '-C', c, 'show'])} <revision>:<path>, and {shlex.join(['git', '-C', c, 'diff'])} "
+            "<arguments> (the brief's relative `git -C` lines, with this absolute path)" for c in plan["clones"]]
+    out += [f"  - {sid}: {shlex.join(argv)} (what the brief's `fetch` line for it means; write it exactly so)"
+            for sid, argv in sorted(plan["fetch"].items())]
+    out.append(f"  - {shlex.join(['python3', os.path.join(kbcommon.TOOLS, 'kbid.py'), 'url'])} <URL> (the id of a new row)")
+    if plan["learn"]:
+        out.append(f"- `microsoft_docs_fetch <url>` in the brief is the tool `{LEARN_TOOL}`.")
+    if plan["skipped"]:
+        out.append("- No command can read these sources here (a url with characters a permission rule cannot hold, or "
+                   "no Learn tool): " + ", ".join(plan["skipped"]) + ". Judge them from their review items; with "
+                   "none, `unconfirmed`.")
+    return "\n".join(out) + "\n\n" + brief
+
+
+def dispatch_reply(stdout, schema):
+    """{result, cost_usd, usage, models, turns, error} of a `claude -p --output-format json` reply: `result` is the
+    `structured_output` (else the JSON object in `result`) when it is valid against `schema`, else None with `error`
+    naming why: a cap, an error result, no JSON, or the first problems against the schema."""
+    out = {"result": None, "cost_usd": 0.0, "usage": {}, "models": [], "turns": 0, "error": ""}
+    try:
+        r = json.loads(stdout)
+    except ValueError:
+        r = None
+    if not isinstance(r, dict):
+        out["error"] = "stdout is no JSON result"
+        return out
+    num = lambda v: isinstance(v, (int, float)) and not isinstance(v, bool)  # noqa: E731
+    out["cost_usd"] = float(r["total_cost_usd"]) if num(r.get("total_cost_usd")) else 0.0
+    out["turns"] = int(r["num_turns"]) if num(r.get("num_turns")) else 0
+    use = r.get("usage") if isinstance(r.get("usage"), dict) else {}
+    out["usage"] = {name: use[key] for key, name in factdiff.JUDGE_USAGE
+                    if isinstance(use.get(key), int) and not isinstance(use.get(key), bool) and use[key] > 0}
+    out["models"] = sorted(r["modelUsage"]) if isinstance(r.get("modelUsage"), dict) else []
+    kind = str(r.get("subtype", ""))
+    if kind in DISPATCH_STOPS:
+        out["error"] = DISPATCH_STOPS[kind]
+        return out
+    if r.get("is_error") or kind.startswith("error"):
+        errs = r.get("errors")
+        errs = "; ".join(str(e) for e in errs) if isinstance(errs, list) else errs
+        out["error"] = str(errs or r.get("result") or kind or "claude -p failed")[:200]
+        return out
+    got = r.get("structured_output")
+    if got is None and isinstance(r.get("result"), str):
+        a, b = r["result"].find("{"), r["result"].rfind("}")
+        try:
+            got = json.loads(r["result"][a:b + 1]) if 0 <= a < b else None
+        except ValueError:
+            got = None
+    if not isinstance(got, dict):
+        out["error"] = "the reply holds no JSON result"
+        return out
+    problems = schema_errors(got, schema)
+    if problems:
+        out["error"] = f"the result breaks the schema ({len(problems)} problem(s)): " + "; ".join(problems[:3])
+        return out
+    out["result"] = got
+    return out
+
+
+def dispatch_call(argv, prompt, cwd, env):
+    """(stdout, stderr's last line or the reason there is none, exit code or None) of one session, killed after
+    DISPATCH_TIMEOUT_S."""
+    try:
+        p = subprocess.run(argv, input=prompt, cwd=cwd, env=env, capture_output=True, text=True, encoding="utf-8",
+                           timeout=DISPATCH_TIMEOUT_S)
+    except subprocess.TimeoutExpired:
+        return "", f"timed out after {DISPATCH_TIMEOUT_S}s", None
+    except (OSError, subprocess.SubprocessError) as e:
+        return "", f"{type(e).__name__}: {e}"[:200], None
+    return p.stdout, (p.stderr.strip().splitlines() or [f"claude -p exited {p.returncode}"])[-1][:200], p.returncode
+
+
+def cmd_dispatch(a, tally):
+    """census.py dispatch: one brief part of one group as a headless `claude -p` session; its schema-valid result is
+    written to RESULTS.json for `apply`. Exit 0, 1 when the run stopped or returned no valid result (nothing is
+    written: the group stays unapplied), 2 refused."""
+    rows, err = phase2_args(a)
+    if err:
+        print(err)
+        return 2
+    if a.max_turns < 1 or a.max_budget_usd <= 0:
+        print("--max-turns and --max-budget-usd must be positive")
+        return 2
+    ctx = phase2_context(rows, a.log, a.factdiff)
+    if a.group not in ctx["members"]:
+        print(f"no group {a.group!r} in the queue of {a.log}; groups: " + (", ".join(ctx["members"]) or "none"))
+        return 2
+    packed, rules = brief_packs(a.group, ctx["members"][a.group], ctx)
+    if not 1 <= a.part <= len(packed):
+        print(f"group {a.group} has {len(packed)} part(s); --part {a.part} is out of range")
+        return 2
+    members = [m for m, _ in packed[a.part - 1]]
+    brief = part_text(a.group, packed, rules, ctx, a.part)
+    exe = claude_exe()
+    if exe is None and not a.dry_run:
+        print("claude is not on PATH (a relative entry, or the current directory, does not count)")
+        return 2
+    plan = dispatch_plan(a.group, members, ctx)
+    mcp = docs_mcp_config() if plan["learn"] else None
+    if plan["learn"] and not mcp:
+        plan = {**plan, "skipped": sorted(plan["skipped"] + plan["learn"]), "learn": []}
+    with open(RESULT_SCHEMA, encoding="utf-8") as f:
+        schema = json.load(f)
+    schema_text = json.dumps(schema, separators=(",", ":"))
+    out_dir = os.path.join(DISPATCH_DIR, ctx["date"], a.group)
+    name = "RESULTS.json" if len(packed) == 1 else f"RESULTS-{a.part}.json"
+    results = os.path.join(out_dir, name)
+    shown = kbcommon.repo_rel(results)
+    label = f"group {a.group} part {a.part} of {len(packed)}"
+    apply_cmd = shlex.join(["python3", f"{TOOLS_REL}/census.py", *root_args(ctx["root"]), "apply", a.log, "--group", a.group,
+                            "--from", shown])
+    if a.dry_run:
+        allow, tools = dispatch_rules(plan, "<scratch>")
+        argv = dispatch_argv(exe or "claude", a.model, a.max_turns, a.max_budget_usd, "<schema>", allow, tools, mcp and "<mcp-config>")
+        prompt = dispatch_prompt(brief, plan, "<scratch>")
+        print(f"dispatch dry run (nothing started): {label}: model={a.model} max-turns={a.max_turns} "
+              f"max-budget-usd={a.max_budget_usd:.2f} rows={len(members)} prompt chars={len(prompt)} "
+              f"tokens~{len(prompt) // kbusage.CHARS_PER_TOKEN}")
+        print(f"claude: {exe or 'not on PATH'}; schema: {SCHEMA_REL}; result: {shown}; then: {apply_cmd}")
+        print("argv: " + shlex.join(argv))
+        return 0
+    if os.path.exists(results):
+        os.remove(results)  # a result of an earlier run is no result of this one
+    os.makedirs(out_dir, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="census-dispatch-") as scratch:
+        scratch = os.path.realpath(scratch)
+        allow, tools = dispatch_rules(plan, scratch)
+        argv = dispatch_argv(exe, a.model, a.max_turns, a.max_budget_usd, schema_text, allow, tools, mcp)
+        began = time.monotonic()
+        stdout, why, code = dispatch_call(argv, dispatch_prompt(brief, plan, scratch), scratch, dispatch_env())
+    wall = round(time.monotonic() - began, 1)
+    with open(os.path.join(out_dir, f"reply-{a.part}.json"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(stdout)
+    reply = dispatch_reply(stdout, schema)
+    if not stdout.strip():
+        reply["error"] = why
+    elif code and reply["result"] is not None:
+        reply["result"], reply["error"] = None, f"claude -p exited {code} with a result: not taken"
+    ok = reply["result"] is not None
+    tally["runs"] += 1
+    tally["ok" if ok else "failed"] += 1
+    tally.update(reply["usage"])
+    tally["turns"] += reply["turns"]
+    tally["cost-usd-micro"] += round(reply["cost_usd"] * 1e6)
+    toks = " ".join(f"{n}={reply['usage'].get(n, 0)}" for _, n in factdiff.JUDGE_USAGE)
+    print(f"dispatch {label}: model={a.model} served={','.join(reply['models']) or '-'} turns={reply['turns']} "
+          f"wall={wall}s {toks} total_cost_usd={reply['cost_usd']:.4f}")
+    if not ok:
+        print(f"{label} UNAPPLIED: {reply['error']}; no RESULTS.json was written (the reply is "
+              f"{kbcommon.repo_rel(os.path.join(out_dir, f'reply-{a.part}.json'))})")
+        return 1
+    with open(results, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(reply["result"], f, indent=1)
+        f.write("\n")
+    print(f"result: {shown} ({len(reply['result']['outcomes'])} outcome(s)); then: {apply_cmd}")
+    return 0
+
+
 def step(name, script, *args, ok=(0,), skip="", capture=False):
     """One step of a driver: its argv (printed with `python3`, run with this interpreter), the exit codes that are no
     failure, the reason a resumed run skips it (empty: it runs) and whether its output is kept for the report."""
@@ -2828,7 +3124,7 @@ def cmd_finish(a, tally):
 
 
 PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin,
-          "judge": cmd_judge}  # each writes a census.phase ops row
+          "judge": cmd_judge, "dispatch": cmd_dispatch}  # each writes a census.phase ops row
 
 
 def main():
@@ -2910,6 +3206,18 @@ def main():
     ay.add_argument("--from", dest="from_json", required=True, metavar="RESULTS.json",
                     help=f"the group's result, valid against {SCHEMA_REL}")
     ay.add_argument("--dry-run", action="store_true", help="print every write and step, change nothing")
+    dp = sub.add_parser("dispatch", help="phase 2: one group's brief part as a capped headless session on a smaller model; "
+                                         "writes the result `apply` takes (paid unless --dry-run)")
+    dp.add_argument("log")
+    dp.add_argument("--group", required=True, help="a group name `groups` prints")
+    dp.add_argument("--part", type=int, default=1, help=f"the part of a group over {BRIEF_CHARS} characters (default 1)")
+    dp.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the brief prints (default as "
+                                                       "for summary)")
+    dp.add_argument("--model", default=DISPATCH_MODEL, help=f"the session's model (default {DISPATCH_MODEL})")
+    dp.add_argument("--max-turns", type=int, metavar="N", default=DISPATCH_TURNS, help=f"turn cap (default {DISPATCH_TURNS})")
+    dp.add_argument("--max-budget-usd", type=float, metavar="USD", default=DISPATCH_BUDGET_USD,
+                    help=f"dollar cap (default {DISPATCH_BUDGET_USD:.2f})")
+    dp.add_argument("--dry-run", action="store_true", help="print the model, caps, rules and argv, start nothing")
     u = sub.add_parser("run", help="phases 0-1 as one command: fact diff, apply, check, index, the phase-1 commit, summary")
     u.add_argument("--date", help="census date (default today)")
     u.add_argument("--resume", action="store_true", help="skip the steps whose output for the date exists")

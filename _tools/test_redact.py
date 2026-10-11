@@ -361,6 +361,148 @@ def census_groups_split_the_queue_by_owner_and_brief_fills_each_group_in(tmp_pat
         assert [g["group"] for g in json.loads(capsys.readouterr().out)["groups"]] == list(groups)
 
 
+def census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path, monkeypatch, capsys):
+    """`census.py dispatch` with a stub `claude` on PATH: no test makes a paid run."""
+    pin, tip = "a" * 40, "0123456789ab"
+    cited = {"S9990005": [("public/dsc/d.md", 2)], "S9990006": [("public/dsc/d.md", 6)], "S9990007": [("public/dsc/d.md", 10)],
+             "S9990008": [("public/dsc/d.md", 12), ("public/mecm/b.md", 3)]}
+    page = {"public/dsc/d.md": ["", "sources: [S9990005, S9990006]", "", "", "", "- Pinned. [CODE S9990006]", "", "", "",
+                                "- Learn. [DOC S9990007]", "", "- Docs. [DOC S9990008]"],
+            "public/mecm/b.md": ["", "", "- Foreign fact. [DOC S9990008]"]}
+    rows = [census_row("S9990005"), census_row("S9990006", kind="raw-pin", repo="github.com/Org/Repo", pin=pin, path="src/f.rs",
+                                              evidence=f"file differs at main@{tip}; latest change", proof=f"main@{tip}"),
+            census_row("S9990007", url="https://learn.microsoft.com/en-us/entra/x"),
+            census_row("S9990008", url="https://code.claude.com/docs/en/hooks")]
+    log = tmp_path / "2099-01-02.csv"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    kbcommon.write_csv(str(log), census.COLS, rows)
+    owned = os.path.join(census.KB, "dsc", "d.md")
+    foreign_file = os.path.join(census.KB, "mecm", "b.md")
+    clone = os.path.join(kbcommon.HOME, "_cache", "census", "repos", "github.com__Org__Repo.git")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    stub = bin_dir / "claude"
+    stub.write_text(f"#!{sys.executable}\n" + "import json, os, sys\nhere = os.path.dirname(os.path.abspath(__file__))\n"
+                    "rec = {'argv': sys.argv[1:], 'stdin': sys.stdin.read(), 'cwd': os.getcwd(), 'env': dict(os.environ)}\n"
+                    "open(os.path.join(here, 'seen.json'), 'w', encoding='utf-8').write(json.dumps(rec))\n"
+                    "sys.stdout.write(open(os.path.join(here, 'reply.json'), encoding='utf-8').read())\n"
+                    "sys.exit(int(open(os.path.join(here, 'code'), encoding='utf-8').read()))\n", encoding="utf-8")
+    stub.chmod(0o755)
+    good = {"outcomes": [{"id": "S9990005", "outcome": "confirmed", "note": "n"}], "new_rows": [], "superseded": {}, "gaps": [],
+            "conflicts": [], "foreign_edits": [], "edited_files": []}
+
+    def reply(body, code=0):
+        (bin_dir / "reply.json").write_text(body if isinstance(body, str) else json.dumps(body), encoding="utf-8")
+        (bin_dir / "code").write_text(str(code), encoding="utf-8")
+        (bin_dir / "seen.json").unlink(missing_ok=True)
+
+    def ok(**kw):
+        return {"type": "result", "subtype": "success", "is_error": False, "num_turns": 7, "total_cost_usd": 0.0123,
+                "usage": {"input_tokens": 1000, "output_tokens": 200}, "modelUsage": {census.DISPATCH_MODEL: {}}, **kw}
+
+    def args(**kw):
+        return argparse.Namespace(**{"log": str(log), "group": "dsc", "part": 1, "factdiff": None, "model": census.DISPATCH_MODEL,
+                                     "max_turns": census.DISPATCH_TURNS, "max_budget_usd": census.DISPATCH_BUDGET_USD,
+                                     "dry_run": False, **kw})
+
+    results = tmp_path / "dispatch" / "2099-01-02" / "dsc" / "RESULTS.json"
+    with monkeypatch.context() as m:
+        m.setattr(socket.socket, "connect", lambda *a, **k: (_ for _ in ()).throw(AssertionError("dispatch used the network")))
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+        m.setattr(kbfacts, "clone_home", lambda: str(tmp_path / "no-clone"))
+        m.setattr(kbfacts, "cited_lines", lambda ids: {i: cited[i] for i in ids if i in cited})
+        m.setattr(kbfacts, "read", lambda qpath: "\n".join(page.get(qpath, [])))
+        m.setattr(census, "review_by_source", lambda ids, fd: {})
+        m.setattr(census, "DISPATCH_DIR", str(tmp_path / "dispatch"))
+        m.setenv("PATH", str(bin_dir))
+        m.setenv("CLAUDE_PLUGIN_ROOT", "/plugin")
+        # the model is not the orchestrator's: the default is pinned, the caps are set, and a dry run starts nothing
+        assert (census.DISPATCH_MODEL, census.DISPATCH_TURNS, census.DISPATCH_BUDGET_USD) == ("claude-sonnet-5-5", 150, 5.0)
+        assert census.PHASES["dispatch"] is census.cmd_dispatch
+        reply(ok(structured_output=good))
+        assert census.cmd_dispatch(args(dry_run=True), Counter()) == 0
+        text = capsys.readouterr().out
+        assert "dispatch dry run (nothing started): group dsc part 1 of 1: model=claude-sonnet-5-5 max-turns=150" in text
+        assert "max-budget-usd=5.00" in text and not (bin_dir / "seen.json").exists() and not results.exists()
+        if sys.platform != "win32":  # the stub is a script with a shebang line
+            # a valid result is written for apply, and the run's cost, tokens and turns reach the ops row's tally
+            tally = Counter()
+            assert census.cmd_dispatch(args(), tally) == 0
+            text = capsys.readouterr().out
+            assert json.loads(results.read_text(encoding="utf-8")) == good
+            assert "total_cost_usd=0.0123" in text and "turns=7" in text and f"apply {log} --group dsc --from " in text
+            assert dict(tally) == {"runs": 1, "ok": 1, "input-tokens": 1000, "output-tokens": 200, "turns": 7, "cost-usd-micro": 12300}
+            seen = json.loads((bin_dir / "seen.json").read_text(encoding="utf-8"))
+            argv = seen["argv"]
+            flag = lambda name: argv[argv.index(name) + 1]  # noqa: E731
+            assert flag("--model") == "claude-sonnet-5-5" and flag("--output-format") == "json"
+            assert flag("--max-turns") == "150" and flag("--max-budget-usd") == "5.00" and flag("--permission-mode") == "dontAsk"
+            assert json.loads(flag("--json-schema")) == json.loads(Path(census.RESULT_SCHEMA).read_text(encoding="utf-8"))
+            assert "--no-session-persistence" in argv and "--strict-mcp-config" in argv and flag("--mcp-config").count("microsoft-learn") == 1
+            assert flag("--tools") == "Read,Edit,Write,Grep,Bash"
+            allow = argv[argv.index("--allowedTools") + 1:]  # the rules are the last flag: it takes every argument after it
+            slash = lambda p: p.replace(os.sep, "/").lstrip("/")  # noqa: E731
+            assert f"Read(//{slash(owned)})" in allow and f"Edit(//{slash(owned)})" in allow
+            assert not any(slash(foreign_file) in r for r in allow), allow  # a foreign file is no file of the group's
+            assert f"Write(//{slash(owned)})" not in allow
+            assert f"Bash(git -C {clone} show *)" in allow and f"Bash(git -C {clone} diff *)" in allow
+            assert "Bash(curl -sSL https://code.claude.com/docs/en/hooks.md)" in allow and census.LEARN_TOOL in allow
+            assert not any(r.startswith("Bash(curl -sSL https://learn.") for r in allow)
+            assert [r for r in allow if r.startswith("Bash(") and "git" not in r and "curl" not in r] == [
+                f"Bash(python3 {os.path.join(kbcommon.TOOLS, 'kbid.py')} url *)"]
+            # the brief is on stdin behind the run context; the child's cwd is a scratch directory of its own, gone
+            # after the run, outside the repository and the stub's directory; the plugin variables are not passed on
+            assert seen["stdin"].startswith("Run context (census.py dispatch") and "Group dsc, part 1 of 1" in seen["stdin"]
+            assert f"git -C {clone} show" in seen["stdin"] and "Your files (edit only these): kb/public/dsc/d.md" in seen["stdin"]
+            assert not os.path.exists(seen["cwd"]) and not seen["cwd"].startswith((kbcommon.HOME, str(bin_dir)))
+            assert "CLAUDE_PLUGIN_ROOT" not in seen["env"] and seen["env"].get("PATH") == str(bin_dir)
+            # planted failures: a cap, an error result, a result off the schema, no JSON, a failed process: each leaves the
+            # group unapplied, says so, and removes the result of the earlier run
+            bad = dict(good, outcomes=[{"id": "S9990005", "outcome": "bogus", "note": ""}])
+            for body, code, said in ((ok(subtype="error_max_turns", is_error=True), 1, "hit the turn cap (--max-turns)"),
+                                     (ok(subtype="error_max_budget_usd", is_error=True), 1, "hit the dollar cap"),
+                                     (ok(subtype="error_during_execution", is_error=True, errors=["boom"]), 1, "boom"),
+                                     (ok(structured_output=bad), 0, "breaks the schema"),
+                                     ("not json", 0, "stdout is no JSON result"),
+                                     ("", 3, "claude -p exited 3"), (ok(structured_output=good), 3, "not taken")):
+                results.write_text("{}", encoding="utf-8")
+                reply(body, code)
+                tally = Counter()
+                assert census.cmd_dispatch(args(), tally) == 1
+                text = capsys.readouterr().out
+                assert "group dsc part 1 of 1 UNAPPLIED: " in text and said in text and not results.exists(), (said, text)
+                assert tally["failed"] == 1 and "ok" not in tally
+            # the Learn tool and its server are given only when the docs plugin's config names them
+            m.setattr(census, "DOCS_MCP", str(tmp_path / "no-mcp.json"))
+            reply(ok(structured_output=good))
+            assert census.cmd_dispatch(args(), Counter()) == 0
+            seen = json.loads((bin_dir / "seen.json").read_text(encoding="utf-8"))
+            assert "--mcp-config" not in seen["argv"] and census.LEARN_TOOL not in seen["argv"]
+            assert "No command can read these sources here" in seen["stdin"] and "S9990007" in seen["stdin"].split("No command")[1]
+        # guards: the group and part are checked first; claude is taken from PATH only, never from the working directory
+        reply(ok(structured_output=good))
+        assert census.cmd_dispatch(args(group="nope"), Counter()) == 2 and "groups: dsc" in capsys.readouterr().out
+        assert census.cmd_dispatch(args(part=2), Counter()) == 2 and "has 1 part(s)" in capsys.readouterr().out
+        assert census.cmd_dispatch(args(max_turns=0), Counter()) == 2
+        capsys.readouterr()
+        m.chdir(bin_dir)
+        m.setenv("PATH", os.pathsep.join(["", ".", "bin", str(bin_dir)]))
+        assert census.claude_exe() is None  # empty, `.`, a relative entry and the working directory itself
+        assert census.cmd_dispatch(args(), Counter()) == 2 and "claude is not on PATH" in capsys.readouterr().out
+        assert not (bin_dir / "seen.json").exists()
+        m.chdir(tmp_path)
+        assert census.claude_exe(str(bin_dir)) == str(bin_dir / "claude") or sys.platform == "win32"
+    # the ops row of a run: the phase, the cost in millionths of a dollar, the tokens and the turns; a closed shape
+    seen_rows = []
+    with monkeypatch.context() as m:
+        m.setattr(ql_capture, "record", lambda surface, **row: seen_rows.append(row))
+        assert ql_capture.census_phase("dispatch", lambda t: t.update({"runs": 1, "ok": 1, "input-tokens": 1000, "turns": 7,
+                                                                        "cost-usd-micro": 12300}) or 0, "2099-01-02") == 0
+    assert seen_rows[0]["phase"] == "dispatch" and {"name": "cost-usd-micro", "n": 12300} in seen_rows[0]["rows"]
+    assert not ql_capture.ops_problems({"event": "census.phase", **seen_rows[0]})
+
+
 def census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups(tmp_path, monkeypatch, capsys):
     """`census.py judge` with a stub in place of the model call: no test makes a paid call."""
     def item(sid, mark, new="The service restarts on the second Tuesday of each month.", n=1):
@@ -1278,8 +1420,9 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
         assert census.cmd_sample(argparse.Namespace(**{**vars(args()), "log": str(tmp_path / "none.csv")}), Counter()) == 2
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest(tmp_path, monkeypatch, capsys):
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
+    census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path / "dispatch", monkeypatch, capsys)
     factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
     census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
     census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
