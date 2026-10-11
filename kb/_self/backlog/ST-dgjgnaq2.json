@@ -2,7 +2,7 @@
   "id": "ST-dgjgnaq2",
   "kind": "story",
   "title": "Review sprint: Research: CPU-only text analysis, rules as data and self-hosted observability for a corpus service",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qjn563cf",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-qjn563cf"
 }
