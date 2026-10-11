@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Packed before the claim on 2026-10-11, the questions whose coverage is weak or a false good: (1) Haiku 5.5 list prices per million tokens (input, output, cache write, cache read): rag.py pack gives Haiku 4.5's and Sonnet 5.5's only (public/claude/ci-and-headless.md:88), so ST-jkehwsu4 and ST-zdfghdlb cannot price their comparison; (2) whether the Message Batches API or claude -p --json-schema is the route for ST-xy2euufe's batch judge on a clone with no ANTHROPIC_API_KEY (Claude Code subscription auth), and what a structured-output print-mode call costs per item at a batch size the docs bound (input/output limits of --json-schema results). The others (json-schema and total_cost_usd, max-budget-usd and max-turns caps, Haiku 5.5 effort default, model pinning) pack good and stand as findings. The findings name, for ST-xy2euufe, the route and a default model (provisional until ST-jkehwsu4 measures), and for ST-t67jhly3 the domain its end-to-end census runs on (a mid-sized domain by source count, from kb/public/_sources.csv).",
   "checks": [
     {
       "run": [
