@@ -1,0 +1,26 @@
+{
+  "id": "ST-ht2kk34y",
+  "kind": "story",
+  "title": "A land that stops after it removed the worker's worktree prints the command that brings the worktree back for the fix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When backlog.py land stops at a step after it released the worker's worktree (lint, eval, stale, the push), its stop message names the git worktree add command that checks work/<id> out again at the same path, so the orchestrator fixes the branch without finding the path by hand; at SP-up5wchen the land of ST-4ehra2pk stopped at lint twice and the orchestrator re-added the removed worktree each time.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bl_land.py',encoding='utf-8').read();sys.exit(0 if 'worktree add' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-up5wchen close"
+  ]
+}

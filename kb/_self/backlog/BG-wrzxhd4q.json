@@ -1,0 +1,24 @@
+{
+  "id": "BG-wrzxhd4q",
+  "kind": "bug",
+  "title": "kb-verify lint.py given a kb/-prefixed article path lints nothing and prints errors=0 warnings=0, so a worker reports a clean lint the land then refuses",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "lint.py (kb-verify) given an article path with the kb directory prefix lints that article as it does the root-relative path (public/<path>.md), and an argument that matches no article makes lint.py exit non-zero naming it instead of printing errors=0 warnings=0; found at the SP-up5wchen retrospective: the research worker reported lint errors=0 on its ten articles given with the prefix, and the land's lint refused a CODE tag without a path#symbol pointer in one of them.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; p=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','kb/public/no-such-dir/no-such-article.md'],capture_output=True,text=True); sys.exit(p.returncode==0)"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-up5wchen close"
+  ]
+}

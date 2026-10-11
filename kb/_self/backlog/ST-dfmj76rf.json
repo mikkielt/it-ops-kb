@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-qjn563cf close"
-  ]
+  ],
+  "notes": "SP-up5wchen (2026-10-11): the research worker dispatched with --max-turns 200 reported num_turns 318 and 7.37 USD in its result JSON, so the turn cap did not bound the turns it counts either."
 }
