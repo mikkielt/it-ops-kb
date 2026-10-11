@@ -2,7 +2,7 @@
   "id": "ST-jkehwsu4",
   "kind": "story",
   "title": "Haiku 5.5 is measured against the current model on the census's single-call judging steps, and takes each step where it loses nothing that matters",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-yojt6y7v",
   "priority": "P2",
@@ -99,5 +99,19 @@
     }
   ],
   "notes": "Why: the census's model-run steps run on the orchestrator's model today (Agent-tool subagents inherit it), and list prices per million tokens are Opus 5.5  in /  out, Sonnet 5.5  / , Haiku 4.5  /  (public/claude/ci-and-headless.md:88-89, S2131); Haiku 5.5's price is not in the kb on 2026-10-10 (rag.py pack 'Haiku 5.5 list price per million tokens' gives only its effort and id lines, ci-and-headless.md:83, :85), so the sprint's research story fills it before the comparison is priced. The haiku alias resolves to Haiku 5.5 from Claude Code v2.1.293 and moves over time, so runs pin claude-haiku-5-5 (ci-and-headless.md:85, S-ezqg74ki). Haiku 5.5's default effort is medium and thinking cannot be turned off (ci-and-headless.md:83-84): the comparison holds effort equal across models and records it. Reuse the benchmark tooling's pricing (bench_core list_usd; ST-rtmwsqgj fixes its dated-key KeyError) rather than a second price table. Quality premise: the held-out half is judged once, after the prompt is fixed on the tuning half, as the planning rules ask of a goal that names a quality of answers. The 5-point bar and the false-confirm rule are the session's proposal for 'no meaningful loss', open to change at the start gate. 2026-10-11 orchestrator (operator's delegate, unattended run): paid comparison runs are approved; each run keeps the goal's dry-run estimate and --max-budget-usd cap, and the item's whole spend stays under 15 USD (a ceiling set without data: stop and record a gate if the estimate exceeds it). Haiku 5.5 list prices are in the kb since ST-7yh6lbh6 (public/claude/ci-and-headless.md:91).",
-  "claimed_by": "worker-ST-jkehwsu4"
+  "evidence": {
+    "commit": "dcfe0b0c99bef3ca466805afd2b6d364dffca179",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "lookup_eval"
+        ],
+        "exit": 0,
+        "sha256": "964d1eba26cdbee6"
+      }
+    ]
+  }
 }
