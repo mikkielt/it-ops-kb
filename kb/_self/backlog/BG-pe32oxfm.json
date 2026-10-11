@@ -12,5 +12,6 @@
       "python3",
       "_tools/tests.py"
     ]
-  }
+  },
+  "notes": "2026-10-11/12 SP-wwacrsqr review: the review story's done re-ran the whole suite seven times. While a game held the CPU (load 4-12) it took 160-193 s and this test failed each time; the test alone passed in 16.8 s (tests.py -k test_land_waits_hook_of_a_finished_session). With the game gone, 100 passed in 22.5-23 s twice and 30 s once while Spotlight mds_stores and a query-log distill ran near 100% CPU each, refused only on the 22 s darwin ceiling: host contention, not a defect of the test or the sprint's content."
 }
