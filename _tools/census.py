@@ -8,6 +8,7 @@
   census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N]   phase 4: the sources an independent check re-reads
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked, dns and connect hosts, and the size of phase 2's reading queue
   census.py baselines [--list]                     the live unpinned sources with no detection baseline, counted by host (exit 1 when any)
+  census.py judge LOG [--factdiff FLOG] [--model M] [--batch-size N] [--dry-run]   phase 2: review items judged in batches by a no-tool model call
   census.py groups LOG [--factdiff FLOG]           phase 2: the rows to read split into owner groups, as JSON
   census.py brief LOG --group G [--part N] [--factdiff FLOG]   phase 2: a group's brief, filled in
   census.py apply LOG --group G --from RESULTS.json [--dry-run]   phase 2: a group's result, validated, then its bookkeeping
@@ -92,6 +93,21 @@ passages (fact, old and new passage) of a row the fact diff log holds items for 
 else _census/factdiff-<date>.csv beside LOG), and else the whole document held in _cache/factdiff, counted `not cached`
 when the cache holds none (a linked worktree reads the clone's main worktree's cache).
 
+judge (phase 2, before groups) sends the fact diff review items of the queue's rows, each a fact with its old and new
+passage, in batches to one model call each: `claude -p --output-format json --json-schema` with no tools and
+`--max-budget-usd` (factdiff.JUDGE_MODEL by default, factdiff.JUDGE_BATCH items or JUDGE_BATCH_CHARS characters a
+call). A call gives supported, contradicted or not enough information per fact with the sentence of the new passage
+that decides it; a `supported` whose sentence is not in the new passage is not believed. The verdicts are written to
+_census/judge-<D>.csv beside LOG (one row per fact: source_id, fact, path, verdict, sentence, model, note; a fact
+already there is not asked again, so a second run asks only for what a failed call left). A source whose every review
+item is supported is recorded `confirmed` with no agent; `summary`, `groups` and `brief` then leave the supported items
+out, so the rest go to phase 2's readers with only their undecided facts. Items with no new passage, and the rows of
+a pinned file (`repin`'s items), are never sent. --dry-run prints the batch count and the estimated input and output
+tokens and USD (queue block's passages, factdiff.JUDGE_PRICE) and asks nothing. The ops row `census.phase` (phase
+`judge`) holds the verdict counts, `calls`, `failed`, the tokens of each kind and `cost-usd-micro`, the calls'
+total_cost_usd summed in millionths of a dollar. Exit 1 when a call failed (its items stay unjudged), 2 for bad
+arguments.
+
 groups prints, as JSON, the queue's rows (the same rows) split by owner group, with no network and no model: a row goes
 to the domain (first directory under the root) of the files naming it in the tree (`rag.py src --cited`; the lines of a
 ledger or root-level file count for no domain; a row no line names falls back to the files of the log's `used_in`, else
@@ -124,8 +140,8 @@ build_index.py and `doc2query.py stale` (exit 1, stale keys, is no failure), eac
 have them; the foreign edits are printed, never applied. --dry-run prints every write and step and changes nothing;
 a second apply of the same result writes the same bytes.
 
-check, record, confirm and repin (not their --dry-run) each append one ops row `census.phase` to the query log (phase, date,
-ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
+check, record, confirm, repin and judge (not their --dry-run) each append one ops row `census.phase` to the query log (phase,
+date, ms, exit and the rows per bucket or outcome; kb/_self/querylog.md): factdiff.py detect, apply and review write the same.
 
 run and finish chain the phases no model decides, each step a command of its own (its argv is printed first, its ops
 row is its own), with no agent turn between them:
@@ -157,6 +173,7 @@ import build_index, factdiff, kbcommon, kbfacts, kbid, kbusage, provider, ql_cap
 KB = kbcommon.PUBLIC  # the root under census (--root; public by default); the cache stays in the repository
 
 REPOS = os.path.join(kbcommon.HOME, "_cache", "census", "repos")
+JUDGE_COLS = ["source_id", "fact", "path", "verdict", "sentence", "model", "note"]  # _census/judge-<date>.csv
 COLS = ["id", "url", "kind", "repo", "pin", "path", "retrieved_utc", "http_status", "bucket", "evidence", "proof", "note",
         "used_in", "outcome", "outcome_note"]
 BUCKETS = ("OK", "CHANGED", "GONE", "NEWER-VERSION", "NEEDS-READING")
@@ -1155,6 +1172,30 @@ def review_by_source(ids, fd_rows):
     return items
 
 
+def judge_path(log):
+    """The judge verdicts' file beside the census log: _census/judge-<date of LOG>.csv."""
+    return os.path.join(os.path.dirname(os.path.abspath(log)), f"judge-{ql_capture.phase_date(path=log)}.csv")
+
+
+def read_judged(log):
+    """{(source id, fact key, path): row} of the judge file of `log` (`census.py judge`); {} when there is none."""
+    path = judge_path(log)
+    if not os.path.isfile(path):
+        return {}
+    return {(r["source_id"], r["fact"], r["path"]): r for r in kbcommon.load_csv(path, JUDGE_COLS)[1]}
+
+
+def unsupported(items, judged):
+    """`items` (`review_by_source`) without the facts a model call judged supported, a source with none left omitted:
+    what phase 2's readers still read. Items of the same facts are the same keys `judge` wrote."""
+    out = {}
+    for sid, its in items.items():
+        keep = [i for i in its if (judged.get((sid, i["key"], i["path"])) or {}).get("verdict") != "supported"]
+        if keep:
+            out[sid] = keep
+    return out
+
+
 def with_repin_items(items, todo):
     """`items` (`review_by_source`) with the review items `repin_items` gives for the pinned files of `todo` that the fact
     diff holds none for."""
@@ -1237,8 +1278,72 @@ def cmd_summary(a, tally):
     print("HTTP errors (a status other than 200 that left the source to read): "
           + str(sum(1 for r in rows if r["bucket"] == "NEEDS-READING" and r["http_status"].isdigit() and r["http_status"] != "200")))
     print(f"confirmed (phase 3 would date): {sum(1 for r in rows if confirmed(r))}")
-    print("\n".join(queue_lines(reading_queue(rows, factdiff_log_rows(rows, a.log, a.factdiff)))))
+    todo = phase2_rows(rows)
+    items = None
+    if todo:
+        ids = {r["id"] for r in todo}
+        items = with_repin_items(unsupported(review_by_source(ids, factdiff_log_rows(rows, a.log, a.factdiff)), read_judged(a.log)), todo)
+    print("\n".join(queue_lines(reading_queue(rows, [], items))))
     return 0
+
+
+# ---------------------------------------------------------------- judge: review items in batches, one model call each
+
+def judge_queue(rows, log, flog=None):
+    """(sources, items) of what `judge` may send: the phase-2 rows that are no pinned file (those go to `repin` and
+    a reader) with their fact diff review items, {id: row} and [item] in id order. No network, no model."""
+    todo = [r for r in phase2_rows(rows) if r["kind"] not in REPIN_KINDS]
+    by = review_by_source({r["id"] for r in todo}, factdiff_log_rows(rows, log, flog) if todo else [])
+    srcs = {r["id"]: r for r in sorted(todo, key=lambda r: r["id"]) if by.get(r["id"])}
+    return srcs, [it for sid in srcs for it in by[sid]]
+
+
+def cmd_judge(a, tally):
+    rows, err = phase2_args(a)
+    if err:
+        print(err)
+        return 2
+    srcs, items = judge_queue(rows, a.log, a.factdiff)
+    judged, size = read_judged(a.log), a.batch_size or factdiff.JUDGE_BATCH
+    if size < 1 or a.max_budget_usd is not None and a.max_budget_usd <= 0:
+        print("--batch-size and --max-budget-usd must be positive")
+        return 2
+    todo = [it for it in items if (it["source_id"], it["key"], it["path"]) not in judged]
+    ask = [todo[i] for i in factdiff.judge_candidates(todo)]
+    est = factdiff.judge_estimate(factdiff.judge_batches(ask, size), a.model)
+    if a.dry_run:
+        print("\n".join(factdiff.estimate_lines(est, a.model, f"{len(srcs)} source(s), {len(items)} review item(s), "
+                                                f"{len(items) - len(todo)} judged, {len(todo) - len(ask)} with no new passage")))
+        return 0
+    if ask and a.max_budget_usd is None and est["cap_usd"] is None:
+        print(f"no price for {a.model} (factdiff.JUDGE_PRICE): pass --max-budget-usd")
+        return 2
+    verdicts, calls = factdiff.judge_items(ask, a.model, size, a.jobs, a.max_budget_usd)
+    factdiff.judge_tally(tally, verdicts, calls)
+    new = {(ask[i]["source_id"], ask[i]["key"], ask[i]["path"]): {"source_id": ask[i]["source_id"], "fact": ask[i]["key"],
+                                                                   "path": ask[i]["path"], "verdict": v["verdict"],
+                                                                   "sentence": v["sentence"], "model": a.model, "note": v["note"]}
+           for i, v in verdicts.items()}
+    judged = {**judged, **new}
+    if new:
+        kbcommon.write_csv(judge_path(a.log), JUDGE_COLS, sorted(judged.values(), key=lambda r: (kbid.sort_key(r["source_id"]), r["path"], r["fact"])),
+                           atomic=True)
+    confirmed_ids = []
+    for sid, r in srcs.items():
+        its = [i for i in items if i["source_id"] == sid]
+        if all((judged.get((sid, i["key"], i["path"])) or {}).get("verdict") == "supported" for i in its):
+            confirmed_ids.append({"id": sid, "outcome": "confirmed",
+                                  "note": f"{len(its)} fact(s) judged supported by {a.model} ({os.path.basename(judge_path(a.log))})"})
+    if confirmed_ids:
+        log_rows = read_log(a.log)
+        set_outcomes(log_rows, confirmed_ids, tally)
+        write_log(a.log, log_rows)
+    counts = Counter(v["verdict"] for v in judged.values() if (v["source_id"], v["fact"], v["path"]) in
+                     {(i["source_id"], i["key"], i["path"]) for i in items})
+    print(f"judge: {len(srcs)} source(s), {len(items)} review item(s): " + ", ".join(f"{k}={counts[k]}" for k in factdiff.JUDGE_VERDICTS)
+          + f", unjudged={len(items) - sum(counts.values())}; {len(confirmed_ids)} source(s) confirmed with no agent")
+    print("\n".join(factdiff.judge_lines(calls)))
+    return 1 if any(c["error"] for c in calls) else 0
 
 
 # ---------------------------------------------------------------- groups, brief: phase 2 split by owner
@@ -1312,7 +1417,8 @@ def phase2_context(rows, log, flog=None):
     ids = {r["id"] for r in todo}
     fd_rows = factdiff_log_rows(rows, log, flog) if ids else []
     cited = kbfacts.cited_lines(ids) if ids else {}
-    items = with_repin_items(review_by_source(ids, fd_rows), todo) if ids else {}
+    judged = read_judged(log) if ids else {}
+    items = with_repin_items(unsupported(review_by_source(ids, fd_rows), judged), todo) if ids else {}
     queue = {q["id"]: q for q in reading_queue(rows, fd_rows, items, cited)}
     root, members = os.path.basename(KB), defaultdict(list)
     for r in sorted(todo, key=lambda r: r["id"]):
@@ -1320,7 +1426,7 @@ def phase2_context(rows, log, flog=None):
         members[owner_of(files)].append((r, files, queue[r["id"]]))
     date = ql_capture.phase_date(path=log)
     flog_rel = os.path.relpath(os.path.abspath(flog), kbcommon.HOME).replace(os.sep, "/") if flog else census_path(f"factdiff-{date}.csv")
-    return {"date": date, "root": root, "members": dict(sorted(members.items())), "items": items, "flog": flog_rel,
+    return {"date": date, "root": root, "members": dict(sorted(members.items())), "items": items, "judged": judged, "flog": flog_rel,
             "log": os.path.relpath(os.path.abspath(log), kbcommon.HOME).replace(os.sep, "/"),
             "providers": provider.providers(factdiff.ROOT)}
 
@@ -1382,7 +1488,9 @@ def row_block(r, files, q, group, ctx):
                    + (f"; the log's used_in lists {r['used_in']}" if r["used_in"] else ""))
     got = ctx["items"].get(r["id"]) if q["mode"] == "review" else None
     if got:
-        out.append("- review items (judge each: supported | contradicted | not enough information):")
+        done = sum(1 for (sid, _, _), j in ctx["judged"].items() if sid == r["id"] and j["verdict"] == "supported")
+        out.append("- review items (judge each: supported | contradicted | not enough information)"
+                   + (f"; {done} more were judged supported by a model call and are left out" if done else "") + ":")
         for n, it in enumerate(got, 1):
             out += [f"  {n}. {it['outcome']} {kbcommon.repo_rel(it['path'])}:{it['where'].rpartition(':')[2]}"
                     f" ({it['verdict']}; {it['note']})",
@@ -2264,7 +2372,8 @@ def cmd_finish(a, tally):
     return code
 
 
-PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin}  # each writes a census.phase ops row
+PHASES = {"check": cmd_check, "record": cmd_record, "confirm": cmd_confirm, "repin": cmd_repin,
+          "judge": cmd_judge}  # each writes a census.phase ops row
 
 
 def main():
@@ -2300,6 +2409,15 @@ def main():
     m.add_argument("log")
     m.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default: the "
                                                       "log the census's evidence names, else factdiff-<date>.csv beside LOG)")
+    jd = sub.add_parser("judge", help="phase 2: review items judged in batches by a no-tool model call; a source with every "
+                                      "fact supported is confirmed with no agent")
+    jd.add_argument("log")
+    jd.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items are judged (default as for summary)")
+    jd.add_argument("--model", default=factdiff.JUDGE_MODEL, help=f"the model of each call (default {factdiff.JUDGE_MODEL})")
+    jd.add_argument("--batch-size", type=int, metavar="N", help=f"items per call (default {factdiff.JUDGE_BATCH})")
+    jd.add_argument("--max-budget-usd", type=float, metavar="USD", help="each call's cap (default: its estimate, tripled)")
+    jd.add_argument("--jobs", type=int, default=4, help="parallel calls (default 4)")
+    jd.add_argument("--dry-run", action="store_true", help="print the batch count and the estimated tokens and USD, ask nothing")
     gp = sub.add_parser("groups", help="phase 2: the rows to read split into owner groups, as JSON")
     gp.add_argument("log")
     gp.add_argument("--factdiff", metavar="FLOG", help="the fact diff log whose review items the queue sizes (default as for "

@@ -39,12 +39,21 @@ such a document when the source holds none.
 detect, apply and review (apply --dry-run: no row) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the counts per verdict, fact outcome or review outcome; kb/_self/querylog.md): the census's own phases write
 the same.
+
+  factdiff.py [--root NAME] review LOG [--source ID] [--json] [--judge [--model M] [--batch-size N] [--max-budget-usd USD] [--dry-run]]
+      --judge sends the review items that have a new passage, in batches, to one model call each with no tools
+      (`claude -p --output-format json --json-schema`, `--max-budget-usd`; the judge's constants are JUDGE_*): per item
+      supported, contradicted or not enough information with the sentence of the new passage that decides it; a
+      `supported` whose sentence is not in the new passage is not believed. The calls' total_cost_usd and tokens go to
+      the review row; --dry-run prints the batches and the estimated tokens and USD and calls nothing.
+      `census.py judge` applies it to a census log's queue and confirms a source whose every fact is supported.
 Exit: 0 ok; 1 anchors --stale found stale anchors; 2 bad arguments.
 """
-import argparse, collections, concurrent.futures as cf, datetime, hashlib, json, math, os, re, sys, unicodedata, urllib.parse
+import argparse, collections, concurrent.futures as cf, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
+import unicodedata, urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import kbcommon, kbfacts, kbid, provider, ql_capture  # noqa: E402
+import kbcommon, kbfacts, kbid, kbusage, provider, ql_capture  # noqa: E402
 
 ANCHORS, COLS, REASONS, QUOTE_WORDS = kbcommon.ANCHORS, kbcommon.ANCHOR_COLS, kbcommon.ANCHOR_REASONS, kbcommon.QUOTE_WORDS
 CACHE = os.path.join(kbcommon.HOME, "_cache", "factdiff")
@@ -1197,17 +1206,255 @@ def review_items(log, srcs, only=None, offline=False):
                "old": old, "old_from": where, "new": new, "new_from": new_where}
 
 
+# ---------------------------------------------------------------- judge: review items in batches, one tool-less call each
+
+JUDGE_MODEL = "claude-sonnet-5-5"  # the default model of `review --judge` and `census.py judge`; --model overrides it
+JUDGE_VERDICTS = ("supported", "contradicted", "not enough information")
+JUDGE_BATCH = 20  # items one call judges
+JUDGE_BATCH_CHARS = 24_000  # characters of passages one call holds (about 6k tokens); an item alone over it is a batch
+JUDGE_PRICE = {"claude-sonnet-5-5": (2.0, 10.0), "claude-haiku-5-5": (0.10, 0.50)}  # USD per MTok in, out (S2131)
+JUDGE_CALL_TOKENS = 4_000  # estimated input a tool-less claude -p reads besides the batch (system prompt, schema, task)
+JUDGE_REPLY_TOKENS = 80  # estimated output per item: the verdict and the deciding sentence
+JUDGE_CAP_FACTOR, JUDGE_CAP_FLOOR_USD = 3, 0.05  # a call's --max-budget-usd: this many times its estimate, at least this
+JUDGE_TIMEOUT_S = 600
+JUDGE_USAGE = (("input_tokens", "input-tokens"), ("cache_creation_input_tokens", "cache-write-tokens"),
+               ("cache_read_input_tokens", "cache-read-tokens"), ("output_tokens", "output-tokens"))
+JUDGE_SCHEMA = {
+    "type": "object", "additionalProperties": False, "required": ["verdicts"],
+    "properties": {"verdicts": {"type": "array", "items": {
+        "type": "object", "additionalProperties": False, "required": ["n", "verdict", "sentence"],
+        "properties": {"n": {"type": "integer", "minimum": 1}, "verdict": {"type": "string", "enum": list(JUDGE_VERDICTS)},
+                       "sentence": {"type": "string"}}}}}}
+JUDGE_TASK = """\
+You judge whether facts of a knowledge base still hold after their source changed. Each numbered item gives a fact, the \
+passage of its source before the change (old) and the passage now (new). Judge from these passages only; you have no \
+other source and no tool.
+- supported: the new passage states the fact: the same claim, wording may differ.
+- contradicted: the new passage states something that conflicts with the fact.
+- not enough information: the new passage neither states nor contradicts the fact, or you cannot settle it from it. \
+When in doubt choose this: a wrong `supported` is the one error that costs.
+`sentence` is the one sentence of the new passage that decides the item, copied exactly; empty when the new passage has \
+none. Return JSON only: {"verdicts": [{"n": 1, "verdict": "supported", "sentence": "..."}]}, one entry per item."""
+
+
+def judge_candidates(items):
+    """The indexes of `items` a model call can judge: those with a new passage (one with none is undecided with no call)."""
+    return [i for i, it in enumerate(items) if (it.get("new") or "").strip()]
+
+
+def judge_text(it):
+    return fact_text(it["fact"]) + (it.get("old") or "") + (it.get("new") or "")
+
+
+def judge_batches(items, size=JUDGE_BATCH, chars=JUDGE_BATCH_CHARS):
+    """`items` split in order into batches of at most `size` items and `chars` characters of passages (an item alone
+    over `chars` is a batch of its own); each batch a list of items. Deterministic, with no model."""
+    out, cur, used = [], [], 0
+    for it in items:
+        n = len(judge_text(it))
+        if cur and (len(cur) >= size or used + n > chars):
+            out.append(cur)
+            cur, used = [], 0
+        cur.append(it)
+        used += n
+    return out + ([cur] if cur else [])
+
+
+def judge_prompt(batch):
+    """The call's whole input: the task, then each item as `### n`, its fact, old and new passage."""
+    parts = [JUDGE_TASK]
+    for n, it in enumerate(batch, 1):
+        parts.append(f"### {n}\nfact: {fact_text(it['fact'])}\nold: {it.get('old') or '-'}\nnew: {it['new']}")
+    return "\n\n".join(parts)
+
+
+def judge_estimate(batches, model=JUDGE_MODEL):
+    """What a judge run reads and costs, with no network and no model: {batches, items, input_tokens, output_tokens,
+    usd, cap_usd}; usd and cap_usd None when JUDGE_PRICE has no rate for `model`. cap_usd is the --max-budget-usd of
+    the dearest call."""
+    cpt = kbusage.CHARS_PER_TOKEN
+    ins = [len(judge_prompt(b)) // cpt + JUDGE_CALL_TOKENS for b in batches]
+    outs = [len(b) * JUDGE_REPLY_TOKENS for b in batches]
+    rate = JUDGE_PRICE.get(model)
+    cost = [(i * rate[0] + o * rate[1]) / 1e6 for i, o in zip(ins, outs)] if rate else []
+    return {"batches": len(batches), "items": sum(len(b) for b in batches), "input_tokens": sum(ins),
+            "output_tokens": sum(outs), "usd": round(sum(cost), 4) if rate else None,
+            "cap_usd": call_cap(max(cost)) if cost else None}
+
+
+def call_cap(usd):
+    """The --max-budget-usd of a call whose estimated cost is `usd`: JUDGE_CAP_FACTOR times it, at least the floor."""
+    return round(max(JUDGE_CAP_FLOOR_USD, usd * JUDGE_CAP_FACTOR), 2)
+
+
+def judge_argv(model, cap_usd):
+    """The `claude -p` argument list of one call: no tools (`--tools ""`), no hooks, user plugins or MCP servers (as
+    redact.names_argv), the verdicts as `structured_output` of a JSON result (`--json-schema` with `--output-format
+    json`, claude/ci-and-headless.md) and the call's spend capped (`--max-budget-usd`). The prompt goes on stdin."""
+    return [shutil.which("claude") or "claude", "-p", "--model", model, "--tools", "", *kbcommon.NO_HOOKS,
+            "--setting-sources", "project,local", "--strict-mcp-config", "--no-session-persistence",
+            "--output-format", "json", "--json-schema", json.dumps(JUDGE_SCHEMA, separators=(",", ":")),
+            "--max-budget-usd", f"{cap_usd:.2f}"]
+
+
+def judge_result(stdout):
+    """{verdicts: list or None, cost_usd, usage: {name: tokens}, error} of a `claude -p --output-format json` result:
+    `structured_output` (else the JSON object in `result`), `total_cost_usd` and the `usage` counts; an error result or
+    stdout that is no result names why in `error` and has no verdicts."""
+    out = {"verdicts": None, "cost_usd": 0.0, "usage": {}, "error": ""}
+    try:
+        r = json.loads(stdout)
+    except ValueError:
+        out["error"] = "stdout is no JSON result"
+        return out
+    if not isinstance(r, dict):
+        out["error"] = "stdout is no JSON result"
+        return out
+    cost = r.get("total_cost_usd")
+    out["cost_usd"] = float(cost) if isinstance(cost, (int, float)) and not isinstance(cost, bool) else 0.0
+    use = r.get("usage") if isinstance(r.get("usage"), dict) else {}
+    out["usage"] = {name: use[key] for key, name in JUDGE_USAGE
+                    if isinstance(use.get(key), int) and not isinstance(use.get(key), bool) and use[key] > 0}
+    if r.get("is_error") or str(r.get("subtype", "")).startswith("error"):
+        errs = r.get("errors")
+        errs = "; ".join(str(e) for e in errs) if isinstance(errs, list) else errs
+        out["error"] = str(errs or r.get("result") or r.get("subtype") or "claude -p failed")[:200]
+        return out
+    got = r.get("structured_output")
+    if got is None and isinstance(r.get("result"), str):
+        a, b = r["result"].find("{"), r["result"].rfind("}")
+        try:
+            got = json.loads(r["result"][a:b + 1]) if 0 <= a < b else None
+        except ValueError:
+            got = None
+    if isinstance(got, dict) and isinstance(got.get("verdicts"), list):
+        out["verdicts"] = got["verdicts"]
+    else:
+        out["error"] = "the result holds no verdicts"
+    return out
+
+
+def judge_call(prompt, model, cap_usd):
+    """One tool-less model call, in an empty directory so no project instructions load: the `judge_result` of its
+    output. The suite replaces this function: no test makes a paid call."""
+    with tempfile.TemporaryDirectory() as cwd:
+        try:
+            p = subprocess.run(judge_argv(model, cap_usd), input=prompt, cwd=cwd, capture_output=True, text=True,
+                               encoding="utf-8", timeout=JUDGE_TIMEOUT_S)
+        except (OSError, subprocess.SubprocessError) as e:
+            return {"verdicts": None, "cost_usd": 0.0, "usage": {}, "error": f"{type(e).__name__}: {e}"[:200]}
+    got = judge_result(p.stdout)
+    if got["error"] and not p.stdout.strip():
+        got["error"] = (p.stderr.strip().splitlines() or [f"claude -p exited {p.returncode}"])[-1][:200]
+    return got
+
+
+def judge_verdicts(batch, verdicts):
+    """{index in batch: {verdict, sentence, note}} of a reply's `verdicts`. An entry that is malformed, names an item
+    outside the batch or a verdict outside JUDGE_VERDICTS, or repeats an item, is left out (the item stays
+    unjudged). A `supported` whose sentence is not in the item's new passage (normalized) is not believed: it is `not
+    enough information`, noted."""
+    out = {}
+    for v in verdicts:
+        n = v.get("n") if isinstance(v, dict) else None
+        if not isinstance(n, int) or isinstance(n, bool) or not 1 <= n <= len(batch) or n - 1 in out:
+            continue
+        verdict, sentence = v.get("verdict"), v.get("sentence")
+        if verdict not in JUDGE_VERDICTS or not isinstance(sentence, str):
+            continue
+        note = ""
+        if verdict == "supported" and not (norm(sentence) and norm(sentence) in norm(batch[n - 1]["new"])):
+            verdict, note = "not enough information", "supported without a sentence of the new passage"
+        out[n - 1] = {"verdict": verdict, "sentence": " ".join(sentence.split()), "note": note}
+    return out
+
+
+def judge_items(items, model=JUDGE_MODEL, size=JUDGE_BATCH, jobs=4, cap_usd=None, call=None):
+    """(verdicts, calls) of the judgeable `items` (those with a new passage), in batches of one call each: `verdicts`
+    is {index in `items`: {verdict, sentence, note}} for the items a reply judged, `calls` one record per batch
+    ({items, cost_usd, usage, error}). `cap_usd` is each call's --max-budget-usd (else from its estimate); `call`
+    replaces judge_call."""
+    call = call or judge_call
+    idx, batches, at = judge_candidates(items), [], 0
+    for b in judge_batches([items[i] for i in idx], size):
+        batches.append(idx[at:at + len(b)])
+        at += len(b)
+    caps = [cap_usd or judge_estimate([[items[i] for i in b]], model)["cap_usd"] or JUDGE_CAP_FLOOR_USD for b in batches]
+
+    def one(job):
+        b, cap = job
+        return call(judge_prompt([items[i] for i in b]), model, cap)
+
+    with cf.ThreadPoolExecutor(max(1, min(jobs, len(batches) or 1))) as ex:
+        replies = list(ex.map(one, zip(batches, caps)))
+    verdicts, calls = {}, []
+    for b, reply in zip(batches, replies):
+        got = judge_verdicts([items[i] for i in b], reply["verdicts"] or [])
+        verdicts.update({b[k]: v for k, v in got.items()})
+        calls.append({"items": len(b), "cost_usd": reply["cost_usd"], "usage": reply["usage"],
+                      "error": reply["error"] or ("" if got or not b else "no entry matched an item")})
+    return verdicts, calls
+
+
+def judge_tally(tally, verdicts, calls):
+    """Add a judge run's counts to `tally` (the census.phase row): the verdicts, the calls and failed calls, the
+    tokens of each kind and the spend in millionths of a dollar (a row's count is an integer)."""
+    tally.update(v["verdict"] for v in verdicts.values())
+    tally["calls"] += len(calls)
+    tally["failed"] += sum(1 for c in calls if c["error"])
+    for c in calls:
+        tally.update(c["usage"])
+    tally["cost-usd-micro"] += round(sum(c["cost_usd"] for c in calls) * 1e6)
+
+
+def judge_lines(calls):
+    """The summary lines of a judge run: calls, failures, tokens and the spend its results report."""
+    toks = collections.Counter()
+    for c in calls:
+        toks.update(c["usage"])
+    spent = sum(c["cost_usd"] for c in calls)
+    out = [f"judge calls={len(calls)} failed={sum(1 for c in calls if c['error'])} " + " ".join(
+        f"{name}={toks[name]}" for _, name in JUDGE_USAGE) + f" total_cost_usd={spent:.4f}"]
+    out += [f"  call {n} failed: {c['error']}" for n, c in enumerate(calls, 1) if c["error"]]
+    return out
+
+
+def estimate_lines(est, model, what):
+    """The dry run's lines: the batches and the tokens and USD they would cost, as `queue_lines` counts a queue."""
+    cap = f" cap per call=${est['cap_usd']:.2f}" if est["cap_usd"] is not None else ""
+    usd = f"usd~{est['usd']:.4f}{cap}" if est["usd"] is not None else f"usd unknown (no rate for {model}: pass --max-budget-usd)"
+    return [f"judge dry run (no network, no model): {what}: model={model} batches={est['batches']} items={est['items']} "
+            f"input tokens~{est['input_tokens']} output tokens~{est['output_tokens']} {usd}"]
+
+
 def cmd_review(a, tally):
     items = list(review_items(read_log(a.log), sources(), set(a.source) or None))
     tally.update(it["outcome"] for it in items)
-    if a.json:
+    if a.json and not a.judge:
         print(json.dumps(items, indent=1))
         return 0
+    if a.judge and a.dry_run:
+        size = a.batch_size or JUDGE_BATCH
+        batches = judge_batches([items[i] for i in judge_candidates(items)], size)
+        print("\n".join(estimate_lines(judge_estimate(batches, a.model), a.model, f"{len(items)} review item(s)")))
+        return 0
+    verdicts, calls = judge_items(items, a.model, a.batch_size or JUDGE_BATCH, cap_usd=a.max_budget_usd) if a.judge else ({}, [])
+    if a.judge:
+        judge_tally(tally, verdicts, calls)
+        if a.json:
+            print(json.dumps([{**it, "judge": verdicts.get(i)} for i, it in enumerate(items)], indent=1))
+            return 1 if any(c["error"] for c in calls) else 0
     for n, it in enumerate(items, 1):
+        got = verdicts.get(n - 1)
+        decide = (f"{got['verdict']}" + (f" ({got['sentence']})" if got["sentence"] else "") + (f" [{got['note']}]" if got["note"] else "")
+                  if got else "supported | contradicted | not enough info")
         print(f"## {n}. {it['outcome']} {it['source_id']} {it['where']}\n- fact: {fact_text(it['fact'])}\n"
               f"- source: {it['url']} ({it['verdict']}; {it['note']})\n- old ({it['old_from']}): {it['old'] or '-'}\n"
-              f"- new ({it['new_from'] or '-'}): {it['new'] or '-'}\n- decide: supported | contradicted | not enough info\n")
+              f"- new ({it['new_from'] or '-'}): {it['new'] or '-'}\n- {'judged' if got else 'decide'}: {decide}\n")
     print(f"review items={len(items)}")
+    if a.judge:
+        print("\n".join(judge_lines(calls)))
+        return 1 if any(c["error"] for c in calls) else 0
     return 0
 
 
@@ -1537,6 +1784,12 @@ def main():
     rv.add_argument("log")
     rv.add_argument("--source", action="append", default=[])
     rv.add_argument("--json", action="store_true")
+    rv.add_argument("--judge", action="store_true", help=f"judge each item with a tool-less model call (batches of {JUDGE_BATCH}): "
+                                                         "supported, contradicted or not enough information")
+    rv.add_argument("--model", default=JUDGE_MODEL, help=f"the model of --judge (default {JUDGE_MODEL})")
+    rv.add_argument("--batch-size", type=int, metavar="N", help=f"items per call of --judge (default {JUDGE_BATCH})")
+    rv.add_argument("--max-budget-usd", type=float, metavar="USD", help="--judge: each call's cap (default from its estimate)")
+    rv.add_argument("--dry-run", action="store_true", help="--judge: print the batches and the estimated tokens and USD, call nothing")
     ap_ = sub.add_parser("apply", help="apply what needs no model: confirm, re-date, re-point moved facts")
     ap_.add_argument("log")
     ap_.add_argument("--date", help="confirmation date (default today)")
@@ -1568,6 +1821,8 @@ def main():
     kbcommon.KB = ROOT.path
     if a.cmd == "calibrate" and a.what == "history" and not a.repo:
         ap.error("calibrate history needs --repo")
+    if a.cmd == "review" and not a.judge and (a.dry_run or a.batch_size or a.max_budget_usd):
+        ap.error("--dry-run, --batch-size and --max-budget-usd need --judge")
     if a.cmd in PHASES:
         run = lambda tally: PHASES[a.cmd](a, tally)  # noqa: E731
         if getattr(a, "dry_run", False):
