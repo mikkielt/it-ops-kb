@@ -2,7 +2,7 @@
   "id": "BG-pzgeq5t4",
   "kind": "bug",
   "title": "factdiff.py review --judge still defaults to Sonnet 5.5 while census.py judge defaults to Haiku 5.5",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yojt6y7v",
   "priority": "P3",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md",
     "_tools/census.py"
   ],
-  "claimed_by": "orchestrator-yojt6y7v"
+  "evidence": {
+    "commit": "d4211515c1d276e5e087503a6ea7a62496e93d29",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import census, factdiff; sys.exit(0 if factdiff.JUDGE_MODEL == census.STEP_MODELS['judge'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
