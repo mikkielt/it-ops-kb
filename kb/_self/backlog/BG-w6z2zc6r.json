@@ -1,0 +1,16 @@
+{
+  "id": "BG-w6z2zc6r",
+  "kind": "bug",
+  "title": "tests.py full run exceeds the darwin seconds ceiling by 1 to 8 s on a loaded host while all 100 tests pass",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/tests.py exits 0 on the darwin development host under the load of a sprint's parallel workers: the full run stays within the ceiling in _tools/tests_ceiling.json, or the slowest tests are cut, without raising the ceiling",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  }
+}
