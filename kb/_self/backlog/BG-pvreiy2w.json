@@ -1,0 +1,24 @@
+{
+  "id": "BG-pvreiy2w",
+  "kind": "bug",
+  "title": "The QK-postgres-envelope answer tags a DEK per scope as DOC, though Google's page says a new DEK per write and per-scope keys are the topic's own derivation",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The QK-postgres-envelope answer in kb/public/_answers.md tags its per-scope DEK line as DER with the reason, as auth/postgres-column-encryption.md line 33 does, and keeps the DOC tag only for what Google's envelope encryption page states (found by the SP-up5wchen review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/_answers.md').read_text(); sys.exit(any('DEK per scope' in l and '[DOC S-yvalenhr]' in l for l in t.splitlines()))"
+    ]
+  },
+  "repro_reason": "a mis-tagged fact in the answers ledger: no tool behaviour to run, only its text",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-up5wchen review"
+  ]
+}

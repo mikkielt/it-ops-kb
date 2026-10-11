@@ -1,0 +1,26 @@
+{
+  "id": "BG-oyzgvtrg",
+  "kind": "bug",
+  "title": "arch/buildkit-build-secrets says BUILDX_METADATA_PROVENANCE selects the attestation content, which the docs give only for the --metadata-file output",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "arch/buildkit-build-secrets.md line 30 and the QK-buildkit answer say BUILDX_METADATA_PROVENANCE sets only the provenance written to the --metadata-file output, that BUILDX_NO_DEFAULT_ATTESTATIONS switches the image's default attestations, and drop the claim that attestations default to minimal unless a cited page states it (found by the SP-up5wchen review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/arch/buildkit-build-secrets.md').read_text(); sys.exit(not any('BUILDX_METADATA_PROVENANCE' in l and 'metadata-file' in l for l in t.splitlines()))"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/arch/buildkit-build-secrets.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-up5wchen review"
+  ]
+}

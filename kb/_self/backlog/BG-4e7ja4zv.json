@@ -1,0 +1,27 @@
+{
+  "id": "BG-4e7ja4zv",
+  "kind": "bug",
+  "title": "auth/http-message-signatures says no standard operation turns an age X25519 identity into a signing key and omits XEdDSA",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "auth/http-message-signatures.md lines 40-41 and the QK-ed25519 answer name XEdDSA (Signal's spec), which signs with a Montgomery (X25519) private key, as a documented way to sign with an age identity's scalar, state its trade-offs against keeping a separate Ed25519 key, and limit the dropped-sign reasoning to the public-key map (found by the SP-up5wchen review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/auth/http-message-signatures.md').read_text(); sys.exit('XEdDSA' not in t)"
+    ]
+  },
+  "repro_reason": "a missing fact in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/auth/http-message-signatures.md",
+    "kb/public/_answers.md",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-up5wchen review"
+  ]
+}

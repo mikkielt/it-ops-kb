@@ -1,0 +1,26 @@
+{
+  "id": "BG-tgplvevj",
+  "kind": "bug",
+  "title": "auth/issuer-token-rotation and its answer call all four rotations cut-overs, though Discord's old-token validity after a reset is recorded as unknown",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "auth/issuer-token-rotation.md (lines 13 and 50) and the QK-issuer answer claim a cut-over only for GitLab, Cloudflare and R2, and name Discord's old-token validity after Reset Token as unknown, matching line 56 and its gap entry (found by the SP-up5wchen review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/_answers.md').read_text(); sys.exit('all four rotations are cut-overs' in t)"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article and answer: no tool behaviour to run, only the text",
+  "touches": [
+    "kb/public/auth/issuer-token-rotation.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-up5wchen review"
+  ]
+}

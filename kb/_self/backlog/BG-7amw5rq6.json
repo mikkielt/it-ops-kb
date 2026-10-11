@@ -1,0 +1,26 @@
+{
+  "id": "BG-7amw5rq6",
+  "kind": "bug",
+  "title": "auth/postgres-column-encryption gives CipherSweet's FIPS fast index as HMAC-SHA384, while one cited page says PBKDF2-SHA384 with one iteration",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "auth/postgres-column-encryption.md line 39 notes that its two cited CipherSweet pages disagree on the FIPS fast blind index (HMAC-SHA384 against PBKDF2-SHA384 with 1 iteration), or a _conflicts.md entry records it (found by the SP-up5wchen review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; t=pathlib.Path('kb/public/auth/postgres-column-encryption.md').read_text(); sys.exit(not any('HMAC-SHA384' in l and '1 iteration' in l for l in t.splitlines()))"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "touches": [
+    "kb/public/auth/postgres-column-encryption.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-up5wchen review"
+  ]
+}
