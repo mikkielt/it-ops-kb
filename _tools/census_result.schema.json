@@ -1,5 +1,4 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Result of one census phase-2 group",
   "description": "What a phase-2 reader returns for its owner group: census.py apply LOG --group G --from RESULTS.json validates it against this schema, then does the bookkeeping. `claude -p --json-schema` takes the same file.",
   "type": "object",
