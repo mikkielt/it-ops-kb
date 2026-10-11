@@ -2,12 +2,12 @@
   "id": "ST-bivdc2fa",
   "kind": "story",
   "title": "Research sprint goal: Research: GitLab project operations by API for an agent-run estate",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4phd36pa",
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The sprint goal's open questions are answered from official GitLab docs (kb tools first, live docs for the gaps) and written as kb facts and gap entries through the kb skills. Open (pack coverage none, or a false good whose cited lines do not answer it, 2026-10-11): (1) the project settings API attributes that encode a merge regime: only_allow_merge_if_pipeline_succeeds, remove_source_branch_after_merge, merge_method and squash_option, lfs_enabled, shared_runners_enabled, public_jobs, container_registry_access_level and merge_requests_access_level; (2) protected tags' create_access_levels against protected branches' push_access_levels by API; (3) deploy keys, deploy tokens and group access tokens: scopes, per-group versus per-project, expiry ceilings; (4) project webhooks: X-Gitlab-Token, event kinds, push event payload fields; (5) runner registration by runner authentication token (glrt-) via the API; (6) playing a pipeline schedule by API; (7) the group's PyPI, generic and container registries: publish, pin by digest, visibility. Answered in the kb already (pack good, public/gitlab/automated-merge-requests.md): auto-merge by API (merge_when_pipeline_succeeds, auto_merge), detailed_merge_status values and which never resolve by waiting; check them and the merge method, squash and source-branch deletion lines and tag pipelines on protected v* tags (public/gitlab/protected-branches-tags.md) against their cited lines, researching any that do not answer.",
   "checks": [
     {
       "run": [
