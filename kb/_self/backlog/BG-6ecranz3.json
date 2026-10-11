@@ -1,0 +1,19 @@
+{
+  "id": "BG-6ecranz3",
+  "kind": "bug",
+  "title": "census.py dispatch's Edit allow rules for a group's owned files are denied in a checkout under .claude/worktrees, so the session edits nothing and returns its rewrites as foreign edits",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.py dispatch run from a checkout whose path holds .claude/worktrees gives its session an Edit that works on the group's owned files (a rule form the permission mode honours there), or says before the paid run that the checkout's path makes its edits impossible; apply then has the group's rewrites made by the group, not printed as foreign edits for the orchestrator",
+  "repro": {
+    "run": [
+      "grep",
+      "-n",
+      "worktrees",
+      "_tools/census.py"
+    ]
+  },
+  "repro_reason": "the denial shows only in a paid headless claude -p session under --permission-mode dontAsk: its reply's permission_denials names the Edit of an owned file while the dry run prints a rule that looks right; found on 2026-10-11 in the logs census of ST-t67jhly3 (both dispatch replies, two foreign edits in the second) and reproduced with a haiku session on a scratch file: an Edit allowed by an absolute //path rule is denied at .../.claude/worktrees/w/a.txt and done at .../plain/a.txt; the grep matches only once census.py handles that path form"
+}
