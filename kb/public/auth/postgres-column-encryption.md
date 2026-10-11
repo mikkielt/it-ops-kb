@@ -3,7 +3,7 @@ topic: auth/postgres-column-encryption
 priority: P3
 applies_to: "Envelope encryption of PostgreSQL columns with per-site data keys (pgcrypto or client side) and blind indexes (keyed HMAC under a separate key) with their leakage"
 retrieved_utc: 2026-10-11
-sources: [S-byvcl63n, S-alffetzh, S-yvalenhr, S-qt7piebc, S-rqc6efd7]
+sources: [S-byvcl63n, S-alffetzh, S-yvalenhr, S-qt7piebc, S-rqc6efd7, S-r3t6wvk5]
 status: partial
 ---
 
