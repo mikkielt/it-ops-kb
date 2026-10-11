@@ -2,12 +2,12 @@
   "id": "ST-kk5dj5k6",
   "kind": "story",
   "title": "Research sprint goal: Research: Linux host configuration management and hardening by a pull agent",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ajcomz6d",
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs.",
+  "goal": "The sprint goal's open questions are answered from official sources (each project's own docs; kb tools first, live docs for the gaps) and written as kb facts and gap entries through the kb skills. Open (pack coverage none, weak, or a false good whose cited lines do not answer it, 2026-10-11): (1) CIS Benchmark Level 1 and Level 2 server profiles for Debian, Ubuntu, Alpine and AlmaLinux: which families have one, version, machine-readable form; (2) OpenSCAP with the SCAP Security Guide profiles each family ships, and Lynis where no SSG content exists (Alpine); (3) nftables ruleset files, sets and atomic load with nft -f; (4) auditd rules under /etc/audit/rules.d, augenrules, immutable mode; (5) sshd_config options CIS grades and sshd -T; (6) chrony and systemd-timesyncd; (7) automatic upgrades off (apt-daily timers, unattended-upgrades, dnf-automatic) and package pins by snapshot date (snapshot.debian.org, snapshot.ubuntu.com), point release (AlmaLinux vault, Alpine vX.Y) or index hash; (8) Docker secrets under /run/secrets, never environment variables; (9) WireGuard hub-and-spoke: wg-quick, AllowedIPs at the hub, PersistentKeepalive; (10) cloudflared tunnel replicas and Cloudflare Access for an SSH admin path; (11) Incus machine containers and VMs as a test bed (images, launch, exec, snapshot); (12) a pull agent: static binary fetching a git main, refusing a backwards version, idempotent typed steps with check, apply and dry-run (extend prior-art/drift-detection.md, which covers Puppet noop and Chef InSpec); (13) dead-man heartbeat monitors on a second provider. Already answered in the kb: none.",
   "checks": [
     {
       "run": [
