@@ -1,0 +1,33 @@
+{
+  "id": "ST-f2n2h22c",
+  "kind": "story",
+  "title": "The census and refresh read the lookups' cached revalidations as hints and skip re-fetching what a lookup checked within the provider's pacing",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py detect, census.py check and kb-refresh read the revalidation results lookups left in _cache/ (fact key, source id, outcome, date) and skip the request for a source a lookup revalidated within its provider's pacing window, while dating only what their own run confirms (D-tvjml75q); the census summary counts the sources a hint spared; the suite tests a planted cached result.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_lookup_hints"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/census.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    ".claude/skills/kb-census/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-mq7we5r2"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "ST-t2j24bhx",
+  "kind": "story",
+  "title": "factdiff.py detect checks a pinned source's repository for availability, one request per repository, so a deleted or private repository is reported gone",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "factdiff.py detect, census.py check and the lookup revalidation ask, for the pinned sources of a selection, whether each pinned repository still answers (one request per repository and run, through the provider's own route: the forge API or the raw file of one pinned path, within the GitHub unauthenticated limit), and report every pinned source of a repository that answers 404 as gone with the signal 'repository', instead of 'pinned' with no request; the facts citing them are listed for re-sourcing as dead sources are; the suite tests a planted 404 repository with a stubbed response.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pinned_repo_gone"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/census.py",
+    "_tools/provider.py",
+    "_tools/providers.csv",
+    "_tools/test_live_kb.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "kb:public/agents/doc-lookup-sources.md",
+    "kb:public/agents/doc-change-detection.md"
+  ],
+  "notes": "Premise (2026-10-11): python3 _tools/factdiff.py detect --no-save --source S105 --source S108 reports pinned with no request; meanwhile https://api.github.com/repos/MicrosoftDocs/memdocs, https://github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404. Of the 118 kb/public/_sources.csv rows in that repository, 114 were already superseded by Learn pages in earlier censuses and 4 are live (S2196, S-pcy7cqea, S-rgpijsmb, S-yuwxbqz3), so the gap this closes is the next repository that disappears before a census re-sources it. The 4 live rows are the bug filed beside this story."
+}
