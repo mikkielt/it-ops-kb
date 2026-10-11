@@ -226,3 +226,82 @@ claude -p "/kb-census 2026-09-26 --resume" --model MODEL --output-format stream-
 Both stopped before phase 3, asking the operator what to do; Opus 5.5 held the one group whose reader left a fact unchecked, Haiku 5.5 stopped on a red gate (`check.py` fails on the scratch clone's cut-down root in both runs: its anchors cite articles the restored tree lacks) before any commit. Neither ran `--force`, `--no-verify`, `submit_feedback` or a push. **Bars:** false confirms 0 against 1 and skipped steps 5 against 6 (met); turns 31 (met); outcome agreement 57.1% against 71.4%, 14.3 points under (FAILED: one flipped source of 7 is 14.3 points, and both orchestrators' groups were read by the same dispatch model, so the gap is the groups' reading run to run and no orchestrator's). The step keeps its model; the skill names none. One run each is what the 25 USD ceiling and a log of one selection allowed: it shows that Haiku 5.5 followed the skill as far as Opus 5.5 did at a 22nd of the orchestrator's spend, not that it follows it better or worse.
 
 **Spend.** The comparison cost about 14 USD in all: the two dispatch sets 8.1 (6.20 and 1.88), a first pass of 15 groups and the finished parts of a second under a setup that denied `git` on a symlinked clone cache and was thrown away (2.36 and 1.41 USD, plus sessions stopped before they reported), and the orchestrators 1.9. Each paid run followed its `--dry-run` estimate (dispatch) or the list-price estimate above (orchestrator). **Found on the way:** the result schema's `$schema` (2020-12) makes every real `claude -p --json-schema` call fail (`no schema with key or ref`), which the stub the suite uses hides; the runs above passed the schema text without the key, from a patched copy in the clone, so the commands here reproduce only with the key removed from `_tools/census_result.schema.json`.
+
+## A census of the logs domain on the deterministic route, 2026-10-11
+
+One domain's census, run on the route the steps above settled on: the fact diff and the mechanical verdicts with no model, the batch judge on `claude-haiku-5-5` (`census.STEP_MODELS['judge']`), the groups read by `census.py dispatch` on `claude-sonnet-5-5` (`census.DISPATCH_MODEL`), `finish`, and the phase-4 sample with its passage judgments on `claude-haiku-5-5`. The domain is `logs`, chosen by source count from `kb/public/_sources.csv`: 72 cited sources (45 on `learn.microsoft.com`, 23 raw files pinned at a commit, branch or tag, 3 live pages, 1 releases API), near the median (about 76) of the 27 domains' source counts and with every source class a census meets; `entra`, the domain of the dry run above, has 86.
+
+**Commands.** `census.py run` has no selection (its steps cover the whole root: the fact diff alone is about 30 minutes and 3,000 sources), so the steps of `census.plan_run` ran one by one on the domain, each a command of its own:
+
+```
+python3 _tools/factdiff.py detect --dir logs --sitemaps --date 2026-10-11
+python3 _tools/factdiff.py apply kb/public/_census/factdiff-2026-10-11.csv --date 2026-10-11 --commit
+python3 _tools/census.py check --date 2026-10-11 --factdiff kb/public/_census/factdiff-2026-10-11.csv --source ID ...   (the 72 ids)
+python3 _tools/census.py repin kb/public/_census/2026-10-11.csv --date 2026-10-11
+python3 _tools/build_index.py
+python3 _tools/census.py summary kb/public/_census/2026-10-11.csv --factdiff kb/public/_census/factdiff-2026-10-11.csv
+python3 _tools/census.py judge kb/public/_census/2026-10-11.csv --factdiff kb/public/_census/factdiff-2026-10-11.csv --dry-run
+python3 _tools/census.py judge kb/public/_census/2026-10-11.csv --factdiff kb/public/_census/factdiff-2026-10-11.csv --max-budget-usd 0.05
+python3 _tools/census.py groups kb/public/_census/2026-10-11.csv --factdiff kb/public/_census/factdiff-2026-10-11.csv
+python3 _tools/census.py dispatch kb/public/_census/2026-10-11.csv --group logs --part N --factdiff kb/public/_census/factdiff-2026-10-11.csv --dry-run
+python3 _tools/census.py dispatch kb/public/_census/2026-10-11.csv --group logs --part N --factdiff kb/public/_census/factdiff-2026-10-11.csv --max-budget-usd CAP
+python3 _tools/census.py apply kb/public/_census/2026-10-11.csv --group logs --from RESULTS[-N].json
+python3 _tools/census.py finish kb/public/_census/2026-10-11.csv --date 2026-10-11
+python3 _tools/census.py sample kb/public/_census/2026-10-11.csv --changed 0.10 --ok 0.05 --seed 1 --brief
+```
+
+Each paid command followed its `--dry-run`, and its `--max-budget-usd` is the cap the dry run printed (the judge 0.05 USD a call; dispatch 2.22 and 1.88 USD, three times the estimate). The figures below are read from the ops rows `census.phase` of that day (in the query log's spool, which `querylog.py where` names; a row holds `phase`, `date`, `ms`, `exit` and the counts) and from the replies' `total_cost_usd`; wall time is the sum of the phases' `ms`, which leaves out the minutes between commands. The sample's checker call is one `claude -p --model claude-haiku-5-5 --tools ""` on the brief, whose `total_cost_usd` and `duration_ms` are its reply's.
+
+**Phases, as run.**
+
+| phase | wall time | model calls | tokens in / out | total_cost_usd | what it settled |
+|---|---|---|---|---|---|
+| `detect` | 187.3 s | 0 | - | 0 | 72 sources: 8 unchanged, 1 changed, 36 moved, 3 soft 404, 1 replaced, 23 pinned; facts 197 word for word, 45 unanchored, 5 dead |
+| `apply` | 0.5 s | 0 | - | 0 | 8 sources confirmed, no fact to read |
+| `check` | 43.6 s | 0 | - | 0 | 44 OK, 24 CHANGED, 3 GONE, 1 NEWER-VERSION |
+| `repin` | 3.4 s | 0 | - | 0 | 2 pinned files re-pinned (12 facts word for word at the newer commit or release), 2 left in the queue |
+| `judge` (2 runs) | 56.1 s | 4 (1 failed, its batch asked again) | 44,436 / 19,592 | 0.0170 | 45 facts of 19 sources: 12 supported, 3 contradicted, 30 not enough information; 2 sources confirmed with no agent |
+| `dispatch` (2 parts) | 133.1 s | 2 sessions, 45 turns | 999,725 / 16,149 | 0.8164 | 22 rows: 17 confirmed, 1 updated, 4 unconfirmed as the sessions gave them; 2 updated and 3 unconfirmed after the by-hand rewrite below |
+| `finish` (`confirm`) | 0.04 s | 0 | - | 0 | 65 sources and 5 articles dated, 4 rows added by the census |
+| phase-4 checker | 5.0 s | 1 | 8,725 / 941 | 0.0021 | 1 source judged from passages |
+| total | 7 min 9 s | 7 | 1,052,886 / 36,682 | 0.8355 | |
+
+Tokens in count cache writes, cache reads and uncached input. Dispatch's 999,725 tokens in are 142,284 written to the cache and 857,407 read from it: each turn of an agent session re-reads its context, so the tokens a session consumes are not the characters the queue block counts, which is the reason the dry run prices turns and not passages.
+
+**Rows handed to a model.**
+
+| step | handed over | what it was |
+|---|---|---|
+| queue block after phase 1 | 26 rows, 260 facts, 54 review items, 29,572 characters, 7,393 tokens | 25 rows as review passages, 1 as a whole document (a Learn page whose change the fact diff did not locate, `S-hvr4bpb2`) |
+| the same queue with no fact diff | 26 rows, 362,025 characters, 90,506 tokens | `summary` on the phase-1 log with no fact diff log: the whole document of every row, 12.2 times the review passages |
+| batch judge | 23 sources, 50 review items; 45 asked (5 had no new passage), 19 sources judged | 2 sources had every fact supported and went to no agent |
+| agent group `logs` | 22 rows, 112 facts, 30 review items undecided, 20,174 characters | two brief parts, 12 and 10 rows |
+| agent group `intune` | 2 rows (the two Learn pages this domain cites that intune articles cite more), 140 facts, 12 review items, 4,177 characters | not dispatched: its files are outside this change's scope; its dry-run estimate is 0.31 USD and the 2 rows stay in the queue |
+
+**Against the same domain's share of the 2026-09-26 census.** The queue block of that census as phase 1 left it, cut to the sources the domain's files cited at that commit (`git cat-file blob df9030ac7:_census/2026-09-26.csv` filtered to the ids that `logs/` cites at `df9030ac7`, then `census.py summary` on the cut):
+
+| measure | 2026-09-26 census, logs share | 2026-10-11 census, logs |
+|---|---|---|
+| sources in the log | 53 | 72 |
+| buckets | 48 OK, 5 NEEDS-READING | 44 OK, 24 CHANGED, 3 GONE, 1 NEWER-VERSION |
+| rows in phase 2's queue | 5 (3 registry pages, 2 `memdocs` pins) | 26 |
+| facts citing them | 7 | 260 |
+| model input as the queue block counts it | whole documents: 5 rows, 3 characters, 0 tokens (the 2 pins were not cached; the 3 registry pages answer with a script shell) | review passages: 29,572 characters, 7,393 tokens |
+| model input as the calls consumed it | not recorded | judge 44,436 tokens in; dispatch 999,725 in |
+| USD | not recorded | 0.8355 |
+| wall time per phase | not recorded | 7 min 9 s of phases (table above) |
+| outcomes | 3 confirmed, 2 superseded | 19 confirmed, 2 updated, 2 superseded, 3 unconfirmed, 2 not read |
+
+The two censuses are not the same work: the earlier one ran 15 days before this one, with no fact diff, and 48 of the domain's 53 sources were OK; this one ran after 36 pages moved and 24 sources changed, so more rows came to the queue, not fewer. The baseline figure is a lower bound (its documents were not cached on the day the baseline was measured), and that census recorded neither cost nor time, so USD and wall time have no baseline to be set against. What the route shows is the cost of a queue that size: with the fact diff the 26 rows reached a model as 7,393 tokens of passages, not 90,506 of pages, the batch judge settled 2 of the 23 sources it was asked about and 12 of 45 facts outright, and the agent group's 22 rows cost 0.82 USD in 133 s.
+
+**Estimate against run.** The judge's dry run said 3 batches, 18,134 tokens in, 3,600 out and 0.0036 USD; it ran 4 calls (3 batches, one asked again after a call failed on `no entry matched an item`) for 44,436 in, 19,592 out and 0.0170 USD, 4.7 times the estimate, because the estimate prices the passages and a fixed call prompt and Haiku 5.5's thinking tokens are output. The two dispatch parts were estimated at 0.7389 and 0.6275 USD and cost 0.4633 and 0.3531, the whole 0.60 of the estimate, in 45 turns against the 92 estimated.
+
+**Phase-4 sample** (`--changed 0.10 --ok 0.05 --seed 1`): 4 sources checked, 3 agreed by the tool (every fact found word for word in the current text), 1 for the checker. The checker (Haiku 5.5, passages only) answered `disagree` for the changed source `S960`: its passage, the best match in the release's JSON, named the tag `v0.162.0` but showed neither the publication date nor the file versions the rewritten fact names. Reading the page the brief names (the document cache's JSON of the releases API) settled both: tag `v0.162.0`, `published_at` 2026-09-29, and the receiver facts' sources are pinned at `v0.161.0` and the Windows Event Log README at `v0.162.0`. So agreement by the checker 0 of 1 on passages alone, 1 of 1 after the page was read; no fact was wrong. The disagreement is not a defect of the checker; its cause is the step that made the rewrite: the group's session was denied its `Edit` of the owned file, returned the rewrite as a foreign edit, and the orchestrator made it by hand as one fact joining two sources' claims, which no single best-match passage states. That denial is filed as a bug of `census.py dispatch`.
+
+**Found on the way.**
+- **`dispatch` cannot edit in a checkout under `.claude/worktrees`.** In both parts the session's `Edit` of an owned file was denied under `dontAsk` although the dry run's rules allow it by absolute path (the reply's `permission_denials` names the call). A Haiku 5.5 probe on a scratch file reproduces it: the same allow rule edits a file at an ordinary path and is denied at a path with `.claude/worktrees` in it. Both parts' three rewrites (one ASIM schema list, the latest-release line and the `applies_to` of one article) came back as `foreign_edits` and were applied by hand; the outcomes were recorded as the sessions gave them, one (`S960`) then set to `updated`. Filed as a bug.
+- **`census.py run` takes no selection.** Filed as a bug; the steps above are its plan run by hand.
+- **A one-domain census writes outside the domain:** `factdiff.py detect` rewrote the snapshot of a `copy` source (`_snapshots/`), and `kbdecide.py sweep` in `finish` invalidated 8 decisions of `kb/_self/` whose items had been dropped, so a one-domain census changes the decision ledger too. Both were left out of the domain's commits.
+- **A judge call can fail whole:** `no entry matched an item` left 20 items unjudged; the second `judge` asked only for those (the log holds the verdicts of the first, as designed).
+
+**Spend.** 0.8355 USD for the census (0.0170 judge, 0.8164 dispatch, 0.0021 checker), plus about 0.003 USD of probes for the `dispatch` finding; every call stayed under its cap and none was retried at a higher one. The sample's disagreement is above; the tag is not created: 3 sources are unconfirmed (the registry pages) and 2 rows are unread.

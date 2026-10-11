@@ -1,9 +1,9 @@
 ---
 topic: logs/otel-collector-receivers
 priority: P3
-applies_to: "opentelemetry-collector-contrib v0.161.0 (released 2026-09-15)"
-retrieved_utc: 2026-09-26
-sources: [S960, S961, S962, S963, S964]
+applies_to: "opentelemetry-collector-contrib v0.161.0 receiver files (released 2026-09-15); latest release v0.162.0 (2026-09-29)"
+retrieved_utc: 2026-10-11
+sources: [S960, S961, S962, S964, S-dnzkxk4b]
 status: complete
 files: [logs/otel-filelogreceiver.config.csv, logs/otel-windowseventlogreceiver.config.csv, logs/otel-filelogreceiver.metadata.yaml, logs/otel-windowseventlogreceiver.metadata.yaml]
 ---
@@ -16,10 +16,10 @@ Both receivers ship in the contrib distribution (filelog also in k8s). In v0.161
 stability **alpha**, Windows only). Full option tables are saved as CSV beside this file; `metadata.yaml` files are saved verbatim.
 
 ## Facts
-- Latest contrib release at retrieval: `v0.161.0`, published 2026-09-15. [DOC S960]
+- Latest contrib release at 2026-10-11: `v0.162.0`, published 2026-09-29; the receiver facts below were taken from the v0.161.0 files (released 2026-09-15) and the v0.162.0 Windows Event Log README. [DOC S960]
 - File log receiver: type `file_log`, deprecated type `filelog`, stability beta (logs), distributions contrib and k8s. [DOC S962]
 - Windows Event Log receiver: type `windows_event_log`, deprecated type `windowseventlog`, stability alpha (logs), distribution contrib, unsupported on darwin and linux. [DOC S964]
-- The deprecated type `windowseventlog` is still accepted in configuration. [DOC S963]
+- The deprecated type `windowseventlog` is still accepted in configuration. [DOC S-dnzkxk4b]
 - filelog: `include` (glob list) is required; `start_at` defaults to `end`, so by default nothing is read from a file that is not being written to. [DOC S961]
 - filelog: `include_file_name` defaults true (`log.file.name`); `include_file_path` defaults false (`log.file.path`); owner/group/permission attributes are not supported on Windows. [DOC S961]
 - filelog: `encoding` default `utf-8`; also `utf-16le`, `utf-16be`, `ascii`, `nop`, `utf-8-raw`, `big5`. [DOC S961]
@@ -28,21 +28,21 @@ stability **alpha**, Windows only). Full option tables are saved as CSV beside t
 - filelog: supports move/create and copy/truncate rotation, tracking files by identity and fingerprint; `on_truncate` ignore|read_whole_file|read_new. [DOC S961]
 - filelog: `storage` (storage extension id) persists file offsets across restarts; without it offsets are in memory only. [DOC S961]
 - filelog: feature gate `filelog.windows.caseInsensitive` (beta, from v0.142.0) makes include/exclude matching case-insensitive on Windows. [DOC S961]
-- windowseventlog: `channel` required; `start_at` default `end`; `poll_interval` 1s; `max_reads` 100; `raw` false (structured body) or true (XML string). [DOC S963]
-- windowseventlog: `query` takes an XML event query (Windows Query Schema); `path` reads an EVTX archive file; `exclude_providers` filters providers. [DOC S963]
-- windowseventlog: `storage` persists bookmarks across restarts; otherwise bookmarks are in memory. [DOC S963]
-- windowseventlog: `remote` (server, username, password, optional domain) reads from a remote machine; `discover_domain_controllers` (feature gate `domainControllers.autodiscovery`, alpha, from v0.150.0). [DOC S963, S964]
-- windowseventlog: `resolve_sids.enabled` (default false) resolves SIDs via LSA with an LRU cache (10000 entries, 15m TTL). [DOC S963]
-- windowseventlog: `event_driven_scraping` (default false, experimental; same as feature gate `stanza.windows.eventDrivenScraping`, alpha) wakes on Windows API signals; `wait_timeout` 5s safety-net poll. [DOC S963]
-- windowseventlog: `ignore_channel_errors` false by default, so failing to open a channel stops the collector unless set true. [DOC S963]
-- Both: `retry_on_failure` (disabled by default; 1s initial, 30s max interval, 5m max elapsed; `0` = retry forever; then data is discarded). [DOC S961, S963]
+- windowseventlog: `channel` required; `start_at` default `end`; `poll_interval` 1s; `max_reads` 100; `raw` false (structured body) or true (XML string). [DOC S-dnzkxk4b]
+- windowseventlog: `query` takes an XML event query (Windows Query Schema); `path` reads an EVTX archive file; `exclude_providers` filters providers. [DOC S-dnzkxk4b]
+- windowseventlog: `storage` persists bookmarks across restarts; otherwise bookmarks are in memory. [DOC S-dnzkxk4b]
+- windowseventlog: `remote` (server, username, password, optional domain) reads from a remote machine; `discover_domain_controllers` (feature gate `domainControllers.autodiscovery`, alpha, from v0.150.0). [DOC S-dnzkxk4b, S964]
+- windowseventlog: `resolve_sids.enabled` (default false) resolves SIDs via LSA with an LRU cache (10000 entries, 15m TTL). [DOC S-dnzkxk4b]
+- windowseventlog: `event_driven_scraping` (default false, experimental; same as feature gate `stanza.windows.eventDrivenScraping`, alpha) wakes on Windows API signals; `wait_timeout` 5s safety-net poll. [DOC S-dnzkxk4b]
+- windowseventlog: `ignore_channel_errors` false by default, so failing to open a channel stops the collector unless set true. [DOC S-dnzkxk4b]
+- Both: `retry_on_failure` (disabled by default; 1s initial, 30s max interval, 5m max elapsed; `0` = retry forever; then data is discarded). [DOC S961, S-dnzkxk4b]
 
 ## Reference
 - `otel-filelogreceiver.config.csv` (51 fields), `otel-windowseventlogreceiver.config.csv` (29 fields): field, default, description (Apache-2.0, from the README at v0.161.0).
 - `otel-filelogreceiver.metadata.yaml`, `otel-windowseventlogreceiver.metadata.yaml`: verbatim, Apache-2.0, © OpenTelemetry Authors.
 
 ## Examples
-- SNIPPET: configure a filelog receiver for CCM logs and a windowseventlog receiver for a DSC channel; context: opentelemetry-collector-contrib v0.161.0; checked: no [DOC S961, S963: filelog `include`/`start_at`/`encoding`/`include_file_path`/`storage` and windowseventlog `channel`/`start_at`/`storage` options]
+- SNIPPET: configure a filelog receiver for CCM logs and a windowseventlog receiver for a DSC channel; context: opentelemetry-collector-contrib v0.161.0; checked: no [DOC S961, S-dnzkxk4b: filelog `include`/`start_at`/`encoding`/`include_file_path`/`storage` and windowseventlog `channel`/`start_at`/`storage` options]
 ```yaml
 receivers:
   file_log/ccm:
