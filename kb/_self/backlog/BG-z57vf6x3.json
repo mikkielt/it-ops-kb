@@ -2,7 +2,7 @@
   "id": "BG-z57vf6x3",
   "kind": "bug",
   "title": "kbdecide.py lets an agent session record a tests-ceiling decision whose token has a prefix glued to it, which tests.py still accepts",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rlincemn",
   "priority": "P1",
   "rank": 0,
@@ -34,5 +34,28 @@
     "kb/_self/tools.md"
   ],
   "notes": "Found by the SP-rlincemn review (finding 1). Premise run 2026-10-12 on origin/main 0aa024b61: names_ceiling('ztests-ceiling ids=1') is False while tests.py read_ceiling accepts any decision text holding the token as a substring (token in text). The suite is at 100 of 100 ids: extend the existing kbdecide authority test, add no id.",
-  "claimed_by": "orch-rlincemn"
+  "evidence": {
+    "commit": "f3f06f9bd20a28a82823b6637941b8acfc4f56e8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_operator"
+        ],
+        "exit": 0,
+        "sha256": "1651ff9b241fc03f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if all(a.names_ceiling(t) for t in ('ztests-ceiling ids=100 files=15 seconds=darwin:99','x_tests-ceiling ids=1 files=1 seconds=darwin:1')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
