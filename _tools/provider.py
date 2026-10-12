@@ -6,6 +6,9 @@
   provider.py [--root NAME] probe NAME [--url URL] [--write] [--json]
                                                           live requests and deterministic checks of one provider;
                                                           --write stores the measured columns and probed_utc
+  provider.py [--root NAME] read URL [--grep WORDS] [--context N] [--max N] [--from LINE] [--refresh]
+                                                          the page in its provider's raw form, with the lines that
+                                                          hold every word of WORDS and the url to cite
 
 Registry. _tools/providers.csv holds the public providers, shared by every root; a root may add its own
 <root>/_providers.csv for internal providers (a team wiki, an internal git host). They are merged at read time: a root
@@ -40,7 +43,8 @@ Columns (one row per provider):
   stable_id       the key of an id that survives moves and renames (`document_id`), or `-`
   raw_form        how the text is fetched: `-` (the url itself), `query:accept=text/markdown` (added query),
                   `suffix:.md` (added to the path), `header:text/markdown` (Accept header), `blob-to-raw` (a GitHub
-                  or GitLab blob page read as the raw file at the same ref)
+                  or GitLab blob page read as the raw file at the same ref), `arxiv-api` (an arXiv abstract page
+                  read as its entry of the export API, an Atom feed that doc_text reduces to lines)
   sitemap         sitemap index url, or `-`
   sitemap_lastmod per-page (usable per page) | added-removed (only to list added and removed urls) | none | -
   redirects       where moves are recorded (redirection files, 301 chains)
@@ -62,12 +66,21 @@ row with the `git` signal names, and search_api with the page's title when the r
 curated from the provider's documentation and kept. The `*` row serves many hosts: its probe records only probed_utc
 and a note naming the sample host. Exit: 0 ok, 1 the sample could not be fetched, 2 bad arguments.
 
+read fetches URL by its provider's raw form (`show` names it), keeps a 200 for READ_AGE days under
+_cache/provider-read/ (--refresh fetches again) and prints `cite:` (the url to cite), `read:` (the url fetched, its
+status and the day of the fetch) and the lines that hold every word of --grep (case-insensitive), numbered as
+`N:line`, with --context lines either side as `N-line`; a repository file (raw.githubusercontent.com, /-/raw/) is
+numbered by the file's own lines, any other page by the reduced text. Without --grep the text is printed from line
+--from, --max lines at a time (a long line is cut around its first word). Exit: 0 text read (and a line matched),
+1 the page did not answer 200, is not text (a PDF: left to the Read tool) or no line holds every word, 2 bad arguments.
+
 Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
 lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
 is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run.
 """
 import argparse, contextlib, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request, zlib
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
@@ -391,10 +404,14 @@ def raw_url(url, row):
     if kind == "header":
         return base, {"Accept": val}
     if kind == "blob-to-raw":  # a GitHub or GitLab blob page -> the raw file at the same ref
-        m = re.match(r"https://github\.com/([^/]+)/([^/]+)/blob/(.+)$", base)
+        m = re.match(r"https://github\.com/([^/]+)/([^/]+)/blob/([^?]+)", base)
         if m:
             return f"https://raw.githubusercontent.com/{m.group(1)}/{m.group(2)}/{m.group(3)}", {}
         return base.replace("/-/blob/", "/-/raw/"), {}
+    if kind == "arxiv-api":  # an arXiv abstract page -> its entry of the export API (an Atom feed)
+        m = re.match(r"https?://(?:www\.)?arxiv\.org/abs/([^?]+?)/?(?:\?.*)?$", base)
+        if m:
+            return f"https://export.arxiv.org/api/query?id_list={m.group(1)}", {}
     return base, {}
 
 
@@ -460,9 +477,44 @@ def doc_text(body, ctype, url=""):
             return json.dumps(json.loads(t), indent=1, ensure_ascii=False) + "\n"
         except ValueError:
             pass
+    if "<feed" in t[:600] and "http://www.w3.org/2005/Atom" in t[:600]:
+        feed = atom_text(t)
+        if feed is not None:
+            return feed
     if ("xml" in (ctype or "") or t.lstrip().startswith("<?xml")) and len(t) > 500 * (t.count("\n") + 1):
         return re.sub(r">\s*<", ">\n<", t)
     return t
+
+
+ATOM = "{http://www.w3.org/2005/Atom}"
+ARXIV = "{http://arxiv.org/schemas/atom}"
+
+
+def atom_text(xml):
+    """An Atom feed as lines, one block for each entry: `# title`, then `key: value` lines (id, authors, published,
+    updated, categories and the arXiv extension keys) and the summary one sentence a line, so a passage can be
+    located by line. None when the text is not a well-formed feed."""
+    try:
+        feed = ET.fromstring(xml)
+    except ET.ParseError:
+        return None
+    blocks = []
+    for e in feed.findall(ATOM + "entry"):
+        def one(tag, ns=ATOM):
+            node = e.find(ns + tag)
+            return " ".join((node.text or "").split()) if node is not None else ""
+        lines = ["# " + (one("title") or "(no title)")]
+        keys = [("id", one("id")),
+                ("authors", "; ".join(" ".join((a.findtext(ATOM + "name") or "").split()) for a in e.findall(ATOM + "author"))),
+                ("published", one("published")), ("updated", one("updated")),
+                ("categories", "; ".join(c.get("term", "") for c in e.findall(ATOM + "category"))),
+                ("comment", one("comment", ARXIV)), ("journal_ref", one("journal_ref", ARXIV)), ("doi", one("doi", ARXIV))]
+        lines += [f"{k}: {v}" for k, v in keys if v]
+        summary = one("summary")
+        if summary:
+            lines += [""] + re.split(r"(?<=[.!?])\s+(?=[A-Z$\\(])", summary)
+        blocks.append("\n".join(lines))
+    return "\n\n".join(blocks) + "\n" if blocks else None
 
 
 def document(url, row=None, etag="", lastmod=""):
@@ -490,6 +542,125 @@ def document(url, row=None, etag="", lastmod=""):
         out["text"] = doc_text(r["body"], out["ctype"], rurl)
         out["sha"] = hashlib.sha256((out["text"] or "").encode() if out["text"] is not None else r["body"]).hexdigest()
     return out
+
+
+# ---------------------------------------------------------------- read: a page by its route, its matching lines
+
+READ_CACHE = os.path.join(kbcommon.HOME, "_cache", "provider-read")  # beside _cache/factdiff, never committed
+READ_AGE, READ_LINES, READ_WIDTH = 7, 60, 400  # days a fetch is reused; lines printed; characters of a line printed
+NOT_TEXT = "not text: download it with curl into _cache/ and read it with the Read tool (pdf: by page range)"
+
+
+def read_cache_path(url):
+    return os.path.join(READ_CACHE, hashlib.sha256(url.split("#")[0].encode("utf-8")).hexdigest()[:24] + ".json")
+
+
+def _read_text(d):
+    """The text a read greps: a repository file (raw.githubusercontent.com, `/-/raw/`) exactly as it is, so a line
+    number is the file's own (`#L12`); any other page as doc_text reduces it. None for a binary or a PDF."""
+    raw = d.get("raw")
+    if raw is None or raw.startswith("%PDF-"):
+        return None
+    ru = d.get("raw_url") or d["url"]
+    if urllib.parse.urlsplit(ru).netloc.lower() == "raw.githubusercontent.com" or "/-/raw/" in ru:
+        return raw.replace("\r\n", "\n")
+    return doc_text(raw.encode("utf-8"), d.get("ctype", ""), ru)
+
+
+def read(url, rows=None, refresh=False, now=None):
+    """The document of `url` in its provider's raw form, from the read cache when a fetch of it is under READ_AGE days
+    old (`refresh` fetches again): {status, error, url (without fragment), raw_url, raw_form, ctype, bytes, final,
+    moved (the url a redirect ended at when it is not the raw url, else ""), fetched_utc, cached, text (None for a
+    binary, a PDF or a page that did not answer 200)}. Only a 200 is kept in the cache."""
+    base = url.split("#")[0]
+    path = read_cache_path(base)
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    d = None
+    if not refresh:
+        try:
+            with open(path, encoding="utf-8") as f:
+                d = json.load(f)
+            when = datetime.datetime.fromisoformat(d["fetched_utc"])
+            d = d if (now - when).days < READ_AGE else None
+        except (OSError, ValueError, KeyError):
+            d = None
+    if d is not None:
+        d["cached"] = True
+    else:
+        row = for_url(base, rows) or {}
+        got = document(base, row)
+        raw_url_ = got.get("raw_url") or raw_url(base, row)[0]
+        d = {k: got.get(k) for k in ("status", "error", "ctype", "bytes", "final", "raw")}
+        d.update(url=base, raw_url=raw_url_, raw_form=row.get("raw_form") or "-", fetched_utc=now.isoformat(), cached=False,
+                 moved=got["final"] if got["hops"] and got["final"].split("?")[0].rstrip("/") != raw_url_.split("?")[0].rstrip("/") else "")
+        if d["status"] == 200:
+            os.makedirs(READ_CACHE, exist_ok=True)
+            with open(path, "w", encoding="utf-8", newline="\n") as f:
+                json.dump({k: v for k, v in d.items() if k != "cached"}, f)
+    d["text"] = _read_text(d) if d["status"] == 200 else None
+    return d
+
+
+def grep_lines(text, words, context=0, start=1, limit=READ_LINES):
+    """(blocks, total, shown): the lines of `text` that hold every word of `words` (case-insensitive; all lines from
+    line `start` when `words` is empty), each with `context` lines either side, as groups of (number, line, matched);
+    at most `limit` matching lines are shown of `total`."""
+    lines = text.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    low = [w.lower() for w in words]
+    hit = [i for i, ln in enumerate(lines) if i + 1 >= start and all(w in ln.lower() for w in low)]
+    shown = hit[:limit]
+    groups, near = [], set(shown)
+    for i in shown:
+        lo, hi = max(0, i - context), min(len(lines) - 1, i + context)
+        if groups and lo <= groups[-1][-1] + 1:
+            groups[-1].extend(range(groups[-1][-1] + 1, hi + 1))
+        else:
+            groups.append(list(range(lo, hi + 1)))
+    return [[(i + 1, lines[i], i in near) for i in g] for g in groups], len(hit), len(shown)
+
+
+def excerpt(line, words, width=READ_WIDTH):
+    """`line`, cut to a window of `width` characters around its first word when it is longer."""
+    if len(line) <= width:
+        return line
+    at = min((line.lower().find(w.lower()) for w in words if w.lower() in line.lower()), default=0)
+    lo = max(0, min(at - width // 4, len(line) - width))
+    return ("... " if lo else "") + line[lo:lo + width] + (" ..." if lo + width < len(line) else "")
+
+
+def cmd_read(a, rows):
+    """Print the page of a.url by its provider's raw form (exit 1 when it is not read as text or no line holds every
+    word of a.grep, 0 otherwise)."""
+    d = read(a.url, rows, refresh=a.refresh)
+    print(f"cite: {d['url']}")
+    got = f"{d['status'] or d['error']}" + (f", {d['ctype']}" if d.get("ctype") else "") + f", {d['bytes'] or 0} bytes"
+    print(f"read: {d['raw_url']} ({got}; " + ("cache of " if d["cached"] else "fetched ") + f"{d['fetched_utc'][:10]})")
+    if d["moved"]:
+        print(f"moved: {d['moved']}")
+    if d["status"] != 200:
+        print(f"not read: {d['status'] or d['error']}")
+        return 1
+    if d["text"] is None:
+        print(NOT_TEXT)
+        return 1
+    text, words = d["text"], (a.grep or "").split()
+    nlines = len(text.split("\n")) - text.endswith("\n")
+    groups, total, shown = grep_lines(text, words, a.context, a.start, a.limit)
+    if words and not total:
+        each = [(w, sum(w.lower() in ln.lower() for ln in text.split("\n"))) for w in words]
+        print(f"no line holds every word of {' '.join(words)!r}; lines holding each: " + ", ".join(f"{w} {n}" for w, n in each))
+        return 1
+    print(f"lines: {total} of {nlines} " + (f"hold every word of {' '.join(words)!r}" if words else f"from line {a.start}"))
+    for i, g in enumerate(groups):
+        if i:
+            print("--")
+        for n, ln, matched in g:
+            print(f"{n}{':' if matched else '-'}{excerpt(ln, words)}")
+    if shown < total:
+        print(f"{total - shown} more: raise --max" + (" or add words to --grep" if words else f", or --from {groups[-1][-1][0] + 1}"))
+    return 0
 
 
 # ---------------------------------------------------------------- probe
@@ -543,7 +714,7 @@ def probe(row, url):
             continue
         r = request(ru, hdr)
         ct = r["headers"].get("content-type", "")
-        ok = r["status"] == 200 and len(r["body"]) > 200 and ("markdown" in ct or (form == "blob-to-raw" and "html" not in ct))
+        ok = r["status"] == 200 and len(r["body"]) > 200 and ("markdown" in ct or (form in ("blob-to-raw", "arxiv-api") and "html" not in ct))
         ev.append(f"raw form {form}: {r['status'] or r['error']} {r['headers'].get('content-type', '')}")
         if ok:
             raw_forms.append((form, r))
@@ -551,7 +722,7 @@ def probe(row, url):
     curated = [f for f in raw_forms if f[0] == row.get("raw_form")]  # the documented form wins when it works
     if curated or raw_forms:
         form, rr = (curated or raw_forms)[0]
-    elif row.get("raw_form") == "blob-to-raw" or "html" not in ctype:
+    elif row.get("raw_form") in ("blob-to-raw", "arxiv-api") or "html" not in ctype:
         form, rr = (row.get("raw_form") or "-", a) if "html" not in ctype else ("-", a)
     else:
         form, rr = "-", a
@@ -610,7 +781,7 @@ def probe(row, url):
         title = re.search(r"(?im)^title:\s*(.+)$|<title>([^<]+)</title>", raw)
         q = ((title.group(1) or title.group(2)) if title else "overview").split("|")[0].split(" - ")[0].strip()
         s = request(tpl.replace("{q}", urllib.parse.quote(q)))
-        ok = s["status"] == 200 and s["body"][:1] in (b"{", b"[")
+        ok = s["status"] == 200 and (s["body"][:1] in (b"{", b"[") or s["body"][:5] == b"<?xml")
         ev.append(f"search_api {q!r}: {s['status']}" + (", lastUpdatedDate present" if b"lastUpdatedDate" in s["body"] else ""))
         if not ok:
             found["notes_search"] = f"search_api answered {s['status']}"
@@ -650,7 +821,16 @@ def main():
     p.add_argument("--write", action="store_true", help="store the measured columns and probed_utc in the row's file")
     p.add_argument("--json", action="store_true")
     p.add_argument("--delay", type=float, default=DELAY, help="seconds between requests to one host (default 1.1)")
+    r = sub.add_parser("read", help="read a page by its provider's raw form and print the lines that hold every word")
+    r.add_argument("url")
+    r.add_argument("--grep", metavar="WORDS", help="print only the lines that hold every one of these words (any case)")
+    r.add_argument("--context", type=int, default=0, metavar="N", help="lines of context either side of a match (default 0)")
+    r.add_argument("--max", type=int, default=READ_LINES, metavar="N", dest="limit", help=f"lines printed (default {READ_LINES})")
+    r.add_argument("--from", type=int, default=1, metavar="LINE", dest="start", help="first line considered (default 1)")
+    r.add_argument("--refresh", action="store_true", help=f"fetch again although the cache holds the page ({READ_AGE} days)")
     a = ap.parse_args()
+    if a.cmd == "read" and (a.context < 0 or a.limit < 1 or a.start < 1):
+        ap.error("--context must be 0 or more, --max and --from 1 or more")
     try:
         root = kbcommon.root(a.root)
     except (KeyError, kbcommon.RootError) as e:
@@ -661,6 +841,8 @@ def main():
             print(f"{r['provider']:<12} {r['match']:<40} signals={r.get('signals', '')} not_found={r.get('not_found', '')} "
                   f"probed={r.get('probed_utc') or 'never'}" + (f" (root {r['_root']})" if r.get("_root") else ""))
         return 0
+    if a.cmd == "read":
+        return cmd_read(a, rows)
     if a.cmd == "show":
         r = for_url(a.url, rows)
         if not r:

@@ -95,7 +95,7 @@ def test_build_index_check_passes_on_the_live_kb():
     assert code == 0, out[-3000:]
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -217,6 +217,65 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     monkeypatch.setattr(factdiff, "revalidate", lambda *a, **k: pytest.fail("the kb: hook revalidated"))
     res = kb_hook.answer("kb: " + question)
     assert res and res["decision"] == "block" and "revalidate" not in res["reason"]
+    # provider.py read: each family's url maps to its raw form; the page is fetched once, kept under the read cache and
+    # printed as the lines that hold every grep word with the url to cite; a PDF and a miss are reported, not printed
+    prov = provider.providers()
+    raw = lambda u: provider.raw_url(u, provider.for_url(u, prov))[0]  # noqa: E731
+    mapped = {"https://github.com/Org/Repo/blob/v1.2/docs/a.md?plain=1#L5": "https://raw.githubusercontent.com/Org/Repo/v1.2/docs/a.md",
+              "https://gitlab.com/org/proj/-/blob/main/a.md": "https://gitlab.com/org/proj/-/raw/main/a.md",
+              "https://arxiv.org/abs/2406.12045v2": "https://export.arxiv.org/api/query?id_list=2406.12045v2",
+              "https://arxiv.org/abs/hep-th/9901001?context=hep-th": "https://export.arxiv.org/api/query?id_list=hep-th/9901001",
+              "https://learn.microsoft.com/en-us/x": "https://learn.microsoft.com/en-us/x?accept=text/markdown",
+              "https://code.claude.com/docs/en/hooks": "https://code.claude.com/docs/en/hooks.md",
+              "https://modelcontextprotocol.io/specification/x": "https://modelcontextprotocol.io/specification/x.md",
+              "https://github.com/Org/Repo/issues/7": "https://github.com/Org/Repo/issues/7",
+              "https://example.com/p": "https://example.com/p"}
+    assert {u: raw(u) for u in mapped} == mapped
+    page = "# Guide\n\nThe Orion scheduler restarts every night.\n\n## Queue\n\nThe Orion queue holds ten thousand jobs.\nThe Orion queue refuses new jobs.\n"
+    feed = ('<?xml version="1.0" encoding="UTF-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom" xmlns:arxiv="http://arxiv.org/schemas/atom">'
+            "<entry><id>http://arxiv.org/abs/2406.12045v2</id><title>Orion: a benchmark</title><published>2024-06-17T00:00:00Z</published>"
+            "<summary>We study queues. The Orion queue holds ten thousand jobs.</summary><author><name>Jan Kowalski</name></author>"
+            '<category term="cs.AI"/></entry></feed>')
+    html = "<html><body><main><h1>Guide</h1><p>The Orion queue holds ten thousand jobs.</p></main></body></html>"
+    blob, abstract, fetched = "https://github.com/Org/Repo/blob/main/docs/a.md", "https://arxiv.org/abs/2406.12045", []
+    served = {raw(blob): (200, "text/plain; charset=utf-8", "---\nx: 1\n---\n" + page),
+              raw(abstract): (200, "application/atom+xml", feed), "https://example.com/p": (200, "text/html", html),
+              "https://arxiv.org/pdf/2406.12045": (200, "application/pdf", "%PDF-1.7\n1 0 obj"),
+              "https://example.com/gone": (404, "text/html", "")}
+
+    def serve(url, headers=None, limit=20_000_000, method="GET"):
+        fetched.append(url)
+        status, ctype, body = served[url]  # an unplanned url raises
+        return {"status": status, "headers": {"content-type": ctype}, "body": body.encode(), "final": url, "hops": [], "error": ""}
+    monkeypatch.setattr(provider, "request", serve)
+    monkeypatch.setattr(provider, "READ_CACHE", str(tmp_path / "read"))
+
+    def read(url, **kw):
+        ns = argparse.Namespace(url=url, grep=None, context=0, limit=60, start=1, refresh=False)
+        ns.__dict__.update(kw)
+        code = provider.cmd_read(ns, prov)
+        return code, capsys.readouterr().out
+    code, out = read(blob + "#L3", grep="ORION queue", context=1)  # a repository file keeps its own line numbers
+    assert code == 0 and out.startswith(f"cite: {blob}\nread: {raw(blob)} (200, text/plain; charset=utf-8, "), out
+    assert out.splitlines()[3:] == ["9-", "10:The Orion queue holds ten thousand jobs.", "11:The Orion queue refuses new jobs."], out
+    assert "lines: 2 of 11 hold every word of 'ORION queue'" in out
+    code, out = read(blob, grep="orion queue")  # the second read is the cache's: no request
+    assert code == 0 and "cache of " in out and fetched == [raw(blob)], (out, fetched)
+    code, out = read(blob, grep="scheduler queue", refresh=True)  # no line holds both words: the counts of each say where to look
+    assert code == 1 and "no line holds every word of 'scheduler queue'; lines holding each: scheduler 1, queue 3" in out
+    assert fetched == [raw(blob)] * 2
+    code, out = read(abstract, grep="ten thousand")  # an arXiv abstract is its entry of the export API, one sentence a line
+    assert code == 0 and f"cite: {abstract}\nread: {raw(abstract)} (200, application/atom+xml, " in out
+    assert "The Orion queue holds ten thousand jobs." in out.splitlines()[-1]
+    code, out = read(abstract, start=1, limit=3)  # no grep: the text from a line, a few lines at a time
+    assert code == 0 and "1:# Orion: a benchmark" in out and "3:authors: Jan Kowalski" in out and "more: raise --max, or --from 4" in out
+    code, out = read("https://example.com/p", grep="ten thousand")  # any other page: its HTML reduced to text
+    assert code == 0 and out.splitlines()[-1].endswith(":The Orion queue holds ten thousand jobs.")
+    code, out = read("https://arxiv.org/pdf/2406.12045")
+    assert code == 1 and provider.NOT_TEXT in out, out
+    code, out = read("https://example.com/gone", grep="x")
+    assert code == 1 and "not read: 404" in out
+    assert len(os.listdir(tmp_path / "read")) == 4, os.listdir(tmp_path / "read")  # a 200 is kept (a PDF too), a miss is not
 
 
 def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):

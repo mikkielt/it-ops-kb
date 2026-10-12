@@ -20,6 +20,7 @@
       "Bash(python3 _tools/check.py)",
       "Bash(python3 _tools/fetch.py --offline)",
       "Bash(python3 _tools/fetch.py --status *)",
+      "Bash(python3 _tools/provider.py read *)",
       "Bash(python3 _tools/tests.py *)",
       "Bash(python3 _tools/selfdoc.py section *)",
       "Bash(python3 _tools/selfdoc.py map-tools *)",
