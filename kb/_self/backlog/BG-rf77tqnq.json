@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "dhcp-failover.md states only the cmdlet reference's reading of which server -ServerRole Standby makes the standby, though its conflict entry says the kb states both",
   "status": "draft",
+  "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -20,7 +21,11 @@
     "kb/public/_conflicts.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-lcp6dhpz"
+  ],
   "links": [
     "parked: SP-j2jn5ue4 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: repro prints 0 and exits 1; line 37 of dhcp-failover.md cites S-x2hxgchj only for the -ServerRole reading, none cites S-xl2d4tuq for it. Runs after BG-lcp6dhpz (same _conflicts.md) and before BG-4lfjabfo (same expansions.csv)."
 }

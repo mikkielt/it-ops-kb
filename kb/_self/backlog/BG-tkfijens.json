@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kb/public/_answers.md gives the os.copy_file_range EXDEV mapping without its Linux kernel older than 5.3 condition",
   "status": "draft",
+  "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,10 +16,33 @@
     ]
   },
   "repro_reason": "kb content: the defect is the article text itself, so reading the text is the behaviour",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('kb/public/_answers.md',encoding='utf-8') if 'copy_file_range' in l and 'EXDEV' in l and 'older than 5.3' in l];print(len(ls));sys.exit(0 if ls else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The _answers.md entry on os.link across filesystems (about line 2604) says the os page states the EXDEV mapping only for os.copy_file_range, without the page's condition 'In Linux kernel older than 5.3'",
+      "check": 1
+    },
+    {
+      "clause": "ST-vodknj3g fixed the article and the _gaps.md entry, not this answer (SP-5x5ut5ko review gap G3). The entry gives the condition as the page states it",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_answers.md"
   ],
+  "depends_on": [
+    "BG-im4573w7"
+  ],
   "links": [
     "parked: SP-5x5ut5ko review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: the repro exits 1, naming line 2604 of kb/public/_answers.md as the EXDEV line without 5.3; public/python/stdlib-windows-portability.md:86 already quotes the page's condition. Runs after BG-im4573w7, which edits the same file."
 }

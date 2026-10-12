@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The Sonnet 5.5 cache-read conflict's resolution says older runs are re-priced at 0.10, while bench_core.READ_BEFORE keeps them at 0.20",
   "status": "draft",
+  "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -15,11 +16,23 @@
     ]
   },
   "repro_reason": "the defect is the ledger's text against a code constant; no behaviour runs it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('kb/public/_conflicts.md',encoding='utf-8') if '2.1.295 or older' in l and 'READ_BEFORE' in l and '0.20' in l];print(len(ls));sys.exit(0 if ls else 1)"
+      ]
+    }
+  ],
   "touches": [
     "kb/public/_conflicts.md"
+  ],
+  "depends_on": [
+    "ST-iiljf4vt"
   ],
   "links": [
     "parked: SP-ceucrhca review"
   ],
-  "notes": "Review gap 10 (S4): kb/public/_conflicts.md:746 against bench_core.READ_BEFORE."
+  "notes": "Review gap 10 (S4): kb/public/_conflicts.md:746 against bench_core.READ_BEFORE. Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: repro prints 'ledger says re-priced at 0.10' (exit 1); bench_core.py:46 READ_BEFORE is ((2, 1, 296), 0.20) and read_price returns it for a version before 2.1.296."
 }

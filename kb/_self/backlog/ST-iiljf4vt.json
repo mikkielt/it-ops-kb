@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open question whose pack coverage is weak, what per-million-token price Claude Code 2.1.295 or older counts for Sonnet 5.5 cache reads (BG-lcp6dhpz; the kb names no 2.1.295 in an article), is answered with the kb tools first and the live docs for the gap, and the finding is written as a kb fact or gap entry through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Questions run through rag.py pack at plan time: cap on --max-budget-usd (good), os.copy_file_range EXDEV condition (good), Claude Code 2.1.295 or older Sonnet 5.5 cache-read price (weak: no article names 2.1.295), -ServerRole Standby (good), memdocs 404 and Internet Archive (good), memdocs licence (good), RRF k (good), census step models (weak on the public root; good on --root _self, tested SQ-census-judging-steps-model at kb/_self/token-efficiency.md:13, so it needs no outside fact), lock for concurrent writers on Windows and POSIX (good). Only the cache-read price question is narrowed in."
 }
