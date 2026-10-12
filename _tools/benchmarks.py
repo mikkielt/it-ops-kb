@@ -38,13 +38,17 @@
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
                                             query-log questions to kb/_querylog/bench/pool.csv (bench_pool.py);
+                                            the rows of kb/public/_retrieval/bench_scenarios.csv join the public
+                                            pool as the kinds sc_present, sc_partial, sc_absent, sc_offkb and
+                                            sc_stale, six each;
                                             --redo asks the paid call again for the eval rows it names (a pool row
                                             id or an eval case id), --dry-run lists the rows it would ask and the
                                             estimated spend, and asks nothing; --replies FILE answers the --redo
                                             rows from the first check of the same rows in a pool csv, no model
   benchmarks.py pool check [--querylog] [FILE]
                                             exit 1 on a pool row without a usable check, a held-out row with text, a
-                                            leak or a kind off its count
+                                            leak, a kind off its count or a scenario row whose expected route is not
+                                            the route `rag.py pack` prints for its question
   benchmarks.py pool verify [--file F] [--record R]
                                             exit 1, naming each, when the pool record R (default the newest) of the results
                                             file F breaks one of the record's consistency properties (bench_pool.py,

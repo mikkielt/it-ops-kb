@@ -1,0 +1,31 @@
+kind,domain,question,answer,route,note
+sc_present,windows,How do I rotate the Windows LAPS password from Intune?,rotateLocalAdminPassword|Actions/ResetPassword,good,
+sc_present,windows,How do I escrow BitLocker recovery keys for Entra-joined devices?,(?i)Save BitLocker recovery information to Entra ID,good,
+sc_present,gpo,How do I set up the Group Policy central store for ADMX files?,PolicyDefinitions,good,
+sc_present,ad,How do I transfer or seize the FSMO roles to another domain controller with PowerShell?,Move-ADDirectoryServerOperationMasterRole,good,
+sc_present,windows,How do I configure DHCP failover between two Windows Server DHCP servers?,Add-DhcpServerv4Failover,good,
+sc_present,sqlserver,How do I configure automatic seeding for a SQL Server Always On availability group?,SEEDING_MODE\s*=\s*AUTOMATIC,good,
+sc_partial,windows,How do I rotate the Windows LAPS password from Intune and forward the event to Splunk?,rotateLocalAdminPassword|Actions/ResetPassword,split,
+sc_partial,auth,How do I configure Windows Hello for Business with a YubiKey in Intune?,UsePassportForWork,split,
+sc_partial,intune,How do I set up AD CS certificate autoenrollment templates?,(?i)template setup on the CA,split,
+sc_partial,intune,How do I set the SCEP certificate renewal threshold in Intune and renew a web server certificate with certbot?,(?i)renewal threshold,split,
+sc_partial,windows,How do I configure DHCP failover between two Windows Server DHCP servers and sync the leases to an Infoblox grid?,(?i)failover relationship,split,
+sc_partial,entra,How do I back up a BitLocker recovery key to Entra ID and also send it to Splunk?,(?i)recovery keys are stored on the Entra device object,split,
+sc_absent,entra,How do I configure Okta as an external identity provider for Entra ID?,,web,
+sc_absent,sqlserver,How many tempdb data files should a SQL Server instance have?,,web,false good: the pack is good with no check: line and the kb states no tempdb file count
+sc_absent,security,How do I set Exchange Online retention policies with Purview?,,web,false good: the pack is good with no check: line and the kb states no Exchange Online retention policy
+sc_absent,windows,How do I configure Azure Site Recovery for Hyper-V hosts?,,web,
+sc_absent,security,How much does Microsoft 365 E5 cost per user?,,web,false good: the pack is good with no check: line and the kb states no price
+sc_absent,arch,How do I enforce Pod Security Admission on a Kubernetes cluster?,,web,false good: the pack is good with no check: line and the kb states no Pod Security Admission setting
+sc_offkb,offkb,How do I configure a VLAN trunk on a Cisco Catalyst switch?,,none,
+sc_offkb,offkb,How do I create a Veeam backup job for Hyper-V?,,none,
+sc_offkb,offkb,How do I set up Zabbix agent autoregistration?,,none,
+sc_offkb,offkb,How do I configure an IPsec site-to-site VPN on a FortiGate firewall?,,none,
+sc_offkb,offkb,How do I set up snapshot replication on a Synology NAS?,,none,
+sc_offkb,offkb,How do I configure a Postfix relay with SASL authentication?,,none,
+sc_stale,claude,Which scope wins in Claude Code settings when user and project settings conflict?,(?i)managed[- ]settings,good,
+sc_stale,windows,What is a maintenance configuration in Azure Update Manager?,(?i)maintenance configurations?,good,
+sc_stale,agents,How do I add conditional edges to a LangGraph graph?,add_conditional_edges,good,
+sc_stale,claude,How do I configure the Agent SDK permission mode?,permission_mode|permissionMode,good,
+sc_stale,claude,How do I install a Claude Code plugin from a marketplace?,<name>@<origin>,good,
+sc_stale,claude,How do I define a custom subagent in Claude Code?,\.claude/agents/,good,

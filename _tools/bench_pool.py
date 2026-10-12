@@ -4,7 +4,9 @@
 `benchmarks.py pool build` writes kb/public/_retrieval/bench_pool.csv, `pool build --querylog` writes the query-log
 pool under kb/_querylog/bench/, and `pool check` reads either back (kb/_self/tools.md, benchmarks.py pool). Every row
 has at least one check regex, a kind the report groups by and the route a pack should take. The held-out rows name
-lookup_heldout.csv rows by id and hold no question text: `question_of` reads it at run time. The only paid step is one
+lookup_heldout.csv rows by id and hold no question text: `question_of` reads it at run time. The scenario rows
+(`sc_present`, `sc_partial`, `sc_absent`, `sc_offkb`, `sc_stale`) come from bench_scenarios.csv, and `pool check` asks the
+pack of each for its route (`scenario_problems`). The only paid step is one
 Sonnet call that writes the answer regexes of the eval rows, through bench_retrieval's blind-question call; a rebuild
 reuses the regexes of the file it replaces, so it asks nothing. `benchmarks.py run pool` is `s_pool` (the arms, the
 effort levels, the per-run record and the per-cell figures, described in kb/_self/reports/benchmarks.md); its
@@ -32,12 +34,21 @@ PUBLIC_FILE = "kb/public/_retrieval/bench_pool.csv"
 QUERYLOG_FILE = "kb/_querylog/bench/pool.csv"
 EVAL_KINDS = ("fact", "csv_fact", "multi", "synthesis")  # the kinds the 40 eval rows fall into
 VARIANT_KINDS = ("variant_keyword", "variant_sentence", "variant_typo")
+# the scenario kinds, each with the expected routes a row of it may hold: good (a clean good pack) for knowledge present
+# or with a stale source, split for knowledge present in part, web or none (a none verdict) for the rest
+SCENARIO_ROUTES = {"sc_present": ("good",), "sc_partial": ("split",), "sc_absent": ("web", "none"),
+                   "sc_offkb": ("web", "none"), "sc_stale": ("good",)}
+SCENARIO_ROWS = 6  # rows of each scenario kind
 PLAN = {"heldout": 20, "offkb": 15, "false_good": 2, "near_miss": 3, "gap": 5, "count": 3, "cites": 3, "decision": 2,
-        "conflict": 2, "snippet": 5, **{k: 10 for k in VARIANT_KINDS}}
+        "conflict": 2, "snippet": 5, **{k: SCENARIO_ROWS for k in SCENARIO_ROUTES}, **{k: 10 for k in VARIANT_KINDS}}
 EVAL_ROWS = 40  # sampled from lookup_eval.csv, stratified by domain
 QUERYLOG_ROWS = 20
 NONE_CHECK = r"(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)"
 GAP_CHECK = r"(?i)(not (confirmed|documented|covered|in the kb)|unknown|unconfirmed|kb lacks|live docs)"
+LACKS_CHECK = r"(?i)(kb lacks|not in the kb|not covered|does not cover|doesn.t cover|no coverage|not documented|live docs)"
+FRESH_CHECK = (r"(?i)(confirmed \d{4}-\d{2}-\d{2}|unconfirmed|not confirmed|source changed|unanchored|stale|"
+               r"retrieved \d{4}-\d{2}-\d{2})")
+FALSE_GOOD = "false good"  # a scenario row's note that starts with it marks a question the pack answers as good or split
 SENTENCE = ("I need to know this for a task today: ", "Please explain, in full sentences: ")
 STOP = set("the and for are was what which how does did that this with from have has can you your into when where why "
            "not but any all use used using about there their they them then than over under between each per via "
@@ -45,6 +56,8 @@ STOP = set("the and for are was what which how does did that this with from have
 EVAL_FILE = "kb/public/_retrieval/lookup_eval.csv"
 HELDOUT_FILE = "kb/public/_retrieval/lookup_heldout.csv"
 OFFKB_FILE = "kb/public/_retrieval/doc2query/offkb_questions.txt"
+SCENARIO_FILE = "kb/public/_retrieval/bench_scenarios.csv"
+SCENARIO_COLUMNS = ["kind", "domain", "question", "answer", "route", "note"]
 SOURCE_ID = re.compile(r"(?<![\w-])(S-[a-z0-9]{8}|S\d+)(?![\w-])")
 BRAND = re.compile(r"\b(?:[A-Z]{2,}[A-Za-z0-9]*|[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*)\b")
 REGEX_ASK = ("For each numbered item below (a question, then the fact line of the kb that answers it), write one regular "
@@ -582,16 +595,180 @@ def snippet_section(home, seed):
                 [re.escape(t) for t in toks], "good") for rel, n, desc, toks in sorted(picks)]
 
 
+# ---------------------------------------------------------------------------------------------------- scenario rows
+
+def norm_question(text):
+    return re.sub(r"\W+", " ", text.lower()).strip()
+
+
+def scenario_source(question):
+    return "bench_scenarios.csv#" + hashlib.sha1(question.strip().encode("utf-8")).hexdigest()[:8]
+
+
+def scenario_checks(kind, answer):
+    """The checks that state a scenario's expected outcome: the regex of the kb line that answers it (present), that regex
+    and a kb-lacks phrase (partial), the pool's GAP_CHECK (absent), its NONE_CHECK (off-kb), the regex and a confirmation
+    date or freshness mark (stale)."""
+    return {"sc_present": [answer], "sc_partial": [answer, LACKS_CHECK], "sc_absent": [GAP_CHECK],
+            "sc_offkb": [NONE_CHECK], "sc_stale": [answer, FRESH_CHECK]}[kind]
+
+
+def scenario_built(rows):
+    """The pool rows of the rows of bench_scenarios.csv, in the file's order."""
+    return [row(r["kind"], r["domain"], "original", scenario_source(r["question"]), r["question"].strip(),
+                scenario_checks(r["kind"], r["answer"]), r["route"]) for r in rows]
+
+
+def read_scenarios(home=HOME):
+    """(header, rows) of bench_scenarios.csv, each row a dict of the file's columns with a string for each."""
+    with open(Path(home) / SCENARIO_FILE, encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        rows = [{k: (r.get(k) or "") for k in SCENARIO_COLUMNS} for r in reader]
+        return list(reader.fieldnames or []), rows
+
+
+def scenario_file_problems(header, rows, home=HOME):
+    """One line per defect of the rows of bench_scenarios.csv (`read_scenarios`, the header being line 1): columns, a kind, route,
+    domain or question missing or not one of the file's, an answer regex missing (present, partial, stale), not a regex or
+    matching nothing in particular, one given where the scenario takes none, a note that marks a false good on a kind that
+    is not absent, a question twice, and an off-kb question that is a line of the off-kb list or the question of a good
+    eval row."""
+    if header != SCENARIO_COLUMNS:
+        return [f"{SCENARIO_FILE}: columns are not {','.join(SCENARIO_COLUMNS)}"]
+    out = []
+    offkb_file, eval_file = Path(home) / OFFKB_FILE, Path(home) / EVAL_FILE
+    offkb = {norm_question(q) for q in read_lines(offkb_file)} if offkb_file.is_file() else set()
+    good = ({norm_question(c["question"]) for c in read_csv(eval_file) if c["expect_verdict"] == "good"}
+            if eval_file.is_file() else set())
+    seen = set()
+    for n, r in enumerate(rows, 2):
+        where, kind, q = f"{SCENARIO_FILE}:{n}", r["kind"], r["question"].strip()
+        if kind not in SCENARIO_ROUTES:
+            out.append(f"{where}: kind {kind!r} is not one of {', '.join(SCENARIO_ROUTES)}")
+            continue
+        if r["route"] not in SCENARIO_ROUTES[kind]:
+            out.append(f"{where}: route {r['route']!r} is not one of {', '.join(SCENARIO_ROUTES[kind])} for {kind}")
+        if not r["domain"].strip():
+            out.append(f"{where}: no domain")
+        if not q:
+            out.append(f"{where}: no question")
+        elif norm_question(q) in seen:
+            out.append(f"{where}: its question is on an earlier line")
+        seen.add(norm_question(q))
+        if kind in ("sc_present", "sc_partial", "sc_stale"):
+            try:
+                if not r["answer"] or re.search(r["answer"], ""):
+                    out.append(f"{where}: {kind} needs an answer regex that matches no empty answer")
+            except re.error as e:
+                out.append(f"{where}: the answer is not a regex ({e})")
+        elif r["answer"]:
+            out.append(f"{where}: {kind} takes no answer regex")
+        if r["note"].startswith(FALSE_GOOD) and kind != "sc_absent":
+            out.append(f"{where}: only an sc_absent row can be marked a false good")
+        if kind == "sc_offkb" and norm_question(q) in offkb:
+            out.append(f"{where}: its question is a line of the off-kb list")
+        if kind == "sc_offkb" and norm_question(q) in good:
+            out.append(f"{where}: its question is the question of a good eval row")
+    return out
+
+
+def scenario_pack(question):
+    """(route, text) of the pack `rag.py pack` prints for `question`: the route `good` for a pack with no `route:` line,
+    else the line's `split` or `web`; the pack's text."""
+    import kbfacts
+    res = kbfacts.pack_many([question])
+    return res["route"] or "good", res["text"]
+
+
+def route_agrees(expected, printed, false_good=False):
+    """True when the route a pack prints (`good`, `split` or `web`) is the row's expected one: `web` and `none` both
+    expect a none verdict (printed `web`), and a row marked a false good also takes the `good` or `split` its pack
+    prints while the kb lacks the fact."""
+    if expected in ("web", "none"):
+        return printed in ("web", "none") or (false_good and printed in ("good", "split"))
+    return printed == expected
+
+
+def scenario_problems(rows, home=HOME):
+    """One line per defect of the scenario rows of a pool file (`rows`): bench_scenarios.csv missing or defective
+    (`scenario_file_problems`), a pool row that is not what the file builds now (`pool build` rewrites it) or a file row
+    missing from the pool, a route the pack prints now that is not the row's expected one (`route_agrees`), and a
+    present, partial or stale row whose answer regex matches no line of its pack."""
+    mine = [r for r in rows if r.get("kind") in SCENARIO_ROUTES]
+    path = Path(home) / SCENARIO_FILE
+    if not path.is_file():
+        return [f"{SCENARIO_FILE} does not exist"] if mine else []
+    header, scen = read_scenarios(home)
+    out = scenario_file_problems(header, scen, home)
+    if header != SCENARIO_COLUMNS:
+        return out
+    built = {r["source"]: r for r in scenario_built([s for s in scen if s["kind"] in SCENARIO_ROUTES])}
+    notes = {scenario_source(s["question"]): s["note"] for s in scen}
+    held = {r["source"]: r for r in mine}
+    out += [f"{r['id']}: no row of {SCENARIO_FILE} builds it; `pool build` rewrites the pool" for s, r in held.items()
+            if s not in built]
+    out += [f"{r['id']}: its row of {SCENARIO_FILE} is not in the pool; `pool build` adds it" for s, r in built.items()
+            if s not in held]
+    for s, r in held.items():
+        if s not in built:
+            continue
+        if built[s] != r:
+            out.append(f"{r['id']}: differs from its row of {SCENARIO_FILE}; `pool build` rewrites it")
+        route, text = scenario_pack(r["question"])
+        if not route_agrees(r["expected_route"], route, r["kind"] == "sc_absent" and notes[s].startswith(FALSE_GOOD)):
+            out.append(f"{r['id']}: expected route {r['expected_route']} but the pack prints {route} for its question "
+                       f"({r['kind']}: {r['question']})")
+        try:
+            checks = json.loads(r["checks"])
+        except ValueError:
+            continue  # check_problems names a check that is no regex
+        if r["kind"] in ("sc_present", "sc_partial", "sc_stale") and checks and not re.search(checks[0], text):
+            out.append(f"{r['id']}: its answer regex matches no line of the pack for its question")
+    return out
+
+
+def scenario_section(home=HOME):
+    """The pool rows of bench_scenarios.csv, or a PoolError naming its defects (`scenario_file_problems`)."""
+    if not (Path(home) / SCENARIO_FILE).is_file():
+        raise PoolError(f"{SCENARIO_FILE} does not exist")
+    header, rows = read_scenarios(home)
+    problems = scenario_file_problems(header, rows, home)
+    if problems:
+        raise PoolError("; ".join(problems))
+    return scenario_built(rows)
+
+
+def source_stale(ids):
+    """The ids of `ids` whose source is past its freshness lifetime now (kbfacts.source_freshness: no network)."""
+    import kbfacts
+    got = kbfacts.source_freshness(list(ids))
+    return [i for i in ids if got.get(i, {}).get("stale")]
+
+
+def unstale_scenarios(rows, home=HOME):
+    """One line per sc_stale row of a pool file whose pack cites no source past its freshness lifetime now (a census
+    confirmed them since): the row no longer asks about a stale source. A warning, not a defect."""
+    out = []
+    for r in rows:
+        if r.get("kind") == "sc_stale" and (Path(home) / SCENARIO_FILE).is_file():
+            _, text = scenario_pack(r["question"])
+            ids = list(dict.fromkeys(re.findall(r"(?m)^  -> (\S+)  ", text)))
+            if not source_stale(ids):
+                out.append(f"{r['id']}: warning: its pack cites no source past its freshness lifetime now")
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ build and check
 
 def build_public(home=HOME, seed=SEED, ask=sonnet_regexes, out=None, redo=(), kept=None):
-    """The public pool's rows, in the order of the kinds, or a PoolError naming a kind short of rows. `redo` and `kept`
-    are eval_section's."""
+    """The public pool's rows, in the order of the kinds, or a PoolError naming a kind short of rows or a defect of
+    bench_scenarios.csv. `redo` and `kept` are eval_section's."""
     out = Path(out or Path(home) / PUBLIC_FILE)
     ev, variants, near = eval_section(home, seed, ask, out, redo, kept)
     design = design_section()
+    scenarios = scenario_section(home)
     rows = (ev + heldout_section(home, seed) + offkb_section(home, seed) + design[:2] + near + design[2:]
-            + gap_section(home, seed) + tool_section(home, seed) + snippet_section(home, seed) + variants)
+            + gap_section(home, seed) + tool_section(home, seed) + snippet_section(home, seed) + scenarios + variants)
     problems = count_problems(rows)
     if problems:
         raise PoolError("; ".join(problems))
@@ -711,6 +888,7 @@ def check_problems(rows, home=HOME, querylog=False):
     else:
         out += count_problems(rows)
         out += [f"{r['id']}: query-log text in a public file" for r in rows if r["kind"] == "querylog"]
+        out += scenario_problems(rows, home)
     return out
 
 
@@ -869,7 +1047,8 @@ def cli(a, home=HOME):
         return 1
     rows = read_csv(path)
     problems = check_problems(rows, home, a.querylog)
-    for p in problems + ([] if a.querylog else stale_picks(rows, home) + unstated_names(rows, home)):
+    warnings = [] if a.querylog else stale_picks(rows, home) + unstated_names(rows, home) + unstale_scenarios(rows, home)
+    for p in problems + warnings:
         print(f"pool check: {p}")
     return 1 if problems else 0
 
@@ -887,7 +1066,8 @@ DEFAULT_ARMS = tuple(a for a in ARMS if a not in OPT_IN)
 SUBSET_KINDS = {"opus-5-5": ("csv_fact", "multi", "synthesis", "near_miss")}
 ALL_KINDS = "all"
 EFFORTS = ("low", "default")  # `default` passes no --effort: the level the model starts with
-WEB_KINDS = (*EVAL_KINDS, "offkb", "snippet", "false_good")  # the kinds a web search can answer; the web arms run these
+WEB_KINDS = (*EVAL_KINDS, "offkb", "snippet", "false_good", "sc_present", "sc_partial", "sc_absent", "sc_offkb")
+# the kinds a web search can answer; the web arms run these (sc_stale asks what a kb source's age is: no web page states it)
 WEB_ASK = " Cite the source urls."
 HOOK_TIMEOUT_S = 120
 ROUTER_TIMEOUT_S = 1800

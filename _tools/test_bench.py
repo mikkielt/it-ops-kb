@@ -84,6 +84,14 @@ def pool_home(tmp_path, ql_questions):
     (tmp_path / "kb" / "_self").mkdir()
     (tmp_path / "kb" / "_self" / "_decisions.csv").write_text("id,text,by,status\n" + "".join(
         f"D-fixture{n},the fixture picks option number {n} always,operator,active\n" for n in range(4)), encoding="utf-8")
+    sc = ""
+    for kind, route in (("sc_present", "good"), ("sc_partial", "split"), ("sc_absent", "web"), ("sc_offkb", "none"),
+                        ("sc_stale", "good")):
+        answer = "" if kind in ("sc_absent", "sc_offkb") else r"value\d+"
+        for n in range(6):
+            note = "false good: the pack lacks it" if kind == "sc_absent" and n == 0 else ""
+            sc += f"{kind},d{n},Scenario {kind} question {n}?,{answer},{route},{note}\n"
+    (ret / "bench_scenarios.csv").write_text("kind,domain,question,answer,route,note\n" + sc, encoding="utf-8")
     run = tmp_path / "kb" / "_querylog" / "2026-10"
     run.mkdir(parents=True)
     head = '{"run":"20261008T000000Z-aaaaaaaa","pipeline":7,"retrieval":8,"counts":{"entries":%d,"dropped":0,"waiting":0}}\n'
@@ -94,9 +102,18 @@ def pool_home(tmp_path, ql_questions):
     (run / "20261008T000000Z-aaaaaaaa.jsonl").write_text(head % len(ql_questions) + ents, encoding="utf-8")
 
 
+def scenario_pack(question):
+    """The pack a scenario question gets in the fixture: the route its kind expects, one fact line and one stale source."""
+    import re
+    route = {"sc_present": "good", "sc_partial": "split", "sc_absent": "web", "sc_offkb": "web", "sc_stale": "good"}
+    return route[re.search(r"sc_\w+", question).group()], "- d0/a0.md:7 equals value1\n\nsources:\n  -> S-src00000  https://x"
+
+
 def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch, capsys):
     import argparse, re
     import bench_pool as bp
+    monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
+    monkeypatch.setattr(bp, "source_stale", lambda ids: list(ids))
     ql = [f"fixture session question number {i} about topic {i} in detail" for i in range(26)]
     org = "conto" + "so"  # built from parts: the leak scan of the authored files reads source text
     ql[3] = f"why does the sync for jan.doe@{org}.com fail on the fixture topic every time"
@@ -204,6 +221,19 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     assert all(r["question"] == "" and json.loads(r["checks"]) for r in held)
     assert "HELDOUT TEXT" not in out.read_text(encoding="utf-8") and "HELDOUT TEXT" in bp.question_of(held[0], tmp_path)
     assert bp.check_problems(rows, tmp_path) == []
+    assert {r["kind"]: r["expected_route"] for r in rows if r["kind"].startswith("sc_")} == {
+        "sc_present": "good", "sc_partial": "split", "sc_absent": "web", "sc_offkb": "none", "sc_stale": "good"}
+    assert all(json.loads(r["checks"]) == bp.scenario_checks(r["kind"], r"value\d+") for r in rows if r["kind"].startswith("sc_"))
+    sc_file = tmp_path / bp.SCENARIO_FILE
+    sc_text = sc_file.read_text(encoding="utf-8")
+    sc_file.write_text(sc_text.replace("Scenario sc_offkb question 1?", "How do I run off-kb thing 3?"), encoding="utf-8")
+    with pytest.raises(bp.PoolError, match="a line of the off-kb list"):  # the planted failure: an off-kb question the list holds
+        bp.build_public(tmp_path, 3, lambda items: pytest.fail("a defective scenario file asks"), out)
+    sc_file.write_text(sc_text.replace("Scenario sc_offkb question 1?", "What does setting alpha1 beta1 gamma1 equal  case 1?"),
+                       encoding="utf-8")
+    with pytest.raises(bp.PoolError, match="the question of a good eval row"):
+        bp.build_public(tmp_path, 3, lambda items: pytest.fail("a defective scenario file asks"), out)
+    sc_file.write_text(sc_text, encoding="utf-8")
     assert bp.check_problems([{**held[0], "question": bp.question_of(held[0], tmp_path)}], tmp_path)[0].endswith("names a case "
                                                                                                            "of lookup_heldout.csv")  # the planted failure
     monkeypatch.setattr(bp, "current_articles", lambda q: [f"d{int((re.findall(r'number (\d+)', q) or ['0'])[0]) % 6}/a0.md"])
@@ -246,9 +276,11 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
     return "\n".join(json.dumps(e) for e in events)
 
 
-def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line(tmp_path, capsys):
+def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line(tmp_path, capsys, monkeypatch):
     import argparse
     import bench_pool as bp
+    monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
+    monkeypatch.setattr(bp, "source_stale", lambda ids: list(ids))
     pool_home(tmp_path, [f"fixture session question number {i} about topic {i} in detail" for i in range(26)])
     out = tmp_path / "pool.csv"
     rows = bp.build_public(tmp_path, 3, lambda items: [r"value\d+"] * len(items), out)
@@ -262,6 +294,26 @@ def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_pic
     seen = capsys.readouterr().out
     assert seen.count("warning") == 1 and f"{stale['id']}: warning: no check matches" in seen
     assert f"`pool build --redo {stale['id']}`" in seen
+    stale["checks"] = json.dumps([r"value\d+"])
+    absent = next(r for r in rows if r["kind"] == "sc_absent")  # its note marks a false good: a good or split pack is no defect
+    present = next(r for r in rows if r["kind"] == "sc_present")
+    monkeypatch.setattr(bp, "scenario_pack", lambda q: ("good" if "sc_absent question 0" in q else scenario_pack(q)[0],
+                                                       scenario_pack(q)[1]))
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 0 and capsys.readouterr().out == ""
+    monkeypatch.setattr(bp, "scenario_pack", lambda q: ("web" if q == present["question"] else scenario_pack(q)[0], scenario_pack(q)[1]))
+    assert bp.cli(check, tmp_path) == 1  # the planted failure: a route the pack no longer prints
+    seen = capsys.readouterr().out
+    assert f"{present['id']}: expected route good but the pack prints web for its question" in seen and absent["id"] not in seen
+    monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
+    present["checks"] = json.dumps([r"never printed"])
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 1 and "differs from its row of" in capsys.readouterr().out
+    monkeypatch.setattr(bp, "source_stale", lambda ids: [])
+    present["checks"] = json.dumps([r"value\d+"])
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 0  # a stale-source row whose sources a census confirmed is a warning
+    assert capsys.readouterr().out.count("cites no source past its freshness lifetime") == bp.SCENARIO_ROWS
 
 
 def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
