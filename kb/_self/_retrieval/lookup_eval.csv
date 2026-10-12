@@ -311,3 +311,4 @@ SQ-may-review-retrospective-propose-raising-tests-ceiling,may a review or retros
 EV-check-notes-good-pack-print-them,which check: notes does a good pack print and which of them set route split,tools.md,good,yes,"unlike the scatter note, sets `route: split`",
 EV-state-knowledge-ask-show-pack-good,what state does a knowledge ask show when its pack is good with a check: line,backlog.md,good,yes,(a `good` with one is `partial`),
 EV-rag-py-eval-row-whose-verdict,what does rag.py eval do with a row whose verdict differs,tools.md,good,yes,or `failed=verdict`,
+SQ-changed-figure-where-else-old-figure-repeated,a refresh or research changed a figure in a fact: where else is the old figure repeated and what happens to each place,maintaining.md,good,yes,each other place that repeats the old one is updated or filed before done,kb-refresh:update;kb-research:research
