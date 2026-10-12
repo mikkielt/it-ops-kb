@@ -2,7 +2,7 @@
   "id": "BG-j7pe3u46",
   "kind": "bug",
   "title": "pack still prints a clean good for the pool's Exchange Online retention question: How do I set Exchange Online retention policies with Purview?",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
@@ -85,5 +85,6 @@
   "links": [
     "merged: BG-kmjewyid"
   ],
-  "notes": "Merged from BG-kmjewyid at the 2026-10-12 draft triage: only the E5 'per user per month' wording is still a clean good, the tempdb wording is now flagged; same sc_absent false-good class, so the E5 wording is absorbed here (check 1).\nPremise: on 2026-10-12 (origin/main a5a7459f2) the pool's retention question packs as 'coverage: good (best article matches 5 of 5 key words ...)' with no check: or route: line, the E5 per-user-per-month wording is a clean good, and the free hook arm meets 5 of 6 sc_absent rows.\nThe suite is at its id ceiling (100 of 100): extend pack_scatter_check in _tools/test_live_kb.py, add no test id. Checks 2 and 3 pass before the work and guard the pool's scenario rows and the share of eval goods that carry a note."
+  "notes": "Merged from BG-kmjewyid at the 2026-10-12 draft triage: only the E5 'per user per month' wording is still a clean good, the tempdb wording is now flagged; same sc_absent false-good class, so the E5 wording is absorbed here (check 1).\nPremise: on 2026-10-12 (origin/main a5a7459f2) the pool's retention question packs as 'coverage: good (best article matches 5 of 5 key words ...)' with no check: or route: line, the E5 per-user-per-month wording is a clean good, and the free hook arm meets 5 of 6 sc_absent rows.\nThe suite is at its id ceiling (100 of 100): extend pack_scatter_check in _tools/test_live_kb.py, add no test id. Checks 2 and 3 pass before the work and guard the pool's scenario rows and the share of eval goods that carry a note.",
+  "claimed_by": "orch-4o3plg4l"
 }
