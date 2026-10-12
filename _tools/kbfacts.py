@@ -1173,7 +1173,9 @@ def key_terms(text):
 
 CAMEL = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|\d+")
 NUMBER = re.compile(r"\d+(?:\.\d+)+")  # a decimal or dotted number: its dot parts alone do not match it
-VERSION_ID = re.compile(r"(?<![\d.])(\d)-(\d)(?![\d.])")  # a version a model id spells with a hyphen: claude-opus-5-5 is 5.5
+# a version a model id spells with a hyphen, read only after a model family: claude-opus-5-5 is 5.5, claude-3-5-sonnet
+# is 3.5; the S-1-5-18 of a SID or the 8-4-4-4-12 of a GUID is no version
+VERSION_ID = re.compile(r"(?<![a-z0-9])(?:opus|sonnet|haiku|fable|claude)-(\d)-(\d)(?![\d.])")
 
 
 def terms(text, camel=True):
@@ -1706,7 +1708,7 @@ def _unit_key(u, art, meta, sums, exps):
     else:
         summ = None
     ex = exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ()
-    wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), (WORD.pattern, CAMEL.pattern, NUMBER.pattern))
+    wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), (WORD.pattern, CAMEL.pattern, NUMBER.pattern, VERSION_ID.pattern))
     raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), _weigh_code(), wdata,
                       TITLE_WEIGHT, SUMMARY_WEIGHT, EXPANSION_WEIGHT, u["path"], u["title"], u.get("lead", ""),
                       u["section"], u["text"], summ, list(ex), [q for _, q in u.get("anchors", ())]], ensure_ascii=False)
