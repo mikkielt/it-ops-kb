@@ -2,7 +2,7 @@
   "id": "BG-xnh3rozy",
   "kind": "bug",
   "title": "querylog.py apply writes a doc2query expansion for a CSV article, whose key doc2query stale counts gone, so apply --push stops at the doc2query gate",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kwi4ilty",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,6 @@
     "relates BG-ckrasbdn",
     "gap F-699acd493bfa"
   ],
-  "notes": "Found 2026-10-12 by the orchestrator of SP-kwi4ilty at the first apply --push after BG-ckrasbdn merged (run 20261012T132726Z-dfbcc91e): check.py now passes (errors=0) but the gate stops at doc2query.py stale=1, the row 713b1ff371ac 'which model does the haiku alias resolve to in Claude Code' that apply's own commit adds for F-699acd493bfa (article public/claude/models.csv); doc2query.facts reads .md facts only. Premise: the repro exits 1 on origin/main 1b2c20713. Fix choice (operator, delegated): skip the expansion fix for a non-.md article rather than widen doc2query to CSV rows, the smaller and reversible change. Suite at 100 of 100 ids: extend an existing test_apply_* test in _tools/test_redact.py, add no id. Check 0 passes before the work: the worker extends a test_apply_* test so it fails first (a planted CSV-article expansion finding)."
+  "notes": "Found 2026-10-12 by the orchestrator of SP-kwi4ilty at the first apply --push after BG-ckrasbdn merged (run 20261012T132726Z-dfbcc91e): check.py now passes (errors=0) but the gate stops at doc2query.py stale=1, the row 713b1ff371ac 'which model does the haiku alias resolve to in Claude Code' that apply's own commit adds for F-699acd493bfa (article public/claude/models.csv); doc2query.facts reads .md facts only. Premise: the repro exits 1 on origin/main 1b2c20713. Fix choice (operator, delegated): skip the expansion fix for a non-.md article rather than widen doc2query to CSV rows, the smaller and reversible change. Suite at 100 of 100 ids: extend an existing test_apply_* test in _tools/test_redact.py, add no id. Check 0 passes before the work: the worker extends a test_apply_* test so it fails first (a planted CSV-article expansion finding).",
+  "claimed_by": "orch-kwi4ilty"
 }
