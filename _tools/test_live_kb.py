@@ -737,6 +737,21 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert all(packs[q]["verdict"] == "good" and packs[q]["route"] == "split" and "\nkb lacks: " in packs[q]["text"]
                and re.search(r"^check: .*\n(?:.+\n)*route: split$", packs[q]["text"], re.M) for q in flagged), flagged
     assert not [q for q in flagged if q not in offkb], [q for q in flagged if q not in offkb]  # no eval good carries one
+    # the eval counts each row expecting `good` whose pack prints a check: or route: line (`noted`, the totals line's
+    # noted=N), and its default run fails above rag.NOTED_BASELINE: the count here is within it, and a planted file of
+    # one noted and one clean good row counts the one
+    carries = lambda q: re.search(r"^(check|route):", packs[q]["text"], re.M)
+    goods = [r for r in eval_rows() if r["expect_verdict"] == "good"]
+    held = [r for r in goods if carries(r["question"])]
+    assert len(held) <= rag.NOTED_BASELINE, [r["id"] for r in held]
+    plan = [r for r in held[:1]] + [next(r for r in goods if not carries(r["question"]))]
+    plant = tmp_path / "noted.csv"
+    with open(plant, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(plan[0]), lineterminator="\n")
+        w.writeheader()
+        w.writerows(plan)
+    res = rag.run_eval(str(plant))
+    assert res["noted"] == len(held[:1]) and [r["noted"] for r in res["rows"]] == [True] * len(held[:1]) + [False], res["noted"]
     # planted: a root whose lead article holds the question's subject in passing, a price asked with no amount stated,
     # and a question its lead article answers outright, which stays clean
     fx = tmp_path / "passing"

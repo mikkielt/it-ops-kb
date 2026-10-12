@@ -73,6 +73,19 @@
       "class": "agents-rule",
       "answer": "a constant NOTED_BASELINE in rag.py, set to the count the eval prints once the pack-note fixes of this sprint have landed",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which eval runs does the noted baseline bound?",
+      "options": [
+        "only a run with no --file (the tuned sets of every root, or one root with --root)",
+        "every run, a --file run too"
+      ],
+      "recommendation": "only a run with no --file (the tuned sets of every root, or one root with --root)",
+      "class": "agents-rule",
+      "answer": "only a run with no --file (the tuned sets of every root, or one root with --root)",
+      "by": "operator"
     }
   ],
   "links": [

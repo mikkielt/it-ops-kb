@@ -31,7 +31,9 @@
   rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--all]   pack against the lookup eval sets (every
                                            root's lookup_eval.csv and kb/_self's, or FILE): expected article found,
                                            verdict, expected phrase; prints the failing rows and the totals line
-                                           (--all: every row); exit 1 unless every row (or at least N) passes;
+                                           (--all: every row); exit 1 unless every row (or at least N) passes,
+                                           or, with no --file, when noted= (good rows whose pack prints a
+                                           check: or route: line) is above NOTED_BASELINE;
                                            --free adds the _self rows' leave-one-out rate (slow)
   rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
                                            each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
@@ -379,13 +381,17 @@ def scatter_calibration():
             "grid": grid}
 
 
+NOTE_LINES = ("check:", "route:")  # the pack's lines that flag a `good` verdict as possibly false (kbfacts.pack)
+NOTED_BASELINE = 13  # eval rows expected `good` whose pack carries one: the default run fails above it
+
+
 def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
     expect no path), and when the row has `expect_text` one of its `;`-separated phrases must occur in the pack's text.
     A `_self` row passes on its text alone: its phrase must be in one of its docs (it has an anchor, else
     `failed=anchor`) and in the pack's text (else `failed=text`); a row with no `expect_text` expects the verdict
-    `none`. With `free`, `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out
+    `none`. `noted` counts the rows expecting `good` whose pack prints a `check:` or `route:` line (NOTE_LINES). With `free`, `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out
     that row's own tested question (kbfacts.self_store with skip), out of `anchored`: one store build per row, so the
     gate's run leaves it out and the figure is None. A row outside `_self` whose question a kind expert routes
     (kbfacts.routed: a count, a decision id, a conflict, a gap, a citation) fails with `routed`: the eval rows rank."""
@@ -415,13 +421,14 @@ def run_eval(path=None, root=None, free=False):
                     loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
                     hits += any(t in loo["text"] for t in phrases)
                 failed = [] if tok else ["text"]
+        noted = c["expect_verdict"] == "good" and any(ln.startswith(NOTE_LINES) for ln in res["text"].splitlines())
         rows.append({"id": c["id"], "verdict": res["verdict"], "want_verdict": c["expect_verdict"], "found": found,
                      "paths": res["paths"], "chars": len(res["text"]), "ok": not failed, "verdict_ok": vok,
-                     "found_ok": fok, "text_ok": tok, "failed": failed})
+                     "found_ok": fok, "text_ok": tok, "noted": noted, "failed": failed})
     n = len(rows)
     return {"n": n, "passed": sum(r["ok"] for r in rows), "verdict_ok": sum(r["verdict_ok"] for r in rows),
             "found_ok": sum(r["found_ok"] for r in rows), "mean_chars": round(sum(r["chars"] for r in rows) / max(n, 1)),
-            "free": hits if free else None, "anchored": anchored, "rows": rows}
+            "noted": sum(r["noted"] for r in rows), "free": hits if free else None, "anchored": anchored, "rows": rows}
 
 
 def main():
@@ -608,8 +615,15 @@ def main():
             print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<{width}} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
                   f"found={','.join(r['found']) or '-'} chars={r['chars']}" + (f" failed={','.join(r['failed'])}" if r["failed"] else ""))
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
-              f"mean_chars={res['mean_chars']}" + (f" free={res['free']}/{res['anchored']}" if res["free"] is not None else ""))
-        if res["passed"] < (res["n"] if a.min is None else a.min):
+              f"mean_chars={res['mean_chars']} noted={res['noted']}"
+              + (f" free={res['free']}/{res['anchored']}" if res["free"] is not None else ""))
+        over = a.file is None and res["noted"] > NOTED_BASELINE
+        if over:
+            for r in (r for r in res["rows"] if r["noted"]):
+                print(f"NOTED {r['id']:<{width}} carries a check: or route: line though expected good")
+            print(f"noted={res['noted']} is above NOTED_BASELINE={NOTED_BASELINE}: a pack note now fires on an answered "
+                  "question; fix the note, or raise the constant with the reason")
+        if res["passed"] < (res["n"] if a.min is None else a.min) or over:
             sys.exit(1)
     else:
         path, _, line = a.target.partition(":")
