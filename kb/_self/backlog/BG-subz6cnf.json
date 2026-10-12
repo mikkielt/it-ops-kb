@@ -1,0 +1,40 @@
+{
+  "id": "BG-subz6cnf",
+  "kind": "bug",
+  "title": "The narrowed cites cue no longer routes 'Which articles mention the source S1800?' or 'refer to the source S1800' to src --cited",
+  "status": "todo",
+  "sprint": "SP-lmf4ke4w",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "kbfacts.CITE_CUE routes a question whose mention, refer or name word is tied to a source id through a few words such as 'the source', 'source id', 'the id' or 'the sources' (Which articles mention the source S1800?, Which files refer to the source S1800?, Which articles mention source id S1800?, mention the sources S1800 and S1801) to cites, while a question that asks what a source says (Which flag name does S1800 give, What does S1800 say about --max-turns?, Which flag is mentioned in S1800?) still routes nowhere; python3 _tools/tests.py -k pack_routes_kind and python3 _tools/rag.py eval pass",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;y=['Which articles mention the source S1800?','Which files refer to the source S1800?','Which articles mention source id S1800?','Which articles mention the sources S1800 and S1801?','Which articles cite S1800?'];n=['What does S1800 say about --max-turns?','Which flag is mentioned in S1800?'];bad=[q for q in y if 'cites' not in kbfacts.kinds_of_question(q)]+[q for q in n if 'cites' in kbfacts.kinds_of_question(q)];print('misrouted:',bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_routes_kind"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "_tools/test_live_kb.py"
+  ]
+}
