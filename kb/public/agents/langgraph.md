@@ -1,9 +1,9 @@
 ---
 topic: agents/langgraph
 priority: P3
-applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-27
-sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-6buofrld, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr]
+applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-10-12"
+retrieved_utc: 2026-10-12
+sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr]
 status: complete
 ---
 
@@ -11,8 +11,8 @@ status: complete
 
 ## Summary
 - **LangGraph** is LangChain's low-level, open-source orchestration framework (`pip install
-  langgraph`, package `langgraph`, **MIT** licence, latest seen `1.2.12`) for building durable,
-  stateful, multi-actor agent workflows as graphs. [DOC S-6buofrld]
+  langgraph`, package `langgraph`, **MIT** licence, latest seen `1.2.14`) for building durable,
+  stateful, multi-actor agent workflows as graphs. [DOC S-v5hqqcqx]
 - A workflow is a **`StateGraph`**: a shared **state** schema (TypedDict, dataclass or Pydantic
   model), **nodes** (functions that read/update state), and **edges** (fixed or conditional) that
   decide which node runs next; execution uses a Pregel-style message-passing model in discrete
@@ -32,8 +32,8 @@ status: complete
 ## Facts
 
 ### Package, graph construction
-- Install: `pip install langgraph` or `uv add langgraph`; licence **MIT**; latest version observed
-  on PyPI (2026-09-26): `1.2.12`. [DOC S-6buofrld]
+- Install: `pip install langgraph` or `uv add langgraph`; licence **MIT**; latest version in PyPI's
+  project JSON (read 2026-10-12): `1.2.14`. [DOC S-v5hqqcqx]
 - `StateGraph` state can be a `TypedDict`, `dataclass`, or Pydantic `BaseModel`; separate input and
   output schemas can be declared alongside the internal schema. [DOC S-bivxzhtv]
 - **Reducers**: annotate a state field with `Annotated[type, reducer_fn]` (e.g. `operator.add`) so a
@@ -120,7 +120,7 @@ status: complete
   rebranded from "LangGraph Platform") is LangChain's managed service for running LangGraph agents
   in production, offering one-click deployment with durable execution, state and streaming, plus a
   **Studio** IDE for visual debugging. [DOC S-43xr27dp]
-- LangSmith pricing (read 2026-09-27): Developer $0 for one seat with up to 5k base traces a month;
+- LangSmith pricing (read 2026-10-12): Developer $0 for one seat with up to 5k base traces a month;
   Plus $39 per seat per month with up to 10k base traces, access to Deployment and one free small
   serverless deployment; Enterprise custom-priced with self-hosted and hybrid deployment options.
   [DOC S-woho7bmc]
