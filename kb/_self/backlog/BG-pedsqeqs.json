@@ -2,7 +2,7 @@
   "id": "BG-pedsqeqs",
   "kind": "bug",
   "title": "pack's passing note puts a check: and route split on eval questions the kb answers, on common words such as big, bookmark and noqa",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
@@ -75,5 +75,6 @@
     "parked: SP-kp3boz7z review",
     "merged: BG-ggytjiqt"
   ],
-  "notes": "Merged from BG-ggytjiqt at the 2026-10-12 draft triage: the priced note still fires on the Graph throttling cost question; same function and class (a note fires on a question the kb answers), so one calibration item carries both. Its repro is check 1.\nPlanned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the repro prints the three EV ids and the Graph cost question's priced note is True.\nThe suite is at its id ceiling (100 of 100): extend pack_scatter_check in _tools/test_live_kb.py, add no test id. Checks 0, 2 and 3 pass before the work and guard the four questions, the eval's goods and the scatter test."
+  "notes": "Merged from BG-ggytjiqt at the 2026-10-12 draft triage: the priced note still fires on the Graph throttling cost question; same function and class (a note fires on a question the kb answers), so one calibration item carries both. Its repro is check 1.\nPlanned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the repro prints the three EV ids and the Graph cost question's priced note is True.\nThe suite is at its id ceiling (100 of 100): extend pack_scatter_check in _tools/test_live_kb.py, add no test id. Checks 0, 2 and 3 pass before the work and guard the four questions, the eval's goods and the scatter test.",
+  "claimed_by": "orch-4o3plg4l"
 }
