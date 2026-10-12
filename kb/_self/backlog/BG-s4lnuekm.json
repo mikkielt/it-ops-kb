@@ -2,7 +2,7 @@
   "id": "BG-s4lnuekm",
   "kind": "bug",
   "title": "kbfacts.parse_tag reads only the first source of [CODE S-a: path; S-b: path], so the second id of such tags is not cited",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lmf4ke4w",
   "priority": "P3",
   "rank": 0,
@@ -111,5 +111,45 @@
     "parked: SP-5x5ut5ko close"
   ],
   "notes": "Premise run 2026-10-12: the repro prints ids parsed: ['S-sipjyeoi'] on main. Choice made at planning: the parser reads the second source, no article is rewritten (smaller, reversible). Readers outside touches: .claude/skills/kb-verify/lint.py:340 and :149 and _tools/factdiff.py:2059 take parse_tag's parts, so the lint check (check 1) must stay at errors=0 after the change; a CODE pointer error it then shows stops the item with a report, since the lint file guards a rule. Check 2 reads the form named in content-rules.md. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Checks 0 (rag.py eval) and 1 (lint.py) pass before the work: they pin that the parser change breaks no reader. g1 and g2 answered A by the orchestrator under the operator's delegation (2026-10-12), each the recommendation: check 2 now reads the placeholder form, and the article codebase-mapping.md (with its doc2query expansions) joins the touches for the #symbol of its first CODE source.",
-  "claimed_by": "orch-lmf4ke4w"
+  "evidence": {
+    "commit": "f8aa47f4c1fd94aec587ee7cf721718fa1060416",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "f8ae025869474999"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True); print(r.stdout.strip()[-200:]); sys.exit(r.returncode)"
+        ],
+        "exit": 0,
+        "sha256": "00d33977f4129abb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/_self/content-rules.md',encoding='utf-8').read();ok='[CODE <id>: path; <id>: path]' in t;print('content-rules.md names the two-source form:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f9bb9a433280fab6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.parse_tag('[CODE S-sipjyeoi: internal/a.go; S-gfjnysog: internal/b.go]');ids=[i for x in p for i in x['ids']];print('ids parsed:',ids);sys.exit(0 if 'S-gfjnysog' in ids else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f78d247ab3f80be9"
+      }
+    ]
+  }
 }
