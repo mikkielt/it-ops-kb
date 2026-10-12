@@ -138,6 +138,9 @@ TABLE_ROW = re.compile(r"\s*\|")
 TABLE_RULE = re.compile(r"\s*\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?\s*$")
 INFLECTED = 0.5  # the weight of a stem the question shares only through another form of the word (`checks` for `check`)
 SNIPPET_WEIGHT = 0.9  # a code example shows a command more than it states a fact: a prose line of the same score wins
+SENTENCE_END = re.compile(r"[.!?][\"')\]`*]*$")  # the end of a line that closes its sentence, so the next line opens one
+PHRASE_RUN = 4  # question words that follow one another, in the question's order, in a line: the question's own phrase
+PHRASE_WEIGHT = 1.5  # what each word from the PHRASE_RUN-th on adds to a line's score, a stem's rarity weight being about 1 to 4
 
 
 def terms(text):
@@ -152,10 +155,27 @@ def stated(text):
     return " ".join(c for c in CLAUSE.split(text) if not POINTER.search(c))
 
 
-def article_facts(lines):
+def wraps(lines, n, head):
+    """What line `n` wraps: "" when it opens a line of its own (a block opener, or nothing but a blank line, heading,
+    ruler or fence above it), "block" when the text lines above it reach a line that opens a list item, table row or
+    quote, else "prose" (they reach the top of a paragraph that opens with no marker)."""
+    k = n
+    while k - 1 > head and not BLOCK_START.match(lines[k - 1]):
+        before = lines[k - 2]
+        if not before.strip() or before.strip().startswith(("#", "---")) or FENCE.match(before) or TABLE_RULE.match(before):
+            break
+        k -= 1
+    if k == n:
+        return ""
+    return "block" if BLOCK_START.match(lines[k - 1]) else "prose"
+
+
+def article_facts(lines, prose=False):
     """[(line number, text)] of the lines of an article that can state a fact: no front matter, heading, blank line,
     fenced code line, table header or ruler row, no line that wraps the one before it (a paragraph or list item
-    continues over lines) and no line that does nothing but point to another article or data file (`stated`)."""
+    continues over lines; with `prose`, a line that opens a sentence of a paragraph with no list marker, the line above
+    it closing its own, is a line of its own: a Summary states one sentence or two on each line) and no line that does
+    nothing but point to another article or data file (`stated`)."""
     head = front_matter_end(lines)
     out, code = [], False
     for n, ln in enumerate(lines, 1):
@@ -169,9 +189,8 @@ def article_facts(lines):
             continue
         if not stated(text).strip():
             continue
-        before = lines[n - 2].strip() if n > 1 else ""
-        if before and n - 1 > head and not before.startswith(("#", "---")) and not FENCE.match(lines[n - 2]) \
-                and not TABLE_RULE.match(lines[n - 2]) and not BLOCK_START.match(ln):
+        kind = wraps(lines, n, head)
+        if kind == "block" or kind == "prose" and not (prose and SENTENCE_END.search(lines[n - 2].rstrip())):
             continue
         out.append((n, text))
     return out
@@ -189,15 +208,29 @@ def csv_facts(lines):
     return out
 
 
+def phrase_run(qterms, lterms):
+    """The most question words, in the question's order, that follow one another in a line's terms."""
+    best = 0
+    for i in range(len(qterms)):
+        for j, w in enumerate(lterms):
+            k = 0
+            while i + k < len(qterms) and j + k < len(lterms) and qterms[i + k] == lterms[j + k]:
+                k += 1
+            best = max(best, k)
+    return best
+
+
 def fact_for(home, case):
     """(path, line number, text) of the line of the case's expected files that best matches its question, or None under
     two shared stems. The lines are an article's body lines (`article_facts`) or a csv file's data rows (`csv_facts`),
     never a heading, a front-matter line, a csv header, a table header, a line of a code block, a wrapped continuation
-    or a line that only points to another file; a pointer clause of a fact line is not read. A line scores the rarity
-    weight of each stem (a term cut at five letters) it shares with the question: log of the file's lines over those
-    holding the stem, so the file's own subject, on nearly every line, counts for little, and INFLECTED of it when
-    the line has the stem only in another form of the word, and SNIPPET_WEIGHT of its score for a `SNIPPET:` line.
-    Ties go to the line sharing more whole words with the question, then to the first line."""
+    of a list item or a line that only points to another file; a pointer clause of a fact line is not read. A line
+    scores the rarity weight of each stem (a term cut at five letters) it shares with the question: log of the file's
+    lines over those holding the stem (the lines `article_facts` gives without `prose`), so the file's own subject, on
+    nearly every line, counts for little, and INFLECTED of it when the line has the stem only in another form of the
+    word, PHRASE_WEIGHT more for each question word from the PHRASE_RUN-th on of a run of them the line holds in the
+    question's order, and SNIPPET_WEIGHT of its score for a `SNIPPET:` line. Ties go to the line sharing more whole
+    words with the question, then to the first line."""
     qterms = terms(case["question"])
     q, qwords = {w[:5] for w in qterms}, set(qterms)
     best = None
@@ -207,11 +240,16 @@ def fact_for(home, case):
             continue
         lines = path.read_text(encoding="utf-8").splitlines()
         csv_file = rel.endswith(".csv")
-        body = [(n, ln, set(terms(ln if csv_file else stated(ln)))) for n, ln in (csv_facts(lines) if csv_file else article_facts(lines))]
-        held = Counter(s for _, _, ws in body for s in {w[:5] for w in ws})
-        for n, ln, ws in body:
+
+        def read(facts):
+            return [(n, ln, terms(ln if csv_file else stated(ln))) for n, ln in facts]
+        body = read(csv_facts(lines) if csv_file else article_facts(lines))
+        held = Counter(s for _, _, ts in body for s in {w[:5] for w in ts})
+        for n, ln, ts in body if csv_file else read(article_facts(lines, prose=True)):
+            ws = set(ts)
             shared, whole = q & {w[:5] for w in ws}, {w[:5] for w in ws & qwords}
-            score = sum(math.log(1 + len(body) / held[s]) * (1 if s in whole else INFLECTED) for s in shared)
+            score = sum(math.log(1 + len(body) / max(held[s], 1)) * (1 if s in whole else INFLECTED) for s in shared)
+            score += PHRASE_WEIGHT * max(phrase_run(qterms, ts) - PHRASE_RUN + 1, 0)
             score = (score * (SNIPPET_WEIGHT if SNIPPET.match(ln) else 1), len(qwords & ws))
             if len(shared) >= 2 and (best is None or score > best[0]):
                 best = (score, rel, n, ln)
