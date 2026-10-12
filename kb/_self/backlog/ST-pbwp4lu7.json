@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint's three items change this repo's own pack verdict, its freshness-stamp reads and one benchmark report section; the kb already holds the retrieval facts they rest on (public/agents/hybrid-retrieval.md:182 and :190 on the off-kb false good and its QPP features, public/agents/doc-change-detection.md:168 on a fact's age, public/python/interpreter-startup.md on start-up cost), a pack of the sprint's questions returned good or weak on them with every missing word a repo-internal name (sc_absent, _anchors.csv, the cold-pack median), and the four sc_absent questions must stay absent, so no live-docs fetch and no kb fact or gap entry is written. Pack checked 2026-10-12.",
   "claimed_by": "orch-kp3boz7z"
 }
