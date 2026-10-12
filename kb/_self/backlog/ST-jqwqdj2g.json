@@ -2,7 +2,7 @@
   "id": "ST-jqwqdj2g",
   "kind": "story",
   "title": "Each source has a freshness lifetime from its own change history, and a lookup revalidates only sources past it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-etslk6yu",
   "priority": "P2",
@@ -93,5 +93,6 @@
   "links": [
     "kb:public/agents/doc-change-detection.md"
   ],
-  "notes": "Premise: no tool estimates a source's change rate today; _fetch_state.csv keeps only the latest checked_utc and changed_utc, so the history lives in git (git log -p kb/public/_fetch_state.csv). The first step measures, per host, how many sources have two or more recorded changes, and states the share the Poisson estimate can serve before the fallback. Sources: RFC 9111 heuristic freshness (S-ods72iyh), RFC 5861 stale-while-revalidate (S-m7xkty3c), the Poisson change model (S-7uckhkxr), all in public/agents/doc-change-detection.md, Freshness at question time. Decision D-gmrjivyw. Planned 2026-10-12: premise reproduced (no lifetime, Poisson or change-rate code in fetch.py, factdiff.py, provider.py or census.py). The freshness_lifetime test runs fetch.py --status on a planted git history and drives kb_pack and kb_ask.py with a stubbed revalidation, asserting the hook path makes none."
+  "notes": "Premise: no tool estimates a source's change rate today; _fetch_state.csv keeps only the latest checked_utc and changed_utc, so the history lives in git (git log -p kb/public/_fetch_state.csv). The first step measures, per host, how many sources have two or more recorded changes, and states the share the Poisson estimate can serve before the fallback. Sources: RFC 9111 heuristic freshness (S-ods72iyh), RFC 5861 stale-while-revalidate (S-m7xkty3c), the Poisson change model (S-7uckhkxr), all in public/agents/doc-change-detection.md, Freshness at question time. Decision D-gmrjivyw. Planned 2026-10-12: premise reproduced (no lifetime, Poisson or change-rate code in fetch.py, factdiff.py, provider.py or census.py). The freshness_lifetime test runs fetch.py --status on a planted git history and drives kb_pack and kb_ask.py with a stubbed revalidation, asserting the hook path makes none.",
+  "claimed_by": "orch-etslk6yu"
 }
