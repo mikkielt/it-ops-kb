@@ -2,7 +2,7 @@
   "id": "ST-bl3hdung",
   "kind": "story",
   "title": "Research sprint goal: Freshness lifetimes, a free freshness benchmark and census hints from lookups",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-etslk6yu",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-etslk6yu"
 }
