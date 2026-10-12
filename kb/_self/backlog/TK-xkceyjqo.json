@@ -2,7 +2,7 @@
   "id": "TK-xkceyjqo",
   "kind": "task",
   "title": "identifier_of judges the identifier behind an inline flag, a group or a quantifier",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-vwifqi4n",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     "_tools/bench_pool.py",
     "kb/_self/tools.md"
   ],
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "45cf97dc8e2106b7856a3104756356ab1f8a9ca6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json;sys.path.insert(0,\"_tools\");import bench_pool as b;r=next(x for x in b.read_csv(b.PUBLIC_FILE) if x[\"kind\"]==\"fact\" and x[\"source\"].startswith(\"lookup_eval.csv:\"));F=[\"(?i)Invoke-ZzqxInventedDrift\",\"(Invoke-ZzqxInventedDrift|Get-Zzqx)\",\"Invoke-ZzqxInventedDrift(?:s)?\",\"Invoke-ZzqxInventedDrift\"];miss=[f for f in F if not b.unstated_names([dict(r,checks=json.dumps([f]))])];print(miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
