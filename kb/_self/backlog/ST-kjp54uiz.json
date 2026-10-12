@@ -25,9 +25,6 @@
     "_tools/tests_ceiling.json",
     "kb/_self/_decisions.csv"
   ],
-  "depends_on": [
-    "ST-d2f346fz"
-  ],
   "gates": [
     {
       "id": "value",
