@@ -2,7 +2,7 @@
   "id": "ST-tuhb7i2g",
   "kind": "story",
   "title": "Review sprint: Facts carry their freshness at lookup: stamp, revalidation, gone repositories and per-section hashes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tm4wlsve",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-tm4wlsve"
 }
