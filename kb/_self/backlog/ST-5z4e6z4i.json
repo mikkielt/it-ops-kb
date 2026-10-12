@@ -1,0 +1,22 @@
+{
+  "id": "ST-5z4e6z4i",
+  "kind": "story",
+  "title": "backlog.py stage-back ID copies a headless worker's .claude/ staging copies into its worktree, checks and commits them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-sbdy4hsx: every code story touched .claude/ files, so the orchestrator copied each worker's staging copies back by hand (13 files over 4 items), ran selfdoc.py check and the item's checks there, and wrote a second commit with Self-Reviewed for each. backlog.py stage-back ID copies the staging copies dispatch named into the worker's worktree, refuses a copy whose base differs from the worktree's file, runs selfdoc.py check and the item's own checks there, and commits the copies alone with KB-Work on work/ID; the kb-sprint skill's run step 3 names it; a test stages a planted copy and finds one new commit holding only it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stage_back_commits"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx close"
+  ]
+}

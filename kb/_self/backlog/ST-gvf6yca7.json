@@ -24,5 +24,5 @@
   "links": [
     "parked: SP-ilje65fa close"
   ],
-  "notes": "SP-tm4wlsve close (2026-10-12): ST-t2j24bhx's worker recorded gate g1 (how many GitHub REST requests one detect run may make) as provisional; gate add classed it push for the word GitHub and made it blocking, so the landing waited for an operator answer on a request budget that pushes nothing."
+  "notes": "SP-tm4wlsve close (2026-10-12): ST-t2j24bhx's worker recorded gate g1 (how many GitHub REST requests one detect run may make) as provisional; gate add classed it push for the word GitHub and made it blocking, so the landing waited for an operator answer on a request budget that pushes nothing. SP-sbdy4hsx evidence (2026-10-12): gates classed push only by the words github, mirror and origin/main in design questions (ST-7zkw23ca read-rows, ST-3mkvezil licence-words and read-scope, ST-xmnrndxs g1); each worker went on with its recommendation and stopped, and the orchestrator answered them before the landing."
 }

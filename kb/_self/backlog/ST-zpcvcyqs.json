@@ -1,0 +1,22 @@
+{
+  "id": "ST-zpcvcyqs",
+  "kind": "story",
+  "title": "backlog.py resume ID sends a follow-up to an item's worker by the session id its dispatch recorded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-sbdy4hsx: the orchestrator sent ST-nkr6cpvs's rework with claude -p --resume and a session id typed by hand, which was wrong (No conversation found), and had to start it again. backlog.py resume ID FILE reads the session id from the result dispatch wrote in the item's scratch directory and runs the same claude -p argv in the worker's worktree with FILE on stdin, writing a numbered result beside the first; the kb-sprint skill's run step 4.1 names it; a test runs it with a stubbed claude on a planted scratch directory and finds the recorded id in the argv.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "resume_reads_session_id"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx close"
+  ]
+}

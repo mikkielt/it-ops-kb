@@ -1,0 +1,21 @@
+{
+  "id": "ST-c77zwlix",
+  "kind": "story",
+  "title": "provider.py read and search get the PowerShell twin of their allow rules, as the other read-only kb commands have",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-sbdy4hsx: the settings-allow gates of ST-7zkw23ca and ST-nkr6cpvs were answered Bash(python3 _tools/provider.py read *) and search only, so .claude/settings.json has no PowerShell twin of either, while kb/_self/maintaining.md's setup step says the read-only kb commands are allowed for both shell tools; on Windows each call prompts. An operator gate decides whether both get their PowerShell(...) twin; on yes, the settings hold both and maintaining.md names them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys; a=json.load(open('.claude/settings.json'))['permissions']['allow']; sys.exit(0 if all('PowerShell(python3 _tools/provider.py %s *)' % c in a for c in ('read','search')) else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx close"
+  ]
+}

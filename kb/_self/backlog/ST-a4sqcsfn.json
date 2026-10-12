@@ -1,0 +1,21 @@
+{
+  "id": "ST-a4sqcsfn",
+  "kind": "story",
+  "title": "An item touching provider.py gets the tested rules of the docs its touches map to",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-sbdy4hsx: the ST-7zkw23ca worker ran rag.py pack --root _self --item ST-7zkw23ca and got coverage none, so its brief carried no tested rule for provider.py, providers.csv or web-sources.md. kb/_self/map.csv maps _tools/provider.py and _tools/providers.csv to their docs, and those docs have tested questions in kb/_self/_retrieval/lookup_eval.csv (how provider.py read reports a page that is not text, where a fetch is cached), so the item pack prints them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx close"
+  ]
+}

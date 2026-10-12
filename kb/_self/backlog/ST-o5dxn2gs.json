@@ -1,0 +1,22 @@
+{
+  "id": "ST-o5dxn2gs",
+  "kind": "story",
+  "title": "Planning records an open design choice of a new command whose touches guard a rule as a gate before the start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-sbdy4hsx: four stories adding provider.py read and search, kbid.py add's licence read and factdiff.py anchor --quotes left the cache location and age, the output shape and cap, the exit codes, the row names and the CSV format open; their touches guard rules, so gate add made each choice a blocking gate mid-work (14 gates over 4 workers), each worker stopped and the orchestrator answered them before the landing. backlog.py precheck SP warns of a committed item whose touches guard a rule and whose goal adds a subcommand or flag with no gate naming its output, exit codes and any cache, and the kb-sprint skill's plan step 6 names the warning; a test runs precheck on a planted sprint and finds the warning, and none for an item that has the gates.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_open_design_choice"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx close"
+  ]
+}
