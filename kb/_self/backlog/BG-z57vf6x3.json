@@ -2,7 +2,7 @@
   "id": "BG-z57vf6x3",
   "kind": "bug",
   "title": "kbdecide.py lets an agent session record a tests-ceiling decision whose token has a prefix glued to it, which tests.py still accepts",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rlincemn",
   "priority": "P1",
   "rank": 0,
@@ -33,5 +33,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Found by the SP-rlincemn review (finding 1). Premise run 2026-10-12 on origin/main 0aa024b61: names_ceiling('ztests-ceiling ids=1') is False while tests.py read_ceiling accepts any decision text holding the token as a substring (token in text). The suite is at 100 of 100 ids: extend the existing kbdecide authority test, add no id."
+  "notes": "Found by the SP-rlincemn review (finding 1). Premise run 2026-10-12 on origin/main 0aa024b61: names_ceiling('ztests-ceiling ids=1') is False while tests.py read_ceiling accepts any decision text holding the token as a substring (token in text). The suite is at 100 of 100 ids: extend the existing kbdecide authority test, add no id.",
+  "claimed_by": "orch-rlincemn"
 }
