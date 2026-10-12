@@ -251,7 +251,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -363,6 +363,40 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     held = factdiff.revalidate(printed[:5], reuse={A: 3600})
     assert held["sources"][A]["state"] == "cached" and held["lines"][("public/dsc/a.md", 6)]["outcome"] == "moved", held
     assert factdiff.revalidate(printed[:5])["sources"][A]["state"] == "offline"
+    # the census's and refresh's hints: the stored result of a lookup that found a source unchanged spares its request
+    # within the provider's pacing (A was found changed, C and D no lookup answered); detect logs it `hinted`, writes
+    # no state, and census.py check makes it a row nobody reads and nothing dates
+    srcs, rows_p = kbfacts.source_rows(), provider.providers()
+    monkeypatch.setattr(factdiff, "ROOT", kbcommon.root("public"))
+    monkeypatch.setattr(provider, "pacing", lambda row: 3600)
+    hints = factdiff.lookup_hints([A, B, C, D], srcs, rows_p)
+    assert list(hints) == [B] and hints[B]["outcomes"] == {"current": 2} and hints[B]["checked_utc"][:10] == rev["date"], hints
+    monkeypatch.setattr(provider, "request", request)  # the planted pages again, to see which are asked
+    monkeypatch.setattr(factdiff, "write_state", lambda *a, **k: None)
+    monkeypatch.setattr(factdiff, "select_ids", lambda a, s: [B])
+    monkeypatch.setattr(factdiff, "sources", lambda: srcs)
+    monkeypatch.setattr(factdiff, "cited_facts", lambda: {B: [(facts[0][0], "dsc/b.md", 3, facts[0][2])]})
+    flog = tmp_path / "factdiff-hint.csv"
+    detect = lambda: factdiff.cmd_detect(argparse.Namespace(topic=None, dir=None, file=None, source=[B], date="2026-10-12", out=str(flog),  # noqa: E731
+                                                            sitemaps=False, no_save=False), collections.Counter())
+    asked.clear()
+    detect()
+    head = next(r for r in factdiff.read_log(str(flog)) if not r["fact"])
+    assert head["verdict"] == "hinted" and head["signal"] == "lookup" and "no request" in head["evidence"] and not asked, (head, asked)
+    got = census.factdiff_verdicts(str(flog), {B: "2026-10-01"})[B][1]
+    assert got["bucket"] == "NEEDS-READING" and got["note"] == census.HINTED, got
+    row = {c: "" for c in census.COLS} | {"id": B, "url": urls[B], **got}
+    assert not census.confirmed(row) and census.phase2_rows([row]) == []  # not dated, not read
+    census.write_log(str(tmp_path / "census.csv"), [row])
+    capsys.readouterr()
+    census.cmd_summary(argparse.Namespace(log=str(tmp_path / "census.csv"), factdiff=None), collections.Counter())
+    assert re.search(r"^spared by a lookup hint .*: 1$", capsys.readouterr().out, re.M)
+    # past the pacing the source is asked again, as it was
+    monkeypatch.setattr(provider, "pacing", lambda row: 0)
+    asked.clear()
+    detect()
+    assert any(u.startswith(urls[B]) for u in asked) and factdiff.read_log(str(flog))[0]["verdict"] == "unchanged"
+    capsys.readouterr()
     monkeypatch.undo()
     question = good_row()["question"]
     # freshness lifetime: the estimate on a planted history of the state file (no request, no clone): two changes seen

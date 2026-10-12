@@ -239,6 +239,8 @@ BUCKETS = ("OK", "CHANGED", "GONE", "NEWER-VERSION", "NEEDS-READING")
 OUTCOMES = ("confirmed", "updated", "superseded", "gone", "unconfirmed")
 SHA = re.compile(r"[0-9a-f]{40}")
 BLOCKED = "blocked"
+HINTED = "lookup hint"  # a source a lookup revalidated within its provider's pacing: no request, no verdict, not dated
+UNREAD = (BLOCKED, HINTED)  # notes of the rows phase 2 does not read
 DNS, CONNECT = "dns", "connect"  # a fetch that failed to resolve the host, or to connect to it: retried once, then a note
 RETRY_PAUSE = 2  # seconds before that one retry
 UA ="it-ops-kb-census/1.0 (read-only link check)"
@@ -907,11 +909,18 @@ def check_gh_page(url, kind, repo, name, since):
 
 # ---------------------------------------------------------------- check (phases 0-1)
 
+def hinted_verdict(evidence):
+    """The verdict row of a source a lookup's stored revalidation spared (factdiff.lookup_hints): NEEDS-READING with the
+    note HINTED, which no phase reads and `confirm` never dates (only a bucket OK or an outcome does)."""
+    return verdict("NEEDS-READING", evidence, "", HINTED)
+
+
 def factdiff_verdicts(path, retrieved=None):
     """{source id: (http status, verdict)} from a fact diff log (factdiff.py detect, the census's first stage): a source
     that did not change, or whose every fact was found word for word, is OK when the text compared is no newer than
     its retrieved_utc (by the detection baseline or the page's content date; else it is checked here); a gone one
-    GONE; one with facts to review CHANGED. Pinned sources are left to the git checks here."""
+    GONE; one with facts to review CHANGED; one detect spared on a lookup's hint HINTED. Pinned sources are left to
+    the git checks here."""
     with open(path, encoding="utf-8", newline="") as f:
         rows = list(csv.DictReader(f))
     by = defaultdict(list)
@@ -922,6 +931,9 @@ def factdiff_verdicts(path, retrieved=None):
         head, facts = rs[0], [r for r in rs if r["fact"]]
         v = head["verdict"]
         if v in ("pinned", "error"):
+            continue
+        if v == "hinted":  # spared by a lookup's stored result: not asked, so not confirmed either
+            out[sid] = ("", hinted_verdict(head["evidence"]))
             continue
         todo = [r for r in facts if r["outcome"] not in ("verbatim", "moved")]
         rd = ((retrieved or {}).get(sid) or "")[:10]
@@ -1018,15 +1030,20 @@ def cmd_check(a, tally):
         print("no source selected")
         return 2
     fd = factdiff_verdicts(a.factdiff, {r["id"]: r.get("retrieved_utc", "") for r in rows}) if a.factdiff else {}
+    rest = {r["id"]: r for r in rows if r["id"] not in fd}
+    hints = factdiff.lookup_hints(list(rest), rest, provider.providers(factdiff.ROOT))
+    fd.update({sid: ("", hinted_verdict(factdiff.hinted_result(h)[2])) for sid, h in hints.items()})
     work = [(r, classify(r["url"])) for r in rows]
     print(f"phase 0: {len(work)} sources; " + ", ".join(f"{k}={n}" for k, n in sorted(Counter(c["kind"] for _, c in work).items())), flush=True)
+    if hints:
+        print(f"  {len(hints)} source(s) a lookup revalidated within its provider's pacing are not asked", flush=True)
     pinned = [(r, c) for r, c in work if c["repo"] and r["id"] not in fd and provider.is_pinned(r["url"])]
     with cf.ThreadPoolExecutor(8) as ex:  # one request per repository (provider.repository_state); a gone one is not cloned
         states = list(ex.map(provider.repository_state, [r["url"] for r, _ in pinned]))
     gone = {c["repo"] for (_, c), (state, _) in zip(pinned, states) if state == "gone"}
     if gone:
         print(f"  {len(gone)} repositor{'y' if len(gone) == 1 else 'ies'} of pinned sources answer 404: not cloned", flush=True)
-    repos = sorted({c["repo"] for _, c in work if c["repo"]} - gone)
+    repos = sorted({c["repo"] for r, c in work if c["repo"] and r["id"] not in hints} - gone)
     with cf.ThreadPoolExecutor(8) as ex:
         for repo, (d, err) in zip(repos, ex.map(repo_dir, repos)):
             if not d:
@@ -1328,8 +1345,8 @@ def factdiff_log_rows(rows, log, given=None):
 
 
 def phase2_rows(rows):
-    """The rows phase 2 reads: bucket not OK, note not `blocked`, no outcome yet."""
-    return [r for r in rows if r["bucket"] != "OK" and r["note"] != BLOCKED and not r["outcome"]]
+    """The rows phase 2 reads: bucket not OK, note neither `blocked` nor `lookup hint`, no outcome yet."""
+    return [r for r in rows if r["bucket"] != "OK" and r["note"] not in UNREAD and not r["outcome"]]
 
 
 def review_by_source(ids, fd_rows):
@@ -1447,6 +1464,8 @@ def cmd_summary(a, tally):
     print("HTTP errors (a status other than 200 that left the source to read): "
           + str(sum(1 for r in rows if r["bucket"] == "NEEDS-READING" and r["http_status"].isdigit() and r["http_status"] != "200")))
     print(f"confirmed (phase 3 would date): {sum(1 for r in rows if confirmed(r))}")
+    print("spared by a lookup hint (revalidated by a lookup within its provider's pacing: not asked, not dated): "
+          f"{sum(1 for r in rows if r['note'] == HINTED)}")
     todo = phase2_rows(rows)
     items = None
     if todo:
@@ -2501,7 +2520,7 @@ def head_cited_lines(ids):
 def group_scope(rows, cited=None):
     """{group: [(row, citing files)]} of every row phase 2 reads, whether or not it has an outcome yet (a second apply
     finds its group again), owners as the tree at HEAD gives them."""
-    scope = [r for r in rows if r["bucket"] != "OK" and r["note"] != BLOCKED]
+    scope = [r for r in rows if r["bucket"] != "OK" and r["note"] not in UNREAD]
     cited = head_cited_lines({r["id"] for r in scope}) if cited is None else cited
     root, groups = os.path.basename(KB), defaultdict(list)
     for r in sorted(scope, key=lambda r: r["id"]):
