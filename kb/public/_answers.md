@@ -3170,3 +3170,15 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md, agents/doc-lookup-sources.md, agents/codebase-mapping.md, claude/hooks.md, agents/agent-error-catalogue.md.
 
 _Agent: kb-research_
+
+## QK-provider-licence-search-read-routes. Which licence record, search route and read route does each source provider offer a research tool: arXiv, GitHub, GitLab, PyPI, Learn and the Mintlify docs hosts?
+- arXiv: the abstract page links the licence of the version shown (CC BY 4.0, CC BY-SA, CC BY-NC-SA, CC BY-NC-ND, the arXiv non-exclusive licence or CC Zero), each version may differ, and the API's `search_query` finds papers at one request every three seconds on one connection. [DOC S-soqo5xvt, S-7ppiqh3x, S-cig7twfc] [DER S2006, S-u5diy2cr: two abstract pages read]
+- GitHub: a licence is read from the `license` object of the repository endpoint or of a repository search item, which matches only a `LICENSE` file against a short list, so `NOASSERTION` sends a tool to the file; repository search is open at 10 requests a minute unauthenticated and code search needs a token. [DOC S-ezhoiiyb, S-t36jnjsm] [DER S-jkl2kuth, S-5uo7eb2c, S-mz6tic2a, S1002: probes of 2026-10-12]
+- GitLab: `GET /projects/:id?license=true` returns a `license` object for a public project without authentication, its `key` a lowercase key (`lgpl-3.0` in the page's example) not described as an SPDX id. [DOC S-4yvdwu5c] [DER S-4yvdwu5c: the example response]
+- PyPI: the JSON API answers by exact project name and the API page lists no search API; the XML-RPC APIs are planned for deprecation. [DOC S-y6wauqrp, S2192] [DER S-y6wauqrp: the absence]
+- Learn: search through `api/search` and licence through the public mirror (recorded in `agents/doc-change-detection.md` and `agents/doc-lookup-sources.md`); the Mintlify hosts (code.claude.com, modelcontextprotocol.io) answer `.md` as `text/markdown`. [DER S-yftp4qw3, S-ywdbre2n, S1811, S-7ivxsp4z]
+- Conclusion: a licence and a reuse class can be read from the source's own record for arXiv, GitHub, GitLab, Learn (via the mirror) and Anthropic's docs; every other host needs the terms read, and a record that answers `NOASSERTION`, a missing licence or an NC or ND licence is quoted, not copied. A search route exists before WebSearch for Learn, arXiv and GitHub repositories, not for PyPI keywords or GitHub code without a token. [DER S-soqo5xvt, S-ezhoiiyb, S-4yvdwu5c, S-t36jnjsm, S-y6wauqrp]
+- Open: whether a versioned arXiv abstract page links its own version's licence; the vocabulary of GitLab's `license.key`; whether PyPI states that it has no search API. [UNK]
+- See agents/doc-lookup-sources.md, agents/doc-change-detection.md.
+
+_Agent: kb-research_
