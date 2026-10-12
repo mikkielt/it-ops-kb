@@ -308,6 +308,39 @@ def heldout_rewordings(path, root=None):
     return reworded_pairs(held, tuned)
 
 
+OFFKB_FILE = os.path.join("doc2query", "offkb_questions.txt")  # a root's off-kb list, under its _retrieval directory
+
+
+def question_key(q):
+    """A question as the off-kb overlap compares it: lower-cased, spacing collapsed, no closing question mark."""
+    return " ".join(q.lower().split()).rstrip("?").rstrip()
+
+
+def offkb_overlaps(path=None, root=None):
+    """[(row id, eval file name, off-kb list path, its line)] of the eval rows that expect the verdict `good` (a `weak` or
+    `none` row is a guard that an off-kb question stays below it) and whose question is also a line of the off-kb list beside the file (OFFKB_FILE next to it): a question
+    the kb answers and one it lacks at once. `path` names one file, else every root's lookup_eval.csv and HELDOUT_FILE
+    (`root` keeps one root), as eval_cases does."""
+    if path is None:
+        dirs = [(r.name, os.path.join(r.path, kbcommon.DATA_DIR)) for r in kbcommon.roots()]
+        dirs.append((kbfacts.SELF_ROOT, os.path.join(kbcommon.SELF, kbcommon.DATA_DIR)))
+        files = [(n, os.path.join(d, f)) for n, d in dirs if root in (None, n) for f in ("lookup_eval.csv", HELDOUT_FILE)]
+    else:
+        files = [(root, os.path.abspath(path) if os.path.exists(path) else kbcommon.path_of(path))]
+    out = []
+    for name, p in files:
+        offkb = os.path.join(os.path.dirname(p), OFFKB_FILE)
+        if not (os.path.isfile(p) and os.path.isfile(offkb)):
+            continue
+        with open(offkb, encoding="utf-8") as f:
+            lines = {}
+            for n, line in enumerate(f, 1):
+                lines.setdefault(question_key(line), n)
+        out += [(c["id"], os.path.basename(p), offkb, lines[question_key(c["question"])])
+                for _, c in eval_cases(p, name) if c["expect_verdict"] == "good" and question_key(c["question"]) in lines]
+    return out
+
+
 def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
@@ -515,9 +548,13 @@ def main():
         if a.root and a.root not in {r.name for r in kbcommon.roots()} | {kbfacts.SELF_ROOT}:
             ap.error(f"no root {a.root!r}")
         pairs = heldout_rewordings(a.file, a.root) if a.file and os.path.basename(a.file) == HELDOUT_FILE else []
-        if pairs:
-            for hid, label, ratio in pairs:
-                print(f"REWORD {hid} ~ {label} (ratio {ratio:.2f}): a held-out row rewords a tuned row; replace it")
+        for hid, label, ratio in pairs:
+            print(f"REWORD {hid} ~ {label} (ratio {ratio:.2f}): a held-out row rewords a tuned row; replace it")
+        overlaps = offkb_overlaps(a.file, a.root)
+        for rid, name, offkb, line in overlaps:
+            print(f"OFFKB {rid} ({name}): its question is line {line} of {os.path.relpath(offkb, kbcommon.HOME)}, "
+                  f"which lists questions the kb lacks; remove the line, or the row if the kb does not answer it")
+        if pairs or overlaps:
             sys.exit(1)
         res = run_eval(a.file, a.root, a.free)
         if a.json:
