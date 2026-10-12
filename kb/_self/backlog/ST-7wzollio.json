@@ -88,7 +88,7 @@
       "recommendation": "Rows of route good only; the recorded run uses --sample 5 (5 rows of each kind, seed 11), the default of run freshness being every such row",
       "class": "design",
       "answer": "Rows of route good only; the recorded run uses --sample 5 (5 rows of each kind, seed 11), the default of run freshness being every such row",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -101,7 +101,7 @@
       "recommendation": "The host of the source whose outcome the line prints (the worst of those it cites; its first source when none could be checked); a host's median and p95 are the wall times of the lookups that cite it",
       "class": "design",
       "answer": "The host of the source whose outcome the line prints (the worst of those it cites; its first source when none could be checked); a host's median and p95 are the wall times of the lookups that cite it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planned 2026-10-12: benchmarks.py has no freshness scenario (benchmarks.py run freshness exits 2, unknown scenario) and PLANNED holds only pool, so a --dry-run of any other scenario starts it (BG-wapzksub): the worker adds freshness to PLANNED before the dry-run check can pass. The scenario makes no model call; its live requests are within each provider's pacing. SP-tm4wlsve close (2026-10-12): ST-mq7we5r2's gate budget set the revalidation's overall time budget at 90 s (factdiff.REVALIDATE_BUDGET_S) with no measurement of real pack revalidation times; this benchmark's time per question is the figure that confirms or moves it.",

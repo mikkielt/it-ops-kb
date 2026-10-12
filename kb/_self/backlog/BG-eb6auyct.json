@@ -1,0 +1,25 @@
+{
+  "id": "BG-eb6auyct",
+  "kind": "bug",
+  "title": "The router arm of the agent benchmark now revalidates stale sources live, so its times are not comparable with earlier rows",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "agent_bench's router arm calls kb_ask.plan with revalidation off (revalidate=False or KB_NO_REVALIDATE=1) unless a flag asks for it, so its recorded wall times measure the router as before ST-jqwqdj2g made kb_ask.plan revalidate stale sources by default (up to 90 s per question); the repro exits 0 once agent_bench turns it off. SP-etslk6yu review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; s=open('_tools/agent_bench.py', encoding='utf-8').read(); sys.exit(0 if ('revalidate=False' in s or 'KB_NO_REVALIDATE' in s) else 1)"
+    ]
+  },
+  "repro_reason": "the arm's behaviour shows only in a paid benchmark run; the call's argument is what decides it",
+  "touches": [
+    "_tools/agent_bench.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu review"
+  ]
+}

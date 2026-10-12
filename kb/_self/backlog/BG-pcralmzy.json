@@ -1,0 +1,26 @@
+{
+  "id": "BG-pcralmzy",
+  "kind": "bug",
+  "title": "fetch.py --status reads a source's age from its last check alone, so its STALE column disagrees with what a lookup revalidates",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "fetch.py --status computes a source's age and staleness as the lookup does (kbfacts.source_freshness: the newer of its last check and its facts' verified date; age unknown counts as stale unless pinned), so a source --status shows stale is exactly one kb_pack would revalidate; the repro, which compares the stale flag of fetch.py --status --json with kbfacts.source_freshness for every source, exits 0. SP-etslk6yu review: on 2026-10-12 1581 of 3972 sources disagree.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,subprocess,sys; sys.path.insert(0,'_tools'); import kbfacts; p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--json'],capture_output=True,text=True); p.returncode and sys.exit(2); d=json.loads(p.stdout); f=kbfacts.source_freshness([r['id'] for r in d]); bad=[r['id'] for r in d if r['id'] in f and bool(r['stale'])!=bool(f[r['id']]['stale'])]; sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/fetch.py",
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu review"
+  ]
+}

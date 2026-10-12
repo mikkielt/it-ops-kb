@@ -1,0 +1,25 @@
+{
+  "id": "BG-v5f5tn5y",
+  "kind": "bug",
+  "title": "The freshness benchmark's p95 uses round(), which rounds half to even, so the rank is one low for some sample sizes",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_retrieval's freshness p95 takes the nearest-rank percentile, math.ceil(0.95 * n), so n=30 gives rank 29, not 28; the repro exits 0 once the code no longer rounds with round(). SP-etslk6yu review; the recorded n=44 run is unaffected.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(1 if 'int(round(0.95 * len(walls)))' in open('_tools/bench_retrieval.py', encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "the percentile is computed inline in fresh_rows over live wall times; a fixture run needs a refactor the fix makes",
+  "touches": [
+    "_tools/bench_retrieval.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu review"
+  ]
+}

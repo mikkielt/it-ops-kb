@@ -1,0 +1,26 @@
+{
+  "id": "ST-pil43j3u",
+  "kind": "story",
+  "title": "The Poisson lifetime serves real sources, and tools.md states the share it serves",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Once detect records changed_utc (BG-w3p7fqy2, ST-fxz2wrfe), fetch.py --status shows at least one source whose lifetime basis is the Poisson estimate, and kb/_self/tools.md states the measured share of sources each basis serves with the command that measured it, not 'few'. SP-etslk6yu review: on 2026-10-12 the Poisson branch served 0 of 3972 sources (changed_utc empty in every revision of _fetch_state.csv).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys; p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--json'],capture_output=True,text=True); p.returncode and sys.exit(2); d=json.loads(p.stdout); sys.exit(0 if any((r.get('lifetime_basis') or '').endswith('(Poisson)') for r in d) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-etslk6yu review"
+  ]
+}

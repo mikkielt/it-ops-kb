@@ -1,0 +1,25 @@
+{
+  "id": "BG-iw3p4sw4",
+  "kind": "bug",
+  "title": "A lookup's stored revalidation keeps only the last question's lines, so a source past its lifetime is asked again for every new question",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "factdiff.lookup_store keeps the lines of earlier revalidations of a source still within the reuse window (merging, not replacing, rec['lines']), so a lookup that prints another fact of a source revalidated moments ago reuses the stored result instead of re-asking the source; the repro, which stores two results of one source with different lines and asks for the first, exits 0. SP-etslk6yu review (factdiff.py lookup_cached/lookup_store): Q1 prints fact A of S and stores {A}; Q2 prints B and misses, re-asks and stores {B}; Q3 prints A and re-asks again; the test replays identical lines so never hits this.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,time; sys.path.insert(0,'_tools'); import factdiff as f, kbcommon; f.ROOT=kbcommon.root('public'); s='S-review-etslk6yu'; n=time.time(); f.lookup_store(s,{'checked':n,'lines':{'A':{'outcome':'current'}}}); f.lookup_store(s,{'checked':n,'lines':{'B':{'outcome':'current'}}}); sys.exit(0 if f.lookup_cached(s,['A'],3600,n) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu review"
+  ]
+}
