@@ -1,0 +1,20 @@
+{
+  "id": "BG-vrijmdre",
+  "kind": "bug",
+  "title": "tests.py exits 1 over the time ceiling on a loaded darwin host: 100 tests pass in 25 s and 30 s against 24 s",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/tests.py on a darwin host with other sessions running (load average 4.7, the run starting 7 of 12 workers) passes its 100 tests and still exits 1 with 'over the ceiling: the full run took 30 s, the ceiling is 24 s'; a whole-suite run's time bound is judged against the host's load as the ceiling file's darwin:20 with its factor reads it, or the run is not read as over the ceiling while another session loads the host, so a worker's clean tree does not fail the suite for time alone",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  },
+  "repro_reason": "load dependent: the suite passes its tests and fails only the time ceiling, so it reproduces only while other sessions load the host",
+  "touches": [
+    "_tools/tests.py"
+  ]
+}
