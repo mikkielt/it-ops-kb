@@ -1,0 +1,17 @@
+{
+  "id": "BG-s7du27qb",
+  "kind": "bug",
+  "title": "The router's ledger scan reads and splits a ledger file once for each entry it holds, so a gap-cued question costs about 50 ms",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A question the gap or conflict expert scans reads each ledger file once, not once for each entry: kbfacts._ledger_items calls files.setdefault(file, (read(file) or '').splitlines()), whose default is evaluated for every entry, so routed() on a 'What does the kb say about X' question makes 170 reads of _gaps.md; after the fix the repro's count of reads is below 10 and rag.py eval keeps passing all its rows.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;kbfacts.routed('What does the kb say about Kerberos delegation constrained?');n=[0];r=kbfacts.read;kbfacts.read=lambda p:(n.__setitem__(0,n[0]+1),r(p))[1];kbfacts.routed('What does the kb say about Kerberos delegation constrained?');sys.exit(0 if n[0]<10 else 1)"
+    ]
+  }
+}
