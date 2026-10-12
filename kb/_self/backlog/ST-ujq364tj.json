@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Which done item does close --summary name for each goal clause of a sprint, and what does it print when none carries it? (weak: the answer is kb/_self/backlog.md:244 and kb/_self/tools.md:84, so a tested _self row of lookup_eval.csv is added, landed with backlog.py land ID --wait-merge); What trailer does an automatic querylog.py apply --push commit carry? (weak: the answer is kb/_self/git.md:95, so a tested _self row is added). The questions about what researched checks and what precheck warns of are weak because the behaviour is this sprint's own work, not a fact to research.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,7 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/**",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ]
 }

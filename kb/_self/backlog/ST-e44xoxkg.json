@@ -3,22 +3,66 @@
   "kind": "story",
   "title": "A goal research story's check reads its narrowed questions' coverage, not only that a work commit exists",
   "status": "draft",
+  "sprint": "SP-sqgyoiaz",
   "priority": "P3",
   "rank": 0,
-  "goal": "The check of a goal research story reads each question its narrowed goal names (rag.py pack coverage, or a gap entry for it), so done refuses research that left a question unanswered: at SP-4phd36pa, backlog.py researched ST-bivdc2fa proved only a work commit, and only the fresh-context review read the seven clauses (it found four S3 wording gaps, BG-az4r47gd, BG-lmp4mxmo, BG-drzst6zj, BG-o2spkwnz).",
+  "goal": "The check of a goal research story reads each question its narrowed goal names (rag.py pack coverage, or a gap entry for it), so done refuses research that left a question unanswered: at SP-4phd36pa backlog.py researched ST-bivdc2fa proved only a work commit while the fresh-context review that read the seven clauses found four S3 wording gaps (BG-az4r47gd, BG-lmp4mxmo, BG-drzst6zj, BG-o2spkwnz)",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "_tools/test_backlog_portable.py",
-        "-k",
-        "researched_reads_narrowed_coverage"
+        "-c",
+        "\nimport sys,types,io,contextlib;sys.path.insert(0,\"_tools\");import bl_land\nGOOD=\"How do I set the Windows Update deferral period for feature updates with Intune?\"\nNONE=\"What colour is the obsidian frobnicator valve of the Zorblax 9000 spectrometer?\"\ndef researched(goal):\n    it={\"ST-bivdc2fa\":{\"kind\":\"story\",\"goal_research\":True,\"sprint\":\"SP-a\",\"goal\":goal,\"notes\":\"\",\"touches\":[\"kb/public/**\"]}}\n    bl=types.SimpleNamespace(items=it,root=\".\",label=lambda i:i,descendants=lambda i:[])\n    buf=io.StringIO()\n    with contextlib.redirect_stdout(buf):\n        rc=bl_land.cmd_researched(bl,types.SimpleNamespace(id=\"ST-bivdc2fa\"))\n    return rc,buf.getvalue()\nok=researched(GOOD);bad=researched(GOOD+\"; \"+NONE)\nprint(ok,bad);sys.exit(0 if ok[0]==0 and bad[0]==1 and \"colour\" in bad[1] else 1)"
       ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/backlog.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-pwosmcdj"
+  ],
+  "gates": [
+    {
+      "id": "question-coverage",
+      "kind": "blocking",
+      "question": "Which coverage of a narrowed question lets researched pass?",
+      "options": [
+        "good passes; weak or none refuses unless a gap entry names the question",
+        "only none refuses, unless a gap entry names the question"
+      ],
+      "recommendation": "good passes; weak or none refuses unless a gap entry names the question",
+      "do": {
+        "good passes; weak or none refuses unless a gap entry names the question": "ST-e44xoxkg",
+        "only none refuses, unless a gap entry names the question": "ST-e44xoxkg"
+      },
+      "class": "agents-rule",
+      "answer": "good passes; weak or none refuses unless a gap entry names the question",
+      "by": "operator"
+    },
+    {
+      "id": "question-roots",
+      "kind": "blocking",
+      "question": "In which kb roots does researched read each narrowed question's coverage, and what when the project has no kb_root?",
+      "options": [
+        "the roots the story's touches name (kb/public/** is root public), all roots when none; skipped with a said line when kb_root is empty",
+        "only the root backlog.json's kb_root names"
+      ],
+      "recommendation": "the roots the story's touches name (kb/public/** is root public), all roots when none; skipped with a said line when kb_root is empty",
+      "do": {
+        "the roots the story's touches name (kb/public/** is root public), all roots when none; skipped with a said line when kb_root is empty": "ST-e44xoxkg",
+        "only the root backlog.json's kb_root names": "ST-e44xoxkg"
+      },
+      "class": "agents-rule",
+      "answer": "the roots the story's touches name (kb/public/** is root public), all roots when none; skipped with a said line when kb_root is empty",
+      "by": "operator"
     }
   ],
   "links": [
     "parked: SP-4phd36pa close"
   ],
-  "notes": "Filed as a retrospective draft at the SP-4phd36pa close; its check names a test not written yet (it collects none and fails until the work adds it), within the ceiling or merged into an existing test when planned. SP-ajcomz6d close (2026-10-11): researched passed on the first work commit; only the fresh-context review found two S2 gaps (BG-ab3tndhy, a summary contradicting its own table; BG-i44ewtyl, AlmaLinux 8 and 10 half-answered with no gap) and two S3. SP-qjn563cf (2026-10-11): researched ST-pnr4zyni again passed on the work commit alone; only the review found three S2 partial clauses (BG-y3oykyfl, BG-l22a5sfd, BG-vdhzlmv3). SP-up5wchen (2026-10-11): researched ST-4ehra2pk again passed on the work commit alone; the review found three S2 wrong or partial facts (BG-oyzgvtrg, BG-4e7ja4zv, BG-7ofeobia)."
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Recurred at SP-ajcomz6d (BG-ab3tndhy, BG-i44ewtyl: AlmaLinux 8 and 10 half-answered with no gap), SP-qjn563cf (BG-y3oykyfl, BG-l22a5sfd, BG-vdhzlmv3) and SP-up5wchen (BG-oyzgvtrg, BG-4e7ja4zv, BG-7ofeobia): researched passed on the work commit alone and only the fresh-context review found partial or wrong clauses. The questions are the narrowed goal's clauses (split as goal_clauses does); a project with no kb_root runs no pack and keeps today's work-commit rule. Gates answered at planning: question-coverage, question-roots.\nPremise: researched on a story with a real work commit (ST-bivdc2fa) and a narrowed goal that adds a question the kb has no word for (pack coverage none) exits 0 today, as it does for an answered question (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }

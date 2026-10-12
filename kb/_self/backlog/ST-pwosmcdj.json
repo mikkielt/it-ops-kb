@@ -3,27 +3,68 @@
   "kind": "story",
   "title": "An operational story finished by a query-log delivery can be done, not only dropped",
   "status": "draft",
+  "sprint": "SP-sqgyoiaz",
   "priority": "P2",
   "rank": 0,
-  "goal": "done accepts as a story's evidence an automatic querylog.py apply --push commit on the integration main that its checks read, or new and check warn of an open story whose touches are the query-log store only and name the drop route, so close --summary credits the goal clause it carried instead of printing unmet (ST-rtzdy4nm in SP-kwi4ilty)",
+  "goal": "done accepts as a story's evidence an automatic querylog.py apply --push commit on the integration main that its checks read, or new and check warn of an open story whose touches are the query-log store only and name the drop route, so close --summary credits the goal clause it carried instead of printing unmet (ST-rtzdy4nm in SP-kwi4ilty); precheck warns of a committed code-lane item whose check or repro reads the committed query-log store or backlog.py cost figures and names the remedy: a separate item done after the merge, since land runs a code item's checks and repro before it pushes the merge request (BG-ckrasbdn's land stopped at checks in SP-kwi4ilty)",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "done_operational_delivery_story"
+        "-c",
+        "\nimport json,os,subprocess,sys,tempfile\nT=os.path.abspath(\"_tools\");root=tempfile.mkdtemp()\nenv=dict(os.environ,GIT_AUTHOR_NAME=\"t\",GIT_AUTHOR_EMAIL=\"t@e.x\",GIT_COMMITTER_NAME=\"t\",GIT_COMMITTER_EMAIL=\"t@e.x\")\ngit=lambda *a:subprocess.run([\"git\",\"-C\",root,*a],capture_output=True,text=True,env=env,check=True).stdout\nbl=lambda *a:subprocess.run([sys.executable,os.path.join(T,\"backlog.py\"),\"--root\",root,*a],capture_output=True,text=True,env=env)\ngit(\"init\",\"-q\",\"-b\",\"main\")\nopen(os.path.join(root,\"backlog.json\"),\"w\").write(json.dumps({\"item_dir\":\"items\",\"lane_module\":\"\",\"land_push\":[\"git\",\"status\"]}))\ngit(\"add\",\"-A\");git(\"commit\",\"-q\",\"-m\",\"init\")\nsid=bl(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split(\"new sprint \")[1].split()[0]\niid=bl(\"new\",\"story\",\"--title\",\"Deliver rows\",\"--goal\",\"rows delivered\",\"--touch\",\"kb/_querylog/**\",\"--check\",\"python3 -c \\\"import sys;sys.exit(0)\\\"\",\"--sprint\",sid).stdout.split()[2]\nbl(\"answer\",sid,\"start\",\"--answer\",\"approve\",\"--by\",\"operator\");bl(\"start\",sid);bl(\"claim\",iid,\"--by\",\"w1\")\nos.makedirs(os.path.join(root,\"kb/_querylog/2026-10\"));open(os.path.join(root,\"kb/_querylog/2026-10/r.jsonl\"),\"w\").write(\"{}\\n\")\ngit(\"add\",\"-A\");git(\"commit\",\"-q\",\"-m\",\"chore(kb): query log store, 1 run file(s)\\n\\nKB-Auto: querylog\")\np=bl(\"done\",iid,\"--dry-run\");print(p.returncode,p.stdout,p.stderr);sys.exit(p.returncode)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys,types,io,contextlib;sys.path.insert(0,\"_tools\");import bl_land\nit={\"SP-a\":{\"kind\":\"sprint\",\"goal\":\"g\"},\n \"BG-x\":{\"kind\":\"bug\",\"status\":\"draft\",\"sprint\":\"SP-a\",\"title\":\"cost shows\",\"goal\":\"cost figures\",\"touches\":[\"_tools/bl_cost.py\"],\n  \"repro\":{\"run\":[\"python3\",\"-c\",\"import sys;sys.exit(1)  # reads kb/_querylog/ops after a delivery\"]}}}\nbl=types.SimpleNamespace(items=it,root=\".\",label=lambda i:i,sprint_items=lambda s:[i for i,d in it.items() if d.get(\"sprint\")==s])\nbuf=io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_land.cmd_precheck(bl,types.SimpleNamespace(sprint=\"SP-a\"))\nout=buf.getvalue();print(out)\nsys.exit(0 if any(\"warning\" in l and \"query-log\" in l and \"after the merge\" in l for l in out.splitlines()) else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "done accepts as a story's evidence an automatic querylog.py apply --push commit on the integration main that its checks read, or new and check warn of an open story whose touches are the query-log store only and name the drop route, so close --summary credits the goal clause it carried instead of printing unmet (ST-rtzdy4nm in SP-kwi4ilty)",
+      "check": 0
+    },
+    {
+      "clause": "precheck warns of a committed code-lane item whose check or repro reads the committed query-log store or backlog.py cost figures and names the remedy: a separate item done after the merge, since land runs a code item's checks and repro before it pushes the merge request (BG-ckrasbdn's land stopped at checks in SP-kwi4ilty)",
+      "check": 1
+    }
+  ],
   "touches": [
-    "_tools/bl_done.py",
-    "_tools/test_backlog_portable.py",
-    "kb/_self/backlog.md"
+    "_tools/bl_land.py",
+    "_tools/backlog.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-7rqeuzlm"
+  ],
+  "gates": [
+    {
+      "id": "delivery-evidence",
+      "kind": "blocking",
+      "question": "Which route finishes an operational story whose work is a query-log delivery?",
+      "options": [
+        "done accepts the automatic query-log delivery commit (trailer KB-Auto: querylog) as evidence when every touch of the story is the query-log store and its checks pass",
+        "no change to done: new and check only warn of such a story and name the drop route"
+      ],
+      "recommendation": "done accepts the automatic query-log delivery commit (trailer KB-Auto: querylog) as evidence when every touch of the story is the query-log store and its checks pass",
+      "do": {
+        "done accepts the automatic query-log delivery commit (trailer KB-Auto: querylog) as evidence when every touch of the story is the query-log store and its checks pass": "ST-pwosmcdj",
+        "no change to done: new and check only warn of such a story and name the drop route": "ST-pwosmcdj"
+      },
+      "class": "querylog",
+      "answer": "done accepts the automatic query-log delivery commit (trailer KB-Auto: querylog) as evidence when every touch of the story is the query-log store and its checks pass",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-kwi4ilty close",
     "merged: ST-vu4xal5j"
   ],
-  "notes": "Merged from ST-vu4xal5j “Planning warns of a code-lane item whose check or repro reads state only a delivery after its merge can make” at the 2026-10-12 draft triage: land stopped at checks for BG-ckrasbdn in SP-kwi4ilty from the same cause as ST-pwosmcdj: evidence only a query-log delivery after the merge can make; one precheck warning, same remedy text Its goal: backlog.py precheck (or check) warns of a committed code-lane item whose check or repro reads the committed query-log store or backlog.py cost figures, since land runs a code item's checks and repro before it pushes the merge request, and names the remedy: a separate item done after the merge (BG-ckrasbdn's land stopped at checks in SP-kwi4ilty) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"precheck_post_merge_check\"]} Its touches: _tools/bl_plan.py, _tools/test_backlog_portable.py, kb/_self/backlog.md"
+  "notes": "Filed at the SP-kwi4ilty close (ST-rtzdy4nm was dropped because done refused it). Merged at the 2026-10-12 draft triage from ST-vu4xal5j: land stopped at checks for BG-ckrasbdn in SP-kwi4ilty from the same cause, evidence only a query-log delivery after the merge can make; one precheck warning, the remedy text of the first clause. The delivery commit carries the trailer KB-Auto: querylog and no KB-Work. precheck lives in bl_land.cmd_precheck, so the merged story's bl_plan.py touch became bl_land.py. Gate answered at planning: delivery-evidence.\nPremise: done --dry-run on a throwaway project (a claimed story touching kb/_querylog/** and a commit with trailer KB-Auto: querylog changing a file there) exits 1 with 'no commit on HEAD carries the trailer KB-Work', and precheck on a planted bug whose repro text reads kb/_querylog prints no warning (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }
