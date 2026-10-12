@@ -2,7 +2,7 @@
   "id": "BG-ckrasbdn",
   "kind": "bug",
   "title": "Query-log delivery stops for good once learn writes a gap entry citing kb/public/_gaps.md, which check.py refuses, so no usage or work sidecar reaches main and cost reads no figure",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kwi4ilty",
   "priority": "P2",
   "rank": 0,
@@ -106,5 +106,6 @@
     "gap F-44cf8da28cdf",
     "gap F-7850c16a27a2"
   ],
-  "notes": "Recurred at every close from SP-lyfnpu37 to SP-etslk6yu (2026-10-10..12): land warned the work sidecars undelivered and cost --rework read no worker figure. Planned 2026-10-12 (SP-kwi4ilty, origin/main 0ae6d30bc): premise reproduced, the repro exits 1; distill.log's last apply --push (20261012T112205Z-e873d895) stops at check.py 'ERROR public/_gaps.md:1082 cites kb/public/_gaps.md:1058, a file that is not in root public' and doc2query stale=1; the six e2e tests that failed in that gate fail on the same check.py error, so the commit stuck in _cache/querylog/worktree (re-made each run: reflog 3569ca0d4, ec1cefda0) is the same cause. Suite at 100 of 100 ids: extend test_apply_* (_tools/test_redact.py) and test_land_no_work_rows_late_undelivered_or_missing, add no id. Step order: the _tools change lands through its code/<id> merge request (land --wait-merge); after it merges the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done, whose repro reads the committed store. Checks 0 and 1 pass before the work: the worker extends those tests so they fail first."
+  "notes": "Recurred at every close from SP-lyfnpu37 to SP-etslk6yu (2026-10-10..12): land warned the work sidecars undelivered and cost --rework read no worker figure. Planned 2026-10-12 (SP-kwi4ilty, origin/main 0ae6d30bc): premise reproduced, the repro exits 1; distill.log's last apply --push (20261012T112205Z-e873d895) stops at check.py 'ERROR public/_gaps.md:1082 cites kb/public/_gaps.md:1058, a file that is not in root public' and doc2query stale=1; the six e2e tests that failed in that gate fail on the same check.py error, so the commit stuck in _cache/querylog/worktree (re-made each run: reflog 3569ca0d4, ec1cefda0) is the same cause. Suite at 100 of 100 ids: extend test_apply_* (_tools/test_redact.py) and test_land_no_work_rows_late_undelivered_or_missing, add no id. Step order: the _tools change lands through its code/<id> merge request (land --wait-merge); after it merges the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done, whose repro reads the committed store. Checks 0 and 1 pass before the work: the worker extends those tests so they fail first.",
+  "claimed_by": "orch-kwi4ilty"
 }
