@@ -81,7 +81,7 @@
       "recommendation": "memo file",
       "class": "design",
       "answer": "memo file",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -95,7 +95,7 @@
       "recommendation": "one",
       "class": "design",
       "answer": "one",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc, darwin host, load ~2): cProfile of a cold pack 'Claude Code UserPromptSubmit hook timeout' shows fresh_state 54 of 113 ms, csv __next__ 22,226 rows (_csv_dicts 18,094: every _anchors.csv and _fetch_state.csv row); median of five cold packs 117 ms. Checks 0 and 1 pass before the work and pin the stamp's output and the eval verdicts. The suite is at 100 of 100 ids: extend pack_freshness_stamp's test, add no id. On a loaded host a timing check that fails is run again once the host is quiet, never answered by raising the 80 ms bound.",

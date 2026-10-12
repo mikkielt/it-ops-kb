@@ -81,7 +81,7 @@
       "recommendation": "5 units, route split",
       "class": "design",
       "answer": "5 units, route split",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -94,7 +94,7 @@
       "recommendation": "price, pricing, cost; a currency sign or code beside a number",
       "class": "design",
       "answer": "price, pricing, cost; a currency sign or code beside a number",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

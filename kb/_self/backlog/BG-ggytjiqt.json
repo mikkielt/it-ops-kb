@@ -1,0 +1,20 @@
+{
+  "id": "BG-ggytjiqt",
+  "kind": "bug",
+  "title": "pack's priced note fires on any cost question, so a question about a non-monetary cost gets a false check: and route split",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the priced note fires only on a question that asks for a money amount: a good pack of 'What does Graph throttling cost for me/getMemberGroups in resource units?' carries no priced note, while 'What is the current price of a Microsoft 365 E5 licence?' keeps it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;a=kbfacts.pack('What does Graph throttling cost for me/getMemberGroups in resource units?').get('priced');b=kbfacts.pack('What is the current price of a Microsoft 365 E5 licence?').get('priced');print(a,b);sys.exit(0 if not a and b else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-kp3boz7z review"
+  ]
+}

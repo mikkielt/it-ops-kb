@@ -1,0 +1,22 @@
+{
+  "id": "BG-kmjewyid",
+  "kind": "bug",
+  "title": "pack still prints a clean good for rewordings of the tempdb and Microsoft 365 E5 questions BG-xbbimxpq flags",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py pack prints no clean good (coverage good with no check: and no route: line) for 'How many tempdb files are recommended for SQL Server?' and 'How much is a Microsoft 365 E5 licence per user per month?', as it does not for the BG-xbbimxpq wordings; the Exchange Online wording is BG-j7pe3u46",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;outs=[subprocess.run([sys.executable,'_tools/rag.py','pack',q],capture_output=True,text=True,check=True).stdout for q in sys.argv[1:]];bad=[t.splitlines()[0] for t in outs if t.startswith('coverage: good') and 'check:' not in t.split(chr(10)+'## ')[0] and 'route:' not in t.split(chr(10)+'## ')[0]];print(bad);sys.exit(1 if bad else 0)",
+      "How many tempdb files are recommended for SQL Server?",
+      "How much is a Microsoft 365 E5 licence per user per month?"
+    ]
+  },
+  "links": [
+    "parked: SP-kp3boz7z review"
+  ]
+}

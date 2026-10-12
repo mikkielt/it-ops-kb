@@ -1,0 +1,27 @@
+{
+  "id": "ST-6z527rfe",
+  "kind": "story",
+  "title": "The provider-signals memo is keyed and refilled from the current provider registry, so a long-lived process writes no stale signals under a new key",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbfacts reloads _PROVIDER_ROWS when _registry_key() changes, so a long-lived process (MCP server, hook) whose provider registry or provider code changed after its first pack writes signals of the new registry into the provider_signals memo; pack_freshness_stamp's test is extended with a planted registry change in one process, with no new test id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_freshness_stamp"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-kp3boz7z review"
+  ]
+}

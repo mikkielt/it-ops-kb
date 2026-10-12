@@ -1,0 +1,27 @@
+{
+  "id": "ST-qkpbwtsc",
+  "kind": "story",
+  "title": "The scoped ledger row read keeps a row with a quoted field holding a quote and matches a key in the last column",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbfacts._ledger_rows returns the same rows as a full csv read for every cited id, including a row whose quoted field holds a doubled quote mid-field and a ledger whose key column is the last column; pack_freshness_stamp's test plants both cases, with no new test id",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_freshness_stamp"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-kp3boz7z review"
+  ]
+}

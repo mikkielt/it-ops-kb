@@ -1,0 +1,20 @@
+{
+  "id": "BG-pedsqeqs",
+  "kind": "bug",
+  "title": "pack's passing note puts a check: and route split on eval questions the kb answers, on common words such as big, bookmark and noqa",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the passing note of a good pack fires on no question of kb/public/_retrieval/lookup_eval.csv whose expected verdict is good (EV-mcp-tool-output-claude-code-before on big, EV-wef-subscription-encrypted-wec-server-cache on bookmark, EV-rule-families-ruff-select-default-noqa on noqa on 2026-10-12), while the four BG-xbbimxpq questions stay flagged",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,csv;sys.path.insert(0,'_tools');import kbfacts;bad=[r['id'] for r in csv.DictReader(open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8')) if r['expect_verdict']=='good' and kbfacts.pack(r['question']).get('passing')];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "links": [
+    "parked: SP-kp3boz7z review"
+  ]
+}
