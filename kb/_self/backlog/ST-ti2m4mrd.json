@@ -1,0 +1,19 @@
+{
+  "id": "ST-ti2m4mrd",
+  "kind": "story",
+  "title": "Planning a goal that changes what a ledger note means lists every reader of those notes, not only the changed symbol's referrers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-lmf4ke4w retrospective: BG-v57estdm widened kbfacts.OPEN_GAP, but bench_pool.gap_section read _gaps.md notes with its own regex and the stored bench_pool.csv held a row for an entry the change closed, so the worker stopped twice and its touches were widened mid-work (two resumes, gate g2 mid-work); referrers on a ledger file and its note words (Resolved, Superseded, Closed, Partly resolved, Narrowed) lists each module that parses them and each stored data file keyed to their entries, so the planner puts them in the touches or a gate before the start",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "referrers_ledger_note_readers"
+      ]
+    }
+  ]
+}
