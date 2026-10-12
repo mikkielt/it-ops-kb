@@ -95,7 +95,8 @@ Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-add-topic:
 ## 6. Check and report
 Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
 
-- `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`.
+- `python3 _tools/check.py` must end `errors=0`. Then `python3 .claude/skills/kb-verify/lint.py <domain>/<slug>` must report `errors=0`; its warning `DOC fact added in this change` names a new fact whose quote the page does not hold.
+- Anchor the new facts by the quote each rests on: for each `DOC` fact from a non-Microsoft page, its verbatim quote of at most 25 words, as a CSV with the header `line,quote` (the fact's line number in `<domain>/<slug>.md`, then the quote) in the session's scratch directory (a worker's brief names it, else `_cache/`); then `python3 _tools/factdiff.py anchor --file <domain>/<slug>.md --quotes <that csv>`. A line `quote not held: <path>:<line> <source id>` names a fact whose quote the page lacks: correct the quote or the fact.
 - `python3 _tools/rag.py pack "<a question the topic answers>"` finds the new article, and `python3 _tools/rag.py eval` still passes every question (a new article can outrank the expected one).
 - `python3 _tools/tests.py` must pass (leak scan, signals and aliases tables).
 - Report the files created, the fact count by tag, the signal and alias rows added, and the open `UNK` items. Do not commit unless asked.
