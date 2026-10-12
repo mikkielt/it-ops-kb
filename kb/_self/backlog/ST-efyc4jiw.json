@@ -2,7 +2,7 @@
   "id": "ST-efyc4jiw",
   "kind": "story",
   "title": "The off-kb list keeps no question the kb answers, and the eval refuses a question labelled both answered and off-kb",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-7n3d4jte",
   "priority": "P1",
@@ -92,5 +92,6 @@
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise: line 2 of kb/public/_retrieval/doc2query/offkb_questions.txt is the question of lookup_eval.csv row EV-okta-scim-provisioning-map-groups-application (expect good, claude/enterprise-admin.md); the Terraform Log Analytics question is a good eval row and a fact pool row; FileVault key escrow is answered at public/intune/macos-management.md:46. These are 3 of the 15 off-kb questions pack calls good. The overlap check runs over the live files before the sprint commits the story and must find exactly the Okta row now. Planned 2026-10-12: premise reproduced (offkb_questions.txt lines 2, 5 and 7 hold the Okta SCIM, Terraform Log Analytics and FileVault escrow questions). rag.py eval passes before the work (621 of 621): after the work it is the overlap gate itself, so it must still pass on the cleaned list."
+  "notes": "Premise: line 2 of kb/public/_retrieval/doc2query/offkb_questions.txt is the question of lookup_eval.csv row EV-okta-scim-provisioning-map-groups-application (expect good, claude/enterprise-admin.md); the Terraform Log Analytics question is a good eval row and a fact pool row; FileVault key escrow is answered at public/intune/macos-management.md:46. These are 3 of the 15 off-kb questions pack calls good. The overlap check runs over the live files before the sprint commits the story and must find exactly the Okta row now. Planned 2026-10-12: premise reproduced (offkb_questions.txt lines 2, 5 and 7 hold the Okta SCIM, Terraform Log Analytics and FileVault escrow questions). rag.py eval passes before the work (621 of 621): after the work it is the overlap gate itself, so it must still pass on the cleaned list.",
+  "claimed_by": "orch-7n3d4jte"
 }
