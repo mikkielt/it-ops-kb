@@ -60,7 +60,6 @@
     "AGENTS.md"
   ],
   "depends_on": [
-    "ST-mq7we5r2",
     "ST-bl3hdung"
   ],
   "gates": [
