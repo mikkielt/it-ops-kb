@@ -2,7 +2,7 @@
   "id": "ST-wtpwtlk4",
   "kind": "story",
   "title": "The benchmarks report compares the new records with those of 2026-10-08 and 2026-10-09, naming the change behind each moved figure and each scenario's expected outcome met or not",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-ceucrhca",
   "priority": "P1",
@@ -87,5 +87,60 @@
     "ST-gngo7etc"
   ],
   "notes": "Check 2 (report --check) passes before the work on purpose: it keeps the generated tables and README.md's numbers in line; checks 0 and 1 fail until the section is written.",
-  "claimed_by": "orch-ceucrhca"
+  "evidence": {
+    "commit": "3497ce496348abd11cabe6e95d718164dbedb46b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;h=sys.argv[1];need=sys.argv[2:];t=open('kb/_self/reports/benchmarks.md').read();i=t.find(h);s='' if i<0 else t[i:];m=re.search(r'\\n#{2,3} ',s[len(h):]);s=s[:len(h)+m.start()] if m else s;miss=[x for x in need if x not in s];print('section found' if i>=0 else 'no section','missing:',miss);sys.exit(0 if i>=0 and not miss else 1)",
+          "Since the records of 2026-10-08 and 2026-10-09",
+          "ST-b27c527d",
+          "ST-iyrixezt",
+          "BG-zpcqo7qt",
+          "ST-efyc4jiw",
+          "ST-ebn65qen",
+          "ST-jqwqdj2g",
+          "ST-mq7we5r2",
+          "ST-f2n2h22c",
+          "TK-p7ajxp72",
+          "ST-jkehwsu4",
+          "ST-jlezjp6k",
+          "ST-zdfghdlb",
+          "ST-wik6j6im"
+        ],
+        "exit": 0,
+        "sha256": "457dd9712def5de5"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;h=sys.argv[1];need=sys.argv[2:];t=open('kb/_self/reports/benchmarks.md').read();i=t.find(h);s='' if i<0 else t[i:];m=re.search(r'\\n#{2,3} ',s[len(h):]);s=s[:len(h)+m.start()] if m else s;miss=[x for x in need if x not in s];print('section found' if i>=0 else 'no section','missing:',miss);sys.exit(0 if i>=0 and not miss else 1)",
+          "Since the records of 2026-10-08 and 2026-10-09",
+          "sc_present",
+          "sc_partial",
+          "sc_absent",
+          "sc_offkb",
+          "sc_stale",
+          "FSMO",
+          "DHCP",
+          "seeding"
+        ],
+        "exit": 0,
+        "sha256": "457dd9712def5de5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
