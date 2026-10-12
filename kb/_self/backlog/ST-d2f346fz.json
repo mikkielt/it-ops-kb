@@ -2,7 +2,7 @@
   "id": "ST-d2f346fz",
   "kind": "story",
   "title": "A gate about the suite ceiling is of an operator-only class that no agent session answers, delegated or not",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rlincemn",
   "priority": "P1",
   "rank": 0,
@@ -90,5 +90,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc): bl_authority.gate_class reads 'design' both for an item touching _tools/tests_ceiling.json and for a gate asking the ceiling's value, so any agent answers it; the darwin ceiling went 20 -> 22 -> 24 s through delegated gate answers (decision D-kl72euxy from BG-6jaaptm6's gate ceiling). Checks 0, 2 and 3 pass before the work: the worker extends tests 0 and 2 so they fail first; 3 pins the open items. Before the start no open gate names the ceiling (grep of kb/_self/backlog), so the new class reclasses only ST-kjp54uiz's gate value, which stays open for the operator. The suite is at 100 of 100 ids: extend, add no id."
+  "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc): bl_authority.gate_class reads 'design' both for an item touching _tools/tests_ceiling.json and for a gate asking the ceiling's value, so any agent answers it; the darwin ceiling went 20 -> 22 -> 24 s through delegated gate answers (decision D-kl72euxy from BG-6jaaptm6's gate ceiling). Checks 0, 2 and 3 pass before the work: the worker extends tests 0 and 2 so they fail first; 3 pins the open items. Before the start no open gate names the ceiling (grep of kb/_self/backlog), so the new class reclasses only ST-kjp54uiz's gate value, which stays open for the operator. The suite is at 100 of 100 ids: extend, add no id.",
+  "claimed_by": "orch-rlincemn"
 }
