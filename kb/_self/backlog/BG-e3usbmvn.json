@@ -2,7 +2,7 @@
   "id": "BG-e3usbmvn",
   "kind": "bug",
   "title": "pool check exits 1 on the committed tree: the gap kind holds 4 rows and the plan has 5, since the row of a closed gap entry was removed without a replacement",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,29 @@
     }
   ],
   "notes": "Filed by the BG-chs2di4p worker on 2026-10-12; taken into SP-kuhlsf2s by the orchestrator (acting as operator) since pool check, a check of BG-chs2di4p and later items, is red on main before any work: kind gap 4 rows, plan 5. Premise reproduces on origin/main 5ffb67920 (exit 1). Smallest fix preferred: one gap row for an open _gaps.md entry, the pool build rule kept; no other row changes.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "f677c70a4ccb593dec05f07073116d22c782afd2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ba1e2a59800116b6"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ba1e2a59800116b6"
+      }
+    ]
+  }
 }
