@@ -1,0 +1,24 @@
+{
+  "id": "BG-5fentnzk",
+  "kind": "bug",
+  "title": "ql_apply.plain_question leaves path.md:12:34 a path:line citation, so the guard rejects a real question's gap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "plain_question removes every line number of a path:line citation in a logged question, including a doubled one such as docs/a.md:12:34, so no check.LEDGER_CITE match is left and the gap step files the entry instead of rejecting it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_apply,check;sys.exit(0 if check.LEDGER_CITE.search(ql_apply.plain_question('see docs/a.md:12:34 here')) is None else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review"
+  ]
+}

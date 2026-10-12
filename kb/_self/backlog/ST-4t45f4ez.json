@@ -1,0 +1,27 @@
+{
+  "id": "ST-4t45f4ez",
+  "kind": "story",
+  "title": "A data-file article's eval row is applied alone only when it can pass, or the eval-alone branch and its doc go",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "apply_one's eval-row-alone branch for an expansion finding on a non-.md article (ql_apply.py:337) either applies the eval row when the pack passes without an expansion row, shown by a test with a real measure, or is removed with its kb/_self/querylog.md sentence, since try_fix runs only after the eval rule already failed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "apply_data_file_eval_alone"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review"
+  ]
+}

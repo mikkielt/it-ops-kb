@@ -1,0 +1,28 @@
+{
+  "id": "ST-rkyjzt2v",
+  "kind": "story",
+  "title": "A manual querylog.py apply --push records its outcome in distill.log, so land's undelivered warning names its failed gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py apply --push run by hand (querylog.py:264, out=print) writes its apply --push lines and gate lines to the store's distill.log as the automatic push (ql_distill.py:833) does, so bl_land.last_push_failure names the last run's failed gate, not an older automatic run's or nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "manual_push_logs_distill"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/querylog.py",
+    "_tools/ql_deliver.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review"
+  ]
+}

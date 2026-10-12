@@ -1,0 +1,27 @@
+{
+  "id": "ST-4czhz3ar",
+  "kind": "story",
+  "title": "Two gap entries the 2026-10-12 delivery filed are answered by the kb: census step models and RRF's k constant",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb/public/_gaps.md entries of query log findings F-8324b5892fd4 (census step models, which the _self root's token-efficiency doc answers at line 13, tested as SQ-census-judging-steps-model) and F-d92a053cc132 (reciprocal rank fusion and its k constant, answered in kb/public/agents/hybrid-retrieval.md) are marked resolved with the line that answers each, through /kb-refresh, and the gap step's miss of a question the _self root answers is weighed as a rules finding",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('kb/public/_gaps.md',encoding='utf-8') if 'F-8324b5892fd4' in l or 'F-d92a053cc132' in l];sys.exit(0 if ls and all('Resolved' in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_gaps.md",
+    "kb/public/agents/hybrid-retrieval.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review",
+    "gap F-8324b5892fd4",
+    "gap F-d92a053cc132"
+  ]
+}

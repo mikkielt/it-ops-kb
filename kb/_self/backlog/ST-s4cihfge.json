@@ -1,0 +1,27 @@
+{
+  "id": "ST-s4cihfge",
+  "kind": "story",
+  "title": "The gap step's ledger guard counts every error check.py gives the ledger, not only path:line citations",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "ql_apply.gap_one rejects a gap entry and restores the ledger when check.py would refuse it for any reason the quoted question carries (a topic: mark naming no article, a [DOC S99999] or [DECISION x] tag), not only a path:line citation (ledger_citation_errors), so no short logged question can wedge apply --push again",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "apply_gap_guard_all_check_errors"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review"
+  ]
+}

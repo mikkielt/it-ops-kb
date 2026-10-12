@@ -1,0 +1,27 @@
+{
+  "id": "ST-jbgsqkzn",
+  "kind": "story",
+  "title": "land's undelivered warning names the failed gate's first error line, and a check-trailers refusal by name",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.last_push_failure names the first error line of the failed gate's output, not the last line kg_sync prints (kg_sync.py:646), and names a check-trailers failure, which has no (exit N), instead of falling back to kbgit.py sync exit 1, as the backlog.md and tools.md text says",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_names_first_gate_error"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review"
+  ]
+}

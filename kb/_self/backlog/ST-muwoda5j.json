@@ -1,0 +1,27 @@
+{
+  "id": "ST-muwoda5j",
+  "kind": "story",
+  "title": "The query log's research queue skips pasted text, as learn and the gap step do",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the research queue of ql_apply (ql_apply.py:680) takes no gap entry or finding whose question is pasted text (ql_learn.pasted_text, over QUESTION_WORDS words), so a backlog goal or worker brief logged as a prompt is never researched",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_queue_skips_pasted"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty review"
+  ]
+}
