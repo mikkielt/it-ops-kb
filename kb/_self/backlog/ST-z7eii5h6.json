@@ -2,7 +2,7 @@
   "id": "ST-z7eii5h6",
   "kind": "story",
   "title": "Research sprint goal: Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4o3plg4l",
   "goal_research": true,
   "priority": "P1",

@@ -2,7 +2,7 @@
   "id": "ST-6s4ff6fa",
   "kind": "story",
   "title": "rag.py eval counts the good rows whose pack gains a check: note, so a note that misfires on answered questions fails the eval and not only the review",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,

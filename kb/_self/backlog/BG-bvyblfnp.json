@@ -2,7 +2,7 @@
   "id": "BG-bvyblfnp",
   "kind": "bug",
   "title": "kbfacts.terms reads any hyphenated single-digit pair as a dotted version, so a SID such as S-1-5-18 packs as 1.5",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4o3plg4l",
   "priority": "P3",
   "rank": 0,

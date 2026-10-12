@@ -2,7 +2,7 @@
   "id": "BG-pedsqeqs",
   "kind": "bug",
   "title": "pack's passing note puts a check: and route split on eval questions the kb answers, on common words such as big, bookmark and noqa",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,

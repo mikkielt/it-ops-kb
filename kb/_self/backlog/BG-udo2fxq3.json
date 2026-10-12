@@ -2,7 +2,7 @@
   "id": "BG-udo2fxq3",
   "kind": "bug",
   "title": "pack's passing and priced notes are not read by the kb: hook's false-good sentence, backlog.py's judge and ql_learn.passes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
