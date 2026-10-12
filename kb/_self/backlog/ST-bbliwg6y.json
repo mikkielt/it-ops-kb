@@ -1,0 +1,19 @@
+{
+  "id": "ST-bbliwg6y",
+  "kind": "story",
+  "title": "The router broad-lookups probe asks each kind expert's own phrasings, so a narrowed cue that drops a common phrasing fails at its landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-lmf4ke4w retrospective: BG-hc2gficq narrowed kbfacts.CITE_CUE and its checks tried only bare forms (mention S1800), so 'Which articles mention the source S1800?' lost the cites route and the review found it as S1 (BG-subz6cnf); the router_broad_lookups probe in test_live_kb.py also asks, for each kind expert, a set of its own phrasings built from the kb (cites: mention, refer, name and cite with 'the source', 'source id' or nothing between the word and an id the kb cites) and fails naming each that does not route to its expert",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "router_broad_lookups_expert_phrasings"
+      ]
+    }
+  ]
+}
