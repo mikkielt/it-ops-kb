@@ -99,7 +99,9 @@
         "reword the 328 archived cells to answers 404 and mark the 115 CC BY cells as read before the 404"
       ],
       "recommendation": "leave the cells as the recorded reading, with the 404 stated in the two articles and the four dead rows",
-      "class": "push"
+      "class": "push",
+      "answer": "leave the cells as the recorded reading, with the 404 stated in the two articles and the four dead rows",
+      "by": "operator"
     }
   ],
   "links": [
