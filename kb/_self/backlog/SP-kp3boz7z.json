@@ -1,0 +1,20 @@
+{
+  "id": "SP-kp3boz7z",
+  "kind": "sprint",
+  "title": "Lookup correctness: no clean good for questions the kb lacks, measured before and after, and a cold pack near its time before the freshness stamp",
+  "status": "planned",
+  "goal": "rag.py pack prints no clean good (coverage good with no check: and no route: line) for the four sc_absent questions the kb lacks while rag.py eval keeps every row; the hook arm's sc_absent and sc_partial figures of the pool are measured free before and after the fix and recorded in kb/_self/reports/benchmarks.md; a cold rag.py pack reads only the anchor and fetch-state rows of the sources it cites, and the median of five cold packs on the darwin host is under 80 ms again",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
