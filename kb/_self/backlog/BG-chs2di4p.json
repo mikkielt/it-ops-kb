@@ -2,7 +2,7 @@
   "id": "BG-chs2di4p",
   "kind": "bug",
   "title": "The pool's sc_stale check is met by a bare article header's retrieved date, so a pack with no freshness stamp passes it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,6 @@
     "kb/_self/reports/benchmarks.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Premise run 2026-10-12 (reproduces): the repro finds the bare header 'retrieved 2026-10-10' met by bench_pool.FRESH_CHECK (exit 1). Item 1 of the sprint: it rewrites the six sc_stale rows of bench_pool.csv (their second check is FRESH_CHECK; pool build), so it goes before the other items that edit bench_pool.py or the pool csv. The pool check run passes before the work: it pins that the rewritten rows equal what bench_scenarios.csv builds."
+  "notes": "Premise run 2026-10-12 (reproduces): the repro finds the bare header 'retrieved 2026-10-10' met by bench_pool.FRESH_CHECK (exit 1). Item 1 of the sprint: it rewrites the six sc_stale rows of bench_pool.csv (their second check is FRESH_CHECK; pool build), so it goes before the other items that edit bench_pool.py or the pool csv. The pool check run passes before the work: it pins that the rewritten rows equal what bench_scenarios.csv builds.",
+  "claimed_by": "orch-kuhlsf2s"
 }
