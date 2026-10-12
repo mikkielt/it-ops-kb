@@ -195,11 +195,68 @@ def test_backlog_scratch_setting_places_the_workers_scratch_and_refuses_an_absol
         assert values["scratch_dir"] == "_cache/scratch" and any("'scratch_dir'" in p for p in problems)
 
 
-@pytest.mark.parametrize("data, key", [({"item_dri": "x"}, "item_dri"), ({"always_in_scope": "kb/**"}, "always_in_scope")])
-def test_backlog_config_refuses_an_unknown_key_and_a_wrong_type_naming_the_key(tmp_path, data, key):
-    (tmp_path / "backlog.json").write_text(json.dumps(data), encoding="utf-8")
-    code, out, err = config(tmp_path)
-    assert code == 2 and out == "" and key in err
+def test_backlog_config_refuses_an_unknown_key_and_a_wrong_type_naming_the_key(tmp_path):
+    for data, key in (({"item_dri": "x"}, "item_dri"), ({"always_in_scope": "kb/**"}, "always_in_scope")):
+        (tmp_path / "backlog.json").write_text(json.dumps(data), encoding="utf-8")
+        code, out, err = config(tmp_path)
+        assert code == 2 and out == "" and key in err
+
+
+def test_backlog_done_refuses_unrelated_fetch_state_and_anchor_rows_until_the_goal_names_them_or_they_are_restored(
+        tmp_path):
+    """One planted failure for the gate: an anchor run's commit advances the baselines of S200 and drops its anchor,
+    which neither the goal nor a changed fact names; S100's rows are named by a changed fact, S300's change only
+    checked_utc and verified_utc."""
+    root = Repo(tmp_path)
+    root.git("init", "-q", "-b", "main")
+
+    def bl(*args):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=root.env)
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout + p.stderr
+
+    def state(s100, s200, s300, checked="2026-10-01T00:00:00Z"):
+        return ("id,url,checked_utc,etag,doc_sha256\n" + f"S100,https://example.com/a,{checked},{s100},d1\n"
+                f"S200,https://example.com/b,{checked},{s200},d2\nS300,https://example.com/c,{checked},{s300},d3\n")
+
+    def anchors(quote, s200=True, verified="2026-10-01"):
+        rows = [("f1", "a.md", "S100", quote), ("f2", "a.md", "S200", "q2"), ("f3", "b.md", "S300", "q3")]
+        return "fact,path,source_id,status,quote,verified_utc\n" + "".join(
+            f"{f},{p},{s},located,{q},{verified if s == 'S300' else '2026-10-01'}\n"
+            for f, p, s, q in rows if s200 or s != "S200")
+
+    root.write("backlog.json", json.dumps({"lane_module": ""}))
+    root.write("kb/public/_fetch_state.csv", state("e1", "e2", "e3"))
+    root.write("kb/public/_anchors.csv", anchors("q1"))
+    root.write("kb/public/a.md", "- Fact one. [DOC S100]\n- Fact two. [DOC S200]\n")
+    code, out = bl("new", "story", "--title", "Refresh one source", "--goal", "Refresh the facts of one source",
+                   "--touch", "kb/public/**", "--check", "python3 -c pass")
+    assert code == 0, out
+    iid = re.search(r"[A-Z]{2}-[a-z2-7]{8}", out).group(0)
+    item = json.loads(root.read(f"_backlog/{iid}.json"))
+    root.write(f"_backlog/{iid}.json", json.dumps({**item, "status": "doing"}, indent=2) + "\n")
+    root.commit("base")
+    root.write("kb/public/a.md", "- Fact one, re-read. [DOC S100]\n- Fact two. [DOC S200]\n")
+    root.write("kb/public/_fetch_state.csv", state("f1", "f2", "e3", checked="2026-10-12T00:00:00Z"))
+    root.write("kb/public/_anchors.csv", anchors("q1 re-read", s200=False, verified="2026-10-12"))
+    root.commit(f"anchor run\n\nKB-Work: {iid}")
+
+    code, out = bl("done", iid, "--dry-run")
+    assert code == 1 and "not done" in out, out
+    assert "S200 (kb/public/_anchors.csv: dropped, kb/public/_fetch_state.csv: etag)" in out, out
+    assert "S100" not in out and "S300" not in out, out  # named by a changed fact; only dates moved
+    code, out = bl("set", iid, "--goal", "Refresh the facts of S100 and S200")  # the goal names it
+    assert code == 0, out
+    code, out = bl("done", iid, "--dry-run")
+    assert code == 0 and "would be done" in out, out
+    code, out = bl("set", iid, "--goal", "Refresh the facts of one source")
+    assert code == 0, out
+    root.write("kb/public/_fetch_state.csv", state("f1", "e2", "e3", checked="2026-10-12T00:00:00Z"))  # restored
+    root.write("kb/public/_anchors.csv", anchors("q1 re-read", verified="2026-10-12"))
+    root.commit(f"restore S200\n\nKB-Work: {iid}")
+    code, out = bl("done", iid, "--dry-run")
+    assert code == 0 and "would be done" in out, out
 
 
 TRACKERS = {"jira": {"pattern": "[A-Z][A-Z0-9]+-[0-9]+", "url": "https://jira.corp.example.com/browse/{id}"},
