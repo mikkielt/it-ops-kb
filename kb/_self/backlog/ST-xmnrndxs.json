@@ -2,7 +2,7 @@
   "id": "ST-xmnrndxs",
   "kind": "story",
   "title": "factdiff.py anchor takes the researcher's verbatim quote for a fact, and kb-verify warns of a new DOC fact whose quote the page does not hold",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -162,5 +162,28 @@
     "kb:public/agents/hybrid-retrieval.md"
   ],
   "notes": "Premise (2026-10-11, kb/public/_anchors.csv): 6,630 anchors located (49%), 5,102 unlocated:no-match (37%), 1,801 not-text (13%); quote is filled only as anchoring's output (6,563 located rows), never taken from the researcher. Anchoring this session's new facts in agents/hybrid-retrieval.md left correctly paraphrased DOC facts no-match, so a gate on anchors alone would refuse good facts; the researcher's quote is the reliable key. The lint rule runs over the live repository before the sprint commits the story and must warn of nothing in files the change did not touch. Planned 2026-10-12: premise reproduced (factdiff.py anchor takes --topic, --dir, --file, --source, --refetch, --max-age, --dry-run and no quotes). The lint rule's silence on untouched facts is run once over the live repository at claim, before code, and its output recorded here. Silence run over the live repository (2026-10-12, lint.py with the new rule): at the default base HEAD it raised 0 of its 97 warnings; with --base HEAD~60 it raised 17, all in 3 files that range changed, none in an unchanged file.",
-  "claimed_by": "orch-sbdy4hsx"
+  "evidence": {
+    "commit": "b05209360423497d9879c92229054c439e625fb0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "anchor_quote"
+        ],
+        "exit": 0,
+        "sha256": "db8da7c79cae9d09"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if all('--quotes' in open(p, encoding='utf-8').read() for p in ('.claude/skills/kb-research/SKILL.md', '.claude/skills/kb-add-topic/SKILL.md')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
