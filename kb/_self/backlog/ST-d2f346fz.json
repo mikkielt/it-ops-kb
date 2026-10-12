@@ -2,7 +2,7 @@
   "id": "ST-d2f346fz",
   "kind": "story",
   "title": "A gate about the suite ceiling is of an operator-only class that no agent session answers, delegated or not",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rlincemn",
   "priority": "P1",
   "rank": 0,
@@ -91,5 +91,47 @@
     }
   ],
   "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc): bl_authority.gate_class reads 'design' both for an item touching _tools/tests_ceiling.json and for a gate asking the ceiling's value, so any agent answers it; the darwin ceiling went 20 -> 22 -> 24 s through delegated gate answers (decision D-kl72euxy from BG-6jaaptm6's gate ceiling). Checks 0, 2 and 3 pass before the work: the worker extends tests 0 and 2 so they fail first; 3 pins the open items. Before the start no open gate names the ceiling (grep of kb/_self/backlog), so the new class reclasses only ST-kjp54uiz's gate value, which stays open for the operator. The suite is at 100 of 100 ids: extend, add no id.",
-  "claimed_by": "orch-rlincemn"
+  "evidence": {
+    "commit": "0a50882160814854796bde762cc7d5d95275a6a2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate"
+        ],
+        "exit": 0,
+        "sha256": "2010b7d1b33d2443"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.gate_class({'touches':['_tools/tests_ceiling.json']},{'question':'x'});d=a.gate_class({'touches':['kb/_self/code.md']},{'question':'Which value does the suite ceiling take?'});sys.exit(0 if c==d and c in a.OPERATOR_CLASSES and c not in ('secrets','push','agents-rule') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_operator"
+        ],
+        "exit": 0,
+        "sha256": "bff93cdfe51745cf"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e83bee7679bc73db"
+      }
+    ]
+  }
 }
