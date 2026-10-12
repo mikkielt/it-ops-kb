@@ -2,7 +2,7 @@
   "id": "ST-6vkgh5ef",
   "kind": "story",
   "title": "Review sprint: Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7nv2ffr2",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-7nv2ffr2"
 }
