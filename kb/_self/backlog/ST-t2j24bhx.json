@@ -63,6 +63,57 @@
       "class": "design",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How many GitHub REST API requests may one run ask for repository availability, given the 60 an hour unauthenticated limit?",
+      "options": [
+        "50 a run, and stop when the response's remaining count is 5 or less",
+        "30 a run, and stop at 5 remaining",
+        "No cap beyond the response's remaining count"
+      ],
+      "recommendation": "50 a run, and stop when the response's remaining count is 5 or less",
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "A raw file's 404 may be the file or its ref, not the repository: what reports a repository as answering 404?",
+      "options": [
+        "The raw 404 is confirmed once by the forge API; the repository is gone only when that answers 404 too",
+        "The raw 404 alone reports the repository"
+      ],
+      "recommendation": "The raw 404 is confirmed once by the forge API; the repository is gone only when that answers 404 too",
+      "class": "design",
+      "answer": "The raw 404 is confirmed once by the forge API; the repository is gone only when that answers 404 too",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Does a pinned source whose repository answers 404 get a row in the fetch state, as other gone verdicts do?",
+      "options": [
+        "No row: the row's checked_utc would stamp the source confirmed in a pack's freshness stamp",
+        "A row with the error, as a gone page gets"
+      ],
+      "recommendation": "No row: the row's checked_utc would stamp the source confirmed in a pack's freshness stamp",
+      "class": "design",
+      "answer": "No row: the row's checked_utc would stamp the source confirmed in a pack's freshness stamp",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Is the repository check of pinned sources always on in detect, or does it have an opt-out flag?",
+      "options": [
+        "Always on: no flag, one request per repository and run",
+        "An opt-out flag on detect that leaves pinned sources at pinned with no request"
+      ],
+      "recommendation": "Always on: no flag, one request per repository and run",
+      "class": "design",
+      "answer": "Always on: no flag, one request per repository and run",
+      "by": "agent"
     }
   ],
   "links": [

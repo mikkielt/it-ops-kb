@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-import bench_pool, bench_retrieval, kb_hook, kbcommon, kbfacts, kbid, rag, selfdoc
+import bench_pool, bench_retrieval, census, factdiff, kb_hook, kbcommon, kbfacts, kbid, provider, rag, selfdoc
 from conftest import TOOLS, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
@@ -152,7 +152,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp(monkeypatch):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone(monkeypatch):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -230,6 +230,35 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert mark((True, "2026-10-10"), "2026-10-11T08:00:00Z") == "source changed"
     assert mark((False, "2026-10-10"), "") == "unanchored"
     assert mark(None, "2026-10-11T08:00:00Z") == "unanchored"
+    # a pinned source whose repository answers 404 is gone with the signal `repository`, one request per repository and
+    # run, and its facts are listed for re-sourcing as a dead source's are; a missing ref, a rate limit and a live
+    # repository leave it pinned (planted: every url not listed raises, so an unplanned request fails the test)
+    sha, api, asked = "a" * 40, "https://api.github.com/repos/Org/", []
+    raw = lambda repo, name="f.md": f"https://raw.githubusercontent.com/Org/{repo}/{sha}/docs/{name}"  # noqa: E731
+    gitlab = f"https://gitlab.com/org/gone/-/raw/{sha}/x.md"
+    answers = {raw("Gone"): 404, api + "Gone": 404, raw("Moved"): 404, api + "Moved": 200, raw("Limited"): 404, api + "Limited": 403,
+               raw("Live"): 200, "https://gitlab.com/api/v4/projects/org%2Fgone": 404}
+
+    def request(url, headers=None, limit=20_000_000, method="GET"):
+        asked.append(url)
+        return {"status": answers[url], "headers": {}, "body": b"", "final": url, "hops": [], "error": ""}
+    monkeypatch.setattr(provider, "request", request)
+    monkeypatch.setattr(provider, "_repos", {})
+    monkeypatch.setattr(provider, "_gh_api", {"asked": 0, "left": None})
+    prov = provider.providers()
+    got = {n: factdiff.detect_source("S9990001", {"url": u}, {}, prov)[:3] for n, u in (
+        ("gone", raw("Gone")), ("same repository", raw("Gone", "g.md")), ("moved", raw("Moved")), ("limited", raw("Limited")),
+        ("live", raw("Live")), ("gitlab", gitlab))}
+    assert [n for n, v in got.items() if v[:2] == ("gone", "repository")] == ["gone", "same repository", "gitlab"], got
+    assert all(v[0] == "pinned" and v[1] == "pin" for n, v in got.items() if n in ("moved", "limited", "live")), got
+    assert got["gone"][2] == f"repository {api}Gone answers 404" and len(asked) == len(set(asked)) == 8, asked
+    fact = ("0123456789ab", "dsc/d.md", 5, "The Orion scheduler restarts every night at three o'clock. [CODE S9990001]")
+    found, _ = factdiff.resolve("S9990001", {"url": raw("Gone")}, "gone", None, None, [fact], {}, prov)
+    assert [r["outcome"] for r in found] == ["dead"] and "dead" in factdiff.REVIEW
+    monkeypatch.setattr(census, "repo_dir", lambda repo, base=None: (None, f"clone failed: {repo}"))
+    check = lambda u: census.check_one({"url": u, "retrieved_utc": "2026-09-26"}, census.classify(u))[1]  # noqa: E731
+    assert [check(u)["bucket"] for u in (raw("Gone"), gitlab, raw("Moved"), raw("Limited"))] == ["GONE", "GONE"] + ["NEEDS-READING"] * 2
+    assert "answers 404" in check(raw("Gone"))["evidence"] and len(asked) == 8  # the census asked no repository again
 
 
 def test_unit_cache_prune_drops_old_files_of_other_root_sets_and_shrinks_the_slack_pruned_file(tmp_path, monkeypatch):
