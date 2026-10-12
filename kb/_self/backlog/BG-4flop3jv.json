@@ -2,7 +2,7 @@
   "id": "BG-4flop3jv",
   "kind": "bug",
   "title": "pool check passes a scenario row whose pack prints a check: line: scenario_pack reads any pack with no route: line as good",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
@@ -69,5 +69,28 @@
     "parked: SP-j2jn5ue4 review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): rag.py pack 'How do I set up WSUS client targeting?' prints coverage good, a check: line and no route: line, and the repro's pool check problem list is [] (exit 1). The pool check run passes before the work: it pins that no committed sc_present or sc_stale row is named after the change; the fixture scenario_pack of test_bench.py returns (route, text), keep it in step with any new return.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "4acbe652be00828269cedcdd8f59148a9246d712",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ba1e2a59800116b6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile;sys.path.insert(0,\"_tools\");import bench_pool as b;h=tempfile.mkdtemp();p=os.path.join(h,b.SCENARIO_FILE);os.makedirs(os.path.dirname(p));open(p,\"w\").write(\"kind,domain,question,answer,route,note\\nsc_present,windows,How do I set up WSUS client targeting?,WSUS,good,\\n\");r=b.scenario_built(b.read_scenarios(h)[1]);pr=b.scenario_problems(r,h);print(pr);sys.exit(0 if pr else 1)"
+        ],
+        "exit": 0,
+        "sha256": "b05cd841cfbc16fa"
+      }
+    ]
+  }
 }
