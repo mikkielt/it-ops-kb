@@ -90,6 +90,8 @@ QUESTION_WORDS = {
     "agents-rule": re.compile(r"AGENTS\.md|CLAUDE\.md|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
 }
+# The start of the text `tests.ceiling_token` builds: `names_ceiling` finds it with no word boundary, as `read_ceiling` does.
+CEILING_TOKEN = re.compile(r"tests-ceiling ids=", re.I)
 RULE_WORD = re.compile(r"\brule\b", re.I)
 # The file names of the `agents-rule` paths that are no directory (`settings.json`, `backlog.py`, `bl_` for each
 # `bl_*` module): a bare one in a gate's text names its file, while a directory (`skills/`) needs a path with a `/`,
@@ -151,8 +153,11 @@ def in_agent_session(env=None):
 
 
 def names_ceiling(text):
-    """Whether the text (a gate's question, a decision) names the test suite's ceiling."""
-    return bool(QUESTION_WORDS["ceiling"].search(text or ""))
+    """Whether the text (a gate's question, a decision) names the test suite's ceiling: the gate words of
+    QUESTION_WORDS, or the token `tests.py` reads a ceiling's numbers from (`tests-ceiling ids=`) anywhere in it, a
+    prefix glued to it included, since `read_ceiling` accepts any decision text that holds the token as a substring."""
+    text = text or ""
+    return bool(QUESTION_WORDS["ceiling"].search(text) or CEILING_TOKEN.search(text))
 
 
 def rank(cls):
