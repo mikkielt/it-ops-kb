@@ -45,6 +45,21 @@
   "depends_on": [
     "BG-xbbimxpq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The paid run stopped at --max-usd 5 with 57 of 60 runs (3 not started, all BP-1fa2c349 on sonnet-5-5:low, sonnet-5-5:default and router): keep the 57 and state it, or re-run the 3 over the cap?",
+      "options": [
+        "keep 57 of 60 and state it in the section",
+        "re-run the 3 runs over the cap"
+      ],
+      "recommendation": "keep 57 of 60 and state it in the section",
+      "class": "design",
+      "answer": "keep 57 of 60 and state it in the section",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise (planned 2026-10-12): benchmarks.md has no before/after section for BG-xbbimxpq. Before, measured free at origin/main 0ae6d30bc: benchmarks.py run pool --arms hook --kinds sc_absent,sc_partial --reps 1 --out SCRATCH gave sc_absent 2 of 6, sc_partial 6 of 6 (16 s, no model). Paid dry run: run pool --arms haiku-5-5,sonnet-5-5,router --kinds sc_absent,sc_partial --reps 1 --dry-run estimates $3.51 for 60 runs (under the operator's 5 USD limit); run it with --max-usd 5 and --out to scratch, never into the results file. report --check passes before the work and pins the generated tables.",
   "claimed_by": "orch-kp3boz7z"
 }
