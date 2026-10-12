@@ -54,7 +54,8 @@
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "_tools/bench_pool.py"
   ],
   "depends_on": [
     "BG-hc2gficq"
