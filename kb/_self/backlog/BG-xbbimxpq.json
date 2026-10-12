@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "pack prints a clean good for four questions the kb lacks: tempdb data files, the Microsoft 365 E5 price, Kubernetes Pod Security Admission and Exchange Online retention",
   "status": "draft",
+  "sprint": "SP-kp3boz7z",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "rag.py pack no longer prints a clean good (coverage good with no check: and no route: line) for four questions the kb lacks, led by articles on other subjects: the tempdb data file count (security/management-plane-hardening.md), the Microsoft 365 E5 price (windows/bitlocker.md), Kubernetes Pod Security Admission per namespace (arch/k8s-gmsa-windows.md) and Exchange Online retention with Purview (auth/audit-log-apis.md); each prints a check: line or a weak or none verdict, and the eval set keeps its good rows good. Found by the planning probes of SP-j2jn5ue4 (2026-10-12, origin/main 92bc6c598), where DHCP failover and availability group automatic seeding were two more such false goods, which that sprint's research turns into real ones; the pool's sc_absent rows measure the rate.",
+  "goal": "rag.py pack no longer prints a clean good (coverage good with no check: and no route: line) for the four questions the kb lacks, led by articles on other subjects: the tempdb data file count (security/management-plane-hardening.md), the Microsoft 365 E5 price (windows/bitlocker.md), Kubernetes Pod Security Admission per namespace (arch/k8s-gmsa-windows.md) and Exchange Online retention with Purview (auth/audit-log-apis.md); each such pack names what the kb lacks (a kb lacks: line under a check:, weak or none verdict), so the pool's free hook arm meets at least 5 of its 6 sc_absent rows (2 of 6 at origin/main 0ae6d30bc on 2026-10-12); the eval set keeps its good rows good. Found by the planning probes of SP-j2jn5ue4 (2026-10-12, origin/main 92bc6c598).",
   "repro": {
     "run": [
       "python3",
@@ -18,11 +19,57 @@
       "How do I configure Exchange Online mailbox retention policies with Purview?"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_scatter_check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,tempfile,os,re;d=tempfile.mkdtemp();f=os.path.join(d,'r.csv');p=subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool','--arms','hook','--kinds','sc_absent','--reps','1','--out',f],capture_output=True,text=True);t=open(f).read() if os.path.exists(f) else '';m=re.search(r',sc_absent,hook,,fully_right,([0-9]+) of 6,',t);sys.exit(0 if p.returncode==0 and m and int(m.group(1))>=5 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py pack no longer prints a clean good (coverage good with no check: and no route: line) for the four questions the kb lacks, led by articles on other subjects: the tempdb data file count (security/management-plane-hardening.md), the Microsoft 365 E5 price (windows/bitlocker.md), Kubernetes Pod Security Admission per namespace (arch/k8s-gmsa-windows.md) and Exchange Online retention with Purview (auth/audit-log-apis.md)",
+      "check": 3
+    },
+    {
+      "clause": "rag.py pack no longer prints a clean good (coverage good with no check: and no route: line) for the four questions the kb lacks, led by articles on other subjects: the tempdb data file count (security/management-plane-hardening.md), the Microsoft 365 E5 price (windows/bitlocker.md), Kubernetes Pod Security Admission per namespace (arch/k8s-gmsa-windows.md) and Exchange Online retention with Purview (auth/audit-log-apis.md)",
+      "check": 1
+    },
+    {
+      "clause": "each such pack names what the kb lacks (a kb lacks: line under a check:, weak or none verdict), so the pool's free hook arm meets at least 5 of its 6 sc_absent rows (2 of 6 at origin/main 0ae6d30bc on 2026-10-12)",
+      "check": 2
+    },
+    {
+      "clause": "the eval set keeps its good rows good. Found by the planning probes of SP-j2jn5ue4 (2026-10-12, origin/main 92bc6c598)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_live_kb.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "found: SP-j2jn5ue4 planning probes"
-  ]
+  ],
+  "notes": "Planned 2026-10-12 (SP-kp3boz7z, origin/main 0ae6d30bc): premise reproduced: each of the four questions prints 'coverage: good (best article matches 5-6 of 6-7 key words ...)' with no check: or route: line; the key word left out is the question's subject (tempdb, e5 matched but price-only, pod security, retention), led by management-plane-hardening.md:37, bitlocker.md:23, k8s-gmsa-windows.md:14, audit-log-apis.md:52. The suite is at its id ceiling (100 of 100): extend the existing pack_scatter_check test in _tools/test_live_kb.py, add no test id. Keep the eval set's good rows good (rag.py eval) and the off-kb list's good count from rising. Checks 0 and 1 pass before the work and pin the eval verdicts and the scatter test; check 2 (hook arm sc_absent >= 5 of 6) and the repro fail before it."
 }

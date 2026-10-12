@@ -1,0 +1,51 @@
+{
+  "id": "ST-kjp54uiz",
+  "kind": "story",
+  "title": "The darwin suite ceiling takes the value the operator chooses",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/tests_ceiling.json's max_seconds.darwin and the decision it names hold the value the operator gave in gate value of this item, from their own terminal (the ceiling class of ST-d2f346fz); tests.py --ceiling and a full tests.py run pass on a quiet darwin host under it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "--ceiling"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests_ceiling.json",
+    "kb/_self/_decisions.csv"
+  ],
+  "depends_on": [
+    "ST-d2f346fz"
+  ],
+  "gates": [
+    {
+      "id": "value",
+      "kind": "blocking",
+      "question": "Which seconds ceiling does the darwin test suite keep in _tools/tests_ceiling.json (24 s now, decision D-kl72euxy; 22 s before 4586e2204)?",
+      "options": [
+        "keep 24 s: no change to the file; a new decision row records the operator's own answer",
+        "restore 22 s, with ST-5zcl2sof (the suite has room under its id ceiling and its darwin time limit) planned first to bring a full run back under it",
+        "other: the operator names the value"
+      ],
+      "recommendation": "keep 24 s: no change to the file; a new decision row records the operator's own answer",
+      "do": {
+        "keep 24 s: no change to the file; a new decision row records the operator's own answer": "ST-kjp54uiz",
+        "restore 22 s, with ST-5zcl2sof (the suite has room under its id ceiling and its darwin time limit) planned first to bring a full run back under it": "ST-5zcl2sof",
+        "other: the operator names the value": "ST-kjp54uiz"
+      },
+      "class": "design"
+    }
+  ],
+  "notes": "Filed 2026-10-12 at the operator's instruction: gate value stays open for the operator alone, never answered by a delegated or unattended session, even under a blanket approval; it is the only item that waits on it, kept out of any sprint until it is answered, then planned after ST-d2f346fz lands. Until ST-d2f346fz lands the gate reads class design; the class it is meant to have is ceiling."
+}

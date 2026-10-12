@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "Query-log delivery stops for good once learn writes a gap entry citing kb/public/_gaps.md, which check.py refuses, so no usage or work sidecar reaches main and cost reads no figure",
   "status": "draft",
+  "sprint": "SP-kwi4ilty",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "Found in the SP-lyfnpu37 review: the automatic commit 'query log apply 20261010T064624Z-4efaf809' in _cache/querylog/worktree adds _gaps.md entries made from logged prompts that were backlog goals or research-queue briefs (F-44cf8da28cdf, F-7850c16a27a2), one citing kb/public/_gaps.md:1058; check.py refuses it ('cites kb/public/_gaps.md:1058, a file that is not in root public') and doc2query stale fails, so every apply --push since 2026-10-10 06:52Z exits 1 (72 'sync exit 1' lines in distill.log), the committed store's newest run stays 2026-10-08, and backlog.py cost reads 'no item line' for every item of the sprint. A gap entry apply writes passes check.py, a prompt that is a backlog goal or worker brief files no kb gap, and a delivery that fails its gate says so where the orchestrator reads it (selfcheck or land).",
+  "goal": "querylog.py apply writes no _gaps.md entry that check.py refuses (the 2026-10-10 entries of F-44cf8da28cdf and F-7850c16a27a2 cited kb/public/_gaps.md:1058, and every apply --push since stopped at that gate); a logged prompt that is a backlog goal or a worker brief files no kb gap; a delivery whose gate fails is named in land's undelivered warning (gate where); the commit stuck in _cache/querylog/worktree is superseded by the next apply --push, so the store's runs from 2026-10-10 on reach origin/main; backlog.py cost reads work lines for this item's own headless worker",
   "repro": {
     "run": [
       "python3",
@@ -15,13 +16,95 @@
     ]
   },
   "repro_reason": "the stuck commit lives in the local query-log worktree; the committed store missing every run of 2026-10-10 shows its effect",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_apply_"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_land_no_work_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,re;p=subprocess.run([sys.executable,'_tools/backlog.py','cost','BG-ckrasbdn'],capture_output=True,text=True);m=re.search(r': ([0-9]+) run[(]s[)], ([0-9]+) item[(]s[)] with work lines',p.stdout);sys.exit(0 if p.returncode==0 and m and int(m.group(2))>0 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "querylog.py apply writes no _gaps.md entry that check.py refuses (the 2026-10-10 entries of F-44cf8da28cdf and F-7850c16a27a2 cited kb/public/_gaps.md:1058",
+      "check": 0
+    },
+    {
+      "clause": "every apply --push since stopped at that gate)",
+      "check": 0
+    },
+    {
+      "clause": "a logged prompt that is a backlog goal or a worker brief files no kb gap",
+      "check": 0
+    },
+    {
+      "clause": "a delivery whose gate fails is named in land's undelivered warning (gate where)",
+      "check": 1
+    },
+    {
+      "clause": "the commit stuck in _cache/querylog/worktree is superseded by the next apply --push, so the store's runs from 2026-10-10 on reach origin/main",
+      "check": 3
+    },
+    {
+      "clause": "backlog.py cost reads work lines for this item's own headless worker",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/ql_apply.py",
     "_tools/ql_deliver.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/ql_learn.py",
+    "_tools/test_redact.py",
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/public/_gaps.md"
+  ],
+  "depends_on": [
+    "ST-h3q6mzpf"
+  ],
+  "gates": [
+    {
+      "id": "where",
+      "kind": "blocking",
+      "question": "Where does a failed query-log delivery say so to the orchestrator?",
+      "options": [
+        "land: the existing 'undelivered' warning of bl_land names the last apply --push failure from distill.log (its gate and first error line); no new selfcheck check",
+        "selfcheck: a new querylog-delivery check that FAILs when the last apply --push exited non-zero, with the skill's selfcheck list updated"
+      ],
+      "recommendation": "land: the existing 'undelivered' warning of bl_land names the last apply --push failure from distill.log (its gate and first error line); no new selfcheck check",
+      "do": {
+        "land: the existing 'undelivered' warning of bl_land names the last apply --push failure from distill.log (its gate and first error line); no new selfcheck check": "BG-ckrasbdn",
+        "selfcheck: a new querylog-delivery check that FAILs when the last apply --push exited non-zero, with the skill's selfcheck list updated": "BG-ckrasbdn"
+      },
+      "class": "push",
+      "answer": "land: the existing 'undelivered' warning of bl_land names the last apply --push failure from distill.log (its gate and first error line); no new selfcheck check",
+      "by": "operator"
+    }
   ],
   "links": [
-    "parked: SP-lyfnpu37 review"
+    "parked: SP-lyfnpu37 review",
+    "gap F-44cf8da28cdf",
+    "gap F-7850c16a27a2"
   ],
-  "notes": "SP-lyfnpu37 close: every landing of the sprint warned 'landed with no work rows', and cost --rework SP read 'no item line' at the review and again at the close, because no delivery reached origin/main after 2026-10-10 06:52Z. SP-dqkf3i42 review (2026-10-10): cost --rework read 0 runs for every story while worker sessions of hours before still counted as open; the review's distill on a spool copy wrote no usage or work sidecar (only open sessions were left in the spool). Recurrence 2026-10-10, SP-yzs3bj6f: every landing warned that the worker's work sidecar was undelivered (querylog.py apply --push not run), and backlog.py cost --rework gave no figure for the sprint or any item at review or close, the third sprint in a row. Recurrence SP-m3azo2y7 (2026-10-10): every land warned that work sidecars were undelivered or late; cost --rework read no worker figures at review or close. Recurred in SP-avwlotax (2026-10-10): every landing warned 'landed with no work rows on origin/main (undelivered)'; backlog.py cost --rework SP-avwlotax shows only the orchestrator's open-session figures, no worker figures. Recurred at SP-x5gjv4r7 (2026-10-10): at close, cost --rework SP showed only the orchestrator's open session (28.3M tokens); no work sidecar named any of the five closed headless worker sessions, so every item read 0 prompts. SP-up5wchen close (2026-10-11): cost --rework SP read 0 runs and 0 prompts; no work sidecar named the research worker's or the reviewer's session. SP-etslk6yu close evidence: cost --rework SP-etslk6yu and each story read 0 work lines; land warned the work sidecars of ST-bl3hdung and ST-jqwqdj2g were left undelivered in the store."
+  "notes": "Recurred at every close from SP-lyfnpu37 to SP-etslk6yu (2026-10-10..12): land warned the work sidecars undelivered and cost --rework read no worker figure. Planned 2026-10-12 (SP-kwi4ilty, origin/main 0ae6d30bc): premise reproduced, the repro exits 1; distill.log's last apply --push (20261012T112205Z-e873d895) stops at check.py 'ERROR public/_gaps.md:1082 cites kb/public/_gaps.md:1058, a file that is not in root public' and doc2query stale=1; the six e2e tests that failed in that gate fail on the same check.py error, so the commit stuck in _cache/querylog/worktree (re-made each run: reflog 3569ca0d4, ec1cefda0) is the same cause. Suite at 100 of 100 ids: extend test_apply_* (_tools/test_redact.py) and test_land_no_work_rows_late_undelivered_or_missing, add no id. Step order: the _tools change lands through its code/<id> merge request (land --wait-merge); after it merges the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done, whose repro reads the committed store. Checks 0 and 1 pass before the work: the worker extends those tests so they fail first."
 }

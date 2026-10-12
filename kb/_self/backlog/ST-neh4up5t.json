@@ -1,0 +1,76 @@
+{
+  "id": "ST-neh4up5t",
+  "kind": "story",
+  "title": "Refresh claude/settings-and-scopes, claude/plugins, claude/skills-and-subagents and claude/agent-sdk against their live sources and anchor their facts",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "sprint": "SP-qjg5r7jj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the four claude/ articles are refreshed through /kb-refresh against code.claude.com and their other cited sources: each changed fact is restated or dropped by the content rules and each kept fact re-checked, so fetch.py --status reads none of their cited sources as never fetched; the printed fact lines of the four sc_stale packs (settings scope, plugin install, custom subagent, Agent SDK permission mode) carry at most 3 [unanchored] marks (9 of 38 at planning); rag.py eval and doc2query stale keep passing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--topic','claude/settings-and-scopes','--topic','claude/plugins','--topic','claude/skills-and-subagents','--topic','claude/agent-sdk'],capture_output=True,text=True);l=(p.stdout.strip().splitlines() or [''])[-1];print(l);sys.exit(0 if p.returncode==0 and 'never_fetched=0 ' in l+' ' else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;qs=['Which scope wins in Claude Code settings when user and project settings conflict?','How do I install a Claude Code plugin from a marketplace?','How do I define a custom subagent in Claude Code?','How do I configure the Agent SDK permission mode?'];ps=[subprocess.run([sys.executable,'_tools/rag.py','pack',q],capture_output=True,text=True) for q in qs];n=sum('[unanchored' in l for p in ps for l in p.stdout.splitlines() if l.startswith('- '));ok=all(p.returncode==0 and p.stdout.startswith('coverage: good') for p in ps);print(n);sys.exit(0 if ok and n<=3 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/doc2query.py",
+        "stale"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the four claude/ articles are refreshed through /kb-refresh against code.claude.com and their other cited sources: each changed fact is restated or dropped by the content rules and each kept fact re-checked, so fetch.py --status reads none of their cited sources as never fetched",
+      "check": 0
+    },
+    {
+      "clause": "the printed fact lines of the four sc_stale packs (settings scope, plugin install, custom subagent, Agent SDK permission mode) carry at most 3 [unanchored] marks (9 of 38 at planning)",
+      "check": 1
+    },
+    {
+      "clause": "rag.py eval and doc2query stale keep passing",
+      "check": 2
+    },
+    {
+      "clause": "rag.py eval and doc2query stale keep passing",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/claude/plugins.md",
+    "kb/public/claude/skills-and-subagents.md",
+    "kb/public/claude/agent-sdk.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_gaps.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-ad2kuqbt"
+  ],
+  "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc): fetch.py --status over the four topics reads selected=46 never_fetched=46 stale=39; the four sc_stale packs print 9 [unanchored] marks over 38 fact lines (settings-and-scopes 1, agent-sdk 3, plugins 3, skills-and-subagents 2). Checks 2 and 3 pass before the work and pin the eval verdicts and the doc2query rows. Content work for EP-gzr4mmkm's fitness tests: it lands headless with no operator step beyond its gates."
+}
