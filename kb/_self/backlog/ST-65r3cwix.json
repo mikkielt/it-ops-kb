@@ -21,7 +21,9 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-5x5ut5ko close"
+    "parked: SP-5x5ut5ko close",
+    "merged: ST-2mi4asd4",
+    "merged: ST-6hrxxpvo"
   ],
-  "notes": "SP-etslk6yu close evidence: the ST-bl3hdung research worker's factdiff.py anchor rewrote kb/public/_fetch_state.csv wholesale, adding a sections column (about 5,200 changed lines); the worker restored it by hand."
+  "notes": "SP-etslk6yu close evidence: the ST-bl3hdung research worker's factdiff.py anchor rewrote kb/public/_fetch_state.csv wholesale, adding a sections column (about 5,200 changed lines); the worker restored it by hand. Merged from ST-2mi4asd4 “factdiff.py anchor --quotes for one file keeps the quote anchors another file wrote for a shared source” at the 2026-10-12 draft triage: same defect as ST-65r3cwix: cmd_anchor (factdiff.py:587) re-anchors every fact citing a selected source, so --quotes for one file overwrites other files' quote anchors; absorb: keep other files' quote anchors in the same fix Its goal: factdiff.py anchor --file F --quotes CSV re-anchors only the facts of F: a fact of another file citing the same source keeps its quote anchor instead of being re-anchored by plain matching, so a refresh of several articles that share sources needs no scratch script to keep each file's rows (ST-neh4up5t's worker needed one in SP-qjg5r7jj) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"anchor_quotes_keeps_other_files\"]} Merged from ST-6hrxxpvo “A refresh item's touches cover what factdiff.py detect writes, or detect writes none of it into the tree” at the 2026-10-12 draft triage: same worker friction as ST-65r3cwix (factdiff writes outside a refresh item's touches); detect already has --out and --no-save, so absorb: detect's log and snapshots go outside the tree by default or the refresh skill and brief name them Its goal: factdiff.py detect, run by a refresh item, writes its log and the _snapshots/*.txt files it rewrites either outside the tree (the scratch directory) or into paths planning puts in the item's touches, so a worker restores and moves no file by hand (both SP-qjg5r7jj refresh workers did: seven snapshots restored, factdiff-2026-10-12.csv moved to scratch) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"detect_writes_within_touches\"]}"
 }

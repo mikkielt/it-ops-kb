@@ -23,7 +23,8 @@
     "kb/_self/token-efficiency.md"
   ],
   "links": [
-    "parked: SP-qg7ncs6d review"
+    "parked: SP-qg7ncs6d review",
+    "merged: ST-bt2hsuru"
   ],
-  "notes": "SP-qjn563cf (2026-10-11): the goal research worker made a baseline clone in _cache/scratch/ST-pnr4zyni/baseline and its rm -rf was denied; the orchestrator's rm -rf of it was denied too, so the clone stays in scratch."
+  "notes": "SP-qjn563cf (2026-10-11): the goal research worker made a baseline clone in _cache/scratch/ST-pnr4zyni/baseline and its rm -rf was denied; the orchestrator's rm -rf of it was denied too, so the clone stays in scratch. Merged from ST-bt2hsuru “A worker sets changes aside in its scratch directory, never in the shared git stash” at the 2026-10-12 draft triage: Same rule as ST-4jbvwssm: kb-worker.md rule 2 and bl_dispatch.py:96 send a worker to the shared git stash; set-aside as a patch in scratch is one way to give the allowed baseline route; carrier absorbs: never git stash, no entry left in the shared stack (ST-t67jhly3, ST-4ehra2pk) Its goal: The kb-worker role file tells a worker to set aside a change outside its touches as a patch in its scratch directory, never with git stash, whose stack every worktree shares (ST-t67jhly3 left two stash entries, st-t67jhly3-snapshot and st-t67jhly3-decisions-sweep, in the clone's shared stack). Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/agents/kb-worker.md, kb/_self/backlog.md"
 }

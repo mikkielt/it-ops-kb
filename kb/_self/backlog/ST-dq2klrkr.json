@@ -24,6 +24,10 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-tm4wlsve close"
-  ]
+    "parked: SP-tm4wlsve close",
+    "merged: ST-62ixsksb",
+    "merged: ST-eiyr4loh",
+    "merged: ST-2n3xjhae"
+  ],
+  "notes": "Merged from ST-62ixsksb “A review's gate confirms are committed by the tool, so the orchestrator writes no KB-Work list by hand” at the 2026-10-12 draft triage: Premise holds: answer --record commits only for --answer, and bl_items.py:290 rejects --confirm with --record. Same hand-commit-refused-by-hook failure as ST-dq2klrkr; the carrier should also make the confirm path commit with a KB-Work line naming the items, comma-separated. Its goal: backlog.py answer --confirm (or a review command) commits the item files it changes with a KB-Work line naming exactly those items, as claim --commit and start --commit do; at SP-j2jn5ue4 the orchestrator's hand commit of four confirms was refused by the commit-msg hook twice (it named the review story, then space-separated ids) before the comma-separated list passed. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"answer_confirm_commit\"]}"
 }

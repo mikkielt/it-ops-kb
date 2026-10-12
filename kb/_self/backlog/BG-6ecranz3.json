@@ -16,6 +16,8 @@
   },
   "repro_reason": "the denial shows only in a paid headless claude -p session under --permission-mode dontAsk: its reply's permission_denials names the Edit of an owned file while the dry run prints a rule that looks right; found on 2026-10-11 in the logs census of ST-t67jhly3 (both dispatch replies, two foreign edits in the second) and reproduced with a haiku session on a scratch file: an Edit allowed by an absolute //path rule is denied at .../.claude/worktrees/w/a.txt and done at .../plain/a.txt; the grep matches only once census.py handles that path form",
   "links": [
-    "parked: SP-yojt6y7v run"
-  ]
+    "parked: SP-yojt6y7v run",
+    "merged: ST-lihlbwty"
+  ],
+  "notes": "Merged from ST-lihlbwty “census.py dispatch warns before a paid run in a checkout whose Edit rules the CLI denies” at the 2026-10-12 draft triage: BG-6ecranz3's goal already offers 'says before the paid run that the checkout's path makes its edits impossible' and census.py still has no worktrees handling (grep count 0); absorb: the warning plus the kb-census skill sentence for the interim Its goal: Until BG-6ecranz3 lands, census.py dispatch refuses or warns before the paid run when its checkout path holds .claude/worktrees, where the CLI denies the Edit allow rules of the group's owned files, and the kb-census skill says so. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"census\"]} Its touches: _tools/census.py, .claude/skills/kb-census/SKILL.md, kb/_self/tools.md"
 }

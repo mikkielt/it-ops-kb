@@ -24,7 +24,9 @@
     ".claude/skills/kb-census/SKILL.md"
   ],
   "links": [
-    "parked: SP-uwkr7iyl review"
+    "parked: SP-uwkr7iyl review",
+    "merged: ST-l3fqdqxb",
+    "merged: ST-o7anudlq"
   ],
-  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Merged from ST-l3fqdqxb “census.py's usage header lists compare and the full judge options” at the 2026-10-12 draft triage: census.py usage header (lines 8-21) omits compare and judge's --max-budget-usd and --jobs: cosmetic usage text, same census skill and usage polish as ST-jtvvjw5x Its goal: _tools/census.py's module usage header lists compare and the judge command's --max-budget-usd and --jobs, as kb/_self/tools.md does. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"census\"]} Its touches: _tools/census.py Merged from ST-o7anudlq “The kb-census skill's report names the dns and connect hosts beside the blocked ones and gives detect's measured wall time” at the 2026-10-12 draft triage: kb-census skill report text: SKILL.md:40 still says detect takes about 45 minutes where fact-diff.md measured 31 to 33, and the report line omits the dns and connect hosts; same skill-text polish as ST-jtvvjw5x Its goal: The kb-census skill's report line names the hosts census.py summary counts as dns and connect, apart from blocked, and phase 0 gives factdiff.py detect --sitemaps the measured 31 to 33 minutes of 2026-10-10 (the fact-diff report) instead of about 45. Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-census/SKILL.md"
 }

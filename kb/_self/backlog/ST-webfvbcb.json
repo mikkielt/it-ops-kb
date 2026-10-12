@@ -21,7 +21,10 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-qxcj7fgy close"
+    "parked: SP-qxcj7fgy close",
+    "merged: BG-asbzy5z4",
+    "merged: ST-btfulaeh",
+    "merged: ST-si4peqq2"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once."
+  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once. Merged from BG-asbzy5z4 “new crashes with a shlex traceback on a --repro or --check command with an unclosed quote instead of a usage error” at the 2026-10-12 draft triage: repro run: new --repro \"echo it's\" still ends in a shlex ValueError traceback; same bl_items.parse_cmd path as ST-webfvbcb, which must validate the argv anyway Its goal: backlog.py new with a --repro or --check value whose command has an unclosed quote (such as an apostrophe in a word) exits 2 with a usage error naming the option, and writes no item, instead of a ValueError traceback from shlex.split in bl_items.parse_cmd; set already does this. Found while fixing BG-4iaxny3s. Its repro: {\"run\": [\"python3\", \"-c\", \"import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\\\"/_backlog\\\"); p=subprocess.run([sys.executable,\\\"_tools/backlog.py\\\",\\\"--root\\\",t,\\\"new\\\",\\\"bug\\\",\\\"--title\\\",\\\"t\\\",\\\"--severity\\\",\\\"S3\\\",\\\"--goal\\\",\\\"g\\\",\\\"--repro\\\",\\\"echo it\\\"+chr(39)+\\\"s\\\"],capture_output=True,text=True); sys.exit(1 if \\\"Traceback\\\" in p.stderr or p.returncode != 2 else 0)\"]} Merged from ST-btfulaeh “backlog.py new refuses a repro or check that backlog check would refuse, such as python3 -I” at the 2026-10-12 draft triage: same defect as ST-webfvbcb: new/set accept python3 -I -c, check_program_refusal returns '-I is not a _tools/ script'; filed by SP-ceucrhca as a recurrence Its goal: backlog.py new and set refuse, with the same reason, a repro or check argv that bl_intake.check_program_refusal refuses, so a worker's filed bug cannot pass its own commit and stop the landing's sync gate Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"new_refuses_refused_repro\"]}"
 }

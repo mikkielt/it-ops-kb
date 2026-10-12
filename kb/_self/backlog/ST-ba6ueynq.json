@@ -16,5 +16,8 @@
       ]
     }
   ],
-  "notes": "Run start: stderr: Ignoring 14 permissions.allow entries from .claude/settings.json: this workspace has not been trusted; every python3 <plugin>/_tools/backlog.py call was held for approval; ls of the plugin's _tools was blocked outside the allowed working directories."
+  "links": [
+    "merged: ST-7vr2z32i"
+  ],
+  "notes": "Run start: stderr: Ignoring 14 permissions.allow entries from .claude/settings.json: this workspace has not been trusted; every python3 <plugin>/_tools/backlog.py call was held for approval; ls of the plugin's _tools was blocked outside the allowed working directories. Merged from ST-7vr2z32i “The plugin's install steps for a host project's sprint list __pycache__ and other run output in .gitignore” at the 2026-10-12 draft triage: Docs-only item on the same kb/_self/plugin.md host-setup section as ST-ba6ueynq; plugin.md has no __pycache__ yet. Absorb the .gitignore line for __pycache__, scratch_dir and worktree_dir so one doc edit carries both. Its goal: kb/_self/plugin.md's host setup for the sprint skills says to ignore the bytecode and scratch output a premise or check run leaves (__pycache__/, the scratch_dir and worktree_dir), since land stops at its clean-tree step on an untracked file Its checks: {\"run\": [\"python3\", \"-c\", \"import sys; t=open('kb/_self/plugin.md').read(); sys.exit(0 if '__pycache__' in t else 1)\"]}"
 }

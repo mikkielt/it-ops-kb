@@ -18,7 +18,8 @@
     "_tools/bl_authority.py"
   ],
   "links": [
-    "parked: SP-yojt6y7v run"
+    "parked: SP-yojt6y7v run",
+    "merged: BG-6rrnzkcp"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens."
+  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens. Merged from BG-6rrnzkcp “A blocking gate classes the ops-row value shape 'phase token' as secrets” at the 2026-10-12 draft triage: Repro still returns class secrets for 'phase token'; same defect family as BG-xp3imb24 (word token read as a secret outside the existing without_token_counts exception), one fix in bl_authority. Its goal: A gate whose text says token only as the name of the ops-row value shape (a phase token, a closed token) is classed design, not secrets, so a worker's provisional gate on an ops row is not made blocking; a gate naming a credential, an API key or a bearer token stays secrets. Its repro: {\"run\": [\"python3\", \"-c\", \"import sys; sys.path.insert(0, '_tools'); import bl_authority as a; c, _ = a.class_reasons({'touches': []}, {'id': 'g9', 'question': 'Which phase token does the ops row carry?', 'options': ['apply', 'record']}); sys.exit(c == 'secrets')\"]}"
 }

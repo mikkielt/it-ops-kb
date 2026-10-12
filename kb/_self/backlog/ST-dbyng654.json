@@ -22,6 +22,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-rlincemn close"
-  ]
+    "parked: SP-rlincemn close",
+    "merged: ST-4yv2thhh"
+  ],
+  "notes": "Merged from ST-4yv2thhh “start's host-setup warning names the gate host-unchecked command” at the 2026-10-12 draft triage: Premise holds: the host-setup warning text at _tools/bl_plan.py:368 names no gate host-unchecked command. It is the same warning in the same function as ST-dbyng654 (similar 1.00), so one commit covers both. Its goal: Found by the SP-qxcj7fgy review: ST-7avb5uo6 added backlog.py gate host-unchecked ID GATE --reason TEXT, but the start warning for a gate that names a host setup (bl_plan.py) still says only 'or the reason it cannot be checked as the gate's host_unchecked', never the command that sets it. The warning names gate host-unchecked ID GATE --reason TEXT. Its checks: {\"run\": [\"python3\", \"-c\", \"import sys; sys.exit(0 if 'gate host-unchecked' in open('_tools/bl_plan.py',encoding='utf-8').read() else 1)\"]} Its touches: _tools/bl_plan.py, kb/_self/backlog.md, kb/_self/tools.md"
 }

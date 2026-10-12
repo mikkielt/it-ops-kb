@@ -17,5 +17,10 @@
   "repro_reason": "the defect is the module docstring's text, which no command prints back verbatim; the grep names only the line the fix adds",
   "touches": [
     "_tools/backlog.py"
-  ]
+  ],
+  "links": [
+    "merged: BG-5orqmy7i",
+    "merged: BG-dyaikht3"
+  ],
+  "notes": "Merged from BG-5orqmy7i “backlog.py's module usage text for answer omits --free, which says a free answer is meant” at the 2026-10-12 draft triage: Cosmetic: '--free' is absent from backlog.py's usage text (grep confirms), but this is one of three usage-text catch-up items (with BG-77i2lwmr and BG-dyaikht3) that fit one commit. Its goal: The usage text at the top of _tools/backlog.py names --free in its answer line (a text that is none of the gate's options is meant), as args_answer in bl_items.py defines it. Its repro: {\"run\": [\"python3\", \"-c\", \"import sys; sys.exit(0 if '--free' in open('_tools/backlog.py', encoding='utf-8').read() else 1)\"]} Its touches: _tools/backlog.py Merged from BG-dyaikht3 “backlog.py's set usage says a sprint takes notes and links only, though a sprint's goal is set with --by operator” at the 2026-10-12 draft triage: Ran it: backlog.__doc__ still contains 'a sprint takes notes and links only'. Cosmetic S4 usage text, one more entry for the same backlog.py usage catch-up commit. Its goal: Found by the fresh-context review of SP-x5gjv4r7, item ST-ifljijni: the facade's set usage text (_tools/backlog.py) still says 'a sprint takes notes and links only' and names no --by operator beside --goal, while bl_items.cmd_set accepts set SP --goal G --by operator and --delegate; the usage names the sprint's goal rule. Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;sys.path.insert(0,'_tools');import backlog;sys.exit(1 if 'a sprint takes notes and links only' in backlog.__doc__ else 0)\"]} Its touches: _tools/backlog.py"
 }

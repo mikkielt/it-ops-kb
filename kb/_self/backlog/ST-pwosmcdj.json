@@ -22,6 +22,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-kwi4ilty close"
-  ]
+    "parked: SP-kwi4ilty close",
+    "merged: ST-vu4xal5j"
+  ],
+  "notes": "Merged from ST-vu4xal5j “Planning warns of a code-lane item whose check or repro reads state only a delivery after its merge can make” at the 2026-10-12 draft triage: land stopped at checks for BG-ckrasbdn in SP-kwi4ilty from the same cause as ST-pwosmcdj: evidence only a query-log delivery after the merge can make; one precheck warning, same remedy text Its goal: backlog.py precheck (or check) warns of a committed code-lane item whose check or repro reads the committed query-log store or backlog.py cost figures, since land runs a code item's checks and repro before it pushes the merge request, and names the remedy: a separate item done after the merge (BG-ckrasbdn's land stopped at checks in SP-kwi4ilty) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"precheck_post_merge_check\"]} Its touches: _tools/bl_plan.py, _tools/test_backlog_portable.py, kb/_self/backlog.md"
 }

@@ -23,6 +23,8 @@
     "kb/_self/code.md"
   ],
   "links": [
-    "parked: SP-avwlotax close"
-  ]
+    "parked: SP-avwlotax close",
+    "merged: ST-vybjfqvj"
+  ],
+  "notes": "Merged from ST-vybjfqvj “land leaves a host's local main in step with origin/main after it pushes (second-project run)” at the 2026-10-12 draft triage: fast_forward_start (bl_land.py:1614) leaves local main behind when it holds unpushed commits. The same fault hit the kb at SP-avwlotax and is filed as ST-22oykpr5. Absorb: name the divergence before the push, and never push the whole local HEAD history. Its goal: After land pushes in a project whose local main holds commits not yet on origin, local main is fast-forwarded or land names the divergence before its push, never after Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"land_fast_forwards_host_main\"]}"
 }

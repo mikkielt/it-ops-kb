@@ -23,7 +23,9 @@
     "_tools/ql_capture.py"
   ],
   "links": [
-    "parked: SP-uwkr7iyl review"
+    "parked: SP-uwkr7iyl review",
+    "merged: ST-4zufzrar",
+    "merged: ST-y35da4y5"
   ],
-  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck)."
+  "notes": "Review severity S4 (SP-uwkr7iyl review, 2026-10-10); filed as a story since a repro command is written when it is planned. Its check passes before the work: planning replaces it with one that fails until the change lands (plan step 5, precheck). Merged from ST-4zufzrar “The digest counts factdiff.py detect's exit 1 (facts need review) as a failed census.phase” at the 2026-10-12 draft triage: ql_report.py ops block counts any census.phase exit not in (0,None) as failed, so detect's exit 1 (facts to review) reads as a failure; a digest-count fix over the same census.phase row as ST-3xyi2rjo Its goal: ql_report.py's ops block (_tools/ql_report.py:179) reads a census.phase row of factdiff.py detect that exited 1 because facts need review as a success, not a failure; found by the SP-uwkr7iyl review. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"census_queue\"]} Its touches: _tools/ql_report.py, _tools/census.py, kb/_self/querylog.md Merged from ST-y35da4y5 “kb/_self/querylog.md names every command that writes a census.phase row” at the 2026-10-12 draft triage: querylog.md:53 names only check, record and confirm (and factdiff detect, apply, review) while census.PHASES also holds repin, judge and dispatch; same census.phase sentence ST-3xyi2rjo edits Its goal: kb/_self/querylog.md's census.phase sentence names every command in census.PHASES (repin, judge and dispatch among them). Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: kb/_self/querylog.md"
 }

@@ -24,6 +24,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-tm4wlsve close"
-  ]
+    "parked: SP-tm4wlsve close",
+    "merged: BG-w3p7fqy2"
+  ],
+  "notes": "Merged from BG-w3p7fqy2 “factdiff.py detect never records changed_utc, so no source of _fetch_state.csv has a recorded change” at the 2026-10-12 draft triage: Its own note names ST-fxz2wrfe as the duplicate; its repro now passes spuriously (85 kb/public rows hold changed_utc, written by fetch.py on first fetch) while factdiff.py still has no changed_utc write. Its goal: factdiff.py detect writes the state row's changed_utc when a source's verdict is changed, replaced or moved, so the change history in git and the source changed mark of a fact read it; the repro exits 0 once a detect run has recorded a change. Its repro: {\"run\": [\"python3\", \"-c\", \"import csv, sys; sys.exit(0 if any(r['changed_utc'] for r in csv.DictReader(open('kb/public/_fetch_state.csv', encoding='utf-8'))) else 1)\"]}"
 }

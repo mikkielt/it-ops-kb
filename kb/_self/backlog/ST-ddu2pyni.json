@@ -20,6 +20,8 @@
     "kb/_self/reports/fact-diff.md"
   ],
   "links": [
-    "parked: SP-yojt6y7v review"
-  ]
+    "parked: SP-yojt6y7v review",
+    "merged: ST-rz674npj"
+  ],
+  "notes": "Merged from ST-rz674npj “kb/_self/tools.md's factdiff row names the model review --judge defaults to” at the 2026-10-12 draft triage: tools.md:39 already names factdiff.JUDGE_MODEL for review --judge and :40 states Haiku 5.5 as claude-haiku-5-5 and that JUDGE_MODEL gives review --judge too; the residue is the same default-model wording ST-ddu2pyni carries Its goal: kb/_self/tools.md's factdiff.py row names claude-haiku-5-5 as the default model of review --judge. Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: kb/_self/tools.md"
 }

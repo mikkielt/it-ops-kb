@@ -20,6 +20,8 @@
     "kb/_self/code.md"
   ],
   "links": [
-    "parked: SP-ilje65fa review"
-  ]
+    "parked: SP-ilje65fa review",
+    "merged: ST-7ibioci3"
+  ],
+  "notes": "Merged from ST-7ibioci3 “Each census and factdiff item check selects its own test, not one combined test whose id carries six selectors” at the 2026-10-12 draft triage: the census tests merged into one id because the suite is at 100 of 100 ids and the 24 s ceiling: the problem ST-5zcl2sof already carries; absorb: the six census/factdiff selectors each get their own test once room exists Its goal: census_retry, census_baseline, census_repin, census_github_page, factdiff_learn_git and factdiff_anchor each select a test that exercises only that item's behaviour, within the test ceiling in _tools/tests_ceiling.json (raise it with the operator's gate if the ceiling is what forces the merge), so a passing check proves its own item. Its checks: {\"run\": [\"python3\", \"_tools/backlog.py\", \"selectors\"]} Its touches: _tools/test_redact.py, _tools/tests_ceiling.json"
 }

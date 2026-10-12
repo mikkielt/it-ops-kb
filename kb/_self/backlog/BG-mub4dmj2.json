@@ -23,7 +23,9 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-4jfepy6u run"
+    "parked: SP-4jfepy6u run",
+    "merged: BG-wfz6veim",
+    "merged: ST-faro6bww"
   ],
-  "notes": "Recurred in SP-avwlotax (2026-10-10): five items named .claude/skills/kb-sprint/SKILL.md (a symlink to skills/sprint/SKILL.md) in their touches; the orchestrator repointed them to the plugin file before the first claim."
+  "notes": "Recurred in SP-avwlotax (2026-10-10): five items named .claude/skills/kb-sprint/SKILL.md (a symlink to skills/sprint/SKILL.md) in their touches; the orchestrator repointed them to the plugin file before the first claim. Merged from BG-wfz6veim “An item whose touches name a .claude link to the plugin's sprint files cannot land its change, which git records at the plugin path” at the 2026-10-12 draft triage: Same root cause as BG-mub4dmj2: a .claude link touch is not resolved to the plugin file git records. The in_scope repro is still False. Absorb its goal clause that done, held and plan-overlap warnings treat the link as its target, and its linked_touch_in_scope test. Its goal: done, held and the plan's overlap warnings treat a touch of .claude/skills/kb-sprint/SKILL.md, kb-item, kb-backlog or .claude/agents/kb-worker.md as a touch of the plugin file the link resolves to (or check rewrites such touches), so the open items that name the link paths land Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"linked_touch_in_scope\"]} Its repro: {\"run\": [\"python3\", \"-c\", \"import sys; sys.path.insert(0,'_tools'); import bl_base; sys.exit(0 if bl_base.in_scope('skills/sprint/SKILL.md', ['.claude/skills/kb-sprint/SKILL.md']) else 1)\"]}"
 }

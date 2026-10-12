@@ -21,7 +21,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-dqkf3i42 close"
+    "parked: SP-dqkf3i42 close",
+    "merged: ST-vd3boyx5"
   ],
-  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm; the later items (TK-cagohpbu, TK-j5rcgylo, BG-axfywrrd, BG-rqxspwtb, BG-na2uirn5) each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch. Recurrence SP-m3azo2y7 (2026-10-10): ST-zltblzgq and ST-vblulwrc each needed a planted test with the suite at 100 of 100 ids; ST-zltblzgq stopped mid-work on blocking gate g2 to ask where the test goes, and the orchestrator asked ST-vblulwrc g2 before its claim."
+  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm; the later items (TK-cagohpbu, TK-j5rcgylo, BG-axfywrrd, BG-rqxspwtb, BG-na2uirn5) each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch. Recurrence SP-m3azo2y7 (2026-10-10): ST-zltblzgq and ST-vblulwrc each needed a planted test with the suite at 100 of 100 ids; ST-zltblzgq stopped mid-work on blocking gate g2 to ask where the test goes, and the orchestrator asked ST-vblulwrc g2 before its claim. Merged from ST-vd3boyx5 “Sprint planning reads the test ceiling's headroom against the tests its stories add” at the 2026-10-12 draft triage: Near-duplicate of ST-iai37tjr (similar score 1.00): planning reads tests.py --ceiling headroom against the ids stories add; the skill and backlog.md text become part of the precheck story. Its goal: kb-sprint plan compares the test ids and files the committed stories plan to add with the headroom tests.py --ceiling reports, and plans the ids each replaces before the start gate; answers SP-uwkr7iyl, where four census stories each planned a new _tools/test_census_route.py on a suite at 100 of 100 ids, ST-w3jhowin stopped on a blocking ceiling gate mid-work, and the census tests ended in _tools/test_redact.py, a file of another subject. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"--ceiling\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
 }

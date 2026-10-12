@@ -17,6 +17,8 @@
     }
   ],
   "links": [
-    "parked: SP-sbdy4hsx close"
-  ]
+    "parked: SP-sbdy4hsx close",
+    "merged: ST-tuc2zmio"
+  ],
+  "notes": "Merged from ST-tuc2zmio “A host orchestrator can resume a returned worker without a cd its permission rules refuse (second-project run)” at the 2026-10-12 draft triage: Same need as ST-zpcvcyqs: a backlog.py command that runs claude -p --resume in the worker's worktree, instead of a hand cd and a hand-typed session id. Absorb that the command needs no shell cd, so a host's allow rules accept it, and that the plugin skill names it. Its goal: The plugin's sprint skill gives a way to resume a worker's headless session in its worktree that a host's permission rules allow (a backlog.py command that runs claude -p --resume in the worktree, or a documented allow rule) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"plugin_sprint_resume_worker\"]}"
 }

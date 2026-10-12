@@ -21,6 +21,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-up5wchen close"
-  ]
+    "parked: SP-up5wchen close",
+    "merged: ST-iviphkbm"
+  ],
+  "notes": "Merged from ST-iviphkbm “land keeps the worker's worktree until its push has succeeded (second-project run)” at the 2026-10-12 draft triage: land must release the worktree before it rebases (git rebase needs the branch free), and the branch keeps every commit after a failed push, so keeping the worktree is not workable. ST-ht2kk34y already covers a stop at lint, eval, stale or push by printing the git worktree add command. Absorb only a push-failure case into its land_e2e test. Its goal: land removes a finished worker's worktree only after the push step exits 0, so a failed push leaves the worktree to resume in Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"land_keeps_worktree_until_push\"]}"
 }

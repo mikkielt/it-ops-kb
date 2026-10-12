@@ -13,5 +13,9 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import kb_hook;c=kb_hook.routed({'route':'split','verdict':'good','text':'coverage: good\\ncheck: x','passing':['tempdb'],'priced':False});sys.exit(0 if 'flags a possible false good' in c else 1)"
     ]
-  }
+  },
+  "links": [
+    "merged: BG-cs4xmk74"
+  ],
+  "notes": "Merged from BG-cs4xmk74 “backlog.py knowledge and ql_learn judge a good pack whose only check: line is the scatter note as clean” at the 2026-10-12 draft triage: repro run: judge('page file size') returns ('sufficient',''); same predicate as BG-udo2fxq3 (hook, judge, ql_learn.passes read only unmatched/spread); scatter is a calibrated note with no route change, so absorb it only after reading rag.scatter_calibration Its goal: KnowledgeState.judge returns partial and ql_learn's pass test fails for a good pack that has the scatter check: line (pack's scatter key), as for the unmatched and spread lines, since their docs say sufficient is a good pack with no check: line Its repro: {\"run\": [\"python3\", \"-c\", \"import sys,types; sys.path.insert(0,'_tools'); import bl_check; s=bl_check.KnowledgeState(types.SimpleNamespace(root='.')); sys.exit(0 if s.judge('page file size')[0]=='partial' else 1)\"]}"
 }

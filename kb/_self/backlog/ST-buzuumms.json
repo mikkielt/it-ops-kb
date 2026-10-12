@@ -21,7 +21,10 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-lyfnpu37 close"
+    "parked: SP-lyfnpu37 close",
+    "merged: ST-etqx424h",
+    "merged: ST-m42ub6g2",
+    "merged: ST-lh2yw5k4"
   ],
-  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all its work staged and no commit; the orchestrator resumed the session with 60 more turns, and it committed in 6. SP-etslk6yu close evidence: the ST-jqwqdj2g worker (story, 17 touches, cap 100) hit its turn cap with every change staged and nothing committed; a resume of 8 turns finished it."
+  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all its work staged and no commit; the orchestrator resumed the session with 60 more turns, and it committed in 6. SP-etslk6yu close evidence: the ST-jqwqdj2g worker (story, 17 touches, cap 100) hit its turn cap with every change staged and nothing committed; a resume of 8 turns finished it. Merged from ST-etqx424h “dispatch's turn cap for a code task that creates a module or edits bl_land.py fits the work” at the 2026-10-12 draft triage: Turn-cap sizing by item kind (TURNS in bl_dispatch.py:45: task 60, story 100) is the same recurring cap failure as ST-buzuumms (SP-dqkf3i42, SP-x5gjv4r7 workers at 100-122 turns); one carrier; absorbs: size the default cap for a code task creating a module or editing bl_land.py, test dispatch_turn_cap Its goal: dispatch's default --max-turns for a task reflects its size (a new module with tests and docs, or an edit of a large module such as bl_land.py), so a task worker does not stop at the cap with its work uncommitted; in SP-dqkf3i42 TK-g4c5kxsc stopped at 60 turns with staged gates and was resumed, and every later task was dispatched at 100 by hand (TK-mialzcmq used 102, TK-g67asvm5 122 over two passes) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"dispatch_turn_cap\"]} Its touches: _tools/bl_dispatch.py, kb/_self/backlog.md, kb/_self/tools.md, .claude/skills/kb-sprint/SKILL.md"
 }
