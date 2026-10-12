@@ -125,7 +125,9 @@
       "do": {
         "fix-price-then-rerecord": "BG-axnjcayu"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "fix-price-then-rerecord",
+      "by": "operator"
     }
   ],
   "notes": "Sizing (plan host, 2026-10-12, pool of 150 rows before SP-j2jn5ue4's 30 scenario rows): record dry run (--arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --reps 1 --jobs 8 --dry-run) 1024 runs, estimate 51.17 USD; smoke dry run (--sample 2) 236 runs, 11.80 USD; per-run costs from the record of 2026-10-09 at the pinned prices (kb/public/claude/models.csv). With the 30 scenario rows (24 on the web arms): record about 62.50 USD (+30 x 0.3018 kb-arm cost per row, +24 x 0.0952 web), smoke about 15.58 USD; caps 1.5x those, 94 and 23 USD, and checks 0-1 rerun the dry runs and refuse an estimate at or over the cap. Sequential runtime of the record: about 18,600 s (5.2 h) from the 2026-10-09 mean wall seconds per run (kb labels 81.5 s per row over 180 rows, web 46.2 s per row over 86 rows), about 40 min at --jobs 8. Left out against the 2026-10-09 record: haiku-4-5 (retired from the comparison, 5.05 USD), opus-5-5 (its model is unchanged, 4.49 USD) and the session shape (its code is unchanged since 2026-10-09, 25.89 USD): the tool changes show on the fresh shape. A spend cap above these needs a new gate. Checks 0, 1, 4 and 5 pass before the work on purpose: 0 and 1 are the spend guards (the dry runs' estimates stay under the caps once the scenario rows join the pool), 4 and 5 keep pool verify and report --check green; checks 2 and 3 fail until the smoke and the record are done. Smoke 2026-10-12 (312 runs, 0 failed): run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --sample 2 --reps 1 --jobs 8 --max-usd 23 --out _cache/scratch/ST-gngo7etc/pool-smoke.csv (the orchestrator's scratch directory); 3163 rows, spend 15.12 USD in 267 paid runs, 708 s; python3 _tools/benchmarks.py pool verify --file _cache/scratch/ST-gngo7etc/pool-smoke.csv exit 0 (the record 2026-10-12 of pool-smoke.csv is consistent).",
