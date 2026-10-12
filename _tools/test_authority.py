@@ -224,8 +224,10 @@ def test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_opera
     # a decision that names the suite ceiling is refused in an agent session, `--by operator` included, and recorded in
     # the operator's own terminal; another decision is not stopped by the rule in either
     text = "tests-ceiling ids=101 files=15 seconds=darwin:20,linux:60,win32:60"
-    code, out = kbdecide((*record, text), "--by", "operator", agent=True)
-    assert code == 2 and "terminal of their own" in out and "suite ceiling" in out, out
+    # `tests.py` accepts any decision text holding the token as a substring, so a prefix glued to it is refused too
+    for named in (text, "z" + text, "x_" + text, f"note: {text.upper()}"):
+        code, out = kbdecide((*record, named), "--by", "operator", agent=True)
+        assert code == 2 and "terminal of their own" in out and "suite ceiling" in out, (named, out)
     assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file() and p.suffix == ".csv"} == snap
     for words, agent in (("left", True), (text, False)):  # past the ceiling rule: what stops it is the scratch root
         assert "terminal of their own" not in kbdecide((*record, words), "--by", "operator", agent=agent)[1], words
