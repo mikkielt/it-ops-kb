@@ -2,7 +2,7 @@
   "id": "ST-mq7we5r2",
   "kind": "story",
   "title": "pack --revalidate and kb_pack revalidate check only the pack's cited sources live and resolve only the printed lines' anchors",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P1",
@@ -160,5 +160,19 @@
     "kb:public/_answers.md#QK-gone-repository-check-limits-hash-only-hosts"
   ],
   "notes": "Premise (2026-10-11, Python 3.13.2, no model): factdiff.py detect --no-save over one pack's cited sources took 0.2 s for five pinned DSC files, 1.9 s for an Autopilot question's Learn and pinned sources (unchanged) and 7.3 s for five code.claude.com pages (all changed by text hash; of the 212 facts citing them 134 verbatim, 8 modified, 5 not found, 65 unanchored), but resolved every fact citing those sources, not only the printed lines. Over the pool's answerable questions 186 of 241 printed DOC lines (77%) had a located anchor for every cited source. A moved item costs about 140 tokens (the entra replay's 43 review items were 24,212 characters). Limits: UserPromptSubmit hooks 30 s (public/claude/hooks.md:60), MCP idle 5 min (public/agents/agent-error-catalogue.csv:19), GitHub REST 60 per hour unauthenticated (public/agents/doc-change-detection.md:96), Learn one request per 1.1 s per host. Decisions D-tvjml75q and D-gmrjivyw. Planned 2026-10-12: premise is the 2026-10-11 measurement in these notes (detect resolves every fact citing a source, not only the printed lines); rag.py pack has no --revalidate flag today (rag.py pack --help). Ordered last in the sprint so it reuses ST-t2j24bhx's repository check and ST-3zlzfitj's section hashes.",
-  "claimed_by": "orch-tm4wlsve"
+  "evidence": {
+    "commit": "66afa911c9a66c3faeedb995afaec45d18531a02",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_revalidate"
+        ],
+        "exit": 0,
+        "sha256": "a4890eb0283eb527"
+      }
+    ]
+  }
 }
