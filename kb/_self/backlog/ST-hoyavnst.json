@@ -2,7 +2,7 @@
   "id": "ST-hoyavnst",
   "kind": "story",
   "title": "Review sprint: Lookup correctness: router experts, the tag parser and aliases answer what the kb holds",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmf4ke4w",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-lmf4ke4w"
 }
