@@ -1,0 +1,20 @@
+{
+  "id": "SP-qlpfcgs2",
+  "kind": "sprint",
+  "title": "The whole suite fits its seconds ceiling under host load without the ceiling changing",
+  "status": "planned",
+  "goal": "a whole-suite tests.py run passes the darwin seconds ceiling under a sprint's parallel workers, by cutting the slowest scenario and never raising the ceiling; selfcheck's host check and a review's done name a host too loaded for that run before it starts; precheck warns when the committed selectors that collect no test outnumber the free ids of the test ceiling; worker.md and tests.py's over-seconds message say a refused run is retried or recorded, never answered by a proposed raise",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
