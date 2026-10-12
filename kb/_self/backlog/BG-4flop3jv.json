@@ -49,6 +49,22 @@
   "depends_on": [
     "BG-chs2di4p"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What route name does scenario_pack return for a pack with a check: line and no route: line (the scatter note sets no route)?",
+      "options": [
+        "check",
+        "flagged",
+        "split"
+      ],
+      "recommendation": "check",
+      "class": "design",
+      "answer": "check",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-j2jn5ue4 review"
   ],
