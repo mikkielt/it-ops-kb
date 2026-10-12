@@ -74,7 +74,9 @@
         "No cap beyond the response's remaining count"
       ],
       "recommendation": "50 a run, and stop when the response's remaining count is 5 or less",
-      "class": "push"
+      "class": "push",
+      "answer": "50 a run, and stop when the response's remaining count is 5 or less",
+      "by": "operator"
     },
     {
       "id": "g2",
