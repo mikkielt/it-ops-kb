@@ -110,6 +110,28 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which provider rows carry GitHub's two search APIs and PyPI's, and how does a GitHub token reach code search?",
+      "options": [
+        "github has repository search, github-blob has code search (a file's pages), a new pypi row has the project JSON; GITHUB_TOKEN or GH_TOKEN is sent to api.github.com only",
+        "one github row holds both templates and chooses by a repo: qualifier; no token is read"
+      ],
+      "recommendation": "github has repository search, github-blob has code search (a file's pages), a new pypi row has the project JSON; GITHUB_TOKEN or GH_TOKEN is sent to api.github.com only",
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How many hits does provider.py search print by default, and how long is an answer cached?",
+      "options": [
+        "5 hits (--max N raises it up to the API's first page of 10); a 200 is kept 7 days under _cache/provider-search/, --refresh asks again",
+        "10 hits; no cache flag"
+      ],
+      "recommendation": "5 hits (--max N raises it up to the API's first page of 10); a 200 is kept 7 days under _cache/provider-search/, --refresh asks again",
+      "class": "agents-rule"
     }
   ],
   "links": [

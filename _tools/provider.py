@@ -9,6 +9,8 @@
   provider.py [--root NAME] read URL [--grep WORDS] [--context N] [--max N] [--from LINE] [--refresh]
                                                           the page in its provider's raw form, with the lines that
                                                           hold every word of WORDS and the url to cite
+  provider.py [--root NAME] search NAME TERMS... [--max N] [--refresh]
+                                                          the hits (date, title, url) of the search_api of provider NAME
 
 Registry. _tools/providers.csv holds the public providers, shared by every root; a root may add its own
 <root>/_providers.csv for internal providers (a team wiki, an internal git host). They are merged at read time: a root
@@ -49,7 +51,9 @@ Columns (one row per provider):
   sitemap_lastmod per-page (usable per page) | added-removed (only to list added and removed urls) | none | -
   redirects       where moves are recorded (redirection files, 301 chains)
   history         where old text comes from (public repository at a commit, git at the pin, Wayback CDX)
-  search_api      a search url template with {q}, or `-`
+  search_api      a search url template with {q}, or `-`; `search` knows the response of each in SEARCH_SHAPES (Learn's
+                  api/search, the arXiv export API, GitHub's repository search on `github` and code search on
+                  `github-blob`, PyPI's JSON of a project name)
   mcp_freshness   what the provider's MCP server says about a page's version
   not_found       hard-404 (a made-up sibling url answers 404/410) | soft-404 (it answers 200) | status-<code>
                   (another code, e.g. 403) | unknown
@@ -73,6 +77,12 @@ status and the day of the fetch) and the lines that hold every word of --grep (c
 numbered by the file's own lines, any other page by the reduced text. Without --grep the text is printed from line
 --from, --max lines at a time (a long line is cut around its first word). Exit: 0 text read (and a line matched),
 1 the page did not answer 200, is not text (a PDF: left to the Read tool) or no line holds every word, 2 bad arguments.
+
+search asks the row's search_api once (the terms joined as the API reads them: spaces, `all:` terms for arXiv, `-` for
+a PyPI project name; a GitHub token in GITHUB_TOKEN or GH_TOKEN is sent to api.github.com, code search needs one), keeps
+a 200 for SEARCH_AGE days under _cache/provider-search/ (--refresh asks again) and prints `search:` (the request and the
+day of its answer), then `N. DATE  TITLE` and the url of each of the first --max hits (default 5). Exit: 0 hits printed,
+1 the API did not answer 200 or holds no hit, 2 a provider with no search_api.
 
 Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
 lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
@@ -663,6 +673,152 @@ def cmd_read(a, rows):
     return 0
 
 
+# ---------------------------------------------------------------- search: a provider's own search API
+
+SEARCH_CACHE = os.path.join(kbcommon.HOME, "_cache", "provider-search")  # beside the read cache, never committed
+SEARCH_AGE, SEARCH_MAX = 7, 5  # days an answer is reused; hits printed (the API's first page holds at most 10)
+GITHUB_TOKEN_ENV = ("GITHUB_TOKEN", "GH_TOKEN")
+
+
+def _day(stamp):
+    return (stamp or "")[:10] or "-"
+
+
+def _hits_learn(body):
+    return [{"title": x.get("title", ""), "url": x.get("url", ""), "date": _day(x.get("lastUpdatedDate"))}
+            for x in json.loads(body).get("results", []) if x.get("url")]
+
+
+def _hits_arxiv(body):
+    feed = ET.fromstring(body)
+    out = []
+    for e in feed.findall(ATOM + "entry"):
+        one = lambda tag: " ".join((e.findtext(ATOM + tag) or "").split())  # noqa: E731
+        link = one("id").replace("http://arxiv.org/", "https://arxiv.org/")
+        if link:
+            out.append({"title": one("title"), "url": link, "date": _day(one("updated") or one("published"))})
+    return out
+
+
+def _hits_github_repositories(body):
+    out = []
+    for x in json.loads(body).get("items", []):
+        words = " ".join((x.get("description") or "").split())
+        out.append({"title": x.get("full_name", "") + (f": {words[:100]}" if words else ""), "url": x.get("html_url", ""),
+                    "date": _day(x.get("pushed_at"))})
+    return [h for h in out if h["url"]]
+
+
+def _hits_github_code(body):
+    return [{"title": f"{(x.get('repository') or {}).get('full_name', '')}: {x.get('path', '')}", "url": x.get("html_url", ""),
+             "date": "-"} for x in json.loads(body).get("items", []) if x.get("html_url")]
+
+
+def _hits_pypi(body):
+    d = json.loads(body)
+    info = d.get("info") or {}
+    if not info.get("name"):
+        return []
+    stamps = [f.get("upload_time_iso_8601") or f.get("upload_time") or "" for f in d.get("urls") or []]
+    summary = " ".join((info.get("summary") or "").split())
+    return [{"title": f"{info['name']} {info.get('version', '')}".strip() + (f": {summary[:100]}" if summary else ""),
+             "url": info.get("package_url") or f"https://pypi.org/project/{info['name']}/", "date": _day(max(stamps, default=""))}]
+
+
+# (host, path prefix) of a search_api template -> its response parser and how the terms become the {q} of the request
+SEARCH_SHAPES = {
+    ("learn.microsoft.com", "/api/search"): (_hits_learn, " ".join),
+    ("export.arxiv.org", "/api/query"): (_hits_arxiv, " AND all:".join),  # the template's `all:` leads the first word
+    ("api.github.com", "/search/repositories"): (_hits_github_repositories, " ".join),
+    ("api.github.com", "/search/code"): (_hits_github_code, " ".join),
+    ("pypi.org", "/pypi/"): (_hits_pypi, "-".join),
+}
+
+
+def search_shape(template):
+    """(parser, joiner) for a search_api template, or None when no response shape is known for its host and path."""
+    u = urllib.parse.urlsplit(template.replace("{q}", "q"))
+    return next((v for (host, path), v in SEARCH_SHAPES.items() if u.netloc == host and u.path.startswith(path)), None)
+
+
+def search_path(url):
+    return os.path.join(SEARCH_CACHE, hashlib.sha256(url.encode("utf-8")).hexdigest()[:24] + ".json")
+
+
+def search(name, terms, rows=None, refresh=False, now=None):
+    """The hits of the search_api of provider `name` for `terms` (a list of words): {status, error, url (the request),
+    hits ([{title, url, date}] in the API's order), fetched_utc, cached}. A 200 is kept SEARCH_AGE days under
+    SEARCH_CACHE (`refresh` asks again). ValueError when the provider has no row, no search_api or no known response
+    shape for it."""
+    rows = rows if rows is not None else providers()
+    row = next((r for r in rows if r["provider"] == name), None)
+    if row is None:
+        raise ValueError(f"no provider {name!r}; `provider.py list` shows them")
+    tpl = (row.get("search_api") or "-").strip()
+    if tpl in ("-", "") or "{q}" not in tpl:
+        have = ", ".join(r["provider"] for r in rows if "{q}" in (r.get("search_api") or ""))
+        raise ValueError(f"provider {name!r} has no search_api; those that have one: {have}")
+    shape = search_shape(tpl)
+    if shape is None:
+        raise ValueError(f"search_api of {name!r} has a host or path with no known response shape (provider.SEARCH_SHAPES)")
+    parse, join = shape
+    url = tpl.replace("{q}", urllib.parse.quote(join(terms), safe=":"))
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    d = None
+    if not refresh:
+        try:
+            with open(search_path(url), encoding="utf-8") as f:
+                d = json.load(f)
+            d = d if (now - datetime.datetime.fromisoformat(d["fetched_utc"])).days < SEARCH_AGE else None
+        except (OSError, ValueError, KeyError):
+            d = None
+    if d is not None:
+        return {**d, "cached": True}
+    headers = {}
+    token = next((os.environ[v] for v in GITHUB_TOKEN_ENV if os.environ.get(v)), "")
+    if token and urllib.parse.urlsplit(url).netloc == "api.github.com":
+        headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+    r = request(url, headers)
+    d = {"status": r["status"], "error": r["error"], "url": url, "hits": [], "fetched_utc": now.isoformat(), "cached": False}
+    if r["status"] == 200:
+        try:
+            d["hits"] = parse(r["body"])
+        except (ValueError, ET.ParseError, AttributeError, TypeError):
+            d.update(status=0, error="the answer is not in the shape of this search_api")
+    elif r["status"] == 404 and urllib.parse.urlsplit(url).netloc == "pypi.org":
+        d["status"] = 200  # PyPI answers a project name that does not exist with 404: no hit, not a failure
+    if d["status"] == 200:
+        os.makedirs(SEARCH_CACHE, exist_ok=True)
+        with open(search_path(url), "w", encoding="utf-8", newline="\n") as f:
+            json.dump({k: v for k, v in d.items() if k != "cached"}, f)
+    return d
+
+
+def cmd_search(a, rows):
+    """Print the hits of the search_api of provider a.name for a.terms, `N date title` and the url under it (exit 1
+    when the API did not answer 200 or holds no hit, 2 for a provider with no search_api)."""
+    terms = [w for t in a.terms for w in t.split()]
+    try:
+        d = search(a.name, terms, rows, refresh=a.refresh)
+    except ValueError as e:
+        print(str(e))
+        return 2
+    print(f"search: {a.name} {' '.join(terms)!r} ({d['url']}; " + ("cache of " if d["cached"] else "fetched ") + f"{d['fetched_utc'][:10]})")
+    if d["status"] != 200:
+        why = d["status"] or d["error"]
+        print(f"not searched: {why}" + ("; the API's rate limit, ask again later" if d["status"] in (403, 429) else "") +
+              ("; GitHub code search needs a token: set GITHUB_TOKEN" if d["status"] == 401 else ""))
+        return 1
+    if not d["hits"]:
+        print("no hit")
+        return 1
+    for i, h in enumerate(d["hits"][:a.limit], 1):
+        print(f"{i}. {h['date']}  {h['title']}\n   {h['url']}")
+    if len(d["hits"]) > a.limit:
+        print(f"{len(d['hits']) - a.limit} more: raise --max")
+    return 0
+
+
 # ---------------------------------------------------------------- probe
 
 def _sample(name, rows, root):
@@ -828,9 +984,16 @@ def main():
     r.add_argument("--max", type=int, default=READ_LINES, metavar="N", dest="limit", help=f"lines printed (default {READ_LINES})")
     r.add_argument("--from", type=int, default=1, metavar="LINE", dest="start", help="first line considered (default 1)")
     r.add_argument("--refresh", action="store_true", help=f"fetch again although the cache holds the page ({READ_AGE} days)")
+    q = sub.add_parser("search", help="query a provider's own search API: title, url and date of each hit")
+    q.add_argument("name", help="a provider row with a search_api (`list` shows them)")
+    q.add_argument("terms", nargs="+", metavar="TERMS", help="the search words")
+    q.add_argument("--max", type=int, default=SEARCH_MAX, metavar="N", dest="limit", help=f"hits printed (default {SEARCH_MAX})")
+    q.add_argument("--refresh", action="store_true", help=f"ask again although the cache holds the answer ({SEARCH_AGE} days)")
     a = ap.parse_args()
     if a.cmd == "read" and (a.context < 0 or a.limit < 1 or a.start < 1):
         ap.error("--context must be 0 or more, --max and --from 1 or more")
+    if a.cmd == "search" and a.limit < 1:
+        ap.error("--max must be 1 or more")
     try:
         root = kbcommon.root(a.root)
     except (KeyError, kbcommon.RootError) as e:
@@ -843,6 +1006,8 @@ def main():
         return 0
     if a.cmd == "read":
         return cmd_read(a, rows)
+    if a.cmd == "search":
+        return cmd_search(a, rows)
     if a.cmd == "show":
         r = for_url(a.url, rows)
         if not r:
