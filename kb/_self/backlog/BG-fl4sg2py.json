@@ -2,7 +2,7 @@
   "id": "BG-fl4sg2py",
   "kind": "bug",
   "title": "pool check does not flag a committed check alternative that no line of the kb states: BP-9e209bb8 keeps two invented Microsoft365DSC cmdlet names",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j2jn5ue4",
   "priority": "P3",
   "rank": 0,
@@ -75,5 +75,27 @@
     "parked: SP-5i4itd2d review"
   ],
   "notes": "Premise run 2026-10-12 on origin/main 92bc6c598: the repro exits 1 (pool check prints nothing for BP-9e209bb8, whose check still holds Assert-M365DSCTenantDrift). It blocks the fitness test of the pool benchmark: SP-j2jn5ue4's scenario rows and the next pool record are scored by these checks, and a check alternative no kb line states scores a wrong answer right. Plan 2026-10-12: the filed repro passed only while BP-9e209bb8 kept its invented names, so it could never pass once the row is fixed; it now plants an invented alternative in a copy of the pool and asks pool check FILE to name that row, and check 0 reads that BP-9e209bb8 no longer names the two cmdlets. Both fail on origin/main 92bc6c598.",
-  "claimed_by": "orch-j2jn5ue4"
+  "evidence": {
+    "commit": "0745df464f05f76a7d6f23904a1dbb557dc6c58e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/_retrieval/bench_pool.csv').read();bad=[w for w in ('Assert-M365DSCTenantDrift','Test-M365DSCDrift') if w in t];print('still named:',bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d653c99c1c44c623"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bench_pool as b;R=b.read_csv(b.PUBLIC_FILE);r=next(x for x in R if x['kind']=='fact');c=json.loads(r['checks']);c[0]=c[0]+'|Invoke-ZzqxInventedDrift';r['checks']=json.dumps(c);p=os.path.join(tempfile.mkdtemp(),'pool.csv');b.write_csv(p,R);o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','check',p],capture_output=True,text=True);t=o.stdout+o.stderr;print(t[-400:]);sys.exit(0 if r['id'] in t and 'Invoke-ZzqxInventedDrift' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a11925a1c998c845"
+      }
+    ]
+  }
 }
