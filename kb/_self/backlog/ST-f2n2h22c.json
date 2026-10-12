@@ -87,6 +87,17 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which span counts as a lookup's result being recent enough to spare a census or refresh request: the provider's pacing (provider.pacing, a per-request delay of seconds) or the source's freshness lifetime (days)?",
+      "options": [
+        "provider.pacing: the window a lookup reuses its own stored result in; the census and refresh spare only a source a lookup checked seconds ago",
+        "the source's freshness lifetime: a lookup's result spares the census for days, though the census then dates nothing on it"
+      ],
+      "recommendation": "provider.pacing: the window a lookup reuses its own stored result in; the census and refresh spare only a source a lookup checked seconds ago",
+      "class": "agents-rule"
     }
   ],
   "notes": "Planned 2026-10-12: no hint reading exists (the revalidation cache itself lands with ST-mq7we5r2 in SP-tm4wlsve); premise holds by construction once that lands.",
