@@ -83,7 +83,9 @@
         "every run, a --file run too"
       ],
       "recommendation": "only a run with no --file (the tuned sets of every root, or one root with --root)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only a run with no --file (the tuned sets of every root, or one root with --root)",
+      "by": "operator"
     }
   ],
   "links": [
