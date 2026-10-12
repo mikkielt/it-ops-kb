@@ -2,7 +2,7 @@
   "id": "ST-u24f5a2i",
   "kind": "story",
   "title": "The planning and review rules say a suite refused on a loaded host is retried or recorded, never answered by raising the ceiling",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-rlincemn",
   "priority": "P1",
   "rank": 0,
@@ -75,7 +75,8 @@
       },
       "class": "agents-rule",
       "answer": "once, after the host's other tests.py runs end (the host lock names them); a second refusal is recorded as a host finding with its test.run row, and the item's done waits for a quiet run",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "the gate settles a rule's wording (how often a refused suite is rerun), not a setup on this host; nothing on the host proves it"
     }
   ],
   "notes": "Premise (planned 2026-10-12): rag.py pack --root _self 'may a sprint raise the test suite ceiling when a whole-suite run is refused on a loaded host' is weak, kb lacks 'ceiling, refused, loaded'; no rule says what a refused suite on a loaded host gets, and the darwin ceiling was raised twice by delegated gates (cd5337c30 to 22 s, 4586e2204 to 24 s). Check 0 passes before the work and pins every _self eval row. Related drafts left as drafts: BG-w6z2zc6r, BG-ucwq6kga (suite over the darwin ceiling on a loaded host)."
