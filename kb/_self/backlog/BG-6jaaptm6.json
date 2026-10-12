@@ -1,17 +1,39 @@
 {
   "id": "BG-6jaaptm6",
   "kind": "bug",
-  "title": "The full test suite takes over the darwin time ceiling: 22.5 s against 22 s, with and without ST-b27c527d's change",
-  "status": "draft",
-  "priority": "P2",
+  "title": "The full suite runs 21.9-22.3 s at 100 ids on darwin, over its 22 s ceiling at load under 2, so the SP-7n3d4jte review cannot finish",
+  "status": "doing",
+  "sprint": "SP-7n3d4jte",
+  "priority": "P1",
   "rank": 0,
-  "severity": "S3",
-  "goal": "python3 _tools/tests.py --no-reuse exits 0 on the darwin host: a full run of the 100 ids stays within the ceiling of _tools/tests_ceiling.json (max_seconds darwin 20, times the host factor), by speeding the slowest tests or by the operator's recorded answer that raises the ceiling",
+  "severity": "S2",
+  "goal": "The SP-7n3d4jte review story's done ran tests.py 3 times on 2026-10-12 and a direct --no-reuse run once more: every run passed all 100 tests in 21.90-22.32 s of pytest time and exited 1 on the darwin 22 s ceiling (D-7ngv63af), the last two at a load average under 2, and a clone at 38f1fe80a from before this sprint's code ran 22.5 s, so waiting for a quiet host no longer helps; the slowest tests are the land and sync e2e scenarios (13.4, 12.7, 12.5, 10.8 and 9.3 s). The darwin max_seconds in _tools/tests_ceiling.json follows the operator's recorded answer to this item's gate, with that decision's id in the file, and a full tests.py run on this host exits 0.",
   "repro": {
     "run": [
       "python3",
-      "_tools/tests.py",
-      "--no-reuse"
+      "-c",
+      "import json,sys;sys.exit(0 if json.load(open('_tools/tests_ceiling.json'))['max_seconds']['darwin']>22 else 1)"
     ]
-  }
+  },
+  "repro_reason": "a full suite run is the behaviour, but the review story's done already runs it; the repro pins the number the gate decides",
+  "touches": [
+    "_tools/tests_ceiling.json",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite passes all 100 tests in 21.9-22.3 s of pytest time on darwin (wall up to 23 s), over the 22 s ceiling at load under 2: raise the darwin seconds, or cut the suite's time first?",
+      "options": [
+        "tests-ceiling ids=100 files=15 seconds=darwin:24,linux:60,win32:150",
+        "keep darwin at 22 and cut the suite's time (a test-speed story on the land and sync e2e scenarios) before the review can finish"
+      ],
+      "recommendation": "tests-ceiling ids=100 files=15 seconds=darwin:24,linux:60,win32:150",
+      "class": "design",
+      "answer": "tests-ceiling ids=100 files=15 seconds=darwin:24,linux:60,win32:150",
+      "by": "operator"
+    }
+  ],
+  "claimed_by": "orch-7n3d4jte"
 }
