@@ -74,6 +74,47 @@
   "depends_on": [
     "ST-vwifqi4n"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "fact_for picks the defining line of BP-df64045a (:13, not the wipe bullet :60) only through a new signal, since line 13 lacks the question's word Android and so scores below :60 on word overlap: a run of the question's words in its order inside a line adds to its score. Which run length and weight, and what else does it move?",
+      "options": [
+        "run-4-weight-1.5",
+        "run-3-weight-1.0"
+      ],
+      "recommendation": "run-4-weight-1.5",
+      "class": "design",
+      "answer": "run-4-weight-1.5",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which prose lines become fact_for candidates once a Summary paragraph's first line may state nothing (mecm/cmpivot.md:14 states no timeout, :17 does)? Every wrapped line moves 13 more picks to mid-sentence fragments, one stale pool check among them.",
+      "options": [
+        "sentence-opening-lines-of-prose-paragraphs",
+        "every-wrapped-prose-line"
+      ],
+      "recommendation": "sentence-opening-lines-of-prose-paragraphs",
+      "class": "design",
+      "answer": "sentence-opening-lines-of-prose-paragraphs",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "The sprint goal says the cmpivot timeout rows' checks drop non-answer wording, the item goal names only BP-df64045a and BP-c552cb0f: also rewrite the shared check of BP-d306eaa8, BP-8f566d80 and BP-70d0bf39, which accepts 'fast channel' or 'state messages' (line :14, no timeout), to a number or 'one' with a unit of seconds, minutes or hours?",
+      "options": [
+        "rewrite-to-a-time-with-unit",
+        "leave-the-three-checks"
+      ],
+      "recommendation": "rewrite-to-a-time-with-unit",
+      "class": "design",
+      "answer": "rewrite-to-a-time-with-unit",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5i4itd2d review"
   ],

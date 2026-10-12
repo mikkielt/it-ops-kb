@@ -160,11 +160,25 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     side.mkdir(parents=True)
     (side / "wrap.md").write_text(
         "---\ntopic: zz/wrap\n---\n\n## Summary\nThe gadget exports its license state and reports the release channel on\n"
-        "demand, so the gadget license and release channel show in one view.\n\n"
+        "demand, so the gadget license and release channel show in one view.\n"
+        "The gadget retry timeout is 45 seconds.\n\n"
         "- The gadget license and release channel are listed in `zz/plant.md`.\n"
-        "- A gadget license is a signed file.\n", encoding="utf-8")
+        "- A gadget license is a signed file.\n"
+        "  The gadget retry timeout is 90 seconds here.\n", encoding="utf-8")
     wrapped = {"question": "What is the gadget license and release channel?", "expect_paths": "zz/wrap.md"}
-    assert bp.fact_for(tmp_path / "side", wrapped)[1] == 6  # the paragraph's first line; its wrapped line 7 and the pointer line 9 are no facts
+    assert bp.fact_for(tmp_path / "side", wrapped)[1] == 6  # the paragraph's first line; its wrapped line 7 and the pointer line 10 are no facts
+    wrap_lines = (side / "wrap.md").read_text(encoding="utf-8").splitlines()
+    assert [n for n, _ in bp.article_facts(wrap_lines)] == [6, 11]  # a wrapped line, even one that opens a sentence, is no fact of its own
+    assert [n for n, _ in bp.article_facts(wrap_lines, prose=True)] == [6, 8, 11]  # a prose line that opens a sentence is; a list item's line is not
+    assert bp.fact_for(tmp_path / "side", {"question": "gadget retry timeout seconds", "expect_paths": "zz/wrap.md"})[1] == 8  # the timeout sits on the third line of a paragraph
+    (side / "phrase.md").write_text(
+        "---\ntopic: zz/phrase\n---\n\n- The sync status of the board shows each agent and gizmo once a day.\n"
+        "- The gizmo sync agent status board lists every gizmo.\n", encoding="utf-8")
+    ask = {"question": "gizmo sync agent status board", "expect_paths": "zz/phrase.md"}
+    assert bp.fact_for(tmp_path / "side", ask)[1] == 6  # the question's own four-word phrase, over a line with the same stems scattered
+    with monkeypatch.context() as m:
+        m.setattr(bp, "PHRASE_WEIGHT", 0.0)
+        assert bp.fact_for(tmp_path / "side", ask)[1] == 5  # without the phrase weight the two lines tie and the first wins
     (side / "mixed.md").write_text(
         "---\ntopic: zz/mixed\n---\n\n- Sprocket timeout is 30 seconds; the full table is in `zz/plant.csv`.\n"
         "- See `zz/plant.csv` for the sprocket timeout.\n\n```\nsprocket timeout seconds\n```\n\n"
