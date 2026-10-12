@@ -2,7 +2,7 @@
   "id": "ST-7zkw23ca",
   "kind": "story",
   "title": "provider.py read URL --grep WORDS reads a page by its route and prints the matching lines, so research locates a passage without WebFetch",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -178,5 +178,28 @@
     "kb:public/agents/hybrid-retrieval.md"
   ],
   "notes": "Premise: kb-research step 3 says curl the page and use WebFetch only to locate the passage, and read GitHub blobs raw; _tools/providers.csv gives raw_form '-' for github and github-raw and has no arXiv row (2026-10-11), so a session maps routes and greps by hand. A PDF stays with the Read tool: the standard library has no PDF text reader. Planned 2026-10-12: premise reproduced (provider.py has only list, show and probe; providers.csv gives raw_form '-' for github and github-raw and has no arXiv row). The provider_read test reads the providers.csv rows through provider.py's own registry loader.",
-  "claimed_by": "orch-sbdy4hsx"
+  "evidence": {
+    "commit": "eec170e12b3553851a7d17c948013559240e6301",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "provider_read"
+        ],
+        "exit": 0,
+        "sha256": "c4cb6b76ca83b65f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if all('provider.py read' in open(p, encoding='utf-8').read() for p in ('.claude/skills/kb-research/SKILL.md', 'kb/_self/web-sources.md')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
