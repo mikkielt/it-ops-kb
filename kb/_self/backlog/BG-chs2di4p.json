@@ -10,7 +10,6 @@
   "repro": {
     "run": [
       "python3",
-      "-I",
       "-c",
       "import re,sys;sys.path.insert(0,\"_tools\");import bench_pool as b;sys.exit(1 if re.search(b.FRESH_CHECK,\"## public/claude/plugins.md  Plugins  [complete, retrieved 2026-10-10]\") else 0)"
     ]
