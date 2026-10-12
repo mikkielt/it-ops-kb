@@ -34,7 +34,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('kb/_self/content-rules.md',encoding='utf-8').read();ok='[CODE S-a: path; S-b: path]' in t;print('content-rules.md names the two-source form:',ok);sys.exit(0 if ok else 1)"
+        "import sys;t=open('kb/_self/content-rules.md',encoding='utf-8').read();ok='[CODE <id>: path; <id>: path]' in t;print('content-rules.md names the two-source form:',ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
@@ -56,7 +56,9 @@
     "_tools/kbfacts.py",
     "kb/_self/content-rules.md",
     "kb/_self/tools.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "depends_on": [
     "BG-v57estdm",
@@ -73,7 +75,9 @@
         "C: keep one part per source and relax the lint's CODE pointer rule (a rule-guarding file, operator only)"
       ],
       "recommendation": "A: keep one part per source and give the first source a #symbol in codebase-mapping.md:62 (article edit through /kb-refresh, outside this item's touches)",
-      "class": "design"
+      "class": "design",
+      "answer": "A: keep one part per source and give the first source a #symbol in codebase-mapping.md:62 (article edit through /kb-refresh, outside this item's touches)",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -85,12 +89,14 @@
         "C: name the form in prose only (a ';' followed by ids and a colon) and drop check 2"
       ],
       "recommendation": "A: name the form with placeholders (the committed text: [CODE <id>: path; <id>: path]) and change check 2's literal to that form (an edit of the item's own check, operator only)",
-      "class": "design"
+      "class": "design",
+      "answer": "A: name the form with placeholders (the committed text: [CODE <id>: path; <id>: path]) and change check 2's literal to that form (an edit of the item's own check, operator only)",
+      "by": "operator"
     }
   ],
   "links": [
     "parked: SP-5x5ut5ko close"
   ],
-  "notes": "Premise run 2026-10-12: the repro prints ids parsed: ['S-sipjyeoi'] on main. Choice made at planning: the parser reads the second source, no article is rewritten (smaller, reversible). Readers outside touches: .claude/skills/kb-verify/lint.py:340 and :149 and _tools/factdiff.py:2059 take parse_tag's parts, so the lint check (check 1) must stay at errors=0 after the change; a CODE pointer error it then shows stops the item with a report, since the lint file guards a rule. Check 2 reads the form named in content-rules.md. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Checks 0 (rag.py eval) and 1 (lint.py) pass before the work: they pin that the parser change breaks no reader.",
+  "notes": "Premise run 2026-10-12: the repro prints ids parsed: ['S-sipjyeoi'] on main. Choice made at planning: the parser reads the second source, no article is rewritten (smaller, reversible). Readers outside touches: .claude/skills/kb-verify/lint.py:340 and :149 and _tools/factdiff.py:2059 take parse_tag's parts, so the lint check (check 1) must stay at errors=0 after the change; a CODE pointer error it then shows stops the item with a report, since the lint file guards a rule. Check 2 reads the form named in content-rules.md. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Checks 0 (rag.py eval) and 1 (lint.py) pass before the work: they pin that the parser change breaks no reader. g1 and g2 answered A by the orchestrator under the operator's delegation (2026-10-12), each the recommendation: check 2 now reads the placeholder form, and the article codebase-mapping.md (with its doc2query expansions) joins the touches for the #symbol of its first CODE source.",
   "claimed_by": "orch-lmf4ke4w"
 }
