@@ -1,0 +1,20 @@
+{
+  "id": "BG-chs2di4p",
+  "kind": "bug",
+  "title": "The pool's sc_stale check is met by a bare article header's retrieved date, so a pack with no freshness stamp passes it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_pool.FRESH_CHECK, the check of the sc_stale rows, matches the stamp's confirmation date, a freshness mark (unconfirmed, unanchored, source changed) or an answer's own statement of its source's age, and no longer a bare article header's retrieved DATE, so that the hook arm's sc_stale figure of the pool record is met only by a pack that prints the stamp or a mark; the report's description of the kind names the words the check accepts",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;sys.path.insert(0,\"_tools\");import bench_pool as b;sys.exit(1 if re.search(b.FRESH_CHECK,\"## public/claude/plugins.md  Plugins  [complete, retrieved 2026-10-10]\") else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py"
+  ]
+}
