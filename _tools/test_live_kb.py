@@ -92,6 +92,16 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     code, out = tool(lint, "fixture/", env=env)
     flagged = re.findall(r"^ERROR (\S+): Facts line holds a second bullet", out, re.M)
     assert code == 1 and flagged == [f"fixture/print/queues.md:{at}"], out[-2000:]
+    # the article given by its absolute path lints as the qualified one; an argument that names no file is refused,
+    # named as given, and nothing is linted; a live article given from the repository (`kb/public/...`) is no refusal
+    code, out = tool(lint, str(art), env=env)
+    assert code == 1 and re.findall(r"^ERROR (\S+): Facts line holds a second bullet", out, re.M) == flagged, out[-2000:]
+    missing_arg = "kb/public/no-such-dir/no-such-article.md"
+    code, out = tool(lint, missing_arg, "fixture/", env=env)
+    assert code == 1 and repr(missing_arg) in out and "Facts line" not in out, out[-2000:]
+    live = next(Path(kbcommon.PUBLIC).glob("*/*.md")).relative_to(kbcommon.HOME).as_posix()
+    code, out = tool(lint, live, env=env)
+    assert code == 0 and "errors=0" in out, out[-2000:]
     # a DOC fact the change adds: anchored by the quote its page holds (located), or by none (no-match, warned of); the
     # old fact's anchor is no-match too, as 37% of the ledger's are, and raises nothing
     page = "Held jobs wait until an operator releases them. Queues pause without losing their jobs."
