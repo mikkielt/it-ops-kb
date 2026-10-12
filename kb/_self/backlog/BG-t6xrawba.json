@@ -13,5 +13,6 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(1 if a.class_reasons({'touches':['_tools/kbfacts.py']},{'id':'g2','question':'Which unit nouns after in make a cost question no money ask?','options':['units, points, tokens, requests, calls','units only']})[0]=='secrets' else 0)"
     ]
-  }
+  },
+  "notes": "SP-4o3plg4l close, 2026-10-12: two more gates were made blocking as class secrets by the word tokens in an option (BG-pedsqeqs g2 on unit nouns, BG-j7pe3u46 g1 on Title-case name words); each stopped a worker and waited for the orchestrator."
 }

@@ -1,0 +1,21 @@
+{
+  "id": "ST-2gj2kv3r",
+  "kind": "story",
+  "title": "An item that adds a field to a function's result names every caller that gates on that result",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "planning runs referrers on a function whose result an item extends (rag.run_eval's noted) and puts each caller that gates on that result (ql_apply's eval gate) in the item's goal or a parked item, and the _self rules answer 'which callers does a story that adds a key to run_eval's result name' with a good pack; in SP-4o3plg4l ST-6s4ff6fa added noted to run_eval and only rag.py main read it, found by the review (BG-6hb4yabk)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;t=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','which callers does a story that adds a key to run_eval result name'],capture_output=True,text=True).stdout;print(t.splitlines()[0] if t else None);sys.exit(0 if t.startswith('coverage: good') else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-4o3plg4l close"
+  ]
+}
