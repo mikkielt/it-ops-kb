@@ -2,7 +2,7 @@
   "id": "BG-bbcc5f4s",
   "kind": "bug",
   "title": "apply's lead share check reads the whole source line, so a long line's clipped passage that does not answer is still applied",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7nv2ffr2",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,18 @@
     "parked: SP-x5gjv4r7 review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: ql_apply.rules_one on a lead whose printed passage holds none of the key words returns state applied (the repro exits 1 on the base, run at planning 2026-10-12). Order: before ST-s4cihfge (ql_apply.py and test_redact.py are shared).",
-  "claimed_by": "orch-7nv2ffr2"
+  "evidence": {
+    "commit": "b1dc9b60f2a5d8169026554be672b57a12fb442b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,tempfile,pathlib,types\nsys.path.insert(0,\"_tools\")\nimport ql_apply as a\nCLIP=\"The zqxwidget runner installs pytest-xdist through uv run frozen on every build\"\nLEAD=CLIP+\" and much later the plomkinator frobnicator quuxifies every plomkin on commit.\"\nt=pathlib.Path(tempfile.mkdtemp())\ng=types.SimpleNamespace(fresh=lambda:None,measure=lambda:{\"n\":1,\"passed\":1,\"failed\":[],\"chars\":{\"EV-x\":100},\"offkb_good\":0},rules_eval=lambda:t/\"e.csv\",rules_aliases=lambda:t/\"a.csv\",rules_pack=lambda x:{\"text\":\"coverage: weak\\n\\n## kb/_self/w.md\\n- kb/_self/w.md:7 \"+CLIP+\"\\n\"},rule_line=lambda r:(\"w.md\",LEAD),token_counts=lambda:{},anchored=lambda row:row[5] in LEAD,alias_terms=lambda rules=True:{})\nr,human=a.rules_one({\"id\":\"F-1\",\"kind\":\"rules\",\"observed\":{\"verdict\":\"weak\"}},{\"question\":\"which plomkinator frobnicator quuxifies every plomkin\"},g,{\"chars\":{\"EV-x\":100},\"offkb_good\":0})\nstate=(r or {}).get(\"state\");print(\"state of a lead whose printed passage holds none of the key words:\",state)\nsys.exit(0 if state!=\"applied\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5e5eae0c73b81787"
+      }
+    ]
+  }
 }
