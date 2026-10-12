@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "test_land_waits_hook_of_a_finished_session fails in a whole-suite run on a loaded host",
   "status": "draft",
+  "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -13,5 +14,34 @@
       "_tools/tests.py"
     ]
   },
-  "notes": "2026-10-11/12 SP-wwacrsqr review: the review story's done re-ran the whole suite seven times. While a game held the CPU (load 4-12) it took 160-193 s and this test failed each time; the test alone passed in 16.8 s (tests.py -k test_land_waits_hook_of_a_finished_session). With the game gone, 100 passed in 22.5-23 s twice and 30 s once while Spotlight mds_stores and a query-log distill ran near 100% CPU each, refused only on the 22 s darwin ceiling: host contention, not a defect of the test or the sprint's content."
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "hook_process_outlives_a_slow_look"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A whole-suite tests.py run passes on a loaded host, as the test does alone: observed 2026-10-11 in a 12-worker run that took 193 s, where test_land_e2e.TestHookWait.test_land_waits_hook_of_a_finished_session_then_removes_its_worktree_and_multirepo_land_cleans_per_repository saw 'land: waited 2s ... for a process whose parent had exited to end' where it expects 'for the session-end hook to end'",
+      "check": 0
+    },
+    {
+      "clause": "the same test alone passed in 18 s. The run also exceeded the darwin ceiling (193 s against 22 s), which load alone may explain",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-22oykpr5",
+    "ST-um6nghoo",
+    "ST-ht2kk34y"
+  ],
+  "notes": "2026-10-11/12 SP-wwacrsqr review: the review story's done re-ran the whole suite seven times. While a game held the CPU (load 4-12) it took 160-193 s and this test failed each time; the test alone passed in 16.8 s (tests.py -k test_land_waits_hook_of_a_finished_session). With the game gone, 100 passed in 22.5-23 s twice and 30 s once while Spotlight mds_stores and a query-log distill ran near 100% CPU each, refused only on the 22 s darwin ceiling: host contention, not a defect of the test or the sprint's content. Planned for SP-b7wibqok: the repro (whole suite) passes on a quiet host and fails only under load, so it proves nothing before the work; the check that fails now selects the renamed test. Cause: orphan_in (test_land_e2e.py:421) starts a process that sleeps a fixed 1 s, and on a loaded host the process has ended before land's look at its standard output (bl_procs.hook_pids), so no hook is seen and the message reads 'for a process whose parent had exited'. Fix in the test: the orphan stays until land has looked (a sentinel file the test creates), not a fixed sleep. The suite sits at max_ids 100: rename TestHookWait's test to carry the name the check selects, no new id; no code under _tools/bl_ changes. Plan-time runs (2026-10-12): the repro's first whole-suite run was refused at 27 s against the 24 s darwin ceiling while sibling planners ran, the retry passed in 23.1 s: the repro passes on a quiet host, so check 0 is the one that fails before the work."
 }

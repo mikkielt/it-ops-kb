@@ -3,27 +3,64 @@
   "kind": "story",
   "title": "selfcheck's orphans check tells a session-end distill run still at work from a stuck one, instead of failing on any past HOOK_GRACE_S",
   "status": "draft",
+  "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,
-  "goal": "backlog.py selfcheck failed its orphans check at the start of the SP-ajcomz6d run on two querylog.py distill --settle 2 processes of other sessions' ends (parent pid 1, 1 min 32 s old), which finished on their own minutes later; bl_procs.HOOK_GRACE_S (60 s) is shorter than a distill of a long orchestrator transcript. The orphans check fails only on a distill run that is stuck, read from its own progress or lock rather than a fixed 60 s, so an orchestrator acts on no false failure (found by the SP-ajcomz6d close).",
+  "goal": "backlog.py selfcheck failed its orphans check at the start of the SP-ajcomz6d run on two querylog.py distill --settle 2 processes of other sessions' ends (parent pid 1, 1 min 32 s old), which finished on their own minutes later; bl_procs.HOOK_GRACE_S (60 s) is shorter than a distill of a long orchestrator transcript. The orphans check fails only on a distill run that is stuck: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, so an orchestrator acts on no false failure (found by the SP-ajcomz6d close).",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails"
+        "distill_run_holding_or_waiting_on_the_lock_is_a_hook_in_flight"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py selfcheck failed its orphans check at the start of the SP-ajcomz6d run on two querylog.py distill --settle 2 processes of other sessions' ends (parent pid 1, 1 min 32 s old), which finished on their own minutes later",
+      "check": 0
+    },
+    {
+      "clause": "bl_procs.HOOK_GRACE_S (60 s) is shorter than a distill of a long orchestrator transcript. The orphans check fails only on a distill run that is stuck: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, so an orchestrator acts on no false failure (found by the SP-ajcomz6d close)",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/bl_procs.py",
     "_tools/bl_selfcheck.py",
-    "kb/_self/backlog.md",
-    "_tools/test_backlog_portable.py"
+    "_tools/test_backlog_portable.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-um6nghoo"
+  ],
+  "gates": [
+    {
+      "id": "stuck-read",
+      "kind": "blocking",
+      "question": "How does selfcheck's orphans check tell a distill run still at work from a stuck one?",
+      "options": [
+        "lock: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, and stuck beyond that",
+        "grace: raise HOOK_GRACE_S to a fixed number that covers the wait",
+        "warn: keep the 60 s grace and make a past-grace distill run a warning, not a failure"
+      ],
+      "recommendation": "lock: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, and stuck beyond that",
+      "do": {
+        "lock: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, and stuck beyond that": "ST-y6syvkzo",
+        "grace: raise HOOK_GRACE_S to a fixed number that covers the wait": "ST-y6syvkzo",
+        "warn: keep the 60 s grace and make a past-grace distill run a warning, not a failure": "ST-y6syvkzo"
+      },
+      "class": "agents-rule",
+      "answer": "lock: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, and stuck beyond that",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-ajcomz6d close"
   ],
-  "notes": "SP-qjn563cf run (2026-10-11): selfcheck failed its orphans check again on two python3 processes (pids 32577, 32579) of another session's checkout; procs read 0 orphans 30 minutes later. SP-up5wchen run (2026-10-11): selfcheck failed its orphans check on another session's querylog.py distill --settle 2 (pid 34062, parent 1, 1 min 8 s old)."
+  "notes": "Premise: bl_procs.classify marks an orphan whose stdout is distill.log as orphan once it is HOOK_GRACE_S (60 s) old (planned 2026-10-12: classify of such a run 92 s old returned 'orphan'), so selfcheck fails on a distill still waiting for the lock. SP-qjn563cf run (2026-10-11): orphans failed again on two python3 processes (pids 32577, 32579) of another session's checkout, 0 orphans 30 min later. SP-up5wchen run (2026-10-11): orphans failed on another session's querylog.py distill --settle 2 (pid 34062, parent 1, 1 min 8 s old). The distill lock file records the holder's pid and start (ql_base.acquire); a waiting distill gives up after USAGE_LOCK_WAIT_S (ql_distill). The suite sits at max_ids 100: extend the existing selfcheck test and rename it to carry the name the check selects, no new id. Gate stuck-read answered: lock. Planned at the 2026-10-12 draft triage (sprint 15 of 19, \"Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }

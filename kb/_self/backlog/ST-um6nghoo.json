@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "A headless worker's session hooks leave no query log distill process in its worktree that makes land refuse it",
   "status": "draft",
+  "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,
-  "goal": "SP-5x5ut5ko retrospective: the first two headless workers each left five or six querylog.py distill --settle processes running in their worktree (distills of other sessions' transcripts waiting up to USAGE_LOCK_WAIT_S, 600 s, for the distill lock); land refused both branches at step branch until they exited (about 9 minutes). A worker's hooks start such distills outside its worktree, or land tells a distill waiting on the lock from a worker's own process.",
+  "goal": "SP-5x5ut5ko retrospective: the first two headless workers each left five or six querylog.py distill --settle processes running in their worktree (distills of other sessions' transcripts waiting up to USAGE_LOCK_WAIT_S, 600 s, for the distill lock); land refused both branches at step branch until they exited (about 9 minutes), and it recurred at SP-qg7ncs6d, SP-m3azo2y7 and SP-tm4wlsve. A worker's session-end hook starts its distill with the working directory and script in the clone's main checkout, so land finds no process of it in the worktree and no longer stops at step branch; and land's refusal for a process that still runs there says a distill waits up to USAGE_LOCK_WAIT_S for the lock and to run land again, not 'end it'.",
   "checks": [
     {
       "run": [
@@ -14,14 +15,65 @@
         "-k",
         "worker_distill_outside_worktree"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "refusal_names_the_distill_lock_wait"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "SP-5x5ut5ko retrospective: the first two headless workers each left five or six querylog.py distill --settle processes running in their worktree (distills of other sessions' transcripts waiting up to USAGE_LOCK_WAIT_S, 600 s, for the distill lock)",
+      "check": 0
+    },
+    {
+      "clause": "land refused both branches at step branch until they exited (about 9 minutes)",
+      "check": 0
+    },
+    {
+      "clause": "it recurred at SP-qg7ncs6d, SP-m3azo2y7 and SP-tm4wlsve. A worker's session-end hook starts its distill with the working directory and script in the clone's main checkout, so land finds no process of it in the worktree and no longer stops at step branch",
+      "check": 0
+    },
+    {
+      "clause": "and land's refusal for a process that still runs there says a distill waits up to USAGE_LOCK_WAIT_S for the lock and to run land again, not 'end it'",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/ql_distill.py",
-    "_tools/querylog.py",
+    "_tools/ql_base.py",
     "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/querylog.md",
     "kb/_self/usage.md",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
     "kb/_self/backlog.md"
+  ],
+  "gates": [
+    {
+      "id": "distill-where",
+      "kind": "blocking",
+      "question": "Where does a worker's session-end distill run so land finds no process of it in the worker's worktree?",
+      "options": [
+        "outside: querylog launch starts the distill with its working directory and script in the clone's main checkout, never the linked worktree",
+        "wait: land keeps waiting for such a distill up to USAGE_LOCK_WAIT_S plus its run before it refuses",
+        "remove: land removes the worktree past a distill whose output is distill.log and says so"
+      ],
+      "recommendation": "outside: querylog launch starts the distill with its working directory and script in the clone's main checkout, never the linked worktree",
+      "do": {
+        "outside: querylog launch starts the distill with its working directory and script in the clone's main checkout, never the linked worktree": "ST-um6nghoo",
+        "wait: land keeps waiting for such a distill up to USAGE_LOCK_WAIT_S plus its run before it refuses": "ST-um6nghoo",
+        "remove: land removes the worktree past a distill whose output is distill.log and says so": "ST-um6nghoo"
+      },
+      "class": "querylog",
+      "answer": "outside: querylog launch starts the distill with its working directory and script in the clone's main checkout, never the linked worktree",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-5x5ut5ko close",
@@ -29,5 +81,5 @@
     "merged: BG-5qbzoc7n",
     "merged: ST-a755ciys"
   ],
-  "notes": "SP-qg7ncs6d close, 2026-10-10: again on ST-yztru4mz: land stopped at step branch because pid 73924 (querylog.py distill --settle 2, started from the worker worktree's _tools) still ran there about 3 minutes after the worker session exited; the orchestrator waited for it to end and land went through on the second run. Recurrence SP-m3azo2y7 (2026-10-10): land of BG-6cq4zeai stopped at step branch because a session-end querylog.py distill (of an earlier, ended orchestrator session) ran on in the worker worktree for about 6 minutes, queued behind three other distills on the delivery lock. SP-tm4wlsve close (2026-10-12): land ST-2rg6tn6r stopped at step branch after 60 s because the research worker's session-end hook (querylog.py distill --settle 2, run from the worker's worktree) still ran 8 min after the worker exited; the orchestrator waited for it to end and landed on the second run (ops SP-tm4wlsve land.end exit=1 ms=61087)."
+  "notes": "Premise: ql_distill.detach starts a session-end distill with cwd=str(HOME), the checkout the running copy of the tools is in, so a worker's distill has its worktree as working directory (planned 2026-10-12: run detach from a worktree and read its cwd with lsof: it was the worktree root). Merged BG-5qbzoc7n (bl_land.py:932 says 'end it' after the 60 s wait though a distill waits up to 600 s on the usage lock) and ST-a755ciys (SP-etslk6yu: the 60 s wait, 8e655b04f, is shorter than a distill on the lock). Recurrences: SP-qg7ncs6d (ST-yztru4mz, pid 73924 ran 3 min after the worker exited), SP-m3azo2y7 (BG-6cq4zeai, about 6 min behind three distills), SP-tm4wlsve (ST-2rg6tn6r, stopped after 60 s, hook ran 8 min). The suite sits at max_ids 100: extend a test and rename it to carry the name each check selects, no new id. Gate distill-where answered: outside. Planned at the 2026-10-12 draft triage (sprint 15 of 19, \"Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }
