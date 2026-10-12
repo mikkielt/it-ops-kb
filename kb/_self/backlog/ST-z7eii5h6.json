@@ -2,7 +2,7 @@
   "id": "ST-z7eii5h6",
   "kind": "story",
   "title": "Research sprint goal: Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4o3plg4l",
   "goal_research": true,
   "priority": "P1",
@@ -25,5 +25,19 @@
     "kb/public/_sources.csv"
   ],
   "notes": "Planned 2026-10-12: the five questions were run through rag.py pack -q (--root _self for 1 to 4, public for 5); every one printed coverage weak, the _self docs holding the lines named above and the public article holding the retrieval-prediction facts. Touches narrowed from kb/public/** to the article and ledger the questions can change. 2026-10-12 orchestrator (acting operator): touches widened with kb/public/_sources.csv so the research's DOC facts land with their three source rows; the worker prepared the change as a patch and was stopped only by scope.",
-  "claimed_by": "orch-4o3plg4l"
+  "evidence": {
+    "commit": "ea8579d3ab314f5f53a164422c674dabb6d6b6cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-z7eii5h6"
+        ],
+        "exit": 0,
+        "sha256": "84837b3f9f0d72b9"
+      }
+    ]
+  }
 }
