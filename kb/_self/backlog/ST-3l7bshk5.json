@@ -1,0 +1,28 @@
+{
+  "id": "ST-3l7bshk5",
+  "kind": "story",
+  "title": "A router change is checked on broad lookups the kb answers, not only on the eval rows, so a kind expert cannot hijack a good pack",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A test drives kbfacts.routed over a probe set built from the kb itself (one 'What does the kb say about <article title or topic>?' question per article whose plain pack is good, plus the eval, held-out and off-kb questions) and fails naming each question that is routed while its plain pack is good on an article, so a cue or ledger rule as loose as the one BG-zpcqo7qt fixed fails at its item's landing, not at the sprint review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "router_broad_lookups"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_live_kb.py",
+    "_tools/kbfacts.py"
+  ],
+  "links": [
+    "parked: SP-7n3d4jte close"
+  ],
+  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): ST-b27c527d's checks (rag.py eval, -k pack_routes_kind on the pool's rows) passed while the gap expert routed broad lookups as 'kb lacks' (KRBTGT reset cadence, python.org Windows installers, MCP tasks capability); the worker's sweep covered only eval, held-out, off-kb and pool questions, all specific. The review found it as S1 (BG-zpcqo7qt). The test ceiling is at 100 ids: the test replaces or folds into one."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-cr6lmafy",
+  "kind": "story",
+  "title": "A worker brief names a known whole-suite failure that is not a test, such as the seconds ceiling, so the worker files no duplicate bug",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py brief and dispatch take a known suite-level failure (--known-suite TEXT=BUG, e.g. the darwin seconds ceiling) beside --known TEST=BUG, print it in the brief's known failures section, and the worker rules say a listed failure gets no new bug; a brief made with it prints the line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_known_suite_failure"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_brief.py",
+    "_tools/backlog.py"
+  ],
+  "links": [
+    "parked: SP-7n3d4jte close"
+  ],
+  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): the ST-b27c527d worker filed BG-6jaaptm6 for the darwin seconds ceiling although its brief's --probe named BG-ucwq6kga and BG-w6z2zc6r; --known takes only TEST=BUG, so the ceiling had to go in a free-text probe. Touches are a guess: the planner runs referrers on --known first."
+}
