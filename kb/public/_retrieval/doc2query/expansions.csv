@@ -829,3 +829,5 @@ a6e294a5e6c2,Dataverse MCP server connect agents
 88cdfd1d8a5e,Claude Code on the web cloud session git push origin proxy credentials
 e334a7cdc9b5,Claude Code UserPromptSubmit hook output additionalContext decision block reason
 a2d9a7084c8c,structured logging JSON Lines format
+d43039aeca0b,Do Claude Code hook commands inherit the environment variables of the claude process?
+648565d2e264,"how is a code repository ingested into the kb (kb-ingest, CODE tag, pinned commit)"

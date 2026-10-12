@@ -317,3 +317,5 @@ EV-typer-no-prompt-without-tty-print-json,How does a Typer command avoid prompti
 EV-fastapi-security-scopes-per-route-capability,How does FastAPI enforce a per-route capability with Security scopes and dependencies?,python/fastapi-capability-dependencies.md,good,
 EV-sse-last-event-id-cursor-reconnect-resume,How does an SSE client resume from Last-Event-ID and what cursor does the server need?,arch/sse-last-event-id-cursors.md,good,
 EV-rate-limit-429-retry-after-per-caller,How does a server answer 429 with Retry-After for a per-caller rate limit?,arch/http-rate-limit-429-retry-after.md,good,
+EV-claude-code-hook-commands-inherit-environment,Do Claude Code hook commands inherit the environment variables of the claude process?,claude/hooks.md,good,
+EV-code-repository-ingested-into-kb-kb,"how is a code repository ingested into the kb (kb-ingest, CODE tag, pinned commit)",agents/codebase-mapping.md,good,
