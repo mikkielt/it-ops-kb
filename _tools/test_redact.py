@@ -232,6 +232,10 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
     rec, human = ql_apply.rules_one(weak, {"question": off}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
     assert not human and rec["state"] == "no-fix" and rec["observed"] == {"gate": ["the lead passage holds 0 of 4 key words of the question"]}
     assert not gate.eval.exists()
+    # key words the whole line holds past the pack's clip do not make the printed passage answer
+    gate.packs["which plomkin is quuxified on commit"] = printed
+    rec, human = ql_apply.rules_one(weak, {"question": "which plomkin is quuxified on commit"}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
+    assert not human and rec["state"] == "no-fix" and rec["observed"] == {"gate": ["the lead passage holds 0 of 3 key words of the question"]}
     # the lead that answers is applied, its phrase cut from what the pack prints of the line, not from the whole line
     rec, human = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
     assert not human and rec["state"] == "applied"
