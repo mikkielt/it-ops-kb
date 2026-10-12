@@ -2,7 +2,7 @@
   "id": "ST-f2n2h22c",
   "kind": "story",
   "title": "The census and refresh read the lookups' cached revalidations as hints and skip re-fetching what a lookup checked within the provider's pacing",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-etslk6yu",
   "priority": "P3",
@@ -89,5 +89,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Planned 2026-10-12: no hint reading exists (the revalidation cache itself lands with ST-mq7we5r2 in SP-tm4wlsve); premise holds by construction once that lands."
+  "notes": "Planned 2026-10-12: no hint reading exists (the revalidation cache itself lands with ST-mq7we5r2 in SP-tm4wlsve); premise holds by construction once that lands.",
+  "claimed_by": "orch-etslk6yu"
 }
