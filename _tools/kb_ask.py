@@ -2,8 +2,9 @@
 """Ask the kb from a shell or a script, routed by the kb's own tools instead of by a model (stdlib only).
 
   kb_ask.py "<question>"             answer it the cheapest way that works:
-                                     1. a count or list over the kb ("how many intune articles are partial", "which
-                                        files cite S1216") is answered by the audit and source tools: no model;
+                                     1. a question of a kind a tool decides (a count or list of articles, a decision
+                                        id, which sources disagree, a topic a gaps entry records, which files cite a
+                                        source id: kbfacts.routed) is answered by that tool, with path:line: no model;
                                      2. a question with numbered parts or several questions is split, one pack per
                                         part (up to 6);
                                      3. coverage good -> Haiku reads the packs with no tools, in a `claude -p` without
@@ -29,7 +30,7 @@
                                      A weak or none pack without a `route:` line plans split.
   kb_ask.py --route "<question>"     print the plan (kind, parts, verdict, model and, for web and split, the pack's
                                      route, kb has and kb lacks lines), run nothing
-  kb_ask.py --no-model "<question>"  print a good pack, or a count answer, without calling a model
+  kb_ask.py --no-model "<question>"  print a good pack, or a routed answer, without calling a model
   kb_ask.py --model M "<question>"   override the routed model of step 3 or 4
   kb_ask.py -v "<question>"          also print the route to stderr
   kb_ask.py --root _self "<question>"  a question about the kb's own rules (kb/_self/*.md): never the web.
@@ -91,46 +92,12 @@ WEB_RESEARCHER = ("The kb does not cover this question, or the part named on the
 
 # ---------------------------------------------------------------- questions the tools answer without a model
 
-COUNT = re.compile(r"\b(how many|count|number of|list|which|what)\b.*\b(articles?|topics?)\b", re.I | re.S)
-CITE = re.compile(r"\b(cit\w*|us\w* by|refer\w*)\b", re.I)
-STATUS = re.compile(r"\b(partial|complete|unknown)\b", re.I)
-
-
-def domains():
-    """The domain names of every root, bare (`intune`): a question names a domain, not a root."""
-    return sorted({kbfacts.bare(p).split("/", 1)[0] for p in kbfacts.articles()})
-
-
 def tool_answer(question):
-    """The answer text for a count/list question over the kb's articles or a 'who cites source X' question, or None."""
-    ids = kbfacts.ID.findall(question)
-    if ids and CITE.search(question):
-        lines = kbfacts.cited_lines(ids)
-        srcs = kbfacts.source_rows()
-        out = []
-        for i in ids:
-            cid = kbid_canonical(i)
-            row = srcs.get(cid) or {}
-            out.append(f"{cid}  {row.get('url', '(no _sources.csv row)')}")
-            hits = lines.get(cid, [])
-            out += [f"  {p}:{n}" for p, n in hits] or ["  (no file cites it)"]
-            out.append(f"  cited by {len(hits)} line(s)")
-        return "\n".join(out)
-    if not COUNT.search(question):
-        return None
-    words = {w.lower() for w in kbfacts.WORD.findall(question)}
-    doms = [d for d in domains() if d.lower() in words]
-    if not doms and not re.search(r"\b(kb|all|every)\b", question, re.I):
-        return None  # "which articles cover X" is a lookup, not a count
-    m = STATUS.search(question)
-    import rag  # the same table rag.py audit prints
-    rows = [r for d in (doms or [None]) for r in kbfacts.audit(d, m.group(1).lower() if m else None)]
-    return rag.format_audit(rows, fmt="concise")
-
-
-def kbid_canonical(i):
-    import kbid
-    return kbid.canonical_id(i)
+    """The answer text of the tool that holds the answer to a question of a kind a tool decides (kbfacts.routed: a count
+    or list of articles, a decision id, which sources disagree, a topic a gaps entry records, who cites a source id), or
+    None: the question goes on to the pack."""
+    res = kbfacts.routed(question)
+    return res["text"] if res else None
 
 
 # ---------------------------------------------------------------- several parts in one question
@@ -499,7 +466,7 @@ def run(row):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("question", nargs="+")
     ap.add_argument("--route", action="store_true", help="print the plan, run nothing")
-    ap.add_argument("--no-model", action="store_true", help="print a good pack or a count answer without a model")
+    ap.add_argument("--no-model", action="store_true", help="print a good pack or a routed answer without a model")
     ap.add_argument("--model", help="override the routed model")
     ap.add_argument("--root", choices=[RULES_ROOT], help="ask the kb's own rule docs, never the web")
     ap.add_argument("-v", "--verbose", action="store_true")
@@ -509,9 +476,10 @@ def run(row):
     row.update(question=q, route="tool")
     if a.root:
         return rules(q, a, row)
-    tool = tool_answer(q)
-    if tool is not None:
-        print("kind=tool (audit and source tools, no model)" if a.route else tool)
+    res = kbfacts.routed(q) if len(split_parts(q)) == 1 else None  # parts are routed one by one, in their pack
+    if res:
+        row.update(verdict=res["verdict"], lines=ql_capture.pack_lines(res["text"]))
+        print("kind=tool (the tool that holds the answer, no model)" if a.route else res["text"])
         return 0
     p = plan(q, a.model)
     row.update(route="plan" if a.route else p["kind"], verdict=p["verdict"], parts=len(p["parts"]),

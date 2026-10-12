@@ -349,7 +349,8 @@ def run_eval(path=None, root=None, free=False):
     `failed=anchor`) and in the pack's text (else `failed=text`); a row with no `expect_text` expects the verdict
     `none`. With `free`, `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out
     that row's own tested question (kbfacts.self_store with skip), out of `anchored`: one store build per row, so the
-    gate's run leaves it out and the figure is None."""
+    gate's run leaves it out and the figure is None. A row outside `_self` whose question a kind expert routes
+    (kbfacts.routed: a count, a decision id, a conflict, a gap, a citation) fails with `routed`: the eval rows rank."""
     rows, hits, anchored, passages = [], 0, 0, None
     for name, c in eval_cases(path, root):
         own = name == kbfacts.SELF_ROOT
@@ -361,7 +362,9 @@ def run_eval(path=None, root=None, free=False):
         fok = bool(found) if want else True
         phrases = [t.strip() for t in (c.get("expect_text") or "").split(";") if t.strip()]
         tok = any(t in res["text"] for t in phrases) if phrases else True
-        failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok)) if not ok]
+        # every row is a ranking row: a question a kind expert routes (kbfacts.routed) never reaches pack in a lookup
+        free_of_routing = own or kbfacts.routed(c["question"]) is None
+        failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok), ("routed", free_of_routing)) if not ok]
         if own:
             passages = passages or kbfacts.self_units()
             if not phrases:
