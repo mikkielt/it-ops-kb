@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Open questions of the sprint goal, coverage weak on 2026-10-12 (rag.py pack --root _self, no tested question matches): which check: lines of a good pack set route: split and which leave no route: line (kb/_self/tools.md:145 and kb/_self/token-efficiency.md:9 read apart; the case of BG-4flop3jv); how bench_pool.fact_for scores and picks the fact line of a pool row (kb/_self/tools.md:24 names it, article_facts decides; the case of BG-i7q4cjpb). They are answered from the code and the _self docs and written as tested rows for kb/_self/_retrieval/lookup_eval.csv, a code-lane path (_tools/kblane.py): the story lands through backlog.py land ID --wait-merge SECONDS, not done --commit. The goal's other questions are held by passages (tools.md:24 pool check, :142 stamp and marks, code.md:46 test-id ceiling).",
   "checks": [
     {
       "run": [
@@ -19,6 +19,6 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/_self/_retrieval/lookup_eval.csv"
   ]
 }

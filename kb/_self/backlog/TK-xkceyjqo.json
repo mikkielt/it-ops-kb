@@ -1,0 +1,23 @@
+{
+  "id": "TK-xkceyjqo",
+  "kind": "task",
+  "title": "identifier_of judges the identifier behind an inline flag, a group or a quantifier",
+  "status": "draft",
+  "parent": "ST-vwifqi4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "identifier_of in _tools/bench_pool.py judges the identifier inside a check alternative written as (?i)Name, (Name|Other) or Name(?:s)?, so pool check warns of an invented name in those forms as it does of the bare one",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json;sys.path.insert(0,\"_tools\");import bench_pool as b;r=next(x for x in b.read_csv(b.PUBLIC_FILE) if x[\"kind\"]==\"fact\" and x[\"source\"].startswith(\"lookup_eval.csv:\"));F=[\"(?i)Invoke-ZzqxInventedDrift\",\"(Invoke-ZzqxInventedDrift|Get-Zzqx)\",\"Invoke-ZzqxInventedDrift(?:s)?\",\"Invoke-ZzqxInventedDrift\"];miss=[f for f in F if not b.unstated_names([dict(r,checks=json.dumps([f]))])];print(miss);sys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "kb/_self/tools.md"
+  ]
+}

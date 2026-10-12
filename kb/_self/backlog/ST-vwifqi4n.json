@@ -4,26 +4,62 @@
   "title": "A suite test plants an invented identifier in a lookup_eval-sourced pool row and asserts pool check's unstated-names warning",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-kuhlsf2s",
   "priority": "P3",
   "rank": 0,
-  "goal": "_tools/test_bench.py holds a test, within the suite's tests ceiling, that plants an invented identifier in a fixture pool row built on a lookup_eval.csv case and asserts pool check prints the unstated-names warning with exit 0, and that a hand-written near-miss row naming an identifier absent from the fixture kb is not flagged (BG-fl4sg2py gate g2); today unstated_names and identifier_of have no test. Found by the SP-j2jn5ue4 review.",
+  "goal": "identifier_of in _tools/bench_pool.py judges the identifier inside a check alternative written as (?i)Name, (Name|Other) or Name(?:s)?, so pool check warns of an invented name in those forms as it does of the bare one; _tools/test_bench.py holds a test, within the suite's tests ceiling, that plants an invented identifier in a fixture pool row built on a lookup_eval.csv case and asserts pool check prints the unstated-names warning with exit 0; that test also asserts a hand-written near-miss row naming an identifier absent from the fixture kb is not flagged (BG-fl4sg2py gate g2)",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json;sys.path.insert(0,\"_tools\");import bench_pool as b;r=next(x for x in b.read_csv(b.PUBLIC_FILE) if x[\"kind\"]==\"fact\" and x[\"source\"].startswith(\"lookup_eval.csv:\"));F=[\"(?i)Invoke-ZzqxInventedDrift\",\"(Invoke-ZzqxInventedDrift|Get-Zzqx)\",\"Invoke-ZzqxInventedDrift(?:s)?\",\"Invoke-ZzqxInventedDrift\"];miss=[f for f in F if not b.unstated_names([dict(r,checks=json.dumps([f]))])];print(miss);sys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"_tools/test_bench.py\",encoding=\"utf-8\").read();sys.exit(0 if \"found in no article or data file\" in t else 1)"
+      ]
+    },
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "unstated_names"
+        "bench_pool_check_reports_stale_pick"
       ]
     }
   ],
-  "touches": [
-    "_tools/test_bench.py",
-    "_tools/tests_ceiling.json"
+  "clauses": [
+    {
+      "clause": "identifier_of in _tools/bench_pool.py judges the identifier inside a check alternative written as (?i)Name, (Name|Other) or Name(?:s)?, so pool check warns of an invented name in those forms as it does of the bare one",
+      "check": 0
+    },
+    {
+      "clause": "_tools/test_bench.py holds a test, within the suite's tests ceiling, that plants an invented identifier in a fixture pool row built on a lookup_eval.csv case and asserts pool check prints the unstated-names warning with exit 0",
+      "check": 1
+    },
+    {
+      "clause": "_tools/test_bench.py holds a test, within the suite's tests ceiling, that plants an invented identifier in a fixture pool row built on a lookup_eval.csv case and asserts pool check prints the unstated-names warning with exit 0",
+      "check": 2
+    },
+    {
+      "clause": "that test also asserts a hand-written near-miss row naming an identifier absent from the fixture kb is not flagged (BG-fl4sg2py gate g2)",
+      "check": 1
+    },
+    {
+      "clause": "that test also asserts a hand-written near-miss row naming an identifier absent from the fixture kb is not flagged (BG-fl4sg2py gate g2)",
+      "check": 2
+    }
+  ],
+  "depends_on": [
+    "BG-4flop3jv"
   ],
   "links": [
     "parked: SP-j2jn5ue4 review",
     "merged: BG-zopsjnou"
   ],
-  "notes": "Merged from BG-zopsjnou “pool check's unstated-names warning misses an invented identifier behind an inline flag, a group or a quantifier” at the 2026-10-12 draft triage: Repro exits 1: identifier_of (bench_pool.py:919) skips '(?i)Name'. It is the code half of ST-vwifqi4n, which tests the same unstated_names guard; fix and test belong in one item, and no committed row hits it. Its goal: identifier_of in _tools/bench_pool.py judges the identifier inside a check alternative written as (?i)Name, (Name|Other) or Name(?:s)?, so pool check warns of an invented name in those forms as it does of the bare one. No committed row hits it on 2026-10-12. Found by the SP-j2jn5ue4 review. Its repro: {\"run\": [\"python3\", \"-c\", \"import sys,json;sys.path.insert(0,\\\"_tools\\\");import bench_pool as b;R=b.read_csv(b.PUBLIC_FILE);r=next(x for x in R if x[\\\"kind\\\"]==\\\"fact\\\" and x[\\\"source\\\"].startswith(\\\"lookup_eval.csv:\\\"));r[\\\"checks\\\"]=json.dumps([\\\"(?i)Invoke-ZzqxInventedDrift\\\"]);sys.exit(0 if b.unstated_names([r]) else 1)\"]} Its touches: _tools/bench_pool.py, _tools/test_bench.py"
+  "notes": "Merged from BG-zopsjnou “pool check's unstated-names warning misses an invented identifier behind an inline flag, a group or a quantifier” at the 2026-10-12 draft triage: identifier_of (bench_pool.py:919) skips '(?i)Name'; it is the code half of this story, which tests the same unstated_names guard, so fix and test belong in one item; no committed row hits it. Its goal is the first clause of this goal. Found by the SP-j2jn5ue4 review. Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): unstated_names flags the bare name Invoke-ZzqxInventedDrift and misses (?i)Name, (Name|Other) and Name(?:s)?; test_bench.py has no reference to unstated_names. The assertions go into an existing test of test_bench.py (the suite is close to its test-id ceiling, a new id may not fit; tests_ceiling.json stays untouched), so the run check selects that test and passes before the work: it pins that the extended test still passes."
 }
