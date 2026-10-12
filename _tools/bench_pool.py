@@ -738,6 +738,39 @@ def stale_picks(rows, home=HOME):
     return out
 
 
+def identifier_of(alt):
+    """The name an alternative of a check spells when it is identifier-shaped (a cmdlet, API, CSP or setting name: no
+    space, and CamelCase, Verb-Noun or with an underscore), else "". A regex escape reads as the literal it stands for."""
+    lit = re.sub(r"\\b|\\([.\-_])", lambda m: m.group(1) or "", alt)
+    if re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]*", lit) and re.search(r"[a-z0-9][A-Z]|[A-Z][a-z]+-[A-Z]|_", lit):
+        return lit
+    return ""
+
+
+def unstated_names(rows, home=HOME):
+    """One line per eval and near-miss row of a pool file (a row built on a `lookup_eval.csv` case, whose check the model
+    wrote) whose committed check holds an identifier-shaped alternative (`identifier_of`) that no article and no data file
+    of the kb states: a name the model made up passes an answer for nothing the kb says. A warning, not a defect; a prose
+    alternative is not judged, a paraphrase being a legitimate check."""
+    articles, data = article_texts(home), article_texts(home, "csv")
+    out = []
+    for r in rows:
+        if (r.get("kind") not in (*EVAL_KINDS, "near_miss") or not r.get("source", "").startswith("lookup_eval.csv:")
+                or not (articles or data)):
+            continue
+        try:
+            checks = json.loads(r["checks"])
+            alts = [identifier_of(a) for c in checks for a in alternatives(c)]
+        except (ValueError, TypeError, KeyError):
+            continue  # check_problems names a check that is no regex
+        for name in dict.fromkeys(a for a in alts if a):
+            word = re.compile(r"\b" + re.escape(name) + r"\b", re.I)
+            if not any(word.search(t) for t in articles + data):
+                out.append(f"{r['id']}: warning: its check names `{name}`, found in no article or data file of the kb; "
+                           f"`pool build --redo {r['id']}` asks the model again")
+    return out
+
+
 ASK_OVERHEAD = 12_000  # input tokens a tool-less `claude -p` call carries before the prompt, priced as a cache write
 ASK_OUT = 80  # output tokens assumed per regex
 ASK_MAX_ROWS = 12  # a --redo build asks no more rows than this, nor spends more than ASK_MAX_USD (estimated)
@@ -836,7 +869,7 @@ def cli(a, home=HOME):
         return 1
     rows = read_csv(path)
     problems = check_problems(rows, home, a.querylog)
-    for p in problems + ([] if a.querylog else stale_picks(rows, home)):
+    for p in problems + ([] if a.querylog else stale_picks(rows, home) + unstated_names(rows, home)):
         print(f"pool check: {p}")
     return 1 if problems else 0
 
