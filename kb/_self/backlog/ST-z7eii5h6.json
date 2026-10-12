@@ -2,7 +2,7 @@
   "id": "ST-z7eii5h6",
   "kind": "story",
   "title": "Research sprint goal: Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "goal_research": true,
   "priority": "P1",
@@ -23,5 +23,6 @@
     "kb/public/_gaps.md",
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
-  "notes": "Planned 2026-10-12: the five questions were run through rag.py pack -q (--root _self for 1 to 4, public for 5); every one printed coverage weak, the _self docs holding the lines named above and the public article holding the retrieval-prediction facts. Touches narrowed from kb/public/** to the article and ledger the questions can change."
+  "notes": "Planned 2026-10-12: the five questions were run through rag.py pack -q (--root _self for 1 to 4, public for 5); every one printed coverage weak, the _self docs holding the lines named above and the public article holding the retrieval-prediction facts. Touches narrowed from kb/public/** to the article and ledger the questions can change.",
+  "claimed_by": "orch-4o3plg4l"
 }
