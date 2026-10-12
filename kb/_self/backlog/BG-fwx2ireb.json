@@ -1,0 +1,16 @@
+{
+  "id": "BG-fwx2ireb",
+  "kind": "bug",
+  "title": "Whole-suite gate run refused twice on a loaded host while landing ST-keicy7gn: test_land_waits_hook_of_a_finished_session fails at load average 10-11",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Host finding: the whole-suite tests.py run of the sync gate, landing ST-keicy7gn on 2026-10-12, failed twice (the test.run rows of 21:06:52Z, 202 s, and 21:13:03Z, 210 s, ids starting 8a17bf58 and a26a661e) on one test, TestHookWait::test_land_waits_hook_of_a_finished_session_then_removes_its_worktree_and_multirepo_land_cleans_per_repository, which passes alone in 19 s; load average 10-11 from a non-kb process. Same flake as BG-pe32oxfm. The item's done waited for a quiet run; the ceiling was not touched.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  }
+}
