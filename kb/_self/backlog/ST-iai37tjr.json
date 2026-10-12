@@ -3,26 +3,54 @@
   "kind": "story",
   "title": "precheck warns when a sprint's committed selectors that collect no test outnumber the ids the test ceiling has left",
   "status": "draft",
+  "sprint": "SP-qlpfcgs2",
   "priority": "P2",
   "rank": 0,
-  "goal": "backlog.py precheck SP counts the committed items' check selectors that collect no test yet and the free ids of _tools/tests_ceiling.json, and warns before the start gate when the selectors outnumber them, so the plan decides up front which tests extend existing ones; SP-dqkf3i42 started with 97 of 100 ids used and nine selectors to collect, and the orchestrator had to tell every open task mid-run to rename and extend tests instead",
+  "goal": "backlog.py precheck SP counts the committed items' check selectors that collect no test yet and the free ids of _tools/tests_ceiling.json (the headroom tests.py --ceiling reports) and warns before the start gate when the selectors outnumber them, so the plan decides up front which existing tests each new one renames and extends (SP-dqkf3i42 started with 97 of 100 ids used and nine selectors to collect, SP-uwkr7iyl planned four census stories a new test file each on a suite at 100 of 100 ids); the kb-sprint plan step that runs precheck and backlog.md's Sprints text name that warning as where the ids are planned",
   "checks": [
     {
       "run": [
         "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_selectors_outnumber_free_ids"
+      ]
+    },
+    {
+      "run": [
+        "python3",
         "-c",
-        "import sys; sys.exit(0 if 'tests_ceiling' in open('_tools/bl_plan.py', encoding='utf-8').read() else 1)"
+        "import sys;t=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read();b=open(\"kb/_self/backlog.md\",encoding=\"utf-8\").read();s=[l for l in t.splitlines() if \"backlog.py precheck SP\" in l];r=[l for l in b.splitlines() if \"precheck\" in l and \"free ids\" in l];sys.exit(0 if s and \"free ids\" in s[0] and r else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "backlog.py precheck SP counts the committed items' check selectors that collect no test yet and the free ids of _tools/tests_ceiling.json (the headroom tests.py --ceiling reports) and warns before the start gate when the selectors outnumber them, so the plan decides up front which existing tests each new one renames and extends (SP-dqkf3i42 started with 97 of 100 ids used and nine selectors to collect, SP-uwkr7iyl planned four census stories a new test file each on a suite at 100 of 100 ids)",
+      "check": 0
+    },
+    {
+      "clause": "the kb-sprint plan step that runs precheck and backlog.md's Sprints text name that warning as where the ids are planned",
+      "check": 1
+    }
+  ],
   "touches": [
-    "_tools/bl_plan.py",
+    "_tools/bl_land.py",
+    "_tools/bl_check.py",
+    "_tools/test_check_programs.py",
+    ".claude/skills/kb-sprint/SKILL.md",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-aqvuanq7"
   ],
   "links": [
     "parked: SP-dqkf3i42 close",
     "merged: ST-vd3boyx5"
   ],
-  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm; the later items (TK-cagohpbu, TK-j5rcgylo, BG-axfywrrd, BG-rqxspwtb, BG-na2uirn5) each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch. Recurrence SP-m3azo2y7 (2026-10-10): ST-zltblzgq and ST-vblulwrc each needed a planted test with the suite at 100 of 100 ids; ST-zltblzgq stopped mid-work on blocking gate g2 to ask where the test goes, and the orchestrator asked ST-vblulwrc g2 before its claim. Merged from ST-vd3boyx5 “Sprint planning reads the test ceiling's headroom against the tests its stories add” at the 2026-10-12 draft triage: Near-duplicate of ST-iai37tjr (similar score 1.00): planning reads tests.py --ceiling headroom against the ids stories add; the skill and backlog.md text become part of the precheck story. Its goal: kb-sprint plan compares the test ids and files the committed stories plan to add with the headroom tests.py --ceiling reports, and plans the ids each replaces before the start gate; answers SP-uwkr7iyl, where four census stories each planned a new _tools/test_census_route.py on a suite at 100 of 100 ids, ST-w3jhowin stopped on a blocking ceiling gate mid-work, and the census tests ended in _tools/test_redact.py, a file of another subject. Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"--ceiling\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
+  "notes": "SP-ciqk6gt6 close: the suite reached the 100-id ceiling at TK-7nnd2bdm, and five later items each had to extend or rename an existing test, told only through notes the orchestrator added at dispatch. Recurrence SP-m3azo2y7 (2026-10-10): ST-zltblzgq and ST-vblulwrc each needed a planted test at 100 of 100 ids; ST-zltblzgq stopped mid-work on blocking gate g2 to ask where the test goes. Merged from ST-vd3boyx5 at the 2026-10-12 draft triage: planning reads the headroom tests.py --ceiling reports against the ids its stories add, and the skill and backlog.md text join this story; it answers SP-uwkr7iyl, where four census stories each planned a new test file on a suite at 100 of 100 ids and ST-w3jhowin stopped on a blocking gate mid-work. Where the tests go, decided at planning: precheck lives in _tools/bl_land.py (cmd_precheck), not bl_plan.py; the selectors helper is bl_check.selector_rows; the check's selector names a test that does not exist yet, so the worker renames the existing test test_backlog_check_refuses_programs_outside_the_allowlist of _tools/test_check_programs.py by appending _and_precheck_selectors_outnumber_free_ids and extends it, adding no id (the suite is at 100 of 100). Premise run 2026-10-12: precheck SP-qlpfcgs2 prints no selector headroom line today, and backlog.py selectors lists 67 selectors of the open backlog that collect no test against 0 free ids. Planned at the 2026-10-12 draft triage (sprint 14 of 19, \"The whole suite fits its seconds ceiling under host load without the ceiling changing\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }

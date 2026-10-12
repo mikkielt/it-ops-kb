@@ -3,20 +3,43 @@
   "kind": "bug",
   "title": "tests.py full run exceeds the darwin seconds ceiling by 1 to 8 s on a loaded host while all 100 tests pass",
   "status": "draft",
+  "sprint": "SP-qlpfcgs2",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "python3 _tools/tests.py exits 0 on the darwin development host under the load of a sprint's parallel workers: the full run stays within the ceiling in _tools/tests_ceiling.json, or the slowest tests are cut, without raising the ceiling",
+  "goal": "python3 _tools/tests.py exits 0 on the darwin development host under the load of a sprint's parallel workers: the full run stays within the ceiling in _tools/tests_ceiling.json, or the slowest tests are cut, without raising the ceiling (full runs of 22 to 23 s with every test passing on a host where several workers queue on the host lock showed it, 23.6 to 23.9 s of the 24 s ceiling on a quiet worktree when this was planned); first cut: the four land scenarios of _tools/test_land_e2e.py (9 to 12 s each alone in a tests.py _tools/test_land_e2e.py --durations=5 run on this host, the folded gone-once, dry-run and reopened_refs one 10.7 s) each run under 8 s alone with every assertion kept (shared fixture, fewer git and backlog.py subprocesses)",
   "repro": {
     "run": [
       "python3",
       "_tools/tests.py"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;p=subprocess.run([sys.executable,\"_tools/tests.py\",\"_tools/test_land_e2e.py\",\"--no-reuse\",\"--durations=5\"],capture_output=True,text=True);t=[float(x) for x in re.findall(r\"^(\\d+\\.\\d+)s call\",p.stdout,re.M)];sys.exit(1 if p.returncode or not t or max(t)>=8 else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/tests.py exits 0 on the darwin development host under the load of a sprint's parallel workers: the full run stays within the ceiling in _tools/tests_ceiling.json, or the slowest tests are cut, without raising the ceiling (full runs of 22 to 23 s with every test passing on a host where several workers queue on the host lock showed it, 23.6 to 23.9 s of the 24 s ceiling on a quiet worktree when this was planned)",
+      "check": 1
+    },
+    {
+      "clause": "first cut: the four land scenarios of _tools/test_land_e2e.py (9 to 12 s each alone in a tests.py _tools/test_land_e2e.py --durations=5 run on this host, the folded gone-once, dry-run and reopened_refs one 10.7 s) each run under 8 s alone with every assertion kept (shared fixture, fewer git and backlog.py subprocesses)",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py"
+  ],
   "links": [
     "parked: SP-yojt6y7v run",
     "merged: BG-ucwq6kga",
     "merged: ST-ogknl5av"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): the full run took 22 s against the 22 s darwin ceiling at the review story's done (refused once, passed on the rerun), and the research worker reported one run 1 s over. SP-ajcomz6d close (2026-10-11): the review story's done refused once again, the full run 100 passed in 21.85 s reported as 22 s against the 22 s darwin ceiling at load 3.6 on 14 cores; the rerun passed. SP-qjn563cf (2026-10-11): the research worker measured 100 passed in 22.28 s, reported as 23 s, on a clean clone of origin/main with no other run and filed it as BG-e5l2pzys, dropped as a duplicate of this bug. SP-qjn563cf close (2026-10-11): the review story's done refused twice (100 passed in 22.34 s reported 23 s, then 22.02 s reported 22 s, at load 4.9) and passed on the third run. SP-up5wchen close (2026-10-11): the review story's done refused three times (100 passed in 22.05 s, 21.95 s and 21.89 s pytest time, each measured 22 s or more against the 22 s darwin ceiling, done rows 23.1 s, 22.9 s and 22.9 s, load 3.7 to 3.9 on 14 cores) and passed on the fourth run; the research worker also saw 23 s with the clean tree at 22.09 s. 2026-10-11/12 SP-wwacrsqr review: done refused eight times on the whole suite and passed on the ninth. Under a game's load 160-193 s with the BG-pe32oxfm test failing; without it, 100 passed in 22.46-22.98 s (two runs), 29.99 s with Spotlight mds_stores and a query-log distill near 100% CPU each, 22.06 s with mediaanalysisd at 180%, then a pass. backlog.py ops SP-wwacrsqr lists the done.refused rows. SP-df2cu4uj close (2026-10-12): the review story's done refused three times (100 passed in 22.11 s, 21.90 s and 22.20 s pytest time, each measured 22 s against the 22 s darwin ceiling, done rows 23.1 s, 22.9 s and 23.3 s, load 2-3 on an otherwise idle host) and passed on the fourth run; the workers of ST-hwn3phxk, BG-gxxv3mzj, BG-3bjktw5x and BG-rtqshnro each saw one run at 22-23 s."
+  "notes": "Evidence (SP-4phd36pa to SP-df2cu4uj closes, 2026-10-11/12): the review story's done was refused one to nine times on the whole suite, 100 tests passing in 21.9 to 23.0 s pytest time (done rows 22.9 to 23.3 s) against the 22 s darwin ceiling (24 s since D-kl72euxy), at load 2 to 5 on 14 cores, and passed on a later run; under a game's load 160 to 193 s, with Spotlight and a distill near 100% CPU 30 s. BG-e5l2pzys (22.28 s on a clean clone with no other run) was dropped as a duplicate; backlog.py ops SP-wwacrsqr lists the done.refused rows. Absorbed from BG-ucwq6kga (SP-lyfnpu37 and SP-ciqk6gt6, 2026-10-10, 20 s ceiling then): 23 to 40 s with four workers on the host lock; its own-run-time measure cannot be told from wall time, so none is planned. Absorbed from ST-ogknl5av: the folded e2e scenario ran 11 to 12.9 s alone. Premise run 2026-10-12 at planning (14 cores, load near 3, another planner's run on the host lock): tests.py --no-reuse took 23.61 s and 23.89 s of the 24 s ceiling with 100 passed (the second refused, 24 s), and precheck's repro run 30.3 s with 100 passed, refused over 24 s: it reproduces. A tests.py _tools/test_land_e2e.py --durations=5 run shows four tests at 9.3 to 11.7 s (the folded scenario 10.7 s) and in the full run 11.9 to 14.5 s each, the critical path of the run. Planned at the 2026-10-12 draft triage (sprint 14 of 19, \"The whole suite fits its seconds ceiling under host load without the ceiling changing\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }
