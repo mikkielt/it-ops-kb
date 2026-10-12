@@ -2,7 +2,7 @@
   "id": "BG-axnjcayu",
   "kind": "bug",
   "title": "bench_core prices Sonnet 5.5 cache reads at 0.20 for every run although Claude Code 2.1.296 reports them at the page's 0.10",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ceucrhca",
   "priority": "P1",
   "rank": 0,
@@ -67,5 +67,37 @@
     }
   ],
   "notes": "Planned into SP-ceucrhca 2026-10-12 by the orchestrator (ST-gngo7etc gate g1 answered fix-price-then-rerecord): the record of 2026-10-12 failed pool verify (b) on 8 Sonnet 5.5 runs; recomputed from the runs file at a 0.10 cache read, all 8 fall within 20% of list. kb/_self/reports/benchmarks.md:8 also names the 0.20 rate: ST-gngo7etc, which holds that file, rewords it at its re-record. Check 0 (test_bench_price_sonnet_55) passes before the work on purpose: it pins the pricing of runs on versions before 2.1.296, which must stay at 0.20; the worker extends it with a 2.1.296 run priced at 0.10.",
-  "claimed_by": "orch-ceucrhca"
+  "evidence": {
+    "commit": "81642a95cc94ddeb9f267d54a4db0644d05a81dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_sonnet_55"
+        ],
+        "exit": 0,
+        "sha256": "af5480214b5ee050"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/bench_core.py').read();i=t.find('PRICE = {');s=t[max(0,i-1200):i+1200];bad='open conflict' in s;print('comment still calls the conflict open' if bad else 'comment ok');sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "eb0cfc6851887ef4"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import bench_core; assert bench_core.PRICE['claude-sonnet-5-5'][0][4] == 0.10, bench_core.PRICE['claude-sonnet-5-5']"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
