@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer the sprint's questions that the pack rates weak: (1) which cue words route a lookup to the cites expert (src --cited); (2) which _gaps.md entry lines close an entry so the router reads no open gap; (3) how a fact tag with two sources of one kind is written and parsed; (4) when an item that adds a test folds it into an existing one under the id ceiling; (5) where a product alias belongs and how a new alias row is checked. Each is answered by the kb/_self doc line the pack finds, with a tested row in kb/_self/_retrieval/lookup_eval.csv where no tested question matches, else by the live docs or a _gaps.md entry; no outside fact is expected. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,11 @@
     }
   ],
   "touches": [
-    "kb/public/**"
-  ]
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/public/_gaps.md"
+  ],
+  "depends_on": [
+    "ST-2nvlf6jo"
+  ],
+  "notes": "Planned 2026-10-12: the five questions ran through rag.py pack --root _self: all weak, passages exist (tools.md:151 and :158, content-rules.md:68, backlog.md:371) with no tested question. The first run on kb/public (alias names of the new topics) came back none by wording only: those rows are checked against the articles by ST-zrysu6ri's checks, so no outside fact is needed."
 }

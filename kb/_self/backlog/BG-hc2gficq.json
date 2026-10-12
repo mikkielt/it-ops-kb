@@ -4,6 +4,7 @@
   "title": "The router's citation cue routes a lookup that names a source id beside 'name', 'mention', 'refer' or 'used by' to src --cited, printing a file list instead of the fact",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-lmf4ke4w",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -29,14 +30,41 @@
         "-c",
         "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','Which articles cite S1800?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' in r.stdout else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','What do S1800 and S1801 say about the headless flag used by CI?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' not in r.stdout and r.stdout.startswith('coverage: ') else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_routes_kind"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A lookup that names a source id and asks what it says is not routed to the cites expert: rag.py pack 'Which flag name does S1800 give for limiting the number of agentic turns in headless mode?' prints fact lines, not a list of citing files, while rag.py pack 'Which articles cite S1800?' still routes to cites",
+      "check": 4
+    },
+    {
+      "clause": "rag.py eval keeps passing all its rows",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-7n3d4jte review"
   ],
-  "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.CITE_CUE includes name\\w*, mention\\w*, refer\\w*, us\\w* by. Also 'What do S1800 and S1801 say about the headless flag used by CI?' prints a file list; 'What does S1800 say about --max-turns?' is not routed, so the cue words are the cause."
+  "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.CITE_CUE includes name\\w*, mention\\w*, refer\\w*, us\\w* by. Also 'What do S1800 and S1801 say about the headless flag used by CI?' prints a file list; 'What does S1800 say about --max-turns?' is not routed, so the cue words are the cause. Premise run 2026-10-12: the repro pack fails on main and the S1800-and-S1801 pack (check 2) prints a cites file list. Checks 0, 1 and 3 (rag.py eval, the 'Which articles cite S1800?' route, tests -k pack_routes_kind) pass before the work: they pin behaviour that must stay. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
 }
