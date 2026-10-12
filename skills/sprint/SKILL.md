@@ -73,6 +73,9 @@ The review story is ready once every other item is done or dropped. Its checks a
 4. Push through the project's route.
 5. **Clean up:** `close` removes, as a process of its own, the sprint's clean worker worktrees and `work/<id>` branches whose commits are on the integration main, and prints each `removed`, `deleted` and `close: kept <path or branch>: <reason>` line. Report them; a kept item stays until its reason is gone, never removed by hand or with `--force`.
 
+## A suite refused on a loaded host
+A whole-suite `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/tests.py` run refused over the seconds ceiling on a loaded host (a plan's check, a worker's run, a landing's `done`, the review's run) is run again once, after the other runs the host lock names end; a second refusal is recorded as a host finding (a bug that names the refused run's `test.run` row), and the item's `done` waits for a quiet run. No plan, gate, gate answer, review or retrospective proposes raising `${CLAUDE_PLUGIN_ROOT}/_tools/tests_ceiling.json`: only the operator's answer to a gate of class `ceiling`, given in a terminal of their own, changes it.
+
 ## Self-check
 `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/backlog.py selfcheck` (read only) opens every pass of `run`: one line when its checks hold, else a line for each that failed (`FAIL`, exit 1) or could not be read (`UNKNOWN`), with its remedy. Act on a failure before dispatching, or record why you cannot (a gate). The checks:
 - `allow-rules`: a command the skills run has no allow rule in the project's settings: ask the operator, a run never edits settings.
