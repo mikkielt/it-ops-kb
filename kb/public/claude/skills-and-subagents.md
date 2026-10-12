@@ -1,8 +1,8 @@
 ---
 topic: claude/skills-and-subagents
 priority: P2
-applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-09-26"
-retrieved_utc: 2026-10-10
+applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-10-12"
+retrieved_utc: 2026-10-12
 sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy]
 status: complete
 ---
@@ -22,8 +22,8 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - Skill frontmatter fields use lowercase-hyphenated names except `when_to_use`; a field name that doesn't match the
   table exactly is silently ignored, no error. [DOC S2158]
 - `description` + `when_to_use` combined is truncated at 1,536 characters in the skill listing. [DOC S2158]
-- `disable-model-invocation: true` also stops the skill from being preloaded into subagents and (as of v2.1.196)
-  from running when a scheduled task fires it as its prompt. [DOC S2158]
+- `disable-model-invocation: true` also stops the skill from being preloaded into subagents and from running when a
+  scheduled task fires it as its prompt. [DOC S2158]
 - `context: fork` runs the skill body in a forked subagent context; `agent` picks which subagent type; `background`
   (default `true`, requires v2.1.218+) controls whether the invoking turn waits for the fork's result. [DOC S2158]
 - Boolean skill fields accept `yes/no/on/off/1/0` in any case plus `true/false`; before v2.1.218 only `true/false`
@@ -56,9 +56,8 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   within the running session with no restart; a newly created top-level skills directory needs `/reload-skills`
   because it isn't watched yet. [DOC S2158]
 - `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PROJECT_DIR}` are substituted in two places: the skill's markdown content and the
-  Bash rules of its `allowed-tools` frontmatter (`${CLAUDE_PROJECT_DIR}` requires v2.1.196+); in a plugin skill
-  `${CLAUDE_PLUGIN_ROOT}` and `${CLAUDE_PLUGIN_DATA}` are substituted in the same two places, and only in plugin skills.
-  [DOC S2158]
+  Bash rules of its `allowed-tools` frontmatter; in a plugin skill `${CLAUDE_PLUGIN_ROOT}` and
+  `${CLAUDE_PLUGIN_DATA}` are substituted in the same two places, and only in plugin skills. [DOC S2158]
 - In a plugin skill `${CLAUDE_SKILL_DIR}` is the skill's own subdirectory inside the plugin, not the plugin root; use
   `${CLAUDE_PLUGIN_ROOT}` for a file shared between the plugin's skills. Claude Code replaces the `${CLAUDE_*}`
   variables after it inserts the invocation's arguments. [DOC S2158]
@@ -112,8 +111,11 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   nested directories define the same `name`, the definition closest to the working directory wins. Within one
   directory tree (including subfolders), a duplicate `name` loads only one file, by filesystem read order — not
   documented precedence; `/doctor` flags and offers to resolve such duplicates. [DOC S2157]
-- Built-in subagents: **Explore** (read-only, model inherits from the main conversation capped at Opus on the Claude
-  API; Write/Edit denied), **Plan** (read-only, used in plan mode, same model rule), **general-purpose** (every tool
+- Built-in subagents: **Explore** (read-only, Write/Edit denied; runs on the main conversation's model, except that
+  when the main conversation runs Fable it runs on the Opus the `opus` alias resolves to for a subscription, a Console
+  account or an LLM gateway behind `ANTHROPIC_BASE_URL`, and stays on the main model on Bedrock, Google Cloud's Agent
+  Platform, Foundry, Claude Platform on AWS or a Claude apps gateway), **Plan** (read-only, used in plan mode, inherits
+  the main conversation's model unless `CLAUDE_CODE_SUBAGENT_MODEL` is forced onto every subagent), **general-purpose** (every tool
   available to subagents; model = `CLAUDE_CODE_SUBAGENT_MODEL` if set and nothing else assigns one, else the main
   conversation's model), plus helper agents `claude` (catch-all, no fixed model, also the default background-session
   agent), `statusline-setup` (Sonnet), `claude-code-guide` (Haiku). [DOC S2157]
@@ -144,8 +146,9 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
   model, a custom subagent's non-empty prompt replaces the default Claude Code system prompt (as `--system-prompt`
   does), `CLAUDE.md` files still load, the startup header shows `@<name>`, and the choice is restored on resume. The
   flag overrides the `agent` setting; `agent` in `.claude/settings.json` makes the agent the default for every session
-  of the project. The CLI reference lists `--agent` with no print-mode restriction and no page shows it together with
-  `-p`. [DOC S2157, S1824]
+  of the project. [DOC S2157]
+- The CLI reference lists `--agent` as specifying an agent for the current session, overriding the `agent` setting, with
+  no print-mode restriction, and no page shows it together with `-p`. [DOC S1824]
 - A plugin's subagent is selected by its bare name (`claude --agent security-reviewer`); when several plugins provide
   the same name, pass the scoped name `plugin:agent` (`my-plugin:security-reviewer`), and `plugin:folder:agent` when
   the plugin keeps the agent in a subfolder of its `agents/` directory. The same scoped names appear in the `@` typeahead

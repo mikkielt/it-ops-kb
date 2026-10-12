@@ -1,8 +1,8 @@
 ---
 topic: claude/plugins
 priority: P2
-applies_to: "Claude Code 2.1.281 docs (retrieved 2026-09-26)"
-retrieved_utc: 2026-10-10
+applies_to: "Claude Code 2.1.281 docs (retrieved 2026-10-12)"
+retrieved_utc: 2026-10-12
 sources: [S-n5myb3fn, S-3peuisvr, S-3xyywfcr, S-4m2kbuls, S-havfntgx, S-toe7z3kj, S-rp4dtt4w, S-gxuoqjzy, S-r3nam2zs, S-pelzabjq, S-i7if5i7z, S-lkcsn2fs, S-cgtbvuug, S-3yod3u7q, S2158, S-j22fjuka]
 status: complete
 files: [claude/plugins.csv]
@@ -46,7 +46,7 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 
 ### Marketplace.json fields and reserved names
 - `marketplace.json` lives at `.claude-plugin/marketplace.json`; the marketplace root is the directory containing `.claude-plugin/`, and every relative plugin `source` resolves from that root, not from inside `.claude-plugin/`. [DOC S-4m2kbuls, S-r3nam2zs]
-- Top-level fields: `name` (required, no spaces/control/bidi chars, no `/`/`\`/`..`/`.`), `owner` (required, `name` required inside), `plugins` (required array; each entry validated independently so one bad entry doesn't fail the marketplace), `$schema`, `description`, `version`, `metadata.description`/`metadata.version`, `metadata.pluginRoot` (bare-name resolution base, v2.1.239+), `forceRemoveDeletedPlugins` (bool), `allowCrossMarketplaceDependenciesOn` (array), `renames` (former name -> current name or `null`, v2.1.193+). [DOC S-4m2kbuls]
+- Top-level fields: `name` (required; letters, digits, `.`, `_` and `-`, starting with a letter or digit, no `..`; `claude plugin validate` fails any other name), `owner` (required, `name` required inside), `plugins` (required array; each entry validated independently so one bad entry doesn't fail the marketplace), `$schema`, `description`, `version`, `metadata.description`/`metadata.version`, `metadata.pluginRoot` (bare-name resolution base, v2.1.239+), `forceRemoveDeletedPlugins` (bool), `allowCrossMarketplaceDependenciesOn` (array), `renames` (former name -> current name or `null`, v2.1.193+). [DOC S-4m2kbuls]
 - Reserved marketplace names (usable only from a `github`/`git` source under `github.com/anthropics/`): official (`claude-code-marketplace`, `claude-code-plugins`, `claude-plugins-official`, `anthropic-marketplace`, `anthropic-plugins`, `agent-skills`, `anthropic-agent-skills`, `life-sciences`, `knowledge-work-plugins`, `claude-for-legal`, `claude-for-financial-services`, `financial-services-plugins`, `first-party-plugins`, `claude-tag-plugins`); community (`claude-community`, `claude-plugins-community`, `healthcare`); directory names (`anthropic-plugin-directory`, `claude-plugin-directory`); `npm`/`pip`/`uv`/`cargo`/`github`/`gh` in any casing (v2.1.275+); names starting with `claudeai-`. [DOC S-4m2kbuls]
 - Names Claude Code reserves for non-marketplace origins: `inline` (`--plugin-dir`/`--plugin-url`), `builtin`, `skills-dir` (`.claude/skills/` auto-load), `synced` (claude.ai account); also `claude-plugin-test`. [DOC S-4m2kbuls]
 - Plugin entry fields: `name`, `source` (required); `description`, `version` (plugin.json's own `version` wins if both set, `validate` warns of the mismatch), `category`, `tags`, `strict` (default `true`), `relevance`, `dependencies`, `defaultEnabled` (default `true`, entry wins over plugin.json), `displayName`, `metadata` (v2.1.222+), `headers`, `headersHelper` (needs `"strict": false`, v2.1.238+). [DOC S-4m2kbuls]
@@ -77,7 +77,7 @@ allow/deny controls, and `claude/hooks.md` for hook event/field semantics that a
 - Holding users on one version: `ref` (branch or tag) and `sha` (commit) on a `github`, `url` or `git-subdir` plugin entry; `#<ref>` on the marketplace add command (e.g. `your-org/your-marketplace#stable`) pins the catalog to that branch or tag; `<plugin>--v<version>` tags serve dependency version ranges. [DOC S-pelzabjq]
 - A `git` marketplace source object in `extraKnownMarketplaces` takes `url` and an optional `ref` (the docs' example pins `"ref": "main"`); `marketplace add` reads `user@host:path[.git][#ref]` as a `git` source cloned over SSH and `https://.../repo.git[#ref]` as one cloned over HTTPS. [DOC S-4m2kbuls, S-gxuoqjzy]
 - Updating or uninstalling a plugin writes an `.orphaned_at` marker on the old version directory; background cleanup removes it 14 days later. [DOC S-toe7z3kj]
-- Node.js dependency install into a copied plugin's cache: `bun.lock`/`bun.lockb` -> `bun install --frozen-lockfile --ignore-scripts`; `npm-shrinkwrap.json`/`package-lock.json` -> `npm ci --ignore-scripts`; first lockfile match wins in that order; Yarn/pnpm lockfiles and a `bunfig.toml` beside a Bun lockfile are skipped; 60-second timeout; lifecycle scripts never run; the install runs only when the plugin root has both `package.json` and a supported lockfile. [DOC S-toe7z3kj]
+- Node.js dependency install into a copied plugin's cache runs only when the plugin root has both `package.json` and a supported lockfile: `bun.lock` selects Bun, `npm-shrinkwrap.json` or `package-lock.json` selects npm, first match in that order; `bun.lockb`, `yarn.lock` and `pnpm-lock.yaml` skip the install. The install uses the pinned versions only, runs with `--ignore-scripts` (no lifecycle scripts), reads no `.npmrc`, `.env` or `bunfig.toml`, stops at 60 seconds, and no setting turns it off. [DOC S-toe7z3kj]
 
 ### Org / managed settings for plugins
 - Force-install: managed `extraKnownMarketplaces` (keyed by marketplace `name`, each entry a `source` object plus `autoUpdate`) + managed `enabledPlugins` (`plugin-name@marketplace-name: true`); installs at the start of the user's next session; users can't disable a managed-enabled plugin. Setting a plugin to `false` in managed `enabledPlugins` blocks it at every scope and hides it. [DOC S-rp4dtt4w]

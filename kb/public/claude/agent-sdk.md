@@ -1,8 +1,8 @@
 ---
 topic: claude/agent-sdk
 priority: P2
-applies_to: "Claude Agent SDK (Python claude-agent-sdk, TypeScript @anthropic-ai/claude-agent-sdk); code.claude.com docs retrieved 2026-09-26"
-retrieved_utc: 2026-09-26
+applies_to: "Claude Agent SDK (Python claude-agent-sdk, TypeScript @anthropic-ai/claude-agent-sdk); code.claude.com docs retrieved 2026-10-12"
+retrieved_utc: 2026-10-12
 sources: [S-22nastju, S-fksbud2r, S-fmj24q2u, S-rjw74jiz, S-pbd7pui3, S-isqfh6pr, S-gztpah4d, S-llf2m5cf, S-5be7mkzk, S-av5665nf]
 status: complete
 files: [claude/agent-sdk-options.csv]
@@ -59,7 +59,7 @@ directory, and local session transcripts.
 - Callback signature: Python `async def can_use_tool(tool_name: str, input_data: dict, context: ToolPermissionContext) -> PermissionResultAllow | PermissionResultDeny`; TypeScript `async (toolName, input, {signal, suggestions}) => {behavior:"allow", updatedInput} | {behavior:"deny", message}`. [DOC S-pbd7pui3]
 - `PermissionResultAllow(updated_input=...)` / `{behavior:"allow", updatedInput}` lets the tool run with a possibly-modified input; before Claude Code v2.1.207 an allow result omitting `updatedInput` was rejected with a validation error. `PermissionResultDeny(message=...)` / `{behavior:"deny", message}` blocks the call and shows Claude the reason. [DOC S-pbd7pui3]
 - The callback's third argument carries `suggestions`, ready-made `PermissionUpdate` entries; echoing one with `destination: "localSettings"` back as `updated_permissions`/`updatedPermissions` persists an allow rule to `.claude/settings.local.json` so future matching calls skip the prompt (Python requires claude-agent-sdk 0.1.80+). [DOC S-pbd7pui3]
-- Subagent inheritance: a subagent runs in the parent session's permission mode unless its `AgentDefinition` sets `permissionMode` and the parent is in `default`/`dontAsk`/`plan`; Claude Code never applies a `bypassPermissions` value to a subagent unless the parent session itself runs in `bypassPermissions` (requires Claude Code v2.1.267+ for that exception). [DOC S-rjw74jiz]
+- Subagent inheritance: a subagent runs in the parent session's permission mode unless its `AgentDefinition` sets `permissionMode` and the parent is in `default`/`dontAsk`/`plan`; Claude Code never applies a `bypassPermissions` value to a subagent unless the parent session itself runs in `bypassPermissions` (requires Claude Code v2.1.267+ for that exception), and applies an `auto` value only when auto mode is available to that subagent. [DOC S-rjw74jiz]
 - `AskUserQuestion` also triggers `canUseTool` (clarifying questions, common in `plan` mode); its input has a `questions` array of `{question, header (<=12 chars), options[2-4] with label/description, multiSelect}`; the response is `{questions, answers: {question_text: label_or_labels}, response?}`. [DOC S-pbd7pui3]
 
 ### Message types and cost tracking

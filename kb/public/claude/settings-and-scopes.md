@@ -1,8 +1,8 @@
 ---
 topic: claude/settings-and-scopes
 priority: P2
-applies_to: "Claude Code docs (retrieved 2026-09-26)"
-retrieved_utc: 2026-10-07
+applies_to: "Claude Code docs (retrieved 2026-10-12)"
+retrieved_utc: 2026-10-12
 sources: [S2057, S-wzatkg4o, S2042, S-22qwtmf7, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
 status: complete
 files: [claude/settings-keys.csv, claude/env-vars.csv]
@@ -58,7 +58,7 @@ precedence against settings-file `env` values.
 
 ### Permission modes
 - Six modes: `default` (Manual: reads only), `acceptEdits` (reads + file edits + common filesystem Bash commands like `mkdir`/`touch`/`rm`/`mv`/`cp`/`sed`, and PowerShell `Set-Content`/`Add-Content`/`Clear-Content`/`Remove-Item` when that tool is enabled), `plan` (reads, plus classifier-approved commands when auto mode is available), `auto` (everything, background safety checks via a second-model classifier), `dontAsk` (reads + pre-approved tools only; anything else is denied, not prompted), `bypassPermissions` (everything, isolated containers/VMs only). [DOC S-zcuxapgb]
-- The CLI accepts `manual` as an alias for `default` (v2.1.200+); the mode is labeled "Manual" everywhere. [DOC S-zcuxapgb]
+- The CLI accepts `manual` as an alias for `default`; the mode is labeled "Manual" everywhere. [DOC S-zcuxapgb]
 - With v2.1.283+, `auto` is the built-in starting mode for interactive terminal and VS Code sessions; on earlier versions it's the built-in start only on Pro/Max/Team plans in sessions that fetch feature flags. The built-in starting mode for `claude -p` and Agent SDK sessions (and whenever a settings file sets `disableAutoMode: "disable"`) is `default`. [DOC S-zcuxapgb]
 - Starting mode precedence: `--permission-mode` flag (or `--dangerously-skip-permissions`) > `permissions.defaultMode` in a settings file > built-in default. `"auto"` in `.claude/settings.json` or `.claude/settings.local.json` does not take effect (the built-in default applies, not a user-settings `defaultMode`); `"bypassPermissions"` there does not take effect either and the session starts in Manual; the other mode values apply from any settings file. [DOC S-zcuxapgb]
 - Writes to protected paths, and `rm`/`rmdir` on critical paths, are never auto-approved except in `bypassPermissions` mode (and plan-mode sessions with bypass available); deny rules and ask rules block/require approval in every mode including `bypassPermissions`. [DOC S-zcuxapgb]
@@ -89,7 +89,8 @@ precedence against settings-file `env` values.
 - Project root: `CLAUDE.md`, `.mcp.json` (team-shared MCP servers), `.worktreeinclude` (gitignore-syntax list of untracked files to copy into new git worktrees). [DOC S-rfpmkpck]
 - `.claude/settings.json` (committed) and `.claude/settings.local.json` (gitignored) hold `permissions`, `hooks`, `statusLine`, `model`, `env`, `outputStyle`. [DOC S-rfpmkpck]
 - `.claude/rules/` — topic-scoped instructions, optionally `paths:`-gated; `.claude/skills/<name>/SKILL.md` — invocable `/name` prompts with bundled files; `.claude/commands/<name>.md` — legacy single-file `/name` prompts (skills preferred for new work; a same-named skill wins over a command); `.claude/output-styles/` — project-shared output styles; `.claude/agents/<name>.md` — subagents with their own context window, `tools:` frontmatter restricts access; `.claude/workflows/*.js` — dynamic workflow scripts, each becomes a `/<name>` command, saved via `/workflows`; `.claude/agent-memory/<agent>/MEMORY.md` — per-subagent persistent memory (only for subagents with `memory:` frontmatter; `memory: local` → `.claude/agent-memory-local/`, `memory: user` → `~/.claude/agent-memory/`). [DOC S-rfpmkpck]
-- User home: `~/.claude.json` (app state: OAuth session, per-project trust, personal MCP servers, `/config` UI toggles); `~/.claude/CLAUDE.md`; `~/.claude/settings.json`; `~/.claude/keybindings.json`; `~/.claude/rules/` (applies to every project, loaded before project rules). [DOC S-rfpmkpck, S1863]
+- User home: `~/.claude.json` (app state: OAuth session, per-project trust, personal MCP servers, `/config` UI toggles), `~/.claude/settings.json` and `~/.claude/keybindings.json` (custom keyboard shortcuts). [DOC S-rfpmkpck]
+- User home, instructions: `~/.claude/CLAUDE.md` and `~/.claude/rules/`, which apply to every project on the machine and load before project rules. [DOC S1863]
 
 ## Reference
 See `claude/settings-keys.csv` for the settings.json key table (key, type, scope incl. managed-only, default, effect)
