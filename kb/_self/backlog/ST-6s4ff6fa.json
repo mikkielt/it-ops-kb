@@ -2,7 +2,7 @@
   "id": "ST-6s4ff6fa",
   "kind": "story",
   "title": "rag.py eval counts the good rows whose pack gains a check: note, so a note that misfires on answered questions fails the eval and not only the review",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
@@ -78,5 +78,6 @@
   "links": [
     "parked: SP-kp3boz7z close"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the summary line of rag.py eval (questions=630 passed=630 ...) has no count of noted goods and the eval exits 0 while three eval goods carry the passing note (BG-pedsqeqs).\nThe suite is at its id ceiling (100 of 100), so the old check named a test that cannot be added: extend pack_scatter_check, add no test id. Interface the checks read: run_eval's dict gains an integer noted, the summary line prints noted=N, and the module constant rag.NOTED_BASELINE bounds it: a count above it exits 1. The baseline is the count the eval prints once BG-pedsqeqs and BG-j7pe3u46 have landed (this item depends on both). tools.md says rag.py eval is unaffected by the notes: reword it. Check 1 passes before the work (the test it extends). AGENTS.md, content-rules.md and token-efficiency.md are in touches only as mapped docs: edit one only if stale (AGENTS.md is at its size cap)."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the summary line of rag.py eval (questions=630 passed=630 ...) has no count of noted goods and the eval exits 0 while three eval goods carry the passing note (BG-pedsqeqs).\nThe suite is at its id ceiling (100 of 100), so the old check named a test that cannot be added: extend pack_scatter_check, add no test id. Interface the checks read: run_eval's dict gains an integer noted, the summary line prints noted=N, and the module constant rag.NOTED_BASELINE bounds it: a count above it exits 1. The baseline is the count the eval prints once BG-pedsqeqs and BG-j7pe3u46 have landed (this item depends on both). tools.md says rag.py eval is unaffected by the notes: reword it. Check 1 passes before the work (the test it extends). AGENTS.md, content-rules.md and token-efficiency.md are in touches only as mapped docs: edit one only if stale (AGENTS.md is at its size cap).",
+  "claimed_by": "orch-4o3plg4l"
 }
