@@ -15,9 +15,9 @@ ITEMS = Path("_backlog")  # the default item_dir: the throwaway roots have no ba
 REPRO = shlex.join(["python3", "-c", "import sys; sys.exit(1)"])  # fails: the bug stays open
 
 
-def bl(root, *args):
+def bl(root, *args, env=None):
     p = subprocess.run([sys.executable, BACKLOG, "--root", str(root), *args], capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
+                       encoding="utf-8", errors="replace", env=env)
     assert "Traceback" not in p.stderr, p.stderr
     return p.returncode, p.stdout + p.stderr
 
@@ -52,7 +52,8 @@ def edit_gate(root, iid, **kw):
 def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_class_changes_nothing():
     plain = {"id": "g", "question": "Which name?", "options": ["a", "b"]}
     for touches, cls in ((["_tools/kbgit.py"], "push"), ([".claude/skills/*.md"], "agents-rule"),
-                         ([".claude"], "agents-rule"), (["_tools/"], "push"),(["src/credentials.json"], "secrets"),
+                         ([".claude"], "agents-rule"), (["_tools/kbpublic.py"], "push"), (["_tools/"], "ceiling"),
+                         (["_tools/tests_ceiling.json"], "ceiling"), (["src/credentials.json"], "secrets"),
                          (["skills/sprint/SKILL.md"], "agents-rule"), (["agents/worker.md"], "agents-rule"),
                          (["src/skills/a.py", "kb/public/agents/a.md"], "design"), (["src/a.py"], "design")):
         assert ba.derived_class({"touches": touches}, plain) == cls, touches
@@ -62,7 +63,8 @@ def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_
     low = {**plain, "class": "design"}
     assert ba.gate_class(item, low) == "push" and ba.lowered(item, low) == "design"
     assert ba.lowered(item, {**plain, "class": "push"}) is None
-    assert {"secrets", "push", "agents-rule"} == set(ba.OPERATOR_CLASSES)
+    assert {"ceiling", "secrets", "push", "agents-rule"} == set(ba.OPERATOR_CLASSES)
+    assert ("ceiling",) == ba.TERMINAL_CLASSES and ba.rank("ceiling") < ba.rank("agents-rule")
     # the bare word `rule` classes agents-rule only beside a rule-guarding touch or path; `release` classes push anywhere
     for touches, question, cls in ((["kb/public/x.md"], "Which distill rows count by rule?", "design"),
                                    (["kb/public/x.md"], "Do the agents follow which rule?", "design"),
@@ -115,6 +117,25 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
     code, out = bl(tmp_path, "gate", "remove", iid, "g2", "--by", "operator")
     assert code == 0, out
     assert [g["id"] for g in json.loads(path(tmp_path, iid).read_text(encoding="utf-8"))["gates"]] == ["g"]
+    # the suite ceiling: no agent session answers it, `--by operator` included; the operator's own terminal does
+    agent = {**os.environ, ba.AGENT_SESSION_ENV: "1"}
+    terminal = {k: v for k, v in os.environ.items() if k != ba.AGENT_SESSION_ENV}
+    for touch, question in (("_tools/tests_ceiling.json", "Which name?"), ("src/a.py", "Which value does the suite ceiling take?")):
+        cid = new_item(tmp_path, touch=touch)
+        code, out = add_gate(tmp_path, cid, question)
+        assert code == 0 and "class ceiling" in out and gate(tmp_path, cid)["class"] == "ceiling", out
+        before = path(tmp_path, cid).read_bytes()
+        for args in (("--answer", "a", "--by", "operator"), ("--answer", "a", "--by", "operator", "--record"),
+                     ("--answer", "a", "--by", "agent"), ("--provisional",)):
+            code, out = bl(tmp_path, "answer", cid, "g", *args, env=agent)
+            assert code == 2 and "ceiling" in out and "terminal of their own" in out, (args, out)
+            assert path(tmp_path, cid).read_bytes() == before, args
+        code, out = bl(tmp_path, "answer", cid, "g", "--answer", "a", "--by", "operator", env=terminal)
+        assert code == 0, out
+        assert (gate(tmp_path, cid)["answer"], gate(tmp_path, cid)["by"]) == ("a", "operator")
+    # a class the operator answers in any session keeps its rule: the agent session's `--by operator` is taken
+    code, out = bl(tmp_path, "answer", iid, "g", "--answer", "a", "--by", "operator", env=agent)
+    assert code == 0, out
 
 
 def test_an_agent_cannot_confirm_an_operator_gate(tmp_path):
@@ -186,9 +207,25 @@ def test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_opera
     snap = {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file() and p.suffix == ".csv"}
     cmds = (("confirm", "D-aaaaaaaa"), ("restore", "D-aaaaaaaa"), ("supersede", "D-aaaaaaaa", "D-bbbbbbbb"),
             ("record", "--source", "s", "--context", "item:BG-aaaaaaaa", "--", "left"))
-    for cmd, by in [(c, ()) for c in cmds] + [(cmds[0], ("--by", "agent"))]:
+    record = ("record", "--source", "s", "--context", "item:BG-aaaaaaaa", "--maker", "operator", "--")
+
+    def kbdecide(cmd, *by, agent=False):
+        env = {k: v for k, v in os.environ.items() if k not in ("KB_ROOTS", ba.AGENT_SESSION_ENV)}
+        if agent:
+            env[ba.AGENT_SESSION_ENV] = "1"
         p = subprocess.run([sys.executable, str(tmp_path / "_tools" / "kbdecide.py"), cmd[0], "--root", "_self",
-                            *by, *cmd[1:]], cwd=tmp_path, capture_output=True, text=True, encoding="utf-8",
-                           env={k: v for k, v in os.environ.items() if k != "KB_ROOTS"})
-        assert p.returncode == 2 and "operator" in p.stdout + p.stderr, (cmd, by, p.stdout + p.stderr)
+                            *by, *cmd[1:]], cwd=tmp_path, capture_output=True, text=True, encoding="utf-8", env=env)
+        return p.returncode, p.stdout + p.stderr
+
+    for cmd, by in [(c, ()) for c in cmds] + [(cmds[0], ("--by", "agent"))]:
+        code, out = kbdecide(cmd, *by)
+        assert code == 2 and "operator" in out, (cmd, by, out)
     assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file() and p.suffix == ".csv"} == snap
+    # a decision that names the suite ceiling is refused in an agent session, `--by operator` included, and recorded in
+    # the operator's own terminal; another decision is not stopped by the rule in either
+    text = "tests-ceiling ids=101 files=15 seconds=darwin:20,linux:60,win32:60"
+    code, out = kbdecide((*record, text), "--by", "operator", agent=True)
+    assert code == 2 and "terminal of their own" in out and "suite ceiling" in out, out
+    assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file() and p.suffix == ".csv"} == snap
+    for words, agent in (("left", True), (text, False)):  # past the ceiling rule: what stops it is the scratch root
+        assert "terminal of their own" not in kbdecide((*record, words), "--by", "operator", agent=agent)[1], words

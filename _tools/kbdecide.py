@@ -71,6 +71,10 @@ the store.
     (the sweep invalidates a decision whose subject is gone, and a proposal nobody should confirm is rejected the same
     way, with no maker named); `confirm`, `record`, `supersede`, `restore` and `makers --policy` need `--by operator`, which an agent passes
     only after the operator said so, because each makes or brings back a decision that holds.
+  - A decision that names the test suite's ceiling (`bl_authority.names_ceiling`, as `tests-ceiling ids=N files=N
+    seconds=...` does) is stricter: `confirm`, `record`, `supersede` (the new one), `restore` and `ratify` refuse it, exit 2,
+    in a process that runs in an agent session (`bl_authority.in_agent_session`: CLAUDECODE is set), `--by operator`
+    included; the operator runs them in a terminal of their own.
   - A root saves its decision makers by a policy (kbcommon.POLICIES), one reserved row of its decision-makers.csv.
     There is no default: `propose` in a root with none is refused with the question and the options until the
     operator runs `makers R --policy P --by operator`. role-and-name is refused where kbcommon.maker_names_allowed
@@ -346,12 +350,24 @@ def need_operator(a, what):
         raise Refused(f"only the operator {what}: run it with --by {OPERATOR} once the operator has said so")
 
 
+def need_terminal(text, what):
+    """Refused for a decision that names the test suite's ceiling when this process runs in an agent session: that
+    decision takes `--by operator` only from a terminal of the operator's own, as `backlog.py answer` of a gate of class
+    `ceiling` does (`bl_authority.TERMINAL_CLASSES`). `what` is what only the operator does with it."""
+    import bl_authority  # only a ceiling decision reads the gate classes: a scratch repository without the backlog has the rest
+    if bl_authority.in_agent_session() and bl_authority.names_ceiling(text):
+        raise Refused(f"only the operator {what} a decision about the suite ceiling, and from a terminal of their own: "
+                      f"this process runs in an agent session ({bl_authority.AGENT_SESSION_ENV} is set), so --by "
+                      f"{OPERATOR} here is not the operator's")
+
+
 def cmd_confirm(a):
     need_operator(a, "confirms a decision")
     store = Store(a.root)
     rows = load(store)
     row = find(rows, a.id, store)
     need(row, ("proposed",), a.id, "confirmed")
+    need_terminal(field(row, "text"), "confirms")
     by, by_ref = maker_fields(store, a.maker, a.name)
     row.update(status="active", by=by, by_ref=by_ref, date=day(a.date))
     save(store, rows)
@@ -373,6 +389,7 @@ def cmd_record(a):
     for what, value in (("text", text), ("--source (where the decision was made)", source), ("--context", context)):
         if not value:
             raise Refused(f"a decision needs {what}")
+    need_terminal(text, "records")
     did = decision_id(text, context, " ".join((a.gate or "").split()))
     if any(field(r, "id") == did for r in rows):
         raise Refused(f"{did} is already in {store.label}: the same text and context")
@@ -425,6 +442,7 @@ def cmd_supersede(a):
     old, new = find(rows, a.old, store), find(rows, a.new, store)
     need(old, ("active",), a.old, "superseded")
     need(new, ("active",), a.new, "the one that supersedes (confirm it first)")
+    need_terminal(field(new, "text"), "supersedes with")
     old["status"] = "superseded"
     new["supersedes"] = "; ".join(kbcommon.split_list(new.get("supersedes")) + [a.old])
     save(store, rows)
@@ -469,6 +487,7 @@ def cmd_restore(a):
     rows = load(store)
     row = find(rows, a.id, store)
     need(row, ("invalidated",), a.id, "restored")
+    need_terminal(field(row, "text"), "restores")
     kept = f"was invalidated {field(row, 'invalidated_date')}: {field(row, 'invalidated_reason')}"
     status = "active" if field(row, "by") or field(row, "by_ref") else "proposed"  # never a confirmation the operator did not give
     row.update(status=status, invalidated_reason="", invalidated_date="", links="; ".join(filter(None, [field(row, "links"), kept])))
@@ -513,6 +532,7 @@ def cmd_ratify(a):
     store = Store(a.root or SELF_ROOT)
     rows = load(store)
     row = autopilot_row(rows, a.id, store, "ratified")
+    need_terminal(field(row, "text"), "ratifies")
     when = day(a.date)
     by, by_ref = maker_fields(store, OPERATOR, None)
     kept = f"ratified {when}; made by the autopilot {field(row, 'date')}"
