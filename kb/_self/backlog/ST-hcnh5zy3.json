@@ -3,29 +3,64 @@
   "kind": "story",
   "title": "kb-sprint run says backlog.py dispatch blocks until its worker ends and is started in the background with a long timeout",
   "status": "draft",
+  "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
-  "goal": "The kb-sprint skill's run step names backlog.py dispatch as a long command that returns only when the headless worker exits, to start with the Bash tool's run_in_background and timeout 7200000 ms as land is, with its log outside _cache/ of a fresh worktree; answers SP-uwkr7iyl, where a foreground dispatch was moved to the background with a 10-minute cap and the orchestrator killed and resumed the worker to save it, and a log redirect into the orchestrator worktree's missing _cache/ failed.",
+  "goal": "The kb-sprint skill's run step names backlog.py dispatch as a long command that returns only when the headless worker exits, to start with the Bash tool's run_in_background and timeout 7200000 ms as land is, detached from that task (start_new_session, waiting on its pid) where the worker may outlast it, with its log outside _cache/ of a fresh worktree, answering SP-uwkr7iyl, where a foreground dispatch was moved to the background with a 10-minute cap and the orchestrator killed and resumed the worker to save it and a log redirect into the orchestrator worktree's missing _cache/ failed; its review step says a non-S1 gap with no repro command yet is parked as a draft story or as a bug with --repro-reason, since new bug needs --repro, answering SP-uwkr7iyl, where nine review gaps were refused as bugs and filed as stories",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/rag.py",
-        "pack",
-        "--root",
-        "_self",
-        "--set",
-        "kb-sprint:run"
+        "-c",
+        "import re,sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();r=t.split('## run',1)[1].split('## review',1)[0];sys.exit(0 if 'start_new_session' in r and re.search(r'outside\\s+`?_cache',r) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();r=t.split('## review',1)[1].split('## close',1)[0];sys.exit(0 if '--repro-reason' in r else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The kb-sprint skill's run step names backlog.py dispatch as a long command that returns only when the headless worker exits, to start with the Bash tool's run_in_background and timeout 7200000 ms as land is, detached from that task (start_new_session, waiting on its pid) where the worker may outlast it, with its log outside _cache/ of a fresh worktree, answering SP-uwkr7iyl, where a foreground dispatch was moved to the background with a 10-minute cap and the orchestrator killed and resumed the worker to save it and a log redirect into the orchestrator worktree's missing _cache/ failed",
+      "check": 0
+    },
+    {
+      "clause": "its review step says a non-S1 gap with no repro command yet is parked as a draft story or as a bug with --repro-reason, since new bug needs --repro, answering SP-uwkr7iyl, where nine review gaps were refused as bugs and filed as stories",
+      "check": 1
+    }
+  ],
   "touches": [
-    ".claude/skills/kb-sprint/SKILL.md",
-    "kb/_self/backlog.md"
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-buzuumms",
+    "TK-casle7h7"
+  ],
+  "gates": [
+    {
+      "id": "launch",
+      "kind": "blocking",
+      "question": "How does the run step tell the orchestrator to start dispatch?",
+      "options": [
+        "in the background with timeout 7200000 ms, detached (start_new_session, wait on the pid) where the worker may outlast it",
+        "always detached with start_new_session, waiting on the pid"
+      ],
+      "recommendation": "in the background with timeout 7200000 ms, detached (start_new_session, wait on the pid) where the worker may outlast it",
+      "class": "agents-rule",
+      "answer": "in the background with timeout 7200000 ms, detached (start_new_session, wait on the pid) where the worker may outlast it",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-uwkr7iyl close",
     "merged: ST-tlqcchsu"
   ],
-  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands. Recurred in SP-ilje65fa (2026-10-10): a dispatch piped into cut ran in the foreground, was moved to the background with a 10-minute cap and was killed and restarted; a background dispatch with timeout 7200000 also shares the Bash task's process group, so a worker running past two hours would be killed with it: the orchestrator started later dispatches detached (start_new_session) and waited on the pid. Merged from ST-tlqcchsu “kb-sprint review says how a gap without a repro command is parked” at the 2026-10-12 draft triage: Valid: kb-sprint review step 4 names --repro but not --repro-reason or story parking for a gap with no repro command. It comes from the same SP-uwkr7iyl close and edits the same two files as ST-hcnh5zy3. Its goal: kb-sprint review step 5 says a non-S1 gap with no repro command yet is parked as a draft story (or a bug with --repro-reason), since new bug needs --repro; answers SP-uwkr7iyl, where nine review gaps were refused as bugs and filed as stories. Its checks: {\"run\": [\"python3\", \"_tools/rag.py\", \"pack\", \"--root\", \"_self\", \"--set\", \"kb-sprint:review\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Recurred in SP-ilje65fa (2026-10-10): a dispatch piped into cut ran in the foreground, was moved to the background with a 10-minute cap and was killed and restarted; a background dispatch with timeout 7200000 also shares the Bash task's process group, so a worker running past two hours would be killed with it: the orchestrator started later dispatches detached (start_new_session) and waited on the pid. Merged at the 2026-10-12 draft triage: ST-tlqcchsu (kb-sprint review step 4 names --repro but not --repro-reason or story parking for a gap with no repro command; same SP-uwkr7iyl close, same two files). Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12: the run step of skills/sprint/SKILL.md already says to start dispatch with run_in_background and timeout 7200000 ms; it names no detached start (start_new_session), no log outside _cache/, and the review step names no --repro-reason. The old check passed before the work and is replaced by two that exit 1. Ordered after TK-casle7h7: both edit the run step."
 }

@@ -1,0 +1,59 @@
+{
+  "id": "TK-casle7h7",
+  "kind": "task",
+  "title": "Dispatch's turn cap by item kind fits a code task that adds a module, tests and docs and a story that writes a report",
+  "status": "draft",
+  "parent": "ST-buzuumms",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "TURNS in bl_dispatch.py gives a task, subtask or bug that is code work a cap that fits a new module with its tests and docs or an edit of bl_land.py; TURNS gives a story a cap above 100, with the cap table's doc lines (kb/_self/backlog.md, kb/_self/tools.md, the sprint skill's run step) and the portable brief test's expected caps changed to match",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;o=subprocess.run(['python3','_tools/backlog.py','dispatch','--dry-run','TK-casle7h7'],capture_output=True,text=True,check=True).stdout;sys.exit(0 if int(re.search(r'--max-turns (\\d+)',o).group(1))>=100 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;o=subprocess.run(['python3','_tools/backlog.py','dispatch','--dry-run','ST-buzuumms'],capture_output=True,text=True,check=True).stdout;sys.exit(0 if int(re.search(r'--max-turns (\\d+)',o).group(1))>=150 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "TURNS in bl_dispatch.py gives a task, subtask or bug that is code work a cap that fits a new module with its tests and docs or an edit of bl_land.py",
+      "check": 0
+    },
+    {
+      "clause": "TURNS gives a story a cap above 100, with the cap table's doc lines (kb/_self/backlog.md, kb/_self/tools.md, the sprint skill's run step) and the portable brief test's expected caps changed to match",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "gates": [
+    {
+      "id": "caps",
+      "kind": "blocking",
+      "question": "What default --max-turns does dispatch give a code task (60 now) and a story (100 now)?",
+      "options": [
+        "task 100, story 150",
+        "task 60 kept, story 150",
+        "task 120, story 200"
+      ],
+      "recommendation": "task 100, story 150",
+      "class": "agents-rule",
+      "answer": "task 100, story 150",
+      "by": "operator"
+    }
+  ]
+}

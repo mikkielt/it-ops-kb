@@ -3,28 +3,61 @@
   "kind": "story",
   "title": "The baseline route kb-worker names (git stash, a scratch clone it deletes) runs under the worker's allow rules",
   "status": "draft",
+  "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb-worker.md rule 2 and the bl_dispatch.py WORKER_RULES brief rule (ST-yztru4mz) send a worker's baseline run to git stash push -u or a scratch clone it deletes, while .claude/settings.json has no allow rule for git stash, git clone or rm, so a headless worker in permission mode default is refused both and has no baseline route at all. The route the role file and the brief name is one the worker's permissions allow (a route through allowed commands, or allow rules the operator adds); the settings are the operator's. Found by the SP-qg7ncs6d review (S2).",
+  "goal": "kb-worker.md rule 2 and the bl_dispatch.py WORKER_RULES brief rule (ST-yztru4mz) send a worker's baseline run to git stash push -u or a scratch clone it deletes, while .claude/settings.json has no allow rule for git stash, git clone or rm, so a headless worker in permission mode default is refused both and has no baseline route at all; the route the role file and the brief name is one the worker's permissions allow, a route through allowed commands or allow rules the operator adds (the settings are the operator's); a worker sets a change outside its touches aside as a patch in its scratch directory, never with git stash, whose stack every worktree shares, so no entry of its own is left there (ST-t67jhly3 left two). Found by the SP-qg7ncs6d review (S2).",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;w=open('.claude/agents/kb-worker.md',encoding='utf-8').read();s=open('.claude/settings.json',encoding='utf-8').read();bad=[c for c in ('git stash','git clone') if c in w and 'Bash('+c not in s];print('baseline commands kb-worker names with no allow rule:',bad);sys.exit(1 if bad else 0)"
+        "import re,sys;sys.path.insert(0,'_tools');import bl_dispatch as d;w=open('agents/worker.md',encoding='utf-8').read();b=chr(10).join(d.worker_rules('.','ST-4jbvwssm','work/ST-4jbvwssm'));bad=[c for c in ('git stash push','git clone') if c in w or c in b];print('baseline commands still named:',bad);ok=all(re.search(r'never\\s+(with\\s+)?`?git stash',t) for t in (w,b));sys.exit(0 if ok and not bad else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb-worker.md rule 2 and the bl_dispatch.py WORKER_RULES brief rule (ST-yztru4mz) send a worker's baseline run to git stash push -u or a scratch clone it deletes, while .claude/settings.json has no allow rule for git stash, git clone or rm, so a headless worker in permission mode default is refused both and has no baseline route at all",
+      "check": 0
+    },
+    {
+      "clause": "the route the role file and the brief name is one the worker's permissions allow, a route through allowed commands or allow rules the operator adds (the settings are the operator's)",
+      "check": 0
+    },
+    {
+      "clause": "a worker sets a change outside its touches aside as a patch in its scratch directory, never with git stash, whose stack every worktree shares, so no entry of its own is left there (ST-t67jhly3 left two). Found by the SP-qg7ncs6d review (S2)",
+      "check": 0
+    }
+  ],
   "touches": [
-    ".claude/agents/kb-worker.md",
+    "agents/worker.md",
     "_tools/bl_dispatch.py",
     "kb/_self/backlog.md",
-    "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-i4fxvd2h",
+    "TK-dcgp3kd2"
+  ],
+  "gates": [
+    {
+      "id": "route",
+      "kind": "blocking",
+      "question": "What baseline route do the role file and the brief name for a worker that cannot run git stash, git clone or rm?",
+      "options": [
+        "commands the allow rules already name: git diff and git show against origin/main, the brief's known-failing list, a patch file in the scratch directory, with no change to .claude/settings.json",
+        "the operator adds allow rules for git stash and git clone to .claude/settings.json"
+      ],
+      "recommendation": "commands the allow rules already name: git diff and git show against origin/main, the brief's known-failing list, a patch file in the scratch directory, with no change to .claude/settings.json",
+      "class": "push",
+      "answer": "commands the allow rules already name: git diff and git show against origin/main, the brief's known-failing list, a patch file in the scratch directory, with no change to .claude/settings.json",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-qg7ncs6d review",
     "merged: ST-bt2hsuru"
   ],
-  "notes": "SP-qjn563cf (2026-10-11): the goal research worker made a baseline clone in _cache/scratch/ST-pnr4zyni/baseline and its rm -rf was denied; the orchestrator's rm -rf of it was denied too, so the clone stays in scratch. Merged from ST-bt2hsuru “A worker sets changes aside in its scratch directory, never in the shared git stash” at the 2026-10-12 draft triage: Same rule as ST-4jbvwssm: kb-worker.md rule 2 and bl_dispatch.py:96 send a worker to the shared git stash; set-aside as a patch in scratch is one way to give the allowed baseline route; carrier absorbs: never git stash, no entry left in the shared stack (ST-t67jhly3, ST-4ehra2pk) Its goal: The kb-worker role file tells a worker to set aside a change outside its touches as a patch in its scratch directory, never with git stash, whose stack every worktree shares (ST-t67jhly3 left two stash entries, st-t67jhly3-snapshot and st-t67jhly3-decisions-sweep, in the clone's shared stack). Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/agents/kb-worker.md, kb/_self/backlog.md"
+  "notes": "SP-qjn563cf (2026-10-11): the goal research worker made a baseline clone in _cache/scratch/ST-pnr4zyni/baseline and its rm -rf was denied; the orchestrator's rm -rf of it was denied too, so the clone stays in scratch. Merged at the 2026-10-12 draft triage: ST-bt2hsuru (kb-worker.md rule 2 and bl_dispatch.py:96 send a worker to the shared git stash; ST-t67jhly3 and ST-4ehra2pk left entries st-t67jhly3-snapshot and st-t67jhly3-decisions-sweep in the clone's shared stack). Full text: git show on its item file before its drop commit. Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, premise run on main: agents/worker.md rule 2 and the brief's worktree rule both name git stash push -u, and .claude/settings.json allows git diff and git show but no git stash, git clone or rm; the check exits 1. Ordered after TK-dcgp3kd2 and BG-i4fxvd2h: all edit bl_dispatch.py."
 }
