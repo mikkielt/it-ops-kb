@@ -2,7 +2,7 @@
   "id": "ST-3mkvezil",
   "kind": "story",
   "title": "kbid.py add fills licence and reuse from the source's own licence record, and suggests the host's usual pair only as a marked guess",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-xmnrndxs",
   "kind": "story",
   "title": "factdiff.py anchor takes the researcher's verbatim quote for a fact, and kb-verify warns of a new DOC fact whose quote the page does not hold",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",

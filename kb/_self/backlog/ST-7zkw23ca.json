@@ -2,7 +2,7 @@
   "id": "ST-7zkw23ca",
   "kind": "story",
   "title": "provider.py read URL --grep WORDS reads a page by its route and prints the matching lines, so research locates a passage without WebFetch",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
