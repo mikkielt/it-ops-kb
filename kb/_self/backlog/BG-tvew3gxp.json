@@ -2,7 +2,7 @@
   "id": "BG-tvew3gxp",
   "kind": "bug",
   "title": "Two scenario rows' answer regexes match only the kb's literal wording: BP-2c2a3c1d needs <name>@<origin>, BP-0181112b a whole kb sentence",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",
@@ -57,5 +57,6 @@
   "links": [
     "parked: SP-j2jn5ue4 review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): the repro's first check of BP-2c2a3c1d is '<name>@<origin>' and does not match 'Run /plugin install my-plugin@my-marketplace in Claude Code.' (exit 1); BP-0181112b's first check is the kb sentence '(?i)recovery keys are stored on the Entra device object'. The pool check run passes before the work: it pins that bench_scenarios.csv and bench_pool.csv stay in step after both edits."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): the repro's first check of BP-2c2a3c1d is '<name>@<origin>' and does not match 'Run /plugin install my-plugin@my-marketplace in Claude Code.' (exit 1); BP-0181112b's first check is the kb sentence '(?i)recovery keys are stored on the Entra device object'. The pool check run passes before the work: it pins that bench_scenarios.csv and bench_pool.csv stay in step after both edits.",
+  "claimed_by": "orch-kuhlsf2s"
 }
