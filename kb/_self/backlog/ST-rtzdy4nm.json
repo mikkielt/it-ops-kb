@@ -1,0 +1,43 @@
+{
+  "id": "ST-rtzdy4nm",
+  "kind": "story",
+  "title": "Deliver the query-log store once the BG-ckrasbdn fix merges: the 2026-10-10 runs reach main and cost reads worker figures",
+  "status": "todo",
+  "sprint": "SP-kwi4ilty",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the commit stuck in _cache/querylog/worktree is superseded by the first querylog.py apply --push after the code/<id> merge request of BG-ckrasbdn merges, so the store's runs from 2026-10-10 on reach origin/main; backlog.py cost reads work lines for the headless worker of BG-ckrasbdn",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,pathlib;sys.exit(0 if any(pathlib.Path('kb/_querylog/work/2026-10').glob('20261010T*.jsonl')) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,re;p=subprocess.run([sys.executable,'_tools/backlog.py','cost','BG-ckrasbdn'],capture_output=True,text=True);m=re.search(r': ([0-9]+) run[(]s[)], ([0-9]+) item[(]s[)] with work lines',p.stdout);sys.exit(0 if p.returncode==0 and m and int(m.group(2))>0 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the commit stuck in _cache/querylog/worktree is superseded by the first querylog.py apply --push after the code/<id> merge request of BG-ckrasbdn merges, so the store's runs from 2026-10-10 on reach origin/main",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py cost reads work lines for the headless worker of BG-ckrasbdn",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_querylog/**"
+  ],
+  "depends_on": [
+    "BG-ckrasbdn"
+  ],
+  "notes": "Split 2026-10-12 by the orchestrator of SP-kwi4ilty from BG-ckrasbdn: land runs a code item's checks and repro before it pushes the code/<id> merge request, and apply --push gates and applies with origin/main's tools in the worktree beside the spool, so these two clauses cannot pass until the fix merges. Work: after BG-ckrasbdn is done, the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done --commit."
+}
