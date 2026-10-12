@@ -2,7 +2,7 @@
   "id": "ST-t2j24bhx",
   "kind": "story",
   "title": "factdiff.py detect checks a pinned source's repository for availability, one request per repository, so a deleted or private repository is reported gone",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P1",
@@ -70,5 +70,6 @@
     "kb:public/agents/doc-change-detection.md",
     "kb:public/_answers.md#QK-gone-repository-check-limits-hash-only-hosts"
   ],
-  "notes": "Premise (2026-10-11): python3 _tools/factdiff.py detect --no-save --source S105 --source S108 reports pinned with no request; meanwhile https://api.github.com/repos/MicrosoftDocs/memdocs, https://github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404. Of the 118 kb/public/_sources.csv rows in that repository, 114 were already superseded by Learn pages in earlier censuses and 4 are live (S2196, S-pcy7cqea, S-rgpijsmb, S-yuwxbqz3), so the gap this closes is the next repository that disappears before a census re-sources it. The 4 live rows are the bug filed beside this story. Planned 2026-10-12: premise reproduced (factdiff.py detect --no-save --source S105 --source S108 prints pinned=2 with no request). The lookup revalidation does not exist yet: it lands in ST-mq7we5r2, which runs after this story in the sprint and calls the same detection."
+  "notes": "Premise (2026-10-11): python3 _tools/factdiff.py detect --no-save --source S105 --source S108 reports pinned with no request; meanwhile https://api.github.com/repos/MicrosoftDocs/memdocs, https://github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404. Of the 118 kb/public/_sources.csv rows in that repository, 114 were already superseded by Learn pages in earlier censuses and 4 are live (S2196, S-pcy7cqea, S-rgpijsmb, S-yuwxbqz3), so the gap this closes is the next repository that disappears before a census re-sources it. The 4 live rows are the bug filed beside this story. Planned 2026-10-12: premise reproduced (factdiff.py detect --no-save --source S105 --source S108 prints pinned=2 with no request). The lookup revalidation does not exist yet: it lands in ST-mq7we5r2, which runs after this story in the sprint and calls the same detection.",
+  "claimed_by": "orch-tm4wlsve"
 }
