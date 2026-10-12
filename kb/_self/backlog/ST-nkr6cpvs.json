@@ -2,7 +2,7 @@
   "id": "ST-nkr6cpvs",
   "kind": "story",
   "title": "provider.py search NAME TERMS queries a provider's own search API before a session uses WebSearch",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -115,5 +115,6 @@
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise: _tools/providers.csv has a search_api only on its learn row (2026-10-11); this session's research found arXiv papers through export.arxiv.org/api/query?search_query=ti:... with no WebSearch call. Depends on ST-7zkw23ca for the provider rows and cache it adds. Planned 2026-10-12: premise reproduced (providers.csv has a search_api only on its learn row; provider.py has no search subcommand)."
+  "notes": "Premise: _tools/providers.csv has a search_api only on its learn row (2026-10-11); this session's research found arXiv papers through export.arxiv.org/api/query?search_query=ti:... with no WebSearch call. Depends on ST-7zkw23ca for the provider rows and cache it adds. Planned 2026-10-12: premise reproduced (providers.csv has a search_api only on its learn row; provider.py has no search subcommand).",
+  "claimed_by": "orch-sbdy4hsx"
 }
