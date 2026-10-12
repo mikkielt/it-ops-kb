@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "arch/python-single-package-extras says workspace members are always editable while python/uv-projects says uv sync's --no-editable opts out, and no conflict entry links them",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,13 +16,47 @@
     ]
   },
   "repro_reason": "a contradiction between two kb articles: no tool behaviour to run, only the article's text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;L=open('kb/public/_conflicts.md',encoding='utf-8').read().splitlines();ok=any('single-package-extras' in l and 'uv-projects' in l and 'editable' in l for l in L);print('a conflicts entry links the extras and uv-projects editable lines:',ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;U=kbfacts.units('public');a=[u for u in U if u['path'].endswith('/single-package-extras.md') and 'workspace members' in u['text']];b=[u for u in U if u['path'].endswith('/uv-projects.md') and '--no-editable' in u['text']];ok=bool(a) and bool(b) and all('editable' in u['text'] and 'default' in u['text'] for u in a);print('extras article says workspace members are editable by default, uv-projects keeps --no-editable:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/arch/python-single-package-extras.md line 37 says workspace members are always editable [DOC S1706]",
+      "check": 2
+    },
+    {
+      "clause": "kb/public/python/uv-projects.md says uv sync installs members as editable and --no-editable opts out [DOC S-wmmyfoun]",
+      "check": 1
+    },
+    {
+      "clause": "uv's own dependencies.md says both. A kb/public/_conflicts.md entry links the two lines and the extras article says editable by default (found by the SP-wwacrsqr review)",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/arch/python-single-package-extras.md",
     "kb/public/python/uv-projects.md",
     "kb/public/_conflicts.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-oyzgvtrg"
   ],
   "links": [
     "parked: SP-wwacrsqr review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: python-single-package-extras.md:37 says 'workspace members are always editable' (S1706) while uv-projects.md:138 says --no-editable opts out (S-wmmyfoun); no _conflicts.md entry names both. Run at planning: the repro exits 1 and both added checks fail."
 }

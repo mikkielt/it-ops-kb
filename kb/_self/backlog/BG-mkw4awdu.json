@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "python/maturin-pyo3-wheels' abi3 matrix derivation names manylinux_2_28 tags, though maturin's documented default and the generated workflow's manylinux auto give manylinux2014/2_17",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -15,12 +16,50 @@
     ]
   },
   "repro_reason": "a wrong derivation in a kb article: no tool behaviour to run, only the article's text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;us=[u for u in kbfacts.units('public') if u['path'].endswith('python/maturin-pyo3-wheels.md') and 'Derivation for a Linux x86_64' in u['text']];ok=bool(us) and all(('manylinux2014' in u['text'] or 'manylinux_2_17' in u['text']) for u in us);print('abi3 derivation names the documented default manylinux2014/2_17 tag:',ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;us=[u for u in kbfacts.units('public') if u['path'].endswith('python/maturin-pyo3-wheels.md') and 'Derivation for a Linux x86_64' in u['text']];ok=bool(us) and all('macosx_11_0_arm64' in u['text'] and 'deployment' in u['text'].lower() for u in us);print('abi3 derivation marks macosx_11_0_arm64 as inferred from the deployment-target example:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/python/maturin-pyo3-wheels.md's DER fact for a Linux x86_64, Linux aarch64 and macOS arm64 abi3 matrix (and its QK answer in kb/public/_answers.md) gives manylinux_2_28_x86_64 and manylinux_2_28_aarch64 as example tags",
+      "check": 2
+    },
+    {
+      "clause": "maturin's distribution.md (S-c6fbhzyz) says the default is manylinux2014/manylinux_2_17 without --compatibility",
+      "check": 0
+    },
+    {
+      "clause": "the article's own CODE fact says the generated workflow uses manylinux: auto. The derivation names the documented default tag, or says 2_28 applies only with manylinux: 2_28",
+      "check": 0
+    },
+    {
+      "clause": "marks macosx_11_0_arm64 as inferred from the macos-deployment-target example (found by the SP-wwacrsqr review)",
+      "check": 1
+    }
+  ],
   "touches": [
     "kb/public/python/maturin-pyo3-wheels.md",
     "kb/public/_answers.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-fzofresw"
   ],
   "links": [
     "parked: SP-wwacrsqr review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: the abi3 derivation (maturin-pyo3-wheels.md:125-130) gives 'for example manylinux_2_28_x86_64'. Run at planning: the repro exits 1 and both added checks fail. The QK answer (_answers.md:3047-3054) names no manylinux_2_28 tag and already says the tags are inferred: its part is read and confirmed, edited only if a tag appears."
 }

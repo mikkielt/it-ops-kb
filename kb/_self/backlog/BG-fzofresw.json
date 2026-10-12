@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "agents/onnx-runtime-rust-ort says every Windows row of dist.tsv includes directml, though rc.13 has an x86_64-pc-windows-msvc row with webgpu only",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,11 +16,41 @@
     ]
   },
   "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;L=[l.lower() for l in open('kb/public/agents/onnx-runtime-rust-ort.md',encoding='utf-8')];ok=any('x86_64-pc-windows-msvc' in l and 'webgpu' in l for l in L);print('article names the x86_64-pc-windows-msvc webgpu row:',ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;L=[l.lower() for l in open('kb/public/agents/onnx-runtime-rust-ort.md',encoding='utf-8')];ok=any('first' in l and 'directml' in l and 'windows' in l for l in L);print('article says a default Windows build takes the first directml row:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/agents/onnx-runtime-rust-ort.md line 31 no longer says every Windows row includes directml: per ort-sys dist.tsv at v2.0.0-rc.13 one x86_64-pc-windows-msvc row has the feature set webgpu only (asset ms@1.28.0/x86_64-pc-windows-msvc+webgpu.tar.lzma2)",
+      "check": 2
+    },
+    {
+      "clause": "a default Windows build still takes the first (directml) row (found by the SP-qjn563cf review)",
+      "check": 1
+    }
+  ],
   "touches": [
     "kb/public/agents/onnx-runtime-rust-ort.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-a22yrzap"
   ],
   "links": [
     "parked: SP-qjn563cf review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: onnx-runtime-rust-ort.md:31 says 'every Windows row includes directml'. Run at planning: the repro exits 1 (the phrase is present) and the two added checks fail (no line names the x86_64-pc-windows-msvc webgpu row or the first directml row). Shares the article with BG-a22yrzap, which runs first."
 }

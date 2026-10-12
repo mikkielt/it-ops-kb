@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "arch/buildkit-build-secrets says BUILDX_METADATA_PROVENANCE selects the attestation content, which the docs give only for the --metadata-file output",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,12 +16,35 @@
     ]
   },
   "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;us=[u for u in kbfacts.units('public') if u['path'].endswith('arch/buildkit-build-secrets.md') and 'BUILDX_METADATA_PROVENANCE' in u['text']];ok=bool(us) and not any('default to minimal' in u['text'] or 'defaults to minimal' in u['text'] for u in us);print('no BUILDX_METADATA_PROVENANCE fact says attestations default to minimal:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "arch/buildkit-build-secrets.md line 30 and the QK-buildkit answer say BUILDX_METADATA_PROVENANCE sets only the provenance written to the --metadata-file output, that BUILDX_NO_DEFAULT_ATTESTATIONS switches the image's default attestations",
+      "check": 1
+    },
+    {
+      "clause": "drop the claim that attestations default to minimal unless a cited page states it (found by the SP-up5wchen review)",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/arch/buildkit-build-secrets.md",
     "kb/public/_answers.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-mkw4awdu"
   ],
   "links": [
     "parked: SP-up5wchen review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: buildkit-build-secrets.md:30 says attestations default to minimal and BUILDX_METADATA_PROVENANCE selects min, max or disabled. Run at planning: the repro exits 1 (no line pairs the variable with metadata-file) and the added check fails. The QK answer (_answers.md:2994-2999) holds no BUILDX_ variable; its 'max provenance attestations' line is read against S-wt5ys5zb and edited only if the page does not state it."
 }

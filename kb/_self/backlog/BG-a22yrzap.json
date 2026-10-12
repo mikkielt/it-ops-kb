@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "privacy/gliner-glirel-zero-shot recommends gline-rs, which pins ort =2.0.0-rc.9, while agents/onnx-runtime-rust-ort tells a service to pin =2.0.0-rc.13, and neither names the clash",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,12 +16,25 @@
     ]
   },
   "repro_reason": "a wording defect across kb articles: no tool behaviour to run, only the articles' text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;ok=any('gline-rs' in u['text'] and 'rc.9' in u['text'] and 'rc.13' in u['text'] and any(t['kind']=='DER' for t in u['tags']) and u['path'].endswith(('privacy/gliner-glirel-zero-shot.md','agents/onnx-runtime-rust-ort.md')) for u in kbfacts.units('public'));print('a DER fact names the gline-rs rc.9 pin against the rc.13 pin:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
   "touches": [
     "kb/public/privacy/gliner-glirel-zero-shot.md",
     "kb/public/agents/onnx-runtime-rust-ort.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-5fkown4o"
   ],
   "links": [
     "parked: SP-qjn563cf review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: no kb line names gline-rs's =2.0.0-rc.9 pin beside the =2.0.0-rc.13 pin that onnx-runtime-rust-ort.md:78 tells a service to use. Run at planning: the repro exits 1 (gliner-glirel-zero-shot.md:52 holds the rc.9 pin, no line pairs it with rc.13). The DER fact needs both manifests cited (S-bzhegec5, S-pwbxp7jw)."
 }

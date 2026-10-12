@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "agents/codebase-mapping.md omits an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER from the rustc info cache's fingerprint-error cases",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,10 +18,13 @@
   "repro_reason": "kb content: the defect is the article text itself, so reading the text is the behaviour",
   "touches": [
     "kb/public/agents/codebase-mapping.md",
-    "kb/public/_anchors.csv",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-shomh4nz"
   ],
   "links": [
     "parked: SP-5x5ut5ko review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: codebase-mapping.md:90's fingerprint fact names no wrapper. Run at planning: the repro exits 1 and prints 'fingerprint fact names the wrappers: False'. The worker reads rustc_fingerprint at the pinned Cargo sha again before rewording."
 }

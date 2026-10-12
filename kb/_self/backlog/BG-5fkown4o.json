@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "agents/langgraph.md cites the PyPI project JSON for a pip install form the JSON does not state",
   "status": "draft",
+  "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,13 +16,39 @@
     ]
   },
   "repro_reason": "the defect is a fact's wording against its cited page; a command can only read the fact text, and the fix is checked by reading it against the live page",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,csv;sys.path.insert(0,'_tools');import kbfacts;loc={(r['fact'],r['source_id']) for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['path'].endswith('/langgraph.md') and r['status']=='located'};us=[u for u in kbfacts.units('public') if u['path'].endswith('/langgraph.md') and any('S-v5hqqcqx' in t['ids'] for t in u['tags'])];ok=bool(us) and all((kbfacts.fact_key(u['text']),'S-v5hqqcqx') in loc for u in us);print('every fact citing S-v5hqqcqx has a located anchor:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/agents/langgraph.md's install facts (lines 13 and 35) state only what their cited source says: S-v5hqqcqx (https://pypi.org/pypi/langgraph/json) gives version 1.2.14, MIT and the README's 'uv add langgraph', not 'pip install langgraph'",
+      "check": 1
+    },
+    {
+      "clause": "the pip form is dropped or cited to a page that states it",
+      "check": 1
+    },
+    {
+      "clause": "the facts are re-anchored with factdiff.py anchor --quotes",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/agents/langgraph.md",
     "kb/public/_anchors.csv",
-    "kb/public/_sources.csv",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-74agak3p"
   ],
   "links": [
     "parked: SP-qjg5r7jj review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: langgraph.md lines 13 and 35 tag 'pip install langgraph' as DOC S-v5hqqcqx, whose PyPI JSON does not state it. Run at planning: the repro exits 1 (the pip form sits before the S-v5hqqcqx tag); the line-13 fact's anchor in _anchors.csv is unlocated:no-match, the line-35 fact's is located, so the second check fails until line 13 is re-anchored."
 }

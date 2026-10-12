@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Two questions of the sprint goal have weak coverage (pack: false good, check: line) and are answered with the live docs and the pinned sources, then written as kb facts through the kb skills: (1) whether gline-rs's exact ort pin =2.0.0-rc.9 can resolve beside a service's own =2.0.0-rc.13 pin in one Cargo build (the Cargo book's rule on two exact versions of one crate), for BG-a22yrzap; (2) whether an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER makes rustc_fingerprint fail and the .rustc_info.json cache turn off (src/cargo/util/rustc.rs at Cargo sha 797e8a9b), for BG-skpnth6v. The other six questions are covered (good, no check: line). Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
