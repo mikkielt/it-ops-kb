@@ -2,7 +2,7 @@
   "id": "ST-7wzollio",
   "kind": "story",
   "title": "A free freshness benchmark revalidates the pool's cited sources and reports the share of current, moved and source-dated lines and the time per question",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-etslk6yu",
   "priority": "P2",
@@ -77,5 +77,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Planned 2026-10-12: benchmarks.py has no freshness scenario (benchmarks.py run freshness exits 2, unknown scenario) and PLANNED holds only pool, so a --dry-run of any other scenario starts it (BG-wapzksub): the worker adds freshness to PLANNED before the dry-run check can pass. The scenario makes no model call; its live requests are within each provider's pacing. SP-tm4wlsve close (2026-10-12): ST-mq7we5r2's gate budget set the revalidation's overall time budget at 90 s (factdiff.REVALIDATE_BUDGET_S) with no measurement of real pack revalidation times; this benchmark's time per question is the figure that confirms or moves it."
+  "notes": "Planned 2026-10-12: benchmarks.py has no freshness scenario (benchmarks.py run freshness exits 2, unknown scenario) and PLANNED holds only pool, so a --dry-run of any other scenario starts it (BG-wapzksub): the worker adds freshness to PLANNED before the dry-run check can pass. The scenario makes no model call; its live requests are within each provider's pacing. SP-tm4wlsve close (2026-10-12): ST-mq7we5r2's gate budget set the revalidation's overall time budget at 90 s (factdiff.REVALIDATE_BUDGET_S) with no measurement of real pack revalidation times; this benchmark's time per question is the figure that confirms or moves it.",
+  "claimed_by": "orch-etslk6yu"
 }
