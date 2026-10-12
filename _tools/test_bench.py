@@ -362,10 +362,90 @@ def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     assert escalated["checks"] == [False, True, True] and escalated["tool_calls"] == 1
 
 
-def test_bench_pool_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
+class FreshBench:
+    """What a scenario needs of bench_core.Bench: the rows it writes, in the results file's shape, and the options."""
+
+    def __init__(self, dry=False):
+        self.rows, self.dry, self.sample, self.seed = [], dry, None, 11
+
+    def row(self, scenario, case, arm, metric, value, runs="", model="", note=""):
+        self.rows.append({"scenario": scenario, "record": "2026-10-12", "date": "2026-10-12", "commit": "", "claude_code": "",
+                          "kb_topics": "", "case": case, "arm": arm, "model": model, "metric": metric, "value": str(value),
+                          "runs": str(runs), "note": note})
+
+
+def test_bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
     import benchmarks as bm
     import bench_core as bc
+    import bench_pool as bp
     import bench_report as br
+    import bench_retrieval as bret
+    import kbfacts
+    import provider
+    # a fixture pool of two answerable rows and one the kb does not answer, units with and without a DOC tag, five
+    # sources on three hosts: the scenario's tally per outcome and host, its requests counted at provider.request (a
+    # request the time budget refused is none, one with no answer is a failed one) and its dry run, which asks nothing
+    url = {"S1": "https://learn.microsoft.com/a", "S2": "https://raw.githubusercontent.com/o/r/c/b.md",
+           "S3": "https://learn.microsoft.com/c", "S4": "https://code.claude.com/d", "S5": "https://learn.microsoft.com/e"}
+    unit = lambda line, kind: {"path": "public/x.md", "line": line, "tags": [{"kind": kind, "ids": []}]}  # noqa: E731
+    units = [unit(1, "DOC"), unit(2, "DOC"), unit(3, "CODE"), unit(4, "DOC"), unit(5, "DOC")]
+    printed = {"q1": [(1, ["S1"]), (2, ["S2", "S3"]), (3, ["S1"])], "q2": [(1, ["S1"]), (4, ["S4"]), (5, ["S5"])]}
+    outcome = {("q1", 1): ("current", "S1"), ("q1", 2): ("moved", "S2"), ("q2", 1): ("not found", "S1"),
+               ("q2", 4): ("", ""), ("q2", 5): ("source-dated only", "S5")}
+    pool = [{"id": "P1", "kind": "fact", "expected_route": "good", "question": "q1"},
+            {"id": "P2", "kind": "heldout", "expected_route": "good", "question": "q2"},
+            {"id": "P3", "kind": "offkb", "expected_route": "none", "question": "q3"}]
+    monkeypatch.setattr(bp, "load_pool", lambda home=None, kinds=None: pool)
+    monkeypatch.setattr(kbfacts, "units", lambda *a, **kw: units)
+    monkeypatch.setattr(kbfacts, "source_rows", lambda: {k: {"url": v} for k, v in url.items()})
+    asked = []
+
+    def request(u, *a, **kw):
+        asked.append(u)
+        if u == url["S4"]:
+            return {"status": 0, "error": provider.BUDGET_ERROR}
+        return {"status": 0, "error": "boom"} if u == url["S3"] else {"status": 200, "error": ""}
+    monkeypatch.setattr(provider, "request", request)
+
+    def pack_many(questions, revalidate=False, **kw):
+        q = questions[0]
+        lines = [{"path": "public/x.md", "line": n, "key": f"k{n}", "text": "t", "ids": ids} for n, ids in printed[q]]
+        res = {"results": [{"printed": lines}]}
+        if revalidate:
+            sources = {}
+            for sid in sorted({i for _, ids in printed[q] for i in ids}):
+                got = provider.request(url[sid])
+                sources[sid] = {"state": "live" if got["status"] else "offline", "verdict": "", "why": got["error"]}
+            res["revalidate"] = {"sources": sources, "lines": {
+                f"public/x.md:{n}": {"outcome": outcome[(q, n)][0], "id": outcome[(q, n)][1], "unchecked": {}}
+                for n, _ in printed[q] if (q, n) in outcome}}
+        return res
+    monkeypatch.setattr(kbfacts, "pack_many", pack_many)
+    assert "freshness" in bm.SCENARIOS and "freshness" in bm.PLANNED  # a --dry-run of it is a plan, not a run
+    asked.clear()
+    plan = FreshBench(dry=True)
+    with pytest.raises(bc.Skip) as stopped:
+        bret.s_freshness(plan)
+    shown = capsys.readouterr().out
+    assert asked == [] and plan.rows == []  # no request, no row
+    assert "learn.microsoft.com: 3 sources, 4 lines in 2 questions, 4 requests" in shown
+    assert "S2  https://raw.githubusercontent.com/o/r/c/b.md  (1 question)" in shown
+    assert str(stopped.value).startswith("dry run: 2 answerable pool rows, 5 printed DOC lines, 5 sources on 3 hosts, 6 requests")
+    live = FreshBench()
+    bret.s_freshness(live)
+    assert provider.request is request  # the counting wrapper is gone with the run
+    got = {(r["case"], r["metric"]): r["value"] for r in live.rows}
+    assert [got[("all", m)] for m in ("doc_lines", "current", "moved", "not_found", "source_dated_only", "not_checked")] == [
+        "5", "1", "1", "1", "1", "1"]  # the CODE unit's line is no DOC line
+    assert got[("all", "current_share")] == "0.2" and got[("all", "questions")] == "2" and got[("all", "budget_spent")] == "1"
+    assert (got[("all", "requests")], got[("all", "failed_requests")]) == ("5", "1")  # the refused one was never made
+    assert (got[("learn.microsoft.com", "requests")], got[("learn.microsoft.com", "failed_requests")]) == ("4", "1")
+    assert got[("raw.githubusercontent.com", "moved")] == "1" and got[("raw.githubusercontent.com", "requests")] == "1"
+    assert got[("code.claude.com", "not_checked")] == "1" and got[("code.claude.com", "requests")] == "0"  # none was made
+    assert float(got[("all", "p95_s")]) >= float(got[("all", "median_s")]) >= 0 and got[("all", "sources_offline")] == "2"  # S3 failed, S4 refused
+    marker = "<!-- bench:table freshness metrics=current,current_share,requests,median_s cases=all -->\n<!-- /bench -->\n"
+    assert "| all | current | 1 | 20.0% | 5 | " in br.render(marker, live.rows) and br.empty_markers(marker, live.rows) == []
+    # report --check reads the rows of a results file against the report's markers: one with no rows fails it
     other = {"scenario": "tool-speed", "record": "2026-10-09", "date": "2026-10-09", "case": "c", "arm": "a", "metric": "ms",
              "value": "1", "runs": "1"}
     for name, value in (("RESULTS", tmp_path / "results.csv"), ("REPORT", tmp_path / "report.md"),

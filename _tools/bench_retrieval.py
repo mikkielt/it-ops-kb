@@ -1,14 +1,14 @@
-"""The benchmarks' retrieval scenarios: the quality of the pack (retrieval, verdict, doc2query) and the speed
-of the tools (stdlib only).
+"""The benchmarks' retrieval scenarios: the quality of the pack (retrieval, verdict, doc2query), the freshness the
+lookup revalidation reports for the pool's cited sources, and the speed of the tools (stdlib only).
 
 benchmarks.py registers these scenarios in SCENARIOS and holds the command line; the harness is bench_core.py
 (kb/_self/code.md, Layout and Imports; the scenarios are described in kb/_self/reports/benchmarks.md). This
 module imports no facade.
 """
-import json, random, re, shutil, statistics, subprocess, sys, time, uuid
+import collections, contextlib, json, random, re, shutil, statistics, subprocess, sys, threading, time, urllib.parse, uuid
 from pathlib import Path
 
-from bench_core import (HOME, TOOLS, claude_json, mcp_session, no_plugin_env, stat_rows, time_runs)
+from bench_core import (HOME, TOOLS, Skip, claude_json, mcp_session, no_plugin_env, stat_rows, time_runs)
 from kbcommon import NO_HOOKS
 
 
@@ -202,3 +202,165 @@ def s_tool_speed(b):
     for _ in range(1000):
         kbfacts.pack(" ".join(rng.sample(words, 4)))
     b.row("tool-speed", "1,000 random packs", "current", "s", time.perf_counter() - t0, 1)
+
+
+# ---- freshness: the lookup revalidation over the pool's answerable questions, no model
+
+FRESH_KEYS = {"current": "current", "moved": "moved", "not found": "not_found", "source-dated only": "source_dated_only",
+              "": "not_checked"}  # factdiff.revalidate's outcome of a printed line (empty: no cited source could be checked)
+
+
+def fresh_host(url):
+    """The host a source url is served from; `unknown` for a source row with no url."""
+    return urllib.parse.urlsplit(url or "").netloc.lower() or "unknown"
+
+
+@contextlib.contextmanager
+def counted_requests(counts):
+    """provider.request counted per host in `counts` ({host: [made, with no HTTP answer]}) for the block; a request the
+    time budget refused was never made and is not counted."""
+    import provider
+    real, lock = provider.request, threading.Lock()
+
+    def counting(url, *args, **kw):
+        out = real(url, *args, **kw)
+        if out.get("error") != provider.BUDGET_ERROR:
+            with lock:
+                c = counts.setdefault(fresh_host(url), [0, 0])
+                c[0] += 1
+                c[1] += not out.get("status")
+        return out
+    provider.request = counting
+    try:
+        yield
+    finally:
+        provider.request = real
+
+
+def fresh_lines(res, doc):
+    """The printed fact lines of a pack_many result that carry a DOC tag: [{path, line, key, text, ids}]; `doc` is the set
+    of (path, line) of the units that do."""
+    return [p for r in res["results"] for p in r.get("printed", []) if (p["path"], p["line"]) in doc]
+
+
+def fresh_question(res, doc, srcs, wall):
+    """One question's lookup: {wall, tally: {(host, metric): printed DOC lines}, sources: {state: n}, spent}. A line
+    counts under the host of the source whose outcome it prints (of those it cites, the worst: factdiff.LOOKUP_ORDER),
+    or of its first source when none could be checked; `spent` is whether the time budget cut a request."""
+    import provider
+    rev = res.get("revalidate")
+    lines = rev["lines"] if rev else {}
+    out = {"wall": wall, "tally": collections.Counter(), "sources": collections.Counter(), "spent": False}
+    for p in fresh_lines(res, doc):
+        r = lines.get(f"{p['path']}:{p['line']}") or {}
+        outcome = r.get("outcome", "")
+        sid = (r.get("id") if outcome else "") or p["ids"][0]
+        out["tally"][(fresh_host((srcs.get(sid) or {}).get("url")), FRESH_KEYS[outcome])] += 1
+    for v in (rev or {"sources": {}})["sources"].values():
+        out["sources"][v["state"]] += 1
+        out["spent"] |= v.get("why") == provider.BUDGET_ERROR
+    out["spent"] |= any(w == provider.BUDGET_ERROR for r in lines.values() for w in r.get("unchecked", {}).values())
+    return out
+
+
+def _n(n, word):
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def fresh_plan(asks, srcs, delay):
+    """Print what a run would ask, per host: the cited sources (not superseded ones, which a lookup does not ask), the
+    printed DOC lines and questions that cite them, and one request per source per question as the least a run makes
+    (a moved page, a pinned repository or a search adds more; a source asked again within its provider's pacing is
+    answered from the stored check). Returns the totals line."""
+    hosts = {}
+    for r, lines in asks:
+        for p in lines:
+            cited = set()  # the hosts this line cites, each counted once for it
+            for sid in p["ids"]:
+                row = srcs.get(sid) or {}
+                if not row.get("url") or (row.get("superseded_by") or "").strip():
+                    continue
+                host = fresh_host(row["url"])
+                h = hosts.setdefault(host, {"sources": {}, "lines": 0, "questions": set(), "url": {}})
+                h["sources"].setdefault(sid, set()).add(r["id"])
+                h["url"][sid] = row["url"]
+                h["questions"].add(r["id"])
+                if host not in cited:
+                    cited.add(host)
+                    h["lines"] += 1
+    total = 0
+    for host, h in sorted(hosts.items(), key=lambda kv: (-len(kv[1]["sources"]), kv[0])):
+        requests = sum(len(q) for q in h["sources"].values())
+        total += requests
+        print(f"freshness: {host}: {_n(len(h['sources']), 'source')}, {_n(h['lines'], 'line')} in "
+              f"{_n(len(h['questions']), 'question')}, {_n(requests, 'request')} ({requests * delay:.0f} s at {delay} s each)",
+              flush=True)
+        for sid in sorted(h["sources"]):
+            print(f"freshness:   {sid}  {h['url'][sid]}  ({_n(len(h['sources'][sid]), 'question')})", flush=True)
+    sources = sum(len(h["sources"]) for h in hosts.values())
+    lines = sum(len(lines) for _, lines in asks)
+    return (f"{_n(len(asks), 'answerable pool row')}, {_n(lines, 'printed DOC line')}, {_n(sources, 'source')} on "
+            f"{_n(len(hosts), 'host')}, {_n(total, 'request')} at the least")
+
+
+def fresh_rows(b, per_q, counts, pool_rows, note):
+    """The rows of a run: for all printed DOC lines (case `all`) and per host of the source each line prints, the lines
+    by outcome and the shares of current, moved and source-dated ones, the requests made and the wall time of the
+    questions that cite the host (median and p95, seconds); for all, also the questions, the slowest, the questions the
+    revalidation's time budget cut and the sources by how they were answered."""
+    hosts = sorted({h for q in per_q for h, _ in q["tally"]})
+    for case in ["all", *hosts, *sorted(set(counts) - set(hosts))]:
+        mine = [q for q in per_q if case == "all" or any(h == case for h, _ in q["tally"])]
+        n = {m: sum(v for q in per_q for (h, k), v in q["tally"].items() if k == m and case in ("all", h))
+             for m in FRESH_KEYS.values()}
+        total = sum(n.values())
+        runs = len(mine) if case != "all" else len(per_q)  # a host that only answered requests has no question
+        if case == "all" or case in hosts:
+            b.row("freshness", case, "current", "doc_lines", total, runs, note=note if case == "all" else "")
+            for m, v in n.items():
+                b.row("freshness", case, "current", m, v, runs)
+            for m in ("current", "moved", "source_dated_only"):
+                if total:
+                    b.row("freshness", case, "current", f"{m}_share", n[m] / total, runs)
+        made = sum(c[0] for h, c in counts.items() if case in ("all", h))
+        failed = sum(c[1] for h, c in counts.items() if case in ("all", h))
+        b.row("freshness", case, "current", "requests", made, runs or "")
+        b.row("freshness", case, "current", "failed_requests", failed, runs or "")
+        walls = sorted(q["wall"] for q in mine)
+        if walls and (case == "all" or case in hosts):
+            b.row("freshness", case, "current", "median_s", statistics.median(walls), len(walls))
+            b.row("freshness", case, "current", "p95_s", walls[max(0, int(round(0.95 * len(walls))) - 1)], len(walls))
+    walls = [q["wall"] for q in per_q]
+    b.row("freshness", "all", "current", "questions", len(per_q), len(per_q), note=f"of {len(pool_rows)} pool rows")
+    b.row("freshness", "all", "current", "max_s", max(walls), len(per_q))
+    b.row("freshness", "all", "current", "budget_spent", sum(q["spent"] for q in per_q), len(per_q))
+    for state in ("live", "cached", "offline"):
+        b.row("freshness", "all", "current", f"sources_{state}", sum(q["sources"][state] for q in per_q), len(per_q))
+
+
+def s_freshness(b):
+    """Freshness: each answerable row of the question pool (route `good`; `b.sample` rows of each kind, seed `b.seed`)
+    is looked up with revalidation (kbfacts.pack_many, revalidate=True: the cited sources are asked live, within each
+    provider's pacing and the revalidation's time budget), and the printed DOC lines are counted by outcome per host,
+    with the wall time per question and the requests made. No model. With `b.dry` it prints the sources and requests a
+    run would make and asks nothing."""
+    import bench_pool, kbfacts
+    sample, seed = getattr(b, "sample", None), getattr(b, "seed", bench_pool.SEED)
+    pool = [r for r in bench_pool.load_pool(HOME) if r["expected_route"] == "good"]
+    rows = bench_pool.sample_rows(pool, sample, seed)
+    if not rows:
+        raise Skip("no answerable rows in the pool: python3 _tools/benchmarks.py pool build")
+    doc = {(u["path"], u["line"]) for u in kbfacts.units() if "DOC" in kbfacts.kinds_of(u["tags"])}
+    srcs = kbfacts.source_rows()
+    import provider
+    if getattr(b, "dry", False):
+        asks = [(r, fresh_lines(kbfacts.pack_many([r["question"]]), doc)) for r in rows]
+        raise Skip("dry run: " + fresh_plan(asks, srcs, provider.DELAY) + ", no request made")
+    counts, per_q = {}, []
+    with counted_requests(counts):
+        for r in rows:
+            t = time.perf_counter()
+            res = kbfacts.pack_many([r["question"]], revalidate=True)
+            per_q.append(fresh_question(res, doc, srcs, time.perf_counter() - t))
+    command = "run freshness" + (f" --sample {sample}" if sample else "") + (f" --seed {seed}" if seed != bench_pool.SEED else "")
+    fresh_rows(b, per_q, counts, pool, command)

@@ -49,6 +49,7 @@ New since the first runs, a line each:
 - **`/kb-ingest`:** a 12-file sample repository became 18 facts for $2.06, with no `check.py` error.
 - **Host plugin with a team root:** both roots in one pack; Haiku missed the team's part in 1 of 4 runs per mode.
 - **Hook launcher:** `sh _tools/kbpy` adds 3.5 ms on macOS; Linux and Windows are not measured.
+- **Freshness at lookup:** on 44 pool questions (2026-10-12), 193 of 310 printed DOC lines were current at their source, 12 had moved and 95 were dated at their source only; the 230 live requests took 2.80 s per question at the median and 8.82 s at p95.
 
 **On a wide question pool** (2026-10-09, Claude Code 2.1.293, 299 kb topics; fact, table, held-out, off-kb, gap, count, citation, decision, conflict, snippet, phrasing-variant and query-log questions, each with its checks), effective input tokens per right answer:
 - The router (reading on Haiku 5.5): 17,544, right in 138 of 150 runs. Haiku 5.5 with the kb: 73,323, right in 127 of 150. Sonnet 5.5 with the kb: 72,010, right in 134 of 150. Opus 5.5 with the kb: 56,816, right in 135 of 150, at $0.232 a run against $0.150 for Sonnet 5.5 and $0.009 for Haiku 5.5.
