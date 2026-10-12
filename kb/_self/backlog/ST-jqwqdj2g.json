@@ -2,7 +2,7 @@
   "id": "ST-jqwqdj2g",
   "kind": "story",
   "title": "Each source has a freshness lifetime from its own change history, and a lookup revalidates only sources past it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-etslk6yu",
   "priority": "P2",

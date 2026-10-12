@@ -2,7 +2,7 @@
   "id": "ST-f2n2h22c",
   "kind": "story",
   "title": "The census and refresh read the lookups' cached revalidations as hints and skip re-fetching what a lookup checked within the provider's pacing",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-etslk6yu",
   "priority": "P3",
