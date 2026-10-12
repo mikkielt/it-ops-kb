@@ -4,6 +4,7 @@
   "title": "done refuses a content item whose commit advances _fetch_state.csv baselines or drops anchors of sources its goal does not name",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-7nv2ffr2",
   "priority": "P2",
   "rank": 0,
   "goal": "A content item's done (and land) names each _fetch_state.csv row and _anchors.csv row its commit changes for a source the item's goal and touched facts do not cite, and refuses until the worker restores them or the goal names them, so an anchor run cannot mark an unrelated source unchanged without its facts being re-read (SP-df2cu4uj: BG-gxxv3mzj advanced about 15 unrelated baselines and all checks passed).",
@@ -17,11 +18,39 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "A content item's done (and land) names each _fetch_state.csv row and _anchors.csv row its commit changes for a source the item's goal and touched facts do not cite",
+      "check": 0
+    },
+    {
+      "clause": "refuses until the worker restores them or the goal names them, so an anchor run cannot mark an unrelated source unchanged without its facts being re-read (SP-df2cu4uj: BG-gxxv3mzj advanced about 15 unrelated baselines and all checks passed)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
-    "_tools/test_backlog_portable.py"
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which _fetch_state.csv changes does done count as advancing a source's baseline: only the detection columns (ETag, Last-Modified, version id, text hash), or any change to the row, checked_utc included?",
+      "options": [
+        "detection columns only: a row whose only change is checked_utc (a census compared and did not snapshot) is not counted",
+        "any change to the row, checked_utc included"
+      ],
+      "recommendation": "detection columns only: a row whose only change is checked_utc (a census compared and did not snapshot) is not counted",
+      "class": "agents-rule",
+      "answer": "detection columns only: a row whose only change is checked_utc (a census compared and did not snapshot) is not counted",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-df2cu4uj close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise: no _tools/bl_*.py module reads _fetch_state.csv or _anchors.csv in cmd_done (grep at planning 2026-10-12 finds one comment in bl_check.py), so done accepts a commit that advances unrelated baselines. The change goes in bl_land.cmd_done beside stale_docs; land runs done --commit, so it is covered."
 }
