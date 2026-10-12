@@ -2406,7 +2406,9 @@ SCATTER_ARTICLES = 3  # the best articles whose domains the scatter note compare
 SCATTER_DOMAINS = 2  # a `good` whose best articles lie in this many domains or more, and
 SCATTER_SCORE = 15  # whose best unit scores under this, gets the scatter `check:` note; rag.scatter_calibration fits it
 PASSING_UNITS = 5  # a plain key word the kb holds in this many units or fewer, in no article about it, is mentioned in passing
-PRICE_ASK = re.compile(r"(?i)\b(?:price|prices|pricing|cost|costs)\b")  # a question for a price
+PASSING_MISSING = 0.25  # and the lead's printed facts miss at least this share of the key words, the rare word itself included
+PRICE_ASK = re.compile(  # a question for a price; a cost asked in a unit of measure (resource units, request units) is no money
+    r"(?i)\b(?:price|prices|pricing)\b|\bcosts?\b(?!.*\bin\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b)")
 AMOUNT = re.compile(r"(?i)[$€£]\s?\d|\b\d[\d,.]*\s?(?:usd|eur|gbp|pln|dollars?|euros?)\b|\b(?:usd|eur|gbp|pln)\s?\d")  # an amount
 
 
@@ -2440,8 +2442,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     `top_domains` are the two values, None and [] when the pack is not a `good` the note applies to; the note
     changes no route). Two notes read the lead article's printed facts and do set the route (`split`): `passing`
     (a plain alphabetic word of the question that the kb holds in at most PASSING_UNITS units, that is no word of the
-    lead article's title or applies_to, while those facts miss another key word: a tempdb file count against the one
-    line that names tempdb) and `priced` (a question for a price, PRICE_ASK, and no printed fact of the lead holds an
+    lead article's title or applies_to, while those facts miss another key word and, with the rare word itself, at
+    least PASSING_MISSING of the key words: a tempdb file count against the one line that names tempdb) and `priced`
+    (a question for a price, PRICE_ASK: a cost in a unit of measure is none, and no printed fact of the lead holds an
     AMOUNT); `passing` is the list of words, `priced` a bool. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. A `weak` or `none` pack, and a flagged `good` one (a `check:` line, or a
@@ -2688,10 +2691,10 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             scatter = (top_score, top_domains)
     # a `good` whose question's subject the kb only touches: its words are spread over articles of other topics, and
     # the lead's printed facts hold most of them, but (passing) one plain word the kb holds in a few units and no article
-    # about it is the question's subject, and another key word is missing from them (tempdb in a line on encryption at
-    # rest, for a count of tempdb data files), or (priced) the question asks for a price and no printed fact of the lead
-    # states an amount. Notes that route `split`, never a verdict change: a lexical rule cannot tell which word is the
-    # subject, so a true `good` may carry one (an eval row about `noqa`), which the hook then passes on, not answers.
+    # about it is the question's subject, and another key word is missing from them, together a quarter of the key words
+    # (tempdb in a line on encryption at rest, for a count of tempdb data files; one word of ten missing is a paraphrase,
+    # an eval row about `noqa`), or (priced) the question asks for a price and no printed fact of the lead states an
+    # amount. Notes that route `split`, never a verdict change: a lexical rule cannot tell which word is the subject.
     passing, priced = [], False
     lead_units = [u for u in printed if paths and u["path"] == paths[0]]
     if verdict == "good" and lead_units and not lifted and not rules:
@@ -2700,7 +2703,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         lead_has = set().union(*({t for t in known if has(u, t)} for u in lead_units))
         plain = {stem(w.lower()) for w in WORD.findall(question) if w.isalpha() and (w.islower() or w.istitle())}
         rare = sorted(t for t in plain & set(known) if kdf[t] <= PASSING_UNITS and t not in lead_own)
-        if rare and any(t not in lead_has and t not in rare for t in known):
+        absent = [t for t in known if t not in lead_has]
+        if rare and any(t not in rare for t in absent) and len(absent) >= PASSING_MISSING * len(known):
             passing = rare
         priced = bool(PRICE_ASK.search(question)) and not any(AMOUNT.search(u["text"]) for u in lead_units)
     head = f"coverage: {verdict}"
