@@ -1,0 +1,26 @@
+{
+  "id": "ST-buoove5w",
+  "kind": "story",
+  "title": "Review sprint: Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed",
+  "status": "draft",
+  "sprint": "SP-uzwbt63u",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
