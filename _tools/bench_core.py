@@ -33,11 +33,17 @@ PRICE = {
     "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01, 0.20),
                          (None, 0.50, 2.50, 0.625, 0.05, 1.0)),
     "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:90 "Sonnet 5 list"
-    # the page states a 0.10 read; runs are billed 0.20, as the open conflict at kb/public/_conflicts.md:745
-    # "Sonnet 5.5 cache-read price" records
-    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:88 "Sonnet 5.5 $2"
+    # the page's 0.10 read; the cost figure of a Claude Code version before 2.1.296 counted 0.20 (READ_BEFORE), as the
+    # resolved conflict at kb/public/_conflicts.md:745 "Sonnet 5.5 cache-read price" records
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10, 4.0),),  # kb/public/claude/ci-and-headless.md:88 "Sonnet 5.5 $2"
     "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md:89 "Opus 5.5 list"
 }
+# a model's cache-read price per MTok on the Claude Code versions before the one that took the page's: (first version at
+# the page's price, the price before it). The cost `claude -p` reports is a client-side estimate from the client's own
+# table (kb/public/_conflicts.md:746 "Resolved 2026-10-12"), so a run is priced at its own version's rate, as its
+# `total_cost_usd` is, and `pool verify` compares like with like. A version that is empty or unknown (`?`) is priced at
+# the earlier rate, as resolve_model names the alias's first model for it.
+READ_BEFORE = {"claude-sonnet-5-5": ((2, 1, 296), 0.20)}
 # the TTL a request's cache writes are priced at when its usage carries no per-TTL split (`cache_creation`), by the
 # billing surface of the run (kb/public/agents/agent-caching.md:41 "billing surface"): one hour on a Claude
 # subscription, five minutes on an API key. The pool runs on a subscription on this host.
@@ -428,6 +434,15 @@ def tier_of(model, prompt):
     return next(i for i, t in enumerate(PRICE[model]) if t[0] is None or prompt <= t[0])
 
 
+def read_price(model, i, cc=""):
+    """The cache-read price per MTok of tier `i` of `model` on a run of Claude Code version `cc`: the table's, else the
+    earlier one of READ_BEFORE when `cc` is before the version that took the page's price (or has none)."""
+    old = READ_BEFORE.get(model)
+    if old and tuple(int(n) for n in re.findall(r"\d+", cc)[:3]) < old[0]:
+        return old[1]
+    return PRICE[model][i][4]
+
+
 def tier_label(model, i):
     """What a run records of tier `i` of `model`: empty for a model with one price, else its prompt range."""
     tiers = PRICE[model]
@@ -456,8 +471,8 @@ def usage_sum(reqs, model="", cc="", surface=BILLING_SURFACE):
     """Token sums of a run's requests, priced as `model` (an alias or a pinned id) resolves on the run (resolve_model):
     the model, the tokens of each of its price tiers (`cache_write` of which `write_1h` are written for one hour,
     write_1h), the highest tier reached (`tier`) and the effective input, which weights a cache write by its rate over
-    the input price (1.25x for five minutes, 2x for one hour) and a cache read by the model's read price over its input
-    price."""
+    the input price (1.25x for five minutes, 2x for one hour) and a cache read by the model's read price on the run's
+    Claude Code version `cc` (`read_prices`, per tier; read_price) over its input price."""
     u = lambda r, k: r["usage"].get(k, 0) or 0  # noqa: E731
     mid = resolve_model(model, next((r["model"] for r in reqs if r.get("model")), ""), cc)
     if mid not in PRICE:
@@ -471,15 +486,16 @@ def usage_sum(reqs, model="", cc="", surface=BILLING_SURFACE):
             by_tier[i][k] += u(r, f)
         by_tier[i]["write_1h"] += write_1h(r["usage"], surface)
     unc, cw, cr = (sum(t[k] for t in by_tier) for k in ("uncached", "cache_write", "cache_read"))
-    return {"model": mid, "tier": tier_label(mid, top), "by_tier": by_tier,
+    reads = [read_price(mid, i, cc) for i in range(len(by_tier))]
+    return {"model": mid, "tier": tier_label(mid, top), "by_tier": by_tier, "read_prices": reads,
             "uncached": unc, "cache_write": cw, "write_1h": sum(t["write_1h"] for t in by_tier),
             "cache_read": cr, "input": unc + cw + cr,
             "out": sum(t["out"] for t in by_tier), "requests": len(reqs),
             "start_ctx": (u(reqs[0], "input_tokens") + u(reqs[0], "cache_creation_input_tokens")
                           + u(reqs[0], "cache_read_input_tokens")) if reqs else 0,
             "effective": sum(t["uncached"] + round(p[3] / p[1], 6) * (t["cache_write"] - t["write_1h"])
-                             + round(p[5] / p[1], 6) * t["write_1h"] + round(p[4] / p[1], 6) * t["cache_read"]
-                             for t, p in zip(by_tier, PRICE[mid]))}
+                             + round(p[5] / p[1], 6) * t["write_1h"] + round(rp / p[1], 6) * t["cache_read"]
+                             for t, p, rp in zip(by_tier, PRICE[mid], reads))}
 
 
 def prompt_tokens(usage):
@@ -517,10 +533,10 @@ def run_tokens(r, name="", cc=""):
 
 def est_cost(s, searches=0):
     """The list-price cost of a usage_sum run: each tier's tokens at that tier's prices, its cache writes at their TTL's
-    rate (the 1-hour ones at the 1-hour rate)."""
+    rate (the 1-hour ones at the 1-hour rate) and its cache reads at the run's own version's price (`read_prices`)."""
     return sum(t["uncached"] * p[1] + (t["cache_write"] - t["write_1h"]) * p[3] + t["write_1h"] * p[5]
-               + t["cache_read"] * p[4] + t["out"] * p[2]
-               for t, p in zip(s["by_tier"], PRICE[s["model"]])) / 1e6 + searches * WEB_SEARCH_USD
+               + t["cache_read"] * rp + t["out"] * p[2]
+               for t, p, rp in zip(s["by_tier"], PRICE[s["model"]], s["read_prices"])) / 1e6 + searches * WEB_SEARCH_USD
 
 
 def span_s(reqs):
