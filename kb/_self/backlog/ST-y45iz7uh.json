@@ -4,6 +4,7 @@
   "title": "A pack on a host that cannot reach a source's provider gives up fast instead of spending the revalidation budget on every pack",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-u5q37ds3",
   "priority": "P2",
   "rank": 0,
   "goal": "Retrospective of SP-etslk6yu (worker of ST-jqwqdj2g): kb_pack and kb_ask.py now revalidate stale sources by default, up to factdiff.REVALIDATE_BUDGET_S (90 s); on a firewalled host that drops packets, each request waits for its timeout and every pack can spend the whole budget. After a provider host fails to connect once, the lookups of that process (and of later processes within a bounded window, recorded under _cache/) mark its sources offline with no request; a test stubs a connect timeout and finds the second pack makes no request to that host.",
@@ -17,12 +18,34 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Retrospective of SP-etslk6yu (worker of ST-jqwqdj2g): kb_pack and kb_ask.py now revalidate stale sources by default, up to factdiff.REVALIDATE_BUDGET_S (90 s)",
+      "check": 0
+    },
+    {
+      "clause": "on a firewalled host that drops packets, each request waits for its timeout and every pack can spend the whole budget. After a provider host fails to connect once, the lookups of that process (and of later processes within a bounded window, recorded under _cache/) mark its sources offline with no request",
+      "check": 0
+    },
+    {
+      "clause": "a test stubs a connect timeout and finds the second pack makes no request to that host",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/provider.py",
-    "_tools/test_live_kb.py"
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-rppq26tf",
+    "BG-zsiguf72"
   ],
   "links": [
     "parked: SP-etslk6yu close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: on a host whose provider never connects, every pack asks the provider again. Run 2026-10-12 on the base with a stubbed provider.request answering URLError timeout and a second revalidate (stored results cleared): reproduces, the second pack makes 1 request to the host as the first did. The check names a test that does not exist yet (collects none): the worker extends the pack_revalidate test case with a stubbed connect timeout and names it revalidate_host_down_fast, adding no new test id. The record of a host that failed to connect lives under _cache/ (never committed) with a bounded window; the window's length is a choice for the worker (provider.pacing or the source's lifetime are the existing bounds). kb/_self/tools.md 'Revalidation at question time' names the offline causes: add the skipped host."
 }

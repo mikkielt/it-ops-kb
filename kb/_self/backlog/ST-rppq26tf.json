@@ -4,6 +4,7 @@
   "title": "A lookup revalidation whose search or candidate page answers an HTTP error falls back to the offline stamp instead of printing not found",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-u5q37ds3",
   "priority": "P3",
   "rank": 0,
   "goal": "Found by the SP-tm4wlsve review (ST-mq7we5r2): the revalidation's lost flag is set only by provider.spent() or provider.failures(), and failures() counts only requests with no HTTP answer (provider.py:291; factdiff.py:858-863, :1029-1054, :1315, :1332). A 429 or 5xx from the provider's search API or a candidate page yields [] or (None, None) in search_urls and page_doc, and elsewhere returns no candidate page, so a moved passage prints [not found DATE]. An HTTP error of the search or a candidate page counts as a failure: the line keeps the offline stamp and the source's note names the request; a stubbed pack_revalidate case where learn.microsoft.com/api/search answers 503 for an edited, unfound passage expects no outcome and the note.",
@@ -17,13 +18,41 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Found by the SP-tm4wlsve review (ST-mq7we5r2): the revalidation's lost flag is set only by provider.spent() or provider.failures()",
+      "check": 0
+    },
+    {
+      "clause": "failures() counts only requests with no HTTP answer (provider.py:291",
+      "check": 0
+    },
+    {
+      "clause": "factdiff.py:858-863, :1029-1054, :1315, :1332). A 429 or 5xx from the provider's search API or a candidate page yields [] or (None, None) in search_urls and page_doc",
+      "check": 0
+    },
+    {
+      "clause": "elsewhere returns no candidate page, so a moved passage prints [not found DATE]. An HTTP error of the search or a candidate page counts as a failure: the line keeps the offline stamp and the source's note names the request",
+      "check": 0
+    },
+    {
+      "clause": "a stubbed pack_revalidate case where learn.microsoft.com/api/search answers 503 for an edited, unfound passage expects no outcome and the note",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/provider.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "BG-zsiguf72"
   ],
   "links": [
     "parked: SP-tm4wlsve review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: with a page whose edited passage is gone and learn.microsoft.com/api/search answering 503, revalidate prints [not found]. Run 2026-10-12 on the base with stubbed provider.request (a page that dropped one passage, the search 503): reproduces, outcome 'not found' after 3 requests. Fix in factdiff.lookup_source's lost flag and search_urls/page_doc (provider.failures() counts only no-answer requests): an HTTP error of the search or a candidate page counts as a failure. The check names a test that does not exist yet (collects none): the worker extends the pack_revalidate test case and puts revalidate_search_http_error in its name, adding no new test id. kb/_self/tools.md line of 'Revalidation at question time' lists the causes of the offline stamp: add the HTTP error."
 }

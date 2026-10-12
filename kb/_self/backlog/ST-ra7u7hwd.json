@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Open questions (pack coverage none or weak at planning, 2026-10-12): (Q2) how a client-rendered web page such as a Microsoft Tech Community blog post answers a plain HTTP fetch with no JavaScript, and what a soft 404 test compares; (Q3) how long a client may remember that a host did not accept connections before it asks again. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-12 with rag.py pack -q on four questions: HTTP 429/503 from a search API (Q1) good, via public/arch/http-rate-limit-429-retry-after.md; client-rendered page and soft-404 comparison (Q2) none; how long a client remembers an unreachable host (Q3) weak; reload of a long-lived process's registry (Q4) good by coverage, its hits are about MCP list_changed, and the item's own premise is a code behaviour the _self docs state (kbfacts.provider_signals), not an outside fact. Research Q2 and Q3 only."
 }
