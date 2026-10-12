@@ -921,13 +921,51 @@ def stale_picks(rows, home=HOME):
     return out
 
 
+def group_inner(alt):
+    """The body of an alternative that is one group (capturing, `(?:...)` or `(?i:...)`) with at most a quantifier after
+    it, else None."""
+    head = re.match(r"\((?:\?[aiLmsux]*:|(?!\?))", alt)
+    if not head:
+        return None
+    depth, cls, esc = 1, False, False
+    for i in range(head.end(), len(alt)):
+        ch = alt[i]
+        if esc:
+            esc = False
+        elif ch == "\\":
+            esc = True
+        elif cls:
+            cls = ch != "]"
+        elif ch == "[":
+            cls = True
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                tail = alt[i + 1:]
+                if re.fullmatch(r"(?:[?*+]|\{\d+(?:,\d*)?\})?\??", tail):
+                    return alt[head.end():i]
+                return None
+    return None
+
+
 def identifier_of(alt):
-    """The name an alternative of a check spells when it is identifier-shaped (a cmdlet, API, CSP or setting name: no
-    space, and CamelCase, Verb-Noun or with an underscore), else "". A regex escape reads as the literal it stands for."""
+    """The names an alternative of a check spells when they are identifier-shaped (a cmdlet, API, CSP or setting name: no
+    space, and CamelCase, Verb-Noun or with an underscore), else []. A regex escape reads as the literal it stands for;
+    an inline flag at the start, a `\\b` at either end, a group around the whole alternative (each of its alternatives
+    judged) and an optional tail (`(?:s)?`, `s?`) are looked through, the name before the tail being the one judged."""
+    alt = re.sub(r"^\(\?[aiLmsux]+\)|^\\b|\\b$", "", alt)
+    inner = group_inner(alt)
+    if inner is not None:
+        return [n for a in alternatives(inner) for n in identifier_of(a)]
+    rest = re.sub(r"\((?:\?:)?[^()|]*\)(?:[?*]|\{0,\d+\})\??$|(?:\\.|[A-Za-z0-9_])[?*]\??$", "", alt)
+    if rest != alt:
+        return identifier_of(rest)
     lit = re.sub(r"\\b|\\([.\-_])", lambda m: m.group(1) or "", alt)
     if re.fullmatch(r"[A-Za-z][A-Za-z0-9_.-]*", lit) and re.search(r"[a-z0-9][A-Z]|[A-Z][a-z]+-[A-Z]|_", lit):
-        return lit
-    return ""
+        return [lit]
+    return []
 
 
 def unstated_names(rows, home=HOME):
@@ -943,10 +981,10 @@ def unstated_names(rows, home=HOME):
             continue
         try:
             checks = json.loads(r["checks"])
-            alts = [identifier_of(a) for c in checks for a in alternatives(c)]
+            alts = [n for c in checks for a in alternatives(c) for n in identifier_of(a)]
         except (ValueError, TypeError, KeyError):
             continue  # check_problems names a check that is no regex
-        for name in dict.fromkeys(a for a in alts if a):
+        for name in dict.fromkeys(alts):
             word = re.compile(r"\b" + re.escape(name) + r"\b", re.I)
             if not any(word.search(t) for t in articles + data):
                 out.append(f"{r['id']}: warning: its check names `{name}`, found in no article or data file of the kb; "
