@@ -1,0 +1,20 @@
+{
+  "id": "SP-7nv2ffr2",
+  "kind": "sprint",
+  "title": "Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards",
+  "status": "planned",
+  "goal": "check.py refuses a ledger citation whose line lies past the end of its article at any distance; the sync gate runs the held-out reword check when a landing changes only a root's doc2query expansions.csv; lint.py given a kb/-prefixed article path lints it, and an argument matching no article exits non-zero naming it; apply's lead share check reads the passage pack prints, not the whole source line; the gap step's ledger guard rejects an entry and restores the ledger for any error check.py gives it, not only path:line citations; done refuses a content item whose commit advances _fetch_state.csv baselines or drops anchors of sources its goal does not name",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
