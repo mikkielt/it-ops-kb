@@ -32,9 +32,22 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/tests.py -k pack_routes_kind and python3 _tools/rag.py eval pass",
+      "check": 0
+    },
+    {
+      "clause": "kbfacts.CITE_CUE routes a question whose mention, refer or name word is tied to a source id through a few words such as 'the source', 'source id', 'the id' or 'the sources' (Which articles mention the source S1800?, Which files refer to the source S1800?, Which articles mention source id S1800?, mention the sources S1800 and S1801) to cites, while a question that asks what a source says (Which flag name does S1800 give, What does S1800 say about --max-turns?, Which flag is mentioned in S1800?) still routes nowhere",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/tools.md",
-    "_tools/test_live_kb.py"
-  ]
+    "_tools/test_live_kb.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Found by the SP-lmf4ke4w review (fresh-context reviewer, 2026-10-12): BG-hc2gficq's CITE_CUE accepts mention/refer/name only right before the id, so a word such as 'the source' between them drops the cites route; the repro failed on main at filing (misrouted: the four 'the source/source id/the sources' questions)."
 }
