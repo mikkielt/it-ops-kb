@@ -2,7 +2,7 @@
   "id": "BG-pedsqeqs",
   "kind": "bug",
   "title": "pack's passing note puts a check: and route split on eval questions the kb answers, on common words such as big, bookmark and noqa",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
@@ -106,5 +106,59 @@
     "merged: BG-ggytjiqt"
   ],
   "notes": "Merged from BG-ggytjiqt at the 2026-10-12 draft triage: the priced note still fires on the Graph throttling cost question; same function and class (a note fires on a question the kb answers), so one calibration item carries both. Its repro is check 1.\nPlanned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the repro prints the three EV ids and the Graph cost question's priced note is True.\nThe suite is at its id ceiling (100 of 100): extend pack_scatter_check in _tools/test_live_kb.py, add no test id. Checks 0, 2 and 3 pass before the work and guard the four questions, the eval's goods and the scatter test.",
-  "claimed_by": "orch-4o3plg4l"
+  "evidence": {
+    "commit": "5d46eac48fab26cef70ac8fe68bb66e77cc42b6c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;bad=[]\nfor q in sys.argv[1:]:\n t=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",q],capture_output=True,text=True).stdout;h=t.split(chr(10)+\"## \")[0]\n bad+=[q] if t.startswith(\"coverage: good\") and \"check:\" not in h and \"route:\" not in h else []\nprint(bad);sys.exit(1 if bad else 0)",
+          "What is the recommended number of tempdb data files for SQL Server?",
+          "What is the current price of a Microsoft 365 E5 licence?",
+          "How do I enforce Kubernetes Pod Security Admission at the namespace level?",
+          "How do I configure Exchange Online mailbox retention policies with Purview?"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kbfacts;a=kbfacts.pack(\"What does Graph throttling cost for me/getMemberGroups in resource units?\").get(\"priced\");b=kbfacts.pack(\"What is the current price of a Microsoft 365 E5 licence?\").get(\"priced\");print(a,b);sys.exit(0 if not a and b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6bb666d23e647f13"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "e0a70e474495b6e3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_scatter_check"
+        ],
+        "exit": 0,
+        "sha256": "17982b1f1d016a72"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,csv;sys.path.insert(0,'_tools');import kbfacts;bad=[r['id'] for r in csv.DictReader(open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8')) if r['expect_verdict']=='good' and kbfacts.pack(r['question']).get('passing')];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
