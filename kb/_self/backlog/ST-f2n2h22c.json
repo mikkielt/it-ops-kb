@@ -97,7 +97,9 @@
         "the source's freshness lifetime: a lookup's result spares the census for days, though the census then dates nothing on it"
       ],
       "recommendation": "provider.pacing: the window a lookup reuses its own stored result in; the census and refresh spare only a source a lookup checked seconds ago",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "provider.pacing: the window a lookup reuses its own stored result in; the census and refresh spare only a source a lookup checked seconds ago",
+      "by": "operator"
     }
   ],
   "notes": "Planned 2026-10-12: no hint reading exists (the revalidation cache itself lands with ST-mq7we5r2 in SP-tm4wlsve); premise holds by construction once that lands.",
