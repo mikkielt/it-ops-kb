@@ -1,0 +1,27 @@
+{
+  "id": "ST-lp5pxtpe",
+  "kind": "story",
+  "title": "A worker searches the backlog before it files a bug, so it files no duplicate of an open draft",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-etslk6yu: the ST-jqwqdj2g worker filed BG-w3p7fqy2 (detect never records changed_utc) although draft ST-fxz2wrfe already held the same defect. The worker rules in the brief (and .claude/agents/kb-worker.md) name backlog.py find WORDS (or similar) before backlog.py new bug, and a found item gets a note with the new evidence instead of a new bug; a test renders a brief and finds the rule.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_find_before_filing"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    ".claude/agents/kb-worker.md",
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu close"
+  ]
+}

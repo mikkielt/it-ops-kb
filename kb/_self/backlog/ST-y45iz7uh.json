@@ -1,0 +1,28 @@
+{
+  "id": "ST-y45iz7uh",
+  "kind": "story",
+  "title": "A pack on a host that cannot reach a source's provider gives up fast instead of spending the revalidation budget on every pack",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retrospective of SP-etslk6yu (worker of ST-jqwqdj2g): kb_pack and kb_ask.py now revalidate stale sources by default, up to factdiff.REVALIDATE_BUDGET_S (90 s); on a firewalled host that drops packets, each request waits for its timeout and every pack can spend the whole budget. After a provider host fails to connect once, the lookups of that process (and of later processes within a bounded window, recorded under _cache/) mark its sources offline with no request; a test stubs a connect timeout and finds the second pack makes no request to that host.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_host_down_fast"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/provider.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu close"
+  ]
+}

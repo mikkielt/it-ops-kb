@@ -1,0 +1,28 @@
+{
+  "id": "ST-lgekelkq",
+  "kind": "story",
+  "title": "Operator reconsiders the census hint window: provider pacing (seconds) or the source's freshness lifetime",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-etslk6yu: ST-f2n2h22c's gate g1 was answered by the orchestrator acting as operator with its recommendation, provider.pacing, so a census or refresh spares only a source a lookup checked seconds earlier, which in practice spares almost none. The operator decides whether the hint window stays provider.pacing or becomes the source's freshness lifetime (factdiff.lookup_hints takes provider.lifetime; the census still dates only what it confirms, D-tvjml75q); a test plants a cached result older than the pacing and younger than the lifetime and asserts the decided behaviour.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_hint_window_decided"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-etslk6yu close"
+  ]
+}

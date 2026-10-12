@@ -1,0 +1,26 @@
+{
+  "id": "ST-gh2ckggh",
+  "kind": "story",
+  "title": "precheck warns of a goal that lengthens a cache's reuse when no check varies the cached record's inputs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-etslk6yu: ST-jqwqdj2g lengthened the lookup cache's reuse to a source's freshness lifetime, but its check replayed identical printed lines, so it passed while the review found the cache keeps only the last question's lines (BG-iw3p4sw4, S2). The kb-sprint plan rule (an item that adds or widens a cache carries a check that changing each input gives a fresh value) was not applied. backlog.py precheck SP warns of a committed item whose goal reuses, caches or lengthens a stored result and whose checks name no input-variation test; a test runs precheck on a planted sprint and finds the warning.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_cache_input_variation"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu close"
+  ]
+}

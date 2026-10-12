@@ -1,0 +1,26 @@
+{
+  "id": "ST-a755ciys",
+  "kind": "story",
+  "title": "land waits for or steps past a worker sub-session's session-end distill instead of stopping at step branch",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Retrospective of SP-etslk6yu: land of ST-bl3hdung stopped at step branch because a session-end hook (querylog.py distill --settle 2 of a Haiku sub-session of the worker) still ran in the worker's worktree after 61 s; it ran over 8 minutes and the orchestrator had to wait and land again. land waits up to a bound for a session-end distill it can name, or distill of a worker's sessions runs from the clone's own query log directory and not from the worktree, so the worktree can be removed; a test plants a worktree with a running distill process and finds land waiting, then proceeding.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_waits_session_end_distill"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-etslk6yu close"
+  ]
+}

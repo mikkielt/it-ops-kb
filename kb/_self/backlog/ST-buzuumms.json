@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-lyfnpu37 close"
   ],
-  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all its work staged and no commit; the orchestrator resumed the session with 60 more turns, and it committed in 6."
+  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all its work staged and no commit; the orchestrator resumed the session with 60 more turns, and it committed in 6. SP-etslk6yu close evidence: the ST-jqwqdj2g worker (story, 17 touches, cap 100) hit its turn cap with every change staged and nothing committed; a resume of 8 turns finished it."
 }

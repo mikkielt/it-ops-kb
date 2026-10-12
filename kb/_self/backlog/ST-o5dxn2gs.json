@@ -18,5 +18,6 @@
   ],
   "links": [
     "parked: SP-sbdy4hsx close"
-  ]
+  ],
+  "notes": "SP-etslk6yu close evidence: ST-jqwqdj2g's worker raised four blocking gates mid-work (fraction, per-provider lifetime defaults, commit window, off-switch), and ST-f2n2h22c's worker one (g1, the hint window); the per-provider lifetime_days defaults were answered with no measurement behind them."
 }
