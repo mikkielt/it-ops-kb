@@ -492,7 +492,9 @@ def design_section():
 
 
 def gap_section(home, seed):
-    """Open entries of the gaps ledger (tagged UNK, with no Resolved or Superseded line under them), asked as topics."""
+    """Open entries of the gaps ledger (tagged UNK, with no note line kbfacts.OPEN_GAP reads under them: the router's
+    reader, so the pool and the router agree on what is open), asked as topics."""
+    import kbfacts
     lines = (Path(home) / "kb" / "public" / "_gaps.md").read_text(encoding="utf-8").splitlines()
     entries, cur = [], None
     for ln in lines:
@@ -507,7 +509,7 @@ def gap_section(home, seed):
     for e in entries:
         text = " ".join(x.strip() for x in e)
         m = re.match(r"- \*\*(.+?)\*\*", e[0])
-        if not m or "[UNK" not in text or re.search(r"- (Resolved|Superseded)", text) or m.group(1).startswith(("Closed", "Resolved")):
+        if not m or "[UNK" not in text or kbfacts.OPEN_GAP.search(text) or m.group(1).startswith(("Closed", "Resolved")):
             continue
         title = re.sub(r"^(Still open|Narrowed, not closed):\s*", "", m.group(1)).strip(" .:*")
         topic = re.search(r"\(topic: ([\w./-]+)\)", text)
