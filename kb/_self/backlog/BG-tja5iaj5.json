@@ -1,0 +1,17 @@
+{
+  "id": "BG-tja5iaj5",
+  "kind": "bug",
+  "title": "bench_pool.list_usd prices a model with no main-session request at the page's cache-read rate whatever the run's Claude Code version",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bench_pool.list_usd prices the cache reads of a model that has no request of the main session at bench_core.read_price for the run's Claude Code version, so a run on a version before 2.1.296 counts Sonnet 5.5 cache reads at 0.20 there as it does for the model's own requests",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bench_pool as bp; r={'requests':[{'model':'claude-haiku-5-5','usage':{'input_tokens':1}}],'model_usage':{'claude-sonnet-5-5':{'uncached':0,'cache_write':0,'cache_read':1000000,'out':0}}}; c=bp.list_usd(r,'',cc='2.1.295'); assert abs(c-0.20)<1e-6, c"
+    ]
+  }
+}
