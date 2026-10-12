@@ -184,7 +184,7 @@ def routed(res):
                 "source urls, then " + live
                 + (" The pack's check: line flags a possible false good: if no cited line answers the question "
                    "itself, treat the whole question as what the kb lacks."
-                   if res.get("unmatched") or res.get("spread") else ""))
+                   if any(res.get(k) for k in ("unmatched", "spread", "scatter", "passing", "priced", "parted")) else ""))
     head = (f"The kb: hook ran the kb evidence pack for this question (coverage: {res['verdict']}, route: {route}). "
             f"{what}\n\n")
     while lines and len(head) + len("\n".join(lines)) > LIMIT:  # over 10,000 characters the context is saved to a file
