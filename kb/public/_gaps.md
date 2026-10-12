@@ -875,6 +875,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 - LangSmith Deployment current pricing tiers and self-hosted licensing terms are not documented on the fetched LangGraph platform overview page; `docs.langchain.com/langsmith/deployments` was not independently fetched this pass (1 lookup). The exact `langchain-mcp-adapters` → `langchain[mcp]` step-by-step migration guide referenced by the docs was likewise not located on a fetched page (1 lookup). (topic: agents/langgraph)
   - Resolved 2026-09-27: LangChain pricing page (S-woho7bmc: Developer $0, Plus $39 per seat with Deployment access, Enterprise with self-hosted options), self-hosting needs an Enterprise plan and licence key (S-ujkfhzif), and the MCP adapters migration guide (S-bygurlbr). (topic: agents/langgraph)
+- The install and licence facts cite the PyPI project page (S-6buofrld), which returned its script-challenge notice ("A required part of this site couldn't load") to a plain fetch on 2026-10-12, so no sentence of it backs those facts; the project JSON (S-v5hqqcqx) reports `1.2.14` (uploaded 2026-10-06) against the `1.2.12` the install fact records. Left open until the install fact is restated with the JSON as its source. See `QK-pypi-project-metadata-report-now-langgraph` in `_answers.md`. (topic: agents/langgraph)
 
 ## agents/microsoft-agent-framework
 

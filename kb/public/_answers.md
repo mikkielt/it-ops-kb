@@ -3248,3 +3248,13 @@ _Agent: kb-research_
 - See agents/test-suite-size-and-agent-overengineering.md, claude/hooks.md, claude/settings-and-scopes.md.
 
 _Agent: kb-research_
+
+## QK-pypi-project-metadata-report-now-langgraph. What do the PyPI project metadata report now for LangGraph's latest version and licence?
+- PyPI's project JSON for `langgraph` reported version `1.2.14`, uploaded 2026-10-06, when read on 2026-10-12. [DOC S-v5hqqcqx]
+- The same JSON gives the licence as the SPDX expression `MIT`. [DOC S-v5hqqcqx]
+- The kb's install fact records `1.2.12` as the latest version seen on the project page on 2026-09-26. [DOC S-6buofrld]
+- Conclusion: the version in the install fact is two releases behind the index and needs restating with the JSON as its source; the licence it records still holds. The project's HTML page cannot back a fact: a plain fetch of it on 2026-10-12 returned the page's script-challenge notice, so a fact whose source is that page cannot be anchored to a sentence, while the JSON route answers with the fields. [DER S-v5hqqcqx, S-6buofrld: the JSON read against the recorded fact and the HTML fetch]
+- Open: whether the HTML page serves its text to a browser; the kb reads the JSON instead. [UNK]
+- See agents/langgraph.md.
+
+_Agent: kb-research_
