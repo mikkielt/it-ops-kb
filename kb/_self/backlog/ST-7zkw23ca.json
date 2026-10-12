@@ -120,6 +120,50 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "read-cache",
+      "kind": "blocking",
+      "question": "Where does provider.py read keep a fetched page, and for how long?",
+      "options": [
+        "_cache/provider-read/<sha256 of the url>.json, a 200 answer kept 7 days (the age of the docs_fetch cache and factdiff's fetch_all), --refresh fetches again",
+        "Under _cache/factdiff/ with the source documents, keyed by the url"
+      ],
+      "recommendation": "_cache/provider-read/<sha256 of the url>.json, a 200 answer kept 7 days (the age of the docs_fetch cache and factdiff's fetch_all), --refresh fetches again",
+      "class": "agents-rule"
+    },
+    {
+      "id": "read-output",
+      "kind": "blocking",
+      "question": "What does provider.py read print, and how much by default?",
+      "options": [
+        "cite: and read: header lines, then the lines holding every --grep word (any case, as substrings) as N:line, --context lines either side as N-line (default 0), at most 60 lines (--max); no --grep prints the text from --from LINE (default 1), 60 lines at a time",
+        "The whole text with no --grep and every matching line with no cap"
+      ],
+      "recommendation": "cite: and read: header lines, then the lines holding every --grep word (any case, as substrings) as N:line, --context lines either side as N-line (default 0), at most 60 lines (--max); no --grep prints the text from --from LINE (default 1), 60 lines at a time",
+      "class": "agents-rule"
+    },
+    {
+      "id": "read-exit",
+      "kind": "blocking",
+      "question": "Which exit codes does provider.py read give?",
+      "options": [
+        "0 when it printed text (and a line matched); 1 when the page did not answer 200, is not text (a PDF) or no line holds every word; 2 for bad arguments",
+        "0 whenever the page was read, even when no line holds every word"
+      ],
+      "recommendation": "0 when it printed text (and a line matched); 1 when the page did not answer 200, is not text (a PDF) or no line holds every word; 2 for bad arguments",
+      "class": "agents-rule"
+    },
+    {
+      "id": "read-rows",
+      "kind": "blocking",
+      "question": "How are the new providers.csv rows and the arXiv routes-table row named and worded?",
+      "options": [
+        "Rows github-blob (match github.com/*/*/blob/, raw_form blob-to-raw) and arxiv (match arxiv.org/abs/, raw_form arxiv-api, search_api the export API's search_query), a routes-table row for arxiv.org whose avoid cell does not name WebFetch (so the WebFetch hook denies no arxiv.org fetch), arxiv probed_utc left empty until the export API answers a probe",
+        "The same rows, with the arxiv.org routes-table row's avoid cell naming WebFetch, so the hook denies WebFetch on arxiv.org"
+      ],
+      "recommendation": "Rows github-blob (match github.com/*/*/blob/, raw_form blob-to-raw) and arxiv (match arxiv.org/abs/, raw_form arxiv-api, search_api the export API's search_query), a routes-table row for arxiv.org whose avoid cell does not name WebFetch (so the WebFetch hook denies no arxiv.org fetch), arxiv probed_utc left empty until the export API answers a probe",
+      "class": "push"
     }
   ],
   "links": [
