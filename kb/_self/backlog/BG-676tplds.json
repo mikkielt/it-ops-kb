@@ -2,7 +2,7 @@
   "id": "BG-676tplds",
   "kind": "bug",
   "title": "check.py no longer refuses a ledger citation more than one line past the end of its article: the range clamp gives an empty range",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",
   "rank": 0,

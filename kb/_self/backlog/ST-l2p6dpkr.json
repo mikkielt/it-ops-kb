@@ -2,7 +2,7 @@
   "id": "ST-l2p6dpkr",
   "kind": "story",
   "title": "done refuses a content item whose commit advances _fetch_state.csv baselines or drops anchors of sources its goal does not name",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",

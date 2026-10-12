@@ -2,7 +2,7 @@
   "id": "BG-wrzxhd4q",
   "kind": "bug",
   "title": "kb-verify lint.py given a kb/-prefixed article path lints nothing and prints errors=0 warnings=0, so a worker reports a clean lint the land then refuses",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",
   "rank": 0,

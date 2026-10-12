@@ -2,7 +2,7 @@
   "id": "ST-o32bt4yx",
   "kind": "story",
   "title": "Research sprint goal: Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7nv2ffr2",
   "goal_research": true,
   "priority": "P1",

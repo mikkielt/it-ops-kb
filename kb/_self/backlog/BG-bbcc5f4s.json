@@ -2,7 +2,7 @@
   "id": "BG-bbcc5f4s",
   "kind": "bug",
   "title": "apply's lead share check reads the whole source line, so a long line's clipped passage that does not answer is still applied",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7nv2ffr2",
   "priority": "P3",
   "rank": 0,

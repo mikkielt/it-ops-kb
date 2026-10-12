@@ -2,7 +2,7 @@
   "id": "BG-7ivc4owm",
   "kind": "bug",
   "title": "The sync gate's held-out reword check does not run when a landing changes only doc2query expansions.csv",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7nv2ffr2",
   "priority": "P3",
   "rank": 0,
