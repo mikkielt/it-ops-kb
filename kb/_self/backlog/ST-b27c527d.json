@@ -108,12 +108,64 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "rrf-tie",
+      "kind": "blocking",
+      "question": "How does the router break a tie among equal fused RRF scores (the sources give no tie rule)?",
+      "options": [
+        "Best single rank among the lists, then the path:line key in path then line order",
+        "The path:line key alone"
+      ],
+      "recommendation": "Best single rank among the lists, then the path:line key in path then line order",
+      "class": "agents-rule",
+      "answer": "Best single rank among the lists, then the path:line key in path then line order",
+      "by": "operator"
+    },
+    {
+      "id": "ledger-hit",
+      "kind": "blocking",
+      "question": "When does a ledger expert (conflict, gap) answer a question: which entries count as a hit?",
+      "options": [
+        "Every one of the question's topic words (cue words left out, at least 3) is in the entry's title; a gap entry must be open (tagged UNK, no Resolved or Superseded line)",
+        "At least 80% of the topic words are in the entry's whole text"
+      ],
+      "recommendation": "Every one of the question's topic words (cue words left out, at least 3) is in the entry's title; a gap entry must be open (tagged UNK, no Resolved or Superseded line)",
+      "class": "agents-rule",
+      "answer": "Every one of the question's topic words (cue words left out, at least 3) is in the entry's title; a gap entry must be open (tagged UNK, no Resolved or Superseded line)",
+      "by": "operator"
+    },
+    {
+      "id": "routed-size",
+      "kind": "blocking",
+      "question": "How much does a routed answer print?",
+      "options": [
+        "At most 6 items (ledger entries, decision rows, citing files), each ledger entry whole up to 1800 characters cut at a word, then the sources' urls",
+        "At most 3 items, each entry cut to 600 characters"
+      ],
+      "recommendation": "At most 6 items (ledger entries, decision rows, citing files), each ledger entry whole up to 1800 characters cut at a word, then the sources' urls",
+      "class": "agents-rule",
+      "answer": "At most 6 items (ledger entries, decision rows, citing files), each ledger entry whole up to 1800 characters cut at a word, then the sources' urls",
+      "by": "operator"
+    },
+    {
+      "id": "eval-guard",
+      "kind": "blocking",
+      "question": "Does rag.py eval refuse an eval row whose question a kind expert routes, so every row stays a ranking row?",
+      "options": [
+        "Yes: a routed row fails with failed=routed (eval still calls pack, so ranking is unchanged)",
+        "No: eval never reads the router"
+      ],
+      "recommendation": "Yes: a routed row fails with failed=routed (eval still calls pack, so ranking is unchanged)",
+      "class": "agents-rule",
+      "answer": "Yes: a routed row fails with failed=routed (eval still calls pack, so ranking is unchanged)",
+      "by": "operator"
     }
   ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md",
     "kb:public/_answers.md#QK-deterministic-retrieval-experts"
   ],
-  "notes": "Premise: python3 _tools/rag.py pack 'How many articles does the kb hold in the intune domain?' prints no article count, while python3 _tools/rag.py audit intune ends articles=23. An offline probe on 2026-10-11 (no model) routed the pool's rows by kind: count 0 to 3 of 3, decision 0 to 2 of 2, gap 2 to 5 of 5, conflict 0 of 2 until the entry is printed whole (rag.py search cuts _conflicts.md:171 before [DOC S1800,S1801,S1802]); the pool record of 2026-10-09 had the hook arm 0 of 3 count, 0 of 2 decision, 0 of 2 conflict, 2 of 5 gap and the router 0 of 2 decision and conflict. Facts: public/agents/hybrid-retrieval.md (Rank fusion: the original RRF paper; Mixture of retrievers; How these map onto a deterministic toolset), QK-deterministic-retrieval-experts. A typo leg is out: pack passed 10 of 10 typo variants and a closest-word fixer broke the 24H2 false_good row. The hook arm rerun is benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap with --out in a scratch directory (no paid run). Planned 2026-10-12: premise reproduced (pack 'How many articles does the kb hold in the intune domain?' answers good from security/policy-precedence.md with no count). The pack_routes_kind test reads the pool's count, decision, conflict and gap rows through bench_pool's own row reader and drives the kb: hook route on them, so it reads the last clause; the free rerun (benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap --out <scratch>) is recorded in the notes at done. rag.py eval passes before the work (621 of 621) and pins the unchanged ranking.",
+  "notes": "Premise: python3 _tools/rag.py pack 'How many articles does the kb hold in the intune domain?' prints no article count, while python3 _tools/rag.py audit intune ends articles=23. An offline probe on 2026-10-11 (no model) routed the pool's rows by kind: count 0 to 3 of 3, decision 0 to 2 of 2, gap 2 to 5 of 5, conflict 0 of 2 until the entry is printed whole (rag.py search cuts _conflicts.md:171 before [DOC S1800,S1801,S1802]); the pool record of 2026-10-09 had the hook arm 0 of 3 count, 0 of 2 decision, 0 of 2 conflict, 2 of 5 gap and the router 0 of 2 decision and conflict. Facts: public/agents/hybrid-retrieval.md (Rank fusion: the original RRF paper; Mixture of retrievers; How these map onto a deterministic toolset), QK-deterministic-retrieval-experts. A typo leg is out: pack passed 10 of 10 typo variants and a closest-word fixer broke the 24H2 false_good row. The hook arm rerun is benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap with --out in a scratch directory (no paid run). Planned 2026-10-12: premise reproduced (pack 'How many articles does the kb hold in the intune domain?' answers good from security/policy-precedence.md with no count). The pack_routes_kind test reads the pool's count, decision, conflict and gap rows through bench_pool's own row reader and drives the kb: hook route on them, so it reads the last clause; the free rerun (benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap --out <scratch>) is recorded in the notes at done. rag.py eval passes before the work (621 of 621) and pins the unchanged ranking. Done 2026-10-12: the free rerun (benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap, no paid run) on commit 88d908e: count 3 of 3, decision 2 of 2, conflict 2 of 2, gap 5 of 5, 12 of 12 runs right, checks 16/16, cost 0; the record of 2026-10-09 had 0 of 3, 0 of 2, 0 of 2 and 2 of 5. rag.py eval 621 of 621 with the routed guard.",
   "claimed_by": "orch-7n3d4jte"
 }

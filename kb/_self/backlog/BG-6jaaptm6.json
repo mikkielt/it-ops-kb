@@ -1,0 +1,17 @@
+{
+  "id": "BG-6jaaptm6",
+  "kind": "bug",
+  "title": "The full test suite takes over the darwin time ceiling: 22.5 s against 22 s, with and without ST-b27c527d's change",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/tests.py --no-reuse exits 0 on the darwin host: a full run of the 100 ids stays within the ceiling of _tools/tests_ceiling.json (max_seconds darwin 20, times the host factor), by speeding the slowest tests or by the operator's recorded answer that raises the ceiling",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py",
+      "--no-reuse"
+    ]
+  }
+}

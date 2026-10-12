@@ -1,12 +1,12 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
-(the generated index), the lookup eval (rag.py eval), and the pack format, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
+(the generated index), the lookup eval (rag.py eval), the pack format and the questions it routes by kind to the tool that holds the answer, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
 index's unit cache is pinned on a planted fixture root, not on the live kb."""
-import csv, os, re, sqlite3, subprocess, sys, time
+import csv, json, os, re, sqlite3, subprocess, sys, time
 from pathlib import Path
 
 import pytest
 
-import kbcommon, kbfacts, kbid, selfdoc
+import bench_pool, kb_hook, kbcommon, kbfacts, kbid, selfdoc
 from conftest import TOOLS, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
@@ -152,11 +152,26 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_prints_coverage_and_fact_lines_with_path_line_and_tag():
+def test_pack_routes_kind_to_its_tool_and_prints_other_questions_as_coverage_and_fact_lines():
     code, out = tool("rag.py", "pack", good_row()["question"])
     assert code == 0, out[-1500:]
     assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
     assert re.search(r"\S+\.md:\d+.*\[(DOC|CODE|DER|COMMUNITY|UNK)\b", out), out[:1500]
+    assert kbfacts.routed(good_row()["question"]) is None  # a question of no kind a tool decides ranks as pack ranks it
+    # the pool's count, decision, conflict and gap rows: the kb: hook blocks on the answer of the tool that holds it,
+    # each line with its path:line, and the row's own checks read it
+    rows = bench_pool.load_pool(kinds={"count", "decision", "conflict", "gap"})
+    assert {r["kind"] for r in rows} == {"count", "decision", "conflict", "gap"}
+    for r in rows:
+        res = kb_hook.answer("kb: " + r["question"])
+        assert res and res["decision"] == "block", (r["id"], res)
+        for check in json.loads(r["checks"]):
+            assert re.search(check, res["reason"]), (r["id"], check, res["reason"][:800])
+        assert r["kind"] == "count" or re.search(r"^- \S+:[1-9]\d* ", res["reason"], re.M), (r["id"], res["reason"][:800])
+    # experts that both answer are fused by rank alone (k = 60): a key in both lists leads; equal scores go to the key
+    fused = kbfacts.rrf([[("a.md", 1), ("b.md", 1)], [("b.md", 1), ("c.md", 1)]])
+    assert [k for k, _ in fused] == [("b.md", 1), ("a.md", 1), ("c.md", 1)], fused
+    assert [k for k, _ in kbfacts.rrf([[("z.md", 2)], [("a.md", 9)]])] == [("a.md", 9), ("z.md", 2)]
     # a question about one model: the pack leads with that model's row of the models table, not prose that names it
     code, out = tool("rag.py", "pack", "Claude Sonnet 5.5 model release capabilities pricing context window", "--budget", "300")
     assert code == 0, out[-1500:]

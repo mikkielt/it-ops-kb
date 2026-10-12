@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """UserPromptSubmit hook: answer `kb:` prompts from the kb without the model (stdlib only).
 
-  kb: <question>    run the evidence pack (kbfacts.pack). coverage: good -> block the prompt and show the pack to the
+  kb: <question>    a question of a kind a tool decides (a count or list of articles, a decision id, which sources
+                    disagree, what the kb says about a topic a gaps entry records, which articles cite a source id:
+                    kbfacts.routed) is answered by that tool, with the lines' path:line: the prompt is blocked and the
+                    answer shown, as for a good pack. Any other question runs the evidence pack (kbfacts.pack).
+                    coverage: good -> block the prompt and show the pack to the
                     user as the block reason: the model is never called and no tokens are spent; but a good pack
                     with a route (a `check:` line: a name the lead article never mentions, or key words spread over
                     separate facts, a possible false good; or a word nowhere in the kb) goes to the model, so it decides.
@@ -11,8 +15,8 @@
                     not in the kb' with its url and never fill it from memory, then the pack (split) or only its
                     coverage, route:, kb has: and kb lacks: lines (web: no fact lines), cut so the context stays under
                     the 10,000 characters Claude Code keeps.
-  kb+: <question>   always let the prompt through (the model reasons over it): a clean good pack attached with a short
-                    instruction, a pack with a route as for kb:.
+  kb+: <question>   always let the prompt through (the model reasons over it): a clean good pack, or a routed answer,
+                    attached with a short instruction, a pack with a route as for kb:.
   backlog: [text]   run `backlog.py horizon` and `backlog.py next --all --any` (subprocesses; the text is not read) and
                     block the prompt with their output as the reason: no model call. A command that fails or times out
                     lets the prompt through with a note of what failed.
@@ -72,13 +76,23 @@ def respond(prompt):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import kbcommon, kbfacts
     try:
-        res = kbfacts.pack(question)
+        res = kbfacts.pack_routed(question)
     except kbcommon.RootError as e:  # a malformed ROOT_FILE or a clash between roots: never block the prompt on it
         return ({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                         "additionalContext": f"it-ops-kb could not read its roots: {e}"}},
                 {"question": question, "forward": forward, "verdict": "error"})
     row = {"question": question, "forward": forward, "verdict": res["verdict"], "articles": res["paths"][:20],
            "pack": res["text"]}  # main keeps the pack's kb lines (ql_capture.pack_lines), never its text
+    if res.get("routed"):  # a kind a tool decides (count, decision, conflict, gap, citation): its answer, as a good pack's
+        if not forward:
+            return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
+        context = (f"The kb: hook routed this question by its kind ({', '.join(res['routed']['kinds'])}) to the tool that "
+                   "holds the answer. Answer from the lines below with path:line and source urls."
+                   + (" The kb lacks it: state that with the entry, then research only what it lacks in the live docs "
+                      "and label that part 'live docs, not in the kb' with its url; never fill it from memory."
+                      if res.get("route") else "") + "\n\n" + res["text"])
+        return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context[:LIMIT]}}, \
+            dict(row, answered=False)
     if res["verdict"] == "good" and not forward and not res.get("route"):  # a routed good (a check: line, a word not in the kb) goes on
         return {"decision": "block", "reason": res["text"] + NOTE}, dict(row, answered=True)
     if res.get("route"):  # weak, none, or a flagged good: the differential (the kb has part, the live docs the rest)

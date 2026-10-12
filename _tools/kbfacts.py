@@ -915,6 +915,8 @@ def decision_label(d):
         return "decided" + (f" by {d['by']}" if d["by"] else "") + (f" on {d['date']}" if d["date"] else "")
     if d["status"] == "proposed":
         return "proposed (not confirmed)"
+    if d["status"] == "superseded":
+        return "superseded"
     return f"invalidated because {d['reason'] or 'no reason recorded'}"
 
 
@@ -2847,17 +2849,19 @@ PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
-    {verdict (the worst), results, text}. A single question gives exactly pack()'s text. With 3 or more questions
+    {verdict (the worst), results, text}. A part of a kind a tool decides is answered by that tool (pack_routed).
+    A single question gives exactly pack()'s text, or its routed answer. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
     `route` is the overall route of the parts, printed as the pack's first line: `web` when every part routes web,
     else `split` when any part routes; None (no line) when none does. One question gives its pack's route."""
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
-        res = pack(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
+        res = pack_routed(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
         return {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
-    results = [pack(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item) for q in qs]
+    results = [pack_routed(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item)
+               for q in qs]
     routes = [r["route"] for r in results if r["route"]]
     route = None if not routes else "web" if all(r["route"] == "web" for r in results) else "split"
     out, seen, srcs = ([f"route: {route}"] if route else []), set(), []
@@ -2888,6 +2892,287 @@ def cited_lines(ids):
             for i in set(ID.findall(ln)) & want:
                 out[i].append((rel, n))
     return out
+
+
+# ---------------------------------------------------------------- questions a tool answers, routed by their kind
+
+RRF_K = 60  # reciprocal rank fusion's rank constant: the original paper's and Elasticsearch's default `rank_constant`
+ROUTED_ITEMS = 6  # items (ledger entries, decision rows, citing files) a routed answer prints
+ENTRY_CHARS = 1800  # characters of one ledger entry it prints (clip): the whole entry, its source ids included
+TOPIC_MIN = 3  # topic words a question needs for a ledger expert to answer it
+ROUTED_PATHS = 40  # article paths a routed list of articles prints
+
+COUNT_CUE = re.compile(r"\b(?:how many|number of|count of|total number of)\b[^?]*\b(?:articles?|topics?)\b"
+                       r"|\b(?:list|which|what)\b[^?]*\b(?:articles?|topics?)\b[^?]*\b(?:are|is|with status|status)\s+"
+                       r"(?:partial|complete|unknown)\b", re.I)
+LIST_CUE = re.compile(r"\b(?:list|which|what)\b", re.I)
+STATUS_CUE = re.compile(r"\b(partial|complete|unknown)\b", re.I)
+SCOPE_CUE = re.compile(r"\b(?:kb|all|every|total|whole)\b", re.I)
+COUNT_STEMS = frozenset(stem(w) for w in (
+    "article", "articles", "topic", "topics", "many", "number", "count", "list", "hold", "holds", "have", "contain",
+    "contains", "cover", "covers", "domain", "domains", "total", "partial", "complete", "unknown", "status", "kb",
+    "all", "every", "whole", "exist", "each", "per", "currently", "which", "what", "public"))
+CITE_CUE = re.compile(r"\b(?:cit\w*|us\w* by|used in|refer\w*|mention\w*|name\w*)\b", re.I)
+DECISION_REF = re.compile(rf"(?<![\w-]){kbcommon.DECISION_ID.pattern}(?![\w-])")
+CONFLICT_CUE = re.compile(r"\b(?:disagree\w*|conflict\w*|contradict\w*|inconsisten\w*)\b", re.I)
+GAP_CUE = re.compile(r"\bwhat (?:does|do) the kb (?:say|know|document|cover|record|hold|have)\b"
+                     r"|\bdoes the kb (?:cover|document|have|say|know|mention|hold|record)\b", re.I)
+LEDGER_STEMS = frozenset(stem(w) for w in (
+    "source", "sources", "disagree", "disagrees", "conflict", "conflicts", "contradict", "contradicts", "inconsistent",
+    "page", "pages", "doc", "docs", "documentation", "kb", "cover", "know", "document", "record", "hold", "mention",
+    "about", "regarding", "say", "have"))
+OPEN_GAP = re.compile(r"(?:^|\s)- (?:Resolved|Superseded)\b")  # a continuation line that closes a gaps.md entry
+KIND_PHRASE = {"count": "the audit totals", "decision": "the decisions ledger", "conflict": "the whole _conflicts.md entry",
+               "gap": "an open _gaps.md entry: the kb lacks it", "cites": "the lines that cite the source (src --cited)"}
+
+
+def rrf(lists, k=RRF_K):
+    """Reciprocal rank fusion of ranked lists of keys: [(key, score)] best first, where a key scores the sum of
+    1/(k + rank) over the lists that hold it, ranks counted from 1, and adds nothing for a list that lacks it. Only
+    ranks are read, so no score is calibrated. Scores are exact fractions; equal ones go to the best single rank, then
+    to the key (a (path, line) pair: path, then line)."""
+    score, best = defaultdict(Fraction), {}
+    for items in lists:
+        for rank, key in enumerate(dict.fromkeys(items), start=1):
+            score[key] += Fraction(1, k + rank)
+            best[key] = min(best.get(key, rank), rank)
+    return sorted(score.items(), key=lambda kv: (-kv[1], best[kv[0]], kv[0]))
+
+
+def _topic_terms(question, drop):
+    """The question's key words that are not cue words (`drop`): the topic a ledger entry has to hold."""
+    return {t for t in key_terms(question) if t not in drop}
+
+
+def _entry_in_domain(e, domain):
+    """Whether a ledger entry belongs to bare domain `domain`: its `## ` section is the domain's or starts with it, or
+    its text names a `topic: <domain>/...` marker."""
+    d = bare(domain.strip("/"))
+    return e["section"] == d or e["section"].startswith(d + "-") or f"topic: {d}/" in e["text"]
+
+
+def _entry_title(e, lines):
+    """The heading of a ledger entry: its `### ` line, or the bold lead of a bullet (else the bullet's first
+    sentence)."""
+    line = lines[e["line"] - 1] if 0 < e["line"] <= len(lines) else e["text"]
+    line = line.lstrip("#- ").strip()
+    m = re.match(r"\*\*(.+?)\*\*", line)
+    return m.group(1).strip(" .:") if m else line.split(". ")[0]
+
+
+def _heading_blocks(name):
+    """The `### ` blocks of a ledger that ledger_entries() leaves as sub-headings (the heading is followed by bullets:
+    `### on-prem / Windows / ConfigMgr / SQL`): {file, line, end, section, text} with the heading and every line under
+    it up to the next heading, so a question that names the heading finds what its bullets say."""
+    out = []
+    for q in root_files((name,)):
+        section, cur = "", None
+        for n, ln in enumerate((read(q) or "").splitlines(), start=1):
+            if ln.startswith("#"):
+                cur = None
+                if ln.startswith("## "):
+                    section = ln[3:].strip()
+                elif ln.startswith("### "):
+                    cur = {"file": q, "line": n, "end": n, "section": section, "text": ln[4:].strip()}
+                    out.append(cur)
+            elif cur is not None and ln.strip():
+                cur["text"] += " " + ln.strip()
+                cur["end"] = n
+    return out
+
+
+def _ledger_items(question, name, kind, cue_stems, domain, root, open_only):
+    """The entries of ledger `name` whose title holds every topic word of the question (TOPIC_MIN of them at least),
+    tightest title first, as routed items. `open_only`: a gaps entry that is tagged UNK and has no Resolved or
+    Superseded line."""
+    topic = _topic_terms(question, cue_stems)
+    if len(topic) < TOPIC_MIN:
+        return []
+    found, files = [], {}
+    entries = ledger_entries(name)
+    if not open_only:
+        have = {(e["file"], e["line"]) for e in entries}
+        entries += [b for b in _heading_blocks(name) if (b["file"], b["line"]) not in have and b["end"] > b["line"]]
+    for e in entries:
+        if root and root_name(e["file"]) != root or domain and not _entry_in_domain(e, domain):
+            continue
+        if open_only and ("[UNK" not in e["text"] or OPEN_GAP.search(e["text"])):
+            continue
+        lines = files.setdefault(e["file"], (read(e["file"]) or "").splitlines())
+        title = _entry_title(e, lines)
+        if open_only and title.startswith(("Closed", "Resolved")):
+            continue
+        held = set(terms(title))
+        if topic <= held:
+            found.append((len(held), e["file"], e["line"], e, title))
+    out = []
+    for _, path, line, e, title in sorted(found, key=lambda x: x[:3]):
+        span = f"line {line}" if e["end"] == line else f"lines {line}-{e['end']}"
+        word = "open gap entry, the kb lacks it" if open_only else "conflict entry"
+        out.append({"key": (path, line), "kind": kind, "path": path, "title": title, "lacks": open_only,
+                    "lines": [f"- {path}:{line} [{word}; {span}] {clip(e['text'], ENTRY_CHARS)}"]})
+    return out
+
+
+def _conflict_items(question, domain, root, invalidated):
+    return _ledger_items(question, kbcommon.CONFLICTS, "conflict", LEDGER_STEMS, domain, root, False)
+
+
+def _gap_items(question, domain, root, invalidated):
+    return _ledger_items(question, kbcommon.GAPS, "gap", LEDGER_STEMS, domain, root, True)
+
+
+def _decision_items(question, domain, root, invalidated):
+    """The rows of the decisions ledgers (every status: the question names the id) of the ids the question names, in
+    the order named, each as `rag.py show` and kbdecide list read it."""
+    rows = {d["id"]: d for d in decision_rows() if not root or d["root"] == root}
+    out = []
+    for i in dict.fromkeys(DECISION_REF.findall(question)):
+        d = rows.get(i)
+        if d:
+            out.append({"key": (d["path"], d["line"]), "kind": "decision", "path": d["path"],
+                        "lines": [decision_line(d, source=True)]})
+    return out
+
+
+def _cites_items(question, domain, root, invalidated):
+    """One item per file that names a source id of the question (src --cited), files naming most of the ids first,
+    then in path order; its line is the file's first citing line."""
+    ids = list(dict.fromkeys(kbid.canonical_id(i) for i in ID.findall(question)))
+    prefix = scope(domain, root)
+    cited = cited_lines(ids) if ids else {}
+    by_file = {}
+    for i in ids:
+        for path, n in cited.get(i, []):
+            if prefix and not in_prefix(path, prefix):
+                continue
+            by_file.setdefault(path, {}).setdefault(i, []).append(n)
+    out = []
+    for path, hits in sorted(by_file.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        first = min(n for ns in hits.values() for n in ns)
+        said = "; ".join(f"{i}: line{'s' if len(ns) > 1 else ''} {', '.join(map(str, ns[:6]))}"
+                         + (f" (+{len(ns) - 6})" if len(ns) > 6 else "") for i, ns in hits.items())
+        out.append({"key": (path, first), "kind": "cites", "path": path, "ids": sorted(hits),
+                    "lines": [f"- {path}:{first} cites {said}"]})
+    return out
+
+
+def _count_items(question, domain, root, invalidated):
+    """The audit totals (rag.py audit) of the domains the question names, or of the kb: the number of articles and
+    their statuses, and the article paths when the question asks for a list. Nothing when the question also names a
+    topic (`how many articles about Kerberos`), which is a lookup."""
+    doms = sorted({bare(p).split("/", 1)[0] for p in articles() if "/" in bare(p)})
+    words = {w.lower() for w in WORD.findall(question)}
+    named = [d for d in doms if d.lower() in words]
+    known = COUNT_STEMS | {stem(d.lower()) for d in named}
+    if set(key_terms(question)) - known:
+        return []
+    if not named and not (domain or SCOPE_CUE.search(question)):
+        return []
+    found = STATUS_CUE.search(question)
+    status = found.group(1).lower() if found else None
+    wanted = named or [domain or None]
+    rows, lines = [], []
+    for d in wanted:  # the selection audit() makes, without its ledger links: the totals are the same
+        prefix = scope(d, root)
+        part = [{"path": p, "status": m.get("status", "")} for p, m in sorted(articles().items())
+                if (not prefix or in_prefix(p, prefix)) and (not status or m.get("status") == status)]
+        rows += part
+        counts = Counter(r["status"] or "unknown" for r in part)
+        label = d or "the kb"
+        lines.append(f"{label}: articles={len(part)}" + (f" with status {status}" if status else "")
+                     + (" (" + ", ".join(f"{k}={v}" for k, v in sorted(counts.items())) + ")" if counts else ""))
+    if len(wanted) > 1:
+        lines.append(f"total: articles={len(rows)}")
+    shown = " ".join(w for w in wanted if w) + (f" --status {status}" if status else "")
+    if LIST_CUE.search(question):
+        lines += [f"- {r['path']} {r['status'] or 'unknown'}" for r in rows[:ROUTED_PATHS]]
+        if len(rows) > ROUTED_PATHS:
+            lines.append(f"  (+{len(rows) - ROUTED_PATHS} more: python3 _tools/rag.py audit {shown})".replace(" )", ")"))
+    lines.append(f"(the totals of python3 _tools/rag.py audit {shown})".replace(" )", ")"))
+    return [{"key": ("audit:" + (shown.strip() or "kb"), 0), "kind": "count", "path": "", "lines": lines}]
+
+
+EXPERTS = (("decision", DECISION_REF, _decision_items), ("cites", None, _cites_items),
+           ("count", COUNT_CUE, _count_items), ("conflict", CONFLICT_CUE, _conflict_items),
+           ("gap", GAP_CUE, _gap_items))  # (kind, cue, expert): the cues are deterministic, an expert may answer nothing
+
+
+def kinds_of_question(question):
+    """The kinds of the experts whose cue the question shows, in EXPERTS order (an expert may still answer nothing).
+    `cites` shows when the question names a source id and a citation word."""
+    out = []
+    for kind, cue, _ in EXPERTS:
+        if kind == "cites":
+            hit = bool(ID.search(question) and CITE_CUE.search(question))
+        else:
+            hit = bool(cue.search(question))
+        if hit:
+            out.append(kind)
+    return out
+
+
+def routed(question, domain=None, root=None, fmt="detailed", footer=True, invalidated=False):
+    """The answer of the experts that hold the answer to a question of a kind a tool decides, or None when no cue
+    shows or no expert answers (the question ranks as pack() ranks it): a count or list of articles (audit totals), a
+    decision id (the decisions ledgers' row), a 'which sources disagree' question (the whole _conflicts.md entry with
+    its source ids), a 'what does the kb say about' question that an open _gaps.md entry records (`kb lacks:`), a
+    citation question (src --cited). When more than one expert answers, their lists are fused by rrf() and at most
+    ROUTED_ITEMS items print, each with its path:line. The result has pack()'s keys (verdict `good`, `none` when only
+    gap entries answer; route `web` then, else None) and `routed`: the kinds, the printed path:line keys."""
+    if root == SELF_ROOT:
+        return None
+    asked = kinds_of_question(question)
+    if not asked:
+        return None
+    experts = {k: f for k, _, f in EXPERTS}
+    lists = []
+    for k in asked:
+        items = experts[k](question, domain, root, invalidated)
+        if items:
+            lists.append((k, items))
+    if not lists:
+        return None
+    by_key = {}
+    for _, items in lists:
+        for it in items:
+            by_key.setdefault(it["key"], it)
+    fused = rrf([[it["key"] for it in items] for _, items in lists])
+    chosen = [by_key[k] for k, _ in fused][:ROUTED_ITEMS]
+    kinds = sorted({it["kind"] for it in chosen}, key=[k for k, _, _ in EXPERTS].index)
+    verdict = "none" if all(it.get("lacks") for it in chosen) else "good"
+    out = [f"coverage: {verdict} (routed by kind: " + "; ".join(f"{k}, from {KIND_PHRASE[k]}" for k in kinds) + ")"]
+    if verdict == "none":
+        out += ["route: web", "kb has: -", f"kb lacks: {clip(chosen[0]['title'], 160)}"]
+    for it in chosen:
+        out += it["lines"]
+    cited = []
+    for it in chosen:
+        cited += it.get("ids") or ID.findall("\n".join(it["lines"]))
+    rows, seen, srcs = source_rows(), set(), []
+    for i in cited:
+        if i not in seen:
+            seen.add(i)
+            row = rows.get(i) or {}
+            srcs.append((i, row.get("url") or "UNKNOWN id", (row.get("superseded_by") or "").strip()))
+    if srcs and footer and fmt != "concise":
+        out += ["", "sources:"] + format_sources(srcs)
+    paths = list(dict.fromkeys(it["path"] for it in chosen if it["path"]))
+    keys = [f"{k[0]}:{k[1]}" for k in (it["key"] for it in chosen) if not k[0].startswith("audit:")]
+    return {"verdict": verdict, "missing": [], "matched": [], "informative": [], "known": [], "unmatched": [],
+            "spread": None, "route": "web" if verdict == "none" else None, "has": [],
+            "lacks": [chosen[0]["title"]] if verdict == "none" else [], "paths": paths, "tested": [], "pinned": 0,
+            "key_missing": [], "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
+            "decisions": [], "logs": [], "routed": {"kinds": kinds, "lines": keys}}
+
+
+def pack_routed(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None,
+                invalidated=False, item=None, st=None):
+    """routed() when an expert answers the question, else pack() with the same arguments: the one entry the lookup
+    tools (rag.py pack, kb_pack, kb_ask.py, the kb: hook) call. A brief for a backlog item (`item`), a store view (`st`)
+    and the rule docs (root `_self`) are never routed."""
+    res = None if item or st is not None else routed(question, domain, root, fmt, footer, invalidated)
+    return res or pack(question, budget, domain, max_articles, fmt, footer, root, invalidated, item, st)
 
 
 # ---------------------------------------------------------------- topics for code (host workspace signals)
