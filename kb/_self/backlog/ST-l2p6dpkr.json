@@ -1,0 +1,27 @@
+{
+  "id": "ST-l2p6dpkr",
+  "kind": "story",
+  "title": "done refuses a content item whose commit advances _fetch_state.csv baselines or drops anchors of sources its goal does not name",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A content item's done (and land) names each _fetch_state.csv row and _anchors.csv row its commit changes for a source the item's goal and touched facts do not cite, and refuses until the worker restores them or the goal names them, so an anchor run cannot mark an unrelated source unchanged without its facts being re-read (SP-df2cu4uj: BG-gxxv3mzj advanced about 15 unrelated baselines and all checks passed).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_refuses_unrelated_fetch_state"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj close"
+  ]
+}

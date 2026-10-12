@@ -1,0 +1,28 @@
+{
+  "id": "ST-bp4us2ac",
+  "kind": "story",
+  "title": "Code that cites kb lines by number (bench_core.py) no longer blocks a content item from inserting a fact",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A content item may add or remove a line in an article or ledger that _tools code cites by path:line (bench_core.py cites _conflicts.md and ci-and-headless.md) without check.py failing on a file outside its touches: the code cites by anchor or the citation is rewritten by the tool that moves the line, or planning puts the citing file in the item's touches (SP-df2cu4uj: BG-3bjktw5x broke bench_core.py:36 by adding a line, BG-rtqshnro skipped a planned fact for that reason).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_line_citation_moves"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_core.py",
+    "_tools/check.py",
+    "_tools/test_bench.py"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj close"
+  ]
+}

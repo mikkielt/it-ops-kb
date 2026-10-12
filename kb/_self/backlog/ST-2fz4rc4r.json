@@ -1,0 +1,27 @@
+{
+  "id": "ST-2fz4rc4r",
+  "kind": "story",
+  "title": "factdiff.py review prints progress per source and names the fetch it waits on (it ran over 10 minutes silent in BG-rtqshnro)",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py review on the facts of one to five sources prints progress per source and finishes, or names the fetch it waits on, within a bound stated in its usage text, so a worker does not stop it and read pages by hand (SP-df2cu4uj, BG-rtqshnro).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "factdiff_review_progress"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj close"
+  ]
+}

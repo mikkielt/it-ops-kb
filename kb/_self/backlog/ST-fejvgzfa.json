@@ -1,0 +1,26 @@
+{
+  "id": "ST-fejvgzfa",
+  "kind": "story",
+  "title": "Planning a dead-source item asks before the start whether the source rows that quote the dead source in their licence cells are reworded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When a sprint plans an item that marks a source or repository dead, planning counts the _sources.csv rows whose licence or reuse cells quote it and asks a gate before the start gate on whether they are reworded in the item, so the choice is not a blocking gate mid-work (SP-df2cu4uj: BG-gxxv3mzj met it as gate g1, classed blocking by the word mirror, over 328 and 115 cells).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_dead_source_licence_gate"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj close"
+  ]
+}

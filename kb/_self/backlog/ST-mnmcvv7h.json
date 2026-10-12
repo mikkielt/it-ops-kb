@@ -1,0 +1,25 @@
+{
+  "id": "ST-mnmcvv7h",
+  "kind": "story",
+  "title": "The source rows whose licence cells say the MicrosoftDocs/memdocs mirror is archived or cite its LICENSE as the CC BY 4.0 grant say what holds now that it answers 404",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Through /kb-refresh: the kb/public/_sources.csv rows whose licence cell says public mirror MicrosoftDocs/memdocs archived, and those that cite its LICENSE as the CC BY 4.0 grant, say that the repository answers 404 since 2026-10-12 and that the grant was read before then, or rest on the Learn terms of use, without deleting a row (follow-up of gate g1 of BG-gxxv3mzj in SP-df2cu4uj, which left them as recorded).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1 if 'MicrosoftDocs/memdocs archived' in open('kb/public/_sources.csv', encoding='utf-8').read() else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_sources.csv"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj close"
+  ]
+}
