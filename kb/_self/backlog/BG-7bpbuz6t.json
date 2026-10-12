@@ -1,0 +1,29 @@
+{
+  "id": "BG-7bpbuz6t",
+  "kind": "bug",
+  "title": "claude/powershell-tool.md says the read-only Bash set runs without a prompt in every mode, but the permissions page now names blockReadsOutsideWorkingDirectories and auto mode's classifier as exceptions",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Through /kb-refresh of S742: the fact on the built-in read-only Bash set in claude/powershell-tool.md states the exceptions the current permissions page names (permissions.blockReadsOutsideWorkingDirectories for paths outside the working directories, and auto mode's classifier review), the S742 row is dated, and its anchor and fetch-state baseline are re-taken from a re-read of the page.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/public/claude/powershell-tool.md', encoding='utf-8').read(); sys.exit(1 if 'runs without a prompt in every mode' in t and 'blockReadsOutsideWorkingDirectories' not in t else 0)"
+    ]
+  },
+  "repro_reason": "SP-df2cu4uj's BG-gxxv3mzj advanced S742's fetch-state baseline without re-reading the fact, so factdiff.py detect reports the source unchanged and cannot show the stale wording",
+  "touches": [
+    "kb/public/claude/powershell-tool.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_fetch_state.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj review"
+  ]
+}

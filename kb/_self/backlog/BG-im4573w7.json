@@ -1,0 +1,25 @@
+{
+  "id": "BG-im4573w7",
+  "kind": "bug",
+  "title": "_answers.md still calls --max-budget-usd a hard cost cap and tags the archived memdocs as DOC on the dead rows S-rgpijsmb and S-yuwxbqz3",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Through /kb-refresh: the answers in kb/public/_answers.md that call --max-budget-usd a hard cost cap (S1824) or state the archived memdocs and its licence as DOC on S-rgpijsmb and S-yuwxbqz3 (QK-kb-need-know-before-licence-census) carry a dated correction that states what holds now: spend can pass the cap, and the repository answers 404 with those rows dead.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(1 if 'hard cost cap, \\x60--max-budget-usd\\x60' in open('kb/public/_answers.md', encoding='utf-8').read() else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of recorded answers; no tool reads an answer's truth against its source",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj review"
+  ]
+}

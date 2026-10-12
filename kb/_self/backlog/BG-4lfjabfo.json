@@ -1,0 +1,26 @@
+{
+  "id": "BG-4lfjabfo",
+  "kind": "bug",
+  "title": "agents/doc-lookup-sources.md tags as DOC on one Wayback capture that the archive holds no other capture, and tags the 404 probes DER on sources that do not hold them",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Through /kb-refresh of agents/doc-lookup-sources: the fact that the Internet Archive holds no capture of the memdocs API row, raw README or commit row is tagged DER with the lookups as its reason instead of DOC on the one capture S-u2afup7q, and the 404 probe fact names a reason its cited sources support or becomes [UNK].",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(1 if [l for l in open('kb/public/agents/doc-lookup-sources.md', encoding='utf-8') if 'holds no capture' in l and l.rstrip().endswith('[DOC S-u2afup7q]')] else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a fact's tag; check.py validates a tag's form, not whether the cited page states an absence",
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-df2cu4uj review"
+  ]
+}
