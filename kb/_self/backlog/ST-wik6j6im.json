@@ -2,7 +2,7 @@
   "id": "ST-wik6j6im",
   "kind": "story",
   "title": "Research sprint goal: Benchmark knowledge scenarios: a scenario question set and kb content for absent questions",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j2jn5ue4",
   "goal_research": true,
   "priority": "P1",
@@ -82,5 +82,52 @@
     }
   ],
   "notes": "Before (rag.py pack on origin/main 92bc6c598, 2026-10-12; checks 1-3 run then, each exit 1): FSMO coverage none, route web, lead windows/azure-arc-servers.md. DHCP failover a false good (coverage good, no check: line) led by windows/delivery-optimization.md. Automatic seeding a false good led by windows/azure-update-manager.md. The after measurement is checks 1-3 at done.",
-  "claimed_by": "orch-j2jn5ue4"
+  "evidence": {
+    "commit": "7a7621ca80e1a50e7b33bbc41e33351f26dc7af7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-wik6j6im"
+        ],
+        "exit": 0,
+        "sha256": "f5e92fe173fd92bd"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,re;t=subprocess.run([sys.executable,'_tools/rag.py','pack',sys.argv[1]],capture_output=True,text=True).stdout;head=t.split('\\n## ')[0];h=re.search(r'^## (.+)',t,re.M);print(t.splitlines()[0] if t else 'no pack');print(h.group(1) if h else 'no article');sys.exit(0 if t.startswith('coverage: good') and 'check:' not in head and h and re.search(sys.argv[2],h.group(1),re.I) else 1)",
+          "How do I transfer or seize the FSMO roles to another domain controller with PowerShell?",
+          "fsmo|operations master"
+        ],
+        "exit": 0,
+        "sha256": "f0e6db7d03ea3900"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,re;t=subprocess.run([sys.executable,'_tools/rag.py','pack',sys.argv[1]],capture_output=True,text=True).stdout;head=t.split('\\n## ')[0];h=re.search(r'^## (.+)',t,re.M);print(t.splitlines()[0] if t else 'no pack');print(h.group(1) if h else 'no article');sys.exit(0 if t.startswith('coverage: good') and 'check:' not in head and h and re.search(sys.argv[2],h.group(1),re.I) else 1)",
+          "How do I configure DHCP failover between two Windows Server DHCP servers?",
+          "dhcp"
+        ],
+        "exit": 0,
+        "sha256": "2a9c075b5c630a41"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,re;t=subprocess.run([sys.executable,'_tools/rag.py','pack',sys.argv[1]],capture_output=True,text=True).stdout;head=t.split('\\n## ')[0];h=re.search(r'^## (.+)',t,re.M);print(t.splitlines()[0] if t else 'no pack');print(h.group(1) if h else 'no article');sys.exit(0 if t.startswith('coverage: good') and 'check:' not in head and h and re.search(sys.argv[2],h.group(1),re.I) else 1)",
+          "How do I configure automatic seeding for a SQL Server Always On availability group?",
+          "availability group|always on"
+        ],
+        "exit": 0,
+        "sha256": "f559c00556411d33"
+      }
+    ]
+  }
 }
