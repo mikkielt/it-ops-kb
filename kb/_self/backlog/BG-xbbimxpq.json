@@ -1,0 +1,28 @@
+{
+  "id": "BG-xbbimxpq",
+  "kind": "bug",
+  "title": "pack prints a clean good for four questions the kb lacks: tempdb data files, the Microsoft 365 E5 price, Kubernetes Pod Security Admission and Exchange Online retention",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py pack no longer prints a clean good (coverage good with no check: and no route: line) for four questions the kb lacks, led by articles on other subjects: the tempdb data file count (security/management-plane-hardening.md), the Microsoft 365 E5 price (windows/bitlocker.md), Kubernetes Pod Security Admission per namespace (arch/k8s-gmsa-windows.md) and Exchange Online retention with Purview (auth/audit-log-apis.md); each prints a check: line or a weak or none verdict, and the eval set keeps its good rows good. Found by the planning probes of SP-j2jn5ue4 (2026-10-12, origin/main 92bc6c598), where DHCP failover and availability group automatic seeding were two more such false goods, which that sprint's research turns into real ones; the pool's sc_absent rows measure the rate.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;bad=[]\nfor q in sys.argv[1:]:\n o=subprocess.run([sys.executable,'_tools/rag.py','pack',q],capture_output=True,text=True);t=o.stdout;h=t.split('\\n## ')[0]\n clean=t.startswith('coverage: good') and 'check:' not in h and 'route:' not in h;print('clean good' if clean else 'flagged',q);bad+=[q] if clean or o.returncode or not t else []\nsys.exit(1 if bad else 0)",
+      "What is the recommended number of tempdb data files for SQL Server?",
+      "What is the current price of a Microsoft 365 E5 licence?",
+      "How do I enforce Kubernetes Pod Security Admission at the namespace level?",
+      "How do I configure Exchange Online mailbox retention policies with Purview?"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "found: SP-j2jn5ue4 planning probes"
+  ]
+}

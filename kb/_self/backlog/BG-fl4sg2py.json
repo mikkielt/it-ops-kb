@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "pool check does not flag a committed check alternative that no line of the kb states: BP-9e209bb8 keeps two invented Microsoft365DSC cmdlet names",
   "status": "draft",
+  "sprint": "SP-j2jn5ue4",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,15 +12,54 @@
     "run": [
       "python3",
       "-c",
-      "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','check'],capture_output=True,text=True); t=o.stdout+o.stderr; print(t[-400:]); sys.exit(0 if 'BP-9e209bb8' in t else 1)"
+      "import json,os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bench_pool as b;R=b.read_csv(b.PUBLIC_FILE);r=next(x for x in R if x['kind']=='fact');c=json.loads(r['checks']);c[0]=c[0]+'|Invoke-ZzqxInventedDrift';r['checks']=json.dumps(c);p=os.path.join(tempfile.mkdtemp(),'pool.csv');b.write_csv(p,R);o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','check',p],capture_output=True,text=True);t=o.stdout+o.stderr;print(t[-400:]);sys.exit(0 if r['id'] in t and 'Invoke-ZzqxInventedDrift' in t else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/_retrieval/bench_pool.csv').read();bad=[w for w in ('Assert-M365DSCTenantDrift','Test-M365DSCDrift') if w in t];print('still named:',bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py pool check warns for each committed eval and near-miss row whose check holds an alternative found in no kb article or data file (the too_broad no-kb-line rule BG-hytkzabh added for redone regexes)",
+      "check": 1
+    },
+    {
+      "clause": "BP-9e209bb8's check no longer names Assert-M365DSCTenantDrift or Test-M365DSCDrift, which only bench_pool.csv holds. Found by the SP-5i4itd2d review (BG-hytkzabh left the row, outside its touches)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bench_pool.py",
     "kb/public/_retrieval/bench_pool.csv",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-wik6j6im"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Planning probe (2026-10-12, a naive split of each committed eval and near-miss check at '|' searched over kb/public's articles and data): 12 alternatives in 9 rows are in no kb file, not only BP-9e209bb8's two cmdlets: prose paraphrases (BP-34d1ec62 and BP-d6a66627 'ten hours', BP-6df97379 'managed password interval', BP-5615ec04 'not run targets' and two more forms, BP-a8b9d4f3 'at least 8' and '8 characters') and identifiers (BP-23c08131 UseHelloForBusiness, BP-4fa7b2d7 resourceTemplates). Which alternatives does the new pool check warning cover?",
+      "options": [
+        "identifier-shaped alternatives only (a cmdlet, API, CSP or setting name: no space, CamelCase or Verb-Noun); prose paraphrases stay legitimate; each identifier it flags today is fixed in bench_pool.csv or shown to be in the kb",
+        "every alternative; the worker rewrites each flagged row",
+        "every alternative, as a warning that never changes the exit code"
+      ],
+      "recommendation": "identifier-shaped alternatives only (a cmdlet, API, CSP or setting name: no space, CamelCase or Verb-Noun); prose paraphrases stay legitimate; each identifier it flags today is fixed in bench_pool.csv or shown to be in the kb",
+      "class": "secrets",
+      "answer": "identifier-shaped alternatives only (a cmdlet, API, CSP or setting name: no space, CamelCase or Verb-Noun); prose paraphrases stay legitimate; each identifier it flags today is fixed in bench_pool.csv or shown to be in the kb",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-5i4itd2d review"
-  ]
+  ],
+  "notes": "Premise run 2026-10-12 on origin/main 92bc6c598: the repro exits 1 (pool check prints nothing for BP-9e209bb8, whose check still holds Assert-M365DSCTenantDrift). It blocks the fitness test of the pool benchmark: SP-j2jn5ue4's scenario rows and the next pool record are scored by these checks, and a check alternative no kb line states scores a wrong answer right. Plan 2026-10-12: the filed repro passed only while BP-9e209bb8 kept its invented names, so it could never pass once the row is fixed; it now plants an invented alternative in a copy of the pool and asks pool check FILE to name that row, and check 0 reads that BP-9e209bb8 no longer names the two cmdlets. Both fail on origin/main 92bc6c598."
 }

@@ -1,0 +1,101 @@
+{
+  "id": "ST-wkuogen4",
+  "kind": "story",
+  "title": "Re-record the scenarios the router, check: lines, freshness stamps and plugin skills moved: verdict, retrieval, tool-speed, freshness, always-on, host-lookups, kb-lookup-agent and partial",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-ceucrhca",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "benchmarks.py run verdict retrieval tool-speed freshness writes new records of those four scenarios to kb/_self/reports/benchmarks.csv, run on a tree that holds SP-j2jn5ue4's scenario question file; benchmarks.py run always-on host-lookups kb-lookup-agent partial writes new records of those four paid scenarios on such a tree, the spend rows of these four and retrieval summing to no more than the spend cap gate g1 sets; benchmarks.py report regenerates the tables and README.md's numbers so that report --check exits 0",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,subprocess,sys;S=sys.argv[1:];R=list(csv.DictReader(open('kb/_self/reports/benchmarks.csv')));bad=[]\nfor s in S:\n rs=[r for r in R if r['scenario']==s];d=max([r['date'] for r in rs] or ['']);c={r['commit'] for r in rs if r['date']==d}\n ok=any(subprocess.run(['git','cat-file','-e',x+':kb/public/_retrieval/bench_scenarios.csv'],capture_output=True).returncode==0 for x in c)\n print(s,d,sorted(c),'ok' if ok else 'not on a tree with the scenario rows');bad+=[] if ok else [s]\nsys.exit(1 if bad else 0)",
+        "verdict",
+        "retrieval",
+        "tool-speed",
+        "freshness"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,subprocess,sys;S=sys.argv[1:];R=list(csv.DictReader(open('kb/_self/reports/benchmarks.csv')));bad=[]\nfor s in S:\n rs=[r for r in R if r['scenario']==s];d=max([r['date'] for r in rs] or ['']);c={r['commit'] for r in rs if r['date']==d}\n ok=any(subprocess.run(['git','cat-file','-e',x+':kb/public/_retrieval/bench_scenarios.csv'],capture_output=True).returncode==0 for x in c)\n print(s,d,sorted(c),'ok' if ok else 'not on a tree with the scenario rows');bad+=[] if ok else [s]\nsys.exit(1 if bad else 0)",
+        "always-on",
+        "host-lookups",
+        "kb-lookup-agent",
+        "partial"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;S=sys.argv[2:];cap=float(sys.argv[1]);R=list(csv.DictReader(open('kb/_self/reports/benchmarks.csv')))\nt=0.0\nfor s in S:\n rs=[r for r in R if r['scenario']==s];d=max([r['date'] for r in rs] or ['']);v=sum(float(r['value']) for r in rs if r['date']==d and r['metric']=='spend_usd');print(s,d,v);t+=v\nprint('total',round(t,4),'cap',cap);sys.exit(0 if 0<t<=cap else 1)",
+        "4.50",
+        "retrieval",
+        "always-on",
+        "host-lookups",
+        "kb-lookup-agent",
+        "partial"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py run verdict retrieval tool-speed freshness writes new records of those four scenarios to kb/_self/reports/benchmarks.csv, run on a tree that holds SP-j2jn5ue4's scenario question file",
+      "check": 0
+    },
+    {
+      "clause": "benchmarks.py run always-on host-lookups kb-lookup-agent partial writes new records of those four paid scenarios on such a tree, the spend rows of these four and retrieval summing to no more than the spend cap gate g1 sets",
+      "check": 1
+    },
+    {
+      "clause": "benchmarks.py run always-on host-lookups kb-lookup-agent partial writes new records of those four paid scenarios on such a tree, the spend rows of these four and retrieval summing to no more than the spend cap gate g1 sets",
+      "check": 2
+    },
+    {
+      "clause": "benchmarks.py report regenerates the tables and README.md's numbers so that report --check exits 0",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-eorzrshc"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Spend cap for the paid non-pool scenarios (retrieval, always-on, host-lookups, kb-lookup-agent, partial). benchmarks.py has no --dry-run estimate and no --max-usd for them (only pool and freshness plan), so: no estimate. Their last records spent 0.073 (retrieval 2026-10-08) + 0.020 (always-on 2026-10-08) + 0.859 (host-lookups 2026-10-09) + 0.124 (kb-lookup-agent 2026-09-28) + 1.793 (partial 2026-09-28) = 2.87 USD. What cap does the item's spend check hold the new records to?",
+      "options": [
+        "4.50 USD (1.5x the last records' 2.87)",
+        "3.00 USD (the last records' spend)",
+        "skip the paid scenarios"
+      ],
+      "recommendation": "4.50 USD (1.5x the last records' 2.87)",
+      "class": "design",
+      "answer": "4.50 USD (1.5x the last records' 2.87)",
+      "by": "operator"
+    }
+  ],
+  "notes": "Sizing (plan, 2026-10-12): verdict and tool-speed make no model call; freshness makes HTTP requests only (run freshness --dry-run: 102 requests at the least for --sample 2); retrieval, always-on, host-lookups, kb-lookup-agent and partial are paid with no estimate (benchmarks.py run X --dry-run exits 2 for them) and no --max-usd, so the spend cap is gate g1 (4.50 USD, 1.5x the 2.87 USD their last records spent) read after the run by check 2. Run sequential runtime: not measured here (the last records hold wall times per run). Census Haiku 5.5 dispatch and judging are not re-run: ST-zdfghdlb (SP-yojt6y7v) measured them on 2026-10-11. Checks 2 and 3 pass before the work on purpose: check 2 sums the newest records' spend (2.87 USD today, under the cap), so it bounds the new records' spend only together with checks 0 and 1, which fail until those records are written on a tree with the scenario rows; check 3 keeps report --check green."
+}

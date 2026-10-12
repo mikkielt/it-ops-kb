@@ -1,0 +1,90 @@
+{
+  "id": "ST-wtpwtlk4",
+  "kind": "story",
+  "title": "The benchmarks report compares the new records with those of 2026-10-08 and 2026-10-09, naming the change behind each moved figure and each scenario's expected outcome met or not",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-ceucrhca",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.md has a section headed 'Since the records of 2026-10-08 and 2026-10-09' that lists each change landed since those records with the item that landed it (the kind router and RRF ST-b27c527d, the scatter check: line ST-iyrixezt, the gap expert BG-zpcqo7qt, the off-kb list ST-efyc4jiw, the freshness stamp ST-ebn65qen, lifetimes ST-jqwqdj2g, revalidation ST-mq7we5r2, lookup hints ST-f2n2h22c, the plugin's sprint skills TK-p7ajxp72, the census's Haiku 5.5 judging and dispatch ST-jkehwsu4, ST-jlezjp6k and ST-zdfghdlb, which that sprint measured and this one does not re-run, and the research of ST-wik6j6im) with the scenario that measures it and the figure it moved, beyond the previous record's interval or within it; that section names, per scenario kind sc_present, sc_partial, sc_absent, sc_offkb and sc_stale, the share of runs on each arm label whose answer met the kind's expected outcome, and the before and after packs of ST-wik6j6im's three questions; benchmarks.py report --check exits 0",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;h=sys.argv[1];need=sys.argv[2:];t=open('kb/_self/reports/benchmarks.md').read();i=t.find(h);s='' if i<0 else t[i:];m=re.search(r'\\n#{2,3} ',s[len(h):]);s=s[:len(h)+m.start()] if m else s;miss=[x for x in need if x not in s];print('section found' if i>=0 else 'no section','missing:',miss);sys.exit(0 if i>=0 and not miss else 1)",
+        "Since the records of 2026-10-08 and 2026-10-09",
+        "ST-b27c527d",
+        "ST-iyrixezt",
+        "BG-zpcqo7qt",
+        "ST-efyc4jiw",
+        "ST-ebn65qen",
+        "ST-jqwqdj2g",
+        "ST-mq7we5r2",
+        "ST-f2n2h22c",
+        "TK-p7ajxp72",
+        "ST-jkehwsu4",
+        "ST-jlezjp6k",
+        "ST-zdfghdlb",
+        "ST-wik6j6im"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;h=sys.argv[1];need=sys.argv[2:];t=open('kb/_self/reports/benchmarks.md').read();i=t.find(h);s='' if i<0 else t[i:];m=re.search(r'\\n#{2,3} ',s[len(h):]);s=s[:len(h)+m.start()] if m else s;miss=[x for x in need if x not in s];print('section found' if i>=0 else 'no section','missing:',miss);sys.exit(0 if i>=0 and not miss else 1)",
+        "Since the records of 2026-10-08 and 2026-10-09",
+        "sc_present",
+        "sc_partial",
+        "sc_absent",
+        "sc_offkb",
+        "sc_stale",
+        "FSMO",
+        "DHCP",
+        "seeding"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/_self/reports/benchmarks.md has a section headed 'Since the records of 2026-10-08 and 2026-10-09' that lists each change landed since those records with the item that landed it (the kind router and RRF ST-b27c527d, the scatter check: line ST-iyrixezt, the gap expert BG-zpcqo7qt, the off-kb list ST-efyc4jiw, the freshness stamp ST-ebn65qen, lifetimes ST-jqwqdj2g, revalidation ST-mq7we5r2, lookup hints ST-f2n2h22c, the plugin's sprint skills TK-p7ajxp72, the census's Haiku 5.5 judging and dispatch ST-jkehwsu4, ST-jlezjp6k and ST-zdfghdlb, which that sprint measured and this one does not re-run",
+      "check": 0
+    },
+    {
+      "clause": "the research of ST-wik6j6im) with the scenario that measures it and the figure it moved, beyond the previous record's interval or within it",
+      "check": 0
+    },
+    {
+      "clause": "that section names, per scenario kind sc_present, sc_partial, sc_absent, sc_offkb and sc_stale, the share of runs on each arm label whose answer met the kind's expected outcome",
+      "check": 1
+    },
+    {
+      "clause": "the before and after packs of ST-wik6j6im's three questions",
+      "check": 1
+    },
+    {
+      "clause": "benchmarks.py report --check exits 0",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-gngo7etc"
+  ],
+  "notes": "Check 2 (report --check) passes before the work on purpose: it keeps the generated tables and README.md's numbers in line; checks 0 and 1 fail until the section is written."
+}

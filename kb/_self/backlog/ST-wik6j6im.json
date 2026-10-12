@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open questions are answered from official sources (Microsoft Learn first, kb tools first, live docs for the gaps) and written as kb facts through the kb skills, FSMO role transfer and seizure with Move-ADDirectoryServerOperationMasterRole being present in the kb with a pack of coverage good, no check: line and a lead article on FSMO; DHCP failover between two Windows Server DHCP servers (load balance and hot standby modes, MCLT, Add-DhcpServerv4Failover) is present in the kb with such a pack; SQL Server Always On availability group automatic seeding (SEEDING_MODE, the CREATE ANY DATABASE grant on the secondary, its monitoring views) is present in the kb with such a pack. Leave unresearched, since the benchmark asks them as not-present rows: Okta as an external identity provider for Entra ID, the tempdb data file count, Exchange Online retention policies with Purview, Hyper-V Replica, Microsoft 365 E5 prices.",
   "checks": [
     {
       "run": [
@@ -16,9 +16,55 @@
         "researched",
         "ST-wik6j6im"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,re;t=subprocess.run([sys.executable,'_tools/rag.py','pack',sys.argv[1]],capture_output=True,text=True).stdout;head=t.split('\\n## ')[0];h=re.search(r'^## (.+)',t,re.M);print(t.splitlines()[0] if t else 'no pack');print(h.group(1) if h else 'no article');sys.exit(0 if t.startswith('coverage: good') and 'check:' not in head and h and re.search(sys.argv[2],h.group(1),re.I) else 1)",
+        "How do I transfer or seize the FSMO roles to another domain controller with PowerShell?",
+        "fsmo|operations master"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,re;t=subprocess.run([sys.executable,'_tools/rag.py','pack',sys.argv[1]],capture_output=True,text=True).stdout;head=t.split('\\n## ')[0];h=re.search(r'^## (.+)',t,re.M);print(t.splitlines()[0] if t else 'no pack');print(h.group(1) if h else 'no article');sys.exit(0 if t.startswith('coverage: good') and 'check:' not in head and h and re.search(sys.argv[2],h.group(1),re.I) else 1)",
+        "How do I configure DHCP failover between two Windows Server DHCP servers?",
+        "dhcp"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,re;t=subprocess.run([sys.executable,'_tools/rag.py','pack',sys.argv[1]],capture_output=True,text=True).stdout;head=t.split('\\n## ')[0];h=re.search(r'^## (.+)',t,re.M);print(t.splitlines()[0] if t else 'no pack');print(h.group(1) if h else 'no article');sys.exit(0 if t.startswith('coverage: good') and 'check:' not in head and h and re.search(sys.argv[2],h.group(1),re.I) else 1)",
+        "How do I configure automatic seeding for a SQL Server Always On availability group?",
+        "availability group|always on"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The sprint goal's open questions are answered from official sources (Microsoft Learn first, kb tools first, live docs for the gaps) and written as kb facts through the kb skills, FSMO role transfer and seizure with Move-ADDirectoryServerOperationMasterRole being present in the kb with a pack of coverage good, no check: line and a lead article on FSMO",
+      "check": 0
+    },
+    {
+      "clause": "The sprint goal's open questions are answered from official sources (Microsoft Learn first, kb tools first, live docs for the gaps) and written as kb facts through the kb skills, FSMO role transfer and seizure with Move-ADDirectoryServerOperationMasterRole being present in the kb with a pack of coverage good, no check: line and a lead article on FSMO",
+      "check": 1
+    },
+    {
+      "clause": "DHCP failover between two Windows Server DHCP servers (load balance and hot standby modes, MCLT, Add-DhcpServerv4Failover) is present in the kb with such a pack",
+      "check": 2
+    },
+    {
+      "clause": "SQL Server Always On availability group automatic seeding (SEEDING_MODE, the CREATE ANY DATABASE grant on the secondary, its monitoring views) is present in the kb with such a pack. Leave unresearched, since the benchmark asks them as not-present rows: Okta as an external identity provider for Entra ID, the tempdb data file count, Exchange Online retention policies with Purview, Hyper-V Replica, Microsoft 365 E5 prices",
+      "check": 3
     }
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Before (rag.py pack on origin/main 92bc6c598, 2026-10-12; checks 1-3 run then, each exit 1): FSMO coverage none, route web, lead windows/azure-arc-servers.md. DHCP failover a false good (coverage good, no check: line) led by windows/delivery-optimization.md. Automatic seeding a false good led by windows/azure-update-manager.md. The after measurement is checks 1-3 at done."
 }

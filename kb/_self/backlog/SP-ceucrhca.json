@@ -14,7 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Runs after SP-j2jn5ue4 closes: its records must be taken on a tree holding SP-j2jn5ue4's scenario rows and research (ST-wkuogen4 checks 0-1 and ST-gngo7etc check 3 read the record's commit for the scenario file). Expected paid spend: about 2.9 USD for ST-wkuogen4 (cap 4.50), about 15.6 USD for the pool smoke (cap 23) and 62.5 USD for the pool record (cap 94): about 81 USD expected, 121.50 USD at the caps."
 }

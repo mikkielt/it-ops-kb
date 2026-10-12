@@ -1,0 +1,115 @@
+{
+  "id": "ST-gngo7etc",
+  "kind": "story",
+  "title": "Record the pool on the fresh shape with the scenario rows: a smoke under a 23 USD cap, then the record under a 94 USD cap, each passing pool verify",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-ceucrhca",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "the smoke python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --sample 2 --reps 1 --jobs 8 --max-usd 23 --out _cache/scratch/ST-gngo7etc/pool-smoke.csv passes pool verify --file on that file, its path, spend and verify exit written in the item's notes; the record python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --reps 1 --jobs 8 --max-usd 94 writes a pool record to kb/_self/reports/benchmarks.csv on a tree that holds SP-j2jn5ue4's scenario question file, with a fully_right cell for each scenario kind on each kb arm label and the hook and router, its spend rows summing to no more than 94 USD; pool verify exits 0 on that record; benchmarks.py report regenerates the tables and README.md's numbers so that report --check exits 0",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;cap=float(sys.argv[1]);o=subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool',*sys.argv[2:],'--dry-run'],capture_output=True,text=True);t=o.stdout+o.stderr;m=re.search(r'estimated spend [$]([0-9.]+)',t);print(t[-200:]);sys.exit(0 if o.returncode==0 and m and float(m.group(1))<cap else 1)",
+        "23",
+        "--arms",
+        "haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5",
+        "--shape",
+        "fresh",
+        "--reps",
+        "1",
+        "--jobs",
+        "8",
+        "--sample",
+        "2"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;cap=float(sys.argv[1]);o=subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool',*sys.argv[2:],'--dry-run'],capture_output=True,text=True);t=o.stdout+o.stderr;m=re.search(r'estimated spend [$]([0-9.]+)',t);print(t[-200:]);sys.exit(0 if o.returncode==0 and m and float(m.group(1))<cap else 1)",
+        "94",
+        "--arms",
+        "haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5",
+        "--shape",
+        "fresh",
+        "--reps",
+        "1",
+        "--jobs",
+        "8"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,re,sys;n=json.load(open('kb/_self/backlog/'+sys.argv[1]+'.json')).get('notes') or '';ok=re.search(r'pool-smoke[.]csv',n) and re.search(r'pool verify --file \\S+ exit 0',n);print('smoke noted' if ok else 'no smoke line in notes');sys.exit(0 if ok else 1)",
+        "ST-gngo7etc"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,subprocess,sys;K=['sc_present', 'sc_partial', 'sc_absent', 'sc_offkb', 'sc_stale'];L=['haiku-5-5:low','haiku-5-5:default','sonnet-5-5:low','sonnet-5-5:default','router','hook'];R=[r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv')) if r['scenario']=='pool'];rec=max(r['record'] for r in R);R=[r for r in R if r['record']==rec];miss=[(k,l) for k in K for l in L if not any(r['case']==k and r['arm']==l and r['metric']=='fully_right' for r in R)];c={r['commit'] for r in R};tree=any(subprocess.run(['git','cat-file','-e',x+':kb/public/_retrieval/bench_scenarios.csv'],capture_output=True).returncode==0 for x in c);spend=sum(float(r['value']) for r in R if r['metric']=='spend_usd');print(rec,'missing cells:',miss,'tree ok:',tree,'spend:',round(spend,2));sys.exit(0 if not miss and tree and 0<spend<=94 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "verify"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the smoke python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --sample 2 --reps 1 --jobs 8 --max-usd 23 --out _cache/scratch/ST-gngo7etc/pool-smoke.csv passes pool verify --file on that file, its path, spend and verify exit written in the item's notes",
+      "check": 0
+    },
+    {
+      "clause": "the smoke python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --sample 2 --reps 1 --jobs 8 --max-usd 23 --out _cache/scratch/ST-gngo7etc/pool-smoke.csv passes pool verify --file on that file, its path, spend and verify exit written in the item's notes",
+      "check": 2
+    },
+    {
+      "clause": "the record python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --reps 1 --jobs 8 --max-usd 94 writes a pool record to kb/_self/reports/benchmarks.csv on a tree that holds SP-j2jn5ue4's scenario question file, with a fully_right cell for each scenario kind on each kb arm label and the hook and router, its spend rows summing to no more than 94 USD",
+      "check": 1
+    },
+    {
+      "clause": "the record python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --reps 1 --jobs 8 --max-usd 94 writes a pool record to kb/_self/reports/benchmarks.csv on a tree that holds SP-j2jn5ue4's scenario question file, with a fully_right cell for each scenario kind on each kb arm label and the hook and router, its spend rows summing to no more than 94 USD",
+      "check": 3
+    },
+    {
+      "clause": "pool verify exits 0 on that record",
+      "check": 4
+    },
+    {
+      "clause": "benchmarks.py report regenerates the tables and README.md's numbers so that report --check exits 0",
+      "check": 5
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "kb/_self/reports/benchmarks.md",
+    "README.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-wkuogen4"
+  ],
+  "notes": "Sizing (plan host, 2026-10-12, pool of 150 rows before SP-j2jn5ue4's 30 scenario rows): record dry run (--arms haiku-5-5,sonnet-5-5,router,hook,web-haiku-5-5,web-sonnet-5-5 --shape fresh --reps 1 --jobs 8 --dry-run) 1024 runs, estimate 51.17 USD; smoke dry run (--sample 2) 236 runs, 11.80 USD; per-run costs from the record of 2026-10-09 at the pinned prices (kb/public/claude/models.csv). With the 30 scenario rows (24 on the web arms): record about 62.50 USD (+30 x 0.3018 kb-arm cost per row, +24 x 0.0952 web), smoke about 15.58 USD; caps 1.5x those, 94 and 23 USD, and checks 0-1 rerun the dry runs and refuse an estimate at or over the cap. Sequential runtime of the record: about 18,600 s (5.2 h) from the 2026-10-09 mean wall seconds per run (kb labels 81.5 s per row over 180 rows, web 46.2 s per row over 86 rows), about 40 min at --jobs 8. Left out against the 2026-10-09 record: haiku-4-5 (retired from the comparison, 5.05 USD), opus-5-5 (its model is unchanged, 4.49 USD) and the session shape (its code is unchanged since 2026-10-09, 25.89 USD): the tool changes show on the fresh shape. A spend cap above these needs a new gate. Checks 0, 1, 4 and 5 pass before the work on purpose: 0 and 1 are the spend guards (the dry runs' estimates stay under the caps once the scenario rows join the pool), 4 and 5 keep pool verify and report --check green; checks 2 and 3 fail until the smoke and the record are done."
+}

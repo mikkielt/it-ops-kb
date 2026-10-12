@@ -1,0 +1,112 @@
+{
+  "id": "ST-ksznk2zt",
+  "kind": "story",
+  "title": "The pool asks a scenario question set: rows for knowledge present, present in part, not present, off-kb and stale source, each with its expected outcome",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "sprint": "SP-j2jn5ue4",
+  "priority": "P1",
+  "rank": 0,
+  "goal": "pool build reads kb/public/_retrieval/bench_scenarios.csv and writes its rows into the public pool as the kinds sc_present, sc_partial, sc_absent, sc_offkb and sc_stale, six rows each, with no paid call (pool build --dry-run asks no row); pool check exits 1 naming a scenario row whose expected_route disagrees with the route rag.py pack prints for its question (good with no check: line for sc_present and sc_stale, split for sc_partial, web or none for sc_offkb, web or none for sc_absent, or good or split where its note marks a false good (BG-xbbimxpq may add a check: line to those)); each row's checks state its scenario's expected outcome (sc_present a regex of the kb line that answers it, sc_partial that regex with a kb-lacks phrase, sc_absent the pool's GAP_CHECK, sc_offkb its NONE_CHECK, sc_stale the fact with its source's confirmation date or a freshness mark); no sc_offkb question is a line of the off-kb list or the question of a good eval row; the web arms ask sc_present, sc_partial, sc_absent and sc_offkb, never sc_stale; the pool section of kb/_self/reports/benchmarks.md and the benchmarks.py row of kb/_self/tools.md name the five kinds and their expected outcomes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_build_counts or pool_check_reports"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,collections;sys.path.insert(0,'_tools');import bench_pool as b;c=collections.Counter(x['kind'] for x in b.read_csv(b.PUBLIC_FILE));k=['sc_present', 'sc_partial', 'sc_absent', 'sc_offkb', 'sc_stale'];print({x:c[x] for x in k});sys.exit(0 if all(c[x]==6 for x in k) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','build','--dry-run'],capture_output=True,text=True);t=o.stdout+o.stderr;print(t[-300:]);sys.exit(0 if o.returncode==0 and 'no row would be asked' in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool','--arms','web-haiku-5-5','--kinds','sc_present,sc_partial,sc_absent,sc_offkb,sc_stale','--dry-run'],capture_output=True,text=True);t=o.stdout+o.stderr;print(t[-400:]);sys.exit(0 if o.returncode==0 and 'web-haiku-5-5: 24 runs' in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;k=['sc_present', 'sc_partial', 'sc_absent', 'sc_offkb', 'sc_stale'];m=[(f,x) for f in ('kb/_self/reports/benchmarks.md','kb/_self/tools.md') for x in k if x not in open(f).read()];print('missing:',m);sys.exit(1 if m else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "pool build reads kb/public/_retrieval/bench_scenarios.csv and writes its rows into the public pool as the kinds sc_present, sc_partial, sc_absent, sc_offkb and sc_stale, six rows each, with no paid call (pool build --dry-run asks no row)",
+      "check": 2
+    },
+    {
+      "clause": "pool build reads kb/public/_retrieval/bench_scenarios.csv and writes its rows into the public pool as the kinds sc_present, sc_partial, sc_absent, sc_offkb and sc_stale, six rows each, with no paid call (pool build --dry-run asks no row)",
+      "check": 3
+    },
+    {
+      "clause": "pool build reads kb/public/_retrieval/bench_scenarios.csv and writes its rows into the public pool as the kinds sc_present, sc_partial, sc_absent, sc_offkb and sc_stale, six rows each, with no paid call (pool build --dry-run asks no row)",
+      "check": 0
+    },
+    {
+      "clause": "pool check exits 1 naming a scenario row whose expected_route disagrees with the route rag.py pack prints for its question (good with no check: line for sc_present and sc_stale, split for sc_partial, web or none for sc_offkb, web or none for sc_absent, or good or split where its note marks a false good (BG-xbbimxpq may add a check: line to those))",
+      "check": 0
+    },
+    {
+      "clause": "pool check exits 1 naming a scenario row whose expected_route disagrees with the route rag.py pack prints for its question (good with no check: line for sc_present and sc_stale, split for sc_partial, web or none for sc_offkb, web or none for sc_absent, or good or split where its note marks a false good (BG-xbbimxpq may add a check: line to those))",
+      "check": 1
+    },
+    {
+      "clause": "each row's checks state its scenario's expected outcome (sc_present a regex of the kb line that answers it, sc_partial that regex with a kb-lacks phrase, sc_absent the pool's GAP_CHECK, sc_offkb its NONE_CHECK, sc_stale the fact with its source's confirmation date or a freshness mark)",
+      "check": 1
+    },
+    {
+      "clause": "no sc_offkb question is a line of the off-kb list or the question of a good eval row",
+      "check": 1
+    },
+    {
+      "clause": "the web arms ask sc_present, sc_partial, sc_absent and sc_offkb, never sc_stale",
+      "check": 4
+    },
+    {
+      "clause": "the pool section of kb/_self/reports/benchmarks.md and the benchmarks.py row of kb/_self/tools.md name the five kinds and their expected outcomes",
+      "check": 5
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "_tools/benchmarks.py",
+    "kb/public/_retrieval/bench_scenarios.csv",
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md",
+    "kb/_self/design.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-wik6j6im",
+    "BG-fl4sg2py"
+  ],
+  "notes": "Premise (2026-10-12, origin/main 92bc6c598): run pool --kinds sc_present refuses an unknown kind, the pool has one split row and no stale-source row. Candidates probed by rag.py pack then (re-probe, keep six per kind whose verdict fits, never force a route): sc_present: LAPS rotation from Intune (laps.md), BitLocker key escrow for Entra-joined devices (bitlocker.md), Autopatch rings and deferrals, SCEP through NDES (certificates-pki.md), GPO central store (admx-central-store.md), dynamic group by ZTDID (device-identity.md), plus ST-wik6j6im's FSMO, DHCP failover and AG automatic seeding once it lands (note names it). sc_partial: Universal Print with Intune (weak), Ansible win_updates (weak), new Teams client deploy (good+check:), WDAC with Intune (good+check:), SQL Server backup to URL, AD CS autoenrollment templates, certbot renewal (all split). sc_absent: Okta as Entra external IdP (none), tempdb file count (false good, management-plane-hardening.md), Exchange Online retention with Purview (false good, audit-log-apis.md), Hyper-V Replica (good+check:), M365 E5 price (false good, bitlocker.md), Kubernetes Pod Security Admission (false good, k8s-gmsa-windows.md), Purview sensitivity labels (weak). sc_offkb, none in offkb_questions.txt: Cisco Catalyst VLAN trunk, Veeam job for Hyper-V, Zabbix autoregistration, FortiGate IPsec (all none, web), DNS conditional forwarder (weak: re-probe). sc_stale: questions whose pack prints [source changed] or cites a source past its freshness lifetime (rag.py pack --revalidate, benchmarks.py run freshness --dry-run), no network at build. Checks 0, 1 and 3 pass before the work on purpose: check 0 is the test selection the work extends (pool build counts with the scenario rows, pool check naming a planted route disagreement), check 1 keeps pool check green with the new rows, check 3 keeps pool build free of paid calls."
+}
