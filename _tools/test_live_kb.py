@@ -152,7 +152,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_and_fact_lines(monkeypatch):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp(monkeypatch):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -204,6 +204,32 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     code, out = tool("rag.py", "pack", "Claude Sonnet 5.5 model release capabilities pricing context window", "--budget", "300")
     assert code == 0, out[-1500:]
     assert re.search(r"^## (\S+)", out, re.M).group(1).endswith("claude/models.csv"), out[:1500]
+    # the freshness stamp: each cited source's footer line ends with its last confirmation and signal, read with no
+    # network; a printed fact whose anchor is not located, or was verified before its source changed, carries a mark
+    import socket
+    def no_network(*a, **k):
+        raise AssertionError("pack opened a network connection")
+    monkeypatch.setattr(socket, "create_connection", no_network)
+    monkeypatch.setattr(socket.socket, "connect", no_network)
+    res = kbfacts.pack(good_row()["question"])
+    footer = res["text"].split("\nsources:\n", 1)[1].splitlines()
+    stamp = r"  \[(confirmed \d{4}-\d\d-\d\d|unconfirmed), (pinned|git|etag|lastmod|version|hash|no baseline)\]$"
+    assert footer and all(re.search(stamp, ln) for ln in footer), footer
+    assert all(kbfacts.source_stamp(i) in ln for i, ln in zip(res["sources"], footer))
+    unit = next(u for u in kbfacts.units("public") if any(p["kind"] != "UNK" and p["ids"] for p in u["tags"]))
+    sid = next(i for p in unit["tags"] if p["kind"] != "UNK" for i in p["ids"])
+    key, rel = kbfacts.fact_key(unit["text"]), kbfacts.bare(unit["path"])
+    rows = {sid: {"id": sid, "url": "https://example.com/p"}}
+
+    def mark(anchor, changed):
+        state = {sid: {"changed_utc": changed}}
+        monkeypatch.setattr(kbfacts, "fresh_state", lambda: ({(key, rel, sid): anchor} if anchor else {}, {}, state))
+        return kbfacts.fresh_mark(unit, rows)
+    assert mark((True, "2026-10-10"), "") == ""
+    assert mark((True, "2026-10-10"), "2026-10-09T08:00:00Z") == ""
+    assert mark((True, "2026-10-10"), "2026-10-11T08:00:00Z") == "source changed"
+    assert mark((False, "2026-10-10"), "") == "unanchored"
+    assert mark(None, "2026-10-11T08:00:00Z") == "unanchored"
 
 
 def test_unit_cache_prune_drops_old_files_of_other_root_sets_and_shrinks_the_slack_pruned_file(tmp_path, monkeypatch):

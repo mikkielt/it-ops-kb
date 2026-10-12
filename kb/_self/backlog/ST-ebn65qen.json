@@ -93,6 +93,32 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which words does the footer stamp use beyond the goal's five signal kinds (pinned, etag, version, git, hash), and what does it print for a source nothing dates?",
+      "options": [
+        "lastmod for a Last-Modified-only validator, no baseline for a source whose state row holds none, unconfirmed for a source nothing dates",
+        "fold lastmod into etag and print nothing for no baseline or no date"
+      ],
+      "recommendation": "lastmod for a Last-Modified-only validator, no baseline for a source whose state row holds none, unconfirmed for a source nothing dates",
+      "class": "agents-rule",
+      "answer": "lastmod for a Last-Modified-only validator, no baseline for a source whose state row holds none, unconfirmed for a source nothing dates",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How is a printed fact marked, and what counts as unanchored or changed?",
+      "options": [
+        "[unanchored] when a cited non-UNK source has no located anchor row for the fact (an absent row counts), [source changed] when the anchor's verified_utc date is before the source's changed_utc date; both after path:line, joined by '; '",
+        "[unanchored] only for a row with status unlocated:*, an absent row left unmarked; same changed rule"
+      ],
+      "recommendation": "[unanchored] when a cited non-UNK source has no located anchor row for the fact (an absent row counts), [source changed] when the anchor's verified_utc date is before the source's changed_utc date; both after path:line, joined by '; '",
+      "class": "agents-rule",
+      "answer": "[unanchored] when a cited non-UNK source has no located anchor row for the fact (an absent row counts), [source changed] when the anchor's verified_utc date is before the source's changed_utc date; both after path:line, joined by '; '",
+      "by": "operator"
     }
   ],
   "links": [

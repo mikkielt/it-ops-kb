@@ -2558,7 +2558,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     concise = fmt == "concise"
     url_cost = 0 if concise or rules else 110  # a source footer line is about 110 characters
     limit, used, groups, cited, paths, printed = int(budget * 3.5), dused, [], [], [], []
-    taken = defaultdict(list)
+    taken, rows = defaultdict(list), ({} if rules else ledger_rows())
     if rules:
         taken = pick_passages(st, scored, best, dused, limit, pins)
         if not item:
@@ -2591,6 +2591,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
                 text = clip(u["text"], 420)
             where = f" § {u['section']}:" if rules and u["section"] and not one_section else ""
             mark = f" [tested {u['tested']}]" if u.get("tested") else ""
+            if not rules and (fresh := fresh_mark(u, rows)):
+                mark += f" [{fresh}]"
             line = f"- {u['path']}:{u['line']}{mark}{where} {text}" + ("" if u["tags"] else " (no tag)")
             line += ("\n" + snippet_code(u)) if snippet_code(u) else ""
             new_ids = [i for p in u["tags"] for i in p["ids"]] + ID.findall(text)
@@ -2868,8 +2870,114 @@ def clip_around(text, n, phrases=(), terms=()):
                                                 if end < len(text) else "")
 
 
+# ---------------------------------------------------------------- freshness stamp (offline)
+
+CONFIRMED = re.compile(r"confirmed (\d{4}-\d\d-\d\d)")  # the census's suffix of a source row's version_or_date
+_FRESH = [None, ({}, {}, {})]  # [file signature, (anchors, newest verified_utc per source, fetch state per source)]
+_PROVIDER_ROWS = []
+
+
+def _csv_dicts(path):
+    try:
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            yield from csv.DictReader(f)
+    except (OSError, UnicodeDecodeError, csv.Error):
+        return
+
+
+def fresh_state():
+    """(anchors, verified, state) of the served roots, read again when a file's time or size changes: `anchors`
+    {(fact key, root-relative path, source id): (located, verified_utc)} of every `_anchors.csv`, `verified` the newest
+    verified_utc of a source's anchors, `state` {source id: `_fetch_state.csv` row}. No network."""
+    files = [os.path.join(r.path, n) for r in kbcommon.roots() for n in (kbcommon.ANCHORS, kbcommon.STATE)]
+    sig = []
+    for full in files:
+        try:
+            st = os.stat(full)
+            sig.append((full, st.st_mtime_ns, st.st_size))
+        except OSError:
+            continue
+    if _FRESH[0] != sig:
+        anchors, verified, state = {}, {}, {}
+        for r in kbcommon.roots():
+            for row in _csv_dicts(os.path.join(r.path, kbcommon.ANCHORS)):
+                sid, day = row.get("source_id") or "", row.get("verified_utc") or ""
+                anchors[(row.get("fact") or "", row.get("path") or "", sid)] = (row.get("status") == "located", day)
+                if day > verified.get(sid, ""):
+                    verified[sid] = day
+            for row in _csv_dicts(os.path.join(r.path, kbcommon.STATE)):
+                state[row.get("id") or ""] = row
+        _FRESH[:] = [sig, (anchors, verified, state)]
+    return _FRESH[1]
+
+
+def source_signal(sid, url):
+    """The change signal a source's check rests on, offline: the first of its provider's signals (provider.signals, in
+    the order factdiff.detect_source tries them) that its `_fetch_state.csv` row holds: `pinned` (a url whose text
+    cannot change), `git` (a page of a git repository: the row's version id is its file's), `etag`, `lastmod` (a
+    Last-Modified validator), `version` (a version id the page carries) or `hash` (its text's hash); `no baseline`
+    when the row holds none."""
+    import provider  # not at load: it brings the network modules a pack with no source footer never needs
+    if not _PROVIDER_ROWS:
+        try:
+            _PROVIDER_ROWS[:] = provider.providers() or [{}]
+        except OSError:
+            _PROVIDER_ROWS[:] = [{}]
+    st = fresh_state()[2].get(sid) or {}
+    held = {"etag": st.get("etag"), "lastmod": st.get("last_modified"), "version": st.get("version"),
+            "git": st.get("version"), "hash": st.get("doc_sha256")}
+    for s in provider.signals(provider.for_url(url, _PROVIDER_ROWS) or {}, url):
+        if s == "pin":
+            return "pinned"
+        if held.get(s):
+            return s
+    return "no baseline"
+
+
+def ledger_rows():
+    """source_rows(), or {} when a ledger cannot be read (a stamp is a note: it never stops a lookup)."""
+    try:
+        return source_rows()
+    except OSError:
+        return {}
+
+
+def source_stamp(sid, rows=None):
+    """`[confirmed 2026-10-10, hash]` for a cited source: the newest of its anchors' verified_utc, its
+    `_fetch_state.csv` checked_utc and the census's `confirmed <date>` in its version_or_date, and its change signal
+    (source_signal); `[unconfirmed, ...]` when none dates it; "" for an id no ledger holds."""
+    row = (rows or ledger_rows()).get(sid)
+    if not row:
+        return ""
+    _, verified, state = fresh_state()
+    days = [verified.get(sid, ""), ((state.get(sid) or {}).get("checked_utc") or "")[:10],
+            (CONFIRMED.findall(row.get("version_or_date") or "") or [""])[-1]]
+    day = max(days)
+    return f"[{'confirmed ' + day if day else 'unconfirmed'}, {source_signal(sid, (row.get('url') or '').strip())}]"
+
+
+def fresh_mark(u, rows=None):
+    """`unanchored` and `source changed` for a printed fact unit, joined by `; `, "" for neither: a source the fact
+    cites (not UNK, as factdiff.cited_facts reads it) has no located anchor for it (the fact is dated at its source
+    only), or the anchor's verified_utc is before the source's changed_utc. Offline; "" for a unit citing no source."""
+    rows = rows or ledger_rows()
+    sids = [i for p in u["tags"] if p["kind"] != "UNK" for i in p["ids"] if i in rows]
+    if not sids:
+        return ""
+    anchors, _, state = fresh_state()
+    key, rel = fact_key(u["text"]), bare(u["path"])
+    unanchored = changed = False
+    for sid in dict.fromkeys(sids):
+        located, day = anchors.get((key, rel, sid), (False, ""))
+        unanchored |= not located
+        changed |= bool(day) and day < ((state.get(sid) or {}).get("changed_utc") or "")[:10]
+    return "; ".join(m for m, on in (("unanchored", unanchored), ("source changed", changed)) if on)
+
+
 def format_sources(srcs):
-    return [f"  -> {i}  {u}" + (f"  (superseded by {s})" if s else "") for i, u, s in srcs]
+    rows = ledger_rows()
+    return [f"  -> {i}  {u}" + (f"  (superseded by {s})" if s else "") + (f"  {st}" if (st := source_stamp(i, rows)) else "")
+            for i, u, s in srcs]
 
 
 MAX_QUESTIONS = 6
