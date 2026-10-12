@@ -2,7 +2,7 @@
   "id": "ST-3l7bshk5",
   "kind": "story",
   "title": "A router change is checked on broad lookups the kb answers, not only on the eval rows, so a kind expert cannot hijack a good pack",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-lmf4ke4w",
   "priority": "P2",
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-7n3d4jte close"
   ],
-  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): ST-b27c527d's checks (rag.py eval, -k pack_routes_kind on the pool's rows) passed while the gap expert routed broad lookups as 'kb lacks' (KRBTGT reset cadence, python.org Windows installers, MCP tasks capability); the worker's sweep covered only eval, held-out, off-kb and pool questions, all specific. The review found it as S1 (BG-zpcqo7qt). The test ceiling is at 100 ids: the test replaces or folds into one. Premise run 2026-10-12: 'What does the kb say about GitLab semantic versioning requirement for Catalog releases?' prints coverage none routed by kind: gap, and 'What do S1800 and S1801 say about the headless flag used by CI?' a cites file list, while the plain packs answer. Ordered after BG-hc2gficq, BG-v57estdm and BG-s4lnuekm: the test fails until the first two land. The ids are at the ceiling: fold the probe into an existing test (name it to carry router_broad_lookups); tests_ceiling.json is not touched. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): ST-b27c527d's checks (rag.py eval, -k pack_routes_kind on the pool's rows) passed while the gap expert routed broad lookups as 'kb lacks' (KRBTGT reset cadence, python.org Windows installers, MCP tasks capability); the worker's sweep covered only eval, held-out, off-kb and pool questions, all specific. The review found it as S1 (BG-zpcqo7qt). The test ceiling is at 100 ids: the test replaces or folds into one. Premise run 2026-10-12: 'What does the kb say about GitLab semantic versioning requirement for Catalog releases?' prints coverage none routed by kind: gap, and 'What do S1800 and S1801 say about the headless flag used by CI?' a cites file list, while the plain packs answer. Ordered after BG-hc2gficq, BG-v57estdm and BG-s4lnuekm: the test fails until the first two land. The ids are at the ceiling: fold the probe into an existing test (name it to carry router_broad_lookups); tests_ceiling.json is not touched. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-lmf4ke4w"
 }
