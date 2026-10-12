@@ -400,7 +400,7 @@ class KnowledgeState:
             return "unknown", "the kb does not cover it: coverage none"
         if res["verdict"] == "weak":
             return "partial", "coverage weak"
-        if res["unmatched"] or res["spread"]:
+        if any(res.get(k) for k in ("unmatched", "spread", "scatter", "passing", "priced", "parted")):
             return "partial", "coverage good, but the pack's check: line flags a possible false good"
         return "sufficient", ""
 

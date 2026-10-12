@@ -251,7 +251,9 @@ def passes(res, best):
     eval rule, rag.py run_eval); without one, `good` with no `check:` line."""
     if res.get("verdict") != "good":
         return False
-    return best in res.get("paths", []) if best else not (res.get("unmatched") or res.get("spread"))
+    if best:
+        return best in res.get("paths", [])
+    return not any(res.get(k) for k in ("unmatched", "spread", "scatter", "passing", "priced", "parted"))
 
 
 def unknown_words(question, res):
