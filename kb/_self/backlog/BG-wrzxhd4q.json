@@ -2,7 +2,7 @@
   "id": "BG-wrzxhd4q",
   "kind": "bug",
   "title": "kb-verify lint.py given a kb/-prefixed article path lints nothing and prints errors=0 warnings=0, so a worker reports a clean lint the land then refuses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,27 @@
     "parked: SP-up5wchen close"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: lint.py kb/public/no-such-dir/no-such-article.md exits 0 and prints errors=0 warnings=0 (the repro exits 1 on the base, run at planning 2026-10-12). lint.wanted() matches a bare or root-qualified path only, so a kb/ prefix selects nothing. Callers that pass paths (bl_land.changed_articles passes every changed .md of a root, ledgers too) stay clean: only an argument naming no file is refused. Found at the SP-up5wchen retrospective: the research worker reported lint errors=0 on its ten articles given with the kb/ prefix and the land's lint refused a CODE tag without a path#symbol pointer in one of them. The first check runs lint.py --candidates, which reads the same argument list as the lint, on a live candidate with and without the kb/ prefix (the live kb lints clean, so no lint finding is plantable on it); the worker also asserts a kb/-prefixed path in the lint test it extends (no new test id).",
-  "claimed_by": "orch-7nv2ffr2"
+  "evidence": {
+    "commit": "5ae0f8896181ba3714ac22f6dafaa1d878a3db59",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;L='.claude/skills/kb-verify/lint.py';run=lambda *a:[l for l in subprocess.run([sys.executable,L,'--candidates',*a],capture_output=True,text=True).stdout.splitlines() if l.startswith('CODE-CANDIDATE')];p=run()[0].split()[1].rsplit(':',1)[0];a=run(p);b=run('kb/'+p);print(len(a),len(b));sys.exit(0 if a and a==b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "3f11ad6bbc7ecca0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; p=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','kb/public/no-such-dir/no-such-article.md'],capture_output=True,text=True); sys.exit(p.returncode==0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
