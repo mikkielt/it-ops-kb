@@ -305,8 +305,8 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
         return {"status": status, "headers": {}, "body": body.encode(), "final": url, "hops": [], "error": ""}
     monkeypatch.setattr(provider, "request", ask)
     monkeypatch.setattr(provider, "SEARCH_CACHE", str(tmp_path / "search"))
-    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_planted")  # no credential is read: no request carries one
+    monkeypatch.setenv("GH_TOKEN", "ghp_planted")
 
     def find(name, *terms, **kw):
         ns = argparse.Namespace(name=name, terms=list(terms), limit=5, refresh=False)
@@ -324,7 +324,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert code == 0 and out[1:] == ["1. -  Org/Repo: docs/a.md", "   https://github.com/Org/Repo/blob/abc/docs/a.md"], out
     code, out = find("pypi", "orion", "queue")  # the terms joined by `-` are the project name; the newest upload is the date
     assert code == 0 and out[1:] == ["1. 2026-08-01  orion-queue 1.2: A queue", "   https://pypi.org/project/orion-queue/"], out
-    assert len(asked) == 5 and all(h == {} for _, h in asked), asked
+    assert len(asked) == 5, asked
     code, out = find("learn", "orion", "queue", limit=1)  # the same request again is the cache's: no request
     assert code == 0 and "cache of " in out[0] and len(asked) == 5
     code, out = find("pypi", "orion", "gone")  # a project that does not exist answers 404: no hit, and the answer is kept
@@ -332,12 +332,10 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     code, out = find("learn", "orion", "limited")
     assert code == 1 and out[1] == "not searched: 429; the API's rate limit, ask again later", out
     code, out = find("github-blob", "orion", "nowhere")
-    assert code == 1 and out[1].startswith("not searched: 401") and "GITHUB_TOKEN" in out[1], out
+    assert code == 1 and out[1].startswith("not searched: 401") and "WebSearch" in out[1] and "GITHUB_TOKEN" not in out[1], out
     assert len(os.listdir(tmp_path / "search")) == 6, os.listdir(tmp_path / "search")  # the 200s and the 404 are kept, a 429 and a 401 are not
-    monkeypatch.setenv("GITHUB_TOKEN", "ghp_planted")  # a token goes to api.github.com only
-    find("github", "orion", "queue", refresh=True)
-    find("learn", "orion", "queue", refresh=True)
-    assert asked[-2][1]["Authorization"] == "Bearer ghp_planted" and asked[-1][1] == {}, asked[-2:]
+    find("github", "orion", "queue", refresh=True)  # a refreshed ask sends no Authorization header either
+    assert asked[-1][0].startswith("https://api.github.com/") and all("Authorization" not in h for _, h in asked), asked
     code, out = find("generic", "orion")  # a row with no search_api is named, with the rows that have one
     assert code == 2 and "has no search_api" in out[0] and "learn" in out[0] and "pypi" in out[0], out
 

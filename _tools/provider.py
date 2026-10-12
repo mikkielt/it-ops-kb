@@ -79,10 +79,10 @@ numbered by the file's own lines, any other page by the reduced text. Without --
 1 the page did not answer 200, is not text (a PDF: left to the Read tool) or no line holds every word, 2 bad arguments.
 
 search asks the row's search_api once (the terms joined as the API reads them: spaces, `all:` terms for arXiv, `-` for
-a PyPI project name; a GitHub token in GITHUB_TOKEN or GH_TOKEN is sent to api.github.com, code search needs one), keeps
-a 200 for SEARCH_AGE days under _cache/provider-search/ (--refresh asks again) and prints `search:` (the request and the
-day of its answer), then `N. DATE  TITLE` and the url of each of the first --max hits (default 5). Exit: 0 hits printed,
-1 the API did not answer 200 or holds no hit, 2 a provider with no search_api.
+a PyPI project name; no credential is read and no Authorization header is sent, so GitHub's code search answers 401),
+keeps a 200 for SEARCH_AGE days under _cache/provider-search/ (--refresh asks again) and prints `search:` (the request
+and the day of its answer), then `N. DATE  TITLE` and the url of each of the first --max hits (default 5). Exit: 0 hits
+printed, 1 the API did not answer 200 or holds no hit, 2 a provider with no search_api.
 
 Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
 lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
@@ -677,7 +677,6 @@ def cmd_read(a, rows):
 
 SEARCH_CACHE = os.path.join(kbcommon.HOME, "_cache", "provider-search")  # beside the read cache, never committed
 SEARCH_AGE, SEARCH_MAX = 7, 5  # days an answer is reused; hits printed (the API's first page holds at most 10)
-GITHUB_TOKEN_ENV = ("GITHUB_TOKEN", "GH_TOKEN")
 
 
 def _day(stamp):
@@ -774,11 +773,7 @@ def search(name, terms, rows=None, refresh=False, now=None):
             d = None
     if d is not None:
         return {**d, "cached": True}
-    headers = {}
-    token = next((os.environ[v] for v in GITHUB_TOKEN_ENV if os.environ.get(v)), "")
-    if token and urllib.parse.urlsplit(url).netloc == "api.github.com":
-        headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
-    r = request(url, headers)
+    r = request(url)
     d = {"status": r["status"], "error": r["error"], "url": url, "hits": [], "fetched_utc": now.isoformat(), "cached": False}
     if r["status"] == 200:
         try:
@@ -807,7 +802,7 @@ def cmd_search(a, rows):
     if d["status"] != 200:
         why = d["status"] or d["error"]
         print(f"not searched: {why}" + ("; the API's rate limit, ask again later" if d["status"] in (403, 429) else "") +
-              ("; GitHub code search needs a token: set GITHUB_TOKEN" if d["status"] == 401 else ""))
+              ("; GitHub code search needs authentication, which provider.py does not send: use WebSearch" if d["status"] == 401 else ""))
         return 1
     if not d["hits"]:
         print("no hit")
