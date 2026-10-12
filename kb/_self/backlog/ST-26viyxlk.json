@@ -1,0 +1,27 @@
+{
+  "id": "ST-26viyxlk",
+  "kind": "story",
+  "title": "The ceiling guard also reads CLAUDE_CODE_CHILD_SESSION, and the docs call it a guard against carelessness, not a boundary",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_authority.in_agent_session reads CLAUDE_CODE_CHILD_SESSION (set in every subprocess Claude Code starts) besides CLAUDECODE, so a session command that clears CLAUDECODE alone ('CLAUDECODE= python3 _tools/backlog.py answer ...' or 'env -u CLAUDECODE ...') is still refused for a ceiling-class gate and a tests-ceiling decision; backlog.md and tools.md say the environment check guards against a careless delegated session, not one set on defeating it; any deny rule in .claude/settings.json for commands that clear these variables is the operator's call, asked as a gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.in_agent_session({'CLAUDE_CODE_CHILD_SESSION':'1'}) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

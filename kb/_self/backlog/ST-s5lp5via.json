@@ -1,0 +1,25 @@
+{
+  "id": "ST-s5lp5via",
+  "kind": "story",
+  "title": "The decision digest lists ceiling-class decisions with the restricted classes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbdecide.py's RESTRICTED holds ceiling (or is derived from bl_authority.OPERATOR_CLASSES plus querylog and delete), so decision-digest.md lists a ceiling-class decision first, with secrets, push and agents-rule",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbdecide as k;sys.exit(0 if 'ceiling' in k.RESTRICTED else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbdecide.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-7s3sp7sl",
+  "kind": "story",
+  "title": "An agent session cannot write _tools/tests_ceiling.json or a decision row of _decisions.csv directly",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a direct Edit or Write of _tools/tests_ceiling.json or kb/_self/_decisions.csv from an agent session is refused (deny rules in .claude/settings.json or a PreToolUse hook, the operator's choice through a gate before any change to settings), so the ceiling changes only by the operator's recorded ceiling-class answer and not by an edited file plus a hand-written active operator row that tests.py read_ceiling accepts",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys;s=json.load(open('.claude/settings.json'));d=' '.join(s.get('permissions',{}).get('deny',[]));sys.exit(0 if 'tests_ceiling.json' in d and '_decisions.csv' in d else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

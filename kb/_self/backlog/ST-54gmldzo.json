@@ -1,0 +1,27 @@
+{
+  "id": "ST-54gmldzo",
+  "kind": "story",
+  "title": "A gate question that names the seconds, darwin or suite's ceiling is classed ceiling, not design",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_authority's ceiling question words match the wordings the rules use for the suite ceiling ('seconds ceiling', 'darwin ceiling', 'the suite's ceiling', 'ceiling for the test suite', 'tests.py ceiling', max_seconds), so a gate such as 'Raise the darwin seconds ceiling to 40 s?' on an item with no ceiling touch is of class ceiling; the authority test plants those wordings",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if all(a.gate_class({'touches':[]},{'question':q})=='ceiling' for q in ('Raise the darwin seconds ceiling to 40 s?','Which value does the suite\\'s ceiling take?','Raise max_seconds for darwin?')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

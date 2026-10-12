@@ -1,0 +1,27 @@
+{
+  "id": "ST-jiz53bwh",
+  "kind": "story",
+  "title": "gate remove of a ceiling-class gate is refused from an agent session, as answer is",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py gate remove applies the terminal-only rule of the ceiling class (TERMINAL_CLASSES) as cmd_answer does, so an agent session cannot remove ST-kjp54uiz's gate value or any ceiling-class gate with --by operator; backlog.md says removal of a ceiling gate is terminal-only",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

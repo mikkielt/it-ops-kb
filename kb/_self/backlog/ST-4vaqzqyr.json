@@ -1,0 +1,30 @@
+{
+  "id": "ST-4vaqzqyr",
+  "kind": "story",
+  "title": "The ceiling refusal tells an operator in an IDE integrated terminal, where CLAUDECODE is also set, how to answer",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the refusal backlog.py answer and kbdecide.py print for a ceiling-class answer, and backlog.md and tools.md, name the IDE integrated-terminal case (CLAUDECODE is set there too, DOC S-exebozns) and the route the operator takes then (a standalone terminal), or the guard keys on CLAUDE_CODE_CHILD_SESSION, which IDE terminals do not set; which of the two is a gate for the operator",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/kbdecide.py",
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

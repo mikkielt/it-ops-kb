@@ -1,0 +1,27 @@
+{
+  "id": "ST-drnjcoj2",
+  "kind": "story",
+  "title": "worker.md and tests.py's over-ceiling message say a refused run is retried or recorded, not answered by a gate that proposes a raise",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "agents/worker.md's done-bar rule and tests.py's message for a run over max_seconds say what backlog.md says: run again once the host is quiet, else record a host finding; never propose raising _tools/tests_ceiling.json; the over-ids and over-files messages say cut a test",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=[l for l in open('agents/worker.md',encoding='utf-8') if 'Done bar' in l][0];sys.exit(1 if 'record a blocking operator gate instead' in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    "_tools/tests.py",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

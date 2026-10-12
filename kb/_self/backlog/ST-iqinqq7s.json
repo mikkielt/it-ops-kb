@@ -1,0 +1,24 @@
+{
+  "id": "ST-iqinqq7s",
+  "kind": "story",
+  "title": "The Bazel --test_timeout fact keeps only the page's words as DOC and moves 'the declared timeout stays' to its DER fact",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/agents/test-suite-size-and-agent-overengineering.md's Bazel fact tags DOC only that --test_timeout overrides the timeout when running manually under slow conditions; the clause that the BUILD file's declared timeout stays as declared moves to the DER fact beside it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/test-suite-size-and-agent-overengineering.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}

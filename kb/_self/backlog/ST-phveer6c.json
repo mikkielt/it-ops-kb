@@ -1,0 +1,26 @@
+{
+  "id": "ST-phveer6c",
+  "kind": "story",
+  "title": "A sprint's start gate is not made terminal-only by a member's directory or glob touch above _tools/tests_ceiling.json",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a sprint whose member touches _tools/, . or _tools/*.json does not get a ceiling-class start gate that only the operator's own terminal can answer, either because the start gate is left out of the terminal-only rule or because ceiling is derived only from an exact touch of the file or a glob that matches it alone; the choice is a gate for the operator, and backlog.md documents it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_authority.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn review"
+  ]
+}
