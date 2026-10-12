@@ -16,30 +16,35 @@ Spend of the runs of each scenario, per record (paid `claude -p` runs, the Haiku
 |---|---|---|---|---|---|
 | always-on | 2026-09-28 | 20 | 469,228 | 1,118 | $0.12 |
 | always-on | 2026-10-08 | 20 | 423,992 | 156 | $0.02 |
+| always-on | 2026-10-12 | 20 | 438,594 | 216 | $0.02 |
 | doc2query | 2026-09-28 | 2 | 24,579 | 4,271 | $0.10 |
 | files-headless | 2026-09-28 | 14 | 2,157,090 | 14,845 | $1.74 |
 | files-subagents | 2026-09-28 | 11 | 362,274 | 8,113 | $1.35 |
 | headless | 2026-09-28 | 67 | 5,782,044 | 85,290 | $8.10 |
 | host-lookups | 2026-09-28 | 16 | 1,304,536 | 14,136 | $1.50 |
 | host-lookups | 2026-10-09 | 16 | 847,989 | 16,522 | $0.86 |
+| host-lookups | 2026-10-12 | 16 | 908,661 | 20,561 | $1.22 |
 | host-roots | 2026-09-28 | 4 | 340,570 | 3,921 | $0.11 |
 | howto | 2026-09-28 | 6 | 690,606 | 6,422 | $0.50 |
 | ingest | 2026-09-28 | 1 | 6,947,437 | 26,909 | $2.06 |
 | kb-lookup-agent | 2026-09-28 | 3 | 74,652 | 845 | $0.12 |
+| kb-lookup-agent | 2026-10-12 | 3 | 71,524 | 1,769 | $0.01 |
 | models | 2026-09-28 | 28 | 2,788,545 | 26,211 | $4.01 |
 | navigation | 2026-09-30 | 18 | 2,092,986 | 17,421 | $1.44 |
 | new-model | 2026-09-28 | 60 | 6,125,840 | 59,832 | $6.62 |
 | partial | 2026-09-28 | 13 | 2,522,765 | 21,392 | $1.79 |
+| partial | 2026-10-12 | 14 | 1,998,791 | 40,842 | $0.79 |
 | pool | 2026-10-08 | 2643 | 256,726,989 | 692,631 | $113.96 |
 | pool | 2026-10-09 | 1924 | 215,265,541 | 3,541,683 | $149.54 |
 | querylog-pipeline | 2026-09-28 | 1 | 7,250 | 2,608 | $0.03 |
 | research | 2026-09-28 | 1 | 112,904 | 2,809 | $0.21 |
 | retrieval | 2026-09-28 | 1 | 16,352 | 3,331 | $0.07 |
 | retrieval | 2026-10-08 | 1 | 10,301 | 3,360 | $0.07 |
+| retrieval | 2026-10-12 | 1 | 10,989 | 3,605 | $0.08 |
 | route-by-verdict | 2026-09-29 | 36 | 2,723,008 | 57,099 | $3.73 |
 | router | 2026-09-28 | 22 | 358,198 | 8,244 | $0.30 |
 | subagents | 2026-09-28 | 24 | 724,378 | 23,213 | $3.30 |
-| all | | 4952 | 508,900,054 | 4,642,382 | $301.63 |
+| all | | 5006 | 512,328,613 | 4,709,375 | $303.74 |
 <!-- /bench -->
 
 ## Lookups against the web
@@ -417,41 +422,42 @@ What it shows: with `SNIPPET:` units both models passed 9/9 again, Haiku at $0.1
 | 464ae5f | 2026-09-28 | 464ae5f | 2.1.283 | 266 | 2 | - |
 | 85bf6c8 | 2026-09-28 | 85bf6c8 | 2.1.283 | 266 | 2 | - |
 | 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $1.79 |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 1 | $0.79 |
 <!-- /bench -->
 
 <!-- bench:table partial metrics=cost,input,checks,searches,fetched,live checks,outcome -->
 | case | arm | cost | input | checks | searches | fetched | live checks | outcome |
 |---|---|---|---|---|---|---|---|---|
-| p1_partial | haiku | $0.047, $0.037 -> $0.107 (+155%) | 82k, 111k -> 166,287 (+72%) | 4/4, 4/4 -> 4/4 | 1, 1 -> 2 (+100%) | 0, 0 -> 0 | - | - |
-| p1_partial | sonnet | $0.215, $0.110 -> $0.370 (+128%) | 178k, 146k -> 441,925 (+173%) | 4/4, 4/4 -> 4/4 | 1, 1 -> 4 (+300%) | 0, 0 -> 3 | - | - |
-| p2_partial | haiku | $0.024, $0.071 -> $0.052 (+9%) | 50k, 129k -> 115,598 (+29%) | 3/4 (no search), 3/4 (answer wrong) -> 3/4 | 0, 1 -> 0 (-100%) | 0, 1 (0) -> 2 (+300%) | - | - |
-| p2_partial | sonnet | $0.158, $0.106 -> $0.191 (+45%) | 193k, 139k -> 330,934 (+99%) | 4/4, 4/4 -> 3/4 | 2, 1 -> 4 (+167%) | 0, 0 -> 0 | - | - |
+| p1_partial | haiku | $0.047, $0.037 -> $0.107 -> $0.023 (-78%) | 82k, 111k -> 166,287 -> 287,861 (+73%) | 4/4, 4/4 -> 4/4 -> 4/4 | 1, 1 -> 2 -> 2 (+0%) | 0, 0 -> 0 -> 3 | - | - |
+| p1_partial | sonnet | $0.215, $0.110 -> $0.370 -> $0.169 (-54%) | 178k, 146k -> 441,925 -> 197,523 (-55%) | 4/4, 4/4 -> 4/4 -> 4/4 | 1, 1 -> 4 -> 2 (-50%) | 0, 0 -> 3 -> 0 (-100%) | - | - |
+| p2_partial | haiku | $0.024, $0.071 -> $0.052 -> $0.019 (-63%) | 50k, 129k -> 115,598 -> 203,577 (+76%) | 3/4 (no search), 3/4 (answer wrong) -> 3/4 -> 4/4 | 0, 1 -> 0 -> 3 | 0, 1 (0) -> 2 -> 1 (-50%) | - | - |
+| p2_partial | sonnet | $0.158, $0.106 -> $0.191 -> $0.117 (-39%) | 193k, 139k -> 330,934 -> 166,161 (-50%) | 4/4, 4/4 -> 3/4 -> 4/4 | 2, 1 -> 4 -> 2 (-50%) | 0, 0 -> 0 -> 0 | - | - |
 | n1_newer | haiku, before the fixes | $0.020, $0.020 | 49k, 48k | 1/3, 1/3 | 0, 0 | 0, 0 | - | - |
 | n1_newer | sonnet, before the fixes | $0.065, $0.063 | 96k, 96k | 1/3, 1/3 | 0, 0 | 0, 0 | - | - |
 | n2_newer | haiku, before the fixes | $0.019, $0.026 | 47k, 95k | 1/3, 1/3 | 0, 0 | 0, 0 | - | - |
 | n2_newer | sonnet, before the fixes | $0.044, $0.026 | 63k, 95k | 1/3, 1/3 | 0, 0 | 0, 0 | - | - |
 | k1_stale | haiku, before the fixes | $0.028, $0.026 | 74k, 96k | 1/3, 1/3 | 0, 0 | 0, 0 | - | - |
 | k1_stale | sonnet, before the fixes | $0.061, $0.031 | 98k, 97k | 2/3, 1/3 | 0, 0 | 0, 0 | - | - |
-| n1_newer | haiku | $0.010, $0.010 -> $0.023 (+134%) | 51,866 | 1/3, 1/3 -> 1/3 | 0 | 0 | 0, 0 | - |
-| n1_newer | sonnet | $0.024, $0.032 -> $0.070 (+151%) | 105,743 | 1/3, 1/3 -> 1/3 | 0 | 0 | 0, 0 | - |
-| n2_newer | haiku | $0.019, $0.020 -> $0.025 (+27%) | 75,848 | 1/3, 1/3 -> 0/3 | 0 | 0 | 0, 0 | - |
-| n2_newer | sonnet | $0.018, $0.051 -> $0.063 (+83%) | 103,994 | 1/3, 1/3 -> 1/3 | 0 | 0 | 0, 0 | - |
-| k1_stale | haiku | $0.015, $0.014 -> $0.054 (+272%) | 27,029 | 2/3, 2/3 -> 2/3 | 0 | 0 | - | - |
-| k1_stale | sonnet | $0.059, $0.025 -> $0.091 (+116%) | 176,528 | 2/3, 2/3 -> 2/3 | 0 | 0 | - | - |
+| n1_newer | haiku | $0.010, $0.010 -> $0.023 -> $0.010 (-59%) | 51,866 -> 79,552 (+53%) | 1/3, 1/3 -> 1/3 -> 3/3 | 0 -> 0 | 0 -> 1 | 0, 0 | - |
+| n1_newer | sonnet | $0.024, $0.032 -> $0.070 -> $0.059 (-16%) | 105,743 -> 50,665 (-52%) | 1/3, 1/3 -> 1/3 -> 1/3 | 0 -> 0 | 0 -> 0 | 0, 0 | - |
+| n2_newer | haiku | $0.019, $0.020 -> $0.025 -> $0.009 (-63%) | 75,848 -> 132,168 (+74%) | 1/3, 1/3 -> 0/3 -> 2/3 | 0 -> 0 | 0 -> 3 | 0, 0 | - |
+| n2_newer | sonnet | $0.018, $0.051 -> $0.063 -> $0.080 (+27%) | 103,994 -> 151,931 (+46%) | 1/3, 1/3 -> 1/3 -> 2/3 | 0 -> 0 | 0 -> 3 | 0, 0 | - |
+| k1_stale | haiku | $0.015, $0.014 -> $0.054 -> $0.004 (-93%) | 27,029 -> 53,101 (+96%) | 2/3, 2/3 -> 2/3 -> 3/3 | 0 -> 0 | 0 -> 0 | - | - |
+| k1_stale | sonnet | $0.059, $0.025 -> $0.091 -> $0.066 (-27%) | 176,528 -> 75,173 (-57%) | 2/3, 2/3 -> 2/3 -> 2/3 | 0 -> 0 | 0 -> 0 | - | - |
 | n3_newer | haiku, before the fixes | $0.027 | - | - | - | - | - | no live check, 2.2.361 as the latest, $0.027 |
-| n3_newer | haiku | $0.089 -> $0.083 (-6%) | 132,553 | 3/3 | 0 | 1 | - | PyPI fetched, 2.2.364 of 2026-07-22 with the kb's 2.2.361 beside it, $0.089 |
+| n3_newer | haiku | $0.089 -> $0.083 -> $0.011 (-87%) | 132,553 -> 109,981 (-17%) | 3/3 -> 3/3 | 0 -> 0 | 1 -> 1 (+0%) | - | PyPI fetched, 2.2.364 of 2026-07-22 with the kb's 2.2.361 beside it, $0.089 |
 | n3_newer | sonnet, before the fixes | $0.158 | - | - | - | - | - | PyPI fetched, 2.2.364, $0.158 |
-| n3_newer | sonnet | $0.141 | - | - | - | - | - | the same, $0.141 |
+| n3_newer | sonnet | $0.141 -> $0.085 (-40%) | 131,556 | 3/3 | 0 | 1 | - | the same, $0.141 |
 | n4_newer | haiku, before the fixes | $0.050 | - | - | - | - | - | searched, then "Yes" from a search summary (wrong), $0.050 |
-| n4_newer | haiku | $0.122 -> $0.174 (+43%) | 222,145 | 2/3 | 2 | 4 | - | "No", from the tag's tree, $0.122 |
+| n4_newer | haiku | $0.122 -> $0.174 -> $0.025 (-86%) | 222,145 -> 175,158 (-21%) | 2/3 -> 2/3 | 2 -> 1 (-50%) | 4 -> 4 (+0%) | - | "No", from the tag's tree, $0.122 |
 | n4_newer | sonnet, before the fixes | $0.117 | - | - | - | - | - | searched, then "Yes" from the kb's line on `main` read as a release (wrong), $0.117 |
-| n4_newer | sonnet | $0.240 -> $0.489 (+104%) | 572,315 | 2/3 | 1 | 11 | - | "No", after 6 fetches, $0.240 |
+| n4_newer | sonnet | $0.240 -> $0.489 -> $0.112 (-77%) | 572,315 -> 184,384 (-68%) | 2/3 -> 2/3 | 1 -> 1 (+0%) | 11 -> 4 (-64%) | - | "No", after 6 fetches, $0.240 |
 <!-- /bench -->
 
-What it shows:
-- **Partial knowledge still works:** p1 passed 4/4 on both models; p2 3/4 on both (Haiku fetched again a url the pack had cited, Sonnet's answer did not say the log names are undocumented).
-- **The freshness and stale-copy lines still reach the answer:** k1 kept 2/3 on both models (the copy reported behind, without calling `kb_status`); n1/n2 "using the kb" stayed inside the kb (1/3, no live check), as after the fixes.
-- **With leave to use the web** Haiku checked PyPI on n3 (3/3, $0.083) and both models answered "no" on n4 (2/3), Sonnet after 11 fetches ($0.489). Sonnet's n3 run failed with `529 Overloaded` and has no row.
+What it shows (the record of 2026-10-12, Claude Code 2.1.296, 359 kb topics, one run per cell):
+- **Partial knowledge still works:** p1 and p2 passed 4/4 on both models (p2 3/4 on both in the record of 2026-09-28). The runs cost $0.019-$0.169, below the earlier record's $0.052-$0.370; Haiku fetched 3 urls on p1 and 1 on p2, Sonnet none.
+- **The freshness and stale-copy lines still reach the answer:** k1 3/3 on Haiku, which called `kb_status`, and 2/3 on Sonnet, which did not. The n1/n2 "using the kb" arms no longer stay inside the kb: Haiku fetched 1 url on n1 (3/3) and 3 on n2 (2/3), Sonnet none on n1 (1/3) and 3 on n2 (2/3), where the record of 2026-09-28 made no fetch (1/3 on both).
+- **With leave to use the web** both models checked PyPI on n3 (3/3, Haiku $0.011, Sonnet $0.085) and answered "no" on n4 (2/3), after 4 fetches and 1 search ($0.025 and $0.112), where Sonnet's n4 took 11 fetches in the record of 2026-09-28. Sonnet's n3 has a row now (its run of 2026-09-28 failed with `529 Overloaded`).
 
 ### A new model against the one it replaces
 **Setup:** `python3 _tools/benchmarks.py run new-model`: the new model and the one it replaces, pinned by id (`agent_bench.py` configs `sonnet-5-5` and `sonnet-5`, since the `sonnet` alias follows the newest), in one batch so that dollars compare. A curated set from the sections above: the kb arm on ten questions (`s1_fact`, `s3_multi` facts; `s5_none`, `o1_offkb` off the kb; `s6_falsegood`, `s8_falsegood2` false `good`s that need live docs; `h1`-`h3` how-to snippets, `h2_applock` the pack's false `none`; `x1_synth` a cross-topic synthesis), 2 runs each; the bare web arm on `s1_fact`, `x1_synth` and `o1_offkb`; the host scenarios `p1_partial`, `n1_newer` and `k1_stale`; and "Reply with the single word ok." in an empty directory and in the clone (2 runs each, the highest shown). `kb (10)` and `host (3)` are means per question over those cases.
@@ -810,35 +816,36 @@ A same-day run replaces the rows of its scenario and day, which is why the mediu
 | 945fb09 | 2026-09-27 | 945fb09 | 2.1.282 | 188 | - | - |
 | 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 1 | $1.50 |
 | 2026-10-09 | 2026-10-09 | 36a4550 | 2.1.293 | 299 | 1 | $0.86 |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 1 | $1.22 |
 <!-- /bench -->
 
 <!-- bench:table host-lookups metrics=turns,input,out,wall_s,tool_calls,checks,start_ctx -->
 | case | arm | turns | input | out | wall_s | tool_calls | checks | start_ctx |
 |---|---|---|---|---|---|---|---|---|
-| fixed context | host | 1 -> 1 -> 1 (+0%) | 20.1k -> 30,278 -> 18,675 (-38%) | 4 -> 4 -> 4 (+0%) | 1 s -> 3 s -> 3 s (-6%) | 0 -> 0 | 0/0 -> 0/0 | - |
-| fixed context | clone | 1 -> 1 -> 1 (+0%) | 22.3k -> 34,369 -> 22,876 (-33%) | 4 -> 4 -> 4 (+0%) | 1 s -> 4 s -> 5 s (+32%) | 0 -> 0 | 0/0 -> 0/0 | - |
-| T1 | host | 2 -> 2 -> 2 (+0%) | 42.1k -> 61,792 -> 39,505 (-36%) | 561 -> 681 -> 932 (+37%) | 6 s -> 10 s -> 11 s (+9%) | 1 -> 1 (+0%) | 0/0 -> 0/0 | - |
-| T1 | clone | 2 -> 2 -> 2 (+0%) | 46.5k -> 70,928 -> 48,611 (-31%) | 478 -> 504 -> 976 (+94%) | 5 s -> 8 s -> 14 s (+84%) | 1 -> 1 (+0%) | 0/0 -> 0/0 | - |
-| T2 | host | 3 -> 3 -> 3 (+0%) | 62.9k -> 92,230 -> 57,339 (-38%) | 589 -> 512 -> 549 (+7%) | 6 s -> 8 s -> 7 s (-5%) | 2 -> 2 (+0%) | 0/0 -> 0/0 | - |
-| T2 | clone | 3 -> 3 -> 3 (+0%) | 68.0k -> 104,451 -> 69,801 (-33%) | 558 -> 504 -> 518 (+3%) | 6 s -> 9 s -> 12 s (+33%) | 2 -> 2 (+0%) | 0/0 -> 0/0 | - |
-| T3 | host | 2 -> 2 -> 2 (+0%) | 43.9k -> 63,263 -> 43,563 (-31%) | 1,309 -> 874 -> 1,145 (+31%) | 13 s -> 13 s -> 15 s (+16%) | 1 -> 1 (+0%) | 0/0 -> 0/0 | - |
-| T3 | clone | 2 -> 3 -> 2 (-33%) | 51.1k -> 109,848 -> 48,092 (-56%) | 1,655 -> 1,112 -> 895 (-20%) | 16 s -> 16 s -> 12 s (-28%) | 2 -> 1 (-50%) | 0/0 -> 0/0 | - |
-| T4 | host | 2 -> 5 -> 3 (-40%) | 48.9k -> 145,003 -> 74,035 (-49%) | 1,597 -> 2,154 -> 2,016 (-6%) | 15 s -> 22 s -> 17 s (-23%) | 4 -> 2 (-50%) | 0/0 -> 0/0 | - |
-| T4 | clone | 2 -> 3 -> 4 (+33%) | 52.9k -> 115,951 -> 124,126 (+7%) | 1,777 -> 2,394 -> 2,709 (+13%) | 15 s -> 22 s -> 34 s (+52%) | 2 -> 3 (+50%) | 0/0 -> 0/0 | - |
-| T5 | host | 2 -> 2 -> 4 (+100%) | 40.5k -> 61,226 -> 78,103 (+28%) | 271 -> 277 -> 591 (+113%) | 4 s -> 8 s -> 9 s (+9%) | 1 -> 3 (+200%) | 0/0 -> 0/0 | - |
-| T5 | clone | 2 -> 2 -> 4 (+100%) | 44.9k -> 69,366 -> 94,780 (+37%) | 334 -> 236 -> 664 (+181%) | 4 s -> 7 s -> 11 s (+56%) | 1 -> 3 (+200%) | 0/0 -> 0/0 | - |
-| T6 | host | 3 -> 4 -> 3 (-25%) | 67.2k -> 141,435 -> 58,963 (-58%) | 3,071 -> 1,879 -> 1,193 (-37%) | 21 s -> 22 s -> 11 s (-47%) | 3 -> 2 (-33%) | 0/0 -> 0/0 | - |
-| T6 | clone | 2 -> 4 -> 2 (-50%) | 49.0k -> 179,963 -> 47,935 (-73%) | 2,666 -> 2,336 -> 1,079 (-54%) | 21 s -> 30 s -> 12 s (-60%) | 3 -> 1 (-67%) | 0/0 -> 0/0 | - |
-| T1-T6 | host | 14 -> 18 -> 17 (-6%) | 306k -> 564,949 -> 351,508 (-38%) | 7,398 -> 6,377 -> 6,426 (+1%) | 65 s -> 82 s -> 71 s (-14%) | - | - | - |
-| T1-T6 | clone | 13 -> 17 -> 17 (+0%) | 312k -> 650,507 -> 433,345 (-33%) | 7,468 -> 7,086 -> 6,841 (-3%) | 67 s -> 92 s -> 94 s (+2%) | - | - | - |
-| general-purpose agent | host | - | - | - | - | - | - | 13.5k -> 15,281 -> 10,228 (-33%) |
-| kb-review-workspace | host | 0 -> 0 | 73.1k -> 0 -> 0 | 3.9k -> 0 -> 2,305 | 32 s -> 45 s -> 22 s (-53%) | 9 -> 0 -> 0 | 5/5 -> 5/5 -> 5/5 | - |
+| fixed context | host | 1 -> 1 -> 1 -> 1 (+0%) | 20.1k -> 30,278 -> 18,675 -> 19,308 (+3%) | 4 -> 4 -> 4 -> 4 (+0%) | 1 s -> 3 s -> 3 s -> 3 s (-3%) | 0 -> 0 -> 0 | 0/0 -> 0/0 -> 0/0 | - |
+| fixed context | clone | 1 -> 1 -> 1 -> 1 (+0%) | 22.3k -> 34,369 -> 22,876 -> 23,573 (+3%) | 4 -> 4 -> 4 -> 4 (+0%) | 1 s -> 4 s -> 5 s -> 3 s (-37%) | 0 -> 0 -> 0 | 0/0 -> 0/0 -> 0/0 | - |
+| T1 | host | 2 -> 2 -> 2 -> 2 (+0%) | 42.1k -> 61,792 -> 39,505 -> 41,057 (+4%) | 561 -> 681 -> 932 -> 810 (-13%) | 6 s -> 10 s -> 11 s -> 8 s (-22%) | 1 -> 1 -> 1 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T1 | clone | 2 -> 2 -> 2 -> 2 (+0%) | 46.5k -> 70,928 -> 48,611 -> 49,575 (+2%) | 478 -> 504 -> 976 -> 911 (-7%) | 5 s -> 8 s -> 14 s -> 9 s (-37%) | 1 -> 1 -> 1 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T2 | host | 3 -> 3 -> 3 -> 3 (+0%) | 62.9k -> 92,230 -> 57,339 -> 59,238 (+3%) | 589 -> 512 -> 549 -> 630 (+15%) | 6 s -> 8 s -> 7 s -> 7 s (-7%) | 2 -> 2 -> 2 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T2 | clone | 3 -> 3 -> 3 -> 3 (+0%) | 68.0k -> 104,451 -> 69,801 -> 71,973 (+3%) | 558 -> 504 -> 518 -> 563 (+9%) | 6 s -> 9 s -> 12 s -> 7 s (-38%) | 2 -> 2 -> 2 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T3 | host | 2 -> 2 -> 2 -> 2 (+0%) | 43.9k -> 63,263 -> 43,563 -> 42,875 (-2%) | 1,309 -> 874 -> 1,145 -> 1,099 (-4%) | 13 s -> 13 s -> 15 s -> 11 s (-26%) | 1 -> 1 -> 1 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T3 | clone | 2 -> 3 -> 2 -> 3 (+50%) | 51.1k -> 109,848 -> 48,092 -> 76,521 (+59%) | 1,655 -> 1,112 -> 895 -> 1,011 (+13%) | 16 s -> 16 s -> 12 s -> 12 s (+0%) | 2 -> 1 -> 2 (+100%) | 0/0 -> 0/0 -> 0/0 | - |
+| T4 | host | 2 -> 5 -> 3 -> 3 (+0%) | 48.9k -> 145,003 -> 74,035 -> 80,267 (+8%) | 1,597 -> 2,154 -> 2,016 -> 2,225 (+10%) | 15 s -> 22 s -> 17 s -> 19 s (+13%) | 4 -> 2 -> 2 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T4 | clone | 2 -> 3 -> 4 -> 3 (-25%) | 52.9k -> 115,951 -> 124,126 -> 87,213 (-30%) | 1,777 -> 2,394 -> 2,709 -> 2,202 (-19%) | 15 s -> 22 s -> 34 s -> 19 s (-45%) | 2 -> 3 -> 2 (-33%) | 0/0 -> 0/0 -> 0/0 | - |
+| T5 | host | 2 -> 2 -> 4 -> 4 (+0%) | 40.5k -> 61,226 -> 78,103 -> 80,278 (+3%) | 271 -> 277 -> 591 -> 694 (+17%) | 4 s -> 8 s -> 9 s -> 9 s (-3%) | 1 -> 3 -> 3 (+0%) | 0/0 -> 0/0 -> 0/0 | - |
+| T5 | clone | 2 -> 2 -> 4 -> 2 (-50%) | 44.9k -> 69,366 -> 94,780 -> 46,776 (-51%) | 334 -> 236 -> 664 -> 550 (-17%) | 4 s -> 7 s -> 11 s -> 9 s (-20%) | 1 -> 3 -> 1 (-67%) | 0/0 -> 0/0 -> 0/0 | - |
+| T6 | host | 3 -> 4 -> 3 -> 4 (+33%) | 67.2k -> 141,435 -> 58,963 -> 84,638 (+44%) | 3,071 -> 1,879 -> 1,193 -> 2,055 (+72%) | 21 s -> 22 s -> 11 s -> 19 s (+68%) | 3 -> 2 -> 3 (+50%) | 0/0 -> 0/0 -> 0/0 | - |
+| T6 | clone | 2 -> 4 -> 2 -> 4 (+100%) | 49.0k -> 179,963 -> 47,935 -> 123,380 (+157%) | 2,666 -> 2,336 -> 1,079 -> 4,256 (+294%) | 21 s -> 30 s -> 12 s -> 30 s (+149%) | 3 -> 1 -> 3 (+200%) | 0/0 -> 0/0 -> 0/0 | - |
+| T1-T6 | host | 14 -> 18 -> 17 -> 18 (+6%) | 306k -> 564,949 -> 351,508 -> 388,353 (+10%) | 7,398 -> 6,377 -> 6,426 -> 7,513 (+17%) | 65 s -> 82 s -> 71 s -> 73 s (+4%) | - | - | - |
+| T1-T6 | clone | 13 -> 17 -> 17 -> 17 (+0%) | 312k -> 650,507 -> 433,345 -> 455,438 (+5%) | 7,468 -> 7,086 -> 6,841 -> 9,493 (+39%) | 67 s -> 92 s -> 94 s -> 85 s (-10%) | - | - | - |
+| general-purpose agent | host | - | - | - | - | - | - | 13.5k -> 15,281 -> 10,228 -> 10,760 (+5%) |
+| kb-review-workspace | host | 0 -> 0 -> 0 | 73.1k -> 0 -> 0 -> 0 | 3.9k -> 0 -> 2,305 -> 2,855 (+24%) | 32 s -> 45 s -> 22 s -> 22 s (+5%) | 9 -> 0 -> 0 -> 0 | 5/5 -> 5/5 -> 5/5 -> 5/5 | - |
 <!-- /bench -->
 
 What it shows:
-- **The host still costs less than the clone:** 17 turns and 352k input for the six tasks against 17 turns and 433k, at 18.7k and 22.9k of fixed context (the clone also loads `AGENTS.md` and the user's local-scope servers). Both are above the history (306k and 312k) and below the record of 2026-09-28 (565k and 651k, 30.3k and 34.4k of fixed context); T5 took 4 turns where the two earlier records took 2. These cells are the low run's, one run each.
-- **`/kb-review-workspace` named all five planted problems (5/5) at both levels.** Medium (scratch file): $0.0927, 27.8 s, 3,403 output tokens, 10 tool calls in the `kb-reviewer` agent. Low (the results file): $0.0538, 21.5 s, 2,305 output tokens, 8 tool calls. Both rows read 0 input, turns and tool calls (the main session's: the agent runs forked) and carry output tokens and the agent's tool calls (`sub_tool_calls`), which the record of 2026-09-28 reads as 0 and 0 (5/5, $0.1318, 45.4 s at medium). One pair of runs: the lower cost and time at low are the pair's, and the finding is that low missed none of the five.
-- A general-purpose Sonnet agent in the host starts at 10.2k (15.3k on 2026-09-28, 13.5k in the history).
+- **The host still costs less than the clone:** in the record of 2026-10-12, 18 turns and 388k input for the six tasks against 17 turns and 455k, at 19.3k and 23.6k of fixed context (the clone also loads `AGENTS.md` and the user's local-scope servers). The record of 2026-10-09 read 17 turns and 352k against 17 turns and 433k, at 18.7k and 22.9k. Both records are above the history (306k and 312k) and below the record of 2026-09-28 (565k and 651k, 30.3k and 34.4k of fixed context); T5 took 4 turns in the host where the history took 2, and T6 4 turns in both. One run each.
+- **`/kb-review-workspace` named all five planted problems (5/5)** at `effort: low` (the level the file holds at that commit): $0.0858, 22.5 s, 2,855 output tokens and 9 tool calls in the `kb-reviewer` agent. The record of 2026-10-09 read, at medium (scratch file) $0.0927, 27.8 s, 3,403 output tokens and 10 tool calls, and at low $0.0538, 21.5 s, 2,305 output tokens and 8 tool calls; the record of 2026-09-28 $0.1318 and 45.4 s at medium. The rows read 0 input, turns and tool calls (the main session's: the agent runs forked) and carry output tokens and the agent's tool calls (`sub_tool_calls`). One run each, so the difference between the two records at low is not a measured spread; low missed none of the five in either.
+- A general-purpose Sonnet agent in the host starts at 10.8k (10.2k on 2026-10-09, 15.3k on 2026-09-28, 13.5k in the history).
 
 ### Always-on cost
 
@@ -852,22 +859,23 @@ What it shows:
 | 01587ae | 2026-09-28 | 01587ae | 2.1.283 | 271 | - | - |
 | 2026-09-28 | 2026-09-28 | 3e83754 | 2.1.283 | 271 | 4 | $0.12 |
 | 2026-10-08 | 2026-10-08 | 58ebb9c | 2.1.293 | 299 | 4 | $0.02 |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 4 | $0.02 |
 <!-- /bench -->
 
 <!-- bench:table always-on metrics=input,files_the_hooks_wrote -->
 | case | arm | input | files_the_hooks_wrote |
 |---|---|---|---|
-| ok | no plugin | 22,038 (all 4) -> 22,036 (all 4) -> 22,036 (all 4) -> 22,042 -> 19,754 (-10%) | - |
-| ok | --plugin-dir, hooks on | 23,282 (all 5) -> 23,280 (all 5) -> 23,280 (all 5) -> 23,286 -> 21,572 (-7%) | - |
-| ok | --plugin-dir, hooks off | 23,286 -> 21,572 (-7%) | - |
-| ok | clone, hooks off | 24,584 -> 24,303 (-1%) | - |
-| ok | clone, query log hooks on | 24,584 -> 24,420 (-1%) | - |
-| isolation | --plugin-dir, hooks on | - | 3 -> 3 (+0%) |
+| ok | no plugin | 22,038 (all 4) -> 22,036 (all 4) -> 22,036 (all 4) -> 22,042 -> 19,754 -> 19,524 (-1%) | - |
+| ok | --plugin-dir, hooks on | 23,282 (all 5) -> 23,280 (all 5) -> 23,280 (all 5) -> 23,286 -> 21,572 -> 21,863 (+1%) | - |
+| ok | --plugin-dir, hooks off | 23,286 -> 21,572 -> 21,863 (+1%) | - |
+| ok | clone, hooks off | 24,584 -> 24,303 -> 24,173 (-1%) | - |
+| ok | clone, query log hooks on | 24,584 -> 24,420 -> 24,286 (-1%) | - |
+| isolation | --plugin-dir, hooks on | - | 3 -> 3 -> 3 (+0%) |
 <!-- /bench -->
 
 What it shows:
-- **The plugin adds 1,244 tokens** (23,286 against 22,042), the same as in the two history records; its hooks on or off make no difference (23,286 both), since no hook prints.
-- **The query log's hooks add nothing to a clone's context:** 24,584 with them on and off. With them on, the plugin copy's hooks wrote 3 files under the scratch directory (its `digest-week` marker, `distill.log` and the spool directory) and nothing under `~/.claude/plugins/data/`.
+- **The plugin adds 2,339 tokens** (21,863 against 19,524 in the record of 2026-10-12; 1,818 in the record of 2026-10-08, 21,572 against 19,754; 1,244 in the history, 23,286 against 22,042); its hooks on or off make no difference (21,863 both), since no hook prints.
+- **The query log's hooks add about 110 tokens to a clone's context in the last two records:** 24,286 with them on against 24,173 off on 2026-10-12, 24,420 against 24,303 on 2026-10-08; the history read 24,584 on and off. The runs say not where the difference comes from. With them on, the plugin copy's hooks wrote 3 files under the scratch directory (its `digest-week` marker, `distill.log` and the spool directory) and nothing under `~/.claude/plugins/data/`.
 
 ### kb-lookup agent start context
 
@@ -878,18 +886,19 @@ What it shows:
 |---|---|---|---|---|---|---|
 | 945fb09 | 2026-09-27 | 945fb09 | 2.1.283 | 266 | - | - |
 | 2026-09-28 | 2026-09-28 | 654c8ad | 2.1.283 | 271 | 1 | $0.12 |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 1 | $0.01 |
 <!-- /bench -->
 
 <!-- bench:table kb-lookup-agent metrics=start_ctx,input,requests,route,checks -->
 | case | arm | start_ctx | input | requests | route | checks |
 |---|---|---|---|---|---|---|
-| run 1 | kb-lookup | 3,937 -> 3,999 (+2%) | 11,149 -> 10,079 (-10%) | 2 -> 2 (+0%) | kb_pack -> kb_pack | 1/1 |
-| run 2 | kb-lookup | 3,938 -> 4,005 (+2%) | 18,026 -> 20,915 (+16%) | 3 -> 3 (+0%) | kb_pack, kb_show -> kb_pack > kb_show | 1/1 |
-| run 3 | kb-lookup | 3,932 -> 4,009 (+2%) | 9,937 -> 17,784 (+79%) | 2 -> 3 (+50%) | kb_pack -> kb_pack > kb_show | 1/1 |
+| run 1 | kb-lookup | 3,937 -> 3,999 -> 5,466 (+37%) | 11,149 -> 10,079 -> 23,548 (+134%) | 2 -> 2 -> 3 (+50%) | kb_pack -> kb_pack -> kb_pack > kb_pack | 1/1 -> 1/1 |
+| run 2 | kb-lookup | 3,938 -> 4,005 -> 5,481 (+37%) | 18,026 -> 20,915 -> 23,353 (+12%) | 3 -> 3 -> 3 (+0%) | kb_pack, kb_show -> kb_pack > kb_show -> kb_pack > kb_pack | 1/1 -> 1/1 |
+| run 3 | kb-lookup | 3,932 -> 4,009 -> 5,537 (+38%) | 9,937 -> 17,784 -> 23,790 (+34%) | 2 -> 3 -> 3 (+0%) | kb_pack -> kb_pack > kb_show -> kb_pack > kb_pack | 1/1 -> 1/1 |
 | run 4 | kb-lookup | 3,931 | 9,935 | 2 | kb_pack | - |
 <!-- /bench -->
 
-What it shows: the agent starts at 4.0k (3,999-4,009), 70 tokens above the history's 3,931-3,938: the lookup skill it preloads grew. Every run called `kb_pack` first and answered 10 nodes.
+What it shows: in the record of 2026-10-12 the agent starts at 5.5k (5,466-5,537), 1.5k above the record of 2026-09-28 (3,999-4,009) and the history's 3,931-3,938. The run does not split the difference: the agent's file changed once since then (the `none` rule, 2026-09-29), it lists 12 kb tools and preloads the `kb-lookup` skill. Every run called `kb_pack` twice in 3 requests and passed its check, at 23.4k-23.8k input in total, where the record of 2026-09-28 read 10.1k-20.9k in 2 to 3 requests.
 
 ## Retrieval
 
@@ -905,27 +914,28 @@ What it shows: the agent starts at 4.0k (3,999-4,009), 70 tokens above the histo
 | beacebd | 2026-09-28 | beacebd | - | 188 | - | - |
 | 2026-09-28 | 2026-09-28 | f830156 | 2.1.283 | 271 | 1 | $0.07 |
 | 2026-10-08 | 2026-10-08 | 58ebb9c | 2.1.293 | 299 | 1 | $0.07 |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 1 | $0.08 |
 <!-- /bench -->
 
 <!-- bench:table retrieval metrics=value -->
 | case | arm | value |
 |---|---|---|
 | untagged content, line in pack (keyword probes) | lexical baseline | 0% |
-| untagged content, line in pack (keyword probes) | current | 84-100% -> 95% -> 97% (+2%) |
+| untagged content, line in pack (keyword probes) | current | 84-100% -> 95% -> 97% -> 93% (-4%) |
 | blind questions, line in pack | lexical baseline | 36/72 |
-| blind questions, line in pack | current | 68/72 (94%) -> 71/72 -> 67/72 |
+| blind questions, line in pack | current | 68/72 (94%) -> 71/72 -> 67/72 -> 69/72 |
 | blind questions, false none | lexical baseline | 11% on tagged facts, 30% on untagged content |
-| blind questions, false none | current | 0% -> 0/72 -> 0/72 |
+| blind questions, false none | current | 0% -> 0/72 -> 0/72 -> 0/72 |
 | off-kb questions answered good | lexical baseline | 3/20 |
-| off-kb questions answered good | current | 2/20 -> 15/106 -> 15/106 |
+| off-kb questions answered good | current | 2/20 -> 15/106 -> 15/106 -> 11/103 |
 | cut facts with no visible tag | lexical baseline | 180 |
-| cut facts with no visible tag | current | 0 -> 33 -> 43 (+30%) |
+| cut facts with no visible tag | current | 0 -> 33 -> 43 -> 43 (+0%) |
 | code blocks retrievable | lexical baseline | 0/44 |
-| code blocks retrievable | current | 44/44 -> 187/189 -> 221/225 |
-| tagged facts, line in pack (keyword probes) | current | 98% -> 99% (+1%) |
+| code blocks retrievable | current | 44/44 -> 187/189 -> 221/225 -> 312/317 |
+| tagged facts, line in pack (keyword probes) | current | 98% -> 99% -> 99% (+0%) |
 <!-- /bench -->
 
-What it shows: on the grown kb, keyword probes find 98% of sampled tagged facts' lines and 95% of untagged content's; 71 of 72 blind questions put the fact's line in the pack and none got a false `none`; 187 of 189 `SNIPPET:` units are found by their own words. The off-kb list (106 questions now) has 15 `good`, as in "Verdict corrections". 33 cut lines of tagged units show no tag, all of them CSV data rows cut before their tag column (16 in `security/settings-crosswalk.csv`); the history counted fact bullets only.
+What it shows: on the kb at 359 topics (2026-10-12), keyword probes find 99% of sampled tagged facts' lines and 93% of untagged content's (97% on 2026-10-08, 95% on 2026-09-28); 69 of 72 blind questions put the fact's line in the pack (71 and 67 in the two records before) and none got a false `none`; 312 of 317 `SNIPPET:` units are found by their own words (221 of 225 on 2026-10-08). The off-kb list (103 questions now) has 11 `good` (15 of 106 before), as in "Verdict corrections". 43 cut lines of tagged units show no tag, as on 2026-10-08, where the first record counted 33; the history counted fact bullets only. Each re-run draws its probes and blind questions anew, so the cells compare in kind, not question for question.
 
 ### Verdict corrections
 
@@ -937,17 +947,18 @@ What it shows: on the grown kb, keyword probes find 98% of sampled tagged facts'
 | beacebd | 2026-09-28 | beacebd | - | 266 | - | - |
 | 2026-09-28 | 2026-09-28 | bfa2a7d | 2.1.283 | 271 | 1 | - |
 | 2026-10-08 | 2026-10-08 | 58ebb9c | 2.1.293 | 299 | 1 | - |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 1 | - |
 <!-- /bench -->
 
 <!-- bench:table verdict metrics=passed,verdict_good,verdict_weak,verdict_none,indexed_lines,median_ms,p95_ms -->
 | case | arm | passed | verdict_good | verdict_weak | verdict_none | indexed_lines | median_ms | p95_ms |
 |---|---|---|---|---|---|---|---|---|
-| index | current | - | - | - | - | 12,469 -> 12,713 -> 14,375 (+13%) | - | - |
+| index | current | - | - | - | - | 12,469 -> 12,713 -> 14,375 -> 16,972 (+18%) | - | - |
 | eval set | previous code | 190/250 | - | - | - | - | - | - |
-| eval set | current | 250/250 -> 250/250 -> 574/574 | - | - | - | - | - | - |
+| eval set | current | 250/250 -> 250/250 -> 574/574 -> 621/621 | - | - | - | - | - | - |
 | off-kb list | previous code | - | 55 | 38 | 13 | - | - | - |
-| off-kb list | current | - | 15 -> 15 -> 15 (+0%) | 48 -> 48 -> 48 (+0%) | 43 -> 43 -> 43 (+0%) | - | - | - |
-| pack, warm | current | - | - | - | - | - | 2.3 ms -> 2.3 ms -> 2.8 ms (+24%) | 4.6 ms -> 4.6 ms -> 5.6 ms (+24%) |
+| off-kb list | current | - | 15 -> 15 -> 15 -> 11 (-27%) | 48 -> 48 -> 48 -> 48 (+0%) | 43 -> 43 -> 43 -> 44 (+2%) | - | - | - |
+| pack, warm | current | - | - | - | - | - | 2.3 ms -> 2.3 ms -> 2.8 ms -> 3.6 ms (+29%) | 4.6 ms -> 4.6 ms -> 5.6 ms -> 6.9 ms (+22%) |
 <!-- /bench -->
 
 <!-- bench:table verdict metrics=eval (129 rows),false goods fixed,TG weak,design off-domain none,original 20 off-kb none -->
@@ -969,7 +980,7 @@ What it shows: on the grown kb, keyword probes find 98% of sampled tagged facts'
 | shipped:** + the AV/PC exemption only for names of up to 3 letters | design set | 129 | - | - | - | - |
 <!-- /bench -->
 
-What it shows: the shipped rules hold on the grown kb: the eval set passes 250 of 250, the off-kb list gives 15 `good`, 48 `weak` and 43 `none` as when the rules shipped, and `pack` takes 2.3 ms median and 4.6 ms at p95 over 12,713 indexed lines (12,469 then). The rule tables are the history's design-set results; the re-run does not repeat them.
+What it shows: the shipped rules hold on the grown kb (2026-10-12): the eval set passes 621 of 621 (574 of 574 on 2026-10-08, 250 of 250 before), the off-kb list of 103 questions gives 11 `good`, 48 `weak` and 44 `none` (15, 48 and 43 of 106 on 2026-10-08, and as when the rules shipped), and `pack` takes 3.6 ms median and 6.9 ms at p95 over 16,972 indexed lines (2.8 ms and 5.6 ms over 14,375 on 2026-10-08; 2.3 ms and 4.6 ms over 12,713 on 2026-09-28). The scatter check flags 8 of the 11 off-kb `good` and 3 of 233 eval `good` at its threshold of 15, calibrated and current alike. The rule tables are the history's design-set results; the re-run does not repeat them.
 
 ### doc2query
 
@@ -1013,60 +1024,62 @@ What it shows: as in round 2, expansion adds nothing measurable on fresh blind q
 | 2026-09-28 | 2026-09-28 | 287f380 | 2.1.283 | 271 | 5 | - |
 | 2026-10-08 | 2026-10-08 | 58ebb9c | 2.1.293 | 299 | 5 | - |
 | 2026-10-09 | 2026-10-09 | 73af85f | 2.1.293 | 300 | 5 | - |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 5 | - |
 <!-- /bench -->
 
 <!-- bench:table tool-speed metrics=time,median_ms,p95_ms,s,size_mb -->
 | case | arm | time | median_ms | p95_ms | s | size_mb |
 |---|---|---|---|---|---|---|
 | rag.py pack (CLI, cold) | before | 3.93 s | - | - | - | - |
-| rag.py pack (CLI, cold) | current | 0.06 s -> 0.04 s -> 0.05 s -> 0.06 s (+2%) | 43.6 ms -> 54.8 ms -> 56.0 ms (+2%) | 50.4 ms -> 57.6 ms -> 73.6 ms (+28%) | - | - |
+| rag.py pack (CLI, cold) | current | 0.06 s -> 0.04 s -> 0.05 s -> 0.06 s -> 0.11 s (+97%) | 43.6 ms -> 54.8 ms -> 56.0 ms -> 110.1 ms (+97%) | 50.4 ms -> 57.6 ms -> 73.6 ms -> 124.6 ms (+69%) | - | - |
 | kb: hook | before | 2.05-2.15 s | - | - | - | - |
-| kb: hook | current | 0.05-0.09 s -> 0.05 s -> 0.06 s -> 0.06 s (+4%) | 49.5 ms -> 57.4 ms -> 59.4 ms (+4%) | 70.3 ms -> 62.1 ms -> 64.1 ms (+3%) | - | - |
+| kb: hook | current | 0.05-0.09 s -> 0.05 s -> 0.06 s -> 0.06 s -> 0.11 s (+87%) | 49.5 ms -> 57.4 ms -> 59.4 ms -> 111.4 ms (+87%) | 70.3 ms -> 62.1 ms -> 64.1 ms -> 115.9 ms (+81%) | - | - |
 | rag.py eval | before | 8.63 s | - | - | - | - |
-| rag.py eval | current | 0.71 s -> 0.79 s -> 3.97 s -> 2.24 s (-44%) | 786.7 ms -> 3970.3 ms -> 2236.0 ms (-44%) | 788.7 ms -> 3987.3 ms -> 2255.6 ms (-43%) | - | - |
+| rag.py eval | current | 0.71 s -> 0.79 s -> 3.97 s -> 2.24 s -> 2.81 s (+25%) | 786.7 ms -> 3970.3 ms -> 2236.0 ms -> 2805.4 ms (+25%) | 788.7 ms -> 3987.3 ms -> 2255.6 ms -> 2808.6 ms (+25%) | - | - |
 | rag.py search | before | 0.29 s | - | - | - | - |
-| rag.py search | current | 0.05 s -> 0.04 s -> 0.05 s -> 0.05 s (+3%) | 39.3 ms -> 50.7 ms -> 52.4 ms (+3%) | 40.2 ms -> 51.8 ms -> 52.9 ms (+2%) | - | - |
+| rag.py search | current | 0.05 s -> 0.04 s -> 0.05 s -> 0.05 s -> 0.05 s (-3%) | 39.3 ms -> 50.7 ms -> 52.4 ms -> 50.9 ms (-3%) | 40.2 ms -> 51.8 ms -> 52.9 ms -> 51.7 ms (-2%) | - | - |
 | MCP session (12 calls) | before | 4.04 s | - | - | - | - |
-| MCP session (12 calls) | current | 1.63 s -> 2.06 s -> 2.76 s -> 2.84 s (+3%) | 2055.5 ms -> 2761.8 ms -> 2842.6 ms (+3%) | 2080.3 ms -> 2995.9 ms -> 3112.1 ms (+4%) | - | - |
+| MCP session (12 calls) | current | 1.63 s -> 2.06 s -> 2.76 s -> 2.84 s -> 4.19 s (+48%) | 2055.5 ms -> 2761.8 ms -> 2842.6 ms -> 4193.7 ms (+48%) | 2080.3 ms -> 2995.9 ms -> 3112.1 ms -> 4917.4 ms (+58%) | - | - |
 | kbgit.py check-trailers (30 commits) | before | 0.77-0.95 s | - | - | - | - |
-| kbgit.py check-trailers (30 commits) | current | 0.41 s -> 0.21 s -> 1.93 s -> 0.16 s (-92%) | 211.6 ms -> 1926.6 ms -> 158.8 ms (-92%) | 235.0 ms -> 1963.5 ms -> 198.8 ms (-90%) | - | - |
+| kbgit.py check-trailers (30 commits) | current | 0.41 s -> 0.21 s -> 1.93 s -> 0.16 s -> 0.21 s (+29%) | 211.6 ms -> 1926.6 ms -> 158.8 ms -> 205.3 ms (+29%) | 235.0 ms -> 1963.5 ms -> 198.8 ms -> 239.6 ms (+21%) | - | - |
 | index build | before | - | - | - | - | - |
-| index build | current | about 3 s, 24 MB -> 2.17 s -> 3.76 s -> 3.87 s (+3%) | - | - | - | 32.5 MB -> 108.0 MB -> 109.0 MB (+1%) |
-| pack in-process, warm | current | - | 3.0 ms -> 2.9 ms -> 2.9 ms -> 3.1 ms (+6%) | 4.5 ms -> 6.6 ms -> 5.8 ms -> 6.1 ms (+5%) | - | - |
-| MCP server start (initialize reply) | current | - | 32.0 ms -> 29.7 ms -> 52.0 ms -> 51.8 ms (-0%) | 30.2 ms -> 52.9 ms -> 51.9 ms (-2%) | - | - |
-| 1,000 random packs | current | - | - | - | 3.30 s -> 2.47 s -> 2.69 s -> 2.83 s (+5%) | - |
+| index build | current | about 3 s, 24 MB -> 2.17 s -> 3.76 s -> 3.87 s -> 4.66 s (+21%) | - | - | - | 32.5 MB -> 108.0 MB -> 109.0 MB -> 130.6 MB (+20%) |
+| pack in-process, warm | current | - | 3.0 ms -> 2.9 ms -> 2.9 ms -> 3.1 ms -> 3.6 ms (+18%) | 4.5 ms -> 6.6 ms -> 5.8 ms -> 6.1 ms -> 7.1 ms (+17%) | - | - |
+| MCP server start (initialize reply) | current | - | 32.0 ms -> 29.7 ms -> 52.0 ms -> 51.8 ms -> 49.9 ms (-4%) | 30.2 ms -> 52.9 ms -> 51.9 ms -> 50.6 ms (-3%) | - | - |
+| 1,000 random packs | current | - | - | - | 3.30 s -> 2.47 s -> 2.69 s -> 2.83 s -> 3.18 s (+12%) | - |
 <!-- /bench -->
 
-What it shows: with 300 topics on macOS (2026-10-09), a cold `rag.py pack` takes 56 ms, the `kb:` hook 59 ms, `search` 52 ms and `eval` (574 questions) 2.2 s, where the run of 2026-10-08 took 3.97 s over the same 574 questions (0.79 s over 250 on 2026-09-28): the `_self` view now holds each anchored tested question's informative words once instead of reading the index for them on every pack. `check-trailers` over 30 commits takes 0.16 s, where the run of 2026-10-08 took 1.93 s and the first run of 2026-09-28 0.21 s: it had grown to about three git processes per commit (the KB-Work checks asked git for origin/main, its ancestry and the item files once per commit), and now reads a range in a fixed number of git calls, so the number of git processes no longer grows with the count of commits. An MCP session of 12 calls takes 2.8 s and the server answers `initialize` in 52 ms; an index build takes 3.9 s and 109.0 MB. In process a warm `pack` takes 3.1 ms at the median and 6.1 ms at p95, and 1,000 random packs 2.8 s. The history's `before` column is the corpus rebuilt by every process; nothing measured here needs it again.
+What it shows: with 359 topics on macOS (2026-10-12), a cold `rag.py pack` takes 110 ms, the `kb:` hook 111 ms, `search` 51 ms and `eval` (621 questions) 2.8 s. The cold `pack` and the hook took 56 ms and 59 ms with 300 topics (2026-10-09) and about twice that now, the same in two runs of the day (110 ms and 139 ms); the persisted index grew by 18% in lines and 20% in size (130.6 MB), which does not account for a doubling, and the run does not say which of the changes since then (the router, the `check:` lines, the freshness stamps) it follows from. `search` did not move. `eval` took 2.2 s over 574 questions on 2026-10-09 and 3.97 s on 2026-10-08 (0.79 s over 250 on 2026-09-28): the `_self` view holds each anchored tested question's informative words once instead of reading the index for them on every pack, and now 2.8 s over 621. `check-trailers` over 30 commits takes 0.21 s, as on 2026-10-09 (0.16 s) and 2026-09-28 (0.21 s) and where the run of 2026-10-08 took 1.93 s: it had grown to about three git processes per commit (the KB-Work checks asked git for origin/main, its ancestry and the item files once per commit), and now reads a range in a fixed number of git calls, so the number of git processes no longer grows with the count of commits. An MCP session of 12 calls takes 4.2 s (2.8 s on 2026-10-09) and the server answers `initialize` in 50 ms; an index build takes 4.7 s and 130.6 MB. In process a warm `pack` takes 3.6 ms at the median and 7.1 ms at p95, and 1,000 random packs 3.2 s. The history's `before` column is the corpus rebuilt by every process; nothing measured here needs it again.
 
 ### Freshness of the cited sources
 
-**Setup:** `python3 _tools/benchmarks.py run freshness --sample 5` (no model, no paid run): each answerable row of the question pool (route `good`; 5 rows of each kind, drawn with seed 11, from the public file and, on a host that has it, the query-log file) is looked up with `kbfacts.pack_many(..., revalidate=True)`, so the cited sources of the printed fact lines are asked live within each provider's pacing and the revalidation's 90 s budget, and the printed lines that carry a `DOC` tag are counted by the outcome the lookup prints: `current`, `moved`, `not found`, `source-dated only` (the fact has no located anchor, so only its source's state is known) or `not checked` (none of the sources it cites could be asked). A line counts under the host of the source whose outcome it prints (of several sources, the worst). `requests` counts every request made during the lookups at `provider.request`, those to hosts no line cites included (the GitHub API a pinned repository is asked through, a search); `median_s` and `p95_s` are the wall time of a whole lookup (the pack and its revalidation), over the questions that cite the host, and the `all` row's over every question. `python3 _tools/benchmarks.py run freshness --dry-run` prints the sources and the requests a run would make (one per source per question as the least) and asks nothing. A source asked again within its provider's pacing is answered from the stored check of the lookup before (`cached`, 17 of the 262 source checks of the run).
+**Setup:** `python3 _tools/benchmarks.py run freshness --sample 5` (no model, no paid run): each answerable row of the question pool (route `good`; 5 rows of each kind, drawn with seed 11, from the public file and, on a host that has it, the query-log file) is looked up with `kbfacts.pack_many(..., revalidate=True)`, so the cited sources of the printed fact lines are asked live within each provider's pacing and the revalidation's 90 s budget, and the printed lines that carry a `DOC` tag are counted by the outcome the lookup prints: `current`, `moved`, `not found`, `source-dated only` (the fact has no located anchor, so only its source's state is known) or `not checked` (none of the sources it cites could be asked). A line counts under the host of the source whose outcome it prints (of several sources, the worst). `requests` counts every request made during the lookups at `provider.request`, those to hosts no line cites included (the GitHub API a pinned repository is asked through, a search); `median_s` and `p95_s` are the wall time of a whole lookup (the pack and its revalidation), over the questions that cite the host, and the `all` row's over every question. `python3 _tools/benchmarks.py run freshness --dry-run` prints the sources and the requests a run would make (one per source per question as the least) and asks nothing. A source asked again within its provider's pacing is answered from the stored check of the lookup before (`cached`, 18 of the 308 source checks of the run).
 
 <!-- bench:records freshness -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
 |---|---|---|---|---|---|---|
-| 2026-10-12 | 2026-10-12 | 480f282 | 2.1.296 | 356 | 1 | - |
+| 2026-10-12 | 2026-10-12 | 9dabbdb | 2.1.296 | 359 | 1 | - |
 <!-- /bench -->
 
 <!-- bench:table freshness metrics=doc_lines,current,moved,not_found,source_dated_only,not_checked -->
 | case | arm | doc_lines | current | moved | not_found | source_dated_only | not_checked |
 |---|---|---|---|---|---|---|---|
-| all | current | 310 | 193 | 12 | 8 | 95 | 2 |
+| all | current | 387 | 227 | 15 | 9 | 134 | 2 |
 | api.github.com | current | 6 | 0 | 0 | 0 | 6 | 0 |
-| code.claude.com | current | 67 | 42 | 10 | 0 | 15 | 0 |
+| code.claude.com | current | 94 | 61 | 13 | 0 | 20 | 0 |
 | curia.europa.eu | current | 1 | 0 | 0 | 1 | 0 | 0 |
 | docs.ansible.com | current | 2 | 1 | 0 | 0 | 1 | 0 |
 | docs.github.com | current | 5 | 3 | 0 | 0 | 2 | 0 |
 | docs.gitlab.com | current | 1 | 0 | 0 | 0 | 1 | 0 |
+| docs.langchain.com | current | 5 | 0 | 0 | 0 | 5 | 0 |
 | download.microsoft.com | current | 2 | 0 | 0 | 2 | 0 | 0 |
 | eur-lex.europa.eu | current | 2 | 0 | 0 | 0 | 0 | 2 |
 | github.com | current | 2 | 0 | 0 | 0 | 2 | 0 |
 | gitlab.com | current | 32 | 20 | 0 | 0 | 12 | 0 |
-| learn.microsoft.com | current | 118 | 76 | 0 | 3 | 39 | 0 |
+| learn.microsoft.com | current | 159 | 88 | 0 | 3 | 68 | 0 |
 | platform.claude.com | current | 2 | 0 | 2 | 0 | 0 | 0 |
-| pypi.org | current | 1 | 0 | 0 | 0 | 1 | 0 |
-| raw.githubusercontent.com | current | 62 | 49 | 0 | 0 | 13 | 0 |
+| pypi.org | current | 2 | 0 | 0 | 1 | 1 | 0 |
+| raw.githubusercontent.com | current | 65 | 52 | 0 | 0 | 13 | 0 |
 | support.microsoft.com | current | 1 | 1 | 0 | 0 | 0 | 0 |
 | techcommunity.microsoft.com | current | 4 | 0 | 0 | 2 | 2 | 0 |
 | www.anthropic.com | current | 1 | 1 | 0 | 0 | 0 | 0 |
@@ -1076,25 +1089,26 @@ What it shows: with 300 topics on macOS (2026-10-09), a cold `rag.py pack` takes
 <!-- bench:table freshness metrics=current_share,moved_share,source_dated_only_share,requests,failed_requests,median_s,p95_s -->
 | case | arm | current_share | moved_share | source_dated_only_share | requests | failed_requests | median_s | p95_s |
 |---|---|---|---|---|---|---|---|---|
-| all | current | 62.3% | 3.9% | 30.6% | 230 | 0 | 2.80 s | 8.82 s |
-| api.github.com | current | 0.0% | 0.0% | 100.0% | 7 | 0 | 6.85 s | 6.85 s |
-| code.claude.com | current | 62.7% | 14.9% | 22.4% | 42 | 0 | 3.49 s | 6.37 s |
-| curia.europa.eu | current | 0.0% | 0.0% | 0.0% | 1 | 0 | 1.77 s | 1.77 s |
-| docs.ansible.com | current | 50.0% | 0.0% | 50.0% | 3 | 0 | 3.00 s | 3.00 s |
-| docs.github.com | current | 60.0% | 0.0% | 40.0% | 4 | 0 | 4.48 s | 6.23 s |
-| docs.gitlab.com | current | 0.0% | 0.0% | 100.0% | 2 | 0 | 2.39 s | 2.39 s |
-| download.microsoft.com | current | 0.0% | 0.0% | 0.0% | 3 | 0 | 6.44 s | 6.44 s |
-| eur-lex.europa.eu | current | 0.0% | 0.0% | 0.0% | 2 | 0 | 1.77 s | 1.77 s |
-| github.com | current | 0.0% | 0.0% | 100.0% | 5 | 0 | 1.27 s | 1.27 s |
-| gitlab.com | current | 62.5% | 0.0% | 37.5% | 6 | 0 | 1.58 s | 2.39 s |
-| learn.microsoft.com | current | 64.4% | 0.0% | 33.1% | 94 | 0 | 2.80 s | 10.51 s |
-| platform.claude.com | current | 0.0% | 100.0% | 0.0% | 4 | 0 | 3.49 s | 3.68 s |
-| pypi.org | current | 0.0% | 0.0% | 100.0% | 3 | 0 | 6.85 s | 6.85 s |
-| raw.githubusercontent.com | current | 79.0% | 0.0% | 21.0% | 27 | 0 | 2.61 s | 10.51 s |
-| support.microsoft.com | current | 100.0% | 0.0% | 0.0% | 2 | 0 | 4.11 s | 4.11 s |
-| techcommunity.microsoft.com | current | 0.0% | 0.0% | 50.0% | 8 | 0 | 6.33 s | 20.10 s |
-| www.anthropic.com | current | 100.0% | 0.0% | 0.0% | 1 | 0 | 2.04 s | 2.04 s |
-| www.edpb.europa.eu | current | 0.0% | 0.0% | 100.0% | 2 | 0 | 1.77 s | 1.77 s |
+| all | current | 58.7% | 3.9% | 34.6% | 278 | 0 | 3.13 s | 7.88 s |
+| api.github.com | current | 0.0% | 0.0% | 100.0% | 7 | 0 | 6.97 s | 6.97 s |
+| code.claude.com | current | 64.9% | 13.8% | 21.3% | 60 | 0 | 4.54 s | 7.38 s |
+| curia.europa.eu | current | 0.0% | 0.0% | 0.0% | 1 | 0 | 1.73 s | 1.73 s |
+| docs.ansible.com | current | 50.0% | 0.0% | 50.0% | 3 | 0 | 2.99 s | 2.99 s |
+| docs.github.com | current | 60.0% | 0.0% | 40.0% | 4 | 0 | 6.96 s | 7.64 s |
+| docs.gitlab.com | current | 0.0% | 0.0% | 100.0% | 2 | 0 | 2.41 s | 2.41 s |
+| docs.langchain.com | current | 0.0% | 0.0% | 100.0% | 3 | 0 | 4.25 s | 4.25 s |
+| download.microsoft.com | current | 0.0% | 0.0% | 0.0% | 3 | 0 | 6.79 s | 6.79 s |
+| eur-lex.europa.eu | current | 0.0% | 0.0% | 0.0% | 2 | 0 | 1.73 s | 1.73 s |
+| github.com | current | 0.0% | 0.0% | 100.0% | 5 | 0 | 1.30 s | 1.30 s |
+| gitlab.com | current | 62.5% | 0.0% | 37.5% | 6 | 0 | 1.59 s | 2.41 s |
+| learn.microsoft.com | current | 55.3% | 0.0% | 42.8% | 116 | 0 | 3.12 s | 10.40 s |
+| platform.claude.com | current | 0.0% | 100.0% | 0.0% | 4 | 0 | 3.39 s | 3.64 s |
+| pypi.org | current | 0.0% | 0.0% | 50.0% | 7 | 0 | 5.61 s | 6.97 s |
+| raw.githubusercontent.com | current | 80.0% | 0.0% | 20.0% | 28 | 0 | 2.10 s | 10.40 s |
+| support.microsoft.com | current | 100.0% | 0.0% | 0.0% | 2 | 0 | 1.96 s | 1.96 s |
+| techcommunity.microsoft.com | current | 0.0% | 0.0% | 50.0% | 8 | 0 | 7.30 s | 22.07 s |
+| www.anthropic.com | current | 100.0% | 0.0% | 0.0% | 1 | 0 | 1.79 s | 1.79 s |
+| www.edpb.europa.eu | current | 0.0% | 0.0% | 100.0% | 2 | 0 | 1.73 s | 1.73 s |
 | docs.rs | current | - | - | - | 6 | 0 | - | - |
 | scrumguides.org | current | - | - | - | 1 | 0 | - | - |
 | support.atlassian.com | current | - | - | - | 3 | 0 | - | - |
@@ -1104,10 +1118,10 @@ What it shows: with 300 topics on macOS (2026-10-09), a cold `rag.py pack` takes
 <!-- bench:table freshness metrics=questions,max_s,budget_spent,sources_live,sources_cached,sources_offline cases=all -->
 | case | arm | questions | max_s | budget_spent | sources_live | sources_cached | sources_offline |
 |---|---|---|---|---|---|---|---|
-| all | current | 44 | 20.10 s | 0 | 243 | 17 | 2 |
+| all | current | 54 | 22.07 s | 0 | 288 | 18 | 2 |
 <!-- /bench -->
 
-What it shows: of the 310 printed DOC lines over 44 questions, 193 (62.3%) were current at their source, 12 (3.9%) had moved, 8 were not found, 95 (30.6%) were dated at their source only and 2 could not be checked. All 12 `moved` lines are Claude Code's pages (10 of `code.claude.com`'s 67 lines, 2 of `platform.claude.com`'s 2); `learn.microsoft.com`, with 118 lines, has 76 current, 39 source-dated only and 3 not found, and the pinned `raw.githubusercontent.com` pages 49 current of 62. The run made 230 requests, all of which got an HTTP answer. A lookup took 2.80 s at the median and 8.82 s at p95, and the slowest, 20.10 s, cited `techcommunity.microsoft.com`; no lookup used up its 90 s budget (`budget_spent` 0), so the budget stands with more than four times the slowest lookup's time. `techcommunity.microsoft.com`'s pages are client-rendered: the fetch extracts no text from the page or from its made-up sibling, so each source asked answers `soft-404` and its lines print `not found`.
+What it shows: of the 387 printed DOC lines over 54 questions, 227 (58.7%) were current at their source, 15 (3.9%) had moved, 9 were not found, 134 (34.6%) were dated at their source only and 2 could not be checked. The earlier run of the same day read 310 lines over 44 questions: 193 (62.3%) current, 12 moved, 8 not found, 95 (30.6%) dated at their source only and 2 not checked. All 15 `moved` lines are Claude Code's pages (13 of `code.claude.com`'s 94 lines, 2 of `platform.claude.com`'s 2); `learn.microsoft.com`, with 159 lines, has 88 current, 68 source-dated only and 3 not found, and the pinned `raw.githubusercontent.com` pages 52 current of 65. The run made 278 requests, all of which got an HTTP answer. A lookup took 3.13 s at the median and 7.88 s at p95, and the slowest, 22.07 s, cited `techcommunity.microsoft.com`; no lookup used up its 90 s budget (`budget_spent` 0), so the budget stands with more than four times the slowest lookup's time. `techcommunity.microsoft.com`'s pages are client-rendered: the fetch extracts no text from the page or from its made-up sibling, so each source asked answers `soft-404` and its lines print `not found`.
 
 ## The query log and the newer tools
 
