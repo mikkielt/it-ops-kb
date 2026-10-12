@@ -160,7 +160,15 @@ def is_miss(e):
     return e.get("verdict") == "none" or (e.get("verdict") == "weak" and e.get("judged") != "answered")
 
 
-RULES_QUESTION_WORDS = 30  # the most words of a question a person or skill asks; a longer one is pasted text
+QUESTION_WORDS = 30  # the most words of a question a person or skill asks; a longer one is pasted text
+RULES_QUESTION_WORDS = QUESTION_WORDS
+
+
+def pasted_text(question):
+    """Whether a question is pasted text, not one a person or skill asked: a backlog item's title and goal, which
+    `backlog.py dispatch` packs, or a worker's brief, has more than QUESTION_WORDS words. No finding is derived from
+    it, and the gap step files no entry for it."""
+    return isinstance(question, str) and len(question.split()) > QUESTION_WORDS
 
 
 def rules_miss(e):
@@ -169,7 +177,7 @@ def rules_miss(e):
     and at most RULES_QUESTION_WORDS words, and its pack verdict was weak or none or the reader found no answer
     (route `miss`)."""
     return (e.get("root") == RULES_ROOT and isinstance(e.get("question"), str) and "set" not in e and "item" not in e
-            and len(e["question"].split()) <= RULES_QUESTION_WORDS
+            and not pasted_text(e["question"])
             and (e.get("verdict") in ("weak", "none") or e.get("route") == "miss"))
 
 
@@ -512,7 +520,7 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
         if rules_miss(e):
             rec = rules_finding(e, (rules_pack or default_rules_pack)(e["question"]))
             derived[rec["id"]] = rec
-        elif is_miss(e):
+        elif is_miss(e) and not pasted_text(e["question"]):
             res = pack(e["question"])
             hit = pages.match(e)  # a false none: the kb cites a page the lookup fetched, so an eval and no gap
             held = None if hit else held_article(res)  # or the pack's lead article holds the words it says it lacks

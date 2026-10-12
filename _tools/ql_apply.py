@@ -10,7 +10,7 @@ import csv, datetime, re, sys
 from pathlib import Path
 
 from ql_base import HOME, one_line, places, restore, run_cmd, write_text
-from ql_learn import article_facts, article_of, domain_article, held_article, passes, unknown_words
+from ql_learn import article_facts, article_of, domain_article, held_article, passes, pasted_text, unknown_words
 from ql_research import add_under, research_one
 from ql_store import (APPLY_STATES, FIX_KINDS, RULES_ROOT, failed_counts, finding_states, store_entries, write_findings)
 
@@ -187,6 +187,11 @@ class Gate:
         sources, gaps (the Resolved note), conflicts and the coverage files build_index regenerates."""
         return [self.file(article)] + [self.ledger(article, n) for n in ("_sources.csv", "_gaps.md", "_conflicts.md",
                                                                           "_coverage.csv", "_coverage.md")]
+
+    def ledger_errors(self, article):
+        """The `path:line` citations of the article's root ledgers that check.py refuses (`ledger_citation_errors`)."""
+        import check
+        return check.ledger_citation_errors(self.root(article))
 
     def index_and_check(self):
         """build_index.py, then check.py over every root: the ERROR lines when check.py does not end errors=0."""
@@ -512,12 +517,23 @@ def specific_words(words):
     return {w for w in words if len({st.paths[i] for i in st.own(w)}) <= limit}
 
 
+def plain_question(text):
+    """The question as a gap entry quotes it: a `path:line` citation in it (a goal that names a ledger line) keeps its
+    path and loses its line, since a ledger's citations are held to the tagged facts of the lines they name
+    (check.py `ledger_citation_errors`) and the question's are not the ledger's."""
+    import check
+    return check.LEDGER_CITE.sub(lambda m: m.group(1) or "", text)
+
+
 def gap_decision(question, gate):
     """(pack result, article, decision) of the gap step for one question, packed on the working tree, writing
     nothing: `passes` (it passes now), `held` (a `none` lead holds the words the pack lacks: an eval finding, the
     article is that lead), `reject` (off the kb's domains: no lead article, a stray `none` lead, a `weak` lead
-    without the subject) or `keep` (a _gaps.md entry under the article's topic). `gap_one` acts on it and
-    `gap_replay` prints it."""
+    without the subject), `pasted` (pasted text, not a question: a backlog goal or a worker's brief, packed
+    nothing) or `keep` (a _gaps.md entry under the article's topic). `gap_one` acts on it and `gap_replay` prints
+    it."""
+    if pasted_text(question):
+        return {}, None, "pasted"
     res = gate.pack(question)
     if passes(res, None):
         return res, None, "passes"
@@ -561,25 +577,40 @@ def gap_one(g, entry, gate, day):
     a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the finding promoted from
     candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a `none` lead with half
     the key words or fewer, a `weak` lead without the subject) it is `rejected` at candidate-gap: no topic can take its
-    entry. []
+    entry; so is pasted text (`gap_decision`), and an entry whose ledger check.py would refuse (the entry quotes the
+    question without its citations' line numbers; the ledger is put back as it was when one is left). []
     when it passes now or a `none` pack's lead article holds the words it lacks (`held_article`): learn records both,
     the second as an eval finding."""
     res, article, decision = gap_decision(entry["question"], gate)
     if decision in ("passes", "held"):
         return []
+    if decision == "pasted":
+        return [{**without_observed(g), "state": "rejected",
+                 "observed": {"gate": ["pasted text, not a question"]}}]
     if decision == "reject":
         return [{**without_observed(g), "state": "rejected",
                  "observed": {"verdict": res.get("verdict"), "gate": ["off the kb's domains"]}}]
     topic = gate.topic(article)
     path = gate.ledger(article, "_gaps.md")
-    text = path.read_text(encoding="utf-8") if path.is_file() else ""
+    existed = path.is_file()
+    text = path.read_text(encoding="utf-8") if existed else ""
     if g["id"] not in text:
+        before = len(gate.ledger_errors(article))
+        asked = plain_question(one_line(entry["question"]).replace("**", ""))
         write_text(path, add_under(text, topic, (
-            f"- **{one_line(entry['question']).replace('**', '')}** The kb was asked this in a logged lookup of "
+            f"- **{asked}** The kb was asked this in a logged lookup of "
             f"{entry.get('day', day)}, and no article answered it (query log finding {g['id']}). Looked in the kb "
             f"{day}: `rag.py pack` gives "
             f"`{res.get('verdict')}`, with this topic in the lead. Needs an official source that states it "
             f"(`/kb-research`, or the query log's opt-in research). (topic: {topic})")))
+        errors = gate.ledger_errors(article)
+        if len(errors) > before:  # the entry cites what check.py refuses: the ledger as it was, the finding rejected
+            if existed:
+                write_text(path, text)
+            else:
+                path.unlink()
+            return [{**without_observed(g), "state": "rejected",
+                     "observed": {"verdict": res.get("verdict"), "gate": ["a ledger citation check.py refuses"]}}]
     return [{**without_observed(g), "state": "applied", "stage": "gap", "article": article,
              "promotions": [*(g.get("promotions") or []), {"from": "candidate-gap", "to": "gap", "by": "apply"}],
              "observed": {"verdict": res.get("verdict"), "topic": topic}}]

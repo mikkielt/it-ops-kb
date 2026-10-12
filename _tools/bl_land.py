@@ -461,6 +461,45 @@ def ops_mark(label):
     LAND_OPS.update(step=ops_token(label), t=time.monotonic(), exit=1)
 
 
+PUSH_LOG_TAIL = 200_000  # bytes of the end of a store's distill.log read for the last `apply --push`
+PUSH_FAILED = re.compile(r"apply --push: (?:kbgit\.py sync exit [1-9]|refused|commit failed|conflict|the worktree|.*nothing pushed)")
+PUSH_DONE = re.compile(r"apply --push: (?:pushed [0-9a-f]+ to |nothing to push)")
+PUSH_GATE = re.compile(r"\s+gate (.+?): FAILED \(exit \d+\): (.*)")
+
+
+def last_push_failure(store):
+    """The phrase naming why the last `apply --push` the distill.log beside STORE records delivered nothing: its first
+    failed gate and that gate's first error line (`gate check.py: ERROR ...`, with the count of the other failed
+    gates), else the line that stopped it; None when its last outcome is a push or nothing to push, or the log has none
+    or cannot be read."""
+    try:
+        from ql_distill import LOG_NAME
+        log = Path(store).parent / LOG_NAME
+        with open(log, "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - PUSH_LOG_TAIL))
+            lines = f.read().decode("utf-8", errors="replace").splitlines()
+    except (OSError, ImportError):
+        return None
+    for i in range(len(lines) - 1, -1, -1):
+        if PUSH_DONE.match(lines[i]):
+            return None
+        if not PUSH_FAILED.match(lines[i]):
+            continue
+        gates, j = [], i - 1
+        while j >= 0 and lines[j].startswith("  "):
+            m = PUSH_GATE.fullmatch(lines[j])
+            if m:
+                gates.insert(0, m.groups())
+            j -= 1
+        if gates:
+            name, first = gates[0]
+            more = f", and {len(gates) - 1} other gate(s) failed" if len(gates) > 1 else ""
+            return f"gate {name}: {first[:200]}{more}"
+        return lines[i][len("apply --push: "):][:200]
+    return None
+
+
 def ops_work_rows(root, iid):
     """[line] the landing of IID says about its work rows, none when nothing is amiss. A line of the committed work
     sidecars (`bl_cost.cost_lines`) that names the item or a descendant of it ends it: the rows are delivered. Else
@@ -469,7 +508,8 @@ def ops_work_rows(root, iid):
     writes the sidecars before `querylog.py apply --push` delivers them) are read:
     - a work sidecar of a local store that names the item and that neither the checkout's `kb/_querylog` nor the
       integration main holds: `warning: ... undelivered`, naming the store and its count of sidecars (a session end
-      left it unpushed), and nothing more;
+      left it unpushed) and, from the store's distill.log, why its last `apply --push` delivered nothing
+      (`last_push_failure`), and nothing more;
     - a worker's row of the item in a spool, a `branch` row (the row that opens a headless worker's window,
       `ql_capture.BRANCH_ACTION`) or an `agent-start` or `agent-stop` row (`ql_capture.AGENT_ACTIONS`: a worker
       started with the Agent tool runs inside the orchestrator's session and writes those, never a `branch` row), is
@@ -506,9 +546,11 @@ def ops_work_rows(root, iid):
                 if named:
                     held.append(p.name)
             if held:
+                why = last_push_failure(store)
                 return [f"warning: {iid} landed with no work rows on {remote}/main (undelivered): {store} holds "
                         f"{len(held)} work sidecar(s) naming it that {remote}/main lacks, a session end left the "
-                        f"store unpushed (`python3 _tools/querylog.py apply --push` delivers it)"]
+                        f"store unpushed (`python3 _tools/querylog.py apply --push` delivers it)"
+                        + (f"; its last run did not deliver, {why}" if why else "")]
         spools = [d for d in dirs if d.is_dir()]
         if not spools:
             return []
