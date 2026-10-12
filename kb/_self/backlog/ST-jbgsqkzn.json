@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land's undelivered warning names the failed gate's first error line, and a check-trailers refusal by name",
   "status": "draft",
+  "sprint": "SP-q5ldd25k",
   "priority": "P3",
   "rank": 0,
   "goal": "bl_land.last_push_failure names the first error line of the failed gate's output, not the last line kg_sync prints (kg_sync.py:646), and names a check-trailers failure, which has no (exit N), instead of falling back to kbgit.py sync exit 1, as the backlog.md and tools.md text says",
@@ -11,17 +12,62 @@
       "run": [
         "python3",
         "_tools/tests.py",
+        "_tools/test_land_e2e.py",
         "-k",
         "land_names_first_gate_error"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "_tools/test_land_e2e.py",
+        "-k",
+        "land_names_check_trailers_refusal"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_land.last_push_failure names the first error line of the failed gate's output, not the last line kg_sync prints (kg_sync.py:646)",
+      "check": 0
+    },
+    {
+      "clause": "names a check-trailers failure, which has no (exit N), instead of falling back to kbgit.py sync exit 1, as the backlog.md and tools.md text says",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/bl_land.py",
     "_tools/test_land_e2e.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "ST-qqerasi3"
+  ],
+  "gates": [
+    {
+      "id": "error-line-reader",
+      "kind": "blocking",
+      "question": "Which side picks a failed gate's first error line for land's undelivered warning: land's reader of the delivery log (bl_land.last_push_failure, reading the gate's output block there), or the sync script that writes the gate's summary line?",
+      "options": [
+        "land's reader of the log, the sync script untouched",
+        "the sync script, which writes the first error line into the gate's summary"
+      ],
+      "recommendation": "land's reader of the log, the sync script untouched",
+      "do": {
+        "land's reader of the log, the sync script untouched": "ST-jbgsqkzn",
+        "the sync script, which writes the first error line into the gate's summary": "ST-jbgsqkzn"
+      },
+      "class": "agents-rule",
+      "answer": "land's reader of the log, the sync script untouched",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-kwi4ilty review"
-  ]
+  ],
+  "notes": "Found at the SP-kwi4ilty review. Premise run 2026-10-12 on a planted distill.log: a gate line '  gate check-trailers origin/main..HEAD: FAILED: commits=3 bad=1' before 'apply --push: kbgit.py sync exit 1: nothing pushed to main' gives 'kbgit.py sync exit 1: nothing pushed to main' (PUSH_GATE needs '(exit N)'), and '  gate tests.py (changed): FAILED (exit 1): 1 failed, 40 passed in 9.1s' gives that summary line, the last output line kg_sync prints, not the first error. Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }
