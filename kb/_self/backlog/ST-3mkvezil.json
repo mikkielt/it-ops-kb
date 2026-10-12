@@ -113,7 +113,9 @@
         "stdout: the same lines, exit 0, so a caller reads no failure"
       ],
       "recommendation": "stderr: the reason and the host's usual pair marked check:, nothing written, exit 2",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "stderr: the reason and the host's usual pair marked check:, nothing written, exit 2",
+      "by": "operator"
     },
     {
       "id": "one-flag",
@@ -124,7 +126,9 @@
         "Read the other value from the source and fill it, the given flag winning"
       ],
       "recommendation": "Refuse, exit 2: both flags together or neither, so a pair is never half read",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Refuse, exit 2: both flags together or neither, so a pair is never half read",
+      "by": "operator"
     },
     {
       "id": "licence-words",
@@ -135,7 +139,9 @@
         "The SPDX id alone for every family, and a mirror's licence files never compared (one GitHub request less for a Learn page)"
       ],
       "recommendation": "The usual row wording: 'CC BY 4.0 (licence link on the arXiv abstract page)', 'MIT (repository licence of OWNER/REPO, from the GitHub API)', 'MIT (public mirror OWNER/REPO)', Learn terms of use (...why...) for quote; more than one licence file at a mirror's root, a LICENSE-CODE aside, is a conflict: quote",
-      "class": "push"
+      "class": "push",
+      "answer": "The usual row wording: 'CC BY 4.0 (licence link on the arXiv abstract page)', 'MIT (repository licence of OWNER/REPO, from the GitHub API)', 'MIT (public mirror OWNER/REPO)', Learn terms of use (...why...) for quote; more than one licence file at a mirror's root, a LICENSE-CODE aside, is a conflict: quote",
+      "by": "operator"
     },
     {
       "id": "read-scope",
@@ -146,7 +152,9 @@
         "Every page of those hosts, and a repository with no recognised licence written as quote with no licence file"
       ],
       "recommendation": "Repository files and front pages on github.com, raw.githubusercontent.com and gitlab.com (not issues, discussions, wikis or merge requests), arxiv.org and ar5iv pages, learn.microsoft.com pages, and the hosts code.claude.com, anthropic.com and www.anthropic.com; a repository with no licence the forge recognises (none, NOASSERTION, other) is unread",
-      "class": "push"
+      "class": "push",
+      "answer": "Repository files and front pages on github.com, raw.githubusercontent.com and gitlab.com (not issues, discussions, wikis or merge requests), arxiv.org and ar5iv pages, learn.microsoft.com pages, and the hosts code.claude.com, anthropic.com and www.anthropic.com; a repository with no licence the forge recognises (none, NOASSERTION, other) is unread",
+      "by": "operator"
     }
   ],
   "links": [
