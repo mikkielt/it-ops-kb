@@ -2,7 +2,7 @@
   "id": "BG-bbcc5f4s",
   "kind": "bug",
   "title": "apply's lead share check reads the whole source line, so a long line's clipped passage that does not answer is still applied",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7nv2ffr2",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,6 @@
   "links": [
     "parked: SP-x5gjv4r7 review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: ql_apply.rules_one on a lead whose printed passage holds none of the key words returns state applied (the repro exits 1 on the base, run at planning 2026-10-12). Order: before ST-s4cihfge (ql_apply.py and test_redact.py are shared)."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: ql_apply.rules_one on a lead whose printed passage holds none of the key words returns state applied (the repro exits 1 on the base, run at planning 2026-10-12). Order: before ST-s4cihfge (ql_apply.py and test_redact.py are shared).",
+  "claimed_by": "orch-7nv2ffr2"
 }
