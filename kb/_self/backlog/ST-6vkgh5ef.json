@@ -2,7 +2,7 @@
   "id": "ST-6vkgh5ef",
   "kind": "story",
   "title": "Review sprint: Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7nv2ffr2",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-7nv2ffr2"
+  "evidence": {
+    "commit": "de6896aecea520bcae480314f8545e5954c32dc1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "437115d55b35946c"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ade56bb1eb51a08c"
+      }
+    ]
+  }
 }
