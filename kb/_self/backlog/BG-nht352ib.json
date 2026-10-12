@@ -1,0 +1,24 @@
+{
+  "id": "BG-nht352ib",
+  "kind": "bug",
+  "title": "13 of the aliases.csv rows ST-zrysu6ri added are inert: expand adds a canonical only when it is itself a row, so 'what is jdm' expands to nothing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Every row of _tools/aliases.csv makes kbfacts.expand add its canonical for a question that holds the alias (pirb, jdm, brms, jcs, sha-256, grafana loki, gliner-x and the other single-row canonicals): the repro exits 0, and rag.py eval keeps every row passing",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;r=kbfacts.expand('what is jdm');print(r);sys.exit(0 if r[0] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/aliases.csv",
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ]
+}
