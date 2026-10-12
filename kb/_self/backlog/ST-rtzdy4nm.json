@@ -2,7 +2,7 @@
   "id": "ST-rtzdy4nm",
   "kind": "story",
   "title": "Deliver the query-log store once the BG-ckrasbdn fix merges: the 2026-10-10 runs reach main and cost reads worker figures",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kwi4ilty",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,6 @@
   "depends_on": [
     "BG-ckrasbdn"
   ],
-  "notes": "Split 2026-10-12 by the orchestrator of SP-kwi4ilty from BG-ckrasbdn: land runs a code item's checks and repro before it pushes the code/<id> merge request, and apply --push gates and applies with origin/main's tools in the worktree beside the spool, so these two clauses cannot pass until the fix merges. Work: after BG-ckrasbdn is done, the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done --commit."
+  "notes": "Split 2026-10-12 by the orchestrator of SP-kwi4ilty from BG-ckrasbdn: land runs a code item's checks and repro before it pushes the code/<id> merge request, and apply --push gates and applies with origin/main's tools in the worktree beside the spool, so these two clauses cannot pass until the fix merges. Work: after BG-ckrasbdn is done, the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done --commit.",
+  "claimed_by": "orch-kwi4ilty"
 }
