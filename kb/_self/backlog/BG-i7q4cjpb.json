@@ -2,7 +2,7 @@
   "id": "BG-i7q4cjpb",
   "kind": "bug",
   "title": "fact_for still picks a non-answer for BP-df64045a and the three cmpivot timeout rows, and gate g1's hand extension of BP-df64045a accepts the wipe line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
   "rank": 0,
@@ -119,5 +119,46 @@
     "parked: SP-5i4itd2d review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): fact_for picks intune/app-protection-mam.md:60 for BP-df64045a and mecm/cmpivot.md:14 for BP-d306eaa8, BP-8f566d80 and BP-70d0bf39; the committed check of BP-df64045a still holds 'selective \\(MAM\\) wipe' and BP-c552cb0f's 'up to 60 seconds'. The pool check run passes before the work: it pins that the edited rows still equal what the files build.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "c76e84e0bc452577ea40dff6d5d99db70281882c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bench_pool as b;C={x[\"id\"]:x for x in b.read_csv(\"kb/public/_retrieval/lookup_eval.csv\")};P={x[\"id\"]:x for x in b.read_csv(b.PUBLIC_FILE)};got={i:b.fact_for(\".\",C[P[i][\"source\"].split(\":\",1)[1]])[:2] for i in (\"BP-d306eaa8\",\"BP-8f566d80\",\"BP-70d0bf39\")};print(got);sys.exit(0 if all(g[1] in (17,43) for g in got.values()) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d7e834893f6f8627"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bench_pool as b;P={x[\"id\"]:x[\"checks\"] for x in b.read_csv(b.PUBLIC_FILE)};a,c=P[\"BP-df64045a\"],P[\"BP-c552cb0f\"];print(a,c);sys.exit(0 if \"selective\" not in a and \"up to 60 seconds\" not in c and \"1.5\" in c else 1)"
+        ],
+        "exit": 0,
+        "sha256": "cecb311413697102"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ba1e2a59800116b6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bench_pool as bp; c={x['id']:x for x in bp.read_csv('kb/public/_retrieval/lookup_eval.csv')}; a=bp.fact_for('.',c['EV-intune-app-protection-policies-mam-ios']); b=bp.fact_for('.',c['EV-cmpivot-query-timeout']); print(a[:2],b[:2]); sys.exit(0 if a[1]==13 and b[1] in (17,43) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "187c1377aa2ee34b"
+      }
+    ]
+  }
 }
