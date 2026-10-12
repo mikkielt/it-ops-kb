@@ -47,7 +47,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 107 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
-| `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 66 |
+| `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 68 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
 | `agents/mmlw-e5-polish-embeddings` | P3 | partial | `agents/mmlw-e5-polish-embeddings.md` | 31 |
 | `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 37 |

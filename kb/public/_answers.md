@@ -3182,3 +3182,14 @@ _Agent: kb-research_
 - See agents/doc-lookup-sources.md, agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-source-s-change-rate-estimated-checks. How is a source's change rate estimated from checks at discrete times, and how biased is the plain changes-over-time estimate?
+- The plain estimator, changes observed over time observed, is biased low when checks are not much more frequent than changes: several changes between two checks show as one, so the estimated time between changes comes out too long however many checks are made. [DOC S-ea26tgr2, S-vrx7t6cc]
+- A modified estimator from Cho and Garcia-Molina subtracts the expected bias and stays finite, `-1 / log((T - X + 0.5) / (T + 0.5))`, with better bias below 50 observations, most where the check interval is 0.5 to 2 times the change interval; it assumes regular checks and Poisson changes. [DOC S-ea26tgr2]
+- Maximum likelihood handles irregular check times but has no closed form, is recomputed from the whole history and is infinite while every check saw a change. [DOC S-vrx7t6cc]
+- Sources regenerated on a schedule are not Poisson: in a sample of quickly changing pages nearly 20% followed a regular hourly pattern better, with a spike at exactly 24 hours. [DOC S-ea26tgr2]
+- Conclusion: a change rate counted from a source's recorded change dates overstates its freshness lifetime for sources checked rarely against how often they change, the checks come at irregular times, and a plain rate is infinite for a source that changed at every check, so a lifetime from history needs the shifted form or a floor and a fallback for sources with few recorded changes. [DER S-ea26tgr2, S-vrx7t6cc]
+- Open: Cho and Garcia-Molina's own paper could not be read (its hosts did not answer on 2026-10-12), so the formula and its conditions rest on the poster's account of it. [UNK]
+- See agents/doc-change-detection.md.
+
+_Agent: kb-research_
