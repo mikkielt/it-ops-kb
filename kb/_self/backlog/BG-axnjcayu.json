@@ -1,0 +1,17 @@
+{
+  "id": "BG-axnjcayu",
+  "kind": "bug",
+  "title": "bench_core prices Sonnet 5.5 cache reads at 0.20 for every run although Claude Code 2.1.296 reports them at the page's 0.10",
+  "status": "draft",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A run's Sonnet 5.5 cost in the benchmark harness counts cache reads at the rate Claude Code's cost figure used on that run's version: 0.20 per million tokens up to Claude Code 2.1.295 and 0.10 (the pricing page's rate, kb/public/claude/ci-and-headless.md) from 2.1.296, and the comment above bench_core.PRICE no longer calls the conflict at kb/public/_conflicts.md open.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bench_core; assert bench_core.PRICE['claude-sonnet-5-5'][0][4] == 0.10, bench_core.PRICE['claude-sonnet-5-5']"
+    ]
+  }
+}
