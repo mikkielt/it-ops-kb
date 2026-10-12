@@ -1,0 +1,27 @@
+{
+  "id": "BG-5fkown4o",
+  "kind": "bug",
+  "title": "agents/langgraph.md cites the PyPI project JSON for a pip install form the JSON does not state",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/public/agents/langgraph.md's install facts (lines 13 and 35) state only what their cited source says: S-v5hqqcqx (https://pypi.org/pypi/langgraph/json) gives version 1.2.14, MIT and the README's 'uv add langgraph', not 'pip install langgraph'; the pip form is dropped or cited to a page that states it, and the facts are re-anchored with factdiff.py anchor --quotes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open('kb/public/agents/langgraph.md',encoding='utf-8').read();sys.exit(1 if re.search(r'pip install[^\\[]*\\[DOC S-v5hqqcqx\\]',t) else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a fact's wording against its cited page; a command can only read the fact text, and the fix is checked by reading it against the live page",
+  "touches": [
+    "kb/public/agents/langgraph.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qjg5r7jj review"
+  ]
+}
