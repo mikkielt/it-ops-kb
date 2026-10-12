@@ -13,6 +13,10 @@
                                            the cited sources' urls, within about BUDGET tokens. Start every lookup here.
   rag.py pack -q PART -q PART ...          one batch for a question with several parts (1-6): a section with its
                                            own verdict per part and one shared source footer
+  rag.py pack QUESTION --revalidate        also check the cited sources of the printed fact lines against their pages
+                                           now (the network, within a time budget; only these sources and lines) and
+                                           mark each line current, moved (with the new passage), not found or
+                                           source-dated only; a source that cannot be checked keeps its offline stamp
   rag.py pack --root _self QUESTION        the best passages of the kb/_self rule docs and the decisions tied to them;
   rag.py pack --root _self --item ID [QUESTION]   the brief of a backlog item: its docs (kb/_self/map.csv) and decisions
   rag.py pack --root _self --set NAME      the tested questions of a set (`skill` or `skill:step`, the `sets` column of
@@ -440,6 +444,9 @@ def main():
     pk.add_argument("--set", dest="set_name", help="with --root _self: the tested questions of a set (`skill` or `skill:step`), "
                     "their passages and the decisions tied to them; no ranking, no verdict")
     pk.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
+    pk.add_argument("--revalidate", action="store_true", help="check the cited sources of the printed fact lines against "
+                    "their pages now (the network, within a time budget) and mark each line current, moved, not found "
+                    "or source-dated only; the results are kept under _cache/ only")
     fa = sub.add_parser("facts"); fa.add_argument("prefix"); fa.add_argument("--tag", help="comma-separated kinds, e.g. UNK,COMMUNITY")
     fa.add_argument("--format", choices=FORMATS, default="concise"); fa.add_argument("--root", help="one root only")
     au = sub.add_parser("audit"); au.add_argument("prefix", nargs="?"); au.add_argument("--status")
@@ -536,7 +543,7 @@ def main():
             sys.exit(2)
         if len(parts) > kbfacts.MAX_QUESTIONS:
             sys.exit(f"pack: at most {kbfacts.MAX_QUESTIONS} parts")
-        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief)
+        res = kbfacts.pack_many(parts, a.budget, domain_arg(a.domain), a.format, a.root, a.invalidated, brief, a.revalidate)
         if a.root == kbfacts.SELF_ROOT:
             kbfacts.record_self(res["text"], a.budget, res, parts, item=a.item)
         if a.json:

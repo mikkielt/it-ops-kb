@@ -56,7 +56,7 @@ the same.
 Exit: 0 ok; 1 anchors --stale found stale anchors; 2 bad arguments.
 """
 import argparse, collections, concurrent.futures as cf, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
-import unicodedata, urllib.parse
+import threading, time, unicodedata, urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon, kbfacts, kbid, kbusage, provider, ql_capture  # noqa: E402
@@ -902,8 +902,10 @@ def git_quiet(sid, url, st, stamp):
     return res["evidence"], {**st, "id": sid, "url": url, "checked_utc": stamp, "detected_utc": stamp, "error": ""}
 
 
-def detect_source(sid, src, st, rows):
-    """(verdict, signal, evidence, new state, doc, prev doc) of one source against its stored state."""
+def detect_source(sid, src, st, rows, lookup=False):
+    """(verdict, signal, evidence, new state, doc, prev doc) of one source against its stored state. `lookup` (a
+    revalidation at question time, revalidate): no clone of a git repository is made or fetched (the page itself is asked
+    instead) and the fetched document is not written to the cache of the detection runs."""
     url, row = src["url"], provider.for_url(src["url"], rows) or {}
     sig = provider.signals(row, url)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -913,7 +915,7 @@ def detect_source(sid, src, st, rows):
             return "gone", "repository", ev, None, None, None  # no state row: checked_utc would stamp it confirmed
         return "pinned", "pin", "pinned url: its text cannot change (census.py compares the pin with upstream)", None, None, None
     prev = load_json(cache_path(sid))
-    quiet = git_quiet(sid, url, st, stamp)
+    quiet = None if lookup else git_quiet(sid, url, st, stamp)
     if quiet:
         return "unchanged", "git", quiet[0], quiet[1], prev, prev
     d = provider.document(url, row, etag=st.get("etag", ""), lastmod=st.get("last_modified", ""))
@@ -923,15 +925,16 @@ def detect_source(sid, src, st, rows):
         via = "etag" if st.get("etag") and "etag" in sig else "lastmod"
         return "unchanged", via, "304 Not Modified", new, prev, prev
     if not d["status"] or d["error"] or d["status"] not in (200, 404, 410):
-        new["error"] = (d["error"] or f"HTTP {d['status']}")[:200]
+        new["error"] = (d["error"] or ("rate limited: " if d.get("limited") else "") + f"HTTP {d['status']}")[:200]
         return "error", "", new["error"], new, None, prev
     if d["status"] in (404, 410):
         new.update(error=f"HTTP {d['status']}")
         return "gone", "status", f"HTTP {d['status']}", new, None, prev
-    save_doc(sid, {**d, "id": sid, "url": url, "fetched_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()})
+    if not lookup:
+        save_doc(sid, {**d, "id": sid, "url": url, "fetched_utc": datetime.datetime.now(datetime.timezone.utc).isoformat()})
     keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
     version = d["version"].get(keys[0], "") if keys else ""
-    gid = gh_page_id(url, d.get("raw") or "") if "git" in sig else ""
+    gid = gh_page_id(url, d.get("raw") or "") if "git" in sig and not lookup else ""
     if gid:  # a wiki page or a repository home: its file's blob ids in the clone cache are its version id
         keys, version = ["git"], gid
     d["sha"] = hashlib.sha256((d["text"] or "").encode()).hexdigest()
@@ -956,7 +959,7 @@ def detect_source(sid, src, st, rows):
     if version and not st.get("version") and st.get("doc_sha256") and since:  # a baseline of the text only: date it against the signal
         if keys == ["timeline"] and version <= since:
             return "unchanged", "version", f"timeline {version} is not after the baseline {since}", new, d, prev
-        if keys == ["git"] and gh_page_quiet_since(url, d.get("raw") or "", since[:10]):
+        if keys == ["git"] and not lookup and gh_page_quiet_since(url, d.get("raw") or "", since[:10]):
             return "unchanged", "git", f"no commit of the page's file, licence or release since the baseline {since[:10]}", new, d, prev
     if st.get("doc_sha256") == d["sha"]:
         return "unchanged", "hash", "document text identical", new, d, prev
@@ -1068,19 +1071,23 @@ def elsewhere(fact, anchor, cands, rows):
     return "not-found", best[0] or "", f"best candidate cover {best[1]:.2f}" if best[0] else "no candidate page"
 
 
-def linked(src, doc, row):
+def linked(src, doc, row, sitemaps=True):
     """Pages a moved passage may have gone to, before any search: the redirect target, then the pages added to the
-    provider's sitemap in this run nearest the source's path."""
+    provider's sitemap in this run nearest the source's path (not for a lookup: reading a sitemap rewrites the set
+    that the next detection compares with)."""
     out = [doc["final"]] if doc and doc.get("final") and doc["final"] != src["url"] and doc.get("hops") else []
+    if not sitemaps:
+        return out
     seg = urllib.parse.urlsplit(src["url"]).path.strip("/").split("/")
     segs = [x for x in seg[:2] if x and x != "en-us"][:1]
     return out + near(src["url"], sitemap_added(row, segs))
 
 
-def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None):
+def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, lookup=False):
     """Log rows, one per fact of a source whose text changed, moved or died. `secs` is the (baseline, current) pair of
     section sets of a page only its text hash found changed: a located fact whose anchor's section hashes the same in
-    both is `verbatim` with the signal `section`, not resolved (no passage search, no other page)."""
+    both is `verbatim` with the signal `section`, not resolved (no passage search, no other page). `lookup`: the
+    provider's sitemap is not read (linked)."""
     out = []
     row = provider.for_url(src["url"], rows) or {}
     d = Doc(doc["text"]) if doc and doc.get("text") else None
@@ -1111,36 +1118,28 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None):
                 rec.update(outcome="modified", note=sim + changed)
                 found += 1
             else:
-                o, t, note = elsewhere(text, a, linked(src, doc, row) + search_urls(text, a, row, src["url"], src.get("title", "")), rows)
+                o, t, note = elsewhere(text, a, linked(src, doc, row, not lookup) + search_urls(text, a, row, src["url"], src.get("title", "")), rows)
                 rec.update(outcome=o, target=t, note=note)
         else:
-            cands = linked(src, doc, row) + search_urls(text, a, row, src["url"], src.get("title", ""))
+            cands = linked(src, doc, row, not lookup) + search_urls(text, a, row, src["url"], src.get("title", ""))
             o, t, note = elsewhere(text, a if located else None, cands, rows)
             rec.update(outcome=o if o == "moved" else "dead", target=t, note=note)
         out.append(rec)
     return out, found
 
 
-def cmd_detect(a, tally):
-    """Detection for the selected sources, then resolution per fact; the log goes to _census/factdiff-<date>.csv."""
-    srcs, facts, anchors, state = sources(), cited_facts(), read_anchors(), read_state()
-    rows = provider.providers(ROOT)
-    ids = [i for i in select_ids(a, srcs) if i in facts and not (srcs[i].get("superseded_by") or "").strip()]
-    date = a.date or today()
+def detect_pass(ids, srcs, state, rows, lookup=False):
+    """{source id: detect_source's result} of the sources `ids`: one thread per host, a host's sources in turn (its
+    pacing), one source's failure an `error` verdict and never the end of the run."""
     by_host = collections.defaultdict(list)
     for sid in ids:
         by_host[urllib.parse.urlsplit(srcs[sid]["url"]).netloc].append(sid)
-    print(f"detect: {len(ids)} source(s) on {len(by_host)} host(s)", file=sys.stderr, flush=True)
-    learn = learn_repos([srcs[i]["url"] for i in ids if has_baseline(state.get(i)) and state[i].get("detected_utc")])
-    if learn:
-        print(f"detect: {len(learn)} docs repositor{'y' if len(learn) == 1 else 'ies'} of Learn pages fetched into the clone cache",
-              file=sys.stderr, flush=True)
 
     def host_job(host):
         res = []
         for sid in by_host[host]:
             try:
-                v = detect_source(sid, srcs[sid], state.get(sid, {}), rows)
+                v = detect_source(sid, srcs[sid], state.get(sid, {}), rows, lookup)
             except Exception as e:  # noqa: BLE001 - one source must never stop the run
                 v = ("error", "", f"{type(e).__name__}: {e}"[:200], None, None, None)
             res.append((sid, v))
@@ -1150,6 +1149,43 @@ def cmd_detect(a, tally):
     with cf.ThreadPoolExecutor(max(1, min(16, len(by_host)))) as ex:
         for part in ex.map(host_job, list(by_host)):
             results.update(part)
+    return results
+
+
+def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False):
+    """(verdict, evidence, fact rows, (changed, unchanged) section counts or None) of one source's detect_source result
+    `res` and its `facts`: a page that changed, is new, moved, is gone, is a soft 404 or was replaced has its facts
+    resolved (resolve), one only its text hash found changed is compared per heading section first, and a `replaced`
+    page whose anchors are still found is an edit, `changed`. An unchanged or pinned source has no fact rows."""
+    verdict, signal, ev, _, doc, prev = res
+    rows_f, secs, counts = [], None, None
+    if verdict == "changed" and signal == "hash" and doc and doc.get("text"):
+        # the text hash is the only signal: the sections hashed at the baseline tell which part of the page changed
+        old = stored_sections(state.get(sid, {}), prev)
+        if old:
+            secs = (old, sections(doc["text"]))
+            counts = section_counts(*secs)
+            ev += f"; sections: {counts[0]} changed, {counts[1]} unchanged"
+    if verdict in ("changed", "new", "moved", "gone", "soft-404", "replaced"):
+        rows_f, found = resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs, lookup)
+        if verdict == "replaced" and found:
+            verdict, ev = "changed", ev + "; anchors still found: an edit, not a replacement"
+    return verdict, ev, rows_f, counts
+
+
+def cmd_detect(a, tally):
+    """Detection for the selected sources, then resolution per fact; the log goes to _census/factdiff-<date>.csv."""
+    srcs, facts, anchors, state = sources(), cited_facts(), read_anchors(), read_state()
+    rows = provider.providers(ROOT)
+    ids = [i for i in select_ids(a, srcs) if i in facts and not (srcs[i].get("superseded_by") or "").strip()]
+    date = a.date or today()
+    hosts = {urllib.parse.urlsplit(srcs[sid]["url"]).netloc for sid in ids}
+    print(f"detect: {len(ids)} source(s) on {len(hosts)} host(s)", file=sys.stderr, flush=True)
+    learn = learn_repos([srcs[i]["url"] for i in ids if has_baseline(state.get(i)) and state[i].get("detected_utc")])
+    if learn:
+        print(f"detect: {len(learn)} docs repositor{'y' if len(learn) == 1 else 'ies'} of Learn pages fetched into the clone cache",
+              file=sys.stderr, flush=True)
+    results = detect_pass(ids, srcs, state, rows)
     if a.sitemaps:  # the site-level diff: record every involved provider's sitemap, so the next run sees additions
         segs = collections.defaultdict(set)
         for sid in ids:
@@ -1162,20 +1198,10 @@ def cmd_detect(a, tally):
                       "since the last run", file=sys.stderr, flush=True)
     log, counts, outc, secn = [], collections.Counter(), collections.Counter(), collections.Counter()
     for sid in ids:
-        verdict, signal, ev, new, doc, prev = results[sid]
-        rows_f, secs = [], None
-        if verdict == "changed" and signal == "hash" and doc and doc.get("text"):
-            # the text hash is the only signal: the sections hashed at the baseline tell which part of the page changed
-            old = stored_sections(state.get(sid, {}), prev)
-            if old:
-                secs = (old, sections(doc["text"]))
-                changed, same = section_counts(*secs)
-                secn.update(changed=changed, unchanged=same)
-                ev += f"; sections: {changed} changed, {same} unchanged"
-        if verdict in ("changed", "new", "moved", "gone", "soft-404", "replaced"):
-            rows_f, found = resolve(sid, srcs[sid], verdict, doc, prev, facts[sid], anchors, rows, secs)
-            if verdict == "replaced" and found:
-                verdict, ev = "changed", ev + "; anchors still found: an edit, not a replacement"
+        _, signal, _, new, doc, prev = results[sid]
+        verdict, ev, rows_f, sec = resolve_source(sid, srcs[sid], results[sid], state, facts[sid], anchors, rows)
+        if sec:
+            secn.update(changed=sec[0], unchanged=sec[1])
         counts[verdict] += 1
         base = {"source_id": sid, "url": srcs[sid]["url"], "verdict": verdict, "signal": signal, "evidence": ev,
                 "baseline_utc": state.get(sid, {}).get("detected_utc", "") if verdict != "new" else "",
@@ -1203,6 +1229,209 @@ def cmd_detect(a, tally):
              if secn["changed"] or secn["unchanged"] else "")
           + ("" if a.no_save else f"; wrote {os.path.relpath(out, kbcommon.HOME)}"))
     return 1 if any(outc[k] for k in REVIEW) else 0
+
+
+# ---------------------------------------------------------------- revalidation at question time
+
+REVALIDATE_BUDGET_S = 90  # all the requests of one revalidation together: far under the MCP client's idle timeout (5 minutes)
+PASSAGE_CHARS = 280  # the new passage a moved fact prints, cut here
+LOOKUP_ORDER = ("current", "source-dated only", "moved", "not found")  # best first: a line citing several sources prints the worst
+_lookup_guard = threading.Lock()
+
+
+def lookup_cache_path(sid):
+    """The stored result of a source's last revalidation: under _cache/, beside the detection runs' document cache and
+    never in a committed ledger (a lookup writes no anchors, state or source rows)."""
+    return os.path.join(os.path.dirname(CACHE), "revalidate", ROOT.name, re.sub(r"[^\w.-]", "_", sid) + ".json")
+
+
+def lookup_cached(sid, keys, pace, now):
+    """The stored result of an earlier revalidation of a source when it is younger than `pace` seconds and holds every
+    line of `keys`, else None."""
+    try:
+        with open(lookup_cache_path(sid), encoding="utf-8") as f:
+            rec = json.load(f)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(rec, dict) or not isinstance(rec.get("lines"), dict):
+        return None
+    age = now - (rec.get("checked") if isinstance(rec.get("checked"), (int, float)) else 0)
+    return rec if 0 <= age < pace and all(k in rec["lines"] for k in keys) else None
+
+
+def lookup_store(sid, rec):
+    """Keep a revalidation's result; a cache that cannot be written never stops a lookup."""
+    path = lookup_cache_path(sid)
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path + ".tmp", "w", encoding="utf-8", newline="\n") as f:
+            json.dump(rec, f)
+        os.replace(path + ".tmp", path)
+    except OSError:
+        pass
+
+
+def line_key(rel, key):
+    return f"{rel}|{key}"
+
+
+def new_passage(text, doc):
+    """The passage of `doc` (a Doc) that backs a fact now, one line, cut at PASSAGE_CHARS; "" when none does."""
+    win, _, _ = doc.locate(fact_text(text))
+    if win is None:
+        return ""
+    p = " ".join(doc.window(*win).split())
+    return p if len(p) <= PASSAGE_CHARS else p[:PASSAGE_CHARS].rsplit(" ", 1)[0] + " ..."
+
+
+def lookup_source(sid, src, res, facts, state, anchors, rows):
+    """({line key: outcome}, live verdict, why not checked) of one source's detect_source result `res`, for the printed
+    `facts` [(fact key, path, line, text)] only. An outcome is {outcome, target, passage, note}: `current` (the source is
+    unchanged and the fact has a located anchor, or its passage is found word for word), `moved` (its passage is found
+    on another page, or edited in place: the new passage is kept), `not found`, or `source-dated only` (the fact has
+    no located anchor, so only its source's state is known). A source that could not be asked has no outcomes and a
+    reason; a fact whose search for its passage was cut short by the time budget or a network error has outcome ""
+    and the reason as its note."""
+    verdict, signal, ev, _, doc, _ = res
+    if verdict == "error":  # a network error, the time budget, a limit or a status that is no answer
+        return None, verdict, ev if ev == provider.BUDGET_ERROR or ev.startswith(("HTTP ", "rate limited")) else f"network error: {ev}"
+    if verdict == "pinned":
+        st, why = provider.repository_state(src["url"])
+        if st == "" and why:  # the text cannot change, but whether its repository still answers could not be asked
+            return None, verdict, f"pinned; its repository was not asked: {why}"
+    out = {}
+    if verdict == "gone" and signal == "repository":
+        return {line_key(rel, key): {"outcome": "not found", "target": "", "passage": "", "note": f"its repository is gone: {ev}"}
+                for key, rel, _line, _text in facts}, verdict, ""
+    if verdict in ("pinned", "unchanged"):
+        for key, rel, _line, _text in facts:
+            a = anchors.get((key, rel, sid))
+            located = a is not None and a.get("status") == "located"
+            out[line_key(rel, key)] = {"outcome": "current" if located else "source-dated only", "target": "", "passage": "",
+                                       "note": "source unchanged" + ("" if located else "; no located anchor")}
+        return out, verdict, ""
+    failed = provider.failures()
+    verdict, ev, rows_f, _ = resolve_source(sid, src, res, state, facts, anchors, rows, lookup=True)
+    lost = provider.spent() or provider.failures() > failed
+    text_of = {(key, rel): text for key, rel, _line, text in facts}
+    cur = Doc(doc["text"]) if doc and doc.get("text") else None
+    for r in rows_f:
+        key, rel = r["fact"], r["path"]
+        rec = {"outcome": "", "target": "", "passage": "", "note": r["note"]}
+        o = r["outcome"]
+        if o == "verbatim":
+            rec.update(outcome="current", note="passage word for word" + (" (its section is unchanged)" if r.get("signal") == SECTION_SIGNAL else ""))
+        elif o == "modified" and cur is not None:
+            rec.update(outcome="moved", target=src["url"], passage=new_passage(text_of[(key, rel)], cur), note="edited in place: " + r["note"])
+        elif o == "moved":
+            d, _ = page_doc(r["target"], rows)
+            rec.update(outcome="moved", target=r["target"], passage=new_passage(text_of[(key, rel)], d) if d is not None else "")
+        elif o == "unanchored":
+            rec.update(outcome="source-dated only", note="source changed; no located anchor")
+        elif o in ("not-found", "dead"):
+            if lost:  # the search for the passage did not finish: nothing is known of it
+                rec.update(note=provider.BUDGET_ERROR if provider.spent() else "network error during the search for the passage")
+            else:
+                rec.update(outcome="not found", note="source gone or replaced" if o == "dead" else r["note"])
+        else:
+            rec.update(outcome="not found")
+        out[line_key(rel, key)] = rec
+    return out, verdict, ""
+
+
+def lookup_root(items, out, day, now):
+    """revalidate's work for the printed lines of one root (the module's ROOT)."""
+    srcs, state, anchors = kbfacts.source_rows(), read_state(), read_anchors()
+    rows = provider.providers(ROOT)
+    wanted = collections.defaultdict(dict)  # source id -> {(fact key, path): (line, text)}
+    for p in items:
+        for sid in p["ids"]:
+            wanted[sid][(p["key"], kbfacts.bare(p["path"]))] = (p["line"], p["text"])
+    got, ask = {}, []
+    for sid in sorted(wanted):
+        src = srcs.get(sid)
+        if src is None or not src.get("url"):
+            continue
+        facts = [(k, rel, ln, text) for (k, rel), (ln, text) in wanted[sid].items()]
+        if (src.get("superseded_by") or "").strip():
+            out["sources"][sid] = {"state": "offline", "verdict": "", "why": f"superseded by {src['superseded_by'].strip()}"}
+            continue
+        pace = provider.pacing(provider.for_url(src["url"], rows))
+        rec = lookup_cached(sid, [line_key(rel, k) for k, rel, _, _ in facts], pace, now)
+        if rec is not None:
+            got[sid] = (rec["lines"], rec.get("verdict", ""), "", rec.get("checked_utc", day), "cached")
+        else:
+            ask.append((sid, src, facts))
+    results = detect_pass([sid for sid, _, _ in ask], srcs, state, rows, lookup=True) if ask else {}
+    for sid, src, facts in ask:
+        res = results.get(sid) or ("error", "", provider.BUDGET_ERROR, None, None, None)
+        try:
+            lines, verdict, why = lookup_source(sid, src, res, facts, state, anchors, rows)
+        except Exception as e:  # noqa: BLE001 - one source must never stop a lookup
+            lines, verdict, why = None, "error", f"{type(e).__name__}: {e}"[:200]
+        if lines is None:
+            got[sid] = (None, verdict, why, day, "offline")
+            continue
+        stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        lookup_store(sid, {"checked": now, "checked_utc": stamp, "verdict": verdict, "signal": res[1],
+                           "lines": {k: v for k, v in lines.items() if v["outcome"]}})
+        got[sid] = (lines, verdict, "", stamp, "live")
+    for sid, (lines, verdict, why, stamp, how) in got.items():
+        out["sources"][sid] = {"state": how, "verdict": verdict, "why": why, "checked_utc": stamp}
+    for p in items:
+        rel, found, unchecked = kbfacts.bare(p["path"]), [], {}
+        for sid in p["ids"]:
+            if sid not in got:
+                continue
+            lines, verdict, why, stamp, how = got[sid]
+            rec = (lines or {}).get(line_key(rel, p["key"]))
+            if rec is None or not rec["outcome"]:
+                unchecked[sid] = why or (rec or {}).get("note") or "not checked"
+            else:
+                found.append({**rec, "id": sid, "checked_utc": stamp})
+        best = max(found, key=lambda r: LOOKUP_ORDER.index(r["outcome"]), default=None)
+        out["lines"][(p["path"], p["line"])] = {**(best or {"outcome": ""}), "unchecked": unchecked}
+
+
+def revalidate(printed, budget=REVALIDATE_BUDGET_S):
+    """Check the sources the printed fact lines of a pack cite against their pages now, for the lines printed only:
+    `printed` is [{path (qualified), line, key (fact key), text, ids (the cited non-UNK source ids)}]. Detection is
+    `detect` with no save (detect_source in lookup mode, resolve_source): only the cited sources are asked and only the
+    printed facts' anchors are resolved, the requests of all of it within `budget` seconds in all (provider.budget).
+    A source asked within its provider's pacing (provider.pacing) is answered from the stored result of that check
+    (lookup_cache_path), so a repeated pack asks nothing. Writes only under _cache/ (the stored results; the detection
+    cache's documents are left as they are); no anchor, state row, source row or log. Returns {date, lines: {(path, line):
+    {outcome (current | moved | not found | source-dated only, "" when no cited source could be checked), id, target,
+    passage, note, checked_utc, unchecked: {source id: why}}}, sources: {id: {state: live | cached | offline, verdict,
+    why, checked_utc}}}. A source that could not be checked (a network error, the time budget, GitHub's unauthenticated
+    limit, a page that did not answer) is `offline` with its reason, and its lines keep the offline stamp."""
+    global ROOT
+    day = today()
+    out = {"date": day, "lines": {}, "sources": {}}
+    by_root = collections.defaultdict(list)
+    for p in printed:
+        if p["ids"]:
+            by_root[kbfacts.root_name(p["path"])].append(p)
+    if not by_root:
+        return out
+    with _lookup_guard:
+        keep = ROOT
+        for cache in (_pages, _searches, _added, _madeup):  # a long-lived process (kb_mcp): no answer of an earlier run
+            cache.clear()
+        provider.new_run()
+        try:
+            with provider.budget(budget):
+                for name, items in by_root.items():
+                    try:
+                        ROOT = kbcommon.root(name or "")
+                    except (KeyError, kbcommon.RootError):
+                        continue
+                    lookup_root(items, out, day, time.time())
+        finally:
+            ROOT = keep
+            for cache in (_pages, _searches, _added, _madeup):
+                cache.clear()
+    return out
 
 
 # ---------------------------------------------------------------- review and apply

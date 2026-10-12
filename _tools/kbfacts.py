@@ -2747,6 +2747,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             "unmatched": unmatched, "spread": spread, "scatter": scatter, "top_score": top_score,
             "top_domains": top_domains, "route": route, "has": has, "lacks": lacks, "paths": paths,
             "tested": [t[0] for t in tested], "pinned": sum(1 for u in printed if u.get("tested")),
+            "printed": [] if rules else printed_lines(printed, rows),
             "key_missing": own_words(question, unheld),
             "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
             "decisions": [{"id": d["id"], "status": d["status"], "label": decision_label(d), "path": d["path"],
@@ -2956,6 +2957,17 @@ def source_stamp(sid, rows=None):
     return f"[{'confirmed ' + day if day else 'unconfirmed'}, {source_signal(sid, (row.get('url') or '').strip())}]"
 
 
+def printed_lines(units, rows):
+    """[{path, line, key, text, ids}] of the printed fact units that cite a source (not UNK, as factdiff.cited_facts
+    reads it) the ledger holds: what revalidate (factdiff) checks and apply_revalidation marks."""
+    out = []
+    for u in units:
+        ids = list(dict.fromkeys(i for p in u["tags"] if p["kind"] != "UNK" for i in p["ids"] if i in rows))
+        if ids:
+            out.append({"path": u["path"], "line": u["line"], "key": fact_key(u["text"]), "text": u["text"], "ids": ids})
+    return out
+
+
 def fresh_mark(u, rows=None):
     """`unanchored` and `source changed` for a printed fact unit, joined by `; `, "" for neither: a source the fact
     cites (not UNK, as factdiff.cited_facts reads it) has no located anchor for it (the fact is dated at its source
@@ -2980,13 +2992,88 @@ def format_sources(srcs):
             for i, u, s in srcs]
 
 
+FACT_LINE = re.compile(r"^- (\S+):(\d+)(?=[ \n]|$)")
+OFFLINE_MARK = re.compile(r" \[(?:unanchored|source changed)(?:; (?:unanchored|source changed))*\]")
+FOOTER_LINE = re.compile(r"^  -> (\S+)  ")
+LIVE_WORD = {"pinned": "unchanged", "unchanged": "unchanged", "changed": "changed", "replaced": "changed",
+             "moved": "moved", "gone": "gone", "soft-404": "gone", "new": "read, no earlier baseline"}
+
+
+def revalidated(text, rev):
+    """`text` of a pack with the outcome of a revalidation (factdiff.revalidate) put in: each printed fact line it
+    checked gets `[current DATE]`, `[moved DATE]` (a line under it holds the new passage, and the page), `[not found
+    DATE]` or `[source-dated only DATE]` in place of the offline marks; a line none of whose sources could be checked
+    keeps them. A footer line of a source it asked ends with what the page showed; the last line says how many sources
+    it asked, how many it answered from a check younger than the provider's pacing, and, with the reason, each it could
+    not check (its facts keep the offline stamp)."""
+    out = []
+    for ln in text.split("\n"):
+        m = FACT_LINE.match(ln)
+        r = rev["lines"].get((m.group(1), int(m.group(2)))) if m else None
+        if r and r["outcome"]:
+            tail = OFFLINE_MARK.sub("", ln[m.end():], count=1)
+            note = f"; {', '.join(r['unchecked'])} not checked" if r["unchecked"] else ""
+            out.append(f"{ln[:m.end()]} [{r['outcome']} {r['checked_utc'][:10]}{note}]{tail}")
+            if r["outcome"] == "moved":
+                where = f" ({r['target']})" if r["target"] else ""
+                out.append(f'    now{where}: "{r["passage"]}"' if r["passage"] else f"    now{where}: no passage located")
+            continue
+        if r:  # a source asked live whose answer for this line was cut short: the footer does not say it
+            cut = sorted({w for i, w in r["unchecked"].items() if rev["sources"].get(i, {}).get("state") != "offline"})
+            if cut:
+                ln = f"{ln[:m.end()]} [not checked live: {', '.join(cut)}]{ln[m.end():]}"
+            out.append(ln)
+            continue
+        f = FOOTER_LINE.match(ln)
+        src = rev["sources"].get(f.group(1)) if f else None
+        if src and src["state"] != "offline":
+            ln += f"  [live {src['checked_utc'][:10]}: {LIVE_WORD.get(src['verdict'], src['verdict'] or 'checked')}]"
+        elif src:
+            ln += "  [not checked live]"
+        out.append(ln)
+    live = sum(1 for v in rev["sources"].values() if v["state"] == "live")
+    cached = sum(1 for v in rev["sources"].values() if v["state"] == "cached")
+    why = defaultdict(list)
+    for i, v in rev["sources"].items():
+        if v["state"] == "offline":
+            why[v["why"]].append(i)
+    if not rev["sources"]:
+        out.append(f"revalidate {rev['date']}: no printed fact line cites a source to check")
+    else:
+        out.append(f"revalidate {rev['date']}: {live} source(s) asked live, {cached} answered from a check younger than "
+                   f"its provider's pacing" + ("; not checked, the offline stamp stands: "
+                   + "; ".join(f"{', '.join(ids)} ({w})" for w, ids in why.items()) if why else ""))
+    return "\n".join(out)
+
+
+def revalidate_pack(res):
+    """pack_many's result with its printed fact lines revalidated against their sources now (revalidated): `text` is
+    rewritten and `revalidate` holds factdiff.revalidate's answer. Never raises: a lookup that cannot revalidate says
+    so and keeps its offline text."""
+    import factdiff  # not at load: the detection tool and the network modules it brings are for this call only
+    printed = [p for r in res["results"] for p in r.get("printed", [])]
+    try:
+        rev = factdiff.revalidate(list({(p["path"], p["line"]): p for p in printed}.values()))
+    except Exception as e:  # noqa: BLE001 - a lookup always answers
+        return {**res, "text": res["text"] + f"\nrevalidate: not done, the offline stamp stands ({type(e).__name__}: {str(e)[:120]})",
+                "revalidate": None}
+    res["revalidate"] = {"date": rev["date"], "sources": rev["sources"],
+                         "lines": {f"{p}:{n}": {k: v for k, v in r.items() if k != "text"} for (p, n), r in rev["lines"].items()}}
+    res["text"] = revalidated(res["text"], rev)
+    return res
+
+
 MAX_QUESTIONS = 6
 PART_BUDGET_MIN = 800  # tokens per part of a 3+ part pack
 
 
-def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
+def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None,
+              revalidate=False):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A part of a kind a tool decides is answered by that tool (pack_routed).
+    `revalidate` (rag.py pack --revalidate, kb_pack's revalidate): the printed fact lines are checked against their
+    sources now and marked with the outcome (revalidate_pack); the lookup tools that never go to the network (the kb:
+    hook, kb_ask.py) leave it off.
     A single question gives exactly pack()'s text, or its routed answer. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
@@ -2995,7 +3082,8 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
     if len(qs) == 1:
         res = pack_routed(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
-        return {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
+        one = {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
+        return revalidate_pack(one) if revalidate else one
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
     results = [pack_routed(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item)
                for q in qs]
@@ -3011,8 +3099,9 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     if srcs and fmt != "concise":
         out += ["sources:"] + format_sources(srcs)
     order = ("none", "weak", "good")
-    return {"verdict": min((r["verdict"] for r in results), key=order.index), "route": route, "results": results,
+    many = {"verdict": min((r["verdict"] for r in results), key=order.index), "route": route, "results": results,
             "text": "\n".join(out).rstrip()}
+    return revalidate_pack(many) if revalidate else many
 
 
 def cited_lines(ids):
