@@ -3159,3 +3159,14 @@ _Agent: kb-research_
 - See agents/doc-lookup-sources.md, agents/doc-change-detection.md, agents/headless-agent-runtimes.md, claude/ci-and-headless.md, claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-gone-repository-check-limits-hash-only-hosts. What does a pack's gone-repository check, per-section comparison and bounded live revalidation need to know about 404 answers, rate limits and hash-only docs hosts?
+- GitHub answers an unauthenticated request for a private resource with `404 Not Found` "to avoid confirming the existence of private repositories", a rate-limited one with `403` or `429`, and a renamed repository with `301`. [DOC S-a76fjdhb, S2197]
+- GitLab's API says `404` means a resource's ID was not found "or the user isn't authorized to access the resource", and on gitlab.com the unauthenticated limits in effect are 500 requests each minute per IP address and 800 each minute for raw endpoint traffic of a project, with `429` and `Retry-After` on excess. [DOC S-phkss6q3, S-ggcghqgu]
+- On 2026-10-12 a made-up project answered `404` on the GitLab API route with the limit headers, but `302` to sign-in on the web raw path, whose redirect then met a Cloudflare challenge `403`; one raw file request to GitHub's raw host did not move the REST `core` counter. [DER S-ny2cx7aq, S-setpfkdd, S2196, S-2r7j5aw2: single probes]
+- The `.md` forms of a Claude Code docs page and an MCP specification page sent no `etag` and a `last-modified` equal to the response time, so for hash-only hosts the text is the only signal; the heading-section rule for comparing it per section (fence-aware, ATX headings) is already in the kb, as are the limits a live check must stay under: 30 s for a `UserPromptSubmit` hook, 5 minutes of MCP idle timeout for HTTP servers and 60 GitHub requests an hour. [DER S743, S-w65ompps: one response each] [DOC S-gmmkbalr, S743, S1862, S2188]
+- Conclusion: a pinned source's repository can only be reported as "answers 404", never "deleted"; a `403` or `429` is rate limiting and a `301` a move; GitHub is checked through its REST route within 60 requests an hour per address and GitLab.com through its API route, not its raw web path; and per-section hashes are the only finer signal on the hash-only Mintlify hosts. [DER S-a76fjdhb, S-phkss6q3, S-ny2cx7aq, S-setpfkdd, S743, S-w65ompps]
+- Open: the request limit of `raw.githubusercontent.com`, whether a deleted repository and a private one can be told apart without a token, and the per-section change rate of any host. [UNK]
+- See agents/doc-change-detection.md, agents/doc-lookup-sources.md, agents/codebase-mapping.md, claude/hooks.md, agents/agent-error-catalogue.md.
+
+_Agent: kb-research_
