@@ -85,6 +85,45 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "scatter-threshold",
+      "kind": "blocking",
+      "question": "How is the scatter note's score threshold chosen and what is it?",
+      "options": [
+        "The whole score that maximises off-kb goods flagged less eval goods flagged over lookup_eval.csv's good rows (the lower score on a tie): 15 on today's sets, kept as kbfacts.SCATTER_SCORE and re-fitted by the benchmark",
+        "The highest whole score that flags at most 2% of the eval goods"
+      ],
+      "recommendation": "The whole score that maximises off-kb goods flagged less eval goods flagged over lookup_eval.csv's good rows (the lower score on a tie): 15 on today's sets, kept as kbfacts.SCATTER_SCORE and re-fitted by the benchmark",
+      "class": "agents-rule",
+      "answer": "The whole score that maximises off-kb goods flagged less eval goods flagged over lookup_eval.csv's good rows (the lower score on a tie): 15 on today's sets, kept as kbfacts.SCATTER_SCORE and re-fitted by the benchmark",
+      "by": "operator"
+    },
+    {
+      "id": "scatter-route",
+      "kind": "blocking",
+      "question": "Does the scatter note also route the pack (route: split, so the kb: hook passes the pack to the model instead of answering alone)?",
+      "options": [
+        "No: the note is a check: line only; route, verdict and the kb: hook's behaviour are unchanged, and the hook and ql_learn (outside this item's touches) stay as they are",
+        "Yes: route_of treats it as the other check: lines, and kb_hook.py and ql_learn.py read it too"
+      ],
+      "recommendation": "No: the note is a check: line only; route, verdict and the kb: hook's behaviour are unchanged, and the hook and ql_learn (outside this item's touches) stay as they are",
+      "class": "agents-rule",
+      "answer": "No: the note is a check: line only; route, verdict and the kb: hook's behaviour are unchanged, and the hook and ql_learn (outside this item's touches) stay as they are",
+      "by": "operator"
+    },
+    {
+      "id": "scatter-benchmark-rows",
+      "kind": "blocking",
+      "question": "How does the verdict benchmark print the calibration?",
+      "options": [
+        "Six rows under scenario verdict, case 'scatter check': arms calibrated and current, metrics threshold, off_kb_goods_flagged and eval_goods_flagged, with 'of N' in the note",
+        "One row of the fitted threshold and counts in its note"
+      ],
+      "recommendation": "Six rows under scenario verdict, case 'scatter check': arms calibrated and current, metrics threshold, off_kb_goods_flagged and eval_goods_flagged, with 'of N' in the note",
+      "class": "agents-rule",
+      "answer": "Six rows under scenario verdict, case 'scatter check': arms calibrated and current, metrics threshold, off_kb_goods_flagged and eval_goods_flagged, with 'of N' in the note",
+      "by": "operator"
     }
   ],
   "links": [

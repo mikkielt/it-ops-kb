@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-import bench_pool, kb_hook, kbcommon, kbfacts, kbid, selfdoc
+import bench_pool, bench_retrieval, kb_hook, kbcommon, kbfacts, kbid, rag, selfdoc
 from conftest import TOOLS, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
@@ -152,7 +152,35 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_routes_kind_to_its_tool_and_prints_other_questions_as_coverage_and_fact_lines():
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_and_fact_lines(monkeypatch):
+    # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
+    # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
+    heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
+    with open(heldout, encoding="utf-8", newline="") as f:
+        held_questions = {r["question"] for r in csv.DictReader(f)}
+    real, asked, rows = kbfacts.pack, [], []
+    monkeypatch.setattr(kbfacts, "pack", lambda q, *a, **k: asked.append(q) or real(q, *a, **k))
+
+    class Rows:
+        def row(self, scenario, case, arm, metric, value, runs="", model="", note=""):
+            rows.append((case, arm, metric, value, note))
+    bench_retrieval.scatter_rows(Rows())
+    monkeypatch.setattr(kbfacts, "pack", real)
+    offkb = rag.offkb_questions()
+    assert held_questions and not held_questions & set(asked), held_questions & set(asked)
+    assert set(asked) == {r["question"] for r in eval_rows() if r["expect_verdict"] == "good"} | set(offkb)
+    packs = {q: real(q) for q in set(asked)}
+    noted = {q: "check: the best articles lie in" in p["text"] for q, p in packs.items()}
+    scatter = {(arm, metric): (value, note) for case, arm, metric, value, note in rows}
+    off = [q for q in offkb if packs[q]["top_score"] is not None]  # a `good` the note applies to
+    ev = [q for q in set(asked) - set(offkb) if packs[q]["top_score"] is not None]
+    cur_off, cur_ev = (sum(noted[q] for q in group) for group in (off, ev))
+    assert scatter["current", "threshold"][0] == kbfacts.SCATTER_SCORE and scatter["current", "off_kb_goods_flagged"] == (cur_off, f"of {len(off)}")
+    assert scatter["current", "eval_goods_flagged"] == (cur_ev, f"of {len(ev)}")
+    # the calibration is a best whole score: none flags more off-kb goods net of eval goods than it, the shipped one included
+    cal = scatter["calibrated", "off_kb_goods_flagged"][0] - scatter["calibrated", "eval_goods_flagged"][0]
+    assert cal >= cur_off - cur_ev and scatter["calibrated", "off_kb_goods_flagged"][1] == f"of {len(off)}"
+    assert all(packs[q]["verdict"] == "good" and packs[q]["scatter"] for q in noted if noted[q])  # a note, never a verdict
     code, out = tool("rag.py", "pack", good_row()["question"])
     assert code == 0, out[-1500:]
     assert re.search(r"^coverage: good\b", out, re.M), out[:1500]

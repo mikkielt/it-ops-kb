@@ -2402,6 +2402,17 @@ def pick_passages(st, scored, best, cost, limit, pins=()):
     return taken
 
 
+SCATTER_ARTICLES = 3  # the best articles whose domains the scatter note compares
+SCATTER_DOMAINS = 2  # a `good` whose best articles lie in this many domains or more, and
+SCATTER_SCORE = 15  # whose best unit scores under this, gets the scatter `check:` note; rag.scatter_calibration fits it
+
+
+def article_domain(qpath):
+    """The domain directory of a qualified article path (`public/intune/x.md`: `intune`); a file at the root of its
+    kb root is its own domain."""
+    return bare(qpath).split("/")[0]
+
+
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
          item=None, st=None):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
@@ -2420,8 +2431,11 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     verdict becomes `none` when a name the question uses is held by under RARE_NAME of all lines and by none of the
     lines the pack could print (up to 6 per shown article), since the question is then about another product.
     Untagged content alone never makes a question `good`. A `good` pack gets a
-    `check:` note (verdict unchanged) when a name the question uses is nowhere in the lead article, or when no tagged
-    fact among the top hits holds half of 4+ key words. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
+    `check:` note (verdict unchanged) when a name the question uses is nowhere in the lead article, when no tagged
+    fact among the top hits holds half of 4+ key words, or when its best SCATTER_ARTICLES articles span
+    SCATTER_DOMAINS or more domains and its best unit scores under SCATTER_SCORE (`scatter`; `top_score` and
+    `top_domains` are the two values, None and [] when the pack is not a `good` the note applies to; the note
+    changes no route). A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. A `weak` or `none` pack, and a flagged `good` one (a `check:` line, or a
     word nowhere in the kb), also prints `route:` (`split`, or `web` for a `none` unless only language or format names are missing), `kb has:` (the question's own words
@@ -2649,6 +2663,16 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         top = max((sum(1 for t in known if has(u, t)) for _, u in scored if u["tags"]), default=0)
         if top * 2 < len(known):
             spread = (top, len(known))
+    # a `good` whose three best articles lie in separate domains and whose best unit scores low: the words matched a
+    # little in each of several topics, none of them the one asked about. A query performance prediction signal fitted
+    # to this kb's labelled questions (rag.scatter_calibration), a note and never a verdict or route change: it flags
+    # a few true `good` packs too.
+    top_score, top_domains, scatter = None, [], None
+    if verdict == "good" and not lifted and not rules:
+        top_score = best
+        top_domains = list(dict.fromkeys(article_domain(a) for a in list(by_art)[:SCATTER_ARTICLES]))
+        if len(top_domains) >= SCATTER_DOMAINS and top_score < SCATTER_SCORE:
+            scatter = (top_score, top_domains)
     head = f"coverage: {verdict}"
     counted = informative if rules else known
     if tested:
@@ -2671,6 +2695,10 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if spread:
         out.append(f"check: no single fact holds half the key words (at most {spread[0]} of {spread[1]}); the facts may "
                    "be about something related. Answer only if a cited line answers the question itself.")
+    if scatter:
+        out.append(f"check: the best articles lie in {len(top_domains)} domains ({', '.join(top_domains)}) and the best "
+                   f"fact scores only {top_score:.1f}; the facts may be about something related. Answer only if a cited "
+                   "line answers the question itself.")
     fresh = freshness(question, missing, st.arts.get(paths[0] if paths else (order[0] if order else ""), {}))
     if fresh:
         out.append(fresh)
@@ -2714,7 +2742,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
-            "unmatched": unmatched, "spread": spread, "route": route, "has": has, "lacks": lacks, "paths": paths,
+            "unmatched": unmatched, "spread": spread, "scatter": scatter, "top_score": top_score,
+            "top_domains": top_domains, "route": route, "has": has, "lacks": lacks, "paths": paths,
             "tested": [t[0] for t in tested], "pinned": sum(1 for u in printed if u.get("tested")),
             "key_missing": own_words(question, unheld),
             "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
@@ -3160,7 +3189,8 @@ def routed(question, domain=None, root=None, fmt="detailed", footer=True, invali
     paths = list(dict.fromkeys(it["path"] for it in chosen if it["path"]))
     keys = [f"{k[0]}:{k[1]}" for k in (it["key"] for it in chosen) if not k[0].startswith("audit:")]
     return {"verdict": verdict, "missing": [], "matched": [], "informative": [], "known": [], "unmatched": [],
-            "spread": None, "route": "web" if verdict == "none" else None, "has": [],
+            "spread": None, "scatter": None, "top_score": None, "top_domains": [],
+            "route": "web" if verdict == "none" else None, "has": [],
             "lacks": [chosen[0]["title"]] if verdict == "none" else [], "paths": paths, "tested": [], "pinned": 0,
             "key_missing": [], "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
             "decisions": [], "logs": [], "routed": {"kinds": kinds, "lines": keys}}

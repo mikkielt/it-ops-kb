@@ -921,7 +921,7 @@ What it shows: on the grown kb, keyword probes find 98% of sampled tagged facts'
 
 ### Verdict corrections
 
-**Setup:** `python3 _tools/benchmarks.py run verdict`: the eval set, the off-kb list's verdicts, the indexed lines, and `pack`'s time over the eval questions (in process, warm, 3 passes). The history's rule tables (the design set of common-word false goods and off-domain questions, and the held-out set) chose the rules that shipped; those sets were not committed, so the re-run measures the shipped rules on the committed sets.
+**Setup:** `python3 _tools/benchmarks.py run verdict`: the eval set, the off-kb list's verdicts, the scatter check's calibration (case `scatter check`, arms `calibrated` and `current`: the threshold fitted on the eval set's `good` rows against the off-kb list's `good` ones, the one `kbfacts.SCATTER_SCORE` holds, and for each the off-kb goods and the eval goods flagged; the held-out file is never read), the indexed lines, and `pack`'s time over the eval questions (in process, warm, 3 passes). The history's rule tables (the design set of common-word false goods and off-domain questions, and the held-out set) chose the rules that shipped; those sets were not committed, so the re-run measures the shipped rules on the committed sets.
 
 <!-- bench:records verdict -->
 | record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |

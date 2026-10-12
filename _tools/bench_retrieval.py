@@ -87,18 +87,30 @@ def s_retrieval(b):
     b.row("retrieval", "code blocks retrievable", "current", "value", f"{got}/{len(snippets)}", 1)
 
 
+def scatter_rows(b):
+    """The scatter check's calibration (rag.scatter_calibration): the threshold fitted to the eval set's good rows
+    against the off-kb list's good ones, the threshold pack uses, and the goods each flags."""
+    import rag
+    c = rag.scatter_calibration()
+    for arm, threshold, off, ev in (("calibrated", c["threshold"], c["off_flagged"], c["eval_flagged"]),
+                                    ("current", c["current"], c["off_noted"], c["eval_noted"])):
+        b.row("verdict", "scatter check", arm, "threshold", threshold, 1)
+        b.row("verdict", "scatter check", arm, "off_kb_goods_flagged", off, 1, note=f"of {c['off_goods']}")
+        b.row("verdict", "scatter check", arm, "eval_goods_flagged", ev, 1, note=f"of {c['eval_goods']}")
+
+
 def s_verdict(b):
-    """Verdict corrections: the eval set, the off-kb list's verdicts, the indexed lines and pack's time over the eval
-    questions, warm."""
+    """Verdict corrections: the eval set, the off-kb list's verdicts, the scatter check's calibration, the indexed
+    lines and pack's time over the eval questions, warm."""
     import kbfacts, rag
     res = rag.run_eval()
     b.row("verdict", "eval set", "current", "passed", f"{res['passed']}/{res['n']}", 1)
     b.row("verdict", "eval set", "current", "mean_chars", res["mean_chars"], 1)
-    path = Path(kbfacts.kbcommon.public().path) / "_retrieval" / "doc2query" / "offkb_questions.txt"
-    qs = [ln.strip() for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip() and not ln.startswith("#")]
+    qs = rag.offkb_questions()
     vs = [kbfacts.pack(q)["verdict"] for q in qs]
     for v in ("good", "weak", "none"):
         b.row("verdict", "off-kb list", "current", f"verdict_{v}", vs.count(v), 1, note=f"of {len(qs)}")
+    scatter_rows(b)
     b.row("verdict", "index", "current", "indexed_lines", len(kbfacts.units(untagged=True)), 1)
     questions = [c["question"] for _, c in rag.eval_cases()]
     times = []
