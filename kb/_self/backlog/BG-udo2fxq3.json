@@ -2,7 +2,7 @@
   "id": "BG-udo2fxq3",
   "kind": "bug",
   "title": "pack's passing and priced notes are not read by the kb: hook's false-good sentence, backlog.py's judge and ql_learn.passes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
@@ -110,5 +110,6 @@
   "links": [
     "merged: BG-cs4xmk74"
   ],
-  "notes": "Merged from BG-cs4xmk74 at the 2026-10-12 draft triage: judge('page file size') returns ('sufficient','') for a good pack whose only check: line is the scatter note; same predicate (hook, judge and ql_learn.passes read only unmatched and spread). rag.scatter_calibration read on 2026-10-12: at threshold 15 the note flags 8 of 11 off-kb goods and 3 of 236 eval goods, so the scatter line counts as flagged (gate g1); scatter sets no route, so kb_hook.routed never sees it alone.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the repro exits 1 (routed with passing set adds no possible-false-good sentence), judge with a passing or priced pack returns ('sufficient',''), ql_learn.passes is True for one, and judge('page file size') is ('sufficient','')."
+  "notes": "Merged from BG-cs4xmk74 at the 2026-10-12 draft triage: judge('page file size') returns ('sufficient','') for a good pack whose only check: line is the scatter note; same predicate (hook, judge and ql_learn.passes read only unmatched and spread). rag.scatter_calibration read on 2026-10-12: at threshold 15 the note flags 8 of 11 off-kb goods and 3 of 236 eval goods, so the scatter line counts as flagged (gate g1); scatter sets no route, so kb_hook.routed never sees it alone.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the repro exits 1 (routed with passing set adds no possible-false-good sentence), judge with a passing or priced pack returns ('sufficient',''), ql_learn.passes is True for one, and judge('page file size') is ('sufficient','').",
+  "claimed_by": "orch-4o3plg4l"
 }
