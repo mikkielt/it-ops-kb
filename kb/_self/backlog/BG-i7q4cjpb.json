@@ -2,7 +2,7 @@
   "id": "BG-i7q4cjpb",
   "kind": "bug",
   "title": "fact_for still picks a non-answer for BP-df64045a and the three cmpivot timeout rows, and gate g1's hand extension of BP-df64045a accepts the wipe line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
   "rank": 0,
@@ -77,5 +77,6 @@
   "links": [
     "parked: SP-5i4itd2d review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): fact_for picks intune/app-protection-mam.md:60 for BP-df64045a and mecm/cmpivot.md:14 for BP-d306eaa8, BP-8f566d80 and BP-70d0bf39; the committed check of BP-df64045a still holds 'selective \\(MAM\\) wipe' and BP-c552cb0f's 'up to 60 seconds'. The pool check run passes before the work: it pins that the edited rows still equal what the files build."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): fact_for picks intune/app-protection-mam.md:60 for BP-df64045a and mecm/cmpivot.md:14 for BP-d306eaa8, BP-8f566d80 and BP-70d0bf39; the committed check of BP-df64045a still holds 'selective \\(MAM\\) wipe' and BP-c552cb0f's 'up to 60 seconds'. The pool check run passes before the work: it pins that the edited rows still equal what the files build.",
+  "claimed_by": "orch-kuhlsf2s"
 }
