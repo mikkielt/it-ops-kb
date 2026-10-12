@@ -3193,3 +3193,36 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-fsmo-transfer-seize-powershell. How do I transfer or seize the FSMO roles to another domain controller with PowerShell?
+- `Move-ADDirectoryServerOperationMasterRole -Identity <new holder> -OperationMasterRole <roles>` transfers one or more of `PDCEmulator`, `RIDMaster`, `InfrastructureMaster`, `SchemaMaster`, `DomainNamingMaster`; transfer is the recommended option and runs from any domain-joined computer with the ActiveDirectory module. [DOC S-qbxv7o56]
+- The same command with `-Force` seizes: it tries a graceful transfer first and seizes only when that is not possible; a fully qualified name as `-Identity` fails, so pass the object from `Get-ADDomainController`. [DOC S-qbxv7o56]
+- Transfer when the holder is reachable or being demoted; seize only when it failed and cannot return. A seized RID master raises the next RID pool by 30,000 (cmdlet) or 10,000 (Ntdsutil `roles`), and the new holder waits for one inbound replication cycle before acting. [DOC S-hnfdk22k]
+- Ntdsutil does the same with `roles`, `connections`, `connect to server`, then `transfer <role>` or `seize <role>`; `netdom query fsmo` verifies the holders. [DOC S-hnfdk22k, S-uyoeu33z]
+- Conclusion: transfer first, with the holder online; seize with `-Force` only for a lost holder, and rebuild that holder if it ever returns. [DER S-qbxv7o56, S-hnfdk22k]
+- Open: the pages differ on the group for seizing the schema master (Enterprise Admins or Schema Admins); recorded in `_conflicts.md`. [UNK]
+- See ad/fsmo-roles.md.
+
+_Agent: kb-research_
+
+## QK-dhcp-failover-configure. How do I configure DHCP failover between two Windows Server DHCP servers?
+- `Add-DhcpServerv4Failover -ComputerName <server holding the scopes> -Name <relationship> -PartnerServer <partner> -ScopeId <scopes>` creates a load-balance (50:50 by default) relationship on both servers and copies the scopes to the partner; `-SharedSecret` turns on message authentication. [DOC S-xl2d4tuq, S-x2hxgchj]
+- Hot standby: add `-ReservePercent` (default 5) and, to make the local server the standby, `-ServerRole Standby`; the default role of the local server is `Active`. [DOC S-x2hxgchj]
+- MCLT (`-MaxClientLeadTime`, default 1 hour) is the temporary lease length and the wait before the survivor takes the whole pool; `-AutoStateTransition` and `-StateSwitchInterval` set when communications interrupted becomes partner down. [DOC S-45mj3bt5, S-x2hxgchj]
+- Scope changes are replicated by hand; the partner must not already hold the scope; TCP 647 and clocks within one minute are required. [DOC S-45mj3bt5, S-xl2d4tuq]
+- Conclusion: use load balance for two servers at one site and hot standby for a central standby behind a local server; set the mode through the parameter set of `Add-DhcpServerv4Failover`. [DER S-45mj3bt5, S-x2hxgchj]
+- Open: the overview and management pages differ on the minimum Windows Server version for partners, and the management page's hot-standby example names the partner as standby where the cmdlet reference makes the local server the standby; recorded in `_conflicts.md`. [UNK]
+- See windows/dhcp-failover.md.
+
+_Agent: kb-research_
+
+## QK-ag-automatic-seeding-configure. How do I configure automatic seeding for a SQL Server Always On availability group?
+- Set `SEEDING_MODE = AUTOMATIC` on each secondary replica in `CREATE AVAILABILITY GROUP` or `MODIFY REPLICA ON`; the default is `MANUAL`. [DOC S-7u5iv73w, S-bvigwggq]
+- On each secondary, after `ALTER AVAILABILITY GROUP [<AGName>] JOIN`, run `ALTER AVAILABILITY GROUP [<AGName>] GRANT CREATE ANY DATABASE`; without it the secondary logs that it has not been granted permission to create databases. [DOC S-7u5iv73w, S-bvigwggq]
+- Databases need the full recovery model and a current full and log backup, and the mirroring endpoint port must be open between replicas. [DOC S-bvigwggq]
+- Monitor with `sys.dm_hadr_automatic_seeding` (history) and `sys.dm_hadr_physical_seeding_stats` (running seeds), the SQL Server log and extended events. [DOC S-7u5iv73w, S-bvigwggq]
+- Conclusion: grant on every secondary and watch the history DMV on both sides; use `DENY CREATE ANY DATABASE` to hold a database back and `SEEDING_MODE = MANUAL` on the primary to cancel seeds. [DER S-7u5iv73w, S-bvigwggq]
+- Open: the concept and how-to pages differ on seeding's threading (single-threaded up to five databases, or one thread per LUN); recorded in `_conflicts.md`. [UNK]
+- See sqlserver/availability-group-seeding.md.
+
+_Agent: kb-research_

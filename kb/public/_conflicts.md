@@ -783,3 +783,13 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## privacy/spacy-pipeline-pinning
 - spaCy `download --url` at release-v3.8.16: the CLI table describes the option as "Download from a mirror repository at the given url" (S-pmc3phpi), but `download_model` in `spacy/cli/download.py` (S-kmhasvx6) raises `ValueError` when the joined URL does not start with `about.__download_url__` (the GitHub releases prefix), and replaces a `--url` value without a trailing slash by that prefix, so a mirror on another host is not reachable through it in the code read. Both read 2026-10-11 at the same tag; installing a mirrored wheel with a direct `pip install <url>` is unaffected. (topic: privacy/spacy-pipeline-pinning)
+
+## ad/fsmo-roles
+- Group needed for the schema master: the transfer-or-seize page (S-hnfdk22k, read 2026-10-12) names Enterprise Administrators for transferring the schema master and domain naming master, while the forest-recovery seize page (S-uyoeu33z, read 2026-10-12) lists Schema Admins for `seize schema master` and Enterprise Admins for the domain naming master. The two pages cover transfer and seizure in different scenarios; the kb states both and does not choose. (topic: ad/fsmo-roles)
+
+## windows/dhcp-failover
+- Minimum Windows Server version for failover partners: the overview page (S-45mj3bt5, read 2026-10-12) says both partners must run at least Windows Server 2016, while the management page (S-xl2d4tuq, read 2026-10-12) lists at least Windows Server 2012 as the prerequisite. The kb states both and does not choose. (topic: windows/dhcp-failover)
+- Which server is the standby: the management page (S-xl2d4tuq) runs `Add-DhcpServerv4Failover -ComputerName dhcp1 ... -ServerRole Standby` and says dhcp2 (the partner) is the standby; the cmdlet reference (S-x2hxgchj) defines `-ServerRole` as the role of the local server and its example 2 with `-ServerRole Standby` makes the local server the standby. The kb follows the cmdlet reference for the parameter and states the page's reading as the page's. Not run, so not settled. (topic: windows/dhcp-failover)
+
+## sqlserver/availability-group-seeding
+- Threading of automatic seeding: the concept page (S-7u5iv73w, read 2026-10-12) calls it a single-threaded process that can handle up to five databases, while the how-to page (S-bvigwggq, read 2026-10-12) says SQL Server uses one thread per LUN on the primary and on the secondary. The kb states both and does not choose. (topic: sqlserver/availability-group-seeding)

@@ -8,6 +8,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `ad/computer-attributes` | P1 | complete | `ad/computer-attributes.md`, `ad/computer-attributes.csv` | 12 |
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
+| `ad/fsmo-roles` | P2 | complete | `ad/fsmo-roles.md` | 4 |
 | `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 9 |
 | `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
@@ -338,6 +339,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `sqlserver/linux-container` | P0 | complete | `sqlserver/linux-container.md`, `sqlserver/mssql-server-tags.json` | 8 |
 | `sqlserver/sp-getapplock` | P0 | complete | `sqlserver/sp-getapplock.md` | 1 |
 | `sqlserver/temporal-tables` | P0 | complete | `sqlserver/temporal-tables.md` | 7 |
+| `sqlserver/availability-group-seeding` | P2 | complete | `sqlserver/availability-group-seeding.md` | 2 |
 | `standards/owasp` | P2 | complete | `standards/owasp.md`, `standards/owasp.csv` | 8 |
 | `windows/execution-policy-signing` | P0 | complete | `windows/execution-policy-signing.md` | 9 |
 | `windows/gitlab-runner-windows` | P0 | complete | `windows/gitlab-runner-windows.md` | 19 |
@@ -349,6 +351,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/azure-update-manager` | P2 | complete | `windows/azure-update-manager.md` | 28 |
 | `windows/bitlocker` | P2 | complete | `windows/bitlocker.md`, `windows/bitlocker.csv` | 17 |
 | `windows/delivery-optimization` | P2 | complete | `windows/delivery-optimization.md`, `windows/delivery-optimization.csv` | 15 |
+| `windows/dhcp-failover` | P2 | complete | `windows/dhcp-failover.md` | 3 |
 | `windows/event-forwarding-sysmon` | P2 | complete | `windows/event-forwarding-sysmon.md`, `windows/sysmon-events.csv` | 9 |
 | `windows/kiosk-assigned-access` | P2 | complete | `windows/kiosk-assigned-access.md` | 11 |
 | `windows/laps` | P2 | complete | `windows/laps.md`, `windows/laps.csv` | 15 |
