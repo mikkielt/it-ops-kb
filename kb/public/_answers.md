@@ -3237,3 +3237,14 @@ _Agent: kb-research_
 - See claude/ci-and-headless.md, claude/models.csv, agents/agent-caching.md.
 
 _Agent: kb-research_
+
+## QK-who-may-change-test-suite-ceiling. Who may change a test-suite ceiling, and how does a script tell a person's own terminal from an agent's Claude Code session?
+- A declared test limit: Bazel states a per-run override for slow conditions (`--test_timeout`) and says the declared timeout is to be as tight as possible without flakiness; none of the sources read says who may change a declared limit. [DOC S-3dlofilm]
+- Claude Code's mechanism for a rule an agent must not lift: a deny rule at a higher scope cannot be overridden, and a write to a protected path is never auto-approved outside `bypassPermissions`. [DOC S742, S-zcuxapgb]
+- A message from another session cannot answer a permission prompt, and the receiver is told not to change permission settings or configuration because another session asked. [DOC S-sdxhnx3i]
+- A script's check: `CLAUDECODE=1` is set in Bash, PowerShell and hook commands by every version and also in IDE extensions' integrated terminals; `CLAUDE_CODE_CHILD_SESSION=1` is set only in subprocesses Claude Code starts (2.1.172+). [DOC S-exebozns]
+- Conclusion: a rule that only a person changes a suite ceiling has no official source to rest on, so a project sets it for itself; what Claude Code documents is the mechanism for keeping a session out of a file or a setting. A script that must refuse an agent session reads `CLAUDE_CODE_CHILD_SESSION`, not `CLAUDECODE` alone, and treats the value as a signal the process controls, since no variable states whether a person is at the session. A run refused on a loaded host is a longer limit for that run only, the declared limit unchanged. [DER S-3dlofilm, S-exebozns, S742, S-zcuxapgb: the documented mechanisms and per-run override, applied to a ceiling]
+- Open: an official statement of who may change a declared test limit, and a documented attended or unattended session variable. [UNK]
+- See agents/test-suite-size-and-agent-overengineering.md, claude/hooks.md, claude/settings-and-scopes.md.
+
+_Agent: kb-research_

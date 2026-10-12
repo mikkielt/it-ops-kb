@@ -2,7 +2,7 @@
 topic: agents/test-suite-size-and-agent-overengineering
 priority: P3
 applies_to: "keeping a test suite small and fast, deciding which tests to delete, running a slow full suite less often than per merge, and keeping a coding agent from over-engineering it: GitLab testing guide, pipelines page and quarantine handbook (master), Software Engineering at Google (2020), Google SRE book (2017), Bazel test encyclopedia, Microsoft Learn DevOps (2022), Anthropic prompting guidance for Claude Opus 4.5 to Opus 5 and Sonnet 5.5, Claude Code best practices (retrieved 2026-10-10)"
-retrieved_utc: 2026-10-10
+retrieved_utc: 2026-10-12
 sources: [S-zec4acor, S-pf2bzwco, S-xpnhjuy4, S-topmk5kh, S-3dlofilm, S-wxn7kar4, S-claarsij, S-flv3lmzn, S-3jc54vsg, S-xxsfmdk5, S-krlfjqxg, S-o3v6ozch, S-bmz46flb, S-ocdzembr, S-nxhqpwaf, S-f65kifg4, S-jg2qnt5d]
 status: partial
 ---
@@ -33,6 +33,8 @@ Tests are cheap to add and costly to keep: every one is run, read and repaired f
 ### Budgets a tool or a team enforces
 - Bazel gives every test a size, and a timeout that follows from it unless one is set: 60 seconds for a small test, 300 for medium, 900 for large and 3600 for enormous; the limit is for a whole test target to run to completion, not for each test method. [DOC S-3dlofilm]
 - Bazel's guidance is to set each timeout as tight as it can be without causing flakiness. [DOC S-3dlofilm]
+- Bazel lets a person who runs tests by hand "under conditions that are known to be slow" override the timeout for that run with `--test_timeout` (in seconds, for example `--test_timeout=120`); the timeout in the BUILD file stays as declared. [DOC S-3dlofilm]
+- For a run refused or timed out because the host is loaded, Bazel's documented route is therefore a longer limit for that run only, not an edit of the declared limit; none of the sources read says who may change a declared limit or ceiling, or that a refused run is to be recorded. [DER S-3dlofilm: the per-run flag is stated, a rule for who changes the declared timeout is not]
 - Microsoft's test taxonomy sets time budgets per level: an L0 unit test averages under 60 milliseconds per assembly, an L1 test under 400 milliseconds, and no L1 test may exceed 2 seconds. [DOC S-wxn7kar4]
 - Microsoft's account of moving one product's tests to that taxonomy: new unit tests replaced some of the legacy end-to-end tests, "but many were simply deleted, based on team analysis of their usefulness." [DOC S-wxn7kar4]
 - Google's SRE book ties the amount of testing to the system's reliability requirements: a life-critical or revenue-critical system needs far more than a non-production script with a short shelf life. [DOC S-flv3lmzn]
