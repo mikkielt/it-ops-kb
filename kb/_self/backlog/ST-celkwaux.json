@@ -2,7 +2,7 @@
   "id": "ST-celkwaux",
   "kind": "story",
   "title": "Review sprint: Benchmark knowledge scenarios: a scenario question set and kb content for absent questions",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j2jn5ue4",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-j2jn5ue4"
+  "evidence": {
+    "commit": "0c572b7d261dd5aeec7cf32cfb10e4882577b440",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "d60b686b0a5226fa"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "6989e8dd5c18a6a2"
+      }
+    ]
+  }
 }
