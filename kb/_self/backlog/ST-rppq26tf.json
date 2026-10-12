@@ -1,0 +1,29 @@
+{
+  "id": "ST-rppq26tf",
+  "kind": "story",
+  "title": "A lookup revalidation whose search or candidate page answers an HTTP error falls back to the offline stamp instead of printing not found",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found by the SP-tm4wlsve review (ST-mq7we5r2): the revalidation's lost flag is set only by provider.spent() or provider.failures(), and failures() counts only requests with no HTTP answer (provider.py:291; factdiff.py:858-863, :1029-1054, :1315, :1332). A 429 or 5xx from the provider's search API or a candidate page yields [] or (None, None) in search_urls and page_doc, and elsewhere returns no candidate page, so a moved passage prints [not found DATE]. An HTTP error of the search or a candidate page counts as a failure: the line keeps the offline stamp and the source's note names the request; a stubbed pack_revalidate case where learn.microsoft.com/api/search answers 503 for an edited, unfound passage expects no outcome and the note.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_search_http_error"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tm4wlsve review"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-gtaw5kip",
+  "kind": "story",
+  "title": "The lookup revalidation prints current for a section-kept or unchanged fact only when the baseline is no newer than the fact's last confirmation, as apply does",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Found by the SP-tm4wlsve review (ST-mq7we5r2, ST-3zlzfitj): factdiff.revalidate (factdiff.py:1306-1324) prints [current DATE] for a fact kept by its section, or for an unchanged or pinned source, with no confirmable() guard, while apply's kept() requires the baseline to be no newer than the last confirmation (kb/_self/tools.md:159: a later baseline proves only that nothing changed since). Scenario: anchor verified on 'thirty', page edited to 'sixty', detect saved the new baseline with no apply, another section edited later; pack --revalidate finds the fact's section equal to the saved baseline and prints current for the stale 'thirty'. The revalidation applies the same guard as apply and, when the baseline postdates the anchor's verified_utc, resolves the passage instead; a stubbed pack_revalidate case with verified_utc before detected_utc and the anchor's passage in neither text expects an outcome other than current.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_baseline_after_confirmation"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tm4wlsve review"
+  ]
+}
