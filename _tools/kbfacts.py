@@ -2999,13 +2999,42 @@ LIVE_WORD = {"pinned": "unchanged", "unchanged": "unchanged", "changed": "change
              "moved": "moved", "gone": "gone", "soft-404": "gone", "new": "read, no earlier baseline"}
 
 
-def revalidated(text, rev):
+def source_freshness(ids, rows=None):
+    """{source id: {age_days, lifetime_days, basis, stale}} for the ids a ledger holds, with no network: the source's
+    freshness lifetime (provider.lifetimes: its recorded changes, its Learn file's commits, its page date, its
+    provider's default; None for a pinned url) against its age, the time since the date source_stamp prints. A source
+    no check or anchor dates (age None) is stale unless it is pinned."""
+    import provider  # not at load: it brings the network modules a pack with no source footer never needs
+    rows = rows or ledger_rows()
+    _, verified, state = fresh_state()
+    now, by_root = time.time(), defaultdict(dict)
+    for i in ids:
+        if rows.get(i):
+            by_root[rows[i].get("root") or ""][i] = rows[i]
+    out = {}
+    for name, srcs in by_root.items():
+        try:
+            root = kbcommon.root(name)
+        except (KeyError, kbcommon.RootError):
+            continue
+        for i, lt in provider.lifetimes(srcs, state, provider.providers(root), root, now).items():
+            dates = (provider.last_check(state.get(i), rows[i]), provider.stamp_epoch(verified.get(i, "")))
+            last = max((d for d in dates if d is not None), default=None)
+            age = None if last is None else max(now - last, 0) / provider.DAY
+            out[i] = {"age_days": age, "lifetime_days": lt["days"], "basis": lt["basis"],
+                      "stale": lt["days"] is not None and (age is None or age > lt["days"])}
+    return out
+
+
+def revalidated(text, rev, fresh=None):
     """`text` of a pack with the outcome of a revalidation (factdiff.revalidate) put in: each printed fact line it
     checked gets `[current DATE]`, `[moved DATE]` (a line under it holds the new passage, and the page), `[not found
     DATE]` or `[source-dated only DATE]` in place of the offline marks; a line none of whose sources could be checked
     keeps them. A footer line of a source it asked ends with what the page showed; the last line says how many sources
     it asked, how many it answered from a check younger than the provider's pacing, and, with the reason, each it could
-    not check (its facts keep the offline stamp)."""
+    not check (its facts keep the offline stamp). `fresh` (source_freshness of the cited sources; the revalidation
+    asked only those past their lifetime): each such source's footer line first carries `[stale: AGE old, lifetime
+    DAYS]`, the stamp the page's answer follows, and the last line counts the sources past their lifetime."""
     out = []
     for ln in text.split("\n"):
         m = FACT_LINE.match(ln)
@@ -3026,6 +3055,10 @@ def revalidated(text, rev):
             continue
         f = FOOTER_LINE.match(ln)
         src = rev["sources"].get(f.group(1)) if f else None
+        due = (fresh or {}).get(f.group(1)) if f else None
+        if due and due["stale"]:
+            ln += (f"  [stale: {due['age_days']:.0f}d old, lifetime {due['lifetime_days']:.0f}d]" if due["age_days"] is not None
+                   else f"  [stale: never confirmed, lifetime {due['lifetime_days']:.0f}d]")
         if src and src["state"] != "offline":
             ln += f"  [live {src['checked_utc'][:10]}: {LIVE_WORD.get(src['verdict'], src['verdict'] or 'checked')}]"
         elif src:
@@ -3037,29 +3070,50 @@ def revalidated(text, rev):
     for i, v in rev["sources"].items():
         if v["state"] == "offline":
             why[v["why"]].append(i)
-    if not rev["sources"]:
+    stale = sum(1 for v in (fresh or {}).values() if v["stale"])
+    if fresh is not None and not fresh:
+        out.append(f"revalidate {rev['date']}: no printed fact line cites a source to check")
+    elif fresh is not None and not stale:
+        out.append(f"revalidate {rev['date']}: none of the {len(fresh)} cited source(s) is past its freshness lifetime, "
+                   "none asked")
+    elif not rev["sources"]:
         out.append(f"revalidate {rev['date']}: no printed fact line cites a source to check")
     else:
-        out.append(f"revalidate {rev['date']}: {live} source(s) asked live, {cached} answered from a check younger than "
-                   f"its provider's pacing" + ("; not checked, the offline stamp stands: "
-                   + "; ".join(f"{', '.join(ids)} ({w})" for w, ids in why.items()) if why else ""))
+        head = f"{stale} of the {len(fresh)} cited source(s) past their freshness lifetime: " if fresh is not None else ""
+        out.append(f"revalidate {rev['date']}: {head}{live} source(s) asked live, {cached} answered from a check younger than "
+                   + ("its freshness lifetime" if fresh is not None else "its provider's pacing")
+                   + ("; not checked, the offline stamp stands: "
+                      + "; ".join(f"{', '.join(ids)} ({w})" for w, ids in why.items()) if why else ""))
     return "\n".join(out)
 
 
-def revalidate_pack(res):
+def revalidate_pack(res, stale_only=False):
     """pack_many's result with its printed fact lines revalidated against their sources now (revalidated): `text` is
-    rewritten and `revalidate` holds factdiff.revalidate's answer. Never raises: a lookup that cannot revalidate says
-    so and keeps its offline text."""
+    rewritten and `revalidate` holds factdiff.revalidate's answer. `stale_only`: only the cited sources past their
+    freshness lifetime (source_freshness) are asked, and a result of a live check younger than the lifetime is reused;
+    the others keep the offline stamp, and `revalidate` also holds `freshness`. Never raises: a lookup that cannot
+    revalidate says so and keeps its offline text."""
     import factdiff  # not at load: the detection tool and the network modules it brings are for this call only
-    printed = [p for r in res["results"] for p in r.get("printed", [])]
+    printed = list({(p["path"], p["line"]): p for r in res["results"] for p in r.get("printed", [])}.values())
+    fresh = reuse = None
     try:
-        rev = factdiff.revalidate(list({(p["path"], p["line"]): p for p in printed}.values()))
+        if stale_only:
+            fresh = source_freshness(list(dict.fromkeys(i for p in printed for i in p["ids"])))
+            if not fresh:  # no printed line cites a source: the pack has nothing to add
+                return {**res, "revalidate": None}
+            due = {i: f["lifetime_days"] * 86400 for i, f in fresh.items() if f["stale"]}
+            printed = [{**p, "ids": [i for i in p["ids"] if i in due]} for p in printed]
+            reuse = due
+        rev = (factdiff.revalidate(printed, reuse=reuse) if reuse or not stale_only
+               else {"date": factdiff.today(), "lines": {}, "sources": {}})  # nothing past its lifetime: nothing asked
     except Exception as e:  # noqa: BLE001 - a lookup always answers
         return {**res, "text": res["text"] + f"\nrevalidate: not done, the offline stamp stands ({type(e).__name__}: {str(e)[:120]})",
                 "revalidate": None}
     res["revalidate"] = {"date": rev["date"], "sources": rev["sources"],
                          "lines": {f"{p}:{n}": {k: v for k, v in r.items() if k != "text"} for (p, n), r in rev["lines"].items()}}
-    res["text"] = revalidated(res["text"], rev)
+    if fresh is not None:
+        res["revalidate"]["freshness"] = fresh
+    res["text"] = revalidated(res["text"], rev, fresh)
     return res
 
 
@@ -3071,9 +3125,10 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
               revalidate=False):
     """One pack per question (1-6), each with its own coverage verdict, and one shared source footer:
     {verdict (the worst), results, text}. A part of a kind a tool decides is answered by that tool (pack_routed).
-    `revalidate` (rag.py pack --revalidate, kb_pack's revalidate): the printed fact lines are checked against their
-    sources now and marked with the outcome (revalidate_pack); the lookup tools that never go to the network (the kb:
-    hook, kb_ask.py) leave it off.
+    `revalidate` (rag.py pack --revalidate, kb_pack's revalidate): True checks the printed fact lines against their
+    sources now and marks them with the outcome (revalidate_pack); "stale" (kb_pack's default, kb_ask.py) asks only
+    the cited sources past their freshness lifetime and prints the stale stamp of each; False (the kb: hook, which
+    never goes to the network) leaves the pack as it was.
     A single question gives exactly pack()'s text, or its routed answer. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
@@ -3083,7 +3138,7 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     if len(qs) == 1:
         res = pack_routed(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
         one = {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
-        return revalidate_pack(one) if revalidate else one
+        return revalidate_pack(one, revalidate == "stale") if revalidate else one
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
     results = [pack_routed(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item)
                for q in qs]
@@ -3101,7 +3156,7 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     order = ("none", "weak", "good")
     many = {"verdict": min((r["verdict"] for r in results), key=order.index), "route": route, "results": results,
             "text": "\n".join(out).rstrip()}
-    return revalidate_pack(many) if revalidate else many
+    return revalidate_pack(many, revalidate == "stale") if revalidate else many
 
 
 def cited_lines(ids):

@@ -11,7 +11,8 @@
                                      but replacing a `kb` server that runs another clone's kb_mcp.py
 
 Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network, but kb_pack
-with `revalidate` on the team's own server, which checks the printed facts' cited sources against their pages):
+on the team's own server, which checks the printed facts' cited sources against their pages when `revalidate` asks and,
+unasked, for a source past its freshness lifetime):
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
              Operator decisions come beside the facts, labelled decided or proposed (`include_invalidated` adds the
@@ -22,6 +23,8 @@ with `revalidate` on the team's own server, which checks the printed facts' cite
              `revalidate` (the team's own server only) asks each printed fact's cited sources now, within a time
              budget under the client's idle timeout, and marks each line current, moved (with the new passage), not
              found or source-dated only; a source it could not ask keeps its offline stamp, and the footer says so.
+             Left out, it asks only the cited sources past their freshness lifetime (provider.lifetimes), whose
+             footer line carries a `[stale: ...]` stamp first; `false` never asks, as does KB_NO_REVALIDATE=1.
              Always loaded (`anthropic/alwaysLoad`): the first lookup needs no tool-search round trip.
   kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
@@ -113,10 +116,12 @@ TOOL_LIST = [
          "root": ROOT,
          "include_invalidated": {"type": "boolean", "default": False,
                                  "description": "also invalidated decisions, with why"},
-         "revalidate": {"type": "boolean", "default": False,
-                        "description": "check the printed facts' cited sources against their pages now (network, "
-                                       "within a time budget; the team's own server only): each line is marked "
-                                       "current, moved (new passage), not found or source-dated only"},
+         "revalidate": {"type": "boolean",
+                        "description": "true: check every printed fact's cited sources against their pages now "
+                                       "(network, within a time budget; the team's own server only): each line is "
+                                       "marked current, moved (new passage), not found or source-dated only. Left "
+                                       "out: only the sources past their freshness lifetime are checked, their "
+                                       "stale stamp printed; false: none, no network"},
          "response_format": {**FORMAT, "default": "detailed"}},
          "additionalProperties": False},
      "annotations": {**READ_ONLY, "openWorldHint": True},  # `revalidate` asks the cited sources' hosts
@@ -270,12 +275,14 @@ def kb_pack(args):
     if len(questions) > kbfacts.MAX_QUESTIONS:
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
-    revalidate = args.get("revalidate") is True
-    if revalidate and limited():
+    revalidate = args.get("revalidate")
+    if revalidate is True and limited():
         raise ToolError("revalidate is not served here: this server is limited to named roots and never goes to the "
                         "network for a client; the pack's offline stamp says how current each source was last confirmed")
     with guarded():
         root = root_of(args)
+        if revalidate is not True and revalidate is not False:  # unasked: a source past its lifetime, where this server may ask
+            revalidate = "stale" if not limited() and os.environ.get("KB_NO_REVALIDATE") != "1" else False
         res = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root,
                                 args.get("include_invalidated") is True, revalidate=revalidate)
         text = res["text"]

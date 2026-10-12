@@ -1,12 +1,12 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
 (the generated index), the lookup eval (rag.py eval), the pack format and the questions it routes by kind to the tool that holds the answer, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
 index's unit cache is pinned on a planted fixture root, not on the live kb."""
-import argparse, collections, csv, hashlib, json, os, re, sqlite3, subprocess, sys, time
+import argparse, collections, csv, datetime, hashlib, json, math, os, re, sqlite3, subprocess, sys, time
 from pathlib import Path
 
 import pytest
 
-import bench_pool, bench_retrieval, census, factdiff, kb_hook, kbcommon, kbfacts, kbid, provider, rag, selfdoc
+import bench_pool, bench_retrieval, census, factdiff, fetch, kb_ask, kb_hook, kb_mcp, kbcommon, kbfacts, kbid, provider, rag, selfdoc
 from conftest import TOOLS, Repo, requires_git, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
@@ -251,7 +251,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -358,6 +358,125 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error=provider.BUDGET_ERROR), "final": url})
     cut = factdiff.revalidate(printed[:1])
     assert cut["sources"][A]["state"] == "offline" and cut["sources"][A]["why"] == provider.BUDGET_ERROR, cut
+    # a stored result younger than the source's freshness lifetime (`reuse`) answers with no request, though the provider's
+    # pacing is over; without it the source is asked again (and, here, cut short by the used-up budget)
+    held = factdiff.revalidate(printed[:5], reuse={A: 3600})
+    assert held["sources"][A]["state"] == "cached" and held["lines"][("public/dsc/a.md", 6)]["outcome"] == "moved", held
+    assert factdiff.revalidate(printed[:5])["sources"][A]["state"] == "offline"
+    monkeypatch.undo()
+    question = good_row()["question"]
+    # freshness lifetime: the estimate on a planted history of the state file (no request, no clone): two changes seen
+    # give the modified Poisson estimate, one only a tenth of the time since the page date, none the provider's default,
+    # a pinned url none; a Learn page's file commits count when the clone cache holds its repository
+    stamp = lambda t: datetime.datetime.fromtimestamp(t, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")  # noqa: E731
+    now = provider.stamp_epoch("2026-10-12T00:00:00Z")
+    base = now - 110 * provider.DAY  # its last check is 60 days before `now`
+    S1, S2, S3, S4, S5, S7 = (f"S99901{n:02d}" for n in (1, 2, 3, 4, 5, 7))
+    purl = {S1: "https://learn.microsoft.com/en-us/test/changing", S2: "https://learn.microsoft.com/en-us/test/once",
+            S3: "https://learn.microsoft.com/en-us/test/quiet", S4: f"https://raw.githubusercontent.com/Org/Repo/{'b' * 40}/docs/f.md",
+            S5: "https://learn.microsoft.com/en-us/test/always",
+            S7: "https://learn.microsoft.com/en-us/entra/identity/orion"}
+    hist = Repo(tmp_path / "hist")
+    os.makedirs(hist.path)
+    hist.git("init", "-q", "-b", "main")
+    cols = "id,url,checked_utc,fetched_utc,changed_utc\n"
+    for k in range(6):  # a check every 10 days; S1 changed at the third and fifth, S2 at the fourth, S5 at every check
+        t = base + 10 * k * provider.DAY
+        row = lambda sid, chg: f"{sid},{purl[sid]},{stamp(t)},{stamp(t)},{stamp(chg)}\n"  # noqa: E731
+        hist.write("kb/public/_fetch_state.csv", cols + row(S1, base + 20 * provider.DAY * (k >= 2) + 20 * provider.DAY * (k >= 4))
+                   + row(S2, base + 30 * provider.DAY * (k >= 3)) + row(S3, base) + row(S4, base)
+                   + row(S5, t))
+        hist.commit(f"state {k}", "kb/public/_fetch_state.csv")
+    hist.write("kb/public/_sources.csv", "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
+               + "".join(f"{sid},{u},,,,,,{'updated 2026-09-22' if sid == S2 else ''},,,\n" for sid, u in purl.items()))
+    docs = tmp_path / "repos" / "github.com__MicrosoftDocs__entra-docs.git"  # the clone cache: this page's file has 3 commits
+    os.makedirs(docs.parent)
+    Repo(docs.parent).git("init", "-q", "-b", "main", str(docs))
+    for n, when in enumerate(stamp(now - d * provider.DAY)[:10] for d in (100, 60, 20)):
+        Repo(docs).write("docs/identity/orion.md", f"# Orion {n}\n")
+        Repo(docs).git("add", "-A")
+        Repo(docs).git("commit", "-q", "-m", f"edit {n}", env={"GIT_COMMITTER_DATE": when + "T12:00:00Z", "GIT_AUTHOR_DATE": when + "T12:00:00Z"})
+    monkeypatch.setattr(census, "REPOS", str(docs.parent))
+    monkeypatch.setattr(kbcommon, "HOME", hist.path)
+    monkeypatch.setattr(provider, "_learn_memo", {})
+    monkeypatch.setattr(provider, "request", lambda *a, **k: pytest.fail("a lifetime made a request"))
+    proot = argparse.Namespace(path=os.path.join(hist.path, "kb", "public"), name="public")
+    psrc = {r["id"]: r for r in csv.DictReader(open(os.path.join(proot.path, "_sources.csv"), encoding="utf-8"))}
+    pstate = {r["id"]: r for r in csv.DictReader(open(os.path.join(proot.path, "_fetch_state.csv"), encoding="utf-8"))}
+    life = provider.lifetimes(psrc, pstate, provider.providers(), proot, now, hist.path)
+    mean = 10 / -math.log((5 - 2 + 0.5) / (5 + 0.5))  # 5 check intervals of 10 days, 2 changes: 22.1 days (the plain rate: 25)
+    assert abs(life[S1]["days"] - provider.FRACTION * mean) < 1e-6 and life[S1]["changes"] == 2, life[S1]
+    assert life[S1]["basis"] == "2 changes in 5 checks, one every 22 days (Poisson)", life[S1]
+    assert life[S5]["days"] is not None and abs(life[S5]["days"] - provider.FRACTION * 10 / -math.log(0.5 / 5.5)) < 1e-6, life[S5]
+    assert abs(life[S2]["days"] - provider.FRACTION * 20) < 1e-6 and life[S2]["basis"] == "10% of the 20 days since its page date", life[S2]
+    assert life[S3]["days"] == 7.0 and life[S3]["basis"] == "provider default (learn)", life[S3]
+    assert life[S4]["days"] is None and life[S4]["basis"].startswith("pinned"), life[S4]
+    assert abs(life[S7]["days"] - provider.FRACTION * provider.WINDOW_DAYS / 3) < 1e-6 and life[S7]["changes"] == 3, life[S7]
+    assert provider.modified_interval([0, 1, 2], [1]) is None and provider.modified_interval([0], []) is None  # one change is no rate
+    # fetch.py --status prints each source's lifetime and age, offline; a source past its lifetime is marked
+    monkeypatch.setattr(fetch, "KB", proot.path)
+    monkeypatch.setattr(fetch, "read_state", lambda: pstate)
+    fetch.status(argparse.Namespace(topic=[], dir=[], file=[], source=[], older_than=None, json=True), psrc)
+    shown = {r["id"]: r for r in json.loads(capsys.readouterr().out)}
+    assert shown[S1]["lifetime_days"] == round(life[S1]["days"], 1) and shown[S4]["lifetime_days"] is None
+    assert shown[S1]["stale"] and shown[S3]["stale"] and not shown[S4]["stale"] and shown[S1]["lifetime_basis"] == life[S1]["basis"]
+    fetch.status(argparse.Namespace(topic=[], dir=[], file=[], source=[S1, S4], older_than=None, json=False), psrc)
+    out = capsys.readouterr().out.splitlines()
+    assert re.search(rf"^{S1} +fetched \S+ +changed \S+ +age \d+\.\dd +lifetime 2\.2d STALE +\(2 changes in 5 checks", out[0]), out
+    assert re.search(rf"^{S4} .* never stale +\(pinned", out[1]) and out[2].endswith("stale=1"), out
+    # the history is kept: a second read asks git for the log only
+    shown_revs = []
+    real_git = provider._git
+    monkeypatch.setattr(provider, "_git", lambda cwd, *a: shown_revs.append(a[0]) or real_git(cwd, *a))
+    assert provider.state_history(proot, hist.path)[S1] == provider.state_history(proot, hist.path)[S1] and "show" not in shown_revs
+    monkeypatch.undo()
+    # kb_pack and kb_ask.py ask only the cited sources past their lifetime, stamp each stale and reuse a live check
+    # younger than the lifetime; revalidate false, KB_NO_REVALIDATE and the kb: hook ask nothing
+    monkeypatch.setenv("KB_NO_UPSTREAM", "1")
+    monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "live" / "factdiff"))
+    pre = kbfacts.pack_many([question])
+    cited = list(dict.fromkeys(i for r in pre["results"] for p in r.get("printed", []) for i in p["ids"]))
+    assert cited, pre["text"][-800:]
+    plant = lambda late: {i: {"days": 7.0 if i == cited[0] and late else 365.0, "basis": "planted", "changes": 0} for i in cited}  # noqa: E731
+    stage = {"late": True}
+    monkeypatch.setattr(provider, "lifetimes", lambda srcs, *a, **k: {i: plant(stage["late"])[i] for i in srcs})
+    real_state = kbfacts.fresh_state()
+    old = {i: {"checked_utc": "2026-01-01T00:00:00Z"} for i in cited}
+    monkeypatch.setattr(kbfacts, "fresh_state", lambda: (real_state[0], {}, old))
+    real_rows = kbfacts.ledger_rows()
+    monkeypatch.setattr(kbfacts, "ledger_rows", lambda: {i: {**r, "version_or_date": ""} for i, r in real_rows.items()})
+    first = kbfacts.pack_many([question])["text"]  # the offline pack, its stamps from the planted state
+    asked_live = []
+
+    def ask(printed, budget=None, reuse=None):
+        ids = sorted({i for p in printed for i in p["ids"]})
+        asked_live.append((ids, dict(reuse or {})))
+        return {"date": "2026-10-12", "lines": {}, "sources": {i: {"state": "live", "verdict": "unchanged", "why": "",
+                                                                    "checked_utc": "2026-10-12T00:00:00Z"} for i in ids}}
+    monkeypatch.setattr(factdiff, "revalidate", ask)
+    text = kb_mcp.kb_pack({"question": question})
+    assert asked_live == [([cited[0]], {cited[0]: 7 * 86400})], asked_live
+    lines = text.splitlines()
+    stale_line = next(ln for ln in lines if ln.startswith(f"  -> {cited[0]}  "))
+    assert re.search(r"  \[stale: \d+d old, lifetime 7d\]  \[live 2026-10-12: unchanged\]$", stale_line), stale_line
+    assert not any("[stale" in ln or "[live" in ln for ln in lines if ln.startswith("  -> ") and f" {cited[0]} " not in ln)
+    assert lines[-1] == (f"revalidate 2026-10-12: 1 of the {len(cited)} cited source(s) past their freshness lifetime: "
+                         "1 source(s) asked live, 0 answered from a check younger than its freshness lifetime"), lines[-1]
+    assert kb_mcp.kb_pack({"question": question, "revalidate": False}) == first and len(asked_live) == 1
+    monkeypatch.setenv("KB_NO_REVALIDATE", "1")
+    assert kb_mcp.kb_pack({"question": question}) == first and kb_ask.plan(question)["text"] == first and len(asked_live) == 1
+    monkeypatch.delenv("KB_NO_REVALIDATE")
+    assert kb_ask.plan(question, revalidate=False)["text"] == first and len(asked_live) == 1
+    assert "[stale: " in kb_ask.plan(question)["text"] and len(asked_live) == 2  # kb_ask.py asks as kb_pack does
+    monkeypatch.setattr(factdiff, "revalidate", lambda *a, **k: pytest.fail("the kb: hook revalidated"))
+    res = kb_hook.answer("kb: " + question)
+    assert res and res["decision"] == "block" and "[stale" not in res["reason"] and "revalidate" not in res["reason"]
+    stage["late"] = False  # every source inside its lifetime: nothing is asked, and the last line says so
+    monkeypatch.setattr(factdiff, "revalidate", ask)
+    quiet = kb_mcp.kb_pack({"question": question}).splitlines()
+    assert len(asked_live) == 2 and quiet[-1] == (f"revalidate {factdiff.today()}: none of the {len(cited)} cited source(s) is past "
+                                                  "its freshness lifetime, none asked"), quiet[-1]
+    monkeypatch.undo()
     # the pack: --revalidate is a flag of rag.py pack; over the live kb with every page failing it keeps the offline text
     # and says which sources it could not check; the kb: hook never goes to the network
     monkeypatch.undo()

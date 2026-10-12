@@ -1437,8 +1437,9 @@ def lookup_source(sid, src, res, facts, state, anchors, rows):
     return out, verdict, ""
 
 
-def lookup_root(items, out, day, now):
-    """revalidate's work for the printed lines of one root (the module's ROOT)."""
+def lookup_root(items, out, day, now, reuse=None):
+    """revalidate's work for the printed lines of one root (the module's ROOT). `reuse` {source id: seconds}: a stored
+    result younger than that is reused, where the provider's pacing alone would ask again."""
     srcs, state, anchors = kbfacts.source_rows(), read_state(), read_anchors()
     rows = provider.providers(ROOT)
     wanted = collections.defaultdict(dict)  # source id -> {(fact key, path): (line, text)}
@@ -1454,7 +1455,7 @@ def lookup_root(items, out, day, now):
         if (src.get("superseded_by") or "").strip():
             out["sources"][sid] = {"state": "offline", "verdict": "", "why": f"superseded by {src['superseded_by'].strip()}"}
             continue
-        pace = provider.pacing(provider.for_url(src["url"], rows))
+        pace = max(provider.pacing(provider.for_url(src["url"], rows)), (reuse or {}).get(sid, 0))
         rec = lookup_cached(sid, [line_key(rel, k) for k, rel, _, _ in facts], pace, now)
         if rec is not None:
             got[sid] = (rec["lines"], rec.get("verdict", ""), "", rec.get("checked_utc", day), "cached")
@@ -1491,13 +1492,15 @@ def lookup_root(items, out, day, now):
         out["lines"][(p["path"], p["line"])] = {**(best or {"outcome": ""}), "unchecked": unchecked}
 
 
-def revalidate(printed, budget=REVALIDATE_BUDGET_S):
+def revalidate(printed, budget=REVALIDATE_BUDGET_S, reuse=None):
     """Check the sources the printed fact lines of a pack cite against their pages now, for the lines printed only:
     `printed` is [{path (qualified), line, key (fact key), text, ids (the cited non-UNK source ids)}]. Detection is
     `detect` with no save (detect_source in lookup mode, resolve_source): only the cited sources are asked and only the
     printed facts' anchors are resolved, the requests of all of it within `budget` seconds in all (provider.budget).
     A source asked within its provider's pacing (provider.pacing) is answered from the stored result of that check
-    (lookup_cache_path), so a repeated pack asks nothing. Writes only under _cache/ (the stored results; the detection
+    (lookup_cache_path), so a repeated pack asks nothing; `reuse` {source id: seconds} lengthens that for a source to
+    its freshness lifetime (provider.lifetime), so a source whose last live check is younger is not asked again.
+    Writes only under _cache/ (the stored results; the detection
     cache's documents are left as they are); no anchor, state row, source row or log. Returns {date, lines: {(path, line):
     {outcome (current | moved | not found | source-dated only, "" when no cited source could be checked), id, target,
     passage, note, checked_utc, unchecked: {source id: why}}}, sources: {id: {state: live | cached | offline, verdict,
@@ -1524,7 +1527,7 @@ def revalidate(printed, budget=REVALIDATE_BUDGET_S):
                         ROOT = kbcommon.root(name or "")
                     except (KeyError, kbcommon.RootError):
                         continue
-                    lookup_root(items, out, day, time.time())
+                    lookup_root(items, out, day, time.time(), reuse)
         finally:
             ROOT = keep
             for cache in (_pages, _searches, _added, _madeup):

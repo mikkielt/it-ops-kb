@@ -88,6 +88,58 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "fraction",
+      "kind": "blocking",
+      "question": "What share of a source's estimated mean time between changes is its freshness lifetime?",
+      "options": [
+        "10%: RFC 9111's typical heuristic fraction; for a Poisson source about a 1 in 10 chance a change has landed within it",
+        "50%: the source is trusted until a change is about as likely as not"
+      ],
+      "recommendation": "10%: RFC 9111's typical heuristic fraction; for a Poisson source about a 1 in 10 chance a change has landed within it",
+      "class": "agents-rule",
+      "answer": "10%: RFC 9111's typical heuristic fraction; for a Poisson source about a 1 in 10 chance a change has landed within it",
+      "by": "operator"
+    },
+    {
+      "id": "defaults",
+      "kind": "blocking",
+      "question": "Which lifetime in days does each provider row give a source with no recorded changes and no page date (providers.csv lifetime_days)?",
+      "options": [
+        "Per provider, by how fast its pages change: learn 7, github-home 7, github-docs 7, pypi 7, claude-code 2, mcp-docs 2, gitlab-docs 2, anthropic 28, github-issue 1, github-discussion 1, github-wiki 14, github 14, github-blob 14, gitlab 14, github-raw 30, arxiv 90, generic 14; a row with none takes the generic row's, else 30",
+        "One value, 30 days, for every provider"
+      ],
+      "recommendation": "Per provider, by how fast its pages change: learn 7, github-home 7, github-docs 7, pypi 7, claude-code 2, mcp-docs 2, gitlab-docs 2, anthropic 28, github-issue 1, github-discussion 1, github-wiki 14, github 14, github-blob 14, gitlab 14, github-raw 30, arxiv 90, generic 14; a row with none takes the generic row's, else 30",
+      "class": "push",
+      "answer": "Per provider, by how fast its pages change: learn 7, github-home 7, github-docs 7, pypi 7, claude-code 2, mcp-docs 2, gitlab-docs 2, anthropic 28, github-issue 1, github-discussion 1, github-wiki 14, github 14, github-blob 14, gitlab 14, github-raw 30, arxiv 90, generic 14; a row with none takes the generic row's, else 30",
+      "by": "operator"
+    },
+    {
+      "id": "window",
+      "kind": "blocking",
+      "question": "Over what span are a Learn page's source-file commits counted for its change rate when the state history holds fewer than two changes?",
+      "options": [
+        "The last 365 days; the page needs two commits in it, else its page date decides",
+        "The last 90 days"
+      ],
+      "recommendation": "The last 365 days; the page needs two commits in it, else its page date decides",
+      "class": "agents-rule",
+      "answer": "The last 365 days; the page needs two commits in it, else its page date decides",
+      "by": "operator"
+    },
+    {
+      "id": "off-switch",
+      "kind": "blocking",
+      "question": "How does a caller turn the automatic revalidation of a source past its lifetime off in kb_pack and kb_ask.py?",
+      "options": [
+        "kb_pack's revalidate: false, the environment variable KB_NO_REVALIDATE=1 for both, and kb_ask.py --route makes none",
+        "kb_pack's revalidate: false only; kb_ask.py always asks"
+      ],
+      "recommendation": "kb_pack's revalidate: false, the environment variable KB_NO_REVALIDATE=1 for both, and kb_ask.py --route makes none",
+      "class": "agents-rule",
+      "answer": "kb_pack's revalidate: false, the environment variable KB_NO_REVALIDATE=1 for both, and kb_ask.py --route makes none",
+      "by": "operator"
     }
   ],
   "links": [

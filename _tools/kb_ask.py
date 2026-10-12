@@ -41,6 +41,11 @@
                                      part the kb lacks, or that the reader cannot answer, prints the pack's `kb has` and
                                      `kb lacks` lines and the commands that read its sections, and exits 1
 
+A pack (steps 2 to 5) asks the sources its fact lines cite that are past their freshness lifetime (kbfacts.pack_many
+revalidate "stale", within a time budget): each such footer line carries its `[stale: ...]` stamp and what the page
+showed, and the facts the reader gets carry the live marks. Within a lifetime no request is made; --route and
+KB_NO_REVALIDATE=1 make none.
+
 Every run writes one query log spool row (kb/_self/querylog.md, Capture): the question, the route taken (`tool`,
 `good`, `web`, `split`, `plan` for --route, with `escalated` when the reader answered INSUFFICIENT; for --root _self
 `tool`, `read` or `miss`), the verdict, the kb lines of the pack (path:line, tag, verdict), the model and, for a web or
@@ -163,15 +168,16 @@ def part_routes(text):
     return has, lacks
 
 
-def plan(question, model=None):
+def plan(question, model=None, revalidate="stale"):
     """{kind: good|web|split, parts, verdict, text (the packs), route (web, split or None), has, lacks (the packs'
     `kb has:` and `kb lacks:` lines, one entry per line; for a routed pack of several parts, each part as its own route
     sends it: part_routes), leads ([(path, title)]: the up to 3 nearest articles), model}.
     The kind follows the pack's `route:` line (a pack of several parts starts with one overall line); a clean good
     pack has none and stays `good`. A weak or none pack without the line plans `split`, the route that keeps the kb's
-    evidence in front of the model."""
+    evidence in front of the model. `revalidate`: "stale" asks the cited sources past their freshness lifetime now and
+    prints their stale stamp (kbfacts.pack_many); False is the offline pack (--route, KB_NO_REVALIDATE=1)."""
     parts = split_parts(question)
-    res = kbfacts.pack_many(parts)
+    res = kbfacts.pack_many(parts, revalidate=revalidate if os.environ.get("KB_NO_REVALIDATE") != "1" else False)
     text = res["text"]
     m = ROUTE_LINE.search(text)
     route = m.group(1) if m else (None if res["verdict"] == "good" else "split")
@@ -481,7 +487,7 @@ def run(row):
         row.update(verdict=res["verdict"], lines=ql_capture.pack_lines(res["text"]))
         print("kind=tool (the tool that holds the answer, no model)" if a.route else res["text"])
         return 0
-    p = plan(q, a.model)
+    p = plan(q, a.model, False if a.route else "stale")
     row.update(route="plan" if a.route else p["kind"], verdict=p["verdict"], parts=len(p["parts"]),
                lines=ql_capture.pack_lines(p["text"]))
     line = f"kind={p['kind']} verdict={p['verdict']} parts={len(p['parts'])} model={p['model']}"

@@ -19,7 +19,10 @@ Modes:
               fetch and record the fetch date. Default output is a summary per source (partial diff); --full
               adds a unified diff of the page text, --max-lines N caps it per source. Exit 0 = no change,
               1 = something changed, 2 = a fetch failed (as diff(1)).
-  --status    offline: when each selected source was last fetched, last changed, and its last error.
+  --status    offline: when each selected source was last fetched, last changed, its age (the time since
+              its last check) and freshness lifetime (provider.lifetimes: its recorded changes' Poisson rate,
+              its Learn file's commits, a fraction of the time since its page date, or its provider's default),
+              and its last error.
 
 Roots: every path above is relative to a root (kb/<root>/). --root NAME picks one of this repository's roots;
 without it --diff and --status work on the public root, and --verify, --refresh and --offline on every root with
@@ -323,23 +326,32 @@ def diff_sources(a, sources):
 
 
 def status(a, sources):
+    import provider  # not at load: the network modules --verify and --diff do not need
     state = read_state()
     now = datetime.datetime.now(datetime.timezone.utc)
+    chosen = select(a, sources, state)
+    root = argparse.Namespace(path=KB, name=os.path.basename(os.path.normpath(KB)))  # what provider reads of a kbcommon.Root
+    life = provider.lifetimes({sid: sources[sid] for sid in chosen}, state, provider.providers(root), root, now.timestamp())
     out = []
-    for sid in select(a, sources, state):
-        st = state.get(sid, {})
-        age = None
-        if st.get("fetched_utc"):
-            age = (now - datetime.datetime.strptime(st["fetched_utc"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)).days
+    for sid in chosen:
+        st, lt = state.get(sid, {}), life[sid]
+        last = provider.last_check(st, sources[sid])
+        age = round((now.timestamp() - last) / provider.DAY, 1) if last is not None else None
         out.append({"id": sid, "url": sources[sid]["url"], "fetched_utc": st.get("fetched_utc") or None, "age_days": age,
+                    "lifetime_days": None if lt["days"] is None else round(lt["days"], 1), "lifetime_basis": lt["basis"],
+                    "stale": lt["days"] is not None and age is not None and age > lt["days"],
                     "changed_utc": st.get("changed_utc") or None, "checked_utc": st.get("checked_utc") or None,
                     "error": st.get("error") or None, "retrieved_utc": sources[sid].get("retrieved_utc")})
     if a.json:
         return print(json.dumps(out, indent=1))
     for r in out:
+        life_txt = "never stale" if r["lifetime_days"] is None else f"lifetime {r['lifetime_days']}d"
         print(f"{r['id']:<10} fetched {r['fetched_utc'] or 'never':<20} changed {r['changed_utc'] or '-':<20} "
-              f"{'age ' + str(r['age_days']) + 'd' if r['age_days'] is not None else '':<9} {('ERROR ' + r['error']) if r['error'] else ''}")
-    print(f"selected={len(out)} never_fetched={sum(1 for r in out if not r['fetched_utc'])} with_error={sum(1 for r in out if r['error'])}")
+              f"{'age ' + str(r['age_days']) + 'd' if r['age_days'] is not None else 'age unknown':<13} "
+              f"{life_txt + (' STALE' if r['stale'] else ''):<22} ({r['lifetime_basis']})"
+              f"{(' ERROR ' + r['error']) if r['error'] else ''}")
+    print(f"selected={len(out)} never_fetched={sum(1 for r in out if not r['fetched_utc'])} with_error={sum(1 for r in out if r['error'])} "
+          f"stale={sum(1 for r in out if r['stale'])}")
 
 
 def main():
