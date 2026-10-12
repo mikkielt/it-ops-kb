@@ -1,0 +1,17 @@
+{
+  "id": "BG-2rh4u36u",
+  "kind": "bug",
+  "title": "stem() strips a repeated final digit, so a build number 26100 is indexed as 2610 and 544 as 54",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kbfacts.terms keeps a number whole: 'terms(\"26100\")' is ['26100'] and 'terms(\"S-1-5-32-544\")' holds no token ending 54, so the double-letter rule of stem() touches words only",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;t=kbfacts.terms('26100');print(t);sys.exit(0 if t==['26100'] else 1)"
+    ]
+  }
+}
