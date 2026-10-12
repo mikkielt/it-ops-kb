@@ -105,6 +105,17 @@
       "class": "agents-rule",
       "answer": "each reader names the pack keys itself, unmatched, spread, passing and priced",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which pack keys beyond unmatched, spread, passing and priced does each reader count as a check: line: parted (BG-j7pe3u46's name held apart), and scatter for the kb: hook's possible-false-good sentence?",
+      "options": [
+        "parted in the hook, the judge and ql_learn.passes; scatter in the judge and ql_learn.passes (gate g1) and in the hook too, whose sentence names the pack's check: line",
+        "parted in the judge and ql_learn.passes only; scatter in the judge and ql_learn.passes only"
+      ],
+      "recommendation": "parted in the hook, the judge and ql_learn.passes; scatter in the judge and ql_learn.passes (gate g1) and in the hook too, whose sentence names the pack's check: line",
+      "class": "agents-rule"
     }
   ],
   "links": [
