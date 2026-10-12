@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "security/linux-nftables calls a flush ruleset file one idempotent step without saying it clears the tables other roles own",
   "status": "draft",
+  "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,10 +16,37 @@
     ]
   },
   "repro_reason": "a wording defect in a kb article: no tool behaviour to run, only the article's text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=[l.strip() for l in pathlib.Path(sys.argv[1]).read_text().splitlines()]; sys.exit(sys.argv[2] in ls or any(sys.argv[3] in l for l in ls))",
+        "kb/public/security/linux-nftables.md",
+        "flush ruleset",
+        "begins with `flush ruleset`"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/security/linux-nftables.md (the DER at line 29 and the example near line 46) calls a ruleset file that begins with flush ruleset a single idempotent step for a pull agent, but never says flush ruleset removes every table, including those other roles (Docker, WireGuard) own. Add, from the nftables wiki's Atomic rule replacement page (https://wiki.nftables.org/wiki-nftables/index.php/Atomic_rule_replacement), the contrast between flush table and flush ruleset",
+      "check": 1
+    },
+    {
+      "clause": "scope the DER and the example to the agent's own table (found by the SP-ajcomz6d review)",
+      "check": 0
+    }
+  ],
   "touches": [
-    "kb/public/security/linux-nftables.md"
+    "kb/public/security/linux-nftables.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "BG-7ofeobia"
   ],
   "links": [
     "parked: SP-ajcomz6d review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: linux-nftables.md line 29 (DER) calls a file beginning with flush ruleset a single idempotent step and the example at line 46 starts with flush ruleset; line 18 gives only the sets contrast. Run 2026-10-12 at planning: grep found no 'other roles' or 'every table'; the repro fails; reproduces. The DER line is tagged, so its doc2query rows (expansions.csv) may need pruning."
 }

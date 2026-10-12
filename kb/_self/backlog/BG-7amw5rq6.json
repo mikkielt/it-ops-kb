@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "auth/postgres-column-encryption gives CipherSweet's FIPS fast index as HMAC-SHA384, while one cited page says PBKDF2-SHA384 with one iteration",
   "status": "draft",
+  "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -20,7 +21,11 @@
     "kb/public/_conflicts.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-4e7ja4zv"
+  ],
   "links": [
     "parked: SP-up5wchen review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: kb/public/auth/postgres-column-encryption.md line 39 gives the FIPS fast index as HMAC-SHA384 for S-qt7piebc and S-rqc6efd7 together, and neither _conflicts.md nor _gaps.md names CipherSweet. Run 2026-10-12 at planning: grep of both ledgers found nothing, the repro fails; the disagreement itself sits on the live page (ciphersweet.paragonie.com/internals/blind-index), unread offline: the worker reads both pages first and, if they agree, drops the item with why."
 }
