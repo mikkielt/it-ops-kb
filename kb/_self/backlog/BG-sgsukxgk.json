@@ -1,0 +1,24 @@
+{
+  "id": "BG-sgsukxgk",
+  "kind": "bug",
+  "title": "kbid.usual_pair breaks a tie alphabetically although its docstring says the first pair in text order",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbid.usual_pair and its docstring agree on the pair it suggests on a tie: the first pair in the root's text order, as the docstring says, so the check: guess kbid.py add prints for a host whose pairs tie is the one the file lists first.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import kbid; p=kbid.usual_pair([{'url':'https://h.example.com/a','licence':'Z','reuse':'quote'},{'url':'https://h.example.com/b','licence':'A','reuse':'copy'}],'https://h.example.com/c'); sys.exit(0 if p[0]==('Z','quote') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbid.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx review"
+  ]
+}

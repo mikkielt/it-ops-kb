@@ -1,0 +1,24 @@
+{
+  "id": "BG-c3mckvqz",
+  "kind": "bug",
+  "title": "provider.read_licence leaves a Learn mirror with LICENSE.md and LICENSE-CODE.md unread when GitHub answers NOASSERTION",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "provider._learn_licence sets LICENSE-CODE aside, as ST-3mkvezil's licence-words gate says, also when GitHub's licence API answers NOASSERTION for a mirror whose root holds LICENSE.md and LICENSE-CODE.md (MicrosoftDocs/PowerShell-Docs), so kbid.py add writes CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs) with reuse copy, as the existing rows of that mirror read, instead of exiting 2.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import provider; r=provider.read_licence('https://learn.microsoft.com/en-us/powershell/scripting/overview'); sys.exit(0 if r['licence'].startswith('CC BY 4.0 (public mirror MicrosoftDocs/PowerShell-Docs') and r['reuse']=='copy' else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-sbdy4hsx review"
+  ]
+}
