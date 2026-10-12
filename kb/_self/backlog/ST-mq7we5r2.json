@@ -96,7 +96,9 @@
         "the same four words, but an unchanged or pinned source makes every one of its facts current, anchored or not"
       ],
       "recommendation": "[current DATE], [moved DATE] with one now-line holding the new passage, [not found DATE], [source-dated only DATE]; verbatim is current, modified (edited in place) and moved are moved, not-found and dead are not found, unanchored is source-dated only, and a fact with no located anchor is source-dated only even when its source is unchanged",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "[current DATE], [moved DATE] with one now-line holding the new passage, [not found DATE], [source-dated only DATE]; verbatim is current, modified (edited in place) and moved are moved, not-found and dead are not found, unanchored is source-dated only, and a fact with no located anchor is source-dated only even when its source is unchanged",
+      "by": "operator"
     },
     {
       "id": "cache",
@@ -107,7 +109,9 @@
         "the same file, reused for a fixed 1.1 s for every provider"
       ],
       "recommendation": "_cache/revalidate/<root>/<source id>.json beside the detection cache; reused while younger than provider.pacing(row): the hour over a row's documented 'N requests/hour' (60 an hour is 60 s), never under the 1.1 s per-host delay, which is also the window of a row that documents no hourly count",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "_cache/revalidate/<root>/<source id>.json beside the detection cache; reused while younger than provider.pacing(row): the hour over a row's documented 'N requests/hour' (60 an hour is 60 s), never under the 1.1 s per-host delay, which is also the window of a row that documents no hourly count",
+      "by": "operator"
     },
     {
       "id": "budget",
@@ -119,7 +123,9 @@
         "240 seconds"
       ],
       "recommendation": "90 seconds (factdiff.REVALIDATE_BUDGET_S): a request that cannot finish in what is left is not sent, and the source it belonged to keeps its offline stamp",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "90 seconds (factdiff.REVALIDATE_BUDGET_S): a request that cannot finish in what is left is not sent, and the source it belonged to keeps its offline stamp",
+      "by": "operator"
     },
     {
       "id": "who",
@@ -130,7 +136,9 @@
         "every server, openWorldHint stays false"
       ],
       "recommendation": "only the team's own unlimited stdio server; a server limited to named roots (--roots, kb_http.py) answers an error naming why; kb_pack's openWorldHint becomes true",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "only the team's own unlimited stdio server; a server limited to named roots (--roots, kb_http.py) answers an error naming why; kb_pack's openWorldHint becomes true",
+      "by": "operator"
     },
     {
       "id": "test-id",
@@ -141,7 +149,9 @@
         "the long pack test of test_live_kb.py, its name lengthened once more"
       ],
       "recommendation": "test_lookup_eval_passes_on_the_live_kb: the new test keeps its rag.py eval assertions (the lookup on the live kb) and adds the revalidation ones; the long pack test in test_live_kb.py is not lengthened again",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "test_lookup_eval_passes_on_the_live_kb: the new test keeps its rag.py eval assertions (the lookup on the live kb) and adds the revalidation ones; the long pack test in test_live_kb.py is not lengthened again",
+      "by": "operator"
     }
   ],
   "links": [
