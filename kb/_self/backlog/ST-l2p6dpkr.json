@@ -59,7 +59,7 @@
       "recommendation": "outside-touches: the commit changes ledger rows beyond what the goal names; no file outside touches changes",
       "class": "querylog",
       "answer": "outside-touches: the commit changes ledger rows beyond what the goal names; no file outside touches changes",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "anchors",

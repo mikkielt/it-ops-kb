@@ -42,7 +42,7 @@
       "recommendation": "Rename the existing gap-step test and extend it",
       "class": "design",
       "answer": "Rename the existing gap-step test and extend it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
