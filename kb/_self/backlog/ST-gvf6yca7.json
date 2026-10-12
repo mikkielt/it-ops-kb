@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-ilje65fa close"
-  ]
+  ],
+  "notes": "SP-tm4wlsve close (2026-10-12): ST-t2j24bhx's worker recorded gate g1 (how many GitHub REST requests one detect run may make) as provisional; gate add classed it push for the word GitHub and made it blocking, so the landing waited for an operator answer on a request budget that pushes nothing."
 }

@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-uwkr7iyl close"
   ],
-  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands."
+  "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Its check passes before the work: planning replaces it with one that fails until the change lands. SP-tm4wlsve close (2026-10-12): with the suite at 100 of 100 ids, all four code stories answered their ceiling gates Replace; three of them extended one test in _tools/test_live_kb.py by renaming it to carry their selectors (pack_freshness_stamp, pinned_repo_gone, section_hash), so one test id now holds four stories' assertions. The whole suite ran 23.8 s against the 24 s darwin ceiling at the review."
 }

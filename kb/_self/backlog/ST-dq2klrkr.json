@@ -1,0 +1,29 @@
+{
+  "id": "ST-dq2klrkr",
+  "kind": "story",
+  "title": "answer --root WORKTREE commits the item file it changes on the worker's branch, so the orchestrator makes no hand git commit there",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-tm4wlsve: the orchestrator records an operator answer to a gate that exists only on a worker's branch with backlog.py --root WORKTREE answer, then a hand git -C WORKTREE commit of the item file. One such commit was refused by a permission rule (its message named GitHub and push), and land, started beside it, stopped at step branch on the uncommitted item file (ops SP-tm4wlsve land.end exit=1 for ST-t2j24bhx). answer --root WORKTREE commits the item file alone on the worker's branch with a fixed subject and KB-Work, as claim --commit does, and the kb-sprint skill's run step 4.1 names that form; a test answers a gate in a planted worktree and finds one new commit holding only the item file.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "answer_root_commits_worker_item"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog_portable.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tm4wlsve close"
+  ]
+}

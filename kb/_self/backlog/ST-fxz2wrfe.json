@@ -1,0 +1,29 @@
+{
+  "id": "ST-fxz2wrfe",
+  "kind": "story",
+  "title": "detect records changed_utc in _fetch_state.csv, so a pack's [source changed] mark can fire on the live kb",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-tm4wlsve: ST-ebn65qen's [source changed] mark compares an anchor's verified_utc with its source's _fetch_state.csv changed_utc, but no row of the kb's _fetch_state.csv files holds a changed_utc (0 of 2590 rows on 2026-10-12), so the mark never fires on the live kb and its check passed only on planted state. factdiff detect writes changed_utc when it finds a source changed (or the stamp reads the change date from the field detect does write), and a test runs detect on a planted changed page and finds the date in the state row and the mark on a pack line citing it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "detect_writes_changed_utc"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tm4wlsve close"
+  ]
+}

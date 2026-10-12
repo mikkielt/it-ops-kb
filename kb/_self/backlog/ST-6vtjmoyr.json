@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-lyfnpu37 close"
-  ]
+  ],
+  "notes": "SP-tm4wlsve close (2026-10-12): ST-mq7we5r2 (touches name AGENTS.md) ended with five design gates gate add made blocking (marks, cache, budget, who, test-id) and ST-ebn65qen with two (g1 signal words, g2 fact marks); each worker built to its recommendation and stopped, and the landing waited for the operator's answers, which took every recommendation."
 }
