@@ -68,6 +68,35 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How many units of the kb may hold a plain question word for it to count as mentioned in passing (kbfacts.PASSING_UNITS), and does a pack with that note route split?",
+      "options": [
+        "5 units, route split",
+        "3 units, route split",
+        "5 units, a note only with no route change"
+      ],
+      "recommendation": "5 units, route split",
+      "class": "design",
+      "answer": "5 units, route split",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which question words make a price ask (kbfacts.PRICE_ASK) and what counts as an amount in a printed fact (kbfacts.AMOUNT)?",
+      "options": [
+        "price, pricing, cost; a currency sign or code beside a number",
+        "also how much, whose answer is any number"
+      ],
+      "recommendation": "price, pricing, cost; a currency sign or code beside a number",
+      "class": "design",
+      "answer": "price, pricing, cost; a currency sign or code beside a number",
+      "by": "agent"
+    }
+  ],
   "links": [
     "found: SP-j2jn5ue4 planning probes"
   ],

@@ -1,0 +1,17 @@
+{
+  "id": "BG-udo2fxq3",
+  "kind": "bug",
+  "title": "pack's passing and priced notes are not read by the kb: hook's false-good sentence, backlog.py's judge and ql_learn.passes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb_hook.routed adds its possible-false-good sentence, bl_check.py's judge reports partial and ql_learn.passes reports no pass for a good pack whose passing or priced note is set, as they do for unmatched and spread",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kb_hook;c=kb_hook.routed({'route':'split','verdict':'good','text':'coverage: good\\ncheck: x','passing':['tempdb'],'priced':False});sys.exit(0 if 'flags a possible false good' in c else 1)"
+    ]
+  }
+}

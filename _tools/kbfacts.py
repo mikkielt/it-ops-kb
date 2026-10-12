@@ -2405,6 +2405,9 @@ def pick_passages(st, scored, best, cost, limit, pins=()):
 SCATTER_ARTICLES = 3  # the best articles whose domains the scatter note compares
 SCATTER_DOMAINS = 2  # a `good` whose best articles lie in this many domains or more, and
 SCATTER_SCORE = 15  # whose best unit scores under this, gets the scatter `check:` note; rag.scatter_calibration fits it
+PASSING_UNITS = 5  # a plain key word the kb holds in this many units or fewer, in no article about it, is mentioned in passing
+PRICE_ASK = re.compile(r"(?i)\b(?:price|prices|pricing|cost|costs)\b")  # a question for a price
+AMOUNT = re.compile(r"(?i)[$€£]\s?\d|\b\d[\d,.]*\s?(?:usd|eur|gbp|pln|dollars?|euros?)\b|\b(?:usd|eur|gbp|pln)\s?\d")  # an amount
 
 
 def article_domain(qpath):
@@ -2435,7 +2438,11 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     fact among the top hits holds half of 4+ key words, or when its best SCATTER_ARTICLES articles span
     SCATTER_DOMAINS or more domains and its best unit scores under SCATTER_SCORE (`scatter`; `top_score` and
     `top_domains` are the two values, None and [] when the pack is not a `good` the note applies to; the note
-    changes no route). A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
+    changes no route). Two notes read the lead article's printed facts and do set the route (`split`): `passing`
+    (a plain alphabetic word of the question that the kb holds in at most PASSING_UNITS units, that is no word of the
+    lead article's title or applies_to, while those facts miss another key word: a tempdb file count against the one
+    line that names tempdb) and `priced` (a question for a price, PRICE_ASK, and no printed fact of the lead holds an
+    AMOUNT); `passing` is the list of words, `priced` a bool. A word that is a product alias (_tools/aliases.csv) counts as present where any alias of the product is;
     the other aliases rank at a lower weight but never count as key words. `budget` is in tokens (about 3.5
     characters each) and bounds the text. A `weak` or `none` pack, and a flagged `good` one (a `check:` line, or a
     word nowhere in the kb), also prints `route:` (`split`, or `web` for a `none` unless only language or format names are missing), `kb has:` (the question's own words
@@ -2675,6 +2682,23 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         top_domains = list(dict.fromkeys(article_domain(a) for a in list(by_art)[:SCATTER_ARTICLES]))
         if len(top_domains) >= SCATTER_DOMAINS and top_score < SCATTER_SCORE:
             scatter = (top_score, top_domains)
+    # a `good` whose question's subject the kb only touches: its words are spread over articles of other topics, and
+    # the lead's printed facts hold most of them, but (passing) one plain word the kb holds in a few units and no article
+    # about it is the question's subject, and another key word is missing from them (tempdb in a line on encryption at
+    # rest, for a count of tempdb data files), or (priced) the question asks for a price and no printed fact of the lead
+    # states an amount. Notes that route `split`, never a verdict change: a lexical rule cannot tell which word is the
+    # subject, so a true `good` may carry one (an eval row about `noqa`), which the hook then passes on, not answers.
+    passing, priced = [], False
+    lead_units = [u for u in printed if paths and u["path"] == paths[0]]
+    if verdict == "good" and lead_units and not lifted and not rules:
+        lead_meta = st.arts.get(paths[0], {})
+        lead_own = set(key_terms(f"{lead_meta.get('title', '')} {lead_meta.get('applies_to', '')}"))
+        lead_has = set().union(*({t for t in known if has(u, t)} for u in lead_units))
+        plain = {stem(w.lower()) for w in WORD.findall(question) if w.isalpha() and (w.islower() or w.istitle())}
+        rare = sorted(t for t in plain & set(known) if kdf[t] <= PASSING_UNITS and t not in lead_own)
+        if rare and any(t not in lead_has and t not in rare for t in known):
+            passing = rare
+        priced = bool(PRICE_ASK.search(question)) and not any(AMOUNT.search(u["text"]) for u in lead_units)
     head = f"coverage: {verdict}"
     counted = informative if rules else known
     if tested:
@@ -2701,10 +2725,19 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         out.append(f"check: the best articles lie in {len(top_domains)} domains ({', '.join(top_domains)}) and the best "
                    f"fact scores only {top_score:.1f}; the facts may be about something related. Answer only if a cited "
                    "line answers the question itself.")
+    if passing:
+        said = own_words(question, passing)
+        out.append(f"check: {', '.join(said)} {'is' if len(said) == 1 else 'are'} held by only a few lines of the kb, "
+                   f"in no article about {'it' if len(said) == 1 else 'them'}, and the lead article's facts miss other "
+                   "key words; the facts may be about something related. Answer only if a cited line answers the "
+                   "question itself.")
+    if priced:
+        out.append("check: the question asks for a price and no fact of the lead article states an amount; the facts "
+                   "may be about something related. Answer only if a cited line answers the question itself.")
     fresh = freshness(question, missing, st.arts.get(paths[0] if paths else (order[0] if order else ""), {}))
     if fresh:
         out.append(fresh)
-    route = None if rules and verdict == "none" else route_of(verdict, unmatched, spread, missing)
+    route = None if rules and verdict == "none" else route_of(verdict, unmatched, spread, missing, passing or priced)
     # a near miss (a `none` that routes split: only a language or format name is nowhere in the kb) prints what a
     # `weak` pack would, its facts and source footer, and no none sentence, so the reader answers the part the kb has
     # (sp_getapplock for the T-SQL question) and looks up only the rest
@@ -2744,7 +2777,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if srcs and footer and not concise:
         out += ["", "sources:"] + format_sources(srcs)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
-            "unmatched": unmatched, "spread": spread, "scatter": scatter, "top_score": top_score,
+            "unmatched": unmatched, "spread": spread, "scatter": scatter, "passing": passing, "priced": priced,
+            "top_score": top_score,
             "top_domains": top_domains, "route": route, "has": has, "lacks": lacks, "paths": paths,
             "tested": [t[0] for t in tested], "pinned": sum(1 for u in printed if u.get("tested")),
             "printed": [] if rules else printed_lines(printed, rows),
@@ -2761,15 +2795,16 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
 LANGUAGE_NAMES = frozenset(("t-sql", "tsql", "powershell", "python", "bash", "kql", "json", "yaml", "xml", "csv"))
 
 
-def route_of(verdict, unmatched, spread, missing):
+def route_of(verdict, unmatched, spread, missing, noted=False):
     """Where a question goes after the pack: None (answer from the pack), `split` (the kb has part of it: answer what
     the pack holds, look up what it lacks in the live docs) or `web` (the kb does not cover it). A `good` pack is
-    flagged, and routes `split`, when it has a `check:` line (`unmatched`, `spread`) or a word nowhere in the kb
-    (`missing`); a clean `good` routes nowhere. A `none` pack routes `web`, except a near miss: when every word
-    nowhere in the kb is a language or format name (LANGUAGE_NAMES) it routes `split`."""
+    flagged, and routes `split`, when it has a `check:` line (`unmatched`, `spread`, `noted`: a word held in passing
+    or a price asked with no amount) or a word nowhere in the kb (`missing`); a clean `good` routes nowhere. A `none`
+    pack routes `web`, except a near miss: when every word nowhere in the kb is a language or format name
+    (LANGUAGE_NAMES) it routes `split`."""
     if verdict == "none":
         return "split" if missing and all(t in LANGUAGE_NAMES for t in missing) else "web"
-    if verdict == "weak" or unmatched or spread or missing:
+    if verdict == "weak" or unmatched or spread or missing or noted:
         return "split"
     return None
 
@@ -3457,7 +3492,7 @@ def routed(question, domain=None, root=None, fmt="detailed", footer=True, invali
     paths = list(dict.fromkeys(it["path"] for it in chosen if it["path"]))
     keys = [f"{k[0]}:{k[1]}" for k in (it["key"] for it in chosen) if not k[0].startswith("audit:")]
     return {"verdict": verdict, "missing": [], "matched": [], "informative": [], "known": [], "unmatched": [],
-            "spread": None, "scatter": None, "top_score": None, "top_domains": [],
+            "spread": None, "scatter": None, "passing": [], "priced": False, "top_score": None, "top_domains": [],
             "route": "web" if verdict == "none" else None, "has": [],
             "lacks": [chosen[0]["title"]] if verdict == "none" else [], "paths": paths, "tested": [], "pinned": 0,
             "key_missing": [], "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),

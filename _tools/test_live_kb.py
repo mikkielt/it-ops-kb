@@ -729,6 +729,49 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     cal = scatter["calibrated", "off_kb_goods_flagged"][0] - scatter["calibrated", "eval_goods_flagged"][0]
     assert cal >= cur_off - cur_ev and scatter["calibrated", "off_kb_goods_flagged"][1] == f"of {len(off)}"
     assert all(packs[q]["verdict"] == "good" and packs[q]["scatter"] for q in noted if noted[q])  # a note, never a verdict
+    # the two further notes, a plain word the kb holds in a few lines of other topics while the lead article's facts
+    # miss other key words (`passing`) and a price asked with no amount in them (`priced`): each a `check:` line that
+    # routes `split` with what the kb lacks and leaves the verdict, and no more than 1 in 20 eval goods carries one
+    flagged = [q for q, p in packs.items() if p["passing"] or p["priced"]]
+    assert all(packs[q]["verdict"] == "good" and packs[q]["route"] == "split" and "\nkb lacks: " in packs[q]["text"]
+               and re.search(r"^check: .*\n(?:.+\n)*route: split$", packs[q]["text"], re.M) for q in flagged), flagged
+    assert sum(q in ev for q in flagged) * 20 <= len(ev), [q for q in flagged if q in ev]
+    # planted: a root whose lead article holds the question's subject in passing, a price asked with no amount stated,
+    # and a question its lead article answers outright, which stays clean
+    fx = tmp_path / "passing"
+    fixture_root(fx, SID)
+    facts = {"hardening": ("Print server hardening", ["Encryption at rest protects the sweeper files of the Spooler service."]),
+             "capacity": ("Print capacity", ["The recommended number of queues is 50.",
+                                             "Spooled files live on disk, and the Spooler keeps them."]),
+             "licensing": ("Licensing", ["The Spooler service plan includes the sweeper licence per print server.",
+                                         "A licence for the Spooler service plan is bought through the reseller."]),
+             "labels": ("Labels", ["The price tag of an item is printed on its label."]),
+             "sizing": ("Sizing", [f"The recommended number of {w} is {n}." for n, w in enumerate(
+                 "gadgets widgets lamps fans pumps valves".split(), 2)]),
+             "misc": ("Miscellany", [f"Item {w} behaves in its own way {n}." for n, w in enumerate(
+                 "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau".split())])}
+    for slug, (title, lines) in facts.items():
+        write(fx / "print" / f"{slug}.md",
+              f"---\ntopic: print/{slug}\npriority: P1\napplies_to: \"PL-SRV-0042 print servers\"\nretrieved_utc: 2026-09-26\n"
+              f"sources: [{SID}]\nstatus: partial\n---\n\n# {title}\n\n## Summary\nA fixture.\n\n## Facts\n"
+              + "".join(f"- {line} [DOC {SID}]\n" for line in lines) + "\n## Reference\n\n## Examples\n")
+    env = {**os.environ, "KB_ROOTS": str(fx), "KB_INDEX": str(tmp_path / "packidx")}
+    env.pop("KB_DOC2QUERY", None)
+
+    def fixture_pack(question):
+        p = subprocess.run([sys.executable, "-c", PACK_FIXTURE, TOOLS, question], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", env=env)
+        assert p.returncode == 0, p.stdout[-1500:] + p.stderr[-1500:]
+        return p.stdout
+    for question, kind in (("What is the recommended number of sweeper files for the Spooler?", "held by only a few lines"),
+                           ("What is the price of the Spooler service plan licence?", "asks for a price")):
+        out = fixture_pack(question)
+        assert re.search(r"^coverage: good\b", out, re.M) and "check: " in out and kind in out, out[:1200]
+        assert re.search(r"^route: split$", out, re.M) and re.search(r"^kb lacks: \S", out, re.M), out[:1200]
+    out = fixture_pack("What is the recommended number of queues for the Spooler?")
+    assert re.search(r"^coverage: good\b", out, re.M) and not re.search(r"^(check|route):", out, re.M), out[:1200]
+    assert kbfacts.AMOUNT.search("It costs $36 per user a month") and kbfacts.AMOUNT.search("36 EUR")
+    assert not kbfacts.AMOUNT.search("Windows 10/11 Enterprise E3/E5 licence") and kbfacts.PRICE_ASK.search("How much does it cost")
     code, out = tool("rag.py", "pack", good_row()["question"])
     assert code == 0, out[-1500:]
     assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
