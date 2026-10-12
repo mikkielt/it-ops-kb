@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Fact diff: turn "a source changed" into "these facts still hold, these changed, these are gone" (stdlib only).
 
-  factdiff.py [--root NAME] anchor [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
-      locate each fact's backing sentence in the current text of its sources and write its anchor
+  factdiff.py [--root NAME] anchor [SELECTION] [--refetch] [--max-age DAYS] [--dry-run] [--quotes CSV]
+      locate each fact's backing sentence in the current text of its sources and write its anchor; --quotes CSV
+      (header `line,quote`; needs one --file F) gives the quote each new fact of F rests on, at most QUOTE_WORDS
+      words, by the fact's line: the anchor is the passage that holds the quote word for word (case, markup, quotes
+      and punctuation apart), and a fact whose quote the page lacks is anchored by its own words as any other
   factdiff.py [--root NAME] snapshot [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
       write the normalized text of the root's live copy sources, with attribution, to <root>/_snapshots/<id>.txt
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
@@ -55,7 +58,7 @@ the same.
       `census.py judge` applies it to a census log's queue and confirms a source whose every fact is supported.
 Exit: 0 ok; 1 anchors --stale found stale anchors; 2 bad arguments.
 """
-import argparse, collections, concurrent.futures as cf, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
+import argparse, collections, concurrent.futures as cf, csv, datetime, hashlib, json, math, os, re, shutil, subprocess, sys, tempfile
 import threading, time, unicodedata, urllib.parse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -64,7 +67,8 @@ import kbcommon, kbfacts, kbid, kbusage, provider, ql_capture  # noqa: E402
 ANCHORS, COLS, REASONS, QUOTE_WORDS = kbcommon.ANCHORS, kbcommon.ANCHOR_COLS, kbcommon.ANCHOR_REASONS, kbcommon.QUOTE_WORDS
 CACHE = os.path.join(kbcommon.HOME, "_cache", "factdiff")
 TERMS = 8
-CONFIG = os.path.join(kbcommon.TOOLS, "factdiff.toml")  # the calibrated cut-offs (kb/_self/reports/fact-diff.md)
+QUOTE_MIN_WORDS = 3  # a given quote shorter than this holds too little to locate a passage by
+CONFIG =os.path.join(kbcommon.TOOLS, "factdiff.toml")  # the calibrated cut-offs (kb/_self/reports/fact-diff.md)
 
 
 def _config():
@@ -111,6 +115,11 @@ def norm(s):
 
 def sha(s):
     return hashlib.sha256(norm(s).encode()).hexdigest()[:16]
+
+
+def words_key(s):
+    """The words of a text in the form two spellings of one sentence share: norm()'s, then word characters only."""
+    return " ".join(re.findall(r"\w+", norm(s)))
 
 
 def units(text):
@@ -254,6 +263,7 @@ class Doc:
                 if i + k <= len(self.units):
                     self.shas.setdefault(sha(self.window(i, k)), (i, k))
         self.nums = numbers(text or "")
+        self.words = None  # words_key of each unit, made on the first locate_quote
 
     def window(self, i, k):
         return " ".join(u for _, u in self.units[i:i + k])
@@ -292,6 +302,22 @@ class Doc:
         (a package feed, a JSON listing) holds any fact's terms and a small share of its own."""
         held = set().union(*self.terms[win[0]:win[0] + win[1]])
         return sum(self.idf[t] for t in shared) / (sum(self.idf[t] for t in held) or 1.0)
+
+    def locate_quote(self, quote):
+        """The window (i, k) of 1 to SPAN consecutive units that holds the quote's words in a row (words_key: case,
+        markup, quotes and punctuation apart), the shortest and then the first; None when no window does, or the
+        quote is shorter than QUOTE_MIN_WORDS words."""
+        want = words_key(quote)
+        if len(want.split()) < QUOTE_MIN_WORDS:
+            return None
+        if self.words is None:
+            self.words = [words_key(u) for _, u in self.units]
+        want = f" {want} "
+        for k in range(1, SPAN + 1):
+            for i in range(len(self.units) - k + 1):
+                if want in f" {' '.join(self.words[i:i + k])} ":
+                    return i, k
+        return None
 
     def locate(self, fact, cites=1):
         """(window (i, k), cover, shared terms) of the fact's backing passage, or (None, cover, shared) below the cut.
@@ -503,18 +529,90 @@ def anchor_rows(sid, facts, doc, reuse, when, cites=None):
     return out
 
 
+def read_quotes(path, rel, facts):
+    """({fact line: quote}, problems) of a --quotes CSV (header `line,quote`) for the file `rel` (root-relative): each
+    line must be a tagged fact of the file and each quote at most QUOTE_WORDS words; `facts` is cited_facts()."""
+    out, bad = {}, []
+    lines = {line for fs in facts.values() for _k, r, line, _t in fs if r == rel}
+    try:
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.reader(f))
+    except OSError as e:
+        return {}, [f"--quotes {path}: {e.strerror or e}"]
+    if not rows or [c.strip().lower() for c in rows[0]] != ["line", "quote"]:
+        return {}, [f"--quotes {path}: the header must be `line,quote`"]
+    for n, r in enumerate(rows[1:], start=2):
+        if not any(c.strip() for c in r):
+            continue
+        if len(r) != 2 or not r[0].strip().isdigit():
+            bad.append(f"--quotes {path}:{n}: want `line,quote` (the fact's line number, then its quote)")
+        elif int(r[0]) not in lines:
+            bad.append(f"--quotes {path}:{n}: {rel}:{int(r[0])} is no tagged fact of the file")
+        elif len(r[1].split()) > QUOTE_WORDS:
+            bad.append(f"--quotes {path}:{n}: the quote of {rel}:{int(r[0])} is over {QUOTE_WORDS} words")
+        elif int(r[0]) in out:
+            bad.append(f"--quotes {path}:{n}: {rel}:{int(r[0])} is quoted twice")
+        else:
+            out[int(r[0])] = r[1].strip()
+    return out, bad
+
+
+def quote_rows(rows, facts, doc, reuse, quotes):
+    """Anchors each fact the researcher quoted by its quote, in `rows` (anchor_rows' rows of `facts`, one source; changed
+    in place), when the page holds it: the passage that holds the quote word for word, its terms those the fact shares with it (else
+    the quote's), and the quote kept as the anchor's `quote` where the source's reuse allows. A row whose quote the page
+    lacks, or whose terms come out empty, stays as it was. Returns ([fact lines anchored by their quote], [fact lines
+    whose quote the page lacks]); a page that is no text holds neither."""
+    if not quotes or doc is None or doc.get("error") or doc.get("status") != 200 or doc.get("text") is None:
+        return [], []
+    d, found, lost = Doc(doc["text"]), [], []
+    for row, (key, _rel, line, text) in zip(rows, facts):
+        if line not in quotes:
+            continue
+        win = d.locate_quote(quotes[line])
+        if win is not None:
+            held = set().union(*d.terms[win[0]:win[0] + win[1]])
+            order = lambda t: (-d.idf.get(t, 0.0), t)  # noqa: E731
+            terms = sorted(term_set(fact_text(text)) & held, key=order) or sorted(term_set(quotes[line]) & held, key=order)
+            terms = [t for t in terms if not LEAKY.search(t)][:TERMS]
+        if win is None or not terms:
+            lost.append(line)
+            continue
+        row.update(status="located", heading=d.units[win[0]][0][:200], terms=";".join(terms), sha=sha(d.window(*win)),
+                   quote=quote_of(quotes[line], reuse))
+        found.append(line)
+    return found, lost
+
+
 def cmd_anchor(a):
     srcs = sources()
     facts = cited_facts()
+    quotes, rel = {}, None
+    if getattr(a, "quotes", None):
+        rel = os.path.normpath(a.file[0]).replace(os.sep, "/")
+        quotes, bad = read_quotes(a.quotes, rel, facts)
+        if bad:
+            print("\n".join(bad), file=sys.stderr)
+            return 2
     ids = select_ids(a, srcs)
     ids = [i for i in ids if i in facts and i in srcs]
     docs = fetch_all(ids, srcs, a.max_age, a.refetch)
     anchors = read_anchors()
     when = today()
     counts = collections.Counter()
-    cites = collections.Counter((k, rel) for fs in facts.values() for k, rel, _, _ in fs)
+    cites = collections.Counter((k, rel_) for fs in facts.values() for k, rel_, _, _ in fs)
     for sid in ids:
-        for row in anchor_rows(sid, facts[sid], docs.get(sid), (srcs[sid].get("reuse") or "").strip(), when, cites):
+        reuse = (srcs[sid].get("reuse") or "").strip()
+        rows = anchor_rows(sid, facts[sid], docs.get(sid), reuse, when, cites)
+        if quotes:
+            mine = [(i, f) for i, f in enumerate(facts[sid]) if f[1] == rel and f[2] in quotes]
+            if mine:
+                found, lost = quote_rows([rows[i] for i, _ in mine], [f for _, f in mine], docs.get(sid), reuse, quotes)
+                counts["quote found"] += len(found)
+                counts["quote not held"] += len(lost)
+                for line in lost:
+                    print(f"quote not held: {rel}:{line} {sid}", file=sys.stderr)
+        for row in rows:
             k = (row["fact"], row["path"], row["source_id"])
             old = anchors.get(k)
             if old and old["status"] == "located" and row["status"].startswith("unlocated:fetch"):
@@ -2077,7 +2175,9 @@ def main():
     an.add_argument("--refetch", action="store_true", help="ignore cached documents")
     an.add_argument("--max-age", type=float, default=7, help="reuse cached documents up to DAYS old (default 7)")
     an.add_argument("--dry-run", action="store_true")
-    sn = sub.add_parser("snapshot", help="write the normalized text of the root's live copy sources to _snapshots/")
+    an.add_argument("--quotes", metavar="CSV", help=f"the quote each new fact of the one --file rests on, at most {QUOTE_WORDS} "
+                                                     "words, as a CSV of `line,quote`")
+    sn =sub.add_parser("snapshot", help="write the normalized text of the root's live copy sources to _snapshots/")
     for p in (sn,):
         p.add_argument("--topic", action="append", default=[])
         p.add_argument("--dir", action="append", default=[])
@@ -2135,6 +2235,8 @@ def main():
     except (KeyError, kbcommon.RootError):
         ap.error(f"--root {a.root}: no such root")
     kbcommon.KB = ROOT.path
+    if a.cmd == "anchor" and a.quotes and len(a.file) != 1:
+        ap.error("--quotes needs exactly one --file: its lines are that file's")
     if a.cmd == "calibrate" and a.what == "history" and not a.repo:
         ap.error("calibrate history needs --repo")
     if a.cmd == "review" and not a.judge and (a.dry_run or a.batch_size or a.max_budget_usd):

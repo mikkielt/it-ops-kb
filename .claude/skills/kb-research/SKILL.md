@@ -103,7 +103,8 @@ The contract in brief (the sections read above hold the rest):
 ## 5. Check
 - `python3 _tools/build_index.py` regenerates `_coverage.csv`, the root's `_coverage.md` table and `used_in` from what you wrote.
 - `python3 _tools/check.py` must end `errors=0`.
-- `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors.
+- Anchor each new fact by the quote it rests on: write the report's quote list (step 6) as a CSV with the header `line,quote` (the fact's line number in the file, then its verbatim quote of at most 25 words) in the session's scratch directory (a worker's brief names it, else `_cache/`), and run `python3 _tools/factdiff.py anchor --file <a topic you edited or created> --quotes <that csv>` for each file, one CSV a file. The anchor is the passage of the fetched page that holds the quote; a line `quote not held: <path>:<line> <source id>` names a fact whose quote the page lacks (the fact is then anchored by its own words, if they match): correct the quote or the fact. A fact with no quote (a Microsoft page read through the docs tools) needs no row.
+- `python3 .claude/skills/kb-verify/lint.py <each topic you edited or created>` must add no errors; its warning `DOC fact added in this change` names a new fact whose quote the page does not hold.
 - `python3 _tools/doc2query.py stale` must print `stale=0`: if you reworded facts that had expansions, `python3 _tools/doc2query.py prune` removes their rows.
 - `python3 _tools/rag.py eval`: every question passes (`passed` = `questions`).
 - `python3 _tools/tests.py` must pass. It includes the leak scan: no real tenant ids, hostnames, addresses or tokens.
@@ -112,7 +113,7 @@ The contract in brief (the sections read above hold the rest):
 Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
 
 - The context map in brief: anchor topics and what the kb already knew.
-- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on; rows added to `signals.csv`, `aliases.csv` or `lookup_eval.csv`.
+- What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on (the CSV of step 5); rows added to `signals.csv`, `aliases.csv` or `lookup_eval.csv`.
 - Where each fact went (extended topic or new topic) and why, per step 2's rules.
 - The answer to the question in a few lines, with the vendor status (GA/preview) of every product or feature it relies on.
 - For each corrected figure, the places that repeated the old one and whether each was updated or filed.

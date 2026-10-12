@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 import bench_pool, bench_retrieval, census, factdiff, kb_hook, kbcommon, kbfacts, kbid, provider, rag, selfdoc
-from conftest import TOOLS, tool
+from conftest import TOOLS, Repo, requires_git, tool
 
 EVAL_CSV = os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv")
 SID = "FXT-" + "a" * 8  # not a source of the fixture root's _sources.csv
@@ -74,7 +74,8 @@ def test_check_py_names_a_ledger_citation_of_a_line_that_is_no_fact(tmp_path):
     assert code == 1 and cited == [("3", f"print/queues.md:{heading},"), ("4", f"print/queues.md:{fact}-{heading},")], out[-2000:]
 
 
-def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag(tmp_path):
+@requires_git
+def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words(tmp_path):
     root = tmp_path / "root"
     fixture_root(root, SID)
     art = root / "print" / "queues.md"
@@ -85,9 +86,49 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag(tmp_path):
     env = {**os.environ, "KB_ROOTS": str(root)}
     code, out = tool("build_index.py", "--root", "fixture", env=env)
     assert code == 0, out[-2000:]
-    code, out = tool(os.path.join("..", ".claude", "skills", "kb-verify", "lint.py"), "fixture/", env=env)
+    lint = os.path.join("..", ".claude", "skills", "kb-verify", "lint.py")
+    code, out = tool(lint, "fixture/", env=env)
     flagged = re.findall(r"^ERROR (\S+): Facts line holds a second bullet", out, re.M)
     assert code == 1 and flagged == [f"fixture/print/queues.md:{at}"], out[-2000:]
+    # a DOC fact the change adds: anchored by the quote its page holds (located), or by none (no-match, warned of); the
+    # old fact's anchor is no-match too, as 37% of the ledger's are, and raises nothing
+    page = "Held jobs wait until an operator releases them. Queues pause without losing their jobs."
+    old_fact, quoted, missing = "Finished jobs are kept for 14 days.", "Operators free a held job at will.", "Spooler retention is 14 days."
+    quotes = {quoted: "wait until an operator releases them", missing: "retention is fourteen days by default"}
+
+    def anchor(text):
+        facts = [(kbfacts.fact_key(u["text"]), "print/queues.md", u["line"], u["text"])
+                 for u in kbfacts.md_units("print/queues.md", text) if u["text"].startswith((old_fact, quoted, missing))]
+        rows = factdiff.anchor_rows(SID, facts, {"status": 200, "text": page}, "copy", "2026-10-12")
+        found, lost = factdiff.quote_rows(rows, facts, {"status": 200, "text": page}, "copy",
+                                          {f[2]: quotes[f[3].split(" [DOC")[0]] for f in facts if f[3].split(" [DOC")[0] in quotes})
+        kbcommon.write_csv(str(root / "_anchors.csv"), kbcommon.ANCHOR_COLS, rows)
+        return [r["status"] for r in rows], found, lost
+
+    repo = Repo(root)
+    repo.git("init", "-q", "-b", "main")
+    write(root / "_sources.csv", (root / "_sources.csv").read_text(encoding="utf-8")
+          + f"{SID},https://example.com/print,Print queues,Example,MIT,copy,2026-09-26,,,,\n")
+    assert anchor(art.read_text(encoding="utf-8")) == (["unlocated:no-match"], [], [])
+    repo.commit("base")
+    write(art, art.read_text(encoding="utf-8").replace(
+        "## Reference", f"- {quoted} [DOC {SID}]\n- {missing} [DOC {SID}]\n\n## Reference"))
+    text = art.read_text(encoding="utf-8")
+    statuses, found, lost = anchor(text)
+    assert statuses == ["unlocated:no-match", "located", "unlocated:no-match"] and len(found) == 1 and len(lost) == 1
+    lines = text.split("\n")
+    code, out = tool(lint, "fixture/", env=env)
+    warned = re.findall(r"^WARN\s+(\S+): DOC fact added in this change: no passage of", out, re.M)
+    assert warned == [f"fixture/print/queues.md:{lines.index(f'- {missing} [DOC {SID}]') + 1}"], out[-2000:]
+    # the quote CSV: a fact line and its quote, at most 25 words, for a tagged fact of the one file
+    got = tmp_path / "quotes.csv"
+    wordy = " ".join(["word"] * 26)
+    got.write_text(f"line,quote\n{lines.index(f'- {quoted} [DOC {SID}]') + 1},{quotes[quoted]}\n99,x y z\n"
+                   f"{lines.index(f'- {missing} [DOC {SID}]') + 1},{wordy}\n", encoding="utf-8")
+    facts = {SID: [(kbfacts.fact_key(u["text"]), "print/queues.md", u["line"], u["text"])
+                   for u in kbfacts.md_units("print/queues.md", text)]}
+    ok, bad = factdiff.read_quotes(str(got), "print/queues.md", facts)
+    assert list(ok.values()) == [quotes[quoted]] and len(bad) == 2 and "no tagged fact" in bad[0] and "over 25 words" in bad[1], bad
 
 
 def test_build_index_check_passes_on_the_live_kb():
