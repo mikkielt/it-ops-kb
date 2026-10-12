@@ -312,3 +312,8 @@ EV-check-notes-good-pack-print-them,which check: notes does a good pack print an
 EV-state-knowledge-ask-show-pack-good,what state does a knowledge ask show when its pack is good with a check: line,backlog.md,good,yes,(a `good` with one is `partial`),
 EV-rag-py-eval-row-whose-verdict,what does rag.py eval do with a row whose verdict differs,tools.md,good,yes,or `failed=verdict`,
 SQ-changed-figure-where-else-old-figure-repeated,a refresh or research changed a figure in a fact: where else is the old figure repeated and what happens to each place,maintaining.md,good,yes,each other place that repeats the old one is updated or filed before done,kb-refresh:update;kb-research:research
+EV-words-question-about-source-id-send,which words in a question about a source id send the lookup to the cites expert,tools.md,good,yes,"a `cite` form (`cites`, `cited`, `citing`, `citation`) anywhere",
+EV-dated-lines-under-gaps-md-entry,which dated lines under a _gaps.md entry close it and which leave it open for the research queue,querylog.md,good,yes,`Resolved <date>:` or `Superseded <date>:` closes the entry,kb-research:queue
+EV-fact-tag-written-cites-two-sources,how is a fact tag written when it cites two sources of the same kind,content-rules.md,good,yes,"Canonical forms: `[DOC <id>, <id>]`",
+EV-story-adds-test-suite-test-id,a story adds a test and the suite is at its test id ceiling: does the new test fold into an existing one,code.md,good,yes,at the ceiling it replaces one,kb-item:work
+EV-aliases-file-takes-new-product-alias,which aliases file takes a new product alias row of a root other than public,querylog.md,good,yes,a root other than public: the `aliases.csv` in its own retrieval data,kb-add-topic:register
