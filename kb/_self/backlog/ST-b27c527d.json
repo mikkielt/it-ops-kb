@@ -2,7 +2,7 @@
   "id": "ST-b27c527d",
   "kind": "story",
   "title": "pack, kb_ask and the kb: hook route a question by its kind to the tool that answers it, and fuse the lists by RRF",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-7n3d4jte",
   "priority": "P1",
@@ -167,5 +167,28 @@
     "kb:public/_answers.md#QK-deterministic-retrieval-experts"
   ],
   "notes": "Premise: python3 _tools/rag.py pack 'How many articles does the kb hold in the intune domain?' prints no article count, while python3 _tools/rag.py audit intune ends articles=23. An offline probe on 2026-10-11 (no model) routed the pool's rows by kind: count 0 to 3 of 3, decision 0 to 2 of 2, gap 2 to 5 of 5, conflict 0 of 2 until the entry is printed whole (rag.py search cuts _conflicts.md:171 before [DOC S1800,S1801,S1802]); the pool record of 2026-10-09 had the hook arm 0 of 3 count, 0 of 2 decision, 0 of 2 conflict, 2 of 5 gap and the router 0 of 2 decision and conflict. Facts: public/agents/hybrid-retrieval.md (Rank fusion: the original RRF paper; Mixture of retrievers; How these map onto a deterministic toolset), QK-deterministic-retrieval-experts. A typo leg is out: pack passed 10 of 10 typo variants and a closest-word fixer broke the 24H2 false_good row. The hook arm rerun is benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap with --out in a scratch directory (no paid run). Planned 2026-10-12: premise reproduced (pack 'How many articles does the kb hold in the intune domain?' answers good from security/policy-precedence.md with no count). The pack_routes_kind test reads the pool's count, decision, conflict and gap rows through bench_pool's own row reader and drives the kb: hook route on them, so it reads the last clause; the free rerun (benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap --out <scratch>) is recorded in the notes at done. rag.py eval passes before the work (621 of 621) and pins the unchanged ranking. Done 2026-10-12: the free rerun (benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap, no paid run) on commit 88d908e: count 3 of 3, decision 2 of 2, conflict 2 of 2, gap 5 of 5, 12 of 12 runs right, checks 16/16, cost 0; the record of 2026-10-09 had 0 of 3, 0 of 2, 0 of 2 and 2 of 5. rag.py eval 621 of 621 with the routed guard.",
-  "claimed_by": "orch-7n3d4jte"
+  "evidence": {
+    "commit": "d36dd08d12209302d6de838284e2a24f85e3667d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "664cc96e9bbaf0f8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_routes_kind"
+        ],
+        "exit": 0,
+        "sha256": "86e62c85edfc5547"
+      }
+    ]
+  }
 }
