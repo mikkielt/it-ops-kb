@@ -2408,7 +2408,8 @@ SCATTER_SCORE = 15  # whose best unit scores under this, gets the scatter `check
 PASSING_UNITS = 5  # a plain key word the kb holds in this many units or fewer, in no article about it, is mentioned in passing
 PASSING_MISSING = 0.25  # and the lead's printed facts miss at least this share of the key words, the rare word itself included
 PRICE_ASK = re.compile(  # a question for a price; a cost asked in a unit of measure (resource units, request units) is no money
-    r"(?i)\b(?:price|prices|pricing)\b|\bcosts?\b(?!.*\bin\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b)")
+    r"(?i)\b(?:price|prices|pricing)\b|\bcosts?\b(?!.*\bin\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b)"
+    r"|\bhow much\b(?=.*\b(?:licen[cs]es?|subscriptions?|seats?|per\s+(?:user|device|month|year))\b)")
 AMOUNT = re.compile(r"(?i)[$€£]\s?\d|\b\d[\d,.]*\s?(?:usd|eur|gbp|pln|dollars?|euros?)\b|\b(?:usd|eur|gbp|pln)\s?\d")  # an amount
 
 
@@ -2416,6 +2417,23 @@ def article_domain(qpath):
     """The domain directory of a qualified article path (`public/intune/x.md`: `intune`); a file at the root of its
     kb root is its own domain."""
     return bare(qpath).split("/")[0]
+
+
+def name_apart(question, known, held):
+    """The multi-word names of the question (two or more capitalised words in a row after its first word, each a key
+    word the kb holds: `Exchange Online`) that none of the lead article's printed facts holds beside any of the
+    question's lower-case key words: the name sits in some facts and what is asked about it in others. `held` is the
+    set of key words each printed fact holds. [(stems of the name, stems of the lower-case key words)]"""
+    words, run, runs = WORD.findall(question), [], []
+    for i, w in enumerate(words + [""]):
+        if i and w.istitle() or w[:1].isdigit() and run:
+            run.append(stem(w.lower()))
+        else:
+            runs += [run] if len(run) > 1 else []
+            run = []
+    plain = {stem(w) for w in words if w.islower()} & set(known)
+    return [(name, plain) for name in runs if plain and set(name) <= set(known)
+            and not any(set(name) <= h and h & plain for h in held)]
 
 
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
@@ -2695,7 +2713,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     # (tempdb in a line on encryption at rest, for a count of tempdb data files; one word of ten missing is a paraphrase,
     # an eval row about `noqa`), or (priced) the question asks for a price and no printed fact of the lead states an
     # amount. Notes that route `split`, never a verdict change: a lexical rule cannot tell which word is the subject.
-    passing, priced = [], False
+    passing, priced, parted = [], False, []
     lead_units = [u for u in printed if paths and u["path"] == paths[0]]
     if verdict == "good" and lead_units and not lifted and not rules:
         lead_meta = st.arts.get(paths[0], {})
@@ -2707,6 +2725,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         if rare and any(t not in rare for t in absent) and len(absent) >= PASSING_MISSING * len(known):
             passing = rare
         priced = bool(PRICE_ASK.search(question)) and not any(AMOUNT.search(u["text"]) for u in lead_units)
+        parted = name_apart(question, known, [{t for t in known if has(u, t)} for u in lead_units])
     head = f"coverage: {verdict}"
     counted = informative if rules else known
     if tested:
@@ -2739,13 +2758,19 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
                    f"in no article about {'it' if len(said) == 1 else 'them'}, and the lead article's facts miss other "
                    "key words; the facts may be about something related. Answer only if a cited line answers the "
                    "question itself.")
+    together = [f"{' '.join(own_words(question, name))} beside {', '.join(own_words(question, plain))}"
+                for name, plain in parted]
+    if parted:
+        out.append(f"check: no fact of the lead article holds {', '.join(together)}; the facts may be about "
+                   "something related. Answer only if a cited line answers the question itself.")
     if priced:
         out.append("check: the question asks for a price and no fact of the lead article states an amount; the facts "
                    "may be about something related. Answer only if a cited line answers the question itself.")
     fresh = freshness(question, missing, st.arts.get(paths[0] if paths else (order[0] if order else ""), {}))
     if fresh:
         out.append(fresh)
-    route = None if rules and verdict == "none" else route_of(verdict, unmatched, spread, missing, passing or priced)
+    route = None if rules and verdict == "none" else route_of(verdict, unmatched, spread, missing,
+                                                                   passing or priced or parted)
     # a near miss (a `none` that routes split: only a language or format name is nowhere in the kb) prints what a
     # `weak` pack would, its facts and source footer, and no none sentence, so the reader answers the part the kb has
     # (sp_getapplock for the T-SQL question) and looks up only the rest
@@ -2753,7 +2778,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if shut and not rules:
         out.append(NONE_SENTENCE)
     has = own_words(question, set(hit) | dheld)
-    lacks = own_words(question, [t for t in informative if t not in hit and t not in dheld])
+    lacks = own_words(question, [t for t in informative if t not in hit and t not in dheld]) + together
     if route:
         out += ([] if rules else [f"route: {route}"]) + [f"kb has: {', '.join(has) or '-'}", f"kb lacks: {', '.join(lacks) or '-'}"]
         if rules:
@@ -2786,7 +2811,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         out += ["", "sources:"] + format_sources(srcs, rows)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
             "unmatched": unmatched, "spread": spread, "scatter": scatter, "passing": passing, "priced": priced,
-            "top_score": top_score,
+            "top_score": top_score, "parted": together,
             "top_domains": top_domains, "route": route, "has": has, "lacks": lacks, "paths": paths,
             "tested": [t[0] for t in tested], "pinned": sum(1 for u in printed if u.get("tested")),
             "printed": [] if rules else printed_lines(printed, rows),
@@ -3607,7 +3632,7 @@ def routed(question, domain=None, root=None, fmt="detailed", footer=True, invali
     paths = list(dict.fromkeys(it["path"] for it in chosen if it["path"]))
     keys = [f"{k[0]}:{k[1]}" for k in (it["key"] for it in chosen) if not k[0].startswith("audit:")]
     return {"verdict": verdict, "missing": [], "matched": [], "informative": [], "known": [], "unmatched": [],
-            "spread": None, "scatter": None, "passing": [], "priced": False, "top_score": None, "top_domains": [],
+            "spread": None, "scatter": None, "passing": [], "priced": False, "parted": [], "top_score": None, "top_domains": [],
             "route": "web" if verdict == "none" else None, "has": [],
             "lacks": [chosen[0]["title"]] if verdict == "none" else [], "paths": paths, "tested": [], "pinned": 0,
             "key_missing": [], "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),

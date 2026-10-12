@@ -82,6 +82,21 @@
   "depends_on": [
     "BG-pedsqeqs"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which words does the parted note read as a name, and which as what is asked about it? Measured: the second option flagged 7 of 236 eval goods, the first flags none of the eval set, the held-out file or the pool's goods and flags two off-kb goods",
+      "options": [
+        "a name is two or more Title-case words in a row after the first word, all key words the kb holds; the subject is the question's lower-case key words",
+        "a name also takes all-caps and mixed-case tokens (SQL Server, Okta SCIM, GitLab API), the subject every other key word"
+      ],
+      "recommendation": "a name is two or more Title-case words in a row after the first word, all key words the kb holds; the subject is the question's lower-case key words",
+      "class": "secrets",
+      "answer": "a name is two or more Title-case words in a row after the first word, all key words the kb holds; the subject is the question's lower-case key words",
+      "by": "operator"
+    }
+  ],
   "links": [
     "merged: BG-kmjewyid"
   ],
