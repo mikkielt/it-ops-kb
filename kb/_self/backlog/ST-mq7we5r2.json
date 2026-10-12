@@ -4,6 +4,7 @@
   "title": "pack --revalidate and kb_pack revalidate check only the pack's cited sources live and resolve only the printed lines' anchors",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-tm4wlsve",
   "priority": "P1",
   "rank": 0,
   "goal": "rag.py pack --revalidate and kb_pack's revalidate argument run factdiff's detection (detect --no-save) on only the pack's cited sources and resolve only the printed fact lines' anchors, then print per line current (source unchanged or passage word for word, dated today), moved (with the new passage, at most one passage per line), not found, or source-dated only (no located anchor); results go only to _cache/ (D-tvjml75q) and a cached result younger than the provider's pacing is reused; a network error, a timeout (an overall budget under the MCP idle timeout) or GitHub's unauthenticated limit falls back to the offline stamp and says so; the kb: hook never revalidates (D-gmrjivyw); the suite tests the outcomes with stubbed provider responses, never the network.",
@@ -15,6 +16,28 @@
         "-k",
         "pack_revalidate"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py pack --revalidate and kb_pack's revalidate argument run factdiff's detection (detect --no-save) on only the pack's cited sources and resolve only the printed fact lines' anchors, then print per line current (source unchanged or passage word for word, dated today), moved (with the new passage, at most one passage per line), not found, or source-dated only (no located anchor)",
+      "check": 0
+    },
+    {
+      "clause": "results go only to _cache/ (D-tvjml75q) and a cached result younger than the provider's pacing is reused",
+      "check": 0
+    },
+    {
+      "clause": "a network error, a timeout (an overall budget under the MCP idle timeout) or GitHub's unauthenticated limit falls back to the offline stamp and says so",
+      "check": 0
+    },
+    {
+      "clause": "the kb: hook never revalidates (D-gmrjivyw)",
+      "check": 0
+    },
+    {
+      "clause": "the suite tests the outcomes with stubbed provider responses, never the network",
+      "check": 0
     }
   ],
   "touches": [
@@ -34,11 +57,40 @@
     "kb/_self/embedding.md"
   ],
   "depends_on": [
-    "ST-ebn65qen"
+    "ST-ebn65qen",
+    "ST-3zlzfitj"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/agents/doc-change-detection.md",
     "kb:public/_answers.md#QK-fact-freshness-at-lookup"
   ],
-  "notes": "Premise (2026-10-11, Python 3.13.2, no model): factdiff.py detect --no-save over one pack's cited sources took 0.2 s for five pinned DSC files, 1.9 s for an Autopilot question's Learn and pinned sources (unchanged) and 7.3 s for five code.claude.com pages (all changed by text hash; of the 212 facts citing them 134 verbatim, 8 modified, 5 not found, 65 unanchored), but resolved every fact citing those sources, not only the printed lines. Over the pool's answerable questions 186 of 241 printed DOC lines (77%) had a located anchor for every cited source. A moved item costs about 140 tokens (the entra replay's 43 review items were 24,212 characters). Limits: UserPromptSubmit hooks 30 s (public/claude/hooks.md:60), MCP idle 5 min (public/agents/agent-error-catalogue.csv:19), GitHub REST 60 per hour unauthenticated (public/agents/doc-change-detection.md:96), Learn one request per 1.1 s per host. Decisions D-tvjml75q and D-gmrjivyw."
+  "notes": "Premise (2026-10-11, Python 3.13.2, no model): factdiff.py detect --no-save over one pack's cited sources took 0.2 s for five pinned DSC files, 1.9 s for an Autopilot question's Learn and pinned sources (unchanged) and 7.3 s for five code.claude.com pages (all changed by text hash; of the 212 facts citing them 134 verbatim, 8 modified, 5 not found, 65 unanchored), but resolved every fact citing those sources, not only the printed lines. Over the pool's answerable questions 186 of 241 printed DOC lines (77%) had a located anchor for every cited source. A moved item costs about 140 tokens (the entra replay's 43 review items were 24,212 characters). Limits: UserPromptSubmit hooks 30 s (public/claude/hooks.md:60), MCP idle 5 min (public/agents/agent-error-catalogue.csv:19), GitHub REST 60 per hour unauthenticated (public/agents/doc-change-detection.md:96), Learn one request per 1.1 s per host. Decisions D-tvjml75q and D-gmrjivyw. Planned 2026-10-12: premise is the 2026-10-11 measurement in these notes (detect resolves every fact citing a source, not only the printed lines); rag.py pack has no --revalidate flag today (rag.py pack --help). Ordered last in the sprint so it reuses ST-t2j24bhx's repository check and ST-3zlzfitj's section hashes."
 }

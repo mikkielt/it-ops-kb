@@ -4,6 +4,7 @@
   "title": "provider.py read URL --grep WORDS reads a page by its route and prints the matching lines, so research locates a passage without WebFetch",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-sbdy4hsx",
   "priority": "P2",
   "rank": 0,
   "goal": "provider.py read URL [--grep WORDS] [--context N] fetches the url in its provider's raw form (Learn markdown, the .md form of code.claude.com and modelcontextprotocol.io, a GitHub blob as raw.githubusercontent.com at the same ref, a GitLab blob as /-/raw/, an arXiv abstract through the export API, else the HTML page reduced to text), caches it under _cache/ as factdiff's fetches are, and prints the lines that hold every grep word with line numbers and the url to cite; new providers.csv rows give GitHub blob-to-raw and arXiv their raw forms; a PDF is reported as not text, left to the Read tool; kb-research step 3 and kb/_self/web-sources.md name it as the way to locate a passage, with WebFetch no longer needed for that; the suite tests the url mapping and the grep with stubbed responses.",
@@ -15,6 +16,39 @@
         "-k",
         "provider_read"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if all('provider.py read' in open(p, encoding='utf-8').read() for p in ('.claude/skills/kb-research/SKILL.md', 'kb/_self/web-sources.md')) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "provider.py read URL [--grep WORDS] [--context N] fetches the url in its provider's raw form (Learn markdown, the .md form of code.claude.com and modelcontextprotocol.io, a GitHub blob as raw.githubusercontent.com at the same ref, a GitLab blob as /-/raw/, an arXiv abstract through the export API, else the HTML page reduced to text), caches it under _cache/ as factdiff's fetches are",
+      "check": 0
+    },
+    {
+      "clause": "prints the lines that hold every grep word with line numbers and the url to cite",
+      "check": 0
+    },
+    {
+      "clause": "new providers.csv rows give GitHub blob-to-raw and arXiv their raw forms",
+      "check": 0
+    },
+    {
+      "clause": "a PDF is reported as not text, left to the Read tool",
+      "check": 0
+    },
+    {
+      "clause": "kb-research step 3 and kb/_self/web-sources.md name it as the way to locate a passage, with WebFetch no longer needed for that",
+      "check": 1
+    },
+    {
+      "clause": "the suite tests the url mapping and the grep with stubbed responses",
+      "check": 0
     }
   ],
   "touches": [
@@ -27,10 +61,69 @@
     ".claude/skills/kb-research/SKILL.md",
     ".claude/skills/kb-refresh/SKILL.md",
     ".claude/skills/kb-add-topic/SKILL.md",
-    ".claude/settings.json"
+    ".claude/settings.json",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
+  ],
+  "depends_on": [
+    "ST-fdijhqel"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "settings-allow",
+      "kind": "blocking",
+      "question": "Which allow rule does .claude/settings.json get for provider.py read?",
+      "options": [
+        "Bash(python3 _tools/provider.py read *) only; the WebFetch rules stay as they are",
+        "No allow rule; each call is approved by hand"
+      ],
+      "recommendation": "Bash(python3 _tools/provider.py read *) only; the WebFetch rules stay as they are",
+      "class": "agents-rule",
+      "answer": "Bash(python3 _tools/provider.py read *) only; the WebFetch rules stay as they are",
+      "by": "operator"
+    },
+    {
+      "id": "skill-read",
+      "kind": "blocking",
+      "question": "How do kb-research step 3, kb-refresh and kb-add-topic name provider.py read?",
+      "options": [
+        "provider.py read locates a passage; WebFetch stays only for a page provider.py read reports it cannot read as text",
+        "provider.py read and WebFetch named as equal choices"
+      ],
+      "recommendation": "provider.py read locates a passage; WebFetch stays only for a page provider.py read reports it cannot read as text",
+      "class": "agents-rule",
+      "answer": "provider.py read locates a passage; WebFetch stays only for a page provider.py read reports it cannot read as text",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise: kb-research step 3 says curl the page and use WebFetch only to locate the passage, and read GitHub blobs raw; _tools/providers.csv gives raw_form '-' for github and github-raw and has no arXiv row (2026-10-11), so a session maps routes and greps by hand. A PDF stays with the Read tool: the standard library has no PDF text reader."
+  "notes": "Premise: kb-research step 3 says curl the page and use WebFetch only to locate the passage, and read GitHub blobs raw; _tools/providers.csv gives raw_form '-' for github and github-raw and has no arXiv row (2026-10-11), so a session maps routes and greps by hand. A PDF stays with the Read tool: the standard library has no PDF text reader. Planned 2026-10-12: premise reproduced (provider.py has only list, show and probe; providers.csv gives raw_form '-' for github and github-raw and has no arXiv row). The provider_read test reads the providers.csv rows through provider.py's own registry loader."
 }

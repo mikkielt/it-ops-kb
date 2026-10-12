@@ -4,6 +4,7 @@
   "title": "_conflicts.md 'no cost-cap flag despite brief expecting one' says --max-budget-usd does not exist, though the kb cites it as a print-mode cap",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-df2cu4uj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -20,5 +21,9 @@
     "kb/public/_conflicts.md",
     "kb/public/agents/headless-agent-runtimes.md",
     "kb/public/_sources.csv"
-  ]
+  ],
+  "depends_on": [
+    "BG-gxxv3mzj"
+  ],
+  "notes": "Planned 2026-10-12: repro reproduced (the entry still says no such flag and carries no Resolved line)."
 }

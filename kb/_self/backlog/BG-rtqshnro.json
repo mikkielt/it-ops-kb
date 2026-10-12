@@ -4,6 +4,7 @@
   "title": "Facts citing five code.claude.com pages no longer match them: a detect run finds modified and not-found passages",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-df2cu4uj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -41,6 +42,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Through /kb-refresh of the sources S743, S-av5665nf, S1800, S1824 and S-fmj24q2u: every fact citing them whose passage detect reports modified or not found is re-checked against the current page and reworded, re-pointed or made [UNK] with a _gaps.md entry, the unanchored ones get anchors where the page states them",
+      "check": 2
+    },
+    {
+      "clause": "Through /kb-refresh of the sources S743, S-av5665nf, S1800, S1824 and S-fmj24q2u: every fact citing them whose passage detect reports modified or not found is re-checked against the current page and reworded, re-pointed or made [UNK] with a _gaps.md entry, the unanchored ones get anchors where the page states them",
+      "check": 0
+    },
+    {
+      "clause": "the new baselines are saved, so the repro reports no modified or not-found fact",
+      "check": 2
+    }
+  ],
   "touches": [
     "kb/public/agents/doc-lookup-sources.md",
     "kb/public/agents/headless-agent-runtimes.md",
@@ -65,11 +80,14 @@
     "kb/public/_answers.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-3bjktw5x"
+  ],
   "relates_to": [
     "BG-3bjktw5x"
   ],
   "links": [
     "kb:public/agents/doc-change-detection.md"
   ],
-  "notes": "Observed 2026-10-11 (Python 3.13.2): the repro reported changed=5 with facts verbatim=134, modified=8, not-found=5, unanchored=65 at one run and modified=12, not-found=1 at a run minutes later, so the pages are moving; the refresh reads the current pages, not these counts. BG-3bjktw5x (the stale cost-cap conflict entry) rests on S1824, one of these sources."
+  "notes": "Observed 2026-10-11 (Python 3.13.2): the repro reported changed=5 with facts verbatim=134, modified=8, not-found=5, unanchored=65 at one run and modified=12, not-found=1 at a run minutes later, so the pages are moving; the refresh reads the current pages, not these counts. BG-3bjktw5x (the stale cost-cap conflict entry) rests on S1824, one of these sources. Planned 2026-10-12: repro reproduced (changed=5; verbatim=134 modified=12 not-found=1 unanchored=65). check.py and rag.py eval pass before the work: they pin the contract and the lookups the refresh must keep. Runs after BG-3bjktw5x, which resolves the S1824 cost-cap conflict entry in the same files."
 }

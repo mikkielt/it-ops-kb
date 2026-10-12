@@ -4,6 +4,7 @@
   "title": "pack adds a check: note to a good verdict whose top hits are scattered and weak, calibrated on the eval set against the off-kb list",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-7n3d4jte",
   "priority": "P2",
   "rank": 0,
   "goal": "pack, with its verdict unchanged, adds a check: note when a good verdict's top three articles span two or more domains and its top BM25 score is under a threshold calibrated on lookup_eval.csv's good rows against the off-kb list's good ones (a query performance prediction signal fitted to this collection, never a generic predictor); the calibration and its counts (off-kb goods flagged, eval goods flagged) are printed by the verdict benchmark; rag.py eval keeps passing every row, since a check: note changes no verdict; lookup_heldout.csv's rows are not used to tune it.",
@@ -24,6 +25,24 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "pack, with its verdict unchanged, adds a check: note when a good verdict's top three articles span two or more domains and its top BM25 score is under a threshold calibrated on lookup_eval.csv's good rows against the off-kb list's good ones (a query performance prediction signal fitted to this collection, never a generic predictor)",
+      "check": 1
+    },
+    {
+      "clause": "the calibration and its counts (off-kb goods flagged, eval goods flagged) are printed by the verdict benchmark",
+      "check": 1
+    },
+    {
+      "clause": "rag.py eval keeps passing every row, since a check: note changes no verdict",
+      "check": 0
+    },
+    {
+      "clause": "lookup_heldout.csv's rows are not used to tune it",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/rag.py",
@@ -33,13 +52,43 @@
     "kb/_self/code.md",
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/reports/benchmarks.md"
+    "kb/_self/reports/benchmarks.md",
+    "AGENTS.md"
   ],
   "depends_on": [
-    "ST-efyc4jiw"
+    "ST-efyc4jiw",
+    "ST-b27c527d"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise: an offline probe on 2026-10-11 found no single feature (NQC-style spread of the top ten BM25 scores, rarest key word's IDF, top score, key-word count, domains of the top three articles) that flags any of the 15 off-kb goods without flagging an eval good; the pair (top three articles in two or more domains, top score under 18) flagged 12 of 15 off-kb goods and 10 of 205 eval goods, so it is a note, not a verdict change. QPP research: predictors vary most with the collection and do not generalize, and QPP-driven selective processing gives marginal gains (public/agents/hybrid-retrieval.md, Query performance prediction, S-lsfxdurw); hence calibration on this kb's labelled sets. Depends on ST-efyc4jiw so the off-kb labels are right first."
+  "notes": "Premise: an offline probe on 2026-10-11 found no single feature (NQC-style spread of the top ten BM25 scores, rarest key word's IDF, top score, key-word count, domains of the top three articles) that flags any of the 15 off-kb goods without flagging an eval good; the pair (top three articles in two or more domains, top score under 18) flagged 12 of 15 off-kb goods and 10 of 205 eval goods, so it is a note, not a verdict change. QPP research: predictors vary most with the collection and do not generalize, and QPP-driven selective processing gives marginal gains (public/agents/hybrid-retrieval.md, Query performance prediction, S-lsfxdurw); hence calibration on this kb's labelled sets. Depends on ST-efyc4jiw so the off-kb labels are right first. Planned 2026-10-12: premise is the probe in these notes (no single feature separates; the pair flagged 12 of 15 off-kb goods and 10 of 205 eval goods); the pack_scatter_check test runs the verdict benchmark's calibration and asserts its printed counts and that it reads no lookup_heldout.csv row. rag.py eval passes before the work (621 of 621) and pins the unchanged verdicts."
 }

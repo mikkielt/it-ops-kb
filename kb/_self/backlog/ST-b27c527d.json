@@ -4,6 +4,7 @@
   "title": "pack, kb_ask and the kb: hook route a question by its kind to the tool that answers it, and fuse the lists by RRF",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-7n3d4jte",
   "priority": "P1",
   "rank": 0,
   "goal": "kbfacts recognises a question's kind by deterministic cues and answers it from the tool that already holds the answer: a count or list of articles from rag.py audit's totals, a decision id from the decisions ledger (kbdecide list's row), a 'which sources disagree' question from the whole _conflicts.md entry with its source ids (search alone cuts it), a 'what does the kb say about' question that hits a _gaps.md entry as kb lacks with that entry, and a citation question from src --cited; when more than one expert answers, their ranked lists are fused by reciprocal rank fusion (k = 60, no score calibration); pack, kb_pack, kb_ask.py and the kb: hook print the routed answer with its path:line; every other question ranks as today, so rag.py eval keeps passing all its rows; the pool's hook arm, rerun free with no model, is right on its count, decision, conflict and gap rows.",
@@ -24,6 +25,32 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kbfacts recognises a question's kind by deterministic cues and answers it from the tool that already holds the answer: a count or list of articles from rag.py audit's totals, a decision id from the decisions ledger (kbdecide list's row), a 'which sources disagree' question from the whole _conflicts.md entry with its source ids (search alone cuts it), a 'what does the kb say about' question that hits a _gaps.md entry as kb lacks with that entry",
+      "check": 1
+    },
+    {
+      "clause": "a citation question from src --cited",
+      "check": 1
+    },
+    {
+      "clause": "when more than one expert answers, their ranked lists are fused by reciprocal rank fusion (k = 60, no score calibration)",
+      "check": 1
+    },
+    {
+      "clause": "pack, kb_pack, kb_ask.py and the kb: hook print the routed answer with its path:line",
+      "check": 1
+    },
+    {
+      "clause": "every other question ranks as today, so rag.py eval keeps passing all its rows",
+      "check": 0
+    },
+    {
+      "clause": "the pool's hook arm, rerun free with no model, is right on its count, decision, conflict and gap rows",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/kb_ask.py",
@@ -39,9 +66,53 @@
     "kb/_self/plugin.md",
     "kb/_self/content-rules.md"
   ],
+  "depends_on": [
+    "ST-efyc4jiw"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "hook-routed",
+      "kind": "blocking",
+      "question": "How does the kb: hook (_tools/kb_hook.py) treat a question an expert routes by kind?",
+      "options": [
+        "Answer it as it answers a good pack: print the routed answer with its path:line; a question no expert answers keeps today's coverage rule",
+        "Always pass a routed question on to the session"
+      ],
+      "recommendation": "Answer it as it answers a good pack: print the routed answer with its path:line; a question no expert answers keeps today's coverage rule",
+      "class": "agents-rule",
+      "answer": "Answer it as it answers a good pack: print the routed answer with its path:line; a question no expert answers keeps today's coverage rule",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
+  ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md",
     "kb:public/_answers.md#QK-deterministic-retrieval-experts"
   ],
-  "notes": "Premise: python3 _tools/rag.py pack 'How many articles does the kb hold in the intune domain?' prints no article count, while python3 _tools/rag.py audit intune ends articles=23. An offline probe on 2026-10-11 (no model) routed the pool's rows by kind: count 0 to 3 of 3, decision 0 to 2 of 2, gap 2 to 5 of 5, conflict 0 of 2 until the entry is printed whole (rag.py search cuts _conflicts.md:171 before [DOC S1800,S1801,S1802]); the pool record of 2026-10-09 had the hook arm 0 of 3 count, 0 of 2 decision, 0 of 2 conflict, 2 of 5 gap and the router 0 of 2 decision and conflict. Facts: public/agents/hybrid-retrieval.md (Rank fusion: the original RRF paper; Mixture of retrievers; How these map onto a deterministic toolset), QK-deterministic-retrieval-experts. A typo leg is out: pack passed 10 of 10 typo variants and a closest-word fixer broke the 24H2 false_good row. The hook arm rerun is benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap with --out in a scratch directory (no paid run)."
+  "notes": "Premise: python3 _tools/rag.py pack 'How many articles does the kb hold in the intune domain?' prints no article count, while python3 _tools/rag.py audit intune ends articles=23. An offline probe on 2026-10-11 (no model) routed the pool's rows by kind: count 0 to 3 of 3, decision 0 to 2 of 2, gap 2 to 5 of 5, conflict 0 of 2 until the entry is printed whole (rag.py search cuts _conflicts.md:171 before [DOC S1800,S1801,S1802]); the pool record of 2026-10-09 had the hook arm 0 of 3 count, 0 of 2 decision, 0 of 2 conflict, 2 of 5 gap and the router 0 of 2 decision and conflict. Facts: public/agents/hybrid-retrieval.md (Rank fusion: the original RRF paper; Mixture of retrievers; How these map onto a deterministic toolset), QK-deterministic-retrieval-experts. A typo leg is out: pack passed 10 of 10 typo variants and a closest-word fixer broke the 24H2 false_good row. The hook arm rerun is benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap with --out in a scratch directory (no paid run). Planned 2026-10-12: premise reproduced (pack 'How many articles does the kb hold in the intune domain?' answers good from security/policy-precedence.md with no count). The pack_routes_kind test reads the pool's count, decision, conflict and gap rows through bench_pool's own row reader and drives the kb: hook route on them, so it reads the last clause; the free rerun (benchmarks.py run pool --arms hook --kinds count,decision,conflict,gap --out <scratch>) is recorded in the notes at done. rag.py eval passes before the work (621 of 621) and pins the unchanged ranking."
 }

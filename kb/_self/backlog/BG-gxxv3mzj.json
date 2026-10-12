@@ -4,6 +4,7 @@
   "title": "MicrosoftDocs/memdocs answers 404, but doc-lookup-sources.md says it is archived and four live sources still point into it",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-df2cu4uj",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -35,6 +36,45 @@
         "_tools/rag.py",
         "eval"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(1 if [l for l in open('kb/public/agents/doc-lookup-sources.md', encoding='utf-8') if 'MicrosoftDocs/memdocs' in l and 'is archived' in l] else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/factdiff.py",
+        "detect",
+        "--no-save",
+        "--source",
+        "S-rgpijsmb"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Through /kb-refresh of agents/doc-lookup-sources and agents/doc-change-detection: the facts that rest on MicrosoftDocs/memdocs (that it is archived, its licence terms, its redirection files, a ConfigMgr page's commit resolving in it) say what holds now that the repository answers 404 on the API, on github.com and for raw files, or become [UNK] with a _gaps.md entry",
+      "check": 2
+    },
+    {
+      "clause": "Through /kb-refresh of agents/doc-lookup-sources and agents/doc-change-detection: the facts that rest on MicrosoftDocs/memdocs (that it is archived, its licence terms, its redirection files, a ConfigMgr page's commit resolving in it) say what holds now that the repository answers 404 on the API, on github.com and for raw files, or become [UNK] with a _gaps.md entry",
+      "check": 0
+    },
+    {
+      "clause": "the four live rows S2196, S-pcy7cqea, S-rgpijsmb and S-yuwxbqz3 are marked dead with their last Wayback capture by factdiff.py dead, or superseded where a live successor states the same",
+      "check": 3
+    },
+    {
+      "clause": "the four live rows S2196, S-pcy7cqea, S-rgpijsmb and S-yuwxbqz3 are marked dead with their last Wayback capture by factdiff.py dead, or superseded where a live successor states the same",
+      "check": 4
+    },
+    {
+      "clause": "the repro then reports no dead fact",
+      "check": 4
     }
   ],
   "touches": [
@@ -46,8 +86,11 @@
     "kb/public/_fetch_state.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-hwn3phxk"
+  ],
   "links": [
     "kb:public/agents/doc-lookup-sources.md"
   ],
-  "notes": "Observed 2026-10-11: api.github.com/repos/MicrosoftDocs/memdocs, github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404 (the GitHub API's remaining unauthenticated budget was 31 of 60, so not a rate limit); the repro reports gone=2 pinned=1, facts dead=5. 114 of the repository's 118 source rows were already superseded by Learn pages. doc-lookup-sources.md:52 says the repository is archived (last push 2026-09-02, S2196 confirmed 2026-09-26)."
+  "notes": "Observed 2026-10-11: api.github.com/repos/MicrosoftDocs/memdocs, github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404 (the GitHub API's remaining unauthenticated budget was 31 of 60, so not a rate limit); the repro reports gone=2 pinned=1, facts dead=5. 114 of the repository's 118 source rows were already superseded by Learn pages. doc-lookup-sources.md:52 says the repository is archived (last push 2026-09-02, S2196 confirmed 2026-09-26). Planned 2026-10-12: repro reproduced (gone=2 pinned=1, dead=5); S-rgpijsmb, the fourth live row the repro leaves out, has its own check (gone=1, dead=2 today). check.py and rag.py eval pass before the work: they pin the contract and the lookups the refresh must keep."
 }

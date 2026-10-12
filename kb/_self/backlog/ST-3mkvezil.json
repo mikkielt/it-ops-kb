@@ -4,6 +4,7 @@
   "title": "kbid.py add fills licence and reuse from the source's own licence record, and suggests the host's usual pair only as a marked guess",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-sbdy4hsx",
   "priority": "P2",
   "rank": 0,
   "goal": "kbid.py add, when --licence and --reuse are omitted, reads the licence from the source itself by its family: an arXiv abstract page's licence link (CC BY, CC BY-SA: copy; CC BY-NC-SA, CC BY-NC-ND and the arXiv non-exclusive licence: quote), a GitHub or GitLab repository's licence through its API (an SPDX id: copy, unless NC, ND or source-available: quote), a Microsoft Learn page through its public mirror repository named in the page's github_feedback_content_git_url (kb/_self/content-rules.md, Licensing and privacy), and the fixed pairs of code.claude.com and anthropic.com; for any other host it prints the host's most common pair in _sources.csv marked 'check' and writes nothing until the flags are given; explicit flags always win; the suite tests each family with stubbed responses, never the network.",
@@ -15,6 +16,32 @@
         "-k",
         "kbid_licence"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbid.py add, when --licence and --reuse are omitted, reads the licence from the source itself by its family: an arXiv abstract page's licence link (CC BY, CC BY-SA: copy",
+      "check": 0
+    },
+    {
+      "clause": "CC BY-NC-SA, CC BY-NC-ND and the arXiv non-exclusive licence: quote), a GitHub or GitLab repository's licence through its API (an SPDX id: copy, unless NC, ND or source-available: quote), a Microsoft Learn page through its public mirror repository named in the page's github_feedback_content_git_url (kb/_self/content-rules.md, Licensing and privacy)",
+      "check": 0
+    },
+    {
+      "clause": "the fixed pairs of code.claude.com and anthropic.com",
+      "check": 0
+    },
+    {
+      "clause": "for any other host it prints the host's most common pair in _sources.csv marked 'check' and writes nothing until the flags are given",
+      "check": 0
+    },
+    {
+      "clause": "explicit flags always win",
+      "check": 0
+    },
+    {
+      "clause": "the suite tests each family with stubbed responses, never the network",
+      "check": 0
     }
   ],
   "touches": [
@@ -29,10 +56,57 @@
     ".claude/skills/kb-research/SKILL.md",
     ".claude/skills/kb-add-topic/SKILL.md",
     ".claude/skills/kb-refresh/SKILL.md",
-    ".claude/skills/kb-ingest/SKILL.md"
+    ".claude/skills/kb-ingest/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "ST-nkr6cpvs"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "skill-licence",
+      "kind": "blocking",
+      "question": "How do kb-research, kb-add-topic, kb-refresh and kb-ingest word the licence step of a new source row?",
+      "options": [
+        "Run kbid.py add without --licence and --reuse; give both flags only when it prints a pair marked check, after reading the source's licence",
+        "Keep the copy-a-same-host-pair step and name the tool as optional"
+      ],
+      "recommendation": "Run kbid.py add without --licence and --reuse; give both flags only when it prints a pair marked check, after reading the source's licence",
+      "class": "agents-rule",
+      "answer": "Run kbid.py add without --licence and --reuse; give both flags only when it prints a pair marked check, after reading the source's licence",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise (2026-10-11, over kb/public/_sources.csv, 3,150 rows): the most common (licence, reuse) pair per host covers 58% of the rows on hosts with two or more rows, the most common reuse class 81%; learn.microsoft.com alone holds 116 distinct pairs because a Learn page's licence follows its public mirror repository, so a host default is wrong too often to write unasked. Today kbid.py add requires --licence and --reuse and a session copies a same-host pair from rag.py src by reading. arXiv licence links were read mechanically from the abstract pages in this session's research (11 papers, five licence kinds)."
+  "notes": "Premise (2026-10-11, over kb/public/_sources.csv, 3,150 rows): the most common (licence, reuse) pair per host covers 58% of the rows on hosts with two or more rows, the most common reuse class 81%; learn.microsoft.com alone holds 116 distinct pairs because a Learn page's licence follows its public mirror repository, so a host default is wrong too often to write unasked. Today kbid.py add requires --licence and --reuse and a session copies a same-host pair from rag.py src by reading. arXiv licence links were read mechanically from the abstract pages in this session's research (11 papers, five licence kinds). Planned 2026-10-12: premise reproduced (kbid.py add declares --licence and --reuse required=True)."
 }

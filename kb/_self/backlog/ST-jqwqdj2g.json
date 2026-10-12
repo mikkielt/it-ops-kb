@@ -4,6 +4,7 @@
   "title": "Each source has a freshness lifetime from its own change history, and a lookup revalidates only sources past it",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-etslk6yu",
   "priority": "P2",
   "rank": 0,
   "goal": "A source's freshness lifetime is computed with no network from its own history: the Poisson rate of its observed changes (the changed_utc values across the git history of _fetch_state.csv, or its mapped Learn file's commits) where it has two or more, else a fraction (RFC 9111's typical 10%) of the time since its content date, else its provider's default; fetch.py --status prints each source's lifetime and age; kb_pack and kb_ask.py revalidate a cited source automatically only when its age exceeds its lifetime, printing the stale stamp meanwhile (stale-while-revalidate, D-gmrjivyw); the hook stays offline; the suite tests the estimate on a planted history.",
@@ -15,6 +16,28 @@
         "-k",
         "freshness_lifetime"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A source's freshness lifetime is computed with no network from its own history: the Poisson rate of its observed changes (the changed_utc values across the git history of _fetch_state.csv, or its mapped Learn file's commits) where it has two or more, else a fraction (RFC 9111's typical 10%) of the time since its content date, else its provider's default",
+      "check": 0
+    },
+    {
+      "clause": "fetch.py --status prints each source's lifetime and age",
+      "check": 0
+    },
+    {
+      "clause": "kb_pack and kb_ask.py revalidate a cited source automatically only when its age exceeds its lifetime, printing the stale stamp meanwhile (stale-while-revalidate, D-gmrjivyw)",
+      "check": 0
+    },
+    {
+      "clause": "the hook stays offline",
+      "check": 0
+    },
+    {
+      "clause": "the suite tests the estimate on a planted history",
+      "check": 0
     }
   ],
   "touches": [
@@ -37,10 +60,39 @@
     "AGENTS.md"
   ],
   "depends_on": [
-    "ST-mq7we5r2"
+    "ST-mq7we5r2",
+    "ST-bl3hdung"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/agents/doc-change-detection.md"
   ],
-  "notes": "Premise: no tool estimates a source's change rate today; _fetch_state.csv keeps only the latest checked_utc and changed_utc, so the history lives in git (git log -p kb/public/_fetch_state.csv). The first step measures, per host, how many sources have two or more recorded changes, and states the share the Poisson estimate can serve before the fallback. Sources: RFC 9111 heuristic freshness (S-ods72iyh), RFC 5861 stale-while-revalidate (S-m7xkty3c), the Poisson change model (S-7uckhkxr), all in public/agents/doc-change-detection.md, Freshness at question time. Decision D-gmrjivyw."
+  "notes": "Premise: no tool estimates a source's change rate today; _fetch_state.csv keeps only the latest checked_utc and changed_utc, so the history lives in git (git log -p kb/public/_fetch_state.csv). The first step measures, per host, how many sources have two or more recorded changes, and states the share the Poisson estimate can serve before the fallback. Sources: RFC 9111 heuristic freshness (S-ods72iyh), RFC 5861 stale-while-revalidate (S-m7xkty3c), the Poisson change model (S-7uckhkxr), all in public/agents/doc-change-detection.md, Freshness at question time. Decision D-gmrjivyw. Planned 2026-10-12: premise reproduced (no lifetime, Poisson or change-rate code in fetch.py, factdiff.py, provider.py or census.py). The freshness_lifetime test runs fetch.py --status on a planted git history and drives kb_pack and kb_ask.py with a stubbed revalidation, asserting the hook path makes none."
 }

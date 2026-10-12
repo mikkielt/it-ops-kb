@@ -4,6 +4,7 @@
   "title": "A free freshness benchmark revalidates the pool's cited sources and reports the share of current, moved and source-dated lines and the time per question",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-etslk6yu",
   "priority": "P2",
   "rank": 0,
   "goal": "benchmarks.py run freshness (no model, no paid run) runs the lookup revalidation over the pool's answerable questions and records per provider host and over all: printed DOC lines current, moved, not found and source-dated only, wall time per question (median and p95) and requests made; the scenario's rows go to benchmarks.csv and its section to kb/_self/reports/benchmarks.md, with README.md's figures where the report summarises them; --dry-run prints the sources and requests it would make.",
@@ -15,6 +16,36 @@
         "-k",
         "bench_freshness"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "run",
+        "freshness",
+        "--dry-run"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv, sys; sys.exit(0 if any(r.get('scenario') == 'freshness' for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv', encoding='utf-8'))) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py run freshness (no model, no paid run) runs the lookup revalidation over the pool's answerable questions and records per provider host and over all: printed DOC lines current, moved, not found and source-dated only, wall time per question (median and p95) and requests made",
+      "check": 0
+    },
+    {
+      "clause": "the scenario's rows go to benchmarks.csv and its section to kb/_self/reports/benchmarks.md, with README.md's figures where the report summarises them",
+      "check": 2
+    },
+    {
+      "clause": "--dry-run prints the sources and requests it would make",
+      "check": 1
     }
   ],
   "touches": [
@@ -29,6 +60,23 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-mq7we5r2"
-  ]
+    "ST-mq7we5r2",
+    "ST-bl3hdung"
+  ],
+  "gates": [
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "design",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
+  ],
+  "notes": "Planned 2026-10-12: benchmarks.py has no freshness scenario (benchmarks.py run freshness exits 2, unknown scenario) and PLANNED holds only pool, so a --dry-run of any other scenario starts it (BG-wapzksub): the worker adds freshness to PLANNED before the dry-run check can pass. The scenario makes no model call; its live requests are within each provider's pacing."
 }

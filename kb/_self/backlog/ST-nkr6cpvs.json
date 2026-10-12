@@ -4,6 +4,7 @@
   "title": "provider.py search NAME TERMS queries a provider's own search API before a session uses WebSearch",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-sbdy4hsx",
   "priority": "P2",
   "rank": 0,
   "goal": "provider.py search NAME TERMS [--max N] queries the search_api of a provider row (Learn's api/search, the arXiv export API's search_query, GitHub's repository and code search, PyPI's JSON for a project name) and prints title, url and date per hit, cached for 7 days like docs_search; providers.csv gains the arXiv, GitHub and PyPI search_api values; kb-research step 3 tries it for a vendor or project with a row before WebSearch; the suite tests each provider's request and parsing with stubbed responses.",
@@ -15,6 +16,31 @@
         "-k",
         "provider_search"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'provider.py search' in open('.claude/skills/kb-research/SKILL.md', encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "provider.py search NAME TERMS [--max N] queries the search_api of a provider row (Learn's api/search, the arXiv export API's search_query, GitHub's repository and code search, PyPI's JSON for a project name) and prints title, url and date per hit, cached for 7 days like docs_search",
+      "check": 0
+    },
+    {
+      "clause": "providers.csv gains the arXiv, GitHub and PyPI search_api values",
+      "check": 0
+    },
+    {
+      "clause": "kb-research step 3 tries it for a vendor or project with a row before WebSearch",
+      "check": 1
+    },
+    {
+      "clause": "the suite tests each provider's request and parsing with stubbed responses",
+      "check": 0
     }
   ],
   "touches": [
@@ -25,13 +51,69 @@
     "kb/_self/code.md",
     "kb/_self/web-sources.md",
     ".claude/skills/kb-research/SKILL.md",
-    ".claude/settings.json"
+    ".claude/settings.json",
+    "AGENTS.md",
+    "kb/_self/maintaining.md"
   ],
   "depends_on": [
     "ST-7zkw23ca"
   ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does this item's work change AGENTS.md?",
+      "options": [
+        "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+        "Yes: one clause in AGENTS.md, at most 4096 bytes after an equal cut elsewhere"
+      ],
+      "recommendation": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "class": "agents-rule",
+      "answer": "No: AGENTS.md stays 4091 bytes; the change is documented in the kb/_self docs its touches name",
+      "by": "operator"
+    },
+    {
+      "id": "settings-allow",
+      "kind": "blocking",
+      "question": "Which allow rule does .claude/settings.json get for provider.py search?",
+      "options": [
+        "Bash(python3 _tools/provider.py search *) only; the WebSearch rules stay as they are",
+        "No allow rule; each call is approved by hand"
+      ],
+      "recommendation": "Bash(python3 _tools/provider.py search *) only; the WebSearch rules stay as they are",
+      "class": "agents-rule",
+      "answer": "Bash(python3 _tools/provider.py search *) only; the WebSearch rules stay as they are",
+      "by": "operator"
+    },
+    {
+      "id": "skill-search",
+      "kind": "blocking",
+      "question": "How does kb-research step 3 order provider.py search and WebSearch?",
+      "options": [
+        "provider.py search first for a vendor or project with a search_api row; WebSearch only when it returns no hit or the host has no row",
+        "Both named as equal choices"
+      ],
+      "recommendation": "provider.py search first for a vendor or project with a search_api row; WebSearch only when it returns no hit or the host has no row",
+      "class": "agents-rule",
+      "answer": "provider.py search first for a vendor or project with a search_api row; WebSearch only when it returns no hit or the host has no row",
+      "by": "operator"
+    },
+    {
+      "id": "ceiling",
+      "kind": "blocking",
+      "question": "The suite is at 100 of 100 test ids (tests.py --ceiling, 2026-10-12): how does this story's new test fit?",
+      "options": [
+        "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+        "Raise max_ids by one through the operator's recorded tests-ceiling decision"
+      ],
+      "recommendation": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "class": "agents-rule",
+      "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
+      "by": "operator"
+    }
+  ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise: _tools/providers.csv has a search_api only on its learn row (2026-10-11); this session's research found arXiv papers through export.arxiv.org/api/query?search_query=ti:... with no WebSearch call. Depends on ST-7zkw23ca for the provider rows and cache it adds."
+  "notes": "Premise: _tools/providers.csv has a search_api only on its learn row (2026-10-11); this session's research found arXiv papers through export.arxiv.org/api/query?search_query=ti:... with no WebSearch call. Depends on ST-7zkw23ca for the provider rows and cache it adds. Planned 2026-10-12: premise reproduced (providers.csv has a search_api only on its learn row; provider.py has no search subcommand)."
 }
