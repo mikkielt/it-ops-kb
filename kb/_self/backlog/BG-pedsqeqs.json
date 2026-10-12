@@ -71,6 +71,36 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What share of the question's key words must the lead article's printed facts miss (the rare word counted) before the passing note fires? Eval goods miss at most 0.125, the four flagged questions 0.29.",
+      "options": [
+        "0.25",
+        "0.20",
+        "0.30"
+      ],
+      "recommendation": "0.25",
+      "class": "design",
+      "answer": "0.25",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which unit nouns after 'in' make a cost question no money ask (priced note off)?",
+      "options": [
+        "units, points, tokens, requests, calls",
+        "units only",
+        "no exemption; a cost with a non-money cue is read by a cue list instead"
+      ],
+      "recommendation": "units, points, tokens, requests, calls",
+      "class": "secrets",
+      "answer": "units, points, tokens, requests, calls",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-kp3boz7z review",
     "merged: BG-ggytjiqt"

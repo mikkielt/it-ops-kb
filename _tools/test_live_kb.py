@@ -735,13 +735,13 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     flagged = [q for q, p in packs.items() if p["passing"] or p["priced"]]
     assert all(packs[q]["verdict"] == "good" and packs[q]["route"] == "split" and "\nkb lacks: " in packs[q]["text"]
                and re.search(r"^check: .*\n(?:.+\n)*route: split$", packs[q]["text"], re.M) for q in flagged), flagged
-    assert sum(q in ev for q in flagged) * 20 <= len(ev), [q for q in flagged if q in ev]
+    assert not [q for q in flagged if q not in offkb], [q for q in flagged if q not in offkb]  # no eval good carries one
     # planted: a root whose lead article holds the question's subject in passing, a price asked with no amount stated,
     # and a question its lead article answers outright, which stays clean
     fx = tmp_path / "passing"
     fixture_root(fx, SID)
     facts = {"hardening": ("Print server hardening", ["Encryption at rest protects the sweeper files of the Spooler service."]),
-             "capacity": ("Print capacity", ["The recommended number of queues is 50.",
+             "capacity": ("Print capacity", ["The recommended number of queues is 50 for the Spooler.",
                                              "Spooled files live on disk, and the Spooler keeps them."]),
              "licensing": ("Licensing", ["The Spooler service plan includes the sweeper licence per print server.",
                                          "A licence for the Spooler service plan is bought through the reseller."]),
@@ -768,8 +768,13 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
         out = fixture_pack(question)
         assert re.search(r"^coverage: good\b", out, re.M) and "check: " in out and kind in out, out[:1200]
         assert re.search(r"^route: split$", out, re.M) and re.search(r"^kb lacks: \S", out, re.M), out[:1200]
-    out = fixture_pack("What is the recommended number of queues for the Spooler?")
-    assert re.search(r"^coverage: good\b", out, re.M) and not re.search(r"^(check|route):", out, re.M), out[:1200]
+    # one key word of five missing from the lead's facts, its rare word printed there, is a paraphrase: clean
+    for question in ("What is the recommended number of queues for the Spooler?",
+                     "What is the recommended number of queues for the Spooler item?"):
+        out = fixture_pack(question)
+        assert re.search(r"^coverage: good\b", out, re.M) and not re.search(r"^(check|route):", out, re.M), out[:1200]
+    assert not kbfacts.PRICE_ASK.search("What does it cost in resource units?")
+    assert kbfacts.PRICE_ASK.search("What does it cost per user?") and kbfacts.PRICE_ASK.search("What is the price in units of 5?")
     assert kbfacts.AMOUNT.search("It costs $36 per user a month") and kbfacts.AMOUNT.search("36 EUR")
     assert not kbfacts.AMOUNT.search("Windows 10/11 Enterprise E3/E5 licence") and kbfacts.PRICE_ASK.search("How much does it cost")
     code, out = tool("rag.py", "pack", good_row()["question"])

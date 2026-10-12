@@ -1,0 +1,17 @@
+{
+  "id": "BG-t6xrawba",
+  "kind": "bug",
+  "title": "a gate whose options list tokens as a unit of measure is classed secrets and made blocking, so only the operator can answer a wording choice",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.class_reasons gives a provisional gate that lists tokens as a unit noun among units, points and requests the class design, not secrets, while a gate about a credential or token value keeps secrets (found 2026-10-12 working BG-pedsqeqs gate g2: 'class secrets (matched token): made blocking')",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(1 if a.class_reasons({'touches':['_tools/kbfacts.py']},{'id':'g2','question':'Which unit nouns after in make a cost question no money ask?','options':['units, points, tokens, requests, calls','units only']})[0]=='secrets' else 0)"
+    ]
+  }
+}
