@@ -2,7 +2,7 @@
   "id": "ST-efyc4jiw",
   "kind": "story",
   "title": "The off-kb list keeps no question the kb answers, and the eval refuses a question labelled both answered and off-kb",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-7n3d4jte",
   "priority": "P1",
@@ -93,5 +93,37 @@
     "kb:public/agents/hybrid-retrieval.md"
   ],
   "notes": "Premise: line 2 of kb/public/_retrieval/doc2query/offkb_questions.txt is the question of lookup_eval.csv row EV-okta-scim-provisioning-map-groups-application (expect good, claude/enterprise-admin.md); the Terraform Log Analytics question is a good eval row and a fact pool row; FileVault key escrow is answered at public/intune/macos-management.md:46. These are 3 of the 15 off-kb questions pack calls good. The overlap check runs over the live files before the sprint commits the story and must find exactly the Okta row now. Planned 2026-10-12: premise reproduced (offkb_questions.txt lines 2, 5 and 7 hold the Okta SCIM, Terraform Log Analytics and FileVault escrow questions). rag.py eval passes before the work (621 of 621): after the work it is the overlap gate itself, so it must still pass on the cleaned list.",
-  "claimed_by": "orch-7n3d4jte"
+  "evidence": {
+    "commit": "2c2ed1168e4d69c6a11d91e049a688901edec17d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "82b94846b5ba6df5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "eval_offkb_overlap"
+        ],
+        "exit": 0,
+        "sha256": "b964e6a42ff4d306"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('kb/public/_retrieval/doc2query/offkb_questions.txt', encoding='utf-8').read().splitlines(); sys.exit(1 if [q for q in ('How does Okta SCIM provisioning map groups to application roles?', 'Which Terraform azurerm resource creates a Log Analytics workspace?', 'How does Intune escrow FileVault recovery keys for macOS?') if q in t] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
