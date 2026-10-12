@@ -130,3 +130,5 @@ architectural decision record,architecture decision record
 madr,architecture decision record
 precompact,hooks
 hooks,hooks
+test-suite,test
+test,test

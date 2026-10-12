@@ -319,3 +319,4 @@ EV-sse-last-event-id-cursor-reconnect-resume,How does an SSE client resume from 
 EV-rate-limit-429-retry-after-per-caller,How does a server answer 429 with Retry-After for a per-caller rate limit?,arch/http-rate-limit-429-retry-after.md,good,
 EV-claude-code-hook-commands-inherit-environment,Do Claude Code hook commands inherit the environment variables of the claude process?,claude/hooks.md,good,
 EV-code-repository-ingested-into-kb-kb,"how is a code repository ingested into the kb (kb-ingest, CODE tag, pinned commit)",agents/codebase-mapping.md,good,
+EV-who-may-change-test-suite-ceiling,"Who may change a test-suite ceiling or limit that guards an agent: must a human approve it, or may the agent raise it?",agents/test-suite-size-and-agent-overengineering.md,good,
