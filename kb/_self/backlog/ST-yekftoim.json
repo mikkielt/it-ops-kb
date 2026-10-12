@@ -2,7 +2,7 @@
   "id": "ST-yekftoim",
   "kind": "story",
   "title": "Refresh agents/langgraph and windows/azure-update-manager against their live sources and anchor their facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-qjg5r7jj",
   "priority": "P2",
@@ -72,5 +72,45 @@
     "ST-ad2kuqbt"
   ],
   "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc): fetch.py --status over the two topics reads selected=39 never_fetched=39 stale=35; the two sc_stale packs print 8 [unanchored] marks over 12 fact lines (langgraph 6, azure-update-manager 2). Checks 2 and 3 pass before the work and pin the eval verdicts and the doc2query rows. Research findings (2026-10-12): all 39 cited sources fetch with status 200; the unlocated pairs are mostly term-coverage near-misses (langgraph 16 of 23, azure-update-manager 29 of 32 at cover 0.25 or more), so most [unanchored] marks clear with factdiff.py anchor --file F --quotes CSV (a verbatim quote of at most 25 words per fact line). Content checks: the LangChain pricing page still holds Developer /bin/zsh, Plus  per seat, 5k and 10k base traces; the AUM hotpatch known-issue fact (azure-update-manager.md:71) still matches the Learn page (no known issues, past issues mitigated). One real change: PyPI's project JSON reports langgraph 1.2.14 (uploaded 2026-10-06, MIT) against the install fact's 1.2.12; the project's HTML page (S-6buofrld) returns a script-challenge notice, so langgraph.md:13 and :35 take the new source S-v5hqqcqx (QK-pypi-project-metadata-report-now-langgraph in _answers.md, open gap in _gaps.md under agents/langgraph) and S-6buofrld is retired or re-pointed in the same change.",
-  "claimed_by": "orch-qjg5r7jj"
+  "evidence": {
+    "commit": "3f546c7b805fa1f9236ba913a9b4f913f42eeb03",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--topic','agents/langgraph','--topic','windows/azure-update-manager'],capture_output=True,text=True);l=(p.stdout.strip().splitlines() or [''])[-1];print(l);sys.exit(0 if p.returncode==0 and 'never_fetched=0 ' in l+' ' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c2de3a2881f81510"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;qs=['How do I add conditional edges to a LangGraph graph?','What is a maintenance configuration in Azure Update Manager?'];ps=[subprocess.run([sys.executable,'_tools/rag.py','pack',q],capture_output=True,text=True) for q in qs];n=sum('[unanchored' in l for p in ps for l in p.stdout.splitlines() if l.startswith('- '));ok=all(p.returncode==0 and p.stdout.startswith('coverage: good') for p in ps);print(n);sys.exit(0 if ok and n<=2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "f6f4ffc7f484c0f7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/doc2query.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
