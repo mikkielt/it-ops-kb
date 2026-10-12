@@ -327,6 +327,11 @@ def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_pic
     assert bp.cli(check, tmp_path) == 1  # the planted failure: a route the pack no longer prints
     seen = capsys.readouterr().out
     assert f"{present['id']}: expected route good but the pack prints web for its question" in seen and absent["id"] not in seen
+    partial = next(r for r in rows if r["kind"] == "sc_partial")
+    monkeypatch.setattr(bp, "scenario_pack", lambda q: (scenario_pack(q)[0], "- d0/a0.md:7 states nothing"
+                                                        if q == partial["question"] else scenario_pack(q)[1]))
+    assert bp.cli(check, tmp_path) == 1  # the planted failure: a pack with no line the row's answer regex matches
+    assert f"{partial['id']}: its answer regex matches no line of the pack for its question" in capsys.readouterr().out
     monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
     present["checks"] = json.dumps([r"never printed"])
     bp.write_csv(out, rows)
