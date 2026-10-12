@@ -2,8 +2,11 @@
 """Contract checks that _tools/check.py does not make (stdlib only). Reports only; never edits.
 
   lint.py                    every topic of every root (kbcommon.roots())
-  lint.py auth public/dsc    only topics whose path starts with one of these prefixes (a path in its root, or a
-                             qualified path `<root>/<path>`); findings name files by their qualified path
+  lint.py auth public/dsc    only topics whose path starts with one of these prefixes (a path in its root, a
+                             qualified path `<root>/<path>`, or that path from the repository, `kb/<root>/<path>`, or
+                             absolute); findings name files by their qualified path. An argument that matches no file
+                             of any root, is no other existing file and no path git has a history of (a deleted
+                             article) exits 1 naming it, so a mistyped path never reads as a clean lint
   lint.py --json             machine output
   lint.py --candidates [PREFIX...]   migration lists, not findings: DOC facts that cite only source-code files, not
                              published contracts such as schemas (CODE candidates; kbfacts.contract_source), and
@@ -175,6 +178,54 @@ def wanted(root, rel, prefixes):
                                for a in prefixes)
 
 
+def qualified(arg):
+    """The prefix `arg` names as the qualified `<root>/<path>` wanted() compares: a path from the repository
+    (`kb/public/<path>`) or an absolute one that lies under a root is rewritten; any other argument is returned as is."""
+    a = arg.replace(os.sep, "/")
+    full = os.path.normpath(a if os.path.isabs(a) else os.path.join(kbcommon.HOME, a))
+    for root in kbcommon.roots():
+        try:
+            rel = os.path.relpath(full, root.path).replace(os.sep, "/")
+        except ValueError:  # another drive
+            continue
+        if rel == ".":
+            return root.name
+        if rel != ".." and not rel.startswith("../"):
+            return kbcommon.qualify(root, rel)
+    return arg
+
+
+def kb_file(path):
+    """Whether `path` (qualified, or from `kb/` or the repository) names an existing file or directory of a root or of
+    the kb directory (its own docs, `kb/_self/`, are under no root)."""
+    root, rel = kbcommon.split(path)
+    if root:
+        return os.path.exists(os.path.join(root.path, rel))
+    for base in (kbcommon.KB_DIR, kbcommon.HOME):
+        full = os.path.normpath(os.path.join(base, path))
+        if os.path.exists(full) and (full + os.sep).startswith(kbcommon.KB_DIR + os.sep):
+            return True
+    return False
+
+
+def refused(args):
+    """The arguments (as qualified() gives them) that select nothing: no .md file of any root starts with it, it names
+    no existing file or directory of a root or of kb/ (the kb's own docs are under no root, and a landing passes
+    them), and git has no history of the path (a deleted article, which a landing's changed paths hold)."""
+    files = list(root_files())
+    out = []
+    for a in args:
+        path = a.rstrip("/")
+        if any(wanted(root, p, [a]) for root, p in files) or kb_file(path):
+            continue
+        root, rel = kbcommon.split(path)
+        homes = [(root.path, rel)] if root else [(kbcommon.KB_DIR, path), (kbcommon.HOME, path)]
+        if any((git_out(at, "log", "-1", "--format=%H", "--", p) or "").strip() for at, p in homes):
+            continue
+        out.append(a)
+    return out
+
+
 def all_sources():
     """{id: row} over every root's _sources.csv (ids are unique across roots by their prefix)."""
     out = {}
@@ -225,9 +276,11 @@ def root_files():
 
 
 def git_out(root, *args):
-    """git's stdout run in the root's directory, or None when it fails (no git, no work tree, no such revision)."""
+    """git's stdout run in the root's directory (a Root, or a directory), or None when it fails (no git, no work
+    tree, no such revision)."""
     try:
-        p = subprocess.run(["git", "-C", root.path, *args], capture_output=True, text=True, encoding="utf-8", errors="replace")
+        p = subprocess.run(["git", "-C", getattr(root, "path", root), *args], capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
     except OSError:
         return None
     return p.stdout if p.returncode == 0 else None
@@ -386,7 +439,12 @@ def main():
             base = argv[i + 1] if a == "--base" else a.partition("=")[2]
             argv = [x for j, x in enumerate(argv) if j != i and not (a == "--base" and j == i + 1)]
             break
-    args = [a for a in argv if a not in ("--json", "--candidates")]
+    given = [a for a in argv if a not in ("--json", "--candidates")]
+    args = [qualified(a) for a in given]
+    none = refused(args)
+    if none:
+        sys.exit("lint.py: no file of any root matches " + ", ".join(repr(g) for g, a in zip(given, args) if a in none)
+                 + " (a path in its root, `<root>/<path>` or `kb/<root>/<path>`): nothing was linted")
     if "--candidates" in sys.argv:
         return candidates(args)
     out = []
