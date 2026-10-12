@@ -2,7 +2,7 @@
   "id": "ST-iyrixezt",
   "kind": "story",
   "title": "pack adds a check: note to a good verdict whose top hits are scattered and weak, calibrated on the eval set against the off-kb list",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-7n3d4jte",
   "priority": "P2",
@@ -130,5 +130,28 @@
     "kb:public/agents/hybrid-retrieval.md"
   ],
   "notes": "Premise: an offline probe on 2026-10-11 found no single feature (NQC-style spread of the top ten BM25 scores, rarest key word's IDF, top score, key-word count, domains of the top three articles) that flags any of the 15 off-kb goods without flagging an eval good; the pair (top three articles in two or more domains, top score under 18) flagged 12 of 15 off-kb goods and 10 of 205 eval goods, so it is a note, not a verdict change. QPP research: predictors vary most with the collection and do not generalize, and QPP-driven selective processing gives marginal gains (public/agents/hybrid-retrieval.md, Query performance prediction, S-lsfxdurw); hence calibration on this kb's labelled sets. Depends on ST-efyc4jiw so the off-kb labels are right first. Planned 2026-10-12: premise is the probe in these notes (no single feature separates; the pair flagged 12 of 15 off-kb goods and 10 of 205 eval goods); the pack_scatter_check test runs the verdict benchmark's calibration and asserts its printed counts and that it reads no lookup_heldout.csv row. rag.py eval passes before the work (621 of 621) and pins the unchanged verdicts.",
-  "claimed_by": "orch-7n3d4jte"
+  "evidence": {
+    "commit": "ffb5ddd9a4c45bd932bd8e7517605d41e006d23b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "101ee009c8294d25"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_scatter_check"
+        ],
+        "exit": 0,
+        "sha256": "782d073f61972b3f"
+      }
+    ]
+  }
 }
