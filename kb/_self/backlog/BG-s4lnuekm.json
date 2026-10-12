@@ -104,7 +104,7 @@
       "recommendation": "OptionsDeclarations (one symbol that holds all four flags, the one a single-anchor pointer resolves)",
       "class": "design",
       "answer": "OptionsDeclarations (one symbol that holds all four flags, the one a single-anchor pointer resolves)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
