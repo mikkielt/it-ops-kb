@@ -95,11 +95,128 @@ def test_build_index_check_passes_on_the_live_kb():
     assert code == 0, out[-3000:]
 
 
-def test_lookup_eval_passes_on_the_live_kb():
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
     assert code == 0 and int(m.group(1)) > 0 and m.group(1) == m.group(2), out[-3000:]
+    # pack --revalidate asks the cited sources of the printed fact lines, resolves only those lines' anchors and marks
+    # each; every response is planted (a url not listed raises), and nothing is written but under the cache directory
+    real_request = provider.request
+    with provider.budget(0):  # a request that cannot finish in the time left is not sent
+        assert real_request("https://learn.microsoft.com/x")["error"] == provider.BUDGET_ERROR
+    host, sha = "https://learn.microsoft.com/en-us/test/", "a" * 40
+    A, B, C, D, P, G = "S9990011", "S9990012", "S9990013", "S9990014", "S9990015", "S9990016"
+    urls = {A: host + "page-a", B: host + "page-b", C: host + "page-c", D: host + "page-d",
+            P: f"https://raw.githubusercontent.com/Org/Repo/{sha}/docs/f.md", G: "https://github.com/Org/Repo/issues/7"}
+    fill = "".join(f"## Part {i}\n\nOrion node {i} reports its health and its queue depth to the console every {i + 7} minutes.\n\n"
+                   for i in range(12))
+    old = fill + ("# Orion\n\n## Schedule\n\nThe Orion scheduler restarts every night at three o'clock.\n\n"
+                  "## Queue\n\nThe Orion queue holds ten thousand jobs before it refuses new ones.\n\n"
+                  "## Audit\n\nThe Orion audit log keeps ninety days of history for every tenant.\n\n"
+                  "## Retry\n\nThe Orion retry worker waits four seconds between attempts at a failed job.\n")
+    new = old.replace("ten thousand", "twenty thousand").replace(
+        "## Audit\n\nThe Orion audit log keeps ninety days of history for every tenant.\n\n", "").replace(
+        "## Retry\n\nThe Orion retry worker waits four seconds between attempts at a failed job.\n", "")
+    audit = "# Audit\n\nThe Orion audit log keeps ninety days of history for every tenant.\n"
+    facts = [("a1a1a1a1a1a1", 5, "The Orion scheduler restarts every night at three o'clock."),
+             ("b2b2b2b2b2b2", 6, "The Orion queue holds ten thousand jobs before it refuses new ones."),
+             ("c3c3c3c3c3c3", 7, "The Orion audit log keeps ninety days of history for every tenant."),
+             ("d4d4d4d4d4d4", 8, "The Orion retry worker waits four seconds between attempts at a failed job."),
+             ("e5e5e5e5e5e5", 9, "The Orion dashboard shows a green badge for a healthy node.")]
+    when = {"text": old, "final": urls[A], "fetched_utc": "2026-10-01T00:00:00+00:00"}
+    anchors = {}
+    for sid, rel in ((A, "dsc/a.md"), (B, "dsc/b.md"), (B, "dsc/c.md")):
+        for r in factdiff.anchor_rows(sid, [(k, rel, ln, t) for k, ln, t in facts], {"status": 200, "text": old}, "quote", "2026-10-01"):
+            anchors[(r["fact"], r["path"], sid)] = r
+    assert anchors[("e5e5e5e5e5e5", "dsc/a.md", A)]["status"] == "unlocated:no-match"
+    state = {A: factdiff.baseline(A, urls[A], when, provider.providers()),
+             B: {**factdiff.baseline(B, urls[B], when, provider.providers()), "etag": 'W/"1"'}}
+    asked, resolved = [], []
+
+    def respond(status=200, body=b"", headers=None, error=""):
+        return {"status": status, "headers": {"content-type": "text/markdown", **(headers or {})}, "body": body,
+                "final": "", "hops": [], "error": error}
+    pages = {urls[A]: lambda h: respond(body=new.encode()),
+             urls[B]: lambda h: respond(304) if h.get("If-None-Match") else respond(body=old.encode()),
+             urls[C]: lambda h: respond(0, error="URLError: timed out"),
+             urls[G]: lambda h: respond(403, headers={"x-ratelimit-remaining": "0"}),
+             f"https://raw.githubusercontent.com/Org/Repo/{sha}/docs/f.md": lambda h: respond(404),
+             "https://api.github.com/repos/Org/Repo": lambda h: respond(403, headers={"x-ratelimit-remaining": "0"}),
+             host + "audit": lambda h: respond(body=audit.encode())}
+
+    def request(url, headers=None, limit=20_000_000, method="GET"):
+        asked.append(url)
+        if "learn.microsoft.com/api/search" in url:
+            return {**respond(headers={"content-type": "application/json"}, body=json.dumps({"results": [{"url": host + "audit"}]}).encode()), "final": url}
+        return {**pages[url.split("?")[0]](headers or {}), "final": url}
+    monkeypatch.setattr(provider, "request", request)
+    monkeypatch.setattr(provider, "_repos", {})  # the repository answers and the GitHub request count are the process's
+    monkeypatch.setattr(provider, "_gh_api", {"asked": 0, "left": None, "seen": 0.0})
+    monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "cache" / "factdiff"))
+    monkeypatch.setattr(kbfacts, "source_rows", lambda: {sid: {"id": sid, "url": u} for sid, u in {**urls, D: urls[D]}.items()})
+    monkeypatch.setattr(factdiff, "read_state", lambda: state)
+    monkeypatch.setattr(factdiff, "read_anchors", lambda: anchors)
+    real_resolve = factdiff.resolve
+    monkeypatch.setattr(factdiff, "resolve", lambda sid, src, v, doc, prev, fs, *a, **k: resolved.append((sid, [f[2] for f in fs])) or real_resolve(sid, src, v, doc, prev, fs, *a, **k))
+    for name in ("write_state", "write_anchors", "write_snapshot"):  # a lookup writes no committed ledger
+        monkeypatch.setattr(factdiff, name, lambda *a, **k: pytest.fail("a revalidation wrote a ledger"))
+    line = lambda path, n, key, text, *ids: {"path": path, "line": n, "key": key, "text": text, "ids": list(ids)}  # noqa: E731
+    printed = [line("public/dsc/a.md", n, k, t, A) for k, n, t in facts]  # D is in the ledger, cited by no printed line
+    printed += [line("public/dsc/b.md", 3, facts[0][0], facts[0][2], B), line("public/dsc/c.md", 4, facts[0][0], facts[0][2], B, C),
+                line("public/dsc/d.md", 2, "f6f6f6f6f6f6", "The Orion pin is fixed.", P), line("public/dsc/g.md", 2, "f7f7f7f7f7f7", "x", G)]
+    rev = factdiff.revalidate(printed)
+    by_line = {k: v["outcome"] for k, v in rev["lines"].items()}
+    assert [by_line[("public/dsc/a.md", n)] for n in range(5, 10)] == ["current", "moved", "moved", "not found", "source-dated only"], by_line
+    assert rev["lines"][("public/dsc/a.md", 6)]["passage"] == "The Orion queue holds twenty thousand jobs before it refuses new ones."
+    assert rev["lines"][("public/dsc/a.md", 7)]["target"] == host + "audit" and "ninety days" in rev["lines"][("public/dsc/a.md", 7)]["passage"]
+    assert by_line[("public/dsc/b.md", 3)] == "current" and rev["lines"][("public/dsc/b.md", 3)]["checked_utc"][:10] == rev["date"]
+    # a line citing a source that could not be asked keeps the other's outcome and names the one it lacks
+    assert by_line[("public/dsc/c.md", 4)] == "current" and list(rev["lines"][("public/dsc/c.md", 4)]["unchecked"]) == [C]
+    assert rev["sources"][C] == {"state": "offline", "verdict": "error", "why": "network error: URLError: timed out", "checked_utc": rev["date"]}
+    assert rev["sources"][P]["why"].startswith("pinned; its repository was not asked: github.com/org/repo: GitHub's unauthenticated limit")
+    assert rev["sources"][G]["why"] == "rate limited: HTTP 403" and by_line[("public/dsc/g.md", 2)] == ""
+    assert resolved == [(A, [5, 6, 7, 8, 9])] and not any(urls[D] in u for u in asked), (resolved, asked)  # printed lines of cited sources only
+    assert sum(u.startswith(urls[A]) for u in asked) == 1 and sum(u.startswith(urls[B]) for u in asked) == 1
+    # the marks the pack puts in: the live outcome replaces the offline ones; a line none of whose sources could be asked keeps them
+    text = ("- public/dsc/a.md:6 [unanchored; source changed] The Orion queue holds ten thousand jobs. [DOC S9990011]\n"
+            "- public/dsc/g.md:2 [unanchored] x [DOC S9990016]\n\nsources:\n  -> S9990011  " + urls[A] + "  [confirmed 2026-10-10, hash]\n"
+            "  -> S9990016  " + urls[G] + "  [confirmed 2026-10-10, hash]")
+    marked = kbfacts.revalidated(text, rev).split("\n")
+    assert marked[0] == f"- public/dsc/a.md:6 [moved {rev['date']}] The Orion queue holds ten thousand jobs. [DOC S9990011]", marked[0]
+    assert marked[1] == f'    now ({urls[A]}): "The Orion queue holds twenty thousand jobs before it refuses new ones."'
+    assert marked[2] == "- public/dsc/g.md:2 [unanchored] x [DOC S9990016]" and marked[6].endswith("  [not checked live]")
+    assert marked[5].endswith(f"  [live {rev['date']}: changed]") and marked[-1].startswith(f"revalidate {rev['date']}: 2 source(s) asked live, 0 answered")
+    assert "not checked, the offline stamp stands: " in marked[-1] and "network error: URLError: timed out" in marked[-1]
+    # a result younger than the provider's pacing is reused with no request; an offline source is asked again
+    before = len(asked)
+    monkeypatch.setattr(provider, "pacing", lambda row: 3600)
+    again = factdiff.revalidate(printed)
+    kept = [k for k in rev["lines"] if k[0] != "public/dsc/d.md" and k[0] != "public/dsc/g.md"]
+    assert {k: again["lines"][k] for k in kept} == {k: rev["lines"][k] for k in kept}
+    assert again["sources"][A]["state"] == again["sources"][B]["state"] == "cached"
+    assert not any(u.startswith((urls[A], urls[B])) for u in asked[before:]), asked[before:]  # only C, G and P were asked again
+    assert not [p for p in tmp_path.rglob("*") if p.is_file() and "revalidate" not in p.parts]  # only the stored results, under the cache
+    # the time budget: a source asked after it is used up is not checked, and says so
+    monkeypatch.setattr(provider, "pacing", lambda row: 0)
+    monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error=provider.BUDGET_ERROR), "final": url})
+    cut = factdiff.revalidate(printed[:1])
+    assert cut["sources"][A]["state"] == "offline" and cut["sources"][A]["why"] == provider.BUDGET_ERROR, cut
+    # the pack: --revalidate is a flag of rag.py pack; over the live kb with every page failing it keeps the offline text
+    # and says which sources it could not check; the kb: hook never goes to the network
+    monkeypatch.undo()
+    monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "live" / "factdiff"))
+    question = good_row()["question"]
+    offline = kbfacts.pack_many([question])["text"]
+    monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error="URLError: stubbed"), "final": url})
+    monkeypatch.setattr(sys, "argv", ["rag.py", "pack", question, "--revalidate"])
+    rag.main()
+    live = capsys.readouterr().out.rstrip("\n")
+    body, _, summary = live.rpartition("\nrevalidate ")
+    assert body.replace("  [not checked live]", "") == offline and "not checked, the offline stamp stands: " in summary, live[-1500:]
+    monkeypatch.setattr(factdiff, "revalidate", lambda *a, **k: pytest.fail("the kb: hook revalidated"))
+    res = kb_hook.answer("kb: " + question)
+    assert res and res["decision"] == "block" and "revalidate" not in res["reason"]
 
 
 def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):

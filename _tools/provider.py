@@ -62,9 +62,11 @@ row with the `git` signal names, and search_api with the page's title when the r
 curated from the provider's documentation and kept. The `*` row serves many hosts: its probe records only probed_utc
 and a note naming the sample host. Exit: 0 ok, 1 the sample could not be fetched, 2 bad arguments.
 
-Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text() and repository_state().
+Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
+lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
+is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run.
 """
-import argparse, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, threading, time
+import argparse, contextlib, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request, zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -86,6 +88,8 @@ STAMP = re.compile(r"\b\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ")
 PINNED = re.compile(r"(?:^|/)(?:[0-9a-f]{40})(?:/|$)|/-/raw/v?\d+\.\d+|/releases/download/|raw\.githubusercontent\.com/[^/]+/[^/]+/"
                     r"(?:refs/tags/)?v?\d+\.\d+[^/]*/")
 _last, _ctx = {}, [None]
+_budget = {"until": None}  # time.monotonic() at which the block under budget() ends
+_failed = [0]  # requests that got no HTTP answer (network error, timeout, budget used up): failures() counts them
 
 
 # ---------------------------------------------------------------- the registry
@@ -222,12 +226,49 @@ def decode_body(body, encoding, limit=20_000_000):
     return body
 
 
+BUDGET_ERROR = "time budget used up"
+
+
+@contextlib.contextmanager
+def budget(seconds):
+    """Bound every request of the block to `seconds` in all: one that could not finish in the time left is not sent and
+    answers status 0 with error BUDGET_ERROR, a started one is cut at the time left. For a lookup that must answer
+    within its caller's timeout; one block at a time (the budget is the process's)."""
+    _budget["until"] = time.monotonic() + seconds
+    try:
+        yield
+    finally:
+        _budget["until"] = None
+
+
+def failures():
+    """How many requests so far got no HTTP answer: a caller that must tell an absent page from an unreachable one
+    compares the count before and after its requests."""
+    return _failed[0]
+
+
+def spent():
+    """Whether the block under budget() has used its time up."""
+    return _budget["until"] is not None and time.monotonic() >= _budget["until"]
+
+
+def pacing(row):
+    """Seconds between two requests to one provider that its `rate_limit` column asks for: the hour over a documented
+    `N requests/hour` or `N requests per hour`, never under DELAY; DELAY for a row that documents no hourly count."""
+    m = re.search(r"(\d[\d,]*)\s+requests?\s*(?:/|per)\s*hour", (row or {}).get("rate_limit") or "")
+    return max(DELAY, 3600 / max(1, int(m.group(1).replace(",", "")))) if m else DELAY
+
+
 def request(url, headers=None, limit=20_000_000, method="GET"):
     """{status, headers (lowercase keys), body (bytes), final, hops, error}; one request per DELAY seconds per host.
     A Content-Encoding body is decoded (decode_body); the headers stay as the server sent them.
     Never raises for HTTP or network errors: status is the code, or 0 with `error`."""
     host = urllib.parse.urlsplit(url).netloc
     wait = DELAY - (time.time() - _last.get(host, 0))
+    until = _budget["until"]
+    if until is not None and time.monotonic() + max(wait, 0) >= until:  # under budget(): no request that cannot finish
+        _failed[0] += 1
+        return {"status": 0, "headers": {}, "body": b"", "final": url, "hops": [], "error": BUDGET_ERROR}
     if wait > 0:
         time.sleep(wait)
     _last[host] = time.time()
@@ -236,7 +277,7 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
     req = urllib.request.Request(url, method=method, headers={"User-Agent": UA, "Accept": "*/*", **(headers or {})})
     out = {"status": 0, "headers": {}, "body": b"", "final": url, "hops": chain.hops, "error": ""}
     try:
-        with opener.open(req, timeout=TIMEOUT) as r:
+        with opener.open(req, timeout=TIMEOUT if until is None else max(0.5, min(TIMEOUT, until - time.monotonic()))) as r:
             out.update(status=r.status, headers={k.lower(): v for k, v in r.headers.items()}, body=r.read(limit), final=r.geturl())
     except urllib.error.HTTPError as e:
         out.update(status=e.code, headers={k.lower(): v for k, v in (e.headers or {}).items()}, final=e.geturl() or url)
@@ -246,6 +287,8 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
             pass
     except Exception as e:  # noqa: BLE001 - a change check must never stop a run
         out["error"] = f"{type(e).__name__}: {str(getattr(e, 'reason', e))[:120]}"
+    if out["error"]:
+        _failed[0] += 1
     if out["body"] and out["headers"].get("content-encoding"):
         out["body"] = decode_body(out["body"], out["headers"]["content-encoding"], limit)
     return out
@@ -254,7 +297,16 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
 # ---------------------------------------------------------------- the repository of a pinned url
 
 GH_API_MAX, GH_API_RESERVE = 50, 5  # GitHub REST requests one run asks; the remaining count it stops at (the limit is 60 an hour)
-_repos, _repo_locks, _repo_guard, _gh_api = {}, {}, threading.Lock(), {"asked": 0, "left": None}
+_repos, _repo_locks, _repo_guard, _gh_api = {}, {}, threading.Lock(), {"asked": 0, "left": None, "seen": 0.0}
+
+
+def new_run():
+    """Begin a run in a process that lives on (the kb MCP server): the repositories already asked and the requests
+    counted are forgotten; the remaining count GitHub last reported stands for the hour it was reported in."""
+    with _repo_guard:
+        _repos.clear()
+        _repo_locks.clear()
+        _gh_api["asked"] = 0
 
 
 def repository(url):
@@ -290,18 +342,21 @@ def _ask_repository(key, api, raw):
     github = key.startswith("github.com/")
     if github:
         with _repo_guard:
-            spent = _gh_api["asked"] >= GH_API_MAX or (_gh_api["left"] is not None and _gh_api["left"] <= GH_API_RESERVE)
+            fresh = _gh_api["left"] is not None and time.time() - _gh_api.get("seen", 0.0) < 3600
+            spent = _gh_api["asked"] >= GH_API_MAX or (fresh and _gh_api["left"] <= GH_API_RESERVE)
             _gh_api["asked"] += not spent
         if spent:
             return "", f"{key}: the run's GitHub REST requests are used up (60 an hour unauthenticated)"
     r = request(api, limit=1)
     left = r["headers"].get("x-ratelimit-remaining", "")
     if github and left.isdigit():
-        _gh_api["left"] = int(left)
+        _gh_api["left"], _gh_api["seen"] = int(left), time.time()
     if r["status"] == 404:
         return "gone", f"repository {api} answers 404"
     if r["status"] == 200:
         return "answers", f"{api} answers 200"
+    if github and r["status"] in (403, 429) and left == "0":
+        return "", f"{key}: GitHub's unauthenticated limit of 60 REST requests an hour is used up"
     return "", f"{api}: {r['status'] or r['error']}"
 
 
@@ -412,7 +467,8 @@ def doc_text(body, ctype, url=""):
 
 def document(url, row=None, etag="", lastmod=""):
     """Fetch a source's document by its provider's raw form, conditionally when a validator is given.
-    {status, final, hops, not_modified, etag, lastmod, version (dict), text, sha, bytes, error}."""
+    {status, final, hops, not_modified, etag, lastmod, version (dict), text, sha, bytes, error, limited}; `limited`
+    is True for a 403 or 429 that says the request limit is used up (x-ratelimit-remaining 0, or Retry-After)."""
     row = row if row is not None else for_url(url) or {}
     rurl, hdr = raw_url(url, row)
     sig = signals(row, url)
@@ -423,7 +479,8 @@ def document(url, row=None, etag="", lastmod=""):
     r = request(rurl, hdr)
     out = {"status": r["status"], "final": r["final"], "hops": r["hops"], "not_modified": r["status"] == 304,
            "etag": r["headers"].get("etag", ""), "lastmod": r["headers"].get("last-modified", ""), "version": {},
-           "text": None, "sha": "", "bytes": len(r["body"]), "error": r["error"], "ctype": r["headers"].get("content-type", "")}
+           "text": None, "sha": "", "bytes": len(r["body"]), "error": r["error"], "ctype": r["headers"].get("content-type", ""),
+           "limited": r["status"] in (403, 429) and (r["headers"].get("x-ratelimit-remaining") == "0" or "retry-after" in r["headers"])}
     if r["status"] == 200 and r["body"]:
         raw = r["body"].decode("utf-8", errors="replace")
         out["raw"] = raw if doc_text(r["body"], out["ctype"], rurl) is not None else None

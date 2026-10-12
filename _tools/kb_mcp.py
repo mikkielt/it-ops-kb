@@ -10,7 +10,8 @@
                                      add --scope local`: this machine and this clone only), skipping names already there,
                                      but replacing a `kb` server that runs another clone's kb_mcp.py
 
-Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network):
+Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network, but kb_pack
+with `revalidate` on the team's own server, which checks the printed facts' cited sources against their pages):
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
              Operator decisions come beside the facts, labelled decided or proposed (`include_invalidated` adds the
@@ -18,6 +19,9 @@ Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb 
              LOG rows (observed signals) of the printed articles and facts follow under `observed signal (LOG, not a
              fact):` with the dates they cover; they never count toward coverage and are never an answer on their own.
              `questions` (1-6) batches the parts of a multi-part question: a section per part, one shared footer.
+             `revalidate` (the team's own server only) asks each printed fact's cited sources now, within a time
+             budget under the client's idle timeout, and marks each line current, moved (with the new passage), not
+             found or source-dated only; a source it could not ask keeps its offline stamp, and the footer says so.
              Always loaded (`anthropic/alwaysLoad`): the first lookup needs no tool-search round trip.
   kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
@@ -73,7 +77,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts, kbpublic  # noqa: E402
 
-NAME, VERSION = "kb", "1.5.0"
+NAME, VERSION = "kb", "1.6.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -109,9 +113,13 @@ TOOL_LIST = [
          "root": ROOT,
          "include_invalidated": {"type": "boolean", "default": False,
                                  "description": "also invalidated decisions, with why"},
+         "revalidate": {"type": "boolean", "default": False,
+                        "description": "check the printed facts' cited sources against their pages now (network, "
+                                       "within a time budget; the team's own server only): each line is marked "
+                                       "current, moved (new passage), not found or source-dated only"},
          "response_format": {**FORMAT, "default": "detailed"}},
          "additionalProperties": False},
-     "annotations": READ_ONLY,
+     "annotations": {**READ_ONLY, "openWorldHint": True},  # `revalidate` asks the cited sources' hosts
      "_meta": {"anthropic/alwaysLoad": True}},
     {"name": "kb_facts", "title": "Fact lines by prefix and tag",
      "description": DOCS + "Every fact line under a path prefix (a domain like 'agents', a topic like 'auth/kerberos', or "
@@ -262,10 +270,14 @@ def kb_pack(args):
     if len(questions) > kbfacts.MAX_QUESTIONS:
         raise ToolError(f"at most {kbfacts.MAX_QUESTIONS} questions per call")
     budget = min(max(int(args.get("budget") or 1200), 200), 6000)
+    revalidate = args.get("revalidate") is True
+    if revalidate and limited():
+        raise ToolError("revalidate is not served here: this server is limited to named roots and never goes to the "
+                        "network for a client; the pack's offline stamp says how current each source was last confirmed")
     with guarded():
         root = root_of(args)
         res = kbfacts.pack_many(questions, budget, domain_of(args), fmt_of(args, "detailed"), root,
-                                args.get("include_invalidated") is True)
+                                args.get("include_invalidated") is True, revalidate=revalidate)
         text = res["text"]
         if root == kbfacts.SELF_ROOT:
             kbfacts.record_self(text, budget, res, questions)
