@@ -32,14 +32,18 @@ bucket:
                 series (same tag shape, created later); a Learn page's source file in its public MicrosoftDocs repo
                 (LEARN_MAP) has no commit since retrieval, or, without one, the page's `updated_at` meta is not after it; a live page's sitemap lastmod or page date is not after it
   CHANGED       the file or page changed since retrieval (evidence: commits or date)
-  GONE          404/410, the file was deleted, the commit or tag vanished
+  GONE          404/410, the file was deleted, the commit or tag vanished, or the repository of a pinned source answers
+                404 (provider.repository_state: one request per repository; a private one answers alike)
   NEWER-VERSION a newer release of the pinned one exists and the cited file differs there
   NEEDS-READING nothing mechanical decides it: no date on the page, an HTTP error, the host is denied here
                 (note `blocked`), the host did not resolve or accept a connection (note `dns` or `connect`: a fetch that
                 fails with a name-resolution or connection error is tried once more after RETRY_PAUSE seconds, in the
                 same run, and the note is set only when the second try fails too), or MicrosoftDocs/memdocs (archived:
                 re-source to the live Learn page)
-Git work uses bare blobless clones in _cache/census/repos/ (git over https; api.github.com is never called).
+Git work uses bare blobless clones in _cache/census/repos/ (git over https). A pinned source's repository is asked first,
+once, by the forge's own route (provider.repository): on GitHub the raw file of a pinned path, which is not the REST API,
+and the API (at most GH_API_MAX requests a run) for a url with no file or to tell a missing ref from a missing repository;
+on gitlab.com the projects API. One that answers 404 is GONE and is not cloned.
 A github.com page that is a file of a repository (provider.github_page) is decided by its provider's signal, with the one
 GET of the page that names a 404, a redirect (the repository moved) and the archived banner: a wiki page by the commits
 of its file in the wiki's own repository (`<repo>.wiki`), a repository home by its README blob at the default branch, its
@@ -48,7 +52,8 @@ timestamp of its timeline; a wiki's own git url by its newest commit. The page's
 part of the signal. api.github.com urls and a page no signal fits (a releases list, a pull request) go to reading.
 --factdiff LOG takes the verdicts of the census's first stage (factdiff.py detect, _census/factdiff-<date>.csv) for the
 sources it covers: unchanged, or every fact found word for word, against a text no newer than retrieved_utc -> OK; gone or soft 404 with nothing moved -> GONE;
-facts to review -> CHANGED, the evidence naming `factdiff.py review`. Pinned and errored sources are checked here.
+facts to review -> CHANGED, the evidence naming `factdiff.py review`. Pinned and errored sources are checked here, but a
+pinned source whose repository answers 404 (verdict gone, signal `repository`) is GONE from the log.
 
 repin (no judgment, no network beyond the clone's own fetch) takes each row of kind raw-pin or raw-ref (and release, whose
 url names no file and so stays) in bucket CHANGED or NEWER-VERSION that has no outcome, and reads the file at the newer
@@ -947,6 +952,10 @@ def check_one(r, c):
     if kind == "gh-page" or kind == "api-other":
         return "", verdict("NEEDS-READING", "a github.com page (issues, wiki, home) or API call; read it", "", "github page")
     if c["repo"]:
+        if provider.is_pinned(r["url"]):  # a clone cache outlives its repository: ask the repository first
+            state, ev = provider.repository_state(r["url"])
+            if state == "gone":
+                return "", verdict("GONE", f"repository: {ev}")
         d, err = repo_dir(c["repo"])
         if not d:
             if kind == "learn":
@@ -1011,7 +1020,13 @@ def cmd_check(a, tally):
     fd = factdiff_verdicts(a.factdiff, {r["id"]: r.get("retrieved_utc", "") for r in rows}) if a.factdiff else {}
     work = [(r, classify(r["url"])) for r in rows]
     print(f"phase 0: {len(work)} sources; " + ", ".join(f"{k}={n}" for k, n in sorted(Counter(c["kind"] for _, c in work).items())), flush=True)
-    repos = sorted({c["repo"] for _, c in work if c["repo"]})
+    pinned = [(r, c) for r, c in work if c["repo"] and r["id"] not in fd and provider.is_pinned(r["url"])]
+    with cf.ThreadPoolExecutor(8) as ex:  # one request per repository (provider.repository_state); a gone one is not cloned
+        states = list(ex.map(provider.repository_state, [r["url"] for r, _ in pinned]))
+    gone = {c["repo"] for (_, c), (state, _) in zip(pinned, states) if state == "gone"}
+    if gone:
+        print(f"  {len(gone)} repositor{'y' if len(gone) == 1 else 'ies'} of pinned sources answer 404: not cloned", flush=True)
+    repos = sorted({c["repo"] for _, c in work if c["repo"]} - gone)
     with cf.ThreadPoolExecutor(8) as ex:
         for repo, (d, err) in zip(repos, ex.map(repo_dir, repos)):
             if not d:

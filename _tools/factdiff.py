@@ -845,7 +845,10 @@ def detect_source(sid, src, st, rows):
     url, row = src["url"], provider.for_url(src["url"], rows) or {}
     sig = provider.signals(row, url)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    if "pin" in sig:
+    if "pin" in sig:  # its text cannot change; its repository, once per run, may be gone (a 404: deleted or private)
+        state, ev = provider.repository_state(url)
+        if state == "gone":
+            return "gone", "repository", ev, None, None, None  # no state row: checked_utc would stamp it confirmed
         return "pinned", "pin", "pinned url: its text cannot change (census.py compares the pin with upstream)", None, None, None
     prev = load_json(cache_path(sid))
     quiet = git_quiet(sid, url, st, stamp)

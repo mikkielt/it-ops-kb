@@ -19,7 +19,8 @@ Columns (one row per provider):
   match           space-separated url prefixes without scheme (`learn.microsoft.com/`), or `*`
   signals         the change signals fetch tools try, cheapest first, `;`-separated:
                     pin     the url is pinned (a commit or tag in the path): its text never changes; upstream moves are
-                            a new source row (census.py compares the pin with the branch tip)
+                            a new source row (census.py compares the pin with the branch tip); its repository is asked
+                            once a run whether it still answers (repository_state)
                     etag    a conditional GET with the stored ETag; 304 = unchanged
                     lastmod a conditional GET with the stored Last-Modified; 304 = unchanged
                     version the page's own version id (`version_meta`); the same id = unchanged
@@ -60,10 +61,10 @@ row with the `git` signal names, and search_api with the page's title when the r
 curated from the provider's documentation and kept. The `*` row serves many hosts: its probe records only probed_utc
 and a note naming the sample host. Exit: 0 ok, 1 the sample could not be fetched, 2 bad arguments.
 
-Library use (factdiff.py, census.py): providers(), for_url(), document() and doc_text().
+Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text() and repository_state().
 """
-import argparse, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, time, urllib.error
-import urllib.parse, urllib.request, zlib
+import argparse, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, threading, time
+import urllib.error, urllib.parse, urllib.request, zlib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import kbcommon  # noqa: E402
@@ -247,6 +248,75 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
     if out["body"] and out["headers"].get("content-encoding"):
         out["body"] = decode_body(out["body"], out["headers"]["content-encoding"], limit)
     return out
+
+
+# ---------------------------------------------------------------- the repository of a pinned url
+
+GH_API_MAX, GH_API_RESERVE = 50, 5  # GitHub REST requests one run asks; the remaining count it stops at (the limit is 60 an hour)
+_repos, _repo_locks, _repo_guard, _gh_api = {}, {}, threading.Lock(), {"asked": 0, "left": None}
+
+
+def repository(url):
+    """(key, api, raw) of the repository a pinned url names, or ("", "", "") for a host with no route here. `key` is
+    `github.com/OWNER/REPO` (lowercase); `api` the forge's own route to it (GitHub's REST API, GitLab's projects API:
+    GitLab's web raw path redirects to sign-in); `raw` a raw file of the url's own pinned path on GitHub, which is not
+    the REST API and costs none of its 60 requests an hour, or "" when the url names none (a tree, a release, a commit)."""
+    u = urllib.parse.urlsplit(url.split("#")[0])
+    host, p = u.netloc.lower(), [urllib.parse.unquote(x) for x in u.path.split("/") if x]
+    if host == "raw.githubusercontent.com" and len(p) >= 4:
+        return f"github.com/{p[0]}/{p[1]}".lower(), f"https://api.github.com/repos/{p[0]}/{p[1]}", url.split("#")[0].split("?")[0]
+    if host == "github.com" and len(p) >= 3 and p[0] not in GH_NOT_OWNER:
+        raw = raw_url(url, {"raw_form": "blob-to-raw"})[0] if p[2] == "blob" and len(p) >= 5 else ""
+        return f"github.com/{p[0]}/{p[1]}".lower(), f"https://api.github.com/repos/{p[0]}/{p[1]}", raw
+    if host == "api.github.com" and len(p) >= 3 and p[0] == "repos":
+        return f"github.com/{p[1]}/{p[2]}".lower(), f"https://api.github.com/repos/{p[1]}/{p[2]}", ""
+    if host == "gitlab.com" and "/-/" in u.path:
+        project = "/".join(urllib.parse.unquote(x) for x in u.path.split("/-/")[0].split("/") if x)
+        return f"gitlab.com/{project}".lower(), f"https://gitlab.com/api/v4/projects/{urllib.parse.quote(project, safe='')}", ""
+    return "", "", ""
+
+
+def _ask_repository(key, api, raw):
+    """(state, evidence) from one repository's route: `gone` when it answers 404, `answers` when it answers, "" when
+    it could not be asked (no budget left, rate limited, a network error). A raw file's 404 may be the file or its ref,
+    not the repository, so it is confirmed once by the API; a private repository answers 404 as a deleted one does."""
+    if raw:
+        r = request(raw, limit=1)
+        if r["status"] == 200:
+            return "answers", f"{raw} answers 200"
+        if r["status"] != 404:
+            return "", f"{raw}: {r['status'] or r['error']}"
+    github = key.startswith("github.com/")
+    if github:
+        with _repo_guard:
+            spent = _gh_api["asked"] >= GH_API_MAX or (_gh_api["left"] is not None and _gh_api["left"] <= GH_API_RESERVE)
+            _gh_api["asked"] += not spent
+        if spent:
+            return "", f"{key}: the run's GitHub REST requests are used up (60 an hour unauthenticated)"
+    r = request(api, limit=1)
+    left = r["headers"].get("x-ratelimit-remaining", "")
+    if github and left.isdigit():
+        _gh_api["left"] = int(left)
+    if r["status"] == 404:
+        return "gone", f"repository {api} answers 404"
+    if r["status"] == 200:
+        return "answers", f"{api} answers 200"
+    return "", f"{api}: {r['status'] or r['error']}"
+
+
+def repository_state(url):
+    """(state, evidence) of the repository of a pinned url (`repository`), asked once per repository and run: `gone`
+    when it answers 404, `answers`, or "" for a url with no route here or one that could not be asked. Safe to call
+    from several threads."""
+    key, api, raw = repository(url)
+    if not key:
+        return "", ""
+    with _repo_guard:
+        lock = _repo_locks.setdefault(key, threading.Lock())
+    with lock:
+        if key not in _repos:
+            _repos[key] = _ask_repository(key, api, raw)
+    return _repos[key]
 
 
 # ---------------------------------------------------------------- the document text
