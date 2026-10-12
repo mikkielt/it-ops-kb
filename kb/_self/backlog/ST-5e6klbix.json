@@ -2,7 +2,7 @@
   "id": "ST-5e6klbix",
   "kind": "story",
   "title": "Research sprint goal: Lookup correctness: router experts, the tag parser and aliases answer what the kb holds",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmf4ke4w",
   "goal_research": true,
   "priority": "P1",
@@ -25,5 +25,6 @@
   "depends_on": [
     "ST-2nvlf6jo"
   ],
-  "notes": "Planned 2026-10-12: the five questions ran through rag.py pack --root _self: all weak, passages exist (tools.md:151 and :158, content-rules.md:68, backlog.md:371) with no tested question. The first run on kb/public (alias names of the new topics) came back none by wording only: those rows are checked against the articles by ST-zrysu6ri's checks, so no outside fact is needed."
+  "notes": "Planned 2026-10-12: the five questions ran through rag.py pack --root _self: all weak, passages exist (tools.md:151 and :158, content-rules.md:68, backlog.md:371) with no tested question. The first run on kb/public (alias names of the new topics) came back none by wording only: those rows are checked against the articles by ST-zrysu6ri's checks, so no outside fact is needed.",
+  "claimed_by": "orch-lmf4ke4w"
 }
