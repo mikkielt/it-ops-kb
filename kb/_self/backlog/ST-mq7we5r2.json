@@ -86,6 +86,62 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "marks",
+      "kind": "blocking",
+      "question": "How is a revalidated fact line marked, and how do factdiff's six per-fact outcomes map to the goal's four words?",
+      "options": [
+        "[current DATE], [moved DATE] with one now-line holding the new passage, [not found DATE], [source-dated only DATE]; verbatim is current, modified (edited in place) and moved are moved, not-found and dead are not found, unanchored is source-dated only, and a fact with no located anchor is source-dated only even when its source is unchanged",
+        "the same four words, but an unchanged or pinned source makes every one of its facts current, anchored or not"
+      ],
+      "recommendation": "[current DATE], [moved DATE] with one now-line holding the new passage, [not found DATE], [source-dated only DATE]; verbatim is current, modified (edited in place) and moved are moved, not-found and dead are not found, unanchored is source-dated only, and a fact with no located anchor is source-dated only even when its source is unchanged",
+      "class": "agents-rule"
+    },
+    {
+      "id": "cache",
+      "kind": "blocking",
+      "question": "Where is a revalidation's result kept, and how long is it reused ('younger than the provider's pacing')?",
+      "options": [
+        "_cache/revalidate/<root>/<source id>.json beside the detection cache; reused while younger than provider.pacing(row): the hour over a row's documented 'N requests/hour' (60 an hour is 60 s), never under the 1.1 s per-host delay, which is also the window of a row that documents no hourly count",
+        "the same file, reused for a fixed 1.1 s for every provider"
+      ],
+      "recommendation": "_cache/revalidate/<root>/<source id>.json beside the detection cache; reused while younger than provider.pacing(row): the hour over a row's documented 'N requests/hour' (60 an hour is 60 s), never under the 1.1 s per-host delay, which is also the window of a row that documents no hourly count",
+      "class": "agents-rule"
+    },
+    {
+      "id": "budget",
+      "kind": "blocking",
+      "question": "What overall time budget do one revalidation's requests share, under the MCP client's 5 minute idle timeout?",
+      "options": [
+        "90 seconds (factdiff.REVALIDATE_BUDGET_S): a request that cannot finish in what is left is not sent, and the source it belonged to keeps its offline stamp",
+        "45 seconds",
+        "240 seconds"
+      ],
+      "recommendation": "90 seconds (factdiff.REVALIDATE_BUDGET_S): a request that cannot finish in what is left is not sent, and the source it belonged to keeps its offline stamp",
+      "class": "agents-rule"
+    },
+    {
+      "id": "who",
+      "kind": "blocking",
+      "question": "Which servers accept revalidate, and what does kb_pack's tool annotation say?",
+      "options": [
+        "only the team's own unlimited stdio server; a server limited to named roots (--roots, kb_http.py) answers an error naming why; kb_pack's openWorldHint becomes true",
+        "every server, openWorldHint stays false"
+      ],
+      "recommendation": "only the team's own unlimited stdio server; a server limited to named roots (--roots, kb_http.py) answers an error naming why; kb_pack's openWorldHint becomes true",
+      "class": "agents-rule"
+    },
+    {
+      "id": "test-id",
+      "kind": "blocking",
+      "question": "Which existing test id does the story's pack_revalidate test replace, keeping its assertions (ceiling gate: Replace)?",
+      "options": [
+        "test_lookup_eval_passes_on_the_live_kb: the new test keeps its rag.py eval assertions (the lookup on the live kb) and adds the revalidation ones; the long pack test in test_live_kb.py is not lengthened again",
+        "the long pack test of test_live_kb.py, its name lengthened once more"
+      ],
+      "recommendation": "test_lookup_eval_passes_on_the_live_kb: the new test keeps its rag.py eval assertions (the lookup on the live kb) and adds the revalidation ones; the long pack test in test_live_kb.py is not lengthened again",
+      "class": "agents-rule"
     }
   ],
   "links": [
