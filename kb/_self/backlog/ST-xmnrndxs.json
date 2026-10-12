@@ -2,7 +2,7 @@
   "id": "ST-xmnrndxs",
   "kind": "story",
   "title": "factdiff.py anchor takes the researcher's verbatim quote for a fact, and kb-verify warns of a new DOC fact whose quote the page does not hold",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -109,5 +109,6 @@
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise (2026-10-11, kb/public/_anchors.csv): 6,630 anchors located (49%), 5,102 unlocated:no-match (37%), 1,801 not-text (13%); quote is filled only as anchoring's output (6,563 located rows), never taken from the researcher. Anchoring this session's new facts in agents/hybrid-retrieval.md left correctly paraphrased DOC facts no-match, so a gate on anchors alone would refuse good facts; the researcher's quote is the reliable key. The lint rule runs over the live repository before the sprint commits the story and must warn of nothing in files the change did not touch. Planned 2026-10-12: premise reproduced (factdiff.py anchor takes --topic, --dir, --file, --source, --refetch, --max-age, --dry-run and no quotes). The lint rule's silence on untouched facts is run once over the live repository at claim, before code, and its output recorded here."
+  "notes": "Premise (2026-10-11, kb/public/_anchors.csv): 6,630 anchors located (49%), 5,102 unlocated:no-match (37%), 1,801 not-text (13%); quote is filled only as anchoring's output (6,563 located rows), never taken from the researcher. Anchoring this session's new facts in agents/hybrid-retrieval.md left correctly paraphrased DOC facts no-match, so a gate on anchors alone would refuse good facts; the researcher's quote is the reliable key. The lint rule runs over the live repository before the sprint commits the story and must warn of nothing in files the change did not touch. Planned 2026-10-12: premise reproduced (factdiff.py anchor takes --topic, --dir, --file, --source, --refetch, --max-age, --dry-run and no quotes). The lint rule's silence on untouched facts is run once over the live repository at claim, before code, and its output recorded here.",
+  "claimed_by": "orch-sbdy4hsx"
 }
