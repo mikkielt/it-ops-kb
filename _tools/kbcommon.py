@@ -71,9 +71,11 @@ KB = PUBLIC
 ROOT_FILE = "_root.md"
 SOURCES, STATE, ARTIFACTS = "_sources.csv", "_fetch_state.csv", "_artifacts.csv"
 # _fetch_state.csv: fetch.py's columns (the text hash of --diff), then factdiff.py detect's (the provider's signals as
-# last seen: validators, version id, the normalized document's hash, where the url led, its status and simhash)
+# last seen: validators, version id, the normalized document's hash, where the url led, its status and simhash, the
+# hash of each heading section of that document)
 STATE_COLS = ["id", "url", "checked_utc", "fetched_utc", "changed_utc", "sha256", "text_sha256", "bytes", "error",
-              "etag", "last_modified", "version", "doc_sha256", "final_url", "http_status", "simhash", "detected_utc"]
+              "etag", "last_modified", "version", "doc_sha256", "final_url", "http_status", "simhash", "detected_utc",
+              "sections"]
 ANSWERS, GAPS, CONFLICTS = "_answers.md", "_gaps.md", "_conflicts.md"
 COVERAGE_CSV, COVERAGE_MD = "_coverage.csv", "_coverage.md"
 CENSUS_DIR = "_census"
