@@ -2,7 +2,7 @@
   "id": "ST-celkwaux",
   "kind": "story",
   "title": "Review sprint: Benchmark knowledge scenarios: a scenario question set and kb content for absent questions",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j2jn5ue4",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-j2jn5ue4"
 }
