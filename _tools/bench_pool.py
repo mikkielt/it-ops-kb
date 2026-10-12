@@ -674,19 +674,22 @@ def scenario_file_problems(header, rows, home=HOME):
 
 
 def scenario_pack(question):
-    """(route, text) of the pack `rag.py pack` prints for `question`: the route `good` for a pack with no `route:` line,
-    else the line's `split` or `web`; the pack's text."""
+    """(route, text) of the pack `rag.py pack` prints for `question`: the `split` or `web` of its `route:` line; with no
+    such line, `check` for a pack with a `check:` line (a `good` the scatter note flags, which sets no route) and `good`
+    for a clean one; the pack's text."""
     import kbfacts
     res = kbfacts.pack_many([question])
-    return res["route"] or "good", res["text"]
+    if res["route"]:
+        return res["route"], res["text"]
+    return ("check" if re.search(r"(?m)^check: ", res["text"]) else "good"), res["text"]
 
 
 def route_agrees(expected, printed, false_good=False):
-    """True when the route a pack prints (`good`, `split` or `web`) is the row's expected one: `web` and `none` both
-    expect a none verdict (printed `web`), and a row marked a false good also takes the `good` or `split` its pack
-    prints while the kb lacks the fact."""
+    """True when the route a pack prints (`good`, `check`, `split` or `web`) is the row's expected one: `web` and `none`
+    both expect a none verdict (printed `web`), and a row marked a false good also takes the `good`, `check` or `split`
+    its pack prints while the kb lacks the fact."""
     if expected in ("web", "none"):
-        return printed in ("web", "none") or (false_good and printed in ("good", "split"))
+        return printed in ("web", "none") or (false_good and printed in ("good", "check", "split"))
     return printed == expected
 
 
@@ -717,7 +720,8 @@ def scenario_problems(rows, home=HOME):
             out.append(f"{r['id']}: differs from its row of {SCENARIO_FILE}; `pool build` rewrites it")
         route, text = scenario_pack(r["question"])
         if not route_agrees(r["expected_route"], route, r["kind"] == "sc_absent" and notes[s].startswith(FALSE_GOOD)):
-            out.append(f"{r['id']}: expected route {r['expected_route']} but the pack prints {route} for its question "
+            seen = "a check: line and no route:" if route == "check" else route
+            out.append(f"{r['id']}: expected route {r['expected_route']} but the pack prints {seen} for its question "
                        f"({r['kind']}: {r['question']})")
         try:
             checks = json.loads(r["checks"])
