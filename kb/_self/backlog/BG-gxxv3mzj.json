@@ -2,7 +2,7 @@
   "id": "BG-gxxv3mzj",
   "kind": "bug",
   "title": "MicrosoftDocs/memdocs answers 404, but doc-lookup-sources.md says it is archived and four live sources still point into it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-df2cu4uj",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "BG-3bjktw5x",
   "kind": "bug",
   "title": "_conflicts.md 'no cost-cap flag despite brief expecting one' says --max-budget-usd does not exist, though the kb cites it as a print-mode cap",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-df2cu4uj",
   "priority": "P2",

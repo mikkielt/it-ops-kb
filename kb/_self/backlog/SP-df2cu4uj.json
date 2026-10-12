@@ -2,7 +2,7 @@
   "id": "SP-df2cu4uj",
   "kind": "sprint",
   "title": "Stale sources: the gone memdocs repository, five changed code.claude.com pages and the cost-cap conflict",
-  "status": "planned",
+  "status": "active",
   "goal": "The facts resting on MicrosoftDocs/memdocs say what holds now that it answers 404, and its four live rows are dead or superseded; the facts citing five code.claude.com pages match their current text; and the cost-cap conflict entry is resolved by the source that documents --max-budget-usd",
   "gates": [
     {

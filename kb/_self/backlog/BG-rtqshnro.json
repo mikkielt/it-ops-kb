@@ -2,7 +2,7 @@
   "id": "BG-rtqshnro",
   "kind": "bug",
   "title": "Facts citing five code.claude.com pages no longer match them: a detect run finds modified and not-found passages",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-df2cu4uj",
   "priority": "P2",
