@@ -474,11 +474,11 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     plant = lambda late: {i: {"days": 7.0 if i == cited[0] and late else 365.0, "basis": "planted", "changes": 0} for i in cited}  # noqa: E731
     stage = {"late": True}
     monkeypatch.setattr(provider, "lifetimes", lambda srcs, *a, **k: {i: plant(stage["late"])[i] for i in srcs})
-    real_state = kbfacts.fresh_state()
+    real_state = kbfacts.fresh_state(cited)
     old = {i: {"checked_utc": "2026-01-01T00:00:00Z"} for i in cited}
-    monkeypatch.setattr(kbfacts, "fresh_state", lambda: (real_state[0], {}, old))
+    monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: (real_state[0], {}, old))
     real_rows = kbfacts.ledger_rows()
-    monkeypatch.setattr(kbfacts, "ledger_rows", lambda: {i: {**r, "version_or_date": ""} for i, r in real_rows.items()})
+    monkeypatch.setattr(kbfacts, "ledger_rows", lambda ids=None: {i: {**r, "version_or_date": ""} for i, r in real_rows.items()})
     first = kbfacts.pack_many([question])["text"]  # the offline pack, its stamps from the planted state
     asked_live = []
 
@@ -807,6 +807,32 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     stamp = r"  \[(confirmed \d{4}-\d\d-\d\d|unconfirmed), (pinned|git|etag|lastmod|version|hash|no baseline)\]$"
     assert footer and all(re.search(stamp, ln) for ln in footer), footer
     assert all(kbfacts.source_stamp(i) in ln for i, ln in zip(res["sources"], footer))
+    # the stamp reads only the anchor and fetch-state rows of the sources it cites, the rows a whole read holds for
+    # them; a url's signals come from a memo file once seen, with no provider call, and from provider alone otherwise
+    cited = set(res["sources"])
+    with monkeypatch.context() as mp:
+        mp.setattr(kbfacts, "_FRESH", [None, {}, {}, {}, set(), 0, False])
+        anchors, verified, state = kbfacts.fresh_state(cited)
+        want_a, want_s = {}, {}
+        for r in kbfacts.kbcommon.roots():
+            for row in csv.DictReader(open(os.path.join(r.path, kbfacts.kbcommon.ANCHORS), encoding="utf-8-sig", newline="")):
+                if row["source_id"] in cited:
+                    want_a[(row["fact"], row["path"], row["source_id"])] = (row["status"] == "located", row["verified_utc"])
+            for row in csv.DictReader(open(os.path.join(r.path, kbfacts.kbcommon.STATE), encoding="utf-8-sig", newline="")):
+                if row["id"] in cited:
+                    want_s[row["id"]] = row
+        assert anchors == want_a and state == want_s and want_a and set(verified) <= cited, (len(anchors), len(want_a))
+        assert {k[2] for k in anchors} <= cited and set(state) <= cited
+        mp.setenv("KB_INDEX", str(tmp_path / "signals"))
+        mp.setattr(kbfacts, "_SIGNALS", {})
+        mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
+        urls = [u for _, u, _ in res["source_rows"]]
+        want = {u: provider.signals(provider.for_url(u, provider.providers()) or {}, u) for u in urls}
+        assert {u: kbfacts.provider_signals(u) for u in urls} == want and provider.ROOT_FILE == "_providers.csv"
+        mp.setattr(kbfacts, "_SIGNALS", {})
+        mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
+        mp.setattr(provider, "signals", lambda *a, **k: 1 / 0)
+        assert {u: kbfacts.provider_signals(u) for u in urls} == want
     unit = next(u for u in kbfacts.units("public") if any(p["kind"] != "UNK" and p["ids"] for p in u["tags"]))
     sid = next(i for p in unit["tags"] if p["kind"] != "UNK" for i in p["ids"])
     key, rel = kbfacts.fact_key(unit["text"]), kbfacts.bare(unit["path"])
@@ -814,7 +840,7 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
 
     def mark(anchor, changed):
         state = {sid: {"changed_utc": changed}}
-        monkeypatch.setattr(kbfacts, "fresh_state", lambda: ({(key, rel, sid): anchor} if anchor else {}, {}, state))
+        monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: ({(key, rel, sid): anchor} if anchor else {}, {}, state))
         return kbfacts.fresh_mark(unit, rows)
     assert mark((True, "2026-10-10"), "") == ""
     assert mark((True, "2026-10-10"), "2026-10-09T08:00:00Z") == ""
