@@ -1,0 +1,26 @@
+{
+  "id": "ST-sbrfjik3",
+  "kind": "story",
+  "title": "Review sprint: Research gaps: SSG CIS profiles for RHEL-family hosts, Python Fluent accessors, JSON logs from Python and Rust services, Cargo feature unification for ort",
+  "status": "draft",
+  "sprint": "SP-23m5etrf",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
