@@ -2,7 +2,7 @@
   "id": "ST-3zlzfitj",
   "kind": "story",
   "title": "A source whose host gives only a page hash is compared per section, so an edit elsewhere on the page does not mark every fact on it changed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P2",
@@ -98,5 +98,19 @@
     "kb:public/_answers.md#QK-gone-repository-check-limits-hash-only-hosts"
   ],
   "notes": "Premise (2026-10-11): factdiff.py detect --no-save on five code.claude.com sources (S743, S-av5665nf, S1800, S1824, S-fmj24q2u) reported all five changed by text hash in 7.3 s and resolved 212 facts: 134 verbatim, 8 modified, 5 not found, 65 unanchored; providers.csv gives code.claude.com, modelcontextprotocol.io, www.anthropic.com and docs.github.com no ETag. The anchor's heading column already names the section a fact's passage sits in. Planned 2026-10-12: premise reproduced (detect --no-save on S743, S-av5665nf, S1800, S1824, S-fmj24q2u: changed=5 by text hash, verbatim=134 modified=12 not-found=1 unanchored=65). The lookup revalidation lands in ST-mq7we5r2 after this story and reuses detect's section comparison.",
-  "claimed_by": "orch-tm4wlsve"
+  "evidence": {
+    "commit": "1a133d54069d4b826196119a1716a8fe0737fe4d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "section_hash"
+        ],
+        "exit": 0,
+        "sha256": "aa3752089224cc0d"
+      }
+    ]
+  }
 }
