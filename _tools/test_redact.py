@@ -243,6 +243,39 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
     gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["SQ-x"], "why": {"SQ-x": ["text"]}, "chars": {"EV-x": 100}, "offkb_good": 0}
     rec, _ = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
     assert rec["state"] == "no-fix" and rec["observed"] == {"gate": ["eval fails: SQ-x (text)"]}
+    # the gap step: no entry for pasted text (a backlog goal), none that check.py refuses (a citation the question quotes)
+    class GapGate(LeadGate):
+        def pack(self, question):
+            return {"verdict": "none", "paths": ["public/python/stdlib.md"], "matched": ["a", "b"], "known": ["a", "b"]}
+
+        def article_of(self, path):
+            return path
+
+        def topic(self, article):
+            return "python/stdlib"
+
+        def root(self, article):
+            return types.SimpleNamespace(path=str(tmp_path), name="public")
+
+        def ledger(self, article, name):
+            return tmp_path / name
+
+    gap, ledger = GapGate(tmp_path, {}, {}), tmp_path / "_gaps.md"
+    cand = {"id": "F-9", "kind": "gap", "state": "open", "stage": "candidate-gap", "promotions": []}
+    goal = "Close gap F-1 (kb/public/_gaps.md:1058) " + "and research the platform docs " * 6
+    rec, = ql_apply.gap_one(cand, {"question": goal}, gap, "2026-10-12")
+    assert rec["state"] == "rejected" and rec["observed"] == {"gate": ["pasted text, not a question"]} and not ledger.exists()
+    asked = "what does os.link raise across volumes, see kb/public/_gaps.md:1058"
+    rec, = ql_apply.gap_one(cand, {"question": asked}, gap, "2026-10-12")
+    text = ledger.read_text(encoding="utf-8")
+    assert rec["state"] == "applied" and "see kb/public/_gaps.md**" in text and ":1058" not in text
+    assert gap.ledger_errors("public/python/stdlib.md") == []
+    ledger.write_text("", encoding="utf-8")
+    with pytest.MonkeyPatch.context() as m:  # planted: the entry quotes the citation whole, and the ledger is put back
+        m.setattr(ql_apply, "plain_question", lambda t: t)
+        rec, = ql_apply.gap_one(cand, {"question": asked}, gap, "2026-10-12")
+    assert rec["state"] == "rejected" and rec["observed"]["gate"] == ["a ledger citation check.py refuses"]
+    assert ledger.read_text(encoding="utf-8") == ""
 
 
 def census_row(sid, **kw):

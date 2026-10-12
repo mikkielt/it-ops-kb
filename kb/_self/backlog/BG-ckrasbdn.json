@@ -83,6 +83,17 @@
       "class": "push",
       "answer": "land: the existing 'undelivered' warning of bl_land names the last apply --push failure from distill.log (its gate and first error line); no new selfcheck check",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which question length marks pasted text, a backlog goal or a worker brief, for public lookups: no finding, no gap entry?",
+      "options": [
+        "more than 30 words, the limit a rules lookup already has (ql_learn.QUESTION_WORDS)",
+        "a match of the question against the clone's backlog items (a closed sprint's items are deleted, so a goal of one stops matching)"
+      ],
+      "recommendation": "more than 30 words, the limit a rules lookup already has (ql_learn.QUESTION_WORDS)",
+      "class": "agents-rule"
     }
   ],
   "links": [

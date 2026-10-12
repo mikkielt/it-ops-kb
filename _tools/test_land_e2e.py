@@ -399,6 +399,19 @@ def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, ca
     assert len(out) == 1 and out[0].startswith(f"warning: {iid} landed with no work rows on origin/main (undelivered)")
     assert f"{store.parent.name}/store holds 1 work sidecar(s) naming it" in out[0], out  # say() redacts the user name
     assert "origin/main lacks" in out[0] and "apply --push" in out[0], out
+    assert "its last run did not deliver" not in out[0], out  # no distill.log: the warning stands as it was
+
+    log = store.parent / "distill.log"  # the last run's gate stopped it: the warning names the gate and its first error
+    log.write_text("apply --push: pushed 0a1b2c3d4 to origin/main\napply: run=1 records=2\n"
+                   "  gate check.py: FAILED (exit 1): ERROR public/_gaps.md:7 cites kb/public/_gaps.md:1058, a file "
+                   "that is not in root public\n  gate doc2query.py stale: FAILED (exit 1): stale=1\n"
+                   "  gate querylog.py check: ok: problems=0\n"
+                   "apply --push: kbgit.py sync exit 1: nothing pushed to main\n", encoding="utf-8")
+    out = landed()
+    assert len(out) == 1 and "its last run did not deliver, gate check.py: ERROR public/_gaps.md:7 cites" in out[0], out
+    assert "and 1 other gate(s) failed" in out[0], out
+    log.write_text(log.read_text(encoding="utf-8") + "apply --push: pushed 5e6f7a8b9 to origin/main\n", encoding="utf-8")
+    assert "its last run did not deliver" not in landed()[0]  # a push after the failure: nothing to name
 
     (root / "kb" / "_querylog" / "work" / "2026-10" / sidecar.name).write_text(sidecar.read_text(encoding="utf-8"),
                                                                               encoding="utf-8")
