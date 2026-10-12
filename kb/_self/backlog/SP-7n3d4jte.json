@@ -2,7 +2,7 @@
   "id": "SP-7n3d4jte",
   "kind": "sprint",
   "title": "Lookups route a question by its kind and label off-kb questions once",
-  "status": "planned",
+  "status": "active",
   "goal": "The off-kb list holds no question the kb answers and the eval refuses one labelled both ways; pack, kb_pack, kb_ask.py and the kb: hook answer count, decision, conflict, gap and citation questions from the tool that holds the answer and fuse several experts' lists by RRF; and a good verdict whose top hits are scattered and weak carries a check: note calibrated on the eval set against the off-kb list",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "ST-b27c527d",
   "kind": "story",
   "title": "pack, kb_ask and the kb: hook route a question by its kind to the tool that answers it, and fuse the lists by RRF",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-7n3d4jte",
   "priority": "P1",
