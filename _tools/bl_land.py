@@ -1,7 +1,8 @@
 """The landing side of backlog.py (kb/_self/backlog.md, What done refuses, Landing; kb/_self/tools.md): `done`, which runs an
 item's checks and records the evidence, `land`, which rebases a worker's branch and runs the steps to the integration
 main, `close`, which deletes a finished sprint, and `researched`, the goal research story's check by done's rules;
-with what they share: the commits an item's trailers name (`item_commits`, `unlanded_code`, `out_of_scope`), the runner of a check (`run_check`), the worker's worktree
+with what they share: the commits an item's trailers name (`item_commits`, `unlanded_code`, `out_of_scope`, and the
+ledger rows they changed for a source nothing names: `unrelated_baselines`), the runner of a check (`run_check`), the worker's worktree
 (`live_processes`, `release_worker_worktree`), the landed work/<id> branch (`delete_landed_branch`) and the stuck merge
 request line.
 
@@ -10,7 +11,7 @@ time windows of the detectors that `precheck` names) and never `backlog`. The br
 `kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `researched`, `land`, `merge` and `close` with `bl_cli` itself when
 imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
-import argparse, datetime, hashlib, importlib, json, os, re, shlex, shutil, subprocess, sys, time
+import argparse, csv, datetime, hashlib, importlib, io, json, os, re, shlex, shutil, subprocess, sys, time
 from collections import namedtuple
 from pathlib import Path
 
@@ -144,6 +145,98 @@ def stale_docs(root, commits):
         if own:
             out.append((doc, own))
     return out, since
+
+
+STATE_LEDGER, ANCHOR_LEDGER = "_fetch_state.csv", "_anchors.csv"
+STATE_BASELINE = ("sha256", "text_sha256")  # fetch.py's hashes; with factdiff.BASELINE_KEYS, what detect compares a page with
+GENERATED_DIRS = ("_census", "_snapshots", "_retrieval", "_querylog")  # written by tools over every source: cite none
+TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
+
+
+def blob_text(root, rev, path):
+    """The text of PATH at REV, "" when REV has no such file."""
+    p = subprocess.run(["git", "cat-file", "blob", f"{rev}:{path}"], cwd=root, capture_output=True)
+    return p.stdout.decode("utf-8-sig", errors="replace") if p.returncode == 0 else ""
+
+
+def ledger_rows(text, state):
+    """{key: row} of a ledger's csv TEXT: a _fetch_state.csv row (STATE true) is keyed by its id, an _anchors.csv row
+    by (fact, path, source_id)."""
+    rows = {}
+    for r in csv.DictReader(io.StringIO(text, newline="")):
+        rows[(r.get("id") or "") if state else (r.get("fact"), r.get("path"), r.get("source_id"))] = r
+    return rows
+
+
+def ledger_moves(root, commits):
+    """{source id: [`<ledger>: <what changed>`]} of the ledger rows the item's COMMITS ({commit: [paths]}) changed and
+    HEAD still has changed (the ledger as of the parent of the first commit that touched it against HEAD, so a later
+    revert clears a row): a _fetch_state.csv row whose detection columns (factdiff.BASELINE_KEYS and the text hashes,
+    not checked_utc) differ, and an _anchors.csv row added, dropped or changed in a column other than verified_utc."""
+    import factdiff
+    detection = tuple(factdiff.BASELINE_KEYS) + STATE_BASELINE
+    first = {}
+    for sha, paths in commits.items():
+        for p in paths:
+            if Path(p).name in (STATE_LEDGER, ANCHOR_LEDGER):
+                first.setdefault(p, sha)
+    out = {}
+    for path, sha in first.items():
+        if blob_id(root, f"{sha}^", path) == blob_id(root, "HEAD", path):
+            continue
+        state = Path(path).name == STATE_LEDGER
+        before = ledger_rows(blob_text(root, f"{sha}^", path), state)
+        after = ledger_rows(blob_text(root, "HEAD", path), state)
+        for key in before.keys() | after.keys():
+            b, a = before.get(key), after.get(key)
+            if state:
+                sid = key
+                cols = [c for c in detection if ((b or {}).get(c) or "") != ((a or {}).get(c) or "")]
+                what = ", ".join(cols) if a else "row dropped"
+            else:
+                sid = key[2] or ""
+                cols = (["added"] if b is None else ["dropped"] if a is None
+                        else [c for c in a.keys() | b.keys()
+                              if isinstance(c, str) and c != "verified_utc" and (a.get(c) or "") != (b.get(c) or "")])
+                what = ", ".join(sorted(cols))
+            if cols:
+                out.setdefault(sid, set()).add(f"{path}: {what}")
+    return {sid: sorted(w) for sid, w in out.items()}
+
+
+def cites_sources(path):
+    """True for a changed file whose lines are facts or records of sources: not a ledger a tool rewrites for every
+    source, a generated directory, a coverage table or an item file."""
+    parts = path.split("/")
+    return not (item_file(path) or parts[-1] in (STATE_LEDGER, ANCHOR_LEDGER) or parts[-1].startswith("_coverage.")
+                or any(d in parts[:-1] for d in GENERATED_DIRS))
+
+
+def cited_tokens(root, commits, texts):
+    """The words of TEXTS (the item's goal and title) and of every line the item's COMMITS ({commit: [paths]}) added
+    or removed in a file that cites_sources: a source id in it is named, by the goal or by a fact the item touched."""
+    words = set()
+    for t in texts:
+        words.update(TOKEN_RE.findall(t))
+    for sha, paths in commits.items():
+        paths = [p for p in paths if cites_sources(p)]
+        for i in range(0, len(paths), 100):
+            diff = git(root, "show", "--no-renames", "-U0", "--format=", sha, "--", *paths[i:i + 100])
+            for ln in diff.splitlines():
+                if ln[:1] in "+-" and not ln.startswith(("+++", "---")):
+                    words.update(TOKEN_RE.findall(ln[1:]))
+    return words
+
+
+def unrelated_baselines(bl, iid, root, commits):
+    """[(source id, [what changed])] of the ledger rows the item's COMMITS changed (ledger_moves) for a source that
+    neither its goal (the family's goals and titles) nor a line it added or removed names, sorted by id."""
+    moves = ledger_moves(root, commits)
+    if not moves:
+        return []
+    texts = [str(bl.items[i].get(k) or "") for i in [iid] + bl.descendants(iid) for k in ("goal", "title")]
+    named = cited_tokens(root, commits, texts)
+    return sorted((sid, what) for sid, what in moves.items() if sid not in named)
 
 
 def noop_proof(bl, iid, passed):
@@ -351,6 +444,18 @@ def cmd_done(bl, a):
                                                            for doc, own in behind)
                             + " (edit each in the item's touches, or name one read and found still correct in the "
                               "Self-Reviewed: trailer of a commit of the item)")
+        try:
+            unrelated = unrelated_baselines(bl, iid, bl.root, commits)
+        except Exception as e:  # noqa: BLE001 - a ledger or git error is said, not raised
+            unrelated = []
+            say(f"warning: the ledger rows check could not run: {e}")
+        if unrelated:
+            reasons.append("outside-touches")
+            problems.append("ledger rows of sources the goal and the facts the item touched do not name: "
+                            + "; ".join(f"{sid} ({', '.join(what)})" for sid, what in unrelated[:8])
+                            + (f"; and {len(unrelated) - 8} more" if len(unrelated) > 8 else "")
+                            + " (restore those rows, or name each source id in the goal: backlog.py set "
+                              f"{iid} --goal TEXT)")
     if problems:
         refuse_done(iid, t0, reasons, f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
     checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
