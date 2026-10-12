@@ -266,8 +266,12 @@ def alias_fixes(finding, entry, gate, res):
 
 
 def expansion_fixes(finding, entry, gate):
-    """[(rows by file, [])] per candidate fact: the article's facts sharing the most words with the question."""
+    """[(rows by file, [])] per candidate fact: the article's facts sharing the most words with the question. []
+    for an article that is not a .md file: doc2query keys the tagged facts of .md articles only, so a row for a data
+    file's fact would leave `doc2query.py stale` red."""
     import kbfacts
+    if not finding["article"].endswith(".md"):
+        return []
     q = set(kbfacts.terms(entry["question"]))
     facts = sorted(gate.facts(finding["article"]), key=lambda f: (-len(q & set(kbfacts.terms(f[1]))), f[0]))
     return [({"expansions": [[kbfacts.fact_key(text), entry["question"]]]}, [])
@@ -329,6 +333,8 @@ def apply_one(ev, fix, entry, gate, base):
         problems.append("no fix finding")
     else:
         cands = alias_fixes(fix, entry, gate, res) if fix["kind"] == "alias" else expansion_fixes(fix, entry, gate)
+        if not cands and fix["kind"] == "expansion" and not fix["article"].endswith(".md"):
+            cands = [({}, [])]  # a data file takes no expansion row: the eval row alone is tried
         if not cands:
             problems.append(f"no candidate {fix['kind']}")
         row = [eid, question, bare_path, "good", ""]

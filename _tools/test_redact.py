@@ -243,6 +243,31 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
     gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["SQ-x"], "why": {"SQ-x": ["text"]}, "chars": {"EV-x": 100}, "offkb_good": 0}
     rec, _ = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
     assert rec["state"] == "no-fix" and rec["observed"] == {"gate": ["eval fails: SQ-x (text)"]}
+    # an expansion finding for a data file: doc2query keys the facts of .md articles only, so no expansion row is
+    # written (it would leave `doc2query.py stale` red) and the eval row alone is tried
+    class CsvGate(LeadGate):
+        def pack(self, question):
+            return {"verdict": "weak", "paths": []}
+
+        def targets(self, article):
+            return {"root": "public", "eval": tmp_path / "csv_eval.csv", "expansions": tmp_path / "expansions.csv"}
+
+        def facts(self, article):
+            return [(1, "haiku resolves to the newest Haiku model [DOC S1]")]
+
+    csv_gate = CsvGate(tmp_path, {}, {})
+    ev = {"id": "F-e", "kind": "eval", "state": "open", "stage": "miss", "expect": "public/claude/models.csv"}
+    fix = {"id": "F-x", "kind": "expansion", "state": "open", "article": "public/claude/models.csv"}
+    entry, base = {"question": "which model does the haiku alias resolve to"}, {"chars": {"EV-x": 100}, "offkb_good": 0}
+    assert ql_apply.expansion_fixes(fix, entry, csv_gate) == []
+    done, fixed = ql_apply.apply_one(ev, fix, entry, csv_gate, base)
+    assert (done["state"], fixed["state"], fixed["observed"]) == ("applied", "applied", {"rows": 0})
+    assert not (tmp_path / "expansions.csv").exists() and len(ql_apply.csv_rows(tmp_path / "csv_eval.csv")) == 1
+    # planted: the eval row fails alone, so the pair is no-fix and rejected, the eval file put back
+    (tmp_path / "csv_eval.csv").unlink()
+    csv_gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["EV-y"], "chars": {"EV-x": 100}, "offkb_good": 0}
+    gone, rejected = ql_apply.apply_one(ev, fix, entry, csv_gate, base)
+    assert (gone["state"], rejected["state"]) == ("no-fix", "rejected") and not (tmp_path / "csv_eval.csv").exists()
     # the gap step: no entry for pasted text (a backlog goal), none that check.py refuses (a citation the question quotes)
     class GapGate(LeadGate):
         def pack(self, question):
