@@ -54,6 +54,21 @@
   "touches": [
     "_tools/aliases.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which canonical term does each of the four aliases whose notes canonical no kb/public article spells take (brms, otlp, ocb, jcs)?",
+      "options": [
+        "article's own spelling: brms=business rules engine, otlp=otlp, ocb=ocb, jcs=rfc 8785",
+        "leave the four rows out"
+      ],
+      "recommendation": "article's own spelling: brms=business rules engine, otlp=otlp, ocb=ocb, jcs=rfc 8785",
+      "class": "design",
+      "answer": "article's own spelling: brms=business rules engine, otlp=otlp, ocb=ocb, jcs=rfc 8785",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qjn563cf close"
   ],
