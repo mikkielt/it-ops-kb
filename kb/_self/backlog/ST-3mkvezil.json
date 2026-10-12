@@ -2,7 +2,7 @@
   "id": "ST-3mkvezil",
   "kind": "story",
   "title": "kbid.py add fills licence and reuse from the source's own licence record, and suggests the host's usual pair only as a marked guess",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -161,5 +161,19 @@
     "kb:public/agents/hybrid-retrieval.md"
   ],
   "notes": "Premise (2026-10-11, over kb/public/_sources.csv, 3,150 rows): the most common (licence, reuse) pair per host covers 58% of the rows on hosts with two or more rows, the most common reuse class 81%; learn.microsoft.com alone holds 116 distinct pairs because a Learn page's licence follows its public mirror repository, so a host default is wrong too often to write unasked. Today kbid.py add requires --licence and --reuse and a session copies a same-host pair from rag.py src by reading. arXiv licence links were read mechanically from the abstract pages in this session's research (11 papers, five licence kinds). Planned 2026-10-12: premise reproduced (kbid.py add declares --licence and --reuse required=True).",
-  "claimed_by": "orch-sbdy4hsx"
+  "evidence": {
+    "commit": "38a800f079550c68f1e2dbba0ce28d6d444d6bb9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kbid_licence"
+        ],
+        "exit": 0,
+        "sha256": "cca3bda9840310a8"
+      }
+    ]
+  }
 }
