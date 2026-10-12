@@ -2,7 +2,7 @@
   "id": "ST-nkr6cpvs",
   "kind": "story",
   "title": "provider.py search NAME TERMS queries a provider's own search API before a session uses WebSearch",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -142,5 +142,28 @@
     "kb:public/agents/hybrid-retrieval.md"
   ],
   "notes": "Premise: _tools/providers.csv has a search_api only on its learn row (2026-10-11); this session's research found arXiv papers through export.arxiv.org/api/query?search_query=ti:... with no WebSearch call. Depends on ST-7zkw23ca for the provider rows and cache it adds. Planned 2026-10-12: premise reproduced (providers.csv has a search_api only on its learn row; provider.py has no search subcommand).",
-  "claimed_by": "orch-sbdy4hsx"
+  "evidence": {
+    "commit": "3e3fce0487dc257bbb143a8705437a6ced1e29db",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "provider_search"
+        ],
+        "exit": 0,
+        "sha256": "b2df46abd3b9ceb0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(0 if 'provider.py search' in open('.claude/skills/kb-research/SKILL.md', encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
