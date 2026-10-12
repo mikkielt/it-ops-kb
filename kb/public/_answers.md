@@ -3226,3 +3226,14 @@ _Agent: kb-research_
 - See sqlserver/availability-group-seeding.md.
 
 _Agent: kb-research_
+
+## QK-did-list-prices-haiku-5-5. Did the list prices of Haiku 5.5, Sonnet 5.5 and Opus 5.5, the `claude -p` result cost fields or the effort defaults change between Claude Code 2.1.293 and 2.1.296?
+- Prices: no. The pricing page read raw on 2026-10-12 lists Opus 5.5 at $4 input, $20 output and $0.20 cache read, Sonnet 5.5 at $2, $10 and $0.10, and Haiku 5.5 at $0.10, $0.50 and $0.01 up to 100,000 prompt tokens, as the kb had them on 2026-10-08. [DOC S2131]
+- Claude Code's cost figure: yes, one change. v2.1.296 prices Sonnet 5.5 cache reads at $0.10 per million tokens in `/cost`, the status line, `--max-budget-usd` and the SDK's cost figures, "was $0.20". [DOC S1864]
+- Result fields: no change named. The entries of v2.1.294 to v2.1.296 add, rename or remove no key of `usage`, `modelUsage` or `total_cost_usd`; `modelUsage` entries carry `costBasis` (`list`, `managed`, `unknown`) since v2.1.246. [DER S1864, S-isqfh6pr]
+- Effort defaults: no change. `high`, except `medium` for Opus 5.5, Sonnet 5.5 and Haiku 5.5 and `xhigh` for Opus 4.7 in Claude Code; the models overview lists Sonnet 5.5 as `high`. [DOC S-ezqg74ki, S-eu3n3hyf]
+- Conclusion: a record that ran on v2.1.295 or older reports Sonnet 5.5 cost with cache reads at $0.20, double the page; two runs on 2.1.296 reported costs equal to their token counts at the page's $0.10, so a run on 2.1.296 prices as listed, `costBasis` `list`. The earlier "billed $0.20" conflict is resolved as to what `claude -p` reports. [DER S1864, S2131]
+- Open: what Anthropic invoiced for Sonnet 5.5 cache reads before v2.1.296, and Opus 5.5 cache reads on 2.1.296, which no run covered. [UNK]
+- See claude/ci-and-headless.md, claude/models.csv, agents/agent-caching.md.
+
+_Agent: kb-research_
