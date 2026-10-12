@@ -2,7 +2,7 @@
   "id": "ST-wqwn4zfj",
   "kind": "story",
   "title": "Review sprint: Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4o3plg4l",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-4o3plg4l"
+  "evidence": {
+    "commit": "b024a3b3cbcc918a63b179e50b79c04ba88e0e1e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e541d8d8ddfd243b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "74ad6dd37daec5df"
+      }
+    ]
+  }
 }
