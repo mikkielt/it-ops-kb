@@ -18,7 +18,9 @@ CODE is the implementation read at a pinned commit, not a documented contract: `
 `path#L10-L20`); code_pointer() returns the pointer. In kb/_self/ a CODE part may point into this repository without an
 id (`[CODE _tools/kbfacts.py#pack]`; a test checks the file and the symbol exist).
 A `;` or `,` directly followed by a KIND starts the next part, so `[DOC S1208, COMMUNITY S1209]` has two parts and
-`[DER S328,S329: different property; Type has no table]` has one. Canonical form: `[DOC S1, S2]`, `[DER S1: how]`,
+`[DER S328,S329: different property; Type has no table]` has one. A `;` followed by ids and a colon, with no KIND
+(`[CODE S-a: path#x; S-b: path#y]`), is another source of the part before it, read as a part of the same kind with its
+own note, so every id of such a tag is cited. Canonical form: `[DOC S1, S2]`, `[DER S1: how]`,
 `[UNK]` or `[UNK: why]`, `[CODE S1: path#symbol]`. DOC, CODE and COMMUNITY parts must name at least one source id,
 and a CODE part a pointer and a pinned source (kb-verify lint reports those that do not).
 DECISION cites an operator decision of the root's `_decisions.csv`, not a source: `[DECISION D-k3f7q2zd]` or
@@ -75,9 +77,12 @@ _K = "|".join(KINDS)
 SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts", kbcommon.SNAPSHOTS}
 TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
 ID = kbid.SOURCE_ID
-_PART_SPLIT = re.compile(rf"\s*[;,]\s*(?=(?:{_K})\b)")
+_PART_SPLIT = re.compile(rf"\s*(?:[;,]\s*(?=(?:{_K})\b)|;\s*(?=(?:{kbid.ID_PATTERN})\b\s*:))")
 _PART = re.compile(rf"({_K})(?:/({_K}))?\b\s*(?:from\s+)?"
                    rf"((?:{kbid.ID_PATTERN})(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*)?(.*)", re.S)  # every root's id prefix
+_SOURCE_KINDS = ("DOC", "CODE", "DER", "COMMUNITY")  # the kinds whose parts name source ids
+# a segment with no kind that opens with ids and a colon (`S-b: path`): another source of the part before it
+_MORE_SOURCE = re.compile(rf"((?:{kbid.ID_PATTERN})(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*)\s*:(.*)", re.S)
 TOPIC_MARK = re.compile(r"\btopic:\s*`?([a-z0-9-]+/[a-z0-9./-]+?)`?(?=[\s,;.)\]]|$)")
 _DECISION_PART = re.compile(rf"DECISION\b\s*({kbcommon.DECISION_ID.pattern}\b)?(.*)", re.S)
 LOG_ID = re.compile(r"L-[a-z2-7]{8}")  # check.LOG_ID, which this module cannot import (a test holds them equal)
@@ -104,8 +109,13 @@ def parse_tag(tag):
                           "note": g.group(2).strip().lstrip(":,—–- ").strip()})
             continue
         m = _PART.match(seg)
-        if not m:  # a `;` inside a note: belongs to the previous part
-            if parts:
+        if not m:
+            more = _MORE_SOURCE.match(seg)
+            if more and parts and parts[-1]["kind"] in _SOURCE_KINDS:  # `[CODE S-a: p; S-b: q]`: another source of that kind
+                parts.append({"kind": parts[-1]["kind"], "ids": ID.findall(more.group(1)),
+                              "note": more.group(2).strip().lstrip(":,—–- ").strip()})
+                continue
+            if parts:  # a `;` inside a note: belongs to the previous part
                 parts[-1]["note"] = (parts[-1]["note"] + "; " + seg).strip("; ")
             continue
         parts.append({"kind": m.group(1), "ids": ID.findall(m.group(3) or ""),

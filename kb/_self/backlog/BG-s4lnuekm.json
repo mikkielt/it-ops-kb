@@ -62,6 +62,32 @@
     "BG-v57estdm",
     "BG-hc2gficq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "parse_tag now reads [CODE S-a: p; S-b: q] as two CODE parts, so the kb-verify lint judges each pointer and reports kb/public/agents/codebase-mapping.md:62 (first source internal/tsoptions/declscompiler.go has no #symbol; the old parse credited it with the second source's pointer). How is that one tag handled?",
+      "options": [
+        "A: keep one part per source and give the first source a #symbol in codebase-mapping.md:62 (article edit through /kb-refresh, outside this item's touches)",
+        "B: read the extra sources into the first part (ids extended, notes joined): lint stays at errors=0, the first source's missing symbol stays unjudged as before",
+        "C: keep one part per source and relax the lint's CODE pointer rule (a rule-guarding file, operator only)"
+      ],
+      "recommendation": "A: keep one part per source and give the first source a #symbol in codebase-mapping.md:62 (article edit through /kb-refresh, outside this item's touches)",
+      "class": "design"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Check 2 and the goal require content-rules.md to hold the literal [CODE S-a: path; S-b: path], but check.py reads any [CODE ...] tag in a kb/_self doc with ANY_ID and reports S-a and S-b as 'cites unknown source' (errors=2; test_check_py_passes_on_the_live_kb and four sync/land end-to-end tests fail with it). How is the form named?",
+      "options": [
+        "A: name the form with placeholders (the committed text: [CODE <id>: path; <id>: path]) and change check 2's literal to that form (an edit of the item's own check, operator only)",
+        "B: keep the literal [CODE S-a: path; S-b: path] and make check.py skip placeholder ids such as S-a and S-b (a change of _tools/check.py, outside this item's touches and a rule-guarding file)",
+        "C: name the form in prose only (a ';' followed by ids and a colon) and drop check 2"
+      ],
+      "recommendation": "A: name the form with placeholders (the committed text: [CODE <id>: path; <id>: path]) and change check 2's literal to that form (an edit of the item's own check, operator only)",
+      "class": "design"
+    }
+  ],
   "links": [
     "parked: SP-5x5ut5ko close"
   ],
