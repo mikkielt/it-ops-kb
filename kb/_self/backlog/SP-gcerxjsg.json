@@ -1,0 +1,20 @@
+{
+  "id": "SP-gcerxjsg",
+  "kind": "sprint",
+  "title": "Content fixes: GitLab and Claude Code articles match their live pages",
+  "status": "planned",
+  "goal": "gitlab/project-settings-api no longer says every attribute is in both the create and update tables; the pipeline schedule play minute limit is attached to the UI run and its permissions part tagged DER; gitlab/deploy-keys-and-tokens and its answer say a deploy token reaches the public API only through package registry endpoints; gitlab/package-registries cites a pinned source row for its digest pin fact; claude/powershell-tool names the blockReadsOutsideWorkingDirectories and auto mode classifier exceptions to the read-only Bash set; claude/plugins.csv name rules and eval --judge-model default match the live pages; ci-and-headless modelUsage-key facts state the router-pinned claude-haiku-4-5 key as observed, with repo observations tagged DER; the sources whose fetch-state baselines advanced unread (the WebSearch limit among them) are re-read, re-anchored and dated",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
