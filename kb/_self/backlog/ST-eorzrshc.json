@@ -2,7 +2,7 @@
   "id": "ST-eorzrshc",
   "kind": "story",
   "title": "Research sprint goal: Benchmark run: measure the changes since the records of 2026-10-08 and 2026-10-09 across the knowledge scenarios",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ceucrhca",
   "goal_research": true,
   "priority": "P1",
@@ -36,5 +36,19 @@
     "kb/public/**"
   ],
   "notes": "Planning host runs Claude Code 2.1.296 (claude --version, 2026-10-12); the pool record of 2026-10-09 ran 2.1.293, so three releases lie between the records.",
-  "claimed_by": "orch-ceucrhca"
+  "evidence": {
+    "commit": "6effcb157a1abeb0999165d4a226e37abb56c55d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-eorzrshc"
+        ],
+        "exit": 0,
+        "sha256": "bc117a3a1f336fa8"
+      }
+    ]
+  }
 }
