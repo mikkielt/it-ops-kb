@@ -92,6 +92,19 @@
       "class": "design",
       "answer": "A: name the form with placeholders (the committed text: [CODE <id>: path; <id>: path]) and change check 2's literal to that form (an edit of the item's own check, operator only)",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which symbol of declscompiler.go does the CODE pointer on codebase-mapping.md:62 name: the four flags sit in two vars (listFiles and explainFiles in commonOptionsWithBuild, showConfig and listFilesOnly in optionsForCompiler), and OptionsDeclarations is their concatenation?",
+      "options": [
+        "OptionsDeclarations (one symbol that holds all four flags, the one a single-anchor pointer resolves)",
+        "commonOptionsWithBuild, optionsForCompiler (the two vars that hold the literals, the pointer's first anchor naming only two of the flags)"
+      ],
+      "recommendation": "OptionsDeclarations (one symbol that holds all four flags, the one a single-anchor pointer resolves)",
+      "class": "design",
+      "answer": "OptionsDeclarations (one symbol that holds all four flags, the one a single-anchor pointer resolves)",
+      "by": "agent"
     }
   ],
   "links": [
