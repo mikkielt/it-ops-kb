@@ -1,0 +1,20 @@
+{
+  "id": "SP-sqgyoiaz",
+  "kind": "sprint",
+  "title": "Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage",
+  "status": "planned",
+  "goal": "close --summary credits each goal clause to the story that carried it; done accepts a query-log delivery as an operational story's evidence; a goal research story's check reads its narrowed questions' coverage",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
