@@ -2,7 +2,7 @@
   "id": "ST-neh4up5t",
   "kind": "story",
   "title": "Refresh claude/settings-and-scopes, claude/plugins, claude/skills-and-subagents and claude/agent-sdk against their live sources and anchor their facts",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-qjg5r7jj",
   "priority": "P2",
@@ -73,5 +73,45 @@
     "ST-ad2kuqbt"
   ],
   "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc): fetch.py --status over the four topics reads selected=46 never_fetched=46 stale=39; the four sc_stale packs print 9 [unanchored] marks over 38 fact lines (settings-and-scopes 1, agent-sdk 3, plugins 3, skills-and-subagents 2). Checks 2 and 3 pass before the work and pin the eval verdicts and the doc2query rows. Content work for EP-gzr4mmkm's fitness tests: it lands headless with no operator step beyond its gates. Research findings (2026-10-12): all 46 cited sources fetch with status 200 and none reads fetch-error; the 68 unlocated fact-source pairs of the four articles are mostly term-coverage near-misses (cover 0.25 to 0.40 against MIN_COVER 0.4; 54 of 68: settings-and-scopes 11 of 14, plugins 18 of 24, skills-and-subagents 11 of 11, agent-sdk 14 of 19), and spot checks against the live pages found the content holding (plugins.md:54 command timeout 1-600s default 60, plugins.md:91 v2.1.269+, agent-sdk.md:29 ClaudeSDKClient). The fix that clears an [unanchored] mark is a verbatim quote of at most 25 words per fact line: factdiff.py anchor --file F --quotes CSV (header line,quote; one CSV per file) located a fact the plain matcher left (langgraph.md:42, located 19 to 20, dry run); a fact whose page lacks its claim is restated or dropped. Pack lines to anchor first: settings-and-scopes.md:92, plugins.md:13 and :86 and plugins.csv:41, skills-and-subagents.md:143, agent-sdk.md:49 and :61 and :63 and agent-sdk-options.csv:24.",
-  "claimed_by": "orch-qjg5r7jj"
+  "evidence": {
+    "commit": "9ba2b1489ddc1f8c10f8b7f1056a160a7925a1b6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--topic','claude/settings-and-scopes','--topic','claude/plugins','--topic','claude/skills-and-subagents','--topic','claude/agent-sdk'],capture_output=True,text=True);l=(p.stdout.strip().splitlines() or [''])[-1];print(l);sys.exit(0 if p.returncode==0 and 'never_fetched=0 ' in l+' ' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8d02c4e82ae96f2a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;qs=['Which scope wins in Claude Code settings when user and project settings conflict?','How do I install a Claude Code plugin from a marketplace?','How do I define a custom subagent in Claude Code?','How do I configure the Agent SDK permission mode?'];ps=[subprocess.run([sys.executable,'_tools/rag.py','pack',q],capture_output=True,text=True) for q in qs];n=sum('[unanchored' in l for p in ps for l in p.stdout.splitlines() if l.startswith('- '));ok=all(p.returncode==0 and p.stdout.startswith('coverage: good') for p in ps);print(n);sys.exit(0 if ok and n<=3 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9a271f2a916b0b6e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "d2a8fa57684b7439"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/doc2query.py",
+          "stale"
+        ],
+        "exit": 0,
+        "sha256": "87a3b1b935511a85"
+      }
+    ]
+  }
 }
