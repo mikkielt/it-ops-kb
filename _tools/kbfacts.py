@@ -2929,6 +2929,7 @@ RRF_K = 60  # reciprocal rank fusion's rank constant: the original paper's and E
 ROUTED_ITEMS = 6  # items (ledger entries, decision rows, citing files) a routed answer prints
 ENTRY_CHARS = 1800  # characters of one ledger entry it prints (clip): the whole entry, its source ids included
 TOPIC_MIN = 3  # topic words a question needs for a ledger expert to answer it
+GAP_TITLE_SHARE = 1 / 3  # weight share of an open gap's title that the question's topic words must hold (idf weights)
 ROUTED_PATHS = 40  # article paths a routed list of articles prints
 
 COUNT_CUE = re.compile(r"\b(?:how many|number of|count of|total number of)\b[^?]*\b(?:articles?|topics?)\b"
@@ -3010,10 +3011,25 @@ def _heading_blocks(name):
     return out
 
 
+def _title_share(topic, held):
+    """The share of a title's weight its words in `topic` hold, a word weighing its inverse document frequency over
+    the kb's units (rank()'s idf): a title's rare words count more than its common ones, so a question that names
+    only the subject of a narrow entry holds a small share and one that names its missing fact a large one."""
+    st = store()
+    n = max(st.n, 1)
+
+    def weight(t):
+        df = len(st.own(t))
+        return math.log(1 + (n - df + 0.5) / (df + 0.5))
+
+    return sum(weight(t) for t in topic) / sum(weight(t) for t in held)
+
+
 def _ledger_items(question, name, kind, cue_stems, domain, root, open_only):
     """The entries of ledger `name` whose title holds every topic word of the question (TOPIC_MIN of them at least),
     tightest title first, as routed items. `open_only`: a gaps entry that is tagged UNK and has no Resolved or
-    Superseded line."""
+    Superseded line, and whose title the topic words hold GAP_TITLE_SHARE of at least: a broad question whose words
+    only fit inside a narrower entry's title is a lookup the pack answers."""
     topic = _topic_terms(question, cue_stems)
     if len(topic) < TOPIC_MIN:
         return []
@@ -3032,7 +3048,7 @@ def _ledger_items(question, name, kind, cue_stems, domain, root, open_only):
         if open_only and title.startswith(("Closed", "Resolved")):
             continue
         held = set(terms(title))
-        if topic <= held:
+        if topic <= held and (not open_only or _title_share(topic, held) >= GAP_TITLE_SHARE):
             found.append((len(held), e["file"], e["line"], e, title))
     out = []
     for _, path, line, e, title in sorted(found, key=lambda x: x[:3]):
