@@ -1,0 +1,22 @@
+{
+  "id": "BG-tvn7abnu",
+  "kind": "bug",
+  "title": "claude/plugins.csv: marketplace.json and plugin entry name rules and the eval --judge-model default are stale against the live pages",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/claude/plugins.csv rows for marketplace.json name (line 37) and plugin entry name (line 46) state the name rule the marketplace-reference page (S-4m2kbuls) now gives: letters, digits, '.', '_' and '-', starting with a letter or digit, no '..'; the claude plugin eval --judge-model row (line 86) names the model Claude Code uses for background tasks as its default (S-lkcsn2fs) instead of 'small fast model'; the rows are re-anchored with factdiff.py anchor --quotes; claude/plugins.md:49 already states the new rule.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/claude/plugins.csv',encoding='utf-8').read();sys.exit(1 if 'no spaces/control/bidi chars' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of three data rows; a command can only read the rows, and the fix is checked by reading them against the live pages",
+  "touches": [
+    "kb/public/claude/plugins.csv",
+    "kb/public/_anchors.csv"
+  ]
+}
