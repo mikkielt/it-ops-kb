@@ -2,7 +2,7 @@
   "id": "ST-mjxwc3q7",
   "kind": "story",
   "title": "Review sprint: Research reads, searches, licences and anchors sources by tool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sbdy4hsx",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-sbdy4hsx"
 }
