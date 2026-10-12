@@ -1,0 +1,21 @@
+{
+  "id": "ST-xcttbexh",
+  "kind": "story",
+  "title": "A goal that changes a guard's behaviour has a check that runs the real guard in a suite test, not a stub",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "/kb-sprint plan gives each item that changes what a check or guard accepts (a regex, a route reading, a detector) a check selecting a suite test that runs the changed code unstubbed, and backlog.py check warns of a code item whose touches name a test file its checks select no test of; SP-kuhlsf2s's BG-4flop3jv and BG-chs2di4p listed test_bench.py yet landed with no test, and the review found both guards unpinned (BG-4lxb2w34, BG-jgahu3o2)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}

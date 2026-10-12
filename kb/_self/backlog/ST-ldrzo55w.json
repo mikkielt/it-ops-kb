@@ -1,0 +1,22 @@
+{
+  "id": "ST-ldrzo55w",
+  "kind": "story",
+  "title": "pool build makes no paid call unless asked: a fresh --out path asks a model for every eval regex",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "benchmarks.py pool build to an --out path with no prior regexes prints the paid calls it would make and their dry-run estimate and makes none without an explicit flag, so a worker's local rebuild (ST-keicy7gn, one unplanned Sonnet call of about 0.06 USD) costs nothing by default",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}

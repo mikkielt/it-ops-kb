@@ -1,0 +1,22 @@
+{
+  "id": "ST-gnd6ozjm",
+  "kind": "story",
+  "title": "pool build can rebuild one row or one section without resampling the rest",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "benchmarks.py pool build takes a row id or a kind and rewrites only those rows, as scenario_built produces them, leaving the other sections as committed, so a fix to one scenario row (ST-keicy7gn, where a full build resampled offkb, gap, cites, decision and snippet after kb drift and the worker hand-edited the row) goes through the tool",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}

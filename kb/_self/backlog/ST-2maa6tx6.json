@@ -1,0 +1,21 @@
+{
+  "id": "ST-2maa6tx6",
+  "kind": "story",
+  "title": "An item that removes or adds a bench pool row keeps pool check green: PLAN's per-kind count is part of its checks",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A backlog item whose touches name kb/public/_retrieval/bench_pool.csv carries python3 _tools/benchmarks.py pool check among its checks, so a row removed without a replacement (BG-v57estdm, which left kind gap at 4 of 5) is refused at its done, not found red by the next sprint; backlog.py check warns of such an item without that check",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}

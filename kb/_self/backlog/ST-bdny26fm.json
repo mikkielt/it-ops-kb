@@ -1,0 +1,22 @@
+{
+  "id": "ST-bdny26fm",
+  "kind": "story",
+  "title": "A plan note that says a check passes on the base is read against precheck's output",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck prints, beside a committed item's check that fails on the base, any sentence of its notes that says that check passes before the work, so a planner's wrong premise (BG-chs2di4p's 'pool check passes before the work', red on main since BG-v57estdm) is fixed before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "precheck",
+        "SP-kuhlsf2s"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "ST-5nyibqne",
+  "kind": "story",
+  "title": "A worker's gate question states only figures it measured, with the command beside each",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A gate a worker records names each figure with the command that measured it, and the worker role file says so; SP-kuhlsf2s's BG-i7q4cjpb gate g2 said '13 more picks' while the worker's own measurement was about 10",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}
