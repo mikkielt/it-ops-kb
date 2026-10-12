@@ -1,0 +1,22 @@
+{
+  "id": "ST-ppgsm3im",
+  "kind": "story",
+  "title": "A refresh that re-points a fact to another source checks each part of the fact against the new source",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the kb-refresh skill and the worker brief of a refresh item say that a fact re-cited to a new source (a superseded or retired one) keeps only the parts the new source states, each part read on the new page, and a test reads that step; SP-qjg5r7jj's ST-yekftoim re-pointed agents/langgraph.md's install facts to the PyPI JSON with a pip install form only the retired page stated (BG-5fkown4o, found by the review)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "refresh_repoint_rechecks_fact"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-qjg5r7jj close"
+  ]
+}

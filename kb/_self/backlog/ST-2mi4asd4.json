@@ -1,0 +1,22 @@
+{
+  "id": "ST-2mi4asd4",
+  "kind": "story",
+  "title": "factdiff.py anchor --quotes for one file keeps the quote anchors another file wrote for a shared source",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchor --file F --quotes CSV re-anchors only the facts of F: a fact of another file citing the same source keeps its quote anchor instead of being re-anchored by plain matching, so a refresh of several articles that share sources needs no scratch script to keep each file's rows (ST-neh4up5t's worker needed one in SP-qjg5r7jj)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_quotes_keeps_other_files"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-qjg5r7jj close"
+  ]
+}
