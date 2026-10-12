@@ -2,7 +2,7 @@
   "id": "ST-ebn65qen",
   "kind": "story",
   "title": "Every pack prints an offline freshness stamp: each cited source's last confirmation and signal, and a mark on a printed fact that is unanchored or older than its source's last change",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P1",
@@ -99,5 +99,6 @@
     "kb:public/agents/doc-change-detection.md",
     "kb:public/_answers.md#QK-fact-freshness-at-lookup"
   ],
-  "notes": "Premise: python3 _tools/rag.py pack 'Claude Code UserPromptSubmit hook timeout' prints the article's retrieved date in its header and the source urls in its footer, with no date per source or fact; the confirmation dates exist offline in _anchors.csv (verified_utc), _fetch_state.csv (checked_utc, changed_utc) and _sources.csv (version_or_date 'confirmed ...'). Decision D-gmrjivyw: the stamp is always printed, offline. Planned 2026-10-12: premise reproduced (pack 'Claude Code UserPromptSubmit hook timeout' footer lists source urls with no date or signal). Check 2 bounds rag.py eval's mean_chars under 2730, 5% over the 2600 it printed on 2026-10-12 at 320fd2fd1; it passes before the work as a ceiling. If an earlier sprint's landing moves mean_chars, the worker re-measures the base at claim and sets the bound to base x 1.05 before any code. rag.py eval passes before the work (621 of 621) and pins the verdicts."
+  "notes": "Premise: python3 _tools/rag.py pack 'Claude Code UserPromptSubmit hook timeout' prints the article's retrieved date in its header and the source urls in its footer, with no date per source or fact; the confirmation dates exist offline in _anchors.csv (verified_utc), _fetch_state.csv (checked_utc, changed_utc) and _sources.csv (version_or_date 'confirmed ...'). Decision D-gmrjivyw: the stamp is always printed, offline. Planned 2026-10-12: premise reproduced (pack 'Claude Code UserPromptSubmit hook timeout' footer lists source urls with no date or signal). Check 2 bounds rag.py eval's mean_chars under 2730, 5% over the 2600 it printed on 2026-10-12 at 320fd2fd1; it passes before the work as a ceiling. If an earlier sprint's landing moves mean_chars, the worker re-measures the base at claim and sets the bound to base x 1.05 before any code. rag.py eval passes before the work (621 of 621) and pins the verdicts.",
+  "claimed_by": "orch-tm4wlsve"
 }
