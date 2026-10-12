@@ -1,0 +1,28 @@
+{
+  "id": "ST-fas2b2pu",
+  "kind": "story",
+  "title": "A sprint's goal research reads a design gate's premises before the operator answers that gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md (Sprints: plan) and the sprint skill say that a design gate whose options rest on a fact about the platform (an environment variable, an API, a product behaviour) is asked after the goal research has looked that fact up, or the research's finding reopens it before the item is dispatched; in SP-rlincemn the research found CLAUDECODE is also set in IDE integrated terminals only after ST-d2f346fz's gate how was answered and its worker had run; a tested _self question leads rag.py pack --root _self to the rule",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-rlincemn close"
+  ]
+}

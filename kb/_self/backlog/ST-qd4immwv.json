@@ -1,0 +1,25 @@
+{
+  "id": "ST-qd4immwv",
+  "kind": "story",
+  "title": "The sprint review's reviewer writes its findings in its final text, so the orchestrator reads them without resuming it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's review step (and any tool that writes the reviewer's brief) tells the headless reviewer to put every finding in its final answer text and never only through a findings tool, since claude -p --output-format json keeps only the final text in result; in SP-rlincemn the reviewer reported through ReportFindings and the orchestrator had to resume its session to read the 11 findings",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.index('## review'):t.index('## close')];sys.exit(0 if 'final answer' in s or 'final text' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn close"
+  ]
+}

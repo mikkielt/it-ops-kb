@@ -1,0 +1,28 @@
+{
+  "id": "ST-ilzaoi32",
+  "kind": "story",
+  "title": "Planning checks a guard's detector against the acceptor it guards, on planted variants, not only the clean form",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md (Sprints: plan) and the sprint skill say that an item adding a guard in front of an acceptor (a refusal keyed on a text the acceptor reads, such as kbdecide.py's ceiling guard in front of tests.py read_ceiling) carries a check that runs the acceptor's own predicate and the guard on planted variants (a prefix, a suffix, case), so a guard narrower than its acceptor fails before the start; a tested _self question leads rag.py pack --root _self to the rule",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-rlincemn close"
+  ]
+}

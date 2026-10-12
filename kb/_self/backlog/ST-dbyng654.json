@@ -1,0 +1,27 @@
+{
+  "id": "ST-dbyng654",
+  "kind": "story",
+  "title": "start's host-setup warning does not fire on a rule gate whose wording only names a host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start and check warn of a gate naming a host setup with no --host-check only when the gate's options set something up on a host, not when the gate settles a rule's wording that mentions a loaded host; in SP-rlincemn ST-u24f5a2i's gate retry (how often a refused suite is rerun) drew the warning and needed gate host-unchecked",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "start_host_warning_rule_gate"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-rlincemn close"
+  ]
+}
