@@ -2,7 +2,7 @@
   "id": "ST-f2n2h22c",
   "kind": "story",
   "title": "The census and refresh read the lookups' cached revalidations as hints and skip re-fetching what a lookup checked within the provider's pacing",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-etslk6yu",
   "priority": "P3",
@@ -103,5 +103,19 @@
     }
   ],
   "notes": "Planned 2026-10-12: no hint reading exists (the revalidation cache itself lands with ST-mq7we5r2 in SP-tm4wlsve); premise holds by construction once that lands.",
-  "claimed_by": "orch-etslk6yu"
+  "evidence": {
+    "commit": "7656880b4e890a1206ffd830cda14760b68d43a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_lookup_hints"
+        ],
+        "exit": 0,
+        "sha256": "59d7ce5334420610"
+      }
+    ]
+  }
 }
