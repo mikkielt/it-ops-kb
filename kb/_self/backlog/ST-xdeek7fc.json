@@ -2,7 +2,7 @@
   "id": "ST-xdeek7fc",
   "kind": "story",
   "title": "Review sprint: Freshness lifetimes, a free freshness benchmark and census hints from lookups",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-etslk6yu",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-etslk6yu"
 }
