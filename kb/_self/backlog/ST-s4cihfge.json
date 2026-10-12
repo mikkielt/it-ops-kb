@@ -2,7 +2,7 @@
   "id": "ST-s4cihfge",
   "kind": "story",
   "title": "The gap step's ledger guard counts every error check.py gives the ledger, not only path:line citations",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,19 @@
     "parked: SP-kwi4ilty review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise: ql_apply.gap_one for a question holding 'topic: no/such-topic' returns state applied, and the _gaps.md entry holds a topic mark check.py refuses as an unknown topic (script run at planning 2026-10-12: state applied). Gate.ledger_errors calls only check.ledger_citation_errors; check.py is in touches because the other ledger checks live in check.main. Order: after BG-676tplds and BG-bbcc5f4s (shared check.py, ql_apply.py, test_redact.py).",
-  "claimed_by": "orch-7nv2ffr2"
+  "evidence": {
+    "commit": "67aad3d789e79759e2b8de095d0286de0209080e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "apply_gap_guard_all_check_errors"
+        ],
+        "exit": 0,
+        "sha256": "0e4f07aadaf6544b"
+      }
+    ]
+  }
 }
