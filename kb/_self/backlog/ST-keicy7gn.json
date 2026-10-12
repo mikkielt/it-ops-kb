@@ -1,0 +1,36 @@
+{
+  "id": "ST-keicy7gn",
+  "kind": "story",
+  "title": "The AD CS autoenrollment sc_partial row tests partial knowledge, and a test asserts the scenario answer-not-in-pack message",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The sc_partial row on AD CS certificate autoenrollment templates in kb/public/_retrieval/bench_scenarios.csv and bench_pool.csv is replaced by a question whose present part a kb line answers (its regex today matches the Intune PKCS connector template line, and the kb has no autoenrollment fact, so the row tests absent knowledge); and _tools/test_bench.py asserts scenario_problems' message for a row whose answer regex matches no line of its pack. Found by the SP-j2jn5ue4 review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "scenario_answer_not_in_pack"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/bench_scenarios.csv",
+    "kb/public/_retrieval/bench_pool.csv",
+    "_tools/test_bench.py"
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 review"
+  ]
+}

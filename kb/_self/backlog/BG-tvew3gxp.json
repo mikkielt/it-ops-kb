@@ -1,0 +1,25 @@
+{
+  "id": "BG-tvew3gxp",
+  "kind": "bug",
+  "title": "Two scenario rows' answer regexes match only the kb's literal wording: BP-2c2a3c1d needs <name>@<origin>, BP-0181112b a whole kb sentence",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The first check of the sc_stale row BP-2c2a3c1d (Claude Code plugin install) matches a correct answer that names a real plugin and marketplace (/plugin install my-plugin@my-marketplace), and the first check of the sc_partial row BP-0181112b (BitLocker key to Entra ID and Splunk) matches a correct paraphrase, in kb/public/_retrieval/bench_scenarios.csv and bench_pool.csv; today a right answer scores wrong. Found by the SP-j2jn5ue4 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,json,re;sys.path.insert(0,\"_tools\");import bench_pool as b;R={x[\"id\"]:x for x in b.read_csv(b.PUBLIC_FILE)};a=\"Run /plugin install my-plugin@my-marketplace in Claude Code.\";c=json.loads(R[\"BP-2c2a3c1d\"][\"checks\"])[0];ok=bool(re.search(c,a));print(c,ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "kb/public/_retrieval/bench_scenarios.csv",
+    "kb/public/_retrieval/bench_pool.csv"
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "BG-4flop3jv",
+  "kind": "bug",
+  "title": "pool check passes a scenario row whose pack prints a check: line: scenario_pack reads any pack with no route: line as good",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "benchmarks.py pool check names an sc_present or sc_stale scenario row whose pack is good but prints a check: line, as ST-ksznk2zt's goal and the pool section of kb/_self/reports/benchmarks.md state (good with no check: line); today scenario_pack in _tools/bench_pool.py maps any pack without a route: line to good. No committed row hits it on 2026-10-12 (all twelve sc_present and sc_stale packs print no check: line). Found by the SP-j2jn5ue4 review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile;sys.path.insert(0,\"_tools\");import bench_pool as b;h=tempfile.mkdtemp();p=os.path.join(h,b.SCENARIO_FILE);os.makedirs(os.path.dirname(p));open(p,\"w\").write(\"kind,domain,question,answer,route,note\\nsc_present,windows,How do I set up WSUS client targeting?,WSUS,good,\\n\");r=b.scenario_built(b.read_scenarios(h)[1]);pr=b.scenario_problems(r,h);print(pr);sys.exit(0 if pr else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 review"
+  ]
+}

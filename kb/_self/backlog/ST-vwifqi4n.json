@@ -1,0 +1,27 @@
+{
+  "id": "ST-vwifqi4n",
+  "kind": "story",
+  "title": "A suite test plants an invented identifier in a lookup_eval-sourced pool row and asserts pool check's unstated-names warning",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/test_bench.py holds a test, within the suite's tests ceiling, that plants an invented identifier in a fixture pool row built on a lookup_eval.csv case and asserts pool check prints the unstated-names warning with exit 0, and that a hand-written near-miss row naming an identifier absent from the fixture kb is not flagged (BG-fl4sg2py gate g2); today unstated_names and identifier_of have no test. Found by the SP-j2jn5ue4 review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "unstated_names"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_bench.py",
+    "_tools/tests_ceiling.json"
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 review"
+  ]
+}
