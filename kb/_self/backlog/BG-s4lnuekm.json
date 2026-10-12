@@ -2,7 +2,7 @@
   "id": "BG-s4lnuekm",
   "kind": "bug",
   "title": "kbfacts.parse_tag reads only the first source of [CODE S-a: path; S-b: path], so the second id of such tags is not cited",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmf4ke4w",
   "priority": "P3",
   "rank": 0,
@@ -65,5 +65,6 @@
   "links": [
     "parked: SP-5x5ut5ko close"
   ],
-  "notes": "Premise run 2026-10-12: the repro prints ids parsed: ['S-sipjyeoi'] on main. Choice made at planning: the parser reads the second source, no article is rewritten (smaller, reversible). Readers outside touches: .claude/skills/kb-verify/lint.py:340 and :149 and _tools/factdiff.py:2059 take parse_tag's parts, so the lint check (check 1) must stay at errors=0 after the change; a CODE pointer error it then shows stops the item with a report, since the lint file guards a rule. Check 2 reads the form named in content-rules.md. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Checks 0 (rag.py eval) and 1 (lint.py) pass before the work: they pin that the parser change breaks no reader."
+  "notes": "Premise run 2026-10-12: the repro prints ids parsed: ['S-sipjyeoi'] on main. Choice made at planning: the parser reads the second source, no article is rewritten (smaller, reversible). Readers outside touches: .claude/skills/kb-verify/lint.py:340 and :149 and _tools/factdiff.py:2059 take parse_tag's parts, so the lint check (check 1) must stay at errors=0 after the change; a CODE pointer error it then shows stops the item with a report, since the lint file guards a rule. Check 2 reads the form named in content-rules.md. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Checks 0 (rag.py eval) and 1 (lint.py) pass before the work: they pin that the parser change breaks no reader.",
+  "claimed_by": "orch-lmf4ke4w"
 }
