@@ -503,7 +503,8 @@ def ledger_citation_errors(root):
                 if end < line:
                     res.append(f"{where}, a range that ends before it starts")
                     continue
-                bad = next((x for x in range(line, min(end, total + 1) + 1) if x not in tagged), None)
+                bad = line if line > total else next(
+                    (x for x in range(line, min(end, total + 1) + 1) if x not in tagged), None)
                 if bad is not None:
                     of = "" if bad == line and end == line else f"its line {bad}, "
                     res.append(f"{where}, {of}" + ("a line past the end of the file" if bad > total
