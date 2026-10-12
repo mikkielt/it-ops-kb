@@ -1,0 +1,20 @@
+{
+  "id": "BG-ybwm6y3l",
+  "kind": "bug",
+  "title": "factdiff.search_urls sends a request to every search_api row and reads only Learn's results key",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "factdiff.search_urls asks a provider's search_api only for a row whose response shape it reads (provider.search_shape names the shape), or reads the hits through provider.search, so a github, github-blob, pypi or arxiv source whose passage left its page costs no request that cannot yield a candidate page",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import factdiff, inspect; sys.exit(0 if 'search_shape' in inspect.getsource(factdiff.search_urls) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py"
+  ]
+}

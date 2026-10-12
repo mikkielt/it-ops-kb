@@ -95,7 +95,7 @@ def test_build_index_check_passes_on_the_live_kb():
     assert code == 0, out[-3000:]
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -276,6 +276,68 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     code, out = read("https://example.com/gone", grep="x")
     assert code == 1 and "not read: 404" in out
     assert len(os.listdir(tmp_path / "read")) == 4, os.listdir(tmp_path / "read")  # a 200 is kept (a PDF too), a miss is not
+    # provider.py search: each provider's request is its search_api with the terms in the form that API reads, the answer is
+    # parsed to date, title and url, and a 200 is kept 7 days (the second call asks nothing); a failure is named, not printed as hits
+    answers = {
+        "https://learn.microsoft.com/api/search?search=orion%20queue&locale=en-us&$top=10":
+            (200, json.dumps({"results": [{"title": "Orion queue", "url": "https://learn.microsoft.com/en-us/orion/queue",
+                                           "lastUpdatedDate": "2026-09-25T22:18:00+00:00"}, {"title": "no url"}]})),
+        "https://export.arxiv.org/api/query?search_query=all:orion%20AND%20all:queue&max_results=10": (200, feed),
+        "https://api.github.com/search/repositories?q=orion%20queue&per_page=10":
+            (200, json.dumps({"items": [{"full_name": "Org/Repo", "description": "An  Orion\nqueue", "html_url": "https://github.com/Org/Repo",
+                                         "pushed_at": "2026-07-20T10:00:00Z"}]})),
+        "https://api.github.com/search/code?q=orion%20repo:Org%2FRepo&per_page=10":
+            (200, json.dumps({"items": [{"repository": {"full_name": "Org/Repo"}, "path": "docs/a.md",
+                                         "html_url": "https://github.com/Org/Repo/blob/abc/docs/a.md"}]})),
+        "https://pypi.org/pypi/orion-queue/json":
+            (200, json.dumps({"info": {"name": "orion-queue", "version": "1.2", "summary": "A queue",
+                                       "package_url": "https://pypi.org/project/orion-queue/"},
+                              "urls": [{"upload_time_iso_8601": "2026-08-01T09:00:00.1Z"}, {"upload_time_iso_8601": "2026-08-01T09:00:01.2Z"}]})),
+        "https://pypi.org/pypi/orion-gone/json": (404, ""),
+        "https://learn.microsoft.com/api/search?search=orion%20limited&locale=en-us&$top=10": (429, ""),
+        "https://api.github.com/search/code?q=orion%20nowhere&per_page=10": (401, "{}"),
+    }
+    asked = []
+
+    def ask(url, headers=None, limit=20_000_000, method="GET"):
+        asked.append((url, dict(headers or {})))
+        status, body = answers[url]  # an unplanned url raises
+        return {"status": status, "headers": {}, "body": body.encode(), "final": url, "hops": [], "error": ""}
+    monkeypatch.setattr(provider, "request", ask)
+    monkeypatch.setattr(provider, "SEARCH_CACHE", str(tmp_path / "search"))
+    monkeypatch.setenv("GITHUB_TOKEN", "ghp_planted")  # no credential is read: no request carries one
+    monkeypatch.setenv("GH_TOKEN", "ghp_planted")
+
+    def find(name, *terms, **kw):
+        ns = argparse.Namespace(name=name, terms=list(terms), limit=5, refresh=False)
+        ns.__dict__.update(kw)
+        code = provider.cmd_search(ns, prov)
+        return code, capsys.readouterr().out.splitlines()
+    code, out = find("learn", "orion", "queue")  # a hit with no url is dropped; the date is the day of lastUpdatedDate
+    assert code == 0 and out[1:] == ["1. 2026-09-25  Orion queue", "   https://learn.microsoft.com/en-us/orion/queue"], out
+    assert out[0].startswith("search: learn 'orion queue' (https://learn.microsoft.com/api/search?search=orion%20queue") and "fetched " in out[0]
+    code, out = find("arxiv", "orion", "queue")  # every word is an `all:` term of the export API's search_query
+    assert code == 0 and out[1:] == ["1. 2024-06-17  Orion: a benchmark", "   https://arxiv.org/abs/2406.12045v2"], out
+    code, out = find("github", "orion queue")  # words in one argument or several are the same query; a description is one line
+    assert code == 0 and out[1:] == ["1. 2026-07-20  Org/Repo: An Orion queue", "   https://github.com/Org/Repo"], out
+    code, out = find("github-blob", "orion", "repo:Org/Repo")  # code search: a file of a repository, no date
+    assert code == 0 and out[1:] == ["1. -  Org/Repo: docs/a.md", "   https://github.com/Org/Repo/blob/abc/docs/a.md"], out
+    code, out = find("pypi", "orion", "queue")  # the terms joined by `-` are the project name; the newest upload is the date
+    assert code == 0 and out[1:] == ["1. 2026-08-01  orion-queue 1.2: A queue", "   https://pypi.org/project/orion-queue/"], out
+    assert len(asked) == 5, asked
+    code, out = find("learn", "orion", "queue", limit=1)  # the same request again is the cache's: no request
+    assert code == 0 and "cache of " in out[0] and len(asked) == 5
+    code, out = find("pypi", "orion", "gone")  # a project that does not exist answers 404: no hit, and the answer is kept
+    assert code == 1 and out[1:] == ["no hit"], out
+    code, out = find("learn", "orion", "limited")
+    assert code == 1 and out[1] == "not searched: 429; the API's rate limit, ask again later", out
+    code, out = find("github-blob", "orion", "nowhere")
+    assert code == 1 and out[1].startswith("not searched: 401") and "WebSearch" in out[1] and "GITHUB_TOKEN" not in out[1], out
+    assert len(os.listdir(tmp_path / "search")) == 6, os.listdir(tmp_path / "search")  # the 200s and the 404 are kept, a 429 and a 401 are not
+    find("github", "orion", "queue", refresh=True)  # a refreshed ask sends no Authorization header either
+    assert asked[-1][0].startswith("https://api.github.com/") and all("Authorization" not in h for _, h in asked), asked
+    code, out = find("generic", "orion")  # a row with no search_api is named, with the rows that have one
+    assert code == 2 and "has no search_api" in out[0] and "learn" in out[0] and "pypi" in out[0], out
 
 
 def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
