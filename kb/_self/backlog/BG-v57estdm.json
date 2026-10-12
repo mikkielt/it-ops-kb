@@ -86,9 +86,7 @@
       ],
       "recommendation": "remove-row",
       "do": {
-        "remove-row": "BG-v57estdm",
-        "regenerate-gap-rows": "BG-hmicfc3j",
-        "keep-and-defer": "BG-hmicfc3j"
+        "remove-row": "BG-v57estdm"
       },
       "class": "design",
       "answer": "remove-row",
