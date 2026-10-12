@@ -2,7 +2,7 @@
   "id": "ST-3cqn5ed6",
   "kind": "story",
   "title": "Review sprint: Content: refresh and anchor the six articles behind the benchmark's sc_stale rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qjg5r7jj",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-qjg5r7jj"
 }
