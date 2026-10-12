@@ -2,7 +2,7 @@
   "id": "ST-hu63klnr",
   "kind": "story",
   "title": "Review sprint: Lookups route a question by its kind and label off-kb questions once",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7n3d4jte",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-7n3d4jte"
+  "evidence": {
+    "commit": "d5509778c6534a54483753dd39568ee9f02b0ccf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "2307d463ac8585f0"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a803ca87437fec8d"
+      }
+    ]
+  }
 }
