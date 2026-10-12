@@ -2,7 +2,7 @@
   "id": "ST-2rg6tn6r",
   "kind": "story",
   "title": "Research sprint goal: Facts carry their freshness at lookup: stamp, revalidation, gone repositories and per-section hashes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tm4wlsve",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Research 2026-10-12: findings written to kb/public/agents/doc-change-detection.md (GitHub 404 and rate-limit semantics, GitLab.com gone-project route and limits, hash-only host headers) and answer QK-gone-repository-check-limits-hash-only-hosts in _answers.md; open raw-host limit in _gaps.md under agents/doc-change-detection. Already in the kb and not re-researched: per-source freshness lifetimes and the offline stamp inputs (QK-fact-freshness-at-lookup), heading and fence rule for sections (agents/codebase-mapping.md:42), hook 30 s (claude/hooks.md:60), MCP idle 5 min (agents/agent-error-catalogue.csv:19). Planning input: the kb's non-superseded pinned sources name 278 GitHub repositories and 7 GitLab projects (counted from _sources.csv), more than 60 unauthenticated REST requests an hour, so a whole-kb repository check has to go through the raw file route (not charged to the core counter on one probe; its limit undocumented) or a selection.",
-  "claimed_by": "orch-tm4wlsve"
+  "evidence": {
+    "commit": "c2aed0b0445de86de6feb59856a31e42ebf400c3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2rg6tn6r"
+        ],
+        "exit": 0,
+        "sha256": "26167d447d1c4396"
+      }
+    ]
+  }
 }
