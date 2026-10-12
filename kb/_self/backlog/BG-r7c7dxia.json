@@ -1,0 +1,24 @@
+{
+  "id": "BG-r7c7dxia",
+  "kind": "bug",
+  "title": "done's ledger check does not see a source id the goal writes joined by a hyphen, such as S100-related or S100-S120",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land's goal tokens name a source id written with a hyphen or underscore joined to it (S100-related, S100-S120), so done does not refuse rows of a source the goal names (SP-7nv2ffr2 review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_land;sys.exit(0 if 'S100' in bl_land.TOKEN_RE.findall('Refresh S100-related facts') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 review"
+  ]
+}

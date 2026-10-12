@@ -1,0 +1,25 @@
+{
+  "id": "ST-3g3snqb5",
+  "kind": "story",
+  "title": "The lint test proves a kb/-prefixed article path is linted, not only that no refusal fires",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "test_live_kb.py's lint test asserts that a kb/<root>/<path> argument lints the planted article and names its finding, so a qualified() that stopped rewriting the prefix fails the suite, not only the item check of BG-wrzxhd4q (SP-7nv2ffr2 review).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lint_kb_prefixed_path_lints_article"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 review"
+  ]
+}

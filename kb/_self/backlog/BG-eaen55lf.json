@@ -1,0 +1,25 @@
+{
+  "id": "BG-eaen55lf",
+  "kind": "bug",
+  "title": "lint.py exits 0 and lints nothing for a path outside kb/ or a kb/_self doc, since its no-file refusal exempts any existing kb path and any path git has history for",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "lint.py given an argument that selects no article of any root (a _tools/ file, README.md, kb/ itself) exits non-zero naming it, as BG-wrzxhd4q's goal says; only the kb/_self docs and deleted articles a landing passes (bl_land.changed_articles) stay exempt, and the HOME history fallback goes (SP-7nv2ffr2 review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;p=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','_tools/check.py'],capture_output=True,text=True);sys.exit(p.returncode==0)"
+    ]
+  },
+  "touches": [
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 review"
+  ]
+}

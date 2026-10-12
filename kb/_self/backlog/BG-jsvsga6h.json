@@ -1,0 +1,25 @@
+{
+  "id": "BG-jsvsga6h",
+  "kind": "bug",
+  "title": "The sync gate's held-out reword check does not run on a landing that changes only articles, though an article edit can match a held-out row to an existing expansion",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_sync.heldout_checks selects a root's lookup_heldout.csv when a landing changes an article of that root, not only its doc2query expansions.csv, so an article edit whose fact key matches an existing expansion row that rewords a held-out question is refused at the gate (SP-7nv2ffr2 review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kg_sync;sys.exit(0 if kg_sync.heldout_checks(['kb/public/python/stdlib.md']) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 review"
+  ]
+}

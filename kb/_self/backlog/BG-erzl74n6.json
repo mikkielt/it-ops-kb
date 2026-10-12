@@ -1,0 +1,25 @@
+{
+  "id": "BG-erzl74n6",
+  "kind": "bug",
+  "title": "done's ledger check turns any error reading the ledgers into a warning and lets the item through with the check off",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "An error reading _fetch_state.csv or _anchors.csv or their git history in done's ledger check (bl_land.cmd_done, the except around unrelated_baselines) refuses done naming the error, instead of a warning and an empty list, so a broken ledger never passes the check silently (SP-7nv2ffr2 review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit('the ledger rows check could not run' in open('_tools/bl_land.py').read())"
+    ]
+  },
+  "repro_reason": "the warning branch runs only on a csv or git failure inside done, which needs a planted broken clone; the read names the branch the fix replaces with a refusal",
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-ph7dcjhz",
+  "kind": "bug",
+  "title": "done's ledger check attributes to an item the _fetch_state.csv and _anchors.csv rows a later commit of another item changed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.ledger_moves counts only the ledger rows the item's own commits change, not every row changed from the parent of its first ledger commit to HEAD, so done of item A run after another commit advanced S200 names only A's own rows (SP-7nv2ffr2 review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land;d=tempfile.mkdtemp();g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@t','-c','commit.gpgsign=false',*a],check=True,capture_output=True,text=True).stdout.strip();g('init','-q');p=os.path.join(d,'_fetch_state.csv');w=lambda s1,s2:open(p,'w').write('id,etag\\nS100,'+s1+'\\nS200,'+s2+'\\n');w('a','a');g('add','.');g('commit','-qm','base');w('b','a');g('commit','-qam','A');A=g('rev-parse','HEAD');w('b','b');g('commit','-qam','B');m=bl_land.ledger_moves(d,{A:['_fetch_state.csv']});print(m);sys.exit(0 if set(m)=={'S100'} else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 review"
+  ]
+}
