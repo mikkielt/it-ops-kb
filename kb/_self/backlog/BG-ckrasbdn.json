@@ -2,7 +2,7 @@
   "id": "BG-ckrasbdn",
   "kind": "bug",
   "title": "Query-log delivery stops for good once learn writes a gap entry citing kb/public/_gaps.md, which check.py refuses, so no usage or work sidecar reaches main and cost reads no figure",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kwi4ilty",
   "priority": "P2",
   "rank": 0,

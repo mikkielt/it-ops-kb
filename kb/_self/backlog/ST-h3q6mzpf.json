@@ -2,7 +2,7 @@
   "id": "ST-h3q6mzpf",
   "kind": "story",
   "title": "Research sprint goal: Worker cost reaches backlog.py cost: query-log delivery no longer stops on a gap entry check.py refuses",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kwi4ilty",
   "goal_research": true,
   "priority": "P1",

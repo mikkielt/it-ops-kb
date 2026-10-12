@@ -2,7 +2,7 @@
   "id": "ST-wfqgxc5a",
   "kind": "story",
   "title": "Review sprint: Worker cost reaches backlog.py cost: query-log delivery no longer stops on a gap entry check.py refuses",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kwi4ilty",
   "review": true,
   "priority": "P1",
