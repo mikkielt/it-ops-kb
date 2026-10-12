@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The observability research answers JSON logs to stdout for the Collector, Loki, Tempo and Grafana but not for the corpus service's own Python and Rust code",
   "status": "draft",
+  "sprint": "SP-23m5etrf",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -15,6 +16,15 @@
     ]
   },
   "repro_reason": "a missing fact in kb articles: no tool behaviour to run, only the articles' text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; t=[l.lower() for f in list(pathlib.Path('kb/public/logs').glob('*.md'))+[pathlib.Path('kb/public/_gaps.md')] for l in f.read_text().splitlines()]; py=any('python' in l and 'logging' in l and 'json' in l and 'stdout' in l for l in t); rs=any('tracing-subscriber' in l and 'json' in l for l in t); sys.exit(0 if py and rs else 1)"
+      ]
+    }
+  ],
   "touches": [
     "kb/public/logs/otel-collector-otlp-pipeline.md",
     "kb/public/logs/loki-tempo-grafana-retention.md",
@@ -22,7 +32,11 @@
     "kb/public/_sources.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-y3oykyfl"
+  ],
   "links": [
     "parked: SP-qjn563cf review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 13 of 19, \"Research gaps: SSG CIS profiles for RHEL-family hosts, Python Fluent accessors, JSON logs from Python and Rust services, Cargo feature unification for ort\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-12: rag.py pack on Python and Rust JSON log lines to stdout leads with the JSON Lines hashing article, no line names tracing-subscriber; the repro and the added check fail on the base (precheck exit 1)."
 }

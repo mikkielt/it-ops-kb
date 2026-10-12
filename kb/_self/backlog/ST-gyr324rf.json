@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Open at 2026-10-12 (rag.py pack): which SSG CIS profiles the rhel8 and rhel10 products carry and whether AlmaLinux 8 and 10 can be scanned with them (weak, rhel10 not in the kb); which Debian 11 to 13 and Ubuntu 22.04 to 26.04 SSG products carry a CIS profile (good, but the lead line is the summary the table contradicts); whether Python's fluent.runtime has typed accessors or a literal lint (good, but no lead line answers it); how a Python and a Rust service write JSON log lines to stdout (good, but the lead article is JSON Lines hashing); how Cargo feature unification lets a dependency enable an ort provider feature and what detects it (check: line, unification absent). Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
