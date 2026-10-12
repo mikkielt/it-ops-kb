@@ -120,7 +120,9 @@
         "one github row holds both templates and chooses by a repo: qualifier; no token is read"
       ],
       "recommendation": "github has repository search, github-blob has code search (a file's pages), a new pypi row has the project JSON; GITHUB_TOKEN or GH_TOKEN is sent to api.github.com only",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "github has repository search, github-blob has code search, a new pypi row has the project JSON; no token is read (GITHUB_TOKEN, GH_TOKEN or any other): code search's 401 prints that GitHub code search needs authentication, which provider.py does not send, and that WebSearch is the fallback. Operator-only secrets class: the conservative option, no secret read or sent; a token can be added later by its own operator gate.",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -131,7 +133,9 @@
         "10 hits; no cache flag"
       ],
       "recommendation": "5 hits (--max N raises it up to the API's first page of 10); a 200 is kept 7 days under _cache/provider-search/, --refresh asks again",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "5 hits (--max N raises it up to the API's first page of 10); a 200 is kept 7 days under _cache/provider-search/, --refresh asks again",
+      "by": "operator"
     }
   ],
   "links": [
