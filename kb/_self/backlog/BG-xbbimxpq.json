@@ -2,7 +2,7 @@
   "id": "BG-xbbimxpq",
   "kind": "bug",
   "title": "pack prints a clean good for four questions the kb lacks: tempdb data files, the Microsoft 365 E5 price, Kubernetes Pod Security Admission and Exchange Online retention",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kp3boz7z",
   "priority": "P2",
   "rank": 0,
@@ -71,5 +71,6 @@
   "links": [
     "found: SP-j2jn5ue4 planning probes"
   ],
-  "notes": "Planned 2026-10-12 (SP-kp3boz7z, origin/main 0ae6d30bc): premise reproduced: each of the four questions prints 'coverage: good (best article matches 5-6 of 6-7 key words ...)' with no check: or route: line; the key word left out is the question's subject (tempdb, e5 matched but price-only, pod security, retention), led by management-plane-hardening.md:37, bitlocker.md:23, k8s-gmsa-windows.md:14, audit-log-apis.md:52. The suite is at its id ceiling (100 of 100): extend the existing pack_scatter_check test in _tools/test_live_kb.py, add no test id. Keep the eval set's good rows good (rag.py eval) and the off-kb list's good count from rising. Checks 0 and 1 pass before the work and pin the eval verdicts and the scatter test; check 2 (hook arm sc_absent >= 5 of 6) and the repro fail before it."
+  "notes": "Planned 2026-10-12 (SP-kp3boz7z, origin/main 0ae6d30bc): premise reproduced: each of the four questions prints 'coverage: good (best article matches 5-6 of 6-7 key words ...)' with no check: or route: line; the key word left out is the question's subject (tempdb, e5 matched but price-only, pod security, retention), led by management-plane-hardening.md:37, bitlocker.md:23, k8s-gmsa-windows.md:14, audit-log-apis.md:52. The suite is at its id ceiling (100 of 100): extend the existing pack_scatter_check test in _tools/test_live_kb.py, add no test id. Keep the eval set's good rows good (rag.py eval) and the off-kb list's good count from rising. Checks 0 and 1 pass before the work and pin the eval verdicts and the scatter test; check 2 (hook arm sc_absent >= 5 of 6) and the repro fail before it.",
+  "claimed_by": "orch-kp3boz7z"
 }
