@@ -4,23 +4,36 @@
   "title": "A section-kept fact whose anchor window starts at a heading line is compared by the parent section, so an edit to its body reads as unchanged",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-djl7za6x",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "Found by the SP-tm4wlsve review (ST-3zlzfitj): an anchor's heading is the path of its window's first unit, and a heading line's own unit sits under its parent's path (factdiff.sections, factdiff.py:196-203; section_unchanged, :235-238; resolve, :1103). A passage whose window starts at a heading unit gets the parent's section, so an edit to the body under that heading leaves the compared section unchanged and detect, and the lookup revalidation, report the fact verbatim with signal section (pack --revalidate prints [current DATE]) for a changed passage. The comparison covers the section of every unit of the anchor's window, not only the first; the section_hash test gains a page whose fact window starts at a heading and asserts the edited body resolves modified or not-found.",
+  "goal": "A fact whose anchor window starts at a heading unit is compared by the section of every unit of its window, not by the parent section of the first unit, so detect and the lookup revalidation no longer report a passage verbatim with signal section when only the body under that heading was edited: the edited body resolves modified or not-found, with a section_hash test page whose fact window starts at a heading that asserts it.",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0,'_tools'); import factdiff as f; a='# Guide\\n\\n## Alpha\\n\\nAlpha text stays.\\n\\n## Retry limits\\n\\nThe Orion queue gives up after thirty failed attempts for every job.\\n'; b=a.replace('thirty','sixty'); u=list(f.units(a)); h=[p for p,t in u if 'Retry limits' in t][0]; sys.exit(1 if f.section_unchanged({'heading':h}, f.sections(a), f.sections(b)) else 0)"
+      "import sys; sys.path.insert(0,\"_tools\"); import factdiff as f; a=\"# Guide\\n\\n## Alpha\\n\\nAlpha text stays.\\n\\n## Retry limits\\n\\nThe Orion queue gives up after thirty failed attempts for every job.\\n\"; b=a.replace(\"thirty\",\"sixty\"); fact=(\"k1\",\"x.md\",3,\"Retry limits: the Orion queue gives up after thirty failed attempts for every job.\"); row=f.anchor_rows(\"S9990001\",[fact],{\"status\":200,\"text\":a},None,\"2026-01-01\")[0]; out,_=f.resolve(\"S9990001\",{\"url\":\"https://example.com/p\"},\"changed\",{\"text\":b},{\"text\":a},[fact],{(\"k1\",\"x.md\",\"S9990001\"):row},[],(f.sections(a),f.sections(b))); sys.exit(1 if any(r.get(\"signal\")==\"section\" for r in out) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "section_window_starts_at_heading"
+      ]
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ],
   "links": [
     "parked: SP-tm4wlsve review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: resolve gives outcome verbatim, signal section, for a fact whose passage was edited when its anchor window starts at a heading unit. Run 2026-10-12 on origin/main: anchor_rows located heading \"Guide\" (the parent path) and resolve returned verbatim/section for the edited body: reproduces. The repro goes through anchor_rows and resolve, so any design that compares the section of every unit of the window (resolve holds the old text as prev) passes it. The test is the existing section_hash test in test_live_kb.py, extended with a page whose window starts at a heading. Found by the SP-tm4wlsve review (ST-3zlzfitj): an anchor heading is the path of its window first unit, and a heading line own unit sits under its parent path (factdiff.sections, section_unchanged, resolve)."
 }

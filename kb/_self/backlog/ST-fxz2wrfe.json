@@ -4,9 +4,10 @@
   "title": "detect records changed_utc in _fetch_state.csv, so a pack's [source changed] mark can fire on the live kb",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-djl7za6x",
   "priority": "P3",
   "rank": 0,
-  "goal": "Retrospective of SP-tm4wlsve: ST-ebn65qen's [source changed] mark compares an anchor's verified_utc with its source's _fetch_state.csv changed_utc, but no row of the kb's _fetch_state.csv files holds a changed_utc (0 of 2590 rows on 2026-10-12), so the mark never fires on the live kb and its check passed only on planted state. factdiff detect writes changed_utc when it finds a source changed (or the stamp reads the change date from the field detect does write), and a test runs detect on a planted changed page and finds the date in the state row and the mark on a pack line citing it.",
+  "goal": "factdiff detect writes the state row's changed_utc when a source's verdict is changed, replaced or moved (or the stamp reads the change date from the field detect does write), so the change history in git and a fact's [source changed] mark read it, which today only fetch.py writes (85 of 2610 rows of the public root's state file on 2026-10-12, 0 of 2590 when found), with a test that runs detect on a planted changed page and finds the date in the state row and the mark on a pack line citing it. Found in the SP-tm4wlsve retrospective: ST-ebn65qen's mark compares an anchor's verified_utc with its source's changed_utc and its check passed only on planted state.",
   "checks": [
     {
       "run": [
@@ -21,11 +22,16 @@
     "_tools/factdiff.py",
     "_tools/kbfacts.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-iw3p4sw4"
   ],
   "links": [
     "parked: SP-tm4wlsve close",
     "merged: BG-w3p7fqy2"
   ],
-  "notes": "Merged from BG-w3p7fqy2 “factdiff.py detect never records changed_utc, so no source of _fetch_state.csv has a recorded change” at the 2026-10-12 draft triage: Its own note names ST-fxz2wrfe as the duplicate; its repro now passes spuriously (85 kb/public rows hold changed_utc, written by fetch.py on first fetch) while factdiff.py still has no changed_utc write. Its goal: factdiff.py detect writes the state row's changed_utc when a source's verdict is changed, replaced or moved, so the change history in git and the source changed mark of a fact read it; the repro exits 0 once a detect run has recorded a change. Its repro: {\"run\": [\"python3\", \"-c\", \"import csv, sys; sys.exit(0 if any(r['changed_utc'] for r in csv.DictReader(open('kb/public/_fetch_state.csv', encoding='utf-8'))) else 1)\"]}"
+  "notes": "Merged from BG-w3p7fqy2 “factdiff.py detect never records changed_utc, so no source of _fetch_state.csv has a recorded change” at the 2026-10-12 draft triage: Its own note names ST-fxz2wrfe as the duplicate; its repro now passes spuriously (85 kb/public rows hold changed_utc, written by fetch.py on first fetch) while factdiff.py still has no changed_utc write. Its goal: factdiff.py detect writes the state row's changed_utc when a source's verdict is changed, replaced or moved, so the change history in git and the source changed mark of a fact read it; the repro exits 0 once a detect run has recorded a change. Its repro: {\"run\": [\"python3\", \"-c\", \"import csv, sys; sys.exit(0 if any(r['changed_utc'] for r in csv.DictReader(open('kb/public/_fetch_state.csv', encoding='utf-8'))) else 1)\"]} Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: factdiff detect never writes changed_utc. Run 2026-10-12 on origin/main: factdiff.py holds no changed_utc (grep count 0), kb/public/_fetch_state.csv has 85 of 2610 rows with one, all fetch.py writes, and the check selection collects no test yet: reproduces. The merged BG-w3p7fqy2 repro passes spuriously, so it is not kept. The test name carries detect_writes_changed_utc. Run last: it follows the other items on factdiff.py and test_live_kb.py."
 }
