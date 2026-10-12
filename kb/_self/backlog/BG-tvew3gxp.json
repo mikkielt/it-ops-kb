@@ -2,7 +2,7 @@
   "id": "BG-tvew3gxp",
   "kind": "bug",
   "title": "Two scenario rows' answer regexes match only the kb's literal wording: BP-2c2a3c1d needs <name>@<origin>, BP-0181112b a whole kb sentence",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",
@@ -58,5 +58,37 @@
     "parked: SP-j2jn5ue4 review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): the repro's first check of BP-2c2a3c1d is '<name>@<origin>' and does not match 'Run /plugin install my-plugin@my-marketplace in Claude Code.' (exit 1); BP-0181112b's first check is the kb sentence '(?i)recovery keys are stored on the Entra device object'. The pool check run passes before the work: it pins that bench_scenarios.csv and bench_pool.csv stay in step after both edits.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "7b0cefff29d2885c1a21a0a3be20cc67b7f83ec3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,re;sys.path.insert(0,\"_tools\");import bench_pool as b;R={x[\"id\"]:x for x in b.read_csv(b.PUBLIC_FILE)};c=json.loads(R[\"BP-0181112b\"][\"checks\"])[0];A=[\"The BitLocker recovery key is stored on the device object in Entra ID.\",\"Entra ID keeps the recovery key on the device object, so deleting the device deletes the key.\"];ok=[bool(re.search(c,a)) for a in A];print(c,ok);sys.exit(0 if all(ok) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "25f911babec33d4a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ba1e2a59800116b6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,re;sys.path.insert(0,\"_tools\");import bench_pool as b;R={x[\"id\"]:x for x in b.read_csv(b.PUBLIC_FILE)};a=\"Run /plugin install my-plugin@my-marketplace in Claude Code.\";c=json.loads(R[\"BP-2c2a3c1d\"][\"checks\"])[0];ok=bool(re.search(c,a));print(c,ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "033931df235b09ff"
+      }
+    ]
+  }
 }
