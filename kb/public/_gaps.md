@@ -797,6 +797,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## agents/doc-lookup-sources
 
+- **Why `MicrosoftDocs/memdocs` answers 404, and whether a successor public mirror exists for ConfigMgr and Intune pages.** Looked 2026-10-12: the repository's API, home page and a pinned raw file answer 404 (a search of the `MicrosoftDocs` organisation for a repository named `memdocs` finds none), the Learn "How to use Microsoft Intune documentation" page (S-xmqy75h7) and a ConfigMgr page's head tags (S-f6ejsacc) still point at it, and the Internet Archive holds one capture of the home page (2026-05-11, S-u2afup7q). A 404 does not say deleted, private or moved. Needs a Microsoft statement, or a Learn page whose edit link names a live public repository; until then the facts say "answers 404" and name the last capture. (topic: agents/doc-lookup-sources)
 - Anthropic docs terms for storing fetched page text offline: not found on platform.claude.com or code.claude.com
   (2026-09-25). Until found, Anthropic docs stay summarized with quotes of at most 25 words.
   - Tried 2026-09-27: WebSearch of anthropic.com/legal (Consumer and Commercial Terms) and the docs footers already cited; no docs-specific licence found. Still open. (topic: agents/doc-lookup-sources)
