@@ -2,7 +2,7 @@
   "id": "BG-gxxv3mzj",
   "kind": "bug",
   "title": "MicrosoftDocs/memdocs answers 404, but doc-lookup-sources.md says it is archived and four live sources still point into it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-df2cu4uj",
   "priority": "P2",
@@ -92,5 +92,6 @@
   "links": [
     "kb:public/agents/doc-lookup-sources.md"
   ],
-  "notes": "Observed 2026-10-11: api.github.com/repos/MicrosoftDocs/memdocs, github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404 (the GitHub API's remaining unauthenticated budget was 31 of 60, so not a rate limit); the repro reports gone=2 pinned=1, facts dead=5. 114 of the repository's 118 source rows were already superseded by Learn pages. doc-lookup-sources.md:52 says the repository is archived (last push 2026-09-02, S2196 confirmed 2026-09-26). Planned 2026-10-12: repro reproduced (gone=2 pinned=1, dead=5); S-rgpijsmb, the fourth live row the repro leaves out, has its own check (gone=1, dead=2 today). check.py and rag.py eval pass before the work: they pin the contract and the lookups the refresh must keep."
+  "notes": "Observed 2026-10-11: api.github.com/repos/MicrosoftDocs/memdocs, github.com/MicrosoftDocs/memdocs and a raw file pinned at memdocs@4b5429df answer 404 (the GitHub API's remaining unauthenticated budget was 31 of 60, so not a rate limit); the repro reports gone=2 pinned=1, facts dead=5. 114 of the repository's 118 source rows were already superseded by Learn pages. doc-lookup-sources.md:52 says the repository is archived (last push 2026-09-02, S2196 confirmed 2026-09-26). Planned 2026-10-12: repro reproduced (gone=2 pinned=1, dead=5); S-rgpijsmb, the fourth live row the repro leaves out, has its own check (gone=1, dead=2 today). check.py and rag.py eval pass before the work: they pin the contract and the lookups the refresh must keep.",
+  "claimed_by": "orch-df2cu4uj"
 }
