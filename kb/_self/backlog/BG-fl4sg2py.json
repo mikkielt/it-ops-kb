@@ -68,7 +68,7 @@
       "recommendation": "eval-sourced rows only (a row built on a lookup_eval.csv case, whose check the model wrote), as built",
       "class": "design",
       "answer": "eval-sourced rows only (a row built on a lookup_eval.csv case, whose check the model wrote), as built",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
