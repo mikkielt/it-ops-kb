@@ -103,6 +103,50 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "unread-exit",
+      "kind": "blocking",
+      "question": "When kbid.py add reads no licence (any other host, or a record it cannot use), what does it print and exit with?",
+      "options": [
+        "stderr: the reason and the host's usual pair marked check:, nothing written, exit 2",
+        "stdout: the same lines, exit 0, so a caller reads no failure"
+      ],
+      "recommendation": "stderr: the reason and the host's usual pair marked check:, nothing written, exit 2",
+      "class": "agents-rule"
+    },
+    {
+      "id": "one-flag",
+      "kind": "blocking",
+      "question": "When only one of --licence and --reuse is given to kbid.py add, what does it do?",
+      "options": [
+        "Refuse, exit 2: both flags together or neither, so a pair is never half read",
+        "Read the other value from the source and fill it, the given flag winning"
+      ],
+      "recommendation": "Refuse, exit 2: both flags together or neither, so a pair is never half read",
+      "class": "agents-rule"
+    },
+    {
+      "id": "licence-words",
+      "kind": "blocking",
+      "question": "What words does kbid.py add write in licence for a licence it read, and how does a Learn mirror with several licence files count?",
+      "options": [
+        "The usual row wording: 'CC BY 4.0 (licence link on the arXiv abstract page)', 'MIT (repository licence of OWNER/REPO, from the GitHub API)', 'MIT (public mirror OWNER/REPO)', Learn terms of use (...why...) for quote; more than one licence file at a mirror's root, a LICENSE-CODE aside, is a conflict: quote",
+        "The SPDX id alone for every family, and a mirror's licence files never compared (one GitHub request less for a Learn page)"
+      ],
+      "recommendation": "The usual row wording: 'CC BY 4.0 (licence link on the arXiv abstract page)', 'MIT (repository licence of OWNER/REPO, from the GitHub API)', 'MIT (public mirror OWNER/REPO)', Learn terms of use (...why...) for quote; more than one licence file at a mirror's root, a LICENSE-CODE aside, is a conflict: quote",
+      "class": "push"
+    },
+    {
+      "id": "read-scope",
+      "kind": "blocking",
+      "question": "Which pages does kbid.py add read a licence for, and which stay a marked guess?",
+      "options": [
+        "Repository files and front pages on github.com, raw.githubusercontent.com and gitlab.com (not issues, discussions, wikis or merge requests), arxiv.org and ar5iv pages, learn.microsoft.com pages, and the hosts code.claude.com, anthropic.com and www.anthropic.com; a repository with no licence the forge recognises (none, NOASSERTION, other) is unread",
+        "Every page of those hosts, and a repository with no recognised licence written as quote with no licence file"
+      ],
+      "recommendation": "Repository files and front pages on github.com, raw.githubusercontent.com and gitlab.com (not issues, discussions, wikis or merge requests), arxiv.org and ar5iv pages, learn.microsoft.com pages, and the hosts code.claude.com, anthropic.com and www.anthropic.com; a repository with no licence the forge recognises (none, NOASSERTION, other) is unread",
+      "class": "push"
     }
   ],
   "links": [

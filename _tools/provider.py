@@ -84,6 +84,13 @@ keeps a 200 for SEARCH_AGE days under _cache/provider-search/ (--refresh asks ag
 and the day of its answer), then `N. DATE  TITLE` and the url of each of the first --max hits (default 5). Exit: 0 hits
 printed, 1 the API did not answer 200 or holds no hit, 2 a provider with no search_api.
 
+read_licence(url) (kbid.py add) reads the licence and reuse class from the source's own record: an arXiv abstract
+page's licence link, a GitHub or GitLab repository's licence through the forge's API, a Learn page's public mirror
+(the page's github_feedback_content_git_url; archived, private or with conflicting licence files it is `quote`) and
+the fixed pair of code.claude.com and anthropic.com. It returns `copy` only for an open licence (an SPDX id that is
+no NC, ND or source-available one, CC BY, CC BY-SA, CC0) and leaves licence and reuse empty, with a `note`, for any
+other host or a record it cannot use; a GitHub request is unauthenticated (60 an hour; a Learn page asks two).
+
 Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
 lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
 is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run.
@@ -812,6 +819,189 @@ def cmd_search(a, rows):
     if len(d["hits"]) > a.limit:
         print(f"{len(d['hits']) - a.limit} more: raise --max")
     return 0
+
+
+# ---------------------------------------------------------------- the licence of a source
+
+ANTHROPIC_TERMS = "Anthropic terms (no open licence)"
+ANTHROPIC_HOSTS = ("code.claude.com", "anthropic.com", "www.anthropic.com")
+ARXIV_HOSTS = ("arxiv.org", "www.arxiv.org", "export.arxiv.org", "ar5iv.org", "ar5iv.labs.arxiv.org")
+ARXIV_ID = re.compile(r"^/(?:abs|pdf|html)/(.+?)(?:\.pdf)?/?$")
+ABS_LICENSE = re.compile(r'class="abs-license"[^>]*>\s*<a[^>]*\bhref="([^"]+)"', re.I)
+CC_LINK = re.compile(r"creativecommons\.org/(licenses|publicdomain)/([a-z-]+)/(\d\.\d)", re.I)
+CC_SPDX = re.compile(r"^CC-(BY(?:-(?:NC|SA|ND))*)-(\d\.\d)$")
+NO_REUSE = re.compile(r"(?:^|-)(?:NC|ND)(?:-|$)|^(?:BUSL|SSPL|Elastic|FSL|PolyForm|Commons-Clause)", re.I)  # NC, ND, source-available
+LICENCE_FILE = re.compile(r"^(?:LICEN[CS]E|COPYING)(?:[.-].*)?$", re.I)
+CODE_LICENCE = re.compile(r"[-_.]code\b", re.I)  # LICENSE-CODE: the licence of the repository's code, beside its content's
+REPO_PAGES = ("blob", "tree", "raw", "blame")  # the path words after OWNER/REPO that are files of the repository
+GITLAB_SPDX = {k.lower(): k for k in (  # GitLab names a licence by its lowercase SPDX id; the ids not here are upper-cased
+    "Apache-2.0", "Artistic-2.0", "BSD-2-Clause", "BSD-3-Clause", "BSL-1.0", "MIT", "MPL-2.0", "Unlicense", "Zlib")}
+META_FEEDBACK = re.compile(r"<meta\b[^>]*\bname=\"github_feedback_content_git_url\"[^>]*>", re.I)
+
+
+def _found(family, licence, reuse, evidence):
+    return {"family": family, "licence": licence, "reuse": reuse, "evidence": evidence, "note": ""}
+
+
+def _unread(family, why):
+    return {"family": family, "licence": "", "reuse": "", "evidence": "", "note": why}
+
+
+def spdx_words(spdx):
+    """An SPDX id in the words the rows use: `CC-BY-SA-4.0` -> `CC BY-SA 4.0`, `CC0-1.0` -> `CC0 1.0`, the rest as it is."""
+    m = CC_SPDX.match(spdx)
+    if m:
+        return f"CC {m.group(1)} {m.group(2)}"
+    return "CC0 " + spdx[4:] if spdx.startswith("CC0-") else spdx
+
+
+def _arxiv_licence(u):
+    m = ARXIV_ID.match(u.path)
+    if not m or u.hostname.lower() not in ARXIV_HOSTS:
+        return _unread("arxiv", "not an arXiv abstract, PDF or HTML url")
+    page = f"https://arxiv.org/abs/{m.group(1)}"
+    r = request(page, limit=2_000_000)
+    if r["status"] != 200:
+        return _unread("arxiv", f"{page} did not answer 200 ({r['status'] or r['error']})")
+    text = r["body"].decode("utf-8", "replace")
+    link = ABS_LICENSE.search(text)
+    if not link:
+        return _unread("arxiv", f"{page} has no licence link")
+    href, words = link.group(1), "licence link on the arXiv abstract page"
+    if "arxiv.org/licenses/nonexclusive-distrib" in href:
+        return _found("arxiv", "arXiv non-exclusive distribution licence (no reuse grant)", "quote", page)
+    cc = CC_LINK.search(href)
+    if cc and re.fullmatch(r"by(?:-(?:nc|sa|nd))*|zero", cc.group(2).lower()):
+        kind = cc.group(2).lower()
+        name = f"CC0 {cc.group(3)}" if kind == "zero" else f"CC {kind.upper()} {cc.group(3)}"
+        return _found("arxiv", f"{name} ({words})", "quote" if re.search(r"-(?:nc|nd)\b", kind) else "copy", page)
+    return _unread("arxiv", f"{page} links a licence this tool does not know: {href}")
+
+
+def _repository_of(u):
+    """(forge, `owner/repo`, api url) of the repository a GitHub or GitLab page is a file of or the front page of, or None."""
+    host = (u.hostname or "").lower()
+    p = [urllib.parse.unquote(x) for x in u.path.split("/") if x]
+    if host == "raw.githubusercontent.com":
+        ok = len(p) >= 4  # owner, repository, ref, path
+    else:
+        ok = host in ("github.com", "www.github.com") and len(p) >= 2 and p[0] not in GH_NOT_OWNER and (len(p) == 2 or p[2] in REPO_PAGES)
+    if ok:
+        slug = f"{p[0]}/{re.sub(r'[.]git$', '', p[1])}"
+        return "GitHub", slug, f"https://api.github.com/repos/{slug}"
+    if host == "gitlab.com":
+        head, dash, rest = u.path.partition("/-/")
+        if dash and rest.split("/")[0] not in REPO_PAGES:  # an issue, a merge request, a wiki: not the repository's files
+            return None
+        parts = [urllib.parse.unquote(x) for x in head.split("/") if x]
+        if len(parts) >= 2:
+            slug = re.sub(r"[.]git$", "", "/".join(parts))
+            return "GitLab", slug, f"https://gitlab.com/api/v4/projects/{urllib.parse.quote(slug, safe='')}?license=true"
+    return None
+
+
+def _repository_licence(forge, api):
+    """(status, spdx, archived, note) of one repository from its forge's API. `spdx` is "" when the repository has no
+    licence the forge recognised (none, NOASSERTION, GitLab's `other`); `status` the HTTP status (0: no answer)."""
+    r = request(api, limit=2_000_000)
+    if r["status"] != 200:
+        return r["status"], "", False, f"{api} answered {r['status'] or r['error']}" + (
+            " (GitHub's unauthenticated limit is 60 REST requests an hour)" if r["status"] in (403, 429) else "")
+    try:
+        d = json.loads(r["body"].decode("utf-8", "replace"))
+        lic = d.get("license") or {}
+        if forge == "GitHub":
+            spdx = lic.get("spdx_id") or ""
+        else:
+            key = (lic.get("key") or "").lower()
+            spdx = GITLAB_SPDX.get(key, key.upper()) if key and key != "other" else ""
+        return 200, "" if spdx == "NOASSERTION" else spdx, bool(d.get("archived")), ""
+    except (ValueError, AttributeError, TypeError):
+        return 0, "", False, f"{api} answered a body that is not the forge's JSON"
+
+
+def _spdx_reuse(spdx):
+    return "quote" if NO_REUSE.search(spdx) else "copy"
+
+
+def _repo_licence(u):
+    got = _repository_of(u)
+    if got is None:
+        return _unread("repository", "not a file or the front page of a GitHub or GitLab repository")
+    forge, slug, api = got
+    status, spdx, _, note = _repository_licence(forge, api)
+    if status != 200:
+        return _unread("repository", note)
+    if not spdx or spdx.startswith("LicenseRef-"):
+        return _unread("repository", f"{forge} recognises no licence of {slug}: read its licence file")
+    reuse = _spdx_reuse(spdx)
+    tail = f"repository licence of {slug}, from the {forge} API" + ("" if reuse == "copy" else "; NC, ND or source-available terms: no reuse grant")
+    return _found("repository", f"{spdx_words(spdx)} ({tail})", reuse, api)
+
+
+def _licence_files(slug):
+    """The names of the licence files at a GitHub repository's root, its code licence (`LICENSE-CODE`) left out; None
+    when the listing could not be read."""
+    r = request(f"https://api.github.com/repos/{slug}/contents/", limit=2_000_000)
+    if r["status"] != 200:
+        return None
+    try:
+        names = [x.get("name", "") for x in json.loads(r["body"].decode("utf-8", "replace")) if x.get("type") == "file"]
+    except (ValueError, AttributeError, TypeError):
+        return None
+    return sorted(n for n in names if LICENCE_FILE.match(n) and not CODE_LICENCE.search(n))
+
+
+def _learn_licence(u):
+    page = urllib.parse.urlunsplit((u.scheme, u.netloc, u.path, u.query, ""))
+    r = request(page, limit=5_000_000)
+    if r["status"] != 200:
+        return _unread("learn", f"{page} did not answer 200 ({r['status'] or r['error']})")
+    tag = META_FEEDBACK.search(r["body"].decode("utf-8", "replace"))
+    content = re.search(r"\bcontent=\"([^\"]*)\"", tag.group(0)) if tag else None
+    repo = _repository_of(urllib.parse.urlsplit(content.group(1))) if content else None
+    if repo is None or repo[0] != "GitHub":
+        return _unread("learn", f"{page} names no GitHub mirror in its github_feedback_content_git_url")
+    _, slug, api = repo
+    terms = "Microsoft Learn terms of use"
+    status, spdx, archived, note = _repository_licence("GitHub", api)
+    if status == 404:
+        return _found("learn", f"{terms} (source repository {slug} is not public: the GitHub API answers 404)", "quote", api)
+    if status != 200:
+        return _unread("learn", note)
+    if archived:
+        return _found("learn", f"{terms} (public mirror {slug} archived: its licence covers only the archived text)", "quote", api)
+    files = _licence_files(slug)
+    if files is None:
+        return _unread("learn", f"the licence files of {slug} could not be listed (GitHub's unauthenticated limit is 60 requests an hour)")
+    if len(files) > 1:
+        return _found("learn", f"{terms} (public mirror {slug}: licence files {', '.join(files)} conflict)", "quote", api)
+    if not spdx or spdx.startswith("LicenseRef-"):
+        return _unread("learn", f"GitHub recognises no licence of the mirror {slug}: read its licence file")
+    if _spdx_reuse(spdx) == "quote":
+        return _found("learn", f"{terms} (public mirror {slug}, {spdx_words(spdx)}: no reuse grant)", "quote", api)
+    return _found("learn", f"{spdx_words(spdx)} (public mirror {slug})", "copy", api)
+
+
+def read_licence(url):
+    """What the source's own licence record gives a `kbid.py add` row: {family, licence, reuse, evidence, note}. `family`
+    names how it was read (`arxiv`: the licence link of the abstract page; `repository`: the GitHub or GitLab API;
+    `learn`: the public mirror the page's github_feedback_content_git_url names, by kb/_self/content-rules.md,
+    Licensing and privacy; `anthropic`: the fixed pair of code.claude.com and anthropic.com; "" for any other host).
+    `licence` and `reuse` are "" when nothing was read, and `note` says why. A reuse of `copy` is only an open licence
+    (SPDX id, CC BY or CC BY-SA); NC, ND, source-available, non-exclusive and a recognised-nowhere licence are `quote` or
+    unread. No credential is read and no Authorization header sent: GitHub's REST API allows 60 requests an hour."""
+    u = urllib.parse.urlsplit(url.strip())
+    host = (u.hostname or "").lower()
+    if host in ANTHROPIC_HOSTS:
+        return _found("anthropic", ANTHROPIC_TERMS, "quote", f"fixed pair of {host}")
+    if host in ARXIV_HOSTS:
+        return _arxiv_licence(u)
+    if host == "learn.microsoft.com":
+        return _learn_licence(u)
+    if _repository_of(u) is not None:
+        return _repo_licence(u)
+    return _unread("", f"no licence record is read for the host {host or url!r}")
 
 
 # ---------------------------------------------------------------- probe
