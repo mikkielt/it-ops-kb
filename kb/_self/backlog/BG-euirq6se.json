@@ -1,0 +1,20 @@
+{
+  "id": "BG-euirq6se",
+  "kind": "bug",
+  "title": "pack's priced note fires on a unit cost asked as 'how many <units> does X cost', which asks for no money amount",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a good pack of 'How many resource units does a Graph getMemberGroups call cost?' carries no priced note and no route split, while 'What is the current price of a Microsoft 365 E5 licence?' keeps it (PRICE_ASK exempts a unit only after 'cost ... in'; found by the SP-4o3plg4l review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.pack('How many resource units does a Graph getMemberGroups call cost?');print(p.get('priced'));sys.exit(1 if p.get('priced') else 0)"
+    ]
+  },
+  "links": [
+    "parked: SP-4o3plg4l review"
+  ]
+}

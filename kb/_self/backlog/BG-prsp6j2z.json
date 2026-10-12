@@ -1,0 +1,24 @@
+{
+  "id": "BG-prsp6j2z",
+  "kind": "bug",
+  "title": "hybrid-retrieval.md states in the present tense that kbfacts.terms reads a SID as a dotted version, which BG-bvyblfnp fixed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/agents/hybrid-retrieval.md's probe fact on kbfacts.terms and SIDs says the rule was narrowed to model families by BG-bvyblfnp (5301633fd) and that S-1-5-18 no longer gives 1.5 (found by the SP-4o3plg4l review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/agents/hybrid-retrieval.md',encoding='utf-8').read();sys.exit(1 if 'also fires inside SIDs' in t and 'BG-bvyblfnp' not in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the article's wording; the behaviour itself is already fixed",
+  "touches": [
+    "kb/public/agents/hybrid-retrieval.md"
+  ],
+  "links": [
+    "parked: SP-4o3plg4l review"
+  ]
+}

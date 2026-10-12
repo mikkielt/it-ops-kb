@@ -1,0 +1,21 @@
+{
+  "id": "BG-6hb4yabk",
+  "kind": "bug",
+  "title": "ql_apply's eval gate reads passed and n but not noted, so an auto-applied change that puts a note on an eval good passes it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_apply's gate refuses a change whose rag.run_eval result has noted above rag.NOTED_BASELINE, as rag.py eval does (ST-6s4ff6fa added noted to run_eval; found by the SP-4o3plg4l review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import ql_apply;s=inspect.getsource(ql_apply);sys.exit(0 if 'noted' in s or 'NOTED_BASELINE' in s else 1)"
+    ]
+  },
+  "repro_reason": "the gate's refusal needs an auto-applied change that raises noted on a fixture store; the repro reads whether ql_apply reads noted at all",
+  "links": [
+    "parked: SP-4o3plg4l review"
+  ]
+}
