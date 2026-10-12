@@ -700,7 +700,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -804,6 +804,52 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
     assert re.search(r"\S+\.md:\d+.*\[(DOC|CODE|DER|COMMUNITY|UNK)\b", out), out[:1500]
     assert kbfacts.routed(good_row()["question"]) is None  # a question of no kind a tool decides ranks as pack ranks it
+    # router_broad_lookups: a kind expert never takes a question whose plain pack is good. The probe set is built from
+    # the kb: one `What does the kb say about <title>?` per article (its topic where it has no heading), then the eval,
+    # held-out and off-kb questions; each is named that kbfacts.routed answers while kbfacts.pack is good on an article
+    class Text(str):  # the ledger scan splits its file again for each entry it holds: one split of a text here
+        cut = None
+
+        def splitlines(self, *a):
+            if self.cut is None:
+                self.cut = str.splitlines(self)
+            return self.cut
+
+    def hijacked(questions):
+        out = []
+        for q in dict.fromkeys(questions):
+            res = kbfacts.routed(q)
+            plain = kbfacts.pack(q) if res else None
+            if res and plain["verdict"] == "good" and plain["paths"]:
+                out.append(f"{q} (routed by kind: {', '.join(res['routed']['kinds'])}; pack good on {plain['paths'][0]})")
+        return out
+
+    def title_of(path, meta):
+        head = re.search(r"^# (.+)$", kbfacts.read(path) or "", re.M)
+        return head.group(1).strip() if head else meta["topic"].rsplit("/", 1)[-1].replace("-", " ")
+    with open(heldout, encoding="utf-8", newline="") as f:
+        held_rows = [r["question"] for r in csv.DictReader(f)]
+    probe = [f"What does the kb say about {title_of(p, m)}?" for p, m in sorted(kbfacts.articles().items())]
+    probe += [r["question"] for r in eval_rows()] + held_rows + offkb
+    assert len(probe) > len(kbfacts.articles()) + len(eval_rows()), len(probe)
+    memo = {}
+    plain_read = kbfacts.read
+
+    def read_once(path):
+        if path not in memo:
+            text = plain_read(path)
+            memo[path] = Text(text) if text else text
+        return memo[path]
+    with monkeypatch.context() as mp:
+        mp.setattr(kbfacts, "read", read_once)
+        found = hijacked(probe)
+        assert not found, found
+        # planted: an expert whose cue shows on every question and that answers every one is named for a good pack
+        loose = lambda q, domain, root, invalidated: [{"key": ("planted.md", 1), "kind": "gap", "path": "planted.md",  # noqa: E731
+                                                       "title": "planted", "lacks": True, "lines": ["- planted.md:1 [gap]"]}]
+        mp.setattr(kbfacts, "EXPERTS", (("gap", re.compile("."), loose),))
+        named = hijacked([good_row()["question"]])
+        assert len(named) == 1 and named[0].startswith(good_row()["question"] + " (routed by kind: gap;"), named
     # the pool's count, decision, conflict and gap rows: the kb: hook blocks on the answer of the tool that holds it,
     # each line with its path:line, and the row's own checks read it
     rows = bench_pool.load_pool(kinds={"count", "decision", "conflict", "gap"})
