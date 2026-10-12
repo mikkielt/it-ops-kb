@@ -95,7 +95,122 @@ def test_build_index_check_passes_on_the_live_kb():
     assert code == 0, out[-3000:]
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url(monkeypatch, tmp_path, capsys):
+def kbid_licence_families(monkeypatch, tmp_path, capsys):
+    """`kbid.py add` with no --licence and --reuse reads the source's own licence record by its family; each answer is
+    stubbed (a url not listed raises), so no request leaves the process, and an unread licence writes nothing."""
+    import types
+    head = "id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\n"
+    wiki = "https://wiki.corp.example.com/"
+    write(tmp_path / "lic" / "_sources.csv", head + "".join(
+        f"S-{c * 8},{wiki}{n},T,P,{lic},{reuse},2026-10-01,,,,\n"
+        for c, n, lic, reuse in (("a", "x", "Corp wiki terms", "quote"), ("b", "y", "Corp wiki terms", "quote"), ("c", "z", "MIT", "copy"))))
+    root = types.SimpleNamespace(path=str(tmp_path / "lic"), name="fixture", id_prefix="S")
+
+    def abs_page(href):
+        return f'<html><div class="abs-license"><a href="{href}" title="Rights to this article" class="has_license">license</a>'
+    cc = "http://creativecommons.org/licenses/"
+    gh, gl, files = "https://api.github.com/repos/", "https://gitlab.com/api/v4/projects/", "/contents/"
+    page = lambda mirror: f'<html><head><meta name="github_feedback_content_git_url" content="https://github.com/{mirror}/blob/main/docs/a.md" />'  # noqa: E731
+    repo = lambda spdx, **kw: json.dumps({"license": {"spdx_id": spdx} if spdx else None, **kw})  # noqa: E731
+    names = lambda *n: json.dumps([{"name": x, "type": "file"} for x in n])  # noqa: E731
+    learn = "https://learn.microsoft.com/en-us/test/"
+    pages = {
+        "https://arxiv.org/abs/2310.11511": (200, abs_page(cc + "by/4.0/")),
+        "https://arxiv.org/abs/2411.04403": (200, abs_page(cc + "by-sa/4.0/")),
+        "https://arxiv.org/abs/2107.05720": (200, abs_page(cc + "by-nc-sa/4.0/")),
+        "https://arxiv.org/abs/2302.09947": (200, abs_page(cc + "by-nc-nd/4.0/")),
+        "https://arxiv.org/abs/2406.99999": (200, abs_page("http://arxiv.org/licenses/nonexclusive-distrib/1.0/")),
+        "https://arxiv.org/abs/2402.13350v2": (200, abs_page("http://creativecommons.org/publicdomain/zero/1.0/")),
+        "https://arxiv.org/abs/2403.14403": (200, "<html><body>no licence here</body></html>"),
+        gh + "Org/Repo": (200, repo("MIT")),
+        gh + "Org/Source": (200, repo("BUSL-1.1")),
+        gh + "Org/Nc": (200, repo("CC-BY-NC-4.0")),
+        gh + "Org/None": (200, repo(None)),
+        gh + "Org/Other": (200, repo("NOASSERTION")),
+        gl + "grp%2Fsub%2Fproj?license=true": (200, json.dumps({"license": {"key": "apache-2.0", "name": "Apache License 2.0"}})),
+        learn + "page-a": (200, page("Org/Docs")), gh + "Org/Docs": (200, repo("MIT", archived=False)),
+        gh + "Org/Docs" + files: (200, names("LICENSE", "LICENSE-CODE", "README.md")),
+        learn + "page-b": (200, page("Org/Old")), gh + "Org/Old": (200, repo("CC-BY-4.0", archived=True)),
+        learn + "page-c": (200, page("Org/Private")), gh + "Org/Private": (404, "{}"),
+        learn + "page-d": (200, page("Org/Graph")), gh + "Org/Graph": (200, repo("CC-BY-4.0", archived=False)),
+        gh + "Org/Graph" + files: (200, names("LICENSE", "LICENSE.md", "README.md")),
+        learn + "page-e": (200, "<html><head><title>no mirror</title>"),
+        learn + "page-f": (200, page("Org/Cc")), gh + "Org/Cc": (200, repo("CC-BY-4.0", archived=False)),
+        gh + "Org/Cc" + files: (403, "{}"),
+    }
+    asked = []
+
+    def ask(url, headers=None, limit=20_000_000, method="GET"):
+        asked.append((url, dict(headers or {})))
+        status, body = pages[url]
+        return {"status": status, "headers": {}, "body": body.encode(), "final": url, "hops": [], "error": ""}
+    monkeypatch.setattr(provider, "request", ask)
+
+    def add(url, **flags):
+        ns = argparse.Namespace(url=url, title="T", publisher="P", licence=None, reuse=None, version="", sha256="")
+        ns.__dict__.update(flags)
+        code = kbid.cmd_add(ns, root)
+        cap = capsys.readouterr()
+        rows = [r for r in kbid.read_rows(root) if r["url"] == url]
+        return code, cap.out.strip(), cap.err, ((rows[0]["licence"], rows[0]["reuse"]) if rows else None)
+    via = " (licence link on the arXiv abstract page)"
+    arx = "https://arxiv.org/abs/"
+    # arXiv: the abstract page's licence link; CC BY and CC BY-SA copy, an NC or ND licence and the non-exclusive one quote
+    code, out, err, got = add(arx + "2310.11511")
+    assert code == 0 and out.startswith("S-") and got == ("CC BY 4.0" + via, "copy"), (code, out, err, got)
+    assert err.startswith(f"licence read (arxiv, {arx}2310.11511): CC BY 4.0"), err
+    assert add(arx + "2411.04403")[3] == ("CC BY-SA 4.0" + via, "copy")
+    assert add(arx + "2107.05720")[3] == ("CC BY-NC-SA 4.0" + via, "quote")
+    assert add(arx + "2302.09947")[3] == ("CC BY-NC-ND 4.0" + via, "quote")
+    assert add(arx + "2406.99999")[3] == ("arXiv non-exclusive distribution licence (no reuse grant)", "quote")
+    assert add("https://arxiv.org/pdf/2402.13350v2")[3] == ("CC0 1.0" + via, "copy")  # a PDF url is read at its abstract page
+    assert asked[-1][0] == arx + "2402.13350v2"
+    code, out, err, got = add(arx + "2403.14403")  # no licence link: nothing is written and the reason is named
+    assert code == 2 and out == "" and got is None and "has no licence link" in err and "nothing written" in err, err
+    # a GitHub or GitLab repository: its licence as the API gives it; NC, ND and source-available ids quote; an id the forge
+    # does not recognise is unread
+    assert add("https://github.com/Org/Repo/blob/main/docs/a.md")[3] == ("MIT (repository licence of Org/Repo, from the GitHub API)", "copy")
+    assert add("https://github.com/Org/Source")[3][1] == "quote"
+    code, out, err, got = add("https://raw.githubusercontent.com/Org/Nc/abc/x.md")
+    assert got is not None and got[0].startswith("CC BY-NC 4.0 (repository licence of Org/Nc") and got[1] == "quote", got
+    for u in ("https://github.com/Org/None", "https://github.com/Org/Other"):
+        code, out, err, got = add(u)
+        assert code == 2 and got is None and "recognises no licence" in err, (u, err)
+    code, out, err, got = add("https://gitlab.com/grp/sub/proj/-/blob/main/README.md")
+    assert got == ("Apache-2.0 (repository licence of grp/sub/proj, from the GitLab API)", "copy"), (code, err, got)
+    # a Learn page: its public mirror's licence (the page's github_feedback_content_git_url); archived, private or in
+    # conflict (LICENSE beside LICENSE.md, not beside LICENSE-CODE) it is `quote` under the Learn terms
+    assert add(learn + "page-a")[3] == ("MIT (public mirror Org/Docs)", "copy")
+    terms = "Microsoft Learn terms of use ("
+    assert add(learn + "page-b")[3] == (terms + "public mirror Org/Old archived: its licence covers only the archived text)", "quote")
+    assert add(learn + "page-c")[3] == (terms + "source repository Org/Private is not public: the GitHub API answers 404)", "quote")
+    assert add(learn + "page-d")[3] == (terms + "public mirror Org/Graph: licence files LICENSE, LICENSE.md conflict)", "quote")
+    for u, why in ((learn + "page-e", "names no GitHub mirror"), (learn + "page-f", "could not be listed")):
+        code, out, err, got = add(u)  # no mirror named, or the listing is rate limited: no pair is guessed
+        assert code == 2 and got is None and why in err, (u, err)
+    # the fixed pair of code.claude.com and anthropic.com asks nothing
+    n = len(asked)
+    assert add("https://code.claude.com/docs/en/hooks")[3] == ("Anthropic terms (no open licence)", "quote")
+    assert add("https://www.anthropic.com/news/x")[3] == ("Anthropic terms (no open licence)", "quote") and len(asked) == n
+    # any other host: the host's most common pair marked check, nothing written, no request
+    code, out, err, got = add(wiki + "new")
+    assert code == 2 and out == "" and got is None and len(asked) == n, (code, out, err)
+    assert "check: the usual pair of wiki.corp.example.com in fixture/_sources.csv is --licence 'Corp wiki terms' --reuse quote (2 of 3 rows)" in err
+    assert "nothing written" in err, err
+    code, out, err, got = add("https://other.corp.example.com/x")
+    assert code == 2 and "check: fixture/_sources.csv holds no row of other.corp.example.com" in err, err
+    assert add(wiki + "new", licence="Corp wiki terms", reuse="quote")[3] == ("Corp wiki terms", "quote")  # given, it is written
+    # explicit flags always win and ask nothing; one flag alone is refused; a url already in the root is unchanged
+    code, out, err, got = add("https://github.com/Org/Repo/blob/main/docs/b.md", licence="Own words", reuse="paraphrase")
+    assert code == 0 and got == ("Own words", "paraphrase") and len(asked) == n, (code, err, got)
+    code, out, err, got = add(arx + "2310.99999", licence="Own words")
+    assert code == 2 and got is None and "together, or neither" in err and len(asked) == n, err
+    code, out, err, got = add(arx + "2310.11511")
+    assert code == 0 and out.startswith("S-") and "unchanged" in err and len(asked) == n, (code, err)
+    assert all("Authorization" not in h for _, h in asked), asked
+
+
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -338,6 +453,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert asked[-1][0].startswith("https://api.github.com/") and all("Authorization" not in h for _, h in asked), asked
     code, out = find("generic", "orion")  # a row with no search_api is named, with the rows that have one
     assert code == 2 and "has no search_api" in out[0] and "learn" in out[0] and "pypi" in out[0], out
+    kbid_licence_families(monkeypatch, tmp_path, capsys)
 
 
 def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):

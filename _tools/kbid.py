@@ -6,7 +6,7 @@
   kbid.py answer "QUESTION" [--root NAME]   suggest a QK-<slug> answer id for the root's _answers.md (and say if it
                                             is taken)
   kbid.py eval "QUESTION" [--root NAME]     the EV-<slug> id for a row of the root's _retrieval/lookup_eval.csv
-  kbid.py add URL --title T --publisher P --licence L --reuse CLASS [--version V] [--sha256 HEX] [--root NAME]
+  kbid.py add URL --title T --publisher P [--licence L --reuse CLASS] [--version V] [--sha256 HEX] [--root NAME]
                                             append the url's row to the root's _sources.csv and print its id
   kbid.py check                             every root's _sources.csv: hash-id collisions, ids that do not match
                                             their url or do not carry the root's prefix
@@ -33,10 +33,20 @@ message names the differing fields. Exit 0 written or unchanged; 2 refused or a 
 publisher or licence, a reuse class outside kbcommon.REUSE, a url that is not http(s), a hash that is not 64 hex
 characters).
 
+The licence. With --licence and --reuse omitted, `add` reads the source's own licence record by its family
+(`provider.read_licence`; the rules are kb/_self/content-rules.md, Licensing and privacy): an arXiv abstract page's
+licence link, a GitHub or GitLab repository's licence through its API, a Microsoft Learn page's public mirror named
+in its github_feedback_content_git_url, and the fixed pair of code.claude.com and anthropic.com. A licence it
+reads is printed on stderr and written; one it cannot read (another host, an answer it cannot use) is never
+written: `add` prints on stderr the most common (licence, reuse) pair of the url's host in the root's _sources.csv
+marked `check:` and exits 2, and the row is written when the flags are given after the source's licence was read.
+Both flags, or neither: explicit flags always win and no network is asked; a url already in the root with its row
+is unchanged without a read.
+
 Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <question>`: lowercase words
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 """
-import argparse, base64, csv, datetime, functools, hashlib, os, re, sys, urllib.parse
+import argparse, base64, collections, csv, datetime, functools, hashlib, os, re, sys, urllib.parse
 import kbcommon
 from kbcommon import read_sources  # noqa: F401  (kbgit and the tests call kbid.read_sources)
 
@@ -174,9 +184,10 @@ def main():
         p.add_argument("--root", default="public", help="the root the id is for (default public)")
     d = sub.add_parser("add", help="append a source row for a url (changes nothing when it is there)")
     d.add_argument("url")
-    for flag in ("title", "publisher", "licence"):
+    for flag in ("title", "publisher"):
         d.add_argument(f"--{flag}", required=True)
-    d.add_argument("--reuse", required=True, choices=sorted(kbcommon.REUSE), help="what the licence allows with the text")
+    d.add_argument("--licence", default=None, help="the licence in words (omitted with --reuse: read from the source)")
+    d.add_argument("--reuse", default=None, choices=sorted(kbcommon.REUSE), help="what the licence allows with the text")
     d.add_argument("--version", default="", help="the row's version_or_date")
     d.add_argument("--sha256", default="", help="the row's artifact_sha256")
     d.add_argument("--root", default="public", help="the root the row is for (default public)")
@@ -245,13 +256,19 @@ def _row_key(sid):
     return sort_key(sid) if is_source_id(sid) else (2, 0, sid)
 
 
-def add_source(root, url, title, publisher, licence, reuse, version="", sha256="", today=None):
-    """Add the url's row to the root's _sources.csv and return (id, written). ValueError, naming the problem, when
-    the row is refused: a bad field, another row for the url, or a row with another url under the same hash id."""
+def _check_url(url):
+    """The stripped url; ValueError when it is not an http(s) url with a host."""
     url = url.strip()
     p = urllib.parse.urlsplit(url)
     if p.scheme not in ("http", "https") or not p.hostname or re.search(r"\s", url):
         raise ValueError(f"not an http(s) url: {url!r}")
+    return url
+
+
+def add_source(root, url, title, publisher, licence, reuse, version="", sha256="", today=None):
+    """Add the url's row to the root's _sources.csv and return (id, written). ValueError, naming the problem, when
+    the row is refused: a bad field, another row for the url, or a row with another url under the same hash id."""
+    url = _check_url(url)
     fields = {"title": _one_line(title), "publisher": _one_line(publisher), "licence": _one_line(licence),
               "reuse": reuse.strip()}
     for k in ("title", "publisher", "licence"):
@@ -286,10 +303,61 @@ def add_source(root, url, title, publisher, licence, reuse, version="", sha256="
     return sid, True
 
 
+def usual_pair(rows, url):
+    """((licence, reuse), n, total) of the url's host in `rows`: its most common pair (the first in text order on a
+    tie), the rows that hold it and the host's rows with a licence; None when the host has no row."""
+    host = (urllib.parse.urlsplit(url.strip()).hostname or "").lower()
+    pairs = collections.Counter((_one_line(r.get("licence")), (r.get("reuse") or "").strip()) for r in rows
+                                if r.get("licence") and (urllib.parse.urlsplit(r.get("url") or "").hostname or "").lower() == host)
+    if not host or not pairs:
+        return None
+    (pair, n), = sorted(pairs.items(), key=lambda kv: (-kv[1], kv[0]))[:1]
+    return pair, n, sum(pairs.values())
+
+
+def _read_licence(url, rows, root):
+    """(licence, reuse) the source's own licence record gives, or (None, None) after printing, on stderr, why nothing was
+    read and the host's usual pair marked `check:` (a guess; nothing is written from it)."""
+    import provider  # the network side, loaded only when a licence is read
+    got = provider.read_licence(url)
+    if got["licence"]:
+        print(f"licence read ({got['family']}, {got['evidence']}): {got['licence']} | {got['reuse']}", file=sys.stderr)
+        return got["licence"], got["reuse"]
+    print(f"refused: no licence read for {url.strip()}: {got['note']}", file=sys.stderr)
+    host = (urllib.parse.urlsplit(url.strip()).hostname or "").lower()
+    usual = usual_pair(rows, url)
+    if usual:
+        (licence, reuse), n, total = usual
+        print(f"check: the usual pair of {host} in {root.name}/{kbcommon.SOURCES} is --licence {licence!r} --reuse {reuse} "
+              f"({n} of {total} rows): a guess, not the source's licence", file=sys.stderr)
+    else:
+        print(f"check: {root.name}/{kbcommon.SOURCES} holds no row of {host}", file=sys.stderr)
+    print("nothing written: read the source's licence where it is stated and give --licence and --reuse", file=sys.stderr)
+    return None, None
+
+
 def cmd_add(a, root):
-    """kbid.py add: the exit code (0 written or unchanged, 2 refused)."""
+    """kbid.py add: the exit code (0 written or unchanged, 2 refused: a bad argument, a conflicting row or a licence
+    that was not read)."""
+    licence, reuse = a.licence, a.reuse
     try:
-        sid, written = add_source(root, a.url, a.title, a.publisher, a.licence, a.reuse, a.version, a.sha256)
+        if (licence is None) != (reuse is None):
+            raise ValueError("give --licence and --reuse together, or neither (the licence is then read from the source)")
+        if licence is None:
+            _check_url(a.url)
+            try:
+                rows = read_rows(root)
+            except (OSError, csv.Error):
+                rows = []
+            norm = normalize_url(a.url)
+            have = next((r for r in rows if normalize_url(r.get("url") or "") == norm), None)
+            if have:  # the url's row is there: nothing to read, and the row's own pair is what it is compared with
+                licence, reuse = have.get("licence", ""), have.get("reuse", "")
+            else:
+                licence, reuse = _read_licence(a.url, rows, root)
+                if licence is None:
+                    return 2
+        sid, written = add_source(root, a.url, a.title, a.publisher, licence, reuse, a.version, a.sha256)
     except ValueError as e:
         print(f"refused: {e}", file=sys.stderr)
         return 2
