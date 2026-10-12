@@ -1,0 +1,35 @@
+{
+  "id": "BG-v57estdm",
+  "kind": "bug",
+  "title": "The router's gap expert treats a _gaps.md entry closed by a Closed, Partly resolved or Narrowed line as open and answers 'the kb lacks it'",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A _gaps.md entry whose continuation lines close it (Closed, Partly resolved, Narrowed, as well as Resolved and Superseded) is not routed as an open gap: rag.py pack 'What does the kb say about GitLab semantic versioning requirement for Catalog releases?' prints the article that answers it (arch/gitlab-ci-components.md), not kb lacks from _gaps.md:310; rag.py eval keeps passing all its rows.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','What does the kb say about GitLab semantic versioning requirement for Catalog releases?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: gap' not in r.stdout and r.stdout.startswith('coverage: ') else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7n3d4jte review"
+  ],
+  "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.OPEN_GAP matches only '- Resolved|Superseded'. Also _gaps.md:268 (Closed); 16 'Partly resolved' and 3 'Narrowed' entries (_gaps.md:1064, 1066, 1068): whether a partly resolved entry still routes as open is the planner's choice."
+}

@@ -1,0 +1,42 @@
+{
+  "id": "BG-hc2gficq",
+  "kind": "bug",
+  "title": "The router's citation cue routes a lookup that names a source id beside 'name', 'mention', 'refer' or 'used by' to src --cited, printing a file list instead of the fact",
+  "status": "draft",
+  "parent": "EP-jqjlwiar",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A lookup that names a source id and asks what it says is not routed to the cites expert: rag.py pack 'Which flag name does S1800 give for limiting the number of agentic turns in headless mode?' prints fact lines, not a list of citing files, while rag.py pack 'Which articles cite S1800?' still routes to cites; rag.py eval keeps passing all its rows.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','Which flag name does S1800 give for limiting the number of agentic turns in headless mode?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' not in r.stdout and r.stdout.startswith('coverage: ') else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','Which articles cite S1800?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' in r.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-7n3d4jte review"
+  ],
+  "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.CITE_CUE includes name\\w*, mention\\w*, refer\\w*, us\\w* by. Also 'What do S1800 and S1801 say about the headless flag used by CI?' prints a file list; 'What does S1800 say about --max-turns?' is not routed, so the cue words are the cause."
+}
