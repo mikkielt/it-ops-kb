@@ -2,7 +2,7 @@
   "id": "ST-yekftoim",
   "kind": "story",
   "title": "Refresh agents/langgraph and windows/azure-update-manager against their live sources and anchor their facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-qjg5r7jj",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "ST-neh4up5t",
   "kind": "story",
   "title": "Refresh claude/settings-and-scopes, claude/plugins, claude/skills-and-subagents and claude/agent-sdk against their live sources and anchor their facts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-qjg5r7jj",
   "priority": "P2",

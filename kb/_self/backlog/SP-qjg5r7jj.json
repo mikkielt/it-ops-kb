@@ -2,7 +2,7 @@
   "id": "SP-qjg5r7jj",
   "kind": "sprint",
   "title": "Content: refresh and anchor the six articles behind the benchmark's sc_stale rows",
-  "status": "planned",
+  "status": "active",
   "goal": "the six articles the pool's sc_stale rows lead with (claude/settings-and-scopes, claude/plugins, claude/skills-and-subagents, claude/agent-sdk, agents/langgraph, windows/azure-update-manager) are refreshed against their live sources through /kb-refresh, so fetch.py --status reads none of their 85 cited sources as never fetched; the printed fact lines of the six sc_stale packs carry at most 5 [unanchored] marks (17 of 50 at planning); rag.py eval keeps every row",
   "gates": [
     {
