@@ -1,0 +1,21 @@
+{
+  "id": "BG-viwywxml",
+  "kind": "bug",
+  "title": "Gap row BP-bac81f87 names a _gaps.md entry that is no longer open and its pack is good, and pool check never judges a gap row's route",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Every gap row of bench_pool.csv names an open _gaps.md entry (kbfacts.OPEN_GAP) and its pack routes to web; pool check names a gap row whose entry has closed or narrowed or whose pack does not route to web",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bench_pool as b;bad=[r['id'] for r in b.read_csv(b.PUBLIC_FILE) if r['kind']=='gap' and b.scenario_pack(r['question'])[0]!='web'];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "links": [
+    "parked: SP-kuhlsf2s review"
+  ],
+  "notes": "Overlaps draft BG-sclw54q6 (the same row BP-bac81f87); this one adds that pool check judges no gap row's route or openness. Merge the two at triage."
+}

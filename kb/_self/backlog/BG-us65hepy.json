@@ -1,0 +1,20 @@
+{
+  "id": "BG-us65hepy",
+  "kind": "bug",
+  "title": "fact_for's phrase signal moved the SubagentStart/SubagentStop case to a line without agent_transcript_path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "fact_for on lookup_eval case EV-subagentstart-subagentstop-hook-input-fields-agent picks a claude/hooks.md line that holds agent_transcript_path (the question asks for the transcript), and no lookup_eval case's pick moves to a line missing a question term the old pick held",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,csv;sys.path.insert(0,'_tools');import bench_pool as b;c=next(r for r in csv.DictReader(open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8')) if r['id']=='EV-subagentstart-subagentstop-hook-input-fields-agent');f=b.fact_for('.',c);print(f[:2]);sys.exit(0 if f and 'agent_transcript_path' in f[2] else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-kuhlsf2s review"
+  ]
+}

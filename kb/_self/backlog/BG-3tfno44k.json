@@ -1,0 +1,20 @@
+{
+  "id": "BG-3tfno44k",
+  "kind": "bug",
+  "title": "Five of the six sc_stale rows cite no source past its freshness lifetime, so they no longer measure staleness",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Each sc_stale row of bench_pool.csv asks a question whose pack cites a source past its freshness lifetime, so pool check prints no 'cites no source past its freshness lifetime' warning; rows rebuilt through bench_scenarios.csv, no paid run without its dry-run estimate",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,subprocess;o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','check'],capture_output=True,text=True);n=(o.stdout+o.stderr).count('cites no source past');print(n,o.returncode);sys.exit(1 if n or o.returncode else 0)"
+    ]
+  },
+  "links": [
+    "parked: SP-kuhlsf2s review"
+  ]
+}

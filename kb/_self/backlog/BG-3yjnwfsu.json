@@ -1,0 +1,20 @@
+{
+  "id": "BG-3yjnwfsu",
+  "kind": "bug",
+  "title": "BP-2c2a3c1d's answer regex rejects the placeholder paraphrase /plugin install <plugin>@<marketplace>",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The first check of BP-2c2a3c1d (bench_scenarios.csv and bench_pool.csv) matches a correct paraphrase with angle-bracket placeholders around the @ as well as a literal plugin id; the two files change in step and pool check passes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;p=json.loads(next(x for x in b.read_csv(b.PUBLIC_FILE) if x['id']=='BP-2c2a3c1d')['checks'])[0];r=[bool(re.search(p,a)) for a in ['/plugin install my-plugin@my-marketplace','/plugin install <plugin>@<marketplace>']];print(r);sys.exit(0 if all(r) else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-kuhlsf2s review"
+  ]
+}

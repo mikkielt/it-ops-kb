@@ -1,0 +1,21 @@
+{
+  "id": "BG-4lxb2w34",
+  "kind": "bug",
+  "title": "No suite test runs scenario_pack's check route or FRESH_CHECK: every test stubs scenario_pack",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "An existing test of _tools/test_bench.py runs the real scenario_pack on a pack with a check: line and no route: line and asserts pool check names the row (the pack prints a check: line), and asserts bench_pool.FRESH_CHECK does not match a bare article header's retrieved date; no new test id, tests_ceiling.json untouched",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('_tools/test_bench.py',encoding='utf-8').read();sys.exit(0 if 'FRESH_CHECK' in t and 'prints a check: line' in t else 1)"
+    ]
+  },
+  "repro_reason": "The defect is a missing assertion in the suite: the code works today (BG-4flop3jv and BG-chs2di4p checks), so only the test file's text can show the assertion is absent; the fix's check is python3 _tools/tests.py -k bench_pool_check_reports_stale_pick with scenario_pack reverted failing it.",
+  "links": [
+    "parked: SP-kuhlsf2s review"
+  ]
+}

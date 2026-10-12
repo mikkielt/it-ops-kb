@@ -1,0 +1,20 @@
+{
+  "id": "BG-v3fcyl3c",
+  "kind": "bug",
+  "title": "The cmpivot timeout rows' answer regex accepts any duration, so a wrong timeout passes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The answer regex of the cmpivot timeout rows (BP-d306eaa8, BP-8f566d80, BP-70d0bf39 and their variants) matches the kb's 1-hour and 10-minute timeouts (mecm/cmpivot.md:17) and rejects another duration such as 30 seconds; pool check passes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;p=json.loads(next(x for x in b.read_csv(b.PUBLIC_FILE) if x['id']=='BP-d306eaa8')['checks'])[0];r=[bool(re.search(p,a)) for a in ['the CMPivot timeout is 30 seconds','a 1-hour timeout']];print(r);sys.exit(0 if r==[False,True] else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-kuhlsf2s review"
+  ]
+}
