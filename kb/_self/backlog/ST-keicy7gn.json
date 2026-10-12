@@ -2,7 +2,7 @@
   "id": "ST-keicy7gn",
   "kind": "story",
   "title": "The AD CS autoenrollment sc_partial row tests partial knowledge, and a test asserts the scenario answer-not-in-pack message",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",
@@ -69,5 +69,6 @@
   "links": [
     "parked: SP-j2jn5ue4 review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): rag.py pack of the row's question prints 'not in the kb: autoenrollment' and its answer regex matches public/intune/certificates-pki.md:49, the PKCS connector template line, so the row tests absent knowledge. Plan: the replacement question comes from a rag.py pack with coverage good whose present part a kb line answers; the test assertion goes into an existing test of _tools/test_bench.py (the suite is close to its test-id ceiling, a new id may not fit). The pool check run passes before the work: it pins that the rebuilt pool stays consistent with bench_scenarios.csv."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): rag.py pack of the row's question prints 'not in the kb: autoenrollment' and its answer regex matches public/intune/certificates-pki.md:49, the PKCS connector template line, so the row tests absent knowledge. Plan: the replacement question comes from a rag.py pack with coverage good whose present part a kb line answers; the test assertion goes into an existing test of _tools/test_bench.py (the suite is close to its test-id ceiling, a new id may not fit). The pool check run passes before the work: it pins that the rebuilt pool stays consistent with bench_scenarios.csv.",
+  "claimed_by": "orch-kuhlsf2s"
 }
