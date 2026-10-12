@@ -4,6 +4,7 @@
   "title": "sample --brief agrees a fact by tool only when its anchor predates the census's phase-2 edits",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-htl7jkrm",
   "priority": "P2",
   "rank": 0,
   "goal": "census.py sample --brief agrees a fact by tool only when its anchor's verified_utc predates the census's phase-2 edits (or the fact line is unchanged since phase 1); every fact re-anchored in phase 2 goes to the checker with its passage, so a reader's rewrite is never agreed by the anchor it wrote.",
@@ -13,16 +14,31 @@
         "python3",
         "_tools/tests.py",
         "-k",
-        "census"
+        "census_sample_brief_agrees_by_tool_only_before_phase2_edits"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "census.py sample --brief agrees a fact by tool only when its anchor's verified_utc predates the census's phase-2 edits (or the fact line is unchanged since phase 1)",
+      "check": 0
+    },
+    {
+      "clause": "every fact re-anchored in phase 2 goes to the checker with its passage, so a reader's rewrite is never agreed by the anchor it wrote",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/census.py",
     "_tools/test_redact.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-ct2jakvm"
   ],
   "links": [
     "parked: SP-yojt6y7v review"
-  ]
+  ],
+  "notes": "Premise: sample_brief and current_passage (_tools/census.py) never read an anchor's verified_utc: a located anchor whose sha is in the page is agreed by tool whatever its date. Premise run 2026-10-12: inspect.getsource shows no 'verified_utc' in either; reproduces. verified_utc is a date only and a census runs in one day, so 'predates' means strictly before the census's phase date (ql_capture.phase_date of the log), or the fact line is unchanged since phase 1; the same-day anchors of phase 2's own re-anchor go to the checker. Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
 }

@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Goal questions run 2026-10-12 with rag.py pack -q: (1) how an Edit permission rule names an absolute path and whether .claude directories are protected, (2) whether thinking tokens count as output, (3) the usage and cost fields of claude -p --output-format json. Coverage good for all three (public/claude/settings-and-scopes.md:65 protected-path writes denied under dontAsk; public/claude/ci-and-headless.md:72 total_cost_usd and modelUsage). Its done needs 'No outside facts: the kb holds each answer'."
 }
