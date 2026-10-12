@@ -59,6 +59,21 @@
   "depends_on": [
     "BG-hc2gficq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does a Mostly resolved note (3 entries in kb/public/_gaps.md) end the open-gap route like Partly resolved, though the goal names only Closed, Partly resolved, Narrowed, Resolved and Superseded?",
+      "options": [
+        "yes",
+        "no"
+      ],
+      "recommendation": "yes",
+      "class": "design",
+      "answer": "yes",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-7n3d4jte review"
   ],
