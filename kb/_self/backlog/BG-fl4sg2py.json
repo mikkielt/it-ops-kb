@@ -2,7 +2,7 @@
   "id": "BG-fl4sg2py",
   "kind": "bug",
   "title": "pool check does not flag a committed check alternative that no line of the kb states: BP-9e209bb8 keeps two invented Microsoft365DSC cmdlet names",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-j2jn5ue4",
   "priority": "P3",
   "rank": 0,
