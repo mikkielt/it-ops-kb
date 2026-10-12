@@ -1,0 +1,18 @@
+{
+  "id": "BG-xweoljdy",
+  "kind": "bug",
+  "title": "factdiff.py anchors --stale lists 31 anchors of facts that no longer exist in claude, logs and python articles, which anchor --file leaves because no cited source selects them",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.py anchors --stale prints stale=0: the anchors of reworded or removed facts in claude/api-limits.csv, claude/hooks.md, claude/messages-api.md, logs/microsoft-sentinel.md, logs/otel-collector-receivers.md, logs/otel-log-semconv.md and python/uv-projects.md are pruned, and a refresh that rewords a fact leaves none behind.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/factdiff.py",
+      "anchors",
+      "--stale"
+    ]
+  }
+}
