@@ -2,7 +2,7 @@
   "id": "BG-udo2fxq3",
   "kind": "bug",
   "title": "pack's passing and priced notes are not read by the kb: hook's false-good sentence, backlog.py's judge and ql_learn.passes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4o3plg4l",
   "priority": "P2",
   "rank": 0,
@@ -124,5 +124,45 @@
     "merged: BG-cs4xmk74"
   ],
   "notes": "Merged from BG-cs4xmk74 at the 2026-10-12 draft triage: judge('page file size') returns ('sufficient','') for a good pack whose only check: line is the scatter note; same predicate (hook, judge and ql_learn.passes read only unmatched and spread). rag.scatter_calibration read on 2026-10-12: at threshold 15 the note flags 8 of 11 off-kb goods and 3 of 236 eval goods, so the scatter line counts as flagged (gate g1); scatter sets no route, so kb_hook.routed never sees it alone.\nPremise: on 2026-10-12 (origin/main a5a7459f2) the repro exits 1 (routed with passing set adds no possible-false-good sentence), judge with a passing or priced pack returns ('sufficient',''), ql_learn.passes is True for one, and judge('page file size') is ('sufficient','').",
-  "claimed_by": "orch-4o3plg4l"
+  "evidence": {
+    "commit": "0f6688cae6cc68cf1e7d7bee505880f2dd8de0af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,\"_tools\");import bl_check;s=bl_check.KnowledgeState(types.SimpleNamespace(root=\".\"));r=s.judge(\"page file size\");print(r);sys.exit(0 if r[0]==\"partial\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "28a5ae6b54d1c06b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,\"_tools\");import bl_check;base=dict(verdict=\"good\",sources=[],paths=[],unmatched=[],spread=None,scatter=None,passing=[],priced=False);bad=[]\nfor k,v in ((\"passing\",[\"tempdb\"]),(\"priced\",True)):\n s=bl_check.KnowledgeState(types.SimpleNamespace(root=\".\"));r=dict(base,**dict([(k,v)]));s.pack=lambda q,r=r:r\n bad+=[k] if s.judge(\"x\")[0]!=\"partial\" else []\ns=bl_check.KnowledgeState(types.SimpleNamespace(root=\".\"));s.pack=lambda q:base\nbad+=[\"clean\"] if s.judge(\"x\")[0]!=\"sufficient\" else []\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import ql_learn;base=dict(verdict=\"good\",paths=[],unmatched=[],spread=None,scatter=None,passing=[],priced=False);bad=[k for k,v in ((\"passing\",[\"tempdb\"]),(\"priced\",True),(\"scatter\",(9.0,[\"a\",\"b\"]))) if ql_learn.passes(dict(base,**dict([(k,v)])),None)]\nbad+=[] if ql_learn.passes(base,None) else [\"clean\"]\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kb_hook;c=kb_hook.routed({'route':'split','verdict':'good','text':'coverage: good\\ncheck: x','passing':['tempdb'],'priced':False});sys.exit(0 if 'flags a possible false good' in c else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
