@@ -2,7 +2,7 @@
   "id": "BG-bvyblfnp",
   "kind": "bug",
   "title": "kbfacts.terms reads any hyphenated single-digit pair as a dotted version, so a SID such as S-1-5-18 packs as 1.5",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-4o3plg4l",
   "priority": "P3",
   "rank": 0,
@@ -80,5 +80,45 @@
     "parked: SP-5i4itd2d review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) terms('S-1-5-18') prints ['s-1-5-18', '18', '1.5'] and pack 'default value 1.5' leads with public/security/settings-crosswalk.csv:357, a SID row. Checks 1 and 2 pass before the work and guard the model-id rewrite (claude-opus-5-5 to 5.5) and the eval.",
-  "claimed_by": "orch-4o3plg4l"
+  "evidence": {
+    "commit": "0e024cbc3de785238a71618ac7e559f8c750d5a0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;t=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"default value 1.5\"],capture_output=True,text=True).stdout;lead=[l for l in t.splitlines() if l.startswith(\"- \")][:1];print(lead[0][:120] if lead else None);sys.exit(1 if not lead or \"settings-crosswalk.csv\" in lead[0] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "2148f466a3c50ea9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kbfacts;t=kbfacts.terms(\"claude-opus-5-5\");print(t);sys.exit(0 if \"5.5\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c89790687da53618"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "462a53e06b588a2b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import kbfacts; t=kbfacts.terms('S-1-5-18'); print(t); sys.exit(1 if '1.5' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "5bb346310f0b6f8d"
+      }
+    ]
+  }
 }
