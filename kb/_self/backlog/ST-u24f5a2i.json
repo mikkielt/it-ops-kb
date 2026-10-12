@@ -2,7 +2,7 @@
   "id": "ST-u24f5a2i",
   "kind": "story",
   "title": "The planning and review rules say a suite refused on a loaded host is retried or recorded, never answered by raising the ceiling",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rlincemn",
   "priority": "P1",
   "rank": 0,
@@ -80,5 +80,38 @@
     }
   ],
   "notes": "Premise (planned 2026-10-12): rag.py pack --root _self 'may a sprint raise the test suite ceiling when a whole-suite run is refused on a loaded host' is weak, kb lacks 'ceiling, refused, loaded'; no rule says what a refused suite on a loaded host gets, and the darwin ceiling was raised twice by delegated gates (cd5337c30 to 22 s, 4586e2204 to 24 s). Check 0 passes before the work and pins every _self eval row. Related drafts left as drafts: BG-w6z2zc6r, BG-ucwq6kga (suite over the darwin ceiling on a loaded host).",
-  "claimed_by": "orch-rlincemn"
+  "evidence": {
+    "commit": "a37f370c249c70cf2e2eb6af51d8043d09888420",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "_self"
+        ],
+        "exit": 0,
+        "sha256": "225241c8fdb123d3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a sprint raise the test suite ceiling when a whole-suite run is refused on a loaded host'],capture_output=True,text=True);ls=[l for l in p.stdout.splitlines() if l.startswith('- kb/_self/')];sys.exit(0 if p.returncode==0 and ls and 'ceiling' in ls[0] and ('again' in ls[0] or 'retr' in ls[0]) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a review or retrospective propose raising the tests_ceiling.json seconds'],capture_output=True,text=True);ls=[l for l in p.stdout.splitlines() if l.startswith('- kb/_self/')];sys.exit(0 if p.returncode==0 and ls and 'ceiling' in ls[0] and 'operator' in ls[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
