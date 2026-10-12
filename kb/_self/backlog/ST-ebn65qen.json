@@ -103,7 +103,9 @@
         "fold lastmod into etag and print nothing for no baseline or no date"
       ],
       "recommendation": "lastmod for a Last-Modified-only validator, no baseline for a source whose state row holds none, unconfirmed for a source nothing dates",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "lastmod for a Last-Modified-only validator, no baseline for a source whose state row holds none, unconfirmed for a source nothing dates",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -114,7 +116,9 @@
         "[unanchored] only for a row with status unlocated:*, an absent row left unmarked; same changed rule"
       ],
       "recommendation": "[unanchored] when a cited non-UNK source has no located anchor row for the fact (an absent row counts), [source changed] when the anchor's verified_utc date is before the source's changed_utc date; both after path:line, joined by '; '",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "[unanchored] when a cited non-UNK source has no located anchor row for the fact (an absent row counts), [source changed] when the anchor's verified_utc date is before the source's changed_utc date; both after path:line, joined by '; '",
+      "by": "operator"
     }
   ],
   "links": [
