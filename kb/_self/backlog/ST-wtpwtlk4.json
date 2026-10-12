@@ -2,7 +2,7 @@
   "id": "ST-wtpwtlk4",
   "kind": "story",
   "title": "The benchmarks report compares the new records with those of 2026-10-08 and 2026-10-09, naming the change behind each moved figure and each scenario's expected outcome met or not",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-ceucrhca",
   "priority": "P1",
@@ -86,5 +86,6 @@
   "depends_on": [
     "ST-gngo7etc"
   ],
-  "notes": "Check 2 (report --check) passes before the work on purpose: it keeps the generated tables and README.md's numbers in line; checks 0 and 1 fail until the section is written."
+  "notes": "Check 2 (report --check) passes before the work on purpose: it keeps the generated tables and README.md's numbers in line; checks 0 and 1 fail until the section is written.",
+  "claimed_by": "orch-ceucrhca"
 }
