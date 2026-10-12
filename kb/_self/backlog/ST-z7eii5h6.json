@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open questions the kb answers only weakly are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs: (1) which check: notes a good pack prints and which of them set route split (kb/_self/tools.md:140); (2) the state of a knowledge ask whose pack is good with a check: line (kb/_self/backlog.md:87); (3) what rag.py eval does with a row whose verdict differs (kb/_self/tools.md:12); (4) how terms reads a hyphenated version and a SID (kb/_self/tools.md:135 names only model ids); (5) how query performance prediction flags a possible false good (kb/public/agents/hybrid-retrieval.md). Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,9 @@
     }
   ],
   "touches": [
-    "kb/public/**"
-  ]
+    "kb/public/agents/hybrid-retrieval.md",
+    "kb/public/_gaps.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "Planned 2026-10-12: the five questions were run through rag.py pack -q (--root _self for 1 to 4, public for 5); every one printed coverage weak, the _self docs holding the lines named above and the public article holding the retrieval-prediction facts. Touches narrowed from kb/public/** to the article and ledger the questions can change."
 }

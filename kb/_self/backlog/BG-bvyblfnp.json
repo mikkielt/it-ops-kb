@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "kbfacts.terms reads any hyphenated single-digit pair as a dotted version, so a SID such as S-1-5-18 packs as 1.5",
   "status": "draft",
+  "sprint": "SP-4o3plg4l",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "terms() maps a hyphenated version to a dotted one only inside a model id (claude-opus-5-5 to 5.5), never inside a SID or another hyphenated token: terms('S-1-5-18') holds no '1.5', and pack 'default value 1.5' no longer leads with a settings-crosswalk.csv SID row. Introduced by ST-z5uh6oj7's VERSION_ID; found by the SP-5i4itd2d review.",
+  "goal": "terms() maps a hyphenated version to a dotted one only inside a model id (claude-opus-5-5 to 5.5), never inside a SID or another hyphenated token: terms('S-1-5-18') holds no '1.5'; pack 'default value 1.5' no longer leads with a settings-crosswalk.csv SID row (introduced by ST-z5uh6oj7's VERSION_ID, found by the SP-5i4itd2d review)",
   "repro": {
     "run": [
       "python3",
@@ -14,11 +15,54 @@
       "import sys; sys.path.insert(0,'_tools'); import kbfacts; t=kbfacts.terms('S-1-5-18'); print(t); sys.exit(1 if '1.5' in t else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;t=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"default value 1.5\"],capture_output=True,text=True).stdout;lead=[l for l in t.splitlines() if l.startswith(\"- \")][:1];print(lead[0][:120] if lead else None);sys.exit(1 if not lead or \"settings-crosswalk.csv\" in lead[0] else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import kbfacts;t=kbfacts.terms(\"claude-opus-5-5\");print(t);sys.exit(0 if \"5.5\" in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "terms() maps a hyphenated version to a dotted one only inside a model id (claude-opus-5-5 to 5.5), never inside a SID or another hyphenated token: terms('S-1-5-18') holds no '1.5'",
+      "check": 3
+    },
+    {
+      "clause": "terms() maps a hyphenated version to a dotted one only inside a model id (claude-opus-5-5 to 5.5), never inside a SID or another hyphenated token: terms('S-1-5-18') holds no '1.5'",
+      "check": 1
+    },
+    {
+      "clause": "pack 'default value 1.5' no longer leads with a settings-crosswalk.csv SID row (introduced by ST-z5uh6oj7's VERSION_ID, found by the SP-5i4itd2d review)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-j7pe3u46"
   ],
   "links": [
     "parked: SP-5i4itd2d review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) terms('S-1-5-18') prints ['s-1-5-18', '18', '1.5'] and pack 'default value 1.5' leads with public/security/settings-crosswalk.csv:357, a SID row. Checks 1 and 2 pass before the work and guard the model-id rewrite (claude-opus-5-5 to 5.5) and the eval."
 }
