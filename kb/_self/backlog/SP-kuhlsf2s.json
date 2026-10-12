@@ -1,0 +1,20 @@
+{
+  "id": "SP-kuhlsf2s",
+  "kind": "sprint",
+  "title": "Benchmark pool checks read the pack as the lookup does and pin their guards with tests",
+  "status": "planned",
+  "goal": "pool check names a scenario row whose pack is good but prints a check: line; the sc_stale check accepts a stamp date or a freshness mark, not a bare article header's retrieved date; the unstated-names warning is tested on a planted invented identifier and also reads one behind an inline flag, group or quantifier; fact_for picks the defining line for BP-df64045a and the cmpivot timeout rows, and their checks drop non-answer wording; the AD CS autoenrollment sc_partial row tests partial knowledge and the answer-not-in-pack message is tested; BP-2c2a3c1d and BP-0181112b checks match a correct paraphrase",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
