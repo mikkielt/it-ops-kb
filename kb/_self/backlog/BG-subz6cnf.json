@@ -2,7 +2,7 @@
   "id": "BG-subz6cnf",
   "kind": "bug",
   "title": "The narrowed cites cue no longer routes 'Which articles mention the source S1800?' or 'refer to the source S1800' to src --cited",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lmf4ke4w",
   "priority": "P1",
   "rank": 0,
@@ -50,5 +50,37 @@
     "kb/_self/token-efficiency.md"
   ],
   "notes": "Found by the SP-lmf4ke4w review (fresh-context reviewer, 2026-10-12): BG-hc2gficq's CITE_CUE accepts mention/refer/name only right before the id, so a word such as 'the source' between them drops the cites route; the repro failed on main at filing (misrouted: the four 'the source/source id/the sources' questions).",
-  "claimed_by": "orch-lmf4ke4w"
+  "evidence": {
+    "commit": "ba15ee3c86541b3ac7fc722232950b3656de49c7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_routes_kind"
+        ],
+        "exit": 0,
+        "sha256": "7bc7d85beae71820"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "f8ae025869474999"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;y=['Which articles mention the source S1800?','Which files refer to the source S1800?','Which articles mention source id S1800?','Which articles mention the sources S1800 and S1801?','Which articles cite S1800?'];n=['What does S1800 say about --max-turns?','Which flag is mentioned in S1800?'];bad=[q for q in y if 'cites' not in kbfacts.kinds_of_question(q)]+[q for q in n if 'cites' in kbfacts.kinds_of_question(q)];print('misrouted:',bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "f3c03b6502817d7b"
+      }
+    ]
+  }
 }
