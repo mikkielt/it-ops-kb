@@ -1,0 +1,19 @@
+{
+  "id": "ST-vbvktckh",
+  "kind": "story",
+  "title": "Planning plants the text a doc check requires and runs check.py and the lint on it before the start gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-lmf4ke4w retrospective: BG-s4lnuekm's check 2 required content-rules.md to hold the literal [CODE S-a: path; S-b: path], which check.py rejects as citing unknown sources, and the parser change surfaced a lint pointer error in codebase-mapping.md:62; both became blocking gates mid-work (g1, g2) and widened the touches to an article; precheck plants the literal a text check names into a scratch copy of the doc and the parser change's effect on the live kb, runs check.py and lint.py there, and warns before the start gate of each error it would cause",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_plants_doc_literal"
+      ]
+    }
+  ]
+}
