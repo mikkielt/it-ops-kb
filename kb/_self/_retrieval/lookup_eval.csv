@@ -305,3 +305,4 @@ SQ-census-one-domain-cost,what does a census of one domain cost on the determini
 SQ-may-research-worker-querylog-py-close,may a research worker's querylog.py close commit change kb/_querylog outside the item's touches at done,querylog.md,good,yes,trailer makes `backlog.py done` refuse,
 SQ-may-sprint-test-suite-ceiling-test,what may a sprint do when the test suite is at its ceiling of test ids,code.md,good,yes,needs room under `max_ids,
 SQ-commit-name-doc-read-found-still,how does a commit name a doc read and found still correct for selfdoc stale,maintaining.md,good,yes,"_tools/`, `.claude/`, `.claude-plugin/`, `.githooks",
+SQ-done-refuses-item-whose-work-operational,done refuses an item whose work is an operational run with no file change of its own: how is it finished,backlog.md,good,yes,sprint are never printed,
