@@ -1,0 +1,26 @@
+{
+  "id": "ST-opqlkzlt",
+  "kind": "story",
+  "title": "Review sprint: Benchmark run: measure the changes since the records of 2026-10-08 and 2026-10-09 across the knowledge scenarios",
+  "status": "draft",
+  "sprint": "SP-ceucrhca",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

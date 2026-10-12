@@ -1,0 +1,20 @@
+{
+  "id": "SP-ceucrhca",
+  "kind": "sprint",
+  "title": "Benchmark run: measure the changes since the records of 2026-10-08 and 2026-10-09 across the knowledge scenarios",
+  "status": "planned",
+  "goal": "The scenarios the changes since their last records move are recorded again on a tree holding SP-j2jn5ue4's scenario rows; a fresh-shape pool record with the scenario rows passes pool verify within a spend cap set from its dry run; and the report compares each re-recorded figure with its previous record, naming the change that moved it and, per scenario kind, whether the expected outcome was met",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
