@@ -789,6 +789,48 @@ The scatter check did not flag either false good before the research (its note n
 
 **What this section does not support.** A ranking of the arms on any scenario kind (six rows, one run each); the size of any moved kind cell; an effect of ST-jqwqdj2g's automatic revalidation or ST-f2n2h22c's hints on a lookup, which no scenario runs (the pool arms ran with hooks off); a reading of `sc_stale` as the stamp's effect (BG-chs2di4p); a cause for the kb arms' longer wall time per run; the census items' figures, which this sprint did not re-run; and a Sonnet 5.5 comparison in tokens per right answer between the records, whose cache-read weight differs.
 
+### The false-good fix (BG-xbbimxpq): the pool's `sc_absent` and `sc_partial` before and after
+
+Four questions the kb lacks packed to a clean `good` led by an article on another subject, which the record of 2026-10-12 above shows as the hook's 2 of 6 on `sc_absent`. The fix (`718d1dcb5`) makes `pack` print a `check:` line and route `split`, with `kb has:` and `kb lacks:`, for a plain question word the kb holds in only a few lines and in no article about it, and for a price asked where no printed fact states an amount; it never changes the verdict. This section measures the 12 pool rows of the two kinds the figures above name, `sc_absent` and `sc_partial` (six rows each), before and after it. **Before** is the tree of `0ae6d30bc` (origin/main when the fix was planned), **after** is this branch's tree, which holds the fix (`1e837c5` is the commit the rows name); both ran on 2026-10-12, Claude Code 2.1.296, one rep, with `--out` to a scratch file, so the results file, its generated tables and its spend table do not hold them. The commands:
+- `python3 _tools/benchmarks.py run pool --arms hook --kinds sc_absent,sc_partial --reps 1 --out SCRATCH/before.csv`, run from a clone checked out at `0ae6d30bc`, then the same command from the tree after the fix with `--out SCRATCH/after-hook.csv` (free: no model, 16 s each).
+- `python3 _tools/benchmarks.py run pool --arms haiku-5-5,sonnet-5-5,router --kinds sc_absent,sc_partial --reps 1 --jobs 8 --max-usd 5 --out SCRATCH/after-paid.csv`, the tree after the fix only; their cells before are those of the record of 2026-10-12 (commit `541378c`, the same rows, one run each), which ran before the fix.
+
+**The hook arm, free, runs right of six, before and after the fix:**
+
+| kind | before (`0ae6d30bc`) | after |
+|---|---|---|
+| `sc_absent` | 2 of 6 | 5 of 6 |
+| `sc_partial` | 6 of 6 | 6 of 6 |
+| both kinds | 8 of 12 | 11 of 12 |
+
+The two before figures are those the record of 2026-10-12 holds (2 of 6, 6 of 6), measured again here on `0ae6d30bc`. The two `sc_absent` rows the hook met before are the two whose pack is `none` with route `web` (Okta, Azure Site Recovery). After the fix the packs of the tempdb data files, the Microsoft 365 E5 price and the Pod Security Admission questions carry a `check:` line and route `split` (`kb lacks: tempdb`, `kb lacks: enforce`; the price question's `kb lacks:` is empty, its `check:` names the missing amount), which is what the three more right runs are. The Exchange Online retention question (`BP-023d9e73`) still packs to a clean `good` led by `public/auth/audit-log-apis.md:52`, so the hook meets 5 of 6, not 6 (BG-j7pe3u46). `sc_partial` has nothing to gain: its pack was already `split`, and it is 6 of 6 on both sides.
+
+**The paid arms, one run for each row after the fix, against their cells of the record of 2026-10-12** (runs right of the rows asked; `now` is the run of this section):
+
+| arm label | `sc_absent`, record | `sc_absent`, now | `sc_partial`, record | `sc_partial`, now |
+|---|---|---|---|---|
+| haiku-5-5:low | 5 of 6 | 6 of 6 | 4 of 6 | 4 of 6 |
+| haiku-5-5:default | 5 of 6 | 3 of 6 | 3 of 6 | 2 of 6 |
+| sonnet-5-5:low | 4 of 6 | 3 of 5 | 4 of 6 | 4 of 6 |
+| sonnet-5-5:default | 5 of 6 | 5 of 5 | 3 of 6 | 3 of 6 |
+| router | 6 of 6 | 5 of 5 | 4 of 6 | 4 of 6 |
+
+Effective input tokens per right answer, then the cost of a run (record -> now):
+
+| arm label | `sc_absent` tokens | `sc_absent` cost | `sc_partial` tokens | `sc_partial` cost |
+|---|---|---|---|---|
+| haiku-5-5:low | 95,645 -> 79,995 | $0.0124 -> $0.0117 | 117,480 -> 137,669 | $0.0169 -> $0.0249 |
+| haiku-5-5:default | 88,001 -> 149,675 | $0.0112 -> $0.0121 | 158,411 -> 252,425 | $0.0194 -> $0.0209 |
+| sonnet-5-5:low | 96,366 -> 103,934 | $0.1470 -> $0.1390 | 82,093 -> 108,066 | $0.1291 -> $0.1647 |
+| sonnet-5-5:default | 105,017 -> 92,857 | $0.2080 -> $0.2156 | 172,410 -> 180,649 | $0.2245 -> $0.2324 |
+| router | 33,304 -> 38,679 | $0.0708 -> $0.0805 | 70,991 -> 89,198 | $0.1021 -> $0.1245 |
+
+Read them as follows. **Within:** every figure above lies inside the 95% interval of its cell in the record of 2026-10-12 (a right share of 3 of 6 by Haiku 5.5 at the default level sits on the lower bound of 50%, the router's 38,679 tokens on the upper bound of 38,963), so no model arm's `sc_absent` or `sc_partial` figure moved beyond the spread of one run per row. The fix changes what the pack says on three rows, which the model arms read through their own tools; Sonnet 5.5 at `low`, the model arm shortest of `sc_absent` in the record (4 of 6), shows 3 of 5, and the other cells differ from the record's by one or two runs, which one run per row does not separate from the noise of a run. **The hook is the one arm the fix moves:** 2 of 6 to 5 of 6 on `sc_absent`, beyond its record cell's interval (0%-67%), at no model tokens and no change on `sc_partial`.
+
+**The run's own limit.** The dry run estimated $3.51 for 60 runs, each priced at the mean cost of its label's all-kinds cell; these two kinds cost more a run than that mean (the router's $0.10 against $0.026), so the 57 runs that ran billed $5.72 (Haiku 5.5 $0.42 in both levels, Sonnet 5.5 $4.16, the router $1.15), and `--max-usd 5` with `--jobs 8` stopped the run three runs short, each the Pod Security Admission row (`BP-1fa2c349`) on `sonnet-5-5:low`, `sonnet-5-5:default` and the router. Those three cells therefore rest on five rows, not six, and the one row left out is one of the four the fix flags; a re-run of the three would add to a spend already past the limit and was not made.
+
+**What this section does not support.** A ranking of the arms on either kind (six rows, one run each, three cells of five); a size for any moved cell; an effect of the fix on a model arm's answer, which no cell separates from the run-to-run spread; and the Exchange Online row, which the fix does not close.
+
 ## Reading files, hosts and start contexts
 
 ### Reading files without the lookup tools
