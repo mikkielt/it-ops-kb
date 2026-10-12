@@ -2,7 +2,7 @@
   "id": "BG-hc2gficq",
   "kind": "bug",
   "title": "The router's citation cue routes a lookup that names a source id beside 'name', 'mention', 'refer' or 'used by' to src --cited, printing a file list instead of the fact",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-lmf4ke4w",
   "priority": "P2",
@@ -67,5 +67,55 @@
     "parked: SP-7n3d4jte review"
   ],
   "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.CITE_CUE includes name\\w*, mention\\w*, refer\\w*, us\\w* by. Also 'What do S1800 and S1801 say about the headless flag used by CI?' prints a file list; 'What does S1800 say about --max-turns?' is not routed, so the cue words are the cause. Premise run 2026-10-12: the repro pack fails on main and the S1800-and-S1801 pack (check 2) prints a cites file list. Checks 0, 1 and 3 (rag.py eval, the 'Which articles cite S1800?' route, tests -k pack_routes_kind) pass before the work: they pin behaviour that must stay. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
-  "claimed_by": "orch-lmf4ke4w"
+  "evidence": {
+    "commit": "877b7ba30f3c20965ddae152aa341ea43b81b56b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "254ad86d5800ee9f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','Which articles cite S1800?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' in r.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','What do S1800 and S1801 say about the headless flag used by CI?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' not in r.stdout and r.stdout.startswith('coverage: ') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_routes_kind"
+        ],
+        "exit": 0,
+        "sha256": "8cbba9e274591b71"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','Which flag name does S1800 give for limiting the number of agentic turns in headless mode?'],capture_output=True,text=True); sys.exit(0 if r.returncode==0 and 'routed by kind: cites' not in r.stdout and r.stdout.startswith('coverage: ') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
