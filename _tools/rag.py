@@ -341,6 +341,40 @@ def offkb_overlaps(path=None, root=None):
     return out
 
 
+def offkb_questions(root=None):
+    """The questions of a root's off-kb list (OFFKB_FILE under its DATA_DIR; the public root's by default), in file
+    order, without blank lines and `#` comments."""
+    base = kbcommon.public().path if root is None else next(r.path for r in kbcommon.roots() if r.name == root)
+    with open(os.path.join(base, kbcommon.DATA_DIR, OFFKB_FILE), encoding="utf-8") as f:
+        return [ln.strip() for ln in f if ln.strip() and not ln.startswith("#")]
+
+
+def scatter_calibration():
+    """The scatter note's threshold fitted to this kb (kbfacts.SCATTER_SCORE, kbfacts.pack's `scatter`). A `good` pack
+    is flagged at a whole number T when its best articles lie in SCATTER_DOMAINS or more domains and its best unit
+    scores under T. Counted over the questions of the public root's lookup_eval.csv rows that expect `good` (the tuned
+    set: lookup_heldout.csv is never read) and over its off-kb list's, each that packs to a `good` the note applies
+    to (`top_score` is not None). The threshold maximises the off-kb goods flagged less the eval goods flagged, the
+    lower T on a tie. Returns {threshold, off_flagged, off_goods, eval_flagged, eval_goods} at it, {current,
+    off_noted, eval_noted} at kbfacts.SCATTER_SCORE (the packs' own `scatter`) and `grid`, [(T, off goods flagged,
+    eval goods flagged)]."""
+    def feats(questions):
+        packs = [kbfacts.pack(q) for q in questions]
+        return [p for p in packs if p["top_score"] is not None]
+    evals = feats(c["question"] for _, c in eval_cases(root=kbcommon.public().name) if c["expect_verdict"] == "good")
+    offs = feats(offkb_questions())
+
+    def flagged(packs, t):
+        return sum(1 for p in packs if len(p["top_domains"]) >= kbfacts.SCATTER_DOMAINS and p["top_score"] < t)
+    top = max((p["top_score"] for p in evals + offs), default=0)
+    grid = [(t, flagged(offs, t), flagged(evals, t)) for t in range(1, int(top) + 2)]
+    best = max(grid, key=lambda g: (g[1] - g[2], -g[0]), default=(0, 0, 0))
+    return {"threshold": best[0], "off_flagged": best[1], "off_goods": len(offs), "eval_flagged": best[2],
+            "eval_goods": len(evals), "current": kbfacts.SCATTER_SCORE,
+            "off_noted": sum(1 for p in offs if p["scatter"]), "eval_noted": sum(1 for p in evals if p["scatter"]),
+            "grid": grid}
+
+
 def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows

@@ -1,0 +1,17 @@
+{
+  "id": "BG-cs4xmk74",
+  "kind": "bug",
+  "title": "backlog.py knowledge and ql_learn judge a good pack whose only check: line is the scatter note as clean",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "KnowledgeState.judge returns partial and ql_learn's pass test fails for a good pack that has the scatter check: line (pack's scatter key), as for the unmatched and spread lines, since their docs say sufficient is a good pack with no check: line",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types; sys.path.insert(0,'_tools'); import bl_check; s=bl_check.KnowledgeState(types.SimpleNamespace(root='.')); sys.exit(0 if s.judge('page file size')[0]=='partial' else 1)"
+    ]
+  }
+}
