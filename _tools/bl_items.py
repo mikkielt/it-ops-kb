@@ -313,6 +313,12 @@ def cmd_answer(bl, a):
     delegate = a.by[len("delegate:"):] if (a.by or "").startswith("delegate:") else None
     if delegate is not None and not a.confirm:
         raise Rejected(f"--by delegate:{delegate} only confirms a provisional answer (--confirm), it answers nothing")
+    held = bl_authority.gate_class(scope, g)
+    if held in bl_authority.TERMINAL_CLASSES and bl_authority.in_agent_session():
+        raise Rejected(f"gate {a.gate} of {bl.label(iid)} is class {held}: no agent session answers it, so --by "
+                       f"{a.by or 'operator'} from this one is not the operator's; the operator answers it in a "
+                       f"terminal of their own: python3 _tools/backlog.py answer {iid} {a.gate} --answer TEXT --by "
+                       "operator [--record]")
     if a.by != "operator" and (a.by or a.provisional):
         cls = bl_authority.derived_class(scope, g)
         if cls in bl_authority.OPERATOR_CLASSES:

@@ -44,7 +44,7 @@
         "restore 22 s, with ST-5zcl2sof (the suite has room under its id ceiling and its darwin time limit) planned first to bring a full run back under it": "ST-5zcl2sof",
         "other: the operator names the value": "ST-kjp54uiz"
       },
-      "class": "design"
+      "class": "ceiling"
     }
   ],
   "notes": "Filed 2026-10-12 at the operator's instruction: gate value stays open for the operator alone, never answered by a delegated or unattended session, even under a blanket approval; it is the only item that waits on it, kept out of any sprint until it is answered, then planned after ST-d2f346fz lands. Until ST-d2f346fz lands the gate reads class design; the class it is meant to have is ceiling."

@@ -1,26 +1,33 @@
 """Who may answer a gate (kb/_self/backlog.md, Dependencies, gates and triggers): the class of a gate and the classes
-only the operator answers.
+only the operator answers, and of those the one no agent session answers at all.
 
 Every gate has a class, one of CLASSES, listed from the most restricted to the least. `gate_class(item, gate)` derives
 it from the item's `touches` and the gate's question and id: the strictest class any of them names, `design` when none
 does; `class_reasons` also names the touches and words that set it, which `gate add` prints. A class a gate stores (`gate add` writes it) is read as a floor for nothing but the record: the class in force is
 the stricter of the stored and the derived, so an agent that writes a lower class into an item file changes nothing,
-and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (secrets, push and agents-rule) is blocking
-and takes only the operator's answer; the operator answers every class.
+and `lowered` names it for `check`. A gate of a class in OPERATOR_CLASSES (ceiling, secrets, push and agents-rule) is
+blocking and takes only the operator's answer; the operator answers every class. The class in TERMINAL_CLASSES (ceiling,
+the test suite's ceiling) is stricter still: `--by operator` from a Claude Code session (`in_agent_session`: the
+environment names one, attended or not, headless or delegated) is no operator's answer, so it is recorded only from a
+terminal of the operator's own.
 
 Standard library only; imports `bl_base` and never `backlog`, `bl_check` or `bl_plan`."""
 import fnmatch
+import os
 import posixpath
 import re
 
 from bl_base import START_GATE
 
-CLASSES = ("secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
-OPERATOR_CLASSES = ("secrets", "push", "agents-rule")  # the classes only the operator answers
+CLASSES = ("ceiling", "secrets", "push", "start", "querylog", "agents-rule", "delete", "design")
+OPERATOR_CLASSES = ("ceiling", "secrets", "push", "agents-rule")  # the classes only the operator answers
+TERMINAL_CLASSES = ("ceiling",)  # of those, the classes no agent session answers, whatever `--by` says
+AGENT_SESSION_ENV = "CLAUDECODE"  # set in the environment of every Claude Code session and of each command it runs
 
 # Paths whose change makes a gate about the item one of the class: a directory ends with `/`, a file is exact. A touch
 # names one when it is the path, a directory above it, or a glob that matches it.
 PATHS = {
+    "ceiling": ("_tools/tests_ceiling.json",),
     "push": ("_tools/kbgit.py", "_tools/kbpublic.py", "_tools/kg_", "_tools/kblane.py", ".gitlab-ci.yml", ".github/",
              ".githooks/"),
     "querylog": ("kb/_querylog/",),
@@ -73,6 +80,7 @@ def without_token_counts(text):
 # is no `agents-rule` word of its own (a design question about which rows count by rule is no rule-guarding work): it
 # classes only where the item's touches or the gate's text name a rule-guarding path or file (`rule_paths`).
 QUESTION_WORDS = {
+    "ceiling": re.compile(r"\btests?[-_ ]ceiling|\bsuite[-_ ]ceiling|\bceiling of the (?:test )?suite", re.I),
     "secrets": re.compile(r"secret|credential|password|passphrase|token|\bPATs?\b|\bbearer\b|\bssh\b|api[- ]key|"
                           r"private key|\.env\b|rotat\w*\s+(?:\w+\s+){0,2}keys?\b", re.I),
     "push": re.compile(r"\bpush(?:ing)?\b|publish|force[- ]push|\bremote\b|\bgithub\b|\bgitlab\b|\borigin\b|"
@@ -133,6 +141,18 @@ def command_words(gate):
         v = gate.get(key)
         out += [str(x) for x in v] if isinstance(v, (list, tuple)) else [str(v)] if v else []
     return " ".join(out)
+
+
+def in_agent_session(env=None):
+    """Whether the process runs in a Claude Code session (its environment, `os.environ` by default, sets
+    AGENT_SESSION_ENV): the operator's own terminal does not. The signal a session's own command line can clear, so
+    it guards against a delegated session passing `--by operator`, not against one set on defeating it."""
+    return bool((os.environ if env is None else env).get(AGENT_SESSION_ENV))
+
+
+def names_ceiling(text):
+    """Whether the text (a gate's question, a decision) names the test suite's ceiling."""
+    return bool(QUESTION_WORDS["ceiling"].search(text or ""))
 
 
 def rank(cls):
