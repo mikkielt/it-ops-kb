@@ -77,7 +77,7 @@
       "recommendation": "Outcome verbatim with the fact row's signal section, and a sections column of _fetch_state.csv bound to the document hash by its first 12 digits",
       "class": "design",
       "answer": "Outcome verbatim with the fact row's signal section, and a sections column of _fetch_state.csv bound to the document hash by its first 12 digits",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -90,7 +90,7 @@
       "recommendation": "Every source whose verdict falls to the text hash (the four hosts and any host with no stronger signal), sections keyed by the anchor heading path, 8 and 12 hex digits",
       "class": "design",
       "answer": "Every source whose verdict falls to the text hash (the four hosts and any host with no stronger signal), sections keyed by the anchor heading path, 8 and 12 hex digits",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

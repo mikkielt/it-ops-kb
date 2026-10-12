@@ -89,7 +89,7 @@
       "recommendation": "The raw 404 is confirmed once by the forge API; the repository is gone only when that answers 404 too",
       "class": "design",
       "answer": "The raw 404 is confirmed once by the forge API; the repository is gone only when that answers 404 too",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -102,7 +102,7 @@
       "recommendation": "No row: the row's checked_utc would stamp the source confirmed in a pack's freshness stamp",
       "class": "design",
       "answer": "No row: the row's checked_utc would stamp the source confirmed in a pack's freshness stamp",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -115,7 +115,7 @@
       "recommendation": "Always on: no flag, one request per repository and run",
       "class": "design",
       "answer": "Always on: no flag, one request per repository and run",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
