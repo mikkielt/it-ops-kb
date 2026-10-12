@@ -2,7 +2,7 @@
   "id": "TK-wztp5ixd",
   "kind": "task",
   "title": "A test plants an invented name in a lookup_eval row and keeps a hand-written near-miss unflagged",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-vwifqi4n",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,28 @@
     "TK-xkceyjqo"
   ],
   "notes": "Task of ST-vwifqi4n, after TK-xkceyjqo. The assertions go into an existing test of _tools/test_bench.py (bench_pool_check_reports_stale_pick builds the pool and runs pool check): the suite is close to its test-id ceiling and a new id may not fit. The second check runs that test and passes before the work: it pins that the extended test stays green; the first check is the one that fails now.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "47a6635412b8a3848dfa189bc71f49259066947c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"_tools/test_bench.py\",encoding=\"utf-8\").read();sys.exit(0 if \"found in no article or data file\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool_check_reports_stale_pick"
+        ],
+        "exit": 0,
+        "sha256": "1cf7d4402527cf6b"
+      }
+    ]
+  }
 }
