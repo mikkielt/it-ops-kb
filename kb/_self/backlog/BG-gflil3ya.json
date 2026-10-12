@@ -1,0 +1,20 @@
+{
+  "id": "BG-gflil3ya",
+  "kind": "bug",
+  "title": "factdiff.revalidate dates a run by the local day and stamps checked_utc in UTC, so test_live_kb fails between local midnight and UTC midnight",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "factdiff.revalidate's date and its checked_utc stamps name the same day at any hour in any time zone (today() reads the local date, the stamps UTC), so test_live_kb's lookup-eval test passes when the local day is ahead of UTC; found 2026-10-13 00:26 local (22:26Z), when the whole-suite gate of ST-keicy7gn's landing failed on it after 99 passed",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,time,sys;sys.path.insert(0,'_tools');import factdiff;d=[];[(os.environ.__setitem__('TZ',z),time.tzset(),d.append(factdiff.today())) for z in ('Etc/GMT-14','Etc/GMT+12')];print(d);sys.exit(0 if d[0]==d[1] else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-kuhlsf2s close"
+  ]
+}
