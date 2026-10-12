@@ -2,7 +2,7 @@
   "id": "ST-wfqgxc5a",
   "kind": "story",
   "title": "Review sprint: Worker cost reaches backlog.py cost: query-log delivery no longer stops on a gap entry check.py refuses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kwi4ilty",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-kwi4ilty"
+  "evidence": {
+    "commit": "eb0103d80603222de4f8618a420dd0bd0322fa95",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "4a81d4a7e496fbe0"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7933568ae1c150ee"
+      }
+    ]
+  }
 }
