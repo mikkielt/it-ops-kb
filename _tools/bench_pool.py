@@ -46,8 +46,7 @@ QUERYLOG_ROWS = 20
 NONE_CHECK = r"(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)"
 GAP_CHECK = r"(?i)(not (confirmed|documented|covered|in the kb)|unknown|unconfirmed|kb lacks|live docs)"
 LACKS_CHECK = r"(?i)(kb lacks|not in the kb|not covered|does not cover|doesn.t cover|no coverage|not documented|live docs)"
-FRESH_CHECK = (r"(?i)(confirmed \d{4}-\d{2}-\d{2}|unconfirmed|not confirmed|source changed|unanchored|stale|"
-               r"retrieved \d{4}-\d{2}-\d{2})")
+FRESH_CHECK = r"(?i)(confirmed \d{4}-\d{2}-\d{2}|unconfirmed|not confirmed|source changed|unanchored|stale)"
 FALSE_GOOD = "false good"  # a scenario row's note that starts with it marks a question the pack answers as good or split
 SENTENCE = ("I need to know this for a task today: ", "Please explain, in full sentences: ")
 STOP = set("the and for are was what which how does did that this with from have has can you your into when where why "
