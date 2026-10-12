@@ -28,7 +28,11 @@
                                             arm (or ARM/session, in the session shape only) its own reps and kinds, the
                                             arms not named taking --reps and --kinds, and an arm they name that the run
                                             does not run is an error; --sample N keeps N rows of each kind, seeded by
-                                            --seed
+                                            --seed; `freshness` looks up each answerable pool row (route `good`, the
+                                            --sample rows of each kind) with the cited sources revalidated live and
+                                            records per provider host and for all the printed DOC lines current, moved,
+                                            not found, source-dated only and not checked, the requests made and the
+                                            wall time per question (no model; --dry-run prints the sources and requests)
   benchmarks.py pool build [--querylog] [--seed N] [--out FILE] [--redo ID]... [--dry-run]
                                             [--replies FILE]
                                             write the stratified question pool, with a check per row, to
@@ -86,7 +90,7 @@ from bench_lookup import (s_always_on, s_files_headless, s_files_subagents, s_he
                           s_kb_lookup_agent, s_models, s_navigation, s_partial, s_route_by_verdict, s_router,
                           s_subagents)  # noqa: E402
 from bench_querylog import s_querylog_hooks, s_querylog_pipeline, s_redaction, s_research  # noqa: E402
-from bench_retrieval import s_doc2query, s_retrieval, s_tool_speed, s_verdict  # noqa: E402
+from bench_retrieval import s_doc2query, s_freshness, s_retrieval, s_tool_speed, s_verdict  # noqa: E402
 
 REPORT = HOME / "kb" / "_self" / "reports" / "benchmarks.md"
 README = HOME / "README.md"
@@ -109,6 +113,7 @@ SCENARIOS = {  # name: (report section, function)
     "verdict": ("Verdict corrections", s_verdict),
     "doc2query": ("doc2query", s_doc2query),
     "tool-speed": ("Tool speed", s_tool_speed),
+    "freshness": ("Freshness of the cited sources", s_freshness),
     "querylog-hooks": ("Query log hooks", s_querylog_hooks),
     "querylog-pipeline": ("Distill, learn and apply", s_querylog_pipeline),
     "redaction": ("Redaction speed", s_redaction),
@@ -120,7 +125,7 @@ SCENARIOS = {  # name: (report section, function)
     "navigation": ("Finding the code", s_navigation),
     "pool": ("A question pool over the kb, router, hook and web arms", bench_pool.s_pool),
 }
-PLANNED = ("pool",)  # the scenarios that read `b.dry`: they print a plan and start no model, the others have no plan
+PLANNED = ("pool", "freshness")  # the scenarios that read `b.dry`: they print a plan and start no model, the others have no plan
 
 
 def main(argv=None):
@@ -138,14 +143,14 @@ def main(argv=None):
                    + "+".join(bench_pool.SUBSET_KINDS["opus-5-5"]) + ")")
     r.add_argument("--effort", help="the effort levels of the kb arms of `pool`, comma separated (default: "
                    + ",".join(bench_pool.EFFORTS) + ")")
-    r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` and start no model (another scenario has no plan: exit 2)")
+    r.add_argument("--dry-run", action="store_true", help="print the plan of `pool` or `freshness` and start no model or request (another scenario has no plan: exit 2)")
     r.add_argument("--shape", default="fresh",
                    help="`pool`: a fresh session per question, or groups of six questions in one session, or both, comma "
                    "separated (default: fresh)")
     r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
     r.add_argument("--jobs", type=int, default=1, help="`pool`: runs at once (default: 1)")
     r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs cost this many US dollars")
-    r.add_argument("--sample", type=int, help="`pool`: keep this many rows of each kind, drawn with --seed (default: every row)")
+    r.add_argument("--sample", type=int, help="`pool`, `freshness`: keep this many rows of each kind, drawn with --seed (default: every row)")
     r.add_argument("--arm-reps", action="append", metavar="ARM=N",
                    help="`pool`: the reps of an arm (ARM/session: of the session shape), comma separated or repeated; the arms "
                    "not named take --reps")

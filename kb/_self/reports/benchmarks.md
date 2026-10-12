@@ -1031,6 +1031,76 @@ What it shows: as in round 2, expansion adds nothing measurable on fresh blind q
 
 What it shows: with 300 topics on macOS (2026-10-09), a cold `rag.py pack` takes 56 ms, the `kb:` hook 59 ms, `search` 52 ms and `eval` (574 questions) 2.2 s, where the run of 2026-10-08 took 3.97 s over the same 574 questions (0.79 s over 250 on 2026-09-28): the `_self` view now holds each anchored tested question's informative words once instead of reading the index for them on every pack. `check-trailers` over 30 commits takes 0.16 s, where the run of 2026-10-08 took 1.93 s and the first run of 2026-09-28 0.21 s: it had grown to about three git processes per commit (the KB-Work checks asked git for origin/main, its ancestry and the item files once per commit), and now reads a range in a fixed number of git calls, so the number of git processes no longer grows with the count of commits. An MCP session of 12 calls takes 2.8 s and the server answers `initialize` in 52 ms; an index build takes 3.9 s and 109.0 MB. In process a warm `pack` takes 3.1 ms at the median and 6.1 ms at p95, and 1,000 random packs 2.8 s. The history's `before` column is the corpus rebuilt by every process; nothing measured here needs it again.
 
+### Freshness of the cited sources
+
+**Setup:** `python3 _tools/benchmarks.py run freshness --sample 5` (no model, no paid run): each answerable row of the question pool (route `good`; 5 rows of each kind, drawn with seed 11, from the public file and, on a host that has it, the query-log file) is looked up with `kbfacts.pack_many(..., revalidate=True)`, so the cited sources of the printed fact lines are asked live within each provider's pacing and the revalidation's 90 s budget, and the printed lines that carry a `DOC` tag are counted by the outcome the lookup prints: `current`, `moved`, `not found`, `source-dated only` (the fact has no located anchor, so only its source's state is known) or `not checked` (none of the sources it cites could be asked). A line counts under the host of the source whose outcome it prints (of several sources, the worst). `requests` counts every request made during the lookups at `provider.request`, those to hosts no line cites included (the GitHub API a pinned repository is asked through, a search); `median_s` and `p95_s` are the wall time of a whole lookup (the pack and its revalidation), over the questions that cite the host, and the `all` row's over every question. `python3 _tools/benchmarks.py run freshness --dry-run` prints the sources and the requests a run would make (one per source per question as the least) and asks nothing. A source asked again within its provider's pacing is answered from the stored check of the lookup before (`cached`, 17 of the 262 source checks of the run).
+
+<!-- bench:records freshness -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+| 2026-10-12 | 2026-10-12 | 480f282 | 2.1.296 | 356 | 1 | - |
+<!-- /bench -->
+
+<!-- bench:table freshness metrics=doc_lines,current,moved,not_found,source_dated_only,not_checked -->
+| case | arm | doc_lines | current | moved | not_found | source_dated_only | not_checked |
+|---|---|---|---|---|---|---|---|
+| all | current | 310 | 193 | 12 | 8 | 95 | 2 |
+| api.github.com | current | 6 | 0 | 0 | 0 | 6 | 0 |
+| code.claude.com | current | 67 | 42 | 10 | 0 | 15 | 0 |
+| curia.europa.eu | current | 1 | 0 | 0 | 1 | 0 | 0 |
+| docs.ansible.com | current | 2 | 1 | 0 | 0 | 1 | 0 |
+| docs.github.com | current | 5 | 3 | 0 | 0 | 2 | 0 |
+| docs.gitlab.com | current | 1 | 0 | 0 | 0 | 1 | 0 |
+| download.microsoft.com | current | 2 | 0 | 0 | 2 | 0 | 0 |
+| eur-lex.europa.eu | current | 2 | 0 | 0 | 0 | 0 | 2 |
+| github.com | current | 2 | 0 | 0 | 0 | 2 | 0 |
+| gitlab.com | current | 32 | 20 | 0 | 0 | 12 | 0 |
+| learn.microsoft.com | current | 118 | 76 | 0 | 3 | 39 | 0 |
+| platform.claude.com | current | 2 | 0 | 2 | 0 | 0 | 0 |
+| pypi.org | current | 1 | 0 | 0 | 0 | 1 | 0 |
+| raw.githubusercontent.com | current | 62 | 49 | 0 | 0 | 13 | 0 |
+| support.microsoft.com | current | 1 | 1 | 0 | 0 | 0 | 0 |
+| techcommunity.microsoft.com | current | 4 | 0 | 0 | 2 | 2 | 0 |
+| www.anthropic.com | current | 1 | 1 | 0 | 0 | 0 | 0 |
+| www.edpb.europa.eu | current | 1 | 0 | 0 | 0 | 1 | 0 |
+<!-- /bench -->
+
+<!-- bench:table freshness metrics=current_share,moved_share,source_dated_only_share,requests,failed_requests,median_s,p95_s -->
+| case | arm | current_share | moved_share | source_dated_only_share | requests | failed_requests | median_s | p95_s |
+|---|---|---|---|---|---|---|---|---|
+| all | current | 62.3% | 3.9% | 30.6% | 230 | 0 | 2.80 s | 8.82 s |
+| api.github.com | current | 0.0% | 0.0% | 100.0% | 7 | 0 | 6.85 s | 6.85 s |
+| code.claude.com | current | 62.7% | 14.9% | 22.4% | 42 | 0 | 3.49 s | 6.37 s |
+| curia.europa.eu | current | 0.0% | 0.0% | 0.0% | 1 | 0 | 1.77 s | 1.77 s |
+| docs.ansible.com | current | 50.0% | 0.0% | 50.0% | 3 | 0 | 3.00 s | 3.00 s |
+| docs.github.com | current | 60.0% | 0.0% | 40.0% | 4 | 0 | 4.48 s | 6.23 s |
+| docs.gitlab.com | current | 0.0% | 0.0% | 100.0% | 2 | 0 | 2.39 s | 2.39 s |
+| download.microsoft.com | current | 0.0% | 0.0% | 0.0% | 3 | 0 | 6.44 s | 6.44 s |
+| eur-lex.europa.eu | current | 0.0% | 0.0% | 0.0% | 2 | 0 | 1.77 s | 1.77 s |
+| github.com | current | 0.0% | 0.0% | 100.0% | 5 | 0 | 1.27 s | 1.27 s |
+| gitlab.com | current | 62.5% | 0.0% | 37.5% | 6 | 0 | 1.58 s | 2.39 s |
+| learn.microsoft.com | current | 64.4% | 0.0% | 33.1% | 94 | 0 | 2.80 s | 10.51 s |
+| platform.claude.com | current | 0.0% | 100.0% | 0.0% | 4 | 0 | 3.49 s | 3.68 s |
+| pypi.org | current | 0.0% | 0.0% | 100.0% | 3 | 0 | 6.85 s | 6.85 s |
+| raw.githubusercontent.com | current | 79.0% | 0.0% | 21.0% | 27 | 0 | 2.61 s | 10.51 s |
+| support.microsoft.com | current | 100.0% | 0.0% | 0.0% | 2 | 0 | 4.11 s | 4.11 s |
+| techcommunity.microsoft.com | current | 0.0% | 0.0% | 50.0% | 8 | 0 | 6.33 s | 20.10 s |
+| www.anthropic.com | current | 100.0% | 0.0% | 0.0% | 1 | 0 | 2.04 s | 2.04 s |
+| www.edpb.europa.eu | current | 0.0% | 0.0% | 100.0% | 2 | 0 | 1.77 s | 1.77 s |
+| docs.rs | current | - | - | - | 6 | 0 | - | - |
+| scrumguides.org | current | - | - | - | 1 | 0 | - | - |
+| support.atlassian.com | current | - | - | - | 3 | 0 | - | - |
+| zenchong.substack.com | current | - | - | - | 4 | 0 | - | - |
+<!-- /bench -->
+
+<!-- bench:table freshness metrics=questions,max_s,budget_spent,sources_live,sources_cached,sources_offline cases=all -->
+| case | arm | questions | max_s | budget_spent | sources_live | sources_cached | sources_offline |
+|---|---|---|---|---|---|---|---|
+| all | current | 44 | 20.10 s | 0 | 243 | 17 | 2 |
+<!-- /bench -->
+
+What it shows: of the 310 printed DOC lines over 44 questions, 193 (62.3%) were current at their source, 12 (3.9%) had moved, 8 were not found, 95 (30.6%) were dated at their source only and 2 could not be checked. All 12 `moved` lines are Claude Code's pages (10 of `code.claude.com`'s 67 lines, 2 of `platform.claude.com`'s 2); `learn.microsoft.com`, with 118 lines, has 76 current, 39 source-dated only and 3 not found, and the pinned `raw.githubusercontent.com` pages 49 current of 62. The run made 230 requests, all of which got an HTTP answer. A lookup took 2.80 s at the median and 8.82 s at p95, and the slowest, 20.10 s, cited `techcommunity.microsoft.com`; no lookup used up its 90 s budget (`budget_spent` 0), so the budget stands with more than four times the slowest lookup's time. `techcommunity.microsoft.com`'s pages are client-rendered: the fetch extracts no text from the page or from its made-up sibling, so each source asked answers `soft-404` and its lines print `not found`.
+
 ## The query log and the newer tools
 
 These scenarios have no history: they measure what was built after the last runs.
