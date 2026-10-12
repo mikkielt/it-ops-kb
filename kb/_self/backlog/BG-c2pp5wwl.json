@@ -4,6 +4,7 @@
   "title": "BG-gxxv3mzj's anchor run advanced the fetch-state baselines of about 15 sources outside it and dropped anchors, so detect no longer reports their changes (the 200 WebSearch limit in doc-lookup-sources.md among them)",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -16,14 +17,46 @@
     ]
   },
   "repro_reason": "the advanced baselines make factdiff.py detect report these sources unchanged, so no tool run shows the stale fact; the text check reads the one fact the review quoted",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/agents/doc-lookup-sources.md\").read_text().splitlines() if \"200 `WebSearch` calls\" in l]; sys.exit(0 if ls and \"interactive\" in ls[0] and \"v2.1.290\" in ls[0] else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; r={x[\"id\"]:x[\"retrieved_utc\"] for x in csv.DictReader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\"))}; sys.exit(0 if all(r.get(i,\"\")>=\"2026-10-12\" for i in (\"S-3yod3u7q\",\"S1809\",\"S-eluaxz73\")) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Through /kb-refresh of S-3yod3u7q, S1809 and S-eluaxz73 and each other source whose _fetch_state.csv baseline commit 5f16b6d63 advanced without re-reading its facts: each fact is re-checked against its current page (the WebSearch limit in agents/doc-lookup-sources.md says it applies to an interactive terminal session and that it refills on v2.1.290 and later, per the tools reference), its anchor is re-taken",
+      "check": 0
+    },
+    {
+      "clause": "the rows are dated",
+      "check": 1
+    }
+  ],
   "touches": [
     "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/agents/docs-maintenance-agents.md",
+    "kb/public/_answers.md",
     "kb/public/_sources.csv",
     "kb/public/_anchors.csv",
     "kb/public/_fetch_state.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-wl36adcq"
+  ],
   "links": [
     "parked: SP-df2cu4uj review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Scope: the three named sources are cited by agents/doc-lookup-sources.md (S1809 also by agents/docs-maintenance-agents.md, S-3yod3u7q's WebSearch limit also repeated in _answers.md); the other sources are the rows of _fetch_state.csv that commit 5f16b6d63 changed without a re-read (git show 5f16b6d63 -- kb/public/_fetch_state.csv, less the four marked dead there). The checks read the three named sources and the WebSearch line; a worker lists the others in its commit message. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base."
 }

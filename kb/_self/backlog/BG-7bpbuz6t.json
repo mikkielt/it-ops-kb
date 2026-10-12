@@ -4,6 +4,7 @@
   "title": "claude/powershell-tool.md says the read-only Bash set runs without a prompt in every mode, but the permissions page now names blockReadsOutsideWorkingDirectories and auto mode's classifier as exceptions",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-gcerxjsg",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -16,6 +17,43 @@
     ]
   },
   "repro_reason": "SP-df2cu4uj's BG-gxxv3mzj advanced S742's fetch-state baseline without re-reading the fact, so factdiff.py detect reports the source unchanged and cannot show the stale wording",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; t=pathlib.Path(\"kb/public/claude/powershell-tool.md\").read_text(); sys.exit(0 if \"blockReadsOutsideWorkingDirectories\" in t and \"classifier\" in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; r=[r for r in csv.DictReader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\")) if r[\"id\"]==\"S742\"]; sys.exit(0 if r and r[0][\"retrieved_utc\"]>=\"2026-10-12\" else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; sys.path.insert(0,\"_tools\"); import kbfacts; ks=[kbfacts.fact_key(u[\"text\"]) for u in kbfacts.units(\"public\") if u[\"path\"].endswith(\"claude/powershell-tool.md\") and \"blockReadsOutsideWorkingDirectories\" in u[\"text\"] and \"read-only\" in u[\"text\"]]; rows=[r for r in csv.DictReader(open(\"kb/public/_anchors.csv\",encoding=\"utf-8\")) if r[\"source_id\"]==\"S742\" and r[\"status\"]==\"located\" and r[\"fact\"] in ks]; sys.exit(0 if ks and rows else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Through /kb-refresh of S742: the fact on the built-in read-only Bash set in claude/powershell-tool.md states the exceptions the current permissions page names (permissions.blockReadsOutsideWorkingDirectories for paths outside the working directories",
+      "check": 0
+    },
+    {
+      "clause": "auto mode's classifier review), the S742 row is dated",
+      "check": 1
+    },
+    {
+      "clause": "its anchor and fetch-state baseline are re-taken from a re-read of the page",
+      "check": 2
+    }
+  ],
   "touches": [
     "kb/public/claude/powershell-tool.md",
     "kb/public/_sources.csv",
@@ -23,7 +61,12 @@
     "kb/public/_fetch_state.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-o2spkwnz",
+    "ST-rnimob5e"
+  ],
   "links": [
     "parked: SP-df2cu4uj review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base."
 }

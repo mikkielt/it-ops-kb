@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Three questions the pack of the sprint goal does not answer from a cited line are answered with the kb tools first and the live docs for the gaps: which exceptions the permissions page names to the read-only Bash set (permissions.blockReadsOutsideWorkingDirectories, auto mode's classifier); whether the 200 WebSearch limit applies to an interactive session and from which version it refills; which modelUsage key a run pinned to claude-haiku-4-5 writes, read from the repo's benchmark rows. The findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,7 @@
     }
   ],
   "touches": [
-    "kb/public/**"
-  ]
+    "kb/public/_gaps.md"
+  ],
+  "notes": "Planned 2026-10-12 with rag.py pack -q on the sprint goal's eight questions: good for the GitLab ones (project settings tables, schedule play limit, deploy token reach, pipeline security digest pin) and for the marketplace name rules; the three named in the goal are weak: the read-only Bash pack carried a check: line (powershell-tool.md never mentions blockReadsOutsideWorkingDirectories), the WebSearch line states the 200 limit without interactive or a refill version, and the modelUsage facts say the pinned key was not observed. Findings go to _gaps.md only; the items edit the articles."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The pipeline schedule play lines say at most once a minute under DOC, though the source says it of the UI run only",
   "status": "draft",
+  "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,11 +16,42 @@
     ]
   },
   "repro_reason": "a wording and tag defect in kb facts: no tool behaviour to run, only the facts' text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,re,sys; ls=[l for l in pathlib.Path(\"kb/public/gitlab/pipelines-rules.md\").read_text().splitlines() if re.search(r\"once (per|a) minute\", l)]; sys.exit(0 if ls and not any(\"API call below\" in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The QK answer line in kb/public/_answers.md tags DOC that POST /projects/:id/pipeline_schedules/:id/play runs with the caller's permissions at most once a minute",
+      "check": 1
+    },
+    {
+      "clause": "kb/public/gitlab/pipelines-rules.md:32 reads the same way",
+      "check": 0
+    },
+    {
+      "clause": "S448 says the minute limit of the UI manual run only",
+      "check": 0
+    },
+    {
+      "clause": "the play page names no answer for a call inside the interval (pipelines-rules.md:34, its _gaps.md entry). Attach the limit to the UI run in pipelines-rules.md and tag the QK line's permissions part DER or drop the minute limit there (found by the SP-4phd36pa review)",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/gitlab/pipelines-rules.md",
     "kb/public/_answers.md"
   ],
+  "depends_on": [
+    "BG-drzst6zj"
+  ],
   "links": [
     "parked: SP-4phd36pa review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base."
 }

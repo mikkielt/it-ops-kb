@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "ci-and-headless.md's modelUsage-key facts say a pinned undated claude-haiku-4-5 key was never observed, while benchmarks.csv's router-pinned rows show it, and tag repo observations DER on doc sources",
   "status": "draft",
+  "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,6 +16,51 @@
     ]
   },
   "repro_reason": "the defect is a fact's wording against the repo's benchmark rows; no command runs it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; t=pathlib.Path(\"kb/public/claude/ci-and-headless.md\").read_text(); sys.exit(0 if \"2.1.284\" in t and \"2.1.282\" in t and \"a pinned undated `--model claude-haiku-4-5`, or a provider\" not in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,pathlib,sys; t=pathlib.Path(\"kb/public/claude/ci-and-headless.md\").read_text(); ids=[r[\"id\"] for r in csv.DictReader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\")) if \"benchmarks.csv\" in r[\"url\"] or \"benchmarks.csv\" in r[\"title\"]]; ls=[l for l in t.splitlines() if \"Observed on Claude Code\" in l and \"claude-haiku-4-5-20251001\" in l]; sys.exit(0 if ids and ls and all(any(i in l for i in ids) for l in ls) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/claude/ci-and-headless.md\").read_text().splitlines() if \"else on the version the alias names\" in l]; sys.exit(0 if all(\"CLAUDE_CODE_SUBAGENT_MODEL\" in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The modelUsage-key facts of kb/public/claude/ci-and-headless.md (from :94)",
+      "check": 3
+    },
+    {
+      "clause": "their _answers.md and _gaps.md entries, state what the repo's own benchmark rows show: benchmarks.csv's route-by-verdict rows of 2026-09-29 (Claude Code 2.1.284, arm router-pinned, reader run with --model claude-haiku-4-5) are keyed claude-haiku-4-5 undated",
+      "check": 0
+    },
+    {
+      "clause": "the dated claude-haiku-4-5-20251001 key appears on 2.1.282 and 2.1.284 too, not only 2.1.283",
+      "check": 0
+    },
+    {
+      "clause": "the observed-key facts cite a source that holds the rows (not S-fksbud2r and S-eu3n3hyf alone)",
+      "check": 1
+    },
+    {
+      "clause": "the frontmatter-alias branch 'else on the version the alias names' is stated only as far as its source (skills-and-subagents.md:102 states it for CLAUDE_CODE_SUBAGENT_MODEL). Found by the SP-55ddkrrx review",
+      "check": 2
+    }
+  ],
   "touches": [
     "kb/public/claude/ci-and-headless.md",
     "kb/public/_answers.md",
@@ -23,7 +69,11 @@
     "kb/public/_coverage.csv",
     "kb/public/_coverage.md"
   ],
+  "depends_on": [
+    "BG-tvn7abnu"
+  ],
   "links": [
     "parked: SP-55ddkrrx review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base."
 }

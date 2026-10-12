@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "claude/plugins.csv: marketplace.json and plugin entry name rules and the eval --judge-model default are stale against the live pages",
   "status": "draft",
+  "sprint": "SP-gcerxjsg",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -15,8 +16,47 @@
     ]
   },
   "repro_reason": "the defect is the wording of three data rows; a command can only read the rows, and the fix is checked by reading them against the live pages",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/claude/plugins.csv\").read_text().splitlines() if \"claude plugin eval --judge-model\" in l]; sys.exit(0 if ls and not any(\"small fast model\" in l for l in ls) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; sys.path.insert(0,\"_tools\"); import kbfacts; ok={r[\"fact\"] for r in csv.DictReader(open(\"kb/public/_anchors.csv\",encoding=\"utf-8\")) if r[\"status\"]==\"located\"}; want=(\"file=marketplace.json; field=name;\",\"file=plugin entry; field=name;\",\"field=claude plugin eval --judge-model;\"); us=[u for u in kbfacts.units(\"public\") if u[\"path\"].endswith(\"plugins.csv\") and \"claude\" in u[\"path\"]]; sys.exit(0 if all(any(w in u[\"text\"] and kbfacts.fact_key(u[\"text\"]) in ok for u in us) for w in want) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/claude/plugins.csv rows for marketplace.json name (line 37) and plugin entry name (line 46) state the name rule the marketplace-reference page (S-4m2kbuls) now gives: letters, digits, '.', '_' and '-', starting with a letter or digit, no '..'",
+      "check": 2
+    },
+    {
+      "clause": "the claude plugin eval --judge-model row (line 86) names the model Claude Code uses for background tasks as its default (S-lkcsn2fs) instead of 'small fast model'",
+      "check": 0
+    },
+    {
+      "clause": "the rows are re-anchored with factdiff.py anchor --quotes",
+      "check": 1
+    },
+    {
+      "clause": "claude/plugins.md:49 already states the new rule",
+      "check": 2
+    }
+  ],
   "touches": [
     "kb/public/claude/plugins.csv",
-    "kb/public/_anchors.csv"
-  ]
+    "kb/public/_anchors.csv",
+    "kb/public/_fetch_state.csv"
+  ],
+  "depends_on": [
+    "BG-7bpbuz6t"
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Clause 4 (plugins.md:49 already states the new rule) was true at planning on 2026-10-12, so no check of its own fails now; the repro reads the csv rows against it. The csv rows are facts of kb/public/claude/plugins.csv anchored as file=...; field=name units: lines 37 and 86 are unlocated today, and the check on anchors needs all three located after the reword. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base."
 }
