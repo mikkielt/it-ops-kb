@@ -2,7 +2,7 @@
   "id": "ST-opqlkzlt",
   "kind": "story",
   "title": "Review sprint: Benchmark run: measure the changes since the records of 2026-10-08 and 2026-10-09 across the knowledge scenarios",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ceucrhca",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-ceucrhca"
+  "evidence": {
+    "commit": "d63b44033948cb30d690c7ecdc3bcf767f6c8c88",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9a53e7b2e91b200e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "c18293a4827a2211"
+      }
+    ]
+  }
 }
