@@ -2,7 +2,7 @@
   "id": "ST-brgsh3gj",
   "kind": "story",
   "title": "Review sprint: The test-suite ceiling is the operator's decision only: an operator-only gate class no delegated session answers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rlincemn",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-rlincemn"
+  "evidence": {
+    "commit": "9300ce73e4b2319146f09aa7144518eff0c24ff0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "631c25784f92de01"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "43366118adff6841"
+      }
+    ]
+  }
 }
