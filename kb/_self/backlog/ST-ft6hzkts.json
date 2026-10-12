@@ -2,7 +2,7 @@
   "id": "ST-ft6hzkts",
   "kind": "story",
   "title": "A cold pack reads only its cited sources' anchor and fetch-state rows for the freshness stamp, so its time is back near the 56 ms before the stamp",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-kp3boz7z",
   "priority": "P2",

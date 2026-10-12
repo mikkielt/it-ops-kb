@@ -2,7 +2,7 @@
   "id": "BG-xbbimxpq",
   "kind": "bug",
   "title": "pack prints a clean good for four questions the kb lacks: tempdb data files, the Microsoft 365 E5 price, Kubernetes Pod Security Admission and Exchange Online retention",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kp3boz7z",
   "priority": "P2",
   "rank": 0,
