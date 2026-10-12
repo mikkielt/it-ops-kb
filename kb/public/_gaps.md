@@ -1496,3 +1496,11 @@ Still open: (topic: auth/configmgr-rbac-auth)
 - Source S-rgpijsmb (https://api.github.com/repos/MicrosoftDocs/memdocs/commits/d3432a8c0e9a1b8706eff71005a6b7ca53c35f98) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 36 lost it. (topic: agents/doc-change-detection)
 
 - Source S-yuwxbqz3 (https://raw.githubusercontent.com/MicrosoftDocs/memdocs/4b5429df8b47046c6b251e572ee61199fb5d4a5d/README.md) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 55 lost it. (topic: agents/doc-lookup-sources)
+
+## agents/headless-agent-runtimes
+
+- **Anthropic terms automated unattended use Claude Code subscription token Pro Max loop scripted usage ban** The kb was asked this in a logged lookup of 2026-10-04, and no article answered it (query log finding F-633d7691b544). Looked in the kb 2026-10-12: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/headless-agent-runtimes)
+
+## security/policy-precedence
+
+- **How many articles does the kb hold in the intune domain?** The kb was asked this in a logged lookup of 2026-10-12, and no article answered it (query log finding F-ea430090e717). Looked in the kb 2026-10-12: `rag.py pack` gives `good`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: security/policy-precedence)
