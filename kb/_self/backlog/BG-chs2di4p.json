@@ -2,7 +2,7 @@
   "id": "BG-chs2di4p",
   "kind": "bug",
   "title": "The pool's sc_stale check is met by a bare article header's retrieved date, so a pack with no freshness stamp passes it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
   "rank": 0,

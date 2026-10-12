@@ -2,7 +2,7 @@
   "id": "BG-tvew3gxp",
   "kind": "bug",
   "title": "Two scenario rows' answer regexes match only the kb's literal wording: BP-2c2a3c1d needs <name>@<origin>, BP-0181112b a whole kb sentence",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",

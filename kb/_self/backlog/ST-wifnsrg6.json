@@ -2,7 +2,7 @@
   "id": "ST-wifnsrg6",
   "kind": "story",
   "title": "Review sprint: Benchmark pool checks read the pack as the lookup does and pin their guards with tests",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kuhlsf2s",
   "review": true,
   "priority": "P1",

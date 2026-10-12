@@ -2,7 +2,7 @@
   "id": "ST-nmx3lejz",
   "kind": "story",
   "title": "Research sprint goal: Benchmark pool checks read the pack as the lookup does and pin their guards with tests",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kuhlsf2s",
   "goal_research": true,
   "priority": "P1",

@@ -2,7 +2,7 @@
   "id": "BG-4flop3jv",
   "kind": "bug",
   "title": "pool check passes a scenario row whose pack prints a check: line: scenario_pack reads any pack with no route: line as good",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",

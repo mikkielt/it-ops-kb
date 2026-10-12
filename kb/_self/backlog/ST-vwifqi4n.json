@@ -2,7 +2,7 @@
   "id": "ST-vwifqi4n",
   "kind": "story",
   "title": "A suite test plants an invented identifier in a lookup_eval-sourced pool row and asserts pool check's unstated-names warning",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",

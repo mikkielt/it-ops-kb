@@ -2,7 +2,7 @@
   "id": "TK-wztp5ixd",
   "kind": "task",
   "title": "A test plants an invented name in a lookup_eval row and keeps a hand-written near-miss unflagged",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-vwifqi4n",
   "priority": "P2",
   "rank": 0,

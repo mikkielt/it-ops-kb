@@ -2,7 +2,7 @@
   "id": "BG-i7q4cjpb",
   "kind": "bug",
   "title": "fact_for still picks a non-answer for BP-df64045a and the three cmpivot timeout rows, and gate g1's hand extension of BP-df64045a accepts the wipe line",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kuhlsf2s",
   "priority": "P2",
   "rank": 0,

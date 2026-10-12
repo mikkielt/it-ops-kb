@@ -2,7 +2,7 @@
   "id": "ST-keicy7gn",
   "kind": "story",
   "title": "The AD CS autoenrollment sc_partial row tests partial knowledge, and a test asserts the scenario answer-not-in-pack message",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",
