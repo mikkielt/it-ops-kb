@@ -2,7 +2,7 @@
   "id": "BG-xbbimxpq",
   "kind": "bug",
   "title": "pack prints a clean good for four questions the kb lacks: tempdb data files, the Microsoft 365 E5 price, Kubernetes Pod Security Admission and Exchange Online retention",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kp3boz7z",
   "priority": "P2",
   "rank": 0,
@@ -101,5 +101,50 @@
     "found: SP-j2jn5ue4 planning probes"
   ],
   "notes": "Planned 2026-10-12 (SP-kp3boz7z, origin/main 0ae6d30bc): premise reproduced: each of the four questions prints 'coverage: good (best article matches 5-6 of 6-7 key words ...)' with no check: or route: line; the key word left out is the question's subject (tempdb, e5 matched but price-only, pod security, retention), led by management-plane-hardening.md:37, bitlocker.md:23, k8s-gmsa-windows.md:14, audit-log-apis.md:52. The suite is at its id ceiling (100 of 100): extend the existing pack_scatter_check test in _tools/test_live_kb.py, add no test id. Keep the eval set's good rows good (rag.py eval) and the off-kb list's good count from rising. Checks 0 and 1 pass before the work and pin the eval verdicts and the scatter test; check 2 (hook arm sc_absent >= 5 of 6) and the repro fail before it.",
-  "claimed_by": "orch-kp3boz7z"
+  "evidence": {
+    "commit": "10e16e871ac7da926feaca4ee958b2a4edbf0ab5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "629caf9a2e4156aa"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_scatter_check"
+        ],
+        "exit": 0,
+        "sha256": "caf6b184ae767ffb"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,tempfile,os,re;d=tempfile.mkdtemp();f=os.path.join(d,'r.csv');p=subprocess.run([sys.executable,'_tools/benchmarks.py','run','pool','--arms','hook','--kinds','sc_absent','--reps','1','--out',f],capture_output=True,text=True);t=open(f).read() if os.path.exists(f) else '';m=re.search(r',sc_absent,hook,,fully_right,([0-9]+) of 6,',t);sys.exit(0 if p.returncode==0 and m and int(m.group(1))>=5 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;bad=[]\nfor q in sys.argv[1:]:\n o=subprocess.run([sys.executable,'_tools/rag.py','pack',q],capture_output=True,text=True);t=o.stdout;h=t.split('\\n## ')[0]\n clean=t.startswith('coverage: good') and 'check:' not in h and 'route:' not in h;print('clean good' if clean else 'flagged',q);bad+=[q] if clean or o.returncode or not t else []\nsys.exit(1 if bad else 0)",
+          "What is the recommended number of tempdb data files for SQL Server?",
+          "What is the current price of a Microsoft 365 E5 licence?",
+          "How do I enforce Kubernetes Pod Security Admission at the namespace level?",
+          "How do I configure Exchange Online mailbox retention policies with Purview?"
+        ],
+        "exit": 0,
+        "sha256": "3539915f4c450f8a"
+      }
+    ]
+  }
 }
