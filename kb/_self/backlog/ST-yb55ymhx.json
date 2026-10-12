@@ -1,0 +1,26 @@
+{
+  "id": "ST-yb55ymhx",
+  "kind": "story",
+  "title": "The Since section names the change or model move behind the kb-lookup-agent, partial and retrieval figures of 2026-10-12",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The section 'Since the records of 2026-10-08 and 2026-10-09' of kb/_self/reports/benchmarks.md names, for kb-lookup-agent, its start context rising 37% (about 4.0k to 5.5k) with the change behind it and the model move from Haiku 4.5 to Haiku 5.5; for partial, that its comparison with 2026-09-28 spans the model move from Haiku 4.5 and Sonnet 5 to Haiku 5.5 and Sonnet 5.5; and for retrieval, the untagged line-in-pack share falling 97% to 93% with its cause or a noise statement",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;h='Since the records of 2026-10-08 and 2026-10-09';t=open('kb/_self/reports/benchmarks.md').read();i=t.find(h);s='' if i<0 else t[i:];m=re.search(r'\\n#{2,3} ',s[len(h):]);s=s[:len(h)+m.start()] if m else s;miss=[x for x in ('kb-lookup-agent','partial','line-in-pack') if x not in s];print('missing:',miss);sys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "links": [
+    "parked: SP-ceucrhca review"
+  ],
+  "notes": "Review gaps 3 (S3, benchmarks.md:961 kb-lookup-agent start context +37%, model Haiku 4.5 to 5.5, unnamed), 4 (S3, :458 partial compared with 2026-09-28 across a model move), 5 (S4, :998 retrieval untagged line-in-pack 97% to 93%)."
+}

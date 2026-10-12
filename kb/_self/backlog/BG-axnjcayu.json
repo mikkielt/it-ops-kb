@@ -63,7 +63,7 @@
       "recommendation": "earlier 0.20",
       "class": "design",
       "answer": "earlier 0.20",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planned into SP-ceucrhca 2026-10-12 by the orchestrator (ST-gngo7etc gate g1 answered fix-price-then-rerecord): the record of 2026-10-12 failed pool verify (b) on 8 Sonnet 5.5 runs; recomputed from the runs file at a 0.10 cache read, all 8 fall within 20% of list. kb/_self/reports/benchmarks.md:8 also names the 0.20 rate: ST-gngo7etc, which holds that file, rewords it at its re-record. Check 0 (test_bench_price_sonnet_55) passes before the work on purpose: it pins the pricing of runs on versions before 2.1.296, which must stay at 0.20; the worker extends it with a 2.1.296 run priced at 0.10.",

@@ -1,0 +1,25 @@
+{
+  "id": "BG-lcp6dhpz",
+  "kind": "bug",
+  "title": "The Sonnet 5.5 cache-read conflict's resolution says older runs are re-priced at 0.10, while bench_core.READ_BEFORE keeps them at 0.20",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The resolved line under the Sonnet 5.5 cache-read entry of kb/public/_conflicts.md states the rate the harness prices a run on Claude Code 2.1.295 or older at (0.20, bench_core.READ_BEFORE), so the ledger and the code agree",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/_conflicts.md').read();bad='is re-priced at $0.10 to match the page' in t;print('ledger says re-priced at 0.10' if bad else 'ok');sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the ledger's text against a code constant; no behaviour runs it",
+  "touches": [
+    "kb/public/_conflicts.md"
+  ],
+  "links": [
+    "parked: SP-ceucrhca review"
+  ],
+  "notes": "Review gap 10 (S4): kb/public/_conflicts.md:746 against bench_core.READ_BEFORE."
+}

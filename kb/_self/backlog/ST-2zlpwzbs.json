@@ -1,0 +1,26 @@
+{
+  "id": "ST-2zlpwzbs",
+  "kind": "story",
+  "title": "The 2026-10-12 comparison in benchmarks.md corrects six figures and claims the review found off",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.md reports the Haiku 5.5 low gap cell falling 5 of 5 to 4 of 5 beyond its interval; the tool-speed text attributes the cold pack's doubling to the freshness stamp as the Since section does; the plugin always-on rise is set against the spread of the 2026-10-08 and 2026-10-12 cells, not 2026-09-28's; the hook's 14 new rows beyond the router's kinds are named; the warm pack figure compares 2026-10-09 with 2026-10-12; and the pool record's text names the discarded first attempt of 2026-10-12 (61.09 USD, failed pool verify (b))",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/benchmarks.md').read();i=t.find('What it shows: with 359 topics');s=t[i:i+1500];bad=[m for m,ok in (('tool-speed still unattributed','does not say which of the changes' not in s),('first attempt not named','61.09' in t)) if not ok];print(bad or 'ok');sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "links": [
+    "parked: SP-ceucrhca review"
+  ],
+  "notes": "Review gaps 1 (S3, benchmarks.md:756 Haiku 5.5 low gap 5/5 to 4/5 called within), 2 (S3, :1112 tool-speed text contradicts the Since attribution), 6 (S4, :764 spread from 2026-09-28), 7 (S4, :756 hook rows fact and variant_* not covered), 8 (S4, :760 warm pack 2.9 is 2026-10-08, 2026-10-09 is 3.1), 9 (S4, :545 first attempt 61.09 USD not named). The check reads gaps 2 and 9 only; the others are read by hand."
+}
