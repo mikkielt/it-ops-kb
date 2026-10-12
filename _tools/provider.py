@@ -59,6 +59,9 @@ Columns (one row per provider):
                   (another code, e.g. 403) | unknown
   rate_limit      the documented or observed request limit
   reuse           the usual reuse class of the provider's pages (kbcommon.REUSE; the source row decides)
+  lifetime_days   days a source of the provider counts as fresh when neither its recorded changes nor its page date give
+                  a lifetime (lifetime); curated, never measured by probe; a row without it takes the `*` row's, else
+                  DEFAULT_LIFETIME_DAYS
   probed_utc      when `probe --write` last measured the row (YYYY-MM-DD)
   notes           free text: what the probe could not decide
 
@@ -94,8 +97,10 @@ other host or a record it cannot use; a GitHub request is unauthenticated (60 an
 Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
 lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
 is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run.
+lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
+revalidation at question time and fetch.py --status read it.
 """
-import argparse, contextlib, datetime, email.utils, hashlib, json, os, random, re, ssl, string, subprocess, sys, threading, time
+import argparse, calendar, collections, contextlib, csv, datetime, email.utils, hashlib, io, json, math, os, random, re, ssl, string, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request, zlib
 import xml.etree.ElementTree as ET
 
@@ -106,7 +111,7 @@ SHARED = os.path.join(kbcommon.TOOLS, "providers.csv")
 ROOT_FILE = "_providers.csv"
 COLS = ["provider", "match", "signals", "etag", "lastmod", "version_meta", "stable_id", "raw_form", "sitemap",
         "sitemap_lastmod", "redirects", "history", "search_api", "mcp_freshness", "not_found", "rate_limit", "reuse",
-        "probed_utc", "notes"]
+        "lifetime_days", "probed_utc", "notes"]
 MEASURED = ("signals", "etag", "lastmod", "version_meta", "raw_form", "sitemap", "not_found", "probed_utc")
 SIGNALS = ("pin", "etag", "lastmod", "version", "git", "hash")
 UA = "it-ops-kb-fetch/1.0 (read-only change check)"
@@ -209,6 +214,222 @@ def signals(row, url=""):
     out = [s.strip() for s in (row.get("signals") or "").split(";") if s.strip() in SIGNALS]
     out = [s for s in out if s != "pin" or is_pinned(url)] if url else out
     return [s for s in out if s != "hash"] + ["hash"]
+
+
+# ---------------------------------------------------------------- freshness lifetime
+
+FRACTION = 0.1  # RFC 9111 4.2.2: a heuristic lifetime is a fraction of the time since the last change, "typically 10%"
+DEFAULT_LIFETIME_DAYS = 30  # a provider row that holds no `lifetime_days`, with no `*` row to give one
+WINDOW_DAYS = 365  # the span of a docs file's commits read for its change rate
+DAY = 86400.0
+CONFIRMED = re.compile(r"confirmed (\d{4}-\d\d-\d\d)")  # the census's suffix of a source row's version_or_date
+PAGE_DATE = re.compile(r"(?:updated_at|updated|lastmod|modified) (\d{4}-\d\d-\d\d)")  # a page's own date there
+LEARN_FILES = (".md", "/index.md", ".yml", "/index.yml")  # the files a Learn page can be built from (census.check_learn)
+LEARN_MEMO_S = 3600  # a long-lived server asks git about a page's file once an hour
+_learn_memo = {}  # url -> (time, [commit epochs])
+
+
+def stamp_epoch(stamp):
+    """Seconds since the epoch of a `YYYY-MM-DDTHH:MM:SSZ` or `YYYY-MM-DD` stamp (UTC); None when it is neither."""
+    m = re.match(r"(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d):(\d\d))?", stamp or "")
+    if not m:
+        return None
+    try:
+        return float(calendar.timegm(tuple(int(x or 0) for x in m.groups())))
+    except (ValueError, OverflowError):
+        return None
+
+
+def _git(cwd, *args):
+    """stdout of `git -C cwd ARGS`, "" when git fails. Never a request: an object a partial clone lacks is not fetched."""
+    try:
+        p = subprocess.run(["git", "-C", cwd, *args], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=120, env={**os.environ, "GIT_NO_LAZY_FETCH": "1", "GIT_TERMINAL_PROMPT": "0"})
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return p.stdout if p.returncode == 0 else ""
+
+
+def state_history(root, home=None):
+    """{source id: {checks: [epoch], changes: [epoch]}} from the git history of the root's `_fetch_state.csv`, with no
+    request: every `fetched_utc`, `detected_utc` and `changed_utc` a committed revision held is a successful check of
+    that source, every `changed_utc` a change it saw (the file keeps only the latest of each, so the history is the
+    only record of the earlier ones). {} outside a git repository. The result is kept under _cache/lifetime/ and
+    extended by the revisions committed since, as long as the ones it read are still the file's oldest."""
+    home = home or kbcommon.HOME
+    rel = os.path.relpath(os.path.join(root.path, kbcommon.STATE), home).replace(os.sep, "/")
+    revs = _git(home, "log", "--format=%H", "--", rel).split()[::-1]  # oldest first
+    if not revs:
+        return {}
+    cache = os.path.join(home, "_cache", "lifetime", f"history-{root.name}.json")
+    data, done = {}, []
+    try:
+        with open(cache, encoding="utf-8") as f:
+            got = json.load(f)
+        if got["rel"] == rel and revs[:len(got["revs"])] == got["revs"]:
+            data, done = got["data"], got["revs"]
+    except (OSError, ValueError, KeyError, TypeError):
+        pass
+    if len(revs) > len(done):
+        sets = {sid: {k: set(v) for k, v in rec.items()} for sid, rec in data.items()}
+        for rev in revs[len(done):]:
+            try:
+                rows = kbcommon.parse_csv(rel, _git(home, "show", f"{rev}:{rel}"), ("id",))[1]
+            except kbcommon.CsvError:
+                continue
+            for r in rows:
+                rec = sets.setdefault(r["id"], {"checks": set(), "changes": set()})
+                for col in ("fetched_utc", "detected_utc", "changed_utc"):
+                    t = stamp_epoch(r.get(col))
+                    if t is not None:
+                        rec["checks"].add(t)
+                        if col == "changed_utc":
+                            rec["changes"].add(t)
+        data = {sid: {k: sorted(v) for k, v in rec.items()} for sid, rec in sets.items()}
+        try:
+            os.makedirs(os.path.dirname(cache), exist_ok=True)
+            with open(cache + ".tmp", "w", encoding="utf-8", newline="\n") as f:
+                json.dump({"rel": rel, "revs": revs, "data": data}, f)
+            os.replace(cache + ".tmp", cache)
+        except OSError:
+            pass
+    return data
+
+
+def modified_interval(checks, changes):
+    """Mean days between the changes of one source by Cho and Garcia-Molina's modified estimator, from the times of its
+    successful checks (the first only sets the baseline) and of the changes they saw: with n check intervals of mean
+    length I and X changes seen, I / -ln((n - X + 0.5) / (n + 0.5)). The 0.5 terms keep it finite when every check saw
+    a change, where the plain rate is infinite, and it corrects the bias of counting at most one change per check.
+    None under two changes seen (or two checks): the change rate is then not known."""
+    checks = sorted(set(checks))
+    seen = len({c for c in changes if checks and c > checks[0]})
+    if len(checks) < 2 or seen < 2:
+        return None
+    n = len(checks) - 1
+    return (checks[-1] - checks[0]) / n / -math.log((n - min(seen, n) + 0.5) / (n + 0.5)) / DAY
+
+
+def clone_dir(repo):
+    """The bare clone of a docs repository in the census's cache (this checkout's, else the clone's main worktree's)."""
+    import census, kbfacts  # not at load: the census brings the detection tools a lookup with no Learn source never needs
+    name = census.clone_name(repo) + ".git"
+    for base in (census.REPOS, os.path.join(kbfacts.clone_home(), "_cache", "census", "repos")):
+        if os.path.isdir(os.path.join(base, name)):
+            return os.path.join(base, name)
+    return None
+
+
+def learn_commits(urls, now=None, days=WINDOW_DAYS):
+    """{url: [commit epoch]} of the Learn pages among `urls` whose source file (census.learn_source) has commits in the
+    last `days`, read from the census's clone cache with one git walk per repository and no request; a page that maps to
+    no repository, or whose repository is not in the cache, is left out."""
+    now = now or time.time()
+    out, want = {}, []
+    for u in urls:
+        memo = _learn_memo.get(u)
+        if memo and now - memo[0] < LEARN_MEMO_S:
+            out[u] = memo[1]
+        elif urllib.parse.urlsplit(u).netloc.lower() == "learn.microsoft.com":
+            want.append(u)
+    if not want:
+        return out
+    import census
+    by_repo = collections.defaultdict(dict)
+    for u in want:
+        repo, path = census.learn_source(u)
+        for suffix in LEARN_FILES if repo else ():
+            by_repo[repo][path + suffix] = u
+    since = datetime.datetime.fromtimestamp(now - days * DAY, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for repo, files in by_repo.items():
+        d = clone_dir(repo)
+        if d is None:
+            continue
+        times, paths, t = collections.defaultdict(set), sorted(files), None
+        for i in range(0, len(paths), 1000):
+            for ln in _git(d, "log", f"--since={since}", "--format=%ct", "--name-only", "HEAD", "--", *paths[i:i + 1000]).splitlines():
+                if re.fullmatch(r"\d{9,11}", ln.strip()):
+                    t = float(ln)
+                elif ln in files and t is not None:
+                    times[files[ln]].add(t)
+        for u in set(files.values()):
+            out[u] = sorted(times[u])
+            _learn_memo[u] = (now, out[u])
+    return out
+
+
+def page_date(st, src, row):
+    """Epoch of a source's own content date from files only: the newest `updated_at`, `updated`, `lastmod` or `modified`
+    date of its version_or_date, else the state row's Last-Modified when its provider's header is a stable one."""
+    days = [stamp_epoch(d) for d in PAGE_DATE.findall((src or {}).get("version_or_date") or "")]
+    if any(d is not None for d in days):
+        return max(d for d in days if d is not None)
+    if ((row or {}).get("lastmod") or "").startswith("stable") and (st or {}).get("last_modified"):
+        try:
+            return email.utils.parsedate_to_datetime(st["last_modified"]).timestamp()
+        except (TypeError, ValueError):
+            pass
+    return None
+
+
+def default_days(row, rows):
+    """(days, provider name) a provider row's `lifetime_days` gives, else the `*` row's, else DEFAULT_LIFETIME_DAYS."""
+    star = next((r for r in rows or () if (r.get("match") or "").split() == ["*"]), None)
+    for r in (row, star):
+        try:
+            if r and float(r.get("lifetime_days") or 0) > 0:
+                return float(r["lifetime_days"]), r.get("provider", "")
+        except ValueError:
+            pass
+    return float(DEFAULT_LIFETIME_DAYS), ""
+
+
+def lifetime(sid, src, st, hist, commits, row, rows, now):
+    """{days, basis, changes} of one source: how long its facts count as fresh after a check, with no request. `days` is
+    FRACTION of the mean time between its changes, estimated from the first evidence there is: its recorded changes in
+    the git history of the state file when it has two or more (modified_interval); else its Learn file's commits in the
+    last WINDOW_DAYS when it has two or more; else the time since its page date (RFC 9111's heuristic); else its
+    provider's `lifetime_days`. None for a pinned url: its text cannot change."""
+    url = (src.get("url") or "").strip()
+    if is_pinned(url) or "pin" in signals(row or {}, url):
+        return {"days": None, "basis": "pinned: its text cannot change", "changes": 0}
+    h = hist.get(sid) or {"checks": [], "changes": []}
+    mean = modified_interval(h["checks"], h["changes"])
+    if mean:
+        seen = len({c for c in h["changes"] if c > min(h["checks"])})
+        return {"days": FRACTION * mean, "changes": seen,
+                "basis": f"{seen} changes in {len(set(h['checks'])) - 1} checks, one every {mean:.0f} days (Poisson)"}
+    got = commits.get(url) or []
+    if len(got) >= 2:
+        return {"days": FRACTION * WINDOW_DAYS / len(got), "changes": len(got),
+                "basis": f"{len(got)} commits of its file in {WINDOW_DAYS} days"}
+    d = page_date(st, src, row)
+    if d is not None and d < now:
+        age = (now - d) / DAY
+        return {"days": FRACTION * age, "changes": 0, "basis": f"{FRACTION:.0%} of the {age:.0f} days since its page date"}
+    days, name = default_days(row, rows)
+    return {"days": days, "changes": 0, "basis": f"provider default ({name or 'built in'})"}
+
+
+def lifetimes(sources, state, rows, root, now=None, home=None):
+    """{source id: lifetime()} for `sources` {id: _sources.csv row}, `state` {id: _fetch_state.csv row}, `rows` the
+    provider registry and `root` the kbcommon.Root they belong to, with no request: the state file's git history, the
+    census's clone cache and the files' own dates."""
+    now = time.time() if now is None else now
+    hist = state_history(root, home)
+    rowof = {sid: for_url((s.get("url") or "").strip(), rows) for sid, s in sources.items()}
+    need = [s["url"].strip() for sid, s in sources.items() if not is_pinned(s.get("url") or "")
+            and modified_interval((hist.get(sid) or {}).get("checks", []), (hist.get(sid) or {}).get("changes", [])) is None]
+    commits = learn_commits(need, now) if need else {}
+    return {sid: lifetime(sid, s, state.get(sid) or {}, hist, commits, rowof[sid], rows, now) for sid, s in sources.items()}
+
+
+def last_check(st, src):
+    """Epoch of the last check of a source known from files with no request: the newest of the state row's checked_utc,
+    fetched_utc and detected_utc and the census's `confirmed DAY` of its version_or_date; None when none dates it."""
+    days = [stamp_epoch((st or {}).get(c)) for c in ("checked_utc", "fetched_utc", "detected_utc")]
+    days += [stamp_epoch(d) for d in CONFIRMED.findall((src or {}).get("version_or_date") or "")]
+    return max((d for d in days if d is not None), default=None)
 
 
 # ---------------------------------------------------------------- http

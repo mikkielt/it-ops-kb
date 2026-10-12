@@ -1,0 +1,18 @@
+{
+  "id": "BG-w3p7fqy2",
+  "kind": "bug",
+  "title": "factdiff.py detect never records changed_utc, so no source of _fetch_state.csv has a recorded change",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.py detect writes the state row's changed_utc when a source's verdict is changed, replaced or moved, so the change history in git and the source changed mark of a fact read it; the repro exits 0 once a detect run has recorded a change.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv, sys; sys.exit(0 if any(r['changed_utc'] for r in csv.DictReader(open('kb/public/_fetch_state.csv', encoding='utf-8'))) else 1)"
+    ]
+  },
+  "repro_reason": "detect's write needs a fetched page: only the test suite plants one, so the committed state file is the evidence a run would leave"
+}
