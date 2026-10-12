@@ -65,6 +65,32 @@
       "class": "design",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does detect record a fact whose anchor's section hashes the same as at the baseline, and where do the section hashes live?",
+      "options": [
+        "Outcome verbatim with the fact row's signal section, and a sections column of _fetch_state.csv bound to the document hash by its first 12 digits",
+        "A new outcome unchanged (census.factdiff_verdicts would list it for review until it is changed, outside this item's touches) and a column merged with the other detection columns by kg_merge.py (outside the touches)"
+      ],
+      "recommendation": "Outcome verbatim with the fact row's signal section, and a sections column of _fetch_state.csv bound to the document hash by its first 12 digits",
+      "class": "design",
+      "answer": "Outcome verbatim with the fact row's signal section, and a sections column of _fetch_state.csv bound to the document hash by its first 12 digits",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which sources get the section comparison, and how are sections keyed and hashed?",
+      "options": [
+        "Every source whose verdict falls to the text hash (the four hosts and any host with no stronger signal), sections keyed by the anchor heading path, 8 and 12 hex digits",
+        "Only the four named hosts, selected by a providers.csv column"
+      ],
+      "recommendation": "Every source whose verdict falls to the text hash (the four hosts and any host with no stronger signal), sections keyed by the anchor heading path, 8 and 12 hex digits",
+      "class": "design",
+      "answer": "Every source whose verdict falls to the text hash (the four hosts and any host with no stronger signal), sections keyed by the anchor heading path, 8 and 12 hex digits",
+      "by": "agent"
     }
   ],
   "links": [

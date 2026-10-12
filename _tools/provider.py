@@ -28,7 +28,8 @@ Columns (one row per provider):
                             `<repo>.wiki`, a repository's README at its default branch): the blob ids there, with the
                             licence blob, the release tags and the archived banner for a repository home, are its version
                             id (census.gh_page_id); census.py check asks git for a commit since retrieval instead
-                    hash    sha256 of the normalized document text (always last)
+                    hash    sha256 of the normalized document text (always last); where it decides, factdiff.py also
+                            compares the document's heading sections (its `sections` column)
   etag            none | stable | per-request (changes on every request) | weak (W/ prefix; stable)
   lastmod         none | stable (If-Modified-Since answers 304) | stable-no-304 | request-time (the header is the
                   time of the request: useless)

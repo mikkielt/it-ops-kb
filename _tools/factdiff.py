@@ -36,6 +36,12 @@ backing passage when it covers at least MIN_COVER of the weight and holds at lea
 Cache: documents fetched here are kept in _cache/factdiff/<root>/<id>.json (never committed) and reused for
 --max-age days (default 7); --refetch ignores them. census.py confirm takes a source's detection baseline from
 such a document when the source holds none.
+
+Sections. A page whose only signal is the text hash is compared per heading section: `_fetch_state.csv` keeps in
+`sections` the hash of each section's normalized units (`sections()`), beside doc_sha256 and bound to it. detect
+reads a located fact whose anchor's `heading` names a section that hashes the same as at the baseline as `verbatim`
+with the row signal `section`, and resolves only the facts of edited sections; the source's evidence counts the sections.
+
 detect, apply and review (apply --dry-run: no row) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the counts per verdict, fact outcome or review outcome; kb/_self/querylog.md): the census's own phases write
 the same.
@@ -175,6 +181,61 @@ def fact_text(text):
 
 def term_set(text):
     return {t for t in kbfacts.terms(text) if len(t) > 2 and not t.isdigit()}
+
+
+SECTION_KEY = 8  # hex digits of a heading path's key
+SECTION_HASH = 12  # ... and of its section's content hash (also the share of the document hash that binds a stored set to it)
+SECTION_SIGNAL = "section"  # the signal of a fact row whose section hashes the same as at the baseline
+
+
+def section_key(heading):
+    """The key of a heading path, cut at 200 characters as an anchor row's `heading` column is."""
+    return hashlib.sha256(norm(heading[:200]).encode()).hexdigest()[:SECTION_KEY]
+
+
+def sections(text):
+    """{section key: hash} of a document text: the units under one heading path, hashed in order (a heading line's own
+    unit sits under its parent's path), so an edit changes the hash of its section only; the units are normalized, so
+    a change of markup or case moves none."""
+    grouped = collections.defaultdict(list)
+    for path, unit in units(text):
+        grouped[section_key(path)].append(norm(unit))
+    return {k: hashlib.sha256("\n".join(us).encode()).hexdigest()[:SECTION_HASH] for k, us in grouped.items()}
+
+
+def sections_column(text, doc_sha):
+    """The `sections` value of a _fetch_state.csv row: the first digits of the document hash it belongs to, then each
+    section's `key:hash`, `;`-separated. The hash prefix binds the set to its text: a merge that takes the row's other
+    columns from another detection leaves a set that stored_sections ignores."""
+    return ";".join([(doc_sha or "")[:SECTION_HASH]] + [f"{k}:{h}" for k, h in sorted(sections(text or "").items())])
+
+
+def stored_sections(st, prev):
+    """{key: hash} of the text a state row's doc_sha256 hashes: the row's `sections` value when it names that hash,
+    else those of `prev`, the cached document of the previous fetch, when its text hashes to doc_sha256; {} when
+    neither (a baseline taken before sections were kept, with its cached text gone)."""
+    want = st.get("doc_sha256") or ""
+    if not want:
+        return {}
+    head, _, rest = (st.get("sections") or "").partition(";")
+    if rest and head == want[:SECTION_HASH]:
+        return dict(p.split(":", 1) for p in rest.split(";") if ":" in p)
+    if prev and prev.get("text") and hashlib.sha256(prev["text"].encode()).hexdigest() == want:
+        return sections(prev["text"])
+    return {}
+
+
+def section_counts(old, new):
+    """(changed, unchanged) sections of two sets: a section only one holds counts as changed."""
+    keys = set(old) | set(new)
+    same = sum(1 for k in keys if k in old and k in new and old[k] == new[k])
+    return len(keys) - same, same
+
+
+def section_unchanged(anchor, old, new):
+    """Whether the section holding an anchor's passage (its `heading`) hashes the same in both sets."""
+    k = section_key((anchor or {}).get("heading") or "")
+    return k in old and old[k] == new.get(k)
 
 
 class Doc:
@@ -484,9 +545,10 @@ def baseline(sid, url, d, rows):
     row = provider.for_url(url, rows) or {}
     keys = [k for k in (row.get("version_meta") or "").split(",") if k.strip() and k != "-"]
     stamp = (d.get("fetched_utc") or "")[:19].replace("+00:00", "")
+    doc_sha = hashlib.sha256(d["text"].encode()).hexdigest()
     return {"id": sid, "url": url, "etag": d.get("etag", ""), "last_modified": d.get("lastmod", ""),
             "version": (d.get("version") or {}).get(keys[0], "") if keys else "",
-            "doc_sha256": hashlib.sha256(d["text"].encode()).hexdigest(),
+            "doc_sha256": doc_sha, "sections": sections_column(d["text"], doc_sha),
             "final_url": d["final"] if (d.get("final") or "").split("?")[0] != provider.raw_url(url, row)[0].split("?")[0] else "",
             "http_status": "200", "simhash": simhash(d["text"]), "detected_utc": (stamp + "Z") if stamp else ""}
 
@@ -874,7 +936,8 @@ def detect_source(sid, src, st, rows):
         keys, version = ["git"], gid
     d["sha"] = hashlib.sha256((d["text"] or "").encode()).hexdigest()
     new.update(etag=d["etag"], last_modified=d["lastmod"], version=version, doc_sha256=d["sha"], error="",
-               final_url=d["final"] if d["hops"] else "", simhash=simhash(d["text"] or ""))
+               final_url=d["final"] if d["hops"] else "", simhash=simhash(d["text"] or ""),
+               sections=sections_column(d["text"], d["sha"]))
     raw_url = provider.raw_url(url, row)[0]
     moved = bool(d["hops"]) and d["final"].split("?")[0].rstrip("/") != raw_url.split("?")[0].rstrip("/")
     text = d["text"] or ""
@@ -1014,8 +1077,10 @@ def linked(src, doc, row):
     return out + near(src["url"], sitemap_added(row, segs))
 
 
-def resolve(sid, src, verdict, doc, prev, facts, anchors, rows):
-    """Log rows, one per fact of a source whose text changed, moved or died."""
+def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None):
+    """Log rows, one per fact of a source whose text changed, moved or died. `secs` is the (baseline, current) pair of
+    section sets of a page only its text hash found changed: a located fact whose anchor's section hashes the same in
+    both is `verbatim` with the signal `section`, not resolved (no passage search, no other page)."""
     out = []
     row = provider.for_url(src["url"], rows) or {}
     d = Doc(doc["text"]) if doc and doc.get("text") else None
@@ -1027,6 +1092,9 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows):
         rec = {"fact": key, "path": rel, "line": line, "outcome": "", "target": "", "note": ""}
         if d is not None and located and a["sha"] in d.shas:
             rec["outcome"] = "verbatim"
+            found += 1
+        elif d is not None and located and secs and section_unchanged(a, *secs):
+            rec.update(outcome="verbatim", signal=SECTION_SIGNAL, note="the section of its passage hashes the same as at the baseline")
             found += 1
         elif d is not None and verdict not in ("soft-404", "replaced"):
             win, cover, _ = d.locate(fact_text(text))
@@ -1092,12 +1160,20 @@ def cmd_detect(a, tally):
             if row["provider"] in segs and (row.get("sitemap") or "-") != "-":
                 print(f"sitemap {row['provider']}: {len(sitemap_added(row, sorted(segs[row['provider']]), not a.no_save))} url(s) added "
                       "since the last run", file=sys.stderr, flush=True)
-    log, counts, outc = [], collections.Counter(), collections.Counter()
+    log, counts, outc, secn = [], collections.Counter(), collections.Counter(), collections.Counter()
     for sid in ids:
         verdict, signal, ev, new, doc, prev = results[sid]
-        rows_f = []
+        rows_f, secs = [], None
+        if verdict == "changed" and signal == "hash" and doc and doc.get("text"):
+            # the text hash is the only signal: the sections hashed at the baseline tell which part of the page changed
+            old = stored_sections(state.get(sid, {}), prev)
+            if old:
+                secs = (old, sections(doc["text"]))
+                changed, same = section_counts(*secs)
+                secn.update(changed=changed, unchanged=same)
+                ev += f"; sections: {changed} changed, {same} unchanged"
         if verdict in ("changed", "new", "moved", "gone", "soft-404", "replaced"):
-            rows_f, found = resolve(sid, srcs[sid], verdict, doc, prev, facts[sid], anchors, rows)
+            rows_f, found = resolve(sid, srcs[sid], verdict, doc, prev, facts[sid], anchors, rows, secs)
             if verdict == "replaced" and found:
                 verdict, ev = "changed", ev + "; anchors still found: an edit, not a replacement"
         counts[verdict] += 1
@@ -1108,6 +1184,7 @@ def cmd_detect(a, tally):
         for r in rows_f:
             log.append({**base, **r})
             outc[r["outcome"]] += 1
+            secn["facts"] += r.get("signal") == SECTION_SIGNAL
         if new is not None and not a.no_save:
             state[sid] = new
         if doc is not None and wants_snapshot(srcs[sid], doc) and not a.no_save:
@@ -1119,8 +1196,12 @@ def cmd_detect(a, tally):
         write_state(state)
     tally.update(counts)
     tally.update({f"fact-{k}": n for k, n in outc.items()})
+    tally.update({f"sections-{k}": n for k, n in secn.items() if n})
     print("detect: " + " ".join(f"{k}={counts[k]}" for k in VERDICTS if counts[k]) + "; facts: "
-          + " ".join(f"{k}={outc[k]}" for k in OUTCOMES if outc[k]) + ("" if a.no_save else f"; wrote {os.path.relpath(out, kbcommon.HOME)}"))
+          + " ".join(f"{k}={outc[k]}" for k in OUTCOMES if outc[k])
+          + (f"; sections: changed={secn['changed']} unchanged={secn['unchanged']} (facts kept by section={secn['facts']})"
+             if secn["changed"] or secn["unchanged"] else "")
+          + ("" if a.no_save else f"; wrote {os.path.relpath(out, kbcommon.HOME)}"))
     return 1 if any(outc[k] for k in REVIEW) else 0
 
 
@@ -1512,6 +1593,9 @@ def cmd_apply(a, tally):
         head = rs[0]
         fr = [r for r in rs if r["fact"]]
         retrieved = srcs.get(sid, {}).get("retrieved_utc", "")
+        # a fact kept by its section is as old as the baseline the section was hashed at: it needs that baseline to be
+        # no newer than the last confirmation, as an unchanged source does
+        kept = lambda r: r["outcome"] == "verbatim" and (r["signal"] != SECTION_SIGNAL or confirmable(head, retrieved))  # noqa: E731
         if head["verdict"] == "unchanged":
             if not confirmable(head, retrieved):
                 held += 1
@@ -1520,12 +1604,12 @@ def cmd_apply(a, tally):
             for k, rel, _, _ in facts.get(sid, []):
                 if (k, rel, sid) in anchors:
                     anchors[(k, rel, sid)]["verified_utc"] = date
-        elif head["verdict"] in ("changed", "new", "moved") and fr and all(r["outcome"] == "verbatim" for r in fr) \
+        elif head["verdict"] in ("changed", "new", "moved") and fr and all(kept(r) for r in fr) \
                 and len(fr) == len(facts.get(sid, [])) and all(anchors[(r["fact"], r["path"], sid)]["verified_utc"][:10]
                                                                 <= retrieved[:10] for r in fr):
             confirmed[sid] = f"fact diff: {len(fr)} anchor(s) verbatim"
         for r in fr:
-            if r["outcome"] == "verbatim" and anchors[(r["fact"], r["path"], sid)]["verified_utc"][:10] <= retrieved[:10]:
+            if kept(r) and anchors[(r["fact"], r["path"], sid)]["verified_utc"][:10] <= retrieved[:10]:
                 anchors[(r["fact"], r["path"], sid)]["verified_utc"] = date
                 n_verbatim += 1
             elif r["outcome"] == "moved" and r["target"]:

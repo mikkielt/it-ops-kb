@@ -1,7 +1,7 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
 (the generated index), the lookup eval (rag.py eval), the pack format and the questions it routes by kind to the tool that holds the answer, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
 index's unit cache is pinned on a planted fixture root, not on the live kb."""
-import csv, json, os, re, sqlite3, subprocess, sys, time
+import argparse, collections, csv, hashlib, json, os, re, sqlite3, subprocess, sys, time
 from pathlib import Path
 
 import pytest
@@ -152,7 +152,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone(monkeypatch):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -259,6 +259,51 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     check = lambda u: census.check_one({"url": u, "retrieved_utc": "2026-09-26"}, census.classify(u))[1]  # noqa: E731
     assert [check(u)["bucket"] for u in (raw("Gone"), gitlab, raw("Moved"), raw("Limited"))] == ["GONE", "GONE"] + ["NEEDS-READING"] * 2
     assert "answers 404" in check(raw("Gone"))["evidence"] and len(asked) == 8  # the census asked no repository again
+    # a host whose only signal is the text hash: the page is compared per heading section. The baseline holds each
+    # section's hash beside the page's; an edit in Beta moves Beta's and no other, so the fact of Alpha (its anchor
+    # placed on an earlier text, so its passage is not word for word in the baseline) is kept by its section with the
+    # row signal `section`, no passage search, and only the fact of the edited section is resolved
+    page = ("# Guide\n\n## Alpha\n\nThe Orion scheduler restarts every night at three o'clock.\n\n"
+            "## Beta\n\nThe Orion queue holds ten thousand jobs before it refuses new ones.\n")
+    edited = page.replace("ten thousand", "twenty thousand")
+    url, sid = "https://code.claude.com/docs/en/guide", "S9990003"
+    monkeypatch.setattr(factdiff, "ROOT", kbcommon.root("public"))
+    monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+    facts = [("0123456789ab", "dsc/a.md", 5, "The Orion scheduler restarts every night at three o'clock."),
+             ("ba9876543210", "dsc/b.md", 6, "The Orion queue holds ten thousand jobs before it refuses new ones.")]
+    anchors = {(r["fact"], r["path"], sid): r for r in factdiff.anchor_rows(sid, facts, {"status": 200, "text": page}, "quote", "2026-10-01")}
+    assert [r["heading"] for r in anchors.values()] == ["Guide > Alpha", "Guide > Beta"]
+    anchors[("0123456789ab", "dsc/a.md", sid)]["sha"] = "0" * 16
+    base = factdiff.baseline(sid, url, {"text": page, "final": url, "fetched_utc": "2026-10-01T00:00:00+00:00"}, prov)
+    assert base["doc_sha256"] == hashlib.sha256(page.encode()).hexdigest() and base["sections"].count(":") == 4
+    assert factdiff.section_counts(factdiff.sections(page), factdiff.sections(edited)) == (1, 3)
+    # the stored set belongs to its text: another document's hash leaves it unread, and the previous fetch's text stands in
+    assert factdiff.stored_sections(base, None) == factdiff.sections(page)
+    assert factdiff.stored_sections({**base, "doc_sha256": "f" * 64}, None) == {}
+    assert factdiff.stored_sections({**base, "sections": ""}, {"text": page}) == factdiff.sections(page)
+    monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
+        "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": len(edited), "raw": None,
+        "version": {}, "text": edited, "ctype": "text/markdown"})
+    v, signal, ev, new, doc, prev = factdiff.detect_source(sid, {"url": url}, base, prov)
+    assert (v, signal) == ("changed", "hash") and new["sections"] == factdiff.sections_column(edited, new["doc_sha256"])
+    found, _ = factdiff.resolve(sid, {"url": url}, v, doc, {"text": page}, facts, anchors, prov,
+                                (factdiff.stored_sections(base, None), factdiff.sections(edited)))
+    assert [(r["outcome"], r.get("signal", "")) for r in found] == [("verbatim", factdiff.SECTION_SIGNAL), ("modified", "")], found
+    # detect's source row counts the sections, the run's line totals them; apply trusts a fact kept by its section only
+    # when the baseline is no newer than the last confirmation
+    monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": url, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
+    monkeypatch.setattr(factdiff, "cited_facts", lambda prefix=None: {sid: facts})
+    monkeypatch.setattr(factdiff, "read_anchors", lambda: anchors)
+    monkeypatch.setattr(factdiff, "read_state", lambda: {sid: base})
+    monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: [sid])
+    log = tmp_path / "log.csv"
+    args = argparse.Namespace(date="2026-10-12", out=str(log), no_save=False, sitemaps=False)
+    monkeypatch.setattr(factdiff, "write_state", lambda state: None)
+    monkeypatch.setattr(factdiff, "write_snapshot", lambda *a, **k: None)
+    assert factdiff.cmd_detect(args, collections.Counter()) == 1  # the fact of Beta waits for review
+    assert "sections: changed=1 unchanged=3 (facts kept by section=1)" in capsys.readouterr().out
+    head = factdiff.read_log(log)[0]
+    assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 3 unchanged"), head
 
 
 def test_unit_cache_prune_drops_old_files_of_other_root_sets_and_shrinks_the_slack_pruned_file(tmp_path, monkeypatch):
