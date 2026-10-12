@@ -1,0 +1,17 @@
+{
+  "id": "BG-hmicfc3j",
+  "kind": "bug",
+  "title": "The benchmark pool's gap rows count a _gaps.md entry closed by a Closed, Partly resolved, Mostly resolved or Narrowed line as open and expect the web route",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_pool.gap_section draws its open gap entries with kbfacts.OPEN_GAP (the router's reader), so no pool gap row names an entry the router no longer answers 'the kb lacks it' for; the repro and python3 _tools/tests.py -k pack_routes_kind pass",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bench_pool,kb_hook;bad=[r['id'] for r in bench_pool.load_pool(kinds={'gap'}) if (kb_hook.answer('kb: '+r['question']) or {}).get('decision')!='block'];print('gap rows the hook does not block:',bad);sys.exit(1 if bad else 0)"
+    ]
+  }
+}
