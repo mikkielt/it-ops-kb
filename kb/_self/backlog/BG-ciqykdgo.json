@@ -1,0 +1,22 @@
+{
+  "id": "BG-ciqykdgo",
+  "kind": "bug",
+  "title": "The research queue's ql_research.NOTE does not read a Closed note, so querylog.py queue keeps a _gaps.md entry the router reads as closed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_research.NOTE and SETTLED read a '- Closed <date>:' note under a _gaps.md entry as settling it, as kbfacts.OPEN_GAP does (13 Closed notes in kb/public/_gaps.md), and kb/_self/querylog.md says which notes settle an entry for the queue; whether Narrowed and Partly resolved settle it for the queue too is a gate before the start: the repro exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_research as q;m=q.NOTE.match('  - Closed 2026-10-10: answered');print('Closed note read:',bool(m and m.group(1) in q.SETTLED));sys.exit(0 if m and m.group(1) in q.SETTLED else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_research.py",
+    "kb/_self/querylog.md",
+    "kb/_self/content-rules.md"
+  ]
+}
