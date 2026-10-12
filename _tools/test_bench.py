@@ -18,6 +18,14 @@ def test_bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio():
     s = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284")
     assert s["model"] == "claude-sonnet-5-5" and s["tier"] == ""
     assert s["effective"] == 100 + 2 * 1000 + 0.1 * 10000  # the read price over the input price: 0.20 / 2.0
+    # the table holds the page's 0.10 read; Claude Code's cost figure counted 0.20 up to 2.1.295 and the page's from 2.1.296
+    assert bc.PRICE["claude-sonnet-5-5"][0][4] == 0.10
+    run = [req("claude-sonnet-5-5", 100, 1000, 10000, 500)]
+    last, first = bc.usage_sum(run, "sonnet", "2.1.295"), bc.usage_sum(run, "sonnet", "2.1.296")
+    assert last["effective"] == s["effective"] and round(bc.est_cost(last), 6) == round(
+        (100 * 2 + 1000 * 4.0 + 10000 * 0.20 + 500 * 10) / 1e6, 6)
+    assert first["effective"] == 100 + 2 * 1000 + 0.05 * 10000
+    assert round(bc.est_cost(first), 6) == round((100 * 2 + 1000 * 4.0 + 10000 * 0.10 + 500 * 10) / 1e6, 6)
     # no per-TTL split in the usage: the writes are priced at the billing surface's TTL, one hour on a subscription
     assert round(bc.est_cost(s), 6) == round((100 * 2 + 1000 * 4.0 + 10000 * 0.20 + 500 * 10) / 1e6, 6)
     api = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284", surface="api")
@@ -684,7 +692,7 @@ def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_
     b.dry, b.rows = True, []
     with pytest.raises(bp.Skip) as e:  # the estimate prices the stated default tokens at bench_core's prices
         bp.s_pool(b)
-    run = (2000 * 2.0 + 8000 * 4.0 + 80000 * 0.20 + 1200 * 10.0) / 1e6  # a cache write at the 1-hour price
+    run = (2000 * 2.0 + 8000 * 4.0 + 80000 * 0.10 + 1200 * 10.0) / 1e6  # a cache write at the 1-hour price
     assert f"estimated spend ${12 * run:.2f}" in str(e.value) and "the default" in capsys.readouterr().out
     cell = lambda record, label, model, **m: [{"scenario": "pool", "record": record, "case": "all", "arm": label, "model": model,  # noqa: E731
                                               "metric": k, "value": str(v)} for k, v in m.items()]
