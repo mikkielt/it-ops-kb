@@ -2,7 +2,7 @@
   "id": "ST-7zkw23ca",
   "kind": "story",
   "title": "provider.py read URL --grep WORDS reads a page by its route and prints the matching lines, so research locates a passage without WebFetch",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-sbdy4hsx",
   "priority": "P2",
@@ -125,5 +125,6 @@
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise: kb-research step 3 says curl the page and use WebFetch only to locate the passage, and read GitHub blobs raw; _tools/providers.csv gives raw_form '-' for github and github-raw and has no arXiv row (2026-10-11), so a session maps routes and greps by hand. A PDF stays with the Read tool: the standard library has no PDF text reader. Planned 2026-10-12: premise reproduced (provider.py has only list, show and probe; providers.csv gives raw_form '-' for github and github-raw and has no arXiv row). The provider_read test reads the providers.csv rows through provider.py's own registry loader."
+  "notes": "Premise: kb-research step 3 says curl the page and use WebFetch only to locate the passage, and read GitHub blobs raw; _tools/providers.csv gives raw_form '-' for github and github-raw and has no arXiv row (2026-10-11), so a session maps routes and greps by hand. A PDF stays with the Read tool: the standard library has no PDF text reader. Planned 2026-10-12: premise reproduced (provider.py has only list, show and probe; providers.csv gives raw_form '-' for github and github-raw and has no arXiv row). The provider_read test reads the providers.csv rows through provider.py's own registry loader.",
+  "claimed_by": "orch-sbdy4hsx"
 }
