@@ -2,7 +2,7 @@
   "id": "ST-rtzdy4nm",
   "kind": "story",
   "title": "Deliver the query-log store once the BG-ckrasbdn fix merges: the 2026-10-10 runs reach main and cost reads worker figures",
-  "status": "doing",
+  "status": "dropped",
   "sprint": "SP-kwi4ilty",
   "priority": "P2",
   "rank": 0,
@@ -40,6 +40,5 @@
     "BG-ckrasbdn",
     "BG-xnh3rozy"
   ],
-  "notes": "Split 2026-10-12 by the orchestrator of SP-kwi4ilty from BG-ckrasbdn: land runs a code item's checks and repro before it pushes the code/<id> merge request, and apply --push gates and applies with origin/main's tools in the worktree beside the spool, so these two clauses cannot pass until the fix merges. Work: after BG-ckrasbdn is done, the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done --commit.",
-  "claimed_by": "orch-kwi4ilty"
+  "notes": "Split 2026-10-12 by the orchestrator of SP-kwi4ilty from BG-ckrasbdn: land runs a code item's checks and repro before it pushes the code/<id> merge request, and apply --push gates and applies with origin/main's tools in the worktree beside the spool, so these two clauses cannot pass until the fix merges. Work: after BG-ckrasbdn is done, the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done --commit. Dropped: Met without a work commit of its own: the query-log delivery e617f00ff (querylog.py apply --push run 20261012T134205Z-9997a0f4, merged to origin/main after BG-ckrasbdn and BG-xnh3rozy) superseded the stuck commit; kb/_querylog/work/2026-10 now holds the 2026-10-10 runs (check 0 exits 0) and backlog.py cost BG-ckrasbdn reads 1 item with work lines, 78 Sonnet requests (check 1 exits 0). done refuses it, since the delivery commit carries KB-Auto, not KB-Work (backlog.md, An item whose touches are item files only)."
 }
