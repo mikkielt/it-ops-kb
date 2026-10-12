@@ -2,7 +2,7 @@
   "id": "BG-bvyblfnp",
   "kind": "bug",
   "title": "kbfacts.terms reads any hyphenated single-digit pair as a dotted version, so a SID such as S-1-5-18 packs as 1.5",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,6 @@
   "links": [
     "parked: SP-5i4itd2d review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) terms('S-1-5-18') prints ['s-1-5-18', '18', '1.5'] and pack 'default value 1.5' leads with public/security/settings-crosswalk.csv:357, a SID row. Checks 1 and 2 pass before the work and guard the model-id rewrite (claude-opus-5-5 to 5.5) and the eval."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 1 of 19, \"Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nPremise: on 2026-10-12 (origin/main a5a7459f2) terms('S-1-5-18') prints ['s-1-5-18', '18', '1.5'] and pack 'default value 1.5' leads with public/security/settings-crosswalk.csv:357, a SID row. Checks 1 and 2 pass before the work and guard the model-id rewrite (claude-opus-5-5 to 5.5) and the eval.",
+  "claimed_by": "orch-4o3plg4l"
 }
