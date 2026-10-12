@@ -3,22 +3,80 @@
   "kind": "story",
   "title": "backlog.py new bug refuses a repro whose program check refuses",
   "status": "draft",
+  "sprint": "SP-uzwbt63u",
   "priority": "P2",
   "rank": 0,
-  "goal": "Retrospective of SP-qxcj7fgy: ST-7avb5uo6's worker filed BG-77i2lwmr with a grep repro; new accepted it, the worker's backlog.py check ran before the filing, and land stopped at the sync gate (backlog.py check errors=1, and three test_land_e2e tests that copy the backlog) until the orchestrator rewrote the repro on the branch. new bug, set --repro and set --check refuse a program that bl_intake.check_program_refusal refuses, with exit 2 and nothing written, so a worker's filed bug never fails the landing gate.",
+  "goal": "Retrospective of SP-qxcj7fgy: ST-7avb5uo6's worker filed BG-77i2lwmr with a grep repro that new accepted, then land stopped at the sync gate (backlog.py check errors=1, three test_land_e2e tests that copy the backlog) until the orchestrator rewrote the repro on the branch, because the worker's backlog.py check had run before the filing. new bug, set --repro and set --check refuse a program that bl_intake.check_program_refusal refuses, with exit 2 and nothing written, so a worker's filed bug never fails the landing gate; new refuses python3 -I -c the same way, with the refusal's reason; a --repro or --check value with an unclosed quote (echo it's) exits 2 with a usage error naming the option and writes no item, not a ValueError traceback from shlex.split in bl_items.parse_cmd",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\"/_backlog\"); p=subprocess.run([sys.executable,\"_tools/backlog.py\",\"--root\",t,\"new\",\"bug\",\"--title\",\"b\",\"--severity\",\"S3\",\"--goal\",\"g\",\"--repro\",\"grep -q zzzzqqqq _tools/backlog.py\",\"--repro-reason\",\"the defect is a docstring line\"],capture_output=True,text=True); sys.exit(0 if p.returncode==2 and os.listdir(t+\"/_backlog\")==[] else 1)"
+        "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nd = t + '/kb/_self/backlog'; os.makedirs(d)\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\np = subprocess.run(b + ['new', 'bug', '--title', 'b', '--severity', 'S3', '--goal', 'g', '--repro', 'grep -q zzzzqqqq _tools/backlog.py', '--repro-reason', 'the defect is a docstring line'], capture_output=True, text=True, cwd=t)\nsys.exit(0 if p.returncode == 2 and os.listdir(d) == [] else 1)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nd = t + '/kb/_self/backlog'; os.makedirs(d)\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\ndef run(*a): return subprocess.run(b + list(a), capture_output=True, text=True, cwd=t)\ni = run('new', 'story', '--title', 'S', '--goal', 'g').stdout.split()[2]\nbefore = {n: open(d + '/' + n).read() for n in os.listdir(d)}\nbad = ['python3', '-I', '-c', 'import sys; sys.exit(1)']\nr1 = run('new', 'bug', '--title', 'b', '--severity', 'S3', '--goal', 'g', '--repro', __import__('shlex').join(bad))\nr2 = run('set', i, '--check', __import__('shlex').join(bad))\nafter = {n: open(d + '/' + n).read() for n in os.listdir(d)}\nsys.exit(0 if r1.returncode == 2 and r2.returncode == 2 and after == before else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nd = t + '/kb/_self/backlog'; os.makedirs(d)\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\ndef run(*a): return subprocess.run(b + list(a), capture_output=True, text=True, cwd=t)\nq = \"echo it\" + chr(39) + \"s\"\nrs = [run('new', 'bug', '--title', 't', '--severity', 'S3', '--goal', 'g', '--repro', q),\n      run('new', 'story', '--title', 't', '--goal', 'g', '--check', q)]\nok = all(r.returncode == 2 and 'Traceback' not in r.stderr for r in rs) and os.listdir(d) == []\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Retrospective of SP-qxcj7fgy: ST-7avb5uo6's worker filed BG-77i2lwmr with a grep repro that new accepted, then land stopped at the sync gate (backlog.py check errors=1, three test_land_e2e tests that copy the backlog) until the orchestrator rewrote the repro on the branch, because the worker's backlog.py check had run before the filing. new bug, set --repro and set --check refuse a program that bl_intake.check_program_refusal refuses, with exit 2 and nothing written, so a worker's filed bug never fails the landing gate",
+      "check": 0
+    },
+    {
+      "clause": "new refuses python3 -I -c the same way, with the refusal's reason",
+      "check": 1
+    },
+    {
+      "clause": "a --repro or --check value with an unclosed quote (echo it's) exits 2 with a usage error naming the option and writes no item, not a ValueError traceback from shlex.split in bl_items.parse_cmd",
+      "check": 2
     }
   ],
   "touches": [
     "_tools/bl_items.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_check_programs.py"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which commands does the refusal at filing cover?",
+      "options": [
+        "a bug's --repro and every --check of new, set and --add-check, by the one predicate backlog check uses",
+        "only a bug's --repro"
+      ],
+      "recommendation": "a bug's --repro and every --check of new, set and --add-check, by the one predicate backlog check uses",
+      "class": "agents-rule",
+      "answer": "a bug's --repro and every --check of new, set and --add-check, by the one predicate backlog check uses",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Are the commands of a gate's do and host-check entries refused by the same predicate when gate add files them?",
+      "options": [
+        "no: they run by fire and host-check, never as an open item's repro or check",
+        "yes: gate add refuses what check_program_refusal refuses"
+      ],
+      "recommendation": "no: they run by fire and host-check, never as an open item's repro or check",
+      "class": "agents-rule",
+      "answer": "no: they run by fire and host-check, never as an open item's repro or check",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-qxcj7fgy close",
@@ -26,5 +84,5 @@
     "merged: ST-btfulaeh",
     "merged: ST-si4peqq2"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once. Merged from BG-asbzy5z4 “new crashes with a shlex traceback on a --repro or --check command with an unclosed quote instead of a usage error” at the 2026-10-12 draft triage: repro run: new --repro \"echo it's\" still ends in a shlex ValueError traceback; same bl_items.parse_cmd path as ST-webfvbcb, which must validate the argv anyway Its goal: backlog.py new with a --repro or --check value whose command has an unclosed quote (such as an apostrophe in a word) exits 2 with a usage error naming the option, and writes no item, instead of a ValueError traceback from shlex.split in bl_items.parse_cmd; set already does this. Found while fixing BG-4iaxny3s. Its repro: {\"run\": [\"python3\", \"-c\", \"import os,subprocess,sys,tempfile; t=tempfile.mkdtemp(); os.makedirs(t+\\\"/_backlog\\\"); p=subprocess.run([sys.executable,\\\"_tools/backlog.py\\\",\\\"--root\\\",t,\\\"new\\\",\\\"bug\\\",\\\"--title\\\",\\\"t\\\",\\\"--severity\\\",\\\"S3\\\",\\\"--goal\\\",\\\"g\\\",\\\"--repro\\\",\\\"echo it\\\"+chr(39)+\\\"s\\\"],capture_output=True,text=True); sys.exit(1 if \\\"Traceback\\\" in p.stderr or p.returncode != 2 else 0)\"]} Merged from ST-btfulaeh “backlog.py new refuses a repro or check that backlog check would refuse, such as python3 -I” at the 2026-10-12 draft triage: same defect as ST-webfvbcb: new/set accept python3 -I -c, check_program_refusal returns '-I is not a _tools/ script'; filed by SP-ceucrhca as a recurrence Its goal: backlog.py new and set refuse, with the same reason, a repro or check argv that bl_intake.check_program_refusal refuses, so a worker's filed bug cannot pass its own commit and stop the landing's sync gate Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"new_refuses_refused_repro\"]}"
+  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once. Merged at the 2026-10-12 draft triage: BG-asbzy5z4 (new --repro \"echo it's\" ends in a shlex ValueError traceback from bl_items.parse_cmd; set already exits 2), ST-btfulaeh (new and set accept python3 -I -c, check_program_refusal returns '-I is not a _tools/ script'; filed by SP-ceucrhca as a recurrence), ST-si4peqq2 (same goal, no real check). Today (run 2026-10-12) set --check python3 -I is already refused with exit 2 and new bug is not, so check 1's set half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: new bug --repro 'python3 -I -c ...' is accepted (exit 0, bug filed) and new bug --repro \"echo it's\" ends in a shlex ValueError traceback (reproduces)."
 }

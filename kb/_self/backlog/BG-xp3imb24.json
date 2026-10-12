@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "A gate whose question names a constant such as DISPATCH_BASE_TOKENS is classed secrets by the word token inside the identifier",
   "status": "draft",
+  "sprint": "SP-uzwbt63u",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "class_reasons does not read the word token inside an upper-case identifier (DISPATCH_BASE_TOKENS, MAX_TOKENS) as a secret, so a gate about a token-count constant gets the class its touches and other words give",
+  "goal": "class_reasons does not read the word token inside an upper-case identifier of token counts (DISPATCH_BASE_TOKENS, MAX_TOKENS) as a secret, so a gate about a token-count constant gets the class its touches and other words give; a gate whose text says token only as the name of the ops-row value shape (a phase token, a closed token) is classed design, not secrets, while one naming a credential, an API key or a bearer token stays secrets",
   "repro": {
     "run": [
       "python3",
@@ -14,12 +15,62 @@
       "import sys; sys.path.insert(0,'_tools'); import bl_authority as a; sys.exit(0 if a.class_reasons({'touches':['_tools/census.py']},{'id':'g9','question':'What is census.DISPATCH_BASE_TOKENS?','options':[]})[0]=='design' else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_authority as a\ndef cls(touches, q, options=()):\n    return a.class_reasons({'touches': touches}, {'id': 'g9', 'question': q, 'options': list(options)})[0]\ndesign = [cls([], 'Which phase token does the ops row carry?', ['apply', 'record']),\n          cls([], 'Does the closed token of the ops row stay a free word?')]\nsecret = [cls([], 'Which bearer token does the job send?'), cls([], 'Is the API token rotated?'),\n          cls([], 'May the credential in tokens.json be read?'), cls([], 'Is GITLAB_TOKEN passed to the job?')]\nsys.exit(0 if design == ['design'] * 2 and secret == ['secrets'] * 4 else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "class_reasons does not read the word token inside an upper-case identifier of token counts (DISPATCH_BASE_TOKENS, MAX_TOKENS) as a secret, so a gate about a token-count constant gets the class its touches and other words give",
+      "check": 1
+    },
+    {
+      "clause": "a gate whose text says token only as the name of the ops-row value shape (a phase token, a closed token) is classed design, not secrets, while one naming a credential, an API key or a bearer token stays secrets",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/bl_authority.py"
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which upper-case identifiers lose the secret reading of the word token?",
+      "options": [
+        "only those holding TOKENS in the plural (DISPATCH_BASE_TOKENS, MAX_TOKENS); a singular such as GITLAB_TOKEN stays secrets",
+        "every upper-case identifier holding TOKEN"
+      ],
+      "recommendation": "only those holding TOKENS in the plural (DISPATCH_BASE_TOKENS, MAX_TOKENS); a singular such as GITLAB_TOKEN stays secrets",
+      "class": "secrets",
+      "answer": "only those holding TOKENS in the plural (DISPATCH_BASE_TOKENS, MAX_TOKENS); a singular such as GITLAB_TOKEN stays secrets",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which words before token name the ops-row value shape that is no secret?",
+      "options": [
+        "only phase and closed (phase token, closed token)",
+        "any word before token that is not a credential word"
+      ],
+      "recommendation": "only phase and closed (phase token, closed token)",
+      "class": "secrets",
+      "answer": "only phase and closed (phase token, closed token)",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-yojt6y7v run",
     "merged: BG-6rrnzkcp"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens. Merged from BG-6rrnzkcp “A blocking gate classes the ops-row value shape 'phase token' as secrets” at the 2026-10-12 draft triage: Repro still returns class secrets for 'phase token'; same defect family as BG-xp3imb24 (word token read as a secret outside the existing without_token_counts exception), one fix in bl_authority. Its goal: A gate whose text says token only as the name of the ops-row value shape (a phase token, a closed token) is classed design, not secrets, so a worker's provisional gate on an ops row is not made blocking; a gate naming a credential, an API key or a bearer token stays secrets. Its repro: {\"run\": [\"python3\", \"-c\", \"import sys; sys.path.insert(0, '_tools'); import bl_authority as a; c, _ = a.class_reasons({'touches': []}, {'id': 'g9', 'question': 'Which phase token does the ops row carry?', 'options': ['apply', 'record']}); sys.exit(c == 'secrets')\"]}"
+  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens. Merged at the 2026-10-12 draft triage from BG-6rrnzkcp: a blocking gate classes the ops-row value shape 'phase token' as secrets; same defect family (the word token read as a secret outside the without_token_counts exception), one fix in bl_authority; its repro is class_reasons on 'Which phase token does the ops row carry?' with no touches, which must not be secrets. Today both return secrets (run 2026-10-12). Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: class_reasons returns secrets for 'What is census.DISPATCH_BASE_TOKENS?' and for 'Which phase token does the ops row carry?' (reproduces)."
 }
