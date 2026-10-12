@@ -2,7 +2,7 @@
   "id": "ST-3zlzfitj",
   "kind": "story",
   "title": "A source whose host gives only a page hash is compared per section, so an edit elsewhere on the page does not mark every fact on it changed",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P2",

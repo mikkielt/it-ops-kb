@@ -2,7 +2,7 @@
   "id": "ST-mq7we5r2",
   "kind": "story",
   "title": "pack --revalidate and kb_pack revalidate check only the pack's cited sources live and resolve only the printed lines' anchors",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P1",

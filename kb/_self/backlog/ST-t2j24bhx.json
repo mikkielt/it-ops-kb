@@ -2,7 +2,7 @@
   "id": "ST-t2j24bhx",
   "kind": "story",
   "title": "factdiff.py detect checks a pinned source's repository for availability, one request per repository, so a deleted or private repository is reported gone",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-tm4wlsve",
   "priority": "P1",
