@@ -4,9 +4,10 @@
   "title": "A pool run's --max-usd cap counts the runs in flight and its dry run prices the kinds it runs, so a capped run neither passes its cap nor stops short of its rows",
   "status": "draft",
   "parent": "EP-4nl2jr4q",
+  "sprint": "SP-e4fm2ovk",
   "priority": "P2",
   "rank": 0,
-  "goal": "benchmarks.py run pool starts no run once the finished runs plus the runs in flight, each at its kind's mean cost, would pass --max-usd, and --dry-run prices each kind at its own mean cost, not the all-kinds mean (SP-kp3boz7z: ST-qm6wuqq4's paid run, 60 runs on sc_absent and sc_partial with --jobs 8, was estimated at 3.51 USD, billed 5.72 USD against a 5 USD cap and stopped 3 runs short)",
+  "goal": "benchmarks.py run pool starts no run once the finished runs plus the runs in flight, each at its kind's mean cost, would pass --max-usd; its --dry-run prices each kind at its own mean cost, not the all-kinds mean (SP-kp3boz7z: ST-qm6wuqq4's paid run, 60 runs on sc_absent and sc_partial with --jobs 8, was estimated at 3.51 USD, billed 5.72 USD against a 5 USD cap and stopped 3 runs short)",
   "checks": [
     {
       "run": [
@@ -15,15 +16,38 @@
         "-k",
         "pool_max_usd_in_flight"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_dry_run_kind_prices"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py run pool starts no run once the finished runs plus the runs in flight, each at its kind's mean cost, would pass --max-usd",
+      "check": 0
+    },
+    {
+      "clause": "its --dry-run prices each kind at its own mean cost, not the all-kinds mean (SP-kp3boz7z: ST-qm6wuqq4's paid run, 60 runs on sc_absent and sc_partial with --jobs 8, was estimated at 3.51 USD, billed 5.72 USD against a 5 USD cap and stopped 3 runs short)",
+      "check": 1
     }
   ],
   "touches": [
-    "_tools/benchmarks.py",
-    "_tools/bench_core.py",
     "_tools/bench_pool.py",
-    "kb/_self/tools.md"
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md",
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "depends_on": [
+    "ST-2zlpwzbs"
   ],
   "links": [
     "parked: SP-kp3boz7z close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: bench_pool.run_tasks starts a task while spent_usd() (finished runs only) is under the cap, so up to --jobs runs in flight pass it; and assumed_run prices a label at its all-kinds mean. Run at planning on main: run_tasks over 10 tasks at 1.0 USD each, jobs=4, cap=3.0 started 5 and spent 5.0 (cap passed by 2). Dry run: assumed_run reads the label's all cell only; SP-kp3boz7z billed 5.72 against 3.51 estimated. No paid probe, no spend cap gate: the change moves the cap's start rule and the estimate, no count or billed price of a run; both checks use a fake runner. Docs to correct with it: benchmarks.md (the paragraph on --max-usd says the spend can pass X by up to --jobs runs and prices a label at its all cell's mean), the help of --max-usd, tools.md."
 }

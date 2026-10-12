@@ -4,6 +4,7 @@
   "title": "Code that cites kb lines by number (bench_core.py) no longer blocks a content item from inserting a fact",
   "status": "draft",
   "parent": "EP-jqjlwiar",
+  "sprint": "SP-e4fm2ovk",
   "priority": "P3",
   "rank": 0,
   "goal": "A content item may add or remove a line in an article or ledger that _tools code cites by path:line (bench_core.py cites _conflicts.md and ci-and-headless.md) without check.py failing on a file outside its touches: the code cites by anchor or the citation is rewritten by the tool that moves the line, or planning puts the citing file in the item's touches (SP-df2cu4uj: BG-3bjktw5x broke bench_core.py:36 by adding a line, BG-rtqshnro skipped a planned fact for that reason).",
@@ -20,9 +21,12 @@
   "touches": [
     "_tools/bench_core.py",
     "_tools/check.py",
-    "_tools/test_bench.py"
+    "_tools/test_check_programs.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ],
   "links": [
     "parked: SP-df2cu4uj close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise: check.code_citation_errors fails on a file outside a content item's touches when the item inserts a fact line above a line _tools/bench_core.py cites. Run at planning on a scratch copy (bench_core.py, _conflicts.md, ci-and-headless.md): one tagged line inserted at line 11 of ci-and-headless.md raised the citation errors from 3 (files not copied) to 11. The test goes in test_check_programs.py, which already tests code_citation_errors; the choice among anchor, rewrite and touches is the worker's, the check needs one behaviour test of it."
 }
