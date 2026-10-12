@@ -96,7 +96,9 @@
         "no exemption; a cost with a non-money cue is read by a cue list instead"
       ],
       "recommendation": "units, points, tokens, requests, calls",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "units, points, tokens, requests, calls",
+      "by": "operator"
     }
   ],
   "links": [
