@@ -2565,7 +2565,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     concise = fmt == "concise"
     url_cost = 0 if concise or rules else 110  # a source footer line is about 110 characters
     limit, used, groups, cited, paths, printed = int(budget * 3.5), dused, [], [], [], []
-    taken, rows = defaultdict(list), ({} if rules else ledger_rows())
+    taken, rows = defaultdict(list), {}
     if rules:
         taken = pick_passages(st, scored, best, dused, limit, pins)
         if not item:
@@ -2581,13 +2581,17 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             taken = pick_passages(st, scored, best, dused, limit, pins)
             used = dused
         order = list(taken)
-    for art in order:
-        if rules:
-            picked = taken[art]
-        else:
-            picked = sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]
+    else:
+        for art in order:
+            taken[art] = sorted((x for x in by_art[art] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]
             if not art.endswith(".csv"):  # facts read in article order; rows of a table go by score, so the budget cuts the weakest
-                picked.sort(key=lambda x: x[1]["line"])
+                taken[art].sort(key=lambda x: x[1]["line"])
+        # the marks of these lines read the ledgers once, for the sources they cite and no other
+        rows = ledger_rows({i for g in taken.values() for _, u in g
+                            for i in [*(i for p in u["tags"] for i in p["ids"]), *ID.findall(u["text"])]})
+        fresh_state(rows)
+    for art in order:
+        picked = taken[art]
         items = []
         one_section = len({u["section"] for _, u in picked}) == 1  # rule docs: the heading once, else on each line
         for s, u in picked:
@@ -2775,7 +2779,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if shut or rules:
         srcs = []
     if srcs and footer and not concise:
-        out += ["", "sources:"] + format_sources(srcs)
+        out += ["", "sources:"] + format_sources(srcs, rows)
     return {"verdict": verdict, "missing": missing, "matched": sorted(hit), "informative": informative, "known": known,
             "unmatched": unmatched, "spread": spread, "scatter": scatter, "passing": passing, "priced": priced,
             "top_score": top_score,
@@ -2909,22 +2913,50 @@ def clip_around(text, n, phrases=(), terms=()):
 # ---------------------------------------------------------------- freshness stamp (offline)
 
 CONFIRMED = re.compile(r"confirmed (\d{4}-\d\d-\d\d)")  # the census's suffix of a source row's version_or_date
-_FRESH = [None, ({}, {}, {})]  # [file signature, (anchors, newest verified_utc per source, fetch state per source)]
+_FRESH = [None, {}, {}, {}, set(), 0, False]  # [file signature, anchors, newest verified_utc per source, fetch state per source,
+#                                                  ids read, scans made, every row read]
+_SCOPED = [0]  # scans of _sources.csv for some ids made by ledger_rows
 _PROVIDER_ROWS = []
 
 
-def _csv_dicts(path):
+def _ledger_rows(path, column, sids):
+    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as dicts, read by scanning its
+    text: a plain record is matched on its field with no csv parse, so only a row of a wanted source is ever parsed. A
+    record with a quote (a quoted field may hold a comma or a newline) is joined to the end of its quoted fields and
+    parsed to be sure."""
+    rows = []
     try:
         with open(path, encoding="utf-8-sig", newline="") as f:
-            yield from csv.DictReader(f)
+            head = next(csv.reader([f.readline()]), [])
+            if column not in head:
+                return rows
+            col, record = head.index(column), ""
+            for line in f:
+                if record or '"' in line:
+                    record += line
+                    if record.count('"') % 2:  # inside a quoted field: the record goes on in the next line
+                        continue
+                    line, record = record, ""
+                    if any(p[:1] == '"' for p in line.split(",", col + 1)[:col + 1]):
+                        row = next(csv.reader([line]), [])  # a quoted leading field: only a parse tells the column
+                        if len(row) > col and (sids is None or row[col] in sids):
+                            rows.append(dict(zip(head, row)))
+                        continue
+                parts = line.split(",", col + 1)
+                if len(parts) > col and (sids is None or parts[col] in sids):
+                    rows.append(dict(zip(head, next(csv.reader([line]), []))))
     except (OSError, UnicodeDecodeError, csv.Error):
-        return
+        pass
+    return rows
 
 
-def fresh_state():
-    """(anchors, verified, state) of the served roots, read again when a file's time or size changes: `anchors`
-    {(fact key, root-relative path, source id): (located, verified_utc)} of every `_anchors.csv`, `verified` the newest
-    verified_utc of a source's anchors, `state` {source id: `_fetch_state.csv` row}. No network."""
+def fresh_state(sids):
+    """(anchors, verified, state) of the served roots for the source ids `sids`, their rows read from the two ledgers
+    when first asked and again when a file's time or size changes: `anchors` {(fact key, root-relative path, source
+    id): (located, verified_utc)} of the `_anchors.csv` rows of those sources, `verified` the newest verified_utc of a
+    source's anchors, `state` {source id: `_fetch_state.csv` row}. A process's first read takes the rows of `sids`
+    alone, so a caller names all it will need first; its next one that finds an id unread takes every row, once, so a
+    server answering many questions scans the ledgers no more than twice. No network."""
     files = [os.path.join(r.path, n) for r in kbcommon.roots() for n in (kbcommon.ANCHORS, kbcommon.STATE)]
     sig = []
     for full in files:
@@ -2934,17 +2966,83 @@ def fresh_state():
         except OSError:
             continue
     if _FRESH[0] != sig:
-        anchors, verified, state = {}, {}, {}
+        _FRESH[:] = [sig, {}, {}, {}, set(), _FRESH[5], False]
+    _, anchors, verified, state, read = _FRESH[:5]
+    todo = set(sids) - read
+    if todo and not _FRESH[6]:
+        _FRESH[5] += 1
+        every = _FRESH[5] > 1
+        want = None if every else todo
         for r in kbcommon.roots():
-            for row in _csv_dicts(os.path.join(r.path, kbcommon.ANCHORS)):
+            for row in _ledger_rows(os.path.join(r.path, kbcommon.ANCHORS), "source_id", want):
                 sid, day = row.get("source_id") or "", row.get("verified_utc") or ""
                 anchors[(row.get("fact") or "", row.get("path") or "", sid)] = (row.get("status") == "located", day)
                 if day > verified.get(sid, ""):
                     verified[sid] = day
-            for row in _csv_dicts(os.path.join(r.path, kbcommon.STATE)):
+            for row in _ledger_rows(os.path.join(r.path, kbcommon.STATE), "id", want):
                 state[row.get("id") or ""] = row
-        _FRESH[:] = [sig, (anchors, verified, state)]
-    return _FRESH[1]
+        read |= todo
+        _FRESH[6] = every
+    return anchors, verified, state
+
+
+_SIGNALS = {}  # url -> its provider's signals, under registry key `_SIGNALS_KEY[0]`
+_SIGNALS_KEY = [None]
+
+
+def _registry_key():
+    """sha1 over the time and size of the files a url's signals come from: the shared registry, each root's own and
+    provider.py (its pinned-url rule); a root's file name is provider.ROOT_FILE."""
+    h = hashlib.sha1()
+    for full in [os.path.join(TOOLS, "providers.csv"), os.path.join(TOOLS, "provider.py"),
+                 *(os.path.join(r.path, "_providers.csv") for r in kbcommon.roots())]:
+        try:
+            st = os.stat(full)
+            h.update(f"{full}\0{st.st_mtime_ns}\0{st.st_size}\n".encode())
+        except OSError:
+            h.update(f"{full}\0-\n".encode())
+    return h.hexdigest()
+
+
+def provider_signals(url):
+    """The signals of the provider that serves `url` (provider.signals of provider.for_url), kept in a file of the index
+    directory per registry key (_registry_key), so a lookup that cites urls it has seen imports no network module:
+    `provider` is imported, at the first url the file lacks, for that url alone."""
+    d = index_dir()
+    memo = os.path.join(d, f"kbkey-signals-{hashlib.sha1(kbcommon.HOME.encode()).hexdigest()[:12]}.json") if d else None
+    key = _registry_key()
+    if _SIGNALS_KEY[0] != key:
+        _SIGNALS.clear()
+        try:
+            with open(memo, encoding="utf-8") as f:
+                got = json.load(f)
+            if got.get("key") == key:
+                _SIGNALS.update({u: s for u, s in got.get("signals", {}).items() if isinstance(s, list)})
+        except (OSError, ValueError, TypeError, AttributeError):
+            pass
+        _SIGNALS_KEY[0] = key
+    if url in _SIGNALS:
+        return _SIGNALS[url]
+    import provider  # not at load: it brings the network modules a pack with no source footer never needs
+    if not _PROVIDER_ROWS:
+        try:
+            _PROVIDER_ROWS[:] = provider.providers() or [{}]
+        except OSError:
+            _PROVIDER_ROWS[:] = [{}]
+    _SIGNALS[url] = provider.signals(provider.for_url(url, _PROVIDER_ROWS) or {}, url)
+    tmp = None
+    try:
+        os.makedirs(d, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".kbkey-", suffix=".tmp", dir=d)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"key": key, "signals": _SIGNALS}, f, sort_keys=True)
+        os.replace(tmp, memo)
+    except (OSError, TypeError):  # no index directory (KB_INDEX=0) or not writable: the next lookup asks provider again
+        pass
+    finally:
+        if tmp and os.path.exists(tmp):
+            _remove(tmp)
+    return _SIGNALS[url]
 
 
 def source_signal(sid, url):
@@ -2953,16 +3051,10 @@ def source_signal(sid, url):
     cannot change), `git` (a page of a git repository: the row's version id is its file's), `etag`, `lastmod` (a
     Last-Modified validator), `version` (a version id the page carries) or `hash` (its text's hash); `no baseline`
     when the row holds none."""
-    import provider  # not at load: it brings the network modules a pack with no source footer never needs
-    if not _PROVIDER_ROWS:
-        try:
-            _PROVIDER_ROWS[:] = provider.providers() or [{}]
-        except OSError:
-            _PROVIDER_ROWS[:] = [{}]
-    st = fresh_state()[2].get(sid) or {}
+    st = fresh_state([sid])[2].get(sid) or {}
     held = {"etag": st.get("etag"), "lastmod": st.get("last_modified"), "version": st.get("version"),
             "git": st.get("version"), "hash": st.get("doc_sha256")}
-    for s in provider.signals(provider.for_url(url, _PROVIDER_ROWS) or {}, url):
+    for s in provider_signals(url):
         if s == "pin":
             return "pinned"
         if held.get(s):
@@ -2970,22 +3062,31 @@ def source_signal(sid, url):
     return "no baseline"
 
 
-def ledger_rows():
-    """source_rows(), or {} when a ledger cannot be read (a stamp is a note: it never stops a lookup)."""
-    try:
-        return source_rows()
-    except OSError:
-        return {}
+def ledger_rows(ids=None):
+    """source_rows(), or {} when a ledger cannot be read (a stamp is a note: it never stops a lookup); `ids`: only the
+    rows of those sources, read by a scan of each root's `_sources.csv` that parses no other row, the first time in a
+    process; later every row, cached as source_rows() is."""
+    if ids is None or _SCOPED[0]:
+        try:
+            return source_rows()
+        except OSError:
+            return {}
+    _SCOPED[0] += 1
+    out, want = {}, set(ids)
+    for r in kbcommon.roots():
+        for row in _ledger_rows(os.path.join(r.path, kbcommon.SOURCES), "id", want):
+            out.setdefault(row["id"], {**row, "root": r.name})
+    return out
 
 
 def source_stamp(sid, rows=None):
     """`[confirmed 2026-10-10, hash]` for a cited source: the newest of its anchors' verified_utc, its
     `_fetch_state.csv` checked_utc and the census's `confirmed <date>` in its version_or_date, and its change signal
     (source_signal); `[unconfirmed, ...]` when none dates it; "" for an id no ledger holds."""
-    row = (rows or ledger_rows()).get(sid)
+    row = (ledger_rows([sid]) if rows is None else rows).get(sid)
     if not row:
         return ""
-    _, verified, state = fresh_state()
+    _, verified, state = fresh_state([sid])
     days = [verified.get(sid, ""), ((state.get(sid) or {}).get("checked_utc") or "")[:10],
             (CONFIRMED.findall(row.get("version_or_date") or "") or [""])[-1]]
     day = max(days)
@@ -3003,15 +3104,20 @@ def printed_lines(units, rows):
     return out
 
 
+def cited_ids(u, rows):
+    """The source ids a fact unit cites (not UNK, as factdiff.cited_facts reads it) that the ledger `rows` holds."""
+    return [i for p in u["tags"] if p["kind"] != "UNK" for i in p["ids"] if i in rows]
+
+
 def fresh_mark(u, rows=None):
     """`unanchored` and `source changed` for a printed fact unit, joined by `; `, "" for neither: a source the fact
     cites (not UNK, as factdiff.cited_facts reads it) has no located anchor for it (the fact is dated at its source
     only), or the anchor's verified_utc is before the source's changed_utc. Offline; "" for a unit citing no source."""
-    rows = rows or ledger_rows()
-    sids = [i for p in u["tags"] if p["kind"] != "UNK" for i in p["ids"] if i in rows]
+    rows = ledger_rows() if rows is None else rows
+    sids = cited_ids(u, rows)
     if not sids:
         return ""
-    anchors, _, state = fresh_state()
+    anchors, _, state = fresh_state(sids)
     key, rel = fact_key(u["text"]), bare(u["path"])
     unanchored = changed = False
     for sid in dict.fromkeys(sids):
@@ -3021,8 +3127,12 @@ def fresh_mark(u, rows=None):
     return "; ".join(m for m, on in (("unanchored", unanchored), ("source changed", changed)) if on)
 
 
-def format_sources(srcs):
-    rows = ledger_rows()
+def format_sources(srcs, rows=None):
+    """The footer lines of `srcs` [(id, url, superseded by)], `rows` the ledger rows of their ids when the caller has
+    read them."""
+    if rows is None:
+        rows = ledger_rows([i for i, _, _ in srcs])
+    fresh_state(i for i, _, _ in srcs if i in rows)  # one read of the ledgers for all the footer's sources
     return [f"  -> {i}  {u}" + (f"  (superseded by {s})" if s else "") + (f"  {st}" if (st := source_stamp(i, rows)) else "")
             for i, u, s in srcs]
 
@@ -3041,7 +3151,8 @@ def source_freshness(ids, rows=None):
     no check or anchor dates (age None) is stale unless it is pinned."""
     import provider  # not at load: it brings the network modules a pack with no source footer never needs
     rows = rows or ledger_rows()
-    _, verified, state = fresh_state()
+    ids = list(ids)
+    _, verified, state = fresh_state(ids)
     now, by_root = time.time(), defaultdict(dict)
     for i in ids:
         if rows.get(i):

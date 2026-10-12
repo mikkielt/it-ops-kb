@@ -68,6 +68,36 @@
   "depends_on": [
     "BG-xbbimxpq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does a pack take the signals of a source's provider from, so a cold pack imports no network module?",
+      "options": [
+        "memo file",
+        "index database table",
+        "import provider at every first stamp"
+      ],
+      "recommendation": "memo file",
+      "class": "design",
+      "answer": "memo file",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How many reads of only the cited sources' ledger rows does a process make before its next read takes every row once?",
+      "options": [
+        "one",
+        "none: every read is of the cited rows alone",
+        "none: every process reads every row"
+      ],
+      "recommendation": "one",
+      "class": "design",
+      "answer": "one",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise (planned 2026-10-12, origin/main 0ae6d30bc, darwin host, load ~2): cProfile of a cold pack 'Claude Code UserPromptSubmit hook timeout' shows fresh_state 54 of 113 ms, csv __next__ 22,226 rows (_csv_dicts 18,094: every _anchors.csv and _fetch_state.csv row); median of five cold packs 117 ms. Checks 0 and 1 pass before the work and pin the stamp's output and the eval verdicts. The suite is at 100 of 100 ids: extend pack_freshness_stamp's test, add no id. On a loaded host a timing check that fails is run again once the host is quiet, never answered by raising the 80 ms bound.",
   "claimed_by": "orch-kp3boz7z"
 }
