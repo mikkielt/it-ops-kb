@@ -900,7 +900,7 @@ def confirmable(head, retrieved):
     page's own content date. A baseline taken after the last confirmation proves only that nothing changed since."""
     r = (retrieved or "")[:10]
     return bool(r) and any(d and d[:10] <= r for d in (head.get("baseline_utc", ""), head.get("content_date", "")))
-VERDICTS = ("unchanged", "changed", "new", "moved", "gone", "soft-404", "replaced", "error", "pinned")
+VERDICTS = ("unchanged", "changed", "new", "moved", "gone", "soft-404", "replaced", "error", "pinned", "hinted")
 OUTCOMES = ("verbatim", "moved", "modified", "not-found", "unanchored", "dead")
 AUTO = ("verbatim", "moved")  # applied with no model: the anchor's passage found word for word
 REVIEW = ("modified", "not-found", "unanchored", "dead")
@@ -1279,11 +1279,16 @@ def cmd_detect(a, tally):
     date = a.date or today()
     hosts = {urllib.parse.urlsplit(srcs[sid]["url"]).netloc for sid in ids}
     print(f"detect: {len(ids)} source(s) on {len(hosts)} host(s)", file=sys.stderr, flush=True)
-    learn = learn_repos([srcs[i]["url"] for i in ids if has_baseline(state.get(i)) and state[i].get("detected_utc")])
+    hints = lookup_hints(ids, srcs, rows)
+    if hints:
+        print(f"detect: {len(hints)} source(s) a lookup revalidated within its provider's pacing are not asked", file=sys.stderr, flush=True)
+    ask = [i for i in ids if i not in hints]
+    learn = learn_repos([srcs[i]["url"] for i in ask if has_baseline(state.get(i)) and state[i].get("detected_utc")])
     if learn:
         print(f"detect: {len(learn)} docs repositor{'y' if len(learn) == 1 else 'ies'} of Learn pages fetched into the clone cache",
               file=sys.stderr, flush=True)
-    results = detect_pass(ids, srcs, state, rows)
+    results = detect_pass(ask, srcs, state, rows)
+    results.update({sid: hinted_result(h) for sid, h in hints.items()})
     if a.sitemaps:  # the site-level diff: record every involved provider's sitemap, so the next run sees additions
         segs = collections.defaultdict(set)
         for sid in ids:
@@ -1367,6 +1372,31 @@ def lookup_store(sid, rec):
         os.replace(path + ".tmp", path)
     except OSError:
         pass
+
+
+def lookup_hints(ids, srcs, rows, now=None):
+    """{source id: {checked_utc, lines, outcomes}} of the sources of `ids` whose last revalidation at question time
+    (lookup_cache_path: fact key, outcome, date) is younger than their provider's pacing and found the page unchanged,
+    each line it checked `current` or `source-dated only`. A hint only spares a request: it confirms nothing, so detect
+    and census.py check never date a source on it. A source a lookup found changed, moved or gone is not a hint, and
+    neither is a pinned url (census.py compares its pin with upstream) or one no lookup asked."""
+    now = time.time() if now is None else now
+    out = {}
+    for sid in ids:
+        rec = lookup_cached(sid, [], provider.pacing(provider.for_url(srcs[sid]["url"], rows)), now)
+        if rec is None or rec.get("verdict") != "unchanged" or not rec["lines"]:
+            continue
+        outcomes = collections.Counter(v.get("outcome") for v in rec["lines"].values() if isinstance(v, dict))
+        if set(outcomes) <= {"current", "source-dated only"}:
+            out[sid] = {"checked_utc": rec.get("checked_utc", ""), "lines": len(rec["lines"]), "outcomes": dict(outcomes)}
+    return out
+
+
+def hinted_result(hint):
+    """detect_source's result tuple for a source a lookup's stored result spared (lookup_hints): verdict `hinted`, no
+    state, document or fact rows, so nothing of it is written or dated."""
+    kinds = ", ".join(f"{k}={n}" for k, n in sorted(hint["outcomes"].items()))
+    return "hinted", "lookup", f"a lookup revalidated it {hint['checked_utc']} ({kinds}); no request", None, None, None
 
 
 def line_key(rel, key):
