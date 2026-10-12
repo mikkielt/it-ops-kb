@@ -1,0 +1,22 @@
+{
+  "id": "ST-ix5wl2lt",
+  "kind": "story",
+  "title": "The commit-msg hook refuses a planning commit whose KB-Work names an item it does not change, as check-trailers does at the push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py commit-msg exits non-zero, and the commit is not made, for a backlog-planning commit whose KB-Work names an item whose file it does not change, since check-trailers refuses that commit at the push anyway (SP-7nv2ffr2: the hook printed the refusal and the commit was made, then amended by hand) (SP-7nv2ffr2 close).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "commit_msg_refuses_planning_kb_work"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 close"
+  ]
+}

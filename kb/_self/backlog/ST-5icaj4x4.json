@@ -1,0 +1,22 @@
+{
+  "id": "ST-5icaj4x4",
+  "kind": "story",
+  "title": "A sprint worker can restore a tracked file of its touches that it damaged in its own worktree",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A headless worker that damages a tracked file inside its touches (ST-s4cihfge truncated _tools/test_redact.py to 0 bytes with a failed open-for-write) restores it to HEAD by a permitted command, instead of stopping with the work uncommitted because git checkout and a cp from git show are both denied (SP-7nv2ffr2 close).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_restores_touched_file"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 close"
+  ]
+}

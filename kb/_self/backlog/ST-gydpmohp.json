@@ -1,0 +1,22 @@
+{
+  "id": "ST-gydpmohp",
+  "kind": "story",
+  "title": "Planning asks an open choice a goal leaves for each file it names, not for one of a pair",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck warns of a committed item whose goal names two or more ledgers or files that the same open choice applies to while a gate answers it for only one of them, so the choice for each is asked before the start (SP-7nv2ffr2: ST-l2p6dpkr had gate g1 for _fetch_state.csv columns and the worker stopped mid-work on the same choice for _anchors.csv) (SP-7nv2ffr2 close).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_open_choice_each_named_file"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-7nv2ffr2 close"
+  ]
+}
