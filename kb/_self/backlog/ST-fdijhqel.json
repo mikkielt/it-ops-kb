@@ -2,7 +2,7 @@
   "id": "ST-fdijhqel",
   "kind": "story",
   "title": "Research sprint goal: Research reads, searches, licences and anchors sources by tool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sbdy4hsx",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orch-sbdy4hsx"
+  "evidence": {
+    "commit": "44ac6ae2b669a8a9a4417543b95a231a00cf9955",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-fdijhqel"
+        ],
+        "exit": 0,
+        "sha256": "678a3a961dc39610"
+      }
+    ]
+  }
 }
