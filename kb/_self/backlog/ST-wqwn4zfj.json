@@ -2,7 +2,7 @@
   "id": "ST-wqwn4zfj",
   "kind": "story",
   "title": "Review sprint: Lookup correctness: pack notes fire only where they should, and the eval counts a good row that gains one",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4o3plg4l",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-4o3plg4l"
 }
