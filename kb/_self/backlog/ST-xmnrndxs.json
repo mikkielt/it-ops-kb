@@ -104,11 +104,55 @@
       "class": "agents-rule",
       "answer": "Replace: the story's -k test takes the place of one existing test id of the same file and subject, whose assertions it keeps; ids stay at 100",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What counts as a DOC fact added in the change for kb-verify's lint, and where does the lint take the base from?",
+      "options": [
+        "Its fact key is not among the file's facts at --base REV, default HEAD (the uncommitted change), a new file counting all; kb-verify step 6 passes its base",
+        "A fixed base: the merge base with origin/main"
+      ],
+      "recommendation": "Its fact key is not among the file's facts at --base REV, default HEAD (the uncommitted change), a new file counting all; kb-verify step 6 passes its base",
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which anchors does kb-verify's lint warn of for a DOC fact the change added, and for which sources?",
+      "options": [
+        "A no-match anchor on any host, and for a copy or quote source that is no microsoft.com page an anchor with no quote or no anchor row; not-text, fetch-error and gone anchors and paraphrase or unknown sources stay silent",
+        "A no-match anchor only; a located anchor with no quote and a fact with no anchor row stay silent"
+      ],
+      "recommendation": "A no-match anchor on any host, and for a copy or quote source that is no microsoft.com page an anchor with no quote or no anchor row; not-text, fetch-error and gone anchors and paraphrase or unknown sources stay silent",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What does anchor --quotes take and write for a quoted fact?",
+      "options": [
+        "A CSV with the header line,quote and exactly one --file; a quote of 3 words or more is looked for as a word sequence in 1 to SPAN consecutive units, and the anchor's quote column then holds the researcher's quote where reuse allows; a quote the page lacks falls back to the fact's own words and prints quote not held",
+        "Quotes as repeated flags, a quote column holding the first 25 words of the located passage"
+      ],
+      "recommendation": "A CSV with the header line,quote and exactly one --file; a quote of 3 words or more is looked for as a word sequence in 1 to SPAN consecutive units, and the anchor's quote column then holds the researcher's quote where reuse allows; a quote the page lacks falls back to the fact's own words and prints quote not held",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Which existing test id does the story's test replace, and what marks it?",
+      "options": [
+        "The lint test of test_live_kb.py that names a Facts line with a second bullet, renamed to keep its assertions and add the anchor_quote ones, marked requires_git since the added-fact rule reads the root's git history",
+        "A new test id, which needs the operator's recorded raise of the ceiling"
+      ],
+      "recommendation": "The lint test of test_live_kb.py that names a Facts line with a second bullet, renamed to keep its assertions and add the anchor_quote ones, marked requires_git since the added-fact rule reads the root's git history",
+      "class": "agents-rule"
     }
   ],
   "links": [
     "kb:public/agents/hybrid-retrieval.md"
   ],
-  "notes": "Premise (2026-10-11, kb/public/_anchors.csv): 6,630 anchors located (49%), 5,102 unlocated:no-match (37%), 1,801 not-text (13%); quote is filled only as anchoring's output (6,563 located rows), never taken from the researcher. Anchoring this session's new facts in agents/hybrid-retrieval.md left correctly paraphrased DOC facts no-match, so a gate on anchors alone would refuse good facts; the researcher's quote is the reliable key. The lint rule runs over the live repository before the sprint commits the story and must warn of nothing in files the change did not touch. Planned 2026-10-12: premise reproduced (factdiff.py anchor takes --topic, --dir, --file, --source, --refetch, --max-age, --dry-run and no quotes). The lint rule's silence on untouched facts is run once over the live repository at claim, before code, and its output recorded here.",
+  "notes": "Premise (2026-10-11, kb/public/_anchors.csv): 6,630 anchors located (49%), 5,102 unlocated:no-match (37%), 1,801 not-text (13%); quote is filled only as anchoring's output (6,563 located rows), never taken from the researcher. Anchoring this session's new facts in agents/hybrid-retrieval.md left correctly paraphrased DOC facts no-match, so a gate on anchors alone would refuse good facts; the researcher's quote is the reliable key. The lint rule runs over the live repository before the sprint commits the story and must warn of nothing in files the change did not touch. Planned 2026-10-12: premise reproduced (factdiff.py anchor takes --topic, --dir, --file, --source, --refetch, --max-age, --dry-run and no quotes). The lint rule's silence on untouched facts is run once over the live repository at claim, before code, and its output recorded here. Silence run over the live repository (2026-10-12, lint.py with the new rule): at the default base HEAD it raised 0 of its 97 warnings; with --base HEAD~60 it raised 17, all in 3 files that range changed, none in an unchanged file.",
   "claimed_by": "orch-sbdy4hsx"
 }
