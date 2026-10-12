@@ -2,7 +2,7 @@
   "id": "BG-v57estdm",
   "kind": "bug",
   "title": "The router's gap expert treats a _gaps.md entry closed by a Closed, Partly resolved or Narrowed line as open and answers 'the kb lacks it'",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-lmf4ke4w",
   "priority": "P2",
@@ -62,5 +62,6 @@
   "links": [
     "parked: SP-7n3d4jte review"
   ],
-  "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.OPEN_GAP matches only '- Resolved|Superseded'. Also _gaps.md:268 (Closed); 16 'Partly resolved' and 3 'Narrowed' entries (_gaps.md:1064, 1066, 1068): whether a partly resolved entry still routes as open is the planner's choice. Premise run 2026-10-12: the repro pack prints coverage none, routed by kind: gap from _gaps.md:310 (a Closed entry); the closers check fails for Closed, Partly resolved and Narrowed. Choice made at planning: all five closers end the open-gap route as the goal says; the entry stays in the ledger as state (audit --entries still lists it). rag.py eval and tests -k pack_routes_kind pass before the work: they pin behaviour that must stay. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Found by the fresh-context review of SP-7n3d4jte on 2026-10-12 (S2): kbfacts.OPEN_GAP matches only '- Resolved|Superseded'. Also _gaps.md:268 (Closed); 16 'Partly resolved' and 3 'Narrowed' entries (_gaps.md:1064, 1066, 1068): whether a partly resolved entry still routes as open is the planner's choice. Premise run 2026-10-12: the repro pack prints coverage none, routed by kind: gap from _gaps.md:310 (a Closed entry); the closers check fails for Closed, Partly resolved and Narrowed. Choice made at planning: all five closers end the open-gap route as the goal says; the entry stays in the ledger as state (audit --entries still lists it). rag.py eval and tests -k pack_routes_kind pass before the work: they pin behaviour that must stay. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-lmf4ke4w"
 }
