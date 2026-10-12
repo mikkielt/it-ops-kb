@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-5i4itd2d close"
-  ]
+  ],
+  "notes": "SP-j2jn5ue4 (2026-10-12): the orchestrator, acting as operator, confirmed BG-fl4sg2py g2 (eval-sourced rows only) before the fresh-context reviewer ran; the reviewer then found that narrowing untested (ST-vwifqi4n) and the identifier rule it judges incomplete (BG-zopsjnou)."
 }

@@ -1,0 +1,22 @@
+{
+  "id": "ST-62ixsksb",
+  "kind": "story",
+  "title": "A review's gate confirms are committed by the tool, so the orchestrator writes no KB-Work list by hand",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py answer --confirm (or a review command) commits the item files it changes with a KB-Work line naming exactly those items, as claim --commit and start --commit do; at SP-j2jn5ue4 the orchestrator's hand commit of four confirms was refused by the commit-msg hook twice (it named the review story, then space-separated ids) before the comma-separated list passed.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "answer_confirm_commit"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 close"
+  ]
+}

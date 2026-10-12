@@ -1,0 +1,22 @@
+{
+  "id": "ST-sbip3ofp",
+  "kind": "story",
+  "title": "Planning records the kb line that answers each benchmark candidate question, not only the pack's verdict",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A sprint plan that lists benchmark question candidates by pack verdict (split, weak, good) also records the kb line that answers each one's present part: at SP-j2jn5ue4 the planned sc_partial candidates (new Teams client, Ansible win_updates, SQL Server backup to URL) had no answering kb line, so the worker replaced them with compound questions whose route may flip on small rewording.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_candidates_answer_line"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 close"
+  ]
+}

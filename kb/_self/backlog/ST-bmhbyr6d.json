@@ -1,0 +1,22 @@
+{
+  "id": "ST-bmhbyr6d",
+  "kind": "story",
+  "title": "Planning gives each condition of a goal clause its own planted case, so a check that reads one condition does not pass the clause",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Sprint planning maps a goal clause with two conditions to checks that plant each one: ST-ksznk2zt's clause 'good with no check: line for sc_present and sc_stale' was read by a test that plants only a route disagreement, so scenario_pack shipped reading no check: line and passed every check (found by the SP-j2jn5ue4 review as BG-4flop3jv).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_clause_each_condition"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-j2jn5ue4 close"
+  ]
+}
