@@ -2,7 +2,7 @@
   "id": "BG-s4lnuekm",
   "kind": "bug",
   "title": "kbfacts.parse_tag reads only the first source of [CODE S-a: path; S-b: path], so the second id of such tags is not cited",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lmf4ke4w",
   "priority": "P3",
   "rank": 0,

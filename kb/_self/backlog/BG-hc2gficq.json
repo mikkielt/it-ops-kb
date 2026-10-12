@@ -2,7 +2,7 @@
   "id": "BG-hc2gficq",
   "kind": "bug",
   "title": "The router's citation cue routes a lookup that names a source id beside 'name', 'mention', 'refer' or 'used by' to src --cited, printing a file list instead of the fact",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-lmf4ke4w",
   "priority": "P2",

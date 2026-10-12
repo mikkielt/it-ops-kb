@@ -2,7 +2,7 @@
   "id": "BG-v57estdm",
   "kind": "bug",
   "title": "The router's gap expert treats a _gaps.md entry closed by a Closed, Partly resolved or Narrowed line as open and answers 'the kb lacks it'",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-lmf4ke4w",
   "priority": "P2",

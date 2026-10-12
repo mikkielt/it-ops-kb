@@ -2,7 +2,7 @@
   "id": "SP-lmf4ke4w",
   "kind": "sprint",
   "title": "Lookup correctness: router experts, the tag parser and aliases answer what the kb holds",
-  "status": "planned",
+  "status": "active",
   "goal": "a lookup naming a source id beside 'name', 'mention', 'refer' or 'used by' prints fact lines, not a citing-file list; a _gaps.md entry closed by a Closed, Partly resolved or Narrowed line is not routed as an open gap; a router change is tested on broad lookups the kb answers, so no kind expert hijacks a good pack; each source of a [CODE S-a: path; S-b: path] tag is parsed and cited; aliases.csv maps the other names of the SP-qjn563cf topics; the kb-refresh and kb-research step sets print the old-figure search rule from a tested _self question",
   "gates": [
     {
