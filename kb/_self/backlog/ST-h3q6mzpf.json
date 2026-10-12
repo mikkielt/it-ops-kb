@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: every open question of the goal concerns this project's own tools (querylog.py apply and its gap step, check.py's citation rule, backlog.py cost and the work and usage sidecars), answered by kb/_self docs and the tools' code, not by an official external source; kb/public holds no article on them, and the worktree's check.py run reports errors=0, so no gap entry or fact is missing there. Knowledge the committed items need: kb/_self/content-rules.md:63 (a path:line citation in _gaps.md names a tagged fact line of an article, so a citation of a _gaps.md line is refused), kb/_self/querylog.md Apply and Delivery (a red gate pushes nothing, exit 1), kb/_self/usage.md and kb/_self/backlog.md Cost of work (cost reads the work and usage sidecars of landed items).",
   "claimed_by": "orch-kwi4ilty"
 }
