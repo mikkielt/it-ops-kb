@@ -3384,7 +3384,7 @@ COUNT_STEMS = frozenset(stem(w) for w in (
 _CITE_ID = rf"(?-i:{ID.pattern})"
 CITE_CUE = re.compile(  # a word that asks who cites an id: `cite` forms anywhere, the others only beside the id itself
     r"\bcit(?:e[sd]?|ing|ations?)\b"
-    rf"|\b(?:mention\w*|refer\w*|name[sd]?)\s+(?:(?:to|both|either)\s+)?(?:source\s+)?{_CITE_ID}"
+    rf"|\b(?:mention\w*|refer\w*|name[sd]?)\s+(?:(?:to|both|either)\s+)?(?:the\s+)?(?:(?:sources?\s+)?ids?\s+|sources?\s+)?{_CITE_ID}"
     rf"|{_CITE_ID}\s+(?:(?:is|are)\s+)?(?:used|mentioned|referenced|referred to|named)\s+(?:by|in)\b", re.I)
 DECISION_REF = re.compile(rf"(?<![\w-]){kbcommon.DECISION_ID.pattern}(?![\w-])")
 CONFLICT_CUE = re.compile(r"\b(?:disagree\w*|conflict\w*|contradict\w*|inconsisten\w*)\b", re.I)
