@@ -3371,7 +3371,11 @@ COUNT_STEMS = frozenset(stem(w) for w in (
     "article", "articles", "topic", "topics", "many", "number", "count", "list", "hold", "holds", "have", "contain",
     "contains", "cover", "covers", "domain", "domains", "total", "partial", "complete", "unknown", "status", "kb",
     "all", "every", "whole", "exist", "each", "per", "currently", "which", "what", "public"))
-CITE_CUE = re.compile(r"\b(?:cit\w*|us\w* by|used in|refer\w*|mention\w*|name\w*)\b", re.I)
+_CITE_ID = rf"(?-i:{ID.pattern})"
+CITE_CUE = re.compile(  # a word that asks who cites an id: `cite` forms anywhere, the others only beside the id itself
+    r"\bcit(?:e[sd]?|ing|ations?)\b"
+    rf"|\b(?:mention\w*|refer\w*|name[sd]?)\s+(?:(?:to|both|either)\s+)?(?:source\s+)?{_CITE_ID}"
+    rf"|{_CITE_ID}\s+(?:(?:is|are)\s+)?(?:used|mentioned|referenced|referred to|named)\s+(?:by|in)\b", re.I)
 DECISION_REF = re.compile(rf"(?<![\w-]){kbcommon.DECISION_ID.pattern}(?![\w-])")
 CONFLICT_CUE = re.compile(r"\b(?:disagree\w*|conflict\w*|contradict\w*|inconsisten\w*)\b", re.I)
 GAP_CUE = re.compile(r"\bwhat (?:does|do) the kb (?:say|know|document|cover|record|hold|have)\b"
