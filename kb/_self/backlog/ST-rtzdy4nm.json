@@ -37,7 +37,8 @@
     "kb/_querylog/**"
   ],
   "depends_on": [
-    "BG-ckrasbdn"
+    "BG-ckrasbdn",
+    "BG-xnh3rozy"
   ],
   "notes": "Split 2026-10-12 by the orchestrator of SP-kwi4ilty from BG-ckrasbdn: land runs a code item's checks and repro before it pushes the code/<id> merge request, and apply --push gates and applies with origin/main's tools in the worktree beside the spool, so these two clauses cannot pass until the fix merges. Work: after BG-ckrasbdn is done, the orchestrator runs python3 _tools/querylog.py apply --push once from its own checkout, then done --commit.",
   "claimed_by": "orch-kwi4ilty"

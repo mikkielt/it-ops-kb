@@ -1,0 +1,48 @@
+{
+  "id": "BG-xnh3rozy",
+  "kind": "bug",
+  "title": "querylog.py apply writes a doc2query expansion for a CSV article, whose key doc2query stale counts gone, so apply --push stops at the doc2query gate",
+  "status": "todo",
+  "sprint": "SP-kwi4ilty",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "ql_apply.expansion_fixes proposes no expansion row for an article that is not a .md file (doc2query keys only the tagged facts of .md articles, doc2query.facts), so the expansion finding F-699acd493bfa for public/claude/models.csv adds no row keyed 713b1ff371ac and an apply --push run leaves doc2query.py stale at stale=0; the eval row of such a finding is still applied when it passes alone",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_apply;G=type('G',(),{'facts':lambda s,a:[(1,'haiku resolves to the newest Haiku model [DOC S1]')]});sys.exit(1 if ql_apply.expansion_fixes({'article':'public/claude/models.csv'},{'question':'which model does the haiku alias resolve to'},G()) else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_apply_"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "ql_apply.expansion_fixes proposes no expansion row for an article that is not a .md file (doc2query keys only the tagged facts of .md articles, doc2query.facts), so the expansion finding F-699acd493bfa for public/claude/models.csv adds no row keyed 713b1ff371ac and an apply --push run leaves doc2query.py stale at stale=0",
+      "check": 1
+    },
+    {
+      "clause": "the eval row of such a finding is still applied when it passes alone",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "relates BG-ckrasbdn",
+    "gap F-699acd493bfa"
+  ],
+  "notes": "Found 2026-10-12 by the orchestrator of SP-kwi4ilty at the first apply --push after BG-ckrasbdn merged (run 20261012T132726Z-dfbcc91e): check.py now passes (errors=0) but the gate stops at doc2query.py stale=1, the row 713b1ff371ac 'which model does the haiku alias resolve to in Claude Code' that apply's own commit adds for F-699acd493bfa (article public/claude/models.csv); doc2query.facts reads .md facts only. Premise: the repro exits 1 on origin/main 1b2c20713. Fix choice (operator, delegated): skip the expansion fix for a non-.md article rather than widen doc2query to CSV rows, the smaller and reversible change. Suite at 100 of 100 ids: extend an existing test_apply_* test in _tools/test_redact.py, add no id. Check 0 passes before the work: the worker extends a test_apply_* test so it fails first (a planted CSV-article expansion finding)."
+}
