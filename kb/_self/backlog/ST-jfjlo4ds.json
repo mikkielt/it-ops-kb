@@ -1,0 +1,27 @@
+{
+  "id": "ST-jfjlo4ds",
+  "kind": "story",
+  "title": "apply --push names a delivery sent as a merge request as such, not as pushed to origin/main",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "querylog.py apply --push prints that its commit went as the merge request of branch code/<sha> and origin/main did not move when kbgit.py sync sent it by the code lane, instead of 'pushed <sha> to origin/main' (run 20261012T134205Z-9997a0f4 in SP-kwi4ilty), so an orchestrator knows to wait for the merge before reading the store",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "apply_push_names_merge_request"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty close"
+  ]
+}

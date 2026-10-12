@@ -1,0 +1,26 @@
+{
+  "id": "ST-ksmnwzd5",
+  "kind": "story",
+  "title": "A delivery bug's premise lists every gate its failed apply --push run stopped at, each with an item",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "planning a bug whose premise is a failed querylog.py apply --push reads every failed gate of that run's distill.log (check.py, doc2query.py stale, tests) and plans an item or names an existing one for each before the start gate, so a second blocker is not found only at the first delivery after the merge (doc2query stale=1, noted in BG-ckrasbdn's premise, became BG-xnh3rozy mid-sprint in SP-kwi4ilty)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_delivery_premise_all_gates"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty close"
+  ]
+}

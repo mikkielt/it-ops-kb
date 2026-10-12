@@ -1,0 +1,27 @@
+{
+  "id": "ST-pwosmcdj",
+  "kind": "story",
+  "title": "An operational story finished by a query-log delivery can be done, not only dropped",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "done accepts as a story's evidence an automatic querylog.py apply --push commit on the integration main that its checks read, or new and check warn of an open story whose touches are the query-log store only and name the drop route, so close --summary credits the goal clause it carried instead of printing unmet (ST-rtzdy4nm in SP-kwi4ilty)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_operational_delivery_story"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_done.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kwi4ilty close"
+  ]
+}
