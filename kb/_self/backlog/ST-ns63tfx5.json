@@ -1,0 +1,23 @@
+{
+  "id": "ST-ns63tfx5",
+  "kind": "story",
+  "title": "backlog.py land waits for the merge request of a code-lane item without --wait-merge, or names the lane before its first push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "land of an item whose commits go through the code lane either waits for its merge request by default or prints the lane and the --wait-merge rerun before it pushes, so an orchestrator does not run every such landing twice",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_code_lane_without_wait_merge"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ceucrhca close"
+  ],
+  "notes": "Retrospective SP-ceucrhca 2026-10-12: land ST-wkuogen4 without --wait-merge pushed code/ST-wkuogen4 and exited saying to run land again; every later landing of the sprint (BG-axnjcayu, ST-gngo7etc, ST-wtpwtlk4) went through the code lane and was run with --wait-merge."
+}

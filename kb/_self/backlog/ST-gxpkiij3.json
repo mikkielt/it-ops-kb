@@ -1,0 +1,23 @@
+{
+  "id": "ST-gxpkiij3",
+  "kind": "story",
+  "title": "A price change the goal research finds blocks a sprint's paid pool record until bench_core.PRICE follows it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "When a sprint's goal research records a changed price or billing rate of a pinned model, the plan or start of a sprint with a paid pool record gets a blocking gate, or a task that updates bench_core.PRICE, before the record runs, so pool verify (b) does not fail on the record after its spend",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_price_change_blocks_paid_record"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ceucrhca close"
+  ],
+  "notes": "Retrospective SP-ceucrhca 2026-10-12: ST-eorzrshc found Claude Code 2.1.296 prices Sonnet 5.5 cache reads at 0.10 and filed BG-axnjcayu; the orchestrator kept bench_core unchanged for comparability, the smoke (312 runs) passed pool verify, and the record (61.09 USD) failed verify (b) on 8 of 1072 runs, so a fix and a second record (61.29 USD) followed. A smoke is too small to catch a rare off-list run."
+}
