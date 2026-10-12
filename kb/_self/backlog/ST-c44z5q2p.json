@@ -1,0 +1,27 @@
+{
+  "id": "ST-c44z5q2p",
+  "kind": "story",
+  "title": "Planning takes a bug's repro questions from the pool rows its goal names, so a repro that passes means the pool rows pass",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a bug or story whose goal names benchmark pool rows (a kind such as sc_absent, or row ids) has a repro or check that reads those rows' own question text from the pool, and backlog.py check warns of one whose repro quotes a question no pool row holds (SP-kp3boz7z: BG-xbbimxpq's repro used 'mailbox retention policies', the pool's row says 'retention policies', and the row stayed a clean good, BG-j7pe3u46)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "repro_reads_pool_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kp3boz7z close"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ST-mjmo3tx7",
+  "kind": "story",
+  "title": "A pool run's --max-usd cap counts the runs in flight and its dry run prices the kinds it runs, so a capped run neither passes its cap nor stops short of its rows",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py run pool starts no run once the finished runs plus the runs in flight, each at its kind's mean cost, would pass --max-usd, and --dry-run prices each kind at its own mean cost, not the all-kinds mean (SP-kp3boz7z: ST-qm6wuqq4's paid run, 60 runs on sc_absent and sc_partial with --jobs 8, was estimated at 3.51 USD, billed 5.72 USD against a 5 USD cap and stopped 3 runs short)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_max_usd_in_flight"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py",
+    "_tools/bench_core.py",
+    "_tools/bench_pool.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-kp3boz7z close"
+  ]
+}

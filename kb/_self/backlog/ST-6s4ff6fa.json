@@ -1,0 +1,28 @@
+{
+  "id": "ST-6s4ff6fa",
+  "kind": "story",
+  "title": "rag.py eval counts the good rows whose pack gains a check: note, so a note that misfires on answered questions fails the eval and not only the review",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "rag.py eval prints the number of rows expected good whose pack carries a check: note or a route: line and fails when it rises above a recorded baseline, so a change to the pack's notes is caught by the item's eval check (SP-kp3boz7z: BG-xbbimxpq's eval check passed 621 of 621 while its passing note put a check: on three eval goods, found only by the review, BG-pedsqeqs)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "eval_counts_noted_goods"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-kp3boz7z close"
+  ]
+}
