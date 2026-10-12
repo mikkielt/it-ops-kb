@@ -2,7 +2,7 @@
   "id": "ST-l2p6dpkr",
   "kind": "story",
   "title": "done refuses a content item whose commit advances _fetch_state.csv baselines or drops anchors of sources its goal does not name",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",
@@ -79,5 +79,19 @@
     "parked: SP-df2cu4uj close"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise: no _tools/bl_*.py module reads _fetch_state.csv or _anchors.csv in cmd_done (grep at planning 2026-10-12 finds one comment in bl_check.py), so done accepts a commit that advances unrelated baselines. The change goes in bl_land.cmd_done beside stale_docs; land runs done --commit, so it is covered.",
-  "claimed_by": "orch-7nv2ffr2"
+  "evidence": {
+    "commit": "3700abcfae2a11dd1d65070244edd8b3f7b80bee",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_refuses_unrelated_fetch_state"
+        ],
+        "exit": 0,
+        "sha256": "81d524bd4ae46ef5"
+      }
+    ]
+  }
 }
