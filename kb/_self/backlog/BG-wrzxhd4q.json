@@ -2,7 +2,7 @@
   "id": "BG-wrzxhd4q",
   "kind": "bug",
   "title": "kb-verify lint.py given a kb/-prefixed article path lints nothing and prints errors=0 warnings=0, so a worker reports a clean lint the land then refuses",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7nv2ffr2",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-up5wchen close"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: lint.py kb/public/no-such-dir/no-such-article.md exits 0 and prints errors=0 warnings=0 (the repro exits 1 on the base, run at planning 2026-10-12). lint.wanted() matches a bare or root-qualified path only, so a kb/ prefix selects nothing. Callers that pass paths (bl_land.changed_articles passes every changed .md of a root, ledgers too) stay clean: only an argument naming no file is refused. Found at the SP-up5wchen retrospective: the research worker reported lint errors=0 on its ten articles given with the kb/ prefix and the land's lint refused a CODE tag without a path#symbol pointer in one of them. The first check runs lint.py --candidates, which reads the same argument list as the lint, on a live candidate with and without the kb/ prefix (the live kb lints clean, so no lint finding is plantable on it); the worker also asserts a kb/-prefixed path in the lint test it extends (no new test id)."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: lint.py kb/public/no-such-dir/no-such-article.md exits 0 and prints errors=0 warnings=0 (the repro exits 1 on the base, run at planning 2026-10-12). lint.wanted() matches a bare or root-qualified path only, so a kb/ prefix selects nothing. Callers that pass paths (bl_land.changed_articles passes every changed .md of a root, ledgers too) stay clean: only an argument naming no file is refused. Found at the SP-up5wchen retrospective: the research worker reported lint errors=0 on its ten articles given with the kb/ prefix and the land's lint refused a CODE tag without a path#symbol pointer in one of them. The first check runs lint.py --candidates, which reads the same argument list as the lint, on a live candidate with and without the kb/ prefix (the live kb lints clean, so no lint finding is plantable on it); the worker also asserts a kb/-prefixed path in the lint test it extends (no new test id).",
+  "claimed_by": "orch-7nv2ffr2"
 }
