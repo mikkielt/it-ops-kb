@@ -322,6 +322,16 @@ def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_pic
     bp.write_csv(out, rows)
     assert bp.cli(check, tmp_path) == 0  # a stale-source row whose sources a census confirmed is a warning
     assert capsys.readouterr().out.count("cites no source past its freshness lifetime") == bp.SCENARIO_ROWS
+    invented = "Set-InventedThing"  # no article and no data file of the fixture kb states it
+    stale["checks"] = json.dumps([r"value\d+", invented])  # a row built on a lookup_eval.csv case: the model's check
+    hand = next(r for r in rows if r["kind"] == "near_miss" and not r["source"].startswith("lookup_eval.csv:"))
+    hand["checks"] = json.dumps([invented])  # a hand-written near-miss row: its check is the author's
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 0  # a warning, not a defect
+    seen = capsys.readouterr().out
+    assert seen.count("found in no article or data file") == 1
+    assert f"{stale['id']}: warning: its check names `{invented}`, found in no article or data file of the kb" in seen
+    assert f"`pool build --redo {stale['id']}`" in seen and hand["id"] not in seen  # the near-miss row is not judged
 
 
 def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
