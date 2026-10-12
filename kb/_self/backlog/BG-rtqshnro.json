@@ -2,7 +2,7 @@
   "id": "BG-rtqshnro",
   "kind": "bug",
   "title": "Facts citing five code.claude.com pages no longer match them: a detect run finds modified and not-found passages",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-df2cu4uj",
   "priority": "P2",
@@ -89,5 +89,6 @@
   "links": [
     "kb:public/agents/doc-change-detection.md"
   ],
-  "notes": "Observed 2026-10-11 (Python 3.13.2): the repro reported changed=5 with facts verbatim=134, modified=8, not-found=5, unanchored=65 at one run and modified=12, not-found=1 at a run minutes later, so the pages are moving; the refresh reads the current pages, not these counts. BG-3bjktw5x (the stale cost-cap conflict entry) rests on S1824, one of these sources. Planned 2026-10-12: repro reproduced (changed=5; verbatim=134 modified=12 not-found=1 unanchored=65). check.py and rag.py eval pass before the work: they pin the contract and the lookups the refresh must keep. Runs after BG-3bjktw5x, which resolves the S1824 cost-cap conflict entry in the same files."
+  "notes": "Observed 2026-10-11 (Python 3.13.2): the repro reported changed=5 with facts verbatim=134, modified=8, not-found=5, unanchored=65 at one run and modified=12, not-found=1 at a run minutes later, so the pages are moving; the refresh reads the current pages, not these counts. BG-3bjktw5x (the stale cost-cap conflict entry) rests on S1824, one of these sources. Planned 2026-10-12: repro reproduced (changed=5; verbatim=134 modified=12 not-found=1 unanchored=65). check.py and rag.py eval pass before the work: they pin the contract and the lookups the refresh must keep. Runs after BG-3bjktw5x, which resolves the S1824 cost-cap conflict entry in the same files.",
+  "claimed_by": "orch-df2cu4uj"
 }
