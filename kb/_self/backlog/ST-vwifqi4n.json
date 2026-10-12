@@ -2,7 +2,7 @@
   "id": "ST-vwifqi4n",
   "kind": "story",
   "title": "A suite test plants an invented identifier in a lookup_eval-sourced pool row and asserts pool check's unstated-names warning",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",
@@ -62,5 +62,37 @@
     "merged: BG-zopsjnou"
   ],
   "notes": "Merged from BG-zopsjnou “pool check's unstated-names warning misses an invented identifier behind an inline flag, a group or a quantifier” at the 2026-10-12 draft triage: identifier_of (bench_pool.py:919) skips '(?i)Name'; it is the code half of this story, which tests the same unstated_names guard, so fix and test belong in one item; no committed row hits it. Its goal is the first clause of this goal. Found by the SP-j2jn5ue4 review. Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): unstated_names flags the bare name Invoke-ZzqxInventedDrift and misses (?i)Name, (Name|Other) and Name(?:s)?; test_bench.py has no reference to unstated_names. The assertions go into an existing test of test_bench.py (the suite is close to its test-id ceiling, a new id may not fit; tests_ceiling.json stays untouched), so the run check selects that test and passes before the work: it pins that the extended test still passes.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "4e0345886ab1f46a87bd8a5fefa01b836ea70706",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json;sys.path.insert(0,\"_tools\");import bench_pool as b;r=next(x for x in b.read_csv(b.PUBLIC_FILE) if x[\"kind\"]==\"fact\" and x[\"source\"].startswith(\"lookup_eval.csv:\"));F=[\"(?i)Invoke-ZzqxInventedDrift\",\"(Invoke-ZzqxInventedDrift|Get-Zzqx)\",\"Invoke-ZzqxInventedDrift(?:s)?\",\"Invoke-ZzqxInventedDrift\"];miss=[f for f in F if not b.unstated_names([dict(r,checks=json.dumps([f]))])];print(miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"_tools/test_bench.py\",encoding=\"utf-8\").read();sys.exit(0 if \"found in no article or data file\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool_check_reports_stale_pick"
+        ],
+        "exit": 0,
+        "sha256": "563fbc9244dbca9a"
+      }
+    ]
+  }
 }
