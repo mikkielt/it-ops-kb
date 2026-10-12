@@ -70,7 +70,9 @@
         "any change to a row, verified_utc included"
       ],
       "recommendation": "a row added, dropped or changed in a column other than verified_utc: a row whose only change is verified_utc (the run re-read it and found it as before) is not counted",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a row added, dropped or changed in a column other than verified_utc: a row whose only change is verified_utc (the run re-read it and found it as before) is not counted",
+      "by": "operator"
     }
   ],
   "links": [
