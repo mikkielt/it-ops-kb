@@ -411,7 +411,9 @@ def lead_printed(res):
 
 
 def lead_share(line, question):
-    """(key words of `question` that `line` holds, key words of `question`), as the pack counts them (`key_terms`)."""
+    """(key words of `question` that `line` holds, key words of `question`), as the pack counts them (`key_terms`).
+    The lead's `line` is the text the pack prints of it, as the anchor phrase is cut from: a key word past the clip is
+    not in the passage that answers."""
     import kbfacts
     keys = set(kbfacts.key_terms(question))
     return len(keys & set(kbfacts.key_terms(line))), len(keys)
@@ -433,7 +435,8 @@ def rules_one(f, entry, gate, base):
     `observed`. With a `pair` on the finding (learn's), its aliases.csv rows go in with the eval row and stay only with
     it. A weak finding with no answer line and no missing key word (`from_lead`) takes the first passage
     `pack --root _self` prints as the line when that line holds more than half of the question's key words, its anchor
-    phrase cut from the text the pack prints of it, a guess the same gates check (`observed` then has `lead`); any
+    phrase cut from the text the pack prints of it, which also holds the share (a key word past the pack's clip does
+    not count), a guess the same gates check (`observed` then has `lead`); any
     other finding with no answer line (a `route` `miss` too) is left open and reported (a word pair for aliases.csv is
     then a person's to pick); a question the file already holds gets nothing (learn records it)."""
     import kbid
@@ -459,7 +462,7 @@ def rules_one(f, entry, gate, base):
         for ref in refs:
             got = gate.rule_line(ref)
             if lead and got:
-                held, keys = lead_share(got[1], question)
+                held, keys = lead_share(shown, question)
                 if held * 2 <= keys:
                     problems.append(f"the lead passage holds {held} of {keys} key words of the question")
                     break
