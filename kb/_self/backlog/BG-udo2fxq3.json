@@ -115,7 +115,9 @@
         "parted in the judge and ql_learn.passes only; scatter in the judge and ql_learn.passes only"
       ],
       "recommendation": "parted in the hook, the judge and ql_learn.passes; scatter in the judge and ql_learn.passes (gate g1) and in the hook too, whose sentence names the pack's check: line",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "parted in the hook, the judge and ql_learn.passes; scatter in the judge and ql_learn.passes (gate g1) and in the hook too, whose sentence names the pack's check: line",
+      "by": "operator"
     }
   ],
   "links": [
