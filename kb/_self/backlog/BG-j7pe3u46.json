@@ -1,0 +1,17 @@
+{
+  "id": "BG-j7pe3u46",
+  "kind": "bug",
+  "title": "pack still prints a clean good for the pool's Exchange Online retention question: How do I set Exchange Online retention policies with Purview?",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "rag.py pack for the pool's sc_absent row BP-023d9e73, How do I set Exchange Online retention policies with Purview?, no longer prints a clean good (coverage good with no check: and no route: line) led by public/auth/audit-log-apis.md:52 on audit retention; the pack names what the kb lacks, and the pool's free hook arm meets 6 of its 6 sc_absent rows (5 of 6 after BG-xbbimxpq, which passed on its own repro wording, mailbox retention policies, and not on the pool row's). Found measuring ST-qm6wuqq4.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/rag.py','pack','How do I set Exchange Online retention policies with Purview?'],capture_output=True,text=True);t=o.stdout;h=t.split(chr(10)+'## ')[0];sys.exit(1 if o.returncode or t.startswith('coverage: good') and 'check:' not in h and 'route:' not in h else 0)"
+    ]
+  }
+}
