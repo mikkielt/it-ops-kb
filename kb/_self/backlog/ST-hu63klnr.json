@@ -2,7 +2,7 @@
   "id": "ST-hu63klnr",
   "kind": "story",
   "title": "Review sprint: Lookups route a question by its kind and label off-kb questions once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7n3d4jte",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-7n3d4jte"
 }
