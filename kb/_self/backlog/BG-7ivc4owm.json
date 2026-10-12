@@ -2,7 +2,7 @@
   "id": "BG-7ivc4owm",
   "kind": "bug",
   "title": "The sync gate's held-out reword check does not run when a landing changes only doc2query expansions.csv",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7nv2ffr2",
   "priority": "P3",
   "rank": 0,
@@ -24,5 +24,6 @@
   "links": [
     "parked: SP-5x5ut5ko review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: kg_sync.heldout_checks(['kb/public/_retrieval/doc2query/expansions.csv']) returns [] (the repro exits 1 on the base, run at planning 2026-10-12). The held-out file beside an expansions.csv is <root>/_retrieval/lookup_heldout.csv. Refusal run once against today's main: rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --min 1 prints no REWORD line (questions=20 passed=20), so the check does not fire on a state main holds."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 3 of 19, \"Checks that passed broken work: ledger citations, lint paths, the held-out reword gate and the query-log apply guards\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: kg_sync.heldout_checks(['kb/public/_retrieval/doc2query/expansions.csv']) returns [] (the repro exits 1 on the base, run at planning 2026-10-12). The held-out file beside an expansions.csv is <root>/_retrieval/lookup_heldout.csv. Refusal run once against today's main: rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --min 1 prints no REWORD line (questions=20 passed=20), so the check does not fire on a state main holds.",
+  "claimed_by": "orch-7nv2ffr2"
 }
