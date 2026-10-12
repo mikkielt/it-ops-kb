@@ -72,9 +72,6 @@ d82b0763da82,PreToolUse compatible hook types
 927846748f20,MCP Elicitation hook request handling
 927846748f20,How does an Elicitation hook respond to choices?
 927846748f20,MCP server elicitation request structure
-4dbaa624f401,ElicitationResult hook action override
-4dbaa624f401,Can you change the elicitation action after user response?
-4dbaa624f401,ElicitationResult content modification
 cafc5fd00fd0,Elicitation hook release version
 cafc5fd00fd0,When were Elicitation hooks introduced?
 d3fbd48af67c,Defender API list machines permissions
