@@ -118,7 +118,9 @@
         "The path:line key alone"
       ],
       "recommendation": "Best single rank among the lists, then the path:line key in path then line order",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Best single rank among the lists, then the path:line key in path then line order",
+      "by": "operator"
     },
     {
       "id": "ledger-hit",
@@ -129,7 +131,9 @@
         "At least 80% of the topic words are in the entry's whole text"
       ],
       "recommendation": "Every one of the question's topic words (cue words left out, at least 3) is in the entry's title; a gap entry must be open (tagged UNK, no Resolved or Superseded line)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Every one of the question's topic words (cue words left out, at least 3) is in the entry's title; a gap entry must be open (tagged UNK, no Resolved or Superseded line)",
+      "by": "operator"
     },
     {
       "id": "routed-size",
@@ -140,7 +144,9 @@
         "At most 3 items, each entry cut to 600 characters"
       ],
       "recommendation": "At most 6 items (ledger entries, decision rows, citing files), each ledger entry whole up to 1800 characters cut at a word, then the sources' urls",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "At most 6 items (ledger entries, decision rows, citing files), each ledger entry whole up to 1800 characters cut at a word, then the sources' urls",
+      "by": "operator"
     },
     {
       "id": "eval-guard",
@@ -151,7 +157,9 @@
         "No: eval never reads the router"
       ],
       "recommendation": "Yes: a routed row fails with failed=routed (eval still calls pack, so ranking is unchanged)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Yes: a routed row fails with failed=routed (eval still calls pack, so ranking is unchanged)",
+      "by": "operator"
     }
   ],
   "links": [
