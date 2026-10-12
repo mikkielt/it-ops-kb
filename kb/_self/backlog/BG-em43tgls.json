@@ -1,0 +1,17 @@
+{
+  "id": "BG-em43tgls",
+  "kind": "bug",
+  "title": "selfdoc.py check fails: kb/_self/code.md:46 names the heading 'Sprints: plan and review' that kb/_self/backlog.md does not have",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "python3 _tools/selfdoc.py check exits 0 with no PROBLEM line: the reference at kb/_self/code.md:46 names a heading kb/_self/backlog.md holds (found 2026-10-12 while working BG-pedsqeqs, origin/main untouched by it)",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/selfdoc.py",
+      "check"
+    ]
+  }
+}
