@@ -2,7 +2,7 @@
   "id": "ST-3cqn5ed6",
   "kind": "story",
   "title": "Review sprint: Content: refresh and anchor the six articles behind the benchmark's sc_stale rows",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qjg5r7jj",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-qjg5r7jj"
+  "evidence": {
+    "commit": "b2a71b1f0bd38607668b678ca0aff753de8daabe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "631c25784f92de01"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "8d3b15aef220275f"
+      }
+    ]
+  }
 }
