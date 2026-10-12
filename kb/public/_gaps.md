@@ -1470,3 +1470,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## arch/rust-clippy-criterion-gates
 - **Whether a Criterion "Performance has regressed" result changes the process exit status.** Looked 2026-10-11 in the getting-started, command-line options, FAQ and known-limitations pages (S-ba2xucuh, S-hqm43pk6, S-luxqgdxs, S-n33p6asx): none says; a regression gate is therefore unconfirmed. [UNK] (topic: arch/rust-clippy-criterion-gates)
+
+- Source S2196 (https://api.github.com/repos/MicrosoftDocs/memdocs) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 37, 46 lost it. (topic: agents/doc-change-detection)
+
+- Source S2196 (https://api.github.com/repos/MicrosoftDocs/memdocs) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 52, 57 lost it. (topic: agents/doc-lookup-sources)
+
+- Source S-pcy7cqea (https://api.github.com/repos/MicrosoftDocs/memdocs/contents/?ref=4b5429df8b47046c6b251e572ee61199fb5d4a5d) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 64 lost it. (topic: agents/doc-change-detection)
+
+- Source S-rgpijsmb (https://api.github.com/repos/MicrosoftDocs/memdocs/commits/d3432a8c0e9a1b8706eff71005a6b7ca53c35f98) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 36 lost it. (topic: agents/doc-change-detection)
+
+- Source S-yuwxbqz3 (https://raw.githubusercontent.com/MicrosoftDocs/memdocs/4b5429df8b47046c6b251e572ee61199fb5d4a5d/README.md) is gone (gone, 2026-10-12) and no page holds its passages (fact diff: provider search and redirects checked); facts at lines 55 lost it. (topic: agents/doc-lookup-sources)

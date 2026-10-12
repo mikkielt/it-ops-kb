@@ -89,6 +89,19 @@
   "depends_on": [
     "ST-hwn3phxk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Do the source rows' licence cells that state the memdocs mirror as archived (328 rows) or cite its LICENSE as the CC BY 4.0 grant (115 rows) get reworded now that the repository answers 404?",
+      "options": [
+        "leave the cells as the recorded reading, with the 404 stated in the two articles and the four dead rows",
+        "reword the 328 archived cells to answers 404 and mark the 115 CC BY cells as read before the 404"
+      ],
+      "recommendation": "leave the cells as the recorded reading, with the 404 stated in the two articles and the four dead rows",
+      "class": "push"
+    }
+  ],
   "links": [
     "kb:public/agents/doc-lookup-sources.md"
   ],
