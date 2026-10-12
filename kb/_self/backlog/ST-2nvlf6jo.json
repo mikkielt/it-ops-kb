@@ -2,7 +2,7 @@
   "id": "ST-2nvlf6jo",
   "kind": "story",
   "title": "kb-refresh and kb-research step sets ask the old-figure search rule as tested _self questions",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmf4ke4w",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-avwlotax close"
   ],
-  "notes": "Premise run 2026-10-12: rag.py pack --root _self --set kb-refresh:update prints ten placeholder and source-id questions and no old-figure line (the check fails). The rule is maintaining.md:41 (the /kb-refresh row: 'repeats the old one'); a row's expect_paths names maintaining.md, its sets column carries kb-refresh:update;kb-research:research, and rag.py eval --root _self stays passing. Landing is code-lane: kb/_self/_retrieval/ is a subdirectory of kb/_self. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. rag.py eval --root _self passes before the work: it pins that the new row passes."
+  "notes": "Premise run 2026-10-12: rag.py pack --root _self --set kb-refresh:update prints ten placeholder and source-id questions and no old-figure line (the check fails). The rule is maintaining.md:41 (the /kb-refresh row: 'repeats the old one'); a row's expect_paths names maintaining.md, its sets column carries kb-refresh:update;kb-research:research, and rag.py eval --root _self stays passing. Landing is code-lane: kb/_self/_retrieval/ is a subdirectory of kb/_self. Planned at the 2026-10-12 draft triage (sprint 2 of 19, \"Lookup correctness: router experts, the tag parser and aliases answer what the kb holds\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. rag.py eval --root _self passes before the work: it pins that the new row passes.",
+  "claimed_by": "orch-lmf4ke4w"
 }
