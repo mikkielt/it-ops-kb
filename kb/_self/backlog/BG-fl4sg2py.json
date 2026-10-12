@@ -56,6 +56,19 @@
       "class": "secrets",
       "answer": "identifier-shaped alternatives only (a cmdlet, API, CSP or setting name: no space, CamelCase or Verb-Noun); prose paraphrases stay legitimate; each identifier it flags today is fixed in bench_pool.csv or shown to be in the kb",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which pool rows does the unstated-names warning of pool check judge: the goal says each committed eval and near-miss row, and the hand-written design near-miss row (check sp_getapplock|sp_releaseapplock, source no lookup_eval.csv case) is a near-miss row too?",
+      "options": [
+        "eval-sourced rows only (a row built on a lookup_eval.csv case, whose check the model wrote), as built",
+        "every eval and near-miss row, the test fixture given the article it needs"
+      ],
+      "recommendation": "eval-sourced rows only (a row built on a lookup_eval.csv case, whose check the model wrote), as built",
+      "class": "design",
+      "answer": "eval-sourced rows only (a row built on a lookup_eval.csv case, whose check the model wrote), as built",
+      "by": "agent"
     }
   ],
   "links": [
