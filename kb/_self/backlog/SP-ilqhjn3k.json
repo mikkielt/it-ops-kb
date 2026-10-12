@@ -1,0 +1,20 @@
+{
+  "id": "SP-ilqhjn3k",
+  "kind": "sprint",
+  "title": "Content fixes: answers, conflicts, gaps and source rows say what holds now",
+  "status": "planned",
+  "goal": "_answers.md says spend can pass --max-budget-usd and the memdocs rows S-rgpijsmb and S-yuwxbqz3 are dead; the os.link EXDEV answer gives copy_file_range's Linux kernel older than 5.3 condition; the Sonnet 5.5 cache-read conflict says older runs price at 0.20; dhcp-failover.md states the Learn page's -ServerRole Standby reading beside the cmdlet reference's; doc-lookup-sources.md tags the no-capture fact DER and names a supported reason for the 404 probes; the census step models and RRF k gap entries are marked resolved with their answering line; the memdocs source rows say the repository answers 404 since 2026-10-12; kbid.py add keeps every row under concurrent adds",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
