@@ -1,0 +1,24 @@
+{
+  "id": "BG-potjqhfd",
+  "kind": "bug",
+  "title": "kb/_self/git.md says tests.py fails on a duplicate signal or alias row, but a suite run passes with a planted duplicate alias row",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/git.md names no check that does not exist: a duplicate row of _tools/aliases.csv or a root's signals.csv is either refused by a named check (check.py or a test) or the sentence says that none refuses it and the loader keeps the first row",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit(1 if 'tests.py fails on a duplicate signal or alias' in pathlib.Path('kb/_self/git.md').read_text(encoding='utf-8') else 0)"
+    ]
+  },
+  "repro_reason": "the behaviour is a negative: no check refuses a duplicate row, and a planted duplicate needs a full suite run of 25 s under the host test lock; the text match fails while the sentence claims a check, and passes once it names a check that exists or says none does",
+  "touches": [
+    "kb/_self/git.md",
+    "_tools/check.py",
+    "_tools/kbfacts.py"
+  ],
+  "notes": "Found by ST-5e6klbix on 2026-10-12 while answering where a product alias belongs and how a new alias row is checked (git.md:83). Premise run: a duplicate row 'sccm,configmgr' appended to _tools/aliases.csv, python3 _tools/tests.py --no-reuse: 100 passed (the run only failed the darwin seconds ceiling, BG-w6z2zc6r); kbfacts._aliases skips a repeated word tuple silently and check.py names no retrieval data file. The rows ST-5e6klbix added anchor no text on this sentence."
+}
