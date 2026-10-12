@@ -3384,7 +3384,9 @@ LEDGER_STEMS = frozenset(stem(w) for w in (
     "source", "sources", "disagree", "disagrees", "conflict", "conflicts", "contradict", "contradicts", "inconsistent",
     "page", "pages", "doc", "docs", "documentation", "kb", "cover", "know", "document", "record", "hold", "mention",
     "about", "regarding", "say", "have"))
-OPEN_GAP = re.compile(r"(?:^|\s)- (?:Resolved|Superseded)\b")  # a continuation line that closes a gaps.md entry
+# a continuation line that ends a gaps.md entry's open-gap route (the research queue's `Tried` and `Partly resolved`
+# rule is `ql_research.SETTLED`'s: a partly resolved entry is a lead there and an answered lookup here)
+OPEN_GAP = re.compile(r"(?:^|\s)- (?:Resolved|Superseded|Closed|Partly resolved|Mostly resolved|Narrowed)\b")
 KIND_PHRASE = {"count": "the audit totals", "decision": "the decisions ledger", "conflict": "the whole _conflicts.md entry",
                "gap": "an open _gaps.md entry: the kb lacks it", "cites": "the lines that cite the source (src --cited)"}
 
@@ -3460,9 +3462,10 @@ def _title_share(topic, held):
 
 def _ledger_items(question, name, kind, cue_stems, domain, root, open_only):
     """The entries of ledger `name` whose title holds every topic word of the question (TOPIC_MIN of them at least),
-    tightest title first, as routed items. `open_only`: a gaps entry that is tagged UNK and has no Resolved or
-    Superseded line, and whose title the topic words hold GAP_TITLE_SHARE of at least: a broad question whose words
-    only fit inside a narrower entry's title is a lookup the pack answers."""
+    tightest title first, as routed items. `open_only`: a gaps entry that is tagged UNK and has no line OPEN_GAP
+    reads (Resolved, Superseded, Closed, Partly resolved, Mostly resolved, Narrowed), and whose title the topic words
+    hold GAP_TITLE_SHARE of at least: a broad question whose words only fit inside a narrower entry's title is a
+    lookup the pack answers."""
     topic = _topic_terms(question, cue_stems)
     if len(topic) < TOPIC_MIN:
         return []
