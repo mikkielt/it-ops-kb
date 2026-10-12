@@ -1,6 +1,6 @@
 """`kbgit.py sync --push` end to end in a throwaway clone and bare origin: a content commit reaches main, a commit the
-gate rejects does not, a held-out row that rewords a tuned row is refused, a passing gate test run is reused for the
-same tree, and a code commit goes to a code/ branch while main stays."""
+gate rejects does not, a held-out row that rewords a tuned row is refused (and a changed expansions.csv runs that check),
+a passing gate test run is reused for the same tree, and a code commit goes to a code/ branch while main stays."""
 import json, os, re
 
 import pytest
@@ -103,6 +103,11 @@ def test_heldout_reword_is_refused_at_the_gate(scenario):
     assert r.returncode == 1, r.stdout + r.stderr
     assert "REWORD HO-sync-e2e-heldout ~ EV-sync-e2e-heldout" in r.stdout, r.stdout
     assert scenario.origin.rev("main") == before
+    # a range that changes only a root's doc2query expansions runs the same check on that root's held-out file
+    import kg_sync
+    paths = ["kb/public/_retrieval/doc2query/expansions.csv", "kb/public/windows/sync-e2e-heldout.md"]
+    assert [p for p, _ in kg_sync.heldout_checks(paths)] == ["kb/public/_retrieval/lookup_heldout.csv"]
+    assert kg_sync.heldout_checks(paths[1:]) == []
 
 
 def test_code_commit_goes_to_a_branch(scenario):
