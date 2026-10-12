@@ -607,6 +607,95 @@ def tag_errors(text, root, held):
     return res
 
 
+def text_tag_errors(text, root, owner, known, held):
+    """(source ids cited, errors) of the tags of `text`, a file of root (None: outside the roots): a DOC, CODE, DER or
+    COMMUNITY tag naming a source the file may not cite (`cite_error`), then a DECISION or LOG tag naming a row it may
+    not (`tag_errors`)."""
+    ids, res = 0, []
+    for tag in TAG.findall(text):
+        for sid in kbid.ANY_ID.findall(tag):
+            ids += 1
+            e = cite_error(sid, root, owner, known)
+            if e:
+                res.append(e)
+    return ids, res + tag_errors(text, root, held)
+
+
+def source_ids(root):
+    """The ids of the rows of a root's _sources.csv; empty when it cannot be read (`check_root_ledgers` reports that)."""
+    try:
+        return {x["id"] for x in kbcommon.load_csv(os.path.join(root.path, kbcommon.SOURCES), ("id",))[1]}
+    except kbcommon.CsvError:
+        return set()
+
+
+def held_ledger_ids(roots):
+    """{kind: {root name or None: ids}} of the DECISION and LOG rows a tag may name: each root's own, kb/_self's under
+    None."""
+    held = {kind: {r.name: ledger_ids(r.path, f[0]) for r in roots} for kind, f in LEDGER_TAGS.items()}
+    for kind, f in LEDGER_TAGS.items():
+        held[kind][None] = ledger_ids(kbcommon.SELF, f[0])
+    return held
+
+
+def front_topic(root, path, text):
+    """The topic a Markdown file of root (None: outside the roots) declares in its front matter (its path without `.md`
+    when the key has no value), or None for a file with none (a ledger, an index, a doc)."""
+    head = text.split("\n---", 2)[0]
+    if not text.startswith("---\n") or "\ntopic:" not in head:
+        return None
+    t = re.search(r"\ntopic:\s*(\S+)", head)
+    return t.group(1) if t else os.path.relpath(path, root.path if root else kbcommon.HOME)[:-3].replace(os.sep, "/")
+
+
+def topic_mark_errors(root, topics):
+    """The `topic: <domain>/<slug>` markers of a root's _gaps.md and _conflicts.md that name none of `topics`, one error
+    each, naming the ledger line."""
+    res = []
+    for name in (kbcommon.GAPS, kbcommon.CONFLICTS):
+        try:
+            with open(os.path.join(root.path, name), encoding="utf-8") as f:
+                lines = f.read().splitlines()
+        except (OSError, UnicodeDecodeError):
+            continue
+        for n, ln in enumerate(lines, start=1):
+            for m in TOPIC_MARK.finditer(ln):
+                t = m.group(1).removesuffix(".md").removesuffix(".csv")
+                if t not in topics:
+                    res.append(f"{kbcommon.qualify(root, name)}:{n} names unknown topic {t!r} of root {root.name} "
+                               f"(topic: <domain>/<slug>)")
+    return res
+
+
+def ledger_errors(root):
+    """Every error check.py gives the ledger files of one root (_answers.md, _gaps.md, _conflicts.md), whatever its
+    kind: a tag citing a source, decision or log row the root may not cite, a `path:line` citation naming no tagged
+    fact, a `topic:` marker naming no topic of the root. The gap step counts them before and after it writes an entry,
+    so an entry that adds one is not kept."""
+    roots = kbcommon.roots()
+    owner = {r.id_prefix: r for r in roots}
+    known = {r.name: source_ids(r) for r in roots}
+    known["*"] = set().union(*known.values())
+    held = held_ledger_ids(roots)
+    res, topics = [], set()
+    for p in walk(root.path, (".md",), {os.path.abspath(r.path) for r in roots} - {os.path.abspath(root.path)}):
+        try:
+            with open(p, encoding="utf-8") as f:
+                topic = front_topic(root, p, f.read())
+        except (OSError, UnicodeDecodeError):
+            continue
+        if topic:
+            topics.add(topic)
+    for name in (kbcommon.ANSWERS, kbcommon.GAPS, kbcommon.CONFLICTS):
+        try:
+            with open(os.path.join(root.path, name), encoding="utf-8") as f:
+                text = f.read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        res.extend(f"{kbcommon.qualify(root, name)} {e}" for e in text_tag_errors(text, root, owner, known, held)[1])
+    return res + ledger_citation_errors(root) + topic_mark_errors(root, topics)
+
+
 def check_logs(root, owner, known):
     """The format of a root's `_logs.csv`, or of kb/_self's when `root` is None (LOG_COLS): optional. A row is a derived
     aggregate with the runs it came from, never raw event text (RAW_EVENT, the leak scan)."""
@@ -691,14 +780,9 @@ def main():
     if a.root:  # a citation of another root must still be recognised as such
         for r in roots:
             if r.name != a.root:
-                try:
-                    known[r.name] = {x["id"] for x in kbcommon.load_csv(os.path.join(r.path, kbcommon.SOURCES), ("id",))[1]}
-                except kbcommon.CsvError:
-                    pass
+                known[r.name] = source_ids(r)
     known["*"] = set().union(*known.values())
-    held = {kind: {r.name: ledger_ids(r.path, f[0]) for r in roots} for kind, f in LEDGER_TAGS.items()}  # tags resolve here
-    for kind, f in LEDGER_TAGS.items():
-        held[kind][None] = ledger_ids(kbcommon.SELF, f[0])  # kb/_self's file
+    held = held_ledger_ids(roots)  # tags resolve here
     errors.extend(f"{kbcommon.qualify(r, kbcommon.ROOT_FILE)}: id_prefix {LOG_PREFIX!r} is reserved for log row ids"
                   for r in roots if r.id_prefix == LOG_PREFIX and (not a.root or r.name == a.root))
     scans = [(r, r.path) for r in roots if not a.root or r.name == a.root]
@@ -748,14 +832,11 @@ def main():
             except (OSError, UnicodeDecodeError) as e:
                 errors.append(f"{rel} is unreadable: {e}")
                 continue
-            for tag in TAG.findall(text):
-                for sid in kbid.ANY_ID.findall(tag):
-                    cited += 1
-                    e = cite_error(sid, root, owner, known)
-                    if e:
-                        errors.append(f"{rel} {e}")
-            errors.extend(f"{rel} {e}" for e in tag_errors(text, root, held))
-            if text.startswith("---\n") and "\ntopic:" in text.split("\n---", 2)[0]:
+            n_cited, found = text_tag_errors(text, root, owner, known, held)
+            cited += n_cited
+            errors.extend(f"{rel} {e}" for e in found)
+            topic = front_topic(root, p, text)
+            if topic:
                 head = text.split("\n---", 2)[0]
                 for key in ("topic", "priority", "retrieved_utc", "sources", "status"):
                     if f"\n{key}:" not in head:
@@ -763,24 +844,12 @@ def main():
                 m = re.search(r"\nstatus:\s*(\S+)", head)
                 if m and m.group(1) not in ("complete", "partial", "unknown"):
                     errors.append(f"{rel} has status {m.group(1)}")
-                t = re.search(r"\ntopic:\s*(\S+)", head)
                 if root:
-                    topics.add(t.group(1) if t else os.path.relpath(p, root.path)[:-3].replace(os.sep, "/"))
+                    topics.add(topic)
         if root is None:
             continue
         errors.extend(ledger_citation_errors(root))
-        for name in (kbcommon.GAPS, kbcommon.CONFLICTS):
-            try:
-                with open(os.path.join(root.path, name), encoding="utf-8") as f:
-                    lines = f.read().splitlines()
-            except (OSError, UnicodeDecodeError):
-                continue
-            for n, ln in enumerate(lines, start=1):
-                for m in TOPIC_MARK.finditer(ln):
-                    t = m.group(1).removesuffix(".md").removesuffix(".csv")
-                    if t not in topics:
-                        errors.append(f"{kbcommon.qualify(root, name)}:{n} names unknown topic {t!r} of root "
-                                      f"{root.name} (topic: <domain>/<slug>)")
+        errors.extend(topic_mark_errors(root, topics))
     if not a.root:
         errors.extend(long_tracked_paths())
         errors.extend(code_citation_errors())

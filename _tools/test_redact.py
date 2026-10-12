@@ -220,7 +220,7 @@ def test_apply_anchors_a_weak_rules_miss_on_the_lead_passage_and_the_committed_o
     assert ql_apply.apply(store=store, gate=gate, hold=held, out=said.append, kb_commit="0" * 40) == 0 and said == ["apply: nothing to apply"]
 
 
-def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from_the_printed_text(tmp_path):
+def test_apply_keeps_a_lead_that_does_not_answer_no_fix_cuts_the_anchor_and_apply_gap_guard_all_check_errors(tmp_path):
     line = "The zqxwidget plomkinator frobnicator quuxifies every plomkin on commit."
     shown = "The zqxwidget plomkinator frobnicator quuxifies every"
     asked, off = "which zqxwidget plomkinator frobnicator quuxifies every", "how are laptops enrolled into autopilot at provisioning"
@@ -272,7 +272,8 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
     csv_gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["EV-y"], "chars": {"EV-x": 100}, "offkb_good": 0}
     gone, rejected = ql_apply.apply_one(ev, fix, entry, csv_gate, base)
     assert (gone["state"], rejected["state"]) == ("no-fix", "rejected") and not (tmp_path / "csv_eval.csv").exists()
-    # the gap step: no entry for pasted text (a backlog goal), none that check.py refuses (a citation the question quotes)
+    # the gap step: no entry for pasted text (a backlog goal), none that check.py refuses (a citation, a topic mark or a
+    # source or decision tag the question quotes)
     class GapGate(LeadGate):
         def pack(self, question):
             return {"verdict": "none", "paths": ["public/python/stdlib.md"], "matched": ["a", "b"], "known": ["a", "b"]}
@@ -284,12 +285,14 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
             return "python/stdlib"
 
         def root(self, article):
-            return types.SimpleNamespace(path=str(tmp_path), name="public")
+            return types.SimpleNamespace(path=str(tmp_path), name="public", visibility="public")
 
         def ledger(self, article, name):
             return tmp_path / name
 
     gap, ledger = GapGate(tmp_path, {}, {}), tmp_path / "_gaps.md"
+    (tmp_path / "python").mkdir()
+    (tmp_path / "python" / "stdlib.md").write_text("---\ntopic: python/stdlib\n---\n# stdlib\n", encoding="utf-8")
     cand = {"id": "F-9", "kind": "gap", "state": "open", "stage": "candidate-gap", "promotions": []}
     goal = "Close gap F-1 (kb/public/_gaps.md:1058) " + "and research the platform docs " * 6
     rec, = ql_apply.gap_one(cand, {"question": goal}, gap, "2026-10-12")
@@ -303,8 +306,12 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_and_cuts_the_anchor_from
     with pytest.MonkeyPatch.context() as m:  # planted: the entry quotes the citation whole, and the ledger is put back
         m.setattr(ql_apply, "plain_question", lambda t: t)
         rec, = ql_apply.gap_one(cand, {"question": asked}, gap, "2026-10-12")
-    assert rec["state"] == "rejected" and rec["observed"]["gate"] == ["a ledger citation check.py refuses"]
+    assert rec["state"] == "rejected" and rec["observed"]["gate"] == ["a ledger entry check.py refuses"]
     assert ledger.read_text(encoding="utf-8") == ""
+    for carried in ("topic: no/such-topic", "[DOC S99999]", "[DECISION D-aaaaaaaa]"):  # planted: what else check.py refuses
+        rec, = ql_apply.gap_one(cand, {"question": f"what does os.link raise {carried} across volumes"}, gap, "2026-10-12")
+        assert rec["state"] == "rejected" and rec["observed"]["gate"] == ["a ledger entry check.py refuses"], carried
+        assert ledger.read_text(encoding="utf-8") == ""
 
 
 def census_row(sid, **kw):

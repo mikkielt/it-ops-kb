@@ -30,6 +30,21 @@
     "BG-bbcc5f4s",
     "BG-676tplds"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The suite is at the 100-id ceiling and the item's check selects a test by -k apply_gap_guard_all_check_errors: which test carries that name?",
+      "options": [
+        "Rename the existing gap-step test and extend it",
+        "Add a new test id and ask the operator to raise the ceiling"
+      ],
+      "recommendation": "Rename the existing gap-step test and extend it",
+      "class": "design",
+      "answer": "Rename the existing gap-step test and extend it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kwi4ilty review"
   ],

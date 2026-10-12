@@ -189,9 +189,9 @@ class Gate:
                                                                           "_coverage.csv", "_coverage.md")]
 
     def ledger_errors(self, article):
-        """The `path:line` citations of the article's root ledgers that check.py refuses (`ledger_citation_errors`)."""
+        """Every error check.py gives the ledgers of the article's root (`check.ledger_errors`)."""
         import check
-        return check.ledger_citation_errors(self.root(article))
+        return check.ledger_errors(self.root(article))
 
     def index_and_check(self):
         """build_index.py, then check.py over every root: the ERROR lines when check.py does not end errors=0."""
@@ -586,8 +586,9 @@ def gap_one(g, entry, gate, day):
     a _gaps.md entry under the article's topic, in the article's root, dated `day`, and the finding promoted from
     candidate-gap to gap (`applied`). Off the kb's domains (no lead, a lead no article holds, a `none` lead with half
     the key words or fewer, a `weak` lead without the subject) it is `rejected` at candidate-gap: no topic can take its
-    entry; so is pasted text (`gap_decision`), and an entry whose ledger check.py would refuse (the entry quotes the
-    question without its citations' line numbers; the ledger is put back as it was when one is left). []
+    entry; so is pasted text (`gap_decision`), and an entry that adds an error to the root's ledgers (`Gate.ledger_errors`:
+    a citation, a topic mark or a source, decision or log tag the question carries; the entry quotes the question
+    without its citations' line numbers; the ledger is put back as it was when one is left). []
     when it passes now or a `none` pack's lead article holds the words it lacks (`held_article`): learn records both,
     the second as an eval finding."""
     res, article, decision = gap_decision(entry["question"], gate)
@@ -613,13 +614,13 @@ def gap_one(g, entry, gate, day):
             f"`{res.get('verdict')}`, with this topic in the lead. Needs an official source that states it "
             f"(`/kb-research`, or the query log's opt-in research). (topic: {topic})")))
         errors = gate.ledger_errors(article)
-        if len(errors) > before:  # the entry cites what check.py refuses: the ledger as it was, the finding rejected
+        if len(errors) > before:  # the entry holds what check.py refuses: the ledger as it was, the finding rejected
             if existed:
                 write_text(path, text)
             else:
                 path.unlink()
             return [{**without_observed(g), "state": "rejected",
-                     "observed": {"verdict": res.get("verdict"), "gate": ["a ledger citation check.py refuses"]}}]
+                     "observed": {"verdict": res.get("verdict"), "gate": ["a ledger entry check.py refuses"]}}]
     return [{**without_observed(g), "state": "applied", "stage": "gap", "article": article,
              "promotions": [*(g.get("promotions") or []), {"from": "candidate-gap", "to": "gap", "by": "apply"}],
              "observed": {"verdict": res.get("verdict"), "topic": topic}}]
