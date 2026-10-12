@@ -61,6 +61,21 @@
   "depends_on": [
     "BG-j7pe3u46"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which model ids does terms() read a hyphenated digit pair in as a dotted version?",
+      "options": [
+        "Claude families only",
+        "Other vendors' model ids too"
+      ],
+      "recommendation": "Claude families only",
+      "class": "design",
+      "answer": "Claude families only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5i4itd2d review"
   ],
