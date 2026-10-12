@@ -2,7 +2,7 @@
   "id": "BG-subz6cnf",
   "kind": "bug",
   "title": "The narrowed cites cue no longer routes 'Which articles mention the source S1800?' or 'refer to the source S1800' to src --cited",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lmf4ke4w",
   "priority": "P1",
   "rank": 0,
@@ -49,5 +49,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Found by the SP-lmf4ke4w review (fresh-context reviewer, 2026-10-12): BG-hc2gficq's CITE_CUE accepts mention/refer/name only right before the id, so a word such as 'the source' between them drops the cites route; the repro failed on main at filing (misrouted: the four 'the source/source id/the sources' questions)."
+  "notes": "Found by the SP-lmf4ke4w review (fresh-context reviewer, 2026-10-12): BG-hc2gficq's CITE_CUE accepts mention/refer/name only right before the id, so a word such as 'the source' between them drops the cites route; the repro failed on main at filing (misrouted: the four 'the source/source id/the sources' questions).",
+  "claimed_by": "orch-lmf4ke4w"
 }
