@@ -2,7 +2,7 @@
   "id": "ST-wkuogen4",
   "kind": "story",
   "title": "Re-record the scenarios the router, check: lines, freshness stamps and plugin skills moved: verdict, retrieval, tool-speed, freshness, always-on, host-lookups, kb-lookup-agent and partial",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-ceucrhca",
   "priority": "P1",
@@ -97,5 +97,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Sizing (plan, 2026-10-12): verdict and tool-speed make no model call; freshness makes HTTP requests only (run freshness --dry-run: 102 requests at the least for --sample 2); retrieval, always-on, host-lookups, kb-lookup-agent and partial are paid with no estimate (benchmarks.py run X --dry-run exits 2 for them) and no --max-usd, so the spend cap is gate g1 (4.50 USD, 1.5x the 2.87 USD their last records spent) read after the run by check 2. Run sequential runtime: not measured here (the last records hold wall times per run). Census Haiku 5.5 dispatch and judging are not re-run: ST-zdfghdlb (SP-yojt6y7v) measured them on 2026-10-11. Checks 2 and 3 pass before the work on purpose: check 2 sums the newest records' spend (2.87 USD today, under the cap), so it bounds the new records' spend only together with checks 0 and 1, which fail until those records are written on a tree with the scenario rows; check 3 keeps report --check green."
+  "notes": "Sizing (plan, 2026-10-12): verdict and tool-speed make no model call; freshness makes HTTP requests only (run freshness --dry-run: 102 requests at the least for --sample 2); retrieval, always-on, host-lookups, kb-lookup-agent and partial are paid with no estimate (benchmarks.py run X --dry-run exits 2 for them) and no --max-usd, so the spend cap is gate g1 (4.50 USD, 1.5x the 2.87 USD their last records spent) read after the run by check 2. Run sequential runtime: not measured here (the last records hold wall times per run). Census Haiku 5.5 dispatch and judging are not re-run: ST-zdfghdlb (SP-yojt6y7v) measured them on 2026-10-11. Checks 2 and 3 pass before the work on purpose: check 2 sums the newest records' spend (2.87 USD today, under the cap), so it bounds the new records' spend only together with checks 0 and 1, which fail until those records are written on a tree with the scenario rows; check 3 keeps report --check green.",
+  "claimed_by": "orch-ceucrhca"
 }
