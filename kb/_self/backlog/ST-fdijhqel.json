@@ -2,7 +2,7 @@
   "id": "ST-fdijhqel",
   "kind": "story",
   "title": "Research sprint goal: Research reads, searches, licences and anchors sources by tool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sbdy4hsx",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-sbdy4hsx"
 }
