@@ -1,0 +1,18 @@
+{
+  "id": "BG-e3usbmvn",
+  "kind": "bug",
+  "title": "pool check exits 1 on the committed tree: the gap kind holds 4 rows and the plan has 5, since the row of a closed gap entry was removed without a replacement",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "pool check exits 0 on the committed pool: kind gap holds as many rows as PLAN names, each naming an open entry of kb/public/_gaps.md, so a check of an item that runs pool check is not red before its work",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/benchmarks.py",
+      "pool",
+      "check"
+    ]
+  }
+}
