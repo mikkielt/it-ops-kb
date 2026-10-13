@@ -12,7 +12,7 @@ from urllib.parse import urlsplit
 import kbpublic
 from ql_base import (DISABLED_NAME, HOME, STORE_REL, acquire, now, places, plugin_data, read_json, release, run_cmd,
                      write_text)
-from ql_distill import spool_delivered
+from ql_distill import LOG_MAX_BYTES, LOG_NAME, spool_delivered
 from ql_research import edit_problems
 from ql_store import (APPLY_FAILED, FINDINGS, LEARN_STATES, OPS, USAGE, WORK, finding_states, findings_files,
                       leak_problems, load_run, ops_files, run_files, store_entries, usage_files, work_files,
@@ -837,14 +837,41 @@ class Pusher:
         return code
 
 
+def logged(qdir, out=print):
+    """`out`, with each line also appended to the distill.log beside the spool in `qdir` (a fresh file above
+    LOG_MAX_BYTES, as `ql_distill.detach` starts one), so `bl_land.last_push_failure` reads the run's outcome as it
+    reads an automatic one's. `out` itself when this process's standard output already is that file (a run detached
+    into it) or the file cannot be written: a log never fails a push."""
+    log = Path(qdir) / LOG_NAME
+    try:
+        if os.path.samestat(os.fstat(sys.stdout.fileno()), log.stat()):
+            return out
+    except (OSError, ValueError, AttributeError):
+        pass  # no log yet, or a standard output that is no file
+
+    def say(text):
+        out(text)
+        try:
+            log.parent.mkdir(parents=True, exist_ok=True)
+            fresh = log.exists() and log.stat().st_size > LOG_MAX_BYTES
+            with open(log, "w" if fresh else "a", encoding="utf-8", newline="\n") as f:
+                f.write(text + "\n")
+        except OSError:
+            pass
+    return say
+
+
 def push(home=None, qdir=None, run=None, apply_step=None, out=print, now_dt=None, root=None):
     """`apply --push`: under the distill lock, the CI check of the last automatic commit (a revert when red), then in
     the worktree beside the spool the local store's new files (gated), learn and apply, one commit of all of them
     with its KB-Auto trailer, and kbgit.py sync --push to origin; the spool rows of pushed entries go after it. In a
     plugin host (no `home`, this copy running as the plugin) the push runs from the managed clone (host_push).
-    0 done (pushed, nothing to push, CI pending, or a conflict branch pushed), 1 a step failed, 2 refused, 3 another
-    distill or push holds the lock."""
+    With the default `out` the lines also go to the distill.log beside the spool (`logged`), as the automatic push's
+    do. 0 done (pushed, nothing to push, CI pending, or a conflict branch pushed), 1 a step failed, 2 refused, 3
+    another distill or push holds the lock."""
     qdir = Path(qdir or places()[0])
+    if out is print:
+        out = logged(qdir)
     lock = acquire(qdir)
     if lock is None:
         out("apply --push: another distill or push holds the lock")
