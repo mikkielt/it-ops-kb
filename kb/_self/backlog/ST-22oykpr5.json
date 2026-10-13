@@ -67,6 +67,17 @@
       "class": "push",
       "answer": "rebase: land rebases those commits onto origin/main and says so, and names the command when any commit changes another file or the tree is dirty",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How many of the checkout's unpushed commits does land list by name before its push?",
+      "options": [
+        "8, the rest counted (bl_land.NAMED_COMMITS)",
+        "all of them, however many"
+      ],
+      "recommendation": "8, the rest counted (bl_land.NAMED_COMMITS)",
+      "class": "push"
     }
   ],
   "links": [
