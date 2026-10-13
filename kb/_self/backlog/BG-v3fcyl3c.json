@@ -2,7 +2,7 @@
   "id": "BG-v3fcyl3c",
   "kind": "bug",
   "title": "The cmpivot timeout rows' answer regex accepts any duration, so a wrong timeout passes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,6 @@
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
-  "notes": "Premise: the repro prints [True, True] and exits 1 on 2026-10-13 (the regex is any number and unit). Six pool rows share the regex through their source, lookup_eval.csv:EV-cmpivot-query-timeout and EV-memcm-cmpivot-query-timeout (BP-d306eaa8, BP-8f566d80, BP-70d0bf39 and the variants BP-b124a0c0, BP-1f52a1d6, BP-6ca01fa4): edit all six in bench_pool.csv, which a rebuild keeps by source; the new regex matches mecm/cmpivot.md:17 (pool check warns when no check matches the line fact_for picks). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Premise: the repro prints [True, True] and exits 1 on 2026-10-13 (the regex is any number and unit). Six pool rows share the regex through their source, lookup_eval.csv:EV-cmpivot-query-timeout and EV-memcm-cmpivot-query-timeout (BP-d306eaa8, BP-8f566d80, BP-70d0bf39 and the variants BP-b124a0c0, BP-1f52a1d6, BP-6ca01fa4): edit all six in bench_pool.csv, which a rebuild keeps by source; the new regex matches mecm/cmpivot.md:17 (pool check warns when no check matches the line fact_for picks). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-honlhzdc"
 }
