@@ -1,0 +1,24 @@
+{
+  "id": "ST-btdvup3d",
+  "kind": "story",
+  "title": "The facts SP-gcerxjsg reworded in gitlab/project-settings-api and gitlab/pipelines-rules get anchor rows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Anchor the two DOC facts BG-drzst6zj and BG-lmp4mxmo reworded without anchors, since _anchors.csv was outside their touches: gitlab/project-settings-api.md:17 (S-4yvdwu5c, the create and update table attributes) and gitlab/pipelines-rules.md:32 (S448, the Run button's once-per-minute limit; quote: You can manually run scheduled pipelines once per minute.), each with factdiff.py anchor --file F --quotes CSV, keeping only those facts' rows (found by the SP-gcerxjsg retrospective).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; sys.path.insert(0,\"_tools\"); import kbfacts; ks=[kbfacts.fact_key(u[\"text\"]) for u in kbfacts.units(\"public\") if (u[\"path\"].endswith(\"/project-settings-api.md\") and \"appear in neither\" in u[\"text\"]) or (u[\"path\"].endswith(\"/pipelines-rules.md\") and \"once per minute\" in u[\"text\"] and \"S448\" in u[\"text\"])]; rows={r[\"fact\"] for r in csv.DictReader(open(\"kb/public/_anchors.csv\",encoding=\"utf-8\")) if r[\"status\"]==\"located\"}; sys.exit(0 if len(ks)==2 and all(k in rows for k in ks) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-gcerxjsg close"
+  ]
+}

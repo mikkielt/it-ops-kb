@@ -1,0 +1,22 @@
+{
+  "id": "ST-jypjvnqp",
+  "kind": "story",
+  "title": "check.py refuses a source row that pins this repository's own blob at a commit the public home does not hold",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "BG-wl36adcq's worker wrote a source row for kb/_self/reports/benchmarks.csv as a github.com blob pinned at eb079a248457, an integration-remote hash that kbgit.py publish rewrites, so the url would 404 on the public home; the orchestrator caught it by hand and the row now pins the projection's e2b6ca068. A source row whose url is a blob of this repository on its public home names a commit on the public main (or the check says it cannot read that remote), and kb/_self names how such a self-sourced row is pinned (found by the SP-gcerxjsg retrospective).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "self_source_pin_public"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-gcerxjsg close"
+  ]
+}

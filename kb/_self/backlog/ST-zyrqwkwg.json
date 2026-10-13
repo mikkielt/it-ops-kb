@@ -1,0 +1,22 @@
+{
+  "id": "ST-zyrqwkwg",
+  "kind": "story",
+  "title": "A planned goal that names its sources by a rule (a commit's changed rows) lists their ids, so done accepts each re-read source's ledger rows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "BG-c2pp5wwl's goal named its sources as 'each other source whose _fetch_state.csv baseline commit 5f16b6d63 advanced', and done refused its landing over S742's rows (outside-touches: ledger rows of sources the goal does not name), because done reads source ids only from the goal text and the facts touched. backlog.py check warns of a committed item whose goal names sources by such a rule with no id list, or done accepts the ids an item lists in a field of its own; either way a re-read of the rule's sources lands without a goal edit (found by the SP-gcerxjsg retrospective).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_rule_named_sources"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-gcerxjsg close"
+  ]
+}
