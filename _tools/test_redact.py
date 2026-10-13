@@ -1428,11 +1428,12 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
              "S9990002": [fact(2, sentences[0]), ("k2b", "dsc/d.md", 21, "- A restart is deferred for a month. [DOC S9990002]")],
              "S9990004": [fact(4, sentences[2])],  # what replaced S9990003
              "S9990006": [fact(6, sentences[0])]}
-    anchors = {(k, rel, sid): {"status": "located", "sha": found[sentences[i]]}
+    anchors = {(k, rel, sid): {"status": "located", "sha": found[sentences[i]], "verified_utc": "2099-01-01"}
                for sid, k, rel, i in (("S9990001", "k1", "dsc/d.md", 0), ("S9990001", "k1b", "dsc/d.md", 1),
                                       ("S9990002", "k2", "dsc/d.md", 0), ("S9990004", "k4", "dsc/d.md", 2),
                                       ("S9990006", "k6", "dsc/d.md", 0))}
-    anchors[("k2b", "dsc/d.md", "S9990002")] = {"status": "located", "sha": factdiff.sha("A restart may be deferred for a month.")}
+    anchors[("k2b", "dsc/d.md", "S9990002")] = {"status": "located", "sha": factdiff.sha("A restart may be deferred for a month."),
+                                                "verified_utc": "2099-01-01"}
     tmp_path.mkdir(parents=True, exist_ok=True)
     cache = tmp_path / "cache"
     for sid in ("S9990001", "S9990002", "S9990004"):
@@ -1458,6 +1459,7 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
         m.setattr(factdiff, "cited_facts", lambda *a: facts)
         m.setattr(factdiff, "read_anchors", lambda: anchors)
         m.setattr(census, "read_sources", lambda: srcs)
+        m.setattr(census, "g", lambda *a, **k: (0, "", ""))  # no phase-1 commit: the anchors' dates decide
         m.setattr(provider, "document", document)
         capsys.readouterr()  # what the steps before printed
         tally = Counter()
@@ -1489,7 +1491,73 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
         assert census.cmd_sample(argparse.Namespace(**{**vars(args()), "log": str(tmp_path / "none.csv")}), Counter()) == 2
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path, monkeypatch, capsys):
+def census_sample_brief_agrees_by_tool_only_before_phase2_edits(tmp_path, monkeypatch, capsys):
+    """An anchor dated the census day agrees a fact by tool only when the phase-1 commit held the fact's line; a rewrite
+    of phase 2 goes to the checker with its passage, whatever its anchor finds."""
+    sentence = "The service restarts on the second Tuesday of each month."
+    rewrite = "- The service restarts on the second Tuesday of every month. [DOC S9990003]"
+    text = f"{sentence} The agent writes every restart to the event log."
+    urls = {n: f"https://docs.example.com/S999000{n}" for n in (1, 2, 3)}
+    held = f"- {sentence} [DOC S9990002]\n"  # the article as the phase-1 commit held it
+    key_held = {kbfacts.fact_key(u["text"]) for u in kbfacts.md_units("dsc/d.md", held)}
+    assert len(key_held) == 1
+    facts = {"S9990001": [("k1", "dsc/d.md", 3, f"- {sentence} [DOC S9990001]")],
+             "S9990002": [(next(iter(key_held)), "dsc/d.md", 4, held.strip())],
+             "S9990003": [(kbfacts.fact_key(rewrite), "dsc/d.md", 5, rewrite)]}
+    on = {"S9990001": "2099-01-01", "S9990002": "2099-01-02", "S9990003": "2099-01-02"}
+    anchors = {(f[0][0], "dsc/d.md", sid): {"status": "located", "sha": factdiff.sha(sentence), "verified_utc": on[sid]}
+               for sid, f in facts.items()}
+    cache = tmp_path / "cache"
+    for n, url in urls.items():
+        path = cache / "public" / f"S999000{n}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps({"id": f"S999000{n}", "url": url, "status": 200, "text": text,
+                                    "fetched_utc": "2099-01-02T10:00:00+00:00"}), encoding="utf-8")
+    log = tmp_path / "2099-01-02.csv"
+    kbcommon.write_csv(str(log), census.COLS, [{**{c: "" for c in census.COLS}, "id": f"S999000{n}", "url": url, "bucket": "OK"}
+                                              for n, url in urls.items()])
+    srcs = [{"id": f"S999000{n}", "url": url, "superseded_by": ""} for n, url in urls.items()]
+    asked, commit = [], ["c0ffee"]
+
+    def git(d, *argv, **kw):
+        asked.append(argv)
+        if argv[0] == "log":
+            return 0, commit[0], ""
+        return (0, held, "") if argv[:2] == ("cat-file", "blob") and argv[2].startswith("c0ffee:") else (128, "", "bad object")
+
+    def brief():
+        asked.clear()
+        capsys.readouterr()
+        assert census.cmd_sample(argparse.Namespace(log=str(log), changed=1.0, ok=1.0, seed=1, brief=True, max_age=7), Counter()) == 0
+        return capsys.readouterr().out
+
+    with monkeypatch.context() as m:
+        m.setattr(socket.socket, "connect", lambda *a, **k: (_ for _ in ()).throw(AssertionError("sample used the network")))
+        m.setattr(kbcommon, "KB", kbcommon.PUBLIC)
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(factdiff, "CACHE", str(cache))
+        m.setattr(factdiff, "cited_facts", lambda *a: facts)
+        m.setattr(factdiff, "read_anchors", lambda: anchors)
+        m.setattr(census, "read_sources", lambda: srcs)
+        m.setattr(census, "g", git)
+        # a day-old anchor and a same-day anchor of a line the phase-1 commit held agree by tool; the rewrite goes to the
+        # checker with the passage its anchor names, which is no proof
+        out = brief()
+        agreed, _, left = out.partition("## For the checker")
+        assert "checked=3 agreed by tool=2 for the checker=1" in out
+        assert "S9990001  ok" in agreed and "S9990002  ok" in agreed and "S9990003" not in agreed
+        assert left.count("### ") == 1 and left.split("### ")[1].startswith("S9990003  ok")
+        assert f"fact: {rewrite.split(' [')[0]}" in left and f"passage (anchor placed in phase 2): {sentence}" in left
+        assert ("log", "-1", "--format=%H", "--fixed-strings", "--grep=census 2099-01-02 phase 1 verdicts") in asked
+        assert [a for a in asked if a[0] == "cat-file"] == [("cat-file", "blob", "c0ffee:kb/public/dsc/d.md")]
+        # no phase-1 commit in the history: only the anchor of an earlier day is a tool's proof
+        commit[0] = ""
+        out = brief()
+        assert "checked=3 agreed by tool=1 for the checker=2" in out
+        assert "S9990001  ok" in out.partition("## For the checker")[0] and out.count("passage (anchor placed in phase 2)") == 2
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path / "dispatch", monkeypatch, capsys)
     factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
@@ -1502,6 +1570,7 @@ def test_census_queue_and_census_groups_are_sized_without_network_each_phase_wri
     census_apply_refuses_a_bad_result_and_writes_a_good_one_through_kbid(tmp_path / "apply", monkeypatch, capsys)
     census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path / "baseline", monkeypatch, capsys)
     census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest(tmp_path / "sample", monkeypatch, capsys)
+    census_sample_brief_agrees_by_tool_only_before_phase2_edits(tmp_path / "phase2", monkeypatch, capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)
 
     # a data row is anchored on its values, never its column names; a row whose own name is not on the page stays unlocated

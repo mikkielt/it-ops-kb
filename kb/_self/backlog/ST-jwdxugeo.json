@@ -37,6 +37,36 @@
   "depends_on": [
     "ST-ct2jakvm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does sample --brief know a fact line is unchanged since phase 1, which the census's phase-2 edits did not touch?",
+      "options": [
+        "phase-1 commit keys",
+        "fact diff log verbatim rows",
+        "anchor date only"
+      ],
+      "recommendation": "phase-1 commit keys",
+      "class": "design",
+      "answer": "phase-1 commit keys",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the brief call the passage of an anchor placed after phase 1 that sends its fact to the checker?",
+      "options": [
+        "anchor placed in phase 2",
+        "best match",
+        "unproven"
+      ],
+      "recommendation": "anchor placed in phase 2",
+      "class": "design",
+      "answer": "anchor placed in phase 2",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],
