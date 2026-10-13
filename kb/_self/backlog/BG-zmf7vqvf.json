@@ -1,0 +1,25 @@
+{
+  "id": "BG-zmf7vqvf",
+  "kind": "bug",
+  "title": "_gaps.md entry on the read-only Bash set's exceptions points at settings-and-scopes.md:73 for a fact now at another line, and says powershell-tool.md:37 names no exception as if current",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The _gaps.md entry 'Which exceptions the permissions page names to the built-in read-only Bash command set' points at the line that now holds the blockReadsOutsideWorkingDirectories fact, or names the article section, and marks its 2026-10-13 reading of powershell-tool.md:37 as past",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;f=[l for l in open('kb/public/_gaps.md',encoding='utf-8') if 'Which exceptions the permissions page names' in l];ok=bool(f) and not any('settings-and-scopes.md:73' in l for l in f);print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a kb ledger defect: the entry text is what a lookup returns",
+  "touches": [
+    "kb/public/_gaps.md"
+  ],
+  "links": [
+    "parked: SP-foopqq2x review"
+  ],
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+}

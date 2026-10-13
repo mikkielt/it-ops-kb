@@ -1,0 +1,28 @@
+{
+  "id": "BG-u3edtq34",
+  "kind": "bug",
+  "title": "_answers.md QK-who-may-change-test-suite-ceiling still states Bazel's --test_timeout as a per-run override under DOC, and the article's DER note says the per-run flag is stated",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The _answers.md fact on Bazel's --test_timeout keeps only the page's words under [DOC S-3dlofilm] (an override when manually running under conditions known to be slow), and the DER note at agents/test-suite-size-and-agent-overengineering.md:37 says the per-run reading is the kb's own, not stated by the page",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;a=[l for l in open('kb/public/_answers.md',encoding='utf-8') if '--test_timeout' in l and '[DOC S-3dlofilm]' in l];d=[l for l in open('kb/public/agents/test-suite-size-and-agent-overengineering.md',encoding='utf-8') if 'per-run flag is stated' in l];ok=bool(a) and not any('per-run' in l for l in a) and not d;print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the fact text is the behaviour a lookup returns",
+  "touches": [
+    "kb/public/_answers.md",
+    "kb/public/agents/test-suite-size-and-agent-overengineering.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-foopqq2x review"
+  ],
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+}

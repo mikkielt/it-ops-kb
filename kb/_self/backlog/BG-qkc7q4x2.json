@@ -1,0 +1,26 @@
+{
+  "id": "BG-qkc7q4x2",
+  "kind": "bug",
+  "title": "settings-and-scopes.md's DER fact on the commands a default -p run executes lists the read-only Bash set's members without citing the permissions page that lists them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The DER fact in kb/public/claude/settings-and-scopes.md on the commands a claude -p --permission-mode default run executes with no rule cites the permissions page (S-pmhgjvef or S742) for the read-only set it lists, as the git diff and git show fact below it now does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;f=[l for l in open('kb/public/claude/settings-and-scopes.md',encoding='utf-8') if 'executes with no' in l and 'read-only forms of' in l];t=[l[l.rfind('[DER'):] for l in f];ok=bool(t) and any(('S-pmhgjvef' in x or 'S742' in x) for x in t);print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the tag is what a lookup returns",
+  "touches": [
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-foopqq2x review"
+  ],
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "BG-oi3ncidh",
+  "kind": "bug",
+  "title": "settings-and-scopes.md's DOC S742 fact on the Glob --allowedTools exception adds that the rule is no more consulted than in a settings file, a reading the page does not state",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The DOC S742 fact on the Glob --allowedTools warning exception in kb/public/claude/settings-and-scopes.md states only what the permissions page says; whether the exempted rule is consulted is a DER fact with its reading shown, or an UNK, or is dropped",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;f=[l for l in open('kb/public/claude/settings-and-scopes.md',encoding='utf-8') if 'passed in `--allowedTools`' in l and '[DOC S742]' in l];ok=bool(f) and not any('no more consulted' in l for l in f);print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the fact text is the behaviour a lookup returns",
+  "touches": [
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-foopqq2x review"
+  ],
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+}

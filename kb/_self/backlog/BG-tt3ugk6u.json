@@ -1,0 +1,25 @@
+{
+  "id": "BG-tt3ugk6u",
+  "kind": "bug",
+  "title": "_anchors.csv keeps two unlocated rows of key 287f72bc4cc2, the old text of the settings-and-scopes.md git diff and git show fact, and the reworded fact has no anchor row",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.py anchor --file claude/settings-and-scopes.md re-anchors the reworded git diff and git show fact and prunes the two stale rows of key 287f72bc4cc2, so factdiff.py anchors --stale lists no row of that article",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;ok='287f72bc4cc2' not in open('kb/public/_anchors.csv',encoding='utf-8').read();print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the stale rows are ledger text; the anchor run that prunes them needs the network",
+  "touches": [
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-foopqq2x review"
+  ],
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+}
