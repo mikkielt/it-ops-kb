@@ -1,0 +1,26 @@
+{
+  "id": "ST-sqmr3ve3",
+  "kind": "story",
+  "title": "Planning reads a goal clause that names a class of files against every member, not only the file the notes name",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck lists, for a committed item whose goal clause names a class of files (_tools code, every article, every ledger), the members its touches leave out, so a clause such as SP-e4fm2ovk's 'a content item adds or removes a line that _tools code cites by number without check.py failing' is planned against all citing files (bench_core.py and kbfacts.py), not met for one and found unmet at the review (BG-3ewsdo6l filed in the sprint after the review)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_clause_class_members"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-e4fm2ovk close"
+  ],
+  "notes": "Filed at the SP-e4fm2ovk close (retrospective). No suite test covers precheck yet: the planner of this story names the test file it extends before the start."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-emvafjrc",
+  "kind": "story",
+  "title": "A planned goal's figure about recorded benchmark rows is read from benchmarks.csv, not stated from memory",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning reads each figure a goal states about recorded benchmark rows (a sample size, a rank, a recorded value) from kb/_self/reports/benchmarks.csv with the command beside it in the item's notes, so a claim such as BG-v5f5tn5y's 'the recorded n=44 run is unaffected' (the 2026-10-12 freshness run has n=54 and its p95 moved from rank 51 to 52) is caught before the start, not by the review (SP-e4fm2ovk review gap 2)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_recorded_figure_read"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-e4fm2ovk close"
+  ]
+}

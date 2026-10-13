@@ -1,0 +1,25 @@
+{
+  "id": "ST-koaujnzm",
+  "kind": "story",
+  "title": "A planned bug that fixes a code pattern lists the pattern's other sites in the tree, so a sibling is fixed or filed before the start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck, or the planning step of /kb-sprint, lists for a committed bug whose goal names a code expression (such as round(0.95 * n) as a p95 rank) the other places the tree holds it, so each is in the goal, filed as its own item or named as out of scope before the start (SP-e4fm2ovk: BG-v5f5tn5y fixed the freshness p95, its worker found the verdict p95 int(0.95 * n) and filed BG-pjtajc2m, the review found bench_core.stat_rows' round() p95 and parked BG-z4mcy4w4)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_bug_pattern_siblings"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-e4fm2ovk close"
+  ]
+}
