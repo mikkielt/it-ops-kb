@@ -1,0 +1,26 @@
+{
+  "id": "ST-tuvomuuy",
+  "kind": "story",
+  "title": "A goal research story's brief tells it not to quote a doc line an in-flight sibling's touches rewrite",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Retrospective of SP-uzwbt63u: ST-b56r6a7v's eval row EV-gate-add-made-blocking-worker-commits-gate-stops quoted the backlog.md line ST-qzpovl6h was rewriting in the same sprint; the orchestrator caught it before landing and resumed the worker to re-point the row after the sibling landed. The worker rules of a brief for a goal research story say that a lookup_eval.csv row whose phrase quotes a doc an in-flight sibling touches is re-checked after that sibling lands, and the orchestrator lands the research story after the siblings whose docs its rows quote",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib, sys; sys.path.insert(0, '_tools'); import bl_dispatch; r = ' '.join(bl_dispatch.worker_rules(pathlib.Path('.'), 'ST-aaaaaaaa', 'work/ST-aaaaaaaa')); sys.exit(0 if 'lookup_eval.csv' in r and 'sibling' in r else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uzwbt63u close"
+  ]
+}

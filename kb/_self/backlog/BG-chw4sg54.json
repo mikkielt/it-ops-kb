@@ -1,0 +1,24 @@
+{
+  "id": "BG-chw4sg54",
+  "kind": "bug",
+  "title": "Concurrent dispatch runs race on the claims ledger: a shared tmp file crashes a dispatch and orphans its worker",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "Found at the SP-uzwbt63u close: four backlog.py dispatch runs started at once all write the claims ledger through bl_dispatch.record_worker, which reads the ledger, then writes a fixed kb-backlog-claims.json.tmp and os.replace()s it; two dispatches died with FileNotFoundError on the replace after their claude -p had started, leaving two orphaned workers (parent pid 1, no worker_session recorded at exit), and the read-modify-write lost the other two items' worker_pid. record_worker writes the ledger under a lock with a temp file of its own, so concurrent dispatches of different items each keep their record and none fails",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json, os, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport bl_dispatch\nt = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\ncode = \"import sys; sys.path.insert(0, '_tools'); import bl_dispatch, pathlib; [bl_dispatch.record_worker(pathlib.Path(sys.argv[1]), sys.argv[2], worker_pid=i) for i in range(30)]\"\nps = [subprocess.Popen([sys.executable, '-c', code, t, f'ST-{c * 8}'], stderr=subprocess.DEVNULL) for c in 'abcdef']\ncodes = [p.wait() for p in ps]\nled = json.loads(bl_dispatch.ledger_path(t).read_text())\nsys.exit(0 if codes == [0] * 6 and all(f'ST-{c * 8}' in led for c in 'abcdef') else 1)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-uzwbt63u close"
+  ]
+}
