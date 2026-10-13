@@ -2,7 +2,7 @@
   "id": "ST-6z527rfe",
   "kind": "story",
   "title": "The provider-signals memo is keyed and refilled from the current provider registry, so a long-lived process writes no stale signals under a new key",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-u5q37ds3",
   "priority": "P3",
@@ -49,5 +49,6 @@
   "links": [
     "parked: SP-kp3boz7z review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\n\nPremise: after the registry changes in one process, provider_signals still answers with the old rows' signals under the new key. Run 2026-10-12 on the base: reproduces. Registry key A with signals etag;lastmod, then key B with a row giving version: kbfacts.provider_signals answered ['etag', 'lastmod', 'hash'] for the second url (wanted ['version', 'hash']), since _PROVIDER_ROWS is filled once. Check 0 plants that change in one process (no index directory) and fails now. Check 1 names the existing pack_freshness_stamp test with a registry-change suffix: it collects no test now (exit 2); the worker extends that test with the planted change and appends _registry_change to the name's pack_freshness_stamp part, adding no new test id."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\n\nPremise: after the registry changes in one process, provider_signals still answers with the old rows' signals under the new key. Run 2026-10-12 on the base: reproduces. Registry key A with signals etag;lastmod, then key B with a row giving version: kbfacts.provider_signals answered ['etag', 'lastmod', 'hash'] for the second url (wanted ['version', 'hash']), since _PROVIDER_ROWS is filled once. Check 0 plants that change in one process (no index directory) and fails now. Check 1 names the existing pack_freshness_stamp test with a registry-change suffix: it collects no test now (exit 2); the worker extends that test with the planted change and appends _registry_change to the name's pack_freshness_stamp part, adding no new test id.",
+  "claimed_by": "orch-u5q37ds3"
 }
