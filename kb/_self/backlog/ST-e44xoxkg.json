@@ -2,7 +2,7 @@
   "id": "ST-e44xoxkg",
   "kind": "story",
   "title": "A goal research story's check reads its narrowed questions' coverage, not only that a work commit exists",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sqgyoiaz",
   "priority": "P3",
   "rank": 0,
@@ -130,5 +130,18 @@
     "parked: SP-4phd36pa close"
   ],
   "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Recurred at SP-ajcomz6d (BG-ab3tndhy, BG-i44ewtyl: AlmaLinux 8 and 10 half-answered with no gap), SP-qjn563cf (BG-y3oykyfl, BG-l22a5sfd, BG-vdhzlmv3) and SP-up5wchen (BG-oyzgvtrg, BG-4e7ja4zv, BG-7ofeobia): researched passed on the work commit alone and only the fresh-context review found partial or wrong clauses. The questions are the narrowed goal's clauses (split as goal_clauses does); a project with no kb_root runs no pack and keeps today's work-commit rule. Gates answered at planning: question-coverage, question-roots.\nPremise: researched on a story with a real work commit (ST-bivdc2fa) and a narrowed goal that adds a question the kb has no word for (pack coverage none) exits 0 today, as it does for an answered question (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-sqgyoiaz"
+  "evidence": {
+    "commit": "7c36f6d46f10fb6c44369e88322d8e359c38a4d5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,types,io,contextlib;sys.path.insert(0,\"_tools\");import bl_land\nGOOD=\"How do I set the Windows Update deferral period for feature updates with Intune?\"\nNONE=\"What colour is the obsidian frobnicator valve of the Zorblax 9000 spectrometer?\"\ndef researched(goal):\n    it={\"ST-bivdc2fa\":{\"kind\":\"story\",\"goal_research\":True,\"sprint\":\"SP-a\",\"goal\":goal,\"notes\":\"\",\"touches\":[\"kb/public/**\"]}}\n    bl=types.SimpleNamespace(items=it,root=\".\",label=lambda i:i,descendants=lambda i:[])\n    buf=io.StringIO()\n    with contextlib.redirect_stdout(buf):\n        rc=bl_land.cmd_researched(bl,types.SimpleNamespace(id=\"ST-bivdc2fa\"))\n    return rc,buf.getvalue()\nok=researched(GOOD);bad=researched(GOOD+\"; \"+NONE)\nprint(ok,bad);sys.exit(0 if ok[0]==0 and bad[0]==1 and \"colour\" in bad[1] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "503471cf58a5b340"
+      }
+    ]
+  }
 }
