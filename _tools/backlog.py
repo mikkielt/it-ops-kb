@@ -140,7 +140,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
   backlog.py researched ID               the goal research story's check, which new sprint gives it: exit 0 once
                                           its research is written by done's rules (a commit on HEAD whose KB-Work
                                           names it and changes a file other than item files, or its notes' No
-                                          outside facts: <reason>), 1 before; read-only
+                                          outside facts: <reason>) and each question its goal names (a sentence
+                                          ending in ?) has pack coverage good in the roots its touches name, or an
+                                          open _gaps.md entry titled with it, 1 before; read-only
   backlog.py land ID [--branch B] [--trailer 'KEY: VALUE']...
                                           land a finished item's branch (default work/ID) from a clean tree: fetch
                                           and rebase it on the integration main, then a content item: done --commit,

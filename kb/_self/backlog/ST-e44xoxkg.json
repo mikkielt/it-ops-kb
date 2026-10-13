@@ -59,6 +59,61 @@
       "class": "agents-rule",
       "answer": "the roots the story's touches name (kb/public/** is root public), all roots when none; skipped with a said line when kb_root is empty",
       "by": "operator"
+    },
+    {
+      "id": "question-form",
+      "kind": "blocking",
+      "question": "How does researched find the questions in a narrowed goal?",
+      "options": [
+        "each sentence of a goal clause that ends in ?, a lead-in of up to 8 words ending in a colon dropped; a goal with none reads no coverage",
+        "every clause of the goal is a question"
+      ],
+      "recommendation": "each sentence of a goal clause that ends in ?, a lead-in of up to 8 words ending in a colon dropped; a goal with none reads no coverage",
+      "class": "agents-rule"
+    },
+    {
+      "id": "roots-combine",
+      "kind": "blocking",
+      "question": "When a story's touches name several kb roots, which root's coverage answers a question?",
+      "options": [
+        "the best root: good in any named root answers it",
+        "every named root must be good"
+      ],
+      "recommendation": "the best root: good in any named root answers it",
+      "class": "agents-rule"
+    },
+    {
+      "id": "check-line",
+      "kind": "blocking",
+      "question": "Does a good verdict that carries a check: line (a possible false good) answer a question?",
+      "options": [
+        "yes: the verdict as printed decides, the check: line does not refuse",
+        "no: good with a check: line counts as weak, as the knowledge state does"
+      ],
+      "recommendation": "yes: the verdict as printed decides, the check: line does not refuse",
+      "class": "agents-rule"
+    },
+    {
+      "id": "gap-match",
+      "kind": "blocking",
+      "question": "Which gap entry names a question for researched?",
+      "options": [
+        "an open _gaps.md entry (tagged UNK, no Resolved line) whose title holds the question's key words, as kbfacts._gap_items reads it for a kb lacks route",
+        "any entry of _gaps.md that holds the question's words anywhere in its text"
+      ],
+      "recommendation": "an open _gaps.md entry (tagged UNK, no Resolved line) whose title holds the question's key words, as kbfacts._gap_items reads it for a kb lacks route",
+      "class": "agents-rule"
+    },
+    {
+      "id": "other-clone",
+      "kind": "blocking",
+      "question": "What does researched do when --root names another clone than the one the tools run from?",
+      "options": [
+        "reads no coverage, says so and keeps the work-commit rule, as the knowledge state does",
+        "refuses"
+      ],
+      "recommendation": "reads no coverage, says so and keeps the work-commit rule, as the knowledge state does",
+      "class": "agents-rule"
     }
   ],
   "links": [
