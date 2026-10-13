@@ -144,7 +144,9 @@
       "do": {
         "every match: clause_words folds, so carry, left-behind and the similar hint read one word set": "ST-7rqeuzlm",
         "carry matches only: the similar hint keeps unfolded words": "ST-7rqeuzlm"
-      }
+      },
+      "answer": "every match: clause_words folds, so carry, left-behind and the similar hint read one word set",
+      "by": "operator"
     }
   ],
   "links": [
