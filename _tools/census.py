@@ -1231,13 +1231,16 @@ def sampled(rows, a):
 
 
 WORD = "word for word"  # the anchor's passage is in the source's current text: the proof factdiff apply dates a source on
+PLACED = "anchor placed in phase 2"  # the same, by an anchor written after the phase-1 commit: no proof, the checker judges it
 SAMPLE_RULES = """\
 You are the independent check of the census of {date}: a context that did not do phase 2. Change nothing: edit, record and \
 commit nothing.
 A source under "Agreed by tool" has every fact that cites it found word for word in its current text: it is not yours.
 For each source under "For the checker": judge each of its facts from the passage printed under it, supported or not. Open \
 the page (its `read:` line) only when a passage does not settle a fact: no passage, or one that does not say what the fact \
-says. A source no fact cites: judge its outcome (gone: the page is gone; superseded: its facts cite the successor).
+says. A source no fact cites: judge its outcome (gone: the page is gone; superseded: its facts cite the successor). A passage \
+marked "anchor placed in phase 2" is the one an anchor written after phase 1 names, for a fact phase 2 may have rewritten: \
+judge whether it says what the fact says.
 Answer `agree` for a source whose every fact is supported, else `disagree` with the fact (`path:line`) and why.
 One line per source of "For the checker": its id, `agree` or `disagree`, and the reason."""
 
@@ -1253,14 +1256,40 @@ def successor(sid, srcs):
         sid = nxt
 
 
-def current_passage(doc, anchor, claim, cites=1):
+def phase1_commit(date):
+    """The commit `census.py run` made for the census of `date` (`docs(kb): census DATE phase 1 verdicts`); '' when the
+    history holds none."""
+    return g(kbcommon.HOME, "log", "-1", "--format=%H", "--fixed-strings", f"--grep=census {date} phase 1 verdicts")[1]
+
+
+def phase1_keys(commit, rel, cache):
+    """The fact keys (`kbfacts.fact_key`) of the facts the file `rel` (root-relative) held at `commit`; None when
+    there is no commit or the file was not in it. `cache` ({rel: keys}) keeps what it read."""
+    if rel not in cache:
+        code, text, _ = g(kbcommon.HOME, "cat-file", "blob", f"{commit}:{kbcommon.repo_rel(rel)}") if commit else (1, "", "")
+        units = (kbfacts.md_units if rel.endswith(".md") else kbfacts.csv_units)(rel, text) if code == 0 else []
+        cache[rel] = {kbfacts.fact_key(u["text"]) for u in units} if code == 0 else None
+    return cache[rel]
+
+
+def placed_before_phase2(anchor, key, rel, date, commit, cache):
+    """True when an anchor can be trusted as a tool's proof in phase 4: its `verified_utc` is a day before the census
+    `date` (a census runs in one day, so a same-day anchor is phase 1's or phase 2's), or the fact line is the one the
+    phase-1 `commit` held (`phase1_keys`: a reader's rewrite has another key, and no anchor of it predates its edit)."""
+    verified = (anchor.get("verified_utc") or "")[:10]
+    return bool(verified) and verified < date or key in (phase1_keys(commit, rel, cache) or ())
+
+
+def current_passage(doc, anchor, claim, cites=1, placed_before=True):
     """(passage, how) of a fact in the source's current text `doc` (`factdiff.Doc`): the anchor's own passage when it is
-    there word for word (`WORD`), else the best window `Doc.locate` (given the fact's `cites`, the sources it cites) or
-    `Doc.score` gives (`best match`); (None, '') when the page holds none."""
+    there word for word (`WORD`; `PLACED` when `placed_before` is False: the anchor was written after the census's
+    phase-1 commit, so possibly by the reader who rewrote the fact, and proves nothing), else the best window
+    `Doc.locate` (given the fact's `cites`, the sources it cites) or `Doc.score` gives (`best match`); (None, '') when
+    the page holds none."""
     if doc is None:
         return None, ""
     if anchor and anchor.get("status") == "located" and anchor.get("sha") in doc.shas:
-        return doc.window(*doc.shas[anchor["sha"]]), WORD
+        return doc.window(*doc.shas[anchor["sha"]]), WORD if placed_before else PLACED
     win = doc.locate(claim, cites)[0] or doc.score(claim)[0]
     return (doc.window(*win), "best match") if win else (None, "")
 
@@ -1268,14 +1297,17 @@ def current_passage(doc, anchor, claim, cites=1):
 def sample_brief(picked, log, a):
     """The phase-4 brief of the sample `picked` ([(group, row)]): per source its citing facts, each with the passage of
     the source's current text (the factdiff document cache, or a fetch) its anchor names; a source whose every fact is
-    found word for word is agreed by tool, with that proof, and the rest go to the checker with the fact, the passage and
-    the command that reads the source. Returns (text, counts)."""
+    found word for word by an anchor placed before phase 2's edits (`placed_before_phase2`) is agreed by tool, with that
+    proof, and the rest go to the checker with the fact, the passage and the command that reads the source. Returns
+    (text, counts)."""
     srcs, facts, anchors = {r["id"]: r for r in read_sources()}, factdiff.cited_facts(), factdiff.read_anchors()
     plan = {r["id"]: successor(r["id"], srcs) for _, r in picked}
     need = sorted({t for t in plan.values() if facts.get(t) and t in srcs})
     docs = factdiff.fetch_all(need, srcs, a.max_age) if need else {}
     cites = factdiff.cite_counts(facts)
     ctx, tool, check = {"providers": provider.providers(factdiff.ROOT)}, [], []
+    date, phase1 = ql_capture.phase_date(path=log), {}
+    commit = phase1_commit(date)
     for group, r in picked:
         tid = plan[r["id"]]
         d = docs.get(tid)
@@ -1284,7 +1316,9 @@ def sample_brief(picked, log, a):
         for key, rel, line, text in facts.get(tid, []):
             claim = factdiff.fact_text(text)
             anchor = anchors.get((key, rel, tid))
-            passage, how = current_passage(doc, anchor, claim, cites.get((key, rel), 1))
+            before = doc is None or not anchor or anchor.get("status") != "located" \
+                or placed_before_phase2(anchor, key, rel, date, commit, phase1)
+            passage, how = current_passage(doc, anchor, claim, cites.get((key, rel), 1), before)
             got.append({"at": f"{kbcommon.repo_rel(rel)}:{line}", "claim": claim, "passage": passage, "how": how,
                         "anchor": "located" if anchor and anchor.get("status") == "located" else "not located"})
         head = f"{r['id']}  {group}, outcome {r['outcome'] or '-'}, bucket {r['bucket']}"
@@ -1306,7 +1340,6 @@ def sample_brief(picked, log, a):
         out += ["- read:"] + [f"  {c}" for c in read_commands(r, ctx)]
         check.append("\n".join(out))
     n = len(picked)
-    date = ql_capture.phase_date(path=log)
     text = "\n\n".join([SAMPLE_RULES.format(date=date),
                          f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}; the checker's passage judgments "
                          f"run on {STEP_MODELS['check']}",
