@@ -2,7 +2,7 @@
   "id": "BG-shomh4nz",
   "kind": "bug",
   "title": "arch/python-single-package-extras says workspace members are always editable while python/uv-projects says uv sync's --no-editable opts out, and no conflict entry links them",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,

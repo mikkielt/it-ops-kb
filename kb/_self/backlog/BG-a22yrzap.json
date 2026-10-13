@@ -2,7 +2,7 @@
   "id": "BG-a22yrzap",
   "kind": "bug",
   "title": "privacy/gliner-glirel-zero-shot recommends gline-rs, which pins ort =2.0.0-rc.9, while agents/onnx-runtime-rust-ort tells a service to pin =2.0.0-rc.13, and neither names the clash",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,

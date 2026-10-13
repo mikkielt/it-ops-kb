@@ -2,7 +2,7 @@
   "id": "BG-skpnth6v",
   "kind": "bug",
   "title": "agents/codebase-mapping.md omits an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER from the rustc info cache's fingerprint-error cases",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-oyzgvtrg",
   "kind": "bug",
   "title": "arch/buildkit-build-secrets says BUILDX_METADATA_PROVENANCE selects the attestation content, which the docs give only for the --metadata-file output",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,

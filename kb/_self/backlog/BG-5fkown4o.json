@@ -2,7 +2,7 @@
   "id": "BG-5fkown4o",
   "kind": "bug",
   "title": "agents/langgraph.md cites the PyPI project JSON for a pip install form the JSON does not state",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,

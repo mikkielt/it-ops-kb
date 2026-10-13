@@ -2,7 +2,7 @@
   "id": "ST-iqinqq7s",
   "kind": "story",
   "title": "The Bazel --test_timeout fact keeps only the page's words as DOC and moves 'the declared timeout stays' to its DER fact",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,

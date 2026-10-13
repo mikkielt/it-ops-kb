@@ -2,7 +2,7 @@
   "id": "BG-mkw4awdu",
   "kind": "bug",
   "title": "python/maturin-pyo3-wheels' abi3 matrix derivation names manylinux_2_28 tags, though maturin's documented default and the generated workflow's manylinux auto give manylinux2014/2_17",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
