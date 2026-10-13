@@ -2,7 +2,7 @@
   "id": "ST-bp4us2ac",
   "kind": "story",
   "title": "Code that cites kb lines by number (bench_core.py) no longer blocks a content item from inserting a fact",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-e4fm2ovk",
   "priority": "P3",
@@ -45,5 +45,19 @@
     "parked: SP-df2cu4uj close"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise: check.code_citation_errors fails on a file outside a content item's touches when the item inserts a fact line above a line _tools/bench_core.py cites. Run at planning on a scratch copy (bench_core.py, _conflicts.md, ci-and-headless.md): one tagged line inserted at line 11 of ci-and-headless.md raised the citation errors from 3 (files not copied) to 11. The test goes in test_check_programs.py, which already tests code_citation_errors; the choice among anchor, rewrite and touches is the worker's, the check needs one behaviour test of it.",
-  "claimed_by": "orch-e4fm2ovk"
+  "evidence": {
+    "commit": "a07ce1f8ddfacffbf823819b72b4f5fb1e7afc92",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "code_line_citation_moves"
+        ],
+        "exit": 0,
+        "sha256": "86a61f0a72a22faf"
+      }
+    ]
+  }
 }
