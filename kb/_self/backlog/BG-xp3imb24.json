@@ -2,7 +2,7 @@
   "id": "BG-xp3imb24",
   "kind": "bug",
   "title": "A gate whose question names a constant such as DISPATCH_BASE_TOKENS is classed secrets by the word token inside the identifier",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uzwbt63u",
   "priority": "P2",
   "rank": 0,
@@ -72,5 +72,6 @@
     "parked: SP-yojt6y7v run",
     "merged: BG-6rrnzkcp"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens. Merged at the 2026-10-12 draft triage from BG-6rrnzkcp: a blocking gate classes the ops-row value shape 'phase token' as secrets; same defect family (the word token read as a secret outside the without_token_counts exception), one fix in bl_authority; its repro is class_reasons on 'Which phase token does the ops row carry?' with no touches, which must not be secrets. Today both return secrets (run 2026-10-12). Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: class_reasons returns secrets for 'What is census.DISPATCH_BASE_TOKENS?' and for 'Which phase token does the ops row carry?' (reproduces). Recurred in SP-htl7jkrm (2026-10-13): ST-ct2jakvm's gate g1 named JUDGE_REPLY_TOKENS and was classed secrets and made blocking; the worker stopped and was resumed after the orchestrator answered 435 (the measured figure, the only option in the item check's range)."
+  "notes": "SP-4phd36pa close (2026-10-11): ST-bivdc2fa's g1, a choice of topic slugs, was classed secrets and made blocking by the word token inside the slug gitlab/deploy-keys-and-tokens. Merged at the 2026-10-12 draft triage from BG-6rrnzkcp: a blocking gate classes the ops-row value shape 'phase token' as secrets; same defect family (the word token read as a secret outside the without_token_counts exception), one fix in bl_authority; its repro is class_reasons on 'Which phase token does the ops row carry?' with no touches, which must not be secrets. Today both return secrets (run 2026-10-12). Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: class_reasons returns secrets for 'What is census.DISPATCH_BASE_TOKENS?' and for 'Which phase token does the ops row carry?' (reproduces). Recurred in SP-htl7jkrm (2026-10-13): ST-ct2jakvm's gate g1 named JUDGE_REPLY_TOKENS and was classed secrets and made blocking; the worker stopped and was resumed after the orchestrator answered 435 (the measured figure, the only option in the item check's range).",
+  "claimed_by": "orch-uzwbt63u"
 }
