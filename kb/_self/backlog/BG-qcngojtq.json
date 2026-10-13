@@ -1,0 +1,20 @@
+{
+  "id": "BG-qcngojtq",
+  "kind": "bug",
+  "title": "A question that names a version without its v prefix gets coverage none although the kb spells it v2.1.294",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A question naming Claude Code 2.1.294 gets the verdict and fact lines of the same question naming v2.1.294, so a version spelled with or without its v prefix finds the facts that spell it either way",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run(['python3','_tools/rag.py','pack','Did Claude Code 2.1.294 change any key of the claude -p result usage field'],capture_output=True,text=True).stdout;print(o.splitlines()[0]);sys.exit(1 if o.startswith('coverage: none') else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py"
+  ]
+}
