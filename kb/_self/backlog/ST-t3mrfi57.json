@@ -27,6 +27,34 @@
   "depends_on": [
     "ST-2dng4vot"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does anchor --file fetch the source of a fact whose row is unlocated:fetch-error, not-text or gone: from the document cache within --max-age, or always past it? fetch_doc caches failed answers too, so a retry inside --max-age days of the failure would read the cached error and retry nothing.",
+      "options": [
+        "refetch past the cache",
+        "use the cache within --max-age"
+      ],
+      "recommendation": "refetch past the cache",
+      "class": "design",
+      "answer": "refetch past the cache",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When the retry still fails, does anchor --file replace the unlocated row with the new one (new verified_utc) or keep the old row untouched?",
+      "options": [
+        "replace the row, as every other selection does",
+        "keep the old row when its status is unchanged"
+      ],
+      "recommendation": "replace the row, as every other selection does",
+      "class": "design",
+      "answer": "replace the row, as every other selection does",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-htl7jkrm review"
   ],
