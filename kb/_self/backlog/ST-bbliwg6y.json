@@ -2,7 +2,7 @@
   "id": "ST-bbliwg6y",
   "kind": "story",
   "title": "The router broad-lookups probe asks each kind expert's own phrasings, so a narrowed cue that drops a common phrasing fails at its landing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enudabdr",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-lmf4ke4w close"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: kbfacts.routed answers the cites phrasings of S1800 today, and no probe asks them. Run 2026-10-13 on the base: the six phrasings (mention the source, mention source, mention, refer to the source ID, cite the source, names the source id) all route to cites; the check's selector collects no test, so tests.py exits 2 (precheck). Test-only unless a phrasing the probe builds fails: then kbfacts.py is the fix. The probe extends the router_broad_lookups test or adds one id inside the ceiling; the ceiling is the operator's and no gate edits it. Follows BG-s7du27qb."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: kbfacts.routed answers the cites phrasings of S1800 today, and no probe asks them. Run 2026-10-13 on the base: the six phrasings (mention the source, mention source, mention, refer to the source ID, cite the source, names the source id) all route to cites; the check's selector collects no test, so tests.py exits 2 (precheck). Test-only unless a phrasing the probe builds fails: then kbfacts.py is the fix. The probe extends the router_broad_lookups test or adds one id inside the ceiling; the ceiling is the operator's and no gate edits it. Follows BG-s7du27qb.",
+  "claimed_by": "orch-enudabdr"
 }
