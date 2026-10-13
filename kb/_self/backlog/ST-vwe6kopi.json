@@ -1,0 +1,26 @@
+{
+  "id": "ST-vwe6kopi",
+  "kind": "story",
+  "title": "A land run stopped by a fetch timeout records its ops row under the step the stop message names, not rebase",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When git fetch times out inside a landing (KB_GIT_NETWORK_TIMEOUT), the land.step ops row names the same step as the 'land stopped at step' line, so ops and the retrospective read the failed step right (SP-honlhzdc: BG-viwywxml's row said step=rebase exit=1 ms=120519 while land printed 'stopped at step fetch: git fetch did not finish within 120 s')",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_fetch_timeout_ops_step"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-honlhzdc close"
+  ]
+}

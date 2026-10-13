@@ -1,0 +1,28 @@
+{
+  "id": "ST-5bi4vrhi",
+  "kind": "story",
+  "title": "Pool check and pool-row item checks match answer regexes as agent_bench scores them, not with re.I",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_pool exposes the match agent_bench uses to score an answer (re.search with no flags today) and pool check and stale_picks use it, so a regex that fails at scoring, such as a cmpivot timeout regex without (?i) against 'Ten minutes', fails pool check, and item checks over pool rows call it instead of compiling with re.I (SP-honlhzdc: BG-v3fcyl3c's and BG-qnq3pjd2's checks passed with re.I; BG-tkgpxdva)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_check_matches_as_scored"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/agent_bench.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-honlhzdc close"
+  ]
+}

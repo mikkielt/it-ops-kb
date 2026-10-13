@@ -1,0 +1,25 @@
+{
+  "id": "ST-vi55cuw4",
+  "kind": "story",
+  "title": "Two orchestrator rules answer as tested _self questions: finishing a story whose tasks are all done, and KB-Work for a planning commit of several items",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The _self pack answers 'how is a story whose tasks are all done finished' and 'how does a planning commit that changes several item files name them in KB-Work' with coverage good from a tested question each (both weak on 2026-10-13, rules misses of the SP-honlhzdc orchestrator)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;Q=['how is a story whose tasks are all done finished','how does a planning commit that changes several item files name them in KB-Work'];H=[(subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self',q,'--budget','200'],capture_output=True,text=True).stdout.splitlines() or [''])[0] for q in Q];print(H);sys.exit(0 if all(h.startswith('coverage: good (tested question') for h in H) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-honlhzdc close"
+  ]
+}

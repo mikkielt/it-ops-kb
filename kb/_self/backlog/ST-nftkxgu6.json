@@ -1,0 +1,27 @@
+{
+  "id": "ST-nftkxgu6",
+  "kind": "story",
+  "title": "check warns when a goal clause names a landing's outcome and its mapped check never drives a landing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check (or precheck) warns when a committed item's goal clause says a landing or push fails or refuses and the check its clauses mapping names neither runs land, done --commit nor sync on a fixture, so a clause such as BG-viwywxml's 'the landing that closes an entry fails a check' is not credited by a check that only calls check_problems (SP-honlhzdc review, BG-2mdkl622)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_warns_landing_clause_without_land_check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-honlhzdc close"
+  ]
+}
