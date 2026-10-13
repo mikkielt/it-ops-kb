@@ -2,7 +2,7 @@
   "id": "BG-prsp6j2z",
   "kind": "bug",
   "title": "hybrid-retrieval.md states in the present tense that kbfacts.terms reads a SID as a dotted version, which BG-bvyblfnp fixed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-zof4bcok",
   "kind": "bug",
   "title": "agents/doc-lookup-sources.md cites S745 as DOC but its sources: header does not list it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,

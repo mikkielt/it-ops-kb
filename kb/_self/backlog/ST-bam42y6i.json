@@ -2,7 +2,7 @@
   "id": "ST-bam42y6i",
   "kind": "story",
   "title": "codebase-mapping and its rustc-wrapper answer say the rustc -vV spawn fails only when the outermost wrapper is unresolvable",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,

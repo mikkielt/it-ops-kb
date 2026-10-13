@@ -2,7 +2,7 @@
   "id": "BG-xweoljdy",
   "kind": "bug",
   "title": "factdiff.py anchors --stale lists 31 anchors of facts that no longer exist in claude, logs and python articles, which anchor --file leaves because no cited source selects them",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uvz65lvm",
   "priority": "P2",
   "rank": 0,

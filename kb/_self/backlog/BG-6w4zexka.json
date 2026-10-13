@@ -2,7 +2,7 @@
   "id": "BG-6w4zexka",
   "kind": "bug",
   "title": "doc-lookup-sources.md's memdocs no-capture DER rests on the Wayback availability API, which doc-change-detection.md says cannot prove absence",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
