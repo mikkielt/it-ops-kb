@@ -23,37 +23,37 @@ FIELDS = ["scenario", "record", "date", "commit", "claude_code", "kb_topics", "c
 # cache write); a run's cost and its effective input weights read the tier each request's prompt falls in, and each
 # request's cache writes at the TTL they were written for (`usage_sum`). Plus $0.01 per web search (the method of the
 # subagent measurement). Each row's kb fact, all [DOC S2131]; the 1-hour write is also at
-# kb/public/agents/agent-caching.md:23 "1-hour writes cost 2x" (2x the input price) and :27 "Haiku 5.5 is priced by
-# prompt length" (its per-tier 5-minute and 1-hour writes). The quoted words after a citation are what its fact line
-# must still hold: check.py fails when a fact inserted above moves the line away from them.
+# kb/public/agents/agent-caching.md "1-hour writes cost 2x" (2x the input price) and kb/public/agents/agent-caching.md
+# "Haiku 5.5 is priced by prompt length" (its per-tier 5-minute and 1-hour writes). The quoted words after a citation
+# name no line: check.py fails when no fact of the file holds them any more, and a fact inserted above moves nothing.
 PRICE_SOURCE = "S2131"
 PRICE = {
-    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10, 2.0),),  # kb/public/claude/ci-and-headless.md:88 "Haiku 4.5 $1"
-    # kb/public/claude/ci-and-headless.md:91 "Haiku 5.5 list prices"
+    "claude-haiku-4-5": ((None, 1.0, 5.0, 1.25, 0.10, 2.0),),  # kb/public/claude/ci-and-headless.md "Haiku 4.5 $1"
+    # kb/public/claude/ci-and-headless.md "Haiku 5.5 list prices"
     "claude-haiku-5-5": ((100_000, 0.10, 0.50, 0.125, 0.01, 0.20),
                          (None, 0.50, 2.50, 0.625, 0.05, 1.0)),
-    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md:90 "Sonnet 5 list"
+    "claude-sonnet-5": ((None, 2.0, 10.0, 2.5, 0.20, 4.0),),  # kb/public/claude/ci-and-headless.md "Sonnet 5 list"
     # the page's 0.10 read; the cost figure of a Claude Code version before 2.1.296 counted 0.20 (READ_BEFORE), as the
-    # resolved conflict at kb/public/_conflicts.md:745 "Sonnet 5.5 cache-read price" records
-    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10, 4.0),),  # kb/public/claude/ci-and-headless.md:88 "Sonnet 5.5 $2"
-    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md:89 "Opus 5.5 list"
+    # resolved conflict at kb/public/_conflicts.md "Sonnet 5.5 cache-read price" records
+    "claude-sonnet-5-5": ((None, 2.0, 10.0, 2.5, 0.10, 4.0),),  # kb/public/claude/ci-and-headless.md "Sonnet 5.5 $2"
+    "claude-opus-5-5": ((None, 4.0, 20.0, 5.0, 0.20, 8.0),),  # kb/public/claude/ci-and-headless.md "Opus 5.5 list"
 }
 # a model's cache-read price per MTok on the Claude Code versions before the one that took the page's: (first version at
 # the page's price, the price before it). The cost `claude -p` reports is a client-side estimate from the client's own
-# table (kb/public/_conflicts.md:746 "Resolved 2026-10-12"), so a run is priced at its own version's rate, as its
+# table (kb/public/_conflicts.md "Resolved 2026-10-12, as to what"), so a run is priced at its own version's rate, as its
 # `total_cost_usd` is, and `pool verify` compares like with like. A version that is empty or unknown (`?`) is priced at
 # the earlier rate, as resolve_model names the alias's first model for it.
 READ_BEFORE = {"claude-sonnet-5-5": ((2, 1, 296), 0.20)}
 # the TTL a request's cache writes are priced at when its usage carries no per-TTL split (`cache_creation`), by the
-# billing surface of the run (kb/public/agents/agent-caching.md:41 "billing surface"): one hour on a Claude
+# billing surface of the run (kb/public/agents/agent-caching.md "billing surface"): one hour on a Claude
 # subscription, five minutes on an API key. The pool runs on a subscription on this host.
 SURFACE_WRITE_TTL = {"subscription": "1h", "api": "5m"}
 BILLING_SURFACE = "subscription"
 # the alias arms of a run and the model each names from a Claude Code version on; a run's own transcript names the model
 # it used, and that wins: this table only prices a run that reports none. The versions' kb facts: haiku from 2.1.293
-# kb/public/claude/ci-and-headless.md:85 "v2.1.293" [DOC S-ezqg74ki], sonnet from 2.1.284
-# kb/public/claude/ci-and-headless.md:86 "v2.1.284" [DOC S1864], opus from 2.1.280
-# kb/public/claude/ci-and-headless.md:87 "v2.1.280" [DOC S-ezqg74ki, S1864] (no earlier model is stated for opus, so its
+# kb/public/claude/ci-and-headless.md "from Claude Code v2.1.293" [DOC S-ezqg74ki], sonnet from 2.1.284
+# kb/public/claude/ci-and-headless.md "Claude Code v2.1.284 added" [DOC S1864], opus from 2.1.280
+# kb/public/claude/ci-and-headless.md "Claude Code v2.1.280 added" [DOC S-ezqg74ki, S1864] (no earlier model is stated for opus, so its
 # one row covers every version)
 ARMS = ("haiku", "sonnet", "opus")
 ALIAS = {"haiku": (((0,), "claude-haiku-4-5"), ((2, 1, 293), "claude-haiku-5-5")),

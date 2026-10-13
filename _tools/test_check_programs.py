@@ -68,7 +68,7 @@ def test_backlog_check_refuses_programs_outside_the_allowlist(tmp_path):
     assert not marker.exists()
 
 
-def test_check_names_code_kb_citations_that_a_fact_inserted_above_has_moved(tmp_path):
+def test_check_names_code_line_citation_moves_but_not_an_anchored_citation(tmp_path):
     kb = tmp_path / "kb"
     (kb / "fx" / "api").mkdir(parents=True)
     (kb / "fx" / "_root.md").write_text("---\nroot: fx\n---\n", encoding="utf-8")
@@ -86,15 +86,22 @@ def test_check_names_code_kb_citations_that_a_fact_inserted_above_has_moved(tmp_
         f'PRICE = {{"sonnet": 2.0}}  # {cite}:6 "Sonnet 5.5 costs $2"\n'
         f'# {cite}:6-7 "Haiku 4.5 costs" and :7 "Haiku 4.5", but {cite}:5 "Facts" is a heading\n'
         f'FIXTURE = "{cite}:99 \\"nothing\\""\n'
-        f'# {cite}:6 "Sonnet 5" is not Sonnet 5.5; kb/fx/gone.md:1 is no file; kb/_self/rules.md:2 is blank\n',
+        f'# {cite}:6 "Sonnet 5" is not Sonnet 5.5; kb/fx/gone.md:1 is no file; kb/_self/rules.md:2 is blank\n'
+        f'# by anchor: {cite} "Haiku 4.5 costs" and kb/_self/rules.md "Rule two" hold, {cite} "Opus 5.5" and '
+        f'{cite} "Facts" (a heading) and kb/fx/gone.md "Gone" do not\n',
         encoding="utf-8")
-    got = check.code_citation_errors(tmp_path)
-    assert [e.split(" cites ")[1].split(",")[0] for e in got] == [
-        f'{cite}:5 "Facts"', f'{cite}:6 "Sonnet 5"', "kb/fx/gone.md:1", "kb/_self/rules.md:2"], got
-    assert all(e.startswith("_tools/price.py:") for e in got)
+
+    def named():
+        return [e.split(" cites ")[1].split(",")[0] for e in check.code_citation_errors(tmp_path)]
+
+    got = named()
+    assert got == [f'{cite}:5 "Facts"', f'{cite}:6 "Sonnet 5"', "kb/fx/gone.md:1", "kb/_self/rules.md:2",
+                   f'{cite} "Opus 5.5"', f'{cite} "Facts"', 'kb/fx/gone.md "Gone"'], got
+    assert all(e.startswith("_tools/price.py:") for e in check.code_citation_errors(tmp_path))
     art.write_text("\n".join([*article[:5], "- A fact inserted above. [DOC S1]", *article[5:]]) + "\n", encoding="utf-8")
-    moved = [e.split(" cites ")[1].split(",")[0] for e in check.code_citation_errors(tmp_path)]  # :6 holds the new fact
+    moved = named()  # :6 holds the new fact; the anchored citations hold wherever their fact sits
     assert f'{cite}:6 "Sonnet 5.5 costs $2"' in moved and moved.count(f'{cite}:7 "Haiku 4.5"') == 2, moved
+    assert [m for m in moved if m.startswith(f'{cite} "')] == [f'{cite} "Opus 5.5"', f'{cite} "Facts"'], moved
 
 
 def drift_run(monkeypatch, tmp_path, runs):

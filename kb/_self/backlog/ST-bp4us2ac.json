@@ -25,6 +25,22 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does _tools code cite a kb fact an item may insert above, so check.py no longer fails on a moved line: by anchor (kb/...md \"term\" with no line number, held while a fact of the file holds the term), by a tool that rewrites the line numbers, or by listing the citing file in each item's touches? The anchor form also covers every kb/public citation in bench_core.py, not only the two files the goal names.",
+      "options": [
+        "anchor",
+        "rewrite",
+        "touches"
+      ],
+      "recommendation": "anchor",
+      "class": "design",
+      "answer": "anchor",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-df2cu4uj close"
   ],
