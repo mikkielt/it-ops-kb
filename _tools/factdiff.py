@@ -994,15 +994,16 @@ def save_doc(sid, d):
 
 
 _madeup, _pages = {}, {}
-_unanswered, _unanswered_uses = {}, []  # request url -> "HTTP 503 ..." of a search or candidate page that answered an HTTP error; one entry per use
+_unanswered, _unanswered_uses = {}, []  # request url -> "HTTP 503 ..." of a search or candidate page that gave no answer; one entry per use
 
 
 def _http_error(url, status, what):
-    """Record that the search or candidate page `url` answered `status`, an HTTP error: no answer to the passage's search
-    (a 404 or 410 of a candidate page is an absent page, no error). Returns True when it was recorded."""
-    if not status or status == 200 or (what == "candidate page" and status in (404, 410)):
+    """Record that the search or candidate page `url` answered `status`, an HTTP error, or no HTTP answer at all (status
+    0: a network error, the time budget): no answer to the passage's search, whoever leans on it later (a 404 or 410 of
+    a candidate page is an absent page, no error). Returns True when it was recorded."""
+    if status == 200 or (what == "candidate page" and status in (404, 410)):
         return False
-    _unanswered[url] = f"HTTP {status} from the {what} {url.split('?')[0]}"
+    _unanswered[url] = f"{f'HTTP {status}' if status else 'no HTTP answer'} from the {what} {url.split('?')[0]}"
     return True
 
 
@@ -1223,12 +1224,17 @@ def search_urls(fact, anchor, row, src_url, title=""):
         req = tpl.replace("{q}", urllib.parse.quote(q))
         if q not in _searches:
             r = provider.request(req)
-            try:
-                res = json.loads(r["body"]).get("results", []) if r["status"] == 200 else []
-            except ValueError:
-                res = []
-            _searches[q] = [x["url"] for x in res if x.get("url")]
-            _http_error(req, r["status"], "search")
+            res = None  # the provider's result list; None for an answer that is not one (a sign-in page, an error object)
+            if r["status"] == 200:
+                try:
+                    body = json.loads(r["body"])
+                except ValueError:
+                    body = None
+                res = body.get("results") if isinstance(body, dict) else None
+                res = res if isinstance(res, list) else None
+            _searches[q] = [x["url"] for x in res or [] if isinstance(x, dict) and x.get("url")]
+            if not _http_error(req, r["status"], "search") and res is None:
+                _unanswered[req] = f"no result list from the search {req.split('?')[0]}"
         _used_unanswered(req)
         hits = [u for u in _searches[q] if urllib.parse.urlsplit(u).path.rstrip("/") != urllib.parse.urlsplit(src_url).path.rstrip("/")
                 and not urllib.parse.urlsplit(u).path.endswith("/")]  # a hub or landing page holds no passage
