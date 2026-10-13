@@ -95,7 +95,9 @@
         "no: good with a check: line counts as weak, as the knowledge state does"
       ],
       "recommendation": "yes: the verdict as printed decides, the check: line does not refuse",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes: the verdict as printed decides, the check: line does not refuse",
+      "by": "operator"
     },
     {
       "id": "gap-match",
