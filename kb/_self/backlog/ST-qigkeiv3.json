@@ -69,7 +69,9 @@
         "judge-confirmed"
       ],
       "recommendation": "judged",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "judged",
+      "by": "operator"
     }
   ],
   "links": [
