@@ -2,7 +2,7 @@
   "id": "BG-6hb4yabk",
   "kind": "bug",
   "title": "ql_apply's eval gate reads passed and n but not noted, so an auto-applied change that puts a note on an eval good passes it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,6 @@
   "links": [
     "parked: SP-4o3plg4l review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 on the base: both the source-read repro and the planted-gate check (try_fix with run_eval noted = NOTED_BASELINE+1 returns ok=True, no problems) fail (precheck). Follows BG-5fentnzk (ql_apply.py, test_redact.py)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 on the base: both the source-read repro and the planted-gate check (try_fix with run_eval noted = NOTED_BASELINE+1 returns ok=True, no problems) fail (precheck). Follows BG-5fentnzk (ql_apply.py, test_redact.py).",
+  "claimed_by": "orch-enudabdr"
 }
