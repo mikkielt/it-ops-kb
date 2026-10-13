@@ -2,7 +2,7 @@
   "id": "ST-piqs2azs",
   "kind": "story",
   "title": "gate add --do accepts an option whose text holds '=', such as a tests-ceiling answer",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uzwbt63u",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,6 @@
   "links": [
     "parked: SP-m3azo2y7 close"
   ],
-  "notes": "Check 0 also holds the plain form (--do 'a=python3 -c \"x=1\"') that the change must keep accepting; that half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: gate add --do 'x ids=1=ID' with option 'x ids=1' exits 2 with 'OPTION one of the --option values' (reproduces)."
+  "notes": "Check 0 also holds the plain form (--do 'a=python3 -c \"x=1\"') that the change must keep accepting; that half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: gate add --do 'x ids=1=ID' with option 'x ids=1' exits 2 with 'OPTION one of the --option values' (reproduces).",
+  "claimed_by": "orch-uzwbt63u"
 }
