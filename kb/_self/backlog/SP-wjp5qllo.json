@@ -1,0 +1,20 @@
+{
+  "id": "SP-wjp5qllo",
+  "kind": "sprint",
+  "title": "The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling",
+  "status": "planned",
+  "goal": "the slowest tests of test_sync_e2e, test_live_kb and test_leaks each run under 6 s alone, so a worker's whole-suite run keeps its darwin ceiling with sibling workers; factdiff.revalidate's date and its checked_utc stamps name the same UTC day at any hour; lint.py exits non-zero for an argument that selects no article, and lints the article of a kb/<root>/<path> argument; selfdoc.py check exits 0 and code.md counts the seven selfcheck checks; a gate question naming the seconds, darwin or suite's ceiling is classed ceiling",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
