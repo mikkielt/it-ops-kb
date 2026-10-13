@@ -1,0 +1,25 @@
+{
+  "id": "BG-dwxlx7nv",
+  "kind": "bug",
+  "title": "pytest-xdist.md says -n auto counts physical cores without the psutil condition its new macOS fact states",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/python/pytest-xdist.md's -n auto fact says it counts physical cores when psutil is importable, so it agrees with the resolution-order fact and the new macOS fact (one worker per logical CPU without psutil)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;l=open('kb/public/python/pytest-xdist.md',encoding='utf-8').read().splitlines();t=[x for x in l if x.startswith('- `-n auto` uses as many worker processes')];sys.exit(0 if t and 'psutil' in t[0] else 1)"
+    ]
+  },
+  "repro_reason": "the gap is one fact's wording in a kb article; no code path prints it",
+  "touches": [
+    "kb/public/python/pytest-xdist.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-qlpfcgs2 review"
+  ]
+}

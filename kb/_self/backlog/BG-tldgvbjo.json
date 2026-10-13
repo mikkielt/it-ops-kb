@@ -1,0 +1,24 @@
+{
+  "id": "BG-tldgvbjo",
+  "kind": "bug",
+  "title": "code.md says bl_selfcheck.py holds six checks, where run_checks and its docstring hold seven",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/_self/code.md's bl_ module list says bl_selfcheck.py holds the seven checks behind backlog.py selfcheck, as run_checks returns",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/_self/code.md',encoding='utf-8').read();sys.exit(1 if 'the six checks behind' in t else 0)"
+    ]
+  },
+  "repro_reason": "the gap is the wording of one line of a doc; no code path prints it",
+  "touches": [
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-qlpfcgs2 review"
+  ]
+}

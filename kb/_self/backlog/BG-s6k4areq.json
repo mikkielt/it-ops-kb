@@ -1,0 +1,23 @@
+{
+  "id": "BG-s6k4areq",
+  "kind": "bug",
+  "title": "selfcheck's host line over both load limits is cut inside its remedy, so the host-load remedy never shows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_selfcheck.check_host at a load over both LOAD_PER_CORE and SUITE_LOAD_PER_CORE renders through line_of within LINE_MAX with both remedies readable, so the line does not end in [cut]",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_selfcheck as s;r=s.check_host(load=30.0,cores=14);t=s.line_of(r);sys.exit(1 if t.endswith('[cut]') else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_selfcheck.py"
+  ],
+  "links": [
+    "parked: SP-qlpfcgs2 review"
+  ]
+}
