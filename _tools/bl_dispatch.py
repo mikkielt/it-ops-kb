@@ -249,12 +249,13 @@ def siblings(bl, iid):
     return out
 
 
-def goal_text(bl, iid):
+def goal_text(bl, iid, turns=None):
     """What `backlog.py goal ID` prints: the item's /goal condition and the answered gates above it, its `done`
-    command written as `backlog_cmd` writes the project's backlog.py."""
+    command written as `backlog_cmd` writes the project's backlog.py. TURNS, the worker's `--max-turns`, ends the
+    condition with its stop clause; `goal` itself names no number."""
     buf = io.StringIO()
     with contextlib.redirect_stdout(buf):
-        bl_items.cmd_goal(bl, argparse.Namespace(id=iid))
+        bl_items.cmd_goal(bl, argparse.Namespace(id=iid, turns=turns))
     own = "python3 _tools/backlog.py"
     return buf.getvalue().rstrip("\n").replace(f"`{own} done ", f"`{backlog_cmd(bl.root)} done ")
 
@@ -401,7 +402,7 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None):
            *repo_lines(bl, iid, branch),
            f"Scratch directory for throwaway files: {scratch}/ (never /tmp, never the worktree).", "",
            "## Item", head, "", "```json", canonical(it).rstrip("\n"), "```", "",
-           f"Its goal text (`{backlog_cmd(bl.root)} goal {iid}`):", goal_text(bl, iid), ""]
+           f"Its goal text (`{backlog_cmd(bl.root)} goal {iid}`):", goal_text(bl, iid, turns), ""]
     ext = external_lines(it)
     if ext:
         out += ["External tracker ids:", *[f"- {line}" for line in ext], ""]
