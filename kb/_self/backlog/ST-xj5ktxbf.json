@@ -2,7 +2,7 @@
   "id": "ST-xj5ktxbf",
   "kind": "story",
   "title": "Review sprint: Content fixes: answers, conflicts, gaps and source rows say what holds now",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-ilqhjn3k"
 }
