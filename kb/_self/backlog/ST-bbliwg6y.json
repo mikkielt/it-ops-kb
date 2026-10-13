@@ -27,6 +27,22 @@
   "depends_on": [
     "BG-s7du27qb"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the router_broad_lookups probe ask each kind expert's own phrasings (where it lives, how many)? Built from the kb: a cited source id of each shape (S-xxxxxxxx, S1800) with mention, refer to, name, cite and nothing, the source, source, the source id, source id before the id, plus used by, mentioned in, referenced by, who cites; a decision row of each status; each domain and the kb for count; the first 6 open gap and 6 conflict entries' titles with each cue word; a planted narrowed CITE_CUE",
+      "options": [
+        "extend the existing test, no new test id",
+        "a new test id",
+        "every gap and conflict entry, not the first 6"
+      ],
+      "recommendation": "extend the existing test, no new test id",
+      "class": "design",
+      "answer": "extend the existing test, no new test id",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-lmf4ke4w close"
   ],
