@@ -38,7 +38,9 @@
         "300"
       ],
       "recommendation": "435",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "435",
+      "by": "operator"
     }
   ],
   "links": [
