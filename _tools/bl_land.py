@@ -20,11 +20,12 @@ from pathlib import Path
 import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
-    ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, external_description,
-    clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line, main_worktree_spool, need, rel_dir,
-    repositories, research_touches, run, say, scope, setting, split_touch, waits, worker_dir,
+    ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
+    external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line,
+    main_worktree_spool, need, rel_dir, repositories, research_touches, run, say, scope, setting, split_touch, waits,
+    worker_dir,
 )
-from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
+from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, other_clone, trivial_command
 
 
 def item_commits(root, ids):
@@ -395,22 +396,108 @@ def research_without_facts(it):
     return bool(it.get("kind") == "story" and it.get("goal_research") and NO_OUTSIDE_FACTS.search(it.get("notes") or ""))
 
 
+QUESTION_LEAD_WORDS = 8  # a lead-in of at most this many words before `: ` is no part of a narrowed goal's question
+TOUCH_ROOT = re.compile(r"kb/([^/*?\[\]]+)/")  # a touch inside a named kb root (`kb/public/**`: root `public`)
+COVERAGE_ORDER = ("none", "weak", "good")
+
+
+def goal_questions(goal):
+    """The questions a narrowed goal names: each sentence of the goal that ends in `?`, a lead-in of up to
+    QUESTION_LEAD_WORDS words ending in `: ` left off, in order, each once. The goal is cut where `goal_clauses` cuts
+    it, but a question is read whole: a piece that names no question is joined to the next across a `, and ` (a
+    question's own comma-and, `which item ..., and what does it print?`) and dropped at a `; `, which ends a clause.
+    A goal with no such sentence (the default goal of a research story, which `new sprint` files) names none."""
+    parts = re.split(f"({CLAUSE_SPLIT.pattern})", str(goal or ""))
+    out, cur = [], ""
+    for n in range(0, len(parts), 2):
+        cur = parts[n] if not cur else cur + parts[n - 1] + parts[n]
+        sentences = [x.strip() for x in re.split(r"(?<=\?)\s+", cur.strip()) if x.strip()]
+        tail = sentences.pop() if sentences and not sentences[-1].endswith("?") else ""  # the text a `?` has not ended
+        for piece in sentences:
+            lead, sep, rest = piece.partition(": ")
+            if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS:
+                piece = rest.strip()
+            out.append(piece)
+        joins = n + 2 < len(parts) and not parts[n + 1].startswith(";")
+        cur = tail if joins else ""
+    return list(dict.fromkeys(out))
+
+
+def research_roots(it):
+    """The kb roots an item's touches name (`kb/public/**`: `public`), in order; [] when none does, which reads every
+    root."""
+    found = (TOUCH_ROOT.match(t) for t in it.get("touches") or [] if isinstance(t, str))
+    return list(dict.fromkeys(m.group(1) for m in found if m))
+
+
+def question_coverage(question, roots):
+    """(verdict, gap, error): the best coverage of QUESTION over ROOTS (None: every root), `good`, `weak` or `none`
+    (`kbfacts.pack`'s verdict, the one `rag.py pack` prints); GAP, the `path:line` of an open `_gaps.md` entry whose
+    title holds the question's key words (`kbfacts._gap_items`, the entry a `kb lacks:` route reads) or ''; ERROR,
+    why the pack could not run, with the verdict `none`, or ''."""
+    import kbfacts
+    best, gap = "none", ""
+    try:
+        for root in roots or [None]:
+            verdict = kbfacts.pack(question, root=root)["verdict"]
+            if COVERAGE_ORDER.index(verdict) > COVERAGE_ORDER.index(best):
+                best = verdict
+            if not gap and verdict != "good":
+                items = kbfacts._gap_items(question, None, root, False)
+                gap = "{}:{}".format(*items[0]["key"]) if items else ""
+    except Exception as ex:  # a kb the pack cannot read proves nothing
+        return "none", "", f"the pack could not run: {type(ex).__name__}: {ex}"
+    return best, gap, ""
+
+
+def unanswered_questions(bl, it):
+    """([question] of the narrowed goal's questions that the kb leaves unanswered, a line saying why nothing was read
+    or ''): a question is answered when its coverage in the roots the touches name (every root with none) is `good`,
+    or an open gap entry names it. Nothing is read, and the line says so, when the project's `kb_root`
+    setting is empty (it is no kb), when `bl` is another clone than the one these tools run from (its pack reads this
+    clone's kb), and when the goal names no question. Each question read is said on a line of its own."""
+    if not setting("kb_root"):
+        return [], "coverage not read: the project's kb_root is empty"
+    if other_clone(bl):
+        return [], "coverage not read: --root names another clone, whose kb this process does not read"
+    questions = goal_questions(it.get("goal"))
+    if not questions:
+        return [], "coverage not read: the goal names no question (a sentence ending in `?`)"
+    roots = research_roots(it)
+    left = []
+    for q in questions:
+        verdict, gap, error = question_coverage(q, roots)
+        answered = verdict == "good" or bool(gap)
+        said = f"{verdict} + gap entry {gap}" if gap else f"{verdict} ({error})" if error else verdict
+        say(f"  {'ok  ' if answered else 'FAIL'} {said}: {q}")
+        if not answered:
+            left.append(q)
+    return left, ""
+
+
 def cmd_researched(bl, a):
     """The goal research story's check (bl_base.RESEARCH_CHECKS): exit 0 once its research is written, by done's own
     rules, a work commit on HEAD naming it or one of its descendants (`item_commits`) or its notes' `No outside facts:
-    <reason>` (`research_without_facts`); exit 1 before. Read-only."""
+    <reason>` (`research_without_facts`), and each question its narrowed goal names (`goal_questions`) is answered in
+    the kb (`unanswered_questions`); exit 1 before. Read-only."""
     iid = need(bl, a.id)
     it = bl.items[iid]
     if research_without_facts(it):
-        say(f"researched {bl.label(iid)}: its notes say No outside facts")
-        return 0
-    commits = item_commits(bl.root, [iid] + bl.descendants(iid))
-    if commits:
-        say(f"researched {bl.label(iid)}: {len(commits)} work commit(s), the first {next(iter(commits))[:10]}")
-        return 0
-    say(f"not researched {bl.label(iid)}: no commit on HEAD carries KB-Work: {iid} and changes a file other than item "
-        "files, and its notes hold no `No outside facts: <reason>`")
-    return 1
+        proof = "its notes say No outside facts"
+    else:
+        commits = item_commits(bl.root, [iid] + bl.descendants(iid))
+        if not commits:
+            say(f"not researched {bl.label(iid)}: no commit on HEAD carries KB-Work: {iid} and changes a file other "
+                "than item files, and its notes hold no `No outside facts: <reason>`")
+            return 1
+        proof = f"{len(commits)} work commit(s), the first {next(iter(commits))[:10]}"
+    left, skipped = unanswered_questions(bl, it)
+    if left:
+        say(f"not researched {bl.label(iid)}: {len(left)} question(s) of its goal the kb leaves unanswered (a FAIL line "
+            "above; coverage good, or an open _gaps.md entry whose title holds the question's key words, answers one)")
+        return 1
+    say(f"researched {bl.label(iid)}: {proof}" + (f"; {skipped}" if skipped else ""))
+    return 0
 
 
 def is_whole_suite(argv):
