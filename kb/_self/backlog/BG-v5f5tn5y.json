@@ -2,7 +2,7 @@
   "id": "BG-v5f5tn5y",
   "kind": "bug",
   "title": "The freshness benchmark's p95 uses round(), which rounds half to even, so the rank is one low for some sample sizes",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-e4fm2ovk",
   "priority": "P3",

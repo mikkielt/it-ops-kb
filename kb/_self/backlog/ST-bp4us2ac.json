@@ -2,7 +2,7 @@
   "id": "ST-bp4us2ac",
   "kind": "story",
   "title": "Code that cites kb lines by number (bench_core.py) no longer blocks a content item from inserting a fact",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-e4fm2ovk",
   "priority": "P3",

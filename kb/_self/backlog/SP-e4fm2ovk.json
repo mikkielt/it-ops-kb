@@ -2,7 +2,7 @@
   "id": "SP-e4fm2ovk",
   "kind": "sprint",
   "title": "Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report",
-  "status": "planned",
+  "status": "active",
   "goal": "the freshness benchmark's p95 takes the nearest rank, ceil(0.95 n), not a half-to-even round; the agent benchmark's router arm revalidates stale sources only when a flag asks, so its times compare with earlier rows; a pool run starts no run that its --max-usd cap would pass counting the runs in flight, and its dry run prices each kind at its own mean cost; the 2026-10-12 comparison in benchmarks.md carries its six corrected figures and claims, and its Since section names the changes behind the kb-lookup-agent, partial and retrieval figures; a content item adds or removes a line that _tools code cites by number without check.py failing outside its touches",
   "gates": [
     {
