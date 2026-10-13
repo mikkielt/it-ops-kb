@@ -2,7 +2,7 @@
   "id": "BG-im4573w7",
   "kind": "bug",
   "title": "_answers.md still calls --max-budget-usd a hard cost cap and tags the archived memdocs as DOC on the dead rows S-rgpijsmb and S-yuwxbqz3",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
@@ -57,5 +57,36 @@
     "parked: SP-df2cu4uj review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: line 652 of kb/public/_answers.md still reads 'hard cost cap, --max-budget-usd' (repro exits 1); QK-gone-memdocs-five-claude-code-pages-cost-cap (line 3145) already records that S1824 says spend can pass the cap and that memdocs answers 404, so the correction cites it.",
-  "claimed_by": "orch-ilqhjn3k"
+  "evidence": {
+    "commit": "3c709c11f3d1933d97da9f8baae8e81cab497edd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/public/_answers.md',encoding='utf-8') if '--max-budget-usd' in l and 'pass the cap' in l and '2026-10' in l];print(len(ls));sys.exit(0 if ls else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/_answers.md',encoding='utf-8').read();s=t.split('## QK-kb-need-know-before-licence-census.')[1].split(chr(10)+'## ')[0];ls=[l for l in s.split(chr(10)) if '2026-10' in l and '404' in l and ('S-rgpijsmb' in l or 'S-yuwxbqz3' in l)];print('dated 404 correction lines naming the dead rows:',len(ls));sys.exit(0 if ls else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c2948c539cc81759"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(1 if 'hard cost cap, \\x60--max-budget-usd\\x60' in open('kb/public/_answers.md', encoding='utf-8').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
