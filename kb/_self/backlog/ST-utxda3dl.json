@@ -2,7 +2,7 @@
   "id": "ST-utxda3dl",
   "kind": "story",
   "title": "census.py brief carries none of the rules that hold throughout phase 2 (paraphrase, placeholders only, no submit_feedback, read the full page)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-htl7jkrm",
   "priority": "P2",
@@ -38,5 +38,28 @@
     "parked: SP-uwkr7iyl review"
   ],
   "notes": "Premise: BRIEF_RULES (_tools/census.py) holds none of the phase-2 rules the kb-census skill states at lines 34-35. Premise run 2026-10-12: import census, BRIEF_RULES holds none of submit_feedback, 25 words, placeholder, paraphras; reproduces (the goal's line 934 is now 1869). The skill needs no edit: the brief gains the rules, and the skill is the source it reads them from. Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-htl7jkrm"
+  "evidence": {
+    "commit": "a3e63b18a866634736f5d142ccdbcd95467d727c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import census; r = census.BRIEF_RULES.lower(); sys.exit(0 if all(w in r for w in ('submit_feedback', '25 words', 'placeholders', 'paraphrase')) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_brief_carries_phase2_rules"
+        ],
+        "exit": 0,
+        "sha256": "350e39b47349150f"
+      }
+    ]
+  }
 }
