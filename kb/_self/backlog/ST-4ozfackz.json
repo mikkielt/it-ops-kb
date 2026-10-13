@@ -2,7 +2,7 @@
   "id": "ST-4ozfackz",
   "kind": "story",
   "title": "Tested _self eval rows for the --do split rule and the token-count identifier and phase-token exceptions",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,18 @@
     "parked: SP-uzwbt63u review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 1 of 15, \"Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: no row of kb/_self/_retrieval/lookup_eval.csv holds 'longest', 'phase token' and '_tokens' together, so the split rule and the TOKENS-constant and phase-token exceptions have no tested question; run at plan 2026-10-13: the item's check exits 1 on base (reproduces).",
-  "claimed_by": "orch-7ff7c5ui"
+  "evidence": {
+    "commit": "16dd913008549f2e38bb7482ed5275de7ad84563",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, sys; rows = list(csv.reader(open('kb/_self/_retrieval/lookup_eval.csv', encoding='utf-8'))); q = ' '.join(' '.join(r) for r in rows).lower(); sys.exit(0 if 'longest' in q and 'phase token' in q and '_tokens' in q else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
