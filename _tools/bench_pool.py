@@ -529,9 +529,13 @@ def design_section():
     return out
 
 
-def gap_section(home, seed):
-    """Open entries of the gaps ledger (tagged UNK, with no note line kbfacts.OPEN_GAP reads under them: the router's
-    reader, so the pool and the router agree on what is open), asked as topics."""
+def gap_source(title):
+    return "_gaps.md#" + hashlib.sha1(title.encode("utf-8")).hexdigest()[:8]
+
+
+def open_gaps(home):
+    """[(title, domain)] of the open entries of the gaps ledger (tagged UNK, with no note line kbfacts.OPEN_GAP reads
+    under them: the router's reader, so the pool and the router agree on what is open)."""
     import kbfacts
     lines = (Path(home) / "kb" / "public" / "_gaps.md").read_text(encoding="utf-8").splitlines()
     entries, cur = [], None
@@ -543,7 +547,7 @@ def gap_section(home, seed):
             cur.append(ln)
         else:
             cur = None
-    open_gaps = []
+    found = []
     for e in entries:
         text = " ".join(x.strip() for x in e)
         m = re.match(r"- \*\*(.+?)\*\*", e[0])
@@ -552,10 +556,34 @@ def gap_section(home, seed):
         title = re.sub(r"^(Still open|Narrowed, not closed):\s*", "", m.group(1)).strip(" .:*")
         topic = re.search(r"\(topic: ([\w./-]+)\)", text)
         if 12 <= len(title) <= 160:
-            open_gaps.append((title, domain_of(topic.group(1)) if topic else "gaps"))
-    picked = rng_for(seed, "gap").sample(sorted(set(open_gaps)), min(PLAN["gap"], len(set(open_gaps))))
-    return [row("gap", dom, "original", "_gaps.md#" + hashlib.sha1(t.encode("utf-8")).hexdigest()[:8],
-                f"What does the kb say about {t[0].lower() + t[1:]}?", [GAP_CHECK], "web") for t, dom in sorted(picked)]
+            found.append((title, domain_of(topic.group(1)) if topic else "gaps"))
+    return sorted(set(found))
+
+
+def gap_section(home, seed):
+    """Open entries of the gaps ledger (`open_gaps`), asked as topics."""
+    entries = open_gaps(home)
+    picked = rng_for(seed, "gap").sample(entries, min(PLAN["gap"], len(entries)))
+    return [row("gap", dom, "original", gap_source(t), f"What does the kb say about {t[0].lower() + t[1:]}?", [GAP_CHECK], "web")
+            for t, dom in sorted(picked)]
+
+
+def gap_problems(rows, home=HOME):
+    """One line per defect of the gap rows of a pool file (`rows`): an entry of `_gaps.md` that is no longer open (closed,
+    narrowed or gone: its source hash names none of `open_gaps`), and a question whose pack no longer prints the route
+    `web`. A defective row is redrawn by `pool build`."""
+    mine = [r for r in rows if r.get("kind") == "gap"]
+    if not mine or not (Path(home) / "kb" / "public" / "_gaps.md").is_file():
+        return []
+    now = {gap_source(t) for t, _ in open_gaps(home)}
+    out = [f"{r['id']}: its entry {r['source']} is no longer open in _gaps.md (closed, narrowed or gone); `pool build` "
+           f"redraws the gap rows" for r in mine if r["source"] not in now]
+    for r in mine:
+        route, _ = scenario_pack(r["question"])
+        if route != "web":
+            seen = "a check: line and no route:" if route == "check" else route
+            out.append(f"{r['id']}: expected route web but the pack prints {seen} for its question (gap: {r['question']})")
+    return out
 
 
 def articles_of(home):
@@ -892,7 +920,8 @@ def question_of(r, home=HOME):
 
 
 def check_problems(rows, home=HOME, querylog=False):
-    """One line per defect of a pool file's rows: a check missing or not a regex, a held-out row with text, a leak."""
+    """One line per defect of a pool file's rows: a check missing or not a regex, a held-out row with text, a leak, a
+    scenario row (`scenario_problems`) or a gap row (`gap_problems`) the kb no longer agrees with."""
     out = []
     ids = set()
     heldout = {c["id"]: c["question"] for c in read_csv(Path(home) / HELDOUT_FILE)} if (Path(home) / HELDOUT_FILE).is_file() else {}
@@ -933,6 +962,7 @@ def check_problems(rows, home=HOME, querylog=False):
         out += count_problems(rows)
         out += [f"{r['id']}: query-log text in a public file" for r in rows if r["kind"] == "querylog"]
         out += scenario_problems(rows, home)
+        out += gap_problems(rows, home)
     return out
 
 
