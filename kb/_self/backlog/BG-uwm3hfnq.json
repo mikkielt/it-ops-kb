@@ -2,7 +2,7 @@
   "id": "BG-uwm3hfnq",
   "kind": "bug",
   "title": "claude/ci-and-headless.md says a Sonnet 5.5 record from Claude Code 2.1.295 or older is re-priced at $0.10, while bench_core.READ_BEFORE keeps it at $0.20",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "priority": "P1",
   "rank": 0,
@@ -28,5 +28,6 @@
   "touches": [
     "kb/public/claude/ci-and-headless.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
-  ]
+  ],
+  "claimed_by": "orch-ilqhjn3k"
 }
