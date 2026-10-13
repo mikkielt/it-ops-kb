@@ -46,7 +46,7 @@
       "recommendation": "sibling-lock-file: O_EXCL file _sources.csv.lock beside the sources file, a lock older than 30 s cleared by rename-claim, refused after 60 s (exit 2)",
       "class": "design",
       "answer": "sibling-lock-file: O_EXCL file _sources.csv.lock beside the sources file, a lock older than 30 s cleared by rename-claim, refused after 60 s (exit 2)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -59,7 +59,7 @@
       "recommendation": "merged-id: a helper called from the existing census test id in test_redact.py, whose name gains the clause (the file's own pattern for kbid and census scenarios)",
       "class": "querylog",
       "answer": "merged-id: a helper called from the existing census test id in test_redact.py, whose name gains the clause (the file's own pattern for kbid and census scenarios)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
