@@ -5,7 +5,7 @@ benchmarks.py registers these scenarios in SCENARIOS and holds the command line;
 (kb/_self/code.md, Layout and Imports; the scenarios are described in kb/_self/reports/benchmarks.md). This
 module imports no facade.
 """
-import collections, contextlib, json, random, re, shutil, statistics, subprocess, sys, threading, time, urllib.parse, uuid
+import collections, contextlib, json, math, random, re, shutil, statistics, subprocess, sys, threading, time, urllib.parse, uuid
 from pathlib import Path
 
 from bench_core import (HOME, TOOLS, Skip, claude_json, mcp_session, no_plugin_env, stat_rows, time_runs)
@@ -329,7 +329,7 @@ def fresh_rows(b, per_q, counts, pool_rows, note):
         walls = sorted(q["wall"] for q in mine)
         if walls and (case == "all" or case in hosts):
             b.row("freshness", case, "current", "median_s", statistics.median(walls), len(walls))
-            b.row("freshness", case, "current", "p95_s", walls[max(0, int(round(0.95 * len(walls))) - 1)], len(walls))
+            b.row("freshness", case, "current", "p95_s", walls[max(0, math.ceil(0.95 * len(walls)) - 1)], len(walls))
     walls = [q["wall"] for q in per_q]
     b.row("freshness", "all", "current", "questions", len(per_q), len(per_q), note=f"of {len(pool_rows)} pool rows")
     b.row("freshness", "all", "current", "max_s", max(walls), len(per_q))
