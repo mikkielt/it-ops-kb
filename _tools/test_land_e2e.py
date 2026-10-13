@@ -467,24 +467,31 @@ def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, ca
     assert landed() == []
 
 
-def orphan_in(cwd, log, seconds):
-    """The pid of a python process that sleeps SECONDS in the directory CWD, its standard output appended to LOG and its
-    parent (the launcher that started it) already gone: what a session-end hook's distill is for a few seconds."""
+def orphan_in(cwd, log, release, give_up=120):
+    """The pid of a python process that stays in the directory CWD until the file RELEASE exists (or GIVE_UP seconds
+    pass), its standard output appended to LOG and its parent (the launcher that started it) already gone: what a
+    session-end hook's distill is while land looks at it. It ends on the test's signal, never after a fixed time, so a
+    host too loaded to look within a second still finds it there."""
+    stay = ("import os, sys, time; end = time.time() + float(sys.argv[2])\n"
+            "while not os.path.exists(sys.argv[1]) and time.time() < end: time.sleep(0.05)")
     launcher = ("import subprocess, sys; log = open(sys.argv[2], 'ab'); p = subprocess.Popen([sys.executable, '-c', "
-                "'import time; time.sleep(' + sys.argv[3] + ')'], cwd=sys.argv[1], stdin=subprocess.DEVNULL, "
+                "sys.argv[5], sys.argv[3], sys.argv[4]], cwd=sys.argv[1], stdin=subprocess.DEVNULL, "
                 "stdout=log, stderr=log, start_new_session=True); print(p.pid)")
-    started = subprocess.run([sys.executable, "-c", launcher, str(cwd), str(log), str(seconds)], capture_output=True,
-                             text=True)
+    started = subprocess.run([sys.executable, "-c", launcher, str(cwd), str(log), str(release), str(give_up), stay],
+                             capture_output=True, text=True)
     return int(started.stdout.strip())
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
 class TestHookWait:
-    def test_land_waits_hook_of_a_finished_session_then_removes_its_worktree_and_multirepo_land_cleans_per_repository(
+    def test_land_waits_hook_process_outlives_a_slow_look_of_a_finished_session_then_removes_its_worktree_and_multirepo_land_cleans_per_repository(
             self, tmp_path, capsys, monkeypatch):
         """The step of `land` that frees a finished worker's worktree, on a real worktree whose only process is a run
-        its session's end hook started: it waits for it, removes the worktree, and says so."""
+        its session's end hook started: it waits for it, removes the worktree, and says so. The process stays until
+        land has looked at its standard output (the file `release`, made after that look), however long the look
+        takes on a loaded host."""
         import bl_land
+        import bl_procs
         repo = Repo(tmp_path / "clone")
         os.makedirs(repo.path)
         repo.git("init", "-q", "-b", "main")
@@ -494,7 +501,16 @@ class TestHookWait:
         repo.git("worktree", "add", "-q", "-b", "work/ST-00000001", str(worker))
         log = Path(repo.file("_cache/querylog/distill.log"))  # the standard output of the run a SessionEnd starts
         log.parent.mkdir(parents=True)
-        pid = orphan_in(worker, log, 1)
+        release = tmp_path / "land-has-looked"
+        looked = bl_procs.hook_pids
+
+        def look(root, pids, bases=None):
+            found = looked(root, pids, bases)
+            release.write_text("", encoding="utf-8")  # the orphan may end now: land has read what it holds
+            return found
+
+        monkeypatch.setattr(bl_procs, "hook_pids", look)
+        pid = orphan_in(worker, log, release)
         try:
             why = bl_land.release_worker_worktree(Path(repo.path), worker, None, "work/ST-00000001")
         finally:
