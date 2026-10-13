@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import subprocess,sys;r=subprocess.run(['python3','_tools/backlog.py','goal','BG-i4fxvd2h'],capture_output=True,text=True);sys.exit(1 if r.returncode or 'stop after 60 turns' in r.stdout else 0)"
+      "import re,subprocess,sys;r=subprocess.run(['python3','_tools/backlog.py','goal','BG-i4fxvd2h'],capture_output=True,text=True);sys.exit(1 if r.returncode or re.search(r'or stop after \\d+ turns\\s*$',r.stdout) else 0)"
     ]
   },
   "checks": [
