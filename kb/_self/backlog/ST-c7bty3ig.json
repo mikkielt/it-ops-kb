@@ -44,6 +44,21 @@
   "depends_on": [
     "ST-gv2acucc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The lookup's content-date pass of confirmable: state it in tools.md and its eval row, or drop it in confirmable so the baseline must be no newer?",
+      "options": [
+        "state the pass in tools.md and the eval row",
+        "drop the pass in confirmable and add a lookup case"
+      ],
+      "recommendation": "state the pass in tools.md and the eval row",
+      "class": "design",
+      "answer": "state the pass in tools.md and the eval row",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-djl7za6x review"
   ],
