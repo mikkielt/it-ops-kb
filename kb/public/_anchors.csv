@@ -10919,6 +10919,12 @@ ee334c5549de,python/interpreter-startup.md,S-dabwnzz5,unlocated:no-match,,,,,202
 f0c169bcd9c3,python/interpreter-startup.md,S-j7sjakc5,located,,none;return;stder;string;sys;sys.stder;fals;quiet,8868f80511d6ef27,"If quiet is 0 or 1, and doraise is false, the default behaviour is enabled: an error string is written to sys.stderr, and the function",2026-10-10
 fd385ca5aec7,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
 fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,python_cpu_count;overrid;cpu_count;cpu;count;3.13;python,2530d652d55ded52,".. versionchanged:: 3.13 If :option:-X cpucount <-X> is given or :envvar:PYTHONCPUCOUNT is set, :func:cpucount returns the override value n.",2026-10-10
+f1605ea7890b,python/maturin-pyo3-wheels.md,S-sne3yj7b,located,maturin-action > Inputs,auto;compatibl;control;ignor;lowest;other;publish;tag,9457792d2ec05030,"Control the manylinux platform tag on linux, ignored on other platforms, use auto to build for lowest compatible",2026-10-13
+f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-c6fbhzyz,unlocated:no-match,,,,,2026-10-13
+f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-hisnadiu,unlocated:no-match,,,,,2026-10-13
+f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-pyhwnq4g,unlocated:no-match,,,,,2026-10-13
+f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-sne3yj7b,unlocated:no-match,,,,,2026-10-13
+f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,2026-10-13
 1ec7c93c2713,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10
 3dc321aef61e,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
 3dc321aef61e,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10

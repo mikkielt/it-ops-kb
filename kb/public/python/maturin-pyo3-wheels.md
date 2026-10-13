@@ -96,6 +96,9 @@ article records the vendor statements; the project's choices are not recorded he
   `manylinux_2_28_x86_64`; aarch64 uses `ghcr.io/rust-cross/manylinux2014-cross:aarch64` or
   `ghcr.io/rust-cross/manylinux_2_28-cross:aarch64`; the `container` input overrides this and
   `off` builds on the host. Official manylinux images for non-x86 architectures need QEMU. [DOC S-sne3yj7b]
+- maturin-action's `manylinux` input controls the Linux platform tag and is ignored on other
+  platforms; `auto` builds for the lowest compatible tag, and it defaults to `auto` for the `publish`
+  command. [DOC S-sne3yj7b]
 - `maturin generate-ci github > .github/workflows/CI.yml` writes a GitHub Actions workflow (GitHub is
   the only CI provider listed); the flags `--platform`, `--pytest`, `--zig` and `--skip-attestation`
   are marked deprecated in favour of `[tool.maturin.generate-ci.github]` in `pyproject.toml`.
@@ -123,11 +126,16 @@ article records the vendor statements; the project's choices are not recorded he
   crate as python packages to pypi"), while the guide's tutorial points to `uv publish` or
   `twine upload`. [CODE S-xpr6ww5t: src/main.rs#Command::Publish]
 - Derivation for a Linux x86_64, Linux aarch64, macOS arm64 matrix with `abi3-py39`: three native
-  wheel builds named `cp39-abi3-<platform tag>` (for example `manylinux_2_28_x86_64`,
-  `manylinux_2_28_aarch64`, `macosx_11_0_arm64`) plus one sdist, each wheel covering CPython 3.9 and
-  newer GIL-enabled builds. The platform tags are inferred from the examples above, not stated for
-  these exact targets. [DER S-pyhwnq4g, S-c6fbhzyz, S-yfykoru4: abi3 naming and manylinux tagging
-  pattern applied to the three targets]
+  wheel builds named `cp39-abi3-<platform tag>` plus one sdist, each wheel covering CPython 3.9 and
+  newer GIL-enabled builds. The Linux tags are the lowest compatible manylinux tag, which is the
+  documented default without `--compatibility` and with maturin-action's `manylinux: auto`, so
+  `manylinux2014` (`manylinux_2_17`) when the library needs no newer glibc, for example
+  `manylinux_2_17_x86_64` and `manylinux_2_17_aarch64`; `manylinux_2_28` tags follow only from
+  `--compatibility manylinux_2_28` or `manylinux: 2_28`. The macOS tag `macosx_11_0_arm64` is
+  inferred from the `macos-deployment-target = "11.0"` example for `aarch64-apple-darwin`; the pages
+  read state neither a default deployment target nor the tag for this target. [DER S-pyhwnq4g,
+  S-c6fbhzyz, S-sne3yj7b, S-hisnadiu, S-yfykoru4: abi3 naming and manylinux tagging pattern applied
+  to the three targets]
 - A `universal2` macOS wheel (`--target universal2-apple-darwin`) is not mentioned in the maturin
   guide at 1.15.0 that was read, so whether and how maturin produces one is not confirmed here. [UNK]
 
