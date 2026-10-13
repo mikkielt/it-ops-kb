@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Research the sprint goal's questions the kb does not answer well: (Q2, none) what the apply gate checks before a change to the eval stays, noted above rag.NOTED_BASELINE included; (Q3, weak) when a pack prints the priced check note for a how-much question; (Q4, weak) how the router's ledger scan reads a ledger file for a gap-cued question; (Q5, weak) which phrasings route a question to the cites expert. The rest, the dated notes that settle a _gaps.md entry for the research queue, is good. All four are rules of the _self docs the sprint's own items rewrite (querylog.md, tools.md), no fact of an official source: its done needs 'No outside facts: the four are rules questions of _self docs that BG-6hb4yabk, BG-apytw7fo, BG-s7du27qb and ST-bbliwg6y rewrite'. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [

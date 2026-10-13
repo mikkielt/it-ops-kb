@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "ql_apply's eval gate reads passed and n but not noted, so an auto-applied change that puts a note on an eval good passes it",
   "status": "draft",
+  "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "ql_apply's gate refuses a change whose rag.run_eval result has noted above rag.NOTED_BASELINE, as rag.py eval does (ST-6s4ff6fa added noted to run_eval; found by the SP-4o3plg4l review)",
+  "goal": "ql_apply's gate refuses a change whose rag.run_eval result has noted above rag.NOTED_BASELINE, as rag.py eval does (ST-6s4ff6fa added noted to run_eval, found by the SP-4o3plg4l review)",
   "repro": {
     "run": [
       "python3",
@@ -15,7 +16,25 @@
     ]
   },
   "repro_reason": "the gate's refusal needs an auto-applied change that raises noted on a fixture store; the repro reads whether ql_apply reads noted at all",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys,tempfile;sys.path.insert(0,'_tools');import rag,ql_apply;g=ql_apply.Gate();ev=lambda n:{'n':1,'passed':1,'noted':n,'rows':[{'id':'EV-x','ok':True,'failed':[],'chars':10}]};rag.run_eval=lambda *a,**k:ev(rag.NOTED_BASELINE);base=g.measure();p=pathlib.Path(tempfile.mkdtemp())/'e.csv';p.write_text(','.join(ql_apply.CSV_HEADERS['eval'])+'\\n');rag.run_eval=lambda *a,**k:ev(rag.NOTED_BASELINE+1);ok,why=ql_apply.try_fix({},['EV-y','question','a.md','good',''],{'eval':p},g,base);print('gate passed a change above NOTED_BASELINE:',ok,why);sys.exit(1 if ok else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_apply.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "BG-5fentnzk"
+  ],
   "links": [
     "parked: SP-4o3plg4l review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 on the base: both the source-read repro and the planted-gate check (try_fix with run_eval noted = NOTED_BASELINE+1 returns ok=True, no problems) fail (precheck). Follows BG-5fentnzk (ql_apply.py, test_redact.py)."
 }
