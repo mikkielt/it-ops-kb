@@ -34,6 +34,21 @@
   "depends_on": [
     "ST-7475tw3d"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the absence clause of the v2.1.284 fact separated from the quoted price, and is the S1864 source row dated for the read?",
+      "options": [
+        "split into a DOC fact (the quoted price) and a DER fact (the absence clause with its read), and date S1864 2026-10-13 with a note of the read",
+        "keep one line tagged DER with the DOC price inside"
+      ],
+      "recommendation": "split into a DOC fact (the quoted price) and a DER fact (the absence clause with its read), and date S1864 2026-10-13 with a note of the read",
+      "class": "design",
+      "answer": "split into a DOC fact (the quoted price) and a DER fact (the absence clause with its read), and date S1864 2026-10-13 with a note of the read",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilqhjn3k review"
   ],
