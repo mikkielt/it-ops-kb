@@ -266,7 +266,7 @@ TRACKERS = {"jira": {"pattern": "[A-Z][A-Z0-9]+-[0-9]+", "url": "https://jira.co
                        "ref": "#{id}"}}
 
 
-def test_backlog_external_ids_are_validated_shown_found_and_carried_by_claim_commits(tmp_path):
+def test_backlog_external_ids_are_validated_shown_found_and_carried_by_claim_commits_and_answer_root_commits_worker_item(tmp_path):
     (tmp_path / "repo").mkdir()
     root = Repo(tmp_path / "repo")
     root.git("init", "-q", "-b", "main")
@@ -327,6 +327,47 @@ def test_backlog_external_ids_are_validated_shown_found_and_carried_by_claim_com
     bare.write_text("{}", encoding="utf-8")
     code, out = bl("set", tid, "--add-external", "jira=PROJ-9", config=bare)
     assert code == 2 and "backlog.json does not name" in out and "names none" in out
+
+    # answer --root WORKTREE --commit: the item file alone, on the worker's branch, subject and KB-Work fixed
+    for gid, kind in (("g", "blocking"), ("p", "provisional")):
+        code, out = bl("gate", "add", tid, "--id", gid, "--kind", kind, "--question", f"Which name for {gid}?", "--option", "a",
+                       "--option", "b", "--recommendation", "a")
+        assert code == 0, out
+    root.commit("gates")
+    wt = tmp_path / "worker"
+    root.git("worktree", "add", "-q", "-b", f"work/{tid}", str(wt))
+    worker = Repo(wt, env=root.env)
+
+    def answer(*args):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", str(wt), "answer", tid, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           env={**root.env, "KB_BACKLOG_CONFIG": str(cfg)})
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout + p.stderr
+
+    def last(fmt):
+        return worker.git("log", "-1", f"--format={fmt}").strip()
+
+    head = worker.rev("HEAD")
+    code, out = answer("g", "--answer", "a", "--by", "operator")  # without --commit the file is only written
+    assert code == 0 and worker.rev("HEAD") == head and worker.git("status", "--porcelain").strip(), out
+    worker.git("checkout", "-q", "--", ".")
+    code, out = answer("g", "--answer", "a", "--by", "operator", "--commit", "--trailer", "Co-Authored-By: A <a@example.com>")
+    assert code == 0, out
+    assert last("%s") == f'chore(backlog): answer {tid} "Tracked work item"'
+    assert last("%(trailers:key=KB-Work,valueonly)") == tid
+    assert worker.git("show", "--name-only", "--format=", "HEAD").split() == [f"_backlog/{tid}.json"]
+    assert not worker.git("status", "--porcelain").strip()
+    code, out = answer("p", "--provisional", "--commit")
+    assert code == 0, out
+    code, out = answer("p", "--confirm", "--by", "operator", "--commit")
+    assert code == 0, out
+    assert last("%s") == f'chore(backlog): answer {tid} "Tracked work item"'
+    assert worker.git("log", "--format=%s", f"{head}..HEAD").count(f"chore(backlog): answer {tid}") == 3
+    gates = json.loads(Path(wt, "_backlog", f"{tid}.json").read_text(encoding="utf-8"))["gates"]
+    assert [(g["id"], g["by"]) for g in gates] == [("g", "operator"), ("p", "operator")]
+    code, out = answer("g", "--answer", "a", "--by", "operator", "--trailer", "Co-Authored-By: A <a@example.com>")
+    assert code == 1 and "--trailer goes with --record or --commit" in out
 
 
 def test_backlog_external_ids_trailer_is_accepted_by_check_trailers_and_a_malformed_one_is_not(scenario):

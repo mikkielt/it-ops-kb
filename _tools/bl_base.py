@@ -782,7 +782,8 @@ def say(line=""):
     print(withhold(line))
 
 
-# --commit: claim, done, new, start and close commit the item files they wrote, and nothing else
+# --commit: claim, done, new, start and close commit the item files they wrote, and nothing else (answer takes the
+# same flag in its own parser, since its --trailer also goes with --record)
 COMMITS = ("claim", "done", "new", "start", "close")
 TRAILER_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*:[ \t]*\S[^\r\n]*\Z")
 

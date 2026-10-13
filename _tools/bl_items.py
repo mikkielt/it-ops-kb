@@ -294,8 +294,8 @@ def cmd_answer(bl, a):
     if free and (a.provisional or a.confirm or not a.answer):
         raise Rejected("--free goes with --answer TEXT: it says a text that is none of the gate's options is meant")
     if getattr(a, "trailer", None):
-        if not a.record:
-            raise Refused("--trailer goes with --record")
+        if not (a.record or getattr(a, "commit", False)):
+            raise Refused("--trailer goes with --record or --commit")
         why = next(filter(None, map(trailer_problem, a.trailer)), None)
         if why:
             raise Refused(why)
@@ -356,6 +356,8 @@ def cmd_answer(bl, a):
     say(f"gate {a.gate} of {bl.label(iid)}: {g['answer']} (by {g['by']})")
     if a.record:
         commit_answer(bl, a, iid, a.gate)
+    else:
+        commit_written(bl, a, "answer", iid, body=f"Gate {a.gate}.")
     return 0
 
 
@@ -1096,8 +1098,11 @@ def args_answer(p):
     p.add_argument("--provisional", action="store_true")
     p.add_argument("--confirm", action="store_true")
     p.add_argument("--record", action="store_true", help="with --answer TEXT --by operator: keep the answer as an active decision, committed with the item file")
+    p.add_argument("--commit", action="store_true",
+                   help="commit the item file this answer wrote, alone, with a fixed subject and KB-Work (--record "
+                        "commits it already, with the decision row)")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
-                   help="a trailer of the session's own after KB-Work in the --record commit (repeatable)")
+                   help="a trailer of the session's own after KB-Work in the --record or --commit commit (repeatable)")
 
 
 def args_set(p):
