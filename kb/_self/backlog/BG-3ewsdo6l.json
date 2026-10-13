@@ -2,7 +2,7 @@
   "id": "BG-3ewsdo6l",
   "kind": "bug",
   "title": "kbfacts.py still cites two kb facts by line number with no term, so a content item that inserts a fact above them moves or breaks the citation",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-e4fm2ovk",
   "priority": "P1",
@@ -41,5 +41,26 @@
     "kb/_self/tools.md"
   ],
   "notes": "Filed at the SP-e4fm2ovk review (gap 1, reviewer severity S2, raised to S1 by the orchestrator acting as operator since sprint goal clause 5 names _tools code, not only bench_core.py). Premise run on the sprint tip: the repro prints [1760, 1763] and exits 1. The reviewer's probe: a fact inserted at line 60 of the article moves :104 onto the 'VACUUM fails if the connection running it has an open transaction' fact and :118 onto 'auto_vacuum must be set before the first table' with check.py still clean; a blank line inserted at 103 makes check.py fail on :104. Anchor terms must sit on the same comment line as the path (check.CITE_TERM matches right after it; the wrapped-line case is the open draft ST-g6yhdxkt). Not in the goal: _tools/redact.py:20 cites reuse/pseudonymization-tokenization.md:43-48 without kb/, which check.py skips (parked as a separate draft). Correction: the redact.py:20 citation is already in the open draft ST-g6yhdxkt, which also names these two kbfacts.py citations (then :1746, :1749); this bug carries only the kbfacts.py part, for the sprint goal clause, and no separate draft is filed for redact.py.",
-  "claimed_by": "orch-e4fm2ovk"
+  "evidence": {
+    "commit": "47f29934b6a8d44377f499cde44dc6bffea3b35d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "ad861cc339f51798"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import check;from pathlib import Path;bad=[n for n,l in check.code_comment_lines(Path('_tools/kbfacts.py')) for m in check.LEDGER_CITE.finditer(l) if (m.group(1) or '').startswith('kb/') and not check.CITE_TERM.match(l,m.end())];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
