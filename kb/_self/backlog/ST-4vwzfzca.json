@@ -42,6 +42,21 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does the one-domain census bullet's bold head say now that the measured 0.84 USD covers only the 22 dispatched rows and the census was not complete?",
+      "options": [
+        "Keep 'costs under a dollar' and add the 0.31 USD estimate in the body",
+        "Head states 0.84 USD for the rows dispatched and that the one measured was not complete (the eval row's expect_text follows)"
+      ],
+      "recommendation": "Head states 0.84 USD for the rows dispatched and that the one measured was not complete (the eval row's expect_text follows)",
+      "class": "design",
+      "answer": "Head states 0.84 USD for the rows dispatched and that the one measured was not complete (the eval row's expect_text follows)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],
