@@ -1808,8 +1808,10 @@ JUDGE_VERDICTS = ("supported", "contradicted", "not enough information")
 JUDGE_BATCH = 20  # items one call judges
 JUDGE_BATCH_CHARS = 24_000  # characters of passages one call holds (about 6k tokens); an item alone over it is a batch
 JUDGE_PRICE = {"claude-sonnet-5-5": (2.0, 10.0), "claude-haiku-5-5": (0.10, 0.50)}  # USD per MTok in, out (S2131)
-JUDGE_CALL_TOKENS = 4_000  # estimated input a tool-less claude -p reads besides the batch (system prompt, schema, task)
-JUDGE_REPLY_TOKENS = 80  # estimated output per item: the verdict and the deciding sentence
+JUDGE_CALL_TOKENS = 9_000  # input a tool-less claude -p reads besides the batch (system prompt, schema, task), per call
+JUDGE_REPLY_TOKENS = 435  # output per item, thinking tokens included, a failed call's output counted
+# Both measured on Haiku 5.5 in the logs census's judge run (kb/_self/reports/fact-diff.md, "Estimate against run"): 4 calls
+# read 44,436 tokens, about 8,200 of them passages, and wrote 19,592 for 45 items; the earlier 4_000 and 80 priced it 4.7 times low.
 JUDGE_CAP_FACTOR, JUDGE_CAP_FLOOR_USD = 3, 0.05  # a call's --max-budget-usd: this many times its estimate, at least this
 JUDGE_TIMEOUT_S = 600
 JUDGE_USAGE = (("input_tokens", "input-tokens"), ("cache_creation_input_tokens", "cache-write-tokens"),
