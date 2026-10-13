@@ -121,7 +121,7 @@ def s_verdict(b):
             times.append((time.perf_counter() - t) * 1000)
     times.sort()
     b.row("verdict", "pack, warm", "current", "median_ms", statistics.median(times), 3)
-    b.row("verdict", "pack, warm", "current", "p95_ms", times[int(0.95 * len(times)) - 1], 3)
+    b.row("verdict", "pack, warm", "current", "p95_ms", times[math.ceil(0.95 * len(times)) - 1], 3)
 
 
 def s_doc2query(b):
