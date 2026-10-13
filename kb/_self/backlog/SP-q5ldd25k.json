@@ -2,7 +2,7 @@
   "id": "SP-q5ldd25k",
   "kind": "sprint",
   "title": "Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning",
-  "status": "planned",
+  "status": "active",
   "goal": "answer --root WORKTREE and --confirm commit the item files they change with KB-Work naming the items; a .claude/ link touch is read as its plugin file by dispatch, done, held and the plan overlap, and check names the target; check counts a touch gone only when origin/main history has it; a content item's regenerated _coverage files stay in scope; land's undelivered warning names the failed gate's first error line and a check-trailers refusal; a manual querylog.py apply --push logs its outcome in distill.log",
   "gates": [
     {

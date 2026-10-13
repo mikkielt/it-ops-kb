@@ -2,7 +2,7 @@
   "id": "BG-mub4dmj2",
   "kind": "bug",
   "title": "dispatch stages a copy of a .claude/ touch that is a symlink to a plugin file outside .claude/, and done refuses the plugin file the copy-back changes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-q5ldd25k",
   "priority": "P2",
   "rank": 0,

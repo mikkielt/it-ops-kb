@@ -2,7 +2,7 @@
   "id": "ST-rkyjzt2v",
   "kind": "story",
   "title": "A manual querylog.py apply --push records its outcome in distill.log, so land's undelivered warning names its failed gate",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-q5ldd25k",
   "priority": "P2",
   "rank": 0,

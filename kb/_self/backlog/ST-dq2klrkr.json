@@ -2,7 +2,7 @@
   "id": "ST-dq2klrkr",
   "kind": "story",
   "title": "answer --root WORKTREE commits the item file it changes on the worker's branch, for --answer and --confirm, so the orchestrator makes no hand git commit there",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-q5ldd25k",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-gl4f5sxc",
   "kind": "story",
   "title": "backlog.py check counts a touch's file as gone only when the integration main's history has it, not a work branch's own add and remove",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-q5ldd25k",
   "priority": "P2",
   "rank": 0,
