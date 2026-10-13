@@ -127,7 +127,9 @@
       "do": {
         "any named kb root (research_touches: kb/<root>/..., never kb/_self), the path after the root's name": "ST-7rqeuzlm",
         "only kb/public/...": "ST-7rqeuzlm"
-      }
+      },
+      "answer": "any named kb root (research_touches: kb/<root>/..., never kb/_self), the path after the root's name",
+      "by": "operator"
     },
     {
       "id": "fold-scope",
