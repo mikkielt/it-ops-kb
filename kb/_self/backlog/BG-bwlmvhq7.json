@@ -2,7 +2,7 @@
   "id": "BG-bwlmvhq7",
   "kind": "bug",
   "title": "security/linux-nftables calls a flush ruleset file one idempotent step without saying it clears the tables other roles own",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-ajcomz6d review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: linux-nftables.md line 29 (DER) calls a file beginning with flush ruleset a single idempotent step and the example at line 46 starts with flush ruleset; line 18 gives only the sets contrast. Run 2026-10-12 at planning: grep found no 'other roles' or 'every table'; the repro fails; reproduces. The DER line is tagged, so its doc2query rows (expansions.csv) may need pruning."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: linux-nftables.md line 29 (DER) calls a file beginning with flush ruleset a single idempotent step and the example at line 46 starts with flush ruleset; line 18 gives only the sets contrast. Run 2026-10-12 at planning: grep found no 'other roles' or 'every table'; the repro fails; reproduces. The DER line is tagged, so its doc2query rows (expansions.csv) may need pruning.",
+  "claimed_by": "orch-tcis5f23"
 }
