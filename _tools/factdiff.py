@@ -5,7 +5,10 @@
       locate each fact's backing sentence in the current text of its sources and write its anchor; --quotes CSV
       (header `line,quote`; needs one --file F) gives the quote each new fact of F rests on, at most QUOTE_WORDS
       words, by the fact's line: the anchor is the passage that holds the quote word for word (case, markup, quotes
-      and punctuation apart), and a fact whose quote the page lacks is anchored by its own words as any other
+      and punctuation apart), and a fact whose quote the page lacks is anchored by its own words as any other;
+      with --file and no other selector only the facts of those files that hold no anchor row (a new or reworded
+      fact) and the lines the quote CSV names are anchored, the rows of other facts and files are kept and
+      _fetch_state.csv is not written
   factdiff.py [--root NAME] snapshot [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
       write the normalized text of the root's live copy sources, with attribution, to <root>/_snapshots/<id>.txt
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
@@ -620,16 +623,25 @@ def cmd_anchor(a):
             return 2
     ids = select_ids(a, srcs)
     ids = [i for i in ids if i in facts and i in srcs]
-    docs = fetch_all(ids, srcs, a.max_age, a.refetch)
     anchors = read_anchors()
+    before = dict(anchors)
+    # --file alone: only the facts of those files that hold no anchor row (a new or reworded fact: its key is new) or that
+    # the quote CSV names; no other row of the ledger and no `_fetch_state.csv` row is written
+    only = {os.path.normpath(f).replace(os.sep, "/") for f in a.file} if a.file and not (a.topic or a.dir or a.source) else None
+    todo = facts
+    if only is not None:
+        todo = {sid: [f for f in fs if f[1] in only and ((f[0], f[1], sid) not in anchors or (f[1] == rel and f[2] in quotes))]
+                for sid, fs in facts.items()}
+        ids = [i for i in ids if todo.get(i)]
+    docs = fetch_all(ids, srcs, a.max_age, a.refetch)
     when = today()
     counts = collections.Counter()
     cites = cite_counts(facts)
     for sid in ids:
         reuse = (srcs[sid].get("reuse") or "").strip()
-        rows = anchor_rows(sid, facts[sid], docs.get(sid), reuse, when, cites)
+        rows = anchor_rows(sid, todo[sid], docs.get(sid), reuse, when, cites)
         if quotes:
-            mine = [(i, f) for i, f in enumerate(facts[sid]) if f[1] == rel and f[2] in quotes]
+            mine = [(i, f) for i, f in enumerate(todo[sid]) if f[1] == rel and f[2] in quotes]
             if mine:
                 found, lost = quote_rows([rows[i] for i, _ in mine], [f for _, f in mine], docs.get(sid), reuse, quotes)
                 counts["quote found"] += len(found)
@@ -644,13 +656,20 @@ def cmd_anchor(a):
                 continue  # a failed fetch never erases a located anchor
             anchors[k] = row
             counts[row["status"]] += 1
-    live = {(k, rel, sid) for sid, fs in facts.items() for k, rel, _, _ in fs}
-    stale = [k for k in anchors if k not in live and (not ids or k[2] in ids or not a.selected)]
+    live = {(k, rel_, sid) for sid, fs in facts.items() for k, rel_, _, _ in fs}
+    if only is not None:
+        stale = [k for k in anchors if k not in live and k[1] in only]
+    else:
+        stale = [k for k in anchors if k not in live and (not ids or k[2] in ids or not a.selected)]
     for k in stale:
         del anchors[k]
     print(f"anchor: sources={len(ids)} " + " ".join(f"{k}={v}" for k, v in sorted(counts.items())) + f" pruned_stale={len(stale)}")
     if a.dry_run:
         print("dry run: nothing written")
+        return 0
+    if only is not None:
+        if anchors != before:
+            write_anchors(anchors)
         return 0
     write_anchors(anchors)
     state, rows = read_state(), provider.providers(ROOT)
