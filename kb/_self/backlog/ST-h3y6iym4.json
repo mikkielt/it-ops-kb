@@ -1,0 +1,35 @@
+{
+  "id": "ST-h3y6iym4",
+  "kind": "story",
+  "title": "kb!: a person reports on the session's last kb answer from the prompt, at no model tokens",
+  "status": "draft",
+  "parent": "EP-x4cqj7zo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A prompt starting kb!: in Claude Code is handled by kb_hook.py beside kb: and kb+:: it writes one 'feedback' row joined to the session's last kb entry (its session_id and prompt_id, and that entry's pack handle when it has one), reads path:line references, urls and the words wrong, stale, outdated and missing deterministically into the closed fields of kb_feedback, keeps the rest as a rule-redacted comment with class unclassified in the local spool only (D-rd64qovu), prints a one-line receipt naming the id and what will check it, and blocks the prompt so no model turn runs; a kb!: with no earlier kb entry in the session says so and records nothing; the hook makes no network call (D-gmrjivyw).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "kb_bang_feedback"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/ql_capture.py",
+    "_tools/redact.py",
+    "_tools/tests.py",
+    "AGENTS.md",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/querylog.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-brjhg6wl"
+  ],
+  "notes": "Premise: _tools/kb_hook.py handles kb: and kb+: only; a person who sees a wrong answer has no channel but a new prompt the pipeline reads as another lookup. AGENTS.md is capped at 4096 bytes and nearly full: naming kb!: there needs a cut elsewhere in the same commit (wc -c AGENTS.md). Comment text: D-rd64qovu."
+}

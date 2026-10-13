@@ -1,0 +1,46 @@
+{
+  "id": "ST-brjhg6wl",
+  "kind": "story",
+  "title": "kb_pack and rag.py pack print a pack handle that a later call can name, and the mcp capture row keeps it",
+  "status": "draft",
+  "parent": "EP-x4cqj7zo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "rag.py pack and kb_pack print one line 'pack: P-<8 hex>', the hash of the questions, the pack arguments and the kb commit, so the same pack on the same commit gives the same handle on every server, stdio and kb_http.py alike, with no session; the server keeps handle -> {questions, printed lines, commit} under _cache/ for a bounded time and count (never committed); the mcp and kb_hook capture rows store the handle (ql_capture.pack_lines reads it), so distill can join a report to its lookup exactly; rag.py eval keeps passing every row and the eval's mean pack size grows by under 1%.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pack_handle"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/kb_mcp.py",
+    "_tools/kb_hook.py",
+    "_tools/ql_capture.py",
+    "_tools/tests.py",
+    "kb/_self/tools.md",
+    "kb/_self/querylog.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/usage.md"
+  ],
+  "links": [
+    "kb:public/mcp/spec-overview.md"
+  ],
+  "notes": "Premise: python3 _tools/rag.py pack 'Intune enrollment device limit' prints a coverage line, fact lines and a url footer, and no handle a later call could name; kb_mcp.py never sees session_id or prompt_id (kb/_self/querylog.md, Surfaces), so a report could join its lookup only by time window today."
+}
