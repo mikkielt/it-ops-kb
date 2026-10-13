@@ -1015,12 +1015,39 @@ def register_local():
     return code
 
 
+def session_script():
+    """The kb_mcp.py of the linked worktree the working directory is in, when that worktree belongs to this script's
+    own repository and is not this script's checkout: a worker or reviewer in a worktree, whose server was registered
+    with the main checkout's path, reads the kb its branch holds. None for a working directory outside git, in another
+    repository (a host project keeps this script's kb) or in this checkout, and for a worktree with no such script."""
+    top = git("rev-parse", "--show-toplevel", cwd=os.getcwd())
+    mine = git("rev-parse", "--show-toplevel", cwd=kbcommon.HOME)
+    if not top or not mine or same_path(top, mine) or common_dir(top) != common_dir(mine):
+        return None
+    try:
+        script = Path(top) / SCRIPT.resolve().relative_to(Path(mine).resolve())
+    except ValueError:  # this script lies outside its repository's top level (a link)
+        return None
+    return script if script.is_file() and not same_path(script, SCRIPT) else None
+
+
+def redirect(script):
+    """Run `script` (with this process's arguments, stdio and environment) instead of this one and exit with its code."""
+    argv = [sys.executable, str(script), *sys.argv[1:]]
+    if os.name == "posix":
+        os.execv(sys.executable, argv)  # no second process: the client's pipes and signals reach it directly
+    sys.exit(subprocess.run(argv).returncode)
+
+
 def main():
     # JSON-RPC over stdio is UTF-8 with "\n" line ends on every OS; Windows would otherwise write the locale code page
     # and "\r\n"
     sys.stdout.reconfigure(encoding="utf-8", newline="\n")
     if "--register-local" in sys.argv[1:]:
         sys.exit(register_local())
+    script = session_script()
+    if script:
+        redirect(script)
     try:
         kbcommon.serve_only(roots_arg(sys.argv[1:]))
     except (ValueError, kbcommon.RootError) as e:
