@@ -2,7 +2,7 @@
   "id": "BG-o2spkwnz",
   "kind": "bug",
   "title": "gitlab/package-registries cites the unpinned pipeline security page for its digest pin fact",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,6 @@
   "links": [
     "parked: SP-4phd36pa review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Doc2query: no expansion row keys the fact lines of this sprint's articles (checked 2026-10-12 against expansions.csv), so the item's touches leave expansions.csv out except where the open scope may reword facts. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Doc2query: no expansion row keys the fact lines of this sprint's articles (checked 2026-10-12 against expansions.csv), so the item's touches leave expansions.csv out except where the open scope may reword facts. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base.",
+  "claimed_by": "orch-gcerxjsg"
 }
