@@ -4,10 +4,11 @@
   "title": "fetch.py --status reads a source's age from its last check alone, so its STALE column disagrees with what a lookup revalidates",
   "status": "draft",
   "parent": "EP-lk5qdhah",
+  "sprint": "SP-vdrsfftl",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "fetch.py --status computes a source's age and staleness as the lookup does (kbfacts.source_freshness: the newer of its last check and its facts' verified date; age unknown counts as stale unless pinned), so a source --status shows stale is exactly one kb_pack would revalidate; the repro, which compares the stale flag of fetch.py --status --json with kbfacts.source_freshness for every source, exits 0. SP-etslk6yu review: on 2026-10-12 1581 of 3972 sources disagree.",
+  "goal": "fetch.py --status computes a source's age and staleness as the lookup does (kbfacts.source_freshness: the newer of its last check and its facts' verified date, age unknown counting as stale unless pinned), so a source --status shows stale is exactly one kb_pack would revalidate: the stale flag of fetch.py --status --json equals kbfacts.source_freshness for every source, with the --status row of tools.md naming that age, not the time since the last check. SP-etslk6yu review: on 2026-10-12 1581 of 3972 sources disagree.",
   "repro": {
     "run": [
       "python3",
@@ -15,12 +16,29 @@
       "import json,subprocess,sys; sys.path.insert(0,'_tools'); import kbfacts; p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--json'],capture_output=True,text=True); p.returncode and sys.exit(2); d=json.loads(p.stdout); f=kbfacts.source_freshness([r['id'] for r in d]); bad=[r['id'] for r in d if r['id'] in f and bool(r['stale'])!=bool(f[r['id']]['stale'])]; sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; l=[x for x in open('kb/_self/tools.md', encoding='utf-8') if 'fetch.py --status --topic T' in x]; sys.exit(0 if len(l)==1 and 'time since its last check' not in l[0] else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/fetch.py",
     "_tools/kbfacts.py",
-    "_tools/test_live_kb.py"
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-qkpbwtsc"
   ],
   "links": [
     "parked: SP-etslk6yu review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: the repro fails on the base (exit 1: fetch.py --status reads age from the last check alone and leaves an age-unknown source not stale, source_freshness counts it stale). The doc check reads only the --status row of tools.md, which says age is the time since its last check. fetch.py's own --help text (the --status paragraph) says the same and is in its touches."
 }

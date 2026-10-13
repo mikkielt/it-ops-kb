@@ -3,26 +3,32 @@
   "kind": "story",
   "title": "A worker or reviewer in a worktree reads its own worktree's kb, not the main checkout's, through the kb MCP server",
   "status": "draft",
+  "sprint": "SP-vdrsfftl",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb_mcp.py answers from the checkout the session runs in (its working directory's clone), or the worker and reviewer briefs tell a worktree session to use rag.py there, so a session in a worktree does not read a main checkout that is behind origin/main; seen in the SP-wwacrsqr review, where the kb server, registered at local scope with the main checkout's absolute _tools/kb_mcp.py path, served a checkout 33 commits behind and missed the sprint's new articles until the reviewer fell back to rag.py (SP-wwacrsqr retrospective).",
+  "goal": "kb_mcp.py started with its working directory in a linked worktree of its own clone serves that worktree's kb (kb_status's kb_dir and commit are the worktree's), not the checkout whose script the server was registered with, so a worker or reviewer in a worktree reads the kb its branch holds: seen in the SP-wwacrsqr review, where the kb server, registered at local scope with the main checkout's absolute _tools/kb_mcp.py path, served a checkout 33 commits behind and missed the sprint's new articles until the reviewer fell back to rag.py (SP-wwacrsqr retrospective).",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "kb_mcp_reads_session_checkout"
+        "-c",
+        "import subprocess, sys, os, tempfile\nd=os.path.realpath(tempfile.mkdtemp()); w=os.path.join(d,'wt'); ok=False\nsubprocess.run(['git','worktree','add','--detach','-q',w],check=True)\ntry:\n    p=subprocess.run([sys.executable,os.path.abspath('_tools/kb_mcp.py'),'--status'],cwd=w,capture_output=True,text=True,env={**os.environ,'CLAUDE_PROJECT_DIR':w})\n    ok=('kb_dir: '+os.path.join(w,'kb')) in p.stdout.splitlines()\nfinally:\n    subprocess.run(['git','worktree','remove','--force',w])\nsys.exit(0 if ok else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/kb_mcp.py",
-    "_tools/test_live_kb.py",
     "kb/_self/maintaining.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-pcralmzy"
   ],
   "links": [
     "parked: SP-wwacrsqr close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: kb_mcp.py --status run by this checkout's script with its working directory in a fresh linked worktree prints this checkout's kb_dir, not the worktree's: the check fails on the base (exit 1). Chosen route: the code answers from the session's checkout, not worker and reviewer briefs that name rag.py, which would touch rule-guarding files (the worker role file, the skills). Only a working directory in a linked worktree of the script's own repository redirects the server; a host project's session keeps the script's own kb. The test file is left out of the touches (the check runs the changed path and no test id is added): an existing assertion in test_live_kb.py that pins the old kb_mcp start stops the work with a report. Its start-time redirect must leave import kb_mcp inert, since test_live_kb.py imports the module."
 }
