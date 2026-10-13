@@ -1,0 +1,25 @@
+{
+  "id": "BG-vi5dw4zd",
+  "kind": "bug",
+  "title": "_answers.md's AlmaLinux CIS conclusion says the upstream RHEL data stream is not the route, though its own Open line and linux-cis-ssg-openscap.md:38 leave that unconfirmed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The Conclusion line of the AlmaLinux 8 and 10 CIS scanning entry in kb/public/_answers.md (line 3354) says AlmaLinux ships its own scap-security-guide package with CIS profiles and leaves whether the upstream RHEL data stream evaluates on AlmaLinux unconfirmed, as its Open line (3355) and security/linux-cis-ssg-openscap.md:38 [UNK] say, instead of stating 'not with the upstream repository's RHEL data stream' (found by the SP-23m5etrf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,sys; sys.exit(1 if any(l.startswith('- Conclusion: AlmaLinux 8 and 10') and \"not with the upstream repository's RHEL data stream\" in l for l in pathlib.Path('kb/public/_answers.md').read_text().splitlines()) else 0)"
+    ]
+  },
+  "repro_reason": "a wording defect in a kb ledger: no tool behaviour to run, only the conclusion line's text",
+  "touches": [
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-23m5etrf review"
+  ]
+}

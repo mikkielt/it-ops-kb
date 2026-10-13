@@ -1,0 +1,29 @@
+{
+  "id": "BG-nzrj2n32",
+  "kind": "bug",
+  "title": "arch/fluent-rust-typescript.md and its answer name fluent.runtime 0.4.0's class Localization, though fallback.py defines FluentLocalization",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The CODE fact at kb/public/arch/fluent-rust-typescript.md:50 and its anchor, the _answers.md QK entry line on fluent.runtime typing (line 3369), the S-dftqctth source title in kb/public/_sources.csv and arch/texts-catalogue-formats.md:23 name the class FluentLocalization, as fallback.py at fluent.runtime@0.4.0 defines it (class FluentLocalization:, line 14), not Localization (found by the SP-23m5etrf review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import pathlib,re,sys; t=''.join(pathlib.Path(f).read_text() for f in ('kb/public/arch/fluent-rust-typescript.md','kb/public/arch/texts-catalogue-formats.md','kb/public/_answers.md','kb/public/_sources.csv')); sys.exit(1 if re.search(r'(?<!Fluent)Localization[.`/)]', t) else 0)"
+    ]
+  },
+  "repro_reason": "a wording defect in kb articles and ledgers: no tool behaviour to run, only the class name in their text",
+  "touches": [
+    "kb/public/arch/fluent-rust-typescript.md",
+    "kb/public/arch/texts-catalogue-formats.md",
+    "kb/public/_answers.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-23m5etrf review"
+  ]
+}
