@@ -2,7 +2,7 @@
   "id": "BG-wuwypj42",
   "kind": "bug",
   "title": "A gate naming SECRET_TOKENS, PASSWORD_TOKENS or PRIVATE_TOKENS is classed design since token-count identifiers are blanked whole",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uzwbt63u",
   "priority": "P1",
   "rank": 0,
@@ -37,5 +37,18 @@
     }
   ],
   "notes": "Found by the SP-uzwbt63u review (fresh-context reviewer, 2026-10-13), filed S1 by the orchestrator acting as operator: it weakens the operator-only secrets class (fail open), which the policy keeps conservative. Repro run on main 2026-10-13: SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS class design, API_TOKENS secrets; the three count constants design (exit 1). Before 330b88ba0 all five were secrets.",
-  "claimed_by": "orch-uzwbt63u"
+  "evidence": {
+    "commit": "189dd32eb96a9d6e9523f0ef00808deef924ca43",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import bl_authority as a; c = lambda q: a.class_reasons({'touches': []}, {'id': 'g', 'question': q, 'options': []})[0]; s = [c('Is ' + n + ' used?') for n in ('SECRET_TOKENS', 'PASSWORD_TOKENS', 'PRIVATE_TOKENS', 'KEY_TOKENS', 'API_TOKENS')]; d = [c('What is census.' + n + '?') for n in ('DISPATCH_BASE_TOKENS', 'MAX_TOKENS', 'JUDGE_REPLY_TOKENS')]; sys.exit(0 if s == ['secrets'] * 5 and d == ['design'] * 3 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
