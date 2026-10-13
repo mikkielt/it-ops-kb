@@ -1,0 +1,25 @@
+{
+  "id": "ST-sf5fw5mg",
+  "kind": "story",
+  "title": "A suite test pins that stem() keeps a dashed number such as S-1-5-32-544 whole",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A suite test asserts kbfacts.terms keeps every digit run whole, a dashed SID number included (terms('S-1-5-32-544') holds no token ending 54, terms('26100') is ['26100']), so the double-letter rule cannot regress for numbers unnoticed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stem_keeps_digit_runs_whole"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui review"
+  ]
+}
