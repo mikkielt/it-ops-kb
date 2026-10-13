@@ -2,7 +2,7 @@
   "id": "ST-aezkm3zh",
   "kind": "story",
   "title": "The _self rules answer how a public ledger entry cites a _self doc line and how a gap step's rules miss is recorded",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,6 @@
   "links": [
     "parked: SP-ilqhjn3k close"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: pack --root _self for both check questions is coverage weak (precheck: neither is a row of lookup_eval.csv). The rag.py eval --root _self check passes before the work: it pins that the added rows and the doc lines keep every _self row passing. The first check names the two questions the rows carry, as worded there."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: pack --root _self for both check questions is coverage weak (precheck: neither is a row of lookup_eval.csv). The rag.py eval --root _self check passes before the work: it pins that the added rows and the doc lines keep every _self row passing. The first check names the two questions the rows carry, as worded there.",
+  "claimed_by": "orch-enudabdr"
 }
