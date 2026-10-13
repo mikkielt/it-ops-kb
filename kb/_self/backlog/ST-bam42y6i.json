@@ -2,7 +2,7 @@
   "id": "ST-bam42y6i",
   "kind": "story",
   "title": "codebase-mapping and its rustc-wrapper answer say the rustc -vV spawn fails only when the outermost wrapper is unresolvable",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-tjap3mdd review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: the item's first check (no 'the spawn of that command fails too' / 'the same wrapper then fails the spawn' in codebase-mapping.md or _answers.md) exits 1 now: codebase-mapping.md:92 and _answers.md:3335 hold them. Order: after BG-prsp6j2z (shared ledgers); BG-q3l5j2vz precedes it through the chain (same _answers.md)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: the item's first check (no 'the spawn of that command fails too' / 'the same wrapper then fails the spawn' in codebase-mapping.md or _answers.md) exits 1 now: codebase-mapping.md:92 and _answers.md:3335 hold them. Order: after BG-prsp6j2z (shared ledgers); BG-q3l5j2vz precedes it through the chain (same _answers.md).",
+  "claimed_by": "orch-uvz65lvm"
 }
