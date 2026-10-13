@@ -2,7 +2,7 @@
   "id": "ST-cdkj7nza",
   "kind": "story",
   "title": "A worker's brief lets it edit a kb/_self doc in its touches that an in-flight sibling also touches",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mujl7ebh",
   "priority": "P3",
   "rank": 0,
@@ -55,5 +55,18 @@
     "parked: SP-ciqk6gt6 close"
   ],
   "notes": "SP-ciqk6gt6 close: TK-cagohpbu left its kb/_self/backlog.md edit undone because the brief named BG-na2uirn5 in flight on it, and was resumed to make it after BG-na2uirn5 landed. Recurrence SP-m3azo2y7 (2026-10-10): the BG-rn4pt6bb worker left kb/_self/tools.md:82 saying the trailers detector reads the last N days of main because in-flight sibling BG-7cd3hvi6 also touched tools.md; the review parked it as BG-icnbtxdf. Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, premise run on main: with two doing items that both touch kb/_self/backlog.md, siblings() lists that doc for the other item (the check's planted pair), so the brief tells the worker to leave it alone; the check exits 1. Ordered after ST-4jbvwssm and BG-i4fxvd2h: all edit bl_dispatch.py.",
-  "claimed_by": "orch-mujl7ebh"
+  "evidence": {
+    "commit": "99cf2fd979ab989d5b86d5e4ecf4082cbb1ccff1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import bl_dispatch as d;it=lambda t:{'kind':'task','status':'doing','touches':t};B=types.SimpleNamespace(items={'TK-aaaaaaaa':it(['_tools/a.py','kb/_self/backlog.md']),'TK-bbbbbbbb':it(['_tools/b.py','kb/_self/backlog.md'])},ancestors=lambda i:[],descendants=lambda i:[],label=lambda i:i);t=' '.join(d.siblings(B,'TK-aaaaaaaa'));print(t);sys.exit(0 if '_tools/b.py' in t and 'kb/_self/backlog.md' not in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "30bec7017cf0da18"
+      }
+    ]
+  }
 }
