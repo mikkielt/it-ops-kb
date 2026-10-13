@@ -1,0 +1,18 @@
+{
+  "id": "BG-4ntjgf2u",
+  "kind": "bug",
+  "title": "kb/_self/_retrieval/lookup_eval.csv has no tested row for the backlog-tool rules of SP-q5ldd25k, so their packs read weak or none though backlog.md and tools.md answer them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/_self/_retrieval/lookup_eval.csv holds a tested row, expected article and verdict good, for each of these questions asked as the sprint asks them: which history the moved-or-deleted touch rule of backlog.py check reads (backlog.md Sprints, a touches path follows the file); how a link touch under .claude/ is read (backlog.md, the plugin file is edited directly, no staging copy); how land's undelivered warning names the failed gate and its first error line (backlog.md Landing, bl_land.last_push_failure); which paths are always in scope (backlog.md Working on items, kb/_self/backlog/**); who commits an item file answered with --root WORKTREE (backlog.md Running a sprint); whether a manual querylog.py apply --push writes distill.log (querylog.md Delivery); and python3 _tools/rag.py eval passes. A tested row is a code-lane path (_tools/kblane.py): the item lands through backlog.py land ID --wait-merge SECONDS.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/_self/_retrieval/lookup_eval.csv',encoding='utf-8').read(); sys.exit(0 if 'undelivered' in t else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a pack verdict on a question worded as the sprint asks it; a command that exits non-zero for it would restate the eval row the fix adds"
+}
