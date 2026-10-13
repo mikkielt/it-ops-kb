@@ -29,6 +29,21 @@
   "depends_on": [
     "ST-t3mrfi57"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Detection and census gave a page with no words the soft-404 verdict the lookup does not give: change detect_source to test the words of the text in both modes (two empty texts match any made-up page, so the verdict says nothing about the page), or keep detection's verdict and state why in tools.md?",
+      "options": [
+        "detect_source tests words_key(text) in both modes, so census.py check reads no GONE for it",
+        "keep the soft-404 verdict in detection and state in tools.md why"
+      ],
+      "recommendation": "detect_source tests words_key(text) in both modes, so census.py check reads no GONE for it",
+      "class": "design",
+      "answer": "detect_source tests words_key(text) in both modes, so census.py check reads no GONE for it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-u5q37ds3 review"
   ],

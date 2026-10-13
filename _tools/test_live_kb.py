@@ -880,7 +880,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_registry_change_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_router_broad_lookups_expert_phrasings_route_to_their_expert_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_registry_change_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_router_broad_lookups_expert_phrasings_route_to_their_expert_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads_and_detect_empty_page_not_soft404(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -1299,6 +1299,27 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     again = str(tmp_path / "again.csv")
     assert factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=again, no_save=False, sitemaps=False), collections.Counter()) == 0
     assert factdiff.read_log(again)[0]["verdict"] == "unchanged" and saved[sid]["changed_utc"] == "2026-10-05T00:00:00Z"
+    # a page with no words (a client-rendered page's fetch is one newline) matches a made-up sibling page that has none
+    # either (two empty texts have jaccard 1.0): detection, as the lookup, calls it no soft 404, and census.py check
+    # reads its facts for review, not GONE (a provider whose 404s are hard skips the test, so the page is another host's)
+    shell = "https://techcommunity.microsoft.com/blog/test/shell"
+    assert (provider.for_url(shell, prov) or {}).get("not_found") != "hard-404"
+    monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
+        "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": 1, "raw": None,
+        "version": {}, "text": "\n", "ctype": "text/html"})
+    monkeypatch.setattr(factdiff, "madeup_text", lambda u: "\n")
+    monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": shell, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
+    assert factdiff.jaccard("\n", "\n") >= factdiff.SOFT404_MIN
+    for lookup in (False, True):
+        v, signal = factdiff.detect_source(sid, {"url": shell}, {}, prov, lookup)[:2]
+        assert (v, signal) == ("new", ""), (lookup, v, signal)
+    monkeypatch.setattr(factdiff, "read_state", lambda: {})
+    monkeypatch.setattr(factdiff, "sitemap_added", lambda *a, **k: {})  # no other page is asked for the passage
+    monkeypatch.setattr(factdiff, "search_urls", lambda *a, **k: [])
+    blank = str(tmp_path / "blank.csv")
+    factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=blank, no_save=False, sitemaps=False), collections.Counter())
+    assert factdiff.read_log(blank)[0]["verdict"] == "new"
+    assert census.factdiff_verdicts(blank, {sid: "2026-10-01"})[sid][1]["bucket"] != "GONE"
     # a data row two sources cite is weighed as anchoring weighed it (the cites of Doc.locate's second look): on the
     # page both pages share, only the real count lets a row with many cells the page lacks relocate as modified
     old3 = ("# Variables\n\n## SMSInstallUpdateTarget\n\nSpecifies whether the Install Software Updates step installs all updates "
