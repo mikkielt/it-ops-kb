@@ -1,0 +1,27 @@
+{
+  "id": "ST-n63g3ax7",
+  "kind": "story",
+  "title": "An item whose goal the sprint's goal research already delivered is done on the research commit, not dropped, so close credits its clause",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-tjap3mdd retrospective: the goal research ST-74agak3p (a96ac2c5d, whose touches cover the whole public root) wrote the whole fix of BG-a22yrzap and BG-skpnth6v; their workers found nothing to change, done refused both (no-work-commit), and the only route was drop, so close --summary lists sprint goal clauses 2 and 6 as unmet though they are met. done in _tools/bl_land.py accepts an item whose checks pass when a commit carrying KB-Work of the sprint's goal research story changes a file in the item's touches, records that commit as its evidence, and close --summary credits the clause to the item.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_research_carried_item"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd close"
+  ]
+}

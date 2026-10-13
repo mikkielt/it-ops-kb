@@ -1,0 +1,27 @@
+{
+  "id": "ST-tp3j43zr",
+  "kind": "story",
+  "title": "Content items that share only a union-merged ledger such as _anchors.csv run in parallel, as items sharing only a kb/_self doc do",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-tjap3mdd retrospective: the public root's _anchors.csv sat in the touches of 8 of 9 items, so start warned and depends_on chained them, and the sprint ran in seven serial rounds although each item edited a different article and .gitattributes merges _anchors.csv with merge=union (kbgit.py fix dedups it). bl_plan's overlap rule (shared_doc and its callers in _tools/bl_plan.py) treats a path .gitattributes merges with merge=union like a kb/_self doc: no overlap for held --overlaps, check or start, while the landing's rebase and the stale, eval and lint steps still run per item.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "overlap_union_ledger"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd close"
+  ]
+}

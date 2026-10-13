@@ -1,0 +1,27 @@
+{
+  "id": "ST-2ietdnca",
+  "kind": "story",
+  "title": "done accepts an anchor run's prune of _anchors.csv rows whose source no fact of the article cites, without the goal naming that source",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-tjap3mdd retrospective: BG-5fkown4o's worker re-anchored langgraph.md and the anchor run dropped two unlocated rows of S-6buofrld, a source no langgraph.md fact cited on main; done refused (outside-touches: ledger rows of sources the goal does not name), the land removed the worktree, and the orchestrator re-made it to name S-6buofrld in the goal. done's dropped-ledger-row reason in _tools/bl_land.py does not count a dropped _anchors.csv row whose (path, source) no fact of that article cites at the item's base, so a prune of orphan rows lands, while a dropped row of a source a fact still cites is refused as today.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_orphan_anchor_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd close"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-ltvjzeko",
+  "kind": "story",
+  "title": "precheck names a planned check whose kb path filter selects no fact unit or file, which can never pass",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-tjap3mdd retrospective: BG-shomh4nz's planned check filtered kbfacts units by path.endswith('/single-package-extras.md'), which the article public/arch/python-single-package-extras.md never matches, so it could not pass; precheck showed it failing at planning, read as the premise, and the worker had to correct it under a provisional gate. precheck in _tools/bl_land.py warns of a check whose endswith or == literal on a kb article path matches no file under kb/, naming the literal.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_path_filter_matches_none"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd close"
+  ]
+}

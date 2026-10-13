@@ -13,5 +13,8 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.class_reasons({'touches':[]},{'question':'PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version do the install facts state?','options':['keep 1.2.14','move to 1.2.15']});sys.exit(1 if c[0]=='push' else 0)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-tjap3mdd close"
+  ]
 }

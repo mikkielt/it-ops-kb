@@ -1,0 +1,27 @@
+{
+  "id": "ST-7fmamgng",
+  "kind": "story",
+  "title": "factdiff.py anchor re-anchors only the facts of given lines, so a content worker does not hand-trim the rows of every source in the article",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-tjap3mdd retrospective: anchor --file anchors every cited source of the article, with or without --source, so BG-mkw4awdu's worker kept 6 of the 44 rows it added and BG-oyzgvtrg's kept 2 of 22, editing _anchors.csv by hand to keep done from refusing rows of sources the goal does not name. factdiff.py anchor takes --line N (repeatable) and writes rows only for the facts on those lines of the --file article, and kb/_self/tools.md says so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_only_given_lines"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_check_programs.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd close"
+  ]
+}
