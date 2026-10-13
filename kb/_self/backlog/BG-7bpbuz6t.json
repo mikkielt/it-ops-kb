@@ -2,7 +2,7 @@
   "id": "BG-7bpbuz6t",
   "kind": "bug",
   "title": "claude/powershell-tool.md says the read-only Bash set runs without a prompt in every mode, but the permissions page now names blockReadsOutsideWorkingDirectories and auto mode's classifier as exceptions",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-gcerxjsg",
   "priority": "P2",

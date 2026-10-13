@@ -2,7 +2,7 @@
   "id": "BG-o2spkwnz",
   "kind": "bug",
   "title": "gitlab/package-registries cites the unpinned pipeline security page for its digest pin fact",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,

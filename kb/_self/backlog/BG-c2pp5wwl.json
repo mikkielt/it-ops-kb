@@ -2,7 +2,7 @@
   "id": "BG-c2pp5wwl",
   "kind": "bug",
   "title": "BG-gxxv3mzj's anchor run advanced the fetch-state baselines of about 15 sources outside it and dropped anchors, so detect no longer reports their changes (the 200 WebSearch limit in doc-lookup-sources.md among them)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",

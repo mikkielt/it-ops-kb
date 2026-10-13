@@ -2,7 +2,7 @@
   "id": "BG-tvn7abnu",
   "kind": "bug",
   "title": "claude/plugins.csv: marketplace.json and plugin entry name rules and the eval --judge-model default are stale against the live pages",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gcerxjsg",
   "priority": "P2",
   "rank": 0,

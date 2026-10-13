@@ -2,7 +2,7 @@
   "id": "BG-lmp4mxmo",
   "kind": "bug",
   "title": "The pipeline schedule play lines say at most once a minute under DOC, though the source says it of the UI run only",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
