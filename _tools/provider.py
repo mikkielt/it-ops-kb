@@ -99,7 +99,8 @@ lookup that must answer in time (factdiff.revalidate): budget() bounds every req
 is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run;
 host_seen() and host_down() keep, in the process and under _cache/provider-down/, a host that did not accept a
 connection for a window that doubles with each failure in a row (DOWN_BASE_S up to DOWN_CAP_S), so a lookup asks it no
-more until the window is over.
+more until the window is over: under down_window(), gated_request() (the requests of a source's page, a search, a
+candidate page, a made-up sibling and a pinned url's repository) reads and records it for the host each request went to.
 lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
 revalidation at question time and fetch.py --status read it.
 """
@@ -585,6 +586,40 @@ def host_seen(url, error, now=None):
         pass
 
 
+_down_gate = [False]  # whether gated_request reads and records the windows: set by down_window() (a lookup)
+
+
+@contextlib.contextmanager
+def down_window():
+    """Under the block, gated_request leaves a host in its window alone and records what each of its answers shows of
+    the hosts the request went through. For a lookup (factdiff.revalidate); a detection run or a census asks every host."""
+    _down_gate[0] = True
+    try:
+        yield
+    finally:
+        _down_gate[0] = False
+
+
+def gated_request(url, *args, **kwargs):
+    """request() for a source's page, a search, a candidate page, a made-up sibling and a repository: under down_window()
+    a host in its window gets no request (status 0, the reason of down_why as `error`, counted in failures()), and the
+    answer of any other request is recorded with host_seen for every host it went through: the hosts a redirect was
+    followed through answered, and a connection that was not made is the window of the host it was made to, the last
+    hop's, not of the url that was asked. Outside the block it is request()."""
+    if not _down_gate[0]:
+        return request(url, *args, **kwargs)
+    rec = host_down(url)
+    if rec:
+        _failed[0] += 1
+        return {"status": 0, "headers": {}, "body": b"", "final": url, "hops": [], "error": down_why(rec)}
+    r = request(url, *args, **kwargs)
+    chain = [url] + [hop[1] for hop in r.get("hops") or []]
+    for hop in chain[:-1]:
+        host_seen(hop, "")
+    host_seen(chain[-1], r.get("error") or "")
+    return r
+
+
 def request(url, headers=None, limit=20_000_000, method="GET"):
     """{status, headers (lowercase keys), body (bytes), final, hops, error}; one request per DELAY seconds per host.
     A Content-Encoding body is decoded (decode_body); the headers stay as the server sent them.
@@ -660,7 +695,7 @@ def _ask_repository(key, api, raw):
     it could not be asked (no budget left, rate limited, a network error). A raw file's 404 may be the file or its ref,
     not the repository, so it is confirmed once by the API; a private repository answers 404 as a deleted one does."""
     if raw:
-        r = request(raw, limit=1)
+        r = gated_request(raw, limit=1)
         if r["status"] == 200:
             return "answers", f"{raw} answers 200"
         if r["status"] != 404:
@@ -673,7 +708,7 @@ def _ask_repository(key, api, raw):
             _gh_api["asked"] += not spent
         if spent:
             return "", f"{key}: the run's GitHub REST requests are used up (60 an hour unauthenticated)"
-    r = request(api, limit=1)
+    r = gated_request(api, limit=1)
     left = r["headers"].get("x-ratelimit-remaining", "")
     if github and left.isdigit():
         _gh_api["left"], _gh_api["seen"] = int(left), time.time()
@@ -841,7 +876,7 @@ def document(url, row=None, etag="", lastmod=""):
         hdr["If-None-Match"] = etag
     elif lastmod and "lastmod" in sig:
         hdr["If-Modified-Since"] = lastmod
-    r = request(rurl, hdr)
+    r = gated_request(rurl, hdr)
     out = {"status": r["status"], "final": r["final"], "hops": r["hops"], "not_modified": r["status"] == 304,
            "etag": r["headers"].get("etag", ""), "lastmod": r["headers"].get("last-modified", ""), "version": {},
            "text": None, "sha": "", "bytes": len(r["body"]), "error": r["error"], "ctype": r["headers"].get("content-type", ""),
