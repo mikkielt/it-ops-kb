@@ -2,7 +2,7 @@
   "id": "BG-rf77tqnq",
   "kind": "bug",
   "title": "dhcp-failover.md states only the cmdlet reference's reading of which server -ServerRole Standby makes the standby, though its conflict entry says the kb states both",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,18 @@
     "parked: SP-j2jn5ue4 review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: repro prints 0 and exits 1; line 37 of dhcp-failover.md cites S-x2hxgchj only for the -ServerRole reading, none cites S-xl2d4tuq for it. Runs after BG-lcp6dhpz (same _conflicts.md) and before BG-4lfjabfo (same expansions.csv).",
-  "claimed_by": "orch-ilqhjn3k"
+  "evidence": {
+    "commit": "6001a44210155cd46517608295d6cbda41613e15",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;L=[l for l in open(\"kb/public/windows/dhcp-failover.md\") if \"S-xl2d4tuq\" in l and \"-ServerRole Standby\" in l];print(len(L));sys.exit(0 if L else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
