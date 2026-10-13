@@ -2,7 +2,7 @@
   "id": "BG-tkfijens",
   "kind": "bug",
   "title": "kb/public/_answers.md gives the os.copy_file_range EXDEV mapping without its Linux kernel older than 5.3 condition",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,27 @@
     "parked: SP-5x5ut5ko review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: the repro exits 1, naming line 2604 of kb/public/_answers.md as the EXDEV line without 5.3; public/python/stdlib-windows-portability.md:86 already quotes the page's condition. Runs after BG-im4573w7, which edits the same file.",
-  "claimed_by": "orch-ilqhjn3k"
+  "evidence": {
+    "commit": "be41bad0c73c09104ac9a725717309be58f93ea5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/public/_answers.md',encoding='utf-8') if 'copy_file_range' in l and 'EXDEV' in l and 'older than 5.3' in l];print(len(ls));sys.exit(0 if ls else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/public/_answers.md',encoding='utf-8') if 'copy_file_range' in l and 'EXDEV' in l];bad=[l[:80] for l in ls if '5.3' not in l];print('answer lines without the 5.3 condition:',bad or 'none');sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "5c8fb2e0d20be011"
+      }
+    ]
+  }
 }
