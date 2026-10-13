@@ -24,6 +24,21 @@
   "depends_on": [
     "BG-3jo3wlr2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the --test_timeout DOC fact stop saying 'for that run', which the page does not say? The DER fact beside it already says the override applies to that run only.",
+      "options": [
+        "drop-from-doc-only",
+        "drop-from-doc-and-extend-der"
+      ],
+      "recommendation": "drop-from-doc-only",
+      "class": "design",
+      "answer": "drop-from-doc-only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tjap3mdd review"
   ],
