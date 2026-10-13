@@ -21,7 +21,7 @@ import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, external_description,
     clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line, main_worktree_spool, need, rel_dir,
-    repositories, run, say, scope, setting, split_touch, waits, worker_dir,
+    repositories, research_touches, run, say, scope, setting, split_touch, waits, worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, trivial_command
 
@@ -2450,12 +2450,17 @@ def cleanup_gate_do(bl, dead):
 
 
 PART_SPLIT = re.compile(r",\s+(?:and\s+)?|\s+and\s+")  # a list clause's parts: split at ', ' and ' and '
-CLAUSE_COVER = 0.5 # the share of a clause's words an item's title and goal must hold to carry it
+CLAUSE_COVER = 0.5 # the share of a clause's words an item's title, goal and mapped clauses must hold to carry it
 CLAUSE_SIMILAR = 2  # the words an open item outside the sprint shares with an unmet clause to be named beside it
 
 
+def fold_word(w):
+    """A word without its plural or verb `s` (`keeps` is `keep`, `class` stays), so `rows` and `row` are one word."""
+    return w[:-1] if len(w) > 3 and w.endswith("s") and not w.endswith("ss") else w
+
+
 def clause_words(text):
-    return {w for w in re.findall(r"[a-z0-9_]+", str(text).lower()) if len(w) > 3}
+    return {fold_word(w) for w in re.findall(r"[a-z0-9_]+", str(text).lower()) if len(w) > 3}
 
 
 def clause_parts(clause):
@@ -2464,42 +2469,80 @@ def clause_parts(clause):
 
 
 def item_words(bl, iid):
-    """The words of an item's title and goal that `goal_clause_lines` matches a clause against."""
-    return clause_words(f"{bl.items[iid].get('title', '')} {bl.items[iid].get('goal', '')}")
+    """The words of an item's title, goal and mapped clauses (its `clauses` mapping) that a goal clause is matched
+    against."""
+    it = bl.items[iid]
+    mapped = " ".join(str(e.get("clause", "")) for e in it.get("clauses") or [] if isinstance(e, dict))
+    return clause_words(f"{it.get('title', '')} {it.get('goal', '')} {mapped}")
+
+
+def touch_words(bl, iid):
+    """The words of the path of each of a story's touches inside a named kb root (`kb/public/intune/*.md`: `intune`),
+    the root's name and the globs left out: what a research story's touches say it covers."""
+    out = set()
+    for t in bl.items[iid].get("touches") or []:
+        if research_touches([t]):
+            out |= clause_words(re.sub(r"[^a-z0-9]+", " ", t.split("/", 2)[2].lower()))
+    return out
+
+
+def carries_clause(bl, cw, iid, fallback=False):
+    """The one carrier filter, read by `goal_clause_lines` and `clauses_left_behind`: the share of the clause's words
+    (cw) item `iid` holds, 0 when it cannot carry. A review story never carries a clause; a goal research story carries
+    one only as a fallback (`fallback`, `close --summary` alone), by its narrowed goal and its touches' path words, and
+    `move` never counts it."""
+    it = bl.items[iid]
+    if not cw or it.get("review"):
+        return 0
+    if it.get("goal_research"):
+        if not fallback:
+            return 0
+        words = item_words(bl, iid) | touch_words(bl, iid)
+    else:
+        words = item_words(bl, iid)
+    share = len(cw & words) / len(cw)
+    return share if share >= CLAUSE_COVER else 0
+
+
+def clause_carriers(bl, cw, ids):
+    """The done items of `ids` that carry the clause, the story (any kind but a bug) before a bug filed from it, each
+    kind highest share first; with none, the goal research stories that carry it as the fallback."""
+    done = [i for i in ids if bl.items[i].get("status") == "done"]
+    ranked = sorted(((bl.items[i].get("kind") == "bug", -carries_clause(bl, cw, i), i) for i in done))
+    got = [i for bug, share, i in ranked if share]
+    if got:
+        return got
+    return [i for _, share, i in sorted((0, -carries_clause(bl, cw, i, fallback=True), i) for i in done
+                                        if bl.items[i].get("goal_research")) if share]
 
 
 def goal_clause_lines(bl, sid, items):
-    """close --summary's clause lines: the sprint's goal split into its clauses, each with the done item of the sprint
-    whose title and goal hold at least CLAUSE_COVER of its words, or `unmet` and, beside it, the open item outside the
-    sprint that shares at least CLAUSE_SIMILAR words with it (named as similar, never as the clause's carrier)."""
+    """close --summary's clause lines: the sprint's goal split into its clauses, each with every done item of the
+    sprint whose title, goal and mapped clauses hold at least CLAUSE_COVER of its words (a story before a bug filed
+    from it, highest share first; with none, the goal research story whose narrowed goal or touches carry it), or
+    `unmet` and, beside it, the open item outside the sprint that shares at least CLAUSE_SIMILAR words with it (named
+    as similar, never as the clause's carrier)."""
     clauses = goal_clauses(bl.items[sid].get("goal", ""))
     if len(clauses) < 2 and not (clauses and len(clause_parts(clauses[0])) > 1):
         return []
-
-    def best(cw, ids):
-        scored = [(len(cw & item_words(bl, i)) / len(cw), i) for i in ids]
-        top = max(scored, default=(0, None))
-        return top[1] if top[0] >= CLAUSE_COVER else None
 
     def similar(cw, ids):
         scored = [(-len(cw & item_words(bl, i)), i) for i in sorted(ids)]
         top = min(scored, default=(0, None))
         return top[1] if -top[0] >= CLAUSE_SIMILAR else None
-    done = [i for i in items if bl.items[i].get("status") == "done" and not bl.items[i].get("review")
-            and not bl.items[i].get("goal_research")]
     elsewhere = [i for i, it in bl.items.items() if i not in items and it.get("kind") not in ("sprint", "epic")
                  and it.get("status") not in ("done", "dropped")]
     out = ["goal clauses:"]
     def verdict(cw):
-        by = best(cw, done) if cw else None
+        by = clause_carriers(bl, cw, items) if cw else []
         if by:
-            return bl.label(by)
+            return ", ".join(bl.label(i) for i in by)
         now = similar(cw, elsewhere) if cw else None
         return f"unmet; similar open item outside the sprint: {bl.label(now)}" if now else "unmet"
     for n, c in enumerate(clauses, 1):
         cw = clause_words(c)
         parts = clause_parts(c)
-        if len(parts) > 1 and not (cw and best(cw, done)):
+        if len(parts) > 1 and not (cw and clause_carriers(bl, cw, items)):
             out.append(f"  {n}. {c[:120]}:")
             out.extend(f"     - {p[:100]}: {verdict(clause_words(p))}" for p in parts)
         else:
@@ -2508,18 +2551,15 @@ def goal_clause_lines(bl, sid, items):
 
 
 def clauses_left_behind(bl, sid, iid):
-    """The goal clauses of sprint `sid` that item `iid` carries (its title and goal hold at least CLAUSE_COVER of the
-    clause's words) and no other item of the sprint that is not dropped does: what moving `iid` out leaves in the goal.
-    Its tasks and subtasks go with it."""
+    """The goal clauses of sprint `sid` that item `iid` carries (its title, goal and mapped clauses hold at least
+    CLAUSE_COVER of the clause's words) and no other item of the sprint that is not dropped does: what moving `iid`
+    out leaves in the goal. Its tasks and subtasks go with it; a review or goal research story carries nothing."""
     moving = {iid, *bl.descendants(iid)}  # its tasks and subtasks leave with it
     others = [i for i in bl.sprint_items(sid) if i not in moving and bl.items[i].get("status") != "dropped"]
-
-    def carries(cw, i):
-        return bool(cw) and len(cw & item_words(bl, i)) / len(cw) >= CLAUSE_COVER
     left = []
     for c in goal_clauses(bl.items[sid].get("goal", "")):
         cw = clause_words(c)
-        if carries(cw, iid) and not any(carries(cw, i) for i in others):
+        if carries_clause(bl, cw, iid) and not any(carries_clause(bl, cw, i) for i in others):
             left.append(c)
     return left
 

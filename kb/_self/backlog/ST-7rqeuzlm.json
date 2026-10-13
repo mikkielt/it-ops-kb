@@ -113,6 +113,40 @@
       "class": "agents-rule",
       "answer": "the same word cover, with a plural or verb s folded, over the item's title, goal and mapped clauses",
       "by": "operator"
+    },
+    {
+      "id": "touch-words",
+      "kind": "blocking",
+      "question": "Which touches does a goal research story's fallback read for the words of a clause: those inside any named kb root, or only kb/public?",
+      "options": [
+        "any named kb root (research_touches: kb/<root>/..., never kb/_self), the path after the root's name",
+        "only kb/public/..."
+      ],
+      "recommendation": "any named kb root (research_touches: kb/<root>/..., never kb/_self), the path after the root's name",
+      "class": "agents-rule",
+      "do": {
+        "any named kb root (research_touches: kb/<root>/..., never kb/_self), the path after the root's name": "ST-7rqeuzlm",
+        "only kb/public/...": "ST-7rqeuzlm"
+      },
+      "answer": "any named kb root (research_touches: kb/<root>/..., never kb/_self), the path after the root's name",
+      "by": "operator"
+    },
+    {
+      "id": "fold-scope",
+      "kind": "blocking",
+      "question": "Where is the plural or verb s folded: in every clause word match (carry, left-behind and the similar open item hint), or only where an item carries a clause?",
+      "options": [
+        "every match: clause_words folds, so carry, left-behind and the similar hint read one word set",
+        "carry matches only: the similar hint keeps unfolded words"
+      ],
+      "recommendation": "every match: clause_words folds, so carry, left-behind and the similar hint read one word set",
+      "class": "agents-rule",
+      "do": {
+        "every match: clause_words folds, so carry, left-behind and the similar hint read one word set": "ST-7rqeuzlm",
+        "carry matches only: the similar hint keeps unfolded words": "ST-7rqeuzlm"
+      },
+      "answer": "every match: clause_words folds, so carry, left-behind and the similar hint read one word set",
+      "by": "operator"
     }
   ],
   "links": [
