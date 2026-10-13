@@ -33,7 +33,7 @@ status: partial
 - Interval sets with overlapping elements fail to load with "conflicting intervals specified" unless the set has `auto-merge`, which collapses adjacent or overlapping elements. [DOC S-oz7g4upk]
 - The wiki states that a set name has at most 16 characters and that a set `comment` needs nftables 0.9.7 and kernel 5.10. [DOC S-oz7g4upk]
 - In the SSG control file for CIS Debian 12 (benchmark v1.1.0 mapping), recommendations 4.3.1 to 4.3.10 cover nftables (installed, a table exists, base chains exist, loopback traffic, default deny policy, service enabled, rules permanent); all are Level 1 Server and Level 1 Workstation, two are manual (outbound and established connections; iptables flushed). [CODE S-ycjp6jnv: controls/cis_debian12.yml#4.3.1]
-- One ruleset file that begins with `flush ruleset` (or `flush table`) and is applied with `nft -f` is therefore a single idempotent step for a pull agent: a second run swaps in the same content; with `flush ruleset` the step also removes the tables of every other role on the host, so a role that shares the host flushes only its own table. [DER S-nvc4ejpk, S-t7vpftda: atomic swap plus flush-first avoids duplicate rules; `flush ruleset` removes all tables]
+- A ruleset file whose first statement is `flush table inet NAME` and that is applied with `nft -f` is a single idempotent step for a pull agent that owns only that table: a second run swaps in the same content and clears nothing else, so the tables other roles own on the host stay. The table has to exist before the file loads (`nft create table inet NAME`, as the wiki advises). The same file with a bare `flush ruleset` first removes every table on the host, so it fits only a host the agent owns outright. [DER S-nvc4ejpk, S-t7vpftda: atomic swap plus flush-first avoids duplicate rules; `flush table` limits the clearing to one table, `flush ruleset` removes all tables]
 
 ## Reference
 | need | form | source |
@@ -49,10 +49,10 @@ status: partial
 Not read: how each distribution loads `/etc/nftables.conf` at boot (see `_gaps.md`, topic `security/linux-nftables`).
 
 ## Examples
-- SNIPPET: a ruleset file that replaces the host's whole ruleset atomically (every other table goes too; a host shared with other roles flushes only its own table, as in the facts above) and keeps an updatable allow set; context: nftables 0.9.4 or later, placeholder documentation addresses; checked: no [DER S-nvc4ejpk, S-h3233m5r, S-oz7g4upk: flush-first file, `define`, named set]
+- SNIPPET: a ruleset file that replaces only the agent's own table `inet filter` atomically (the tables other roles own are not touched; a bare `flush ruleset` first would remove them too, as in the facts above) and keeps an updatable allow set; context: nftables 0.9.4 or later, the table created beforehand with `nft create table inet filter`, placeholder documentation addresses; `flush table` leaves a loaded set's elements in place, so a reload onto a table whose set already holds elements is not covered by the sources read; checked: no [DER S-nvc4ejpk, S-t7vpftda, S-h3233m5r, S-oz7g4upk: flush-first file, `define`, named set]
 ```
 #!/usr/sbin/nft -f
-flush ruleset
+flush table inet filter
 define ssh_admins = { 192.0.2.10, 192.0.2.11 }
 table inet filter {
   set admin_nets { type ipv4_addr; flags interval; elements = $ssh_admins }
