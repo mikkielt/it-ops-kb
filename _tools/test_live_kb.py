@@ -616,6 +616,12 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     out = capsys.readouterr().out.splitlines()
     assert re.search(rf"^{S1} +fetched \S+ +changed \S+ +age \d+\.\dd +lifetime 2\.2d STALE +\(2 changes in 5 checks", out[0]), out
     assert re.search(rf"^{S4} .* never stale +\(pinned", out[1]) and out[2].endswith("stale=1"), out
+    # a source no check or anchor dates is stale as a lookup counts it, not left out of STALE
+    S8 = "S9990108"
+    fetch.status(argparse.Namespace(topic=[], dir=[], file=[], source=[S8], older_than=None, json=True),
+                 {**psrc, S8: {"id": S8, "url": "https://learn.microsoft.com/en-us/test/undated", "version_or_date": ""}})
+    undated = json.loads(capsys.readouterr().out)[0]
+    assert undated["age_days"] is None and undated["stale"] is True, undated
     # the history is kept: a second read asks git for the log only
     shown_revs = []
     real_git = provider._git

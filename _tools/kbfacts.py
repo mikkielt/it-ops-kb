@@ -3231,9 +3231,8 @@ LIVE_WORD = {"pinned": "unchanged", "unchanged": "unchanged", "changed": "change
 def source_freshness(ids, rows=None):
     """{source id: {age_days, lifetime_days, basis, stale}} for the ids a ledger holds, with no network: the source's
     freshness lifetime (provider.lifetimes: its recorded changes, its Learn file's commits, its page date, its
-    provider's default; None for a pinned url) against its age, the time since the date source_stamp prints. A source
-    no check or anchor dates (age None) is stale unless it is pinned."""
-    import provider  # not at load: it brings the network modules a pack with no source footer never needs
+    provider's default; None for a pinned url) against its age, the time since the newer of its last check and its
+    facts' verified date. A source no check or anchor dates (age None) is stale unless it is pinned."""
     rows = rows or ledger_rows()
     ids = list(ids)
     _, verified, state = fresh_state(ids)
@@ -3247,12 +3246,22 @@ def source_freshness(ids, rows=None):
             root = kbcommon.root(name)
         except (KeyError, kbcommon.RootError):
             continue
-        for i, lt in provider.lifetimes(srcs, state, provider.providers(root), root, now).items():
-            dates = (provider.last_check(state.get(i), rows[i]), provider.stamp_epoch(verified.get(i, "")))
-            last = max((d for d in dates if d is not None), default=None)
-            age = None if last is None else max(now - last, 0) / provider.DAY
-            out[i] = {"age_days": age, "lifetime_days": lt["days"], "basis": lt["basis"],
-                      "stale": lt["days"] is not None and (age is None or age > lt["days"])}
+        out.update(root_freshness(srcs, state, verified, root, now))
+    return out
+
+
+def root_freshness(srcs, state, verified, root, now):
+    """source_freshness of the sources `srcs` ({id: `_sources.csv` row}) of one root `root`, against `state` ({id:
+    `_fetch_state.csv` row}), `verified` ({id: newest verified_utc of its anchors}) and the epoch `now`: the one place
+    a source's age and staleness are decided, which a lookup and `fetch.py --status` both read."""
+    import provider  # not at load: it brings the network modules a pack with no source footer never needs
+    out = {}
+    for i, lt in provider.lifetimes(srcs, state, provider.providers(root), root, now).items():
+        dates = (provider.last_check(state.get(i), srcs[i]), provider.stamp_epoch(verified.get(i, "")))
+        last = max((d for d in dates if d is not None), default=None)
+        age = None if last is None else max(now - last, 0) / provider.DAY
+        out[i] = {"age_days": age, "lifetime_days": lt["days"], "basis": lt["basis"],
+                  "stale": lt["days"] is not None and (age is None or age > lt["days"])}
     return out
 
 
