@@ -2,7 +2,7 @@
   "id": "BG-qcngojtq",
   "kind": "bug",
   "title": "A question that names a version without its v prefix gets coverage none although the kb spells it v2.1.294",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,
@@ -15,6 +15,15 @@
       "import subprocess,sys;o=subprocess.run(['python3','_tools/rag.py','pack','Did Claude Code 2.1.294 change any key of the claude -p result usage field'],capture_output=True,text=True).stdout;print(o.splitlines()[0]);sys.exit(1 if o.startswith('coverage: none') else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;f=lambda v:subprocess.run(['python3','_tools/rag.py','pack','Did Claude Code '+v+' change any key of the claude -p result usage field'],capture_output=True,text=True).stdout.splitlines();a,b=f('2.1.294'),f('v2.1.294');k=lambda o:[o[0].split(' (')[0]]+[l for l in o if l.startswith('- ')];print(k(a)[0],k(b)[0]);sys.exit(0 if k(a)==k(b) else 1)"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "kb/_self/content-rules.md",
@@ -23,5 +32,6 @@
   ],
   "depends_on": [
     "BG-2rh4u36u"
-  ]
+  ],
+  "claimed_by": "orch-7ff7c5ui"
 }
