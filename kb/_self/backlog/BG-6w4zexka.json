@@ -59,6 +59,21 @@
   "depends_on": [
     "BG-zof4bcok"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the memdocs no-capture fact state its basis after the reword? CDX only is recommended: the availability API was not re-run and doc-change-detection.md names CDX or TimeGate as the check to trust; the home page capture is the control, cited with S-u2afup7q.",
+      "options": [
+        "cdx-only",
+        "cdx-and-availability"
+      ],
+      "recommendation": "cdx-only",
+      "class": "design",
+      "answer": "cdx-only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilqhjn3k review",
     "merged: BG-s5cpo5ml"
