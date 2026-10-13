@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The down window gates every request of the lookup revalidation, not only a source's first page request",
   "status": "draft",
+  "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,
-  "goal": "The search host (api.github.com, export.arxiv.org, the Learn search), candidate pages, the made-up sibling and a pinned url's repository request read and record the host's down window as a source's own page does, so two searches against a host that does not accept a connection make one request, not two. Found by the SP-u5q37ds3 review (_tools/factdiff.py search_urls, page_doc, madeup_text; provider.repository_state).",
+  "goal": "The search host (api.github.com, export.arxiv.org, the Learn search), candidate pages, the made-up sibling and a pinned url's repository request read and record the host's down window as a source's own page does, so two searches against a host that does not accept a connection make one request, not two; when a source's url answers a redirect to another host that does not accept a connection, the down window is recorded for the target's host, not the source's own host that answered. Found by the SP-u5q37ds3 review (_tools/factdiff.py search_urls, page_doc, madeup_text and detect_pass, provider.repository_state and the provider.request hops).",
   "checks": [
     {
       "run": [
@@ -14,17 +15,41 @@
         "-k",
         "revalidate_down_window_every_request"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_down_window_redirect_target"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The search host (api.github.com, export.arxiv.org, the Learn search), candidate pages, the made-up sibling and a pinned url's repository request read and record the host's down window as a source's own page does, so two searches against a host that does not accept a connection make one request, not two",
+      "check": 0
+    },
+    {
+      "clause": "when a source's url answers a redirect to another host that does not accept a connection, the down window is recorded for the target's host, not the source's own host that answered. Found by the SP-u5q37ds3 review (_tools/factdiff.py search_urls, page_doc, madeup_text and detect_pass, provider.repository_state and the provider.request hops)",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/provider.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "depends_on": [
+    "ST-c7bty3ig"
   ],
   "links": [
     "parked: SP-u5q37ds3 review",
     "merged: ST-ecxt66tw"
   ],
-  "notes": "Merged from ST-ecxt66tw “A redirect target's connect failure does not put the redirecting host in its down window” at the 2026-10-13 draft triage: Premise holds by reading: detect_pass calls host_seen(url, error) with the source's own url (factdiff.py:1341), and provider.request keeps final=url when a redirect hop fails to connect, so the source's host gets the window. Rare: only 11 of 2621 sources redirect cross-host, none to a known-dead host. Same down-window paths and test file as ST-k445avpw. Its goal: When a source's url answers a redirect to another host that does not accept a connection, the down window is recorded for the target's host, not the source's own host that answered. Found by the SP-u5q37ds3 review (_tools/factdiff.py detect_pass and provider.request hops). Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"revalidate_down_window_redirect_target\"]} Its touches: _tools/factdiff.py, _tools/provider.py, _tools/test_live_kb.py, kb/_self/tools.md"
+  "notes": "Merged from ST-ecxt66tw at the 2026-10-13 draft triage: its goal is the goal's second clause, its check revalidate_down_window_redirect_target the second check. Premise: detect_pass calls host_seen(url, error) with the source's own url (factdiff.py:1341), and provider.request keeps final=url when a redirect hop fails to connect, so the source's host gets the window. Rare: only 11 of 2621 sources redirect cross-host, none to a known-dead host. Premise: factdiff.madeup_text and page_doc call provider.request with no provider.host_down check; with api.github.com in its window, one madeup_text and one page_doc made 2 requests (run 2026-10-13 at base, planted window). Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Its checks' tests drive revalidate (the lookup path) with provider.request stubbed, not detect_pass alone. Test ids are near the ceiling: extend the existing revalidate test and append both selector words to its name, a new id only when none does."
 }

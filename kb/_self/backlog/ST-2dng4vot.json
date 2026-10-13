@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "When does the lookup revalidation read a fact as current if the source's baseline is newer than the fact's confirmation? Which requests of the lookup revalidation read and record a host's down window? Does the lookup give a fetched page with no words a soft 404 verdict? Which facts does factdiff.py anchor --file anchor? How does kbid.py add read the licence of a Learn page through its public mirror? The _self docs answer these, but no tested question matches them yet, so each gets a tested row in kb/_self/_retrieval/lookup_eval.csv, a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,7 @@
     }
   ],
   "touches": [
-    "kb/public/**"
-  ]
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 4 of 15): the five questions were run through rag.py pack --root _self at plan time: Q1 to Q4 weak (the _self docs answer them: kb/_self/tools.md:144, :160, :37; no tested question matches), Q5 none (content-rules.md:84 holds the Learn mirror sentence; the pack reads no NOASSERTION word). Each question's row quotes a phrase the sprint's items keep or rewords with the doc, so the items carry the eval file in their touches and run after this story. No outside facts: every question is a tool rule the _self docs answer, so no kb/public fact is written; its done is the landed rows."
 }
