@@ -34,6 +34,34 @@
     "kb/_self/content-rules.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which lock does kbid.py add take over a root's sources file, and when is a leftover one cleared?",
+      "options": [
+        "sibling-lock-file: O_EXCL file _sources.csv.lock beside the sources file, a lock older than 30 s cleared by rename-claim, refused after 60 s (exit 2)",
+        "host-lock-dir: O_EXCL file in the host lock directory named by a hash of the sources path, cleared when its holder pid no longer runs"
+      ],
+      "recommendation": "sibling-lock-file: O_EXCL file _sources.csv.lock beside the sources file, a lock older than 30 s cleared by rename-claim, refused after 60 s (exit 2)",
+      "class": "design",
+      "answer": "sibling-lock-file: O_EXCL file _sources.csv.lock beside the sources file, a lock older than 30 s cleared by rename-claim, refused after 60 s (exit 2)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "The suite is at max_ids 100: where does the kbid parallel-add test go?",
+      "options": [
+        "merged-id: a helper called from the existing census test id in test_redact.py, whose name gains the clause (the file's own pattern for kbid and census scenarios)",
+        "replace-id: delete an existing test id and add a new one named for the clause"
+      ],
+      "recommendation": "merged-id: a helper called from the existing census test id in test_redact.py, whose name gains the clause (the file's own pattern for kbid and census scenarios)",
+      "class": "querylog",
+      "answer": "merged-id: a helper called from the existing census test id in test_redact.py, whose name gains the clause (the file's own pattern for kbid and census scenarios)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-wwacrsqr close"
   ],

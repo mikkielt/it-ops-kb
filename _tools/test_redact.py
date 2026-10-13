@@ -1642,7 +1642,52 @@ def census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_r
     assert Counter(r["group"] for r in listed) == by and list(by) == ["changed", "judged", "ok"]
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes_and_census_dispatch_refuses_in_a_worktrees_checkout_and_census_brief_carries_phase2_rules_that_hold_throughout(tmp_path, monkeypatch, capsys):
+PARALLEL_ADD = (
+    "import os, sys, time, types\n"
+    "sys.path.insert(0, sys.argv[1])\n"
+    "import kbid\n"
+    "root = types.SimpleNamespace(path=sys.argv[2], name='public', id_prefix='S')\n"
+    "while not os.path.exists(sys.argv[3]):\n"
+    "    time.sleep(0.001)\n"
+    "for n in range(int(sys.argv[5])):\n"
+    "    kbid.add_source(root, f'https://docs.example.com/w{sys.argv[4]}/p{n}', 'Page', 'Example', 'MIT', 'copy',\n"
+    "                    today='2026-10-13')\n")
+
+
+def kbid_parallel_add_keeps_every_row_and_leaves_no_torn_one(tmp_path):
+    """Writers started at one signal each add several sources to one _sources.csv: every row is there once, the file
+    parses whole and in id order, and no lock or temporary file is left; a lock a crashed add left is cleared."""
+    root = tmp_path / "public"
+    root.mkdir(parents=True)
+    cols = ["id", "url", "title", "publisher", "licence", "reuse", "retrieved_utc", "version_or_date", "artifact_sha256",
+            "used_in", "superseded_by"]
+    old = {c: "" for c in cols} | {"id": "S100", "url": "https://docs.example.com/old", "title": "Old",
+                                   "publisher": "Example", "licence": "MIT", "reuse": "copy", "retrieved_utc": "2026-09-26"}
+    sources = root / "_sources.csv"
+    kbcommon.write_csv(str(sources), cols, [old])
+    go, writers, each = tmp_path / "go", 6, 8  # `go` is outside the root: the root lists only its own files
+    procs = [subprocess.Popen([sys.executable, "-c", PARALLEL_ADD, TOOLS, str(root), str(go), str(w), str(each)],
+                              stderr=subprocess.PIPE, text=True, encoding="utf-8") for w in range(writers)]
+    go.write_text("go", encoding="utf-8")
+    for p in procs:
+        assert p.wait(timeout=120) == 0, p.stderr.read()
+    rows = list(csv.DictReader(sources.open(encoding="utf-8", newline="")))
+    want = {"https://docs.example.com/old"} | {f"https://docs.example.com/w{w}/p{n}" for w in range(writers) for n in range(each)}
+    assert len(rows) == len(want) and {r["url"] for r in rows} == want
+    assert all(r["id"] and r["title"] and r["retrieved_utc"] and None not in r for r in rows)
+    assert kbid.check_sources(rows) == [] and [r["id"] for r in rows] == sorted((r["id"] for r in rows), key=kbid.sort_key)
+    assert sorted(f.name for f in root.iterdir()) == ["_sources.csv"]
+    # a lock file a crashed add left, older than the bound, is cleared; a lock nobody holds is no reason to refuse
+    stale = root / "_sources.csv.lock"
+    stale.write_text("pid=1\nstarted=2026-10-01T00:00:00Z\n", encoding="utf-8")
+    os.utime(stale, (1, 1))
+    ns = types.SimpleNamespace(path=str(root), name="public", id_prefix="S")
+    assert kbid.add_source(ns, "https://docs.example.com/after", "Page", "Example", "MIT", "copy")[1] is True
+    assert not stale.exists() and len(list(csv.DictReader(sources.open(encoding="utf-8", newline="")))) == len(want) + 1
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes_and_census_dispatch_refuses_in_a_worktrees_checkout_and_census_brief_carries_phase2_rules_that_hold_throughout_and_kbid_parallel_add_keeps_every_row_and_leaves_no_torn_one(tmp_path, monkeypatch, capsys):
+    kbid_parallel_add_keeps_every_row_and_leaves_no_torn_one(tmp_path / "kbid_parallel")
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path / "dispatch", monkeypatch, capsys)
     census_dispatch_refuses_in_a_worktrees_checkout(tmp_path / "worktrees", monkeypatch, capsys)
