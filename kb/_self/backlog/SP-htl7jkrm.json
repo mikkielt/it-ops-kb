@@ -2,7 +2,7 @@
   "id": "SP-htl7jkrm",
   "kind": "sprint",
   "title": "Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured",
-  "status": "planned",
+  "status": "active",
   "goal": "factdiff.py anchor --file re-anchors only the facts that changed, keeps other files' quote anchors and leaves _fetch_state.csv alone; the phase-4 sample draws judge-confirmed sources at a rate that bounds stale confirms and the report states their agreement; the one-domain census cost bullet states the rows dispatched, the rows left and that the census was not complete; the batch judge's dry-run constants come from the measured Haiku 5.5 output per item; census.py brief carries the rules that hold throughout phase 2; sample --brief agrees a fact by tool only when its anchor predates the phase-2 edits; census.py dispatch gives its session Edit rules that work under .claude/worktrees or says before the paid run that they cannot",
   "gates": [
     {

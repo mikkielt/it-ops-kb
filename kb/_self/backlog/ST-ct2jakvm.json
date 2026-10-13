@@ -2,7 +2,7 @@
   "id": "ST-ct2jakvm",
   "kind": "story",
   "title": "The batch judge's dry-run constants are set from the measured Haiku 5.5 output per item",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-htl7jkrm",
   "priority": "P3",

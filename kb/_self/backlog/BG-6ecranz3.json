@@ -2,7 +2,7 @@
   "id": "BG-6ecranz3",
   "kind": "bug",
   "title": "census.py dispatch's Edit allow rules for a group's owned files are denied in a checkout under .claude/worktrees, so the session edits nothing and returns its rewrites as foreign edits",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-htl7jkrm",
   "priority": "P2",
   "rank": 0,

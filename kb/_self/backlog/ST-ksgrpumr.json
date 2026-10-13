@@ -2,7 +2,7 @@
   "id": "ST-ksgrpumr",
   "kind": "story",
   "title": "Research sprint goal: Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-htl7jkrm",
   "goal_research": true,
   "priority": "P1",

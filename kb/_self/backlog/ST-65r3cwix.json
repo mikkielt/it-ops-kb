@@ -2,7 +2,7 @@
   "id": "ST-65r3cwix",
   "kind": "story",
   "title": "factdiff.py anchor --file writes only the anchor rows of the facts that changed and leaves _fetch_state.csv alone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-htl7jkrm",
   "priority": "P3",
   "rank": 0,
