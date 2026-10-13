@@ -591,14 +591,37 @@ def ops_mark(label):
 PUSH_LOG_TAIL = 200_000  # bytes of the end of a store's distill.log read for the last `apply --push`
 PUSH_FAILED = re.compile(r"apply --push: (?:kbgit\.py sync exit [1-9]|refused|commit failed|conflict|the worktree|.*nothing pushed)")
 PUSH_DONE = re.compile(r"apply --push: (?:pushed [0-9a-f]+ to |nothing to push)")
-PUSH_GATE = re.compile(r"\s+gate (.+?): FAILED \(exit \d+\): (.*)")
+PUSH_GATE = re.compile(r"\s+gate (.+?): FAILED(?: \(exit \d+\))?: (.*)")  # check-trailers' FAILED has no exit
+PUSH_GATE_OUTPUT = re.compile(r"\s+gate (.+?) whole output: (.+) \(\d+ test ids\)")
+GATE_OUTPUT_READ = 200_000  # bytes of the start of a gate's kept output file read for its first error line
+GATE_ERROR_LINE = re.compile(r"(?:ERROR|FAILED)\b|E {2,}\S|[A-Za-z_.]+(?:Error|Exception): ")
+
+
+def gate_first_error(path):
+    """The first error line (`ERROR ...`, `FAILED ...`, a pytest `E` line or an `...Error: ...` line, up to 200
+    characters) of the failed gate's whole output that `kg_sync.gate_output_file` kept at PATH under `_cache/gate`;
+    None when PATH is no such file, cannot be read, or holds no such line."""
+    p = Path(path)
+    if p.parent.name != "gate" or p.parent.parent.name != "_cache":
+        return None
+    try:
+        with open(p, "rb") as f:
+            text = f.read(GATE_OUTPUT_READ).decode("utf-8", errors="replace")
+    except OSError:
+        return None
+    for ln in text.splitlines():
+        ln = ln.strip()
+        if GATE_ERROR_LINE.match(ln):
+            return re.sub(r"^E {2,}", "", ln)[:200]
+    return None
 
 
 def last_push_failure(store):
     """The phrase naming why the last `apply --push` the distill.log beside STORE records delivered nothing: its first
     failed gate and that gate's first error line (`gate check.py: ERROR ...`, with the count of the other failed
-    gates), else the line that stopped it; None when its last outcome is a push or nothing to push, or the log has none
-    or cannot be read."""
+    gates; the first error line of the output file the log names for that gate, else the gate's summary line, which
+    holds only the last line its output ended in; check-trailers' summary line has no exit code), else the line that
+    stopped it; None when its last outcome is a push or nothing to push, or the log has none or cannot be read."""
     try:
         from ql_distill import LOG_NAME
         log = Path(store).parent / LOG_NAME
@@ -613,14 +636,18 @@ def last_push_failure(store):
             return None
         if not PUSH_FAILED.match(lines[i]):
             continue
-        gates, j = [], i - 1
+        gates, kept, j = [], {}, i - 1
         while j >= 0 and lines[j].startswith("  "):
             m = PUSH_GATE.fullmatch(lines[j])
             if m:
                 gates.insert(0, m.groups())
+            m = PUSH_GATE_OUTPUT.fullmatch(lines[j])
+            if m:
+                kept[m[1]] = m[2]
             j -= 1
         if gates:
             name, first = gates[0]
+            first = (gate_first_error(kept[name]) if name in kept else None) or first
             more = f", and {len(gates) - 1} other gate(s) failed" if len(gates) > 1 else ""
             return f"gate {name}: {first[:200]}{more}"
         return lines[i][len("apply --push: "):][:200]
