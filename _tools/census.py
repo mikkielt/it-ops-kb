@@ -5,7 +5,7 @@
   census.py repin LOG [--date D] [--dry-run] [--commit]   phase 1: a pinned file whose facts are word for word at the newer commit is re-pinned
   census.py record LOG --from RESULTS.json | --id ID --outcome O [--note T]   phase 2: what reading decided
   census.py confirm LOG [--date D] [--dry-run]     phase 3: dates and evidence for the confirmed sources and articles
-  census.py sample LOG [--changed 0.10] [--ok 0.05] [--seed N] [--brief [--max-age DAYS]]   phase 4: the sources an independent check re-reads
+  census.py sample LOG [--changed 0.10] [--judged 0.10] [--ok 0.05] [--seed N] [--brief [--max-age DAYS]]   phase 4: the sources an independent check re-reads
   census.py summary LOG [--factdiff FLOG]          counts per bucket and outcome, the blocked, dns and connect hosts, and the size of phase 2's reading queue
   census.py baselines [--list]                     the live unpinned sources with no detection baseline, counted by host (exit 1 when any)
   census.py judge LOG [--factdiff FLOG] [--model M] [--batch-size N] [--dry-run]   phase 2: review items judged in batches by a no-tool model call
@@ -91,7 +91,10 @@ baselines prints how many live (not superseded) unpinned sources hold no detecti
 QUEUE_HOSTS with most; --list: every host, each with its ids and urls); no network, no model; exit 1 when any, 0 when none.
 
 sample (phase 4) prints a CSV of ids for the independent re-check: a fraction of the sources whose facts phase 2
-changed (updated/superseded/gone) and of the confirmed ones (bucket OK or outcome confirmed), seeded, at least one each.
+changed (updated/superseded/gone, group `changed`), of the sources `judge` confirmed with no agent (outcome confirmed,
+a note starting `N fact(s) judged supported by`, group `judged`, --judged, default the changed group's 0.10: a false
+confirm of the judge is a stale fact dated current, so these are drawn at the rate of the changed ones) and of the
+other confirmed ones (bucket OK or outcome confirmed, group `ok`), seeded, at least one each.
 --brief prints instead the checker's brief for the same rows: for each sampled source its citing facts (a superseded
 source: those of the row that replaced it), each with the passage its anchor names in the source's current text, from
 the document cache of _cache/factdiff (--max-age days, default 7) or else a fetch, which it caches. A source whose every
@@ -99,8 +102,10 @@ fact has its anchor's passage word for word in that text (the proof `factdiff.py
 under "Agreed by tool" with that proof (the facts, the url, the document's fetch time) and the checker never sees it; a
 source with a fact whose passage is not there, a source whose page could not be read and a source no fact cites go under
 "For the checker" with each fact, its passage (the anchor's, else the best window, marked) and the command that reads the
-source. The counts `checked`, `agreed by tool` and `for the checker` head the lists; the checker's own agree and
-disagree counts complete the report. The checker is a context that did not do phase 2, and changes nothing.
+source. The counts `checked`, `agreed by tool` and `for the checker` head the lists, also for each group (the line
+`by group`: the report states the `judged` group's agreement apart from `ok`, each source's group is in its head); the
+checker's own agree and disagree counts complete the report. The checker is a context that did not do phase 2, and
+changes nothing.
 
 summary prints the hosts of the rows noted `blocked`, `dns` and `connect` apart, and the count of HTTP errors
 (NEEDS-READING rows with a numeric status other than 200). It also prints the queue phase 2 must read, with no network and no model: the rows whose bucket is not OK, whose
@@ -1217,15 +1222,22 @@ def cmd_baselines(a, tally):
     return 1 if gap else 0
 
 
+JUDGED_NOTE = "fact(s) judged supported by"  # the note `judge` gives a source it confirmed with no agent; `sampled` reads it
+SAMPLE_GROUPS = ("changed", "judged", "ok")  # the phase-4 sample's groups, in the order the sample and its brief list them
+
+
 def sampled(rows, a):
     """[(group, row)] of the phase-4 sample, in the order the CSV lists them: `changed` (outcome updated, superseded or
-    gone) and `ok` (bucket OK with no outcome, or confirmed), each a seeded fraction of at least one row, by id."""
+    gone), `judged` (outcome confirmed by a model call of `judge`, its note holding `JUDGED_NOTE`: a false confirm
+    there is a stale fact the sample must catch, so its rate is the changed group's) and `ok` (bucket OK with no
+    outcome, or any other confirmed), each a seeded fraction of at least one row, by id."""
     rnd = random.Random(a.seed)
     changed = [r for r in rows if r["outcome"] in ("updated", "superseded", "gone")]
-    ok = [r for r in rows if (r["bucket"] == "OK" and not r["outcome"]) or r["outcome"] == "confirmed"]
+    judged = [r for r in rows if r["outcome"] == "confirmed" and JUDGED_NOTE in r["outcome_note"]]
+    ok = [r for r in rows if (r["bucket"] == "OK" and not r["outcome"]) or (r["outcome"] == "confirmed" and JUDGED_NOTE not in r["outcome_note"])]
     pick = lambda xs, rate: rnd.sample(xs, min(len(xs), max(1, round(len(xs) * rate)))) if xs else []  # noqa: E731
     out = []
-    for group, xs in (("changed", pick(changed, a.changed)), ("ok", pick(ok, a.ok))):
+    for group, xs in (("changed", pick(changed, a.changed)), ("judged", pick(judged, a.judged)), ("ok", pick(ok, a.ok))):
         out += [(group, r) for r in sorted(xs, key=lambda r: r["id"])]
     return out
 
@@ -1306,6 +1318,7 @@ def sample_brief(picked, log, a):
     docs = factdiff.fetch_all(need, srcs, a.max_age) if need else {}
     cites = factdiff.cite_counts(facts)
     ctx, tool, check = {"providers": provider.providers(factdiff.ROOT)}, [], []
+    by_group = {g: Counter() for g in SAMPLE_GROUPS}
     date, phase1 = ql_capture.phase_date(path=log), {}
     commit = phase1_commit(date)
     for group, r in picked:
@@ -1322,7 +1335,9 @@ def sample_brief(picked, log, a):
             got.append({"at": f"{kbcommon.repo_rel(rel)}:{line}", "claim": claim, "passage": passage, "how": how,
                         "anchor": "located" if anchor and anchor.get("status") == "located" else "not located"})
         head = f"{r['id']}  {group}, outcome {r['outcome'] or '-'}, bucket {r['bucket']}"
+        by_group[group]["checked"] += 1
         if got and doc is not None and all(g["how"] == WORD for g in got):
+            by_group[group]["agreed by tool"] += 1
             tool.append(f"- {head}: {len(got)} fact(s) found word for word in the current text of "
                         f"{srcs[tid]['url']} (document {tid}, fetched {(d.get('fetched_utc') or '-')[:19]}): "
                         + ", ".join(g["at"] for g in got))
@@ -1338,11 +1353,14 @@ def sample_brief(picked, log, a):
             out += [f"  {n}. {g['at']} ({g['anchor']} anchor)", f"     fact: {g['claim']}",
                     f"     passage ({g['how'] or 'none found'}): {g['passage'] or '-'}"]
         out += ["- read:"] + [f"  {c}" for c in read_commands(r, ctx)]
+        by_group[group]["for the checker"] += 1
         check.append("\n".join(out))
     n = len(picked)
+    groups = "; ".join(f"{g} checked={c['checked']} agreed by tool={c['agreed by tool']} for the checker={c['for the checker']}"
+                       for g, c in by_group.items())
     text = "\n\n".join([SAMPLE_RULES.format(date=date),
                          f"checked={n} agreed by tool={len(tool)} for the checker={len(check)}; the checker's passage judgments "
-                         f"run on {STEP_MODELS['check']}",
+                         f"run on {STEP_MODELS['check']}\nby group, each stated apart in the report: {groups}",
                          "## Agreed by tool\n" + ("\n".join(tool) or "none"),
                          "## For the checker\n\n" + ("\n\n".join(check) or "none")])
     return text, {"checked": n, "agreed by tool": len(tool), "for the checker": len(check)}
@@ -1555,7 +1573,7 @@ def cmd_judge(a, tally):
         its = [i for i in items if i["source_id"] == sid]
         if all((judged.get((sid, i["key"], i["path"])) or {}).get("verdict") == "supported" for i in its):
             confirmed_ids.append({"id": sid, "outcome": "confirmed",
-                                  "note": f"{len(its)} fact(s) judged supported by {a.model} ({os.path.basename(judge_path(a.log))})"})
+                                  "note": f"{len(its)} {JUDGED_NOTE} {a.model} ({os.path.basename(judge_path(a.log))})"})
     if confirmed_ids:
         log_rows = read_log(a.log)
         set_outcomes(log_rows, confirmed_ids, tally)
@@ -3320,7 +3338,9 @@ def main():
     s.add_argument("--max-age", type=float, default=7, help="--brief reuses cached documents up to DAYS old, else fetches "
                                                             "(default 7, as factdiff.py anchor)")
     s.add_argument("--changed", type=float, default=0.10, help="fraction of the changed sources (default 0.10)")
-    s.add_argument("--ok", type=float, default=0.05, help="fraction of the confirmed sources (default 0.05)")
+    s.add_argument("--judged", type=float, default=0.10, help="fraction of the sources the batch judge confirmed (default 0.10, "
+                                                              "the changed group's: the judge's false confirms are stale facts)")
+    s.add_argument("--ok", type=float, default=0.05, help="fraction of the other confirmed sources (default 0.05)")
     s.add_argument("--seed", type=int, default=1)
     bs = sub.add_parser("baselines", help="the live unpinned sources with no detection baseline, counted by host (exit 1 when any)")
     bs.add_argument("--list", action="store_true", help="every host, each with its source ids and urls")
