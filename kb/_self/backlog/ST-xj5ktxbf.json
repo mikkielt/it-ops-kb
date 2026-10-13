@@ -2,7 +2,7 @@
   "id": "ST-xj5ktxbf",
   "kind": "story",
   "title": "Review sprint: Content fixes: answers, conflicts, gaps and source rows say what holds now",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ilqhjn3k",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-ilqhjn3k"
+  "evidence": {
+    "commit": "5e593c9e62a38e050b4fe5450ca39ad74df2cca7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "acc00460990b72c9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "cd6c4bb9732a56c6"
+      }
+    ]
+  }
 }
