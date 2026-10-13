@@ -2,7 +2,7 @@
   "id": "BG-f3d6lirf",
   "kind": "bug",
   "title": "factdiff resolve and review_items call Doc.locate with cites=1, so a data row anchored with several citations may not relocate",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-djl7za6x",
   "priority": "P3",
@@ -43,5 +43,6 @@
   "links": [
     "parked: SP-ilje65fa review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: Doc.locate is called without the citation count outside anchoring. Run 2026-10-12 on origin/main: the repro finds 7 such calls (factdiff.py elsewhere, resolve, new_passage, old_passage, review_items; census.py current_passage, repin_item), so the repro fails now. Anchoring takes the count from one Counter over every source cited_facts; resolve and review_items hold one source facts, so that Counter is passed in. The test name carries resolve_relocates_multi_citation_row (test_live_kb.py; census callers in test_redact.py). Run after ST-gtaw5kip: both change factdiff.py resolve."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: Doc.locate is called without the citation count outside anchoring. Run 2026-10-12 on origin/main: the repro finds 7 such calls (factdiff.py elsewhere, resolve, new_passage, old_passage, review_items; census.py current_passage, repin_item), so the repro fails now. Anchoring takes the count from one Counter over every source cited_facts; resolve and review_items hold one source facts, so that Counter is passed in. The test name carries resolve_relocates_multi_citation_row (test_live_kb.py; census callers in test_redact.py). Run after ST-gtaw5kip: both change factdiff.py resolve.",
+  "claimed_by": "orch-djl7za6x"
 }
