@@ -1,0 +1,18 @@
+{
+  "id": "BG-gjqcfpw4",
+  "kind": "bug",
+  "title": "The snapshots of S2186, S2187, S2189 and S2194 hold the pages as of the 2026-10-10 anchor run, so review shows their old text as the current one after BG-c2pp5wwl moved their baselines",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/_snapshots/S2186.txt, S2187.txt, S2189.txt and S2194.txt hold the normalized text of the live pages (python3 _tools/factdiff.py snapshot --source ID for each), in an item whose touches hold kb/public/_snapshots/**",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/public/_snapshots/S2189.txt',encoding='utf-8').read(); sys.exit(0 if 'generally available' in t.lower() else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a committed snapshot older than the live page; no tool run reads the live page without writing the snapshot, so the text check reads the one status line the live page of S2189 now holds"
+}
