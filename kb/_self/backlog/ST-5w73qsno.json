@@ -2,7 +2,7 @@
   "id": "ST-5w73qsno",
   "kind": "story",
   "title": "Review sprint: Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-htl7jkrm",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-htl7jkrm"
+  "evidence": {
+    "commit": "c1967f2199f4dc52579b090bf96a1e4de20b0e74",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "862e10825745512a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b0640a98e56fd05e"
+      }
+    ]
+  }
 }
