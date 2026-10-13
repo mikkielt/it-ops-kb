@@ -2,7 +2,7 @@
   "id": "BG-3jo3wlr2",
   "kind": "bug",
   "title": "agent-caching.md tags DOC its claim that no changelog entry between v2.1.284 and v2.1.296 changes the Sonnet 5.5 cache-read price",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,

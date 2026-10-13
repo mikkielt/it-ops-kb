@@ -2,7 +2,7 @@
   "id": "BG-mivjdhxk",
   "kind": "bug",
   "title": "claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the same section lists more prompt cases",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,

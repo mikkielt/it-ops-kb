@@ -2,7 +2,7 @@
   "id": "ST-kp5oq4sr",
   "kind": "story",
   "title": "The settings fact on path rules for Write, NotebookEdit, Glob and MultiEdit names the --allowedTools exception for Glob",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,

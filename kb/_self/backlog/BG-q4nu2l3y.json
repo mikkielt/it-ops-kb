@@ -2,7 +2,7 @@
   "id": "BG-q4nu2l3y",
   "kind": "bug",
   "title": "claude/hooks.md:127 says WebFetch runs its prompt on the page with a small, fast model, which the tools reference no longer says (a separate model call for most fetches)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-foopqq2x",
   "priority": "P2",
   "rank": 0,
