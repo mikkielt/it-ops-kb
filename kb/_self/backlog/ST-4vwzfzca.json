@@ -2,7 +2,7 @@
   "id": "ST-4vwzfzca",
   "kind": "story",
   "title": "The one-domain census cost bullet states the rows dispatched, the rows left and that the census was not complete",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-htl7jkrm",
   "priority": "P3",
@@ -61,5 +61,27 @@
     "parked: SP-yojt6y7v review"
   ],
   "notes": "Premise: the one-domain census bullet of kb/_self/token-efficiency.md states the 26-row queue and 0.84 USD only, not the 22 dispatched rows, the 2 undispatched with 0.31 USD, or that the census was not complete. Premise run 2026-10-12: the bullet holds none of '0.31', 'not complete', '22'; reproduces. Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. The checks read the bullet and the eval row for the words '0.31', '22' and 'not complete'; the lookup_eval suite run guards the row's expect_text staying a phrase of the article.",
-  "claimed_by": "orch-htl7jkrm"
+  "evidence": {
+    "commit": "4fcfbb88eb446f3186178574ead52dde3663719c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; l=[x for x in open('kb/_self/token-efficiency.md') if 'A census of one domain costs' in x][0]; sys.exit(0 if '0.31' in l and 'not complete' in l and '22' in l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv, sys; r = [x for x in csv.DictReader(open('kb/_self/_retrieval/lookup_eval.csv', encoding='utf-8')) if x['id'] == 'SQ-census-one-domain-cost'][0]; sys.exit(0 if 'not complete' in r['expect_text'] or 'not complete' in r['question'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
