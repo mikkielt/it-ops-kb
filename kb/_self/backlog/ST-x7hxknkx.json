@@ -31,7 +31,9 @@
         "a section of gitlab/git-test-repositories"
       ],
       "recommendation": "a new topic gitlab/git-commit-paths-and-symlinks",
-      "class": "push"
+      "class": "push",
+      "answer": "a new topic gitlab/git-commit-paths-and-symlinks",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-q5ldd25k"
