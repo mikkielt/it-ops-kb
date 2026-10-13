@@ -2,7 +2,7 @@
   "id": "BG-zsiguf72",
   "kind": "bug",
   "title": "A lookup prints not found for a client-rendered page: the soft-404 test compares its empty text with an empty made-up page",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-u5q37ds3",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,27 @@
     "kb/_self/tools.md"
   ],
   "notes": "Premise: a lookup of a source whose fetched page has no words (one newline, as its made-up sibling's) prints not found. Run 2026-10-12 on the base: reproduces. The repro (live, S1203 of public/auth/flows.csv:10) printed outcome 'not found', note 'source gone or replaced', verdict soft-404; the added check plants the same case with no network (provider.document and provider.request answer one newline) and gets verdict soft-404 now, so it fails until detect_source asks no soft-404 test of a text with no words. The live repro exits 0 offline, so the planted check is the one that proves the fix.",
-  "claimed_by": "orch-u5q37ds3"
+  "evidence": {
+    "commit": "429556a090ad8e62a879f4f4161735cdc3b80ec0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import factdiff, kbcommon, provider; factdiff.ROOT = kbcommon.root('public'); provider.document = lambda url, row=None, etag='', lastmod='': {'status': 200, 'text': '\\n', 'error': '', 'etag': '', 'lastmod': '', 'version': {}, 'final': url, 'hops': [], 'raw': ''}; provider.request = lambda url, headers=None, **k: {'status': 200, 'headers': {'content-type': 'text/plain'}, 'body': b'\\n', 'final': url, 'hops': [], 'error': ''}; v = factdiff.detect_source('S9990001', {'url': 'https://techcommunity.microsoft.com/blog/x/1'}, {}, [], lookup=True)[0]; sys.exit(1 if v == 'soft-404' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import factdiff, kbfacts; u = [x for x in kbfacts.units() if (x['path'], x['line']) == ('public/auth/flows.csv', 10)][0]; r = factdiff.revalidate([{'path': u['path'], 'line': u['line'], 'key': kbfacts.fact_key(u['text']), 'text': u['text'], 'ids': ['S1203']}]); sys.exit(1 if r['lines'][('public/auth/flows.csv', 10)]['outcome'] == 'not found' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
