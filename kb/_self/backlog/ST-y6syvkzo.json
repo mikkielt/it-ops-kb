@@ -68,7 +68,9 @@
         "300 s: five minutes, room for a slow take of the lock after the wait"
       ],
       "recommendation": "120 s: HOOK_MARGIN_S = 120, so a run is stuck after USAGE_LOCK_WAIT_S + 120 s (720 s) without the lock",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "120 s: HOOK_MARGIN_S = 120, so a run is stuck after USAGE_LOCK_WAIT_S + 120 s (720 s) without the lock",
+      "by": "operator"
     }
   ],
   "links": [
