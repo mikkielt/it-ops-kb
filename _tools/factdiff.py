@@ -1075,7 +1075,7 @@ def detect_source(sid, src, st, rows, lookup=False):
     raw_url = provider.raw_url(url, row)[0]
     moved = bool(d["hops"]) and d["final"].split("?")[0].rstrip("/") != raw_url.split("?")[0].rstrip("/")
     text = d["text"] or ""
-    if row.get("not_found") != "hard-404" and text:
+    if row.get("not_found") != "hard-404" and (words_key(text) if lookup else text):  # no words (a client-rendered page) match any made-up page
         mu = madeup_text(raw_url)
         was = prev.get("text") if prev else None
         if mu is not None and jaccard(text, mu) >= SOFT404_MIN and not (was and jaccard(was, mu) >= SOFT404_MIN):
