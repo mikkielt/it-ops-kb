@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "Gap row BP-bac81f87 names a _gaps.md entry that is no longer open and its pack is good, and pool check never judges a gap row's route",
   "status": "draft",
+  "sprint": "SP-honlhzdc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "Every gap row of bench_pool.csv names an open _gaps.md entry (kbfacts.OPEN_GAP) and its pack routes to web; pool check names a gap row whose entry has closed or narrowed or whose pack does not route to web",
+  "goal": "Every gap row of bench_pool.csv names an open _gaps.md entry (kbfacts.OPEN_GAP) and its pack routes to web; pool check names a gap row whose entry has closed or narrowed or whose pack does not route to web, so the landing that closes an entry fails a check while a row still names it",
   "repro": {
     "run": [
       "python3",
@@ -14,9 +15,37 @@
       "import sys;sys.path.insert(0,'_tools');import bench_pool as b;bad=[r['id'] for r in b.read_csv(b.PUBLIC_FILE) if r['kind']=='gap' and b.scenario_pack(r['question'])[0]!='web'];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bench_pool as b;rows=b.read_csv(b.PUBLIC_FILE);g=next(r for r in rows if r['kind']=='gap' and r['source']!='_gaps.md#8f38c7a9');closed={**g,'id':'BP-closed','source':'_gaps.md#8f38c7a9'};good=next(r for r in rows if r['kind']=='sc_present');routed={**g,'id':'BP-routed','question':good['question']};out=b.check_problems(rows+[closed,routed]);named=[i for i in ('BP-closed','BP-routed') if any(l.startswith(i+':') for l in out)];print(named);sys.exit(0 if len(named)==2 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Every gap row of bench_pool.csv names an open _gaps.md entry (kbfacts.OPEN_GAP) and its pack routes to web",
+      "check": 1
+    },
+    {
+      "clause": "pool check names a gap row whose entry has closed or narrowed or whose pack does not route to web, so the landing that closes an entry fails a check while a row still names it",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/bench_pool.csv",
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-3tfno44k"
+  ],
   "links": [
     "parked: SP-kuhlsf2s review",
     "merged: BG-sclw54q6"
   ],
-  "notes": "Overlaps draft BG-sclw54q6 (the same row BP-bac81f87); this one adds that pool check judges no gap row's route or openness. Merge the two at triage. Merged from BG-sclw54q6 “Bench pool gap row BP-bac81f87 names a _gaps.md entry a Narrowed note now closes, and still expects the web route” at the 2026-10-13 draft triage: Same row BP-bac81f87, same fix; BG-viwywxml is broader (adds that pool check judges a gap row's route and openness) and its notes ask for the merge. Repro still exits 1; pool check does not name the row. Its goal: No stored gap row of kb/public/_retrieval/bench_pool.csv names a _gaps.md entry that kbfacts.OPEN_GAP reads as closed: the repro exits 0, and a pool gap row stale this way fails a check at the landing that closes its entry, not at a later review Its repro: {\"run\": [\"python3\", \"-c\", \"import sys,re,hashlib;sys.path.insert(0,'_tools');import kbfacts,bench_pool;T=open('kb/public/_gaps.md',encoding='utf-8').read();H={hashlib.sha1(re.sub(r'^(Still open|Narrowed, not closed):\\\\s*','',m.group(1)).strip(' .:*').encode()).hexdigest()[:8]:m.group(0) for m in re.finditer(r'^- \\\\*\\\\*(.+?)\\\\*\\\\*.*(?:\\\\n  .+)*',T,re.M)};bad=[r['id'] for r in bench_pool.load_pool(kinds={'gap'}) if kbfacts.OPEN_GAP.search(H.get(r['source'].split('#')[1],'Resolved'))];print('gap rows whose entry is closed:',bad);sys.exit(1 if bad else 0)\"]} Its touches: kb/public/_retrieval/bench_pool.csv, _tools/bench_pool.py"
+  "notes": "Merged from BG-sclw54q6 at the 2026-10-13 draft triage (same row BP-bac81f87, same fix): a stored gap row naming a closed entry fails a check at the landing that closes it, not at a later review. Premise: the repro prints ['BP-bac81f87'] and exits 1 on 2026-10-13; a pool build into a scratch copy of the committed file (no paid call, all checks cached) replaces four of the five gap rows (gap_section is re-drawn from the seed, so BP-f3952b33, BP-c6881637 and BP-91d04d4d may be no longer open either). Plan: edit the gap rows, not a whole-pool rebuild: the same build also redraws 24 offkb, cites, decision and snippet rows, so take only the gap rows from a scratch build. pool check judges a gap row by its source hash in _gaps.md (a missing entry counts as closed) and by bench_pool.scenario_pack's route. A new test goes in test_bench.py's pool check test. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
 }

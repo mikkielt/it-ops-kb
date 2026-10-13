@@ -1,0 +1,47 @@
+{
+  "id": "TK-3ycnarx5",
+  "kind": "task",
+  "title": "pool build asks the model only with --ask or --redo, and otherwise lists the rows and the estimate and exits 1",
+  "status": "draft",
+  "parent": "ST-ldrzo55w",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py pool build with no --ask and no --redo makes no paid call: for the eval rows its --out file lacks it prints the rows and the dry-run estimate, writes nothing and exits 1; --ask (or --redo ID) asks as before, the limits of --redo kept; tools.md and code.md say so",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,argparse,tempfile,os;sys.path.insert(0,'_tools');import bench_pool as b;c=[];b.sonnet_regexes=lambda i:(c.append(len(i)),['']*len(i))[1];d=tempfile.mkdtemp();n=lambda a:argparse.Namespace(pool_cmd='build',querylog=False,seed=b.SEED,out=os.path.join(d,'p.csv'),redo=None,dry_run=False,replies=None,ask=a);r=b.cli(n(False));o=(r,list(c),os.path.exists(os.path.join(d,'p.csv')));print(o);r2=b.cli(n(True));print(r2,c);sys.exit(0 if o==(1,[],False) and r2==0 and len(c)==1 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ok=all('--ask' in open(p,encoding='utf-8').read() for p in ('kb/_self/tools.md','kb/_self/code.md'));print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py pool build with no --ask and no --redo makes no paid call: for the eval rows its --out file lacks it prints the rows and the dry-run estimate, writes nothing and exits 1",
+      "check": 0
+    },
+    {
+      "clause": "--ask (or --redo ID) asks as before, the limits of --redo kept",
+      "check": 0
+    },
+    {
+      "clause": "tools.md and code.md say so",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ]
+}

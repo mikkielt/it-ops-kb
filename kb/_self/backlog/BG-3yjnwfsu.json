@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "BP-2c2a3c1d's answer regex rejects the placeholder paraphrase /plugin install <plugin>@<marketplace>",
   "status": "draft",
+  "sprint": "SP-honlhzdc",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
@@ -14,7 +15,31 @@
       "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;p=json.loads(next(x for x in b.read_csv(b.PUBLIC_FILE) if x['id']=='BP-2c2a3c1d')['checks'])[0];r=[bool(re.search(p,a)) for a in ['/plugin install my-plugin@my-marketplace','/plugin install <plugin>@<marketplace>']];print(r);sys.exit(0 if all(r) else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;sys.path.insert(0,'_tools');import bench_pool as b;q='How do I install a Claude Code plugin from a marketplace?';s=next(r for r in b.read_scenarios()[1] if r['question'].strip()==q);ok=[bool(re.search(s['answer'],a)) for a in ['/plugin install my-plugin@my-marketplace','/plugin install <plugin>@<marketplace>']];p=b.check_problems(b.read_csv(b.PUBLIC_FILE));print(ok,p);sys.exit(0 if all(ok) and not p else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The first check of BP-2c2a3c1d (bench_scenarios.csv and bench_pool.csv) matches a correct paraphrase with angle-bracket placeholders around the @ as well as a literal plugin id",
+      "check": 1
+    },
+    {
+      "clause": "the two files change in step and pool check passes",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/bench_scenarios.csv",
+    "kb/public/_retrieval/bench_pool.csv"
+  ],
   "links": [
     "parked: SP-kuhlsf2s review"
-  ]
+  ],
+  "notes": "Premise: the repro prints [True, False] and exits 1 on 2026-10-13 (the regex takes <name>@<origin> or a literal plugin id, not <plugin>@<marketplace>). BP-2c2a3c1d is a scenario row: its answer lives in bench_scenarios.csv and the pool row is scenario_built from it, so edit the answer column and the row's first check together (no whole-pool rebuild: it redraws 24 unrelated rows). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
 }

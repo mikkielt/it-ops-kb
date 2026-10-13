@@ -1,0 +1,44 @@
+{
+  "id": "TK-rwghdnt6",
+  "kind": "task",
+  "title": "The kb-sprint review section's reviewer brief names paid commands as not allowed, and a tested _self question answers it",
+  "status": "draft",
+  "parent": "ST-ldrzo55w",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The reviewer brief of the review section of the kb-sprint skill names paid commands (pool build with --ask, bench runs without --dry-run) as not allowed for the read-only reviewer, backlog.md says the reviewer makes no paid model call, and a tested _self question 'may the sprint reviewer make paid model calls' answers from that line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may the sprint reviewer make paid model calls','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;L=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if 'fresh-context reviewer' in l and 'paid' in l and 'pool build' in l];print(len(L));sys.exit(0 if L else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The reviewer brief of the review section of the kb-sprint skill names paid commands (pool build with --ask, bench runs without --dry-run) as not allowed for the read-only reviewer, backlog.md says the reviewer makes no paid model call",
+      "check": 1
+    },
+    {
+      "clause": "a tested _self question 'may the sprint reviewer make paid model calls' answers from that line",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "AGENTS.md is in touches for the docs map only (it maps skills/sprint/SKILL.md): its 4 KB cap leaves no room, so expect no edit; Self-Reviewed names it as read. Premise: the _self pack for 'may the sprint reviewer make paid model calls' is coverage weak on 2026-10-13 (precheck): reproduces. The tested row is added to kb/_self/_retrieval/lookup_eval.csv (a code-lane path: land with --wait-merge); the line it answers from is the reviewer sentence of kb/_self/backlog.md, Running a sprint (line 308 today)."
+}

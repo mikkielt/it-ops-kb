@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The cmpivot timeout rows' answer regex accepts any duration, so a wrong timeout passes",
   "status": "draft",
+  "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,7 +15,33 @@
       "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;p=json.loads(next(x for x in b.read_csv(b.PUBLIC_FILE) if x['id']=='BP-d306eaa8')['checks'])[0];r=[bool(re.search(p,a)) for a in ['the CMPivot timeout is 30 seconds','a 1-hour timeout']];print(r);sys.exit(0 if r==[False,True] else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;rows=b.read_csv(b.PUBLIC_FILE);R=[r for r in rows if r['source'].endswith('cmpivot-query-timeout')];f=lambda r,a:bool(re.search(json.loads(r['checks'])[0],a,re.I));bad=[r['id'] for r in R if not (f(r,'a 1-hour timeout') and f(r,'10 minutes from the Intune admin center')) or f(r,'the CMPivot timeout is 30 seconds')];p=b.check_problems(rows);print(len(R),bad,p);sys.exit(1 if len(R)!=6 or bad or p else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The answer regex of the cmpivot timeout rows (BP-d306eaa8, BP-8f566d80, BP-70d0bf39 and their variants) matches the kb's 1-hour and 10-minute timeouts (mecm/cmpivot.md:17) and rejects another duration such as 30 seconds",
+      "check": 0
+    },
+    {
+      "clause": "pool check passes",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/bench_pool.csv"
+  ],
+  "depends_on": [
+    "BG-qnq3pjd2"
+  ],
   "links": [
     "parked: SP-kuhlsf2s review"
-  ]
+  ],
+  "notes": "Premise: the repro prints [True, True] and exits 1 on 2026-10-13 (the regex is any number and unit). Six pool rows share the regex through their source, lookup_eval.csv:EV-cmpivot-query-timeout and EV-memcm-cmpivot-query-timeout (BP-d306eaa8, BP-8f566d80, BP-70d0bf39 and the variants BP-b124a0c0, BP-1f52a1d6, BP-6ca01fa4): edit all six in bench_pool.csv, which a rebuild keeps by source; the new regex matches mecm/cmpivot.md:17 (pool check warns when no check matches the line fact_for picks). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
 }
