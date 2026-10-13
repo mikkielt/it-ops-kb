@@ -1,0 +1,18 @@
+{
+  "id": "BG-tl74zfyr",
+  "kind": "bug",
+  "title": "doc-lookup-sources.csv has no row for GitLab's MCP server, which its docs page now marks generally available (GitLab 19.5), the GA criterion the table applies",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/agents/doc-lookup-sources.csv carries a ranked row for GitLab's MCP server (endpoint, OAuth or fine-grained token auth, tools, status generally available from GitLab 19.5, source S2189), or the operator's reason for leaving it out is recorded as a decided gate",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/public/agents/doc-lookup-sources.csv',encoding='utf-8').read(); sys.exit(0 if 'GitLab MCP' in t else 1)"
+    ]
+  },
+  "repro_reason": "the defect is a missing table row, so no tool run shows it; the text check reads for the row's name"
+}
