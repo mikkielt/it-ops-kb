@@ -46,7 +46,7 @@
       "recommendation": "split into a DOC fact (the quoted price) and a DER fact (the absence clause with its read), and date S1864 2026-10-13 with a note of the read",
       "class": "design",
       "answer": "split into a DOC fact (the quoted price) and a DER fact (the absence clause with its read), and date S1864 2026-10-13 with a note of the read",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
