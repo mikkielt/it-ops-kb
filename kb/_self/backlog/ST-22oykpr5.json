@@ -2,7 +2,7 @@
   "id": "ST-22oykpr5",
   "kind": "story",
   "title": "land fast-forwards an orchestrator checkout that holds only unpushed item-file commits by rebasing them onto origin/main",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,
@@ -73,5 +73,6 @@
     "parked: SP-avwlotax close",
     "merged: ST-vybjfqvj"
   ],
-  "notes": "Premise: fast_forward_start leaves a checkout that holds an unpushed commit behind origin/main (planned 2026-10-12: on a throwaway clone with one unpushed empty commit and one commit landed elsewhere it said 'land: left main 1 commit(s) behind origin/main: it cannot fast-forward' and rev-list HEAD..origin/main read 1). Merged ST-vybjfqvj (second-project run, bl_land.py fast_forward_start): same fault; absorbed: name the divergence before the push, and never push the whole local HEAD history. The suite sits at max_ids 100: extend TestLandedItem's test in test_land_e2e.py (it already covers the fast-forward) and rename it to carry the names the checks select, no new id. Gate behind-main answered: rebase (a local rebase, nothing pushed by it). Planned at the 2026-10-12 draft triage (sprint 15 of 19, \"Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Premise: fast_forward_start leaves a checkout that holds an unpushed commit behind origin/main (planned 2026-10-12: on a throwaway clone with one unpushed empty commit and one commit landed elsewhere it said 'land: left main 1 commit(s) behind origin/main: it cannot fast-forward' and rev-list HEAD..origin/main read 1). Merged ST-vybjfqvj (second-project run, bl_land.py fast_forward_start): same fault; absorbed: name the divergence before the push, and never push the whole local HEAD history. The suite sits at max_ids 100: extend TestLandedItem's test in test_land_e2e.py (it already covers the fast-forward) and rename it to carry the names the checks select, no new id. Gate behind-main answered: rebase (a local rebase, nothing pushed by it). Planned at the 2026-10-12 draft triage (sprint 15 of 19, \"Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-b7wibqok"
 }
