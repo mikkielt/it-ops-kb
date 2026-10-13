@@ -1545,8 +1545,9 @@ def lookup_source(sid, src, res, facts, state, anchors, rows, cites=None):
     unchanged, or pinned, and the fact has a located anchor confirmed no earlier than the baseline, or its passage is
     found word for word), `moved` (its passage is found on another page, or edited in place: the new passage is kept),
     `not found`, or `source-dated only` (the fact has no located anchor, or an unchanged source's baseline is newer than
-    its anchor's last confirmation and no text is at hand to resolve it from, so only its source's state is known). A
-    baseline newer than the last confirmation proves only that nothing changed since (confirmable): such a fact is
+    its anchor's last confirmation and no text is at hand to resolve it from, so only its source's state is known; so
+    is every fact of a source whose fetched page has no words, as a client-rendered page's is: no passage is
+    resolved on it and no other page is searched). A baseline newer than the last confirmation proves only that nothing changed since (confirmable): such a fact is
     resolved against the page as a changed one is. A source that could not be asked has no outcomes and a reason; a fact
     whose search for its passage was cut short by the time budget or a network error has outcome "" and the reason as
     its note. `cites`: resolve's."""
@@ -1561,6 +1562,11 @@ def lookup_source(sid, src, res, facts, state, anchors, rows, cites=None):
     if verdict == "gone" and signal == "repository":
         return {line_key(rel, key): {"outcome": "not found", "target": "", "passage": "", "note": f"its repository is gone: {ev}"}
                 for key, rel, _line, _text in facts}, verdict, ""
+    blank = doc is not None and not words_key(doc.get("text") or "")  # a client-rendered page's fetch: no text to resolve against
+    if blank and verdict != "unchanged":  # no passage to find on it and none to search for elsewhere: only its state is known
+        return {line_key(rel, key): {"outcome": "source-dated only", "target": "", "passage": "",
+                                     "note": f"source {verdict}; its page has no words to resolve the passage from"}
+                for key, rel, _line, _text in facts}, verdict, ""
     if verdict in ("pinned", "unchanged"):
         head, stale = baseline_head(state.get(sid), doc, prev), []
         for fact in facts:
@@ -1573,7 +1579,7 @@ def lookup_source(sid, src, res, facts, state, anchors, rows, cites=None):
                 continue
             out[line_key(rel, key)] = {"outcome": "current" if located else "source-dated only", "target": "", "passage": "",
                                        "note": "source unchanged" + ("" if located else "; no located anchor")}
-        if stale and doc and doc.get("text"):
+        if stale and doc and doc.get("text") and not blank:
             failed, used = provider.failures(), len(_unanswered_uses)
             rows_f, _ = resolve(sid, src, verdict, doc, prev, stale, anchors, rows, None, True, None, cites)
             out.update(lookup_outcomes(src, rows_f, stale, doc, search_lost(failed, used), rows, cites))
