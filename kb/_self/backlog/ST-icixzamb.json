@@ -2,7 +2,7 @@
   "id": "ST-icixzamb",
   "kind": "story",
   "title": "Review sprint: Content fixes: Claude Code and agent articles state what their sources say",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-foopqq2x",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-foopqq2x"
 }
