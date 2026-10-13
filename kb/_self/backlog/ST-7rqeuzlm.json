@@ -2,7 +2,7 @@
   "id": "ST-7rqeuzlm",
   "kind": "story",
   "title": "close --summary credits a research sprint's goal clauses to its goal research story",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sqgyoiaz",
   "priority": "P3",
   "rank": 0,
@@ -156,5 +156,45 @@
     "merged: ST-vbdyapo3"
   ],
   "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Merged at the 2026-10-12 draft triage: BG-dpsfmyqi (a bug filed from a story named as the clause's carrier; its repro read eb70b55938), BG-jrfac5wz (clauses_left_behind counts review and goal research stories as carriers where goal_clause_lines does not), ST-vbdyapo3 (SP-qjg5r7jj: 'rag.py eval keeps every row' printed unmet though the item's clauses mapping states it). The failure recurred at the closes of SP-ajcomz6d, SP-qjn563cf, SP-up5wchen (2026-10-11) and SP-j2jn5ue4 (2026-10-12): every clause printed unmet, with unrelated similar-item hints, though the goal research story answered each. Gates answered at planning: carriers, research-carrier, mapping-credit.\nPremise: the four checks run on a planted sprint at planning (2026-10-12, main a5a7459f2): close --summary printed 'unmet' for the research story's clause, named BG-b alone for the mirrored clause and 'unmet' for the mapped clause, and clauses_left_behind returned [] with a research story present: premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-sqgyoiaz"
+  "evidence": {
+    "commit": "59a52a6ec349950401c6fb2e64b0aee3654c09b2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,types;sys.path.insert(0,\"_tools\");import bl_land\nit={\"SP-a\":{\"kind\":\"sprint\",\"goal\":\"ops prints a sprint operational rows; the beta writer works\"},\n \"ST-r\":{\"kind\":\"story\",\"status\":\"done\",\"goal_research\":True,\"title\":\"Research sprint goal\",\"goal\":\"which operational rows ops prints for a sprint\",\"sprint\":\"SP-a\"},\n \"ST-o\":{\"kind\":\"story\",\"status\":\"done\",\"title\":\"beta writer\",\"goal\":\"the beta writer works\",\"sprint\":\"SP-a\"}}\nbl=types.SimpleNamespace(items=it,label=lambda i:i)\nln=[l for l in bl_land.goal_clause_lines(bl,\"SP-a\",[\"ST-r\",\"ST-o\"]) if \"operational\" in l]\nprint(ln);sys.exit(0 if ln and \"ST-r\" in ln[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "42cd264223434785"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,types;sys.path.insert(0,\"_tools\");import bl_land\nit={\"SP-a\":{\"kind\":\"sprint\",\"goal\":\"precheck maps each goal clause to the check that reads it; the beta writer works\"},\n \"ST-s\":{\"kind\":\"story\",\"status\":\"done\",\"title\":\"Planner records the check for each clause\",\"goal\":\"the planner records which check reads each clause of an item goal\",\"sprint\":\"SP-a\"},\n \"BG-b\":{\"kind\":\"bug\",\"status\":\"done\",\"title\":\"precheck maps usage text to the check that reads each goal clause\",\"goal\":\"usage text of precheck maps each goal clause to the check that reads it\",\"sprint\":\"SP-a\"}}\nbl=types.SimpleNamespace(items=it,label=lambda i:i)\nln=[l for l in bl_land.goal_clause_lines(bl,\"SP-a\",[\"ST-s\",\"BG-b\"]) if \"precheck maps\" in l]\nprint(ln);l=ln[0] if ln else \"\";sys.exit(0 if \"ST-s\" in l and (\"BG-b\" not in l or l.index(\"ST-s\")<l.index(\"BG-b\")) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5c1f4ae087fdb994"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,types;sys.path.insert(0,\"_tools\");import bl_land\ncl=\"rag.py eval and doc2query stale keep passing\"\nit={\"SP-a\":{\"kind\":\"sprint\",\"goal\":\"rag.py eval keeps every row; the beta writer works\"},\n \"ST-m\":{\"kind\":\"story\",\"status\":\"done\",\"title\":\"Refresh the corpus\",\"goal\":\"refresh facts; \"+cl,\"clauses\":[{\"clause\":cl,\"check\":0}],\"sprint\":\"SP-a\"}}\nbl=types.SimpleNamespace(items=it,label=lambda i:i)\nln=[l for l in bl_land.goal_clause_lines(bl,\"SP-a\",[\"ST-m\"]) if \"rag.py eval\" in l]\nprint(ln);sys.exit(0 if ln and \"ST-m\" in ln[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7aeeebe8fc0f9ed7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys,types;sys.path.insert(0,\"_tools\");import bl_land\nit={\"SP-a\":{\"kind\":\"sprint\",\"goal\":\"ops prints a sprint operational rows; the beta writer works\"},\n \"ST-r\":{\"kind\":\"story\",\"status\":\"done\",\"goal_research\":True,\"title\":\"Research sprint goal\",\"goal\":\"which operational rows ops prints for a sprint\",\"sprint\":\"SP-a\"},\n \"ST-o\":{\"kind\":\"story\",\"status\":\"todo\",\"title\":\"ops prints operational rows\",\"goal\":\"ops prints a sprint operational rows\",\"sprint\":\"SP-a\"}}\nbl=types.SimpleNamespace(items=it,sprint_items=lambda s:[i for i,d in it.items() if d.get(\"sprint\")==s],descendants=lambda i:[])\nleft=bl_land.clauses_left_behind(bl,\"SP-a\",\"ST-o\");print(\"left behind:\",left)\nsys.exit(0 if left==[\"ops prints a sprint operational rows\"] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2bf147391a5a165a"
+      }
+    ]
+  }
 }
