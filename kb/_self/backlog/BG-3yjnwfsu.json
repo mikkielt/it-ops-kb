@@ -2,7 +2,7 @@
   "id": "BG-3yjnwfsu",
   "kind": "bug",
   "title": "BP-2c2a3c1d's answer regex rejects the placeholder paraphrase /plugin install <plugin>@<marketplace>",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-honlhzdc",
   "priority": "P2",
   "rank": 0,
@@ -41,5 +41,6 @@
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
-  "notes": "Premise: the repro prints [True, False] and exits 1 on 2026-10-13 (the regex takes <name>@<origin> or a literal plugin id, not <plugin>@<marketplace>). BP-2c2a3c1d is a scenario row: its answer lives in bench_scenarios.csv and the pool row is scenario_built from it, so edit the answer column and the row's first check together (no whole-pool rebuild: it redraws 24 unrelated rows). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Premise: the repro prints [True, False] and exits 1 on 2026-10-13 (the regex takes <name>@<origin> or a literal plugin id, not <plugin>@<marketplace>). BP-2c2a3c1d is a scenario row: its answer lives in bench_scenarios.csv and the pool row is scenario_built from it, so edit the answer column and the row's first check together (no whole-pool rebuild: it redraws 24 unrelated rows). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-honlhzdc"
 }
