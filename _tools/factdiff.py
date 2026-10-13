@@ -7,8 +7,9 @@
       words, by the fact's line: the anchor is the passage that holds the quote word for word (case, markup, quotes
       and punctuation apart), and a fact whose quote the page lacks is anchored by its own words as any other;
       with --file and no other selector only the facts of those files that hold no anchor row (a new or reworded
-      fact) and the lines the quote CSV names are anchored, the rows of other facts and files are kept and
-      _fetch_state.csv is not written
+      fact), whose row is unlocated:fetch-error, not-text or gone (its source fetched again, past the cache) and the
+      lines the quote CSV names are anchored, the rows of other facts and files are kept and _fetch_state.csv is not
+      written
   factdiff.py [--root NAME] snapshot [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
       write the normalized text of the root's live copy sources, with attribution, to <root>/_snapshots/<id>.txt
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
@@ -519,6 +520,9 @@ def fetch_all(ids, srcs, max_age=7, refetch=False, log=True):
 
 # ---------------------------------------------------------------- anchors file
 
+# rows a fetch that failed or returned no text left: `anchor --file` tries their facts again (no-match rows stay as they are)
+RETRY_STATUS = ("unlocated:fetch-error", "unlocated:not-text", "unlocated:gone")
+
 def read_anchors():
     p = root_path(ANCHORS)
     if not os.path.exists(p):
@@ -629,15 +633,22 @@ def cmd_anchor(a):
     ids = [i for i in ids if i in facts and i in srcs]
     anchors = read_anchors()
     before = dict(anchors)
-    # --file alone: only the facts of those files that hold no anchor row (a new or reworded fact: its key is new) or that
-    # the quote CSV names; no other row of the ledger and no `_fetch_state.csv` row is written
+    # --file alone: only the facts of those files that hold no anchor row (a new or reworded fact: its key is new), whose
+    # row a failed or non-text fetch left (RETRY_STATUS: fetched again past the cache) or that the quote CSV names; no other
+    # row of the ledger and no `_fetch_state.csv` row is written
     only = {os.path.normpath(f).replace(os.sep, "/") for f in a.file} if a.file and not (a.topic or a.dir or a.source) else None
-    todo = facts
+    todo, retry = facts, set()
     if only is not None:
-        todo = {sid: [f for f in fs if f[1] in only and ((f[0], f[1], sid) not in anchors or (f[1] == rel and f[2] in quotes))]
-                for sid, fs in facts.items()}
+        def wanted(f, sid):
+            row = anchors.get((f[0], f[1], sid))
+            if row is not None and row["status"] in RETRY_STATUS:
+                retry.add(sid)
+            return row is None or row["status"] in RETRY_STATUS or (f[1] == rel and f[2] in quotes)
+        todo = {sid: [f for f in fs if f[1] in only and wanted(f, sid)] for sid, fs in facts.items()}
         ids = [i for i in ids if todo.get(i)]
-    docs = fetch_all(ids, srcs, a.max_age, a.refetch)
+    docs = fetch_all([i for i in ids if i not in retry], srcs, a.max_age, a.refetch)
+    if retry & set(ids):
+        docs.update(fetch_all([i for i in ids if i in retry], srcs, a.max_age, True))
     when = today()
     counts = collections.Counter()
     cites = cite_counts(facts)

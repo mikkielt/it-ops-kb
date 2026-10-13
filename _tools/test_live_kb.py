@@ -77,7 +77,7 @@ def test_check_py_names_a_ledger_citation_of_a_line_that_is_no_fact(tmp_path):
 
 
 @requires_git
-def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words_and_anchor_file_writes_only_changed_facts_and_no_fetch_state_and_anchor_quotes_keeps_other_files_rows(tmp_path, monkeypatch):
+def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words_and_anchor_file_writes_only_changed_facts_and_no_fetch_state_and_anchor_quotes_keeps_other_files_rows_and_anchor_file_retries_unlocated_fetch_error_not_text_and_gone_rows_but_not_no_match_ones(tmp_path, monkeypatch):
     root = tmp_path / "root"
     fixture_root(root, SID)
     art = root / "print" / "queues.md"
@@ -160,7 +160,8 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     monkeypatch.setattr(factdiff, "write_anchors", lambda rows: written.append({k: dict(v) for k, v in rows.items()}))
     monkeypatch.setattr(factdiff, "read_state", lambda: pytest.fail("anchor --file read the fetch state"))
     monkeypatch.setattr(factdiff, "write_state", lambda *args, **kw: pytest.fail("anchor --file wrote _fetch_state.csv"))
-    monkeypatch.setattr(factdiff, "fetch_all", lambda ids, *args, **kw: fetched.append(ids) or {SID: {"status": 200, "text": page}})
+    served, again = [{"status": 200, "text": page}], []
+    monkeypatch.setattr(factdiff, "fetch_all", lambda ids, *args, **kw: fetched.append(ids) or again.append(args[2]) or {SID: served[0]})
 
     def anchor_file(quote_csv=None):
         return factdiff.cmd_anchor(argparse.Namespace(topic=[], dir=[], file=["print/queues.md"], source=[], quotes=quote_csv,
@@ -177,6 +178,19 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     rows = written[1]
     assert rows[(new_key, "print/queues.md", SID)]["status"] == "located" and rows[(new_key, "print/queues.md", SID)]["quote"] == quotes[quoted]
     assert rows[(kept_a["fact"], "print/queues.md", SID)] == kept_a and rows[(kept_b["fact"], "print/other.md", SID)] == kept_b
+    # a fact whose only row a fetch that failed, returned no text or found gone left is fetched again, past the cache, and
+    # anchored when the page answers now; a no-match row is not fetched, nothing is written for it
+    served[0] = {"status": 200, "text": f"{missing} Finished jobs wait for an operator."}
+    key = (new_key, "print/queues.md", SID)
+    ledger.update(rows)
+    for status in ("unlocated:fetch-error", "unlocated:not-text", "unlocated:gone"):
+        ledger[key] = {**kept_a, "fact": new_key, "status": status, "heading": "", "terms": "", "sha": "", "quote": ""}
+        n_fetched, n_written = len(fetched), len(written)
+        assert anchor_file() == 0 and [i for i in fetched[n_fetched:] if i] == [[SID]] and again[-1] is True and len(written) == n_written + 1, status
+        assert written[-1][key]["status"] == "located" and written[-1][(kept_a["fact"], "print/queues.md", SID)] == kept_a, status
+    ledger[key] = {**ledger[key], "status": "unlocated:no-match", "heading": "", "terms": "", "sha": "", "quote": ""}
+    n_fetched, n_written = len(fetched), len(written)
+    assert anchor_file() == 0 and fetched[n_fetched:] == [[]] and len(written) == n_written
 
 
 def test_build_index_check_passes_on_the_live_kb():
