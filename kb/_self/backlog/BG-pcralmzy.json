@@ -50,7 +50,7 @@
       "recommendation": "kbfacts.root_freshness, the per-root body of source_freshness extracted and called by both",
       "class": "design",
       "answer": "kbfacts.root_freshness, the per-root body of source_freshness extracted and called by both",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
