@@ -2,7 +2,7 @@
   "id": "ST-webfvbcb",
   "kind": "story",
   "title": "backlog.py new bug refuses a repro whose program check refuses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uzwbt63u",
   "priority": "P2",
   "rank": 0,
@@ -98,5 +98,36 @@
     "merged: ST-si4peqq2"
   ],
   "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once. Merged at the 2026-10-12 draft triage: BG-asbzy5z4 (new --repro \"echo it's\" ends in a shlex ValueError traceback from bl_items.parse_cmd; set already exits 2), ST-btfulaeh (new and set accept python3 -I -c, check_program_refusal returns '-I is not a _tools/ script'; filed by SP-ceucrhca as a recurrence), ST-si4peqq2 (same goal, no real check). Today (run 2026-10-12) set --check python3 -I is already refused with exit 2 and new bug is not, so check 1's set half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: new bug --repro 'python3 -I -c ...' is accepted (exit 0, bug filed) and new bug --repro \"echo it's\" ends in a shlex ValueError traceback (reproduces).",
-  "claimed_by": "orch-uzwbt63u"
+  "evidence": {
+    "commit": "f11c99ea269cbe3a98fca3d6f020eb61da0930ec",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nd = t + '/kb/_self/backlog'; os.makedirs(d)\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\np = subprocess.run(b + ['new', 'bug', '--title', 'b', '--severity', 'S3', '--goal', 'g', '--repro', 'grep -q zzzzqqqq _tools/backlog.py', '--repro-reason', 'the defect is a docstring line'], capture_output=True, text=True, cwd=t)\nsys.exit(0 if p.returncode == 2 and os.listdir(d) == [] else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nd = t + '/kb/_self/backlog'; os.makedirs(d)\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\ndef run(*a): return subprocess.run(b + list(a), capture_output=True, text=True, cwd=t)\ni = run('new', 'story', '--title', 'S', '--goal', 'g').stdout.split()[2]\nbefore = {n: open(d + '/' + n).read() for n in os.listdir(d)}\nbad = ['python3', '-I', '-c', 'import sys; sys.exit(1)']\nr1 = run('new', 'bug', '--title', 'b', '--severity', 'S3', '--goal', 'g', '--repro', __import__('shlex').join(bad))\nr2 = run('set', i, '--check', __import__('shlex').join(bad))\nafter = {n: open(d + '/' + n).read() for n in os.listdir(d)}\nsys.exit(0 if r1.returncode == 2 and r2.returncode == 2 and after == before else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nd = t + '/kb/_self/backlog'; os.makedirs(d)\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\ndef run(*a): return subprocess.run(b + list(a), capture_output=True, text=True, cwd=t)\nq = \"echo it\" + chr(39) + \"s\"\nrs = [run('new', 'bug', '--title', 't', '--severity', 'S3', '--goal', 'g', '--repro', q),\n      run('new', 'story', '--title', 't', '--goal', 'g', '--check', q)]\nok = all(r.returncode == 2 and 'Traceback' not in r.stderr for r in rs) and os.listdir(d) == []\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
