@@ -1,0 +1,20 @@
+{
+  "id": "SP-uvz65lvm",
+  "kind": "sprint",
+  "title": "Content fixes: doc lookup, change detection and retrieval articles and their anchors",
+  "status": "planned",
+  "goal": "The memdocs no-capture fact rests on CDX lookups and is re-anchored; doc-lookup-sources' sources: header lists S745; the QK-gone-memdocs answer tags the missing captures DER, not DOC; doc-change-detection's soft-404 summary and Tech Community probe state one outcome; its remembered-failure fact matches the window kept under _cache/; hybrid-retrieval says BG-bvyblfnp narrowed kbfacts.terms, so a SID no longer reads as a version; codebase-mapping and its rustc-wrapper answer say the spawn fails only for an unresolvable outermost wrapper; anchors --stale lists no stale anchor of the claude, logs and python articles",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
