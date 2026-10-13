@@ -2,7 +2,7 @@
   "id": "ST-drnjcoj2",
   "kind": "story",
   "title": "worker.md and tests.py's over-ceiling message say a refused run is retried or recorded, not answered by a gate that proposes a raise",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qlpfcgs2",
   "priority": "P2",
   "rank": 0,
@@ -67,5 +67,36 @@
     "parked: SP-rlincemn review"
   ],
   "notes": "Premise run 2026-10-12: the Done bar line of agents/worker.md still ends with 'Never raise a ceiling: record a blocking operator gate instead', and tests.ceiling_report(seconds=999) prints 'cut a test, or ask the operator for a recorded answer that raises _tools/tests_ceiling.json' for a run over its seconds as well as for ids and files; backlog.md (Sprints: plan and review) and code.md already say run again once the host is quiet, else record a host finding. The three checks fail on that text now. The goal leaves no choice open: the wording is the one backlog.md holds. Docs the map names for tests.py and worker.md are in touches so the stale-docs check at done needs no outside edit. Planned at the 2026-10-12 draft triage (sprint 14 of 19, \"The whole suite fits its seconds ceiling under host load without the ceiling changing\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-qlpfcgs2"
+  "evidence": {
+    "commit": "6a4b3bf4cc7ef187e2ec158bfcb24f90ccc75465",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=[l for l in open('agents/worker.md',encoding='utf-8') if 'Done bar' in l][0];sys.exit(1 if 'record a blocking operator gate instead' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import io,sys;sys.path.insert(0,\"_tools\");import tests;e=io.StringIO();sys.stderr=e;tests.ceiling_report(seconds=999);t=e.getvalue();sys.exit(0 if \"raise\" not in t and \"again\" in t and \"host finding\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import io,sys;sys.path.insert(0,\"_tools\");import tests;e=io.StringIO();sys.stderr=e;tests.ceiling_report(ids=999);t=e.getvalue();sys.exit(0 if \"cut a test\" in t and \"raise\" not in t and \"operator\" not in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
