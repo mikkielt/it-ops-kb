@@ -411,7 +411,7 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     assert marks() == {first}, out  # `good` and `late` went with the sprint
 
 
-def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, capsys):
+def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate_error_and_land_names_check_trailers_refusal(tmp_path, monkeypatch, capsys):
     """A landing that exits 0 with no line of the item in the committed work sidecars says which of three it is: a
     worker's row in the spool (rows late, a `land:` line naming the session and its state, no warning), a work sidecar
     naming the item that sits in a local store the integration main lacks (undelivered, the store named), or no worker's
@@ -477,6 +477,30 @@ def test_land_no_work_rows_late_undelivered_or_missing(tmp_path, monkeypatch, ca
     out = landed()
     assert len(out) == 1 and "its last run did not deliver, gate check.py: ERROR public/_gaps.md:7 cites" in out[0], out
     assert "and 1 other gate(s) failed" in out[0], out
+
+    kept = tmp_path / "worktree" / "_cache" / "gate" / "20261010T100000Z-001-tests.py-changed.txt"
+    kept.parent.mkdir(parents=True)  # the gate's whole output, which the log names: its first error line, not its last
+    kept.write_text("tests.py: waiting for the host test lock\n.....F....F.\n=== FAILURES ===\n"
+                    "    assert code == 0, out\nE       AssertionError: sources=3 errors=1\nE       assert 1 == 0\n"
+                    "FAILED _tools/test_live_kb.py::test_check_py - AssertionError\n"
+                    "FAILED _tools/test_other.py::test_other - assert False\n", encoding="utf-8")
+    planted = ("  gate tests.py (changed): FAILED (exit 1): ===== 2 failed, 40 passed in 9.1s =====\n"
+               f"  gate tests.py (changed) whole output: {kept} (2 test ids)\n"
+               "apply --push: kbgit.py sync exit 1: nothing pushed to main\n")
+    log.write_text(planted, encoding="utf-8")
+    out = landed()
+    assert len(out) == 1 and "its last run did not deliver, gate tests.py (changed): AssertionError: sources=3 errors=1" \
+        in out[0], out
+    assert "2 failed, 40 passed" not in out[0] and "other gate" not in out[0], out
+    kept.unlink()  # the file is gone (the newest ten are kept): the summary line stands
+    assert "gate tests.py (changed): ===== 2 failed, 40 passed in 9.1s =====" in landed()[0]
+
+    log.write_text("  gate check-trailers origin/main..HEAD: FAILED: commits=3 bad=1\n"  # no (exit N), the gate's last
+                   "apply --push: kbgit.py sync exit 1: nothing pushed to main\n", encoding="utf-8")
+    out = landed()
+    assert len(out) == 1 and "its last run did not deliver, gate check-trailers origin/main..HEAD: commits=3 bad=1" \
+        in out[0], out
+    assert "kbgit.py sync exit 1" not in out[0], out
     log.write_text(log.read_text(encoding="utf-8") + "apply --push: pushed 5e6f7a8b9 to origin/main\n", encoding="utf-8")
     assert "its last run did not deliver" not in landed()[0]  # a push after the failure: nothing to name
 
