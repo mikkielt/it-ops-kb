@@ -2975,32 +2975,59 @@ _SCOPED = [0]  # scans of _sources.csv for some ids made by ledger_rows
 _PROVIDER_ROWS = []
 
 
+def _quote_state(line, state):
+    """The state of csv's reader after `line`, given the state before it: 0 at the start of a field, 1 in an unquoted
+    field, 2 in a quoted field (the record goes on in the next line), 3 after a quote met in a quoted field. A quote
+    opens a quoted field only at the start of a field, so a bare one (`5" pipe`) opens none, and a pair inside a
+    quoted field is a literal quote: the count of quotes in a record tells neither."""
+    for c in line:
+        if state == 2:
+            if c == '"':
+                state = 3
+        elif c in ",\r\n":
+            state = 0
+        elif state == 3:
+            state = 2 if c == '"' else 1
+        else:
+            state = 2 if state == 0 and c == '"' else 1
+    return state
+
+
 def _ledger_rows(path, column, sids):
-    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as dicts, read by scanning its
-    text: a plain record is matched on its field with no csv parse, so only a row of a wanted source is ever parsed. A
-    record with a quote (a quoted field may hold a comma or a newline) is joined to the end of its quoted fields and
-    parsed to be sure."""
+    """The rows of the csv at `path` whose `column` is in `sids` (every row when None), as csv.DictReader makes them,
+    read by scanning its text: a record whose leading fields hold no quote is matched on its field with no csv parse,
+    so only a row of a wanted source is ever parsed. A record with a quote (a quoted field may hold a comma or a
+    newline) is joined to the end of its quoted field (_quote_state) and parsed to be sure."""
     rows = []
     try:
         with open(path, encoding="utf-8-sig", newline="") as f:
             head = next(csv.reader([f.readline()]), [])
             if column not in head:
                 return rows
-            col, record = head.index(column), ""
+            col, record, state = head.index(column), "", 0
+
+            def take(rec):
+                parts = rec.split(",", col + 1)
+                if sids is not None and not any(p[:1] == '"' for p in parts[:col + 1]) and not (
+                        len(parts) > col and parts[col].rstrip("\r\n") in sids):
+                    return  # unquoted leading fields: the key is read as it stands, a quoted one only a parse tells
+                row = next(csv.reader([rec]), [])
+                if row and (sids is None or len(row) > col and row[col] in sids):
+                    out = dict(zip(head, row))
+                    out.update(dict.fromkeys(head[len(row):]))  # a missing field is None, the extra ones a list under None
+                    if len(row) > len(head):
+                        out[None] = row[len(head):]
+                    rows.append(out)
             for line in f:
                 if record or '"' in line:
                     record += line
-                    if record.count('"') % 2:  # inside a quoted field: the record goes on in the next line
+                    state = _quote_state(line, state)
+                    if state == 2:  # inside a quoted field: the record goes on in the next line
                         continue
-                    line, record = record, ""
-                    if any(p[:1] == '"' for p in line.split(",", col + 1)[:col + 1]):
-                        row = next(csv.reader([line]), [])  # a quoted leading field: only a parse tells the column
-                        if len(row) > col and (sids is None or row[col] in sids):
-                            rows.append(dict(zip(head, row)))
-                        continue
-                parts = line.split(",", col + 1)
-                if len(parts) > col and (sids is None or parts[col] in sids):
-                    rows.append(dict(zip(head, next(csv.reader([line]), []))))
+                    line, record, state = record, "", 0
+                take(line)
+            if record:  # a quoted field left open at the end of the file, read as csv does
+                take(record)
     except (OSError, UnicodeDecodeError, csv.Error):
         pass
     return rows

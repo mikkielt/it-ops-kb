@@ -1126,6 +1126,15 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
                     want_s[row["id"]] = row
         assert anchors == want_a and state == want_s and want_a and set(verified) <= cited, (len(anchors), len(want_a))
         assert {k[2] for k in anchors} <= cited and set(state) <= cited
+        # the scoped read of a ledger returns what a whole csv read does for each id: a key in the last column, a bare
+        # quote mid-field, a quoted field holding a doubled quote or a newline, a row with fewer or more fields
+        planted = tmp_path / "planted.csv"
+        planted.write_text('a,note,id\nx,5" pipe,S1\ny,"say ""x"" then, more",S2\nz,plain,S3\nw,"multi\nline ""q""",S4\n'
+                           'short,S5\nlong,v,S6,extra\n', encoding="utf-8", newline="")
+        whole = list(csv.DictReader(open(planted, encoding="utf-8", newline="")))
+        assert kbfacts._ledger_rows(str(planted), "id", None) == whole and len(whole) == 6
+        for sid in ("S1", "S2", "S3", "S4", "S6"):
+            assert kbfacts._ledger_rows(str(planted), "id", {sid}) == [r for r in whole if r["id"] == sid], sid
         mp.setenv("KB_INDEX", str(tmp_path / "signals"))
         mp.setattr(kbfacts, "_SIGNALS", {})
         mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
