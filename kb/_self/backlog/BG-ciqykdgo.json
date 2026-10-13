@@ -2,7 +2,7 @@
   "id": "BG-ciqykdgo",
   "kind": "bug",
   "title": "The research queue's ql_research.NOTE does not read a Closed note, so querylog.py queue keeps a _gaps.md entry the router reads as closed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,6 @@
   "links": [
     "parked: SP-lmf4ke4w review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: the repro exits 1, NOTE does not match a Closed note (precheck). Gate g1 answered by operator: Closed settles; Narrowed and Partly resolved stay open leads. bl_cost.py is touched for the comment that names SETTLED (cost --research reads ql_research.SETTLED); the change is the tuple and NOTE."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: the repro exits 1, NOTE does not match a Closed note (precheck). Gate g1 answered by operator: Closed settles; Narrowed and Partly resolved stay open leads. bl_cost.py is touched for the comment that names SETTLED (cost --research reads ql_research.SETTLED); the change is the tuple and NOTE.",
+  "claimed_by": "orch-enudabdr"
 }
