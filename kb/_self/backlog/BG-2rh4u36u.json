@@ -32,7 +32,9 @@
         "guard the double-letter rule by a digit test on the whole word"
       ],
       "recommendation": "isalpha guard on the final character of the double-letter rule only",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "isalpha guard on the final character of the double-letter rule only",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-7ff7c5ui"
