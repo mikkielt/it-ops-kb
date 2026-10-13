@@ -2,7 +2,7 @@
 topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-13
 sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S-ehhvgjky, S742, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
 status: complete
 ---
@@ -13,8 +13,9 @@ status: complete
 Three no-auth remote MCP servers cover most of this kb and are configured for every user in `.mcp.json`:
 Microsoft Learn (GA, about 15 domains), Claude Code Docs and the MCP docs site. GitHub's remote MCP server
 (GA, needs a token) reaches the source repositories behind many pinned artifacts and is optional. Plain APIs
-(GitHub REST, Graph `$metadata`, PyPI JSON, `llms.txt`) cover scripted checks. Preview or beta servers
-(GitLab MCP, Microsoft MCP Server for Enterprise) are excluded. Full table: `doc-lookup-sources.csv`.
+(GitHub REST, Graph `$metadata`, PyPI JSON, `llms.txt`) cover scripted checks. The Microsoft MCP Server for
+Enterprise (preview) is excluded, and GitLab's MCP server (GA since GitLab 19.5, needs a token) is not in the
+table. Full table: `doc-lookup-sources.csv`.
 Refreshing an existing fact still goes through `_tools/fetch.py --diff`; these servers are for finding and
 reading the current page.
 
@@ -33,7 +34,7 @@ reading the current page.
 - GitHub documents the remote MCP server setup for IDE clients, with OAuth or a personal access token. [DOC S2186]
 - The remote server's documentation lists per-toolset read-only URLs of the form `https://api.githubcopilot.com/mcp/x/<toolset>/readonly`. [DOC S2187]
 - GitHub's REST API allows 60 requests per hour unauthenticated and 5,000 per hour with a personal access token. [DOC S2188]
-- GitLab's MCP server page shows status Beta (moved from experiment in GitLab 18.6), so it is excluded here; GitLab docs remain reachable as raw files through the GitLab REST API. [DOC S2189]
+- GitLab's MCP server page shows status Generally available (experiment in GitLab 18.3, beta in 18.6, generally available in 19.5) and accepts an OAuth access token with the `mcp` scope or a fine-grained personal access token with the MCP tool permission; it is not one of the no-auth servers and is not in the ranked table, and GitLab docs remain reachable as raw files through the GitLab REST API. [DOC S2189]
 - Microsoft MCP Server for Enterprise (Graph/Entra data) is titled "(preview)" on its Learn overview page, so it is excluded. [DOC S2190]
 - `https://graph.microsoft.com/v1.0/$metadata` is downloadable without authentication; `/beta` is out of scope as a preview surface. [DOC S2191]
 - PyPI's JSON API (`https://pypi.org/pypi/<package>/json`) returns a project's latest-version metadata, its releases and project URLs without authentication; the `releases` key is marked deprecated in favour of the Index API, and `/pypi/<package>/<version>/json` gives one release. [DOC S2192]
@@ -41,7 +42,7 @@ reading the current page.
 - Context7 indexes library docs contributed by its community and states that it cannot guarantee their accuracy. [COMMUNITY S2194]
 - Context7 (Upstash) serves library docs through a remote MCP server at `https://mcp.context7.com/mcp` with two tools, `resolve-library-id` (library name to a Context7 id such as `/vercel/next.js`) and `query-docs` (docs for that id and a query), or through the `ctx7` CLI; a free API key, sent as `Authorization: Bearer`, is recommended for higher rate limits. [DOC S-eutmp4xp]
 - Context7's repository (MIT) holds only the MCP server's source; its API backend, parsing engine and crawling engine are private. [DOC S-eutmp4xp]
-- Anyone can add a public GitHub library to Context7 without owning it; Context7 indexes its `.md`, `.mdx`, `.rst`, `.txt` and `.ipynb` files, falls back to generating examples from source code when a public repository has little documentation, and refreshes libraries automatically "based on popularity". Private sources need a Pro or Enterprise plan. [DOC S-j7xzzcxj]
+- Anyone can add a public GitHub library to Context7 without owning it; Context7 indexes its `.md`, `.mdx`, `.markdown`, `.rst`, `.txt` and `.ipynb` files (not raw source files while documentation is present), falls back to generating examples from source code when a public repository has little documentation, and refreshes libraries automatically "based on popularity". Private sources need a Pro or Enterprise plan. [DOC S-j7xzzcxj]
 - Context7 refresh cadence: when a library is requested and its docs are older than a popularity-based threshold, a background refresh starts: top 100 libraries after 1 day, top 1,000 after 15 days, top 5,000 after 30 days, all others after 45 days (website libraries slightly longer). [DOC S-gupervu4]
 - Context7 limits: the API guide publishes no request-rate numbers ("low rate limits" without an API key) and answers an exceeded limit with `429` plus `Retry-After` and `RateLimit-*` headers [DOC S-ke227men]; the Free plan is blocked after 1,000 API calls a month (with 20 bonus calls a day while blocked), and Pro includes 2,000 calls per seat, then $5 per 1,000 [DOC S-fqi6xbbc].
 - Context7 results carry source URLs: the documentation-context API returns fields described as "URL to source location" and "URL to source page", and its text output has `Source: <url>` lines. [DOC S-autbwi4y]
@@ -69,8 +70,10 @@ reading the current page.
 - Mintlify's generated MCP server has three tools: search (snippets with titles and links), query-docs-filesystem (shell-style reads of the site's virtual filesystem, including reads of several pages in one call) and submit-feedback; search takes optional `version` and `language` filters, and the skill.md files are exposed as MCP resources. [DOC S2182]
 - Microsoft Learn's `microsoft_docs_search` returns up to 10 chunks of at most 500 tokens each with title, url and excerpt, `microsoft_code_sample_search` up to 20 samples (optional `language` filter), and `microsoft_docs_fetch` a whole page as Markdown, so a search adds at most about 5,000 tokens of tool result. [DOC S2177] [DER S2177: 10 x 500 tokens]
 - Claude Code's `WebSearch` tool runs a query on Anthropic's web search backend and returns titles and urls only; it does not fetch the pages, so reading one takes a `WebFetch` call. One call may issue up to eight backend searches. [DOC S-3yod3u7q]
-- A Claude Code session may make at most 200 `WebSearch` calls, counted across subagents (v2.1.212 or later, `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises it); permission rules for `WebSearch` take no specifier, and the tool is available on the Claude API but not on Amazon Bedrock. [DOC S-3yod3u7q]
-- `WebFetch` asks for a url and a prompt and runs the prompt over the page with a small fast model, so it is lossy; it truncates large pages, caches a response 15 minutes, fails a page not downloaded within five minutes (v2.1.268 adds `CLAUDE_CODE_WEBFETCH_DEADLINE_MS`) and refuses hostnames without a dot. [DOC S-3yod3u7q]
+- An interactive terminal session has a limit of 200 `WebSearch` calls, counted across the main conversation and its subagents (v2.1.212 or later); at the limit a search does nothing and Claude is told to continue with what it has gathered or ask for more. `CLAUDE_CODE_MAX_WEB_SEARCHES_PER_SESSION` raises the cap (a positive whole number; the cap cannot be turned off), and from v2.1.290 that session's limit refills at about 100 calls per hour, which `CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR` changes. [DOC S-3yod3u7q]
+- The environment-variables page gives the refill default as 100 in an interactive terminal session and 0, which turns refill off, in a non-interactive session (v2.1.290 or later); the tools reference states the 200-call limit only for an interactive terminal session. [DOC S745] [UNK: whether a `claude -p` or Agent SDK run is subject to the 200-call cap]
+- Permission rules for `WebSearch` take no specifier; the tool is available on the Claude API, Claude Platform on AWS and Microsoft Foundry, works on Google Cloud's Agent Platform with Opus 4, Sonnet 4, Haiku 4.5 and later models, and is not exposed by Amazon Bedrock. [DOC S-3yod3u7q]
+- `WebFetch` asks for a url and a prompt, converts the page to Markdown and, for most fetches, runs the prompt over it in a separate model call, so Claude receives that call's result and the tool is lossy by design; it reads at most 100,000 characters of a page per call (from v2.1.290 the result says how much went unread), caches a response 15 minutes, fails a page not downloaded within five minutes (v2.1.268 adds `CLAUDE_CODE_WEBFETCH_DEADLINE_MS`), refuses hostnames without a dot, and for a redirect to a different host returns the original and target urls instead of following it. [DOC S-3yod3u7q]
 - In Manual and `acceptEdits` permission modes `WebFetch` prompts before a fetch except for a built-in set of preapproved documentation domains and domains a rule allows; the page does not list that set, and an explicit `WebFetch(domain:...)` rule overrides it. [DOC S-3yod3u7q] [UNK: whether Microsoft Learn or the Claude and MCP docs hosts are in the preapproved set]
 - `WebSearch` and `WebFetch` both need approval in a permission-prompting mode, and `-p` has no terminal to answer, so a headless researcher lists them in `--allowedTools` (which allows them without prompting and does not restrict which tools exist) or runs under a mode that skips the prompt. [DER S-3yod3u7q, S742, S1824: the prompt table and the `-p` no-TTY rule]
 
@@ -104,7 +107,7 @@ reading the current page.
 - `.claude/settings.json`: pre-approves those servers and denies their `submit_feedback` tools.
 - `_tools/fetch.py --diff`: re-fetches the recorded sources of a topic and shows what changed.
 - `agents/doc-change-detection.md`: version signals, redirects, sitemaps and archives for telling whether a cited page changed.
-- Rejected: GitLab MCP server (Beta), Microsoft MCP Server for Enterprise (preview), GitHub MCP Insiders mode (early access), undocumented `platform.claude.com/docs/mcp`.
+- Rejected: Microsoft MCP Server for Enterprise (preview), GitHub MCP Insiders mode (early access), undocumented `platform.claude.com/docs/mcp`; not in the table: GitLab MCP server (GA since GitLab 19.5, needs OAuth or a fine-grained personal access token).
 - `agents/hybrid-retrieval.md`: its Azure AI Search, Anthropic, pgvector and Elasticsearch facts were found and read through the Microsoft Learn MCP server and WebFetch listed here.
 
 ## Examples
