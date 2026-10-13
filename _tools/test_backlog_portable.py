@@ -466,8 +466,8 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
     shown = dry(ids["work"])
     assert shown["brief"].endswith(f"_cache/scratch/{ids['work']}/brief.md (stdin)")
     assert shown["argv"].startswith("claude -p --model sonnet --effort high --output-format json --add-dir ")
-    assert shown["argv"].endswith("--max-turns 60")  # a task
-    assert dry(story)["argv"].endswith("--max-turns 100")  # a story
+    assert shown["argv"].endswith("--max-turns 100")  # a task
+    assert dry(story)["argv"].endswith("--max-turns 150")  # a story
     research = made("task", "research item", "--parent", story, "--touch", "kb/public/windows/x.md",
                     "--check", "python3 -c pass")
     assert dry(research)["argv"].endswith("--max-turns 200")  # a task whose scope is kb content only

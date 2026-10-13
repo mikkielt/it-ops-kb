@@ -54,6 +54,17 @@
       "class": "agents-rule",
       "answer": "task 100, story 150",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What --max-turns does dispatch give an epic or a sprint, which followed the story's cap (100) until now?",
+      "options": [
+        "150, the story's cap",
+        "100 kept"
+      ],
+      "recommendation": "150, the story's cap",
+      "class": "agents-rule"
     }
   ],
   "claimed_by": "orch-mujl7ebh"

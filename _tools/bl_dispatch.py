@@ -42,7 +42,7 @@ STAGING = "staging"  # under the scratch directory: copies of the `.claude/` fil
 DEFAULT_MODEL = "sonnet"
 EFFORT = "high"
 # --max-turns by item kind (kb/public/claude/ci-and-headless.md: print mode only, an error at the limit, no default)
-TURNS = {"task": 60, "subtask": 60, "bug": 100, "story": 100, "epic": 100, "sprint": 100}
+TURNS = {"task": 100, "subtask": 100, "bug": 100, "story": 150, "epic": 150, "sprint": 150}
 RESEARCH_TURNS = 200  # a research story, task or subtask or an investigation bug
 INVESTIGATION_RE = re.compile(r"investigat", re.I)  # a bug whose title or goal says so is an investigation bug
 PACK_TIMEOUT_S = 120
