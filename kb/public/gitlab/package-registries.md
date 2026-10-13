@@ -3,7 +3,7 @@ topic: gitlab/package-registries
 priority: P3
 applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, 2026-09-27); PyPI, generic packages and container registry; Free, Premium and Ultimate"
 retrieved_utc: 2026-10-11
-sources: [S-v25mipeh, S-fo6cckzx, S-5lpubwd5, S-gqpmeuse, S-owkwtkdm, S-n3qvicph, S-ocjsmgvx, S-jk4rtq6g, S-cx5yd4ae, S-sxp3exzp, S1507]
+sources: [S-v25mipeh, S-fo6cckzx, S-5lpubwd5, S-gqpmeuse, S-owkwtkdm, S-n3qvicph, S-ocjsmgvx, S-jk4rtq6g, S-cx5yd4ae, S-2fkrq2c6, S1507]
 status: partial
 ---
 
@@ -36,7 +36,8 @@ All three registries are project-scoped for publishing: a PyPI package or a gene
 - An image is named `<registry server>/<namespace>/<project>[/<optional path>]` with up to two further name levels; the path of a repository always matches its project's path, so a registry cannot be moved or renamed apart from the project. [DOC S-5lpubwd5]
 - Pushing is per project; `GET /groups/:id/registry/repositories` lists the registry repositories of a group and `GET /projects/:id/registry/repositories` those of a project. [DOC S-gqpmeuse]
 - `GET /projects/:id/registry/repositories/:repository_id/tags/:tag_name` returns the tag's `digest` (`sha256:...`), `revision`, `short_revision`, `location`, `created_at` and `total_size`; the Tag Details page also shows the manifest and configuration digests. [DOC S-gqpmeuse, S-5lpubwd5]
-- The page documents no pull by digest; Docker documents `NAME[:TAG|@DIGEST]` and GitLab's pipeline security guidance asks for `image: <name>@sha256:<digest>` instead of a mutable tag. [DOC S-cx5yd4ae, S-sxp3exzp]
+- The page documents no pull by digest; Docker documents `docker image pull` with `NAME[:TAG|@DIGEST]`. [DOC S-cx5yd4ae]
+- GitLab's pipeline security page asks to always use SHA digests for Docker images, as `image: python@sha256:...` instead of `image: python:3.9`. [DOC S-2fkrq2c6]
 - Authentication: GitLab username and password (not with 2FA), a personal, deploy, project or group access token, or the GitLab CLI; a token needs `read_registry` to pull and `write_registry` together with `read_registry` to push. [DOC S-owkwtkdm, S-jk4rtq6g]
 - In CI, `CI_REGISTRY_USER` and `CI_REGISTRY_PASSWORD` hold a per-job user with read-write access, or the job token logs in with `gitlab-ci-token`; the job token reads and writes the running project's registry and, for others, the job token allowlist decides. [DOC S-owkwtkdm]
 - Registry JWTs from a login last 5 minutes by default on GitLab Self-Managed and 15 minutes on GitLab.com, so a push that outlasts them fails with `unauthorized: authentication required`. [DOC S-owkwtkdm]
