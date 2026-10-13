@@ -21,5 +21,34 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the nearest-rank p95 facts go: a new topic python/percentile-nearest-rank, or an extension of an existing article?",
+      "options": [
+        "new topic python/percentile-nearest-rank",
+        "extend mecm/cmpivot.md",
+        "extend claude/ci-and-headless.md"
+      ],
+      "recommendation": "new topic python/percentile-nearest-rank",
+      "class": "design",
+      "answer": "new topic python/percentile-nearest-rank",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Do the two answered questions get rows in kb/public/_retrieval/lookup_eval.csv, now that the facts spell the bare version 2.1.294 and the p95 topic exists?",
+      "options": [
+        "add one row per question to the public eval file",
+        "add no row"
+      ],
+      "recommendation": "add one row per question to the public eval file",
+      "class": "design",
+      "answer": "add one row per question to the public eval file",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-7ff7c5ui"
 }
