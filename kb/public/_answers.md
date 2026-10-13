@@ -3311,3 +3311,22 @@ _Agent: kb-research_
 - See security/linux-nftables.md.
 
 _Agent: kb-research_
+
+## QK-gline-rs-s-exact-ort-pin. Can gline-rs's exact ort pin =2.0.0-rc.9 resolve beside a service's own =2.0.0-rc.13 pin in one Cargo build?
+- The Cargo book says Cargo unifies the requirements on one crate when the versions are SemVer-compatible and errors when two compatible versions cannot be unified; its example is two exact pins of `log`, `=0.4.11` and `=0.4.8`. [DOC S-miwhfdzy]
+- Versions are compatible when their left-most non-zero major, minor or patch component is the same, and the resolver's key for one activated version per crate reads only those three numbers, so `2.0.0-rc.9` and `2.0.0-rc.13` have one key. [DOC S-7zyahsl3; CODE S-jdu5egnj: core/resolver/types.rs#SemverCompatibility]
+- `gline-rs` 1.1.0 requires `ort` and `ort-sys` at `=2.0.0-rc.9`; the `ort` `v2.0.0-rc.13` manifest requires `ort-sys` at `=2.0.0-rc.13`. [CODE S-bzhegec5, S-pwbxp7jw: Cargo.toml#dependencies]
+- Conclusion: no, the two pins cannot resolve in one build; Cargo reports a conflict instead of building two copies, and one of the pins has to change (the service takes `=2.0.0-rc.9`, or it leaves `gline-rs` out). [DER S-bzhegec5, S-pwbxp7jw, S-miwhfdzy, S-jdu5egnj]
+- Open: whether `gline-rs` 1.1.0 compiles against `ort` rc.13 with its pin loosened is not stated and was not tested. [UNK]
+- See agents/onnx-runtime-rust-ort.md, privacy/gliner-glirel-zero-shot.md.
+
+_Agent: kb-research_
+
+## QK-unresolvable-rustc-wrapper-rustc-workspace-wrapper. Does an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER make rustc_fingerprint fail and turn the .rustc_info.json cache off?
+- `rustc_fingerprint` hashes the compiler and then each wrapper that is set through `hash_exe`, which resolves the program on `PATH` (or takes a value of more than one path component as it is) and reads its metadata, each step with `?`; `Cache::load` logs "failed to calculate rustc fingerprint" at `warn` and leaves the cache location unset. [CODE S-f6y5we3c: util/rustc.rs#rustc_fingerprint, Cache::load; S-zonbsokp: cargo-util paths.rs#resolve_executable]
+- The wrappers are also placed in front of the `rustc -vV` command that `Rustc::new` runs, the outermost wrapper being the program started, and the error of `output()?` is returned. [CODE S-f6y5we3c: util/rustc.rs#Rustc::new, cached_output; S-uxljwlpn: process_builder.rs#wrapped, build_command_without_args]
+- Conclusion: yes, an unresolvable wrapper makes `rustc_fingerprint` fail and turns the cache off, and the same wrapper then fails the spawn of `rustc -vV`, so a command that loads the global `rustc` stops with an error rather than running uncached; this holds for the pinned source only. [DER S-f6y5we3c, S-uxljwlpn, S-zonbsokp]
+- Open: the text of the spawn error for a missing wrapper was not run; no Cargo documentation page states the cache or its cases. [UNK]
+- See agents/codebase-mapping.md.
+
+_Agent: kb-research_

@@ -45,13 +45,13 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/security-copilot-endpoint` | P2 | complete | `agents/security-copilot-endpoint.md` | 24 |
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
-| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 107 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 109 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 75 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
 | `agents/mmlw-e5-polish-embeddings` | P3 | partial | `agents/mmlw-e5-polish-embeddings.md` | 31 |
-| `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 37 |
+| `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 41 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
 | `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 17 |
 | `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 6 |
@@ -282,7 +282,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `privacy/presidio-recognizer-yaml` | P0 | complete | `privacy/presidio-recognizer-yaml.md`, `privacy/presidio-recognizer-registry.schema.json`, `privacy/presidio-example_recognizers.yaml` | 9 |
 | `privacy/spacy-model-licence` | P0 | complete | `privacy/spacy-model-licence.md` | 5 |
 | `privacy/coreference-resolution-options` | P3 | partial | `privacy/coreference-resolution-options.md` | 51 |
-| `privacy/gliner-glirel-zero-shot` | P3 | partial | `privacy/gliner-glirel-zero-shot.md` | 44 |
+| `privacy/gliner-glirel-zero-shot` | P3 | partial | `privacy/gliner-glirel-zero-shot.md` | 47 |
 | `privacy/morfeusz-polish-lemmatisation` | P3 | partial | `privacy/morfeusz-polish-lemmatisation.md` | 27 |
 | `privacy/spacy-pipeline-pinning` | P3 | partial | `privacy/spacy-pipeline-pinning.md` | 27 |
 | `python/pytest` | P2 | complete | `python/pytest.md` | 14 |

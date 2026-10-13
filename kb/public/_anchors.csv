@@ -704,6 +704,7 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 01562cd9fe99,agents/codebase-mapping.md,S-r6oc37x2,unlocated:no-match,,,,,2026-10-10
 01562cd9fe99,agents/codebase-mapping.md,S-xmboehyd,located,dotnet package list command - .NET CLI | Microsoft Learn > Options,9.0.30;auditsourc;data;audit;vulnerability;sdk;net;sourc,79d81ca5a4bb77ce,"Available starting in .NET SDK 9.0.300, this option uses the <AuditSources> property in your configuration file to specify your source of vulnerability data, which is",2026-10-10
 053137f9456b,agents/codebase-mapping.md,S-4qptrwkx,located,Description > name > engines,advisory;engine-strict;strict;unless;warn;engin;install;dependency,059cf2b5c4be0723,"Unless the user has set the engine-strict config flag, this field is advisory only and will only produce warnings when your package is installed as",2026-10-10
+066b81211e7d,agents/codebase-mapping.md,S-5qhrejbl,unlocated:no-match,,,,,2026-10-13
 066b81211e7d,agents/codebase-mapping.md,S-l7o6het5,unlocated:no-match,,,,,2026-10-10
 080f8a9a9ff6,agents/codebase-mapping.md,S-5gm7nwzj,unlocated:no-match,,,,,2026-10-10
 0b42288d4c86,agents/codebase-mapping.md,S-hvxiebin,located,Overrides,away;further;current;rust-toolchain.toml;toml;rust;directory;file,fd67773093e5d8f4,"the directory tree toward the filesystem root, and a rust-toolchain.toml file that is closer to the current directory will be preferred over a directory override",2026-10-10
@@ -724,14 +725,22 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 0f83424bf376,agents/codebase-mapping.md,S-qpokkcte,unlocated:no-match,,,,,2026-10-10
 0f9d8aa46c75,agents/codebase-mapping.md,S-d7lm5uzs,located,Lockfiles > Proposal,devcontainer-lock.json;local;lock;devcontainer.json;json;record;devcontainer;featur,afbc35ea7fdc2aab,"Local features and the deprecated GitHub releases features are not recorded in the lockfile. The lockfile is named devcontainer-lock.json, is located in the same folder",2026-10-10
 1372d05136a3,agents/codebase-mapping.md,S-caqpwc2e,unlocated:no-match,,,,,2026-10-10
+13c9bb74b1a4,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
+13c9bb74b1a4,agents/codebase-mapping.md,S-uxljwlpn,located,,wrapper;program,35cf05b642bb637d,let mut iter = self.wrappers.iter().rev().chain(once(&self.program));,2026-10-13
+13c9bb74b1a4,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
 1938b01a9b16,agents/codebase-mapping.md,S-loh54u4h,unlocated:no-match,,,,,2026-10-10
+19531f41d7e0,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
+19531f41d7e0,agents/codebase-mapping.md,S-gkpddy5i,unlocated:no-match,,,,,2026-10-13
 19531f41d7e0,agents/codebase-mapping.md,S-ubjrtutg,unlocated:no-match,,,,,2026-10-10
 1a25c73717b3,agents/codebase-mapping.md,S-dxri4xet,unlocated:no-match,,,,,2026-10-10
+1a25c73717b3,agents/codebase-mapping.md,S-ebazgtwi,unlocated:no-match,,,,,2026-10-13
 1b0e752d41be,agents/codebase-mapping.md,S-3a7yfcq7,located,Configuration > Global config: `~/.config/mise/config.toml`,nvmrc;enabl;such;idiomatic;read;tool;version;file,6e16faa7b590d878,"# read version files used by other version managers, such as .nvmrc idiomaticversionfileenabletools = ['node']",2026-10-10
 1ce12a68c184,agents/codebase-mapping.md,S-z35np3zd,unlocated:no-match,,,,,2026-10-10
 1ce8957039f3,agents/codebase-mapping.md,S-4jj4dtg4,located,Set up Claude Code in a monorepo or large codebase > Reduce what Claude reads > Reduce file reads with code intelligence,definition;scan;referenc;find;intelligenc;larg;tree;plugin,84700d5a1b6c12fc,"In a large codebase, finding where a symbol is defined or used can cost many file reads and grep calls. Code intelligence plugins connect Claude",2026-10-10
 1d79493e6b42,agents/codebase-mapping.md,S-6fmskgi2,unlocated:no-match,,,,,2026-10-10
 1e13ee6025a4,agents/codebase-mapping.md,S-ci5jq2sq,located,"type: (int, int) -> int",clean;indentation;classdef;docstr;functiondef;asyncfunctiondef;true;def,7d4c85ab0f22f033,":class:FunctionDef, :class:AsyncFunctionDef, :class:ClassDef, or :class:Module node), or None if it has no docstring. If clean is true, clean up the docstring's indentation with",2026-10-10
+2131cc06e1bd,agents/codebase-mapping.md,S-gfjnysog,unlocated:no-match,,,,,2026-10-13
+2131cc06e1bd,agents/codebase-mapping.md,S-sipjyeoi,unlocated:no-match,,,,,2026-10-13
 2446edc057b4,agents/codebase-mapping.md,S-vstmwlcx,unlocated:no-match,,,,,2026-10-10
 2558661a1366,agents/codebase-mapping.md,S-5mnhlz54,unlocated:no-match,,,,,2026-10-10
 2558661a1366,agents/codebase-mapping.md,S-kyv336v3,unlocated:no-match,,,,,2026-10-10
@@ -750,7 +759,6 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 3d5c5a876b39,agents/codebase-mapping.md,S-ff6may7t,unlocated:no-match,,,,,2026-10-10
 3d5c5a876b39,agents/codebase-mapping.md,S-j645b5a2,unlocated:no-match,,,,,2026-10-10
 3e907ce5b14f,agents/codebase-mapping.md,S-3e3kl7vi,located,Overview > Using `tsconfig.json` or `jsconfig.json`,current;ignor;search;command;directory;input;line;tsc,8c688d9883685728,"By invoking tsc with no input files, in which case the compiler searches for the tsconfig.json file starting in the current directory and continuing up",2026-10-10
-41aa4d0cc830,agents/codebase-mapping.md,S-sipjyeoi,unlocated:no-match,,,,,2026-10-10
 42f831096e83,agents/codebase-mapping.md,S-3zv32lrc,unlocated:no-match,,,,,2026-10-10
 4335b12d56a9,agents/codebase-mapping.md,S-ff6may7t,located,,first;load;relativ;resolv;inherit;base;path;configuration,c787872796126717,"The configuration from the base file are loaded first, then overridden by those in the inheriting config file. All relative paths found in the configuration",2026-10-10
 436c5aae6c7b,agents/codebase-mapping.md,S-gmmkbalr,located,,optional;thre;end;prec;clos;indentation;open;character,6f16806d4e44c470,by the end of line. The optional closing sequence of #s must be preceded by spaces or tabs and may be followed by spaces or,2026-10-10
@@ -779,10 +787,12 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 6282c7116c3b,agents/codebase-mapping.md,S-e54zbsgw,located,Reference an MSBuild Project SDK - MSBuild | Microsoft Learn,adds;bottom;implicit;sdk.prop;file;prop;top;microsoft,d5b95221ce711bef,"During evaluation of the project, MSBuild adds implicit imports at the top and bottom of the project file: <Project> <Import Project=""Sdk.props"" Sdk=""Microsoft.NET.Sdk"" />",2026-10-10
 6282c7116c3b,agents/codebase-mapping.md,S-z35np3zd,located,How MSBuild builds projects - MSBuild | Microsoft Learn > User-configurable imports,driv;root;directory.build.prop;microsoft.common.prop;directory;prop;common;microsoft,97633f37baecfa8a,"That's commonly at the solution level for settings to control all the projects in the solution, but could also be higher up in the filesystem,",2026-10-10
 648565d2e264,agents/codebase-mapping.md,S-kxcc7a7a,unlocated:no-match,,,,,2026-10-10
+648565d2e264,agents/codebase-mapping.md,S-zelwtfks,unlocated:no-match,,,,,2026-10-13
 66233d1c8417,agents/codebase-mapping.md,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
 67212a29a8ae,agents/codebase-mapping.md,S-xdf63oro,located,,json_output_version;1.0;output-format;ptag;version;_typ;format;ctag,33890e010ea42391,"$ ctags --extras=+p --output-format=json --fields=-s input.py {""type"": ""ptag"", ""name"": ""JSONOUTPUTVERSION"", ""path"": ""1.0"", ""pattern"": ""in development""}",2026-10-10
 69524ed0f2a1,agents/codebase-mapping.md,S-me5pwvu4,located,go > Overview ¶ > Start a bug report ¶ > Edit go.mod from tools or scripts ¶,back;writ;instead;go.mod;json;print;mod,206cd3ebb0282f74,writing it back to go.mod. The -json flag prints the final go.mod file in JSON format instead of,2026-10-10
 697f1a20df91,agents/codebase-mapping.md,S-afgd57ln,unlocated:no-match,,,,,2026-10-10
+697f1a20df91,agents/codebase-mapping.md,S-cfzsrdwh,located,,commandlin;dll;line;nuget.commandline.xplat.dll;plat;xplat;nuget;command,a76569b41b781b86,"private const string snugetExeName = ""NuGet.CommandLine.XPlat.dll"";",2026-10-13
 70ce92ed98bb,agents/codebase-mapping.md,S-qv43j5uv,located,dotnet msbuild command - .NET CLI | Microsoft Learn > Description,client;sdk-styl;styl;command-lin;line;option;sdk;command,03895beb478875a0,The command has the exact same capabilities as the existing MSBuild command-line client for SDK-style projects only. The options are all the same.,2026-10-10
 725b0db80e7a,agents/codebase-mapping.md,S-kyv336v3,located,MSBuild Response Files - MSBuild | Microsoft Learn > Directory.Build.rsp,15.6;parent;search;argument;default;project;directory.build.rsp;command-lin,2dd99077da28c025,"In version 15.6 and later, MSBuild searches parent directories of the project for a file named Directory.Build.rsp. This file can be helpful in a source",2026-10-10
 731cfe7a7735,agents/codebase-mapping.md,S-3yod3u7q,located,Tools reference,intelligenc;warn;definition;lsp;referenc;type;each;server,034dc7aa511f7598,"LSP | Code intelligence via language servers: jump to definitions, find references, report type errors and warnings. See LSP tool behavior | No Monitor |",2026-10-12
@@ -818,8 +828,11 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 839e5bc0faa2,agents/codebase-mapping.md,S-f62n2ltd,located,Gradle Wrapper > Verifying the Integrity of the Gradle Wrapper JAR,malicious;pull;replac;request;one;jar;wrapper;gradl,6ca1bda3de19e439,"Since the Wrapper JAR is usually checked into a project's version control system, there is the potential for a malicious actor to replace the original",2026-10-10
 85107791cb02,agents/codebase-mapping.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-10
 85107791cb02,agents/codebase-mapping.md,S-gcxnhiij,unlocated:no-match,,,,,2026-10-10
+86a9b3b73960,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
+86a9b3b73960,agents/codebase-mapping.md,S-trq5hdxv,unlocated:no-match,,,,,2026-10-13
 86f03d3f2b73,agents/codebase-mapping.md,S-cgtbvuug,located,Code intelligence plugins,connect;one;intelligenc;binary;install;code;languag;server,a85abaa69c79f551,"A code intelligence plugin gives Claude the live diagnostics and go-to-definition that your editor has, so Claude catches type errors and missing imports that its",2026-10-12
 88c89231e4d9,agents/codebase-mapping.md,S-qb643f4y,unlocated:no-match,,,,,2026-10-10
+8caefe6ae255,agents/codebase-mapping.md,S-cltv4idz,unlocated:no-match,,,,,2026-10-13
 8caefe6ae255,agents/codebase-mapping.md,S-nkxy23mu,unlocated:no-match,,,,,2026-10-10
 8d4e9008a153,agents/codebase-mapping.md,S-3cfiqwbl,located,Synopsis > Description,alway;dot;return;field;package.json;json;packag;valu,18fccd9bd7df56aa,"The syntax to retrieve and set fields is a dot separated representation of the nested object properties to be found within your package.json, it's the",2026-10-10
 91d867d242b0,agents/codebase-mapping.md,S-orgevefw,located,cargo-metadata(1) > OPTIONS > Output Options,fetch;member;workspac;dependency,ded32865f0173dae,"<dd class=""option-desc""><p>Output information only about the workspace members and don't fetch dependencies.</p>",2026-10-10
@@ -838,6 +851,8 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 954b88b4a8a9,agents/codebase-mapping.md,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
 954b88b4a8a9,agents/codebase-mapping.md,S-nkxy23mu,unlocated:no-match,,,,,2026-10-10
 95c71981713a,agents/codebase-mapping.md,S-j2laoer5,unlocated:no-match,,,,,2026-10-10
+99233e1b7e8a,agents/codebase-mapping.md,S-f6y5we3c,located,,hash_ex;exe;wrapper;hash,f38bfb85bfe3ed98,"hashexe(&mut hasher, wrapper)?;",2026-10-13
+99233e1b7e8a,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
 9b2e2fb7643b,agents/codebase-mapping.md,S-7j4xac2a,unlocated:no-match,,,,,2026-10-10
 9dd838cccf68,agents/codebase-mapping.md,S-gmmkbalr,unlocated:no-match,,,,,2026-10-10
 9de89dccfb82,agents/codebase-mapping.md,S-pwf7njbf,located,Resolution > Universal resolution,requires-python;project;requir;python;version,f6b786c5a36472d4,"For example, if a project's requires-python is >=3.8, resolution will fail if all versions of given dependency require Python 3.9 or later, since",2026-10-10
@@ -860,6 +875,7 @@ b0fbc53b04bf,agents/codebase-mapping.md,S-z2n27rkl,unlocated:no-match,,,,,2026-1
 b1bb442b73e6,agents/codebase-mapping.md,S-j2laoer5,unlocated:no-match,,,,,2026-10-10
 b20c8c6ffd52,agents/codebase-mapping.md,S-vstmwlcx,unlocated:no-match,,,,,2026-10-10
 b2c452d7505c,agents/codebase-mapping.md,S-ci5jq2sq,located,"type: (int, int) -> int",larg;sufficiently;depth;crash;interpreter;stack;complex,493a131ba9f573c9,It is possible to crash the Python interpreter with a sufficiently large/complex string due to stack depth limitations,2026-10-10
+b2f331b76c46,agents/codebase-mapping.md,S-oplh5k3d,unlocated:no-match,,,,,2026-10-13
 b2f331b76c46,agents/codebase-mapping.md,S-ubjrtutg,unlocated:no-match,,,,,2026-10-10
 b326cef8d7ae,agents/codebase-mapping.md,S-3yod3u7q,located,Tools reference > LSP tool behavior,inactiv;intelligenc;lsp;plugin;languag;stay;until;install,f051cbc4c7a81592,"Claude Code keeps the tool inactive until you install a code intelligence plugin for your language. In cloud sessions, Claude Code doesn't start plugin language",2026-10-12
 b5b9c0990c5f,agents/codebase-mapping.md,S-53fkmfzh,unlocated:no-match,,,,,2026-10-10
@@ -872,8 +888,6 @@ b9c5c565170f,agents/codebase-mapping.md,S-mrtq3wwm,unlocated:no-match,,,,,2026-1
 b9c5c565170f,agents/codebase-mapping.md,S-xmboehyd,located,dotnet package list command - .NET CLI | Microsoft Learn > Description,framework;referenc;version;project;packag,0e4229ebaf6457b1,The Resolved column lists the version that the project is currently using and is always a single value. The packages displaying an (A) right next,2026-10-10
 c1b1d4d47538,agents/codebase-mapping.md,S-j645b5a2,unlocated:no-match,,,,,2026-10-10
 c39e5757fae8,agents/codebase-mapping.md,S-6k54ouks,unlocated:no-match,,,,,2026-10-10
-c888f2fe3428,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-10
-c888f2fe3428,agents/codebase-mapping.md,S-trq5hdxv,unlocated:no-match,,,,,2026-10-10
 cab8ac3c9012,agents/codebase-mapping.md,S-hssujrgr,unlocated:no-match,,,,,2026-10-10
 cf9e97e5f877,agents/codebase-mapping.md,S-3dlonliy,unlocated:no-match,,,,,2026-10-10
 cf9e97e5f877,agents/codebase-mapping.md,S-xdf63oro,unlocated:no-match,,,,,2026-10-10
@@ -2392,6 +2406,98 @@ facb79898020,agents/microsoft-agent-framework.md,S-iblntf2w,located,"Python 2026
 facb79898020,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Agent Framework Overview | Microsoft Learn > Get started,agent-framework;install;pip;python;framework;agent,de75d51d92c7f768,"::: zone pivot=""programming-language-python"" pip install agent-framework",2026-10-10
 fb587e5834ff,agents/microsoft-agent-framework.md,S-4yhrlzez,unlocated:no-match,,,,,2026-10-10
 fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Agent Framework Overview | Microsoft Learn > Get started,agent.run;non-stream;stream;await;respons;non;run;agent,1792f64faaf2da24,"# Non-streaming: get the complete response at once result = await agent.run(""What is the largest city in France?"")",2026-10-10
+0050baeb8af9,agents/onnx-runtime-rust-ort.md,S-bzhegec5,located,,issu;ort-sy;sys;2.0.0;2.0.0-rc.9;ort,d799646aea5a1045,"ort-sys = { version = ""=2.0.0-rc.9"", default-features = false }",2026-10-13
+0050baeb8af9,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,2.0.0;2.0.0-rc.13;ort-sy;sys;ort,b4ef9fdc6017b499,"ort-sys = { version = ""=2.0.0-rc.13"", path = ""ort-sys"", default-features = false }",2026-10-13
+03e927dc22e1,agents/onnx-runtime-rust-ort.md,S-yliumtdz,located,ONNX Runtime Execution Providers > Build ONNX Runtime package with EPs,built;combination;default;packag;cpu;runtim;onnx;provider,b6c8ce6e81865c5f,The ONNX Runtime package can be built with any combination of the EPs along with the default CPU execution provider.,2026-10-13
+0b28264baade,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,unlocated:no-match,,,,,2026-10-13
+0f7062072769,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,located,,check;load;byte;session,30518c4166a52846,"/// For .ort models, we enable session.useortmodelbytesdirectly. /// For more information, check [Load ORT format model from an in-memory byte array](https://onnxruntime.ai/docs/performance/model-optimizations/ort-format-models.html#load-ort-format-model-from-an-in-memory-byte-array).",2026-10-13
+0f7062072769,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
+0f7062072769,agents/onnx-runtime-rust-ort.md,S-l3go6sje,unlocated:no-match,,,,,2026-10-13
+13dc80a609e5,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,acl;armn;azur;can;coreml;cuda;directml;migraphx,5e6834b452304d23,"""cuda"", ""tensorrt"", ""openvino"", ""onednn"", ""directml"", ""nnapi"", ""coreml"", ""xnnpack"", ""rocm"", ""acl"", ""armnn"", ""tvm"", ""migraphx"", ""rknpu"", ""vitis"", ""cann"", ""qnn"", ""webgpu"", ""azure"", ""nvrtx"", ""vsinpu""",2026-10-13
+19a011be1786,agents/onnx-runtime-rust-ort.md,S-xt54q2gr,located,,mlas;power;default;provider;cpu,308e1950b03ccbcf,"/// The default CPU execution provider, powered by MLAS.",2026-10-13
+1cc6707fd5f3,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
+1cc6707fd5f3,agents/onnx-runtime-rust-ort.md,S-rlepjcn5,unlocated:no-match,,,,,2026-10-13
+1e8f3547070d,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
+21b595edbfb5,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,unlocated:no-match,,,,,2026-10-13
+21b595edbfb5,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
+21b595edbfb5,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
+32144aefc3c9,agents/onnx-runtime-rust-ort.md,S-jdu5egnj,located,,version,16713b815770f640,Versions a and b are compatible if their left-most nonzero digit is the same.,2026-10-13
+3311fa671220,agents/onnx-runtime-rust-ort.md,S-vzhh6a43,located,Execution providers > Registering execution providers,next;back;fall;operator;order;cpu;fail;register,42d9cf02872cb9f6,"You can, of course, specify multiple execution providers. <Ort/> will register all EPs specified, in order. If an EP does not support a certain operator",2026-10-13
+34f73be6677e,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,unlocated:no-match,,,,,2026-10-13
+38f6e4681c99,agents/onnx-runtime-rust-ort.md,S-ujreltcp,located,Graph Optimizations in ONNX Runtime > Online/Offline Mode,avx2;cpus;saved;hardwar;provider;layout;exampl;offlin,c2769a99eb6dfcee,"When running in offline mode, make sure to use the exact same options (e.g., execution providers, optimization level) and hardware as the target machine that",2026-10-13
+392f2ed5c21f,agents/onnx-runtime-rust-ort.md,S-3mftdvfg,unlocated:no-match,,,,,2026-10-13
+3a8d9f03e246,agents/onnx-runtime-rust-ort.md,S-bzhegec5,unlocated:no-match,,,,,2026-10-13
+3a8d9f03e246,agents/onnx-runtime-rust-ort.md,S-jdu5egnj,unlocated:no-match,,,,,2026-10-13
+3a8d9f03e246,agents/onnx-runtime-rust-ort.md,S-miwhfdzy,unlocated:no-match,,,,,2026-10-13
+3a8d9f03e246,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
+3a9097b2f4f4,agents/onnx-runtime-rust-ort.md,S-gzswlsft,unlocated:no-match,,,,,2026-10-13
+3a90dd6794d0,agents/onnx-runtime-rust-ort.md,S-a7uyxlhd,unlocated:no-match,,,,,2026-10-13
+43b5a059d6c0,agents/onnx-runtime-rust-ort.md,S-7zyahsl3,located,Specifying Dependencies > Version requirement syntax > Default requirements,component;left;left-most;non-zero;zero;non;major;minor,0452b898d1d33fc6,Default requirements specify a minimum version with the ability to update to [SemVer] compatible versions. Versions are considered compatible if their left-most non-zero major/minor/patch component,2026-10-13
+43b5a059d6c0,agents/onnx-runtime-rust-ort.md,S-miwhfdzy,located,Dependency Resolution > Constraints and Heuristics > SemVer compatibility,cannot;unifi;error;compatibl;two;requirement;cargo;version,cfa290b33255f49a,"If two compatible versions cannot be unified because of conflicting version requirements, Cargo will error.",2026-10-13
+43fddf0ab8da,agents/onnx-runtime-rust-ort.md,S-jpjnjgqg,located,,hardware-accelerat;microsoft;other;primarily;pure-rust;train;wrapper;accelerat,b0299b23473c570c,ort is a Rust interface for performing hardware-accelerated inference & training on machine learning models in the Open Neural Network Exchange (ONNX) format. Based on,2026-10-13
+4a88745f733c,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,unlocated:no-match,,,,,2026-10-13
+5017bde4ca5f,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,located,,checksum;digest;external_data;file;external;location;data;optional,71d680ce188e3fd7,"// - ""checksum"" (optional) - SHA1 digest of file specified in under 'location' key. repeated StringStringEntryProto externaldata = 13;",2026-10-13
+541be28563f4,agents/onnx-runtime-rust-ort.md,S-x6bpplvz,unlocated:no-match,,,,,2026-10-13
+552105acd74e,agents/onnx-runtime-rust-ort.md,S-omvw5ahk,located,,execution;max;maxefficiency;overrid;policy;provider;selection;with_execution_provider,141837271cee575b,"// .withexecutionproviders/.withautoep will override this #[cfg(feature = ""api-22"")] let = ortsys![@ort: unsafe SessionOptionsSetEpSelectionPolicy(sessionoptionsptr.asptr(), AutoDevicePolicy::MaxEfficiency.into()) as Result];",2026-10-13
+5db865dddade,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,unlocated:no-match,,,,,2026-10-13
+5db865dddade,agents/onnx-runtime-rust-ort.md,S-anwc4b5l,unlocated:no-match,,,,,2026-10-13
+5db865dddade,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,unlocated:no-match,,,,,2026-10-13
+5db865dddade,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
+5f31594b5127,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,binary;download;download-binary;tls-nativ;api-27;copy;copy-dylib;nativ,a29a083ebf598cc8,"default = [ ""std"", ""ndarray"", ""tracing"", ""download-binaries"", ""tls-native"", ""copy-dylibs"", ""api-27"" ]",2026-10-13
+6fb92e87411a,agents/onnx-runtime-rust-ort.md,S-5xaderxo,located,Prebuilt binaries,clang;haswell;later;libc;linux;ryzen;x86-64;depend,aa63d641cb4e449f,"All x86-64 binaries are compiled with a baseline requirement of x86-64-v3 - that's Intel Haswell (Cores/Xeons after 2013), Intel Gracemont (Atoms after Nov 2021), AMD",2026-10-13
+74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-5xaderxo,unlocated:no-match,,,,,2026-10-13
+74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
+74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
+74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
+7869f116b608,agents/onnx-runtime-rust-ort.md,S-m5r2fcso,unlocated:no-match,,,,,2026-10-13
+7869f116b608,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-13
+7869f116b608,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
+79ddc477e13b,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,unlocated:no-match,,,,,2026-10-13
+7d378e969478,agents/onnx-runtime-rust-ort.md,S-cxzftyij,unlocated:no-match,,,,,2026-10-13
+7d378e969478,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
+7d378e969478,agents/onnx-runtime-rust-ort.md,S-u3hzriiy,unlocated:no-match,,,,,2026-10-13
+7d378e969478,agents/onnx-runtime-rust-ort.md,S-x6bpplvz,located,,ort_cache_dir;ort;default;cach;dir;path,b2ea7767cdec51df,"std::env::varos(""ORTCACHEDIR"").map(PathBuf::from).orelse(cachedirdefault)",2026-10-13
+7ee36e68c078,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,located,,max_stable_version;stabl;max;version;2.0.0;null,ec080a3b449115b0,"""newestversion"": ""2.0.0-rc.14"", ""maxstableversion"": null,",2026-10-13
+87408874eb65,agents/onnx-runtime-rust-ort.md,S-gs7u2ou5,located,Getting started,commit;commit_from_fil;file,3f2076d2f1be52e0,".commitfromfile(""yolov8m.onnx"")?;",2026-10-13
+892d71bb8c0f,agents/onnx-runtime-rust-ort.md,S-co3g3h4o,located,Using a Plugin Execution Provider Library,automatic;policy;register;runtim;selection;onnx;plugin;library,669dff09bf957913,Session creation with automatic EP selection The application code below uses the API function SessionOptionsSetEpSelectionPolicy to have ONNX Runtime automatically select an EP based on,2026-10-13
+89fdb733e906,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,unlocated:no-match,,,,,2026-10-13
+8aa53e4bdeb3,agents/onnx-runtime-rust-ort.md,S-l3go6sje,unlocated:no-match,,,,,2026-10-13
+8b721c6b574c,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,1.8;2.0;apache-2.0;edition;rust-version;apach;licens;mit,5213a68f914c2d58,"edition = ""2024"" rust-version = ""1.88"" license = ""MIT OR Apache-2.0""",2026-10-13
+96b8597482c9,agents/onnx-runtime-rust-ort.md,S-cxzftyij,unlocated:no-match,,,,,2026-10-13
+97aa6cad177f,agents/onnx-runtime-rust-ort.md,S-anwc4b5l,unlocated:no-match,,,,,2026-10-13
+9fc337d2cff7,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
+9fe1157d54a9,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
+a24f866f36a4,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,located,,fail_silently;log;registration;silently;fail;default;error_on_failur;failur,4d971f33dad83f01,/// Configures this execution provider to silently log an error if registration of the EP fails. /// This is the default behavior; it can be,2026-10-13
+a29750581cce,agents/onnx-runtime-rust-ort.md,S-gs7u2ou5,unlocated:no-match,,,,,2026-10-13
+a29750581cce,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,located,,2.0.0-rc.13;version;2.0.0;api;ort,5ac69ebb16171ee8,"""versiondownloads"": ""/api/v1/crates/ort/2.0.0-rc.13/downloads"",",2026-10-13
+a29750581cce,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-13
+a29750581cce,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,2.0.0;2.0.0-rc.13;default;featur;version;ort,b4ef9fdc6017b499,"ort-sys = { version = ""=2.0.0-rc.13"", path = ""ort-sys"", default-features = false }",2026-10-13
+a3230ca0ee6b,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
+a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
+a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,located,ONNX Runtime v1.28.3 > No results found,memory;memory-safety;model;model-validation;patch;safety;validation;fixe,38d370a10259287a,"This is a patch release on top of v1.28.2, containing memory-safety and model-validation fixes, a plugin execution fix, and packaging infrastructure updates.",2026-10-13
+a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
+a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-xjm5bsys,unlocated:no-match,,,,,2026-10-13
+a7c7a56c9ef0,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
+aab993f3682a,agents/onnx-runtime-rust-ort.md,S-y7gpyp7l,located,cargo-vendor(1) > DESCRIPTION,crates.io;git;crat;directory;dependency;vendor;cargo,0393fe218eb603bd,This cargo subcommand will vendor all crates.io and git dependencies for a project into the specified directory at <path>.,2026-10-13
+ab183ac1432e,agents/onnx-runtime-rust-ort.md,S-o3nqheje,located,Multiversioning,1.17;support;1.28;api-28;default;latest;minimum;ort,8d9b364c1b69b48f,<Ort/> can support any version of ONNX Runtime between 1.17 and 1.28. <Ort/>'s minimum API version is controlled by its api-<version> Cargo features. The latest,2026-10-13
+af8916ef1323,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,unlocated:no-match,,,,,2026-10-13
+af8916ef1323,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,located,Linking,point;onnx;runtim;ort,db67af84861d155d,Just point <Ort/> to the output of ONNX Runtime's build pipeline and it'll Just Work™.,2026-10-13
+b00d178686c4,agents/onnx-runtime-rust-ort.md,S-7srl2gyq,located,,compile_error;download-binary;must;one;compil;download;featur;binary,2efbbb0b41b49972,"compileerror!( ""When using download-binaries, a TLS feature must be configured. Enable exactly one of: \",2026-10-13
+b00d178686c4,agents/onnx-runtime-rust-ort.md,S-m5r2fcso,located,Cargo features > TLS features,one;must;download-binary;compil;tls;default;download;binary,7d11cbfdaceac0d1,"One of these features must be enabled when download-binaries is enabled, as download-binaries always uses HTTPS: tls-native (default): Uses the platform's native TLS provider for",2026-10-13
+b00d178686c4,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-13
+b02ffe78acce,agents/onnx-runtime-rust-ort.md,S-5xaderxo,located,Prebuilt binaries,haswell;libc;x86-64;baselin;x86;requirement;binary,aa63d641cb4e449f,"All x86-64 binaries are compiled with a baseline requirement of x86-64-v3 - that's Intel Haswell (Cores/Xeons after 2013), Intel Gracemont (Atoms after Nov 2021), AMD",2026-10-13
+b2e2683cafec,agents/onnx-runtime-rust-ort.md,S-i65jlupl,unlocated:no-match,,,,,2026-10-13
+b54dac339d98,agents/onnx-runtime-rust-ort.md,S-u3hzriiy,located,,cargo_net_offlin;download;dynamic;link;net;offlin;ort_offlin;ort_prefer_dynamic_link,97fb08b1a871e7b6,"pub const PREFERDYNAMICLINK: &str = ""ORTPREFERDYNAMICLINK""; pub const SKIPDOWNLOAD: &[&str] = &[""CARGONETOFFLINE"", ""ORTSKIPDOWNLOAD"", ""ORTOFFLINE""]; pub const CXXSTDLIB: &[&str] = &[",2026-10-13
+c60ccf4b8aa0,agents/onnx-runtime-rust-ort.md,S-gs7u2ou5,unlocated:no-match,,,,,2026-10-13
+c7e007fcbf43,agents/onnx-runtime-rust-ort.md,S-7srl2gyq,unlocated:no-match,,,,,2026-10-13
+d1ecc8e76af8,agents/onnx-runtime-rust-ort.md,S-cxzftyij,unlocated:no-match,,,,,2026-10-13
+d2b6b149e7d2,agents/onnx-runtime-rust-ort.md,S-m5r2fcso,unlocated:no-match,,,,,2026-10-13
+d51036861053,agents/onnx-runtime-rust-ort.md,S-7o37zl5s,unlocated:no-match,,,,,2026-10-13
+d51036861053,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,located,,card;library;library_nam;name;base;base_model;urchad;gliner_multi,7522478af02bcac5,"""cardData"": { ""basemodel"": ""urchade/glinermulti-v2.1"", ""libraryname"": ""transformers.js""",2026-10-13
+d51036861053,agents/onnx-runtime-rust-ort.md,S-rmgaatpo,unlocated:no-match,,,,,2026-10-13
+dd63090b5685,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
+dd67196557c2,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
+e82baf84052e,agents/onnx-runtime-rust-ort.md,S-ah7l36rr,unlocated:no-match,,,,,2026-10-13
 06ab45c8944d,agents/own-chatbot-architecture.md,S1970,located,What is Microsoft Foundry Agent Service? - Microsoft Foundry | Microsoft Learn > Enterprise capabilities,isolat;sandbox;vm-isolat;vnet;bring-your-own;privat;session;bring,d017f290bc93e109,"Private networking is available for prompt agents. Hosted agents support bring-your-own Azure Virtual Network (BYO VNet), where each session runs in a VM-isolated sandbox connected",2026-10-10
 0b8c77262223,agents/own-chatbot-architecture.md,S1974,located,Data policies - Power Platform | Microsoft Learn > Connectors > Virtual connectors,governanc;studio;copilot;platform;power;data;policy;connector,6320bdb2bce299bc,The proliferation of virtual connectors comes from data policies being one of the most popular governance controls in Power Platform. More of these types of,2026-10-10
 1421b6d68307,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-10
@@ -10541,6 +10647,103 @@ b80fd1818a33,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-1
 d0ca697cabb6,privacy/gdpr-pseudonymisation.md,S875,unlocated:not-text,,,,,2026-10-10
 f733bc75de36,privacy/gdpr-pseudonymisation.md,S-eickk3hp,unlocated:no-match,,,,,2026-10-10
 fd8a436263f8,privacy/gdpr-pseudonymisation.md,S870,unlocated:fetch-error,,,,,2026-10-10
+078837c0cdac,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,unlocated:no-match,,,,,2026-10-13
+078837c0cdac,privacy/gliner-glirel-zero-shot.md,S-pjp4rzor,located,,between;end;inclusiv;list;allow;allowed_head;allowed_tail;head_text,3dba60de117aff3b,"The company is headquartered in Cupertino, California.\""\n\nlabels = {\""glirellabels\"": {\n 'co-founder': {\""allowedhead\"": [\""PERSON\""], \""allowedtail\"": [\""ORG\""]}, \n 'country of origin': {\""allowedhead\"": [\""PERSON\"", \""ORG\""], \""allowedtail\"": [\""LOC\"", \""GPE\""]},",2026-10-13
+08ae10647792,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,unlocated:no-match,,,,,2026-10-13
+08ae10647792,privacy/gliner-glirel-zero-shot.md,S-uu7ov3pw,unlocated:no-match,,,,,2026-10-13
+10f2b73aab2e,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,located,Advanced Usage > Input limits and truncation,checkpoint;input;max_len;len;max,a03ccf7dc499675a,"stateless inference, each input that exceeds the checkpoint's config.maxlen",2026-10-13
+1c5d4a28c629,privacy/gliner-glirel-zero-shot.md,S-sislku4q,unlocated:no-match,,,,,2026-10-13
+1c5d4a28c629,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,unlocated:no-match,,,,,2026-10-13
+2a35c7f154e9,privacy/gliner-glirel-zero-shot.md,S-7ke3sttd,located,About > Available models,2.0;apach;apache-2.0;gliner_multi-v2.1;multilingual;gliner_multi;multi;209m,d60eb09474e3b878,v2.1 | urchade/glinersmall-v2.1<br>urchade/glinermedium-v2.1<br>urchade/glinerlarge-v2.1 <br>urchade/glinermulti-v2.1 | 166M<br>209M<br>459M<br>209M | English <br> English <br> English <br> Multilingual | apache-2.0,2026-10-13
+2a35c7f154e9,privacy/gliner-glirel-zero-shot.md,S-pvemvpkp,unlocated:no-match,,,,,2026-10-13
+2a35c7f154e9,privacy/gliner-glirel-zero-shot.md,S-wrx2q5ya,unlocated:no-match,,,,,2026-10-13
+2aaf420df78a,privacy/gliner-glirel-zero-shot.md,S-bzhegec5,located,,ort-sy;sys;2.0.0;2.0.0-rc.9;version;ort,d799646aea5a1045,"ort-sys = { version = ""=2.0.0-rc.9"", default-features = false } # see https://github.com/pykeio/ort/issues/399",2026-10-13
+2aaf420df78a,privacy/gliner-glirel-zero-shot.md,S-jdu5egnj,unlocated:no-match,,,,,2026-10-13
+2aaf420df78a,privacy/gliner-glirel-zero-shot.md,S-miwhfdzy,unlocated:no-match,,,,,2026-10-13
+2aaf420df78a,privacy/gliner-glirel-zero-shot.md,S-pwbxp7jw,located,,onnx;runtim;2.0.0;2.0.0-rc.13;rust;version,73d1c0c76e5b789b,"description = ""A safe Rust wrapper for ONNX Runtime 1.28 - Optimize and accelerate machine learning inference & training"" version = ""2.0.0-rc.13""",2026-10-13
+2b53496f96bc,privacy/gliner-glirel-zero-shot.md,S-gtp7oa24,unlocated:no-match,,,,,2026-10-13
+2b53496f96bc,privacy/gliner-glirel-zero-shot.md,S-hesowhet,unlocated:no-match,,,,,2026-10-13
+2e9ab61120f9,privacy/gliner-glirel-zero-shot.md,S-ewb6gt73,unlocated:no-match,,,,,2026-10-13
+2e9ab61120f9,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,unlocated:no-match,,,,,2026-10-13
+2f90ddc8f374,privacy/gliner-glirel-zero-shot.md,S-eu53rrws,unlocated:no-match,,,,,2026-10-13
+2f90ddc8f374,privacy/gliner-glirel-zero-shot.md,S-nshkwezk,unlocated:no-match,,,,,2026-10-13
+414263c0c14f,privacy/gliner-glirel-zero-shot.md,S-hfifhdhx,located,ONNX Runtime and OpenVINO > Troubleshooting,relation-extraction;decoder;generativ;stream;bi-encoder;extraction;relation;uni,cc3f47689d01d499,"An architecture cannot be exported or loaded Generative-decoder and streaming models currently require the PyTorch runtime. Use a supported uni-encoder, bi-encoder, or relation-extraction checkpoint for",2026-10-13
+414263c0c14f,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,unlocated:no-match,,,,,2026-10-13
+4200ef9baaa1,privacy/gliner-glirel-zero-shot.md,S-hfifhdhx,unlocated:no-match,,,,,2026-10-13
+4f24649a029c,privacy/gliner-glirel-zero-shot.md,S-fxeklpmh,unlocated:no-match,,,,,2026-10-13
+4f24649a029c,privacy/gliner-glirel-zero-shot.md,S-zeyni7ox,unlocated:no-match,,,,,2026-10-13
+53868c21fe22,privacy/gliner-glirel-zero-shot.md,S-vdhsig6s,located,,download_on_miss;miss;download;model;default;languag,f113e1e62a0c81db,downloadonmissing: Whether to automatically download missing language models (default: True).,2026-10-13
+6817447e9f58,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,unlocated:no-match,,,,,2026-10-13
+68c8a8663b3c,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,unlocated:no-match,,,,,2026-10-13
+6e9539321566,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,located,only touches floating-point params/buffers.,cuda;map_location;location;warn;compil;cpu;map;model,3bbec69de147ed0f,"warnings.warn(""Cannot compile model on CPU. Set maplocation='cuda' to compile."", stacklevel=2)",2026-10-13
+7b03513bc739,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,unlocated:no-match,,,,,2026-10-13
+818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-vdhsig6s,unlocated:no-match,,,,,2026-10-13
+818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,unlocated:no-match,,,,,2026-10-13
+818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-wrx2q5ya,unlocated:no-match,,,,,2026-10-13
+818aaba6520f,privacy/gliner-glirel-zero-shot.md,S-zeyni7ox,unlocated:no-match,,,,,2026-10-13
+81e51f343761,privacy/gliner-glirel-zero-shot.md,S-hfifhdhx,located,ONNX Runtime and OpenVINO > Convert a model,load;checkpoint;export,606dad7da0c979f0,Load the source checkpoint with the default PyTorch runtime before exporting:,2026-10-13
+83119f145039,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,unlocated:no-match,,,,,2026-10-13
+83119f145039,privacy/gliner-glirel-zero-shot.md,S-7ke3sttd,unlocated:no-match,,,,,2026-10-13
+83119f145039,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,located,Installation > Usage,library;rel;glirel,bc6f5cc87937202d,"Once you've downloaded the GLiREL library, you can import the GLiREL class.",2026-10-13
+83119f145039,privacy/gliner-glirel-zero-shot.md,S-pjp4rzor,located,,2.0;apach;apache-2.0,85e3ecf26a975287,"""license"": ""Apache-2.0"",",2026-10-13
+83119f145039,privacy/gliner-glirel-zero-shot.md,S-z3khz6q6,unlocated:no-match,,,,,2026-10-13
+84226f1fe513,privacy/gliner-glirel-zero-shot.md,S-n5dkd37b,unlocated:no-match,,,,,2026-10-13
+84226f1fe513,privacy/gliner-glirel-zero-shot.md,S-o4aom6i2,unlocated:no-match,,,,,2026-10-13
+84226f1fe513,privacy/gliner-glirel-zero-shot.md,S-pvemvpkp,unlocated:no-match,,,,,2026-10-13
+84226f1fe513,privacy/gliner-glirel-zero-shot.md,S-sislku4q,unlocated:no-match,,,,,2026-10-13
+84226f1fe513,privacy/gliner-glirel-zero-shot.md,S-vqqlqtwg,unlocated:no-match,,,,,2026-10-13
+8709a259e835,privacy/gliner-glirel-zero-shot.md,S-rvd2zkel,located,GLiNER: Generalist and Lightweight Model for Named Entity Recognition > Architectures,number;uni-encoder;uni;encoder;architectur;type;support;entity,106754a74322e4e5,"Uni-encoder | Strong zero-shot capabilities, supports up to ~50 entity types. The original GLiNER architecture. | glinermultipii-v1 Bi-encoder | Scalable to massive numbers of entity",2026-10-13
+8709a259e835,privacy/gliner-glirel-zero-shot.md,S-sislku4q,unlocated:no-match,,,,,2026-10-13
+8722e7edf3ab,privacy/gliner-glirel-zero-shot.md,S-rvd2zkel,unlocated:no-match,,,,,2026-10-13
+8722e7edf3ab,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,located,"Advanced Usage > Local Models and Caching > Quantization, Compilation & FlashDeBERTa",1.6x;fbgem;stock;kernel;speedup;accuracy;deberta;int8,fe59c839ed91a6c2,"On CPU, built-in FBGEMM kernels (~1.6x speedup). On GPU, torchao int8 weight-only quantization (~50% memory reduction, no speed gain). Intended for models fine-tuned with quantization-aware",2026-10-13
+92ceb49f37d2,privacy/gliner-glirel-zero-shot.md,S-7aohd7sc,unlocated:no-match,,,,,2026-10-13
+92ceb49f37d2,privacy/gliner-glirel-zero-shot.md,S-o4aom6i2,unlocated:no-match,,,,,2026-10-13
+92ceb49f37d2,privacy/gliner-glirel-zero-shot.md,S-ulch3bqh,unlocated:no-match,,,,,2026-10-13
+9bb08d299987,privacy/gliner-glirel-zero-shot.md,S-2fmzqhdr,located,,deberta;deberta-v3-larg;larg;microsoft;model,17cbfdb7f076299d,"""modelname"": ""microsoft/deberta-v3-large"",",2026-10-13
+9bb08d299987,privacy/gliner-glirel-zero-shot.md,S-dwg2wis7,located,About > Available models,gliner_medium-v2.1;gliner_small-v2.1;2.0;apach;apache-2.0;gliner_large-v2.1;multilingual;gliner_medium,d60eb09474e3b878,v2.1 | urchade/glinersmall-v2.1<br>urchade/glinermedium-v2.1<br>urchade/glinerlarge-v2.1 <br>urchade/glinermulti-v2.1 | 166M<br>209M<br>459M<br>209M | English <br> English <br> English <br> Multilingual | apache-2.0,2026-10-13
+9bb08d299987,privacy/gliner-glirel-zero-shot.md,S-gzvx6zzv,unlocated:no-match,,,,,2026-10-13
+9bb08d299987,privacy/gliner-glirel-zero-shot.md,S-hpdsbqwa,unlocated:no-match,,,,,2026-10-13
+9bb08d299987,privacy/gliner-glirel-zero-shot.md,S-kd2ecakr,located,About > Available models,gliner_large-v2.1;gliner_small-v2.1;2.0;apach;apache-2.0;gliner_medium-v2.1;multilingual;gliner_larg,d60eb09474e3b878,v2.1 | urchade/glinersmall-v2.1<br>urchade/glinermedium-v2.1<br>urchade/glinerlarge-v2.1 <br>urchade/glinermulti-v2.1 | 166M<br>209M<br>459M<br>209M | English <br> English <br> English <br> Multilingual | apache-2.0,2026-10-13
+9e381e1efa6d,privacy/gliner-glirel-zero-shot.md,S-bfttmynz,unlocated:no-match,,,,,2026-10-13
+9e381e1efa6d,privacy/gliner-glirel-zero-shot.md,S-n5dkd37b,located,,deberta;deberta-v3-small;microsoft;small;gliner;name,1daf1ee29aa46a19,"""modelname"": ""microsoft/deberta-v3-small"", ""modeltype"": ""gliner"",",2026-10-13
+a2c336557d66,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,unlocated:no-match,,,,,2026-10-13
+a2c336557d66,privacy/gliner-glirel-zero-shot.md,S-gc45kgud,unlocated:no-match,,,,,2026-10-13
+a2c336557d66,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,unlocated:no-match,,,,,2026-10-13
+ac4f0fb7ee50,privacy/gliner-glirel-zero-shot.md,S-7ke3sttd,unlocated:no-match,,,,,2026-10-13
+ac4f0fb7ee50,privacy/gliner-glirel-zero-shot.md,S-rvd2zkel,unlocated:no-match,,,,,2026-10-13
+b625d59c2356,privacy/gliner-glirel-zero-shot.md,S-edkar7xu,located,,bin;glirel_config;glirel_config.json;pytorch;pytorch_model;pytorch_model.bin;json;glirel,95eb5defb08587d1,"Use ""pytorchmodel.bin"" and ""glirelconfig.json""",2026-10-13
+b8041e11f6c9,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,unlocated:no-match,,,,,2026-10-13
+b8041e11f6c9,privacy/gliner-glirel-zero-shot.md,S-pjp4rzor,located,,4.0;archiv;by-nc-sa;licens;model;rel;file;text,e1f5cd56ddb34341,"This differs from spaCy where the end index is exclusive (in this case spaCy would set the indices to [7, 8])\n\nJSONL file:\njson\n{\n \""ner\"": [\n [7,",2026-10-13
+b8041e11f6c9,privacy/gliner-glirel-zero-shot.md,S-uu7ov3pw,located,,2.0;apach;apache-2.0;licens;text,8c2db7bc6b6e5387,"license = {text = ""Apache-2.0""}",2026-10-13
+b8041e11f6c9,privacy/gliner-glirel-zero-shot.md,S-w6u6mtcx,unlocated:no-match,,,,,2026-10-13
+b965eb9872a5,privacy/gliner-glirel-zero-shot.md,S-rvd2zkel,located,GLiNER: Generalist and Lightweight Model for Named Entity Recognition > Quick Start > Basic Usage,0.5;model.predict_entity;predict_entity;threshold;predict;text;label;entity,0cc151362f6fc568,"entities = model.predictentities(text, labels, threshold=0.5)",2026-10-13
+bd2f0137d207,privacy/gliner-glirel-zero-shot.md,S-7p4fya6x,located,Installation & Usage > Benchmarks,gliner-x-larg;gliner_multi;gliner_multi-v2.1;multi;small;tabl;urchad;scor,d94a82e423cbbf66,Below you can see the table with benchmarking results (F1 score) on various maltilingual named entity recognition datasets: Dataset | knowledgator/gliner-x-small | knowledgator/gliner-x-base | knowledgator/gliner-x-large,2026-10-13
+bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-7ke3sttd,located,About > Available models,must;gliner_multi-v2.1;gliner_multi;multi;english;urchad;model;gliner,43b14920efcb9c0d,"v2.1 | urchade/glinersmall-v2.1<br>urchade/glinermedium-v2.1<br>urchade/glinerlarge-v2.1 <br>urchade/glinermulti-v2.1 | 166M<br>209M<br>459M<br>209M | English <br> English <br> English <br> Multilingual | apache-2.0 Installation To use this model, you must install the",2026-10-13
+bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-7p4fya6x,located,Installation & Usage > Benchmarks,gliner_multi;gliner_multi-v2.1;multi;urchad;knowledgator;gliner,31d8efa1ed3f58a6,Dataset | knowledgator/gliner-x-small | knowledgator/gliner-x-base | knowledgator/gliner-x-large | urchade/glinermulti-v2.1,2026-10-13
+bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-ulch3bqh,unlocated:no-match,,,,,2026-10-13
+bf66846a6131,privacy/gliner-glirel-zero-shot.md,S-w6u6mtcx,unlocated:no-match,,,,,2026-10-13
+d30ddc811d8d,privacy/gliner-glirel-zero-shot.md,S-ngy65th6,located,GLiREL : Generalist and Lightweight model for Zero-Shot Relation Extraction,classify;given;entity;rel;relation;glirel,85faf29c3f58a508,GLiREL is a Relation Extraction model capable of classifying unseen relations given the entities within a text.,2026-10-13
+d92add088214,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,unlocated:no-match,,,,,2026-10-13
+d92add088214,privacy/gliner-glirel-zero-shot.md,S-sw4xvzwh,located,,2.0;apach;file;licens,bb9a1314ab46d7aa,"Licensed under the Apache License, Version 2.0 (the ""License""); you may not use this file except in compliance with the License.",2026-10-13
+da47be3e6ffd,privacy/gliner-glirel-zero-shot.md,S-gtbynljf,located,,deberta-v3-larg;microsoft;deberta;gliner;larg;model,a9176fd06ae6fd81,"""modelname"": ""microsoft/deberta-v3-large"", ""modeltype"": ""gliner"",",2026-10-13
+da47be3e6ffd,privacy/gliner-glirel-zero-shot.md,S-snmqzq62,unlocated:no-match,,,,,2026-10-13
+da47be3e6ffd,privacy/gliner-glirel-zero-shot.md,S-zmg7nlby,unlocated:no-match,,,,,2026-10-13
+e05a01bcbe7a,privacy/gliner-glirel-zero-shot.md,S-7ke3sttd,located,About > Available models,name;languag;multilingual;gliner_multi;multi;urchad;gliner,961acebc3f5ed3a7,Release | Model Name | # of Parameters | Language | License - | - | - | - | - v0 | urchade/glinerbase<br>urchade/glinermulti |,2026-10-13
+e05a01bcbe7a,privacy/gliner-glirel-zero-shot.md,S-qkyjirm6,located,DeBERTaV3: Improving DeBERTa using ELECTRA-Style Pre-Training with Gradient-Disentangled Embedding Sharing,multilingual;cc10;mdeberta;ber;train,7f40e22c0a23fb7f,mDeBERTa is multilingual version of DeBERTa which use the same structure as DeBERTa and was trained with CC100 multilingual data.,2026-10-13
+eb443fad3fad,privacy/gliner-glirel-zero-shot.md,S-hfifhdhx,unlocated:no-match,,,,,2026-10-13
+f0f60394871e,privacy/gliner-glirel-zero-shot.md,S-7p4fya6x,unlocated:no-match,,,,,2026-10-13
+f0f60394871e,privacy/gliner-glirel-zero-shot.md,S-fxeklpmh,unlocated:no-match,,,,,2026-10-13
+f0f60394871e,privacy/gliner-glirel-zero-shot.md,S-pefl6gq2,unlocated:no-match,,,,,2026-10-13
+f0f60394871e,privacy/gliner-glirel-zero-shot.md,S-vqqlqtwg,located,,base;config;googl;mt5;name;encoder,496f7d9578136f78,"""encoderconfig"": { ""nameorpath"": ""google/mt5-base"",",2026-10-13
+f0f60394871e,privacy/gliner-glirel-zero-shot.md,S-zeyni7ox,unlocated:no-match,,,,,2026-10-13
+f3de25333b2d,privacy/gliner-glirel-zero-shot.md,S-sislku4q,unlocated:no-match,,,,,2026-10-13
+f3de25333b2d,privacy/gliner-glirel-zero-shot.md,S-y42nqxiw,unlocated:no-match,,,,,2026-10-13
+f841657ed341,privacy/gliner-glirel-zero-shot.md,S-7bjdu5bv,located,,cpu;runs;devic;onnx;torch;ner;requir;python,2a4b65149e7d1b1f,"GLiNER is fine-tunable, optimized to run on CPUs and consumer hardware, and has performance competitive with LLMs several times its size, like ChatGPT and UniNER.\n\nOther",2026-10-13
+f841657ed341,privacy/gliner-glirel-zero-shot.md,S-hesowhet,unlocated:no-match,,,,,2026-10-13
+f841657ed341,privacy/gliner-glirel-zero-shot.md,S-w7vp7g4j,unlocated:no-match,,,,,2026-10-13
+fb4db07ea079,privacy/gliner-glirel-zero-shot.md,S-bzhegec5,located,,ndarray;ort-sy;sys;tokenizer;2.0.0;2.0.0-rc.9;default;featur,b485bf99d107b8e2,"ort-sys = { version = ""=2.0.0-rc.9"", default-features = false } # see https://github.com/pykeio/ort/issues/399 tokenizers = { version=""0.21.0"", features=[""http""] } ndarray = ""0.16.0""",2026-10-13
+fcc21a90ef1c,privacy/gliner-glirel-zero-shot.md,S-7w6x3tvz,unlocated:no-match,,,,,2026-10-13
+fcc21a90ef1c,privacy/gliner-glirel-zero-shot.md,S-z3khz6q6,unlocated:no-match,,,,,2026-10-13
 a96f5e7eed53,privacy/gliner-models.csv,S857,unlocated:no-match,,,,,2026-10-10
 a96f5e7eed53,privacy/gliner-models.csv,S858,unlocated:no-match,,,,,2026-10-10
 c741f9fe495b,privacy/gliner-models.csv,S855,unlocated:no-match,,,,,2026-10-10
