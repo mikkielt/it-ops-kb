@@ -45,6 +45,22 @@
   "depends_on": [
     "BG-vzsk2t5t"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the scoped ledger read find where a csv record ends and match its key without a full parse? Quote-state scan: follows csv's rule that a quote opens a field only at its start, reads the key of a plain record with its line ending stripped, shapes rows as csv.DictReader does, and keeps the no-parse path for rows of unwanted sources. Parity count: keeps the odd-quote join, which a bare quote mid-field breaks. Parse every quoted record: right but costs the parses the scan exists to avoid.",
+      "options": [
+        "quote-state scan",
+        "parity count with the key's line ending stripped",
+        "parse every quoted record"
+      ],
+      "recommendation": "quote-state scan",
+      "class": "design",
+      "answer": "quote-state scan",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kp3boz7z review"
   ],
