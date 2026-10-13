@@ -1939,6 +1939,13 @@ ending `(topic: <domain>/<slug>)`).
 `(topic: <domain>/<slug>)`.
 Update each edited article's `sources:` header and `status`. Do not touch `_sources.csv`, `_gaps.md`, `_conflicts.md`, \
 the index or any file outside your list, and do not commit. Facts in foreign files that need an edit: describe them.
+Rules that hold throughout:
+- Read the full page before confirming or changing a fact (`microsoft_docs_fetch` for Learn, the `.mdx` page for Claude \
+Code docs, git for pinned files); a review item's old and new passage settle only the item they are printed for.
+- Paraphrase Learn text; a quote is 25 words or fewer.
+- Placeholders only in every fact you write (`PL-LT-00123`, `corp.example.com`, `jan.kowalski`, tenant \
+`00000000-0000-0000-0000-000000000000`): never a real hostname, tenant or object id, address, person or token.
+- Never call a docs server's `submit_feedback` tool: it posts outside the repo.
 Return JSON only: {{"outcomes": [{{"id", "outcome", "note"}}], "new_rows": [{{all _sources.csv columns}}], \
 "superseded": {{"old id": "new id"}}, "gaps": [{{"topic", "text"}}], "conflicts": [{{"topic", "text"}}], \
 "foreign_edits": [{{"file", "line", "change"}}], "edited_files": [every file of yours that you edited]}}, valid against \
