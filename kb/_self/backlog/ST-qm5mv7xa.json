@@ -1,0 +1,24 @@
+{
+  "id": "ST-qm5mv7xa",
+  "kind": "story",
+  "title": "A plan gate that moves where a process runs lists what the new place changes before it is answered",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A gate whose option moves a process's working directory or script (ST-um6nghoo's distill-where: outside) names in its option what the new place changes (the spool it reads, the item files it attributes from, whether it delivers and where), so the review does not find those after landing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-b7wibqok close"
+  ]
+}

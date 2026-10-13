@@ -1,0 +1,26 @@
+{
+  "id": "ST-nhax64i4",
+  "kind": "story",
+  "title": "Host finding: workers' whole-suite runs refused at the darwin seconds ceiling on a loaded host, two of three tries, in SP-b7wibqok",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The operator decides from the recorded test.run rows of SP-b7wibqok (refused at 24 to 29 s, passing at 23.6 to 23.96 s, load about 3.7) what the suite's darwin headroom should be; nothing changes the ceiling without that decision",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/tests_ceiling.json"
+  ],
+  "relates_to": [
+    "ST-5zcl2sof"
+  ],
+  "links": [
+    "parked: SP-b7wibqok close"
+  ]
+}

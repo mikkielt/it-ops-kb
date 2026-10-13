@@ -1,0 +1,25 @@
+{
+  "id": "ST-rwxgpmz2",
+  "kind": "story",
+  "title": "A research item's touches let its worker add the eval row for a retrieval miss it finds",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A research worker that finds a pack miss on its own article (SP-b7wibqok: the git worktree re-add question gave coverage weak with route split though gitlab/git-test-repositories.md answers it) can land the lookup_eval.csv row or a doc2query expansion, since the planner puts those files in a research item's touches, and the miss is filed when NOTED_BASELINE would move",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-b7wibqok close"
+  ]
+}
