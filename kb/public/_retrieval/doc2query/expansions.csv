@@ -831,3 +831,18 @@ e334a7cdc9b5,Claude Code UserPromptSubmit hook output additionalContext decision
 a2d9a7084c8c,structured logging JSON Lines format
 d43039aeca0b,Do Claude Code hook commands inherit the environment variables of the claude process?
 648565d2e264,"how is a code repository ingested into the kb (kb-ingest, CODE tag, pinned commit)"
+c84024fb6ad5,Manual mode read-only Bash commands prompt unquoted glob write-capable flags
+c84024fb6ad5,Which Manual-mode cases does the permissions page's Read-only commands section list as still prompting for the built-in read-only Bash set?
+c84024fb6ad5,Does find with an unquoted glob prompt even though find is in the read-only command set?
+41966ac76073,read-only Bash set still prompts docker flag other daemon file magic ps auxe
+41966ac76073,"Which docker, file and ps forms still prompt in Manual mode although the command is in the read-only set?"
+41966ac76073,Does ps aux -e prompt in Claude Code and from which version is the dashed form checked?
+59f1552737b6,"read-only command set prompts special shell variable PATH IFS unparseable command over 10,000 characters"
+59f1552737b6,Which other cases make a command from the built-in read-only Bash set prompt in Manual mode?
+59f1552737b6,Does a command Claude Code cannot parse run as read-only without a prompt?
+9e6acb1f510f,cd with git or redirect prompts in Manual mode read-only commands
+9e6acb1f510f,Which combinations of cd with another read-only command still prompt in Manual mode?
+9e6acb1f510f,Does cd packages/api && ls run without a permission prompt?
+85cf70cbde5e,Glob path rule --allowedTools startup warning exception
+85cf70cbde5e,Which exception does the permissions page give to the startup warning for a Glob path rule passed in --allowedTools?
+85cf70cbde5e,Is a Glob(path) rule given with --allowedTools warned about at startup although path rules for Glob are never consulted?
