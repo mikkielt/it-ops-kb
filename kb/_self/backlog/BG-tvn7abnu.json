@@ -2,7 +2,7 @@
   "id": "BG-tvn7abnu",
   "kind": "bug",
   "title": "claude/plugins.csv: marketplace.json and plugin entry name rules and the eval --judge-model default are stale against the live pages",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gcerxjsg",
   "priority": "P2",
   "rank": 0,
@@ -58,5 +58,6 @@
   "depends_on": [
     "BG-7bpbuz6t"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Clause 4 (plugins.md:49 already states the new rule) was true at planning on 2026-10-12, so no check of its own fails now; the repro reads the csv rows against it. The csv rows are facts of kb/public/claude/plugins.csv anchored as file=...; field=name units: lines 37 and 86 are unlocated today, and the check on anchors needs all three located after the reword. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Clause 4 (plugins.md:49 already states the new rule) was true at planning on 2026-10-12, so no check of its own fails now; the repro reads the csv rows against it. The csv rows are facts of kb/public/claude/plugins.csv anchored as file=...; field=name units: lines 37 and 86 are unlocated today, and the check on anchors needs all three located after the reword. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base.",
+  "claimed_by": "orch-gcerxjsg"
 }
