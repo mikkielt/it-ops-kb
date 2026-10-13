@@ -69,7 +69,9 @@
         "Leave the messages saying 'Resolved note'"
       ],
       "recommendation": "Reword to 'settling note' in ql_research.py's messages and docstrings",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Reword to 'settling note' in ql_research.py's messages and docstrings",
+      "by": "operator"
     }
   ],
   "links": [
