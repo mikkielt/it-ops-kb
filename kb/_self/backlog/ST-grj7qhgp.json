@@ -2,7 +2,7 @@
   "id": "ST-grj7qhgp",
   "kind": "story",
   "title": "Review sprint: Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7ff7c5ui",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-7ff7c5ui"
+  "evidence": {
+    "commit": "80819568dbb5f432be8faffc5fe9fd6c19f8de76",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "93d4835c7bf5a8db"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4b86c3cd5b778057"
+      }
+    ]
+  }
 }
