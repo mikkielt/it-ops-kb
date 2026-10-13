@@ -1,0 +1,20 @@
+{
+  "id": "SP-enudabdr",
+  "kind": "sprint",
+  "title": "Pack notes, router cost and query-log apply guards read what they should",
+  "status": "planned",
+  "goal": "a pack of a memory or data quantity asked 'how much ... per device or month' or a resource-unit cost carries no priced note or route split, while a price ask keeps it; the router's ledger scan reads each ledger file once, not once for each entry; the router_broad_lookups probe asks each kind expert's own phrasings and fails naming each that misses its expert; ql_apply's eval gate refuses a change that raises noted above rag.NOTED_BASELINE; ql_apply.plain_question strips every line number of a doubled path:line citation; the research queue reads a Closed note under a _gaps.md entry as settling it; a tested _self question answers how a public ledger entry cites a _self doc line and how a gap step's rules miss is recorded",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
