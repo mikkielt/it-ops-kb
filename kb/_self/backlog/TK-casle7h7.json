@@ -64,7 +64,9 @@
         "100 kept"
       ],
       "recommendation": "150, the story's cap",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "150, the story's cap",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-mujl7ebh"
