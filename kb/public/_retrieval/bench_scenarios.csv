@@ -27,5 +27,5 @@ sc_stale,claude,Which scope wins in Claude Code settings when user and project s
 sc_stale,windows,What is a maintenance configuration in Azure Update Manager?,(?i)maintenance configurations?,good,
 sc_stale,agents,How do I add conditional edges to a LangGraph graph?,add_conditional_edges,good,
 sc_stale,claude,How do I configure the Agent SDK permission mode?,permission_mode|permissionMode,good,
-sc_stale,claude,How do I install a Claude Code plugin from a marketplace?,(?i)<name>@<origin>|plugin install\b[^\n]*?[\w.-]+@[\w.-]+,good,
+sc_stale,claude,How do I install a Claude Code plugin from a marketplace?,(?i)<[\w.-]+>@<[\w.-]+>|plugin install\b[^\n]*?[\w.-]+@[\w.-]+,good,
 sc_stale,claude,How do I define a custom subagent in Claude Code?,\.claude/agents/,good,
