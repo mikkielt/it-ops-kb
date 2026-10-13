@@ -1,0 +1,27 @@
+{
+  "id": "ST-twgdb6gq",
+  "kind": "story",
+  "title": "Planning a content bug finds every kb line that states the same wrong claim and puts each file in the touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "When a planned bug fixes a wrong or mis-tagged claim in one kb file, planning runs rag.py search for the claim's key words across the root and its ledgers and lists each line stating the same claim, so each is fixed in the item or filed beside it before the start; seen in SP-ilqhjn3k, where BG-lcp6dhpz fixed the 0.10 re-pricing in _conflicts.md while claude/ci-and-headless.md:104 kept it (the review's S1 BG-uwm3hfnq, one more worker cycle), and BG-4lfjabfo fixed the capture-absence tag in doc-lookup-sources.md while _answers.md kept it (BG-q3l5j2vz); the goal research had cited ci-and-headless.md:104 as the answer without reading its second clause against bench_core.READ_BEFORE",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_content_claim_siblings"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k close"
+  ]
+}

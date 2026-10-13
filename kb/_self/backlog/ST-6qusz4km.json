@@ -1,0 +1,28 @@
+{
+  "id": "ST-6qusz4km",
+  "kind": "story",
+  "title": "kbgit.py sync retries a push the forge refuses with a 5xx after a short backoff",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py sync --push tells a forge-side refusal with an HTTP 5xx (remote: ... Internal API error (503), pre-receive hook declined) from a gate or race refusal and retries that push a bounded number of times after a short backoff, naming each try, so a passing landing is not stopped by a passing forge outage; seen in SP-ilqhjn3k, where GitLab's pre_receive endpoint answered 503 to three sync pushes in a row with every local gate green, and a hand loop pushed on its next try",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_retries_forge_5xx"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "_tools/kg_sync.py"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k close"
+  ]
+}

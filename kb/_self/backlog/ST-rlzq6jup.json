@@ -1,0 +1,27 @@
+{
+  "id": "ST-rlzq6jup",
+  "kind": "story",
+  "title": "Planning a lock or concurrency story gives each recovery path a planted check, not only the contended happy path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A planned story that adds a lock or other concurrency guard carries a check per recovery path its design has (a stale lock cleared while other writers contend, a failure between creating the lock and releasing it), each driven on a planted interleaving; seen in SP-ilqhjn3k, where ST-bu3ppwnx's one check ran six contended writers and a single-process stale clear, and the review then found a stale-clear race that hands one lock to two writers (BG-h6aqngbp) and a lock leaked on a failed owner write (BG-u7gtwn5s)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_concurrency_recovery_checks"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k close"
+  ]
+}

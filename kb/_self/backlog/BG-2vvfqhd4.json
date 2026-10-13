@@ -1,0 +1,24 @@
+{
+  "id": "BG-2vvfqhd4",
+  "kind": "bug",
+  "title": "backlog.py check calls a repro's kb-root-relative article path gone, as in BG-s5cpo5ml's factdiff filter",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "backlog.py check reads a path inside a repro or check that is relative to a kb root (agents/doc-lookup-sources.md, as factdiff.py prints it) as that root's article, not as a repository path, and warns of it as gone only when no root holds it; seen in SP-ilqhjn3k, where the worker-filed BG-s5cpo5ml got 'its repro names agents/doc-lookup-sources.md, which is gone' though the public root holds that article",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/backlog.py','check'],capture_output=True,text=True).stdout;n=[l for l in o.splitlines() if 'BG-s5cpo5ml' in l and 'which is gone' in l];print(len(n));sys.exit(1 if n else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k close"
+  ]
+}
