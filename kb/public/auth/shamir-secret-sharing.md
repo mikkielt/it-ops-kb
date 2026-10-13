@@ -35,7 +35,7 @@ Shamir's scheme splits a secret into N shares of which any K rebuild it and fewe
 ## Reference
 | Tool | What is split | Share check | K and N limits | Source |
 |---|---|---|---|---|
-| `sss` / `sss-cli` | random key that encrypts the secret (AEAD) | yes (AEAD, tamper-resistant) | not stated in the README | S-tmotj3si, S-eb3lde4q |
+| `sss` / `sss-cli` | random key that encrypts the secret (AEAD) | yes (AEAD, tamper-resistant) | sss README: at most 255 shares, secrets of 64 bytes, shares of 113 bytes each; the sss-cli README states no limit, and the sss README says sss-cli shares a random key to carry longer secrets, so its shares vary in length | S-tmotj3si, S-eb3lde4q |
 | SLIP-0039 (`python-shamir-mnemonic`) | passphrase-encrypted master secret, two levels | yes (RS1024, digest) | 16 groups of 16 members | S-ujdydznw |
 | Vault `shamir` package | raw secret bytes | no | 2 to 255 | S-pidk4hju |
 | sops `key_groups` | per-file data key | MAC over the file | `shamir_threshold` of the groups | S-r3t6wvk5 |
