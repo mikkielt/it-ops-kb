@@ -10,7 +10,7 @@ sc_partial,auth,How do I configure Windows Hello for Business with a YubiKey in 
 sc_partial,windows,How do I defer Windows quality updates with the Update CSP and send the update events to Splunk?,DeferQualityUpdatesPeriodInDays,split,
 sc_partial,intune,How do I set the SCEP certificate renewal threshold in Intune and renew a web server certificate with certbot?,(?i)renewal threshold,split,
 sc_partial,windows,How do I configure DHCP failover between two Windows Server DHCP servers and sync the leases to an Infoblox grid?,(?i)failover relationship,split,
-sc_partial,entra,How do I back up a BitLocker recovery key to Entra ID and also send it to Splunk?,"(?i)recovery keys?\b[^.]{0,40}\bdevice object",split,
+sc_partial,entra,How do I back up a BitLocker recovery key to Entra ID and also send it to Splunk?,"(?i)recovery keys?\b[^.]{0,40}\bdevice object|\bdevice object\b[^.]{0,40}\brecovery keys?",split,
 sc_absent,entra,How do I configure Okta as an external identity provider for Entra ID?,,web,
 sc_absent,sqlserver,How many tempdb data files should a SQL Server instance have?,,web,false good: the pack is good with no check: line and the kb states no tempdb file count
 sc_absent,security,How do I set Exchange Online retention policies with Purview?,,web,false good: the pack is good with no check: line and the kb states no Exchange Online retention policy
