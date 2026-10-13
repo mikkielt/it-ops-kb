@@ -858,7 +858,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_registry_change_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_registry_change_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_router_broad_lookups_expert_phrasings_route_to_their_expert_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -998,6 +998,80 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
         mp.setattr(kbfacts, "read", read_once)
         found = hijacked(probe)
         assert not found, found
+        # router_broad_lookups_expert_phrasings: each kind expert's own phrasings of what the kb holds (a source id it
+        # cites in each shape, a decision row of each status, each domain, the first open gap and conflict entries'
+        # titles, with each cue word) are named that kbfacts.routed does not answer by that expert, so a narrowed cue
+        # that drops a common phrasing fails at its item's landing, not in a later review
+        cited_memo, cited_lines = {}, kbfacts.cited_lines  # the same id is scanned for once, whatever the phrasing
+
+        def cited_once(ids):
+            if tuple(ids) not in cited_memo:
+                cited_memo[tuple(ids)] = cited_lines(ids)
+            return cited_memo[tuple(ids)]
+        mp.setattr(kbfacts, "cited_lines", cited_once)
+
+        def phrasings():
+            out = []
+            by_shape = {}
+            for sid in sorted(kbfacts.source_rows()):
+                by_shape.setdefault(sid.startswith("S-"), []).append(sid)  # the two shapes: S-xxxxxxxx, S1800
+            shapes = []
+            for ids in by_shape.values():
+                cited = kbfacts.cited_lines(ids[:12])
+                shapes.append(next(i for i in ids[:12] if cited.get(i)))  # the first of the shape the kb cites
+            for sid in shapes:
+                for word in ("mention", "refer to", "name", "cite"):
+                    for between in ("", "the source ", "source ", "the source id ", "source id ", "the source ID "):
+                        out.append(("cites", sid, f"Which articles {word} {between}{sid}?"))
+                out += [("cites", sid, q.format(sid)) for q in ("Which articles is {} used by?", "Where is {} mentioned in?",
+                                                                 "What is {} referenced by?", "Who cites {}?")]
+            decided = {}
+            for d in kbfacts.decision_rows():
+                decided.setdefault(d["status"], d["id"])
+            for did in decided.values():
+                out += [("decision", did, q.format(did)) for q in ("What did the operator decide in {}?",
+                                                                    "What does {} say?", "Show the decision {}.")]
+            out += [("count", "kb", q) for q in ("How many articles does the kb have?", "What is the total number of topics in the kb?",
+                                                 "List all articles of the kb with status partial.")]
+            for dom in sorted({kbfacts.bare(p).split("/", 1)[0] for p in kbfacts.articles() if "/" in kbfacts.bare(p)}):
+                out += [("count", dom, f"How many articles are in {dom}?"), ("count", dom, f"Which articles in {dom} are partial?")]
+            ledgers = (("conflict", kbcommon.CONFLICTS, ("Which sources disagree about {}?", "Do the sources conflict on {}?",
+                                                         "What do the sources contradict on {}?", "Are the sources inconsistent on {}?")),
+                       ("gap", kbcommon.GAPS, ("What does the kb say about {}?", "What does the kb cover on {}?",
+                                               "Does the kb document {}?", "Does the kb have {}?")))
+            for kind, ledger, asks in ledgers:
+                taken = 0
+                for e in kbfacts.ledger_entries(ledger):
+                    lines = (kbfacts.read(e["file"]) or "").splitlines()
+                    title = kbfacts._entry_title(e, lines)
+                    open_gap = "[UNK" in e["text"] and not kbfacts.OPEN_GAP.search(e["text"]) and not title.startswith(("Closed", "Resolved"))
+                    topic = {t for t in kbfacts.key_terms(title) if t not in kbfacts.LEDGER_STEMS}
+                    if len(topic) < kbfacts.TOPIC_MIN or kbfacts.ID.search(title) or (kind == "gap" and not open_gap):
+                        continue  # a title the expert answers by design only when it names three topic words, no source id
+                    out += [(kind, title, q.format(title)) for q in asks]
+                    taken += 1
+                    if taken == 6:
+                        break
+            return out
+
+        def unrouted(asks):
+            out = []
+            for kind, _, q in asks:
+                res = kbfacts.routed(q)
+                if not res or kind not in res["routed"]["kinds"]:
+                    out.append(f"{q} (expects the {kind} expert; routed by: {', '.join(res['routed']['kinds']) if res else 'none'})")
+            return out
+        asks = phrasings()
+        assert {k for k, _, _ in asks} == {k for k, _, _ in kbfacts.EXPERTS}, {k for k, _, _ in asks}
+        assert len({s for k, s, _ in asks if k == "cites"}) == 2, "a cited id of each shape"
+        missed = unrouted(asks)
+        assert not missed, missed
+        # planted: a cite cue narrowed to the bare forms loses the phrasings with `the source` between word and id, and
+        # keeps `mention S...`
+        with monkeypatch.context() as narrow:
+            narrow.setattr(kbfacts, "CITE_CUE", re.compile(rf"\bcit\w+\b|\b(?:mention|refer|name)\w*\s+(?-i:{kbfacts.ID.pattern})", re.I))
+            lost = unrouted([a for a in asks if a[0] == "cites"])
+        assert any("mention the source S" in q for q in lost) and not any(re.search(r"mention S", q) for q in lost), lost
         # planted: an expert whose cue shows on every question and that answers every one is named for a good pack
         loose = lambda q, domain, root, invalidated: [{"key": ("planted.md", 1), "kind": "gap", "path": "planted.md",  # noqa: E731
                                                        "title": "planted", "lacks": True, "lines": ["- planted.md:1 [gap]"]}]
