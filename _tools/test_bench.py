@@ -111,10 +111,12 @@ def pool_home(tmp_path, ql_questions):
 
 
 def scenario_pack(question):
-    """The pack a scenario question gets in the fixture: the route its kind expects, one fact line and one stale source."""
+    """The pack a scenario question gets in the fixture: the route its kind expects (a gap question, which names no kind,
+    routes to web), one fact line and one stale source."""
     import re
     route = {"sc_present": "good", "sc_partial": "split", "sc_absent": "web", "sc_offkb": "web", "sc_stale": "good"}
-    return route[re.search(r"sc_\w+", question).group()], "- d0/a0.md:7 equals value1\n\nsources:\n  -> S-src00000  https://x"
+    kind = re.search(r"sc_\w+", question)
+    return route[kind.group()] if kind else "web", "- d0/a0.md:7 equals value1\n\nsources:\n  -> S-src00000  https://x"
 
 
 def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch, capsys):
@@ -344,6 +346,16 @@ def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_pic
     assert absent["id"] not in seen  # an sc_absent row marked a false good takes a check: line
     assert not re.search(bp.FRESH_CHECK, "## public/d0/a0.md  Fixture topic  [partial, retrieved 2026-10-13]")  # a bare header's date
     assert re.search(bp.FRESH_CHECK, "last confirmed 2026-10-13") and re.search(bp.FRESH_CHECK, "source changed since")
+    monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
+    gap = next(r for r in rows if r["kind"] == "gap")
+    gap["source"] = "_gaps.md#00000000"  # the planted failure: a gap row whose entry is no longer open
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 1 and f"{gap['id']}: its entry _gaps.md#00000000 is no longer open" in capsys.readouterr().out
+    gap["source"] = bp.gap_source(next(t for t, _ in bp.open_gaps(tmp_path)))
+    monkeypatch.setattr(bp, "scenario_pack", lambda q: ("good" if q == gap["question"] else scenario_pack(q)[0], scenario_pack(q)[1]))
+    bp.write_csv(out, rows)
+    assert bp.cli(check, tmp_path) == 1  # the planted failure: a gap row whose pack no longer routes to web
+    assert f"{gap['id']}: expected route web but the pack prints good" in capsys.readouterr().out
     monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
     present["checks"] = json.dumps([r"never printed"])
     bp.write_csv(out, rows)

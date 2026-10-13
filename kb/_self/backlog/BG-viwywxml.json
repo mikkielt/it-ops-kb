@@ -43,6 +43,21 @@
   "depends_on": [
     "BG-3tfno44k"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does pool check judge a gap row, and does pool build route-filter the gap draw? Recommended: check only; a build that packs every candidate adds cost and moves the draw for every seed, and a redraw landing on a non-web entry is named by the same check.",
+      "options": [
+        "check only",
+        "check and route-filtered build"
+      ],
+      "recommendation": "check only",
+      "class": "design",
+      "answer": "check only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kuhlsf2s review",
     "merged: BG-sclw54q6"
