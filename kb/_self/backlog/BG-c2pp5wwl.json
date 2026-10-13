@@ -2,7 +2,7 @@
   "id": "BG-c2pp5wwl",
   "kind": "bug",
   "title": "BG-gxxv3mzj's anchor run advanced the fetch-state baselines of about 15 sources outside it and dropped anchors, so detect no longer reports their changes (the 200 WebSearch limit in doc-lookup-sources.md among them)",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
@@ -59,5 +59,6 @@
   "links": [
     "parked: SP-df2cu4uj review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Scope: the three named sources are cited by agents/doc-lookup-sources.md (S1809 also by agents/docs-maintenance-agents.md, S-3yod3u7q's WebSearch limit also repeated in _answers.md); the other sources are the rows of _fetch_state.csv that commit 5f16b6d63 changed without a re-read (git show 5f16b6d63 -- kb/public/_fetch_state.csv, less the four marked dead there). The checks read the three named sources and the WebSearch line; a worker lists the others in its commit message. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Scope: the three named sources are cited by agents/doc-lookup-sources.md (S1809 also by agents/docs-maintenance-agents.md, S-3yod3u7q's WebSearch limit also repeated in _answers.md); the other sources are the rows of _fetch_state.csv that commit 5f16b6d63 changed without a re-read (git show 5f16b6d63 -- kb/public/_fetch_state.csv, less the four marked dead there). The checks read the three named sources and the WebSearch line; a worker lists the others in its commit message. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base.",
+  "claimed_by": "orch-gcerxjsg"
 }
