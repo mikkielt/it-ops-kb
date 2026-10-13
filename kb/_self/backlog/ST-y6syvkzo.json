@@ -2,7 +2,7 @@
   "id": "ST-y6syvkzo",
   "kind": "story",
   "title": "selfcheck's orphans check tells a session-end distill run still at work from a stuck one, instead of failing on any past HOOK_GRACE_S",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,
@@ -62,5 +62,6 @@
   "links": [
     "parked: SP-ajcomz6d close"
   ],
-  "notes": "Premise: bl_procs.classify marks an orphan whose stdout is distill.log as orphan once it is HOOK_GRACE_S (60 s) old (planned 2026-10-12: classify of such a run 92 s old returned 'orphan'), so selfcheck fails on a distill still waiting for the lock. SP-qjn563cf run (2026-10-11): orphans failed again on two python3 processes (pids 32577, 32579) of another session's checkout, 0 orphans 30 min later. SP-up5wchen run (2026-10-11): orphans failed on another session's querylog.py distill --settle 2 (pid 34062, parent 1, 1 min 8 s old). The distill lock file records the holder's pid and start (ql_base.acquire); a waiting distill gives up after USAGE_LOCK_WAIT_S (ql_distill). The suite sits at max_ids 100: extend the existing selfcheck test and rename it to carry the name the check selects, no new id. Gate stuck-read answered: lock. Planned at the 2026-10-12 draft triage (sprint 15 of 19, \"Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Premise: bl_procs.classify marks an orphan whose stdout is distill.log as orphan once it is HOOK_GRACE_S (60 s) old (planned 2026-10-12: classify of such a run 92 s old returned 'orphan'), so selfcheck fails on a distill still waiting for the lock. SP-qjn563cf run (2026-10-11): orphans failed again on two python3 processes (pids 32577, 32579) of another session's checkout, 0 orphans 30 min later. SP-up5wchen run (2026-10-11): orphans failed on another session's querylog.py distill --settle 2 (pid 34062, parent 1, 1 min 8 s old). The distill lock file records the holder's pid and start (ql_base.acquire); a waiting distill gives up after USAGE_LOCK_WAIT_S (ql_distill). The suite sits at max_ids 100: extend the existing selfcheck test and rename it to carry the name the check selects, no new id. Gate stuck-read answered: lock. Planned at the 2026-10-12 draft triage (sprint 15 of 19, \"Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-b7wibqok"
 }
