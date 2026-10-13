@@ -2,7 +2,7 @@
   "id": "BG-4lfjabfo",
   "kind": "bug",
   "title": "agents/doc-lookup-sources.md tags as DOC on one Wayback capture that the archive holds no other capture, and tags the 404 probes DER on sources that do not hold them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-df2cu4uj review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: line 53 of agents/doc-lookup-sources.md ends [DOC S-u2afup7q] on the 'holds no capture' fact (repro exits 1); line 52, the 404 probe fact, is tagged [DER S-u2afup7q, S2177] with an [UNK] part. Runs after BG-rf77tqnq (same expansions.csv)."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: line 53 of agents/doc-lookup-sources.md ends [DOC S-u2afup7q] on the 'holds no capture' fact (repro exits 1); line 52, the 404 probe fact, is tagged [DER S-u2afup7q, S2177] with an [UNK] part. Runs after BG-rf77tqnq (same expansions.csv).",
+  "claimed_by": "orch-ilqhjn3k"
 }
