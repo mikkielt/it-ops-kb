@@ -1,0 +1,17 @@
+{
+  "id": "BG-pjtajc2m",
+  "kind": "bug",
+  "title": "The verdict benchmark's p95_ms floors int(0.95 * n), so the rank is one low for some sample sizes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_retrieval's verdict scenario takes its p95_ms by the nearest rank, times[math.ceil(0.95 * len(times)) - 1], as the freshness scenario's p95_s does (BG-v5f5tn5y), so 30 timings of 1..30 ms give rank 29, not 28; the repro (s_verdict with its inputs stubbed, 10 questions timed 3 times) exits 0 once the p95_ms row is 29.0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,time; sys.path.insert(0,'_tools'); import bench_retrieval as r, kbfacts, rag; rows=[]; b=type('B',(),{'row':lambda s,*a,**k: rows.append(a)})(); rag.run_eval=lambda: {'passed':0,'n':0,'mean_chars':0}; rag.offkb_questions=lambda: []; rag.eval_cases=lambda: [(0,{'question':str(i)}) for i in range(10)]; kbfacts.pack=lambda q: {'verdict':'good'}; kbfacts.units=lambda untagged=True: []; r.scatter_rows=lambda b: None; it=iter([x for k in range(1,31) for x in (0.0,k/1000)]); time.perf_counter=lambda: next(it); r.s_verdict(b); p=[x[4] for x in rows if x[3]=='p95_ms']; print('p95', p); sys.exit(0 if len(p)==1 and abs(p[0]-29.0)<1e-6 else 1)"
+    ]
+  }
+}
