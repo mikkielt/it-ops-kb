@@ -2,7 +2,7 @@
   "id": "BG-wuwypj42",
   "kind": "bug",
   "title": "A gate naming SECRET_TOKENS, PASSWORD_TOKENS or PRIVATE_TOKENS is classed design since token-count identifiers are blanked whole",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uzwbt63u",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Found by the SP-uzwbt63u review (fresh-context reviewer, 2026-10-13), filed S1 by the orchestrator acting as operator: it weakens the operator-only secrets class (fail open), which the policy keeps conservative. Repro run on main 2026-10-13: SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS class design, API_TOKENS secrets; the three count constants design (exit 1). Before 330b88ba0 all five were secrets."
+  "notes": "Found by the SP-uzwbt63u review (fresh-context reviewer, 2026-10-13), filed S1 by the orchestrator acting as operator: it weakens the operator-only secrets class (fail open), which the policy keeps conservative. Repro run on main 2026-10-13: SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS class design, API_TOKENS secrets; the three count constants design (exit 1). Before 330b88ba0 all five were secrets.",
+  "claimed_by": "orch-uzwbt63u"
 }
