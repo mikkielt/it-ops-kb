@@ -22,6 +22,22 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does PRICE_ASK tell a memory, data or unit quantity from a money ask?",
+      "options": [
+        "named-quantity-nouns",
+        "copula-after-how-much",
+        "exempt-any-quantity-noun"
+      ],
+      "recommendation": "named-quantity-nouns",
+      "class": "design",
+      "answer": "named-quantity-nouns",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-4o3plg4l review",
     "merged: BG-euirq6se"

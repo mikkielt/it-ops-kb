@@ -2429,9 +2429,14 @@ SCATTER_DOMAINS = 2  # a `good` whose best articles lie in this many domains or 
 SCATTER_SCORE = 15  # whose best unit scores under this, gets the scatter `check:` note; rag.scatter_calibration fits it
 PASSING_UNITS = 5  # a plain key word the kb holds in this many units or fewer, in no article about it, is mentioned in passing
 PASSING_MISSING = 0.25  # and the lead's printed facts miss at least this share of the key words, the rare word itself included
-PRICE_ASK = re.compile(  # a question for a price; a cost asked in a unit of measure (resource units, request units) is no money
-    r"(?i)\b(?:price|prices|pricing)\b|\bcosts?\b(?!.*\bin\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b)"
-    r"|\bhow much\b(?=.*\b(?:licen[cs]es?|subscriptions?|seats?|per\s+(?:user|device|month|year))\b)")
+PRICE_ASK = re.compile(  # a question for a price; a cost counted in units (`in resource units`, `how many units ... cost`) or a
+    # memory or data quantity (`how much memory per device`) is no money; a licence word asks for money whatever is counted
+    r"(?i)\b(?:price|prices|pricing)\b"
+    r"|^(?!.*\bhow many\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b).*?"
+    r"\bcosts?\b(?!.*\bin\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b)"
+    r"|\bhow much\b(?=.*\b(?:licen[cs]es?|subscriptions?|seats?)\b)"
+    r"|\bhow much\b(?!.*\b(?:memory|ram|data|storage|disk|space|bandwidth|traffic|cpu|throughput|capacity)\b)"
+    r"(?=.*\bper\s+(?:user|device|month|year)\b)")
 AMOUNT = re.compile(r"(?i)[$€£]\s?\d|\b\d[\d,.]*\s?(?:usd|eur|gbp|pln|dollars?|euros?)\b|\b(?:usd|eur|gbp|pln)\s?\d")  # an amount
 
 
