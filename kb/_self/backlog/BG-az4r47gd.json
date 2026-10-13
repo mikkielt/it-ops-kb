@@ -37,7 +37,8 @@
   ],
   "touches": [
     "kb/public/gitlab/deploy-keys-and-tokens.md",
-    "kb/public/_answers.md"
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv"
   ],
   "depends_on": [
     "BG-lmp4mxmo"

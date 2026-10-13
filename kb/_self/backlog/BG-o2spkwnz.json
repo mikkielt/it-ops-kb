@@ -27,7 +27,8 @@
   ],
   "touches": [
     "kb/public/gitlab/package-registries.md",
-    "kb/public/_sources.csv"
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv"
   ],
   "depends_on": [
     "BG-az4r47gd"
