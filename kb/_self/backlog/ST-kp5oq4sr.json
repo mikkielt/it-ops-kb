@@ -2,7 +2,7 @@
   "id": "ST-kp5oq4sr",
   "kind": "story",
   "title": "The settings fact on path rules for Write, NotebookEdit, Glob and MultiEdit names the --allowedTools exception for Glob",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -79,5 +79,18 @@
     "parked: SP-htl7jkrm review"
   ],
   "notes": "Premise: the fact at kb/public/claude/settings-and-scopes.md:88 (path rules for Write, NotebookEdit, Glob and MultiEdit warned about at startup, S-pmhgjvef) does not name the --allowedTools exception for Glob. Premise run 2026-10-13: the check fails on base (the line holds no 'allowedTools', exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-foopqq2x"
+  "evidence": {
+    "commit": "1537b1c431b72543fedde7f264b41253265ab1a9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; l=[x for x in open('kb/public/claude/settings-and-scopes.md', encoding='utf-8') if 'warned about at startup' in x]; sys.exit(0 if l and 'allowedTools' in l[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
