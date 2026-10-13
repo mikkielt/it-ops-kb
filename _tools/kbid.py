@@ -33,6 +33,11 @@ message names the differing fields. Exit 0 written or unchanged; 2 refused or a 
 publisher or licence, a reuse class outside kbcommon.REUSE, a url that is not http(s), a hash that is not 64 hex
 characters).
 
+Parallel adds. `add` holds an exclusive lock, the file `_sources.csv.lock` beside the sources file (made by exclusive
+create, removed when `add` ends), over its read, insert and atomic write, so adds from several processes at once (the
+subagents of one research run) each keep their row and none writes a torn file. A lock older than 30 seconds is a
+crashed `add`'s and is cleared; an `add` that still finds it held after a minute exits 2 and names the file.
+
 The licence. With --licence and --reuse omitted, `add` reads the source's own licence record by its family
 (`provider.read_licence`; the rules are kb/_self/content-rules.md, Licensing and privacy): an arXiv abstract page's
 licence link, a GitHub or GitLab repository's licence through its API, a Microsoft Learn page's public mirror named
@@ -46,7 +51,7 @@ is unchanged without a read.
 Answer ids. New research answers in _answers.md are headed `## QK-<slug>. <question>`: lowercase words
 joined by hyphens. Existing Q/QA/QS/QR/QG/R headings stay.
 """
-import argparse, base64, collections, csv, datetime, functools, hashlib, os, re, sys, urllib.parse
+import argparse, base64, collections, contextlib, csv, datetime, functools, hashlib, os, re, sys, time, urllib.parse
 import kbcommon
 from kbcommon import read_sources  # noqa: F401  (kbgit and the tests call kbid.read_sources)
 
@@ -280,27 +285,99 @@ def add_source(root, url, title, publisher, licence, reuse, version="", sha256="
     if optional["artifact_sha256"] and not re.fullmatch(r"[0-9a-f]{64}", optional["artifact_sha256"]):
         raise ValueError(f"--sha256 is not 64 hexadecimal characters: {sha256!r}")
     path = os.path.join(root.path, kbcommon.SOURCES)
-    try:
-        with open(path, encoding="utf-8-sig", newline="") as f:
-            header, rows = kbcommon.parse_csv(f"{root.name}/{kbcommon.SOURCES}", f.read(), ADD_COLS)
-    except (OSError, kbcommon.CsvError) as e:
-        raise ValueError(str(e))
-    given = {**fields, **{k: v for k, v in optional.items() if v and k in header}}
-    norm, sid = normalize_url(url), source_id(url, root.id_prefix)
-    for r in rows:
-        if normalize_url(r.get("url") or "") == norm:
-            diff = [k for k, v in given.items() if _one_line(r.get(k)) != v]
-            if diff:
-                raise ValueError(f"{r['id']} is already in {root.name}/{kbcommon.SOURCES} with other "
-                                 f"{', '.join(diff)}: change the row, or give its values")
-            return r["id"], False
-        if r.get("id") == sid:
-            raise ValueError(f"hash id {sid} is taken by {r.get('url')}")
-    new = {c: "" for c in header}
-    new.update(given, id=sid, url=url, retrieved_utc=today or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"))
-    rows.insert(next((i for i, r in enumerate(rows) if _row_key(r["id"]) > _row_key(sid)), len(rows)), new)
-    kbcommon.write_csv(path, header, rows, atomic=True)
+    with _sources_lock(path, f"{root.name}/{kbcommon.SOURCES}"):  # read, insert and write are one step
+        try:
+            with open(path, encoding="utf-8-sig", newline="") as f:
+                header, rows = kbcommon.parse_csv(f"{root.name}/{kbcommon.SOURCES}", f.read(), ADD_COLS)
+        except (OSError, kbcommon.CsvError) as e:
+            raise ValueError(str(e))
+        given = {**fields, **{k: v for k, v in optional.items() if v and k in header}}
+        norm, sid = normalize_url(url), source_id(url, root.id_prefix)
+        for r in rows:
+            if normalize_url(r.get("url") or "") == norm:
+                diff = [k for k, v in given.items() if _one_line(r.get(k)) != v]
+                if diff:
+                    raise ValueError(f"{r['id']} is already in {root.name}/{kbcommon.SOURCES} with other "
+                                     f"{', '.join(diff)}: change the row, or give its values")
+                return r["id"], False
+            if r.get("id") == sid:
+                raise ValueError(f"hash id {sid} is taken by {r.get('url')}")
+        new = {c: "" for c in header}
+        new.update(given, id=sid, url=url, retrieved_utc=today or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"))
+        rows.insert(next((i for i, r in enumerate(rows) if _row_key(r["id"]) > _row_key(sid)), len(rows)), new)
+        kbcommon.write_csv(path, header, rows, atomic=True)
     return sid, True
+
+
+LOCK_SUFFIX = ".lock"
+LOCK_POLL_S = 0.02
+LOCK_STALE_S = 30.0  # a holder keeps the lock for the milliseconds of one read and write: an older file is a crash's
+
+
+def _clear_stale(lock):
+    """Remove `lock` when the file at that name is older than LOCK_STALE_S: the waiter claims it by renaming it to a
+    name of its own (one waiter's rename succeeds, the others find no file), judges the claimed file, not the name, and
+    puts a lock that is not stale back (a link, which never replaces one a writer has made since)."""
+    mine = f"{lock}.clear.{os.getpid()}.{os.urandom(4).hex()}"
+    try:
+        os.replace(lock, mine)
+    except OSError:
+        return
+    try:
+        if time.time() - os.stat(mine).st_mtime <= LOCK_STALE_S:
+            try:
+                os.link(mine, lock)
+            except OSError:
+                pass
+    finally:
+        try:
+            os.unlink(mine)
+        except OSError:
+            pass
+
+
+@contextlib.contextmanager
+def _sources_lock(path, label):
+    """Hold the exclusive lock of one _sources.csv for the block: the file `<path>.lock`, made by exclusive create (no
+    fcntl, so the same on every OS) and removed on exit and on an error. A concurrent add waits for it, so two adds
+    never read the same rows, and never write the one `.tmp` file together. A lock file older than LOCK_STALE_S is a
+    crashed writer's and a waiter clears it (`_clear_stale`). ValueError when the lock is still held after the bound."""
+    lock = path + LOCK_SUFFIX
+    me = f"pid={os.getpid()}\nstarted={datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\n"
+    deadline = time.monotonic() + 2 * LOCK_STALE_S
+    while True:
+        try:
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            break
+        except FileExistsError:
+            pass
+        except OSError as e:  # a directory that is missing or read-only: the read below says so
+            raise ValueError(f"cannot lock {label}: {e}")
+        try:
+            age = time.time() - os.stat(lock).st_mtime
+        except OSError:  # released since: look again
+            continue
+        if age > LOCK_STALE_S:
+            _clear_stale(lock)
+            continue
+        if time.monotonic() > deadline:
+            raise ValueError(f"{label} is locked by another `kbid.py add` ({lock}); remove the file if no add runs")
+        time.sleep(LOCK_POLL_S)
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+        f.write(me)
+    try:
+        yield
+    finally:
+        try:
+            with open(lock, encoding="utf-8") as f:
+                mine = f.read() == me
+        except OSError:
+            mine = False
+        if mine:
+            try:
+                os.unlink(lock)
+            except OSError:
+                pass
 
 
 def usual_pair(rows, url):
