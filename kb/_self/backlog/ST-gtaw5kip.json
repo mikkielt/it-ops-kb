@@ -2,7 +2,7 @@
   "id": "ST-gtaw5kip",
   "kind": "story",
   "title": "The lookup revalidation prints current for a section-kept or unchanged fact only when the baseline is no newer than the fact's last confirmation, as apply does",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P2",

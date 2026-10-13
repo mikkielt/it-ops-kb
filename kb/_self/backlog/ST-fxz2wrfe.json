@@ -2,7 +2,7 @@
   "id": "ST-fxz2wrfe",
   "kind": "story",
   "title": "detect records changed_utc in _fetch_state.csv, so a pack's [source changed] mark can fire on the live kb",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P3",

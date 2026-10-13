@@ -2,7 +2,7 @@
   "id": "BG-geepi6yv",
   "kind": "bug",
   "title": "A section-kept fact whose anchor window starts at a heading line is compared by the parent section, so an edit to its body reads as unchanged",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P2",

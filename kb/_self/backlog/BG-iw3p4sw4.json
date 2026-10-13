@@ -2,7 +2,7 @@
   "id": "BG-iw3p4sw4",
   "kind": "bug",
   "title": "A lookup's stored revalidation keeps only the last question's lines, so a source past its lifetime is asked again for every new question",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P2",

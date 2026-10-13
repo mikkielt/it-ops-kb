@@ -2,7 +2,7 @@
   "id": "ST-436lozkt",
   "kind": "story",
   "title": "Review sprint: Freshness at lookup: revalidation compares the right window and remembers what it checked",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-djl7za6x",
   "review": true,
   "priority": "P1",

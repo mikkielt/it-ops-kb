@@ -2,7 +2,7 @@
   "id": "SP-djl7za6x",
   "kind": "sprint",
   "title": "Freshness at lookup: revalidation compares the right window and remembers what it checked",
-  "status": "planned",
+  "status": "active",
   "goal": "a section-kept fact whose window starts at a heading is compared by the section of every unit of its window, so an edit to its body no longer reads unchanged; factdiff resolve, review_items and census pass the fact's real citation count to Doc.locate, so a multi-citation data row relocates as modified; the lookup revalidation prints current for a section-kept or unchanged fact only when the baseline is no newer than its last confirmation; a lookup's stored revalidation merges the lines of earlier questions of a source, so a source within the reuse window is not asked again; detect records changed_utc in _fetch_state.csv, so a pack's [source changed] mark fires on the live kb",
   "gates": [
     {

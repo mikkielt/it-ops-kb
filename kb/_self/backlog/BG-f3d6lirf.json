@@ -2,7 +2,7 @@
   "id": "BG-f3d6lirf",
   "kind": "bug",
   "title": "factdiff resolve and review_items call Doc.locate with cites=1, so a data row anchored with several citations may not relocate",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-djl7za6x",
   "priority": "P3",
