@@ -1,0 +1,17 @@
+{
+  "id": "BG-s5cpo5ml",
+  "kind": "bug",
+  "title": "kb/public/_anchors.csv holds three stale rows for agents/doc-lookup-sources.md and no anchor for its reworded memdocs capture fact",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "Through /kb-refresh of agents/doc-lookup-sources, factdiff.py anchor --file agents/doc-lookup-sources.md has re-anchored the reworded facts at lines 53 and 54 and pruned the three stale rows, so no STALE line names agents/doc-lookup-sources.md and the lint no longer warns of a DOC fact with no anchor quote.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/factdiff.py','anchors','--stale'],capture_output=True,text=True).stdout;n=[l for l in o.splitlines() if 'agents/doc-lookup-sources.md' in l];print(len(n));sys.exit(1 if n else 0)"
+    ]
+  }
+}
