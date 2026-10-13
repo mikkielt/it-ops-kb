@@ -2,7 +2,7 @@
   "id": "ST-7q55laxt",
   "kind": "story",
   "title": "Review sprint: Content fixes: GitLab and Claude Code articles match their live pages",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gcerxjsg",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "c2f271c42645ab1123e179a5fe2bcfe8f17f081a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "f784c3cb60b064ec"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "923ca1a273bc052e"
+      }
+    ]
+  }
 }
