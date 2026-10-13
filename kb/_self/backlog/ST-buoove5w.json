@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Review 2026-10-13 (fresh-context headless Sonnet reviewer, read-only worktree): 5 gaps. S1 (orchestrator as operator, conservative on the secrets class): BG-wuwypj42 in this sprint. Parked: ST-25gqgwl7 (new accepts a trivial check), ST-nq4pme2q (kb-item skill still says stop), ST-4ozfackz (eval rows for the new rules). Not filed: ST-piqs2azs's goal still says '(or at the last =)' while g1 chose refuse; behaviour matches g1 and the item file is deleted at close. No provisional answers to confirm: every gate of the sprint was answered by operator.",
   "claimed_by": "orch-uzwbt63u"
 }

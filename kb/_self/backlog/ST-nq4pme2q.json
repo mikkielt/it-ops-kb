@@ -1,0 +1,25 @@
+{
+  "id": "ST-nq4pme2q",
+  "kind": "story",
+  "title": "The kb-item skill says a worker goes on with the recommendation of a gate made blocking, as the worker rule does",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-uzwbt63u review: skills/item/SKILL.md step 5 still says of a blocking gate 'stop this item and pick the next', while agents/worker.md rule 6, the dispatch brief and kb/_self/backlog.md say since ST-qzpovl6h that a gate gate add prints as made blocking is committed open and the worker goes on with its recommendation; the skill's step 5 says the same for a gate made blocking mid-work, and keeps 'stop' only for a blocking gate set before the claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib, sys; t = pathlib.Path('skills/item/SKILL.md').read_text(encoding='utf-8'); ls = [l for l in t.splitlines() if 'made blocking' in l]; sys.exit(0 if ls and all('recommendation' in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/item/SKILL.md",
+    "kb/_self/plugin.md"
+  ],
+  "links": [
+    "parked: SP-uzwbt63u review"
+  ]
+}

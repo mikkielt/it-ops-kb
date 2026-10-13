@@ -1,0 +1,24 @@
+{
+  "id": "ST-4ozfackz",
+  "kind": "story",
+  "title": "Tested _self eval rows for the --do split rule and the token-count identifier and phase-token exceptions",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-uzwbt63u review: ST-b56r6a7v's --do row expects only that --do gives an option its do field, and its token row only the model-token-count exception, so the split rule ST-piqs2azs documented (the = after the longest --option value) and the TOKENS-constant and phase-token exceptions BG-xp3imb24 documented have no tested question; each gets a lookup_eval.csv row in the _self root whose phrase quotes the doc line, landed through the code lane",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv, sys; rows = list(csv.reader(open('kb/_self/_retrieval/lookup_eval.csv', encoding='utf-8'))); q = ' '.join(' '.join(r) for r in rows).lower(); sys.exit(0 if 'longest' in q and 'phase token' in q and '_tokens' in q else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-uzwbt63u review"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-25gqgwl7",
+  "kind": "story",
+  "title": "new and set agree on a trivial repro or check: new refuses what set and check refuse as trivial_command",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Found at the SP-uzwbt63u review: after ST-webfvbcb, new story --check 'python3 -c \"print(1)\"' exits 0 with a warning while set --check of the same command exits 2 and backlog check then errors on the item (trivial_command), so a filed item can still fail the landing gate; ST-webfvbcb's gate g3 kept new's warning because test_backlog_portable.py files python3 -c pass through new. new refuses a trivial command with exit 2 and nothing written, as set does, and the portable test files a non-trivial check",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os, subprocess, sys, tempfile; live = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True); d = t + '/kb/_self/backlog'; os.makedirs(d); p = subprocess.run([sys.executable, live + '/_tools/backlog.py', '--root', t, 'new', 'story', '--title', 'S', '--goal', 'g', '--check', 'python3 -c \"print(1)\"'], capture_output=True, text=True, cwd=t); sys.exit(0 if p.returncode == 2 and os.listdir(d) == [] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-uzwbt63u review"
+  ]
+}

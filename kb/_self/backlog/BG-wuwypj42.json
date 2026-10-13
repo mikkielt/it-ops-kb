@@ -1,0 +1,25 @@
+{
+  "id": "BG-wuwypj42",
+  "kind": "bug",
+  "title": "A gate naming SECRET_TOKENS, PASSWORD_TOKENS or PRIVATE_TOKENS is classed design since token-count identifiers are blanked whole",
+  "status": "todo",
+  "sprint": "SP-uzwbt63u",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "The token-count identifier rule BG-xp3imb24 added (bl_authority.TOKEN_IDENT) blanks a whole upper-case identifier ending in TOKENS unless one of its parts is a CRED_WORDS word, so the secret word inside it (SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS) is removed too and the gate falls from secrets to design, a fail-open regression found by the SP-uzwbt63u review; an identifier any of whose parts is a secret word (secret, password, passphrase, private, key, credential, pat, ssh, or a CRED_WORDS word) keeps the secrets class, while DISPATCH_BASE_TOKENS, MAX_TOKENS and JUDGE_REPLY_TOKENS stay design",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import bl_authority as a; c = lambda q: a.class_reasons({'touches': []}, {'id': 'g', 'question': q, 'options': []})[0]; s = [c('Is ' + n + ' used?') for n in ('SECRET_TOKENS', 'PASSWORD_TOKENS', 'PRIVATE_TOKENS', 'KEY_TOKENS', 'API_TOKENS')]; d = [c('What is census.' + n + '?') for n in ('DISPATCH_BASE_TOKENS', 'MAX_TOKENS', 'JUDGE_REPLY_TOKENS')]; sys.exit(0 if s == ['secrets'] * 5 and d == ['design'] * 3 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Found by the SP-uzwbt63u review (fresh-context reviewer, 2026-10-13), filed S1 by the orchestrator acting as operator: it weakens the operator-only secrets class (fail open), which the policy keeps conservative. Repro run on main 2026-10-13: SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS class design, API_TOKENS secrets; the three count constants design (exit 1). Before 330b88ba0 all five were secrets."
+}
