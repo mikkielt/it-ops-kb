@@ -2,7 +2,7 @@
   "id": "BG-zof4bcok",
   "kind": "bug",
   "title": "agents/doc-lookup-sources.md cites S745 as DOC but its sources: header does not list it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-gcerxjsg review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Touches add _coverage.csv and _coverage.md: the header's source count (61 now) feeds the n_sources column and its table row. Order: first of the chain, since BG-6w4zexka edits the same article."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Touches add _coverage.csv and _coverage.md: the header's source count (61 now) feeds the n_sources column and its table row. Order: first of the chain, since BG-6w4zexka edits the same article.",
+  "claimed_by": "orch-uvz65lvm"
 }
