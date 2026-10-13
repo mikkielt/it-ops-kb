@@ -1,0 +1,57 @@
+{
+  "id": "ST-ee636ydm",
+  "kind": "story",
+  "title": "A remote kb server takes feedback only when turned on, and a remote report counts only once approved",
+  "status": "draft",
+  "parent": "EP-x4cqj7zo",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb_http.py and kb_mcp.py --roots list no kb_feedback unless started with --feedback (D-kyy5xgsw: off by default); with it, a remote report is spooled as pending with origin remote, capped at a daily count, and enters distill, learn and apply only after an explicit approval that a human operator or an agent gives (the approval records which: by operator or by agent), as the remote-approval gate settles; a pending report is never researched, aliased or expanded, and one never approved goes with the spool's age limit; the startup line on stderr says feedback is on.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "remote_feedback"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_http.py",
+    "_tools/kb_mcp.py",
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/ql_store.py",
+    "_tools/querylog.py",
+    "_tools/tests.py",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/design.md",
+    "kb/_self/hosting.md",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-qqyvoqyj"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does one explicit approval of remote feedback cover? (D-kyy5xgsw: off by default, approval by a human operator or an agent)",
+      "options": [
+        "each report: remote reports wait as pending until querylog.py feedback approve FB-ID --by operator|agent",
+        "the server: starting kb_http.py --feedback asks the operator or an agent to confirm once, and its reports then count",
+        "both: the start is confirmed once and each report is approved"
+      ],
+      "recommendation": "each report: remote reports wait as pending until querylog.py feedback approve FB-ID --by operator|agent",
+      "do": {
+        "each report: remote reports wait as pending until querylog.py feedback approve FB-ID --by operator|agent": "ST-ee636ydm",
+        "the server: starting kb_http.py --feedback asks the operator or an agent to confirm once, and its reports then count": "ST-ee636ydm",
+        "both: the start is confirmed once and each report is approved": "ST-ee636ydm"
+      },
+      "class": "push"
+    }
+  ]
+}

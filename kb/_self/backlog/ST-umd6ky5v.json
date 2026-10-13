@@ -1,0 +1,34 @@
+{
+  "id": "ST-umd6ky5v",
+  "kind": "story",
+  "title": "A benchmark measures whether agents report the exceptions and stay quiet on good packs",
+  "status": "draft",
+  "parent": "EP-x4cqj7zo",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "agent_bench.py gains a feedback scenario: questions with a known gap, a known retrieval miss (the kb holds the article) and a good pack, each run headless on Sonnet with the kb server; it records the share of exception runs that called kb_feedback with the right outcome and best, and the share of good-pack runs that called it at all (the false-report rate), into kb/_self/reports/benchmarks.md; its --dry-run makes no paid run.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "feedback_bench"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/agent_bench.py",
+    "_tools/bench_core.py",
+    "_tools/bench_report.py",
+    "_tools/benchmarks.py",
+    "_tools/tests.py",
+    "kb/_self/reports/benchmarks.md",
+    "kb/_self/tools.md",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-j5gd7ixn"
+  ],
+  "notes": "Every scenario but the pool makes paid runs whatever --dry-run says (BG-wapzksub); this scenario's --dry-run must make none, and the story's own check runs no paid run."
+}

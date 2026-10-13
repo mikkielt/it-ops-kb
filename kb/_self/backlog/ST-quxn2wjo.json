@@ -1,0 +1,40 @@
+{
+  "id": "ST-quxn2wjo",
+  "kind": "story",
+  "title": "Learn and apply turn feedback into findings the existing gates check, and no report edits a fact",
+  "status": "draft",
+  "parent": "EP-x4cqj7zo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "querylog.py learn reads stored feedback: an outcome replaces Haiku's judged for its entry (the re-run on HEAD still decides fixed-since); a best article gives an eval finding at stage miss with that best, which apply's alias and expansion gates take as today; missed with a lead url and claim gives a gap finding whose research run receives the url and claim as quoted data; a line marked wrong with a url and claim gives a conflict finding that apply records in _conflicts.md as not settled only when quotecheck finds the claim on the page, and writes no fact; a line marked stale gives a report-only source finding for its source id; tool_issue counts per tool in the digest; helpful and irrelevant are reported, never applied; a second learn and apply on unchanged inputs change nothing.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/querylog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "feedback_findings"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_learn.py",
+    "_tools/ql_apply.py",
+    "_tools/ql_research.py",
+    "_tools/ql_report.py",
+    "_tools/ql_store.py",
+    "_tools/tests.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-qqyvoqyj"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "EP-x4cqj7zo",
+  "kind": "epic",
+  "title": "Lookups take explicit feedback: agents report misses and wrong facts through kb_feedback, people through kb!:, and each report becomes a finding the query log's gates check",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "An agent reports an exception of a lookup (a pack that missed, misled, or an answer taken from live docs) with the kb MCP tool kb_feedback, and a person with a kb!: prompt in Claude Code; every report carries only closed fields (an outcome, path:line references with an issue class, a best article, a source id or a gated lead url, a tool issue class), joins its lookup by a pack handle kb_pack prints or by the session's prompt, and becomes a query-log finding that the existing learn and apply gates check, so no report edits a fact; a person's comment text stays in the local spool; feedback through a remote kb_http.py server is off by default and enters the pipeline only after explicit approval; a pack shows a confirmed open report under observed signal, never as a fact.",
+  "links": [
+    "kb:public/mcp/spec-overview.md",
+    "kb:public/mcp/tools.md",
+    "kb:public/mcp/elicitation.md",
+    "kb:public/claude/elicitation.md",
+    "kb:_self/querylog.md"
+  ],
+  "notes": "Decisions: D-ocy63n4a (report only on exceptions), D-rd64qovu (comment text spool-only, Haiku classifies), D-666asy3d (gated lead url in the store), D-kyy5xgsw (remote feedback off by default, explicit approval by a human operator or an agent). The handle follows MCP 2026-07-28: no protocol sessions, cross-call state in server-minted handles passed as tool arguments (public/mcp/spec-overview.md:28). Not yet refined into stories: kb_feedback ask_user=true asking the person through an elicitation form when the client declares form mode (public/claude/elicitation.md:21; never secrets in form mode, public/mcp/elicitation.md:26); an MCP prompt as a second human entry point for other clients (the kb lacks whether Claude Code lists MCP prompts as slash commands: check the live docs first); helpful and irrelevant line marks as a ranking signal for the pack, after the benchmark gives data."
+}

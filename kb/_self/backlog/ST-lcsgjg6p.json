@@ -1,0 +1,42 @@
+{
+  "id": "ST-lcsgjg6p",
+  "kind": "story",
+  "title": "A pack, kb_show and kb_audit show a confirmed open feedback finding on its line as observed signal, never as a fact",
+  "status": "draft",
+  "parent": "EP-x4cqj7zo",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "rag.py pack, kb_pack, kb_show and kb_audit print, beside the active LOG rows under observed signal, one line per printed fact line that an open feedback finding names, e.g. 'flagged (feedback, not a fact): public/x.md:42 wrong x2 since 2026-10-11', read from the committed findings only, so an unconfirmed or pending report shows nowhere; it never counts toward coverage; kb_audit gains a flags count per article; rag.py eval keeps passing every row.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "feedback_flags"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/kb_mcp.py",
+    "_tools/kb_hook.py",
+    "_tools/tests.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md"
+  ],
+  "depends_on": [
+    "ST-quxn2wjo"
+  ]
+}
