@@ -2,7 +2,7 @@
   "id": "ST-piqs2azs",
   "kind": "story",
   "title": "gate add --do accepts an option whose text holds '=', such as a tests-ceiling answer",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uzwbt63u",
   "priority": "P3",
   "rank": 0,
@@ -53,5 +53,18 @@
     "parked: SP-m3azo2y7 close"
   ],
   "notes": "Check 0 also holds the plain form (--do 'a=python3 -c \"x=1\"') that the change must keep accepting; that half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: gate add --do 'x ids=1=ID' with option 'x ids=1' exits 2 with 'OPTION one of the --option values' (reproduces).",
-  "claimed_by": "orch-uzwbt63u"
+  "evidence": {
+    "commit": "578ebd4f3410527f797d90c832d48cd3af0b8a01",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, tempfile\nlive = os.getcwd(); t = tempfile.mkdtemp(); subprocess.run(['git', 'init', '-q', t], check=True)\nos.makedirs(t + '/kb/_self/backlog')\nb = [sys.executable, live + '/_tools/backlog.py', '--root', t]\ndef run(*a): return subprocess.run(b + list(a), capture_output=True, text=True, cwd=t)\ndef new(): return run('new', 'story', '--title', 'S', '--goal', 'g').stdout.split()[2]\ni, j = new(), new()\nr1 = run('gate', 'add', i, '--question', 'q', '--option', 'x ids=1', '--option', 'y', '--recommendation', 'x ids=1', '--do', 'x ids=1=' + i)\nr2 = run('gate', 'add', j, '--question', 'q2', '--option', 'a', '--option', 'b', '--recommendation', 'a', '--do', 'a=python3 -c \"x=1\"')\nprint(r1.stdout, r1.stderr, r2.stdout, r2.stderr)\nsys.exit(r1.returncode or r2.returncode)\n"
+        ],
+        "exit": 0,
+        "sha256": "52c6b2e7752dbab9"
+      }
+    ]
+  }
 }
