@@ -44,5 +44,33 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does pool build --querylog accept --ask, which asks no model there?",
+      "options": [
+        "refuse: --ask, --redo and --dry-run are for the public pool, exit 1",
+        "accept and ignore --ask"
+      ],
+      "recommendation": "refuse: --ask, --redo and --dry-run are for the public pool, exit 1",
+      "class": "querylog",
+      "answer": "refuse: --ask, --redo and --dry-run are for the public pool, exit 1",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which limits does a build made with --ask alone keep: the --redo limits (12 rows, 0.50 USD) or none?",
+      "options": [
+        "none: the limits stay with --redo, as before",
+        "the --redo limits for --ask too"
+      ],
+      "recommendation": "none: the limits stay with --redo, as before",
+      "class": "design",
+      "answer": "none: the limits stay with --redo, as before",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-honlhzdc"
 }

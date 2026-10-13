@@ -241,6 +241,13 @@ def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, 
     assert "would ask 5 rows" in listing and "estimated $" in listing and all(r["source"] in listing for r in evrows[:5])
     rns.redo, rns.dry_run = [r["id"] for r in evrows[:bp.ASK_MAX_ROWS + 1]], False
     assert bp.cli(rns, tmp_path) == 1 and "no call" in capsys.readouterr().out and out.read_text(encoding="utf-8") == before  # the planted failure
+    fresh = tmp_path / "fresh.csv"
+    rns = argparse.Namespace(pool_cmd="build", querylog=False, seed=3, out=str(fresh), redo=None, dry_run=False, ask=False)
+    assert bp.cli(rns, tmp_path) == 1 and not fresh.exists()  # neither --ask nor --redo: the rows are listed, nothing is asked or written
+    assert "no call without --ask" in capsys.readouterr().out
+    monkeypatch.setattr(bp, "sonnet_regexes", lambda items: [r"value\d+"] * len(items))
+    rns.ask = True
+    assert bp.cli(rns, tmp_path) == 0 and fresh.is_file()  # --ask asks as before
     held = [r for r in rows if r["kind"] == "heldout"]
     assert all(r["question"] == "" and json.loads(r["checks"]) for r in held)
     assert "HELDOUT TEXT" not in out.read_text(encoding="utf-8") and "HELDOUT TEXT" in bp.question_of(held[0], tmp_path)
