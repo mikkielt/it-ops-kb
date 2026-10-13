@@ -1,0 +1,25 @@
+{
+  "id": "BG-vzsk2t5t",
+  "kind": "bug",
+  "title": "The section fallback of window_sections keeps a fact whose body changed when the previous text is not cached",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "With no cached previous text (the lookup path on a clone that never ran detect), a fact whose window starts in a section body and runs into the next heading and its body is compared by every section the window can enter, so an edit to that next body resolves modified, not verbatim with signal section. Found by the SP-djl7za6x review: window_sections' fallback takes only the anchor's heading section and those below it (_tools/factdiff.py window_sections).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import factdiff as f; page='# Guide\\n\\n## Alpha\\n\\nThe Orion queue stores jobs in the inbox.\\n\\n## Beta\\n\\nBeta limit is thirty attempts per job before the queue gives up.\\n\\n# Appendix\\n\\nAppendix stays.\\n'; fact=[('k1','x.md',3,'The Orion queue stores jobs in the inbox, and the Beta limit is thirty attempts per job before the queue gives up.')]; row=f.anchor_rows('S9990001',fact,{'status':200,'text':page},None,'2026-01-01')[0]; new=page.replace('thirty','sixty'); out,_=f.resolve('S9990001',{'url':'https://example.com/a'},'changed',{'text':new},None,fact,{('k1','x.md','S9990001'):row},[],(f.sections(page),f.sections(new))); sys.exit(1 if any(r.get('signal')=='section' for r in out) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-djl7za6x review"
+  ]
+}

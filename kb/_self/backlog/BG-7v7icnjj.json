@@ -1,0 +1,25 @@
+{
+  "id": "BG-7v7icnjj",
+  "kind": "bug",
+  "title": "A stale-only lookup revalidation passes Doc.locate the count of the due sources, not the row's real citation count",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbfacts.revalidate_pack with stale_only narrows a printed line's ids to the sources past their lifetime before factdiff.revalidate, so lookup_root counts only those; the lookup passes the row's full citation count, as anchoring does, so a two-source row with one source due relocates as moved. Found by the SP-djl7za6x review (BG-f3d6lirf fixed detect and review only).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import kbfacts, factdiff; printed=[{'path':'public/x/y.md','line':3,'key':'k1','text':'t','ids':['S1','S2']}]; res={'results':[{'printed':printed}],'text':'T'}; kbfacts.source_freshness=lambda ids: {'S1':{'stale':False,'lifetime_days':30},'S2':{'stale':True,'lifetime_days':30}}; seen={}; factdiff.revalidate=lambda p, reuse=None: seen.update(p=p) or {'date':'d','lines':{},'sources':{}}; kbfacts.revalidated=lambda t,r,f: t; kbfacts.revalidate_pack(res, stale_only=True); p=seen['p'][0]; sys.exit(0 if p.get('cites', len(set(p['ids'])))==2 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-djl7za6x review"
+  ]
+}

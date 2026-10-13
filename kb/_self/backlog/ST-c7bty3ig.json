@@ -1,0 +1,28 @@
+{
+  "id": "ST-c7bty3ig",
+  "kind": "story",
+  "title": "The lookup revalidation's content-date pass of confirmable is stated in tools.md and its eval row, or the lookup drops it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.confirmable passes a fact whose baseline is newer than its confirmation when the page's own content date is no newer than the confirmation (as apply's kept() does); kb/_self/tools.md and the lookup_eval.csv row say so, or the lookup requires the baseline to be no newer, with a lookup case of a newer baseline and an old content date that asserts the chosen outcome. Found by the SP-djl7za6x review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_content_date_baseline"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-djl7za6x review"
+  ]
+}

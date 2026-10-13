@@ -1,0 +1,26 @@
+{
+  "id": "ST-djvzc3h7",
+  "kind": "story",
+  "title": "census labelled_set counts a rewritten line's cited sources as anchoring does, without UNK and prose ids",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "census.labelled_set counts the cited sources of a rewritten line with cite_counts' rule (the non-UNK tagged ids), not every source id the line holds, so a row with [DOC S1; UNK: S2] passes 1 to passage_of. Found by the SP-djl7za6x review (_tools/census.py labelled_set).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "labelled_set_counts_cited_like_anchor"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-djl7za6x review"
+  ]
+}
