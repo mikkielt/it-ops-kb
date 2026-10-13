@@ -299,6 +299,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/interpreter-startup` | P3 | partial | `python/interpreter-startup.md` | 9 |
 | `python/maturin-pyo3-wheels` | P3 | partial | `python/maturin-pyo3-wheels.md` | 13 |
 | `python/mypy-strict` | P3 | partial | `python/mypy-strict.md` | 8 |
+| `python/percentile-nearest-rank` | P3 | partial | `python/percentile-nearest-rank.md` | 4 |
 | `python/sqlalchemy-asyncio-asyncpg` | P3 | complete | `python/sqlalchemy-asyncio-asyncpg.md` | 8 |
 | `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 9 |
 | `python/stdlib-cprofile-pstats` | P3 | partial | `python/stdlib-cprofile-pstats.md` | 4 |

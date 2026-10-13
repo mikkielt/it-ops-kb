@@ -11035,6 +11035,26 @@ f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-hisnadiu,unlocated:no-match,,,,,202
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-pyhwnq4g,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-sne3yj7b,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,2026-10-13
+2c1e62582523,python/percentile-nearest-rank.md,S-35bztnbb,unlocated:no-match,,,,,2026-10-13
+2c1e62582523,python/percentile-nearest-rank.md,S-or2wocyn,unlocated:no-match,,,,,2026-10-13
+2df547ebc1fd,python/percentile-nearest-rank.md,S-dh7f43kc,unlocated:no-match,,,,,2026-10-13
+2ff854274a88,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods,nearest-rank;nearest;one;rank,8675188427b9ad56,Hyndman and Fan [3] identified nine and most statistical and spreadsheet software use one of the methods they describe.[10] Algorithms either return the value of,2026-10-13
+32978f4c1aeb,python/percentile-nearest-rank.md,S-or2wocyn,unlocated:no-match,,,,,2026-10-13
+4ca9acfea997,python/percentile-nearest-rank.md,S-g5oa4uyp,located,"percentile(), percentiles() - Kusto | Microsoft Learn",list;nearest;nearest-rank;rank;percentil,4a2cf7ba89dd401e,"Nearest-rank percentile P-th percentile (0 &lt; P &lt;= 100) of a list of ordered values, sorted in ascending order, is the smallest value in the",2026-10-13
+4ca9acfea997,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,list;nearest-rank;nearest;rank;percentil,17fa25702aed590a,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
+4dc5db8d8ce8,python/percentile-nearest-rank.md,S-g5oa4uyp,located,"percentile(), percentiles() - Kusto | Microsoft Learn > Nearest-rank percentile",definition;size;nearest;nearest-rank;error;estimation;median;rank,16a1073314832206,Nearest-rank definition means that P=50 does not conform to the interpolative definition of the median. When evaluating the significance of this discrepancy for the specific,2026-10-13
+51f32f8184c8,python/percentile-nearest-rank.md,S-35bztnbb,unlocated:no-match,,,,,2026-10-13
+568e283c849c,python/percentile-nearest-rank.md,S-35bztnbb,unlocated:no-match,,,,,2026-10-13
+5b830e10facd,python/percentile-nearest-rank.md,S-dh7f43kc,unlocated:no-match,,,,,2026-10-13
+5b830e10facd,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods,interpolat;inclusiv;nearest-rank;nearest;exclusiv;one;valu;method,8675188427b9ad56,Hyndman and Fan [3] identified nine and most statistical and spreadsheet software use one of the methods they describe.[10] Algorithms either return the value of,2026-10-13
+5f26f21f5c85,python/percentile-nearest-rank.md,S-35bztnbb,unlocated:no-match,,,,,2026-10-13
+5f26f21f5c85,python/percentile-nearest-rank.md,S-g5oa4uyp,unlocated:no-match,,,,,2026-10-13
+5f26f21f5c85,python/percentile-nearest-rank.md,S-or2wocyn,unlocated:no-match,,,,,2026-10-13
+62b5558c6327,python/percentile-nearest-rank.md,S-g5oa4uyp,unlocated:no-match,,,,,2026-10-13
+62e5ebaa28fd,python/percentile-nearest-rank.md,S-dh7f43kc,located,statistics — Mathematical statistics functions¶ > Function details¶,linearly;nearest;interpolat;cut;two;point;data,961ec58f05782f8e,The cut points are linearly interpolated from the two nearest data points.,2026-10-13
+6a2f386d05b0,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,list;nearest-rank;nearest;valu;method;rank;percentil,17fa25702aed590a,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
+b0fba6c5235a,python/percentile-nearest-rank.md,S-g5oa4uyp,located,"percentile(), percentiles() - Kusto | Microsoft Learn",ascend;percent;wikipedia;list;smallest;nearest;nearest-rank;rank,ad2e3bd0f551873f,"Nearest-rank percentile P-th percentile (0 &lt; P &lt;= 100) of a list of ordered values, sorted in ascending order, is the smallest value in the",2026-10-13
+b2936907fa0a,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,alway;distinct;fewer;largest;member;100th;result;list,e103682830fd451c,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
 020860d757a9,python/pytest-xdist.md,S-eaoeu53g,located,,queu;order;number;test;work,303e4f031172d0d2,Insert tests scopes into work queue ordered by number of tests.,2026-10-13
 0ed6403f3d09,python/pytest-xdist.md,S-eaoeu53g,located,Check that all nodes collected the same tests,abort;different;run;collect;test,5f30c0474b8741fe,"Different tests collected, aborting run",2026-10-13
 1ec7c93c2713,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10

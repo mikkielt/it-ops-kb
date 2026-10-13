@@ -3448,3 +3448,22 @@ _Agent: kb-research_
 - See gitlab/git-commit-paths-and-symlinks.md, gitlab/git-history-queries.md.
 
 _Agent: kb-research_
+
+## QK-did-claude-code-2-1-294. Did Claude Code 2.1.294 change any key of the `claude -p` result's `usage` field?
+- The changelog's 2.1.294 heading holds two entries, both about hooks: `prompt` and `agent` hooks written as instructions allowed what they should block (fixed), and `prompt` hooks on Stop and SubagentStop written as instructions are judged better. [DER S1864: the entries read against the result's fields]
+- No entry of v2.1.294, v2.1.295 or v2.1.296 adds, renames or removes a key of `usage`, `modelUsage` or `total_cost_usd`; the changelog's newest entry on 2026-10-13 was v2.1.296. [DER S1864]
+- Conclusion: the keys of `usage` (`input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`) are the same before and after 2.1.294; the entry is also spelled `v2.1.294` in the kb's articles, so a lookup that drops the `v` finds it only where the bare number is also written. [DER S1864, S-fksbud2r]
+- Open: the changelog lists changes, not each release's output; a run on 2.1.294 itself was not made. [UNK]
+- See claude/ci-and-headless.md.
+
+_Agent: kb-research_
+
+## QK-p95-taken-nearest-rank. How is a p95 taken at the nearest rank?
+- The nearest-rank percentile is the smallest value of the ascending list with at least P percent of the data at or below it; Kusto's `percentile()` and T-SQL's `PERCENTILE_DISC` state that rule, the first as an estimate. [DOC S-g5oa4uyp, S-35bztnbb]
+- The ordinal rank is `ceil(P / 100 * N)`, counted from 1 (Wikipedia's formula), so the p95 of N sorted timings is the element at index `ceil(0.95 * N) - 1`; it is always a measured value, and for N up to 19 it is the largest. [COMMUNITY S-or2wocyn; DER S-g5oa4uyp, S-35bztnbb]
+- `statistics.quantiles` interpolates between the two nearest points, so it is not the nearest rank; a floor (`int(0.95 * n) - 1`) or a `round` index reads a rank low for most N (4,749 and 2,375 of N = 1 to 5000 on Python 3.13.2). [DOC S-dh7f43kc; DER S-or2wocyn]
+- Conclusion: take the p95 as `ordered[max(1, ceil(0.95 * N)) - 1]` or, in integers, `-(-95 * N // 100)` for the rank; the Python probe found no float error up to N = 5000. [DER S-g5oa4uyp, S-35bztnbb, S-dh7f43kc, S-or2wocyn]
+- Open: whether CMPivot's `percentile` is nearest rank is not stated. [UNK]
+- See python/percentile-nearest-rank.md.
+
+_Agent: kb-research_
