@@ -40,7 +40,7 @@
       "recommendation": "re-run the worktree's own kb_mcp.py at start, decided from the working directory",
       "class": "design",
       "answer": "re-run the worktree's own kb_mcp.py at start, decided from the working directory",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
