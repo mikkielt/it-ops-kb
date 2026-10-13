@@ -1265,15 +1265,18 @@ def _aliases(rules):
 def expand(question, rules=False):
     """Product aliases in a question (with `rules`, the `_self` aliases too): ({stem: weight} to add to the ranking, {key stem: [variant stem tuples]}).
     A key word that belongs to an alias found in the question also counts as present where any other alias of that
-    product is (all words of a multi-word alias). Expansions never become key words of their own, so they cannot
-    raise the coverage verdict on words the question did not use."""
+    product is, its canonical name too (all words of a multi-word alias). Expansions never become key words of their
+    own, so they cannot raise the coverage verdict on words the question did not use. A word the question holds
+    only as a part of a compound (`test` of `test-suite`) is returned too; the ranking's own weight for that part
+    replaces its entry."""
     toks = WORD.findall(question.lower())
     extra, variants = {}, defaultdict(set)
     for canon, forms in aliases(rules).items():
         found = [(i, len(f)) for f in forms for i in range(len(toks) - len(f) + 1) if tuple(toks[i:i + len(f)]) == f]
         if not found:
             continue
-        stems = [tuple(stem(w) for w in f if w not in STOP) for f in forms]
+        name = tuple(WORD.findall(canon))
+        stems = [tuple(stem(w) for w in f if w not in STOP) for f in dict.fromkeys([*forms, name])]
         stems = [s for s in stems if s]
         for i, n in found:
             for w in toks[i:i + n]:
@@ -1282,7 +1285,7 @@ def expand(question, rules=False):
         for s in stems:
             for t in s:
                 extra[t] = ALIAS_WEIGHT / len(s)
-    q = set(terms(question))
+    q = set(key_terms(question))  # words the question used as words: a part of its compound still gets its entry
     return {t: w for t, w in extra.items() if t not in q}, {k: sorted(v) for k, v in variants.items()}
 
 
