@@ -4,6 +4,7 @@
   "title": "kb_pack and rag.py pack print a pack handle that a later call can name, and the mcp capture row keeps it",
   "status": "draft",
   "parent": "EP-x4cqj7zo",
+  "sprint": "SP-waxgh3kg",
   "priority": "P2",
   "rank": 0,
   "goal": "rag.py pack and kb_pack print one line 'pack: P-<8 hex>', the hash of the questions, the pack arguments and the kb commit, so the same pack on the same commit gives the same handle on every server, stdio and kb_http.py alike, with no session; the server keeps handle -> {questions, printed lines, commit} under _cache/ for a bounded time and count (never committed); the mcp and kb_hook capture rows store the handle (ql_capture.pack_lines reads it), so distill can join a report to its lookup exactly; rag.py eval keeps passing every row and the eval's mean pack size grows by under 1%.",
@@ -24,23 +25,82 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "rag.py pack and kb_pack print one line 'pack: P-<8 hex>', the hash of the questions, the pack arguments and the kb commit, so the same pack on the same commit gives the same handle on every server, stdio and kb_http.py alike, with no session",
+      "check": 1
+    },
+    {
+      "clause": "the server keeps handle -> {questions, printed lines, commit} under _cache/ for a bounded time and count (never committed)",
+      "check": 1
+    },
+    {
+      "clause": "the mcp and kb_hook capture rows store the handle (ql_capture.pack_lines reads it), so distill can join a report to its lookup exactly",
+      "check": 1
+    },
+    {
+      "clause": "rag.py eval keeps passing every row and the eval's mean pack size grows by under 1%",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/rag.py",
     "_tools/kb_mcp.py",
     "_tools/kb_hook.py",
     "_tools/ql_capture.py",
-    "_tools/tests.py",
+    "_tools/test_live_kb.py",
+    "_tools/test_redact.py",
+    "AGENTS.md",
     "kb/_self/tools.md",
     "kb/_self/querylog.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
     "kb/_self/content-rules.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "agents-md",
+      "kind": "blocking",
+      "question": "Does AGENTS.md (4096-byte cap) name the pack handle line, or does the handle stay documented in kb/_self docs only?",
+      "options": [
+        "keep AGENTS.md unchanged: 4091 bytes",
+        "name the handle in AGENTS.md with a cut elsewhere in the same commit: at most 4096 bytes"
+      ],
+      "recommendation": "keep AGENTS.md unchanged: 4091 bytes",
+      "do": {
+        "keep AGENTS.md unchanged: 4091 bytes": "ST-brjhg6wl",
+        "name the handle in AGENTS.md with a cut elsewhere in the same commit: at most 4096 bytes": "ST-brjhg6wl"
+      },
+      "class": "agents-rule",
+      "answer": "keep AGENTS.md unchanged: 4091 bytes",
+      "by": "operator"
+    },
+    {
+      "id": "handle-bounds",
+      "kind": "blocking",
+      "question": "What bounded time and count does the _cache/ pack-handle store keep?",
+      "options": [
+        "7 days and 500 handles",
+        "1 day and 200 handles",
+        "30 days and 2000 handles"
+      ],
+      "recommendation": "7 days and 500 handles",
+      "do": {
+        "7 days and 500 handles": "ST-brjhg6wl",
+        "1 day and 200 handles": "ST-brjhg6wl",
+        "30 days and 2000 handles": "ST-brjhg6wl"
+      },
+      "class": "agents-rule",
+      "answer": "7 days and 500 handles",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/mcp/spec-overview.md"
   ],
-  "notes": "Premise: python3 _tools/rag.py pack 'Intune enrollment device limit' prints a coverage line, fact lines and a url footer, and no handle a later call could name; kb_mcp.py never sees session_id or prompt_id (kb/_self/querylog.md, Surfaces), so a report could join its lookup only by time window today."
+  "notes": "Premise: python3 _tools/rag.py pack 'Intune enrollment device limit' prints a coverage line, fact lines and a url footer, and no handle a later call could name; kb_mcp.py never sees session_id or prompt_id (kb/_self/querylog.md, Surfaces), so a report could join its lookup only by time window today. Planned 2026-10-13 (SP-waxgh3kg). Premise run on base: rag.py pack 'Intune enrollment device limit' printed coverage good, fact lines and a sources footer, and no pack handle line: reproduces. rag.py eval passes before the work by design: it pins that every row keeps passing once the handle line is added. Tests are named by -k, so extend an existing test's name with pack_handle (the test-id ceiling), not a new test; the tests live in _tools/test_live_kb.py (pack, kb_mcp) and _tools/test_redact.py (capture row), never _tools/tests.py (the runner). Gates answered at planning: AGENTS.md stays unchanged, store bound 7 days and 500 handles."
 }

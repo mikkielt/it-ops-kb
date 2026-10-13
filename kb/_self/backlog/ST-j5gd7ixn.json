@@ -4,6 +4,7 @@
   "title": "kb_feedback: an agent reports a missed or misleading lookup in closed fields, and the server spools it",
   "status": "draft",
   "parent": "EP-x4cqj7zo",
+  "sprint": "SP-waxgh3kg",
   "priority": "P2",
   "rank": 0,
   "goal": "The team's kb MCP server (kb_mcp.py, no --roots) has a tool kb_feedback taking pack (a handle) or question, outcome (answered, partly, missed, misled), lines (at most 10 of {line: root/path:line, issue: wrong, stale, irrelevant, helpful}), best (an article path), source_url, claim (one sentence of at most 40 words), tool_issue (bad-args, unclear-output, too-long, error); annotations readOnlyHint false, destructiveHint false, idempotentHint true, openWorldHint false; it refuses a line no kb file has, a best that is no article, a url outside the research candidate url gate, a claim the leak scan flags, and a call with neither pack nor question, each as a tool error; an accepted call appends one 'feedback' row to the spool tools file through ql_capture.record (nothing else is written: D-tvjml75q) and returns 'recorded FB-<8 hex>' where the id is a hash of the fields, so a repeat call records nothing new; the server instructions gain one clause and a weak or none pack's footer names a ready kb_feedback call, a good pack prints none (D-ocy63n4a); .claude/settings.json and the plugin.md allow list name the tool.",
@@ -22,29 +23,91 @@
         "-k",
         "kb_feedback"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; s=open('.claude/settings.json').read(); p=open('kb/_self/plugin.md').read(); sys.exit(0 if 'mcp__kb__kb_feedback' in s and 'kb_feedback' in p else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The team's kb MCP server (kb_mcp.py, no --roots) has a tool kb_feedback taking pack (a handle) or question, outcome (answered, partly, missed, misled), lines (at most 10 of {line: root/path:line, issue: wrong, stale, irrelevant, helpful}), best (an article path), source_url, claim (one sentence of at most 40 words), tool_issue (bad-args, unclear-output, too-long, error)",
+      "check": 1
+    },
+    {
+      "clause": "annotations readOnlyHint false, destructiveHint false, idempotentHint true, openWorldHint false",
+      "check": 1
+    },
+    {
+      "clause": "it refuses a line no kb file has, a best that is no article, a url outside the research candidate url gate, a claim the leak scan flags",
+      "check": 1
+    },
+    {
+      "clause": "a call with neither pack nor question, each as a tool error",
+      "check": 1
+    },
+    {
+      "clause": "an accepted call appends one 'feedback' row to the spool tools file through ql_capture.record (nothing else is written: D-tvjml75q) and returns 'recorded FB-<8 hex>' where the id is a hash of the fields, so a repeat call records nothing new",
+      "check": 1
+    },
+    {
+      "clause": "the server instructions gain one clause and a weak or none pack's footer names a ready kb_feedback call, a good pack prints none (D-ocy63n4a)",
+      "check": 1
+    },
+    {
+      "clause": "claude/settings.json and the plugin.md allow list name the tool",
+      "check": 2
     }
   ],
   "touches": [
     "_tools/kb_mcp.py",
     "_tools/kbfacts.py",
     "_tools/ql_capture.py",
+    "_tools/ql_research.py",
     "_tools/redact.py",
-    "_tools/tests.py",
+    "_tools/test_live_kb.py",
+    "_tools/test_redact.py",
     ".claude/settings.json",
+    "kb/_self/maintaining.md",
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
     "kb/_self/querylog.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
     "kb/_self/content-rules.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-brjhg6wl"
+  ],
+  "gates": [
+    {
+      "id": "settings-entry",
+      "kind": "blocking",
+      "question": "How does .claude/settings.json name kb_feedback, which writes the local spool and so is not read-only, while the entry mcp__kb already allows the whole server?",
+      "options": [
+        "allow list: name mcp__kb__kb_feedback explicitly",
+        "ask list: each call asks the operator",
+        "leave settings.json unchanged and rely on mcp__kb"
+      ],
+      "recommendation": "allow list: name mcp__kb__kb_feedback explicitly",
+      "do": {
+        "allow list: name mcp__kb__kb_feedback explicitly": "ST-j5gd7ixn",
+        "ask list: each call asks the operator": "ST-j5gd7ixn",
+        "leave settings.json unchanged and rely on mcp__kb": "ST-j5gd7ixn"
+      },
+      "class": "agents-rule",
+      "answer": "allow list: name mcp__kb__kb_feedback explicitly",
+      "by": "operator"
+    }
   ],
   "links": [
     "kb:public/mcp/tools.md",
     "kb:public/claude/permissions-mcp.md"
   ],
-  "notes": "Premise: every tool in _tools/kb_mcp.py TOOL_LIST carries READ_ONLY and none takes a report; the only feedback today is Haiku's judged and best at distill. The tool writes only the local spool under _cache/, in line with D-tvjml75q; the docs that call the server read-only (the kb_mcp.py docstring, kb/_self/plugin.md, kb/_self/tools.md) say instead that kb_feedback appends to the local spool. Exceptions only: D-ocy63n4a."
+  "notes": "Premise: every tool in _tools/kb_mcp.py TOOL_LIST carries READ_ONLY and none takes a report; the only feedback today is Haiku's judged and best at distill. The tool writes only the local spool under _cache/, in line with D-tvjml75q; the docs that call the server read-only (the kb_mcp.py docstring, kb/_self/plugin.md, kb/_self/tools.md) say instead that kb_feedback appends to the local spool. Exceptions only: D-ocy63n4a. Planned 2026-10-13 (SP-waxgh3kg). Premise run on base: grep -i feedback _tools/kb_mcp.py finds only a comment on submit_feedback, every TOOL_LIST entry carries READ_ONLY and none takes a report: reproduces. rag.py eval passes before the work by design: it pins that a weak or none pack's new footer line breaks no eval row. The url gate is inline in ql_research.candidate_problems: extract one predicate there (ql_research.py is in touches) that kb_mcp and ql_store both call. Extend an existing test's name with kb_feedback, no new test id; tests in _tools/test_live_kb.py and _tools/test_redact.py. Gate answered: settings.json names mcp__kb__kb_feedback in the allow list."
 }

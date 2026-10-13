@@ -4,6 +4,7 @@
   "title": "Learn and apply turn feedback into findings the existing gates check, and no report edits a fact",
   "status": "draft",
   "parent": "EP-x4cqj7zo",
+  "sprint": "SP-waxgh3kg",
   "priority": "P2",
   "rank": 0,
   "goal": "querylog.py learn reads stored feedback: an outcome replaces Haiku's judged for its entry (the re-run on HEAD still decides fixed-since); a best article gives an eval finding at stage miss with that best, which apply's alias and expansion gates take as today; missed with a lead url and claim gives a gap finding whose research run receives the url and claim as quoted data; a line marked wrong with a url and claim gives a conflict finding that apply records in _conflicts.md as not settled only when quotecheck finds the claim on the page, and writes no fact; a line marked stale gives a report-only source finding for its source id; tool_issue counts per tool in the digest; helpful and irrelevant are reported, never applied; a second learn and apply on unchanged inputs change nothing.",
@@ -24,17 +25,57 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "querylog.py learn reads stored feedback: an outcome replaces Haiku's judged for its entry (the re-run on HEAD still decides fixed-since)",
+      "check": 1
+    },
+    {
+      "clause": "a best article gives an eval finding at stage miss with that best, which apply's alias and expansion gates take as today",
+      "check": 1
+    },
+    {
+      "clause": "missed with a lead url and claim gives a gap finding whose research run receives the url and claim as quoted data",
+      "check": 1
+    },
+    {
+      "clause": "a line marked wrong with a url and claim gives a conflict finding that apply records in _conflicts.md as not settled only when quotecheck finds the claim on the page",
+      "check": 1
+    },
+    {
+      "clause": "writes no fact",
+      "check": 1
+    },
+    {
+      "clause": "a line marked stale gives a report-only source finding for its source id",
+      "check": 1
+    },
+    {
+      "clause": "tool_issue counts per tool in the digest",
+      "check": 1
+    },
+    {
+      "clause": "helpful and irrelevant are reported, never applied",
+      "check": 1
+    },
+    {
+      "clause": "a second learn and apply on unchanged inputs change nothing",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/ql_learn.py",
     "_tools/ql_apply.py",
     "_tools/ql_research.py",
     "_tools/ql_report.py",
     "_tools/ql_store.py",
-    "_tools/tests.py",
+    "_tools/test_redact.py",
     "kb/_self/querylog.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-qqyvoqyj"
-  ]
+  ],
+  "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base learn reads judged only (ql_learn.py:158). querylog.py check passes before the work by design: it pins that learn and apply keep a valid store. Large story (9 clauses, 5 modules): a worker out of turns releases and reports, it does not widen touches. Extend an existing test's name with feedback_findings (test-id ceiling); tests in _tools/test_redact.py. No report edits a fact: apply writes only findings, the _conflicts.md not-settled entry and the existing alias and expansion gates."
 }

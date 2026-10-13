@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer one open question with the kb tools first and the live docs for the gap, and write the finding as a kb fact or gap entry through the kb skills: how an MCP server's instructions field (set in the initialize result) reaches the client and the model, which the kb's MCP articles do not state (the pack's lines were about Copilot Studio and stress testing). Covered and not researched: the tool annotations (public/mcp/tools.md:25), tool execution error against protocol error (public/mcp/tools.md:29) and permission rule names for an MCP tool (public/claude/permissions-mcp.md:22). Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [

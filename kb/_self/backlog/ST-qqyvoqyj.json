@@ -4,6 +4,7 @@
   "title": "Distill joins feedback rows to their lookups and the store keeps them in closed fields only",
   "status": "draft",
   "parent": "EP-x4cqj7zo",
+  "sprint": "SP-waxgh3kg",
   "priority": "P2",
   "rank": 0,
   "goal": "Distill joins each feedback row to its entry by pack handle, else by session and prompt id, else (a tools-file row) by the prompt window as other tools rows join, and a row that joins none becomes an entry of its own; the entry gains a 'feedback' field of closed values only (outcome, judged_by agent or user, lines with their issue class, best, source ids matched to _sources.csv, a lead url that passes the research candidate url gate (D-666asy3d), tool_issue); Haiku maps an unclassified comment to those classes and its text never reaches the store (D-rd64qovu); ql_store gates refuse a feedback field with free text, an unknown class, a line or best that is not a kb path, or an ungated url, each with one planted failure; the spool rows go once delivered, as other rows.",
@@ -24,18 +25,46 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Distill joins each feedback row to its entry by pack handle, else by session and prompt id, else (a tools-file row) by the prompt window as other tools rows join",
+      "check": 1
+    },
+    {
+      "clause": "a row that joins none becomes an entry of its own",
+      "check": 1
+    },
+    {
+      "clause": "the entry gains a 'feedback' field of closed values only (outcome, judged_by agent or user, lines with their issue class, best, source ids matched to _sources.csv, a lead url that passes the research candidate url gate (D-666asy3d), tool_issue)",
+      "check": 1
+    },
+    {
+      "clause": "Haiku maps an unclassified comment to those classes and its text never reaches the store (D-rd64qovu)",
+      "check": 1
+    },
+    {
+      "clause": "ql_store gates refuse a feedback field with free text, an unknown class, a line or best that is not a kb path, or an ungated url, each with one planted failure",
+      "check": 1
+    },
+    {
+      "clause": "the spool rows go once delivered, as other rows",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/ql_distill.py",
     "_tools/ql_store.py",
     "_tools/ql_capture.py",
+    "_tools/ql_research.py",
     "_tools/redact.py",
-    "_tools/tests.py",
+    "_tools/test_redact.py",
     "_tools/test_leaks.py",
     "kb/_self/querylog.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
-    "ST-j5gd7ixn",
-    "ST-h3y6iym4"
-  ]
+    "ST-j5gd7ixn"
+  ],
+  "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base has no feedback field (grep -i feedback finds only judged and best in ql_distill, ql_store, ql_learn). querylog.py check passes before the work by design: it pins that the store with feedback entries stays valid. depends_on ST-h3y6iym4 (kb!: rows) dropped at planning: it is a draft outside this sprint and the join works on any feedback row that carries a handle or session and prompt id, so kb_feedback rows alone satisfy it. Extend an existing test's name with feedback_store (test-id ceiling); the url gate predicate comes from ST-j5gd7ixn. Tests in _tools/test_redact.py and _tools/test_leaks.py."
 }
