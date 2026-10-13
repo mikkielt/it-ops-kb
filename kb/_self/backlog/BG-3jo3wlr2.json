@@ -2,7 +2,7 @@
   "id": "BG-3jo3wlr2",
   "kind": "bug",
   "title": "agent-caching.md tags DOC its claim that no changelog entry between v2.1.284 and v2.1.296 changes the Sonnet 5.5 cache-read price",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -53,5 +53,27 @@
     "parked: SP-ilqhjn3k review"
   ],
   "notes": "Premise: kb/public/agents/agent-caching.md:47 tags [DOC S1864] one line that holds both the changelog's quoted price and the clause that no entry between v2.1.284 and v2.1.296 changes it, which is a reading of the changelog, not a page's words. Premise run 2026-10-13: the repro fails on base (absence clauses tagged DOC: 1, exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-foopqq2x"
+  "evidence": {
+    "commit": "0426d26624a122fee2ba98a10b0118ff2d032b0a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('kb/public/agents/agent-caching.md',encoding='utf-8').read().splitlines(); a=[x for x in t if 'no entry between' in x]; p=[x for x in t if '$0.20/Mtok cache reads' in x]; sys.exit(0 if a and p and all('[DER' in x and 'changelog' in x for x in a) and all('[DOC S1864]' in x for x in p) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;b=[l for l in open('kb/public/agents/agent-caching.md',encoding='utf-8') if 'no entry between' in l and l.rstrip().endswith('[DOC S1864].')];print('absence clauses tagged DOC:',len(b));sys.exit(1 if b else 0)"
+        ],
+        "exit": 0,
+        "sha256": "2e8036f5f77e0693"
+      }
+    ]
+  }
 }
