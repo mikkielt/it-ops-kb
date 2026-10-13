@@ -2,7 +2,7 @@
   "id": "ST-buzuumms",
   "kind": "story",
   "title": "A worker near its turn cap commits its work in progress instead of exiting with staged changes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
@@ -19,7 +19,7 @@
       "run": [
         "python3",
         "-c",
-        "import re,subprocess,sys;f=lambda *a:subprocess.run(['python3','_tools/backlog.py',*a],capture_output=True,text=True,check=True).stdout;cap=int(re.search(r'--max-turns (\\d+)',f('dispatch','--dry-run','ST-buzuumms')).group(1));r=f('brief','ST-buzuumms').split('## Fixed rules',1)[1].split('\\n## ',1)[0];m=re.search(r'by turn (\\d+)',r);sys.exit(0 if m and 5<=cap-int(m.group(1))<=30 else 1)"
+        "import re,subprocess,sys;f=lambda *a:subprocess.run(['python3','_tools/backlog.py',*a],capture_output=True,text=True,check=True).stdout;cap=int(re.search(r'--max-turns (\\d+)',f('dispatch','--dry-run','ST-buzuumms')).group(1));r=f('brief','ST-buzuumms').rsplit('\\n## Fixed rules\\n',1)[1].split('\\n## ',1)[0];m=re.search(r'by turn (\\d+)',r);sys.exit(0 if m and 5<=cap-int(m.group(1))<=30 else 1)"
       ]
     }
   ],
@@ -44,5 +44,27 @@
     "merged: ST-lh2yw5k4"
   ],
   "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all work staged and no commit; resumed with 60 more turns, it committed in 6. SP-etslk6yu close: the ST-jqwqdj2g worker (story, 17 touches, cap 100) hit its cap with every change staged; a resume of 8 turns finished it. Merged at the 2026-10-12 draft triage: ST-etqx424h (TURNS in bl_dispatch.py: task 60, story 100; SP-dqkf3i42 and SP-x5gjv4r7 workers used 100-122 turns; TK-g4c5kxsc stopped at 60 with staged gates), ST-m42ub6g2 (a measurement story stopped at its 100-turn cap with commits done) and ST-lh2yw5k4 (SP-ceucrhca, 101 turns, uncommitted). The full text of each merged item: git show on its item file before its drop commit. Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, premise run on main: dispatch --dry-run ST-buzuumms prints --max-turns 100 and the brief's fixed rules name no turn by which a worker commits; both checks exit 1. Tasks: TK-casle7h7 (cap by kind), TK-dcgp3kd2 (commit before the cap).",
-  "claimed_by": "orch-mujl7ebh"
+  "evidence": {
+    "commit": "8750d9fc13069af002671f874182c207463b4556",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;o=subprocess.run(['python3','_tools/backlog.py','dispatch','--dry-run','ST-buzuumms'],capture_output=True,text=True,check=True).stdout;sys.exit(0 if int(re.search(r'--max-turns (\\d+)',o).group(1))>=150 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;f=lambda *a:subprocess.run(['python3','_tools/backlog.py',*a],capture_output=True,text=True,check=True).stdout;cap=int(re.search(r'--max-turns (\\d+)',f('dispatch','--dry-run','ST-buzuumms')).group(1));r=f('brief','ST-buzuumms').rsplit('\\n## Fixed rules\\n',1)[1].split('\\n## ',1)[0];m=re.search(r'by turn (\\d+)',r);sys.exit(0 if m and 5<=cap-int(m.group(1))<=30 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
