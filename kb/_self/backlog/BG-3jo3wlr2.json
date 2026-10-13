@@ -2,7 +2,7 @@
   "id": "BG-3jo3wlr2",
   "kind": "bug",
   "title": "agent-caching.md tags DOC its claim that no changelog entry between v2.1.284 and v2.1.296 changes the Sonnet 5.5 cache-read price",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,6 @@
   "links": [
     "parked: SP-ilqhjn3k review"
   ],
-  "notes": "Premise: kb/public/agents/agent-caching.md:47 tags [DOC S1864] one line that holds both the changelog's quoted price and the clause that no entry between v2.1.284 and v2.1.296 changes it, which is a reading of the changelog, not a page's words. Premise run 2026-10-13: the repro fails on base (absence clauses tagged DOC: 1, exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Premise: kb/public/agents/agent-caching.md:47 tags [DOC S1864] one line that holds both the changelog's quoted price and the clause that no entry between v2.1.284 and v2.1.296 changes it, which is a reading of the changelog, not a page's words. Premise run 2026-10-13: the repro fails on base (absence clauses tagged DOC: 1, exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-foopqq2x"
 }
