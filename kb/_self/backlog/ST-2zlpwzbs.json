@@ -2,7 +2,7 @@
   "id": "ST-2zlpwzbs",
   "kind": "story",
   "title": "The 2026-10-12 comparison in benchmarks.md corrects six figures and claims the review found off",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-e4fm2ovk",
   "priority": "P3",
@@ -68,5 +68,6 @@
     "parked: SP-ceucrhca review",
     "merged: ST-yb55ymhx"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nReview gaps of SP-ceucrhca: 1 (S3, benchmarks.md:756, Haiku 5.5 low gap 5/5 to 4/5 called within), 2 (S3, :1154 tool-speed text contradicts the Since attribution), 6 (S4, :764 spread from 2026-09-28), 7 (S4, :756 hook rows fact and variant_* not covered), 8 (S4, :760 warm pack 2.9 is 2026-10-08, 2026-10-09 is 3.1), 9 (S4, first attempt 61.09 USD not named). Merged from ST-yb55ymhx at the triage (same file, same review): the Since section lacks kb-lookup-agent and line-in-pack, three more gaps.\nPremise: the three checks fail on main. Run at planning: the tool-speed text still says 'does not say which of the changes' and 61.09 is not in the file; kb-lookup-agent and line-in-pack are missing from the Since section; the kind router row has no 5 of 5 -> 4 of 5, the file still says 2.9 -> 3.6."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\nReview gaps of SP-ceucrhca: 1 (S3, benchmarks.md:756, Haiku 5.5 low gap 5/5 to 4/5 called within), 2 (S3, :1154 tool-speed text contradicts the Since attribution), 6 (S4, :764 spread from 2026-09-28), 7 (S4, :756 hook rows fact and variant_* not covered), 8 (S4, :760 warm pack 2.9 is 2026-10-08, 2026-10-09 is 3.1), 9 (S4, first attempt 61.09 USD not named). Merged from ST-yb55ymhx at the triage (same file, same review): the Since section lacks kb-lookup-agent and line-in-pack, three more gaps.\nPremise: the three checks fail on main. Run at planning: the tool-speed text still says 'does not say which of the changes' and 61.09 is not in the file; kb-lookup-agent and line-in-pack are missing from the Since section; the kind router row has no 5 of 5 -> 4 of 5, the file still says 2.9 -> 3.6.",
+  "claimed_by": "orch-e4fm2ovk"
 }
