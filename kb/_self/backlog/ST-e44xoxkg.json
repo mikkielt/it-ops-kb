@@ -82,7 +82,9 @@
         "every named root must be good"
       ],
       "recommendation": "the best root: good in any named root answers it",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the best root: good in any named root answers it",
+      "by": "operator"
     },
     {
       "id": "check-line",
