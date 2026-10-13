@@ -1,0 +1,27 @@
+{
+  "id": "ST-pdps5mqv",
+  "kind": "story",
+  "title": "The contract lint flags an _answers.md Conclusion line that asserts what the same entry's Open line marks unconfirmed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-23m5etrf retrospective: the goal research's AlmaLinux CIS entry in kb/public/_answers.md concluded 'not with the upstream repository's RHEL data stream' (line 3354) while its Open line (3355) and security/linux-cis-ssg-openscap.md:38 [UNK] leave that applicability unconfirmed (parked as BG-vi5dw4zd); the review caught it, no gate did. The kb-research skill tells the worker to word a DER conclusion no stronger than its Open line, and the lint warns of a Conclusion that negates or asserts a term its entry's Open line lists.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "answer_conclusion_within_open"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_lint.py"
+  ],
+  "links": [
+    "parked: SP-23m5etrf close"
+  ]
+}

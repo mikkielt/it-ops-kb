@@ -1,0 +1,24 @@
+{
+  "id": "ST-3jiwam77",
+  "kind": "story",
+  "title": "A goal research worker searches the kb for older answer and fact lines its new facts contradict, and fixes or files each before it lands",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-23m5etrf retrospective: the goal research ST-gyr324rf added Cargo feature unification facts to agents/onnx-runtime-rust-ort.md:94 but left the older QK-ort conclusion in kb/public/_answers.md:2908 saying default-features = false removes any accelerator code path; the sprint review found it as an S1 and it cost a bug (BG-rogddb5j) and a second worker. The kb-research skill's steps tell the worker to run rag.py search on each new fact's claim and fix or file every kb line, ledgers included, that the new fact contradicts before the work commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read().lower(); ok='contradict' in t and 'rag.py search' in t; print('research skill sweeps contradicted lines:', ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-research/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-23m5etrf close"
+  ]
+}

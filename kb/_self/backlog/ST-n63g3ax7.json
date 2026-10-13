@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-tjap3mdd close"
-  ]
+  ],
+  "notes": "Recurred in SP-23m5etrf (2026-10-13): the goal research ST-gyr324rf delivered the end states of BG-i44ewtyl, BG-y3oykyfl, BG-l22a5sfd and BG-vdhzlmv3; all four were dropped (drop refuses an item that is still a dependency, so the chain was dropped from its tail back), and close --summary then printed their goal clauses as unmet."
 }

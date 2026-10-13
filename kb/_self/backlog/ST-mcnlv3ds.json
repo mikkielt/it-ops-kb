@@ -1,0 +1,26 @@
+{
+  "id": "ST-mcnlv3ds",
+  "kind": "story",
+  "title": "check.py or the contract lint refuses a CODE fact whose #Symbol fragment names a class or function the pinned file does not define",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-23m5etrf retrospective: the goal research wrote a CODE fact at arch/fluent-rust-typescript.md:50 citing fallback.py#Localization.format_value, though fluent.runtime 0.4.0's fallback.py defines class FluentLocalization (parked as BG-nzrj2n32); no gate read the fragment against the cached file. A check reads each CODE fact's Class.method fragment against the pinned file's definitions when the file is cached and names a symbol it does not define.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "code_fragment_symbol_defined"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_lint.py"
+  ],
+  "links": [
+    "parked: SP-23m5etrf close"
+  ]
+}
