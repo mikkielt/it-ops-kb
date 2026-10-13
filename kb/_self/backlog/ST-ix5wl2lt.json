@@ -18,5 +18,6 @@
   ],
   "links": [
     "parked: SP-7nv2ffr2 close"
-  ]
+  ],
+  "notes": "SP-djl7za6x close: the orchestrator's commit of two confirmed provisional answers named the review item in KB-Work; commit-msg printed the refusal but the commit was made, and sync's check-trailers refused it (twice, the second time for space-separated ids where a comma list is required)."
 }

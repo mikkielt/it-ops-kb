@@ -1,0 +1,26 @@
+{
+  "id": "ST-qszjjtu3",
+  "kind": "story",
+  "title": "A sprint item that rewords a doc the goal research's tested rows quote carries the _self eval file in its touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When a sprint's goal research lands rows in kb/_self/_retrieval/lookup_eval.csv whose expect_text quotes a kb/_self doc, each committed sibling whose touches name that doc gets the eval file in its touches (or precheck warns before its claim), so a reworded line moves its row in the same item instead of failing the landing's eval. Found in the SP-djl7za6x retrospective: BG-geepi6yv rewrote tools.md's section-window sentence and its land stopped at rag.py eval on two rows ST-5jqqzrgy had just added.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_rows_sibling_eval_touch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-djl7za6x close"
+  ]
+}

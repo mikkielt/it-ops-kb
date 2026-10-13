@@ -1,0 +1,26 @@
+{
+  "id": "ST-bmaftwx4",
+  "kind": "story",
+  "title": "Planning gives a goal clause about the lookup revalidation a check that runs the lookup path, not factdiff.resolve alone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A goal clause that names the lookup (pack --revalidate, the stored revalidation, a lookup's citation count) is read by a check that drives kbfacts.revalidate_pack or factdiff.revalidate on planted state, including a clone with no cached previous text and a stale_only pack, not only factdiff.resolve with hand-built inputs. Found in the SP-djl7za6x retrospective: every item check passed while the review found the lookup path still keeps a changed body by its section with no cached text (BG-vzsk2t5t) and narrows a row's citation count to its due sources (BG-7v7icnjj).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lookup_clause_check_through_pack"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-djl7za6x close"
+  ]
+}

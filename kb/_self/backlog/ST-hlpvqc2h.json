@@ -17,5 +17,5 @@
       ]
     }
   ],
-  "notes": "Run finding 20: the worker reported no Session: trailer, since my brief gave no session id; its commit carried Co-Authored-By, Self-Reviewed and KB-Work only."
+  "notes": "Run finding 20: the worker reported no Session: trailer, since my brief gave no session id; its commit carried Co-Authored-By, Self-Reviewed and KB-Work only. SP-djl7za6x close: ST-gtaw5kip's worker reported its commit lacks the Session trailer the role file lists, since its brief gave no value (kb's own clone, not only a second project)."
 }
