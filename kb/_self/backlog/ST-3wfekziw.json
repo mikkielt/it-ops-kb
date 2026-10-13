@@ -44,6 +44,21 @@
   "depends_on": [
     "BG-q3l5j2vz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the DER inference cite the redirect-following client's lookup of a second Tech Community post (the kb's fetch, one newline for page and made-up sibling, 2026-10-12)?",
+      "options": [
+        "cite S1203 and add it to the article's header sources, which regenerates _sources.csv's articles column outside the touches",
+        "keep the DER tag on S1217 and the article's own sources, describing the lookup in the fact's words, inside the touches"
+      ],
+      "recommendation": "keep the DER tag on S1217 and the article's own sources, describing the lookup in the fact's words, inside the touches",
+      "class": "design",
+      "answer": "keep the DER tag on S1217 and the article's own sources, describing the lookup in the fact's words, inside the touches",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-u5q37ds3 review"
   ],
