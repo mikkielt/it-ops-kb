@@ -3,15 +3,23 @@
   "kind": "story",
   "title": "The per-site DEK note in QK-postgres-envelope and postgres-column-encryption states how it departs from Google's DEK-per-write advice",
   "status": "draft",
+  "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb/public/_answers.md's DER line on a DEK per scope (QK-postgres-envelope) and kb/public/auth/postgres-column-encryption.md line 33 state that a per-site DEK is reused across writes and shared by a site's users, against Google's 'new DEK every time you write' and 'never one DEK for two users', and what that costs; today the DER reason cites those premises without the departure. Found by the SP-tcis5f23 review (S4).",
+  "goal": "kb/public/_answers.md's DER line on a DEK per scope (QK-postgres-envelope) and kb/public/auth/postgres-column-encryption.md line 33 state that a per-site DEK is reused across writes and shared by a site's users, against Google's 'new DEK every time you write' and 'never one DEK for two users', with what that costs, where today the DER reason cites those premises without the departure. Found by the SP-tcis5f23 review (S4).",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
         "import pathlib,sys; ls=pathlib.Path('kb/public/_answers.md').read_text().splitlines(); sys.exit(not any('DEK per scope' in l and '[DER' in l and 'depart' in l for l in ls))"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/auth/postgres-column-encryption.md').read_text().splitlines(); t=[l for l in ls if 'per-site layout' in l and '[DER' in l]; sys.exit(0 if t and all('depart' in l for l in t) else 1)"
       ]
     }
   ],
@@ -20,7 +28,11 @@
     "kb/public/auth/postgres-column-encryption.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-hojn6yjd"
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (answer line 3049 and article line 33 cite Google's premises with no 'depart'); reproduces."
 }

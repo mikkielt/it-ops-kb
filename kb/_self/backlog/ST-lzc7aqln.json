@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The Linux pull-agent answer names the flush an idempotent nft -f file needs and its own-table scope",
   "status": "draft",
+  "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb/public/_answers.md lines 2760 and 2764 (nft -f swaps a whole ruleset; idempotent steps with one nft -f file) say a file needs a flush first and that flush table scopes it to the agent's own table, as the security/linux-nftables article (its lines 17, 23 and 36) now says. Found by the SP-tcis5f23 review (S3).",
+  "goal": "kb/public/_answers.md's two lines of the Linux pull-agent answer on nft -f (the one that says nft -f swaps a whole ruleset, plus the Conclusion's idempotent steps with one nft -f file) say a file needs a flush first and that flush table scopes it to the agent's own table, as the security/linux-nftables article (its lines 17, 23 and 36) now says. Found by the SP-tcis5f23 review (S3).",
   "checks": [
     {
       "run": [
@@ -13,12 +14,23 @@
         "-c",
         "import pathlib,sys; ls=pathlib.Path('kb/public/_answers.md').read_text().splitlines(); sys.exit(any(('swaps a whole ruleset' in l or 'idempotent steps (one' in l) and 'flush table' not in l for l in ls))"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/_answers.md').read_text().splitlines(); t=[l for l in ls if 'swaps a whole ruleset' in l or 'idempotent steps (one' in l]; sys.exit(0 if len(t)==2 and all('own table' in l for l in t) else 1)"
+      ]
     }
   ],
   "touches": [
     "kb/public/_answers.md"
   ],
+  "depends_on": [
+    "ST-tgd7r5ji"
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (the lines on 'swaps a whole ruleset' and 'idempotent steps (one' hold no 'flush table' and no 'own table'); the draft's line numbers 2760 and 2764 are now 2765 and 2769, so the goal names the lines by their words. _answers.md has no doc2query rows (kbfacts.units reads articles only), so no expansions.csv touch."
 }

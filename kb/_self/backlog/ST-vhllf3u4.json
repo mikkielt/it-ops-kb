@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "issuer-token-rotation names R2's S3 key pair, not R2, as the cut-over, since R2 temporary credentials overlap until they expire",
   "status": "draft",
+  "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/auth/issuer-token-rotation.md lines 13 and 50 and the QK-issuer-token-lifetime conclusion in kb/public/_answers.md name the R2 S3 key pair behind a rolled token as the cut-over, not R2 as a whole, since a newly minted R2 temporary credential leaves its predecessor valid until its TTL (reference row and line 54). Found by the SP-tcis5f23 review (S4).",
@@ -13,6 +14,13 @@
         "-c",
         "import pathlib,sys; ls=pathlib.Path('kb/public/auth/issuer-token-rotation.md').read_text().splitlines()+pathlib.Path('kb/public/_answers.md').read_text().splitlines(); sys.exit(any('GitLab, Cloudflare and R2' in l for l in ls))"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/auth/issuer-token-rotation.md').read_text().splitlines()+pathlib.Path('kb/public/_answers.md').read_text().splitlines(); bad=[l for l in ls if 'cut-over' in l and 'R2' in l and 'key pair' not in l]; sys.exit(1 if bad else 0)"
+      ]
     }
   ],
   "touches": [
@@ -20,7 +28,11 @@
     "kb/public/_answers.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-istb5myb"
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (article line 13 and answer line 2993 name 'GitLab, Cloudflare and R2' as the cut-overs without the key pair); reproduces."
 }

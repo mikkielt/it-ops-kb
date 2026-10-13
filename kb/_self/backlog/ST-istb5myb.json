@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "http-message-signatures and its XEdDSA answer say the age recipient is the verification key only when XEdDSA's scalar is the clamped identity",
   "status": "draft",
+  "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/auth/http-message-signatures.md's DER line on signing with XEdDSA (the line naming xeddsa_verify) and the conclusion of QK-xeddsa-let-age-x25519-identity-sign in kb/public/_answers.md state that one string serves as recipient and verification key only if XEdDSA's k is the clamped X25519 scalar, which the article's own open item (line 51) and the _gaps.md entry leave unstated. Found by the SP-tcis5f23 review (S3).",
@@ -21,7 +22,11 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-vx7kahl3"
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: the item's check exits 1 on today's base (lines naming xeddsa_verify and 'doubles as the verification key' carry no 'clamp'); reproduces."
 }

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "linux-nftables' idempotent own-table step says flush table leaves a loaded set's elements",
   "status": "draft",
+  "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/security/linux-nftables.md's DER on the flush-table-first file (line 36) and its example say that flush table keeps the elements of a set the file loads (line 18, DOC), so an address removed from the file stays in the set after a reload and the table does not converge to the file without deleting or flushing the set too. Found by the SP-tcis5f23 review (S3).",
@@ -11,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import pathlib,sys; ls=pathlib.Path('kb/public/security/linux-nftables.md').read_text().splitlines(); sys.exit(not any('flush table' in l and 'element' in l and '[DER' in l for l in ls))"
+        "import pathlib,sys; ls=pathlib.Path('kb/public/security/linux-nftables.md').read_text().splitlines(); a=[l for l in ls if 'single idempotent step' in l]; s=[l for l in ls if l.startswith('- SNIPPET') and 'flush table inet filter' not in l and 'inet filter' in l]; sys.exit(0 if a and s and all('element' in l and '[DER' in l for l in a) and all('not covered by the sources read' not in l for l in s) else 1)"
       ]
     }
   ],
@@ -20,7 +21,11 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-suo7g2om"
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: the draft check passed on today's base because the SNIPPET line 52 already holds 'flush table', 'element' and [DER; it now reads line 36 (the idempotent step must name the elements) and line 52 (it must not call a reload onto a filled set 'not covered by the sources read', since line 18 is DOC) and exits 1."
 }
