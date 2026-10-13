@@ -1,0 +1,27 @@
+{
+  "id": "ST-mrrudfmj",
+  "kind": "story",
+  "title": "Under the lookup's down window a redirect hop into a host already in its window gets no request",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "provider.gated_request reads the window only for the first url's host, so a redirect hop into a host already in its window is still requested and spends another TIMEOUT of the lookup budget (two sources on hosts A and C that both redirect to a firewalled B connect to B twice). Under provider.down_window a hop into a host in its window is refused as the first url would be, and recorded as no new failure. Found by the SP-srqmriw6 review of ST-k445avpw (its gate g3 chose record only, since the goal named only the recording).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "redirect_hop_into_down_host_not_requested"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-srqmriw6 review"
+  ]
+}

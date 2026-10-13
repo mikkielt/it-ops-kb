@@ -1,0 +1,27 @@
+{
+  "id": "ST-u2qvfapz",
+  "kind": "story",
+  "title": "kbid.py add names a failed read of a Learn mirror's licence file as a network failure, not as an unrecognised licence",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Since BG-c3mckvqz provider._licence_file_spdx returns an empty id both when the raw.githubusercontent.com read fails (status 0 or not 200) and when the file's first line is no Creative Commons title, so kbid.py add says GitHub recognises no licence of the mirror and asks to read its licence file even when the read never happened. A failed read is reported as a failed read with its status, and the exit stays 2. Found by the SP-srqmriw6 review of BG-c3mckvqz.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "licence_file_read_failure_named"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-srqmriw6 review"
+  ]
+}

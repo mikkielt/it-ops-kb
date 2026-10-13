@@ -1,0 +1,27 @@
+{
+  "id": "ST-yb5x4x3d",
+  "kind": "story",
+  "title": "factdiff.py anchor --file leaves a still-failing unlocated row unchanged instead of rewriting it on every run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Since ST-t3mrfi57 anchor --file refetches every fact whose only anchor row is unlocated:fetch-error, not-text or gone, and a retry that fails again rewrites the row with a new verified_utc, so _anchors.csv changes on every run for a still-failing source and gone rows are refetched with no backoff. A retry whose status is unchanged keeps the row as it was, and a gone row is retried only after a backoff the docs state. Found by the SP-srqmriw6 review of ST-t3mrfi57 (its gate g2 chose replace the row).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_file_retry_keeps_unchanged_row"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-srqmriw6 review"
+  ]
+}
