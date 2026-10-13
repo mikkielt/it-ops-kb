@@ -2,7 +2,7 @@
   "id": "ST-grj7qhgp",
   "kind": "story",
   "title": "Review sprint: Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7ff7c5ui",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-7ff7c5ui"
 }
