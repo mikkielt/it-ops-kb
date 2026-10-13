@@ -2,7 +2,7 @@
   "id": "BG-mivjdhxk",
   "kind": "bug",
   "title": "claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the same section lists more prompt cases",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -38,5 +38,27 @@
     "parked: SP-gcerxjsg review"
   ],
   "notes": "Premise: kb/public/claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the Read-only commands section of S742 also lists Manual-mode prompt cases (quoted in kb/public/_gaps.md:1104). Premise run 2026-10-13: the repro fails on base (line 37 holds 'two exceptions', exit 1); reproduces. The _gaps.md entry's 'Done' note repeats 'the two exceptions', so _gaps.md is in touches. The goal research story ST-kcayezcs reads the live page and records the prompt cases as facts first (this item depends on it through the chain), so this item rewords line 37 from them. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-foopqq2x"
+  "evidence": {
+    "commit": "e401a8a346f38cd1c233df9cabe3f6213ed09c8e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; l=[x for x in open('kb/public/claude/powershell-tool.md',encoding='utf-8') if 'blockReadsOutsideWorkingDirectories' in x]; sys.exit(0 if l and 'two exceptions' not in l[0] and ('docker' in l[0] or 'further documented' in l[0]) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=[l for l in open(\"kb/public/claude/powershell-tool.md\",encoding=\"utf-8\") if \"blockReadsOutsideWorkingDirectories\" in l]; sys.exit(1 if t and \"two exceptions\" in t[0] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
