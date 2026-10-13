@@ -1,0 +1,27 @@
+{
+  "id": "BG-ibkf3vxm",
+  "kind": "bug",
+  "title": "doc-change-detection.md's redirect-following soft-404 outcome cites S1217, but rests on a 2026-10-12 lookup of another Tech Community post that no source row records",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The soft-404 fact of kb/public/agents/doc-change-detection.md whose DER tag names a lookup of a second post by a client that follows redirects cites a source row for that post (S1203 or a new row), so the observation is traceable; found by the SP-uvz65lvm review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;ls=[l for l in open('kb/public/agents/doc-change-detection.md') if 'a second post' in l];bad=[l[:80] for l in ls if 'S1203' not in l];print('second-post lines without its source row:',len(bad));sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a kb fact's citation; no tool behaviour reads it",
+  "touches": [
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-uvz65lvm review"
+  ]
+}

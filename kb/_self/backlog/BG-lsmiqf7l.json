@@ -1,0 +1,27 @@
+{
+  "id": "BG-lsmiqf7l",
+  "kind": "bug",
+  "title": "codebase-mapping.md:92 and the QK-unresolvable-rustc-wrapper answer say only rustc_fingerprint fails with a valid RUSTC_WRAPPER, but cached_output turns a non-zero rustc -vV exit into an error",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Each line of kb/public/agents/codebase-mapping.md and kb/public/_answers.md that says only rustc_fingerprint fails with a valid RUSTC_WRAPPER and an unresolvable RUSTC_WORKSPACE_WRAPPER also says, from Cache::cached_output in the pinned Cargo source S-f6y5we3c, that a wrapper exiting non-zero on its unresolvable first argument makes Rustc::new fail; found by the SP-uvz65lvm review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;ls=[l for f in ('kb/public/agents/codebase-mapping.md','kb/public/_answers.md') for l in open(f) if 'only `rustc_fingerprint` fails' in l];bad=[l[:80] for l in ls if 'exit' not in l.split('only `rustc_fingerprint` fails',1)[1]];print('lines without the exit-status path:',len(bad));sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of two kb facts; no tool behaviour reads it",
+  "touches": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-uvz65lvm review"
+  ]
+}

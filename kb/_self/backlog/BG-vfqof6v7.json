@@ -13,5 +13,8 @@
       "-c",
       "import subprocess,sys;o=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True).stdout;n=[l for l in o.splitlines() if 'doc-lookup-sources.md' in l and 'header' in l];print(n);sys.exit(1 if n else 0)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-uvz65lvm review"
+  ]
 }
