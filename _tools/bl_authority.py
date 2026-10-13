@@ -57,20 +57,31 @@ def names_secret(touch):
 
 # In a gate's text `token` is a secret word, but not in the sense of a model's token counts (`output tokens`, `token
 # counts`, `usage.output_tokens`) nor in the file name of a Markdown doc (`kb/_self/token-efficiency.md`, as for a
-# touch). A bare `token`, one qualified as a credential (`API token counts` is a count of API tokens) and a token file
+# touch). The ops-row value shapes `phase token` and `closed token` are no secret either, nor an upper-case identifier of
+# token counts that holds `TOKENS` in the plural (`DISPATCH_BASE_TOKENS`, `MAX_TOKENS`). A bare `token`, one qualified
+# as a credential (`API token counts` is a count of API tokens), a singular identifier (`GITLAB_TOKEN`) and a token file
 # keep the class: the classifier fails closed.
 TOKEN_DOC = re.compile(r"[\w./\\-]*token[\w./\\-]*\.md\b", re.I)
+CRED_WORDS = "api|access|auth|bearer|refresh|session|personal|oauth|csrf|jwt|id"
 TOKEN_COUNT = re.compile(
-    r"(?P<cred>\b(?:api|access|auth|bearer|refresh|session|personal|oauth|csrf|jwt|id)[-_ ])?"
+    rf"(?P<cred>\b(?:{CRED_WORDS})[-_ ])?"
     r"(?:\b(?:output|input|prompt|completion|cached?|total|max|context|reasoning)[-_ ]tokens?\b|"
+    r"\b(?:phase|closed)[-_ ]tokens?\b|"
     r"\btokens?[-_ ](?:counts?|usage|budgets?|limits?|costs?|efficiency|estimates?)\b|"
     r"\b(?:counts?|number|numbers) of tokens\b|\btokens per (?:second|minute|request|run)\b)", re.I)
+# An upper-case constant name with `TOKENS` in the plural as one of its parts, at least one other part before it, not
+# the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word among its parts (`API_TOKENS`) is no count.
+TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
+CRED_PART = re.compile(rf"^(?:{CRED_WORDS})$", re.I)
 
 
 def without_token_counts(text):
-    """The text with each token-count phrase and each Markdown doc name that holds `token` replaced by a space: what the
-    `secrets` words are searched in, so a model's token counts and a doc such as `token-efficiency.md` are no secret."""
+    """The text with each token-count phrase, each upper-case identifier of token counts and each Markdown doc name that
+    holds `token` replaced by a space: what the `secrets` words are searched in, so a model's token counts, a constant
+    such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token` and a doc such as `token-efficiency.md` are no secret."""
     text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
+    text = TOKEN_IDENT.sub(
+        lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
     return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
 
 
