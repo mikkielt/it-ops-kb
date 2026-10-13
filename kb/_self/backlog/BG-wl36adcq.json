@@ -2,7 +2,7 @@
   "id": "BG-wl36adcq",
   "kind": "bug",
   "title": "ci-and-headless.md's modelUsage-key facts say a pinned undated claude-haiku-4-5 key was never observed, while benchmarks.csv's router-pinned rows show it, and tag repo observations DER on doc sources",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -75,5 +75,6 @@
   "links": [
     "parked: SP-55ddkrrx review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base.",
+  "claimed_by": "orch-gcerxjsg"
 }
