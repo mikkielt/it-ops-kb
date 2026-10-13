@@ -2,7 +2,7 @@
   "id": "BG-xvvclquq",
   "kind": "bug",
   "title": "A lookup prints not found for a page with no words when the fact has a located anchor: the empty text is resolved and searched elsewhere",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5q37ds3",
   "priority": "P1",
   "rank": 0,
@@ -31,5 +31,6 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
-  "notes": "Premise run 2026-10-13 on origin/main a76187923: the repro exits 1, the line prints outcome not found with note no candidate page (verdict changed, anchor located). Reviewer probe: the same with state {} and with text '   ' or '<script>x</script>'."
+  "notes": "Premise run 2026-10-13 on origin/main a76187923: the repro exits 1, the line prints outcome not found with note no candidate page (verdict changed, anchor located). Reviewer probe: the same with state {} and with text '   ' or '<script>x</script>'.",
+  "claimed_by": "orch-u5q37ds3"
 }
