@@ -32,6 +32,35 @@
   "depends_on": [
     "BG-v3fcyl3c"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which questions replace the four sc_stale rows whose packs cite no stale source (DHCP failover load balance, MCP list_changed notification, MCP output token limit, MCP permission rule), and are the pool rows rebuilt whole or only those four? A whole build also moves the offkb, gap, cites, decision and snippet rows, which the goal does not name.",
+      "options": [
+        "Those four questions; only the four pool rows replaced",
+        "Those four questions; whole pool rebuilt"
+      ],
+      "recommendation": "Those four questions; only the four pool rows replaced",
+      "do": {
+        "Those four questions; only the four pool rows replaced": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "Those four questions; whole pool rebuilt": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "build"
+        ]
+      },
+      "class": "design",
+      "answer": "Those four questions; only the four pool rows replaced",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
