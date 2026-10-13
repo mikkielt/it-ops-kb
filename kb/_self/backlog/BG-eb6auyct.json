@@ -42,7 +42,7 @@
       "recommendation": "--revalidate on --route QUESTION (the name rag.py pack uses); the grid's router configs stay offline",
       "class": "design",
       "answer": "--revalidate on --route QUESTION (the name rag.py pack uses); the grid's router configs stay offline",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

@@ -59,7 +59,7 @@
       "recommendation": "Count the run to start too, and start the first run of a shape whatever its price while its part of the cap is above 0: no estimated overshoot, and a cap below one run's price still starts one",
       "class": "design",
       "answer": "Count the run to start too, and start the first run of a shape whatever its price while its part of the cap is above 0: no estimated overshoot, and a cap below one run's price still starts one",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -73,7 +73,7 @@
       "recommendation": "The label's all-kinds cell, then another kb arm's cell of the same kind, its all cell, then the default",
       "class": "design",
       "answer": "The label's all-kinds cell, then another kb arm's cell of the same kind, its all cell, then the default",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
