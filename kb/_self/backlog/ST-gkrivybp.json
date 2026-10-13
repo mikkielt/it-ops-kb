@@ -27,6 +27,22 @@
   "depends_on": [
     "BG-pcralmzy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kb_mcp.py serve the worktree's kb when its working directory is in a linked worktree of its own repository?",
+      "options": [
+        "re-run the worktree's own kb_mcp.py at start, decided from the working directory",
+        "rebind kbcommon.HOME and the modules' paths in the running process",
+        "read CLAUDE_PROJECT_DIR as well as the working directory"
+      ],
+      "recommendation": "re-run the worktree's own kb_mcp.py at start, decided from the working directory",
+      "class": "design",
+      "answer": "re-run the worktree's own kb_mcp.py at start, decided from the working directory",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-wwacrsqr close"
   ],
