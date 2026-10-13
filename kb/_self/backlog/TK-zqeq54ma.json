@@ -1,0 +1,26 @@
+{
+  "id": "TK-zqeq54ma",
+  "kind": "task",
+  "title": "dispatch's worker leaves a work row in the spool land reads, or dispatch names where its rows went",
+  "status": "draft",
+  "parent": "ST-h66j7wm5",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "A worker that backlog.py dispatch starts leaves a branch, agent-start or agent-stop row naming its item in the spool land and cost read, or dispatch's closing line names the spool its session's rows went to",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dispatch_worker_leaves_work_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}

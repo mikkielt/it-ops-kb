@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "The worker brief's always-in-scope rule tells a content worker to add a source row its touches may not cover, so done refuses _sources.csv",
   "status": "draft",
+  "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "The fixed brief rule of bl_dispatch.WORKER_RULES says a source row is in scope only in a file the item's touches name (always_in_scope holds the coverage files, not _sources.csv), or _sources.csv rows a content item adds count as in scope, so a worker that follows the brief is not refused at done",
+  "goal": "The fixed brief rule of bl_dispatch.WORKER_RULES says a source row is in scope only in a file the item's touches name, or _sources.csv rows a content item adds count as in scope, so a worker that follows the brief is not refused at done; a research item whose touches name a kb root's articles has that root's _sources.csv in its touches, which the Plan rule of kb/_self/backlog.md and the kb-sprint skill's plan step 2 say; the _self rules answer 'may a research item add source rows outside its touches' with a good pack through a tested row of kb/_self/_retrieval/lookup_eval.csv",
   "repro": {
     "run": [
       "python3",
@@ -14,15 +15,69 @@
       "import sys;sys.path.insert(0,'_tools');import bl_base,bl_dispatch;t=' '.join(str(r) for r in bl_dispatch.WORKER_RULES);sys.exit(0 if bl_base.in_scope('kb/public/_sources.csv',['kb/public/gitlab/foo.md']) or 'source row in a file the touches name' in t else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;t=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a research item add source rows outside its touches'],capture_output=True,text=True).stdout;sys.exit(0 if t.startswith('coverage: good') else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;a=open('skills/sprint/SKILL.md',encoding='utf-8').read().split('## plan')[1].split('## start')[0];b=open('kb/_self/backlog.md',encoding='utf-8').read().splitlines();sys.exit(0 if '_sources.csv' in a and any('**Plan**' in l and '_sources.csv' in l for l in b) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The fixed brief rule of bl_dispatch.WORKER_RULES says a source row is in scope only in a file the item's touches name, or _sources.csv rows a content item adds count as in scope, so a worker that follows the brief is not refused at done",
+      "check": 2
+    },
+    {
+      "clause": "a research item whose touches name a kb root's articles has that root's _sources.csv in its touches, which the Plan rule of kb/_self/backlog.md and the kb-sprint skill's plan step 2 say",
+      "check": 1
+    },
+    {
+      "clause": "the _self rules answer 'may a research item add source rows outside its touches' with a good pack through a tested row of kb/_self/_retrieval/lookup_eval.csv",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_dispatch.py",
     "_tools/test_backlog_portable.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "skills/sprint/SKILL.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "depends_on": [
+    "ST-h66j7wm5"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a content worker's source row count as in scope: the brief rule and planning put the root's _sources.csv in the item's touches, or kb/*/_sources.csv joins always_in_scope for every item?",
+      "options": [
+        "the item's touches name the root's _sources.csv",
+        "kb/*/_sources.csv joins always_in_scope"
+      ],
+      "recommendation": "the item's touches name the root's _sources.csv",
+      "do": {
+        "the item's touches name the root's _sources.csv": "BG-6bb4zzdy",
+        "kb/*/_sources.csv joins always_in_scope": "BG-6bb4zzdy"
+      },
+      "class": "agents-rule",
+      "answer": "the item's touches name the root's _sources.csv",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-q5ldd25k review",
     "merged: ST-4q4zv34i"
   ],
-  "notes": "Merged from ST-4q4zv34i “A sprint's goal research story whose questions may add DOC facts has its root's _sources.csv in its touches” at the 2026-10-13 draft triage: No code names _sources.csv (grep of bl_plan/bl_base/bl_land/bl_dispatch); pack for 'may a research item add source rows outside its touches' reads weak, so the check fails; same defect as BG-6bb4zzdy (source rows outside touches). Carrier must absorb: a goal research story naming a root's article has that root's _sources.csv in touches (or its rows count as in scope) and the _self rules answer the question with a good pack. Its goal: new sprint (or planning) gives a goal research story that names a kb root's article the root's _sources.csv in its touches, and the _self rules answer 'may a research item add source rows outside its touches' with a good pack; SP-4o3plg4l's research ST-z7eii5h6 stopped with three DOC facts and their source rows unlanded until the orchestrator widened its touches and resumed it (a second session, about 2.9 USD more) Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;t=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a research item add source rows outside its touches'],capture_output=True,text=True).stdout;print(t.splitlines()[0] if t else None);sys.exit(0 if t.startswith('coverage: good') else 1)\"]}"
+  "notes": "Found at the SP-q5ldd25k review: bl_base.always_in_scope holds the item files and the coverage files, not _sources.csv, yet the fixed brief rule tells a content worker a source row is in scope, so done refuses it. Absorbs ST-4q4zv34i (2026-10-13 triage): no code names _sources.csv (bl_plan, bl_base, bl_land, bl_dispatch); SP-4o3plg4l's research ST-z7eii5h6 stopped with three DOC facts and their source rows unlanded until its touches were widened and it was resumed (a second session, about 2.9 USD more); the pack for 'may a research item add source rows outside its touches' reads weak. Premise (planner, 2026-10-13): the repro exits 1 and python3 _tools/rag.py pack --root _self 'may a research item add source rows outside its touches' prints coverage: weak. Today new sprint files the goal research story with kb/public/**, which covers a root's _sources.csv; the plan rule matters when a planner narrows it to articles. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }

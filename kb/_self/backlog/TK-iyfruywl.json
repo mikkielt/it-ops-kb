@@ -1,0 +1,44 @@
+{
+  "id": "TK-iyfruywl",
+  "kind": "task",
+  "title": "backlog.py stage-back ID copies, checks and commits a worker's staging copies, or with --check only checks them",
+  "status": "draft",
+  "parent": "ST-5z4e6z4i",
+  "priority": "P2",
+  "rank": 1,
+  "goal": "backlog.py stage-back ID copies the staging copies dispatch named into the worker's worktree, refuses a copy whose base differs, runs selfdoc.py check and the item's checks there and commits the copies alone with KB-Work on work/ID; --check runs the docs check over the staged copies and commits nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stage_back_commits"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','stage-back','--help'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and '--check' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py stage-back ID copies the staging copies dispatch named into the worker's worktree, refuses a copy whose base differs, runs selfdoc.py check and the item's checks there and commits the copies alone with KB-Work on work/ID",
+      "check": 0
+    },
+    {
+      "clause": "--check runs the docs check over the staged copies and commits nothing",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/backlog.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}

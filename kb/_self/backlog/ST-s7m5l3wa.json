@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's open questions whose pack is weak are answered with the kb tools first and the live docs for gaps, and the findings are written as kb facts and gap entries through the kb skills: what rows land counts as a worker's work rows and what its warning says when none exist (kb/_self/backlog.md:293); how dispatch records the worker's pid and session in the claims ledger (kb/_self/backlog.md:310); which spool a worker's session-end distill reads when the plugin data directory is set (kb/_self/plugin.md:22, kb/_self/usage.md:73); whether a research item may add source rows outside its touches (a tested row BG-6bb4zzdy adds). Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planner run (2026-10-13): rag.py pack -q x5 --root _self: land's work-row warning, the claims-ledger worker_pid and worker_session, and the session-end distill's spool read weak, each answered by the _self line named in the goal; 'may a research item add source rows outside its touches' reads weak (BG-6bb4zzdy adds its tested row); the staging-copy check order is good (SS1-078). Outside facts: kb/public/claude/hooks.md and plugins.md answer hooks in a headless run and CLAUDE_PLUGIN_DATA with good packs. Every answer is in kb/_self, a doc the committed items change, so its done needs No outside facts: the weak questions are the project's own rules and tool behaviour, not provider documentation."
 }

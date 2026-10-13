@@ -1,0 +1,36 @@
+{
+  "id": "TK-2auyrlan",
+  "kind": "task",
+  "title": "land names why an item has no work rows, a claim in the orchestrator's own session included",
+  "status": "draft",
+  "parent": "ST-h66j7wm5",
+  "priority": "P2",
+  "rank": 2,
+  "goal": "land's missing-work-rows warning for an item has the worker session dispatch recorded for it (its spool file's state) or says the item was claimed and worked in the orchestrator's own session, and backlog.py cost attributes that claim's window",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_names_why_no_work_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "land's missing-work-rows warning for an item has the worker session dispatch recorded for it (its spool file's state) or says the item was claimed and worked in the orchestrator's own session",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py cost attributes that claim's window",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
