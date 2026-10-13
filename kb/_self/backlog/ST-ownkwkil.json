@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "Researched 2026-10-13 with rag.py pack --root _self (one -q per question): the apply gate's noted check (Q2) is none and the priced note's how-much condition (Q3), the router's ledger scan (Q4) and the cites expert's phrasings (Q5) are weak, each answered only by the _self doc lines the sprint's items rewrite (tools.md the check: line and Questions a tool decides, querylog.md Apply and the research queue, code.md the routing paragraph); the dated notes that settle a _gaps.md entry for the research queue (querylog.md:184, content-rules.md:65) are good. No outside facts: the four are rules questions of _self docs that BG-6hb4yabk, BG-apytw7fo, BG-s7du27qb and ST-bbliwg6y rewrite, no fact of an official source, so no kb/public fact or gap entry is written.",
   "claimed_by": "orch-enudabdr"
 }
