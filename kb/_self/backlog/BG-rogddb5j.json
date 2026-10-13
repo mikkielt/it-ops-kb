@@ -2,7 +2,7 @@
   "id": "BG-rogddb5j",
   "kind": "bug",
   "title": "_answers.md QK-ort-crate-stable-release-candidate-onnx concludes that default-features = false removes any accelerator code path, which the new Cargo unification facts contradict",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-23m5etrf",
   "priority": "P1",
   "rank": 0,
@@ -46,5 +46,6 @@
     "kb/public/_answers.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
-  "notes": "Premise run 2026-10-13 on main 97548d78f: both checks exit 1; _answers.md:2908 ends 'this removes the build-time download and any accelerator code path', while agents/onnx-runtime-rust-ort.md:94 (added by ST-gyr324rf) says no accelerator feature in one's own manifest does not make a CPU-only build. Filed by the SP-23m5etrf review as S1."
+  "notes": "Premise run 2026-10-13 on main 97548d78f: both checks exit 1; _answers.md:2908 ends 'this removes the build-time download and any accelerator code path', while agents/onnx-runtime-rust-ort.md:94 (added by ST-gyr324rf) says no accelerator feature in one's own manifest does not make a CPU-only build. Filed by the SP-23m5etrf review as S1.",
+  "claimed_by": "orch-23m5etrf"
 }
