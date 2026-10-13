@@ -918,6 +918,14 @@ def confirmable(head, retrieved):
     page's own content date. A baseline taken after the last confirmation proves only that nothing changed since."""
     r = (retrieved or "")[:10]
     return bool(r) and any(d and d[:10] <= r for d in (head.get("baseline_utc", ""), head.get("content_date", "")))
+
+
+def baseline_head(st, doc, prev):
+    """The `head` of confirmable() for a source's stored state row `st` and the documents of one detection: the
+    baseline's date and the page's own content date, as the log's head row holds them."""
+    return {"baseline_utc": (st or {}).get("detected_utc", ""), "content_date": content_date(doc) or content_date(prev)}
+
+
 VERDICTS = ("unchanged", "changed", "new", "moved", "gone", "soft-404", "replaced", "error", "pinned", "hinted")
 OUTCOMES = ("verbatim", "moved", "modified", "not-found", "unanchored", "dead")
 AUTO = ("verbatim", "moved")  # applied with no model: the anchor's passage found word for word
@@ -1199,11 +1207,13 @@ def linked(src, doc, row, sitemaps=True):
     return out + near(src["url"], sitemap_added(row, segs))
 
 
-def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, lookup=False):
+def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, lookup=False, head=None):
     """Log rows, one per fact of a source whose text changed, moved or died. `secs` is the (baseline, current) pair of
     section sets of a page only its text hash found changed: a located fact whose passage's sections (every unit of
     its window, window_sections) hash the same in both is `verbatim` with the signal `section`, not resolved (no
-    passage search, no other page). `lookup`: the
+    passage search, no other page). `head` (baseline_head), given by a revalidation at question time, is the baseline
+    the sections were hashed at: a fact whose anchor was confirmed before that baseline is resolved, as apply's kept()
+    leaves it, since the baseline proves only that nothing changed since. `lookup`: the
     provider's sitemap is not read (linked)."""
     out = []
     row = provider.for_url(src["url"], rows) or {}
@@ -1217,7 +1227,8 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
         if d is not None and located and a["sha"] in d.shas:
             rec["outcome"] = "verbatim"
             found += 1
-        elif d is not None and located and secs and section_unchanged(window_sections(a, d, pd), *secs):
+        elif d is not None and located and secs and (head is None or confirmable(head, a.get("verified_utc"))) \
+                and section_unchanged(window_sections(a, d, pd), *secs):
             rec.update(outcome="verbatim", signal=SECTION_SIGNAL, note="the section of its passage hashes the same as at the baseline")
             found += 1
         elif d is not None and verdict not in ("soft-404", "replaced"):
@@ -1273,7 +1284,8 @@ def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False):
     """(verdict, evidence, fact rows, (changed, unchanged) section counts or None) of one source's detect_source result
     `res` and its `facts`: a page that changed, is new, moved, is gone, is a soft 404 or was replaced has its facts
     resolved (resolve), one only its text hash found changed is compared per heading section first, and a `replaced`
-    page whose anchors are still found is an edit, `changed`. An unchanged or pinned source has no fact rows."""
+    page whose anchors are still found is an edit, `changed`. An unchanged or pinned source has no fact rows. `lookup`:
+    a fact kept by its section needs the baseline to be no newer than its anchor's last confirmation (resolve)."""
     verdict, signal, ev, _, doc, prev = res
     rows_f, secs, counts = [], None, None
     if verdict == "changed" and signal == "hash" and doc and doc.get("text"):
@@ -1284,7 +1296,8 @@ def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False):
             counts = section_counts(*secs)
             ev += f"; sections: {counts[0]} changed, {counts[1]} unchanged"
     if verdict in ("changed", "new", "moved", "gone", "soft-404", "replaced"):
-        rows_f, found = resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs, lookup)
+        head = baseline_head(state.get(sid), doc, prev) if lookup and verdict != "new" else None
+        rows_f, found = resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs, lookup, head)
         if verdict == "replaced" and found:
             verdict, ev = "changed", ev + "; anchors still found: an edit, not a replacement"
     return verdict, ev, rows_f, counts
@@ -1431,37 +1444,12 @@ def new_passage(text, doc):
     return p if len(p) <= PASSAGE_CHARS else p[:PASSAGE_CHARS].rsplit(" ", 1)[0] + " ..."
 
 
-def lookup_source(sid, src, res, facts, state, anchors, rows):
-    """({line key: outcome}, live verdict, why not checked) of one source's detect_source result `res`, for the printed
-    `facts` [(fact key, path, line, text)] only. An outcome is {outcome, target, passage, note}: `current` (the source is
-    unchanged and the fact has a located anchor, or its passage is found word for word), `moved` (its passage is found
-    on another page, or edited in place: the new passage is kept), `not found`, or `source-dated only` (the fact has
-    no located anchor, so only its source's state is known). A source that could not be asked has no outcomes and a
-    reason; a fact whose search for its passage was cut short by the time budget or a network error has outcome ""
-    and the reason as its note."""
-    verdict, signal, ev, _, doc, _ = res
-    if verdict == "error":  # a network error, the time budget, a limit or a status that is no answer
-        return None, verdict, ev if ev == provider.BUDGET_ERROR or ev.startswith(("HTTP ", "rate limited")) else f"network error: {ev}"
-    if verdict == "pinned":
-        st, why = provider.repository_state(src["url"])
-        if st == "" and why:  # the text cannot change, but whether its repository still answers could not be asked
-            return None, verdict, f"pinned; its repository was not asked: {why}"
-    out = {}
-    if verdict == "gone" and signal == "repository":
-        return {line_key(rel, key): {"outcome": "not found", "target": "", "passage": "", "note": f"its repository is gone: {ev}"}
-                for key, rel, _line, _text in facts}, verdict, ""
-    if verdict in ("pinned", "unchanged"):
-        for key, rel, _line, _text in facts:
-            a = anchors.get((key, rel, sid))
-            located = a is not None and a.get("status") == "located"
-            out[line_key(rel, key)] = {"outcome": "current" if located else "source-dated only", "target": "", "passage": "",
-                                       "note": "source unchanged" + ("" if located else "; no located anchor")}
-        return out, verdict, ""
-    failed = provider.failures()
-    verdict, ev, rows_f, _ = resolve_source(sid, src, res, state, facts, anchors, rows, lookup=True)
-    lost = provider.spent() or provider.failures() > failed
+def lookup_outcomes(src, rows_f, facts, doc, lost, rows):
+    """{line key: outcome} of the fact rows `rows_f` of resolve (lookup_source's outcomes) for `facts`, whose current
+    document is `doc`; `lost`: the search for a passage did not finish."""
     text_of = {(key, rel): text for key, rel, _line, text in facts}
     cur = Doc(doc["text"]) if doc and doc.get("text") else None
+    out = {}
     for r in rows_f:
         key, rel = r["fact"], r["path"]
         rec = {"outcome": "", "target": "", "passage": "", "note": r["note"]}
@@ -1483,7 +1471,55 @@ def lookup_source(sid, src, res, facts, state, anchors, rows):
         else:
             rec.update(outcome="not found")
         out[line_key(rel, key)] = rec
-    return out, verdict, ""
+    return out
+
+
+def lookup_source(sid, src, res, facts, state, anchors, rows):
+    """({line key: outcome}, live verdict, why not checked) of one source's detect_source result `res`, for the printed
+    `facts` [(fact key, path, line, text)] only. An outcome is {outcome, target, passage, note}: `current` (the source is
+    unchanged, or pinned, and the fact has a located anchor confirmed no earlier than the baseline, or its passage is
+    found word for word), `moved` (its passage is found on another page, or edited in place: the new passage is kept),
+    `not found`, or `source-dated only` (the fact has no located anchor, or an unchanged source's baseline is newer than
+    its anchor's last confirmation and no text is at hand to resolve it from, so only its source's state is known). A
+    baseline newer than the last confirmation proves only that nothing changed since (confirmable): such a fact is
+    resolved against the page as a changed one is. A source that could not be asked has no outcomes and a reason; a fact
+    whose search for its passage was cut short by the time budget or a network error has outcome "" and the reason as
+    its note."""
+    verdict, signal, ev, _, doc, prev = res
+    if verdict == "error":  # a network error, the time budget, a limit or a status that is no answer
+        return None, verdict, ev if ev == provider.BUDGET_ERROR or ev.startswith(("HTTP ", "rate limited")) else f"network error: {ev}"
+    if verdict == "pinned":
+        st, why = provider.repository_state(src["url"])
+        if st == "" and why:  # the text cannot change, but whether its repository still answers could not be asked
+            return None, verdict, f"pinned; its repository was not asked: {why}"
+    out = {}
+    if verdict == "gone" and signal == "repository":
+        return {line_key(rel, key): {"outcome": "not found", "target": "", "passage": "", "note": f"its repository is gone: {ev}"}
+                for key, rel, _line, _text in facts}, verdict, ""
+    if verdict in ("pinned", "unchanged"):
+        head, stale = baseline_head(state.get(sid), doc, prev), []
+        for fact in facts:
+            key, rel = fact[0], fact[1]
+            a = anchors.get((key, rel, sid))
+            located = a is not None and a.get("status") == "located"
+            # a pinned source with no baseline has none to be newer: its text cannot change
+            if located and not (verdict == "pinned" and not head["baseline_utc"]) and not confirmable(head, a.get("verified_utc")):
+                stale.append(fact)
+                continue
+            out[line_key(rel, key)] = {"outcome": "current" if located else "source-dated only", "target": "", "passage": "",
+                                       "note": "source unchanged" + ("" if located else "; no located anchor")}
+        if stale and doc and doc.get("text"):
+            failed = provider.failures()
+            rows_f, _ = resolve(sid, src, verdict, doc, prev, stale, anchors, rows, None, True)
+            out.update(lookup_outcomes(src, rows_f, stale, doc, provider.spent() or provider.failures() > failed, rows))
+        for key, rel, _line, _text in stale:
+            out.setdefault(line_key(rel, key), {"outcome": "source-dated only", "target": "", "passage": "",
+                                                "note": "source unchanged; its baseline is newer than the anchor's last confirmation"})
+        return out, verdict, ""
+    failed = provider.failures()
+    verdict, ev, rows_f, _ = resolve_source(sid, src, res, state, facts, anchors, rows, lookup=True)
+    lost = provider.spent() or provider.failures() > failed
+    return lookup_outcomes(src, rows_f, facts, doc, lost, rows), verdict, ""
 
 
 def lookup_root(items, out, day, now, reuse=None):
