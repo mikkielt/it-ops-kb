@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-htl7jkrm close"
-  ]
+  ],
+  "notes": "Recurred in SP-tcis5f23 (2026-10-13): cost --rework SP-tcis5f23 at the close read 0 runs and only the orchestrator's open session; no worker's Sonnet usage was attributed, and ops showed no agent.run rows. Worker spend from their result.json: research 2.20 USD, the seven bugs 0.33-0.66 USD each, reviewer 1.64 USD."
 }

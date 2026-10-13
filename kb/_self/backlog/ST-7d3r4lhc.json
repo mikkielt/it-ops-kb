@@ -1,0 +1,28 @@
+{
+  "id": "ST-7d3r4lhc",
+  "kind": "story",
+  "title": "Planning puts a kb root's _anchors.csv in the touches of a content item that rewords a cited DOC fact, and its worker re-anchors it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "An item whose touches name a kb root's article and whose goal rewords or adds a DOC fact has that root's _anchors.csv in its touches at planning (as the doc2query expansions.csv rule does), precheck warns of one that lacks it, and the worker brief says to re-anchor the reworded lines with factdiff.py anchor --file. Retrospective of SP-tcis5f23: BG-7amw5rq6 and BG-bwlmvhq7 (and the goal research) reworded DOC facts without _anchors.csv in their touches; BG-7amw5rq6's worker left line 39 unanchored on purpose, and the review found the reworded postgres and nftables facts unanchored and three nftables rows orphaned (ST-ko6bkda5).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_reword_names_anchors"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 close"
+  ]
+}

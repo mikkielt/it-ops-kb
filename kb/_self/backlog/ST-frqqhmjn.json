@@ -1,0 +1,28 @@
+{
+  "id": "ST-frqqhmjn",
+  "kind": "story",
+  "title": "backlog.py check warns of a depends_on between two items of a sprint whose touches share no file, so planning orders only what overlaps",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check warns, naming both items, of a depends_on between two open items of one sprint whose touches share no file (a kb/_self doc counting as no overlap, as held does), so a planned order that serialises disjoint work is seen before the start. Retrospective of SP-tcis5f23: BG-7ofeobia (touches shamir-secret-sharing.md only) depended on BG-tgplvevj, BG-bwlmvhq7 on BG-7ofeobia and BG-7amw5rq6 on BG-4e7ja4zv, so seven disjoint-or-light bugs ran in five rounds of one or two workers where three rounds would do.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "depends_without_shared_touch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/bl_check.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 close"
+  ]
+}
