@@ -2,7 +2,7 @@
   "id": "BG-5fkown4o",
   "kind": "bug",
   "title": "agents/langgraph.md cites the PyPI project JSON for a pip install form the JSON does not state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,
@@ -70,5 +70,27 @@
     "parked: SP-qjg5r7jj review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: langgraph.md lines 13 and 35 tag 'pip install langgraph' as DOC S-v5hqqcqx, whose PyPI JSON does not state it. Run at planning: the repro exits 1 (the pip form sits before the S-v5hqqcqx tag); the line-13 fact's anchor in _anchors.csv is unlocated:no-match, the line-35 fact's is located, so the second check fails until line 13 is re-anchored.",
-  "claimed_by": "orch-tjap3mdd"
+  "evidence": {
+    "commit": "678482add5d530a306d8e98a3a1f3f1fe6f4c78b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,csv;sys.path.insert(0,'_tools');import kbfacts;loc={(r['fact'],r['source_id']) for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['path'].endswith('/langgraph.md') and r['status']=='located'};us=[u for u in kbfacts.units('public') if u['path'].endswith('/langgraph.md') and any('S-v5hqqcqx' in t['ids'] for t in u['tags'])];ok=bool(us) and all((kbfacts.fact_key(u['text']),'S-v5hqqcqx') in loc for u in us);print('every fact citing S-v5hqqcqx has a located anchor:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "0155695dec31f636"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('kb/public/agents/langgraph.md',encoding='utf-8').read();sys.exit(1 if re.search(r'pip install[^\\[]*\\[DOC S-v5hqqcqx\\]',t) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
