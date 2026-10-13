@@ -2,7 +2,7 @@
   "id": "ST-icixzamb",
   "kind": "story",
   "title": "Review sprint: Content fixes: Claude Code and agent articles state what their sources say",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-foopqq2x",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-foopqq2x"
+  "evidence": {
+    "commit": "7625d4f2deaf3bc177e1d86c6af560019974e796",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b7d9e9b71ca5373f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0948ae701bfbca63"
+      }
+    ]
+  }
 }
