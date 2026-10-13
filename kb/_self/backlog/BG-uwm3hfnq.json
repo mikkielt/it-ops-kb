@@ -2,7 +2,7 @@
   "id": "BG-uwm3hfnq",
   "kind": "bug",
   "title": "claude/ci-and-headless.md says a Sonnet 5.5 record from Claude Code 2.1.295 or older is re-priced at $0.10, while bench_core.READ_BEFORE keeps it at $0.20",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ilqhjn3k",
   "priority": "P1",
   "rank": 0,
@@ -29,5 +29,27 @@
     "kb/public/claude/ci-and-headless.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
-  "claimed_by": "orch-ilqhjn3k"
+  "evidence": {
+    "commit": "f725b6ebd6e2a12ef54d2ec0a008aaa95a0d5ace",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/public/claude/ci-and-headless.md',encoding='utf-8') if 'v2.1.295 or older' in l and 'READ_BEFORE' in l and '0.20' in l];print(len(ls));sys.exit(0 if ls else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/claude/ci-and-headless.md',encoding='utf-8').read();bad='at $0.10 to match the page' in t;print('article says re-priced at 0.10' if bad else 'ok');sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "dc51b8c96c2d745d"
+      }
+    ]
+  }
 }
