@@ -28,7 +28,7 @@ from pathlib import Path
 import bl_cli
 import bl_items
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, item_repos,
-                     need, repositories, research_touches, say, scope, scratch_dir, setting, split_touch,
+                     link_target, need, repositories, research_touches, resolved_touch, say, scope, scratch_dir, setting, split_touch,
                      touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
 
@@ -195,11 +195,16 @@ def max_turns(bl, iid):
 def staged_files(bl, iid):
     """The paths under `.claude/` that the item's touches name, as files (`<repository>/.claude/x` in a workspace
     with a repositories map): a session in permission mode default or acceptEdits cannot write there, so its brief
-    names a staging copy of each (a glob names no file)."""
+    names a staging copy of each (a glob names no file). A touch that names a link to a file outside `.claude/` (the
+    plugin's skill and role files) is read as that file (bl_base.link_target): git records its change at the
+    target, which a worker may write, so it has no copy; one whose target is under `.claude/` keeps its own."""
     out = []
     for g in scope(bl, iid):
-        if split_touch(g)[1].startswith(".claude/") and not re.search(r"[*?\[]", g) and g not in out:
-            out.append(g)
+        if re.search(r"[*?\[]", g) or g in out:
+            continue
+        if not split_touch(resolved_touch(g))[1].startswith(".claude/"):
+            continue
+        out.append(g)
     return out
 
 
@@ -394,6 +399,12 @@ def compose_brief(bl, iid, known=(), probe=None):
                 + ", and commits it on your branch. In your report, say what you changed in each and which "
                 "headings or anchors other docs point at that you touched.",
                 *[f"- {p} -> {scratch / STAGING / p}" for p in staged], ""]
+    links = [(g, link_target(g)) for g in dict.fromkeys(scope(bl, iid)) if link_target(g) and g not in staged]
+    if links:
+        out += ["## Linked touches",
+                "A touch below names a link to a file elsewhere in the repository: a change to the target is inside it, "
+                "and git records it at the target, so edit the target in the worktree (it has no staging copy).",
+                *[f"- {g} -> {t}" for g, t in links], ""]
     out += ["## In-flight siblings"]
     sib = siblings(bl, iid)
     out += (sib + ["Leave those files alone, and write no test that depends on their content."]) if sib else ["None."]

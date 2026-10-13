@@ -96,7 +96,7 @@ def test_backlog_config_of_the_kb_is_its_committed_file_and_plugin_sprint_item_d
     (work / "_backlog" / f"{iid}.json").write_text("{}\n", encoding="utf-8")  # a worktree writes at the item path
 
 
-def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default_and_multirepo_held(
+def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_trackers_and_worktrees_and_multirepo_fields_and_multirepo_default_and_multirepo_held_and_linked_touch_in_scope_and_linked_touch_check_warns(
         tmp_path, monkeypatch):
     prefixes = {"epic": "AA", "story": "BB", "task": "CC", "subtask": "DD", "bug": "EE", "sprint": "FF"}
     (tmp_path / "backlog.json").write_text(json.dumps({"item_dir": "work/items", "id_prefixes": prefixes,
@@ -181,6 +181,34 @@ def test_backlog_config_of_the_root_the_command_runs_on_sets_item_dir_prefixes_t
     warned = bl_plan.unordered_overlap_warnings(bl)  # the same a.py name in two repositories is no common path
     assert len(warned) == 1 and "CC-mine" in warned[0] and "CC-same" in warned[0] and "api/a.py" in warned[0]
     assert not any("web/a.py" in w for w in warned)
+
+    # linked_touch: a touch that names a link is the file it links to, so its change is in scope, it meets that file's
+    # touches, no staging copy is made for it, and check warns naming the target
+    if sys.platform == "win32":  # a symlink needs a privilege there
+        return
+    import bl_dispatch
+    root = tmp_path / "linked"
+    link = ".claude/skills/kb-sprint/SKILL.md"
+    (root / "skills" / "sprint").mkdir(parents=True)
+    (root / "skills" / "sprint" / "SKILL.md").write_text("# sprint\n", encoding="utf-8")
+    (root / ".claude" / "skills" / "kb-sprint").mkdir(parents=True)
+    os.symlink("../../../skills/sprint/SKILL.md", root / link)
+    (root / ".claude" / "own.md").write_text("# own\n", encoding="utf-8")
+    monkeypatch.setattr(bl_base, "_LOADED", [])
+    bl_base.load_settings(root, env={})
+    assert bl_base.in_scope("skills/sprint/SKILL.md", [link]) and bl_base.in_scope(link, [link])
+    assert not bl_base.in_scope("skills/item/SKILL.md", [link]) and not bl_base.in_scope("skills/sprint/SKILL.md", [])
+    assert bl_base.link_target(".claude/own.md") is None and bl_base.link_target(".claude/*") is None
+    assert bl_base.touches_overlap(link, "skills/sprint/*.md", ()) and bl_plan.touches_meet("skills/sprint/SKILL.md", link, ())
+    bl = bl_base.Backlog(root)
+    bl.items = {"CC-linked": {"id": "CC-linked", "kind": "task", "status": "todo", "touches": [link, ".claude/own.md"]}}
+    assert bl_dispatch.staged_files(bl, "CC-linked") == [".claude/own.md"]  # the link's target is outside .claude/
+    warned = bl_plan.linked_touch_warnings(bl)
+    assert len(warned) == 1 and f"touches names {link}, a link to skills/sprint/SKILL.md:" in warned[0], warned
+    (root / "skills" / "sprint" / "SKILL.md").unlink()  # a link whose target went: the warning says so
+    bl_base._link_target.cache_clear()
+    gone = bl_plan.linked_touch_warnings(bl)
+    assert len(gone) == 1 and "a link to skills/sprint/SKILL.md, which is gone:" in gone[0], gone
 
 
 def test_backlog_scratch_setting_places_the_workers_scratch_and_refuses_an_absolute_or_dotdot_path(tmp_path,
@@ -949,3 +977,4 @@ def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugin
     assert "`_tools/tests_ceiling.json`" in kb and "`selfdoc.py stale --since <the item's base>`" in kb
     assert "`tests.py` result, `selfdoc.py stale --since origin/main` result, the staging" in kb
     assert "the project's own checks" not in kb and str(plugin.as_posix()) not in kb
+
