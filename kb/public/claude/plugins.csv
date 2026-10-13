@@ -34,7 +34,7 @@ lspServers entry,shutdownTimeout,integer ms,no,(none),Claude Code terminates pro
 lspServers entry,restartOnCrash,boolean,no,true,set false to leave a crashed server stopped,DOC,S-3xyywfcr
 lspServers entry,maxRestarts,integer,no,,restart attempts before giving up,DOC,S-3xyywfcr
 lspServers entry,diagnostics,boolean,no,true,whether to push diagnostics into context after edits,DOC,S-3xyywfcr
-marketplace.json,name,string,yes,,"no spaces/control/bidi chars, no / or \, no .., not ""."" ; see reserved-names list in plugins.md",DOC,S-4m2kbuls
+marketplace.json,name,string,yes,,"letters, digits, ., _ and -, starting with a letter or digit, no ..; validate fails any other name; see reserved-names list in plugins.md",DOC,S-4m2kbuls
 marketplace.json,owner,object,yes,,"{name (required), email, url}",DOC,S-4m2kbuls
 marketplace.json,plugins,array,yes,,plugin entries; each validated independently,DOC,S-4m2kbuls
 marketplace.json,description,string,no,,shown to users; validate warns when missing,DOC,S-4m2kbuls
@@ -43,7 +43,7 @@ marketplace.json,metadata.pluginRoot,string,no,,"directory bare plugin source na
 marketplace.json,forceRemoveDeletedPlugins,boolean,no,false,true = uninstall a plugin removed from plugins[] on users' machines,DOC,S-4m2kbuls
 marketplace.json,allowCrossMarketplaceDependenciesOn,array of strings,no,,marketplace names whose plugins may be installed as this marketplace's dependencies,DOC,S-4m2kbuls
 marketplace.json,renames,object,no,,"former plugin name -> current name or null (removed); requires v2.1.193+; append-only, chain must resolve to null or a live name",DOC,S-4m2kbuls;S-pelzabjq
-plugin entry,name,string,yes,,install id before @; no spaces/control/bidi chars; used even when plugin.json sets a different name,DOC,S-4m2kbuls
+plugin entry,name,string,yes,,"install id before @; letters, digits, ., _ and -, starting with a letter or digit; validate fails other names; used even when plugin.json sets a different name",DOC,S-4m2kbuls
 plugin entry,source,string or object,yes,,relative path or source object (github/url/git-subdir/npm/archive/command),DOC,S-4m2kbuls
 plugin entry,description,string,no,,shown in /plugin listings/details,DOC,S-4m2kbuls
 plugin entry,version,string,no,,plugin.json's own version wins if both set (validate warns of mismatch),DOC,S-4m2kbuls
@@ -83,5 +83,5 @@ CLI flag,claude plugin install --scope,enum,no,user,user|project|local,DOC,S-gxu
 CLI flag,claude plugin update --scope,enum,no,(install scope),user|project|local|managed,DOC,S-gxuoqjzy
 CLI flag,claude plugin eval --ablation,enum,no,with-without (when plugin resolves) else none,none runs with-arm only; with-without adds no-plugin baseline,DOC,S-lkcsn2fs
 CLI flag,claude plugin eval --runs,integer,no,3 (or case's own runs),runs per case per arm,DOC,S-lkcsn2fs
-CLI flag,claude plugin eval --judge-model,string,no,small fast model,model used for llm/baseline graders,DOC,S-lkcsn2fs
+CLI flag,claude plugin eval --judge-model,string,no,the model Claude Code uses for background tasks,model used for llm/baseline graders,DOC,S-lkcsn2fs
 CLI flag,claude plugin eval -j/--concurrency,integer,no,1,1-8 concurrent agent runs,DOC,S-lkcsn2fs
