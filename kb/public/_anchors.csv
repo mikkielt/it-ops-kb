@@ -2442,6 +2442,7 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 5db865dddade,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,unlocated:no-match,,,,,2026-10-13
 5db865dddade,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
 5f31594b5127,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,binary;download;download-binary;tls-nativ;api-27;copy;copy-dylib;nativ,a29a083ebf598cc8,"default = [ ""std"", ""ndarray"", ""tracing"", ""download-binaries"", ""tls-native"", ""copy-dylibs"", ""api-27"" ]",2026-10-13
+6eafbf5db88a,agents/onnx-runtime-rust-ort.md,S-ah7l36rr,unlocated:no-match,,,,,2026-10-13
 6fb92e87411a,agents/onnx-runtime-rust-ort.md,S-5xaderxo,located,Prebuilt binaries,clang;haswell;later;libc;linux;ryzen;x86-64;depend,aa63d641cb4e449f,"All x86-64 binaries are compiled with a baseline requirement of x86-64-v3 - that's Intel Haswell (Cores/Xeons after 2013), Intel Gracemont (Atoms after Nov 2021), AMD",2026-10-13
 74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-5xaderxo,unlocated:no-match,,,,,2026-10-13
 74c40d6da98b,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
@@ -2451,6 +2452,7 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 7869f116b608,agents/onnx-runtime-rust-ort.md,S-o3nqheje,unlocated:no-match,,,,,2026-10-13
 7869f116b608,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
 79ddc477e13b,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,unlocated:no-match,,,,,2026-10-13
+7d0283e21444,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-cxzftyij,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-mw6rc3qq,unlocated:no-match,,,,,2026-10-13
 7d378e969478,agents/onnx-runtime-rust-ort.md,S-u3hzriiy,unlocated:no-match,,,,,2026-10-13
@@ -2475,7 +2477,6 @@ a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2
 a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,located,ONNX Runtime v1.28.3 > No results found,memory;memory-safety;model;model-validation;patch;safety;validation;fixe,38d370a10259287a,"This is a patch release on top of v1.28.2, containing memory-safety and model-validation fixes, a plugin execution fix, and packaging infrastructure updates.",2026-10-13
 a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
 a5a7277ad8ba,agents/onnx-runtime-rust-ort.md,S-xjm5bsys,unlocated:no-match,,,,,2026-10-13
-a7c7a56c9ef0,agents/onnx-runtime-rust-ort.md,S-togouwq3,unlocated:no-match,,,,,2026-10-13
 aab993f3682a,agents/onnx-runtime-rust-ort.md,S-y7gpyp7l,located,cargo-vendor(1) > DESCRIPTION,crates.io;git;crat;directory;dependency;vendor;cargo,0393fe218eb603bd,This cargo subcommand will vendor all crates.io and git dependencies for a project into the specified directory at <path>.,2026-10-13
 ab183ac1432e,agents/onnx-runtime-rust-ort.md,S-o3nqheje,located,Multiversioning,1.17;support;1.28;api-28;default;latest;minimum;ort,8d9b364c1b69b48f,<Ort/> can support any version of ONNX Runtime between 1.17 and 1.28. <Ort/>'s minimum API version is controlled by its api-<version> Cargo features. The latest,2026-10-13
 af8916ef1323,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,unlocated:no-match,,,,,2026-10-13
