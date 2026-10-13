@@ -3055,6 +3055,7 @@ def provider_signals(url):
     key = _registry_key()
     if _SIGNALS_KEY[0] != key:
         _SIGNALS.clear()
+        _PROVIDER_ROWS.clear()  # filled again from the registry this key names, at the first url the memo lacks
         try:
             with open(memo, encoding="utf-8") as f:
                 got = json.load(f)

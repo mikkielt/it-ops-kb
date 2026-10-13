@@ -810,7 +810,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_registry_change_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -1016,6 +1016,21 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
         mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
         mp.setattr(provider, "signals", lambda *a, **k: 1 / 0)
         assert {u: kbfacts.provider_signals(u) for u in urls} == want
+    # a registry that changes in one process (a server, a hook): the rows are asked again under the new key, so the
+    # next url's signals are the new row's, and the memo file holds them under that key
+    with monkeypatch.context() as mp:
+        mp.setenv("KB_INDEX", str(tmp_path / "registry"))
+        mp.setattr(kbfacts, "_SIGNALS", {})
+        mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
+        mp.setattr(kbfacts, "_PROVIDER_ROWS", [])
+        cur = {"key": "A", "rows": [{"provider": "x", "match": "example.test", "signals": "etag;lastmod"}]}
+        mp.setattr(kbfacts, "_registry_key", lambda: cur["key"])
+        mp.setattr(provider, "providers", lambda root=None: cur["rows"])
+        assert kbfacts.provider_signals("https://example.test/a") == ["etag", "lastmod", "hash"]
+        cur.update(key="B", rows=[{"provider": "x", "match": "example.test", "signals": "version"}])
+        assert kbfacts.provider_signals("https://example.test/b") == ["version", "hash"]
+        memo = json.loads(next((tmp_path / "registry").glob("kbkey-signals-*.json")).read_text(encoding="utf-8"))
+        assert memo == {"key": "B", "signals": {"https://example.test/b": ["version", "hash"]}}, memo
     unit = next(u for u in kbfacts.units("public") if any(p["kind"] != "UNK" and p["ids"] for p in u["tags"]))
     sid = next(i for p in unit["tags"] if p["kind"] != "UNK" for i in p["ids"])
     key, rel = kbfacts.fact_key(unit["text"]), kbfacts.bare(unit["path"])
