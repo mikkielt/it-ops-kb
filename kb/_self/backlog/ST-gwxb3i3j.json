@@ -2,7 +2,7 @@
   "id": "ST-gwxb3i3j",
   "kind": "story",
   "title": "Research sprint goal: Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b7wibqok",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-b7wibqok"
 }
