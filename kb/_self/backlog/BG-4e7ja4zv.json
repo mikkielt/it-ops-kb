@@ -2,7 +2,7 @@
   "id": "BG-4e7ja4zv",
   "kind": "bug",
   "title": "auth/http-message-signatures says no standard operation turns an age X25519 identity into a signing key and omits XEdDSA",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tcis5f23",
   "priority": "P2",
   "rank": 0,

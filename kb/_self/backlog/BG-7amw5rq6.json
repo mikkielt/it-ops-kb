@@ -2,7 +2,7 @@
   "id": "BG-7amw5rq6",
   "kind": "bug",
   "title": "auth/postgres-column-encryption gives CipherSweet's FIPS fast index as HMAC-SHA384, while one cited page says PBKDF2-SHA384 with one iteration",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,

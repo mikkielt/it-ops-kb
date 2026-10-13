@@ -2,7 +2,7 @@
   "id": "BG-xyxwfiu6",
   "kind": "bug",
   "title": "security/linux-sshd-hardening's summary calls two sshd recommendations Level 2 Server only, though 5.1.8 and 5.1.9 are also Level 1 Workstation",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,

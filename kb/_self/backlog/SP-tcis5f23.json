@@ -2,7 +2,7 @@
   "id": "SP-tcis5f23",
   "kind": "sprint",
   "title": "Content fixes: auth, encryption and Linux hardening articles state what their sources say",
-  "status": "planned",
+  "status": "active",
   "goal": "http-message-signatures names XEdDSA as a documented way to sign with an age identity's scalar, with its trade-offs; postgres-column-encryption notes the CipherSweet FIPS fast-index disagreement; the postgres-envelope answer tags the per-scope DEK as DER; issuer-token-rotation and its answer claim a cut-over only for GitLab, Cloudflare and R2, Discord unknown; shamir-secret-sharing gives the sss README limits of 255 shares and 64-byte secrets; linux-sshd-hardening's summary no longer calls 5.1.8 and 5.1.9 Level 2 Server only; linux-nftables says flush ruleset clears every table and scopes its idempotent step to the agent's own table",
   "gates": [
     {

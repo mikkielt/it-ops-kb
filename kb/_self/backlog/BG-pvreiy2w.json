@@ -2,7 +2,7 @@
   "id": "BG-pvreiy2w",
   "kind": "bug",
   "title": "The QK-postgres-envelope answer tags a DEK per scope as DOC, though Google's page says a new DEK per write and per-scope keys are the topic's own derivation",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,

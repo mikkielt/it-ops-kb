@@ -2,7 +2,7 @@
   "id": "BG-bwlmvhq7",
   "kind": "bug",
   "title": "security/linux-nftables calls a flush ruleset file one idempotent step without saying it clears the tables other roles own",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,

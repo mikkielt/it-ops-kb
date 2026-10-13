@@ -2,7 +2,7 @@
   "id": "BG-7ofeobia",
   "kind": "bug",
   "title": "auth/shamir-secret-sharing says the sss and sss-cli share limits are not stated, while the sss README states 255 shares and 64-byte secrets",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-tcis5f23",
   "priority": "P2",
   "rank": 0,
