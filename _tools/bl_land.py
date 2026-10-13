@@ -20,9 +20,10 @@ from pathlib import Path
 import bl_cli
 import bl_intake
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
-    ANSI_RE, Backlog, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written, external_description,
-    clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line, main_worktree_spool, need, rel_dir,
-    repositories, research_touches, run, say, scope, setting, split_touch, waits, worker_dir,
+    ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
+    external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line,
+    main_worktree_spool, need, rel_dir, repositories, research_touches, run, say, scope, setting, split_touch, waits,
+    worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, other_clone, trivial_command
 
@@ -401,19 +402,24 @@ COVERAGE_ORDER = ("none", "weak", "good")
 
 
 def goal_questions(goal):
-    """The questions a narrowed goal names: each sentence of a goal clause (`goal_clauses`) that ends in `?`, a lead-in
-    of up to QUESTION_LEAD_WORDS words ending in `: ` left off, in order, each once. A goal with no such sentence (the
-    default goal of a research story, which `new sprint` files) names none."""
-    out = []
-    for clause in goal_clauses(goal):
-        for piece in re.split(r"(?<=\?)\s+", clause):
-            piece = piece.strip()
-            if not piece.endswith("?"):
-                continue
+    """The questions a narrowed goal names: each sentence of the goal that ends in `?`, a lead-in of up to
+    QUESTION_LEAD_WORDS words ending in `: ` left off, in order, each once. The goal is cut where `goal_clauses` cuts
+    it, but a question is read whole: a piece that names no question is joined to the next across a `, and ` (a
+    question's own comma-and, `which item ..., and what does it print?`) and dropped at a `; `, which ends a clause.
+    A goal with no such sentence (the default goal of a research story, which `new sprint` files) names none."""
+    parts = re.split(f"({CLAUSE_SPLIT.pattern})", str(goal or ""))
+    out, cur = [], ""
+    for n in range(0, len(parts), 2):
+        cur = parts[n] if not cur else cur + parts[n - 1] + parts[n]
+        sentences = [x.strip() for x in re.split(r"(?<=\?)\s+", cur.strip()) if x.strip()]
+        tail = sentences.pop() if sentences and not sentences[-1].endswith("?") else ""  # the text a `?` has not ended
+        for piece in sentences:
             lead, sep, rest = piece.partition(": ")
             if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS:
                 piece = rest.strip()
             out.append(piece)
+        joins = n + 2 < len(parts) and not parts[n + 1].startswith(";")
+        cur = tail if joins else ""
     return list(dict.fromkeys(out))
 
 
