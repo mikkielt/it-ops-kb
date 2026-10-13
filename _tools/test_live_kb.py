@@ -751,7 +751,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_resolve_relocates_multi_citation_row_with_its_real_citation_count(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_resolve_relocates_multi_citation_row_with_its_real_citation_count_and_detect_writes_changed_utc_of_a_changed_source_that_the_source_changed_mark_reads(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -1054,12 +1054,25 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: [sid])
     log = tmp_path / "log.csv"
     args = argparse.Namespace(date="2026-10-12", out=str(log), no_save=False, sitemaps=False)
-    monkeypatch.setattr(factdiff, "write_state", lambda state: None)
+    saved = {}
+    monkeypatch.setattr(factdiff, "write_state", saved.update)
     monkeypatch.setattr(factdiff, "write_snapshot", lambda *a, **k: None)
     assert factdiff.cmd_detect(args, collections.Counter()) == 1  # the fact of Beta waits for review
     assert "sections: changed=1 unchanged=3 (facts kept by section=1)" in capsys.readouterr().out
     head = factdiff.read_log(log)[0]
     assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 3 unchanged"), head
+    # detect writes the state row's changed_utc of a changed source (its check time), so a fact's `source changed` mark
+    # reads it against the anchor's verified_utc; a source it finds unchanged keeps the one it had
+    assert not base.get("changed_utc") and saved[sid]["changed_utc"] == saved[sid]["detected_utc"] != "", saved
+    mine = {"path": "public/dsc/b.md", "line": 6, "text": facts[1][3], "tags": [{"kind": "DOC", "ids": [sid]}]}
+    monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: (
+        {(kbfacts.fact_key(mine["text"]), kbfacts.bare(mine["path"]), sid): (True, "2026-10-01")}, {}, {sid: saved[sid]}))
+    assert kbfacts.fresh_mark(mine, {sid: {"id": sid, "url": url}}) == "source changed"
+    kept = {**saved[sid], "changed_utc": "2026-10-05T00:00:00Z"}
+    monkeypatch.setattr(factdiff, "read_state", lambda: {sid: kept})
+    again = str(tmp_path / "again.csv")
+    assert factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=again, no_save=False, sitemaps=False), collections.Counter()) == 0
+    assert factdiff.read_log(again)[0]["verdict"] == "unchanged" and saved[sid]["changed_utc"] == "2026-10-05T00:00:00Z"
     # a data row two sources cite is weighed as anchoring weighed it (the cites of Doc.locate's second look): on the
     # page both pages share, only the real count lets a row with many cells the page lacks relocate as modified
     old3 = ("# Variables\n\n## SMSInstallUpdateTarget\n\nSpecifies whether the Install Software Updates step installs all updates "
