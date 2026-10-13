@@ -2,7 +2,7 @@
   "id": "ST-owyktog7",
   "kind": "story",
   "title": "Research sprint goal: The whole suite fits its seconds ceiling under host load without the ceiling changing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qlpfcgs2",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-qlpfcgs2"
 }
