@@ -18,10 +18,26 @@
   "touches": [
     "_tools/factdiff.py",
     "kb/_self/content-rules.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "_tools/test_live_kb.py"
   ],
   "depends_on": [
     "BG-gx5b2yhu"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Two assertions in _tools/test_live_kb.py (outside the item's touches) pin the old section fallback of window_sections: how do they change so the fix lands?",
+      "options": [
+        "Update both assertions to the fixed fallback, with the item's touches extended to _tools/test_live_kb.py",
+        "Narrow the fallback window by the anchor's terms so the one-unit-window fixtures keep their verdict (a heuristic that keeps a fact verbatim when its next body is rewritten whole)"
+      ],
+      "recommendation": "Update both assertions to the fixed fallback, with the item's touches extended to _tools/test_live_kb.py",
+      "class": "design",
+      "answer": "Update both assertions to the fixed fallback, with the item's touches extended to _tools/test_live_kb.py",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-djl7za6x review"

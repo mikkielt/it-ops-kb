@@ -408,9 +408,11 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert not [p for p in tmp_path.rglob("*") if p.is_file() and "revalidate" not in p.parts and "down" not in p.parts]  # only the stored results, under the cache
     provider.host_seen(urls[C], "")  # C timed out again: the sections below ask the Learn host, not its window
     # a baseline taken after an anchor's last confirmation proves only that nothing changed since: a fact kept by its
-    # section, or one of an unchanged source, is resolved against the page as apply's kept() leaves it, not `current`
+    # section, or one of an unchanged source, is resolved against the page as apply's kept() leaves it, not `current`;
+    # the edited Notes section lies beyond the units a window starting in Limits can run into (a section between)
     E, F, H = "S9990017", "S9990018", "S9990019"
     gate = ("# Gateway\n\n## Limits\n\nThe Orion gateway keeps its request log for thirty days before it deletes it.\n\n"
+            "## Summary\n\nThe console lists no further entries for this section.\n\n"
             "## Notes\n\nThe Orion gateway is listed in the console under the Nodes page.\n")
     thirty, sixty = fill + gate, fill + gate.replace("thirty", "sixty")
     edited = sixty.replace("Nodes page", "Gateways page")
@@ -1194,9 +1196,11 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert "answers 404" in check(raw("Gone"))["evidence"] and len(asked) == 8  # the census asked no repository again
     # a host whose only signal is the text hash: the page is compared per heading section. The baseline holds each
     # section's hash beside the page's; an edit in Beta moves Beta's and no other, so the fact of Alpha (its anchor
-    # placed on an earlier text, so its passage is not word for word in the baseline) is kept by its section with the
-    # row signal `section`, no passage search, and only the fact of the edited section is resolved
+    # placed on an earlier text, so its passage is not word for word in the baseline, and Beta lies beyond the units a
+    # window starting in Alpha can run into: a section between) is kept by its section with the row signal `section`,
+    # no passage search, and only the fact of the edited section is resolved
     page = ("# Guide\n\n## Alpha\n\nThe Orion scheduler restarts every night at three o'clock.\n\n"
+            "## Middle\n\nMiddle text stays unchanged.\n\n"
             "## Beta\n\nThe Orion queue holds ten thousand jobs before it refuses new ones.\n")
     edited = page.replace("ten thousand", "twenty thousand")
     url, sid = "https://code.claude.com/docs/en/guide", "S9990003"
@@ -1208,8 +1212,8 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert [r["heading"] for r in anchors.values()] == ["Guide > Alpha", "Guide > Beta"]
     anchors[("0123456789ab", "dsc/a.md", sid)]["sha"] = "0" * 16
     base = factdiff.baseline(sid, url, {"text": page, "final": url, "fetched_utc": "2026-10-01T00:00:00+00:00"}, prov)
-    assert base["doc_sha256"] == hashlib.sha256(page.encode()).hexdigest() and base["sections"].count(":") == 4
-    assert factdiff.section_counts(factdiff.sections(page), factdiff.sections(edited)) == (1, 3)
+    assert base["doc_sha256"] == hashlib.sha256(page.encode()).hexdigest() and base["sections"].count(":") == 5
+    assert factdiff.section_counts(factdiff.sections(page), factdiff.sections(edited)) == (1, 4)
     # the stored set belongs to its text: another document's hash leaves it unread, and the previous fetch's text stands in
     assert factdiff.stored_sections(base, None) == factdiff.sections(page)
     assert factdiff.stored_sections({**base, "doc_sha256": "f" * 64}, None) == {}
@@ -1224,7 +1228,8 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert [(r["outcome"], r.get("signal", "")) for r in found] == [("verbatim", factdiff.SECTION_SIGNAL), ("modified", "")], found
     # a window that starts at a heading line: its anchor's heading is the parent's path and the body sits under the
     # heading's own, so the section of every unit of the window is compared (the old text holds the window; else the
-    # heading's section and those below it): an edit of the body is no `section` verbatim, one outside them is
+    # heading's section, those below it and those of the units a window can run into): an edit of the body is no
+    # `section` verbatim, one outside them is
     page2 = ("# Guide\n\n## Alpha\n\nAlpha text stays.\n\n## Retry limits\n\n"
              "The Orion queue gives up after thirty failed attempts for every job.\n\n# Appendix\n\nAppendix text stays.\n")
     fact2 = [("k1", "x.md", 3, "Retry limits: the Orion queue gives up after thirty failed attempts for every job.")]
@@ -1250,9 +1255,9 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     monkeypatch.setattr(factdiff, "write_state", saved.update)
     monkeypatch.setattr(factdiff, "write_snapshot", lambda *a, **k: None)
     assert factdiff.cmd_detect(args, collections.Counter()) == 1  # the fact of Beta waits for review
-    assert "sections: changed=1 unchanged=3 (facts kept by section=1)" in capsys.readouterr().out
+    assert "sections: changed=1 unchanged=4 (facts kept by section=1)" in capsys.readouterr().out
     head = factdiff.read_log(log)[0]
-    assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 3 unchanged"), head
+    assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 4 unchanged"), head
     # detect writes the state row's changed_utc of a changed source (its check time), so a fact's `source changed` mark
     # reads it against the anchor's verified_utc; a source it finds unchanged keeps the one it had
     assert not base.get("changed_utc") and saved[sid]["changed_utc"] == saved[sid]["detected_utc"] != "", saved
