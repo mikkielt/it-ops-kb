@@ -2,7 +2,7 @@
   "id": "BG-tkfijens",
   "kind": "bug",
   "title": "kb/public/_answers.md gives the os.copy_file_range EXDEV mapping without its Linux kernel older than 5.3 condition",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
@@ -44,5 +44,6 @@
   "links": [
     "parked: SP-5x5ut5ko review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: the repro exits 1, naming line 2604 of kb/public/_answers.md as the EXDEV line without 5.3; public/python/stdlib-windows-portability.md:86 already quotes the page's condition. Runs after BG-im4573w7, which edits the same file."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: the repro exits 1, naming line 2604 of kb/public/_answers.md as the EXDEV line without 5.3; public/python/stdlib-windows-portability.md:86 already quotes the page's condition. Runs after BG-im4573w7, which edits the same file.",
+  "claimed_by": "orch-ilqhjn3k"
 }
