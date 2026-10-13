@@ -1,0 +1,26 @@
+{
+  "id": "ST-ddxhnmcr",
+  "kind": "story",
+  "title": "land names git rebase origin/main, not git merge --ff-only, for a dirty orchestrator checkout that holds local commits",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A dirty checkout with commits beyond its upstream is told git rebase origin/main once the tree is clean, as gate behind-main of ST-22oykpr5 answered",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_names_rebase_for_a_dirty_diverged_checkout"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

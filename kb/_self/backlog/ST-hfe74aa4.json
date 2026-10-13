@@ -1,0 +1,26 @@
+{
+  "id": "ST-hfe74aa4",
+  "kind": "story",
+  "title": "A burst of worker session ends does not lose usage rows behind the Pusher's run under the distill lock",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A --session distill that waits USAGE_LOCK_WAIT_S for a lock a Pusher run holds still writes its usage rows (a retry, or deliver kept off for a worker's end), measured on one Pusher run's duration",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "session_distill_behind_a_pusher_keeps_usage_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

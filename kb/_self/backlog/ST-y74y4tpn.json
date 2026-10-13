@@ -1,0 +1,27 @@
+{
+  "id": "ST-y74y4tpn",
+  "kind": "story",
+  "title": "The query log Pusher refuses or flags a distill run from a main checkout whose PIPELINE_VERSION is older than origin/main's",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A distill run from a main checkout behind origin/main does not write entries the current check refuses on every later run: PIPELINE_VERSION is compared and a stale checkout is named",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stale_main_checkout_distill_is_named"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/ql_deliver.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-frcd5u2m",
+  "kind": "story",
+  "title": "A worker's distill attributes work to items filed on its branch though the main checkout lacks their files",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "ql_distill's item_finder and sprint_finder read the item files of the session's own checkout as well as the main checkout's, so claim and branch rows of an item filed on a worker branch are kept",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "distill_attributes_items_filed_on_a_worker_branch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

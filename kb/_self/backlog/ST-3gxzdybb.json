@@ -1,0 +1,25 @@
+{
+  "id": "ST-3gxzdybb",
+  "kind": "story",
+  "title": "The hook-wait land test bounds its ps and lsof calls so a loaded host cannot pass HOOK_GRACE_S inside one look",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "test_land_e2e's hook-wait test patches HOOK_GRACE_S and the stdout_map timeouts, or asserts only that land waited and the pid is gone, so a 30 s lsof timeout cannot fail it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "hook_process_outlives_a_slow_look"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

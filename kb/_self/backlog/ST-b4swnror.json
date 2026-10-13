@@ -1,0 +1,24 @@
+{
+  "id": "ST-b4swnror",
+  "kind": "story",
+  "title": "stdlib-windows-portability says which result of a removed working directory is documented for Linux and which a macOS run showed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The fact at kb/public/python/stdlib-windows-portability.md on a removed cwd says getcwd ENOENT (Linux, documented) and relative-path open ENOENT (one macOS run only)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

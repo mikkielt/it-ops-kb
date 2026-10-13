@@ -1,0 +1,24 @@
+{
+  "id": "ST-rcdjzn5k",
+  "kind": "story",
+  "title": "git-test-repositories says which git commands refuse a branch held through a rebase's update-refs, and with which error",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The fact at kb/public/gitlab/git-test-repositories.md on update-refs holders is split: die_if_checked_out (checkout, switch, rebase, worktree add) knows HEAD, a detached rebase and bisect; update-refs blocks branch -f and new-branch validation only, with its own error text",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/gitlab/git-test-repositories.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

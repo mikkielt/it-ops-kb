@@ -1,0 +1,26 @@
+{
+  "id": "ST-vgo3loyp",
+  "kind": "story",
+  "title": "land's refusal for a session-end distill says it waits for the lock and then runs its pass",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.still_running_remedy says a session-end distill waits up to USAGE_LOCK_WAIT_S for the lock and then runs its pass, not that it ends within that bound",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "refusal_names_the_distill_lock_wait"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}

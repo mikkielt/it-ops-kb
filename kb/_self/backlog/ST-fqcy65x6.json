@@ -1,0 +1,27 @@
+{
+  "id": "ST-fqcy65x6",
+  "kind": "story",
+  "title": "A worker's session-end distill in a cloud session pushes nothing to the orchestrator's branch",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "With CLAUDE_CODE_REMOTE=true a distill launched from a linked worktree delivers nothing, so a worker's end neither pushes to the main checkout's branch nor reports a failed push",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "cloud_worker_distill_delivers_nothing"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_base.py",
+    "_tools/ql_distill.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-b7wibqok review"
+  ]
+}
