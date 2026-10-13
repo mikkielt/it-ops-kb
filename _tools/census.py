@@ -1253,15 +1253,15 @@ def successor(sid, srcs):
         sid = nxt
 
 
-def current_passage(doc, anchor, claim):
+def current_passage(doc, anchor, claim, cites=1):
     """(passage, how) of a fact in the source's current text `doc` (`factdiff.Doc`): the anchor's own passage when it is
-    there word for word (`WORD`), else the best window `Doc.locate` or `Doc.score` gives (`best match`); (None, '') when
-    the page holds none."""
+    there word for word (`WORD`), else the best window `Doc.locate` (given the fact's `cites`, the sources it cites) or
+    `Doc.score` gives (`best match`); (None, '') when the page holds none."""
     if doc is None:
         return None, ""
     if anchor and anchor.get("status") == "located" and anchor.get("sha") in doc.shas:
         return doc.window(*doc.shas[anchor["sha"]]), WORD
-    win = doc.locate(claim)[0] or doc.score(claim)[0]
+    win = doc.locate(claim, cites)[0] or doc.score(claim)[0]
     return (doc.window(*win), "best match") if win else (None, "")
 
 
@@ -1274,6 +1274,7 @@ def sample_brief(picked, log, a):
     plan = {r["id"]: successor(r["id"], srcs) for _, r in picked}
     need = sorted({t for t in plan.values() if facts.get(t) and t in srcs})
     docs = factdiff.fetch_all(need, srcs, a.max_age) if need else {}
+    cites = factdiff.cite_counts(facts)
     ctx, tool, check = {"providers": provider.providers(factdiff.ROOT)}, [], []
     for group, r in picked:
         tid = plan[r["id"]]
@@ -1283,7 +1284,7 @@ def sample_brief(picked, log, a):
         for key, rel, line, text in facts.get(tid, []):
             claim = factdiff.fact_text(text)
             anchor = anchors.get((key, rel, tid))
-            passage, how = current_passage(doc, anchor, claim)
+            passage, how = current_passage(doc, anchor, claim, cites.get((key, rel), 1))
             got.append({"at": f"{kbcommon.repo_rel(rel)}:{line}", "claim": claim, "passage": passage, "how": how,
                         "anchor": "located" if anchor and anchor.get("status") == "located" else "not located"})
         head = f"{r['id']}  {group}, outcome {r['outcome'] or '-'}, bucket {r['bucket']}"
@@ -1612,9 +1613,9 @@ def labelled_set(rows, base, end, seed=1):
             docs[sid] = factdiff.Doc(d["text"]) if d.get("status") == 200 and d.get("text") else None
         return docs[sid]
 
-    def passage_of(sid, anchor, claim):
+    def passage_of(sid, anchor, claim, cites=1):
         """(passage, how) as `current_passage`, with a best match below COMPARE_COVER given up."""
-        got, how = current_passage(doc(sid), anchor, claim)
+        got, how = current_passage(doc(sid), anchor, claim, cites)
         return (None, "") if got and how != WORD and doc(sid).score(claim)[1] < COMPARE_COVER else (got, how)
 
     changed, seen = [], set()
@@ -1622,8 +1623,9 @@ def labelled_set(rows, base, end, seed=1):
         claim = factdiff.fact_text(old)
         if len(claim.split()) < 6 or claim == factdiff.fact_text(new):
             continue
-        for sid in sorted(set(kbid.SOURCE_ID.findall(old)) & upd):
-            passage, how = passage_of(sid, None, claim)
+        cited = set(kbid.SOURCE_ID.findall(old))
+        for sid in sorted(cited & upd):
+            passage, how = passage_of(sid, None, claim, len(cited))
             key = kbfacts.fact_key(old)
             if passage and (sid, path, key) not in seen:
                 seen.add((sid, path, key))
@@ -1640,12 +1642,13 @@ def labelled_set(rows, base, end, seed=1):
         return at_base[path]
 
     facts, anchors, pool = factdiff.cited_facts(), factdiff.read_anchors(), []
+    cites = factdiff.cite_counts(facts)
     for sid in sorted(conf):
         for key, rel, _line, text in facts.get(sid, []):
             claim = factdiff.fact_text(text)
             if len(claim.split()) < 6 or " ".join(claim.split()) not in text_at_base(rel):
                 continue
-            passage, how = passage_of(sid, anchors.get((key, rel, sid)), claim)
+            passage, how = passage_of(sid, anchors.get((key, rel, sid)), claim, cites.get((key, rel), 1))
             if passage:
                 pool.append({"source_id": sid, "key": key, "path": rel, "fact": claim, "old": None, "new": passage,
                              "how": how, "label": "unchanged"})
@@ -2232,9 +2235,10 @@ def repin_plan(r, d, facts, anchors):
     return plan
 
 
-def repin_item(r, plan, f, why, anchors, d):
+def repin_item(r, plan, f, why, anchors, d, cites=None):
     """The review item (`factdiff.review_items` shape) of one fact of a row that stays in the queue: its old passage
-    from the file at the old commit (else the anchor's quote) and its new one from the file at the newer commit."""
+    from the file at the old commit (else the anchor's quote) and its new one from the file at the newer commit.
+    `cites` is `factdiff.cite_counts` of the root."""
     key, rel, line, text = f
     a = anchors.get((key, rel, r["id"])) or {}
     old, old_from = None, ""
@@ -2246,7 +2250,7 @@ def repin_item(r, plan, f, why, anchors, d):
     if old is None and a.get("quote"):
         old, old_from = a["quote"], "anchor quote"
     doc, claim = plan["doc"], factdiff.fact_text(text)
-    win = (doc.locate(claim)[0] or doc.score(claim)[0]) if doc is not None else None
+    win = (doc.locate(claim, (cites or {}).get((key, rel), 1))[0] or doc.score(claim)[0]) if doc is not None else None
     new = doc.window(*win) if win else None
     found = len(plan["matched"])
     note = f"{why} at {plan['new'][:12]}; {found} of {found + len(plan['missing'])} fact(s) of the source found word for word"
@@ -2268,15 +2272,17 @@ def repin_items(rows, have=()):
     new passage, read from the census clone with no fetch. A candidate with no clone, no located anchor or nothing
     found has none (the whole document stands); one with every fact found is for `repin` to apply."""
     cand = [r for r in repin_candidates(rows) if r["id"] not in have]
-    out, ctx = {}, None
+    out, ctx, cites = {}, None, None
     for r in cand:
         d = repin_clone(r["repo"])
         if not d:
             continue
-        ctx = ctx or (factdiff.cited_facts(), factdiff.read_anchors())
+        if ctx is None:
+            ctx = (factdiff.cited_facts(), factdiff.read_anchors())
+            cites = factdiff.cite_counts(ctx[0])
         plan = repin_plan(r, d, *ctx)
         if plan and not plan["reason"] and plan["missing"] and plan["matched"]:
-            out[r["id"]] = [repin_item(r, plan, f, why, ctx[1], d) for f, why in plan["missing"]]
+            out[r["id"]] = [repin_item(r, plan, f, why, ctx[1], d, cites) for f, why in plan["missing"]]
     return out
 
 

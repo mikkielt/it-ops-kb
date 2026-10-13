@@ -437,6 +437,12 @@ def cited_facts(prefix=None):
     return out
 
 
+def cite_counts(facts):
+    """{(fact key, path): the number of sources the fact cites} of `facts` (cited_facts()): what Doc.locate takes as
+    `cites` of every fact, so that anchoring and each later look at the page weigh a data row's cells alike."""
+    return collections.Counter((k, rel) for fs in facts.values() for k, rel, _, _ in fs)
+
+
 def cache_path(sid, shared=False):
     """The cache file of a source's document. `shared` (a read with no network: queue and review --offline) falls back to
     the cache of the clone's main worktree when this worktree holds none, as the query index is shared."""
@@ -618,7 +624,7 @@ def cmd_anchor(a):
     anchors = read_anchors()
     when = today()
     counts = collections.Counter()
-    cites = collections.Counter((k, rel_) for fs in facts.values() for k, rel_, _, _ in fs)
+    cites = cite_counts(facts)
     for sid in ids:
         reuse = (srcs[sid].get("reuse") or "").strip()
         rows = anchor_rows(sid, facts[sid], docs.get(sid), reuse, when, cites)
@@ -1179,9 +1185,9 @@ def search_urls(fact, anchor, row, src_url, title=""):
     return out
 
 
-def elsewhere(fact, anchor, cands, rows):
+def elsewhere(fact, anchor, cands, rows, cites=1):
     """(outcome, target url, note) of a passage searched on other pages: moved when its anchor is found word for word,
-    else not-found (with the page where the fact's terms best match, for review)."""
+    else not-found (with the page where the fact's terms best match, for review). `cites`: Doc.locate's."""
     best = (None, 0.0)
     for u in cands:
         d, _ = page_doc(u, rows)
@@ -1189,7 +1195,7 @@ def elsewhere(fact, anchor, cands, rows):
             continue
         if anchor and anchor.get("sha") and anchor["sha"] in d.shas:
             return "moved", u, "anchor found word for word"
-        win, cover, _ = d.locate(fact_text(fact))
+        win, cover, _ = d.locate(fact_text(fact), cites)
         if win is not None and cover > best[1]:
             best = (u, cover)
     return "not-found", best[0] or "", f"best candidate cover {best[1]:.2f}" if best[0] else "no candidate page"
@@ -1207,14 +1213,15 @@ def linked(src, doc, row, sitemaps=True):
     return out + near(src["url"], sitemap_added(row, segs))
 
 
-def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, lookup=False, head=None):
+def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, lookup=False, head=None, cites=None):
     """Log rows, one per fact of a source whose text changed, moved or died. `secs` is the (baseline, current) pair of
     section sets of a page only its text hash found changed: a located fact whose passage's sections (every unit of
     its window, window_sections) hash the same in both is `verbatim` with the signal `section`, not resolved (no
     passage search, no other page). `head` (baseline_head), given by a revalidation at question time, is the baseline
     the sections were hashed at: a fact whose anchor was confirmed before that baseline is resolved, as apply's kept()
     leaves it, since the baseline proves only that nothing changed since. `lookup`: the
-    provider's sitemap is not read (linked)."""
+    provider's sitemap is not read (linked). `cites` is cite_counts' {(fact key, path): sources cited} of the whole root
+    (a source's `facts` alone lack the other sources a row cites); a fact it lacks counts 1."""
     out = []
     row = provider.for_url(src["url"], rows) or {}
     d = Doc(doc["text"]) if doc and doc.get("text") else None
@@ -1224,6 +1231,7 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
         a = anchors.get((key, rel, sid))
         located = a is not None and a.get("status") == "located"
         rec = {"fact": key, "path": rel, "line": line, "outcome": "", "target": "", "note": ""}
+        n_cites = (cites or {}).get((key, rel), 1)
         if d is not None and located and a["sha"] in d.shas:
             rec["outcome"] = "verbatim"
             found += 1
@@ -1232,7 +1240,7 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
             rec.update(outcome="verbatim", signal=SECTION_SIGNAL, note="the section of its passage hashes the same as at the baseline")
             found += 1
         elif d is not None and verdict not in ("soft-404", "replaced"):
-            win, cover, _ = d.locate(fact_text(text))
+            win, cover, _ = d.locate(fact_text(text), n_cites)
             old = None
             if located and pd is not None and a["sha"] in pd.shas:
                 old = pd.window(*pd.shas[a["sha"]])
@@ -1246,11 +1254,12 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
                 rec.update(outcome="modified", note=sim + changed)
                 found += 1
             else:
-                o, t, note = elsewhere(text, a, linked(src, doc, row, not lookup) + search_urls(text, a, row, src["url"], src.get("title", "")), rows)
+                o, t, note = elsewhere(text, a, linked(src, doc, row, not lookup) + search_urls(text, a, row, src["url"], src.get("title", "")),
+                                       rows, n_cites)
                 rec.update(outcome=o, target=t, note=note)
         else:
             cands = linked(src, doc, row, not lookup) + search_urls(text, a, row, src["url"], src.get("title", ""))
-            o, t, note = elsewhere(text, a if located else None, cands, rows)
+            o, t, note = elsewhere(text, a if located else None, cands, rows, n_cites)
             rec.update(outcome=o if o == "moved" else "dead", target=t, note=note)
         out.append(rec)
     return out, found
@@ -1280,12 +1289,13 @@ def detect_pass(ids, srcs, state, rows, lookup=False):
     return results
 
 
-def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False):
+def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False, cites=None):
     """(verdict, evidence, fact rows, (changed, unchanged) section counts or None) of one source's detect_source result
     `res` and its `facts`: a page that changed, is new, moved, is gone, is a soft 404 or was replaced has its facts
     resolved (resolve), one only its text hash found changed is compared per heading section first, and a `replaced`
     page whose anchors are still found is an edit, `changed`. An unchanged or pinned source has no fact rows. `lookup`:
-    a fact kept by its section needs the baseline to be no newer than its anchor's last confirmation (resolve)."""
+    a fact kept by its section needs the baseline to be no newer than its anchor's last confirmation (resolve). `cites`:
+    resolve's."""
     verdict, signal, ev, _, doc, prev = res
     rows_f, secs, counts = [], None, None
     if verdict == "changed" and signal == "hash" and doc and doc.get("text"):
@@ -1297,7 +1307,7 @@ def resolve_source(sid, src, res, state, facts, anchors, rows, lookup=False):
             ev += f"; sections: {counts[0]} changed, {counts[1]} unchanged"
     if verdict in ("changed", "new", "moved", "gone", "soft-404", "replaced"):
         head = baseline_head(state.get(sid), doc, prev) if lookup and verdict != "new" else None
-        rows_f, found = resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs, lookup, head)
+        rows_f, found = resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs, lookup, head, cites)
         if verdict == "replaced" and found:
             verdict, ev = "changed", ev + "; anchors still found: an edit, not a replacement"
     return verdict, ev, rows_f, counts
@@ -1332,9 +1342,10 @@ def cmd_detect(a, tally):
                 print(f"sitemap {row['provider']}: {len(sitemap_added(row, sorted(segs[row['provider']]), not a.no_save))} url(s) added "
                       "since the last run", file=sys.stderr, flush=True)
     log, counts, outc, secn = [], collections.Counter(), collections.Counter(), collections.Counter()
+    cites = cite_counts(facts)
     for sid in ids:
         _, signal, _, new, doc, prev = results[sid]
-        verdict, ev, rows_f, sec = resolve_source(sid, srcs[sid], results[sid], state, facts[sid], anchors, rows)
+        verdict, ev, rows_f, sec = resolve_source(sid, srcs[sid], results[sid], state, facts[sid], anchors, rows, cites=cites)
         if sec:
             secn.update(changed=sec[0], unchanged=sec[1])
         counts[verdict] += 1
@@ -1435,18 +1446,19 @@ def line_key(rel, key):
     return f"{rel}|{key}"
 
 
-def new_passage(text, doc):
-    """The passage of `doc` (a Doc) that backs a fact now, one line, cut at PASSAGE_CHARS; "" when none does."""
-    win, _, _ = doc.locate(fact_text(text))
+def new_passage(text, doc, cites=1):
+    """The passage of `doc` (a Doc) that backs a fact now, one line, cut at PASSAGE_CHARS; "" when none does. `cites`:
+    Doc.locate's."""
+    win, _, _ = doc.locate(fact_text(text), cites)
     if win is None:
         return ""
     p = " ".join(doc.window(*win).split())
     return p if len(p) <= PASSAGE_CHARS else p[:PASSAGE_CHARS].rsplit(" ", 1)[0] + " ..."
 
 
-def lookup_outcomes(src, rows_f, facts, doc, lost, rows):
+def lookup_outcomes(src, rows_f, facts, doc, lost, rows, cites=None):
     """{line key: outcome} of the fact rows `rows_f` of resolve (lookup_source's outcomes) for `facts`, whose current
-    document is `doc`; `lost`: the search for a passage did not finish."""
+    document is `doc`; `lost`: the search for a passage did not finish; `cites`: resolve's."""
     text_of = {(key, rel): text for key, rel, _line, text in facts}
     cur = Doc(doc["text"]) if doc and doc.get("text") else None
     out = {}
@@ -1457,10 +1469,12 @@ def lookup_outcomes(src, rows_f, facts, doc, lost, rows):
         if o == "verbatim":
             rec.update(outcome="current", note="passage word for word" + (" (its section is unchanged)" if r.get("signal") == SECTION_SIGNAL else ""))
         elif o == "modified" and cur is not None:
-            rec.update(outcome="moved", target=src["url"], passage=new_passage(text_of[(key, rel)], cur), note="edited in place: " + r["note"])
+            rec.update(outcome="moved", target=src["url"], passage=new_passage(text_of[(key, rel)], cur, (cites or {}).get((key, rel), 1)),
+                       note="edited in place: " + r["note"])
         elif o == "moved":
             d, _ = page_doc(r["target"], rows)
-            rec.update(outcome="moved", target=r["target"], passage=new_passage(text_of[(key, rel)], d) if d is not None else "")
+            rec.update(outcome="moved", target=r["target"],
+                       passage=new_passage(text_of[(key, rel)], d, (cites or {}).get((key, rel), 1)) if d is not None else "")
         elif o == "unanchored":
             rec.update(outcome="source-dated only", note="source changed; no located anchor")
         elif o in ("not-found", "dead"):
@@ -1474,7 +1488,7 @@ def lookup_outcomes(src, rows_f, facts, doc, lost, rows):
     return out
 
 
-def lookup_source(sid, src, res, facts, state, anchors, rows):
+def lookup_source(sid, src, res, facts, state, anchors, rows, cites=None):
     """({line key: outcome}, live verdict, why not checked) of one source's detect_source result `res`, for the printed
     `facts` [(fact key, path, line, text)] only. An outcome is {outcome, target, passage, note}: `current` (the source is
     unchanged, or pinned, and the fact has a located anchor confirmed no earlier than the baseline, or its passage is
@@ -1484,7 +1498,7 @@ def lookup_source(sid, src, res, facts, state, anchors, rows):
     baseline newer than the last confirmation proves only that nothing changed since (confirmable): such a fact is
     resolved against the page as a changed one is. A source that could not be asked has no outcomes and a reason; a fact
     whose search for its passage was cut short by the time budget or a network error has outcome "" and the reason as
-    its note."""
+    its note. `cites`: resolve's."""
     verdict, signal, ev, _, doc, prev = res
     if verdict == "error":  # a network error, the time budget, a limit or a status that is no answer
         return None, verdict, ev if ev == provider.BUDGET_ERROR or ev.startswith(("HTTP ", "rate limited")) else f"network error: {ev}"
@@ -1510,16 +1524,16 @@ def lookup_source(sid, src, res, facts, state, anchors, rows):
                                        "note": "source unchanged" + ("" if located else "; no located anchor")}
         if stale and doc and doc.get("text"):
             failed = provider.failures()
-            rows_f, _ = resolve(sid, src, verdict, doc, prev, stale, anchors, rows, None, True)
-            out.update(lookup_outcomes(src, rows_f, stale, doc, provider.spent() or provider.failures() > failed, rows))
+            rows_f, _ = resolve(sid, src, verdict, doc, prev, stale, anchors, rows, None, True, None, cites)
+            out.update(lookup_outcomes(src, rows_f, stale, doc, provider.spent() or provider.failures() > failed, rows, cites))
         for key, rel, _line, _text in stale:
             out.setdefault(line_key(rel, key), {"outcome": "source-dated only", "target": "", "passage": "",
                                                 "note": "source unchanged; its baseline is newer than the anchor's last confirmation"})
         return out, verdict, ""
     failed = provider.failures()
-    verdict, ev, rows_f, _ = resolve_source(sid, src, res, state, facts, anchors, rows, lookup=True)
+    verdict, ev, rows_f, _ = resolve_source(sid, src, res, state, facts, anchors, rows, lookup=True, cites=cites)
     lost = provider.spent() or provider.failures() > failed
-    return lookup_outcomes(src, rows_f, facts, doc, lost, rows), verdict, ""
+    return lookup_outcomes(src, rows_f, facts, doc, lost, rows, cites), verdict, ""
 
 
 def lookup_root(items, out, day, now, reuse=None):
@@ -1528,7 +1542,9 @@ def lookup_root(items, out, day, now, reuse=None):
     srcs, state, anchors = kbfacts.source_rows(), read_state(), read_anchors()
     rows = provider.providers(ROOT)
     wanted = collections.defaultdict(dict)  # source id -> {(fact key, path): (line, text)}
+    cites = {}  # (fact key, path) -> the sources the printed line cites, as cite_counts counts them for the root
     for p in items:
+        cites[(p["key"], kbfacts.bare(p["path"]))] = len(set(p["ids"]))
         for sid in p["ids"]:
             wanted[sid][(p["key"], kbfacts.bare(p["path"]))] = (p["line"], p["text"])
     got, ask = {}, []
@@ -1550,7 +1566,7 @@ def lookup_root(items, out, day, now, reuse=None):
     for sid, src, facts in ask:
         res = results.get(sid) or ("error", "", provider.BUDGET_ERROR, None, None, None)
         try:
-            lines, verdict, why = lookup_source(sid, src, res, facts, state, anchors, rows)
+            lines, verdict, why = lookup_source(sid, src, res, facts, state, anchors, rows, cites)
         except Exception as e:  # noqa: BLE001 - one source must never stop a lookup
             lines, verdict, why = None, "error", f"{type(e).__name__}: {e}"[:200]
         if lines is None:
@@ -1646,10 +1662,11 @@ def _wayback_text(url, before):
     return provider.doc_text(c["body"], c["headers"].get("content-type", ""), url), f"https://web.archive.org/web/{ts}/{url}"
 
 
-def old_passage(sid, anchor, fact, src, offline=False):
+def old_passage(sid, anchor, fact, src, offline=False, cites=1):
     """(passage, where) the fact rested on before the change: the snapshot at HEAD (copy sources), the previous
     cached document, a Wayback capture from the anchor's date, or the anchor's quote; (None, why) when none has it.
-    `offline`: no Wayback capture is asked for, and the cache of the clone's main worktree is read too."""
+    `offline`: no Wayback capture is asked for, and the cache of the clone's main worktree is read too. `cites`:
+    Doc.locate's."""
     rel = os.path.relpath(snapshot_path(sid), kbcommon.HOME).replace(os.sep, "/")  # git matches tree paths with /
     head = _git(kbcommon.HOME, "cat-file", "blob", f"HEAD:{rel}")  # not `git show` (see calibrate_history)
     tries = []
@@ -1668,7 +1685,7 @@ def old_passage(sid, anchor, fact, src, offline=False):
             d = Doc(text)
             if anchor.get("sha") in d.shas:
                 return d.window(*d.shas[anchor["sha"]]), cap
-            win, _, _ = d.locate(fact_text(fact))
+            win, _, _ = d.locate(fact_text(fact), cites)
             if win:
                 return d.window(*win), cap + " (best match)"
     if anchor and anchor.get("quote"):
@@ -1679,7 +1696,9 @@ def old_passage(sid, anchor, fact, src, offline=False):
 def review_items(log, srcs, only=None, offline=False):
     """The items of `log` a model must read, each with its old and new passage. `offline`: no request is made (no
     Wayback capture, no page fetch): a passage only the network could give is None."""
-    facts = {(k, rel, sid): (line, t) for sid, fs in cited_facts().items() for k, rel, line, t in fs}
+    cited = cited_facts()
+    facts = {(k, rel, sid): (line, t) for sid, fs in cited.items() for k, rel, line, t in fs}
+    cites = cite_counts(cited)
     anchors = read_anchors()
     rows = provider.providers(ROOT)
     for r in log:
@@ -1689,14 +1708,15 @@ def review_items(log, srcs, only=None, offline=False):
         line, text = facts.get(k, (r["line"], ""))
         a = anchors.get(k)
         src = srcs.get(r["source_id"], {"url": r["url"]})
-        old, where = old_passage(r["source_id"], a, text, src, offline)
+        n_cites = cites.get((r["fact"], r["path"]), 1)
+        old, where = old_passage(r["source_id"], a, text, src, offline, n_cites)
         new, new_where = None, ""
         url = r["target"] or (src["url"] if r["verdict"] in ("changed", "new", "moved") else "")
         if url:
             cur = load_json(cache_path(r["source_id"], offline)) if url == src["url"] else None
             d = Doc(cur["text"]) if cur and cur.get("text") else None if offline else page_doc(url, rows)[0]
             if d is not None:
-                win, cover, _ = d.locate(fact_text(text)) if text else (None, 0, [])
+                win, cover, _ = d.locate(fact_text(text), n_cites) if text else (None, 0, [])
                 if win is None and text:
                     win = d.score(fact_text(text))[0]
                 new, new_where = (d.window(*win), url) if win else (None, url)
