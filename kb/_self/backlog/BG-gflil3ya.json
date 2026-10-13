@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "factdiff.revalidate dates a run by the local day and stamps checked_utc in UTC, so test_live_kb fails between local midnight and UTC midnight",
   "status": "draft",
+  "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "factdiff.revalidate's date and its checked_utc stamps name the same day at any hour in any time zone (today() reads the local date, the stamps UTC), so test_live_kb's lookup-eval test passes when the local day is ahead of UTC; found 2026-10-13 00:26 local (22:26Z), when the whole-suite gate of ST-keicy7gn's landing failed on it after 99 passed",
+  "goal": "factdiff.revalidate's date and its checked_utc stamps name the same day at any hour in any time zone (today() reads the local date, the stamps UTC), so test_live_kb's lookup-eval test passes when the local day is ahead of UTC (found 2026-10-13 00:26 local, 22:26Z, when the whole-suite gate of ST-keicy7gn's landing failed on it after 99 passed)",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,14 @@
       "import os,time,sys;sys.path.insert(0,'_tools');import factdiff;d=[];[(os.environ.__setitem__('TZ',z),time.tzset(),d.append(factdiff.today())) for z in ('Etc/GMT-14','Etc/GMT+12')];print(d);sys.exit(0 if d[0]==d[1] else 1)"
     ]
   },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/tools.md"
+  ],
   "links": [
     "parked: SP-kuhlsf2s close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: the repro prints ['2026-10-14', '2026-10-13'] for TZ Etc/GMT-14 and Etc/GMT+12 and exits 1; factdiff.today() is the local date."
 }

@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "selfdoc.py check fails: kb/_self/code.md:46 names the heading 'Sprints: plan and review' that kb/_self/backlog.md does not have",
   "status": "draft",
+  "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "python3 _tools/selfdoc.py check exits 0 with no PROBLEM line: the reference at kb/_self/code.md:46 names a heading kb/_self/backlog.md holds (found 2026-10-12 while working BG-pedsqeqs, origin/main untouched by it)",
+  "goal": "python3 _tools/selfdoc.py check exits 0 with no PROBLEM line: the reference at kb/_self/code.md:46 names a heading the backlog doc holds (found 2026-10-12 while working BG-pedsqeqs, origin/main untouched by it); kb/_self/code.md's bl_ module list says bl_selfcheck.py holds the seven checks behind backlog.py selfcheck, as run_checks returns (absorbs BG-tldgvbjo)",
   "repro": {
     "run": [
       "python3",
@@ -14,8 +15,30 @@
       "check"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/code.md',encoding='utf-8').read();sys.exit(1 if 'the six checks behind' in t else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/selfdoc.py check exits 0 with no PROBLEM line: the reference at kb/_self/code.md:46 names a heading the backlog doc holds (found 2026-10-12 while working BG-pedsqeqs, origin/main untouched by it)",
+      "check": 1
+    },
+    {
+      "clause": "kb/_self/code.md's bl_ module list says bl_selfcheck.py holds the seven checks behind backlog.py selfcheck, as run_checks returns (absorbs BG-tldgvbjo)",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md"
+  ],
   "links": [
     "merged: BG-tldgvbjo"
   ],
-  "notes": "Merged from BG-tldgvbjo “code.md says bl_selfcheck.py holds six checks, where run_checks and its docstring hold seven” at the 2026-10-13 draft triage: code.md:57 still says 'the six checks behind' backlog.py selfcheck; run_checks (bl_selfcheck.py:351) returns seven. One-word edit in the same file as BG-em43tgls, so one commit carries both. Its goal: kb/_self/code.md's bl_ module list says bl_selfcheck.py holds the seven checks behind backlog.py selfcheck, as run_checks returns Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('kb/_self/code.md',encoding='utf-8').read();sys.exit(1 if 'the six checks behind' in t else 0)\"]} Its touches: kb/_self/code.md"
+  "notes": "Merged from BG-tldgvbjo at the 2026-10-13 draft triage: code.md:57 still says 'the six checks behind' backlog.py selfcheck; run_checks (bl_selfcheck.py:351) returns seven; a one-word edit in the same file, so one commit carries both. Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: selfdoc.py check prints PROBLEM kb/_self/code.md:46 and exits 1; code.md:57 still says 'the six checks behind'."
 }

@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "lint.py exits 0 and lints nothing for a path outside kb/ or a kb/_self doc, since its no-file refusal exempts any existing kb path and any path git has history for",
   "status": "draft",
+  "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "lint.py given an argument that selects no article of any root (a _tools/ file, README.md, kb/ itself) exits non-zero naming it, as BG-wrzxhd4q's goal says; only the kb/_self docs and deleted articles a landing passes (bl_land.changed_articles) stay exempt, and the HOME history fallback goes (SP-7nv2ffr2 review).",
+  "goal": "lint.py given an argument that selects no article of any root (a _tools/ file, README.md, kb/ itself) exits non-zero naming it, as BG-wrzxhd4q's goal says; only the kb/_self docs and deleted articles a landing passes (bl_land.changed_articles) stay exempt, and the HOME history fallback goes (SP-7nv2ffr2 review); test_live_kb.py's lint test asserts that a kb/<root>/<path> argument lints the planted article and names its finding, so a qualified() that stopped rewriting the prefix fails the suite (absorbs ST-3g3snqb5)",
   "repro": {
     "run": [
       "python3",
@@ -14,14 +15,52 @@
       "import subprocess,sys;p=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','_tools/check.py'],capture_output=True,text=True);sys.exit(p.returncode==0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;l='.claude/skills/kb-verify/lint.py';c=[subprocess.run([sys.executable,l,a],capture_output=True,text=True).returncode for a in ('_tools/check.py','README.md','kb/')];e=subprocess.run([sys.executable,l,'kb/_self/tools.md'],capture_output=True,text=True).returncode;sys.exit(0 if all(c) and e==0 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('_tools/test_live_kb.py',encoding='utf-8').read();sys.exit(0 if re.search(r'tool\\(lint,[^\\n]*(kb/|prefixed)',t) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "lint.py given an argument that selects no article of any root (a _tools/ file, README.md, kb/ itself) exits non-zero naming it, as BG-wrzxhd4q's goal says",
+      "check": 0
+    },
+    {
+      "clause": "only the kb/_self docs and deleted articles a landing passes (bl_land.changed_articles) stay exempt",
+      "check": 0
+    },
+    {
+      "clause": "the HOME history fallback goes (SP-7nv2ffr2 review)",
+      "check": 0
+    },
+    {
+      "clause": "test_live_kb.py's lint test asserts that a kb/<root>/<path> argument lints the planted article and names its finding, so a qualified() that stopped rewriting the prefix fails the suite (absorbs ST-3g3snqb5)",
+      "check": 1
+    }
+  ],
   "touches": [
     ".claude/skills/kb-verify/lint.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "BG-gflil3ya"
   ],
   "links": [
     "parked: SP-7nv2ffr2 review",
     "merged: ST-3g3snqb5"
   ],
-  "notes": "Merged from ST-3g3snqb5 “The lint test proves a kb/-prefixed article path is linted, not only that no refusal fires” at the 2026-10-13 draft triage: Test lint_kb_prefixed_path_lints_article does not exist (grep of _tools finds nothing). Same files as BG-eaen55lf (lint.py, test_live_kb.py): carrier must absorb a suite test that a kb/<root>/<path> argument lints the planted article and names its finding. Its goal: test_live_kb.py's lint test asserts that a kb/<root>/<path> argument lints the planted article and names its finding, so a qualified() that stopped rewriting the prefix fails the suite, not only the item check of BG-wrzxhd4q (SP-7nv2ffr2 review). Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"lint_kb_prefixed_path_lints_article\"]} Its touches: _tools/test_live_kb.py"
+  "notes": "Merged from ST-3g3snqb5 at the 2026-10-13 draft triage: test lint_kb_prefixed_path_lints_article does not exist; same files (lint.py, test_live_kb.py). The suite holds 100 of max_ids 100, so no new test id: the existing lint test in test_live_kb.py is extended with the kb/<root>/<path> assertion, and its second check reads the shape of that call. Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: lint.py _tools/check.py exits 0 and lints nothing; the first check (also README.md and kb/) exits 1 before the work."
 }

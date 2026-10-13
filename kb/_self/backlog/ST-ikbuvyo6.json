@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-13: pack -q on the sprint's open questions (date.today() local vs UTC date, pytest --durations, git log on a deleted path) gave coverage good for all three (public/python/stdlib-datetime-iso-week.md, public/python/pytest.md:82, public/gitlab/git-history-queries.md:34); only the literal datetime.date.today() is not in the kb, and the fix needs no outside fact. Its done needs 'No outside facts: the sprint's items change this repository's own tools, tests and docs; the Python datetime, pytest and git facts they rest on are in the kb.'"
 }

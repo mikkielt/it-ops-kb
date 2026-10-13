@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The next slowest suite tests (sync e2e, live kb, leaks) each run under 6 s alone, so the whole suite keeps its darwin ceiling with sibling workers",
   "status": "draft",
+  "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
-  "goal": "the slowest tests of _tools/test_sync_e2e.py, _tools/test_live_kb.py and _tools/test_leaks.py each run under 6 s alone in a tests.py --durations=5 run with every assertion kept, never by raising _tools/tests_ceiling.json (SP-qlpfcgs2: after the land scenarios were cut under 8 s, worker whole-suite runs still took 24.1 to 29 s against the 24 s darwin ceiling with two or three sibling workers, all 100 passing; these files then held the slowest tests at 6.1 to 8.6 s)",
+  "goal": "the slowest tests of _tools/test_sync_e2e.py, _tools/test_live_kb.py and _tools/test_leaks.py each run under 6 s alone in a tests.py --durations=5 run with every assertion kept, never by raising _tools/tests_ceiling.json, so a worker's whole-suite run keeps its darwin ceiling with three or four sibling workers (SP-qlpfcgs2: after the land scenarios were cut under 8 s, worker runs took 24.1 to 29 s against the 24 s ceiling with two or three siblings, all 100 passing, these files holding the slowest tests at 6.1 to 8.6 s, while SP-uzwbt63u runs took 25 to 38 s at load 7 to 8, which absorbs BG-vrijmdre's first half)",
   "checks": [
     {
       "run": [
@@ -20,9 +21,12 @@
     "_tools/test_live_kb.py",
     "_tools/test_leaks.py"
   ],
+  "depends_on": [
+    "BG-eaen55lf"
+  ],
   "links": [
     "parked: SP-qlpfcgs2 close",
     "merged: BG-vrijmdre"
   ],
-  "notes": "Premise run 2026-10-13 (load near 1.5 on 14 cores): slowest calls 7.48, 7.28, 7.05, 6.09 s; the check exits 1. The review's whole-suite run passed on a quiet host. Merged from BG-vrijmdre “tests.py exits 1 over the time ceiling on a loaded darwin host: 100 tests pass in 25 s and 30 s against 24 s” at the 2026-10-13 draft triage: Same recurring over-ceiling failure (runs of 25-38 s at load 7-8 in SP-uzwbt63u, 100 passing). Its first half (faster tests so a worker's run passes under 3-4 siblings) is ST-k3e4q43i; absorb its SP-uzwbt63u timings as evidence. Its second half (judge time against host load / not read as over ceiling) changes ceiling semantics and is the operator's call under ST-kjp54uiz, not planned; tests.py:44 already says run again or record a host finding (92d3450c8). Its goal: python3 _tools/tests.py on a darwin host with other sessions running (load average 4.7, the run starting 7 of 12 workers) passes its 100 tests and still exits 1 with 'over the ceiling: the full run took 30 s, the ceiling is 24 s'; a whole-suite run's time bound is judged against the host's load as the ceiling file's darwin:20 with its factor reads it, or the run is not read as over the ceiling while another session loads the host, so a worker's clean tree does not fail the suite for time alone Its repro: {\"run\": [\"python3\", \"_tools/tests.py\"]} Its touches: _tools/tests.py"
+  "notes": "Premise run 2026-10-13 (load near 1.5 on 14 cores): slowest calls 7.48, 7.28, 7.05, 6.09 s; the check exits 1. The review's whole-suite run passed on a quiet host. Merged from BG-vrijmdre at the 2026-10-13 draft triage: its first half (faster tests, a worker's run passes under 3 to 4 siblings) is this item, with its SP-uzwbt63u timings as evidence; its second half (judge time against host load, not read as over the ceiling) changes ceiling semantics, is the operator's call under ST-kjp54uiz and is not planned; tests.py:44 already says run again or record a host finding. Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }
