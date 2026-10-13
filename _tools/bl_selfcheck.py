@@ -30,9 +30,9 @@ The seven checks, each independent and each a result {name, state, detail, remed
                read that fails is `unknown:forge`, no failure)
   orphans      no process in a checkout of the clone runs on after its parent is gone (`bl_procs.snapshot`'s
                `orphan`: a background run a session left behind, named, never signaled; a foreign process is a live
-               session's and no failure, nor is a `hook`, a session-end run of the query log's distill younger than
-               `bl_procs.HOOK_GRACE_S`, named with its age in the result's detail); `unknown` on a host that cannot
-               list working directories
+               session's and no failure, nor is a `hook`, a session-end run of the query log's distill that holds
+               the distill lock or is younger than `ql_distill.USAGE_LOCK_WAIT_S` plus `bl_procs.HOOK_MARGIN_S`,
+               named with its age in the result's detail); `unknown` on a host that cannot list working directories
   main         the newest `ci.pipeline` row (`bl_stall.main_state`, the row `red-pipeline` writes) is not red;
                `unknown` with no row, which `backlog.py red-pipeline --status` reads from the forge (this check reads
                the rows only and makes no forge call of its own)

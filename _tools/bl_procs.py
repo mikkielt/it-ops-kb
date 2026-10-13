@@ -4,11 +4,13 @@ checkout and worktrees), each as an orphan or foreign (kb/_self/backlog.md, Proc
 
   procs                 list them (read only): pid, parent, age, class, command name, and where it runs
 
-Classes: `orphan` (its parent is gone: a background run a session left behind), `hook` (an orphan younger than
-HOOK_GRACE_S whose standard output is the query log's distill.log: the run a session's end hook started, which delivers
-for a few seconds with its parent gone, and ends on its own) and `foreign` (anything else: a live session's own work).
-Nothing is ever signaled: an orphan is named for the operator, who ends it when it is theirs, and `backlog.py selfcheck`
-fails while one runs; a hook in flight is named with its age and fails nothing until it is older than HOOK_GRACE_S. A
+Classes: `orphan` (its parent is gone: a background run a session left behind), `hook` (an orphan whose standard output
+is the query log's distill.log and that is still at work: the run a session's end hook started, which waits for the
+distill lock up to the query log's USAGE_LOCK_WAIT_S, delivers with its parent gone, and ends on its own; it is at work
+while the distill lock records its pid, or while it is younger than USAGE_LOCK_WAIT_S plus HOOK_MARGIN_S) and `foreign`
+(anything else: a live session's own work). Nothing is ever signaled: an orphan is named for the operator, who ends it
+when it is theirs, and `backlog.py selfcheck` fails while one runs; a hook in flight is named with its age and fails
+nothing, and a distill run past both is a stuck one, an orphan. HOOK_GRACE_S is the shorter wait `land` makes. A
 process's command line and environment are never read: only its command name is printed, and a hook is told by the file
 its standard output is. Where a host cannot list working directories (Windows) it says so. Exit codes: 0 listed (also on
 a host that cannot check), 2 a bad request.
@@ -29,8 +31,9 @@ from bl_base import Refused, say
 
 REAPERS = ("init", "systemd", "launchd")  # a parent with one of these names has adopted an orphan
 ORPHAN, HOOK, FOREIGN = "orphan", "hook", "foreign"
-HOOK_GRACE_S = 60  # how long a session-end hook's run is no orphan, and how long `land` waits for one to end
-HOOK_LOG = ("_cache", "querylog")  # under a checkout: the directory ql_base.places() gives a clone, whose distill.log is
+HOOK_GRACE_S = 60  # how long `land` waits for a session-end hook's run to end
+HOOK_MARGIN_S = 120  # past the query log's USAGE_LOCK_WAIT_S, how long a distill run that holds no lock is still at work
+HOOK_LOG =("_cache", "querylog")  # under a checkout: the directory ql_base.places() gives a clone, whose distill.log is
 #                                    the standard output of every run `ql_distill.detach` starts
 
 
@@ -175,6 +178,23 @@ def hook_pids(root, pids, bases=None):
     return {pid for pid, path in stdout_map(pids).items() if path in logs}
 
 
+def lock_holders(bases):
+    """The pids the distill lock of each checkout in BASES records (`ql_base.acquire` writes its holder's own)."""
+    import ql_base
+    out = set()
+    for b in bases:
+        data = ql_base.read_json(os.path.join(b, *HOOK_LOG, ql_base.LOCK_NAME), {})
+        if isinstance(data, dict) and isinstance(data.get("pid"), int):
+            out.add(data["pid"])
+    return out
+
+
+def hook_run_s():
+    """How long a distill run that holds no lock is still at work: the wait for the lock plus HOOK_MARGIN_S."""
+    import ql_distill
+    return ql_distill.USAGE_LOCK_WAIT_S + HOOK_MARGIN_S
+
+
 # ---------------------------------------------------------------- the clone's checkouts
 
 def worktrees(path):
@@ -228,15 +248,16 @@ def inventory(root, tab, cwds, bases=None):
     return out
 
 
-def classify(procs, tab, hooks=(), now=None):
+def classify(procs, tab, hooks=(), now=None, holders=()):
     """Each process of PROCS with its `kind`: foreign while its parent lives, else hook when its pid is in HOOKS (the
-    runs whose standard output is a distill.log) and it started less than HOOK_GRACE_S before NOW, else orphan."""
+    runs whose standard output is a distill.log) and it is in HOLDERS (the pids a distill lock records) or started
+    less than `hook_run_s()` before NOW, else orphan."""
     now = time.time() if now is None else now
     out = []
     for p in procs:
         if not orphaned(tab, p["pid"]):
             kind = FOREIGN
-        elif p["pid"] in hooks and now - p["start"] < HOOK_GRACE_S:
+        elif p["pid"] in hooks and (p["pid"] in holders or now - p["start"] < hook_run_s()):
             kind = HOOK
         else:
             kind = ORPHAN
@@ -266,9 +287,10 @@ def snapshot(root):
     tab = process_table() if cwds is not None else None
     if cwds is None or tab is None:
         return None, None, why or "the process table could not be read"
-    procs = inventory(root, tab, cwds)
-    hooks = hook_pids(root, [p["pid"] for p in procs if orphaned(tab, p["pid"])])
-    return classify(procs, tab, hooks), tab, None
+    bases = checkouts(root)
+    procs = inventory(root, tab, cwds, bases)
+    hooks = hook_pids(root, [p["pid"] for p in procs if orphaned(tab, p["pid"])], bases)
+    return classify(procs, tab, hooks, holders=lock_holders(bases)), tab, None
 
 
 # ---------------------------------------------------------------- the command
@@ -288,8 +310,8 @@ def cmd_procs(bl, a):
         say(line(p, now))
     counts = {k: sum(p["kind"] == k for p in procs) for k in (ORPHAN, HOOK, FOREIGN)}
     say("procs: " + ", ".join(f"{n} {k}" for k, n in counts.items()) + "; nothing is signaled: an orphan is named for "
-        f"the operator, who ends it when it is theirs, and a hook is a session's end run, in flight for under "
-        f"{HOOK_GRACE_S}s")
+        f"the operator, who ends it when it is theirs, and a hook is a session's end distill run at work: it holds "
+        f"the distill lock or is under {hook_run_s()}s old")
     return 0
 
 
