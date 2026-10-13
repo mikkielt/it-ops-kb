@@ -2,7 +2,7 @@
   "id": "BG-i4fxvd2h",
   "kind": "bug",
   "title": "The goal line of a worker's brief says stop after 60 turns whatever cap dispatch gives",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,27 @@
     "parked: SP-qg7ncs6d review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, repro run on main: backlog.py goal BG-i4fxvd2h ends 'or stop after 60 turns' while dispatch --dry-run gives this bug --max-turns 100; both checks exit 1. Ordered after ST-buzuumms: both edit bl_dispatch.py.",
-  "claimed_by": "orch-mujl7ebh"
+  "evidence": {
+    "commit": "b09aea8d209ead7b5a72aa99447037d5f0089ca8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;f=lambda *a:subprocess.run(['python3','_tools/backlog.py',*a],capture_output=True,text=True,check=True).stdout;cap=re.search(r'--max-turns (\\d+)',f('dispatch','--dry-run','BG-i4fxvd2h')).group(1);ln=[l for l in f('brief','BG-i4fxvd2h').splitlines() if l.startswith('BG-i4fxvd2h ') and ' is done: ' in l][0];sys.exit(0 if re.findall(r'stop after (\\d+) turns',ln)[-1:]==[cap] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;r=subprocess.run(['python3','_tools/backlog.py','goal','BG-i4fxvd2h'],capture_output=True,text=True);sys.exit(1 if r.returncode or re.search(r'or stop after \\d+ turns\\s*$',r.stdout) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
