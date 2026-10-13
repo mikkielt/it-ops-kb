@@ -2,7 +2,7 @@
   "id": "ST-rppq26tf",
   "kind": "story",
   "title": "A lookup revalidation whose search or candidate page answers an HTTP error falls back to the offline stamp instead of printing not found",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-u5q37ds3",
   "priority": "P3",
@@ -55,5 +55,19 @@
     "parked: SP-tm4wlsve review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: with a page whose edited passage is gone and learn.microsoft.com/api/search answering 503, revalidate prints [not found]. Run 2026-10-12 on the base with stubbed provider.request (a page that dropped one passage, the search 503): reproduces, outcome 'not found' after 3 requests. Fix in factdiff.lookup_source's lost flag and search_urls/page_doc (provider.failures() counts only no-answer requests): an HTTP error of the search or a candidate page counts as a failure. The check names a test that does not exist yet (collects none): the worker extends the pack_revalidate test case and puts revalidate_search_http_error in its name, adding no new test id. kb/_self/tools.md line of 'Revalidation at question time' lists the causes of the offline stamp: add the HTTP error.",
-  "claimed_by": "orch-u5q37ds3"
+  "evidence": {
+    "commit": "104550f33dd477b8bcab2ba0378c0c125203f9b9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "revalidate_search_http_error"
+        ],
+        "exit": 0,
+        "sha256": "ef3ac7306e556897"
+      }
+    ]
+  }
 }
