@@ -2,7 +2,7 @@
   "id": "ST-nqpgsnm3",
   "kind": "story",
   "title": "settings-and-scopes.md line 73 states as DER which git commands a default -p run allows without citing the page that lists the read-only set",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,6 @@
   "links": [
     "parked: SP-mujl7ebh review"
   ],
-  "notes": "Premise: kb/public/claude/settings-and-scopes.md:73 tags DER on S1800 and S-zcuxapgb the claim that git diff and git show run in a default -p session without a rule; neither source lists the read-only set's members. Premise run 2026-10-13: the check fails on base (line 73 holds neither '[UNK' nor 'S-pmhgjvef', exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Premise: kb/public/claude/settings-and-scopes.md:73 tags DER on S1800 and S-zcuxapgb the claim that git diff and git show run in a default -p session without a rule; neither source lists the read-only set's members. Premise run 2026-10-13: the check fails on base (line 73 holds neither '[UNK' nor 'S-pmhgjvef', exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-foopqq2x"
 }
