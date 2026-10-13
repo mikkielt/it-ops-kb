@@ -57,7 +57,7 @@
       "recommendation": "60 s, doubled with each failure in a row, capped at 300 s",
       "class": "design",
       "answer": "60 s, doubled with each failure in a row, capped at 300 s",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
