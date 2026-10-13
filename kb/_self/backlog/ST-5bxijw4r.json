@@ -2,7 +2,7 @@
   "id": "ST-5bxijw4r",
   "kind": "story",
   "title": "Research sprint goal: Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7ff7c5ui",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-7ff7c5ui"
 }
