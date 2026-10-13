@@ -2,7 +2,7 @@
   "id": "ST-6z527rfe",
   "kind": "story",
   "title": "The provider-signals memo is keyed and refilled from the current provider registry, so a long-lived process writes no stale signals under a new key",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-u5q37ds3",
   "priority": "P3",

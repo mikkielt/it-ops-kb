@@ -2,7 +2,7 @@
   "id": "ST-uyez7gw5",
   "kind": "story",
   "title": "Review sprint: Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-u5q37ds3",
   "review": true,
   "priority": "P1",

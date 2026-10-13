@@ -2,7 +2,7 @@
   "id": "BG-zsiguf72",
   "kind": "bug",
   "title": "A lookup prints not found for a client-rendered page: the soft-404 test compares its empty text with an empty made-up page",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-u5q37ds3",
   "priority": "P2",
   "rank": 0,

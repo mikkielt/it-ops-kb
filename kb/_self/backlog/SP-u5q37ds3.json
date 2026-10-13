@@ -2,7 +2,7 @@
   "id": "SP-u5q37ds3",
   "kind": "sprint",
   "title": "Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry",
-  "status": "planned",
+  "status": "active",
   "goal": "A page with no extractable text is no soft 404 and prints source-dated only, never not found; an HTTP error of the revalidation's search or a candidate page keeps the offline stamp and names the request; a provider host that failed to connect once is skipped with no request for the rest of the process and a bounded window; the provider-signals memo is keyed and refilled from the current registry, so a long-lived process writes no stale signals",
   "gates": [
     {

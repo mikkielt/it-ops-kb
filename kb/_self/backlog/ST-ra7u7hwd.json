@@ -2,7 +2,7 @@
   "id": "ST-ra7u7hwd",
   "kind": "story",
   "title": "Research sprint goal: Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-u5q37ds3",
   "goal_research": true,
   "priority": "P1",

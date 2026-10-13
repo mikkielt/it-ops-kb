@@ -2,7 +2,7 @@
   "id": "ST-y45iz7uh",
   "kind": "story",
   "title": "A pack on a host that cannot reach a source's provider gives up fast instead of spending the revalidation budget on every pack",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-u5q37ds3",
   "priority": "P2",
