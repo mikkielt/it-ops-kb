@@ -2,7 +2,7 @@
   "id": "ST-k445avpw",
   "kind": "story",
   "title": "The down window gates every request of the lookup revalidation, not only a source's first page request",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,
@@ -94,5 +94,29 @@
     "merged: ST-ecxt66tw"
   ],
   "notes": "Merged from ST-ecxt66tw at the 2026-10-13 draft triage: its goal is the goal's second clause, its check revalidate_down_window_redirect_target the second check. Premise: detect_pass calls host_seen(url, error) with the source's own url (factdiff.py:1341), and provider.request keeps final=url when a redirect hop fails to connect, so the source's host gets the window. Rare: only 11 of 2621 sources redirect cross-host, none to a known-dead host. Premise: factdiff.madeup_text and page_doc call provider.request with no provider.host_down check; with api.github.com in its window, one madeup_text and one page_doc made 2 requests (run 2026-10-13 at base, planted window). Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Its checks' tests drive revalidate (the lookup path) with provider.request stubbed, not detect_pass alone. Test ids are near the ceiling: extend the existing revalidate test and append both selector words to its name, a new id only when none does.",
-  "claimed_by": "orch-srqmriw6"
+  "evidence": {
+    "commit": "acfbb3e296016703b73a6241ede133e5c2af44df",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "revalidate_down_window_every_request"
+        ],
+        "exit": 0,
+        "sha256": "c9ff2154cc8ac2c2"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "revalidate_down_window_redirect_target"
+        ],
+        "exit": 0,
+        "sha256": "6ef9ed2df6ca2dd9"
+      }
+    ]
+  }
 }
