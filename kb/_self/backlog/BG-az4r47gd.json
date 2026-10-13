@@ -2,7 +2,7 @@
   "id": "BG-az4r47gd",
   "kind": "bug",
   "title": "gitlab/deploy-keys-and-tokens says a deploy token never reaches the REST API, though package registry endpoints accept it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,27 @@
     "parked: SP-4phd36pa review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "7a19cb5a6d470bfc57a1ddd5960d543727f7f8ea",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; a=pathlib.Path(\"kb/public/gitlab/deploy-keys-and-tokens.md\").read_text(); q=pathlib.Path(\"kb/public/_answers.md\").read_text(); s=[l for l in a.splitlines() if l.startswith(\"Three credentials give automation access\")]; sys.exit(0 if s and \"package registry endpoints\" in s[0] and \"which cannot call the REST API\" not in a and \"HTTP for Git and registries, never the API\" not in q else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit('never the REST API' in pathlib.Path('kb/public/gitlab/deploy-keys-and-tokens.md').read_text())"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
