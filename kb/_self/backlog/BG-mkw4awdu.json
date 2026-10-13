@@ -2,7 +2,7 @@
   "id": "BG-mkw4awdu",
   "kind": "bug",
   "title": "python/maturin-pyo3-wheels' abi3 matrix derivation names manylinux_2_28 tags, though maturin's documented default and the generated workflow's manylinux auto give manylinux2014/2_17",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
@@ -62,5 +62,36 @@
     "parked: SP-wwacrsqr review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: the abi3 derivation (maturin-pyo3-wheels.md:125-130) gives 'for example manylinux_2_28_x86_64'. Run at planning: the repro exits 1 and both added checks fail. The QK answer (_answers.md:3047-3054) names no manylinux_2_28 tag and already says the tags are inferred: its part is read and confirmed, edited only if a tag appears.",
-  "claimed_by": "orch-tjap3mdd"
+  "evidence": {
+    "commit": "4337185872ffdd557ab67b086b5c596ef6338224",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;us=[u for u in kbfacts.units('public') if u['path'].endswith('python/maturin-pyo3-wheels.md') and 'Derivation for a Linux x86_64' in u['text']];ok=bool(us) and all(('manylinux2014' in u['text'] or 'manylinux_2_17' in u['text']) for u in us);print('abi3 derivation names the documented default manylinux2014/2_17 tag:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9c01a654aa6614ae"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;us=[u for u in kbfacts.units('public') if u['path'].endswith('python/maturin-pyo3-wheels.md') and 'Derivation for a Linux x86_64' in u['text']];ok=bool(us) and all('macosx_11_0_arm64' in u['text'] and 'deployment' in u['text'].lower() for u in us);print('abi3 derivation marks macosx_11_0_arm64 as inferred from the deployment-target example:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c530d137308066be"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/public/python/maturin-pyo3-wheels.md').read_text(); sys.exit('for example `manylinux_2_28_x86_64`' in t)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
