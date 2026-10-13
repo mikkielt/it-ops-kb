@@ -2,7 +2,7 @@
   "id": "ST-5w73qsno",
   "kind": "story",
   "title": "Review sprint: Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-htl7jkrm",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-htl7jkrm"
 }
