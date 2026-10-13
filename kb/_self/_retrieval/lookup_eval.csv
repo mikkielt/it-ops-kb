@@ -340,3 +340,4 @@ EV-section-hashes-stored-in-state-bound-document-hash,where are the heading sect
 EV-passage-compared-section-every-unit-window,which section is a passage that spans a heading compared by,tools.md,good,yes,a passage is compared by the section of every unit of its window,
 EV-apply-trusts-section-kept-fact-baseline-newer,when does factdiff apply trust a fact kept by its section as it trusts an unchanged source,tools.md,good,yes,only when the baseline is no newer than the last confirmation,
 EV-stored-revalidation-keeps-lines-of-earlier-questions,does a lookup that prints another fact of a source revalidated moments ago ask the source again,tools.md,good,yes,keeps the lines of its stored result still younger than that window,
+SQ-commit-hook-add-kb-work-trailer,how does the commit hook add the KB-Work trailer on a worker branch,git.md,good,yes,same checks as `check-trailers,
