@@ -31,6 +31,7 @@ from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, alw
                      link_target, need, repositories, research_touches, resolved_touch, say, scope, scratch_dir, setting, split_touch,
                      touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
+from bl_plan import shared_doc
 
 ROLE_FILE = ".claude/agents/kb-worker.md"  # the worker's role file: its brief makes the session read and follow it
 PLUGIN_ROLE_FILE = "agents/worker.md"  # the plugin's, under PLUGIN_ROOT (the directory of the tool scripts): the file
@@ -241,14 +242,23 @@ def known_failures(bl, known):
 
 
 def siblings(bl, iid):
-    """The in-flight items (status doing) outside the item's own chain, each with the files its touches change."""
+    """The in-flight items (status doing) outside the item's own chain, each with the files its touches change. A
+    kb/_self doc (bl_plan.shared_doc) that the item's own touches also name is left out of a sibling's files: the two
+    edit it by section at once and the landing's rebase merges their hunks, so it is no file to leave alone. A
+    sibling left with no file of its own is listed with that said."""
     own = {iid, *bl.ancestors(iid), *bl.descendants(iid)}
+    mine = [g for g in dict.fromkeys(scope(bl, iid)) if shared_doc(g)]
     out = []
     for i in sorted(bl.items):
         it = bl.items[i]
         if i not in own and it.get("status") == "doing":
             globs = scope(bl, i)
-            out.append(f"- {bl.label(i)}: " + (", ".join(globs) if globs else "no touches"))
+            kept = [g for g in globs if not (shared_doc(g) and any(touches_overlap(m, g, []) for m in mine))]
+            if kept:
+                files = ", ".join(kept)
+            else:
+                files = "no file of its own (only kb/_self docs you also touch)" if globs else "no touches"
+            out.append(f"- {bl.label(i)}: {files}")
     return out
 
 
