@@ -2,7 +2,7 @@
   "id": "ST-keicy7gn",
   "kind": "story",
   "title": "The AD CS autoenrollment sc_partial row tests partial knowledge, and a test asserts the scenario answer-not-in-pack message",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-kuhlsf2s",
   "priority": "P3",
@@ -70,5 +70,47 @@
     "parked: SP-j2jn5ue4 review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 4 of 19, \"Benchmark pool checks read the pack as the lookup does and pin their guards with tests\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-12 (reproduces): rag.py pack of the row's question prints 'not in the kb: autoenrollment' and its answer regex matches public/intune/certificates-pki.md:49, the PKCS connector template line, so the row tests absent knowledge. Plan: the replacement question comes from a rag.py pack with coverage good whose present part a kb line answers; the test assertion goes into an existing test of _tools/test_bench.py (the suite is close to its test-id ceiling, a new id may not fit). The pool check run passes before the work: it pins that the rebuilt pool stays consistent with bench_scenarios.csv.",
-  "claimed_by": "orch-kuhlsf2s"
+  "evidence": {
+    "commit": "4ba3f2fbca3d0476d2232239e0dfa4d95020fc09",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,csv;sys.path.insert(0,\"_tools\");import bench_pool as b;S=list(csv.DictReader(open(b.SCENARIO_FILE,encoding=\"utf-8\",newline=\"\")));P=b.read_csv(b.PUBLIC_FILE);bad=[r[\"question\"] for r in S+P if r[\"kind\"]==\"sc_partial\" and \"autoenrollment\" in r[\"question\"].lower()];n=[sum(r[\"kind\"]==\"sc_partial\" for r in L) for L in (S,P)];print(bad,n);sys.exit(1 if bad or n!=[6,6] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "af8b6a7b117d72b0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"_tools/test_bench.py\",encoding=\"utf-8\").read();sys.exit(0 if \"matches no line of the pack\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "bench_pool_check_reports_stale_pick"
+        ],
+        "exit": 0,
+        "sha256": "9d54f59695b81b39"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "pool",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ba1e2a59800116b6"
+      }
+    ]
+  }
 }
