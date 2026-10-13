@@ -1619,7 +1619,7 @@ def lookup_root(items, out, day, now, reuse=None):
     wanted = collections.defaultdict(dict)  # source id -> {(fact key, path): (line, text)}
     cites = {}  # (fact key, path) -> the sources the printed line cites, as cite_counts counts them for the root
     for p in items:
-        cites[(p["key"], kbfacts.bare(p["path"]))] = len(set(p["ids"]))
+        cites[(p["key"], kbfacts.bare(p["path"]))] = p.get("cites", len(set(p["ids"])))
         for sid in p["ids"]:
             wanted[sid][(p["key"], kbfacts.bare(p["path"]))] = (p["line"], p["text"])
     got, ask, paces = {}, [], {}
@@ -1671,7 +1671,8 @@ def lookup_root(items, out, day, now, reuse=None):
 
 def revalidate(printed, budget=REVALIDATE_BUDGET_S, reuse=None):
     """Check the sources the printed fact lines of a pack cite against their pages now, for the lines printed only:
-    `printed` is [{path (qualified), line, key (fact key), text, ids (the cited non-UNK source ids)}]. Detection is
+    `printed` is [{path (qualified), line, key (fact key), text, ids (the cited non-UNK source ids to check), cites
+    (optional: the sources the row cites in all, as anchoring counts them, where `ids` holds only some of them)}]. Detection is
     `detect` with no save (detect_source in lookup mode, resolve_source): only the cited sources are asked and only the
     printed facts' anchors are resolved, the requests of all of it within `budget` seconds in all (provider.budget).
     A source asked within its provider's pacing (provider.pacing) is answered from the stored result of that check

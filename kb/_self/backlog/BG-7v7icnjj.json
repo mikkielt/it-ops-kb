@@ -28,6 +28,21 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does revalidate_pack hand factdiff.revalidate the row's full citation count when stale_only narrows each printed line's ids to the due sources?",
+      "options": [
+        "cites key",
+        "ids whole plus due set"
+      ],
+      "recommendation": "cites key",
+      "class": "design",
+      "answer": "cites key",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-djl7za6x review"
   ],

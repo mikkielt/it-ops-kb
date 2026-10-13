@@ -3305,7 +3305,7 @@ def revalidate_pack(res, stale_only=False):
             if not fresh:  # no printed line cites a source: the pack has nothing to add
                 return {**res, "revalidate": None}
             due = {i: f["lifetime_days"] * 86400 for i, f in fresh.items() if f["stale"]}
-            printed = [{**p, "ids": [i for i in p["ids"] if i in due]} for p in printed]
+            printed = [{**p, "ids": [i for i in p["ids"] if i in due], "cites": len(set(p["ids"]))} for p in printed]
             reuse = due
         rev = (factdiff.revalidate(printed, reuse=reuse) if reuse or not stale_only
                else {"date": factdiff.today(), "lines": {}, "sources": {}})  # nothing past its lifetime: nothing asked
