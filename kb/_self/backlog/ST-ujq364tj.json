@@ -2,7 +2,7 @@
   "id": "ST-ujq364tj",
   "kind": "story",
   "title": "Research sprint goal: Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sqgyoiaz",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**",
     "kb/_self/_retrieval/lookup_eval.csv"
-  ]
+  ],
+  "claimed_by": "orch-sqgyoiaz"
 }
