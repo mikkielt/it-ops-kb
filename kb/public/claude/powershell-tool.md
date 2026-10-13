@@ -1,8 +1,8 @@
 ---
 topic: claude/powershell-tool
 priority: P3
-applies_to: "Claude Code docs as of 2026-09-29 (permissions, tools reference, skills, hooks pages): the PowerShell tool on Windows, its permission rules, and how skills and hooks choose between Bash and PowerShell; the tool is documented as a preview"
-retrieved_utc: 2026-09-29
+applies_to: "Claude Code docs as of 2026-09-29 (permissions, tools reference, skills, hooks pages; the permissions page's Read-only commands section as of 2026-10-13): the PowerShell tool on Windows, its permission rules, and how skills and hooks choose between Bash and PowerShell; the tool is documented as a preview"
+retrieved_utc: 2026-10-13
 sources: [S742, S-3yod3u7q, S-dfhq4kbv, S743, S-h5sble4p, S-zcuxapgb]
 status: partial
 ---
@@ -34,7 +34,7 @@ On Windows without Git Bash the PowerShell tool is the only shell tool and the B
 - A deny or ask rule whose tool name matches no known tool produces a startup warning. [DOC S742]
 - No docs page says that a `Bash(...)` allow rule covers a PowerShell call; the hooks reference states that a single `if` rule matches only one tool's calls, so each tool gets its own handler. A repository that allows `Bash(python3 _tools/rag.py *)` for macOS and Linux therefore needs `PowerShell(python3 _tools/rag.py *)` for a Windows session where the PowerShell tool runs the command. [DER S742, S743: rule format names the tool; the `if` sentence for hooks]
 - `allowed-tools` frontmatter grants are documented with Bash and file rules and `${CLAUDE_SKILL_DIR}` substitution in Bash rules; whether an `allowed-tools: PowerShell(...)` entry works the same way is not shown on the skills page. [UNK: only Bash examples on the skills page]
-- The built-in read-only set that runs without a prompt in every mode is documented as "a built-in set of Bash commands" (`ls`, `cat`, `echo`, `pwd`, `head`, `tail`, `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, read-only `git`); it is not configurable, and an `ask` or `deny` rule makes one of them prompt. [DOC S742]
+- The built-in read-only set that runs without a prompt in every mode is documented as "a built-in set of Bash commands" (`ls`, `cat`, `echo`, `pwd`, `head`, `tail`, `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, read-only `git`), with two exceptions the page names: `permissions.blockReadsOutsideWorkingDirectories` changes what happens for paths outside the working directories, and in auto mode a set command can also wait for the classifier's review. The set is not configurable, and an `ask` or `deny` rule makes one of them prompt. [DOC S742]
 - No docs page lists PowerShell cmdlets or commands that run without a prompt as read-only; whether `Get-ChildItem`, `Get-Content` or a read-only `git` call through the PowerShell tool prompts in Manual mode is not stated, so a PowerShell command meant to run unattended needs its own `PowerShell(...)` allow rule. [UNK: the permissions page's Read-only commands section names only Bash commands]
 - The permissions page documents wrapper stripping (`timeout`, `nice`, `nohup` ...), leading environment-variable assignments, "deny and ask rules apply when any subcommand matches" and the per-subcommand rules saved by "Yes, and don't ask again" under Bash only; the PowerShell section repeats none of them. [UNK: PowerShell section says only "same shape" and "must match every subcommand"]
 - A rule `PowerShell(python3 _tools/rag.py *)` matches `python3 _tools/rag.py pack "x"` and the bare `python3 _tools/rag.py`, and not `python _tools/rag.py ...` (different command text); `python3 _tools/rag.py pack x | Select-Object -First 5` also needs a rule matching `Select-Object -First 5`, because the pipeline is split and every part must match. [DER S742: "same shape as Bash rules", the trailing ` *` rows of the wildcard table, the PowerShell compound-command sentence]
