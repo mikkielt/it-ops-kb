@@ -2,7 +2,7 @@
   "id": "BG-vzsk2t5t",
   "kind": "bug",
   "title": "The section fallback of window_sections keeps a fact whose body changed when the previous text is not cached",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vdrsfftl",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-gkrivybp",
   "kind": "story",
   "title": "A worker or reviewer in a worktree reads its own worktree's kb, not the main checkout's, through the kb MCP server",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vdrsfftl",
   "priority": "P3",
   "rank": 0,

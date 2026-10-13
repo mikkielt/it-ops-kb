@@ -2,7 +2,7 @@
   "id": "ST-qkpbwtsc",
   "kind": "story",
   "title": "The scoped ledger row read keeps a row with a quoted field holding a quote and matches a key in the last column",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-vdrsfftl",
   "priority": "P3",

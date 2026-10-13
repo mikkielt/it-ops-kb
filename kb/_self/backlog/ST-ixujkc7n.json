@@ -2,7 +2,7 @@
   "id": "ST-ixujkc7n",
   "kind": "story",
   "title": "Research sprint goal: Freshness at lookup: revalidation counts, memos, ledger reads and status agree",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vdrsfftl",
   "goal_research": true,
   "priority": "P1",

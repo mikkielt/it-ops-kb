@@ -2,7 +2,7 @@
   "id": "BG-7v7icnjj",
   "kind": "bug",
   "title": "A stale-only lookup revalidation passes Doc.locate the count of the due sources, not the row's real citation count",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vdrsfftl",
   "priority": "P2",
   "rank": 0,

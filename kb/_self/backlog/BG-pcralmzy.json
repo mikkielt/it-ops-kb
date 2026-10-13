@@ -2,7 +2,7 @@
   "id": "BG-pcralmzy",
   "kind": "bug",
   "title": "fetch.py --status reads a source's age from its last check alone, so its STALE column disagrees with what a lookup revalidates",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-vdrsfftl",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "BG-gx5b2yhu",
   "kind": "bug",
   "title": "A network failure cached in the revalidation's page or search memo is reused as not found by a second source",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vdrsfftl",
   "priority": "P2",
   "rank": 0,
