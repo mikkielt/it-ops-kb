@@ -2,7 +2,7 @@
   "id": "ST-74agak3p",
   "kind": "story",
   "title": "Research sprint goal: Content fixes: agents, Python and architecture articles state what their sources say",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tjap3mdd",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orch-tjap3mdd"
+  "evidence": {
+    "commit": "a96ac2c5d85744cf661be54a57db464e200d2c79",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-74agak3p"
+        ],
+        "exit": 0,
+        "sha256": "1dd911980115feba"
+      }
+    ]
+  }
 }
