@@ -56,7 +56,7 @@
       "recommendation": "refuse: --ask, --redo and --dry-run are for the public pool, exit 1",
       "class": "querylog",
       "answer": "refuse: --ask, --redo and --dry-run are for the public pool, exit 1",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -69,7 +69,7 @@
       "recommendation": "none: the limits stay with --redo, as before",
       "class": "design",
       "answer": "none: the limits stay with --redo, as before",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {
