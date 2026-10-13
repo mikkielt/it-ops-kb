@@ -2,7 +2,7 @@
   "id": "ST-gtaw5kip",
   "kind": "story",
   "title": "The lookup revalidation prints current for a section-kept or unchanged fact only when the baseline is no newer than the fact's last confirmation, as apply does",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P2",
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-tm4wlsve review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: a section-kept fact prints current for a passage whose baseline is newer than its anchor. Run 2026-10-12 on origin/main with a planted state (anchor verified 2026-01-01 on \"thirty\", baseline detected 2026-02-01 on \"sixty\", another section edited since): resolve_source returned outcome verbatim, signal section, so lookup_source prints current: reproduces. The check names the new test by its -k fragment, so the test name carries revalidate_baseline_after_confirmation. Run after BG-geepi6yv: both change resolve and lookup_source. From the SP-tm4wlsve review (ST-mq7we5r2, ST-3zlzfitj), kb/_self/tools.md: a later baseline proves only that nothing changed since. Scenario: anchor verified on thirty, page edited to sixty, detect saved the new baseline with no apply, another section edited later; pack --revalidate finds the fact section equal to the saved baseline and prints current for the stale thirty."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: a section-kept fact prints current for a passage whose baseline is newer than its anchor. Run 2026-10-12 on origin/main with a planted state (anchor verified 2026-01-01 on \"thirty\", baseline detected 2026-02-01 on \"sixty\", another section edited since): resolve_source returned outcome verbatim, signal section, so lookup_source prints current: reproduces. The check names the new test by its -k fragment, so the test name carries revalidate_baseline_after_confirmation. Run after BG-geepi6yv: both change resolve and lookup_source. From the SP-tm4wlsve review (ST-mq7we5r2, ST-3zlzfitj), kb/_self/tools.md: a later baseline proves only that nothing changed since. Scenario: anchor verified on thirty, page edited to sixty, detect saved the new baseline with no apply, another section edited later; pack --revalidate finds the fact section equal to the saved baseline and prints current for the stale thirty.",
+  "claimed_by": "orch-djl7za6x"
 }
