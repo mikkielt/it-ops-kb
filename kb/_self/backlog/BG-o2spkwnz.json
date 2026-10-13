@@ -2,7 +2,7 @@
   "id": "BG-o2spkwnz",
   "kind": "bug",
   "title": "gitlab/package-registries cites the unpinned pipeline security page for its digest pin fact",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,27 @@
     "parked: SP-4phd36pa review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Doc2query: no expansion row keys the fact lines of this sprint's articles (checked 2026-10-12 against expansions.csv), so the item's touches leave expansions.csv out except where the open scope may reword facts. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "ac126ee2914cf744743fe8895290d89ee31acce1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; s=pathlib.Path(\"kb/public/_sources.csv\").read_text(); sys.exit(0 if \"9f1632e2d74cf3c87fce2513c999c6cf84a97ab4/doc/ci/pipeline_security/_index.md\" in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit('S-sxp3exzp' in pathlib.Path('kb/public/gitlab/package-registries.md').read_text().splitlines()[38])"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
