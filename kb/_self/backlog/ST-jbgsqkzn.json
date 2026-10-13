@@ -2,7 +2,7 @@
   "id": "ST-jbgsqkzn",
   "kind": "story",
   "title": "land's undelivered warning names the failed gate's first error line, and a check-trailers refusal by name",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-q5ldd25k",
   "priority": "P3",
   "rank": 0,
@@ -70,5 +70,31 @@
     "parked: SP-kwi4ilty review"
   ],
   "notes": "Found at the SP-kwi4ilty review. Premise run 2026-10-12 on a planted distill.log: a gate line '  gate check-trailers origin/main..HEAD: FAILED: commits=3 bad=1' before 'apply --push: kbgit.py sync exit 1: nothing pushed to main' gives 'kbgit.py sync exit 1: nothing pushed to main' (PUSH_GATE needs '(exit N)'), and '  gate tests.py (changed): FAILED (exit 1): 1 failed, 40 passed in 9.1s' gives that summary line, the last output line kg_sync prints, not the first error. Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-q5ldd25k"
+  "evidence": {
+    "commit": "39fac26f94dd2162315e9fef6c646dfd291c9f30",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_land_e2e.py",
+          "-k",
+          "land_names_first_gate_error"
+        ],
+        "exit": 0,
+        "sha256": "e1e315596bd1bc5a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_land_e2e.py",
+          "-k",
+          "land_names_check_trailers_refusal"
+        ],
+        "exit": 0,
+        "sha256": "1b26aa88001361a6"
+      }
+    ]
+  }
 }
