@@ -2,7 +2,7 @@
   "id": "ST-ldrzo55w",
   "kind": "story",
   "title": "pool build makes no paid call unless asked: a fresh --out path asks a model for every eval regex",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,
@@ -76,5 +76,6 @@
     "parked: SP-kuhlsf2s close",
     "merged: ST-e6v5v4dt"
   ],
-  "notes": "Merged from ST-e6v5v4dt at the 2026-10-13 draft triage: the same failure (pool build to a fresh --out asks Sonnet for about 0.06 USD; listed_ask limits only with --redo; second sprint it happened), its review-section brief clause folded into the goal. Premise: pool build to a fresh --out with no prior regexes makes one paid call for 41 eval rows, estimated 0.088 USD (run 2026-10-13 with sonnet_regexes patched, no paid call): reproduces; and the _self pack for 'may the sprint reviewer make paid model calls' is coverage weak. Plan: TK-3ycnarx5 the --ask flag (gate g1 ask-flag), TK-rwghdnt6 the brief clause (gate g2 name-commands). A build into a copy of the committed file asks nothing, since its checks are cached. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Merged from ST-e6v5v4dt at the 2026-10-13 draft triage: the same failure (pool build to a fresh --out asks Sonnet for about 0.06 USD; listed_ask limits only with --redo; second sprint it happened), its review-section brief clause folded into the goal. Premise: pool build to a fresh --out with no prior regexes makes one paid call for 41 eval rows, estimated 0.088 USD (run 2026-10-13 with sonnet_regexes patched, no paid call): reproduces; and the _self pack for 'may the sprint reviewer make paid model calls' is coverage weak. Plan: TK-3ycnarx5 the --ask flag (gate g1 ask-flag), TK-rwghdnt6 the brief clause (gate g2 name-commands). A build into a copy of the committed file asks nothing, since its checks are cached. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-honlhzdc"
 }
