@@ -100,8 +100,11 @@ WORKER_RULES = (
     "a report.",
     "Never write the operator's decisions into docs or code.",
     "Make no git worktree of your own, never `git worktree add`: `git worktree remove` is denied to agents, so one "
-    "you add is left for the operator. A baseline run uses `git stash push -u -m <tag>` (apply it by its sha and drop "
-    "it by tag) or a clone under your scratch directory that you delete yourself.",
+    "you add is left for the operator. A baseline needs no second checkout or stash: whether a failure is yours is "
+    "read with `git diff origin/main -- <path>` and `git show origin/main:<path>` against the known-failing tests "
+    "this brief lists. A change you must set aside goes to a patch file in your scratch directory with `git diff "
+    "--output=<scratch directory>/<name>.patch -- <paths>`, never with `git stash`, whose stack every worktree "
+    "shares.",
     "Run each shell command on its own (no `;`, `&&`, pipes), from your worktree directory; never `git push`, "
     "`backlog.py done`, `land` or `dispatch`: the orchestrator lands.",
 )
