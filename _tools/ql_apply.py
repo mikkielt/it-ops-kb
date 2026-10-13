@@ -529,9 +529,12 @@ def specific_words(words):
 def plain_question(text):
     """The question as a gap entry quotes it: a `path:line` citation in it (a goal that names a ledger line) keeps its
     path and loses its line, since a ledger's citations are held to the tagged facts of the lines they name
-    (check.py `ledger_citation_errors`) and the question's are not the ledger's."""
+    (check.py `ledger_citation_errors`) and the question's are not the ledger's. A doubled one (`a.md:12:34`) loses
+    every line number: the pattern takes `a.md:12`, which leaves `a.md:34` for the next pass."""
     import check
-    return check.LEDGER_CITE.sub(lambda m: m.group(1) or "", text)
+    while (plain := check.LEDGER_CITE.sub(lambda m: m.group(1) or "", text)) != text:
+        text = plain
+    return text
 
 
 def gap_decision(question, gate):
