@@ -14,7 +14,7 @@ from pathlib import Path
 import bl_cli
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written, glob_re, id_re, in_scope,
-    need, repositories, say, scope, split_touch, within_repository,
+    link_target, need, repositories, resolved_touch, say, scope, split_touch, within_repository,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -107,6 +107,27 @@ def stale_touches(bl):
     return out
 
 
+def linked_touch_warnings(bl):
+    """check's warnings: an open item whose touches name a link (bl_base.link_target: a `.claude/` link to a plugin
+    file, or a path under a linked directory), naming the path it resolves to and whether that is gone. Every reader
+    of touches (done, held, dispatch, the overlap warnings) reads the link as that file, so the item lands; naming the
+    file itself says what its scope is."""
+    out = []
+    for iid, it in sorted(bl.items.items()):
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES:
+            continue
+        for t in dict.fromkeys(x for x in it.get("touches", []) or [] if isinstance(x, str)):
+            target = link_target(t, bl.root)
+            if target is None:
+                continue
+            repo, rest = split_touch(target)
+            base = Path(bl.root) / repositories()[repo] if repo not in (None, WORKSPACE) else Path(bl.root)
+            out.append(f"{bl.label(iid)}: touches names {t}, a link to {target}"
+                       + ("" if (base / rest).exists() else ", which is gone")
+                       + f": a change through it is read as a change to {target}; name {target} in touches")
+    return out
+
+
 def touch_paths(item, files, literal):
     """The paths an item's touches name: each path as written, each glob expanded over FILES (tracked paths) and
     LITERAL (the paths a doc map names, which may not exist yet)."""
@@ -116,6 +137,7 @@ def touch_paths(item, files, literal):
             continue
         if not re.search(r"[*?]", t):
             paths.add(t)
+            paths.add(resolved_touch(t))  # a link, and the file it links to: a change through it is git's there
             continue
         rx = glob_re(t)
         paths |= {p for p in list(files) + literal if rx.match(p)}
@@ -403,6 +425,7 @@ def touches_meet(a, b, files):
     matches the other, or a tracked file of FILES that is no such doc matches both. The serializing overlap of `held
     --overlaps`; touches_overlap without the doc exception. Under a repositories map two touches meet only inside
     one repository (bl_base.within_repository), FILES being `<repository>/<path>` (touch_files)."""
+    a, b = resolved_touch(a), resolved_touch(b)  # a touch that names a link is the file it links to
     scoped = within_repository(a, b, files)
     if scoped is None or shared_doc(a) or shared_doc(b):
         return False
@@ -419,7 +442,7 @@ def shared_files(bl, items):
               and bl.items[i].get("touches")]
     by = {}
     for i in scoped:
-        for p in set(bl.items[i]["touches"]):
+        for p in {resolved_touch(t) for t in bl.items[i]["touches"]}:
             by.setdefault(p, []).append(i)
     found = [(p, ids) for p, ids in by.items()
              if not shared_doc(p) and len(ids) >= SHARED_FILE_MIN and 2 * len(ids) > len(scoped)]

@@ -166,14 +166,15 @@ def read_settings(root, env=None):
     return values, sources, path, problems
 
 
-_LOADED = []  # [read_settings(root)] of the root this process runs on; empty until load_settings or a first read
+_LOADED = []  # [read_settings(root), the root] of the root this process runs on; empty until load_settings or a first read
 
 
 def load_settings(root, env=None):
     """Read the project settings of the repository at ROOT (its backlog.json, or KB_BACKLOG_CONFIG's file) for the
     rest of this process: `backlog.main` calls it once, with the root the command runs on, before it builds the
     parser, so every reader below follows that root and not the tool's own clone. Returns read_settings' tuple."""
-    _LOADED[:] = [read_settings(root, env)]
+    _LOADED[:] = [read_settings(root, env), Path(root)]
+    _link_target.cache_clear()
     return _LOADED[0]
 
 
@@ -608,8 +609,50 @@ def glob_re(pattern):
     return re.compile(out + r"\Z")
 
 
+@functools.lru_cache(maxsize=None)
+def _link_target(top, touch):
+    """link_target for the root TOP (a text); cached per process, since the overlap readers ask for each touch of
+    every item pair, and cleared by load_settings."""
+    if not touch or re.search(r"[*?\[]", touch):
+        return None
+    repo, rest = split_touch(touch)
+    base = Path(top)
+    if repo is not None and repo != WORKSPACE:
+        base = base / repositories()[repo]
+    try:
+        base = base.resolve()
+        real = (base / rest).resolve()
+        rel = real.relative_to(base).as_posix()
+    except (ValueError, OSError, RuntimeError):
+        return None  # a link out of its repository: git records nothing at the target
+    if real == Path(os.path.normpath(base / rest)):
+        return None
+    return rel if repo is None else f"{repo}/{rel}"
+
+
+def link_target(touch, root=None):
+    """The path inside the repository a literal TOUCH resolves to when the path, or a directory above it, is a symlink
+    (a `.claude/` link to the plugin's skill or role file): a change through the link shows in git at that path. The
+    target may be gone (a dangling link). None for a glob, for a path that is no link, and for a link that leaves
+    its repository. Read from ROOT, else the root the process runs on (load_settings); a touch under a
+    `repositories` map in its repository."""
+    return _link_target(str(root or (_LOADED[1] if len(_LOADED) > 1 else ROOT)), touch)
+
+
+def resolved_touch(touch):
+    """TOUCH read as the path git records a change to it at: link_target's, else TOUCH as written."""
+    return link_target(touch) or touch
+
+
+def linked_touches(globs):
+    """[path] each literal touch of GLOBS that names a link resolves to (link_target), for the ones that do."""
+    return [t for t in (link_target(g) for g in globs if isinstance(g, str)) if t]
+
+
 def in_scope(path, globs):
-    return any(glob_re(g).match(path) for g in list(globs) + list(always_in_scope()))
+    """True when PATH (as git names it) matches one of GLOBS or an always-in-scope glob. A literal touch that names a
+    symlink (link_target) reads as the file it links to, the path git records a change through the link at."""
+    return any(glob_re(g).match(path) for g in list(globs) + list(always_in_scope()) + linked_touches(globs))
 
 
 def scope(bl, iid):
@@ -677,8 +720,9 @@ def within_repository(a, b, files):
 def touches_overlap(a, b, files):
     """True when two touches globs can name one path: either, read as a path, matches the other (`_tools/**` and
     `_tools/x.py`), or a tracked file matches both (`_tools/*.py` and `_tools/back*`). With a repositories map the
-    touches are `<repository>/<glob>` and are compared only inside one repository (within_repository)."""
-    scoped = within_repository(a, b, files)
+    touches are `<repository>/<glob>` and are compared only inside one repository (within_repository). A touch that
+    names a link is compared as the file it links to (resolved_touch)."""
+    scoped = within_repository(resolved_touch(a), resolved_touch(b), files)
     if scoped is None:
         return False
     a, b, files = scoped

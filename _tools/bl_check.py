@@ -22,7 +22,8 @@ from bl_base import (
     always_in_scope, canonical, clause_commands, external_problems, glob_re, goal_clauses, id_re, kinds, prefix_kind, rel_dir, repositories, sprint_id_re, host_user_pieces, items_holding_names, research_in_planned, say, scope,
     touches_overlap, withhold_names,
 )
-from bl_plan import docs_after_code, docs_warnings, shared_file_warnings, stale_touches, unordered_overlap_warnings
+from bl_plan import (docs_after_code, docs_warnings, linked_touch_warnings, shared_file_warnings, stale_touches,
+                     unordered_overlap_warnings)
 
 
 # ------------------------------------------------------------------ validation
@@ -1307,7 +1308,8 @@ def cmd_check(bl, a):
     stale = stale_knowledge(bl)
     warns = docs_warnings(bl) + repro_text_warnings(bl) \
         + gate_do_warnings(bl) + refused_answer_warnings(bl) + shared_file_warnings(bl) + item_files_warnings(bl) \
-        + facade_touch_warnings(bl) + gone_path_warnings(bl) + unordered_overlap_warnings(bl) + goal_path_warnings(bl) \
+        + facade_touch_warnings(bl) + gone_path_warnings(bl) + linked_touch_warnings(bl) + unordered_overlap_warnings(bl) \
+        + goal_path_warnings(bl) \
         + read_only_check_warnings(bl) + named_test_file_warnings(bl) + unlinked_finding_warnings(bl)
     for x in errs + stale + warns:
         say(withhold_names(x, pieces))  # an error that quotes an item's text never prints a name either
