@@ -1,0 +1,20 @@
+{
+  "id": "SP-waxgh3kg",
+  "kind": "sprint",
+  "title": "Lookup feedback: a pack handle, kb_feedback, and distill and learn turn reports into checked findings",
+  "status": "planned",
+  "goal": "pack and kb_pack print a pack: P-<hex> handle that a later call names and the capture row keeps; kb_feedback takes a closed-field report of a missed or misleading lookup and the server spools it; distill joins feedback rows to their lookups and the store keeps closed fields only; learn and apply turn feedback into findings the existing gates check, and no report edits a fact",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
