@@ -21,6 +21,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Should the part words of a token-count identifier that keep the class also match with a plural s ending (the goal lists the singular words only)?",
+      "options": [
+        "accept a plural s on the part words",
+        "match the singular words only"
+      ],
+      "recommendation": "accept a plural s on the part words",
+      "class": "agents-rule"
+    }
+  ],
   "notes": "Found by the SP-uzwbt63u review (fresh-context reviewer, 2026-10-13), filed S1 by the orchestrator acting as operator: it weakens the operator-only secrets class (fail open), which the policy keeps conservative. Repro run on main 2026-10-13: SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS class design, API_TOKENS secrets; the three count constants design (exit 1). Before 330b88ba0 all five were secrets.",
   "claimed_by": "orch-uzwbt63u"
 }
