@@ -15,7 +15,7 @@ BP-2413ce41,csv_fact,graph,original,lookup_eval.csv:EV-graph-beta-device-propert
 BP-a8bc73e4,fact,intune,original,lookup_eval.csv:EV-android-enterprise-enrollment-ownership-types-ios,What are the Android Enterprise enrollment ownership types and iOS ADE enrollment options in Intune?,"[""fully managed|work profile|dedicated|corporate-owned|personally[- ]owned|Automated Device Enrollment|\\bADE\\b|Apple Configurator|User Enrollment""]",good
 BP-39ac74b8,fact,logs,original,lookup_eval.csv:EV-data-tiers-microsoft-sentinel-offer-default,What data tiers does Microsoft Sentinel offer and what is the default retention for each?,"[""Analytics tier|Data Lake|90 days|30 days|Basic|Auxiliary""]",good
 BP-7b6373d5,fact,mcp,original,lookup_eval.csv:EV-mcp-stdio-transport-changes,mcp stdio transport changes,"[""UTF-8 JSON-RPC|binding that frames""]",good
-BP-d306eaa8,fact,mecm,original,lookup_eval.csv:EV-cmpivot-query-timeout,cmpivot query timeout,"[""\\b(\\d+|one)[\\s-]*(seconds?|minutes?|hours?|s|min)\\b""]",good
+BP-d306eaa8,fact,mecm,original,lookup_eval.csv:EV-cmpivot-query-timeout,cmpivot query timeout,"[""\\b(1|one)[\\s-]*hours?\\b|\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
 BP-7327eb95,fact,powerbi,original,lookup_eval.csv:EV-scheduled-refresh-daily-limit,scheduled refresh daily limit,"[""\\b8\\b|\\b48\\b|\\b(eight|forty-eight)\\b|per day|daily""]",good
 BP-f454bc83,csv_fact,prior-art,original,lookup_eval.csv:EV-awx-license-latest-release-info,AWX license and latest release info,"[""Apache[-\\s]?2\\.0|24\\.6\\.1""]",good
 BP-3d340150,fact,privacy,original,lookup_eval.csv:EV-pseudonymised-data-always-personal-data-after,Is pseudonymised data always personal data after the CJEU SRB judgment?,"[""\\bnot always\\b|\\bno\\b|\\bnot in every case\\b|depends|C-413/23|relative""]",good
@@ -37,7 +37,7 @@ BP-9e209bb8,fact,graph,original,lookup_eval.csv:EV-export-microsoft-365-tenant-c
 BP-df64045a,fact,intune,original,lookup_eval.csv:EV-intune-app-protection-policies-mam-ios,"What are Intune app protection policies (MAM) for iOS, Android and Windows?","[""app protection policies \\(APP\\)|non-Microsoft MDM""]",good
 BP-9cdc47a9,fact,logs,original,lookup_eval.csv:EV-terraform-azurerm-resource-creates-log-analytics,Which Terraform azurerm resource creates a Log Analytics workspace?,"[""azurerm_log_analytics_workspace""]",good
 BP-4fa7b2d7,fact,mcp,original,lookup_eval.csv:EV-resources-subscribe-templates,resources subscribe/templates,"[""listChanged|subscribe|resources/templates/list|uriTemplate""]",good
-BP-8f566d80,fact,mecm,original,lookup_eval.csv:EV-memcm-cmpivot-query-timeout,MEMCM CMPivot query timeout,"[""\\b(\\d+|one)[\\s-]*(seconds?|minutes?|hours?|s|min)\\b""]",good
+BP-8f566d80,fact,mecm,original,lookup_eval.csv:EV-memcm-cmpivot-query-timeout,MEMCM CMPivot query timeout,"[""\\b(1|one)[\\s-]*hours?\\b|\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
 BP-6b791ed3,fact,powerbi,original,lookup_eval.csv:EV-power-bi-gateway-ports,power bi gateway ports,"[""outbound-only|no inbound ports|on-premises data gateway""]",good
 BP-70b8a924,heldout,agents,held-out,lookup_heldout.csv:HO-adr-status-superseded,,"[""agents/decision\\-records\\.md""]",good
 BP-eed5a70e,heldout,agents,held-out,lookup_heldout.csv:HO-bare-headless-default,,"[""agents/headless\\-agent\\-runtimes\\.md""]",good
@@ -76,7 +76,7 @@ BP-689a466b,offkb,offkb,original,offkb_questions.txt#11de637a,web proxy port,"["
 BP-762281b3,offkb,offkb,original,offkb_questions.txt#f499a992,which ports does a print server use,"[""(?i)(not cover|doesn.t cover|does not cover|no coverage|not in the kb|kb lacks|isn.t in|none)""]",none
 BP-777ee410,false_good,design,original,agent_bench.py:s6_falsegood,"Using the kb, how do I create and update the Group Policy Central Store with the Windows 11 24H2 ADMX templates? If the kb does not really answer it, use live Microsoft docs and label them.","[""(?i)SYSVOL"", ""(?i)PolicyDefinitions""]",web
 BP-720bdf20,false_good,design,original,agent_bench.py:s8_falsegood2,Microsoft Purview Data Loss Prevention endpoint DLP onboarding requirements,"[""(?i)1809|Windows 11"", ""(?i)live docs|not in the kb|does not cover""]",web
-BP-70d0bf39,near_miss,mecm,lowercase brand,lookup_eval.csv:EV-cmpivot-query-timeout,cmpivot query timeout,"[""\\b(\\d+|one)[\\s-]*(seconds?|minutes?|hours?|s|min)\\b""]",good
+BP-70d0bf39,near_miss,mecm,lowercase brand,lookup_eval.csv:EV-cmpivot-query-timeout,cmpivot query timeout,"[""\\b(1|one)[\\s-]*hours?\\b|\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
 BP-62228cfe,near_miss,entra,lowercase brand,lookup_eval.csv:EV-aad-device-delete-bitlocker-keys,AAD device delete bitlocker keys,"[""30[\\s-]*days?|soft[\\s-]*delet""]",good
 BP-36b35074,near_miss,sqlserver,original,agent_bench.py:h2_applock,"Using the kb, show T-SQL that takes an exclusive session-owned application lock without waiting, fails if it is held, and releases it. Cite path:line.","[""sp_getapplock"", ""(?i)@LockTimeout\\s*=\\s*0"", ""sp_releaseapplock""]",split
 BP-bac81f87,gap,python,original,_gaps.md#8f38c7a9,What does the kb say about what `CreateProcess` does with `CREATE_BREAKAWAY_FROM_JOB` when the caller's job does not allow breakaway?,"[""(?i)(not (confirmed|documented|covered|in the kb)|unknown|unconfirmed|kb lacks|live docs)""]",web
@@ -135,9 +135,9 @@ BP-e64bdaf9,variant_typo,autopilot,typo,lookup_eval.csv:EV-autopilot-device-reco
 BP-d8203cfb,variant_keyword,prior-art,keyword,lookup_eval.csv:EV-awx-license-latest-release-info,awx license latest release info,"[""Apache[-\\s]?2\\.0|24\\.6\\.1""]",good
 BP-fcb42c1f,variant_sentence,prior-art,sentence,lookup_eval.csv:EV-awx-license-latest-release-info,"Please explain, in full sentences: AWX license and latest release info","[""Apache[-\\s]?2\\.0|24\\.6\\.1""]",good
 BP-8bacbb0e,variant_typo,prior-art,typo,lookup_eval.csv:EV-awx-license-latest-release-info,awx license and latest release info,"[""Apache[-\\s]?2\\.0|24\\.6\\.1""]",good
-BP-b124a0c0,variant_keyword,mecm,keyword,lookup_eval.csv:EV-cmpivot-query-timeout,cmpivot query timeout,"[""\\b(\\d+|one)[\\s-]*(seconds?|minutes?|hours?|s|min)\\b""]",good
-BP-1f52a1d6,variant_sentence,mecm,sentence,lookup_eval.csv:EV-cmpivot-query-timeout,"Please explain, in full sentences: cmpivot query timeout","[""\\b(\\d+|one)[\\s-]*(seconds?|minutes?|hours?|s|min)\\b""]",good
-BP-6ca01fa4,variant_typo,mecm,typo,lookup_eval.csv:EV-cmpivot-query-timeout,cmpiovt query timeout,"[""\\b(\\d+|one)[\\s-]*(seconds?|minutes?|hours?|s|min)\\b""]",good
+BP-b124a0c0,variant_keyword,mecm,keyword,lookup_eval.csv:EV-cmpivot-query-timeout,cmpivot query timeout,"[""\\b(1|one)[\\s-]*hours?\\b|\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
+BP-1f52a1d6,variant_sentence,mecm,sentence,lookup_eval.csv:EV-cmpivot-query-timeout,"Please explain, in full sentences: cmpivot query timeout","[""\\b(1|one)[\\s-]*hours?\\b|\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
+BP-6ca01fa4,variant_typo,mecm,typo,lookup_eval.csv:EV-cmpivot-query-timeout,cmpiovt query timeout,"[""\\b(1|one)[\\s-]*hours?\\b|\\b(10|ten|60|sixty)[\\s-]*(minutes?|mins?)\\b""]",good
 BP-8c26b6ba,variant_keyword,logs,keyword,lookup_eval.csv:EV-data-tiers-microsoft-sentinel-offer-default,data tiers microsoft sentinel offer default retention,"[""Analytics tier|Data Lake|90 days|30 days|Basic|Auxiliary""]",good
 BP-ecb1f34a,variant_sentence,logs,sentence,lookup_eval.csv:EV-data-tiers-microsoft-sentinel-offer-default,I need to know this for a task today: What data tiers does Microsoft Sentinel offer and what is the default retention for each?,"[""Analytics tier|Data Lake|90 days|30 days|Basic|Auxiliary""]",good
 BP-e9d1ba77,variant_typo,logs,typo,lookup_eval.csv:EV-data-tiers-microsoft-sentinel-offer-default,What data tiers does Mcirosoft Sentinel offer and what is the default retention for each?,"[""Analytics tier|Data Lake|90 days|30 days|Basic|Auxiliary""]",good

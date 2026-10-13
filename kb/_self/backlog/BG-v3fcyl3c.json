@@ -40,6 +40,21 @@
   "depends_on": [
     "BG-qnq3pjd2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which durations does the cmpivot timeout answer regex take as right: 60 minutes and the words one, ten, sixty besides the digit forms 1-hour and 10 minutes?",
+      "options": [
+        "take 60 minutes and the words one, ten, sixty too",
+        "take only the digit forms 1-hour and 10 minutes"
+      ],
+      "recommendation": "take 60 minutes and the words one, ten, sixty too",
+      "class": "design",
+      "answer": "take 60 minutes and the words one, ten, sixty too",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
