@@ -2,7 +2,7 @@
   "id": "BG-3yjnwfsu",
   "kind": "bug",
   "title": "BP-2c2a3c1d's answer regex rejects the placeholder paraphrase /plugin install <plugin>@<marketplace>",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-honlhzdc",
   "priority": "P2",
   "rank": 0,

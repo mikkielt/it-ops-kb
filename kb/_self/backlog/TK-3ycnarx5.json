@@ -2,7 +2,7 @@
   "id": "TK-3ycnarx5",
   "kind": "task",
   "title": "pool build asks the model only with --ask or --redo, and otherwise lists the rows and the estimate and exits 1",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-ldrzo55w",
   "priority": "P2",
   "rank": 0,

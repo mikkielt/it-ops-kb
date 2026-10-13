@@ -2,7 +2,7 @@
   "id": "BG-v3fcyl3c",
   "kind": "bug",
   "title": "The cmpivot timeout rows' answer regex accepts any duration, so a wrong timeout passes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-gtug2bqx",
   "kind": "story",
   "title": "benchmarks.md says the 2026-10-12 freshness p95 is the rounded rank and the 2026-09-28 kb-lookup-agent runs had two or three requests",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-honlhzdc",
   "priority": "P3",

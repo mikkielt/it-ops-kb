@@ -2,7 +2,7 @@
   "id": "BG-viwywxml",
   "kind": "bug",
   "title": "Gap row BP-bac81f87 names a _gaps.md entry that is no longer open and its pack is good, and pool check never judges a gap row's route",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-honlhzdc",
   "priority": "P2",
   "rank": 0,

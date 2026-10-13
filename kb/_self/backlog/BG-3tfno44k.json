@@ -2,7 +2,7 @@
   "id": "BG-3tfno44k",
   "kind": "bug",
   "title": "Five of the six sc_stale rows cite no source past its freshness lifetime, so they no longer measure staleness",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,

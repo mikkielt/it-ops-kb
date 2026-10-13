@@ -2,7 +2,7 @@
   "id": "ST-ldrzo55w",
   "kind": "story",
   "title": "pool build makes no paid call unless asked: a fresh --out path asks a model for every eval regex",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,

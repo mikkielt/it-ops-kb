@@ -2,7 +2,7 @@
   "id": "SP-honlhzdc",
   "kind": "sprint",
   "title": "Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report",
-  "status": "planned",
+  "status": "active",
   "goal": "BP-2c2a3c1d's answer regex matches the /plugin install <plugin>@<marketplace> paraphrase; BP-0181112b and BP-c552cb0f match their correct paraphrases; the cmpivot timeout rows' regex rejects a wrong duration; each sc_stale row's pack cites a source past its freshness lifetime; every gap row names an open _gaps.md entry and routes to web, which pool check judges; pool build to a fresh --out makes no paid call unless asked, and the sprint reviewer's brief forbids paid commands; benchmarks.md marks the 2026-10-12 freshness p95 as the rounded rank and the 2026-09-28 kb-lookup-agent runs as two or three requests",
   "gates": [
     {

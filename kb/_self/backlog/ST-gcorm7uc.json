@@ -2,7 +2,7 @@
   "id": "ST-gcorm7uc",
   "kind": "story",
   "title": "Research sprint goal: Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-honlhzdc",
   "goal_research": true,
   "priority": "P1",
