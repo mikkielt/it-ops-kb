@@ -2,7 +2,7 @@
   "id": "ST-7nexqrm4",
   "kind": "story",
   "title": "Review sprint: Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-e4fm2ovk",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-e4fm2ovk"
+  "evidence": {
+    "commit": "d518093d131d97effd68035827b669cba7219885",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "919a9c380d486a69"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4a6cafea335e22c6"
+      }
+    ]
+  }
 }
