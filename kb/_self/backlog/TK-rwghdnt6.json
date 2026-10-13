@@ -2,7 +2,7 @@
   "id": "TK-rwghdnt6",
   "kind": "task",
   "title": "The kb-sprint review section's reviewer brief names paid commands as not allowed, and a tested _self question answers it",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ldrzo55w",
   "priority": "P2",
   "rank": 0,
@@ -56,5 +56,27 @@
     }
   ],
   "notes": "AGENTS.md is in touches for the docs map only (it maps skills/sprint/SKILL.md): its 4 KB cap leaves no room, so expect no edit; Self-Reviewed names it as read. Premise: the _self pack for 'may the sprint reviewer make paid model calls' is coverage weak on 2026-10-13 (precheck): reproduces. The tested row is added to kb/_self/_retrieval/lookup_eval.csv (a code-lane path: land with --wait-merge); the line it answers from is the reviewer sentence of kb/_self/backlog.md, Running a sprint (line 308 today).",
-  "claimed_by": "orch-honlhzdc"
+  "evidence": {
+    "commit": "e5eeb7c581eef3ed007f147fbb2f907f3385884f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may the sprint reviewer make paid model calls','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+        ],
+        "exit": 0,
+        "sha256": "e0f48bf56487a715"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;L=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if 'fresh-context reviewer' in l and 'paid' in l and 'pool build' in l];print(len(L));sys.exit(0 if L else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4355a46b19d348dc"
+      }
+    ]
+  }
 }
