@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-13: the goal's questions (how close --summary credits a clause to a carrier, which ledger rows done attributes to an item, whether land waits for a code-lane merge request, when the review confirms a provisional answer) concern this repository's own tools and its _self docs, which the sprint's items edit. rag.py pack --root _self answers them from backlog.md and tools.md (the review question good, the other three weak on wording only) and root public holds no page on them, so no live-docs fact is to be researched: its done needs the line \"No outside facts: <reason>\" in these notes, written by the worker that runs it, and its goal stays unnarrowed since no question is weak or none against a source outside the repository."
 }

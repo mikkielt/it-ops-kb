@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "close --summary credits a goal clause to the goal research story by the words of its generated title alone",
   "status": "draft",
+  "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
-  "goal": "The research fallback of goal_clause_lines matches a clause against item_words, which holds the generated title 'Research sprint goal: <sprint title>', so a research story whose narrowed goal and kb touches carry nothing of a clause is credited with any clause that shares words with the sprint title, and that clause never prints unmet; the fallback reads the narrowed goal, mapped clauses and touches, not the generated title. Found by the SP-sqgyoiaz review (S2).",
+  "goal": "The research fallback of goal_clause_lines matches a clause against item_words, which holds the generated title 'Research sprint goal: <sprint title>', so a research story whose narrowed goal and touches carry nothing of a clause is credited with any clause that shares words with the sprint title (SP-sqgyoiaz review, S2): the fallback reads the narrowed goal, mapped clauses and touches, not the generated title; clause_words keeps function words (that, each) and backlog vocabulary (goal, story, clause), so ST-e44xoxkg was credited with 'close --summary credits each goal clause to the story that carried it' on 5 of 9 shared words (SP-sqgyoiaz close, S3): a stoplist of both leaves a carrier sharing the words that name its work; move's left-behind message (bl_items.py, kb/_self/tools.md) says close --summary would list the clause unmet where a goal research story is credited as fallback (S3): it follows carries_clause",
   "repro": {
     "run": [
       "python3",
@@ -14,15 +15,61 @@
       "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'SP-a':{'kind':'sprint','goal':'close --summary credits each goal clause to the story that carried it; the beta writer works'},'ST-r':{'kind':'story','status':'done','goal_research':True,'title':'Research sprint goal: Close credits each goal clause to its carrier','goal':'Which git flag keeps a rename?','sprint':'SP-a','touches':['kb/public/git/**']},'ST-b':{'kind':'story','status':'done','title':'beta writer','goal':'the beta writer works','sprint':'SP-a'}};ln=[l for l in b.goal_clause_lines(types.SimpleNamespace(items=it,label=lambda i:i),'SP-a',['ST-r','ST-b']) if 'carried it' in l];print(ln);sys.exit(1 if ln and 'ST-r' in ln[0] else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'SP-a':{'kind':'sprint','goal':'close --summary credits each goal clause to the story that carried it; the beta writer works'},'ST-x':{'kind':'story','status':'done','sprint':'SP-a','title':'A goal research story check reads its narrowed questions coverage, not only that a work commit exists','goal':'The check of a goal research story reads each question its narrowed goal names (rag.py pack coverage, or a gap entry for it), so done refuses research that left a question unanswered: at SP-4phd36pa backlog.py researched ST-bivdc2fa proved only a work commit while the fresh-context review that read the seven clauses found four S3 wording gaps (BG-az4r47gd, BG-lmp4mxmo, BG-drzst6zj, BG-o2spkwnz)'},'ST-b':{'kind':'story','status':'done','sprint':'SP-a','title':'beta writer','goal':'the beta writer works'}};ln=[l for l in b.goal_clause_lines(types.SimpleNamespace(items=it,label=lambda i:i),'SP-a',['ST-x','ST-b']) if 'carried it' in l];print(ln);sys.exit(1 if ln and 'ST-x' in ln[0] else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[p for p in ('_tools/bl_items.py','kb/_self/tools.md') if 'would list it unmet' in open(p,encoding='utf-8').read()];print(ls);sys.exit(1 if ls else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The research fallback of goal_clause_lines matches a clause against item_words, which holds the generated title 'Research sprint goal: <sprint title>', so a research story whose narrowed goal and touches carry nothing of a clause is credited with any clause that shares words with the sprint title (SP-sqgyoiaz review, S2): the fallback reads the narrowed goal, mapped clauses and touches, not the generated title",
+      "check": 2
+    },
+    {
+      "clause": "clause_words keeps function words (that, each) and backlog vocabulary (goal, story, clause), so ST-e44xoxkg was credited with 'close --summary credits each goal clause to the story that carried it' on 5 of 9 shared words (SP-sqgyoiaz close, S3): a stoplist of both leaves a carrier sharing the words that name its work",
+      "check": 0
+    },
+    {
+      "clause": "move's left-behind message (bl_items.py, kb/_self/tools.md) says close --summary would list the clause unmet where a goal research story is credited as fallback (S3): it follows carries_clause",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "_tools/bl_items.py"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "A goal research story whose goal is still the generated default text: does the fallback read that goal through the stoplist, or carry nothing from it?",
+      "options": [
+        "carry nothing from the generated default goal: the fallback reads a narrowed goal, mapped clauses and touches only",
+        "read the default goal through the stoplist like a narrowed one"
+      ],
+      "recommendation": "carry nothing from the generated default goal: the fallback reads a narrowed goal, mapped clauses and touches only",
+      "class": "agents-rule",
+      "answer": "carry nothing from the generated default goal: the fallback reads a narrowed goal, mapped clauses and touches only",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-sqgyoiaz review",
     "merged: BG-j2y4kbdc",
     "merged: BG-fl6qmkkx"
   ],
-  "notes": "Merged from BG-j2y4kbdc “move's left-behind message says close --summary would list the clause unmet where the goal research story is credited as fallback” at the 2026-10-13 draft triage: bl_items.py:681 and tools.md:77 still say 'close --summary would list it unmet' though a clause can be credited to the goal research story as fallback. Same fallback logic and review as BG-ms5dtnnr (credit by word match); the carrier changes that fallback, so this message must follow it. Its goal: _tools/bl_items.py prints for move that no other item carries the clause 'and close --summary would list it unmet', and kb/_self/tools.md says the same, while close --summary now credits a clause no implementing item carries to the sprint's done goal research story as fallback (ST-7rqeuzlm); the message names the fallback when the sprint has a goal research story that carries the clause. Found by the SP-sqgyoiaz review (S3). Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;ls=[l for l in open('_tools/bl_items.py',encoding='utf-8') if 'would list it unmet' in l];print(ls);sys.exit(1 if ls else 0)\"]} Its touches: _tools/bl_items.py, kb/_self/tools.md, kb/_self/backlog.md Merged from BG-fl6qmkkx at the 2026-10-13 draft triage (item in git history): Repro still exits 1 (ST-x credited with 'carried it'); same function goal_clause_lines/clause_words in bl_land.py and same recurring close --summary word-match failure as BG-ms5dtnnr (S2, filed by the review); one fix pass: a stoplist of function words and backlog vocabulary in clause_words, plus the fallback reading the narrowed goal not the title."
+  "notes": "Merged at the 2026-10-13 draft triage: BG-j2y4kbdc (bl_items.py:681 and tools.md:77 still say the clause would be listed unmet though a goal research story is credited as fallback; its repro read bl_items.py for 'would list it unmet') and BG-fl6qmkkx (its repro, now check 0, exits 1: ST-x credited with 'carried it'; one fix pass in bl_land.py goal_clause_lines and clause_words). Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ST-r credited with 'carried it'), check 0 exits 1 (ST-x credited), check 1 exits 1 (bl_items.py and tools.md still say 'would list it unmet')."
 }

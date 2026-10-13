@@ -3,21 +3,42 @@
   "kind": "story",
   "title": "Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase",
   "status": "draft",
+  "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item whose goal adds a rule that tells an agent to run a command (a backlog.py subcommand with a term or flag) carries one check that runs the command form the rule's text gives, on a planted input or this clone, beside its doc-text check. Answers the SP-4jfepy6u close: ST-pogg4knc's check read only the phrase 'removed or renamed flag', and the rule's command, backlog.py referrers --add-touch, exits 2 (BG-sq2qycqc, found by the review).",
+  "goal": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item whose goal adds a rule that tells an agent to run a command (a backlog.py subcommand with a term or flag) carries one check that runs the command form the rule text gives, on a planted input or this clone, beside its doc-text check (SP-4jfepy6u close: ST-pogg4knc check read only the phrase removed or renamed flag while the rule command, backlog.py referrers --add-touch, exits 2: BG-sq2qycqc); the same step and Sprints text name the other checks that read a phrase and not the behaviour: each condition of a clause gets its own planted case (BG-4flop3jv), a wording bug check reads its claim by the items it names, not one phrasing (BG-ab3tndhy), an item that changes how researched reads a goal gets a check that runs researched on the sprint own goal research story (SP-sqgyoiaz), a lock or concurrency story gets a planted check for each recovery path (BG-h6aqngbp), a skill-text check reads the step its goal names, not a line found by its prefix (BG-adgc5qf2), a rule that calls a path in scope gets a check that runs in_scope on that path (BG-6bb4zzdy)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;t=[open(p,encoding='utf-8').read() for p in ('skills/sprint/SKILL.md','kb/_self/backlog.md')];ok=all('runs the command form' in x for x in t);print('plan step and Sprints say a rule naming a command gets a check that runs the command form:',ok);sys.exit(0 if ok else 1)"
+        "import sys;c=chr(96);t=open('skills/sprint/SKILL.md',encoding='utf-8').read().replace(c,'').split('## plan',1)[1].split('\\n## ',1)[0].split('\\n6. ',1)[1];d=open('kb/_self/backlog.md',encoding='utf-8').read().replace(c,'').split('**Plan**',1)[1].split('**Start**',1)[0];ok=all('runs the command form' in x for x in (t,d));print('step 6 and Sprints Plan hold the command-form rule:',ok);sys.exit(0 if ok else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;c=chr(96);ps=['its own planted case','wording bug','runs researched on the sprint','each recovery path','the step its goal names','runs in_scope'];t=open('skills/sprint/SKILL.md',encoding='utf-8').read().replace(c,'').split('## plan',1)[1].split('\\n## ',1)[0].split('\\n6. ',1)[1];d=open('kb/_self/backlog.md',encoding='utf-8').read().replace(c,'').split('**Plan**',1)[1].split('**Start**',1)[0];m=[p for p in ps if p not in t or p not in d];print('missing from step 6 or Sprints Plan:',m);sys.exit(1 if m else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item whose goal adds a rule that tells an agent to run a command (a backlog.py subcommand with a term or flag) carries one check that runs the command form the rule text gives, on a planted input or this clone, beside its doc-text check (SP-4jfepy6u close: ST-pogg4knc check read only the phrase removed or renamed flag while the rule command, backlog.py referrers --add-touch, exits 2: BG-sq2qycqc)",
+      "check": 0
+    },
+    {
+      "clause": "the same step and Sprints text name the other checks that read a phrase and not the behaviour: each condition of a clause gets its own planted case (BG-4flop3jv), a wording bug check reads its claim by the items it names, not one phrasing (BG-ab3tndhy), an item that changes how researched reads a goal gets a check that runs researched on the sprint own goal research story (SP-sqgyoiaz), a lock or concurrency story gets a planted check for each recovery path (BG-h6aqngbp), a skill-text check reads the step its goal names, not a line found by its prefix (BG-adgc5qf2), a rule that calls a path in scope gets a check that runs in_scope on that path (BG-6bb4zzdy)",
+      "check": 1
     }
   ],
   "touches": [
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
+  ],
+  "depends_on": [
+    "ST-fla2es24"
   ],
   "links": [
     "parked: SP-4jfepy6u close",
@@ -28,5 +49,5 @@
     "merged: ST-w73hk57t",
     "merged: ST-wqp3xyp6"
   ],
-  "notes": "Merged from ST-bmhbyr6d “Planning gives each condition of a goal clause its own planted case, so a check that reads one condition does not pass the clause” at the 2026-10-13 draft triage: One of seven 'a check read the phrase, not the behaviour' planning rules parked from sprint reviews (precheck_clause_each_condition test absent); same plan step 6 text in skills/sprint/SKILL.md and backlog.md Sprints. Its goal: Sprint planning maps a goal clause with two conditions to checks that plant each one: ST-ksznk2zt's clause 'good with no check: line for sc_present and sc_stale' was read by a test that plants only a route disagreement, so scenario_pack shipped reading no check: line and passed every check (found by the SP-j2jn5ue4 review as BG-4flop3jv). Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"precheck_clause_each_condition\"]} Merged from ST-rlzq6jup “Planning a lock or concurrency story gives each recovery path a planted check, not only the contended happy path” at the 2026-10-13 draft triage: Same family, one occurrence (ST-bu3ppwnx, SP-ilqhjn3k: its one check ran contended writers only, review then found BG-h6aqngbp and BG-u7gtwn5s); absorb only the doc rule that each recovery path gets a planted check; the planner warning stays out. Its goal: A planned story that adds a lock or other concurrency guard carries a check per recovery path its design has (a stale lock cleared while other writers contend, a failure between creating the lock and releasing it), each driven on a planted interleaving; seen in SP-ilqhjn3k, where ST-bu3ppwnx's one check ran six contended writers and a single-process stale clear, and the review then found a stale-clear race that hands one lock to two writers (BG-h6aqngbp) and a lock leaked on a failed owner write (BG-u7gtwn5s) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"plan_concurrency_recovery_checks\"]} Its touches: _tools/bl_plan.py, _tools/test_backlog_portable.py, kb/_self/backlog.md"
+  "notes": "Merged at the 2026-10-13 draft triage, doc rules only (no planner warning, no bl_plan.py change): ST-bmhbyr6d (a clause with two conditions: a planted case per condition, BG-4flop3jv), ST-l2t3uv6s (a wording bug check reads the claim by its items, BG-ab3tndhy), ST-lco3gszi (an item that changes researched gets a check that runs it on the sprint own goal research story, SP-sqgyoiaz), ST-rlzq6jup (each recovery path of a lock story gets a planted check, SP-ilqhjn3k), ST-w73hk57t (a skill-text check reads the step its goal names, BG-adgc5qf2), ST-wqp3xyp6 (a rule that calls a path in scope gets a check that runs in_scope, BG-6bb4zzdy). Their own test selections (precheck_clause_each_condition, plan_concurrency_recovery_checks, skill_text_check_reads_named_step, precheck_brief_rule_scope) were planner changes and stay out. Check 0 reads the command-form rule in both docs; check 1 reads the six other rules in plan step 6 and the Sprints Plan paragraph. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. At plan time (2026-10-13) both checks exit 1 (step 6 and the Sprints Plan paragraph hold none of the seven phrases)."
 }

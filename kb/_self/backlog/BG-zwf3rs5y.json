@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "researched skips a narrowed goal's question that has no question mark without a said line",
   "status": "draft",
+  "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "goal_questions drops each '; '-separated piece that does not end in '?', so a narrowed goal written as a numbered list of questions (as ST-x7hxknkx and ST-gwxb3i3j were) has those questions passed unread with no FAIL or said line; researched names each piece it does not read as a question. Found by the SP-sqgyoiaz review (S4).",
+  "goal": "goal_questions drops each piece of a narrowed goal that does not end in '?', so a goal written as a numbered list of questions (as ST-x7hxknkx and ST-gwxb3i3j were) has those questions passed unread with no FAIL or said line; a numbered piece such as (1) is read as a question and researched names each other piece it does not read as a question on a line, its exit code unchanged (gate g1). Found by the SP-sqgyoiaz review (S4)",
   "repro": {
     "run": [
       "python3",
@@ -14,12 +15,50 @@
       "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('(1) does git record a change; (2) how does git log report a file?');print(q);sys.exit(1 if len(q)<2 else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,io;sys.path.insert(0,'_tools');import bl_land as b;b.setting=lambda k:'kb';b.other_clone=lambda bl:False;b.question_coverage=lambda q,r:('good','','');o=io.StringIO();w=sys.stdout,sys.stderr;sys.stdout=sys.stderr=o;r=b.unanswered_questions(None,{'goal':'Install the agent first; (1) does git record a change; (2) how does git log report a file?'});sys.stdout,sys.stderr=w;t=o.getvalue();print(t,r);sys.exit(0 if 'does git record a change' in t and 'Install the agent first' in t else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "goal_questions drops each piece of a narrowed goal that does not end in '?', so a goal written as a numbered list of questions (as ST-x7hxknkx and ST-gwxb3i3j were) has those questions passed unread with no FAIL or said line",
+      "check": 1
+    },
+    {
+      "clause": "a numbered piece such as (1) is read as a question and researched names each other piece it does not read as a question on a line, its exit code unchanged (gate g1). Found by the SP-sqgyoiaz review (S4)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "BG-ms5dtnnr"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "A piece of a narrowed goal that has no question mark and is no numbered question: does researched only say it on a line, or fail on it?",
+      "options": [
+        "say it on a line, the exit code unchanged (a numbered piece such as (1) is read as a question)",
+        "fail researched until the piece is reworded as a question"
+      ],
+      "recommendation": "say it on a line, the exit code unchanged (a numbered piece such as (1) is read as a question)",
+      "class": "agents-rule",
+      "answer": "say it on a line, the exit code unchanged (a numbered piece such as (1) is read as a question)",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-sqgyoiaz review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (goal_questions returns 1 of the 2 pieces), check 0 exits 1 (the unread piece is neither read nor said). Gate g1 answered: say it on a line, exit code unchanged."
 }
