@@ -24,6 +24,57 @@
   "depends_on": [
     "BG-mivjdhxk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The goal says the Glob --allowedTools exception is the form census.py dispatch uses; dispatch_rules passes only Read, Edit and Write rules. Drop that clause from the fact?",
+      "options": [
+        "drop",
+        "keep"
+      ],
+      "recommendation": "drop",
+      "do": {
+        "drop": [
+          "the",
+          "fact",
+          "names",
+          "the",
+          "Glob",
+          "exception",
+          "only;",
+          "the",
+          "form",
+          "census",
+          "dispatch",
+          "uses",
+          "is",
+          "covered",
+          "by",
+          "the",
+          "//",
+          "and",
+          "~/",
+          "fact"
+        ],
+        "keep": [
+          "the",
+          "fact",
+          "also",
+          "says",
+          "census",
+          "dispatch",
+          "uses",
+          "the",
+          "Glob",
+          "form"
+        ]
+      },
+      "class": "design",
+      "answer": "drop",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-htl7jkrm review"
   ],
