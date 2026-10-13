@@ -21,5 +21,19 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does stem() keep a number whole: which guard on the double-letter rule?",
+      "options": [
+        "isalpha guard on the final character of the double-letter rule only",
+        "return a token that holds a digit unstemmed before every rule",
+        "guard the double-letter rule by a digit test on the whole word"
+      ],
+      "recommendation": "isalpha guard on the final character of the double-letter rule only",
+      "class": "secrets"
+    }
+  ],
   "claimed_by": "orch-7ff7c5ui"
 }
