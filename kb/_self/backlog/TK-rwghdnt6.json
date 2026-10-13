@@ -50,7 +50,9 @@
         "review-bullet"
       ],
       "recommendation": "running-a-sprint",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "running-a-sprint",
+      "by": "operator"
     }
   ],
   "notes": "AGENTS.md is in touches for the docs map only (it maps skills/sprint/SKILL.md): its 4 KB cap leaves no room, so expect no edit; Self-Reviewed names it as read. Premise: the _self pack for 'may the sprint reviewer make paid model calls' is coverage weak on 2026-10-13 (precheck): reproduces. The tested row is added to kb/_self/_retrieval/lookup_eval.csv (a code-lane path: land with --wait-merge); the line it answers from is the reviewer sentence of kb/_self/backlog.md, Running a sprint (line 308 today).",
