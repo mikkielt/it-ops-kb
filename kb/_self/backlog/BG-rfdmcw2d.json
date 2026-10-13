@@ -21,5 +21,5 @@
   "links": [
     "parked: SP-uvz65lvm review"
   ],
-  "notes": "Filed per the kb-sprint rule for a suite refused twice on a loaded host; kept beside BG-uxs5ncx2, BG-hgdsztln and BG-x55qvsln as the same pattern with this sprint's rows. The ceiling is the operator's decision only."
+  "notes": "Filed per the kb-sprint rule for a suite refused twice on a loaded host; kept beside BG-uxs5ncx2, BG-hgdsztln and BG-x55qvsln as the same pattern with this sprint's rows. The ceiling is the operator's decision only. Three more runs after the filing, all 100 passed and all refused: eb6bfdb9 at 2026-10-13T20:39:15Z, 25597 ms, load about 1.8 (review done); ad43b089 at 20:46:26Z, 24518 ms, load about 1.3 (review done); 5bf50609 at 20:46:56Z, 24556 ms (a standalone tests.py, no other suite run on the host). The review story ST-r432r6d7 cannot pass done until the operator decides the ceiling, so SP-uvz65lvm stays open, every other item done."
 }
