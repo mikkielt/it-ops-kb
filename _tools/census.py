@@ -2874,6 +2874,18 @@ def dispatch_plan(group, members, ctx):
             "fetch": fetch, "learn": sorted(learn), "skipped": skipped}
 
 
+def worktrees_file(files):
+    """The first of `files` (absolute paths) whose own path or real path holds `.claude/worktrees`, else None: the claude
+    CLI denies under `dontAsk` the Edit rule of a file there (found in a checkout `git worktree add` made under that
+    directory), so a session started from such a checkout edits nothing."""
+    for path in files:
+        for p in (path, os.path.realpath(path)):
+            parts = p.replace("\\", "/").split("/")
+            if any(a == ".claude" and b == "worktrees" for a, b in zip(parts, parts[1:])):
+                return path
+    return None
+
+
 def dispatch_rules(plan, scratch):
     """(allow, tools) of a session: the `--allowedTools` rules and the `--tools` set. Read and Edit rules name each
     owned file as an absolute path (`//` is the filesystem root), so no other repository file is readable or editable
@@ -3018,6 +3030,13 @@ def cmd_dispatch(a, tally):
     mcp = docs_mcp_config() if plan["learn"] else None
     if plan["learn"] and not mcp:
         plan = {**plan, "skipped": sorted(plan["skipped"] + plan["learn"]), "learn": []}
+    under = worktrees_file(plan["files"])
+    if under:
+        print(f"dispatch refuses to run from here: {under} is under .claude/worktrees, where the claude CLI denies the "
+              "Edit rules of the group's files, so the session would edit nothing and return its rewrites as foreign "
+              "edits: run it from a checkout outside .claude/worktrees")
+        if not a.dry_run:
+            return 2
     with open(RESULT_SCHEMA, encoding="utf-8") as f:
         schema = json.load(f)
     schema_text = json.dumps(schema, separators=(",", ":"))

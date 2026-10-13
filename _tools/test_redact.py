@@ -488,6 +488,7 @@ def census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_res
         m.setattr(kbfacts, "read", lambda qpath: "\n".join(page.get(qpath, [])))
         m.setattr(census, "review_by_source", lambda ids, fd: {})
         m.setattr(census, "DISPATCH_DIR", str(tmp_path / "dispatch"))
+        m.setattr(census, "worktrees_file", lambda files: None)  # this checkout may itself be one under .claude/worktrees
         m.setenv("PATH", str(bin_dir))
         m.setenv("CLAUDE_PLUGIN_ROOT", "/plugin")
         # the model is not the orchestrator's: the default is pinned, the caps are set, and a dry run starts nothing
@@ -574,6 +575,53 @@ def census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_res
                                                                         "cost-usd-micro": 12300}) or 0, "2099-01-02") == 0
     assert seen_rows[0]["phase"] == "dispatch" and {"name": "cost-usd-micro", "n": 12300} in seen_rows[0]["rows"]
     assert not ql_capture.ops_problems({"event": "census.phase", **seen_rows[0]})
+
+
+def census_dispatch_refuses_in_a_worktrees_checkout(tmp_path, monkeypatch, capsys):
+    """A checkout whose path holds `.claude/worktrees` is where the claude CLI denies the Edit rules of the group's files:
+    a run is refused before the session starts, a dry run prints the line and exits 0, and a checkout outside edits."""
+    log = tmp_path / "2099-01-02.csv"
+    log.parent.mkdir(parents=True, exist_ok=True)
+    kbcommon.write_csv(str(log), census.COLS, [census_row("S9990005")])
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    stub = bin_dir / "claude"
+    stub.write_text(f"#!{sys.executable}\nopen({str(bin_dir / 'seen')!r}, 'w').write('started')\n", encoding="utf-8")
+    stub.chmod(0o755)
+
+    def args(**kw):
+        return argparse.Namespace(**{"log": str(log), "group": "dsc", "part": 1, "factdiff": None, "model": census.DISPATCH_MODEL,
+                                     "max_turns": census.DISPATCH_TURNS, "max_budget_usd": census.DISPATCH_BUDGET_USD,
+                                     "dry_run": False, **kw})
+
+    with monkeypatch.context() as m:
+        m.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        m.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+        m.setattr(kbfacts, "clone_home", lambda: str(tmp_path / "no-clone"))
+        m.setattr(kbfacts, "cited_lines", lambda ids: {"S9990005": [("public/dsc/d.md", 2)]})
+        m.setattr(kbfacts, "read", lambda qpath: "\nsources: [S9990005]\n- Fact. [DOC S9990005]")
+        m.setattr(census, "review_by_source", lambda ids, fd: {})
+        m.setattr(census, "DISPATCH_DIR", str(tmp_path / "dispatch"))
+        m.setenv("PATH", str(bin_dir))
+        under = tmp_path / "repo" / ".claude" / "worktrees" / "w" / "kb" / "public"
+        owned = os.path.join(str(under), "dsc", "d.md")
+        m.setattr(census, "KB", str(under))
+        assert census.worktrees_file([owned]) == owned
+        assert census.worktrees_file([os.path.join(str(tmp_path), "worktrees", ".claude", "d.md")]) is None
+        assert census.cmd_dispatch(args(), Counter()) == 2
+        said = capsys.readouterr().out
+        assert f"{owned} is under .claude/worktrees" in said and "outside .claude/worktrees" in said
+        assert not (bin_dir / "seen").exists() and not (tmp_path / "dispatch").exists()
+        assert census.cmd_dispatch(args(dry_run=True), Counter()) == 0
+        dry = capsys.readouterr().out
+        assert said.strip() in dry and "dispatch dry run (nothing started)" in dry
+        # outside .claude/worktrees the group's Edit rules name its owned file, so the session itself makes the rewrites
+        plain = tmp_path / "plain" / "kb" / "public"
+        m.setattr(census, "KB", str(plain))
+        assert census.cmd_dispatch(args(dry_run=True), Counter()) == 0
+        dry = capsys.readouterr().out
+        slash = os.path.join(str(plain), "dsc", "d.md").replace(os.sep, "/").lstrip("/")
+        assert "refuses to run from here" not in dry and f"Edit(//{slash})" in dry
 
 
 def census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups(tmp_path, monkeypatch, capsys):
@@ -1594,9 +1642,10 @@ def census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_r
     assert Counter(r["group"] for r in listed) == by and list(by) == ["changed", "judged", "ok"]
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes_and_census_brief_carries_phase2_rules_that_hold_throughout(tmp_path, monkeypatch, capsys):
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes_and_census_dispatch_refuses_in_a_worktrees_checkout_and_census_brief_carries_phase2_rules_that_hold_throughout(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path / "dispatch", monkeypatch, capsys)
+    census_dispatch_refuses_in_a_worktrees_checkout(tmp_path / "worktrees", monkeypatch, capsys)
     factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
     census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit(tmp_path / "repin", monkeypatch, capsys)
     census_retry_tries_a_name_resolution_or_connection_error_once_and_notes_it_apart_from_blocked(tmp_path, monkeypatch, capsys)
