@@ -2,7 +2,7 @@
   "id": "TK-casle7h7",
   "kind": "task",
   "title": "Dispatch's turn cap by item kind fits a code task that adds a module, tests and docs and a story that writes a report",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-buzuumms",
   "priority": "P2",
   "rank": 0,

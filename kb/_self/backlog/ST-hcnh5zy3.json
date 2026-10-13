@@ -2,7 +2,7 @@
   "id": "ST-hcnh5zy3",
   "kind": "story",
   "title": "kb-sprint run says backlog.py dispatch blocks until its worker ends and is started in the background with a long timeout",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,

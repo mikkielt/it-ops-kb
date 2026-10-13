@@ -2,7 +2,7 @@
   "id": "SP-mujl7ebh",
   "kind": "sprint",
   "title": "Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash",
-  "status": "planned",
+  "status": "active",
   "goal": "A worker near its turn cap commits its work in progress on work/<id> and reports what is left, and dispatch's cap fits a task that adds a module, tests and docs or a story that only writes a report; the goal line of a worker's brief names the cap dispatch gives, not a fixed 60 turns; the brief's sibling list lets a worker edit a kb/_self doc its sibling also touches; the baseline route the role file and brief name uses commands a worker's permissions allow and never the shared git stash; kb-sprint run starts backlog.py dispatch in the background with a long timeout, and its review parks a gap with no repro command as a draft story or a bug with --repro-reason",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "TK-dcgp3kd2",
   "kind": "task",
   "title": "A worker's brief and role file say to commit its work in progress on work/<id> before its turn cap and report what is left",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-buzuumms",
   "priority": "P2",
   "rank": 0,

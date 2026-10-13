@@ -2,7 +2,7 @@
   "id": "ST-4jbvwssm",
   "kind": "story",
   "title": "The baseline route kb-worker names (git stash, a scratch clone it deletes) runs under the worker's allow rules",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,

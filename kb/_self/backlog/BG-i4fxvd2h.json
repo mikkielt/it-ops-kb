@@ -2,7 +2,7 @@
   "id": "BG-i4fxvd2h",
   "kind": "bug",
   "title": "The goal line of a worker's brief says stop after 60 turns whatever cap dispatch gives",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
