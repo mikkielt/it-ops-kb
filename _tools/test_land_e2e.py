@@ -4,7 +4,8 @@ the draft aside and says so, and still refuses any other untracked file; a resea
 outside facts. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
 `Self-Reviewed:` trailer naming the docs clears that; an item whose check fails stops `land` at its step and leaves
 origin/main where it was; a content landing that adds a CODE tag with no pointer to an article stops at step `lint`,
-which ran on that article's path alone. Three: the checkout `land` runs in holds untracked intake drafts and nothing else:
+which ran on that article's path alone, and a stop at a step after land removed the finished worker's worktree (that
+lint, a failed push) names the `git worktree add` command that checks the branch out again at the same path. Three: the checkout `land` runs in holds untracked intake drafts and nothing else:
 `land` moves them aside and says so before its clean tree step, keeps them there when it stops at a later step, and
 refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there. The fourth class,
 on a throwaway repository: a finished worker's worktree that a session-end hook's run (its parent gone, its standard
@@ -17,6 +18,7 @@ removes."""
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -131,7 +133,8 @@ class TestLandedItem:
 
 
 class TestStoppedLand:
-    def test_land_runs_lint_on_content_item_then_planted_failures(self, scenario, tmp_path):
+    def test_land_runs_lint_on_content_item_then_planted_failures_and_land_stop_after_release_names_worktree_add(
+            self, scenario, tmp_path):
         article = "kb/public/agents/codebase-mapping.md"
         nested = "kb/_self/lane/host.md"  # a code-lane path of the kb's lanes
         repo, sp, (bad, lint, host) = planned(
@@ -163,10 +166,19 @@ class TestStoppedLand:
         repo.write(article, Path(repo.file(article)).read_text(encoding="utf-8") + "\n- Planted fact. [CODE S0000001]\n")
         repo.git("commit", "-q", "-am", f"docs(kb): {lint} work", "-m", f"KB-Work: {lint}")
         repo.git("checkout", "-q", "main")
+        lint_worker = Path(repo.file(f".claude/worktrees/agent-{lint}"))  # the finished worker's worktree: land removes it
+        repo.git("worktree", "add", "-q", str(lint_worker), f"work/{lint}")
         code, out = bl(repo, "land", lint)
         assert code != 0 and "land stopped at step lint" in out, out
         assert "CODE tag without a path#symbol pointer" in out and f"lint.py {article[3:]} exited 1" in out, out
         assert origin_main(scenario) == moved and item(scenario, lint)["status"] == "doing"
+        # the stop after the removal names the command that checks the branch out again at the same path (relative to
+        # the checkout: backlog.py never prints the user's name, which an absolute path holds), and it works
+        back = re.search(r"^  git (worktree add .+)$", out, re.M)
+        assert back and not lint_worker.exists() and shlex.split(back.group(1)) == [
+            "worktree", "add", f".claude/worktrees/agent-{lint}", f"work/{lint}"], out
+        repo.git(*shlex.split(back.group(1)))
+        assert lint_worker.is_dir() and repo.git("-C", str(lint_worker), "branch", "--show-current").strip() == f"work/{lint}"
 
         # a host project of the plugin: no code lane (`lane_module` empty: a commit of a code path lands as content,
         # no merge request) and its own push (`land_push`); a push that exits 3 stops land at that step, `done` already
@@ -176,6 +188,8 @@ class TestStoppedLand:
         repo.git("add", nested)
         repo.git("commit", "-q", "-m", f"docs(kb): {host} work", "-m", f"KB-Work: {host}")
         repo.git("checkout", "-q", "main")
+        host_worker = Path(repo.file(f".claude/worktrees/agent-{host}"))
+        repo.git("worktree", "add", "-q", str(host_worker), f"work/{host}")
 
         def land_host(push):
             env = plain_push(repo, tmp_path, lane_module="", land_stale=[], land_eval=[], land_lint=[], land_push=push)
@@ -184,6 +198,7 @@ class TestStoppedLand:
         code, out = land_host(["python3", "-c", "import sys; sys.exit(3)"])
         assert code != 0 and "land stopped at step python3 -c" in out and "exited 3" in out, out
         assert "No such file" not in out and origin_main(scenario) == moved and item(scenario, host)["status"] == "doing"
+        assert f"git worktree add .claude/worktrees/agent-{host} work/{host}" in out and not host_worker.exists(), out
         code, out = land_host(["git", "push", "--no-verify", "origin", "HEAD:main"])
         assert code == 0 and "landed" in out, out
         assert "merge request" not in out and item(scenario, host)["status"] == "done", out
