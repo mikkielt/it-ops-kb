@@ -77,7 +77,7 @@ def test_check_py_names_a_ledger_citation_of_a_line_that_is_no_fact(tmp_path):
 
 
 @requires_git
-def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words(tmp_path):
+def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words_and_anchor_file_writes_only_changed_facts_and_no_fetch_state_and_anchor_quotes_keeps_other_files_rows(tmp_path, monkeypatch):
     root = tmp_path / "root"
     fixture_root(root, SID)
     art = root / "print" / "queues.md"
@@ -141,6 +141,42 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
                    for u in kbfacts.md_units("print/queues.md", text)]}
     ok, bad = factdiff.read_quotes(str(got), "print/queues.md", facts)
     assert list(ok.values()) == [quotes[quoted]] and len(bad) == 2 and "no tagged fact" in bad[0] and "over 25 words" in bad[1], bad
+    # `anchor --file F` anchors only the facts of F that hold no anchor row (and, with --quotes, the CSV's lines): the row
+    # of another file citing the same source stays as it was and no _fetch_state.csv row is written; a file whose facts
+    # all hold a row fetches nothing and writes nothing
+    kept_a = {"fact": "a" * 12, "path": "print/queues.md", "source_id": SID, "status": "located", "heading": "kept", "terms": "held",
+              "sha": "0" * 16, "quote": "wait until an operator", "verified_utc": "2026-09-01"}
+    kept_b = {**kept_a, "fact": "b" * 12, "path": "print/other.md", "quote": "another file's quote", "verified_utc": "2026-09-02"}
+    new_text = f"{missing} [DOC {SID}]"
+    new_key = kbfacts.fact_key(new_text)
+    cited = {SID: [(kept_a["fact"], "print/queues.md", 3, f"Held jobs stay until released. [DOC {SID}]"),
+                   (new_key, "print/queues.md", 9, new_text),
+                   (kept_b["fact"], "print/other.md", 4, f"Held jobs stay until released. [DOC {SID}]")]}
+    ledger, written, fetched = {(r["fact"], r["path"], SID): r for r in (kept_a, kept_b)}, [], []
+    monkeypatch.setattr(factdiff, "sources", lambda: {SID: {"id": SID, "url": "https://example.com/print", "reuse": "copy"}})
+    monkeypatch.setattr(factdiff, "cited_facts", lambda: cited)
+    monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: [SID])
+    monkeypatch.setattr(factdiff, "read_anchors", lambda: {k: dict(v) for k, v in ledger.items()})
+    monkeypatch.setattr(factdiff, "write_anchors", lambda rows: written.append({k: dict(v) for k, v in rows.items()}))
+    monkeypatch.setattr(factdiff, "read_state", lambda: pytest.fail("anchor --file read the fetch state"))
+    monkeypatch.setattr(factdiff, "write_state", lambda *args, **kw: pytest.fail("anchor --file wrote _fetch_state.csv"))
+    monkeypatch.setattr(factdiff, "fetch_all", lambda ids, *args, **kw: fetched.append(ids) or {SID: {"status": 200, "text": page}})
+
+    def anchor_file(quote_csv=None):
+        return factdiff.cmd_anchor(argparse.Namespace(topic=[], dir=[], file=["print/queues.md"], source=[], quotes=quote_csv,
+                                                      max_age=7, refetch=False, dry_run=False, selected=True))
+
+    assert anchor_file() == 0 and fetched == [[SID]] and len(written) == 1
+    rows = written[0]
+    assert rows[(kept_a["fact"], "print/queues.md", SID)] == kept_a and rows[(kept_b["fact"], "print/other.md", SID)] == kept_b
+    assert rows[(new_key, "print/queues.md", SID)]["status"] == "unlocated:no-match" and len(rows) == 3, rows
+    ledger.update(rows)
+    assert anchor_file() == 0 and fetched[1:] == [[]] and len(written) == 1  # every fact holds a row: no fetch, no write
+    got.write_text(f"line,quote\n9,{quotes[quoted]}\n", encoding="utf-8")
+    assert anchor_file(str(got)) == 0 and len(written) == 2
+    rows = written[1]
+    assert rows[(new_key, "print/queues.md", SID)]["status"] == "located" and rows[(new_key, "print/queues.md", SID)]["quote"] == quotes[quoted]
+    assert rows[(kept_a["fact"], "print/queues.md", SID)] == kept_a and rows[(kept_b["fact"], "print/other.md", SID)] == kept_b
 
 
 def test_build_index_check_passes_on_the_live_kb():
