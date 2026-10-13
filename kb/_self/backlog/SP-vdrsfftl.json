@@ -1,0 +1,20 @@
+{
+  "id": "SP-vdrsfftl",
+  "kind": "sprint",
+  "title": "Freshness at lookup: revalidation counts, memos, ledger reads and status agree",
+  "status": "planned",
+  "goal": "A stale-only revalidation keeps a row's full citation count, not the due sources'; a page or search answer that is a network failure or a 200 without the result list is an unanswered use in every memo hit, never not found; a fact whose window enters a next section is compared by every section it enters without cached previous text; fetch.py --status stale is exactly what a lookup revalidates (kbfacts.source_freshness); the scoped ledger row read returns a full csv read's rows for quoted quotes and a last-column key; a kb MCP session in a worktree reads that worktree's kb, not the main checkout's",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
