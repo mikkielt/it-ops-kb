@@ -45,8 +45,8 @@ class Gate:
         return kbfacts.pack(question, fmt="concise")
 
     def measure(self):
-        """{n, passed, failed, why {failed id: [failed words: text, anchor, ...]}, chars {eval id: pack characters},
-        offkb_good} on the working tree."""
+        """{n, passed, noted, failed, why {failed id: [failed words: text, anchor, ...]}, chars {eval id: pack
+        characters}, offkb_good} on the working tree."""
         import kbcommon, kbfacts, rag
         self.fresh()
         res = rag.run_eval()
@@ -56,7 +56,7 @@ class Gate:
             if p.is_file():
                 qs = [q for q in p.read_text(encoding="utf-8").splitlines() if q.strip()]
                 good += sum(kbfacts.pack(q, fmt="concise")["verdict"] == "good" for q in qs)
-        return {"n": res["n"], "passed": res["passed"], "failed": [r["id"] for r in res["rows"] if not r["ok"]],
+        return {"n": res["n"], "passed": res["passed"], "noted": res["noted"], "failed": [r["id"] for r in res["rows"] if not r["ok"]],
                 "why": {r["id"]: r["failed"] for r in res["rows"] if not r["ok"] and r["failed"]},
                 "chars": {r["id"]: r["chars"] for r in res["rows"]}, "offkb_good": good}
 
@@ -280,8 +280,10 @@ def expansion_fixes(finding, entry, gate):
 
 def try_fix(fix, eval_row, targets, gate, base):
     """Write the fix and the eval row, then hold the kb gates against `base`: every eval question passes, the pack of
-    the questions `base` measured does not grow on average, off-kb `good` does not rise. (ok, problems); the files
-    are put back unless ok."""
+    the questions `base` measured does not grow on average, off-kb `good` does not rise, and `noted` (good rows whose
+    pack prints a `check:` or `route:` line) stays at or under `rag.NOTED_BASELINE`, as `rag.py eval` holds it.
+    (ok, problems); the files are put back unless ok."""
+    import rag
     saved = {}
     for which, rows in [*fix.items(), ("eval", [eval_row])]:
         have = {tuple(r) for r in csv_rows(targets[which])}
@@ -296,6 +298,8 @@ def try_fix(fix, eval_row, targets, gate, base):
         why = m.get("why") or {}
         named = [f"{i} ({', '.join(why[i])})" if why.get(i) else i for i in m["failed"][:3]]
         problems.append(f"eval fails: {', '.join(named)}")
+    if m["noted"] > rag.NOTED_BASELINE:
+        problems.append(f"pack notes rise: noted={m['noted']} is above NOTED_BASELINE={rag.NOTED_BASELINE}")
     ids = [i for i in base["chars"] if i in m["chars"]]
     before = sum(base["chars"][i] for i in ids) / max(len(ids), 1)
     after = sum(m["chars"][i] for i in ids) / max(len(ids), 1)
@@ -665,6 +669,11 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
         base = gate.measure()
         if base["passed"] != base["n"]:
             out(f"apply: rag.py eval fails before any change ({base['passed']} of {base['n']} pass); nothing applied")
+            return 1
+        import rag
+        if base["noted"] > rag.NOTED_BASELINE:
+            out(f"apply: rag.py eval fails before any change (noted={base['noted']} is above NOTED_BASELINE="
+                f"{rag.NOTED_BASELINE}); nothing applied")
             return 1
     if evals:
         fixes = {r["entry"]: r for r in last.values() if r.get("kind") in FIX_KINDS and r.get("state") == "open"
