@@ -3278,3 +3278,12 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-edit-permission-rule-name-absolute-path. How does an Edit permission rule name an absolute path, and does it reach a worktree under .claude/worktrees?
+- An `Edit` rule names an absolute path with a double leading slash, `Edit(//tmp/scratch.txt)` for `/tmp/scratch.txt`; `~/path` starts at the home directory; a single leading slash anchors at the settings source (the primary working directory for project, local and CLI-flag rules), not at the filesystem root. [DOC S-pmhgjvef]
+- Writes under `.claude` are protected paths, but `.claude/worktrees/` is one of the listed exceptions, so an edit inside Claude's own worktree is not a protected-path write; a `permissions.allow` rule never lifts a protected-path write. [DOC S-zcuxapgb]
+- Conclusion: a worktree under `.claude/worktrees/` needs no protected-path allowance; a rule that names a location other than the session's working directory is written `//<absolute path>/**`, and a `/path` rule resolves against the primary working directory, so it cannot name another worktree. [DER S-pmhgjvef, S-zcuxapgb]
+- Open: whether the `.claude/worktrees/` exception holds for a worktree nested under another worktree's `.claude/worktrees/` directory, or one made by `git worktree add` instead of Claude Code. [UNK]
+- See claude/settings-and-scopes.md.
+
+_Agent: kb-research_
