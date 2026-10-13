@@ -108,7 +108,9 @@
         "any entry of _gaps.md that holds the question's words anywhere in its text"
       ],
       "recommendation": "an open _gaps.md entry (tagged UNK, no Resolved line) whose title holds the question's key words, as kbfacts._gap_items reads it for a kb lacks route",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "an open _gaps.md entry (tagged UNK, no Resolved line) whose title holds the question's key words, as kbfacts._gap_items reads it for a kb lacks route",
+      "by": "operator"
     },
     {
       "id": "other-clone",
