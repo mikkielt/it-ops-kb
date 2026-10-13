@@ -21,5 +21,21 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which domain and slug holds the JSON-log-lines-on-stdout facts for a Python and a Rust service?",
+      "options": [
+        "logs/python-rust-json-stdout-logs (new topic, P3)",
+        "extend logs/otel-collector-otlp-pipeline",
+        "extend arch/twelve-factor-readiness"
+      ],
+      "recommendation": "logs/python-rust-json-stdout-logs (new topic, P3)",
+      "class": "design",
+      "answer": "logs/python-rust-json-stdout-logs (new topic, P3)",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-23m5etrf"
 }
