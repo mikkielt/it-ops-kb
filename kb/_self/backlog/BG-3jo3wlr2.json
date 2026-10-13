@@ -1,0 +1,26 @@
+{
+  "id": "BG-3jo3wlr2",
+  "kind": "bug",
+  "title": "agent-caching.md tags DOC its claim that no changelog entry between v2.1.284 and v2.1.296 changes the Sonnet 5.5 cache-read price",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The absence clause of the v2.1.284 fact in kb/public/agents/agent-caching.md (no entry between v2.1.284 and v2.1.296 changes the price) is a DER fact of its own that states the changelog read behind it, and the entry's quoted price stays DOC S1864; found by the SP-ilqhjn3k review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;b=[l for l in open('kb/public/agents/agent-caching.md',encoding='utf-8') if 'no entry between' in l and l.rstrip().endswith('[DOC S1864].')];print('absence clauses tagged DOC:',len(b));sys.exit(1 if b else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the tag of one kb fact; its behaviour is the text a lookup returns",
+  "touches": [
+    "kb/public/agents/agent-caching.md",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k review"
+  ]
+}

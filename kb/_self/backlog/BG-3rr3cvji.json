@@ -1,0 +1,24 @@
+{
+  "id": "BG-3rr3cvji",
+  "kind": "bug",
+  "title": "dhcp-failover.md's -ServerRole Standby fact states the cmdlet reference's example 2 but cites only the management page S-xl2d4tuq",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The fact in kb/public/windows/dhcp-failover.md that compares the management page's -ServerRole Standby example with the cmdlet reference's example 2 cites the cmdlet reference S-x2hxgchj beside S-xl2d4tuq; found by the SP-ilqhjn3k review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;b=[l for l in open('kb/public/windows/dhcp-failover.md',encoding='utf-8') if 'example 2' in l and 'S-xl2d4tuq' in l and 'S-x2hxgchj' not in l];print('comparison lines missing S-x2hxgchj:',len(b));sys.exit(1 if b else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the citation of one kb fact; its behaviour is the text a lookup returns",
+  "touches": [
+    "kb/public/windows/dhcp-failover.md"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k review"
+  ]
+}

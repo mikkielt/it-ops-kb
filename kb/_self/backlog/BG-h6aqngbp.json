@@ -1,0 +1,24 @@
+{
+  "id": "BG-h6aqngbp",
+  "kind": "bug",
+  "title": "kbid.py add's stale-lock clear can take a live holder's lock, so two adds hold the sources lock at once after a crash",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "_clear_stale in _tools/kbid.py never moves aside a lock a live writer made after the waiter judged the old one stale (a waiter that stat'ed a stale lock later os.replace's whatever sits at the name, possibly a fresh lock; a third writer can create the lock before os.link restores it, and a failed link is swallowed), so concurrent adds after a crashed writer's stale lock neither drop a row nor tear the .tmp; found by the SP-ilqhjn3k review (reading _tools/kbid.py:323)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile;sys.path.insert(0,'_tools');import kbid;d=tempfile.mkdtemp();lock=os.path.join(d,'s.lock');open(lock,'w').write('C');o=os.link;os.link=lambda a,b:(open(b,'w').write('D'),o(a,b))[1];kbid._clear_stale(lock);os.link=o;t=open(lock).read();print('lock now held by',t);sys.exit(1 if t!='C' else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbid.py",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k review"
+  ]
+}

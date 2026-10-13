@@ -1,0 +1,25 @@
+{
+  "id": "BG-6w4zexka",
+  "kind": "bug",
+  "title": "doc-lookup-sources.md's memdocs no-capture DER rests on the Wayback availability API, which doc-change-detection.md says cannot prove absence",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The memdocs no-capture fact in kb/public/agents/doc-lookup-sources.md rests on a CDX (or TimeGate) query for each of the API row, raw README and commit row urls, the check the change-detection article names as the one to trust over the availability API, and cites the commit row S-rgpijsmb it speaks of; found by the SP-ilqhjn3k review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;b=[l for l in open('kb/public/agents/doc-lookup-sources.md',encoding='utf-8') if 'holds no capture' in l and 'CDX' not in l];print('no-capture lines without a CDX basis:',len(b));sys.exit(1 if b else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the basis one kb fact states; its behaviour is the text a lookup returns",
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k review"
+  ]
+}

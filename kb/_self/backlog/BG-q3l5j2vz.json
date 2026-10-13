@@ -1,0 +1,24 @@
+{
+  "id": "BG-q3l5j2vz",
+  "kind": "bug",
+  "title": "_answers.md's QK-gone-memdocs answer tags the Internet Archive's missing captures DOC on the one home-page capture S-u2afup7q",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The QK-gone-memdocs answer in kb/public/_answers.md tags the absence of Wayback captures of the memdocs API row, raw README and commit row DER with the lookup that found it, as the doc-lookup-sources article now does after BG-4lfjabfo, and keeps the home-page capture DOC S-u2afup7q; found by the SP-ilqhjn3k review",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;b=[l for l in open('kb/public/_answers.md',encoding='utf-8') if 'holds no capture' in l and l.rstrip().endswith('[DOC S-u2afup7q]')];print('absence lines tagged DOC S-u2afup7q:',len(b));sys.exit(1 if b else 0)"
+    ]
+  },
+  "repro_reason": "the defect is the tag of one ledger line; its behaviour is the text a lookup returns",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-u7gtwn5s",
+  "kind": "bug",
+  "title": "kbid.py add leaks its sources lock when writing the lock file fails, and .gitignore does not list the lock or its clear names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "_sources_lock in _tools/kbid.py removes the lock it created when os.fdopen or the write of its owner line raises (or the process is interrupted before the try), so the next add does not stall for LOCK_STALE_S, and .gitignore lists _sources.csv.lock and _sources.csv.lock.clear.*; found by the SP-ilqhjn3k review (reading _tools/kbid.py:366)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,tempfile;sys.path.insert(0,'_tools');import kbid;d=tempfile.mkdtemp();p=os.path.join(d,'_sources.csv');f=os.fdopen;os.fdopen=lambda *a,**k:(_ for _ in ()).throw(OSError('planted'));exec('try:\\n with kbid._sources_lock(p,p): pass\\nexcept OSError: pass');os.fdopen=f;left=os.path.exists(p+'.lock');print('lock left after a failed write:',left);sys.exit(1 if left else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbid.py",
+    "_tools/test_redact.py",
+    ".gitignore"
+  ],
+  "links": [
+    "parked: SP-ilqhjn3k review"
+  ]
+}
