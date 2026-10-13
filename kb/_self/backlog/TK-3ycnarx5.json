@@ -2,7 +2,7 @@
   "id": "TK-3ycnarx5",
   "kind": "task",
   "title": "pool build asks the model only with --ask or --redo, and otherwise lists the rows and the estimate and exits 1",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-ldrzo55w",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,6 @@
     "_tools/test_bench.py",
     "kb/_self/tools.md",
     "kb/_self/code.md"
-  ]
+  ],
+  "claimed_by": "orch-honlhzdc"
 }
