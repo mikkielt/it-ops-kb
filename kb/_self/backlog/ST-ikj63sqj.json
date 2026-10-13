@@ -2,7 +2,7 @@
   "id": "ST-ikj63sqj",
   "kind": "story",
   "title": "doc-change-detection's remembered-failure fact matches the window the lookup keeps under _cache/",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-u5q37ds3 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: python3 -c \"import sys; t=[l for l in open('kb/public/agents/doc-change-detection.md', encoding='utf-8') if 'remembered failure of a host' in l]; sys.exit(1 if any('holds in memory' in l for l in t) else 0)\" exits 1 now (line 112 says a process holds it in memory). Anchors: BG-xweoljdy, last in the chain, re-anchors this article's reworded facts, so _anchors.csv is not in touches. Order: after ST-3wfekziw (same article)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: python3 -c \"import sys; t=[l for l in open('kb/public/agents/doc-change-detection.md', encoding='utf-8') if 'remembered failure of a host' in l]; sys.exit(1 if any('holds in memory' in l for l in t) else 0)\" exits 1 now (line 112 says a process holds it in memory). Anchors: BG-xweoljdy, last in the chain, re-anchors this article's reworded facts, so _anchors.csv is not in touches. Order: after ST-3wfekziw (same article).",
+  "claimed_by": "orch-uvz65lvm"
 }
