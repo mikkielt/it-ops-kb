@@ -7,7 +7,8 @@ ledger rows they changed for a source nothing names: `unrelated_baselines`), the
 request line.
 
 Standard library only; imports `bl_base`, `bl_check` (the no-op rules `done` applies), `bl_cli` and `bl_intake` (the
-time windows of the detectors that `precheck` names) and never `backlog`. The branch `land` expects sync to open for code commits is named by
+time windows of the detectors that `precheck` names) and never `backlog`; `bl_selfcheck` (the load a review story's
+`done` refuses a whole-suite run at) is imported where `done` reads it. The branch `land` expects sync to open for code commits is named by
 `kg_lane.lane_plan`, the one helper sync uses. It registers `done`, `researched`, `land`, `merge` and `close` with `bl_cli` itself when
 imported (`backlog.py`'s USAGE puts each in its usage position), and `host-check` and the repro rules there call `run_check` from
 here."""
@@ -368,6 +369,23 @@ def cmd_researched(bl, a):
     return 1
 
 
+def is_whole_suite(argv):
+    """True when the check is a whole-suite tests.py run: the script with no selection (-k, named files, --changed)."""
+    argv = [str(x) for x in argv]
+    return (len(argv) > 1 and Path(argv[1]).name == "tests.py"
+            and all(x == "--no-reuse" for x in argv[2:]))
+
+
+def loaded_host_for_suite(checks, load=None, cores=None):
+    """The line that names this host when a check of CHECKS is a whole-suite tests.py run and the host's 5-minute load
+    is over bl_selfcheck.SUITE_LOAD_PER_CORE per core (the load that run no longer fits its seconds ceiling at, which
+    selfcheck's host check fails on too), else None. LOAD and CORES stand in for the host's own."""
+    if not any(is_whole_suite(c["run"]) for c in checks):
+        return None
+    import bl_selfcheck  # where selfcheck's host check lives, imported where `done` reads it
+    return bl_selfcheck.suite_load_problem(load, cores)
+
+
 def cmd_done(bl, a):
     t0 = time.monotonic()
     iid = need(bl, a.id)
@@ -459,6 +477,10 @@ def cmd_done(bl, a):
     if problems:
         refuse_done(iid, t0, reasons, f"{bl.label(iid)} is not done:\n  " + "\n  ".join(problems))
     checks = list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else [])
+    loaded = loaded_host_for_suite(checks) if it.get("review") else None
+    if loaded:  # before the run, which on a loaded host takes minutes and refuses over its seconds ceiling
+        refuse_done(iid, t0, ["not-ready"], f"{bl.label(iid)} is not done: {loaded}; run done again once the load has "
+                    "fallen (selfcheck's host check names the same limit)")
     results, failed, passed = [], [], []
     for c in checks:
         ok, code, out = run_check(bl.root, c)
