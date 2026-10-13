@@ -1,0 +1,29 @@
+{
+  "id": "ST-vgl4be55",
+  "kind": "story",
+  "title": "sc_stale rows keep measuring staleness past one census: their packs cite a source no single refresh makes fresh",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Each sc_stale row of bench_pool.csv asks a question whose pack cites a source that stays past its freshness lifetime after one census or refresh (or the rows are drawn when a census runs, not by hand), and pool check's warning for an unstale row reaches a landing gate (BG-2mdkl622)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "pool",
+        "check"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/bench_scenarios.csv",
+    "kb/public/_retrieval/bench_pool.csv",
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py"
+  ],
+  "links": [
+    "parked: SP-honlhzdc review"
+  ],
+  "notes": "Found by the SP-honlhzdc review (S3): after BG-3tfno44k, BP-3d01d974's Learn sources (7-day lifetime, no age) and BP-91b5c91e's S1512/S1862 (about 1.6 and 1.9 days past) go fresh at one census or Claude Code refresh, as the four rows BG-3tfno44k replaced did. Its check passes on 2026-10-13 (pool check prints nothing): planning must give it a check that fails while a row's stale source is within one refresh of going fresh."
+}

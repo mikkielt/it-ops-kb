@@ -1,0 +1,28 @@
+{
+  "id": "BG-2mdkl622",
+  "kind": "bug",
+  "title": "No landing gate runs pool check, so a landing that closes a _gaps.md entry a gap row names, or leaves an sc_stale row unstale, lands green",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbgit.py sync runs benchmarks.py pool check when bench_pool.csv, bench_scenarios.csv or a root's _gaps.md changes, so the landing that closes an entry a gap row still names fails, as BG-viwywxml's goal and tools.md say",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open('_tools/kg_sync.py',encoding='utf-8').read();ok='\"pool\", \"check\"' in s;print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the gate list is a table of kg_sync.py; a landing fixture that closes a gap entry is the planner's to add",
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/kbgit.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-honlhzdc review"
+  ],
+  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry."
+}

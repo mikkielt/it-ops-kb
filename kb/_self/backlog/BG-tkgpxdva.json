@@ -1,0 +1,24 @@
+{
+  "id": "BG-tkgpxdva",
+  "kind": "bug",
+  "title": "The cmpivot timeout and BP-c552cb0f answer regexes are case-sensitive at scoring, so 'Ten minutes' or 'One hour' fails, and '0.1 hour' passes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The answer regexes of the six cmpivot timeout rows and of BP-c552cb0f match as agent_bench scores them (re.search with no flags): they take a capitalised 'Ten minutes' or 'One hour' and reject '0.1 hour'; pool check passes",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;R={r['id']:json.loads(r['checks'])[0] for r in b.read_csv(b.PUBLIC_FILE)};r=[bool(re.search(R['BP-d306eaa8'],'Ten minutes from the Intune admin center.')),bool(re.search(R['BP-d306eaa8'],'One hour.')),not re.search(R['BP-d306eaa8'],'0.1 hour')];print(r);sys.exit(0 if all(r) else 1)"
+    ]
+  },
+  "touches": [
+    "kb/public/_retrieval/bench_pool.csv",
+    "kb/public/_retrieval/bench_scenarios.csv"
+  ],
+  "links": [
+    "parked: SP-honlhzdc review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "BG-dwcjaspf",
+  "kind": "bug",
+  "title": "The sprint reviewer's brief names pool build --ask as paid but not --redo ID, which also asks the model",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The reviewer sentence of skills/sprint/SKILL.md (review step 3) and of kb/_self/backlog.md (Running a sprint) name pool build with --ask or --redo as paid, so a reviewer following the brief makes no paid call",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;a=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if 'fresh-context reviewer' in l and 'paid' in l];b=[l for l in open('kb/_self/backlog.md',encoding='utf-8') if 'no paid model call' in l];ok=bool(a) and bool(b) and all('--redo' in l for l in a+b);print(len(a),len(b),ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "the defect is the wording of two doc lines",
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "AGENTS.md"
+  ],
+  "links": [
+    "parked: SP-honlhzdc review"
+  ]
+}
