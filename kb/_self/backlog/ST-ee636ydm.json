@@ -51,7 +51,9 @@
         "the server: starting kb_http.py --feedback asks the operator or an agent to confirm once, and its reports then count": "ST-ee636ydm",
         "both: the start is confirmed once and each report is approved": "ST-ee636ydm"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "each report: remote reports wait as pending until querylog.py feedback approve FB-ID --by operator|agent",
+      "by": "operator"
     }
   ]
 }
