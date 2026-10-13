@@ -91,6 +91,17 @@
       "class": "agents-rule",
       "answer": "yes: the worker finishes on its recommendation, commits the gate open and the landing waits for the operator's answer",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does the go-on rule keep an exception for a recommendation that cannot be carried out before the operator's answer, left undone and named in the report?",
+      "options": [
+        "yes: the rule names the exception, in the brief and the role file",
+        "no: the worker always carries the recommendation out"
+      ],
+      "recommendation": "yes: the rule names the exception, in the brief and the role file",
+      "class": "agents-rule"
     }
   ],
   "links": [

@@ -89,13 +89,17 @@ WORKER_RULES = (
      "stack's.",
      "A stacked item (its base holds another item's commits not yet landed): each commit names in its own "
      "`Self-Reviewed` trailer the docs read for its change, not the stack's."),
-    "A choice the goal leaves open (a name, a default, a width, an opt-in, a limit, a price): record a provisional "
-    "gate with your recommendation (`{backlog} gate add {id} --kind provisional ...`), answer it "
-    "`--provisional` and commit it with the work, never prose in the report only: a choice your report names and no "
-    "gate on `{branch}` records sends the item back. A choice only the operator can make, or any choice on an item "
-    "whose touches are rule-guarding: a blocking gate with its options and your recommendation, commit it, and "
-    "stop. `gate add` prints the class it gives the gate; never reword a gate to change its class; one that prints "
-    "`made blocking` is committed as printed, and you stop with a report.",
+    "A choice the goal leaves open (a name, a default, a width, an opt-in, a limit, a price), an implementation "
+    "choice (how the code or text does what the goal says) and a narrowing of the rows the goal names (fewer rows, "
+    "files or cases than it lists): record a provisional gate with your recommendation (`{backlog} gate add {id} "
+    "--kind provisional ...`), answer it `--provisional` and commit it with the work before you report, never prose "
+    "in the report only: a choice your report names and no gate on `{branch}` records sends the item back. A choice "
+    "only the operator can make, or any choice on an item whose touches are rule-guarding: a blocking gate with its "
+    "options and your recommendation, committed open. `gate add` prints the class it gives the gate; never reword a "
+    "gate to change its class; one that prints `made blocking` is committed open as printed, you go on with your "
+    "recommendation, finish the work on it and report the gate: the class names who answers, never that the work "
+    "halts, and the landing waits for the operator's answer (a recommendation that cannot be carried out before the "
+    "answer is left undone, and the report says which part).",
     "A change to what a function returns or takes runs `{backlog} referrers SYMBOL --item {id}` "
     "first and covers every consumer it lists in the same item; a consumer outside the touches stops the work with "
     "a report.",
