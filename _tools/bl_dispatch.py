@@ -44,6 +44,7 @@ EFFORT = "high"
 # --max-turns by item kind (kb/public/claude/ci-and-headless.md: print mode only, an error at the limit, no default)
 TURNS = {"task": 100, "subtask": 100, "bug": 100, "story": 150, "epic": 150, "sprint": 150}
 RESEARCH_TURNS = 200  # a research story, task or subtask or an investigation bug
+COMMIT_MARGIN = 15  # the brief tells a worker to have committed its work in progress this many turns before its cap
 INVESTIGATION_RE = re.compile(r"investigat", re.I)  # a bug whose title or goal says so is an investigation bug
 PACK_TIMEOUT_S = 120
 SELF_ROOT = "_self"  # the kb root of the kb's own rule docs: the one `rag.py pack --item` serves
@@ -69,6 +70,9 @@ WORKER_RULES = (
      "it again."),
     "Commit on the local branch `{branch}` with `KB-Work: {id}` in the message's last paragraph, with "
     "`Co-Authored-By` and the other trailers; never push.",
+    "Your turn cap is {turns} turns (print mode ends with an error at it): by turn {commit_by} commit what you have on "
+    "`{branch}` with `KB-Work: {id}`, finished or as work in progress, and report what is left; never end the session "
+    "with staged or uncommitted changes.",
     "Run tests in the foreground, and end every background command and monitor you started before you return: "
     "`land` refuses a branch while a process still runs in your worktree.",
     "File a bug for any defect outside the item, do not fix it: commit the new item file alone, in a commit of its "
@@ -122,11 +126,12 @@ def backlog_cmd(root):
     return f"python3 {PLUGIN_ROOT.as_posix()}/_tools/backlog.py"
 
 
-def worker_rules(root, iid, branch):
+def worker_rules(root, iid, branch, turns=None):
     """The brief's fixed rules for the project at ROOT, as lines: the kb-only ones (its test runner and ceiling, its
     stale-doc check) as the kb's own brief has them where the project has the tool, else the project-neutral wording.
     The rule on the paths every item may change names `always_in_scope` (what `in_scope` counts), and is left out
-    where the project sets none."""
+    where the project sets none; the rule on the turn cap names TURNS and the turn `COMMIT_MARGIN` turns before it,
+    and is left out where no cap is given."""
     always = ", ".join(f"`{g}`" for g in always_in_scope())
     out = []
     for rule in WORKER_RULES:
@@ -135,7 +140,10 @@ def worker_rules(root, iid, branch):
             rule = kb if has_tool(root, tool) else host
         if "{always}" in rule and not always:
             continue
-        out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root), always=always))
+        if "{turns}" in rule and not turns:
+            continue
+        out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root), always=always, turns=turns,
+                               commit_by=max((turns or 0) - COMMIT_MARGIN, 1)))
     return out
 
 
@@ -375,9 +383,11 @@ def role_file_line(root):
             f"`${{CLAUDE_PLUGIN_ROOT}}` in it is `{plugin}`: write that path where a command shows the variable.")
 
 
-def compose_brief(bl, iid, known=(), probe=None):
-    """The brief for ITEM's worker, as text. Reads the backlog and runs the rules pack; writes nothing."""
+def compose_brief(bl, iid, known=(), probe=None, turns=None):
+    """The brief for ITEM's worker, as text: its fixed rules name the turn cap TURNS, else the cap of the item's kind.
+    Reads the backlog and runs the rules pack; writes nothing."""
     it = bl.items[iid]
+    turns = turns or max_turns(bl, iid)
     wt, scratch, branch = worktree_path(bl.root, iid), scratch_path(bl.root, iid), worker_branch(iid)
     facts = [it.get("kind")]
     if bl.children(iid) or it.get("kind") in ("story", "bug"):
@@ -420,7 +430,7 @@ def compose_brief(bl, iid, known=(), probe=None):
     kf = known_failures(bl, known)
     out += (kf + ["A failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
-    out += ["", "## Fixed rules", *[f"- {r}" for r in worker_rules(bl.root, iid, branch)], "",
+    out += ["", "## Fixed rules", *[f"- {r}" for r in worker_rules(bl.root, iid, branch, turns)], "",
             "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
             "## Report", report_line(bl.root)]
     return "\n".join(out) + "\n"
@@ -571,7 +581,7 @@ def cmd_dispatch(bl, a):
         raise Refused(f"{bl.label(iid)} is {it.get('status')}, not doing: claim it (and push the claim) before dispatch")
     if shutil.which(argv[0]) is None:
         raise Rejected(f"dispatch: {argv[0]} is not on PATH")
-    text = compose_brief(bl, iid, a.known, a.probe)
+    text = compose_brief(bl, iid, a.known, a.probe, turns)
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
     for n, co in repo_checkouts(bl, iid):
