@@ -2,7 +2,7 @@
   "id": "ST-7q55laxt",
   "kind": "story",
   "title": "Review sprint: Content fixes: GitLab and Claude Code articles match their live pages",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gcerxjsg",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-gcerxjsg"
 }
