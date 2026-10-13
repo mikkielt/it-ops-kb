@@ -948,7 +948,8 @@ def test_plugin_sprint_ships_the_skills_and_the_worker_parameterised_by_the_plug
         assert hook("config")[0] == 2 and hook("horizon", "--hook", "--opt-in") == (0, "")
 
 
-def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugins(tmp_path):
+def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugins_and_brief_names_always_in_scope(
+        tmp_path, monkeypatch):
     import bl_dispatch
     plugin = bl_dispatch.PLUGIN_ROOT
     assert (plugin / bl_dispatch.PLUGIN_ROLE_FILE).is_file()  # the plugin's role file is where the brief says
@@ -977,4 +978,11 @@ def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugin
     assert "`_tools/tests_ceiling.json`" in kb and "`selfdoc.py stale --since <the item's base>`" in kb
     assert "`tests.py` result, `selfdoc.py stale --since origin/main` result, the staging" in kb
     assert "the project's own checks" not in kb and str(plugin.as_posix()) not in kb
+    # the paths every item may change are named, as `in_scope` counts them; a project that sets none gets no such line
+    globs = bl_base.always_in_scope()
+    assert globs and all(f"`{g}`" in kb and f"`{g}`" in host for g in globs)
+    assert "a source row whose count regenerates a coverage file is in scope" in kb
+    monkeypatch.setattr(bl_dispatch, "always_in_scope", lambda: ())
+    none = "\n".join(bl_dispatch.worker_rules(tmp_path, "TK-aaaaaaaa", "work/TK-aaaaaaaa"))
+    assert "Besides the touches" not in none and "A doc that needs an edit outside the touches" in none
 
