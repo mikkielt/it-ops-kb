@@ -28,6 +28,19 @@
   "depends_on": [
     "ST-65r3cwix"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which value does factdiff.JUDGE_REPLY_TOKENS take: the measured output per delivered item of the logs census's judge run, which includes the one call that failed whole and was asked again, or the figure of the clean calls alone?",
+      "options": [
+        "435",
+        "300"
+      ],
+      "recommendation": "435",
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v review"
   ],
