@@ -35,7 +35,7 @@
       "recommendation": "Update both assertions to the fixed fallback, with the item's touches extended to _tools/test_live_kb.py",
       "class": "design",
       "answer": "Update both assertions to the fixed fallback, with the item's touches extended to _tools/test_live_kb.py",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
