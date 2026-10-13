@@ -2,7 +2,7 @@
   "id": "BG-7v7icnjj",
   "kind": "bug",
   "title": "A stale-only lookup revalidation passes Doc.locate the count of the due sources, not the row's real citation count",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vdrsfftl",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,18 @@
     "parked: SP-djl7za6x review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 at plan time: the repro fails on the base (exit 1: the printed line's ids are narrowed to the one due source, so Doc.locate gets 1, not 2). The fix may add a cites key to the printed items that factdiff.revalidate reads (cites[(key, path)] near factdiff.py line 1622) or keep the ids whole beside the due set. First of the sprint's chain on factdiff.py and kbfacts.py: BG-gx5b2yhu, BG-vzsk2t5t, ST-qkpbwtsc, BG-pcralmzy and ST-gkrivybp follow it. The test file is left out of the touches (the repro runs the changed path): an existing assertion in test_live_kb.py that pins the old count stops the work with a report.",
-  "claimed_by": "orch-vdrsfftl"
+  "evidence": {
+    "commit": "5ab36c3e6bf69100e9e68cc349390c3cc858e037",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import kbfacts, factdiff; printed=[{'path':'public/x/y.md','line':3,'key':'k1','text':'t','ids':['S1','S2']}]; res={'results':[{'printed':printed}],'text':'T'}; kbfacts.source_freshness=lambda ids: {'S1':{'stale':False,'lifetime_days':30},'S2':{'stale':True,'lifetime_days':30}}; seen={}; factdiff.revalidate=lambda p, reuse=None: seen.update(p=p) or {'date':'d','lines':{},'sources':{}}; kbfacts.revalidated=lambda t,r,f: t; kbfacts.revalidate_pack(res, stale_only=True); p=seen['p'][0]; sys.exit(0 if p.get('cites', len(set(p['ids'])))==2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
