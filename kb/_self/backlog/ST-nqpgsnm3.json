@@ -2,7 +2,7 @@
   "id": "ST-nqpgsnm3",
   "kind": "story",
   "title": "settings-and-scopes.md line 73 states as DER which git commands a default -p run allows without citing the page that lists the read-only set",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,18 @@
     "parked: SP-mujl7ebh review"
   ],
   "notes": "Premise: kb/public/claude/settings-and-scopes.md:73 tags DER on S1800 and S-zcuxapgb the claim that git diff and git show run in a default -p session without a rule; neither source lists the read-only set's members. Premise run 2026-10-13: the check fails on base (line 73 holds neither '[UNK' nor 'S-pmhgjvef', exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-foopqq2x"
+  "evidence": {
+    "commit": "2801094d6a2c4ea6ed803f32fec64b99e2331a32",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[l for l in open('kb/public/claude/settings-and-scopes.md',encoding='utf-8') if '`git diff`' in l and '`git show`' in l];sys.exit(0 if ls and all('[UNK' in l or 'S-pmhgjvef' in l for l in ls) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
