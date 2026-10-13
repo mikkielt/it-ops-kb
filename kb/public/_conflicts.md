@@ -794,3 +794,6 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## sqlserver/availability-group-seeding
 - Threading of automatic seeding: the concept page (S-7u5iv73w, read 2026-10-12) calls it a single-threaded process that can handle up to five databases, while the how-to page (S-bvigwggq, read 2026-10-12) says SQL Server uses one thread per LUN on the primary and on the secondary. The kb states both and does not choose. (topic: sqlserver/availability-group-seeding)
+
+## auth/postgres-column-encryption
+- CipherSweet FIPS fast blind index: the security page (S-qt7piebc, read 2026-10-13) says fast blind indexes under FIPSCrypto calculate a hash using HMAC-SHA384 and truncate it, while the blind-index internals page (S-rqc6efd7, read 2026-10-13) lists the FIPSCrypto fast index as PBKDF2-SHA384 with 1 iteration (three arguments: plaintext, key, bit length). Both pages name PBKDF2-SHA384 for the slow index (the internals page adds a default of 50,000 iterations). The kb states both and does not choose. (topic: auth/postgres-column-encryption)
