@@ -1,0 +1,24 @@
+{
+  "id": "ST-7cuthajw",
+  "kind": "story",
+  "title": "The kb-sprint run step states dispatch's story cap as TURNS gives it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md run step 3 says 150 for a story with no tasks, while TURNS gives every non-research story, epic and sprint 150 and a research-scope item 200 (kb/_self/tools.md states it right); the skill's line matches TURNS. Found by the SP-mujl7ebh review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();r=t.split('## run',1)[1].split('## review',1)[0];sys.exit(1 if 'story with no tasks' in r else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh review"
+  ]
+}

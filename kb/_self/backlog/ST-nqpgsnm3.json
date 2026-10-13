@@ -1,0 +1,25 @@
+{
+  "id": "ST-nqpgsnm3",
+  "kind": "story",
+  "title": "settings-and-scopes.md line 73 states as DER which git commands a default -p run allows without citing the page that lists the read-only set",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/claude/settings-and-scopes.md:73 says git diff and git show run in a default-mode -p session without a rule, tagged DER on S1800 and S-zcuxapgb, neither of which lists the read-only set's members (line 72 names the permissions page for that, line 74 says no page lists its git subcommands); the line cites the page that gives the set or is tagged UNK. Found by the SP-mujl7ebh review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('kb/public/claude/settings-and-scopes.md',encoding='utf-8') if '`git diff`' in l and '`git show`' in l];sys.exit(0 if ls and all('[UNK' in l or 'S-pmhgjvef' in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh review"
+  ]
+}

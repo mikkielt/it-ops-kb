@@ -1,0 +1,27 @@
+{
+  "id": "ST-5t7362dj",
+  "kind": "story",
+  "title": "An Agent-tool worker's prompt from brief ID names no turn cap it does not have",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "compose_brief always fills the turn cap, so brief ID prints 'Your turn cap is N turns' for the kb-sprint skill's Agent-tool fallback, whose subagent has no --max-turns; brief gives the cap only when dispatch runs the session with one, and the role file's no-cap rule is the one an Agent-tool worker reads. Found by the SP-mujl7ebh review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_agent_tool_names_no_cap"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh review"
+  ]
+}

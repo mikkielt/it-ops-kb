@@ -1,0 +1,23 @@
+{
+  "id": "BG-oa5rs334",
+  "kind": "bug",
+  "title": "A worker's brief tells it to commit by turn 1 when dispatch's cap is not above the commit margin",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "worker_rules in bl_dispatch.py clamps the commit-by turn to max(cap - COMMIT_MARGIN, 1), so dispatch --max-turns 10 writes 'by turn 1 commit what you have' into the brief; a cap at or below the margin gets a commit-by turn that leaves the worker room to work, or dispatch refuses such a cap. Found by the SP-mujl7ebh review.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_dispatch as d;r=' '.join(x for x in d.worker_rules('.','X','work/X',10) if 'turn cap' in x);sys.exit(1 if 'by turn 1 ' in r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh review"
+  ]
+}
