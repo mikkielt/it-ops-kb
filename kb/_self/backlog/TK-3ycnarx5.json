@@ -2,7 +2,7 @@
   "id": "TK-3ycnarx5",
   "kind": "task",
   "title": "pool build asks the model only with --ask or --redo, and otherwise lists the rows and the estimate and exits 1",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-ldrzo55w",
   "priority": "P2",
   "rank": 0,
@@ -72,5 +72,27 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-honlhzdc"
+  "evidence": {
+    "commit": "43fcc9e3f0dea739eec1079af2d46a68d0b1fa2a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,argparse,tempfile,os;sys.path.insert(0,'_tools');import bench_pool as b;c=[];b.sonnet_regexes=lambda i:(c.append(len(i)),['']*len(i))[1];d=tempfile.mkdtemp();n=lambda a:argparse.Namespace(pool_cmd='build',querylog=False,seed=b.SEED,out=os.path.join(d,'p.csv'),redo=None,dry_run=False,replies=None,ask=a);r=b.cli(n(False));o=(r,list(c),os.path.exists(os.path.join(d,'p.csv')));print(o);r2=b.cli(n(True));print(r2,c);sys.exit(0 if o==(1,[],False) and r2==0 and len(c)==1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "aded42d97160a181"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ok=all('--ask' in open(p,encoding='utf-8').read() for p in ('kb/_self/tools.md','kb/_self/code.md'));print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
