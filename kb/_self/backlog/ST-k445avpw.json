@@ -60,7 +60,7 @@
       "recommendation": "gated_request under down_window: provider.gated_request, called by each lookup request site, gated by a process flag that factdiff.revalidate sets with provider.down_window",
       "class": "design",
       "answer": "gated_request under down_window: provider.gated_request, called by each lookup request site, gated by a process flag that factdiff.revalidate sets with provider.down_window",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -73,7 +73,7 @@
       "recommendation": "removed: the source's page request is gated and records its hosts itself, the redirect target included, so the per-source check and call would only repeat it, for the source's host",
       "class": "design",
       "answer": "removed: the source's page request is gated and records its hosts itself, the redirect target included, so the per-source check and call would only repeat it, for the source's host",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -86,7 +86,7 @@
       "recommendation": "record only: the hop is followed, as the goal names only the recording of the target's window, and the window it finds ends or doubles as any request's",
       "class": "design",
       "answer": "record only: the hop is followed, as the goal names only the recording of the target's window, and the window it finds ends or doubles as any request's",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

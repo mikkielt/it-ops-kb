@@ -39,7 +39,7 @@
       "recommendation": "refetch past the cache",
       "class": "design",
       "answer": "refetch past the cache",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -52,7 +52,7 @@
       "recommendation": "replace the row, as every other selection does",
       "class": "design",
       "answer": "replace the row, as every other selection does",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

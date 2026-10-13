@@ -41,7 +41,7 @@
       "recommendation": "detect_source tests words_key(text) in both modes, so census.py check reads no GONE for it",
       "class": "design",
       "answer": "detect_source tests words_key(text) in both modes, so census.py check reads no GONE for it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
