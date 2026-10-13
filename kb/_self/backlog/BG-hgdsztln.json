@@ -1,0 +1,22 @@
+{
+  "id": "BG-hgdsztln",
+  "kind": "bug",
+  "title": "Host finding: the SP-enudabdr review's whole-suite runs were refused at the darwin seconds ceiling, 25.4 s and 25.7 s against 24 s, all 100 tests passing on an otherwise idle host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The operator decides from the recorded test.run rows of the SP-enudabdr review (f8321f98 at 2026-10-13T15:20:21Z, 25404 ms, and 834ecb6b at 2026-10-13T15:20:57Z, 25655 ms, 100 passed, no other suite or worker running, beside BG-x55qvsln's SP-7ff7c5ui rows and this sprint's five workers' 24 to 34 s runs under parallel load) what the suite's darwin headroom should be; nothing changes the ceiling without that decision",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  },
+  "touches": [
+    "_tools/tests_ceiling.json"
+  ],
+  "links": [
+    "parked: SP-enudabdr review"
+  ]
+}
