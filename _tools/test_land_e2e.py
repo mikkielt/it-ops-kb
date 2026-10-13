@@ -31,9 +31,17 @@ NOSYNC = {"KB_SYNC_NO_TESTS": "1"}
 PLAN = "kb/_self/backlog"
 
 
-def bl(repo, *args):
-    p = repo.tool("backlog.py", *args, env=NOSYNC)
+def bl(repo, *args, env=NOSYNC):
+    p = repo.tool("backlog.py", *args, env=env)
     return p.returncode, p.stdout + p.stderr
+
+
+def plain_push(repo, tmp_path, **changes):
+    """NOSYNC and a KB_BACKLOG_CONFIG that names a copy of the clone's backlog.json with CHANGES applied (a `land_push`
+    of one plain push: the landing's own steps stay, the sync gate that the own-checkout scenario covers does not)."""
+    cfg = tmp_path / "backlog.json"
+    cfg.write_text(json.dumps({**json.loads(repo.read("backlog.json")), **changes}), encoding="utf-8")
+    return {**NOSYNC, "KB_BACKLOG_CONFIG": str(cfg)}
 
 
 def ok(repo, *args):
@@ -62,32 +70,34 @@ def work(repo, iid, rel):
     repo.git("commit", "-q", "-m", f"docs(kb): {iid} work", "-m", f"KB-Work: {iid}")
 
 
-def planned(scenario, *stories):
+def planned(scenario, *stories, hooks=True):
     """A clone whose backlog is the fixture one (the live items removed, so a planning slip in one of them cannot fail
     `backlog.py check` inside a scenario) and whose started sprint has the stories ((name, kb path, check) each)
-    claimed and pushed to origin/main: (clone, sprint id, story ids)."""
-    repo = scenario.clone()
+    claimed and pushed to origin/main: (clone, sprint id, story ids). The fixture is one commit and one plain push, and a
+    scenario whose landing never reaches the real sync passes `hooks=False`: the commit hooks cost 0.2 s a commit."""
+    repo = scenario.clone(hooks=hooks)
     repo.git("config", "core.fileMode", "false")
     repo.git("rm", "-q", "-r", "--ignore-unmatch", PLAN)
-    repo.git("commit", "-q", "--no-verify", "-m", "test: fixture backlog without the live items")
     sp = new_id(ok(repo, "new", "sprint", "--title", "Landing sprint"))
     ids = [new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal", f"The doc {n}.md exists.",
                      "--touch", rel, "--check", chk)) for n, rel, chk in stories]
     ok(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")
     ok(repo, "start", sp)
     for iid in ids:
-        ok(repo, "claim", iid, "--by", "t", "--commit")
-    repo.commit(f"chore(backlog): plan {sp}", PLAN)
-    p = repo.kbgit("sync", "--push", env=NOSYNC)
-    assert p.returncode == 0, p.stdout + p.stderr
+        ok(repo, "claim", iid, "--by", "t")
+    repo.git("add", "-A", PLAN)
+    repo.git("commit", "-q", "--no-verify", "-m", f"chore(backlog): plan {sp}")
+    repo.git("push", "-q", "--no-verify", "origin", "main")
     return repo, sp, ids
 
 
 # One class each: tests.py hands pytest-xdist whole scopes (a file, or a class in it), so the two scenarios run on
 # two workers instead of one after the other.
 class TestLandedItem:
-    def test_land_moves_intake_draft_then_fast_forwards_and_done_checks_notes(self, scenario):
-        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"))
+    def test_land_moves_intake_draft_then_fast_forwards_and_done_checks_notes(self, scenario, tmp_path):
+        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
+                                    hooks=False)
+        env = plain_push(repo, tmp_path, land_push=["git", "push", "--no-verify", "origin", "HEAD:main"])
         before = origin_main(scenario)
 
         work(repo, good, "kb/_self/good.md")
@@ -97,10 +107,10 @@ class TestLandedItem:
         draft, stray = "kb/_self/backlog/ST-0d1e2f3a.json", "kb/_self/stray.md"
         for rel in (draft, stray):  # an intake draft the worker's session filed, and a file that is no draft
             (worker / rel).write_text("{}\n", encoding="utf-8", newline="\n")
-        code, out = bl(repo, "land", good)
+        code, out = bl(repo, "land", good, env=env)
         assert code != 0 and "uncommitted changes" in out and (worker / draft).is_file(), out  # nothing moves on a refusal
         (worker / stray).unlink()
-        code, out = bl(repo, "land", good)
+        code, out = bl(repo, "land", good, env=env)
         assert code == 0 and "landed" in out and "fast-forwarded main" in out, out
         kept = Path(repo.file("_cache/intake-drafts")) / worker.name / Path(draft).name
         assert "moved the untracked intake draft ST-0d1e2f3a.json" in out and kept.is_file() and not worker.exists(), out
@@ -127,7 +137,7 @@ class TestStoppedLand:
         repo, sp, (bad, lint, host) = planned(
             scenario, ("bad", "kb/_self/bad.md", "python3 _tools/backlog.py show ST-00000000"),
             ("lint", article, "python3 _tools/backlog.py list --kind sprint"),
-            ("host", nested, "python3 _tools/backlog.py list --kind sprint"))
+            ("host", nested, "python3 _tools/backlog.py list --kind sprint"), hooks=False)
         moved = origin_main(scenario)
 
         work(repo, bad, "kb/_self/bad.md")
@@ -166,14 +176,10 @@ class TestStoppedLand:
         repo.git("add", nested)
         repo.git("commit", "-q", "-m", f"docs(kb): {host} work", "-m", f"KB-Work: {host}")
         repo.git("checkout", "-q", "main")
-        settings = json.loads(Path(repo.file("backlog.json")).read_text(encoding="utf-8"))
-        settings.update(lane_module="", land_stale=[], land_eval=[], land_lint=[])
 
         def land_host(push):
-            cfg = tmp_path / "backlog.json"
-            cfg.write_text(json.dumps({**settings, "land_push": push}), encoding="utf-8")
-            p = repo.tool("backlog.py", "land", host, env={**NOSYNC, "KB_BACKLOG_CONFIG": str(cfg)})
-            return p.returncode, p.stdout + p.stderr
+            env = plain_push(repo, tmp_path, lane_module="", land_stale=[], land_eval=[], land_lint=[], land_push=push)
+            return bl(repo, "land", host, env=env)
 
         code, out = land_host(["python3", "-c", "import sys; sys.exit(3)"])
         assert code != 0 and "land stopped at step python3 -c" in out and "exited 3" in out, out
@@ -186,7 +192,8 @@ class TestStoppedLand:
 
 class TestOwnCheckoutDrafts:
     def test_land_moves_own_checkout_drafts_then_refuses_other_files(self, scenario):
-        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"))
+        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
+                                    hooks=False)
         before = origin_main(scenario)
         work(repo, good, "kb/_self/good.md")
         repo.git("checkout", "-q", "main")  # land runs on main in this checkout, which holds the hook's drafts
@@ -273,7 +280,7 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     # the check passes while the doc exists and prints pytest's `no tests ran` once a later commit deletes it
     gone = ("python3 -c \"import pathlib, sys; ok = pathlib.Path('kb/_self/good.md').is_file(); "
             "ok or print('no tests ran'); sys.exit(not ok)\"")
-    repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", gone))
+    repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", gone), hooks=False)
     work(repo, good, "kb/_self/good.md")
     repo.git("checkout", "-q", "main")
     repo.git("merge", "-q", "--ff-only", f"work/{good}")
