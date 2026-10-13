@@ -1171,7 +1171,7 @@ def stem(w):
             break
     if len(w) > 4 and w.endswith("e"):
         w = w[:-1]
-    if len(w) > 3 and w[-1] == w[-2] and w[-1] not in "aeiouls":
+    if len(w) > 3 and w[-1] == w[-2] and w[-1].isalpha() and w[-1] not in "aeiouls":  # a number keeps its digits
         w = w[:-1]
     return w
 
