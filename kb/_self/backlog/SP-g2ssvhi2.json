@@ -18,5 +18,6 @@
       "answer": "approve",
       "by": "operator"
     }
-  ]
+  ],
+  "notes": "Run order 11 of 15 from the 2026-10-13 draft triage: lookup correctness and benchmark measurement first, then kb content, then tooling that fixes recurring sprint failures, then the lookup feedback epic EP-x4cqj7zo."
 }
