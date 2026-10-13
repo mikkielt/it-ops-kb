@@ -43,6 +43,22 @@
     "BG-nht352ib",
     "BG-4lxb2w34"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does fact_for stop the phrase signal moving the SubagentStart/SubagentStop case to hooks.md:41, which lacks agent_transcript_path?",
+      "options": [
+        "phrase_run counts the distinct stems of a run",
+        "raise PHRASE_RUN to 5",
+        "lower PHRASE_WEIGHT"
+      ],
+      "recommendation": "phrase_run counts the distinct stems of a run",
+      "class": "design",
+      "answer": "phrase_run counts the distinct stems of a run",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kuhlsf2s review"
   ],

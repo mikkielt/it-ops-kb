@@ -209,14 +209,15 @@ def csv_facts(lines):
 
 
 def phrase_run(qterms, lterms):
-    """The most question words, in the question's order, that follow one another in a line's terms."""
+    """The most stems (a term cut at five letters, each counted once) of question words, in the question's order, that
+    follow one another in a line's terms: `agent_id agent_type` is one stem, as the score counts it."""
     best = 0
     for i in range(len(qterms)):
         for j, w in enumerate(lterms):
             k = 0
             while i + k < len(qterms) and j + k < len(lterms) and qterms[i + k] == lterms[j + k]:
                 k += 1
-            best = max(best, k)
+            best = max(best, len({t[:5] for t in qterms[i:i + k]}))
     return best
 
 
@@ -228,9 +229,9 @@ def fact_for(home, case):
     scores the rarity weight of each stem (a term cut at five letters) it shares with the question: log of the file's
     lines over those holding the stem (the lines `article_facts` gives without `prose`), so the file's own subject, on
     nearly every line, counts for little, and INFLECTED of it when the line has the stem only in another form of the
-    word, PHRASE_WEIGHT more for each question word from the PHRASE_RUN-th on of a run of them the line holds in the
-    question's order, and SNIPPET_WEIGHT of its score for a `SNIPPET:` line. Ties go to the line sharing more whole
-    words with the question, then to the first line."""
+    word, PHRASE_WEIGHT more for each question stem from the PHRASE_RUN-th on of a run of words the line holds in the
+    question's order (terms of one stem count once), and SNIPPET_WEIGHT of its score for a `SNIPPET:` line. Ties go to
+    the line sharing more whole words with the question, then to the first line."""
     qterms = terms(case["question"])
     q, qwords = {w[:5] for w in qterms}, set(qterms)
     best = None
