@@ -2,7 +2,7 @@
   "id": "BG-vzsk2t5t",
   "kind": "bug",
   "title": "The section fallback of window_sections keeps a fact whose body changed when the previous text is not cached",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vdrsfftl",
   "priority": "P2",
   "rank": 0,
@@ -26,5 +26,6 @@
   "links": [
     "parked: SP-djl7za6x review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: the repro fails on the base (exit 1: the edit to the next section's body leaves the fact verbatim with signal section). The test file is left out of the touches (the repro runs the changed path, and a bug gets no test of its own): an existing assertion in test_live_kb.py that pins the old fallback stops the work with a report. tools.md and content-rules.md describe the section fallback in general and are named for the docs map."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: the repro fails on the base (exit 1: the edit to the next section's body leaves the fact verbatim with signal section). The test file is left out of the touches (the repro runs the changed path, and a bug gets no test of its own): an existing assertion in test_live_kb.py that pins the old fallback stops the work with a report. tools.md and content-rules.md describe the section fallback in general and are named for the docs map.",
+  "claimed_by": "orch-vdrsfftl"
 }
