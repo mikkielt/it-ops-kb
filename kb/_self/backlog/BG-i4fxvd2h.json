@@ -2,7 +2,7 @@
   "id": "BG-i4fxvd2h",
   "kind": "bug",
   "title": "The goal line of a worker's brief says stop after 60 turns whatever cap dispatch gives",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
@@ -62,5 +62,6 @@
   "links": [
     "parked: SP-qg7ncs6d review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, repro run on main: backlog.py goal BG-i4fxvd2h ends 'or stop after 60 turns' while dispatch --dry-run gives this bug --max-turns 100; both checks exit 1. Ordered after ST-buzuumms: both edit bl_dispatch.py."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, repro run on main: backlog.py goal BG-i4fxvd2h ends 'or stop after 60 turns' while dispatch --dry-run gives this bug --max-turns 100; both checks exit 1. Ordered after ST-buzuumms: both edit bl_dispatch.py.",
+  "claimed_by": "orch-mujl7ebh"
 }
