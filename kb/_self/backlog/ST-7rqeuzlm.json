@@ -2,7 +2,7 @@
   "id": "ST-7rqeuzlm",
   "kind": "story",
   "title": "close --summary credits a research sprint's goal clauses to its goal research story",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sqgyoiaz",
   "priority": "P3",
   "rank": 0,
@@ -121,5 +121,6 @@
     "merged: BG-jrfac5wz",
     "merged: ST-vbdyapo3"
   ],
-  "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Merged at the 2026-10-12 draft triage: BG-dpsfmyqi (a bug filed from a story named as the clause's carrier; its repro read eb70b55938), BG-jrfac5wz (clauses_left_behind counts review and goal research stories as carriers where goal_clause_lines does not), ST-vbdyapo3 (SP-qjg5r7jj: 'rag.py eval keeps every row' printed unmet though the item's clauses mapping states it). The failure recurred at the closes of SP-ajcomz6d, SP-qjn563cf, SP-up5wchen (2026-10-11) and SP-j2jn5ue4 (2026-10-12): every clause printed unmet, with unrelated similar-item hints, though the goal research story answered each. Gates answered at planning: carriers, research-carrier, mapping-credit.\nPremise: the four checks run on a planted sprint at planning (2026-10-12, main a5a7459f2): close --summary printed 'unmet' for the research story's clause, named BG-b alone for the mirrored clause and 'unmet' for the mapped clause, and clauses_left_behind returned [] with a research story present: premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Merged at the 2026-10-12 draft triage: BG-dpsfmyqi (a bug filed from a story named as the clause's carrier; its repro read eb70b55938), BG-jrfac5wz (clauses_left_behind counts review and goal research stories as carriers where goal_clause_lines does not), ST-vbdyapo3 (SP-qjg5r7jj: 'rag.py eval keeps every row' printed unmet though the item's clauses mapping states it). The failure recurred at the closes of SP-ajcomz6d, SP-qjn563cf, SP-up5wchen (2026-10-11) and SP-j2jn5ue4 (2026-10-12): every clause printed unmet, with unrelated similar-item hints, though the goal research story answered each. Gates answered at planning: carriers, research-carrier, mapping-credit.\nPremise: the four checks run on a planted sprint at planning (2026-10-12, main a5a7459f2): close --summary printed 'unmet' for the research story's clause, named BG-b alone for the mirrored clause and 'unmet' for the mapped clause, and clauses_left_behind returned [] with a research story present: premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-sqgyoiaz"
 }
