@@ -2,7 +2,7 @@
   "id": "BG-drzst6zj",
   "kind": "bug",
   "title": "gitlab/project-settings-api says every attribute appears in both the create and update tables, though three do not",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,27 @@
     "parked: SP-4phd36pa review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "7cabfcf380c7374345c45b7440791dce7a9263cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/gitlab/project-settings-api.md\").read_text().splitlines() if l.startswith(\"- A project is edited with\")]; sys.exit(0 if ls and all(a in ls[0] for a in (\"automatic_rebase_enabled\", \"container_registry_access_level\", \"merge_requests_access_level\")) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit('every attribute below appears in both tables' in pathlib.Path('kb/public/gitlab/project-settings-api.md').read_text())"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
