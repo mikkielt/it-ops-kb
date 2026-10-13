@@ -2,7 +2,7 @@
   "id": "BG-skpnth6v",
   "kind": "bug",
   "title": "agents/codebase-mapping.md omits an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER from the rustc info cache's fingerprint-error cases",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,5 @@
   "links": [
     "parked: SP-5x5ut5ko review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: codebase-mapping.md:90's fingerprint fact names no wrapper. Run at planning: the repro exits 1 and prints 'fingerprint fact names the wrappers: False'. The worker reads rustc_fingerprint at the pinned Cargo sha again before rewording."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: codebase-mapping.md:90's fingerprint fact names no wrapper. Run at planning: the repro exits 1 and prints 'fingerprint fact names the wrappers: False'. The worker reads rustc_fingerprint at the pinned Cargo sha again before rewording. Dropped: Already met in the tree: the goal research ST-74agak3p “Research sprint goal: Content fixes: agents, Python and architecture articles state what their sources say” (commit a96ac2c5d) rewrote agents/codebase-mapping.md:90 to name an unresolvable RUSTC_WRAPPER or RUSTC_WORKSPACE_WRAPPER among the rustc fingerprint errors, with a CODE fact at :91 read at the pinned Cargo sha and a DER fact at :92; the item's repro exits 0 on origin/main (both .rustc_info.json fingerprint lines name the wrappers), so a worker would have no work commit and done would refuse."
 }
