@@ -2,7 +2,7 @@
   "id": "ST-qqerasi3",
   "kind": "story",
   "title": "A worker's brief names the paths always in scope, so a content worker adds a source row whose count regenerates the _coverage files",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-q5ldd25k",
   "priority": "P3",
   "rank": 0,
@@ -56,5 +56,6 @@
   "links": [
     "parked: SP-5x5ut5ko close"
   ],
-  "notes": "SP-5x5ut5ko retrospective: two workers (ST-owblgazg, ST-tjaxw22f) found an official page that states a fact, added its source row, then dropped it because the topic's source count regenerates kb/public/_coverage.csv and _coverage.md, outside their touches; the fact went in as an UNK lead or a reword. Premise run 2026-10-12 does not reproduce as filed: bl_base.in_scope('kb/public/_coverage.csv', []) and the .md are True (always_in_scope holds kb/*/_coverage.csv and .md in the defaults and in backlog.json), so done and check already count them in scope. What is left: no line of the worker's brief (bl_dispatch.worker_rules, the item JSON) names the always-in-scope paths, so a worker reads its touches alone. Reshaped from a done/plan change to that brief line. Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "SP-5x5ut5ko retrospective: two workers (ST-owblgazg, ST-tjaxw22f) found an official page that states a fact, added its source row, then dropped it because the topic's source count regenerates kb/public/_coverage.csv and _coverage.md, outside their touches; the fact went in as an UNK lead or a reword. Premise run 2026-10-12 does not reproduce as filed: bl_base.in_scope('kb/public/_coverage.csv', []) and the .md are True (always_in_scope holds kb/*/_coverage.csv and .md in the defaults and in backlog.json), so done and check already count them in scope. What is left: no line of the worker's brief (bl_dispatch.worker_rules, the item JSON) names the always-in-scope paths, so a worker reads its touches alone. Reshaped from a done/plan change to that brief line. Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-q5ldd25k"
 }
