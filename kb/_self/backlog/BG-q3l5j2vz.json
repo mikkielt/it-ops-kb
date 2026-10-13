@@ -2,7 +2,7 @@
   "id": "BG-q3l5j2vz",
   "kind": "bug",
   "title": "_answers.md's QK-gone-memdocs answer tags the Internet Archive's missing captures DOC on the one home-page capture S-u2afup7q",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-ilqhjn3k review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Order: after BG-6w4zexka, whose reworded CDX basis the answer's DER tag names."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Order: after BG-6w4zexka, whose reworded CDX basis the answer's DER tag names.",
+  "claimed_by": "orch-uvz65lvm"
 }
