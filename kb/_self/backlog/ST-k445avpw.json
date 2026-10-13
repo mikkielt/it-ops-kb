@@ -1,0 +1,28 @@
+{
+  "id": "ST-k445avpw",
+  "kind": "story",
+  "title": "The down window gates every request of the lookup revalidation, not only a source's first page request",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The search host (api.github.com, export.arxiv.org, the Learn search), candidate pages, the made-up sibling and a pinned url's repository request read and record the host's down window as a source's own page does, so two searches against a host that does not accept a connection make one request, not two. Found by the SP-u5q37ds3 review (_tools/factdiff.py search_urls, page_doc, madeup_text; provider.repository_state).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_down_window_every_request"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

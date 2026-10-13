@@ -1,0 +1,26 @@
+{
+  "id": "BG-gx5b2yhu",
+  "kind": "bug",
+  "title": "A network failure cached in the revalidation's page or search memo is reused as not found by a second source",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "A candidate page or search that got no HTTP answer (status 0) is recorded per use as an HTTP error is, so a second source that leans on the cached failure gets search_lost's reason and its lines keep the offline stamp, not not found. Found by the SP-u5q37ds3 review: _http_error ignores status 0, so only the first use bumps provider.failures() (_tools/factdiff.py page_doc, search_urls, search_lost).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import factdiff as f, provider; provider.document=lambda url,row=None,etag='',lastmod='': (provider._failed.__setitem__(0, provider._failed[0]+1), {'status':0,'text':'','error':'URLError: timed out','etag':'','lastmod':'','version':{},'final':url,'hops':[],'raw':''})[1]; u='https://example.com/cand'; f.page_doc(u,[]); n=provider.failures(); k=len(f._unanswered_uses); f.page_doc(u,[]); sys.exit(0 if f.search_lost(n,k) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

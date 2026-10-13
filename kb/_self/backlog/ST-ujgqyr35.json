@@ -1,0 +1,28 @@
+{
+  "id": "ST-ujgqyr35",
+  "kind": "story",
+  "title": "A connect cut short by the remaining revalidation budget starts no down window for a healthy slow host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "provider.request under budget() shortens the timeout to the time left; a URLError timeout from that shortened connect is reported so that host_seen starts no window (the time budget shows nothing of the host). Found by the SP-u5q37ds3 review (_tools/provider.py request, host_seen).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_budget_cut_no_down_window"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

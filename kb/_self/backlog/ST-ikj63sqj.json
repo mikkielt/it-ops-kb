@@ -1,0 +1,25 @@
+{
+  "id": "ST-ikj63sqj",
+  "kind": "story",
+  "title": "doc-change-detection's remembered-failure fact matches the window the lookup keeps under _cache/",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/agents/doc-change-detection.md's design fact on how long a lookup tool remembers a host that did not accept a connection no longer says it is held in memory only, since the confirmed gate window of ST-y45iz7uh keeps it under _cache/ across processes (60 s doubling to 300 s). Found by the SP-u5q37ds3 review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=[l for l in open('kb/public/agents/doc-change-detection.md', encoding='utf-8') if 'remembered failure of a host' in l]; sys.exit(1 if any('holds in memory' in l for l in t) else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

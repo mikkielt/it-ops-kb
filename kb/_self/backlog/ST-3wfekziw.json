@@ -1,0 +1,25 @@
+{
+  "id": "ST-3wfekziw",
+  "kind": "story",
+  "title": "doc-change-detection's soft-404 summary and its Tech Community probe state one outcome",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/agents/doc-change-detection.md's summary line that two compared texts can both be empty no longer cites the Tech Community probe whose made-up sibling answered a 302 and differed; the summary and the probe bullet state one outcome, and the DER inference names the redirect-following client BG-zsiguf72 saw. Found by the SP-u5q37ds3 review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=[l for l in open('kb/public/agents/doc-change-detection.md', encoding='utf-8') if 'both be empty' in l]; sys.exit(1 if any('Tech Community probe' in l for l in t) else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

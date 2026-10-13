@@ -1,0 +1,25 @@
+{
+  "id": "BG-gx4wphry",
+  "kind": "bug",
+  "title": "A provider-down record read from _cache/ has no bound, so a corrupt or far-future until blocks a host until the file is deleted",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "provider.host_down ignores, or clamps to DOWN_CAP_S, a record whose until lies more than DOWN_CAP_S after its at or after now, so no file under _cache/provider-down/ can keep a host unasked past the cap. Found by the SP-u5q37ds3 review (_tools/provider.py _down_rec, host_down).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, json, time, tempfile; sys.path.insert(0,'_tools'); import provider; provider.DOWN_DIR=tempfile.mkdtemp(); now=time.time(); json.dump({'at':now,'until':now+1e9,'count':1,'error':'URLError: x'}, open(provider._down_path('example.com'),'w')); sys.exit(1 if provider.host_down('https://example.com/a') else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

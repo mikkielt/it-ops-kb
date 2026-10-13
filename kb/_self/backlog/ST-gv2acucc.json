@@ -1,0 +1,28 @@
+{
+  "id": "ST-gv2acucc",
+  "kind": "story",
+  "title": "Detection and census treat a page with no words as the lookup does, or say why they keep the soft-404 verdict",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.detect_source with lookup=False and census.py's check give a fetched page with no words (a client-rendered page: one newline) the same verdict the lookup gives (no soft-404, so no GONE in census and no gone in kbfacts' live word), or kb/_self/tools.md states why detection keeps it. Found by the SP-u5q37ds3 review (_tools/factdiff.py detect_source, _tools/census.py).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "detect_empty_page_not_soft404"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/census.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}

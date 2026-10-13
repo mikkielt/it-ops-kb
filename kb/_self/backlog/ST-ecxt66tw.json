@@ -1,0 +1,28 @@
+{
+  "id": "ST-ecxt66tw",
+  "kind": "story",
+  "title": "A redirect target's connect failure does not put the redirecting host in its down window",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When a source's url answers a redirect to another host that does not accept a connection, the down window is recorded for the target's host, not the source's own host that answered. Found by the SP-u5q37ds3 review (_tools/factdiff.py detect_pass and provider.request hops).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "revalidate_down_window_redirect_target"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 review"
+  ]
+}
