@@ -2,7 +2,7 @@
   "id": "ST-hcnh5zy3",
   "kind": "story",
   "title": "kb-sprint run says backlog.py dispatch blocks until its worker ends and is started in the background with a long timeout",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,27 @@
     "merged: ST-tlqcchsu"
   ],
   "notes": "Retrospective finding of SP-uwkr7iyl close, 2026-10-10. Recurred in SP-ilje65fa (2026-10-10): a dispatch piped into cut ran in the foreground, was moved to the background with a 10-minute cap and was killed and restarted; a background dispatch with timeout 7200000 also shares the Bash task's process group, so a worker running past two hours would be killed with it: the orchestrator started later dispatches detached (start_new_session) and waited on the pid. Merged at the 2026-10-12 draft triage: ST-tlqcchsu (kb-sprint review step 4 names --repro but not --repro-reason or story parking for a gap with no repro command; same SP-uwkr7iyl close, same two files). Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12: the run step of skills/sprint/SKILL.md already says to start dispatch with run_in_background and timeout 7200000 ms; it names no detached start (start_new_session), no log outside _cache/, and the review step names no --repro-reason. The old check passed before the work and is replaced by two that exit 1. Ordered after TK-casle7h7: both edit the run step.",
-  "claimed_by": "orch-mujl7ebh"
+  "evidence": {
+    "commit": "5ccaa0bb3e9e0b2625c4e8f7a9af1bbba3a2af13",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();r=t.split('## run',1)[1].split('## review',1)[0];sys.exit(0 if 'start_new_session' in r and re.search(r'outside\\s+`?_cache',r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();r=t.split('## review',1)[1].split('## close',1)[0];sys.exit(0 if '--repro-reason' in r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
