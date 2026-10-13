@@ -2,7 +2,7 @@
   "id": "ST-dq2klrkr",
   "kind": "story",
   "title": "answer --root WORKTREE commits the item file it changes on the worker's branch, for --answer and --confirm, so the orchestrator makes no hand git commit there",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-q5ldd25k",
   "priority": "P3",
   "rank": 0,
@@ -74,5 +74,29 @@
     "merged: ST-2n3xjhae"
   ],
   "notes": "Retrospective of SP-tm4wlsve: the orchestrator's hand git -C WORKTREE commit of an answered item file was refused by a permission rule (its message named a forge and a push), and land, started beside it, stopped at step branch on the uncommitted file (ops land.end exit=1 for ST-t2j24bhx). At SP-j2jn5ue4 a hand commit of four --confirm answers was refused by the commit-msg hook twice (it named the review story, then space-separated ids) before the comma-separated list passed. Merged at the 2026-10-12 draft triage from ST-62ixsksb, ST-eiyr4loh and ST-2n3xjhae. Premise: answer --record commits only for --answer, and bl_items.py:290 rejects --confirm with --record; the hand commit there of the item file (skills/sprint/SKILL.md:52) is outside the allow rules (.claude/settings.json:63-67). Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: answer SP-q5ldd25k start --confirm --record --by operator exits 2 (--record keeps the operator's answer as a decision: never --provisional or --confirm); answer --help lists no --commit, so a --confirm answer is never committed by the tool.",
-  "claimed_by": "orch-q5ldd25k"
+  "evidence": {
+    "commit": "9bb47995922fc55e53d36b8fafc52db7b58c534a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_backlog_portable.py",
+          "-k",
+          "answer_root_commits_worker_item"
+        ],
+        "exit": 0,
+        "sha256": "f3b69d9e61dc2ae3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();ln=next(l for l in t.splitlines() if 'An answer the operator gives you for a gate that exists only on' in l);s=ln.split('An answer the operator gives you',1)[1].split('Each provisional answer',1)[0];sys.exit(0 if '--commit' in s and 'then a commit there' not in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
