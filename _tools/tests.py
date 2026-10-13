@@ -40,7 +40,8 @@ decision of kb/_self/_decisions.csv made by the operator whose text holds the fi
 number changes only with the operator's recorded answer. A full run also fails when it ran more ids than max_ids or took
 longer than max_seconds; --ceiling checks the ids without running. On a CI runner (GITLAB_CI or GITHUB_ACTIONS set)
 KB_TEST_TIMEOUT_FACTOR (a number of at least 1) multiplies max_seconds, for a container slower than the host the
-seconds were set on. A new test id needs room under max_ids, else it replaces one.
+seconds were set on. A new test id needs room under max_ids, else it replaces one. A run over the ids or files says to
+cut a test; a run over max_seconds says to run again once the host is quiet, else record a host finding.
 
 Each run appends one ops row `test.run` to the query log's spool (ql_capture.record, best effort: nothing is written
 when capture is off, inside a test, or when the row breaks its closed shape, and a failure to write never changes the
@@ -216,13 +217,16 @@ def ceiling_report(ids=None, seconds=None):
     except CeilingError as e:
         print(f"tests.py: ceiling refused: {e}", file=sys.stderr)
         return 1
-    bad = ceiling_problems(c, files=len(test_files()), ids=ids, seconds=seconds, factor=seconds_factor())
-    for b in bad:
+    over_count = ceiling_problems(c, files=len(test_files()), ids=ids)
+    over_time = ceiling_problems(c, seconds=seconds, factor=seconds_factor())
+    for b in over_count + over_time:
         print(f"tests.py: over the ceiling: {b}", file=sys.stderr)
-    if bad:
-        print("tests.py: cut a test, or ask the operator for a recorded answer that raises _tools/tests_ceiling.json",
+    if over_count:
+        print("tests.py: cut a test", file=sys.stderr)
+    if over_time:
+        print("tests.py: run again once the host is quiet, else record a host finding; the seconds ceiling stays",
               file=sys.stderr)
-    return 1 if bad else 0
+    return 1 if over_count or over_time else 0
 
 
 # The test.run row
