@@ -2,7 +2,7 @@
   "id": "BG-oyzgvtrg",
   "kind": "bug",
   "title": "arch/buildkit-build-secrets says BUILDX_METADATA_PROVENANCE selects the attestation content, which the docs give only for the --metadata-file output",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,27 @@
     "parked: SP-up5wchen review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: buildkit-build-secrets.md:30 says attestations default to minimal and BUILDX_METADATA_PROVENANCE selects min, max or disabled. Run at planning: the repro exits 1 (no line pairs the variable with metadata-file) and the added check fails. The QK answer (_answers.md:2994-2999) holds no BUILDX_ variable; its 'max provenance attestations' line is read against S-wt5ys5zb and edited only if the page does not state it.",
-  "claimed_by": "orch-tjap3mdd"
+  "evidence": {
+    "commit": "9a9b12e91549607ce927eb87823d4cc38e9efd2f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;us=[u for u in kbfacts.units('public') if u['path'].endswith('arch/buildkit-build-secrets.md') and 'BUILDX_METADATA_PROVENANCE' in u['text']];ok=bool(us) and not any('default to minimal' in u['text'] or 'defaults to minimal' in u['text'] for u in us);print('no BUILDX_METADATA_PROVENANCE fact says attestations default to minimal:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "772dab84ca0f5528"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/public/arch/buildkit-build-secrets.md').read_text(); sys.exit(not any('BUILDX_METADATA_PROVENANCE' in l and 'metadata-file' in l for l in t.splitlines()))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
