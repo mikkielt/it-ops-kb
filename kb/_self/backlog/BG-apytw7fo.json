@@ -15,6 +15,8 @@
     ]
   },
   "links": [
-    "parked: SP-4o3plg4l review"
-  ]
+    "parked: SP-4o3plg4l review",
+    "merged: BG-euirq6se"
+  ],
+  "notes": "Merged from BG-euirq6se “pack's priced note fires on a unit cost asked as 'how many <units> does X cost', which asks for no money amount” at the 2026-10-13 draft triage: Same PRICE_ASK regex as BG-apytw7fo, same review (SP-4o3plg4l), same fix location. Repro still returns priced=True for the units question; BG-apytw7fo must absorb this question as a second false-priced case. Its goal: a good pack of 'How many resource units does a Graph getMemberGroups call cost?' carries no priced note and no route split, while 'What is the current price of a Microsoft 365 E5 licence?' keeps it (PRICE_ASK exempts a unit only after 'cost ... in'; found by the SP-4o3plg4l review) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.pack('How many resource units does a Graph getMemberGroups call cost?');print(p.get('priced'));sys.exit(1 if p.get('priced') else 0)\"]}"
 }

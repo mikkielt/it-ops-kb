@@ -20,6 +20,9 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-sqgyoiaz review"
-  ]
+    "parked: SP-sqgyoiaz review",
+    "merged: BG-j2y4kbdc",
+    "merged: BG-fl6qmkkx"
+  ],
+  "notes": "Merged from BG-j2y4kbdc “move's left-behind message says close --summary would list the clause unmet where the goal research story is credited as fallback” at the 2026-10-13 draft triage: bl_items.py:681 and tools.md:77 still say 'close --summary would list it unmet' though a clause can be credited to the goal research story as fallback. Same fallback logic and review as BG-ms5dtnnr (credit by word match); the carrier changes that fallback, so this message must follow it. Its goal: _tools/bl_items.py prints for move that no other item carries the clause 'and close --summary would list it unmet', and kb/_self/tools.md says the same, while close --summary now credits a clause no implementing item carries to the sprint's done goal research story as fallback (ST-7rqeuzlm); the message names the fallback when the sprint has a goal research story that carries the clause. Found by the SP-sqgyoiaz review (S3). Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;ls=[l for l in open('_tools/bl_items.py',encoding='utf-8') if 'would list it unmet' in l];print(ls);sys.exit(1 if ls else 0)\"]} Its touches: _tools/bl_items.py, kb/_self/tools.md, kb/_self/backlog.md Merged from BG-fl6qmkkx at the 2026-10-13 draft triage (item in git history): Repro still exits 1 (ST-x credited with 'carried it'); same function goal_clause_lines/clause_words in bl_land.py and same recurring close --summary word-match failure as BG-ms5dtnnr (S2, filed by the review); one fix pass: a stoplist of function words and backlog vocabulary in clause_words, plus the fallback reading the narrowed goal not the title."
 }

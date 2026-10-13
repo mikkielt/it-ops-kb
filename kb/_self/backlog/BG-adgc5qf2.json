@@ -22,6 +22,8 @@
     "kb/_self/maintaining.md"
   ],
   "links": [
-    "parked: SP-avwlotax review"
-  ]
+    "parked: SP-avwlotax review",
+    "merged: BG-y22vhvpv"
+  ],
+  "notes": "Merged from BG-y22vhvpv “The kb-sprint Self-check's host line names the suite-load remedy: wait for the load to fall, or run a -k selection” at the 2026-10-13 draft triage: Repro still exits 1 (the host bullet of skills/sprint/SKILL.md reads 'dispatch fewer workers.' with no -k remedy); it is a one-line wording of the same Self-check bullet list BG-adgc5qf2 rewords, and selfcheck itself prints the remedy (REMEDY['suite-load']). Its goal: skills/sprint/SKILL.md's Self-check line for host names both remedies selfcheck prints: dispatch fewer workers (host-load) and, over SUITE_LOAD_PER_CORE, wait for the load to fall or run a -k selection (suite-load) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;t=[l for l in open('skills/sprint/SKILL.md',encoding='utf-8') if l.startswith('- `host`')];sys.exit(0 if t and '-k' in t[0] else 1)\"]} Its touches: skills/sprint/SKILL.md"
 }

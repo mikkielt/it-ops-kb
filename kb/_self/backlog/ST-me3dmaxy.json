@@ -20,7 +20,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-5x5ut5ko close"
+    "parked: SP-5x5ut5ko close",
+    "merged: ST-n63g3ax7"
   ],
   "notes": "Recurred in SP-tcis5f23 (2026-10-13): the goal research ST-l5srttf4 (touches kb/public/**) wrote the XEdDSA facts BG-4e7ja4zv's goal asked for and the flush ruleset/flush table contrast BG-bwlmvhq7's asked for; the orchestrator told both workers by --probe to read the article first, and BG-4e7ja4zv's article clause was met before its claim. Recurred in SP-tjap3mdd (2026-10-13): the goal research ST-74agak3p wrote the whole fix of BG-a22yrzap and BG-skpnth6v before their claims; both were dropped as already met (done refuses no-work-commit), parked as ST-n63g3ax7. Recurred in SP-23m5etrf (2026-10-13): after ST-gyr324rf landed, precheck SP showed 4 of 5 bugs' checks passing before their work; the fifth, BG-ab3tndhy, failed only on a literal phrasing (parked as ST-l2t3uv6s)."
 }

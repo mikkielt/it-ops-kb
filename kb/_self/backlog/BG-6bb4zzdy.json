@@ -21,6 +21,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-q5ldd25k review"
-  ]
+    "parked: SP-q5ldd25k review",
+    "merged: ST-4q4zv34i"
+  ],
+  "notes": "Merged from ST-4q4zv34i “A sprint's goal research story whose questions may add DOC facts has its root's _sources.csv in its touches” at the 2026-10-13 draft triage: No code names _sources.csv (grep of bl_plan/bl_base/bl_land/bl_dispatch); pack for 'may a research item add source rows outside its touches' reads weak, so the check fails; same defect as BG-6bb4zzdy (source rows outside touches). Carrier must absorb: a goal research story naming a root's article has that root's _sources.csv in touches (or its rows count as in scope) and the _self rules answer the question with a good pack. Its goal: new sprint (or planning) gives a goal research story that names a kb root's article the root's _sources.csv in its touches, and the _self rules answer 'may a research item add source rows outside its touches' with a good pack; SP-4o3plg4l's research ST-z7eii5h6 stopped with three DOC facts and their source rows unlanded until the orchestrator widened its touches and resumed it (a second session, about 2.9 USD more) Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;t=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a research item add source rows outside its touches'],capture_output=True,text=True).stdout;print(t.splitlines()[0] if t else None);sys.exit(0 if t.startswith('coverage: good') else 1)\"]}"
 }

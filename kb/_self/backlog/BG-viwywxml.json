@@ -15,7 +15,8 @@
     ]
   },
   "links": [
-    "parked: SP-kuhlsf2s review"
+    "parked: SP-kuhlsf2s review",
+    "merged: BG-sclw54q6"
   ],
-  "notes": "Overlaps draft BG-sclw54q6 (the same row BP-bac81f87); this one adds that pool check judges no gap row's route or openness. Merge the two at triage."
+  "notes": "Overlaps draft BG-sclw54q6 (the same row BP-bac81f87); this one adds that pool check judges no gap row's route or openness. Merge the two at triage. Merged from BG-sclw54q6 “Bench pool gap row BP-bac81f87 names a _gaps.md entry a Narrowed note now closes, and still expects the web route” at the 2026-10-13 draft triage: Same row BP-bac81f87, same fix; BG-viwywxml is broader (adds that pool check judges a gap row's route and openness) and its notes ask for the merge. Repro still exits 1; pool check does not name the row. Its goal: No stored gap row of kb/public/_retrieval/bench_pool.csv names a _gaps.md entry that kbfacts.OPEN_GAP reads as closed: the repro exits 0, and a pool gap row stale this way fails a check at the landing that closes its entry, not at a later review Its repro: {\"run\": [\"python3\", \"-c\", \"import sys,re,hashlib;sys.path.insert(0,'_tools');import kbfacts,bench_pool;T=open('kb/public/_gaps.md',encoding='utf-8').read();H={hashlib.sha1(re.sub(r'^(Still open|Narrowed, not closed):\\\\s*','',m.group(1)).strip(' .:*').encode()).hexdigest()[:8]:m.group(0) for m in re.finditer(r'^- \\\\*\\\\*(.+?)\\\\*\\\\*.*(?:\\\\n  .+)*',T,re.M)};bad=[r['id'] for r in bench_pool.load_pool(kinds={'gap'}) if kbfacts.OPEN_GAP.search(H.get(r['source'].split('#')[1],'Resolved'))];print('gap rows whose entry is closed:',bad);sys.exit(1 if bad else 0)\"]} Its touches: kb/public/_retrieval/bench_pool.csv, _tools/bench_pool.py"
 }

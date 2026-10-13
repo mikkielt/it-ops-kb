@@ -23,6 +23,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-u5q37ds3 review"
-  ]
+    "parked: SP-u5q37ds3 review",
+    "merged: ST-ecxt66tw"
+  ],
+  "notes": "Merged from ST-ecxt66tw “A redirect target's connect failure does not put the redirecting host in its down window” at the 2026-10-13 draft triage: Premise holds by reading: detect_pass calls host_seen(url, error) with the source's own url (factdiff.py:1341), and provider.request keeps final=url when a redirect hop fails to connect, so the source's host gets the window. Rare: only 11 of 2621 sources redirect cross-host, none to a known-dead host. Same down-window paths and test file as ST-k445avpw. Its goal: When a source's url answers a redirect to another host that does not accept a connection, the down window is recorded for the target's host, not the source's own host that answered. Found by the SP-u5q37ds3 review (_tools/factdiff.py detect_pass and provider.request hops). Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"revalidate_down_window_redirect_target\"]} Its touches: _tools/factdiff.py, _tools/provider.py, _tools/test_live_kb.py, kb/_self/tools.md"
 }

@@ -22,6 +22,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-rlincemn review"
-  ]
+    "parked: SP-rlincemn review",
+    "merged: ST-gpjlryq5"
+  ],
+  "notes": "Merged from ST-gpjlryq5 “The authority tests plant a failure for each ceiling-guard path: confirm, supersede, restore, ratify, a glob touch and a start gate” at the 2026-10-13 draft triage: Same SP-rlincemn review, same file (test_authority.py) and guard as ST-jiz53bwh; its planted-failure tests are the test half of that fix, and need_terminal exists at kbdecide.py:353-535 Its goal: test_authority.py drives, in an agent environment, answer --confirm on a ceiling gate, answer --record on a design gate whose answer text names the ceiling, a sprint start gate with a ceiling-touching member, a glob touch, and kbdecide.py confirm, supersede, restore and ratify with the ceiling token, so removing need_terminal from any of those paths fails a test; within the suite's id ceiling (extend, add no id) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"_tools/test_authority.py\"]} Its touches: _tools/test_authority.py"
 }

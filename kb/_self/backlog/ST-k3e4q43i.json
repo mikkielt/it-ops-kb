@@ -21,7 +21,8 @@
     "_tools/test_leaks.py"
   ],
   "links": [
-    "parked: SP-qlpfcgs2 close"
+    "parked: SP-qlpfcgs2 close",
+    "merged: BG-vrijmdre"
   ],
-  "notes": "Premise run 2026-10-13 (load near 1.5 on 14 cores): slowest calls 7.48, 7.28, 7.05, 6.09 s; the check exits 1. The review's whole-suite run passed on a quiet host."
+  "notes": "Premise run 2026-10-13 (load near 1.5 on 14 cores): slowest calls 7.48, 7.28, 7.05, 6.09 s; the check exits 1. The review's whole-suite run passed on a quiet host. Merged from BG-vrijmdre “tests.py exits 1 over the time ceiling on a loaded darwin host: 100 tests pass in 25 s and 30 s against 24 s” at the 2026-10-13 draft triage: Same recurring over-ceiling failure (runs of 25-38 s at load 7-8 in SP-uzwbt63u, 100 passing). Its first half (faster tests so a worker's run passes under 3-4 siblings) is ST-k3e4q43i; absorb its SP-uzwbt63u timings as evidence. Its second half (judge time against host load / not read as over ceiling) changes ceiling semantics and is the operator's call under ST-kjp54uiz, not planned; tests.py:44 already says run again or record a host finding (92d3450c8). Its goal: python3 _tools/tests.py on a darwin host with other sessions running (load average 4.7, the run starting 7 of 12 workers) passes its 100 tests and still exits 1 with 'over the ceiling: the full run took 30 s, the ceiling is 24 s'; a whole-suite run's time bound is judged against the host's load as the ceiling file's darwin:20 with its factor reads it, or the run is not read as over the ceiling while another session loads the host, so a worker's clean tree does not fail the suite for time alone Its repro: {\"run\": [\"python3\", \"_tools/tests.py\"]} Its touches: _tools/tests.py"
 }

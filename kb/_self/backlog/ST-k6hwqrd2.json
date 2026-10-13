@@ -22,7 +22,9 @@
     ".claude/skills/kb-research/SKILL.md"
   ],
   "links": [
-    "parked: SP-u5q37ds3 close"
+    "parked: SP-u5q37ds3 close",
+    "merged: ST-7snky6yx",
+    "merged: ST-wlidipt6"
   ],
-  "notes": "Recurred in SP-htl7jkrm (2026-10-13): ST-ksgrpumr's answer concluded [DER] that a worktree under .claude/worktrees needs no protected-path allowance, while BG-6ecranz3 in the same sprint records the observed denial there; the review found it."
+  "notes": "Recurred in SP-htl7jkrm (2026-10-13): ST-ksgrpumr's answer concluded [DER] that a worktree under .claude/worktrees needs no protected-path allowance, while BG-6ecranz3 in the same sprint records the observed denial there; the review found it. Merged from ST-7snky6yx “A research worker checks the repo's own records before it records a fact as not observed, and stops at its brief's turn budget” at the 2026-10-13 draft triage: Same family as ST-k6hwqrd2 (research worker verifies against records before writing a fact; the cited BG-wl36adcq is done). Its turn-budget half is covered by dispatch's turn caps. Touches name the kb-worker.md symlink; the real file is agents/worker.md. Its goal: A goal research worker (kb-worker, research story) searches the repository's own measured records (kb/_self/reports/benchmarks.csv, the reports, the query log digests) for an observation before writing a fact or gap entry that says it was not observed, and reports when it passes the turn budget its goal names. SP-55ddkrrx: ST-a5f7dxbx ran 125 turns against its goal's 60-turn hint and wrote an UNK fact (ci-and-headless.md:99) that benchmarks.csv's router-pinned rows contradict (BG-wl36adcq). Its checks: {\"run\": [\"python3\", \"-c\", \"import sys;t=open('.claude/agents/kb-worker.md',encoding='utf-8').read();sys.exit(0 if 'not observed' in t else 1)\"]} Its touches: .claude/agents/kb-worker.md, kb/_self/backlog.md, kb/_self/plugin.md, kb/_self/token-efficiency.md Merged from ST-wlidipt6 at the 2026-10-13 draft triage (item in git history): Same family as ST-k6hwqrd2: research worker reads the source before stating what a CODE fact covers (SP-b7wibqok review caught one). Its check `selfdoc.py stale` proves nothing."
 }

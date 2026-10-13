@@ -22,7 +22,8 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-htl7jkrm close"
+    "parked: SP-htl7jkrm close",
+    "merged: ST-t5z6vddy"
   ],
-  "notes": "Recurred in SP-tcis5f23 (2026-10-13): cost --rework SP-tcis5f23 at the close read 0 runs and only the orchestrator's open session; no worker's Sonnet usage was attributed, and ops showed no agent.run rows. Worker spend from their result.json: research 2.20 USD, the seven bugs 0.33-0.66 USD each, reviewer 1.64 USD."
+  "notes": "Recurred in SP-tcis5f23 (2026-10-13): cost --rework SP-tcis5f23 at the close read 0 runs and only the orchestrator's open session; no worker's Sonnet usage was attributed, and ops showed no agent.run rows. Worker spend from their result.json: research 2.20 USD, the seven bugs 0.33-0.66 USD each, reviewer 1.64 USD. Merged from ST-t5z6vddy “An item the orchestrator works itself has work rows for backlog.py cost” at the 2026-10-13 draft triage: Same recurring 'cost reads no work rows' failure as ST-h66j7wm5 (dispatched worker case); this is its orchestrator-works-itself case (BG-pzgeq5t4, BG-tyh3t5oj landed with 'no work rows (missing)'). Absorb: a claim in the orchestrator's own session must leave a work row land and cost can attribute, or land names why. Its goal: An item the orchestrator claims and works in its own session (a single-commit bug) opens a work window from its claim, so backlog.py cost counts it (BG-pzgeq5t4 and BG-tyh3t5oj landed with 'no work rows (missing)'). Its checks: {\"run\": [\"python3\", \"_tools/backlog.py\", \"check\"]} Its touches: _tools/ql_capture.py, _tools/bl_cost.py, kb/_self/usage.md, kb/_self/backlog.md"
 }

@@ -21,6 +21,10 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-qxcj7fgy close"
-  ]
+    "parked: SP-qxcj7fgy close",
+    "merged: ST-4oe42lzk",
+    "merged: ST-2t3wqbnm",
+    "merged: ST-gnp2p4p2"
+  ],
+  "notes": "Merged from ST-4oe42lzk “backlog.py check warns of an item whose goal adds a backlog.json setting or routes calls through another module without that file in its touches” at the 2026-10-13 draft triage: Goal-implied-touches warning of the same genre as ST-pntfa6ry, ST-2t3wqbnm and ST-eonnt2bt; its docs clause is already warned by bl_plan.docs_warnings (touches name the code, map.csv docs outside scope) and bl_check has facade/goal-path/named-test-file warnings; only the backlog.json-setting and bl_forge-routing triggers are new. Its goal: check warns, for an open item, when its goal names a new setting and its touches lack backlog.json, or names a module its calls go through (such as bl_forge) that its touches lack, or changes a _tools module whose kb/_self/map.csv docs (kb/_self/code.md) its touches lack; in SP-dqkf3i42 five of nine tasks had touches widened at dispatch and two workers stopped on a gate or a patch for a file outside them (TK-g4c5kxsc backlog.json, TK-uwu2lgvo bl_forge.py, ST-zmepvwav test_backlog_portable.py) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"check_touches_setting_module\"]} Its touches: _tools/bl_check.py, kb/_self/backlog.md, kb/_self/tools.md Merged from ST-gnp2p4p2 “Sprint planning maps a new command's skill consumer into an item” at the 2026-10-13 draft triage: Near-duplicate (0.62) of ST-pntfa6ry: both ask planning to put the skill that runs a changed command into touches. Single occurrence (SP-yojt6y7v census judge); a pure planning rule. Its goal: When a committed item adds a command a skill should run (census.py judge for /kb-census), planning puts that skill in some item's touches with a clause that the skill runs it (SP-yojt6y7v's review found the kb-census skill never runs the batch judge, so the end-to-end census ran it by hand). Its checks: {\"run\": [\"python3\", \"_tools/selfdoc.py\", \"check\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md"
 }

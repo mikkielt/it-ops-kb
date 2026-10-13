@@ -15,6 +15,9 @@
     ]
   },
   "links": [
-    "parked: SP-tjap3mdd close"
-  ]
+    "parked: SP-tjap3mdd close",
+    "merged: BG-r2elimmu",
+    "merged: ST-rh2zpuq7"
+  ],
+  "notes": "Merged from BG-r2elimmu “gate add classes a provisional gate push because its question names a gitlab/ kb topic path, and makes it blocking” at the 2026-10-13 draft triage: Repro run: derived_class returns 'push' for a question naming gitlab/git-commit-paths-and-symlinks, so it reproduces, but it is the same push-by-word defect (the \\bgitlab\\b alternative of the push regex) as BG-3yjqrfkp. Its goal: backlog.py gate add --kind provisional with a question that names a kb topic path under gitlab/ (gitlab/git-commit-paths-and-symlinks) is no push-class gate and stays provisional: the class matches a push or a remote write, not the word gitlab inside a kb path Its repro: {\"run\": [\"python3\", \"-c\", \"import sys; sys.path.insert(0,'_tools'); import bl_authority; sys.exit(0 if bl_authority.derived_class({}, {'id':'g1','question':'Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-test-repositories?','options':['a new topic','a section']}) == 'design' else 1)\"]} Merged from ST-rh2zpuq7 “gate add classes a question as push only when it changes what is pushed, not on the word push” at the 2026-10-13 draft triage: Classifier-by-word family (QUESTION_WORDS push at bl_authority.py:98; probe: a question naming 'uploaded' classes push, so BG-3yjqrfkp's repro still fails); BG-3yjqrfkp is the older P2 bug with a repro and should absorb the display-only-question case and BG-r2elimmu; the item's touches name bl_items.py but the classifier is bl_authority.py Its goal: bl_gate's class matcher gives class push to a gate whose options change a push's target or contents, not to a display-only question that names a push (ST-22oykpr5 g1, how many unpushed commits land lists, was made blocking class push) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"gate_class_push_needs_a_push_change\"]} Its touches: _tools/bl_items.py, _tools/test_backlog_portable.py"
 }

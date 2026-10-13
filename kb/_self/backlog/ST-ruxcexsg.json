@@ -20,6 +20,13 @@
     "kb/_self/backlog.md"
   ],
   "links": [
-    "parked: SP-4jfepy6u close"
-  ]
+    "parked: SP-4jfepy6u close",
+    "merged: ST-bmhbyr6d",
+    "merged: ST-l2t3uv6s",
+    "merged: ST-lco3gszi",
+    "merged: ST-rlzq6jup",
+    "merged: ST-w73hk57t",
+    "merged: ST-wqp3xyp6"
+  ],
+  "notes": "Merged from ST-bmhbyr6d “Planning gives each condition of a goal clause its own planted case, so a check that reads one condition does not pass the clause” at the 2026-10-13 draft triage: One of seven 'a check read the phrase, not the behaviour' planning rules parked from sprint reviews (precheck_clause_each_condition test absent); same plan step 6 text in skills/sprint/SKILL.md and backlog.md Sprints. Its goal: Sprint planning maps a goal clause with two conditions to checks that plant each one: ST-ksznk2zt's clause 'good with no check: line for sc_present and sc_stale' was read by a test that plants only a route disagreement, so scenario_pack shipped reading no check: line and passed every check (found by the SP-j2jn5ue4 review as BG-4flop3jv). Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"precheck_clause_each_condition\"]} Merged from ST-rlzq6jup “Planning a lock or concurrency story gives each recovery path a planted check, not only the contended happy path” at the 2026-10-13 draft triage: Same family, one occurrence (ST-bu3ppwnx, SP-ilqhjn3k: its one check ran contended writers only, review then found BG-h6aqngbp and BG-u7gtwn5s); absorb only the doc rule that each recovery path gets a planted check; the planner warning stays out. Its goal: A planned story that adds a lock or other concurrency guard carries a check per recovery path its design has (a stale lock cleared while other writers contend, a failure between creating the lock and releasing it), each driven on a planted interleaving; seen in SP-ilqhjn3k, where ST-bu3ppwnx's one check ran six contended writers and a single-process stale clear, and the review then found a stale-clear race that hands one lock to two writers (BG-h6aqngbp) and a lock leaked on a failed owner write (BG-u7gtwn5s) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"plan_concurrency_recovery_checks\"]} Its touches: _tools/bl_plan.py, _tools/test_backlog_portable.py, kb/_self/backlog.md"
 }

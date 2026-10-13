@@ -20,6 +20,8 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "links": [
-    "parked: SP-ilqhjn3k review"
-  ]
+    "parked: SP-ilqhjn3k review",
+    "merged: BG-s5cpo5ml"
+  ],
+  "notes": "Merged from BG-s5cpo5ml “kb/public/_anchors.csv holds three stale rows for agents/doc-lookup-sources.md and no anchor for its reworded memdocs capture fact” at the 2026-10-13 draft triage: Still reproduces (anchors --stale lists three agents/doc-lookup-sources.md rows: S2177, S-u2afup7q x2) but it is the anchor half of the same memdocs capture fact (doc-lookup-sources.md:54) that BG-6w4zexka rewords; re-anchoring before the reword is wasted Its goal: Through /kb-refresh of agents/doc-lookup-sources, factdiff.py anchor --file agents/doc-lookup-sources.md has re-anchored the reworded facts at lines 53 and 54 and pruned the three stale rows, so no STALE line names agents/doc-lookup-sources.md and the lint no longer warns of a DOC fact with no anchor quote. Its repro: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;o=subprocess.run([sys.executable,'_tools/factdiff.py','anchors','--stale'],capture_output=True,text=True).stdout;n=[l for l in o.splitlines() if 'agents/doc-lookup-sources.md' in l];print(len(n));sys.exit(1 if n else 0)\"]}"
 }

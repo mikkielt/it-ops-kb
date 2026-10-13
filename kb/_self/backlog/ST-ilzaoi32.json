@@ -23,6 +23,9 @@
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "links": [
-    "parked: SP-rlincemn close"
-  ]
+    "parked: SP-rlincemn close",
+    "merged: ST-4yrugqfu",
+    "merged: ST-xcttbexh"
+  ],
+  "notes": "Merged from ST-4yrugqfu “An item that widens a parser or matcher carries a check that an input outside its target is unchanged” at the 2026-10-13 draft triage: Planning-rule prose; it asks for the same planted-variant check as ST-ilzaoi32 (negative input of a widened parser vs a guard on planted variants). Both fixes are one edit to the kb-sprint plan step and kb/_self/backlog.md. Three regressions are behind it (BG-bvyblfnp, BG-676tplds, BG-apytw7fo) but review catches each. Its goal: SP-5i4itd2d retrospective: two items' checks passed on work that regressed inputs outside their goal: ST-z5uh6oj7's VERSION_ID read a SID's digits as a version (BG-bvyblfnp) and ST-vlkxprhy's range clamp stopped refusing a citation far past a file's end (BG-676tplds); each check planted only the target input. Planning (kb-sprint plan step 6) names, for a committed item that widens a tokenizer, regex or citation parser, one negative check of an input the change must leave as it was, as it already does for attribution rules. Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','what negative check does an item that widens a parser carry','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))\"]} Its touches: .claude/skills/kb-sprint/SKILL.md, kb/_self/backlog.md Merged from ST-xcttbexh at the 2026-10-13 draft triage (item in git history): Its rule (the check runs the real guard unstubbed on planted variants) is ST-ilzaoi32's rule; the concrete defect it cites is BG-4lxb2w34. It must also absorb the new check warning: a code item whose touches name a test file that its checks select no test of (bl_check has only the reverse, named_test_file_warnings)."
 }
