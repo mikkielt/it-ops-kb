@@ -33,6 +33,21 @@
   "depends_on": [
     "BG-5fentnzk"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does apply hold noted: in try_fix only, or also stop the run when the measure before any change is already above rag.NOTED_BASELINE?",
+      "options": [
+        "both",
+        "try_fix only"
+      ],
+      "recommendation": "both",
+      "class": "design",
+      "answer": "both",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-4o3plg4l review"
   ],

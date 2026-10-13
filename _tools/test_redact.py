@@ -159,7 +159,7 @@ class LeadGate(ql_apply.Gate):
         pass
 
     def measure(self):
-        return {"n": 1, "passed": 1, "failed": [], "chars": {"EV-x": 100}, "offkb_good": 0}
+        return {"n": 1, "passed": 1, "noted": 0, "failed": [], "chars": {"EV-x": 100}, "offkb_good": 0}
 
     def rules_eval(self):
         return self.eval
@@ -244,7 +244,7 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_cuts_the_anchor_and_appl
     assert phrase in shown and phrase in line
     # a failed row names why it failed
     gate.eval.unlink()
-    gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["SQ-x"], "why": {"SQ-x": ["text"]}, "chars": {"EV-x": 100}, "offkb_good": 0}
+    gate.measure = lambda: {"n": 2, "passed": 1, "noted": 0, "failed": ["SQ-x"], "why": {"SQ-x": ["text"]}, "chars": {"EV-x": 100}, "offkb_good": 0}
     rec, _ = ql_apply.rules_one(weak, {"question": asked}, gate, {"chars": {"EV-x": 100}, "offkb_good": 0})
     assert rec["state"] == "no-fix" and rec["observed"] == {"gate": ["eval fails: SQ-x (text)"]}
     # an expansion finding for a data file: doc2query keys the facts of .md articles only, so no expansion row is
@@ -269,9 +269,16 @@ def test_apply_keeps_a_lead_that_does_not_answer_no_fix_cuts_the_anchor_and_appl
     assert not (tmp_path / "expansions.csv").exists() and len(ql_apply.csv_rows(tmp_path / "csv_eval.csv")) == 1
     # planted: the eval row fails alone, so the pair is no-fix and rejected, the eval file put back
     (tmp_path / "csv_eval.csv").unlink()
-    csv_gate.measure = lambda: {"n": 2, "passed": 1, "failed": ["EV-y"], "chars": {"EV-x": 100}, "offkb_good": 0}
+    csv_gate.measure = lambda: {"n": 2, "passed": 1, "noted": 0, "failed": ["EV-y"], "chars": {"EV-x": 100}, "offkb_good": 0}
     gone, rejected = ql_apply.apply_one(ev, fix, entry, csv_gate, base)
     assert (gone["state"], rejected["state"]) == ("no-fix", "rejected") and not (tmp_path / "csv_eval.csv").exists()
+    # planted: every question passes and a pack note now fires on one more answered question than rag.py eval allows
+    import rag
+    over = rag.NOTED_BASELINE + 1
+    csv_gate.measure = lambda: {"n": 1, "passed": 1, "noted": over, "failed": [], "chars": {"EV-x": 100}, "offkb_good": 0}
+    gone, rejected = ql_apply.apply_one(ev, fix, entry, csv_gate, base)
+    assert (gone["state"], rejected["state"]) == ("no-fix", "rejected") and not (tmp_path / "csv_eval.csv").exists()
+    assert rejected["observed"] == {"gate": [f"pack notes rise: noted={over} is above NOTED_BASELINE={over - 1}"]}
     # the gap step: no entry for pasted text (a backlog goal), none that check.py refuses (a citation, a topic mark or a
     # source or decision tag the question quotes)
     class GapGate(LeadGate):
