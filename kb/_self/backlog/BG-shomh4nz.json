@@ -2,7 +2,7 @@
   "id": "BG-shomh4nz",
   "kind": "bug",
   "title": "arch/python-single-package-extras says workspace members are always editable while python/uv-projects says uv sync's --no-editable opts out, and no conflict entry links them",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
@@ -58,5 +58,6 @@
   "links": [
     "parked: SP-wwacrsqr review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: python-single-package-extras.md:37 says 'workspace members are always editable' (S1706) while uv-projects.md:138 says --no-editable opts out (S-wmmyfoun); no _conflicts.md entry names both. Run at planning: the repro exits 1 and both added checks fail."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: python-single-package-extras.md:37 says 'workspace members are always editable' (S1706) while uv-projects.md:138 says --no-editable opts out (S-wmmyfoun); no _conflicts.md entry names both. Run at planning: the repro exits 1 and both added checks fail.",
+  "claimed_by": "orch-tjap3mdd"
 }
