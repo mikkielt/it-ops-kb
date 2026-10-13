@@ -1164,6 +1164,10 @@ CC_SPDX = re.compile(r"^CC-(BY(?:-(?:NC|SA|ND))*)-(\d\.\d)$")
 NO_REUSE = re.compile(r"(?:^|-)(?:NC|ND)(?:-|$)|^(?:BUSL|SSPL|Elastic|FSL|PolyForm|Commons-Clause)", re.I)  # NC, ND, source-available
 LICENCE_FILE = re.compile(r"^(?:LICEN[CS]E|COPYING)(?:[.-].*)?$", re.I)
 CODE_LICENCE = re.compile(r"[-_.]code\b", re.I)  # LICENSE-CODE: the licence of the repository's code, beside its content's
+CC_TITLE = re.compile(  # the first line of a Creative Commons legal-code file: the licence's name, or CC0's
+    r"^(?:#+\s*)?(?:Creative Commons\s+)?(?:CC0\s+(?P<zero>\d\.\d)\s+Universal"
+    r"|Attribution(?P<terms>(?:-(?:NonCommercial|ShareAlike|NoDerivatives))*)\s+(?P<ver>\d\.\d)\s+International)\s*$", re.I)
+CC_TITLE_WORDS = {"noncommercial": "NC", "sharealike": "SA", "noderivatives": "ND"}
 REPO_PAGES = ("blob", "tree", "raw", "blame")  # the path words after OWNER/REPO that are files of the repository
 GITLAB_SPDX = {k.lower(): k for k in (  # GitLab names a licence by its lowercase SPDX id; the ids not here are upper-cased
     "Apache-2.0", "Artistic-2.0", "BSD-2-Clause", "BSD-3-Clause", "BSL-1.0", "MIT", "MPL-2.0", "Unlicense", "Zlib")}
@@ -1283,6 +1287,24 @@ def _licence_files(slug):
     return sorted(n for n in names if LICENCE_FILE.match(n) and not CODE_LICENCE.search(n))
 
 
+def _licence_file_spdx(slug, name):
+    """(spdx, url) of a licence file at a GitHub repository's root whose first line is a Creative Commons legal-code
+    title (`# Attribution 4.0 International`, `CC0 1.0 Universal`); spdx is "" when the file could not be read or is
+    another text. For a mirror whose licence files GitHub's API reads as NOASSERTION."""
+    url = f"https://raw.githubusercontent.com/{slug}/HEAD/{urllib.parse.quote(name)}"
+    r = request(url, limit=4096)
+    if r["status"] != 200:
+        return "", url
+    head = next((x.strip() for x in r["body"].decode("utf-8-sig", "replace").splitlines() if x.strip()), "")
+    m = CC_TITLE.match(head)
+    if not m:
+        return "", url
+    if m.group("zero"):
+        return f"CC0-{m.group('zero')}", url
+    kinds = [CC_TITLE_WORDS[k.lower()] for k in m.group("terms").split("-") if k]
+    return "-".join(["CC-BY", *kinds, m.group("ver")]), url
+
+
 def _learn_licence(u):
     page = urllib.parse.urlunsplit((u.scheme, u.netloc, u.path, u.query, ""))
     r = request(page, limit=5_000_000)
@@ -1307,8 +1329,11 @@ def _learn_licence(u):
         return _unread("learn", f"the licence files of {slug} could not be listed (GitHub's unauthenticated limit is 60 requests an hour)")
     if len(files) > 1:
         return _found("learn", f"{terms} (public mirror {slug}: licence files {', '.join(files)} conflict)", "quote", api)
-    if not spdx or spdx.startswith("LicenseRef-"):
-        return _unread("learn", f"GitHub recognises no licence of the mirror {slug}: read its licence file")
+    if not spdx or spdx.startswith("LicenseRef-"):  # none or NOASSERTION (a LICENSE.md beside a LICENSE-CODE.md): read the one file
+        file_spdx, evidence = _licence_file_spdx(slug, files[0]) if files else ("", api)
+        if not file_spdx:
+            return _unread("learn", f"GitHub recognises no licence of the mirror {slug}: read its licence file")
+        spdx, api = file_spdx, evidence
     if _spdx_reuse(spdx) == "quote":
         return _found("learn", f"{terms} (public mirror {slug}, {spdx_words(spdx)}: no reuse grant)", "quote", api)
     return _found("learn", f"{spdx_words(spdx)} (public mirror {slug})", "copy", api)
@@ -1318,7 +1343,7 @@ def read_licence(url):
     """What the source's own licence record gives a `kbid.py add` row: {family, licence, reuse, evidence, note}. `family`
     names how it was read (`arxiv`: the licence link of the abstract page; `repository`: the GitHub or GitLab API;
     `learn`: the public mirror the page's github_feedback_content_git_url names, by kb/_self/content-rules.md,
-    Licensing and privacy; `anthropic`: the fixed pair of code.claude.com and anthropic.com; "" for any other host).
+    Licensing and privacy, its one licence file's Creative Commons title where the API gives no id; `anthropic`: the fixed pair of code.claude.com and anthropic.com; "" for any other host).
     `licence` and `reuse` are "" when nothing was read, and `note` says why. A reuse of `copy` is only an open licence
     (SPDX id, CC BY or CC BY-SA); NC, ND, source-available, non-exclusive and a recognised-nowhere licence are `quote` or
     unread. No credential is read and no Authorization header sent: GitHub's REST API allows 60 requests an hour."""
