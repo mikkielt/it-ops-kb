@@ -2,7 +2,7 @@
   "id": "ST-6z527rfe",
   "kind": "story",
   "title": "The provider-signals memo is keyed and refilled from the current provider registry, so a long-lived process writes no stale signals under a new key",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-u5q37ds3",
   "priority": "P3",
@@ -50,5 +50,28 @@
     "parked: SP-kp3boz7z review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.\n\nPremise: after the registry changes in one process, provider_signals still answers with the old rows' signals under the new key. Run 2026-10-12 on the base: reproduces. Registry key A with signals etag;lastmod, then key B with a row giving version: kbfacts.provider_signals answered ['etag', 'lastmod', 'hash'] for the second url (wanted ['version', 'hash']), since _PROVIDER_ROWS is filled once. Check 0 plants that change in one process (no index directory) and fails now. Check 1 names the existing pack_freshness_stamp test with a registry-change suffix: it collects no test now (exit 2); the worker extends that test with the planted change and appends _registry_change to the name's pack_freshness_stamp part, adding no new test id.",
-  "claimed_by": "orch-u5q37ds3"
+  "evidence": {
+    "commit": "59d22d2ce417a5d4d81553a3d3eeed11ad8c89dc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys; os.environ['KB_INDEX'] = '0'; sys.path.insert(0, '_tools'); import kbfacts, provider; cur = {'key': 'A', 'rows': [{'provider': 'x', 'match': 'example.test', 'signals': 'etag;lastmod'}]}; kbfacts._registry_key = lambda: cur['key']; provider.providers = lambda root=None: cur['rows']; kbfacts.provider_signals('https://example.test/a'); cur.update(key='B', rows=[{'provider': 'x', 'match': 'example.test', 'signals': 'version'}]); sys.exit(0 if kbfacts.provider_signals('https://example.test/b') == ['version', 'hash'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "pack_freshness_stamp_registry_change"
+        ],
+        "exit": 0,
+        "sha256": "813ba69f7587eb31"
+      }
+    ]
+  }
 }
