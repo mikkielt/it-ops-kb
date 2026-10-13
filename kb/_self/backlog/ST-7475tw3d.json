@@ -42,6 +42,22 @@
   "depends_on": [
     "ST-nqpgsnm3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the observed denial of an absolute //path Edit rule under .claude/worktrees tagged and where does it sit?",
+      "options": [
+        "der-answer-and-article",
+        "unk-answer-only",
+        "new-source-row"
+      ],
+      "recommendation": "der-answer-and-article",
+      "class": "design",
+      "answer": "der-answer-and-article",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-htl7jkrm review"
   ],
