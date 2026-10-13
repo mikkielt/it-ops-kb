@@ -2,7 +2,7 @@
   "id": "ST-ixujkc7n",
   "kind": "story",
   "title": "Research sprint goal: Freshness at lookup: revalidation counts, memos, ledger reads and status agree",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vdrsfftl",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Goal questions run through rag.py pack -q on 2026-10-13: freshness lifetime and staleness of a cited source: good (D-gmrjivyw decides it); what the kb MCP server reads in a worktree: none (the check: line flags a false good on git-test-repositories.md; --root _self answers weak from maintaining.md and tools.md); search API answering 200 with an error object: good only for other providers' rate limits, the repro needs no vendor page; how a lookup counts a row's cited sources: weak (tools.md and the code answer it). Every open question is about this repository's own tools, so its done needs `No outside facts: <reason>`."
+  "notes": "Goal questions run through rag.py pack -q on 2026-10-13: freshness lifetime and staleness of a cited source: good (D-gmrjivyw decides it); what the kb MCP server reads in a worktree: none (the check: line flags a false good on git-test-repositories.md; --root _self answers weak from maintaining.md and tools.md); search API answering 200 with an error object: good only for other providers' rate limits, the repro needs no vendor page; how a lookup counts a row's cited sources: weak (tools.md and the code answer it). Every open question is about this repository's own tools, so its done needs `No outside facts: <reason>`.",
+  "claimed_by": "orch-vdrsfftl"
 }
