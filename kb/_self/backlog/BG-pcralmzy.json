@@ -2,7 +2,7 @@
   "id": "BG-pcralmzy",
   "kind": "bug",
   "title": "fetch.py --status reads a source's age from its last check alone, so its STALE column disagrees with what a lookup revalidates",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-vdrsfftl",
   "priority": "P3",
@@ -40,5 +40,6 @@
   "links": [
     "parked: SP-etslk6yu review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: the repro fails on the base (exit 1: fetch.py --status reads age from the last check alone and leaves an age-unknown source not stale, source_freshness counts it stale). The doc check reads only the --status row of tools.md, which says age is the time since its last check. fetch.py's own --help text (the --status paragraph) says the same and is in its touches."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: the repro fails on the base (exit 1: fetch.py --status reads age from the last check alone and leaves an age-unknown source not stale, source_freshness counts it stale). The doc check reads only the --status row of tools.md, which says age is the time since its last check. fetch.py's own --help text (the --status paragraph) says the same and is in its touches.",
+  "claimed_by": "orch-vdrsfftl"
 }
