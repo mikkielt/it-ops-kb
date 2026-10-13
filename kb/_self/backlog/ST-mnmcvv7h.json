@@ -2,7 +2,7 @@
   "id": "ST-mnmcvv7h",
   "kind": "story",
   "title": "The source rows whose licence cells say the MicrosoftDocs/memdocs mirror is archived or cite its LICENSE as the CC BY 4.0 grant say what holds now that it answers 404",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
@@ -43,5 +43,6 @@
   "links": [
     "parked: SP-df2cu4uj close"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: 328 rows carry 'MicrosoftDocs/memdocs archived' in a cell and 118 rows read 'memdocs LICENSE' as a CC BY 4.0 licence (the first check exits 1). No row is deleted; reuse cells stay as they are unless the worker's reading of the Learn terms says otherwise."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: 328 rows carry 'MicrosoftDocs/memdocs archived' in a cell and 118 rows read 'memdocs LICENSE' as a CC BY 4.0 licence (the first check exits 1). No row is deleted; reuse cells stay as they are unless the worker's reading of the Learn terms says otherwise.",
+  "claimed_by": "orch-ilqhjn3k"
 }
