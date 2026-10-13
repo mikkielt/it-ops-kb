@@ -1,0 +1,17 @@
+{
+  "id": "BG-3yjqrfkp",
+  "kind": "bug",
+  "title": "A gate question that says a package was uploaded to PyPI is classed push by the word uploaded, so a wording choice about a release date is made blocking",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "class_reasons in _tools/bl_authority.py no longer classes a gate question as push for the word uploaded when it names an upload date of a package release, while a question about uploading the repository's own commits to a remote still classes push, and the repro command exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.class_reasons({'touches':[]},{'question':'PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version do the install facts state?','options':['keep 1.2.14','move to 1.2.15']});sys.exit(1 if c[0]=='push' else 0)"
+    ]
+  }
+}
