@@ -2,7 +2,7 @@
   "id": "BG-mkw4awdu",
   "kind": "bug",
   "title": "python/maturin-pyo3-wheels' abi3 matrix derivation names manylinux_2_28 tags, though maturin's documented default and the generated workflow's manylinux auto give manylinux2014/2_17",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
@@ -61,5 +61,6 @@
   "links": [
     "parked: SP-wwacrsqr review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: the abi3 derivation (maturin-pyo3-wheels.md:125-130) gives 'for example manylinux_2_28_x86_64'. Run at planning: the repro exits 1 and both added checks fail. The QK answer (_answers.md:3047-3054) names no manylinux_2_28 tag and already says the tags are inferred: its part is read and confirmed, edited only if a tag appears."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: the abi3 derivation (maturin-pyo3-wheels.md:125-130) gives 'for example manylinux_2_28_x86_64'. Run at planning: the repro exits 1 and both added checks fail. The QK answer (_answers.md:3047-3054) names no manylinux_2_28 tag and already says the tags are inferred: its part is read and confirmed, edited only if a tag appears.",
+  "claimed_by": "orch-tjap3mdd"
 }
