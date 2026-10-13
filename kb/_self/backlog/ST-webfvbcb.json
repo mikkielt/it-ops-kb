@@ -86,7 +86,9 @@
         "yes: new refuses a trivial command too, as set already does through changed_items"
       ],
       "recommendation": "no: new keeps its warning for a trivial command and refuses only what check_program_refusal refuses",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no: new keeps its warning for a trivial command and refuses only what check_program_refusal refuses",
+      "by": "operator"
     }
   ],
   "links": [
