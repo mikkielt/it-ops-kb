@@ -43,6 +43,21 @@
   "depends_on": [
     "BG-7v7icnjj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is a 200 search answer that is not the provider's result list, and how is each no-answer named in search_lost?",
+      "options": [
+        "result-list-object",
+        "html-only"
+      ],
+      "recommendation": "result-list-object",
+      "class": "design",
+      "answer": "result-list-object",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-u5q37ds3 review",
     "merged: ST-ve4a5sgq"
