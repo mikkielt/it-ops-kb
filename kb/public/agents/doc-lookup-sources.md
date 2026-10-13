@@ -3,7 +3,7 @@ topic: agents/doc-lookup-sources
 priority: P2
 applies_to: "stable (GA) MCP servers and public APIs that return current official documentation for this kb's domains, as of 2026-09-25"
 retrieved_utc: 2026-10-13
-sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S-ehhvgjky, S742, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
+sources: [S2176, S2177, S2178, S2179, S2180, S2181, S2182, S2183, S2184, S2185, S2186, S2187, S2188, S2189, S2190, S2191, S2192, S2193, S2194, S2195, S2197, S1809, S-el34o4bb, S-eutmp4xp, S-j7xzzcxj, S-u2afup7q, S-xmqy75h7, S-b6tooge2, S-ybuoluc4, S-rgy4dvjf, S452, S717, S-fvspfpxd, S-pxvdwitn, S-gupervu4, S-ke227men, S-fqi6xbbc, S-autbwi4y, S-eluaxz73, S-ekcs6zhr, S-3yod3u7q, S-ehhvgjky, S742, S745, S1824, S-soqo5xvt, S-cig7twfc, S-7ppiqh3x, S-u5diy2cr, S-ezhoiiyb, S-t36jnjsm, S-y6wauqrp, S-mz6tic2a, S-5uo7eb2c, S-jkl2kuth, S-ywdbre2n, S-yftp4qw3, S-4yvdwu5c, S2006, S1002, S-5lkuonr6, S1811]
 status: complete
 ---
 
