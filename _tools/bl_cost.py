@@ -580,8 +580,8 @@ def epoch_iso(t):
 # field only a later item adds; until then none is) or one of its `links` names a gap finding of the committed store
 # (`F-<12 hex>` with kind `gap` in `kb/_querylog/findings`). Its tokens are its own lines' direct + attributed counts
 # (`cost_lines`, no descendant, no shared line), the sum of `in`, `cw`, `cr` and `out` over the models (`TOKEN_KEYS`:
-# `requests` is a count of calls, no tokens). A gap finding is closed by a commit when the commit's version of a
-# root's `_gaps.md` has a settling note (`ql_research.SETTLED`: Resolved or Superseded, dated) under the entry that
+# `requests` is a count of calls, no tokens). A gap finding is closed by a commit when the commit's version of a root's
+# `_gaps.md` has a settling note (`ql_research.SETTLED`: Resolved, Superseded or Closed, dated) under the entry that
 # names the finding and its first parent's version has none (or has no entry or no file): the commit that settles the
 # entry, the one `/kb-research` writes, never the query log's own record, which has no `KB-Work` trailer. Tokens per
 # closed gap is the item's tokens divided by the count of its closed gaps, integer division (floor); `n/a` when it
