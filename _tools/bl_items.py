@@ -16,8 +16,8 @@ from bl_base import (
     research_checks, research_in_planned, review_checks, say, scope, trailer_problem, waits, withhold,
 )
 from bl_check import (
-    ITEM_FILES_ROUTE, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
-)
+    ITEM_FILES_ROUTE, bl_intake, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
+)  # bl_intake: the module refused_command_errors reads check_program_refusal from, so `new` and `check` agree
 from bl_land import REOPENED_REFS, cleanup_gate_do, clauses_left_behind, prune_reopened_refs, run_check, own_failure
 from bl_view import (
     is_near, similar,
@@ -31,6 +31,22 @@ from bl_plan import (
 
 def parse_cmd(s):
     return shlex.split(s, posix=True)
+
+
+def filed_command(s, flag):
+    """The argv of the command line S that FLAG (`--repro`, `--check`, `--add-check`) gives an item's repro or check.
+    Rejected, naming FLAG, for a line shlex cannot read (an unclosed quote) and for a program that
+    bl_intake.check_program_refusal refuses, the one predicate `check` counts an error with, so no item is filed that
+    the landing's `check` then refuses; the caller runs and writes nothing before it."""
+    try:
+        argv = parse_cmd(s)
+    except ValueError as e:
+        raise Rejected(f"{flag} is not a command line ({e})") from e
+    why = bl_intake.check_program_refusal(argv)
+    if why:
+        raise Rejected(f"{flag} is refused: {why}; an open item's repro and checks run without a shell, as python3 on "
+                       "a _tools/ script or python3 -c/-m code, so `backlog.py check` would refuse the item")
+    return argv
 
 
 def parse_external(values, flag="--external"):
@@ -127,11 +143,12 @@ def cmd_new(bl, a):
             it["status"] = "draft"
     if a.sprint and bl.items.get(a.sprint, {}).get("status") == "active":  # filed into a running sprint: ready now
         it["status"] = "todo"
+    checks = [{"run": filed_command(c, "--check")} for c in a.check or []]  # before any repro runs: a refusal writes nothing
     if kind == "bug":
         if not a.severity or not a.repro:
             raise Refused("a bug needs --severity and --repro")
         it["severity"] = a.severity
-        it["repro"] = {"run": parse_cmd(a.repro)}
+        it["repro"] = {"run": filed_command(a.repro, "--repro")}
         ok, code, out = run_check(bl.root, it["repro"])
         if ok:
             raise Refused(f"--repro passes now (exit {code}): it must fail until the bug is fixed")
@@ -147,8 +164,8 @@ def cmd_new(bl, a):
             it["repro_reason"] = a.repro_reason.strip()
     elif a.repro_reason:
         raise Rejected("--repro-reason is for a bug's --repro")
-    if a.check:
-        it["checks"] = [{"run": parse_cmd(c)} for c in a.check]
+    if checks:
+        it["checks"] = checks
     warns = noop_warnings(it, out if kind == "bug" else "")
     if a.touch:
         it["touches"] = a.touch
@@ -543,11 +560,11 @@ def cmd_set(bl, a):
         raise Rejected("set refuses --clear repro or severity: a bug needs both")
     if "parent" in given and given["parent"] not in bl.items:
         raise Rejected(f"set refuses parent {given['parent']} for {bl.label(iid)}: no such item")
+    for vals, flag in ((given, "--check"), (adds, "--add-check")):  # refused before a repro runs: nothing is written
+        if "checks" in vals:
+            vals["checks"] = [{"run": filed_command(c, flag)} for c in vals["checks"]]
     if "repro" in given:  # as new bug: a command that fails now, for the defect, not for its own error
-        try:
-            given["repro"] = {"run": parse_cmd(given["repro"])}
-        except ValueError as e:
-            raise Rejected(f"set: --repro is not a command line ({e})") from e
+        given["repro"] = {"run": filed_command(given["repro"], "--repro")}
         ok, code, out = run_check(bl.root, given["repro"])
         if ok and was_done(bl, iid):  # a reopened bug's fix has landed: done reruns the repro and needs it to pass
             ok = False
@@ -569,12 +586,6 @@ def cmd_set(bl, a):
     if a.sprint is not None and bl.items.get(a.sprint, {}).get("status") == "active" and it.get("status") == "draft":
         raise Rejected(f"set refuses sprint {a.sprint} for {bl.label(iid)}: the sprint is active and the item is "
                        "draft, so it would never be ready")
-    for vals, flag in ((given, "--check"), (adds, "--add-check")):
-        if "checks" in vals:
-            try:
-                vals["checks"] = [{"run": parse_cmd(c)} for c in vals["checks"]]
-            except ValueError as e:
-                raise Rejected(f"set: {flag} is not a command line ({e})") from e
 
     def edit(new):
         for f, v in given.items():

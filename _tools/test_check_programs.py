@@ -54,14 +54,31 @@ def test_backlog_check_refuses_programs_outside_the_allowlist(tmp_path):
                ["python3", "../outside/marker.py"],  # a script that leaves the clone
                ["python3", "_tools/../outside/x.py"],  # a path that climbs out of _tools/
                ["python3", "_tools/kbgit.py", "publish"],  # a form that pushes
+               ["python3", "-I", "-c", "pass"],  # an interpreter flag in front of the code
                ["git", "push", "origin", "HEAD:main"]]
     allowed = [["python3", "_tools/check.py"], ["python3", "-c", "import sys; sys.exit(0 if sys.argv else 1)"]]
     assert b("new", "epic", "--title", "Epic", "--goal", "outcome")[0] == 0
     epic = next(w for w in b("list")[1].split() if w.startswith("EP-"))
     args = ["new", "story", "--title", "Story", "--parent", epic, "--goal", "g", "--touch", "src/**"]
-    for argv in refused + allowed:
+    for argv in allowed:
         args += ["--check", shlex.join(argv)]
-    assert b(*args)[0] == 0
+    code, out = b(*args)
+    assert code == 0, out
+    story = out.split()[2]
+    files = next(root.rglob(f"{story}.json")).parent
+    held = {p.name: p.read_text(encoding="utf-8") for p in files.iterdir()}
+    for argv in refused:  # filing refuses what check refuses, with its reason, and writes nothing
+        for filing in (["new", "story", "--title", "Refused", "--goal", "g", "--check", shlex.join(argv)],
+                       ["set", story, "--add-check", shlex.join(argv)]):
+            code, out = b(*filing)
+            assert code == 2 and "check is refused: " in out, (filing, out)
+    assert {p.name: p.read_text(encoding="utf-8") for p in files.iterdir()} == held
+    code, out = b("new", "story", "--title", "Quote", "--goal", "g", "--check", "echo it's")
+    assert code == 2 and "--check is not a command line" in out and "Traceback" not in out, out
+    path = files / f"{story}.json"  # the item a merge brings: a file `new` and `set` would not have written
+    item = json.loads(path.read_text(encoding="utf-8"))
+    item["checks"] += [{"run": argv} for argv in refused]
+    path.write_text(bl_base.canonical(item), encoding="utf-8")
     code, out = b("check")
     assert code == 1 and f"errors={len(refused)} " in out
     assert out.count("is refused") == len(refused)

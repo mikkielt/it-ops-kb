@@ -76,6 +76,19 @@
       "class": "agents-rule",
       "answer": "no: they run by fire and host-check, never as an open item's repro or check",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does new also refuse a repro or check that check's trivial_command flags, besides a program check_program_refusal refuses?",
+      "options": [
+        "no: new keeps its warning for a trivial command and refuses only what check_program_refusal refuses",
+        "yes: new refuses a trivial command too, as set already does through changed_items"
+      ],
+      "recommendation": "no: new keeps its warning for a trivial command and refuses only what check_program_refusal refuses",
+      "class": "agents-rule",
+      "answer": "no: new keeps its warning for a trivial command and refuses only what check_program_refusal refuses",
+      "by": "operator"
     }
   ],
   "links": [
