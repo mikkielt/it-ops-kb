@@ -340,7 +340,27 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     # the check passes while the doc exists and prints pytest's `no tests ran` once a later commit deletes it
     gone = ("python3 -c \"import pathlib, sys; ok = pathlib.Path('kb/_self/good.md').is_file(); "
             "ok or print('no tests ran'); sys.exit(not ok)\"")
-    repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", gone), hooks=False)
+    exits = "python3 -c \"import sys; sys.exit(0)\""
+    probe = "python3 -c \"import sys; sys.exit(1)  # reads kb/_querylog/ops\""
+    repo, sp, (good, rows, probe_id) = planned(
+        scenario, ("good", "kb/_self/good.md", gone), ("rows", "kb/_querylog/rows.jsonl", exits),
+        ("probe", "_tools/probe.py", probe), hooks=False)
+    code, out = bl(repo, "precheck", sp)  # a code-lane item whose check reads the store: only a delivery after the merge
+    warned = [ln for ln in out.splitlines() if ln.startswith("warning: ") and "query-log" in ln]
+    assert code == 0 and len(warned) == 1 and f"{probe_id}" in warned[0] and "after the merge" in warned[0], out
+    ok(repo, "drop", probe_id, "--why", "only its precheck line was read")
+    # a story of the store only has no KB-Work commit: the automatic delivery that is on origin/main is its evidence
+    code, out = bl(repo, "done", rows, "--dry-run")
+    assert code == 1 and "no commit on HEAD carries the trailer KB-Work" in out and "KB-Auto: querylog" in out, out
+    repo.write("kb/_querylog/rows.jsonl", "{}\n")
+    repo.git("add", "kb/_querylog/rows.jsonl")
+    repo.git("commit", "-q", "--no-verify", "-m", "chore(kb): query log store, 1 run file(s)", "-m", "KB-Auto: querylog")
+    code, out = bl(repo, "done", rows, "--dry-run")
+    assert code == 1 and "no commit on HEAD carries the trailer KB-Work" in out, out  # not on origin/main yet
+    repo.git("push", "-q", "--no-verify", "origin", "main")
+    code, out = bl(repo, "done", rows, "--dry-run")
+    assert code == 0 and "the evidence is the automatic query-log delivery" in out and "would be done" in out, out
+    ok(repo, "done", rows, "--commit")
     work(repo, good, "kb/_self/good.md")
     repo.git("checkout", "-q", "main")
     repo.git("merge", "-q", "--ff-only", f"work/{good}")
