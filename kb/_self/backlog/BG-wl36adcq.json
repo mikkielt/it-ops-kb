@@ -72,6 +72,22 @@
   "depends_on": [
     "BG-tvn7abnu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which url, licence and reuse class does the source row for the repository's own benchmarks.csv carry in kb/public/_sources.csv?",
+      "options": [
+        "pinned-blob-cc-by-copy",
+        "pinned-blob-quote",
+        "no-source-row"
+      ],
+      "recommendation": "pinned-blob-cc-by-copy",
+      "class": "design",
+      "answer": "pinned-blob-cc-by-copy",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-55ddkrrx review"
   ],
