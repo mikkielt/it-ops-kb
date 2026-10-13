@@ -2,7 +2,7 @@
   "id": "BG-6ecranz3",
   "kind": "bug",
   "title": "census.py dispatch's Edit allow rules for a group's owned files are denied in a checkout under .claude/worktrees, so the session edits nothing and returns its rewrites as foreign edits",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-htl7jkrm",
   "priority": "P2",
   "rank": 0,
@@ -84,5 +84,6 @@
     "parked: SP-yojt6y7v run",
     "merged: ST-lihlbwty"
   ],
-  "notes": "Premise: census.py has no handling of a checkout path under .claude/worktrees, so dispatch pays for sessions whose Edit is denied. Premise run 2026-10-12: grep of _tools/census.py for 'worktrees' finds nothing and the repro fails; reproduces. Absorbs ST-lihlbwty (the warning before the paid run and the kb-census skill sentence for the interim). Gate g1 answered refuse: no spend is made when the path makes the edits impossible; the Edit rule form the CLI honours there is not planned (it needs a paid probe). Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. The kb states the likely cause: an edit under a protected directory such as .claude is denied under dontAsk (public/claude/settings-and-scopes.md:65, DOC); whether the CLI protects .claude/worktrees by path or by the rule form is what the planned refusal does not need to know."
+  "notes": "Premise: census.py has no handling of a checkout path under .claude/worktrees, so dispatch pays for sessions whose Edit is denied. Premise run 2026-10-12: grep of _tools/census.py for 'worktrees' finds nothing and the repro fails; reproduces. Absorbs ST-lihlbwty (the warning before the paid run and the kb-census skill sentence for the interim). Gate g1 answered refuse: no spend is made when the path makes the edits impossible; the Edit rule form the CLI honours there is not planned (it needs a paid probe). Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. The kb states the likely cause: an edit under a protected directory such as .claude is denied under dontAsk (public/claude/settings-and-scopes.md:65, DOC); whether the CLI protects .claude/worktrees by path or by the rule form is what the planned refusal does not need to know.",
+  "claimed_by": "orch-htl7jkrm"
 }
