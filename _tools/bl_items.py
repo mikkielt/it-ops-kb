@@ -1049,7 +1049,8 @@ def cmd_goal(bl, a):
     globs = scope(bl, iid)
     if globs:
         parts.append("no commit for it changes a file outside " + ", ".join(globs))
-    say(", ".join(parts) + ", or stop after 60 turns")
+    turns = getattr(a, "turns", None)  # the cap of the session that reads the text: only its caller knows it
+    say(", ".join(parts) + (f", or stop after {turns} turns" if turns else ""))
     above = [(x, g) for x in bl.ancestors(iid) for g in bl.items[x].get("gates", []) or [] if g.get("answer")]
     if above:  # a brief built from the goal must not contradict an answer given above the item
         say("answered gates above it, which its work keeps to:")
