@@ -3391,3 +3391,17 @@ _Agent: kb-research_
 - See agents/onnx-runtime-rust-ort.md.
 
 _Agent: kb-research_
+
+## QK-bounds-wall-time-pytest-xdist-loadscope. What bounds the wall time of a pytest-xdist loadscope run on a loaded macOS host, what does os.getloadavg count there, and how does pytest --collect-only count a -k selection?
+- A loadscope work unit is a class (for test methods) or a module (for test functions), and a unit goes whole to one worker. [DOC S-t7c2nvll]
+- Units are queued by test count, not duration, and one never moves except when its worker crashes. [CODE S-eaoeu53g: src/xdist/scheduler/loadscope.py#LoadScopeScheduling.schedule]
+- The scheduler waits for every worker's full-suite collection before it sends the first unit. [CODE S-eaoeu53g: src/xdist/scheduler/loadscope.py#LoadScopeScheduling.schedule]
+- `-n auto` takes its worker count from CPU counts and an environment variable only; on macOS, without `psutil`, that is `os.cpu_count()`, because `os.sched_getaffinity` does not exist there. [DER S-qejsavhl, S-ew7mucsg: the resolution order and a run on macOS]
+- `os.getloadavg()` returns the number of processes in the system run queue averaged over the last 1, 5 and 15 minutes, as three floats. [DOC S-ew7mucsg, S-pfq6vvwq]
+- On macOS the kernel averages a count of running threads every 5 seconds with 1, 5 and 15 minute constants, Apple's `getloadavg` reads it through `vm.loadavg`, and nothing divides it by the CPU count. [CODE S-fm6og32s: bsd/kern/kern_synch.c#compute_averunnable]
+- `--collect-only` closes with `N/M tests collected (K deselected)`, `M` counted before `-k` deselects. [CODE S-muz57uar: src/_pytest/terminal.py#_build_collect_only_summary_stats_line]
+- Conclusion: a loaded host changes neither the worker count nor the grouping, so the end of a run is set by the slowest worker's start and collection, then by the longest unit and the summed test time over the workers, each stretched by the CPUs other work takes; the load average read at the start of a run holds the previous minute's load. [DER S-eaoeu53g, S-t7c2nvll, S-qejsavhl, S-fm6og32s, S-itsqgyii]
+- Open: which thread states are in the run count the kernel averages. [UNK]
+- See python/pytest-xdist.md, python/stdlib-os-loadavg.md, python/pytest.md.
+
+_Agent: kb-research_

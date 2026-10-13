@@ -286,8 +286,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `privacy/gliner-glirel-zero-shot` | P3 | partial | `privacy/gliner-glirel-zero-shot.md` | 47 |
 | `privacy/morfeusz-polish-lemmatisation` | P3 | partial | `privacy/morfeusz-polish-lemmatisation.md` | 27 |
 | `privacy/spacy-pipeline-pinning` | P3 | partial | `privacy/spacy-pipeline-pinning.md` | 27 |
-| `python/pytest` | P2 | complete | `python/pytest.md` | 14 |
-| `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 6 |
+| `python/pytest` | P2 | complete | `python/pytest.md` | 15 |
+| `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 7 |
 | `python/ruff` | P2 | complete | `python/ruff.md` | 13 |
 | `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 6 |
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 15 |
@@ -302,6 +302,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 9 |
 | `python/stdlib-cprofile-pstats` | P3 | partial | `python/stdlib-cprofile-pstats.md` | 4 |
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
+| `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |
 | `python/stdlib-urllib-errors` | P3 | partial | `python/stdlib-urllib-errors.md` | 4 |
 | `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 22 |
 | `python/testcontainers-postgres-pytest` | P3 | partial | `python/testcontainers-postgres-pytest.md` | 15 |

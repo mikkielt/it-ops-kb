@@ -2,8 +2,8 @@
 topic: python/pytest-xdist
 priority: P2
 applies_to: [pytest-xdist, pytest]
-retrieved_utc: 2026-09-29
-sources: [S-t7c2nvll, S-lthpihsc, S-ng5lgn3p, S-qejsavhl, S-ew7mucsg, S-d77lvlq4]
+retrieved_utc: 2026-10-13
+sources: [S-t7c2nvll, S-lthpihsc, S-ng5lgn3p, S-qejsavhl, S-ew7mucsg, S-d77lvlq4, S-eaoeu53g]
 status: complete
 ---
 
@@ -63,6 +63,14 @@ comment "a class's scenario is built once, on one worker") use in this repositor
 - `--maxschedchunk` caps how many tests `--dist load` sends to a worker in one step: `1` sends them one by one (for a few slow tests), larger values let a worker reuse fixtures across consecutive tests, and at least 2 tests go to each worker at the start. [CODE S-qejsavhl: src/xdist/plugin.py#pytest_addoption]
 - With `--dist loadscope`, xdist by default reorders scopes by their number of tests (`--loadscope-reorder`) to improve parallelism, at the cost of the partial order of tests; `--no-loadscope-reorder` keeps the order for plugins that depend on it. [CODE S-qejsavhl: src/xdist/plugin.py#pytest_addoption]
 - Under `loadscope` one test class or module is the unit of work: a class whose tests take minutes keeps one worker busy for all of it while the others go idle at the end of the run, and `worksteal` or `load` can spread a class that holds no shared class-scoped state. [DER S-t7c2nvll: the grouping and `worksteal` rules above]
+
+### Wall time of a loadscope run
+- The scheduler starts distributing only once every worker has sent its collection of the whole suite and the collections are identical (`collection_is_completed` needs a collection from each of `numnodes` workers); a mismatch aborts the run ("Different tests collected"). Each worker therefore imports and collects the full suite before the first test runs. [CODE S-eaoeu53g: src/xdist/scheduler/loadscope.py#LoadScopeScheduling.schedule]
+- A work unit is the node id up to its last `::` (`nodeid.rsplit("::", 1)[0]`): a class for a test method, a module for a test function. Units go into the queue ordered by their number of tests, largest first, when `--loadscope-reorder` is on (the default), not by how long they take. [CODE S-eaoeu53g: src/xdist/scheduler/loadscope.py#LoadScopeScheduling._split_scope, schedule]
+- When there are more workers than units the extra workers are shut down; every other worker first gets one unit, then a second if one is left (issue 277). After that a worker gets the next unit only when it has 2 or fewer pending tests, and a worker that finds the queue empty is told to shut down. A unit already sent to a worker stays there: it moves only when that worker crashes, and loadscope has no work stealing. [CODE S-eaoeu53g: src/xdist/scheduler/loadscope.py#LoadScopeScheduling._reschedule, schedule, remove_node]
+- So the wall time of a `loadscope` run has three parts: the slowest worker's start and full-suite collection; then the run itself, which cannot end before the longest single unit has run on one worker nor before the summed test time divided by the worker count; then the shutdown of the workers. A unit that the queue puts last because it has few tests but that runs long can start late and then set the end of the run alone. [DER S-eaoeu53g, S-t7c2nvll: the collection barrier, the unit rule and the no-steal rule above]
+- Load on the host does not change the worker count or the grouping: `-n auto` is resolved from CPU counts and an environment variable only (the order above), and the scheduler orders units by test count, so a loaded host runs the same units on the same number of workers with fewer CPU cycles for each. Each worker's start, collection and every unit then take longer, and the longest unit and the slowest worker's start are the parts that stretch the end of the run. [DER S-eaoeu53g, S-qejsavhl: the worker-count resolution order and the scheduler's inputs; the effect of load on duration follows from sharing CPUs]
+- On macOS `os.sched_getaffinity` does not exist (`hasattr` is False on CPython 3.13.2 for macOS, checked 2026-10-13), so without `psutil` `-n auto` starts one worker per logical CPU there, as on Windows; `os.getloadavg()` reports how many threads are running or runnable against that count (`python/stdlib-os-loadavg.md`). [DER S-qejsavhl, S-ew7mucsg: the resolution order above and a run on macOS]
 
 ## Reference
 ```toml
