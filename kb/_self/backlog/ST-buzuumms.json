@@ -2,7 +2,7 @@
   "id": "ST-buzuumms",
   "kind": "story",
   "title": "A worker near its turn cap commits its work in progress instead of exiting with staged changes",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-mujl7ebh",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,6 @@
     "merged: ST-m42ub6g2",
     "merged: ST-lh2yw5k4"
   ],
-  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all work staged and no commit; resumed with 60 more turns, it committed in 6. SP-etslk6yu close: the ST-jqwqdj2g worker (story, 17 touches, cap 100) hit its cap with every change staged; a resume of 8 turns finished it. Merged at the 2026-10-12 draft triage: ST-etqx424h (TURNS in bl_dispatch.py: task 60, story 100; SP-dqkf3i42 and SP-x5gjv4r7 workers used 100-122 turns; TK-g4c5kxsc stopped at 60 with staged gates), ST-m42ub6g2 (a measurement story stopped at its 100-turn cap with commits done) and ST-lh2yw5k4 (SP-ceucrhca, 101 turns, uncommitted). The full text of each merged item: git show on its item file before its drop commit. Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, premise run on main: dispatch --dry-run ST-buzuumms prints --max-turns 100 and the brief's fixed rules name no turn by which a worker commits; both checks exit 1. Tasks: TK-casle7h7 (cap by kind), TK-dcgp3kd2 (commit before the cap)."
+  "notes": "Recurred in SP-ilje65fa (2026-10-10): the ST-ai2xlm7x worker exited at its 100-turn cap (101 turns) with all work staged and no commit; resumed with 60 more turns, it committed in 6. SP-etslk6yu close: the ST-jqwqdj2g worker (story, 17 touches, cap 100) hit its cap with every change staged; a resume of 8 turns finished it. Merged at the 2026-10-12 draft triage: ST-etqx424h (TURNS in bl_dispatch.py: task 60, story 100; SP-dqkf3i42 and SP-x5gjv4r7 workers used 100-122 turns; TK-g4c5kxsc stopped at 60 with staged gates), ST-m42ub6g2 (a measurement story stopped at its 100-turn cap with commits done) and ST-lh2yw5k4 (SP-ceucrhca, 101 turns, uncommitted). The full text of each merged item: git show on its item file before its drop commit. Planned at the 2026-10-12 draft triage (sprint 17 of 19, \"Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned 2026-10-12, premise run on main: dispatch --dry-run ST-buzuumms prints --max-turns 100 and the brief's fixed rules name no turn by which a worker commits; both checks exit 1. Tasks: TK-casle7h7 (cap by kind), TK-dcgp3kd2 (commit before the cap).",
+  "claimed_by": "orch-mujl7ebh"
 }
