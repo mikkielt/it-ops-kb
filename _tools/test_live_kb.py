@@ -955,6 +955,11 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert not kbfacts.PRICE_ASK.search("What does it cost in resource units?")
     assert kbfacts.PRICE_ASK.search("How much is a licence per user per month?") and not kbfacts.PRICE_ASK.search("How much memory does it use?")
     assert kbfacts.PRICE_ASK.search("What does it cost per user?") and kbfacts.PRICE_ASK.search("What is the price in units of 5?")
+    assert not any(kbfacts.PRICE_ASK.search(q) for q in (  # a unit cost or a memory or data quantity asks for no money
+        "How many resource units does a Graph getMemberGroups call cost?",
+        "How much memory per device does the Intune agent use?", "How much data per month can the Graph usage reports return?"))
+    assert all(kbfacts.PRICE_ASK.search(q) for q in (
+        "How much is a Microsoft 365 E5 licence per user per month?", "What is the current price of a Microsoft 365 E5 licence?"))
     assert kbfacts.AMOUNT.search("It costs $36 per user a month") and kbfacts.AMOUNT.search("36 EUR")
     assert not kbfacts.AMOUNT.search("Windows 10/11 Enterprise E3/E5 licence") and kbfacts.PRICE_ASK.search("How much does it cost")
     code, out = tool("rag.py", "pack", good_row()["question"])
