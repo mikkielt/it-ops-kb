@@ -2,7 +2,7 @@
   "id": "ST-5jqqzrgy",
   "kind": "story",
   "title": "Research sprint goal: Freshness at lookup: revalidation compares the right window and remembers what it checked",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-djl7za6x",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/_self/_retrieval/lookup_eval.csv"
-  ]
+  ],
+  "claimed_by": "orch-djl7za6x"
 }
