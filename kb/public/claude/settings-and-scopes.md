@@ -1,10 +1,10 @@
 ---
 topic: claude/settings-and-scopes
 priority: P2
-applies_to: "Claude Code docs (retrieved 2026-10-12)"
-retrieved_utc: 2026-10-12
+applies_to: "Claude Code docs (retrieved 2026-10-13)"
+retrieved_utc: 2026-10-13
 sources: [S2057, S-wzatkg4o, S2042, S-22qwtmf7, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
-status: complete
+status: partial
 files: [claude/settings-keys.csv, claude/env-vars.csv]
 ---
 
@@ -68,6 +68,10 @@ precedence against settings-file `env` values.
 - The directory where Claude is launched is the primary working directory; access extends with `--add-dir <path>` at startup, `/add-dir` in a session or `additionalDirectories` in a settings file, and files in an added directory follow the same permission rules as the launch directory: readable without prompts, with file-editing permission following the current permission mode. [DOC S-pmhgjvef]
 - In a `claude -p` run, `--permission-mode acceptEdits` lets Claude write files without prompting and auto-approves common filesystem commands such as `mkdir`, `touch`, `mv` and `cp`, while shell commands beyond the read-only set and network requests still need an `--allowedTools` entry or a `permissions.allow` rule. [DOC S1800]
 - A `claude -p --permission-mode acceptEdits --add-dir <dir>` run therefore edits files under `<dir>` without a prompt: the added directory is inside the scope `acceptEdits` auto-approves, and the exceptions (protected paths, a symlink that resolves outside the scope, critical-path removals) prompt, which a `-p` run with nobody to answer denies. No sentence names `-p`, `--add-dir` and `acceptEdits` together; the fact rests on the three above. [DER S-zcuxapgb, S-pmhgjvef, S1800: the `acceptEdits` scope, added directories under the permission mode, `-p` with `acceptEdits`]
+- A `claude -p` run has no host to answer a permission prompt: the headless page says "In a `-p` run with no host, these requests are denied either way", so a call that would prompt in `default` mode is denied, not waited on, and `--permission-prompts none` adds only that Claude is told not to retry. [DOC S1800]
+- The commands a `claude -p --permission-mode default` run (the built-in start for `-p`, above) executes with no `--allowedTools` entry or `permissions.allow` rule are the file reads and the built-in read-only Bash set (`ls`, `cat`, `grep`, `find`, `diff`, `cd`, "read-only forms of `git`" and the rest, with the cases that still prompt, at `claude/powershell-tool.md:37`); `acceptEdits` lists `rm` among the commands it adds to the set, so `rm` is outside it and is denied in `default`. [DER S1800, S-zcuxapgb: the `-p` denial, the `default` baseline, and the `acceptEdits` list that names `rm`; the set's members are the permissions page's Read-only commands section]
+- `git diff` and `git show` are read-only forms of `git` and run in that `default` run without a rule; `git clone`, which writes a whole tree, and a `git stash` that pushes, pops or drops stashes change the repository and are outside the set, so they are denied unless an allow rule such as `Bash(git stash push *)` or `Bash(git clone *)` names them; the prefix form `Bash(git diff *)` is the headless page's own example. [DER S1800, S-zcuxapgb: the read-only set and the `-p` denial applied to each command]
+- No docs page read lists which `git` subcommands and flags count as read-only forms: `git diff` and `git show` are read-only by what they do, and whether `git stash list` or `git stash show` are in the set is not stated, so a worker that stashes needs its own allow rule rather than relying on the set. [UNK: the permissions page's Read-only commands section says "read-only forms of `git`" and names no subcommand]
 - A `permissions.allow` rule such as `Edit(.claude/**)` does not pre-approve protected-path writes: the safety check runs before allow rules from settings. In prompting modes the prompt can offer a session-scoped "allow edits in this project's .claude folder". [DOC S-zcuxapgb]
 - The sandbox has its own protected-path list, applied to a running command: the `.claude` settings files, the `.claude/skills`, `.claude/agents`, `.claude/commands` and `.claude/hooks` directories and `.mcp.json` (in the working directory and above), plus most of `~/.claude`. No `allowWrite` entry or `Edit` allow rule lifts it; only `filesystem.disabled` does, for every path. [DOC S-l6l42j6e]
 - No mode auto-approves: explicit ask-rule matches, organization connector tools set to `ask`, tools requiring user interaction (`AskUserQuestion`, MCP tools marked `requiresUserInteraction`), critical-path `rm`/`rmdir`, cross-session messaging safeguards, and (with `permissions.blockReadsOutsideWorkingDirectories` on, v2.1.257+) reads outside working directories. [DOC S-zcuxapgb]

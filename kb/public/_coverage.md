@@ -132,7 +132,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 18 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 8 |
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 16 |
-| `claude/settings-and-scopes` | P2 | complete | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 14 |
+| `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 14 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 9 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 8 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 3 |
