@@ -2,7 +2,7 @@
   "id": "BG-fzofresw",
   "kind": "bug",
   "title": "agents/onnx-runtime-rust-ort says every Windows row of dist.tsv includes directml, though rc.13 has an x86_64-pc-windows-msvc row with webgpu only",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,6 @@
   "links": [
     "parked: SP-qjn563cf review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: onnx-runtime-rust-ort.md:31 says 'every Windows row includes directml'. Run at planning: the repro exits 1 (the phrase is present) and the two added checks fail (no line names the x86_64-pc-windows-msvc webgpu row or the first directml row). Shares the article with BG-a22yrzap, which runs first."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: onnx-runtime-rust-ort.md:31 says 'every Windows row includes directml'. Run at planning: the repro exits 1 (the phrase is present) and the two added checks fail (no line names the x86_64-pc-windows-msvc webgpu row or the first directml row). Shares the article with BG-a22yrzap, which runs first.",
+  "claimed_by": "orch-tjap3mdd"
 }
