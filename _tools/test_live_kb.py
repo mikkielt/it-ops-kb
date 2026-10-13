@@ -263,7 +263,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_search_http_error_keeps_the_offline_stamp(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -300,7 +300,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert anchors[("e5e5e5e5e5e5", "dsc/a.md", A)]["status"] == "unlocated:no-match"
     state = {A: factdiff.baseline(A, urls[A], when, provider.providers()),
              B: {**factdiff.baseline(B, urls[B], when, provider.providers()), "etag": 'W/"1"'}}
-    asked, resolved = [], []
+    asked, resolved, search_down = [], [], []
 
     def respond(status=200, body=b"", headers=None, error=""):
         return {"status": status, "headers": {"content-type": "text/markdown", **(headers or {})}, "body": body,
@@ -316,6 +316,8 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     def request(url, headers=None, limit=20_000_000, method="GET"):
         asked.append(url)
         if "learn.microsoft.com/api/search" in url:
+            if search_down:
+                return {**respond(search_down[0]), "final": url}
             return {**respond(headers={"content-type": "application/json"}, body=json.dumps({"results": [{"url": host + "audit"}]}).encode()), "final": url}
         return {**pages[url.split("?")[0]](headers or {}), "final": url}
     monkeypatch.setattr(provider, "request", request)
@@ -389,6 +391,27 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert by_rel["dsc/e2.md"]["outcome"] == "current" and "section is unchanged" in by_rel["dsc/e2.md"]["note"], by_rel["dsc/e2.md"]
     assert by_rel["dsc/f.md"]["outcome"] == "moved" and "sixty days" in by_rel["dsc/f.md"]["passage"], by_rel["dsc/f.md"]
     assert by_rel["dsc/h.md"]["outcome"] == "source-dated only" and "newer than the anchor" in by_rel["dsc/h.md"]["note"], by_rel["dsc/h.md"]
+    # the search answering an HTTP error is no answer: a passage gone from its page and not found elsewhere keeps the
+    # offline stamp (no outcome, the request named), for each printed line asking it; a line resolved in place is unaffected
+    K = "S9990020"
+    urls[K] = host + "page-k"
+    pages[urls[K]] = lambda h: respond(body=new.encode())
+    state[K] = factdiff.baseline(K, urls[K], when, provider.providers())
+    for r in factdiff.anchor_rows(K, [(k, "dsc/k.md", ln, t) for k, ln, t in facts], {"status": 200, "text": old}, "quote", "2026-10-01"):
+        anchors[(r["fact"], r["path"], K)] = r
+    search_down.append(503)
+    down = factdiff.revalidate([line("public/dsc/k.md", ln, k, t, K) for k, ln, t in facts[1:4]])
+    assert [down["lines"][("public/dsc/k.md", ln)]["outcome"] for ln in (6, 7, 8)] == ["moved", "", ""], down
+    for ln in (7, 8):
+        why = down["lines"][("public/dsc/k.md", ln)]["unchecked"][K]
+        assert why.startswith("HTTP 503") and "learn.microsoft.com/api/search" in why, why
+    assert down["sources"][K]["state"] == "live" and down["sources"][K]["verdict"] == "changed", down["sources"][K]
+    search_down.clear()
+    audit_page = pages[host + "audit"]  # a candidate page answering an HTTP error is no answer either
+    pages[host + "audit"] = lambda h: respond(429)
+    limited = factdiff.revalidate([line("public/dsc/k.md", 7, facts[2][0], facts[2][2], K)])["lines"][("public/dsc/k.md", 7)]
+    assert limited["outcome"] == "" and limited["unchecked"][K] == f"HTTP 429 from the candidate page {host}audit", limited
+    pages[host + "audit"] = audit_page
     # the time budget: a source asked after it is used up is not checked, and says so
     monkeypatch.setattr(provider, "pacing", lambda row: 0)
     monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error=provider.BUDGET_ERROR), "final": url})
