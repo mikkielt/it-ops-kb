@@ -2,7 +2,7 @@
   "id": "ST-ksgrpumr",
   "kind": "story",
   "title": "Research sprint goal: Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-htl7jkrm",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Goal questions run 2026-10-12 with rag.py pack -q: (1) how an Edit permission rule names an absolute path and whether .claude directories are protected, (2) whether thinking tokens count as output, (3) the usage and cost fields of claude -p --output-format json. Coverage good for all three (public/claude/settings-and-scopes.md:65 protected-path writes denied under dontAsk; public/claude/ci-and-headless.md:72 total_cost_usd and modelUsage). Its done needs 'No outside facts: the kb holds each answer'.",
-  "claimed_by": "orch-htl7jkrm"
+  "evidence": {
+    "commit": "281773c5fea8b324d88e81a8d4af4423d9ac535f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ksgrpumr"
+        ],
+        "exit": 0,
+        "sha256": "eb7d1ad01703afbd"
+      }
+    ]
+  }
 }
