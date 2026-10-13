@@ -31,7 +31,9 @@
         "match the singular words only"
       ],
       "recommendation": "accept a plural s on the part words",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "accept a plural s on the part words",
+      "by": "operator"
     }
   ],
   "notes": "Found by the SP-uzwbt63u review (fresh-context reviewer, 2026-10-13), filed S1 by the orchestrator acting as operator: it weakens the operator-only secrets class (fail open), which the policy keeps conservative. Repro run on main 2026-10-13: SECRET_TOKENS, PASSWORD_TOKENS, PRIVATE_TOKENS, KEY_TOKENS class design, API_TOKENS secrets; the three count constants design (exit 1). Before 330b88ba0 all five were secrets.",
