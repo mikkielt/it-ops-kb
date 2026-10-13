@@ -411,12 +411,14 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     assert marks() == {first}, out  # `good` and `late` went with the sprint
 
 
-def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate_error_and_land_names_check_trailers_refusal(tmp_path, monkeypatch, capsys):
+def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate_error_and_land_names_check_trailers_refusal_and_manual_push_logs_distill(tmp_path, monkeypatch, capsys):
     """A landing that exits 0 with no line of the item in the committed work sidecars says which of three it is: a
     worker's row in the spool (rows late, a `land:` line naming the session and its state, no warning), a work sidecar
     naming the item that sits in a local store the integration main lacks (undelivered, the store named), or no worker's
     row anywhere (missing, the claim of the orchestrator's own session not counting); a sidecar the checkout holds says
-    nothing, and the exit is 0 in each."""
+    nothing, and the exit is 0 in each. A push run by hand (the default `out`) writes its lines to that distill.log
+    too, so the warning names the failed gate of the last run, not an older automatic run's; a run whose standard
+    output already is that file writes each line once."""
     import types
 
     import bl_base
@@ -507,6 +509,39 @@ def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate
     (root / "kb" / "_querylog" / "work" / "2026-10" / sidecar.name).write_text(sidecar.read_text(encoding="utf-8"),
                                                                               encoding="utf-8")
     assert landed() == []
+
+    import ql_deliver  # a push run by hand leaves its lines in that distill.log, as the detached automatic one does
+    qdir = store.parent
+    log.write_text("apply --push: pushed 0a1b2c3d4 to origin/main\n", encoding="utf-8")  # an older automatic run
+    assert bl_land.last_push_failure(store) is None
+
+    class Failing:
+        def __init__(self, home, qdir, run, apply_step, out, now_dt=None):
+            self.out = out
+
+        def __call__(self):
+            self.out("apply: run=1 records=2")
+            self.out("  gate check.py: FAILED (exit 1): ERROR public/_gaps.md:7 cites a file that is not in root public")
+            self.out("apply --push: kbgit.py sync exit 1: nothing pushed to main")
+            return 1
+
+    monkeypatch.setattr(ql_deliver, "Pusher", Failing)
+    capsys.readouterr()
+    assert ql_deliver.push(home=tmp_path, qdir=qdir) == 1
+    said = capsys.readouterr().out
+    assert "gate check.py: FAILED (exit 1)" in said, said  # still on the standard output
+    assert log.read_text(encoding="utf-8").count("apply --push: kbgit.py sync exit 1") == 1
+    assert bl_land.last_push_failure(store) == "gate check.py: ERROR public/_gaps.md:7 cites a file that is not in root public"
+
+    log.write_text("", encoding="utf-8")
+    kept_stdout = sys.stdout
+    with open(log, "a", encoding="utf-8") as detached:  # standard output already the log, as a hook's run has it
+        monkeypatch.setattr(sys, "stdout", detached)
+        try:
+            assert ql_deliver.push(home=tmp_path, qdir=qdir) == 1
+        finally:
+            monkeypatch.setattr(sys, "stdout", kept_stdout)
+    assert log.read_text(encoding="utf-8").count("apply: run=1 records=2") == 1
 
 
 def orphan_in(cwd, log, release, give_up=120):
