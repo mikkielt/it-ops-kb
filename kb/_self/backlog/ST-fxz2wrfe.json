@@ -2,7 +2,7 @@
   "id": "ST-fxz2wrfe",
   "kind": "story",
   "title": "detect records changed_utc in _fetch_state.csv, so a pack's [source changed] mark can fire on the live kb",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P3",
@@ -35,5 +35,19 @@
     "merged: BG-w3p7fqy2"
   ],
   "notes": "Merged from BG-w3p7fqy2 “factdiff.py detect never records changed_utc, so no source of _fetch_state.csv has a recorded change” at the 2026-10-12 draft triage: Its own note names ST-fxz2wrfe as the duplicate; its repro now passes spuriously (85 kb/public rows hold changed_utc, written by fetch.py on first fetch) while factdiff.py still has no changed_utc write. Its goal: factdiff.py detect writes the state row's changed_utc when a source's verdict is changed, replaced or moved, so the change history in git and the source changed mark of a fact read it; the repro exits 0 once a detect run has recorded a change. Its repro: {\"run\": [\"python3\", \"-c\", \"import csv, sys; sys.exit(0 if any(r['changed_utc'] for r in csv.DictReader(open('kb/public/_fetch_state.csv', encoding='utf-8'))) else 1)\"]} Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: factdiff detect never writes changed_utc. Run 2026-10-12 on origin/main: factdiff.py holds no changed_utc (grep count 0), kb/public/_fetch_state.csv has 85 of 2610 rows with one, all fetch.py writes, and the check selection collects no test yet: reproduces. The merged BG-w3p7fqy2 repro passes spuriously, so it is not kept. The test name carries detect_writes_changed_utc. Run last: it follows the other items on factdiff.py and test_live_kb.py.",
-  "claimed_by": "orch-djl7za6x"
+  "evidence": {
+    "commit": "4cbef7642cc14495457315393f31c4e857fe9c73",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "detect_writes_changed_utc"
+        ],
+        "exit": 0,
+        "sha256": "df7111753d318623"
+      }
+    ]
+  }
 }
