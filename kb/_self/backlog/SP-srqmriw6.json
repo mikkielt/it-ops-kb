@@ -1,0 +1,20 @@
+{
+  "id": "SP-srqmriw6",
+  "kind": "sprint",
+  "title": "Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences",
+  "status": "planned",
+  "goal": "confirmable's content-date pass is stated in tools.md and its eval row, or the lookup drops it; the revalidation's down window gates every request of a lookup (search host, candidate pages, made-up sibling, pinned repository request) and a redirect target's connect failure puts the target's host in it, not the redirecting source's; detection and census give a page with no words the lookup's verdict, or tools.md says why they keep the soft 404; anchor --file retries a fact whose only anchor row is unlocated by a failed fetch; read_licence reads LICENSE.md and LICENSE-CODE.md of a Learn mirror when GitHub answers NOASSERTION, so kbid.py add no longer exits 2",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
