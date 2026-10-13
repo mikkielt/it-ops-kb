@@ -2414,12 +2414,15 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 0050baeb8af9,agents/onnx-runtime-rust-ort.md,S-bzhegec5,located,,issu;ort-sy;sys;2.0.0;2.0.0-rc.9;ort,d799646aea5a1045,"ort-sys = { version = ""=2.0.0-rc.9"", default-features = false }",2026-10-13
 0050baeb8af9,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,2.0.0;2.0.0-rc.13;ort-sy;sys;ort,b4ef9fdc6017b499,"ort-sys = { version = ""=2.0.0-rc.13"", path = ""ort-sys"", default-features = false }",2026-10-13
 03e927dc22e1,agents/onnx-runtime-rust-ort.md,S-yliumtdz,located,ONNX Runtime Execution Providers > Build ONNX Runtime package with EPs,built;combination;default;packag;cpu;runtim;onnx;provider,b6c8ce6e81865c5f,The ONNX Runtime package can be built with any combination of the EPs along with the default CPU execution provider.,2026-10-13
+09611b803f18,agents/onnx-runtime-rust-ort.md,S-5bx2p3mo,located,cargo-tree(1) > DESCRIPTION,flow;show;packag;featur,faae5b59aae87995,can be helpful to use -i flag to show how the features flow into a package,2026-10-13
 0b28264baade,agents/onnx-runtime-rust-ort.md,S-msk5qtcf,unlocated:no-match,,,,,2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,located,,check;load;byte;session,30518c4166a52846,"/// For .ort models, we enable session.useortmodelbytesdirectly. /// For more information, check [Load ORT format model from an in-memory byte array](https://onnxruntime.ai/docs/performance/model-optimizations/ort-format-models.html#load-ort-format-model-from-an-in-memory-byte-array).",2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
 0f7062072769,agents/onnx-runtime-rust-ort.md,S-l3go6sje,unlocated:no-match,,,,,2026-10-13
 13dc80a609e5,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,located,,acl;armn;azur;can;coreml;cuda;directml;migraphx,5e6834b452304d23,"""cuda"", ""tensorrt"", ""openvino"", ""onednn"", ""directml"", ""nnapi"", ""coreml"", ""xnnpack"", ""rocm"", ""acl"", ""armnn"", ""tvm"", ""migraphx"", ""rknpu"", ""vitis"", ""cann"", ""qnn"", ""webgpu"", ""azure"", ""nvrtx"", ""vsinpu""",2026-10-13
 19a011be1786,agents/onnx-runtime-rust-ort.md,S-xt54q2gr,located,,mlas;power;default;provider;cpu,308e1950b03ccbcf,"/// The default CPU execution provider, powered by MLAS.",2026-10-13
+1b915aaaae65,agents/onnx-runtime-rust-ort.md,S-bzhegec5,unlocated:no-match,,,,,2026-10-13
+1b915aaaae65,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
 1cc6707fd5f3,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
 1cc6707fd5f3,agents/onnx-runtime-rust-ort.md,S-rlepjcn5,unlocated:no-match,,,,,2026-10-13
 1e8f3547070d,agents/onnx-runtime-rust-ort.md,S-45rrlyyd,unlocated:no-match,,,,,2026-10-13
@@ -2440,8 +2443,18 @@ fb587e5834ff,agents/microsoft-agent-framework.md,S-kzoop7qs,located,Microsoft Ag
 43b5a059d6c0,agents/onnx-runtime-rust-ort.md,S-7zyahsl3,located,Specifying Dependencies > Version requirement syntax > Default requirements,component;left;left-most;non-zero;zero;non;major;minor,0452b898d1d33fc6,Default requirements specify a minimum version with the ability to update to [SemVer] compatible versions. Versions are considered compatible if their left-most non-zero major/minor/patch component,2026-10-13
 43b5a059d6c0,agents/onnx-runtime-rust-ort.md,S-miwhfdzy,located,Dependency Resolution > Constraints and Heuristics > SemVer compatibility,cannot;unifi;error;compatibl;two;requirement;cargo;version,cfa290b33255f49a,"If two compatible versions cannot be unified because of conflicting version requirements, Cargo will error.",2026-10-13
 43fddf0ab8da,agents/onnx-runtime-rust-ort.md,S-jpjnjgqg,located,,hardware-accelerat;microsoft;other;primarily;pure-rust;train;wrapper;accelerat,b0299b23473c570c,ort is a Rust interface for performing hardware-accelerated inference & training on machine learning models in the Open Neural Network Exchange (ONNX) format. Based on,2026-10-13
+4757a33cd947,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,located,Features > Feature unification > Inspecting resolved features,flow;invert;show;tree;cargo;packag;featur,97a525d92b0a85e0,"This will invert the tree, showing how features flow into the given package",2026-10-13
+47d7e0f56d3c,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,located,Features > Feature resolver version 2,proc;proc-macro;build-dependency;macro;normal;build;dependency;featur,b1f93a575aa6b71b,[Build-dependencies] and proc-macros do not share features with normal dependencies,2026-10-13
 4a88745f733c,agents/onnx-runtime-rust-ort.md,S-atc7uhx5,unlocated:no-match,,,,,2026-10-13
+4b55748fd9ed,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,located,Features > Feature unification,union;build;cargo;packag;enabl;dependency;featur,babc7f0a9c45c916,Cargo will use the union of all features enabled on that dependency when building it,2026-10-13
 5017bde4ca5f,agents/onnx-runtime-rust-ort.md,S-hmcb2gfz,located,,checksum;digest;external_data;file;external;location;data;optional,71d680ce188e3fd7,"// - ""checksum"" (optional) - SHA1 digest of file specified in under 'location' key. repeated StringStringEntryProto externaldata = 13;",2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-5bx2p3mo,unlocated:no-match,,,,,2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-a7uyxlhd,unlocated:no-match,,,,,2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-ah7l36rr,located,,availabl;compil;error;link;onnx;binary;ort;prebuilt,591a1c498ba3b0f9,"log::error!( ""no prebuilt binaries available for target {target} note: you may have to compile ONNX Runtime from source and link ort to your custom build;",2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-bzhegec5,unlocated:no-match,,,,,2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-pwbxp7jw,unlocated:no-match,,,,,2026-10-13
+51b48b91e31c,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,unlocated:no-match,,,,,2026-10-13
 541be28563f4,agents/onnx-runtime-rust-ort.md,S-x6bpplvz,unlocated:no-match,,,,,2026-10-13
 552105acd74e,agents/onnx-runtime-rust-ort.md,S-omvw5ahk,located,,execution;max;maxefficiency;overrid;policy;provider;selection;with_execution_provider,141837271cee575b,"// .withexecutionproviders/.withautoep will override this #[cfg(feature = ""api-22"")] let = ortsys![@ort: unsafe SessionOptionsSetEpSelectionPolicy(sessionoptionsptr.asptr(), AutoDevicePolicy::MaxEfficiency.into()) as Result];",2026-10-13
 5db865dddade,agents/onnx-runtime-rust-ort.md,S-6z4pv23l,unlocated:no-match,,,,,2026-10-13
@@ -2503,7 +2516,9 @@ d51036861053,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,located,,card;library;li
 d51036861053,agents/onnx-runtime-rust-ort.md,S-rmgaatpo,unlocated:no-match,,,,,2026-10-13
 dd63090b5685,agents/onnx-runtime-rust-ort.md,S-ixcjfodz,unlocated:no-match,,,,,2026-10-13
 dd67196557c2,agents/onnx-runtime-rust-ort.md,S-ktoxup5h,unlocated:no-match,,,,,2026-10-13
+dfb753858e3a,agents/onnx-runtime-rust-ort.md,S-d7xuprcc,located,Dependency Resolution > Constraints and Heuristics > Features,flag;unifi;featur;packag;dependency,0208869c1bad0756,the features of the dependencies of all of those packages are unified,2026-10-13
 e82baf84052e,agents/onnx-runtime-rust-ort.md,S-ah7l36rr,unlocated:no-match,,,,,2026-10-13
+eb1b4685edd1,agents/onnx-runtime-rust-ort.md,S-wl3gkg3g,located,Features > Dependency features,ensur;may;disabl;default;featur,10724ba635b2c511,This may not ensure the default features are disabled,2026-10-13
 06ab45c8944d,agents/own-chatbot-architecture.md,S1970,located,What is Microsoft Foundry Agent Service? - Microsoft Foundry | Microsoft Learn > Enterprise capabilities,isolat;sandbox;vm-isolat;vnet;bring-your-own;privat;session;bring,d017f290bc93e109,"Private networking is available for prompt agents. Hosted agents support bring-your-own Azure Virtual Network (BYO VNet), where each session runs in a VM-isolated sandbox connected",2026-10-10
 0b8c77262223,agents/own-chatbot-architecture.md,S1974,located,Data policies - Power Platform | Microsoft Learn > Connectors > Virtual connectors,governanc;studio;copilot;platform;power;data;policy;connector,6320bdb2bce299bc,The proliferation of virtual connectors comes from data policies being one of the most popular governance controls in Power Platform. More of these types of,2026-10-10
 1421b6d68307,agents/own-chatbot-architecture.md,S1970,unlocated:no-match,,,,,2026-10-10
@@ -8737,6 +8752,32 @@ b6e8a830b6a4,logs/otel-log-semconv.md,S640,located,Log > Log Record Attributes,a
 cffbc39c4579,logs/otel-log-semconv.md,S640,located,Log > Log Record Attributes,different;duplicat;remov;log.record.uid;must;uid;valu;record,91b19f311aa6847d,"[2] log.record.uid: If an ID is provided, other log records with the same ID will be considered duplicates and can be removed safely. This means,",2026-10-10
 9828a06007ec,logs/prometheus-retention-exposition.md,S744,located,Monitoring > Available metrics and events > Metrics,scrap;valid;stay;usd;prometheus;unit;omit;otel_metrics_exporter,0f82bba40fc57f09,"When prometheus is the only exporter listed in OTELMETRICSEXPORTER, Claude Code omits the USD, tokens, and s units from the exported metrics so the scrape",2026-10-12
 a2ff7ec7006b,logs/prometheus-retention-exposition.md,S744,unlocated:no-match,,,,,2026-10-12
+0a8f32fb2efa,logs/python-rust-json-stdout-logs.md,S-6l23ubol,located,mylib.py,print_exception;traceback.print_exception;print;traceback;exception,b8d499573b6c69bc,This default implementation just uses :func:traceback.printexception,2026-10-13
+38b5b49d16bd,logs/python-rust-json-stdout-logs.md,S-fmhy7rbl,located,,doc;sets;json;featur;subscriberbuilder;builder;subscriber,7eb36309a774f86f,"#[cfgattr(docsrs, doc(cfg(feature = ""json"")))] impl<T, F, W> SubscriberBuilder<format::JsonFields, format::Format<format::Json, T>, F, W> { /// Sets the json subscriber being built to flatten event metadata.",2026-10-13
+41fbb1a7966a,logs/python-rust-json-stdout-logs.md,S-zzvrhdyd,located,,insert;newlin;none;default,144b045d3cf43fce,"If None (the default), no newlines are inserted",2026-10-13
+437e3fa9b904,logs/python-rust-json-stdout-logs.md,S-7v3dgzq4,located,,stdout;sys.stdout;core;stder;sys.stder;streamhandler;sys;stream,ddaca705bb78999c,"The :class:StreamHandler class, located in the core :mod:logging package, sends logging output to streams such as sys.stdout, sys.stderr or any",2026-10-13
+437e3fa9b904,logs/python-rust-json-stdout-logs.md,S-fmhy7rbl,unlocated:no-match,,,,,2026-10-13
+489b5263d939,logs/python-rust-json-stdout-logs.md,S-bkz7cb64,located,,object;event;json,4978278fe5f2d326,impl Json { /// If set to true event metadata will be flattened into the root object.,2026-10-13
+489b5263d939,logs/python-rust-json-stdout-logs.md,S-fmhy7rbl,located,,object;json;event,80e167bbcc820830,/// // Configure the subscriber to flatten event fields in the output JSON objects.,2026-10-13
+489b5263d939,logs/python-rust-json-stdout-logs.md,S-md4evt46,unlocated:no-match,,,,,2026-10-13
+5e0fb61596b8,logs/python-rust-json-stdout-logs.md,S-6l23ubol,located,mylib.py,append;information;exception;messag;format,994ffd45586b0585,"If there is exception information, it is formatted using :meth:formatException and appended to the message",2026-10-13
+7c7b55433ff3,logs/python-rust-json-stdout-logs.md,S-bkz7cb64,located,,both;default;flatten;list;current;event;field;span,8f2d117098419966,"/// By default, event fields are not flattened, and both current span and span /// list are logged.",2026-10-13
+a9beee93fe7c,logs/python-rust-json-stdout-logs.md,S-2ciukzt5,located,cycles and network bandwidth!,123.456;fnum;messag,274ba430dce23e3f,"message 1 >>> {""fnum"": 123.456, ""num"": 123, ""bar"": ""baz"", ""foo"": ""bar""}",2026-10-13
+ba3820a7b590,logs/python-rust-json-stdout-logs.md,S1720,located,The Twelve-Factor App > XI. Logs > Treat logs as event streams,stdout;unbuffer;factor;twelv;twelve-factor;rout;event;stream,6c409b15395580c8,"A twelve-factor app never concerns itself with routing or storage of its output stream. It should not attempt to write to or manage logfiles. Instead,",2026-10-13
+ba3820a7b590,logs/python-rust-json-stdout-logs.md,S-7v3dgzq4,unlocated:no-match,,,,,2026-10-13
+ba3820a7b590,logs/python-rust-json-stdout-logs.md,S-fmhy7rbl,located,,abov;environment;set;event,86c2eb197596a949,"As mentioned above, the [EnvFilter] allows Spans and Events to //! be filtered at runtime by setting the RUSTLOG environment variable.",2026-10-13
+d2aea63635a4,logs/python-rust-json-stdout-logs.md,S-2ciukzt5,unlocated:no-match,,,,,2026-10-13
+d2aea63635a4,logs/python-rust-json-stdout-logs.md,S-6l23ubol,unlocated:no-match,,,,,2026-10-13
+d2aea63635a4,logs/python-rust-json-stdout-logs.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-13
+d8ef9bc72f3a,logs/python-rust-json-stdout-logs.md,S-md4evt46,unlocated:no-match,,,,,2026-10-13
+dea3ce4b37be,logs/python-rust-json-stdout-logs.md,S-6l23ubol,unlocated:no-match,,,,,2026-10-13
+dea3ce4b37be,logs/python-rust-json-stdout-logs.md,S-7v3dgzq4,unlocated:no-match,,,,,2026-10-13
+dea3ce4b37be,logs/python-rust-json-stdout-logs.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-13
+e4192a2a75f7,logs/python-rust-json-stdout-logs.md,S-fmhy7rbl,unlocated:no-match,,,,,2026-10-13
+ea3da34722dc,logs/python-rust-json-stdout-logs.md,S-7v3dgzq4,located,,stder;sys.stder;sys,f1f00edb19688a02,"otherwise, sys.stderr will be used",2026-10-13
+ee062e832509,logs/python-rust-json-stdout-logs.md,S-bkz7cb64,located,,delimit;newlin;newline-delimit;log;format;json,a4fbe37f3b722ff5,/// Marker for [Format] that indicates that the newline-delimited JSON log,2026-10-13
+efb3beaaca19,logs/python-rust-json-stdout-logs.md,S-6l23ubol,unlocated:no-match,,,,,2026-10-13
+efb3beaaca19,logs/python-rust-json-stdout-logs.md,S-bkz7cb64,unlocated:no-match,,,,,2026-10-13
 0a99cfab492b,logs/sources.csv,S-6epv7qzl,located,Files,panther;setupact;setupact.log;unattendgc;log;logs;windir,4651d5baf8021c1f,%windir%\logs\Panther\unattendgc\setupact.log,2026-10-10
 0ba8d52b7e9b,logs/sources.csv,S618,located,Troubleshooting the Enrollment Status Page > Collect logs,deviceprovision;later;area;mdmdiagnosticstool;mdmdiagnosticstool.ex;exe;output;path,edaca36659e570c9,"On Windows 10, version 1809 and later versions, enter the following command: mdmdiagnosticstool.exe -area DeviceProvisioning -cab <pathToOutputCabFile>",2026-10-10
 117cb26244a5,logs/sources.csv,S634,unlocated:no-match,,,,,2026-10-10
@@ -11661,6 +11702,60 @@ e403249ff376,security/framework-control-map.md,S1552,unlocated:fetch-error,,,,,2
 eb559ca1874c,security/framework-control-map.md,S1563,unlocated:no-match,,,,,2026-10-10
 fdfae000dfeb,security/framework-control-map.md,S-fr4o3437,unlocated:not-text,,,,,2026-10-10
 fdfae000dfeb,security/framework-control-map.md,S-n3ela3o4,unlocated:not-text,,,,,2026-10-10
+1d926d47f1b8,security/linux-cis-ssg-openscap.md,S-4qyumgua,located,,2024-08-26;align;relea;v1.0.0;profil;24.04;benchmark;linux,4e56089031cc0a9c,"This profile defines a baseline that aligns to the ""Level 1 - Server"" configuration from the Center for Internet Security® Ubuntu Linux 24.04 LTS Benchmark™,",2026-10-13
+1d926d47f1b8,security/linux-cis-ssg-openscap.md,S-5ucxfabx,located,,2024-09-26;align;relea;v1.1.0;profil;benchmark;debian,319ce973d0440ab9,"This profile defines a baseline that aligns to the ""Level 1 - Server"" configuration from the Center for Internet Security® Debian 12 Benchmark™, v1.1.0, released",2026-10-13
+1d926d47f1b8,security/linux-cis-ssg-openscap.md,S-q7m3pvv2,located,,2024-06-20;align;relea;v2.0.0;profil;alma;almalinux;benchmark,5fd18e9f9c3506b9,"This profile defines a baseline that aligns to the ""Level 1 - Server"" configuration from the Center for Internet Security® AlmaLinux OS 9 Benchmark™, v2.0.0,",2026-10-13
+347e15881253,security/linux-cis-ssg-openscap.md,S-2yuq6xw2,unlocated:no-match,,,,,2026-10-13
+348bae6d9dca,security/linux-cis-ssg-openscap.md,S-fzqtd2e3,unlocated:no-match,,,,,2026-10-13
+348bae6d9dca,security/linux-cis-ssg-openscap.md,S-sotu6mmv,located,,2025-08-28;align;relea;v4.0.0;profil;server;benchmark,ff5de9b6be3c02a4,"This profile defines a baseline that aligns to the ""Level 1 - Server"" configuration from the Center for Internet Security® Red Hat Enterprise Linux 8",2026-10-13
+438caccd8f4f,security/linux-cis-ssg-openscap.md,S-3yrjvfu3,unlocated:no-match,,,,,2026-10-13
+438caccd8f4f,security/linux-cis-ssg-openscap.md,S-4oqrbtvs,unlocated:no-match,,,,,2026-10-13
+438caccd8f4f,security/linux-cis-ssg-openscap.md,S-hdm6j6sh,located,,titl;level;cis;enterpris;server;benchmark;hat;linux,6ec4037b368083db,title: 'CIS Red Hat Enterprise Linux 10 Benchmark for Level 2 - Server',2026-10-13
+438caccd8f4f,security/linux-cis-ssg-openscap.md,S-mn6raxsi,located,,titl;level;cis;enterpris;server;benchmark;hat;linux,e118132433254079,title: 'CIS Red Hat Enterprise Linux 8 Benchmark for Level 2 - Server',2026-10-13
+4c4f58c7a409,security/linux-cis-ssg-openscap.md,S-afsk2gm4,unlocated:no-match,,,,,2026-10-13
+583e14d2740a,security/linux-cis-ssg-openscap.md,S-m2ry72iv,located,,benchmark;ensur;generation;minimal;26.04;default;profil;ubuntu,2e10149273b29682,Minimal default profile for Ubuntu 26.04 to ensure benchmark generation.,2026-10-13
+583e14d2740a,security/linux-cis-ssg-openscap.md,S-z7bfg2a3,located,profiles > Folders and files > parent directory,default;default.profil;profil,c36e04f6d4558c94,default.profile,2026-10-13
+61ca7cc90472,security/linux-cis-ssg-openscap.md,S-fwapji3y,located,AlmaLinux 8 OpenSCAP Guide > About the oscap Command > Displaying Available Profiles,server;level;cis;alma;linux;almalinux,b0e487db0443cd47,Title: CIS AlmaLinux OS 8 Benchmark for Level 2 - Server,2026-10-13
+66d1ff03d755,security/linux-cis-ssg-openscap.md,S-c3ytabe2,unlocated:no-match,,,,,2026-10-13
+6ace9a2bb202,security/linux-cis-ssg-openscap.md,S-dibgi2xt,located,Debian Linux > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for Debian Linux > CIS-CAT Pro > Recent versions available f,stig;debian;linux;cis,787c0287600ce845,,2026-10-13
+6c461554632e,security/linux-cis-ssg-openscap.md,S-2yuq6xw2,unlocated:no-match,,,,,2026-10-13
+6c461554632e,security/linux-cis-ssg-openscap.md,S-dibgi2xt,unlocated:no-match,,,,,2026-10-13
+6c461554632e,security/linux-cis-ssg-openscap.md,S-kbvw7lhl,unlocated:no-match,,,,,2026-10-13
+6d7dbd81c7d9,security/linux-cis-ssg-openscap.md,S-fbnsylla,located,7. Add AlmaLinux 10 product (copy from rhel10 and rebrand),2025-09-30;relea;almalinuxo;almalinuxos_linux;red_hat_linux;enterpris;hat;red,88fac92bc1666c1f,-e 's/redhatlinux/almalinuxoslinux/g' \ -e 's/Red Hat Enterprise\n Linux/\n AlmaLinux OS/g' \ -e 's/released ....-..-../released 2025-09-30/g' \,2026-10-13
+6e4c0136288f,security/linux-cis-ssg-openscap.md,S-suunbp43,located,,exist;almalinux-releas;check;etc;releas;version;test;almalinux,7f0f06a59399e7e3,"<unix:filetest check=""all"" checkexistence=""allexist"" comment=""/etc/almalinux-release exists"" id=""testalmalinux"" version=""1"">",2026-10-13
+6e4c0136288f,security/linux-cis-ssg-openscap.md,S-v65tqmnq,unlocated:no-match,,,,,2026-10-13
+6f1299fefb4e,security/linux-cis-ssg-openscap.md,S-c7zaz35y,located,,2024-03-28;align;relea;v2.0.0;level;profil;server;benchmark,f691eebb075bbf0c,"This profile defines a baseline that aligns to the ""Level 1 - Server"" configuration from the Center for Internet Security® Ubuntu Linux 22.04 LTS Benchmark™,",2026-10-13
+6f1299fefb4e,security/linux-cis-ssg-openscap.md,S-g4lr43wm,unlocated:no-match,,,,,2026-10-13
+70306b4f33b5,security/linux-cis-ssg-openscap.md,S-kbvw7lhl,located,AlmaLinux OS > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for AlmaLinux OS > CIS Benchmark,alma;almalinux;linux;cis,1056a5d5956884ec,,2026-10-13
+7ad3bac148c3,security/linux-cis-ssg-openscap.md,S-c3ytabe2,unlocated:no-match,,,,,2026-10-13
+7ad3bac148c3,security/linux-cis-ssg-openscap.md,S-v6qk7hcn,unlocated:no-match,,,,,2026-10-13
+7ccc0d19c624,security/linux-cis-ssg-openscap.md,S-v6qk7hcn,located,lynis,runs;unix-ba;bsd;itself;mac;maco;unix;based,f7328f6d1e6d3155,"Lynis - Security auditing and hardening tool, for UNIX-based systems. Lynis is a security auditing tool for systems based on UNIX like Linux, macOS, BSD,",2026-10-13
+8196564ffac2,security/linux-cis-ssg-openscap.md,S-afsk2gm4,located,oscap xccdf generate fix --fix-type bash --output my-remediation-script.sh --result-id xccdf_org.open-scap_testresult_xccdf_org.ssgproject.content_profile_ospp results.xml,packag;scap-security-guid;ssg-rhel8-ds.xml;guid;rhel8;shar;usr;security,429dd1b85b25543b,"In the following example, we will create a customized profile with ID custom based on the OSPP profile from the SCAP Security Guide for Red",2026-10-13
+92afb36188d4,security/linux-cis-ssg-openscap.md,S-3ccfvo3t,located,profiles > Folders and files > parent directory,cis_level1_server;cis_level1_workstation;server;workstation;cis;level;profil,5f91c4936e3712ed,cislevel1server.profile cislevel1workstation.profile,2026-10-13
+92afb36188d4,security/linux-cis-ssg-openscap.md,S-e3oi3dog,located,profiles > Folders and files > parent directory,cis_level1_server;cis_level1_workstation;server;workstation;cis;level;profil,5f91c4936e3712ed,cislevel1server.profile cislevel1workstation.profile,2026-10-13
+92afb36188d4,security/linux-cis-ssg-openscap.md,S-vvr4ensf,located,profiles > Folders and files > parent directory,cis_level1_server;cis_level1_workstation;server;workstation;cis;level;profil,5f91c4936e3712ed,cislevel1server.profile cislevel1workstation.profile,2026-10-13
+a3792d029394,security/linux-cis-ssg-openscap.md,S-v6qk7hcn,located,lynis > Installation > Software package,cent;cento;deb;debian;fedora;oel;opensus;rhel,ffd3d07caa261bf5,"The Lynis project itself also provides packages in RPM or DEB format suitable for systems systems running: CentOS, Debian, Fedora, OEL, openSUSE, RHEL, Ubuntu, and",2026-10-13
+a64124340173,security/linux-cis-ssg-openscap.md,S-kvmwtqw2,located,profiles > Folders and files > parent directory,cis_server_l1;cis_workstation_l1;server;workstation;cis,35df0b105c1b5956,cisserverl1.profile cisworkstationl1.profile,2026-10-13
+a64124340173,security/linux-cis-ssg-openscap.md,S-n6xxzrrl,located,,titl;level;alma;cis;server;almalinux;benchmark;linux,731d606743362b7e,title: 'CIS AlmaLinux OS 9 Benchmark for Level 2 - Server',2026-10-13
+bd0fed96ea10,security/linux-cis-ssg-openscap.md,S-afsk2gm4,located,dnf install scap-security-guide,select;list;rule;profil,a60285c9b8bb1cf2,=== Listing rules selected by a profile,2026-10-13
+cd052416ad84,security/linux-cis-ssg-openscap.md,S-xff3wkn5,located,,support;add;alma;linux;almalinux,3b86fe09c8a1442a,Add AlmaLinux 10 support,2026-10-13
+d2a59aba965c,security/linux-cis-ssg-openscap.md,S-2yuq6xw2,unlocated:no-match,,,,,2026-10-13
+d2a59aba965c,security/linux-cis-ssg-openscap.md,S-c7zaz35y,located,,v2.0.0;profil;22.04;lts;ubuntu,eb3afeb8173b698f,"Ubuntu Linux 22.04 LTS Benchmark™, v2.0.0, released 2024-03-28. This profile includes Center for Internet Security®",2026-10-13
+d36363105d3c,security/linux-cis-ssg-openscap.md,S-c3ytabe2,unlocated:no-match,,,,,2026-10-13
+d36363105d3c,security/linux-cis-ssg-openscap.md,S-fbnsylla,unlocated:no-match,,,,,2026-10-13
+d36363105d3c,security/linux-cis-ssg-openscap.md,S-fwapji3y,unlocated:no-match,,,,,2026-10-13
+e46432d5f7e6,security/linux-cis-ssg-openscap.md,S-afsk2gm4,located,,profile_id;results-arf;arf;report;eval;sourc;stream;data,606c9a0c7ce30c28,oscap xccdf eval --profile PROFILEID --results-arf ARFFILE --report REPORTFILE SOURCEDATASTREAMFILE,2026-10-13
+ec68fa1ef7e1,security/linux-cis-ssg-openscap.md,S-c3ytabe2,unlocated:no-match,,,,,2026-10-13
+efa533894259,security/linux-cis-ssg-openscap.md,S1485,unlocated:no-match,,,,,2026-10-13
+efa533894259,security/linux-cis-ssg-openscap.md,S-kbvw7lhl,unlocated:no-match,,,,,2026-10-13
+f116a1779814,security/linux-cis-ssg-openscap.md,S-ovklfzvf,unlocated:no-match,,,,,2026-10-13
+f3141afbfd25,security/linux-cis-ssg-openscap.md,S-2yuq6xw2,unlocated:no-match,,,,,2026-10-13
+f3141afbfd25,security/linux-cis-ssg-openscap.md,S-4qyumgua,unlocated:no-match,,,,,2026-10-13
+f3141afbfd25,security/linux-cis-ssg-openscap.md,S-5ucxfabx,unlocated:no-match,,,,,2026-10-13
+f3141afbfd25,security/linux-cis-ssg-openscap.md,S-dibgi2xt,unlocated:no-match,,,,,2026-10-13
+f3141afbfd25,security/linux-cis-ssg-openscap.md,S-kbvw7lhl,located,AlmaLinux OS > This CIS Benchmark is the product of a community consensus process and consists of secure configuration guidelines developed for AlmaLinux OS > CIS Hardened Images > Recent versions ava,older;version;alma;almalinux;linux;benchmark;cis,6b5eab3ffbb5c1aa,,2026-10-13
+f3141afbfd25,security/linux-cis-ssg-openscap.md,S-q7m3pvv2,located,,v2.0.0;profil;alma;cis;almalinux;benchmark;linux,80ae796a948283db,"Benchmark™, v2.0.0, released 2024-06-20. This profile includes Center for Internet Security® AlmaLinux OS 9 CIS Benchmarks™ content.",2026-10-13
+f869ca6ffc12,security/linux-cis-ssg-openscap.md,S-cxnklaym,unlocated:no-match,,,,,2026-10-13
 0627ef12f841,security/linux-nftables.md,S-h3233m5r,located,Including files,alphabetical;dot;empty;order;load;match;wildcard;directory,b30ac7e0037850de,"This allows having potentially empty include directories for statements like include ""/etc/firewall/rules/"". The wildcard matches are loaded in alphabetical order. NOTE: Files beginning with dot",2026-10-13
 161ce250e3a4,security/linux-nftables.md,S-h3233m5r,unlocated:no-match,,,,,2026-10-13
 161ce250e3a4,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,other;allow;tabl;flush;file,072cfe6257306860,,2026-10-13

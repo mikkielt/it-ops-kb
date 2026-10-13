@@ -3346,3 +3346,48 @@ _Agent: kb-research_
 - See agents/agent-caching.md, claude/ci-and-headless.md.
 
 _Agent: kb-research_
+
+## QK-ssg-cis-profiles-rhel8-rhel10-products. Which SSG CIS profiles do the rhel8 and rhel10 products carry, and can AlmaLinux 8 and 10 be scanned with them?
+- At the pinned commit `products/rhel8` and `products/rhel10` each carry `cis` (Level 2 Server), `cis_server_l1`, `cis_workstation_l1` and `cis_workstation_l2`, aligned to benchmark v4.0.0 (RHEL 8) and v1.0.1 (RHEL 10). [CODE S-3yrjvfu3, S-4oqrbtvs, S-sotu6mmv, S-fzqtd2e3, S-mn6raxsi, S-hdm6j6sh]
+- The upstream `products/` directory has `almalinux9` but no AlmaLinux 8 or 10 product. [CODE S-c3ytabe2]
+- AlmaLinux's own guide for 8 lists four CIS AlmaLinux OS 8 profiles in its `scap-security-guide` content, and its packaging script for 10 copies `products/rhel10` to `products/almalinux10` and rebrands it. [DOC S-fwapji3y; CODE S-fbnsylla: add-almalinux10-support.sh#products/almalinux10/profiles]
+- Conclusion: AlmaLinux 8 and 10 are scanned with CIS profiles through AlmaLinux's own `scap-security-guide` package, not with the upstream repository's RHEL data stream, whose rule applicability reads the `redhat-release` package. [DER S-c3ytabe2, S-fwapji3y, S-fbnsylla, S-v65tqmnq: product list, vendor package, rebuild script and the RHEL 8 platform check]
+- Open: whether the RHEL data stream evaluates unchanged on AlmaLinux, and the benchmark version of the AlmaLinux 8 and 10 profile files. [UNK]
+- See security/linux-cis-ssg-openscap.md.
+
+_Agent: kb-research_
+
+## QK-debian-11-13-ubuntu-22-04. Which Debian 11 to 13 and Ubuntu 22.04 to 26.04 SSG products carry a CIS profile?
+- Debian 12 and Debian 13 carry `cis_level1_server`, `cis_level1_workstation`, `cis_level2_server` and `cis_level2_workstation`; Debian 11 has ANSSI, `default` and `standard` profiles and no CIS profile. [CODE S-3ccfvo3t, S-vvr4ensf, S-cxnklaym]
+- Ubuntu 22.04 and 24.04 carry the same four CIS profile files; Ubuntu 26.04 has only a hidden `default` profile. [CODE S-g4lr43wm, S-e3oi3dog, S-z7bfg2a3, S-m2ry72iv]
+- Conclusion: four of the six products have a CIS profile (Debian 12 and 13, Ubuntu 22.04 and 24.04); the summary line that listed Debian 11 to 13 and Ubuntu 22.04 to 26.04 as CIS-profiled was wrong for Debian 11 and Ubuntu 26.04 and is corrected. [DER S-3ccfvo3t, S-vvr4ensf, S-cxnklaym, S-g4lr43wm, S-e3oi3dog, S-z7bfg2a3: profile directories compared]
+- See security/linux-cis-ssg-openscap.md.
+
+_Agent: kb-research_
+
+## QK-python-s-fluent-runtime-have-typed. Does Python's fluent.runtime have typed message accessors or a lint for literal message ids?
+- `fluent.runtime` 0.4.0 ships `py.typed`, but `Localization.format_value`, `FluentBundle.has_message` and `get_message` take the message id as `str`, and `format_value` returns the id itself when no bundle has it. [CODE S-43gqmseb, S-dftqctth, S-jjpbp7g2]
+- The package has no accessor generator, and `moz-fluent-linter` reads `.ftl` files, not Python source. [DER S-43gqmseb, S-ejm4457f: package directory and the linter's inputs]
+- Conclusion: neither typed accessors nor a literal-id lint exist in the official Python packages; typed ids are a project-side wrapper (`Literal` or `Enum` of ids from the FTL AST). [DER S-dftqctth, S-43gqmseb, S-edmvqoen]
+- Open: any third-party Python lint rule for message ids. [UNK]
+- See arch/fluent-rust-typescript.md.
+
+_Agent: kb-research_
+
+## QK-python-rust-service-write-json-log. How do a Python and a Rust service write JSON log lines to stdout?
+- Python: `logging.StreamHandler` writes to `sys.stderr` unless given a stream, the cookbook's structured recipe prints `message >>> {json}`, and the default formatter appends a traceback to the message. [DOC S-7v3dgzq4, S-2ciukzt5, S-6l23ubol]
+- Rust: `tracing-subscriber` 0.3.23's `fmt` subscriber writes to stdout by default and its `json` feature (off by default) emits newline-delimited JSON objects. [CODE S-fmhy7rbl, S-bkz7cb64, S-md4evt46]
+- Conclusion: Rust needs the `json` feature and `.json()`; Python needs `StreamHandler(sys.stdout)` and a `Formatter` subclass whose `format` returns `json.dumps` of a dict with the exception text as a field. [DER S-7v3dgzq4, S-6l23ubol, S-zzvrhdyd, S-fmhy7rbl]
+- Open: flushing of a piped Python stream and of a `tracing` stdout writer on exit. [UNK]
+- See logs/python-rust-json-stdout-logs.md.
+
+_Agent: kb-research_
+
+## QK-cargo-feature-unification-let-dependency-enable. How does Cargo feature unification let a dependency enable an ort provider feature, and what detects it?
+- Cargo builds a dependency with the union of the features every package enables on it; a package enables a feature in its dependency declaration or through `"package/feature"` in its `[features]` table, and `default-features = false` does not hold when another package omits it. [DOC S-wl3gkg3g]
+- `gline-rs` 1.1.0 forwards `cuda = ["ort/cuda"]` and `ort` at `rc.13` maps `cuda` to `ort-sys/cuda`. [CODE S-bzhegec5, S-pwbxp7jw]
+- `cargo tree -e features -i ort` shows how features flow into `ort`; `cargo tree -f "{p} {f}"` lists the features of each package. [DOC S-wl3gkg3g, S-5bx2p3mo]
+- Conclusion: one dependency's feature can switch on an `ort` accelerator for the whole build; a CI check on `cargo tree -e features -i ort` and `-i ort-sys` finds it, and `is_available` reports it at run time. [DER S-wl3gkg3g, S-5bx2p3mo, S-bzhegec5, S-pwbxp7jw, S-ktoxup5h]
+- See agents/onnx-runtime-rust-ort.md.
+
+_Agent: kb-research_

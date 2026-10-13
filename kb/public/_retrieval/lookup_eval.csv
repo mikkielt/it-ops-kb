@@ -323,3 +323,8 @@ EV-who-may-change-test-suite-ceiling,"Who may change a test-suite ceiling or lim
 EV-nft-flush-ruleset-remove-compared-flush,"What does nft flush ruleset remove compared with flush table, and does an nft -f file with flush ruleset clear other roles' tables?",security/linux-nftables.md,good,
 EV-xeddsa-let-age-x25519-identity-sign,"Does XEdDSA let an age X25519 identity sign, and what are its trade-offs against a separate Ed25519 key?",auth/http-message-signatures.md,good,
 EV-per-million-token-price-claude-code-2-1-295,What per-million-token price does Claude Code 2.1.295 or older count for Sonnet 5.5 cache reads?,agents/agent-caching.md;claude/ci-and-headless.md,good,
+EV-ssg-cis-profiles-rhel8-rhel10-almalinux-8-10,"Which SSG CIS profiles do the rhel8 and rhel10 products carry, and can AlmaLinux 8 and 10 be scanned with them?",security/linux-cis-ssg-openscap.md,good,
+EV-debian-11-13-ubuntu-22-04-26-04-ssg-cis,Which Debian 11 to 13 and Ubuntu 22.04 to 26.04 SSG products carry a CIS profile?,security/linux-cis-ssg-openscap.md,good,
+EV-python-fluent-runtime-typed-accessors-literal-lint,Does Python's fluent.runtime have typed accessors or a literal lint for message ids?,arch/fluent-rust-typescript.md,good,
+EV-python-rust-service-json-log-lines-stdout,How does a Python and a Rust service write JSON log lines to stdout?,logs/python-rust-json-stdout-logs.md,good,
+EV-cargo-feature-unification-dependency-enable-ort-provider,How does Cargo feature unification let a dependency enable an ort provider feature and what detects it?,agents/onnx-runtime-rust-ort.md,good,

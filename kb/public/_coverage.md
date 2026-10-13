@@ -51,7 +51,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 75 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
 | `agents/mmlw-e5-polish-embeddings` | P3 | partial | `agents/mmlw-e5-polish-embeddings.md` | 31 |
-| `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 41 |
+| `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 44 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
 | `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 17 |
 | `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 6 |
@@ -70,7 +70,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/content-addressed-ids-jsonl` | P3 | partial | `arch/content-addressed-ids-jsonl.md` | 30 |
 | `arch/datalog-engines-rust` | P3 | partial | `arch/datalog-engines-rust.md` | 15 |
 | `arch/docker-secrets-run-secrets` | P3 | complete | `arch/docker-secrets-run-secrets.md` | 2 |
-| `arch/fluent-rust-typescript` | P3 | partial | `arch/fluent-rust-typescript.md` | 49 |
+| `arch/fluent-rust-typescript` | P3 | partial | `arch/fluent-rust-typescript.md` | 52 |
 | `arch/gorules-zen-engine` | P3 | partial | `arch/gorules-zen-engine.md` | 35 |
 | `arch/heartbeat-dead-man-monitors` | P3 | partial | `arch/heartbeat-dead-man-monitors.md` | 3 |
 | `arch/http-rate-limit-429-retry-after` | P3 | partial | `arch/http-rate-limit-429-retry-after.md` | 9 |
@@ -232,6 +232,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `logs/otel-collector-otlp-pipeline` | P3 | partial | `logs/otel-collector-otlp-pipeline.md` | 34 |
 | `logs/otel-collector-receivers` | P3 | complete | `logs/otel-collector-receivers.md`, `logs/otel-filelogreceiver.config.csv`, `logs/otel-windowseventlogreceiver.config.csv`, `logs/otel-filelogreceiver.metadata.yaml`, `logs/otel-windowseventlogreceiver.metadata.yaml` | 5 |
 | `logs/prometheus-retention-exposition` | P3 | partial | `logs/prometheus-retention-exposition.md` | 29 |
+| `logs/python-rust-json-stdout-logs` | P3 | partial | `logs/python-rust-json-stdout-logs.md` | 8 |
 | `mcp/authorization` | P1 | complete | `mcp/authorization.md` | 3 |
 | `mcp/deprecations` | P1 | complete | `mcp/deprecations.md` | 3 |
 | `mcp/elicitation` | P1 | complete | `mcp/elicitation.md` | 6 |
@@ -330,7 +331,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/threat-model-inputs` | P2 | complete | `security/threat-model-inputs.md`, `security/artifacts/mitre/attack-subset.csv`, `security/artifacts/mitre/attack-subset.md` | 12 |
 | `security/vulnerability-prioritization` | P2 | complete | `security/vulnerability-prioritization.md`, `security/vuln-data-apis.csv` | 18 |
 | `security/linux-auditd` | P3 | complete | `security/linux-auditd.md` | 4 |
-| `security/linux-cis-ssg-openscap` | P3 | partial | `security/linux-cis-ssg-openscap.md` | 16 |
+| `security/linux-cis-ssg-openscap` | P3 | partial | `security/linux-cis-ssg-openscap.md` | 32 |
 | `security/linux-nftables` | P3 | partial | `security/linux-nftables.md` | 5 |
 | `security/linux-patching-and-pins` | P3 | partial | `security/linux-patching-and-pins.md` | 10 |
 | `security/linux-sshd-hardening` | P3 | complete | `security/linux-sshd-hardening.md` | 3 |

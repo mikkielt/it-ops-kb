@@ -724,3 +724,10 @@ cargo clippy,arch/rust-clippy-criterion-gates
 CARGO_BUILD_WARNINGS,arch/rust-clippy-criterion-gates
 criterion_group!,arch/rust-clippy-criterion-gates
 --save-baseline,arch/rust-clippy-criterion-gates
+tracing-subscriber,logs/python-rust-json-stdout-logs
+tracing_subscriber,logs/python-rust-json-stdout-logs
+StreamHandler,logs/python-rust-json-stdout-logs
+formatException,logs/python-rust-json-stdout-logs
+fluent.runtime,arch/fluent-rust-typescript
+format_value,arch/fluent-rust-typescript
+cargo tree,agents/onnx-runtime-rust-ort
