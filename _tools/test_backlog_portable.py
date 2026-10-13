@@ -11,6 +11,7 @@ import contextlib
 import io
 import json
 import os
+import platform
 import re
 import shutil
 import subprocess
@@ -706,11 +707,14 @@ def orphan_in(cwd, log, seconds=60):
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
-def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails(tmp_path,
-                                                                                                    monkeypatch):
+def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling(
+        tmp_path, monkeypatch):
     """A run whose standard output is the clone's distill.log and whose parent has exited, younger than
     bl_procs.HOOK_GRACE_S, is a `hook` that the orphans check names with its age and passes; the same run once it is
-    older, and a stray process with another standard output, fail it."""
+    older, and a stray process with another standard output, fail it. The host check fails over SUITE_LOAD_PER_CORE
+    per core, the load a whole-suite run no longer fits its seconds ceiling at, whatever LOAD_PER_CORE allows, and a
+    review story's `done` refuses a whole-suite run at that load, naming the host (a selection it lets through)."""
+    import bl_land
     import bl_procs
     import bl_selfcheck
     log = tmp_path / "_cache" / "querylog" / "distill.log"
@@ -742,6 +746,25 @@ def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stra
                 os.kill(pid, 15)
             except OSError:
                 pass
+
+    monkeypatch.setattr(bl_selfcheck, "lock_facts", lambda now: [])  # the host's own locks are no part of the load
+    assert bl_selfcheck.SUITE_LOAD_PER_CORE < bl_selfcheck.LOAD_PER_CORE
+    near_ten = bl_selfcheck.check_host(load=10.0, cores=14)  # the SP-wwacrsqr review's load, under LOAD_PER_CORE's 21
+    assert near_ten["state"] == "fail" and "load 10.0 over 0.5 per core of 14" in near_ten["detail"], near_ten
+    assert "whole-suite" in near_ten["detail"] and near_ten["remedy"] == bl_selfcheck.REMEDY["suite-load"], near_ten
+    assert bl_selfcheck.check_host(load=7.0, cores=14)["state"] == "ok"  # at the limit, as 2 to 5 on 14 cores is
+    assert bl_selfcheck.check_host(load=7.1, cores=14)["state"] == "fail"
+    over_both = bl_selfcheck.check_host(load=30.0, cores=14)  # over LOAD_PER_CORE too: both remedies
+    assert over_both["state"] == "fail" and bl_selfcheck.REMEDY["host-load"] in over_both["remedy"], over_both
+
+    suite = [{"run": ["python3", "_tools/backlog.py", "check"]}, {"run": ["python3", "_tools/tests.py"]}]
+    named = bl_land.loaded_host_for_suite(suite, load=10.0, cores=14)
+    assert named and platform.node() in named and "load 10.0 over 0.5 per core of 14" in named, named
+    assert bl_land.loaded_host_for_suite(suite, load=3.3, cores=14) is None  # the planning host's load
+    for selection in (["-k", "x"], ["_tools/test_x.py"], ["--changed", "origin/main"]):
+        assert bl_land.loaded_host_for_suite([{"run": ["python3", "_tools/tests.py", *selection]}], 10.0, 14) is None
+    assert bl_land.loaded_host_for_suite([{"run": ["python3", "_tools/backlog.py", "check"]}], 10.0, 14) is None
+    assert bl_land.loaded_host_for_suite([{"run": ["python3", "_tools/tests.py", "--no-reuse"]}], 10.0, 14)
 
 
 PLUGIN_VAR = "${CLAUDE_PLUGIN_ROOT}"

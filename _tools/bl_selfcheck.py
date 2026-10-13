@@ -19,7 +19,9 @@ The seven checks, each independent and each a result {name, state, detail, remed
                refuses fails, and one git cannot be read for is `unknown`
   hooks        `core.hooksPath` runs this checkout's `.githooks` (or the `.githooks` of another worktree of the clone)
                and each hook script is there; the plugin manifest parses and the files it names exist
-  host         the 5-minute load average is under LOAD_PER_CORE times the cores, no host lock (`kb-tests.lock`,
+  host         the 5-minute load average is under SUITE_LOAD_PER_CORE times the cores (the load a whole-suite
+               tests.py run fits its seconds ceiling at, which `done` of a review story reads too, naming the host;
+               it is lower than LOAD_PER_CORE, so a load over that one fails it as well), no host lock (`kb-tests.lock`,
                `kb-main.lock`) has a live holder older than `bl_stall.HOST_LOCK_WAIT_S` (pid and clone named; a
                holder that is gone is cleared by the next taker and is no failure)
   claims       no `doing` item shows `claim-no-commit`, `returned-no-commit`, `returned-staged` or `mr-dead`
@@ -43,6 +45,7 @@ imported where used. It registers its own subcommand when imported, so `backlog.
 """
 import json
 import os
+import platform
 import re
 import subprocess
 import time
@@ -54,6 +57,8 @@ import bl_stall
 from bl_base import Refused, Rejected, say, worker_dir
 
 LOAD_PER_CORE = 1.5  # the 5-minute load average, per core, above which the host is too busy to take more workers
+SUITE_LOAD_PER_CORE = 0.5  # the same load, per core, above which a whole-suite tests.py run no longer fits its darwin
+#                            seconds ceiling: the host check fails over it and a review story's `done` refuses over it
 SHOW = 3  # entries of a list a line names; the rest is `+K more`
 LINE_MAX = 330  # characters of one line
 MAX_CHARS = 1500  # characters of the whole output; whole lines past it are dropped and counted
@@ -101,6 +106,8 @@ REMEDY = {
     "checkout": "use a standalone `git clone` as the orchestrator's clone",
     "hooks": "run /kb-setup (`python3 _tools/kbgit.py install-hooks`) before any commit",
     "host-load": "dispatch fewer workers and give the tests a `-k` selection, which takes no host lock",
+    "suite-load": "wait for the load to fall (another application or sibling workers hold the CPU) and run the "
+                  "whole suite then; a `-k` selection takes no host lock and no ceiling",
     "host-lock": "wait for the holder or narrow the tests to a `-k` selection; end the holder only when it is yours "
                  "and stuck",
     "claims": "ask its worker, or release it (`backlog.py release ID`) and dispatch it again with the failure named in "
@@ -261,6 +268,22 @@ def lock_facts(now, names=LOCKS):
     return found
 
 
+def suite_load_problem(load=None, cores=None):
+    """The line that names this host when its 5-minute load average is over SUITE_LOAD_PER_CORE times the cores, the
+    load above which a whole-suite tests.py run no longer fits its seconds ceiling; None at or under it, and with no
+    load average to read. LOAD and CORES stand in for the host's own (a test plants them); `done` of a review story
+    reads this too, before it starts the whole-suite run."""
+    try:
+        load = os.getloadavg()[1] if load is None else load
+    except (OSError, AttributeError):
+        return None
+    cores = cores or os.cpu_count() or 1
+    if load > SUITE_LOAD_PER_CORE * cores:
+        return (f"host {platform.node() or 'this host'} is too loaded for a whole-suite tests.py run to fit its "
+                f"seconds ceiling: load {load:.1f} over {SUITE_LOAD_PER_CORE:g} per core of {cores}")
+    return None
+
+
 def check_host(now=None, load=None, cores=None):
     now = time.time() if now is None else now
     try:
@@ -269,6 +292,10 @@ def check_host(now=None, load=None, cores=None):
         load = None
     cores = cores or os.cpu_count() or 1
     problems, remedy = [], []
+    suite = None if load is None else suite_load_problem(load, cores)
+    if suite:  # under LOAD_PER_CORE too, whatever it allows: the whole suite is what the load decides first
+        problems.append(suite)
+        remedy.append(REMEDY["suite-load"])
     if load is not None and load > LOAD_PER_CORE * cores:
         problems.append(f"load {load:.1f} over {LOAD_PER_CORE:g} per core of {cores}")
         remedy.append(REMEDY["host-load"])
