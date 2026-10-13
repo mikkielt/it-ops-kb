@@ -514,6 +514,7 @@ def ledger_citation_errors(root):
 
 
 CITE_TERM = re.compile(r'\s*"([^"\n]+)"')  # the term a citation may carry: `path.md:88 "Haiku 4.5"`
+ANCHOR_CITE = re.compile(r'(?<![\w./:-])(kb/(?:[\w.-]+/)+[\w.-]+\.md)\s+"([^"\n]+)"')  # `path.md "term"`: no line
 
 
 def code_comment_lines(path):
@@ -548,9 +549,22 @@ def code_citation_errors(home=None):
     """The `kb/...md:line[-end]` citations in a comment or docstring of `home`'s _tools/*.py (and the `:N` shorthand
     after one on the same line) that no longer hold: a file that is gone, a line past the end, a line that is no
     tagged fact (an article of a root) or is blank (any other file, such as a kb/_self doc), and a line, or a range,
-    that does not hold the term a double-quoted string right after the citation gives. Each error names the code line
-    and the citation."""
+    that does not hold the term a double-quoted string right after the citation gives. A citation by anchor,
+    `kb/...md "term"` with no line, names no line a fact inserted above can move: it holds while a tagged fact (any
+    non-blank line of another file) of the file holds the term, and fails when none does. Each error names the code
+    line and the citation."""
     home, res, files = Path(home or kbcommon.HOME), [], {}
+
+    def load(path):
+        if path not in files:
+            try:
+                text = (home / path).read_text(encoding="utf-8")
+                article = (home / "kb" / path.split("/")[1] / kbcommon.ROOT_FILE).is_file()
+                files[path] = (text.splitlines(), fact_lines(text) if article else None)
+            except (OSError, UnicodeDecodeError):
+                files[path] = None
+        return files[path]
+
     for py in sorted((home / "_tools").glob("*.py")):
         for n, ln in code_comment_lines(py):
             path = None
@@ -562,16 +576,9 @@ def code_citation_errors(home=None):
                 end = int(m.group(3) or m.group(5) or line)
                 t = CITE_TERM.match(ln, m.end())
                 term = t.group(1) if t else None
-                if path not in files:
-                    try:
-                        text = (home / path).read_text(encoding="utf-8")
-                        article = (home / "kb" / path.split("/")[1] / kbcommon.ROOT_FILE).is_file()
-                        files[path] = (text.splitlines(), fact_lines(text) if article else None)
-                    except (OSError, UnicodeDecodeError):
-                        files[path] = None
                 span = f"{line}-{end}" if end != line else str(line)
                 where = f"{py.relative_to(home).as_posix()}:{n} cites {path}:{span}" + (f' "{term}"' if term else "")
-                if files[path] is None:
+                if load(path) is None:
                     res.append(f"{where}, a file that does not exist")
                     continue
                 lines, facts = files[path]
@@ -591,6 +598,17 @@ def code_citation_errors(home=None):
                 held = " ".join(facts[x] if facts is not None else lines[x - 1] for x in cited)
                 if term and not holds_term(term, held):
                     res.append(f"{where}, a line that does not hold that term: re-point the citation at the fact "
+                               f"that does")
+            for m in ANCHOR_CITE.finditer(ln):
+                path, term = m.groups()
+                where = f'{py.relative_to(home).as_posix()}:{n} cites {path} "{term}"'
+                if load(path) is None:
+                    res.append(f"{where}, a file that does not exist")
+                    continue
+                lines, facts = files[path]
+                held = set(facts.values()) if facts is not None else (x for x in lines if x.strip())
+                if not any(holds_term(term, x) for x in held):
+                    res.append(f"{where}, no line of the file holds that term: re-point the citation at the fact "
                                f"that does")
     return res
 
