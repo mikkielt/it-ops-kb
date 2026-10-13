@@ -1,0 +1,24 @@
+{
+  "id": "BG-zof4bcok",
+  "kind": "bug",
+  "title": "agents/doc-lookup-sources.md cites S745 as DOC but its sources: header does not list it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Add S745 to the sources: header of kb/public/agents/doc-lookup-sources.md, which its WebSearch fact cites as DOC since BG-c2pp5wwl, and update the coverage ledgers the header feeds, so the article's header names every source it cites (found by the SP-gcerxjsg review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; h=[l for l in open(\"kb/public/agents/doc-lookup-sources.md\",encoding=\"utf-8\") if l.startswith(\"sources:\")]; sys.exit(0 if h and \"S745\" in h[0] else 1)"
+    ]
+  },
+  "repro_reason": "the header is text; the contract lint warns of it but exits 0 on warnings",
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md"
+  ],
+  "links": [
+    "parked: SP-gcerxjsg review"
+  ]
+}

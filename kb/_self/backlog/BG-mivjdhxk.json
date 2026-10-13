@@ -1,0 +1,26 @@
+{
+  "id": "BG-mivjdhxk",
+  "kind": "bug",
+  "title": "claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the same section lists more prompt cases",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Reword kb/public/claude/powershell-tool.md:37 so it does not say the page names two exceptions: the Read-only commands section of S742 also lists Manual-mode prompt cases (unquoted globs on write-capable flags, docker with -H, --context, --url or --connection, file with -m or -f, among others); name them or say the set has further documented exceptions, from the live page, and re-anchor the fact (found by the SP-gcerxjsg review).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=[l for l in open(\"kb/public/claude/powershell-tool.md\",encoding=\"utf-8\") if \"blockReadsOutsideWorkingDirectories\" in l]; sys.exit(1 if t and \"two exceptions\" in t[0] else 0)"
+    ]
+  },
+  "repro_reason": "the fact's wording is text; no tool compares a count in a fact with its page",
+  "touches": [
+    "kb/public/claude/powershell-tool.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-gcerxjsg review"
+  ]
+}

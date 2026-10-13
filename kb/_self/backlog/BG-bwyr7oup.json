@@ -1,0 +1,27 @@
+{
+  "id": "BG-bwyr7oup",
+  "kind": "bug",
+  "title": "S742's anchor rows outside claude/powershell-tool.md stay dated 2026-10-12, though BG-c2pp5wwl re-read the whole permissions page on 2026-10-13",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Re-take the anchors of S742 (https://code.claude.com/docs/en/permissions.md) for the facts of agents/agent-rbac.md, claude/permissions-mcp.md and agents/doc-lookup-sources.md with factdiff.py anchor --quotes, so each row's date says when the page was last read against it, and reword S742's version_or_date note, which names only the Read-only commands section as re-read on 2026-10-13 (found by the SP-gcerxjsg review; the rows were restored to main's at landing because BG-c2pp5wwl's goal did not name S742).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,sys; r=[x for x in csv.DictReader(open(\"kb/public/_anchors.csv\",encoding=\"utf-8\")) if x[\"source_id\"]==\"S742\"]; sys.exit(1 if any(x[\"verified_utc\"]<\"2026-10-13\" for x in r) else 0)"
+    ]
+  },
+  "repro_reason": "the rows hold the right quotes; only their date understates the last read, which no tool run reports",
+  "touches": [
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_fetch_state.csv"
+  ],
+  "links": [
+    "parked: SP-gcerxjsg review"
+  ]
+}
