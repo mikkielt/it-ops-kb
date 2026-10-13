@@ -1757,10 +1757,11 @@ def _unit_cache_open():
 def _unit_cache_save(con, new, keys):
     """Add the `new` {key: value} rows; when the cache holds more than UNIT_CACHE_SLACK times `keys` (the keys of this
     weighing), drop every row not in `keys` and give the freed pages back with VACUUM, since a DELETE leaves the file
-    its size (kb/public/python/stdlib-sqlite3-csv.md:104). The prune runs only after the rows have doubled, so the
-    VACUUM's rewrite of the file is rare. It runs after the `with con` block has committed: the module's default
-    connection keeps a transaction open after the DELETE until then and a VACUUM inside one is refused
-    (kb/public/python/stdlib-sqlite3-csv.md:118). Best effort: another process may hold the file."""
+    its size (kb/public/python/stdlib-sqlite3-csv.md "keeps its size"). The prune runs only after the rows have
+    doubled, so the VACUUM's rewrite of the file is rare. It runs after the `with con` block has committed: the
+    module's default connection keeps a transaction open after the DELETE until then and a VACUUM inside one is
+    refused (kb/public/python/stdlib-sqlite3-csv.md "default legacy mode"). Best effort: another process may hold
+    the file."""
     pruned = False
     try:
         with con:
