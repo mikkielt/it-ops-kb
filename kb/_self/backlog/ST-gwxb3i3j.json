@@ -2,7 +2,7 @@
   "id": "ST-gwxb3i3j",
   "kind": "story",
   "title": "Research sprint goal: Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-b7wibqok",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orch-b7wibqok"
+  "evidence": {
+    "commit": "a7034fcbbbb115462ad52f0929374dda564b5fb8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-gwxb3i3j"
+        ],
+        "exit": 0,
+        "sha256": "9302a496287c8a89"
+      }
+    ]
+  }
 }
