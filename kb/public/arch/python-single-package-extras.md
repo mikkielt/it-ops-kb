@@ -34,7 +34,9 @@ needed by only one role).
 - Dependency groups are explicitly *not* included in the project's published requirements when built
   for PyPI or another index — the opposite of extras. [DOC S1706]
 - For multiple packages in the same repository, uv says workspaces may be a better fit
-  (`[tool.uv.workspace]` with `members = [...]`); workspace members are always editable. [DOC S1706]
+  (`[tool.uv.workspace]` with `members = [...]`); workspace members are editable by default and
+  `uv add --no-editable` opts a dependency out in a workspace, though the page's dependency-source
+  section words it as always editable. [DOC S1706]
 - `uv pip compile` locks a resolved set including the requested extras (`--extra <name>`, `--all-extras`)
   or dependency groups (`--group <name>`); extras are not supported with the `requirements.in` format.
   [DOC S1522]

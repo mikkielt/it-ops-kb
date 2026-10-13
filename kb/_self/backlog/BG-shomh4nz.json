@@ -28,7 +28,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys;sys.path.insert(0,'_tools');import kbfacts;U=kbfacts.units('public');a=[u for u in U if u['path'].endswith('/single-package-extras.md') and 'workspace members' in u['text']];b=[u for u in U if u['path'].endswith('/uv-projects.md') and '--no-editable' in u['text']];ok=bool(a) and bool(b) and all('editable' in u['text'] and 'default' in u['text'] for u in a);print('extras article says workspace members are editable by default, uv-projects keeps --no-editable:',ok);sys.exit(0 if ok else 1)"
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;U=kbfacts.units('public');a=[u for u in U if u['path'].endswith('/python-single-package-extras.md') and 'workspace members' in u['text']];b=[u for u in U if u['path'].endswith('/uv-projects.md') and '--no-editable' in u['text']];ok=bool(a) and bool(b) and all('editable' in u['text'] and 'default' in u['text'] for u in a);print('extras article says workspace members are editable by default, uv-projects keeps --no-editable:',ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
@@ -54,6 +54,21 @@
   ],
   "depends_on": [
     "BG-oyzgvtrg"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Check 1's path match endswith('/single-package-extras.md') never matches the article path public/arch/python-single-package-extras.md, so it cannot pass: correct the suffix to '/python-single-package-extras.md'?",
+      "options": [
+        "correct the suffix in the item's check",
+        "leave the check and stop the item"
+      ],
+      "recommendation": "correct the suffix in the item's check",
+      "class": "design",
+      "answer": "correct the suffix in the item's check",
+      "by": "agent"
+    }
   ],
   "links": [
     "parked: SP-wwacrsqr review"

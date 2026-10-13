@@ -3004,7 +3004,7 @@ fb34585ef252,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026
 3090c46e5a25,arch/python-single-package-extras.md,S1707,unlocated:no-match,,,,,2026-10-10
 373ffeaecc49,arch/python-single-package-extras.md,S1522,located,Locking environments > Locking requirements,all-extra;extra;format;requirements.in;support;group;lock;compil,a676f43491b1470a,$ uv pip compile pyproject.toml --all-extras Note extras are not supported with the requirements.in format. To lock a dependency group in the current project directory's,2026-10-10
 4360e3b9a11e,arch/python-single-package-extras.md,S1705,unlocated:no-match,,,,,2026-10-10
-843b47c76d91,arch/python-single-package-extras.md,S1706,located,"See ""Environment Markers"" for more information > Dependency sources > Path",better;fit;repository;multipl;may;member;workspac;packag,0f9268f3d23808d4,"For multiple packages in the same repository, workspaces may be a better fit. Workspace member",2026-10-10
+53e9732a3a3e,arch/python-single-package-extras.md,S1706,located,"See ""Environment Markers"" for more information > Dependency sources > Path",better;fit;repository;multipl;may;workspac;packag,becd1d8a45270898,"For multiple packages in the same repository, workspaces may be a better fit",2026-10-13
 9b72880c4e9f,arch/python-single-package-extras.md,S1706,unlocated:no-match,,,,,2026-10-10
 9b72880c4e9f,arch/python-single-package-extras.md,S1708,unlocated:no-match,,,,,2026-10-10
 bf4d657dcfef,arch/python-single-package-extras.md,S1706,unlocated:no-match,,,,,2026-10-10
