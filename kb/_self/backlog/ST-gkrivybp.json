@@ -2,7 +2,7 @@
   "id": "ST-gkrivybp",
   "kind": "story",
   "title": "A worker or reviewer in a worktree reads its own worktree's kb, not the main checkout's, through the kb MCP server",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vdrsfftl",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-wwacrsqr close"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: kb_mcp.py --status run by this checkout's script with its working directory in a fresh linked worktree prints this checkout's kb_dir, not the worktree's: the check fails on the base (exit 1). Chosen route: the code answers from the session's checkout, not worker and reviewer briefs that name rag.py, which would touch rule-guarding files (the worker role file, the skills). Only a working directory in a linked worktree of the script's own repository redirects the server; a host project's session keeps the script's own kb. The test file is left out of the touches (the check runs the changed path and no test id is added): an existing assertion in test_live_kb.py that pins the old kb_mcp start stops the work with a report. Its start-time redirect must leave import kb_mcp inert, since test_live_kb.py imports the module."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: kb_mcp.py --status run by this checkout's script with its working directory in a fresh linked worktree prints this checkout's kb_dir, not the worktree's: the check fails on the base (exit 1). Chosen route: the code answers from the session's checkout, not worker and reviewer briefs that name rag.py, which would touch rule-guarding files (the worker role file, the skills). Only a working directory in a linked worktree of the script's own repository redirects the server; a host project's session keeps the script's own kb. The test file is left out of the touches (the check runs the changed path and no test id is added): an existing assertion in test_live_kb.py that pins the old kb_mcp start stops the work with a report. Its start-time redirect must leave import kb_mcp inert, since test_live_kb.py imports the module.",
+  "claimed_by": "orch-vdrsfftl"
 }
