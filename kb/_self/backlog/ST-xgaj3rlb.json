@@ -1,0 +1,24 @@
+{
+  "id": "ST-xgaj3rlb",
+  "kind": "story",
+  "title": "The worker role's gate add command names a --do per option, so a worker never hand-edits an item file for a missing do map",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "agents/worker.md gives the provisional gate command as gate add ID --kind provisional --question Q --option O --option O --recommendation R, with no --do; backlog.py check then warns of each option with no do, and a gate the class rule makes blocking cannot be removed and re-added without the operator, so at SP-sqgyoiaz the ST-7rqeuzlm worker added the do maps of its two gates by editing the item JSON by hand and the ST-e44xoxkg worker left five gates with the warning. The role file's command names --do OPTION=ID for each option.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;ls=[l for l in open('agents/worker.md',encoding='utf-8') if 'gate add ID --kind provisional' in l];print(ls);sys.exit(0 if ls and all('--do' in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-sqgyoiaz close"
+  ]
+}
