@@ -2,7 +2,7 @@
   "id": "BG-3tfno44k",
   "kind": "bug",
   "title": "Five of the six sc_stale rows cite no source past its freshness lifetime, so they no longer measure staleness",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,
@@ -65,5 +65,18 @@
     "parked: SP-kuhlsf2s review"
   ],
   "notes": "Premise: pool check prints the warning for four rows today (BP-b9e93043, BP-9cf2c396, BP-fa7d95f6, BP-4edc88f0; BP-7579b23f and BP-2c2a3c1d still cite a stale source: S-sdxhnx3i, S-lz7th2mw and S-3yod3u7q); the repro exits 1 with 4. Plan: replace each of the four questions in bench_scenarios.csv by one whose pack cites a source kbfacts.source_freshness reads as stale, and update only those pool rows (scenario_built), not a whole-pool rebuild. No paid call is needed (eval checks are cached): a pool build --dry-run into a scratch copy prints no 'would ask'; read its output before any build. Rows of BG-3yjnwfsu (BP-2c2a3c1d) land first. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
-  "claimed_by": "orch-honlhzdc"
+  "evidence": {
+    "commit": "fcda22162c24617780bc7aef46d510c0bfe15018",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,subprocess;o=subprocess.run([sys.executable,'_tools/benchmarks.py','pool','check'],capture_output=True,text=True);n=(o.stdout+o.stderr).count('cites no source past');print(n,o.returncode);sys.exit(1 if n or o.returncode else 0)"
+        ],
+        "exit": 0,
+        "sha256": "0ccdb5a77ba5bf76"
+      }
+    ]
+  }
 }
