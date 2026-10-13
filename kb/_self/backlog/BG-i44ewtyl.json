@@ -2,7 +2,7 @@
   "id": "BG-i44ewtyl",
   "kind": "bug",
   "title": "security/linux-cis-ssg-openscap leaves AlmaLinux 8 and 10 scanning unanswered: SSG's rhel8 and rhel10 CIS profiles are not named and no gap is logged",
-  "status": "todo",
+  "status": "dropped",
   "sprint": "SP-23m5etrf",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,5 @@
   "links": [
     "parked: SP-ajcomz6d review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 13 of 19, \"Research gaps: SSG CIS profiles for RHEL-family hosts, Python Fluent accessors, JSON logs from Python and Rust services, Cargo feature unification for ort\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-12: rag.py pack on the rhel8 and rhel10 CIS profiles answers coverage weak, 'not in the kb: rhel10'; the repro and the added check fail on the base (precheck exit 1). Orders after BG-ab3tndhy, which edits the same article."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 13 of 19, \"Research gaps: SSG CIS profiles for RHEL-family hosts, Python Fluent accessors, JSON logs from Python and Rust services, Cargo feature unification for ort\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-12: rag.py pack on the rhel8 and rhel10 CIS profiles answers coverage weak, 'not in the kb: rhel10'; the repro and the added check fail on the base (precheck exit 1). Orders after BG-ab3tndhy, which edits the same article. Dropped: already met by the SP-23m5etrf goal research ST-gyr324rf: linux-cis-ssg-openscap.md:26-27 and :55 name the rhel8 and rhel10 CIS profiles as CODE facts, :36-38 and a _gaps.md entry cover AlmaLinux 8 and 10 scanning; the item's checks exit 0 on main and it has no work commit, so done refuses it"
 }
