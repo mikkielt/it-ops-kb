@@ -27,7 +27,7 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, canonical, claims_ledger, external_lines, git, id_re, item_repos,
+from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, external_lines, git, id_re, item_repos,
                      link_target, need, repositories, research_touches, resolved_touch, say, scope, scratch_dir, setting, split_touch,
                      touches_overlap, withhold, worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
@@ -73,6 +73,9 @@ WORKER_RULES = (
     "`land` refuses a branch while a process still runs in your worktree.",
     "File a bug for any defect outside the item, do not fix it: commit the new item file alone, in a commit of its "
     "own on `{branch}` whose `KB-Work` names the new bug, and name the bug in your report.",
+    "Besides the touches, every item may change {always} (the item files and the generated coverage files): a source "
+    "row whose count regenerates a coverage file is in scope, so add it with its fact; do not drop it as outside the "
+    "touches.",
     "A doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs "
     "read and found still correct.",
     ("selfdoc.py",
@@ -121,13 +124,18 @@ def backlog_cmd(root):
 
 def worker_rules(root, iid, branch):
     """The brief's fixed rules for the project at ROOT, as lines: the kb-only ones (its test runner and ceiling, its
-    stale-doc check) as the kb's own brief has them where the project has the tool, else the project-neutral wording."""
+    stale-doc check) as the kb's own brief has them where the project has the tool, else the project-neutral wording.
+    The rule on the paths every item may change names `always_in_scope` (what `in_scope` counts), and is left out
+    where the project sets none."""
+    always = ", ".join(f"`{g}`" for g in always_in_scope())
     out = []
     for rule in WORKER_RULES:
         if not isinstance(rule, str):
             tool, kb, host = rule
             rule = kb if has_tool(root, tool) else host
-        out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root)))
+        if "{always}" in rule and not always:
+            continue
+        out.append(rule.format(id=iid, branch=branch, backlog=backlog_cmd(root), always=always))
     return out
 
 
