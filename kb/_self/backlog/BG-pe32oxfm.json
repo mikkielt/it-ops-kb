@@ -2,7 +2,7 @@
   "id": "BG-pe32oxfm",
   "kind": "bug",
   "title": "test_land_waits_hook_of_a_finished_session fails in a whole-suite run on a loaded host",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,

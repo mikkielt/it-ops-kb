@@ -2,7 +2,7 @@
   "id": "ST-22oykpr5",
   "kind": "story",
   "title": "land fast-forwards an orchestrator checkout that holds only unpushed item-file commits by rebasing them onto origin/main",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,

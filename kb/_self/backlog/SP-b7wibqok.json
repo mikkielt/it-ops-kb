@@ -2,7 +2,7 @@
   "id": "SP-b7wibqok",
   "kind": "sprint",
   "title": "Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test",
-  "status": "planned",
+  "status": "active",
   "goal": "A worker's session-end distill no longer makes land stop at step branch, and a refusal names how long a waiting distill may take; selfcheck's orphans check passes a distill still at work and fails only a stuck one; a land that stops after removing the worker's worktree prints the command that brings it back; land rebases an orchestrator checkout holding only unpushed item-file commits onto origin/main; the hook-wait land test passes in a whole-suite run on a loaded host",
   "gates": [
     {

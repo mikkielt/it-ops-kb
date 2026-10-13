@@ -2,7 +2,7 @@
   "id": "ST-y6syvkzo",
   "kind": "story",
   "title": "selfcheck's orphans check tells a session-end distill run still at work from a stuck one, instead of failing on any past HOOK_GRACE_S",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-b7wibqok",
   "priority": "P3",
   "rank": 0,
