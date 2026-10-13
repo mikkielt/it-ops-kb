@@ -1,0 +1,27 @@
+{
+  "id": "ST-h66j7wm5",
+  "kind": "story",
+  "title": "A dispatched worker's session leaves work rows land can attribute, so cost reads every item of a sprint",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Every worker that backlog.py dispatch starts leaves a branch, agent-start or agent-stop row naming its item in the clone's query log spool, and land names why when none exists. Retrospective of SP-htl7jkrm: ST-ksgrpumr's land warned 'landed with no work rows (missing): no worker session of it left a branch, agent-start or agent-stop row', while its siblings dispatched the same way showed late rows; ST-65r3cwix landed with its work sidecar undelivered; cost --rework SP-htl7jkrm read 0 runs at review time.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dispatch_worker_leaves_work_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-htl7jkrm close"
+  ]
+}

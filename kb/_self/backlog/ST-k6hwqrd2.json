@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-u5q37ds3 close"
-  ]
+  ],
+  "notes": "Recurred in SP-htl7jkrm (2026-10-13): ST-ksgrpumr's answer concluded [DER] that a worktree under .claude/worktrees needs no protected-path allowance, while BG-6ecranz3 in the same sprint records the observed denial there; the review found it."
 }
