@@ -1,0 +1,25 @@
+{
+  "id": "BG-rfdmcw2d",
+  "kind": "bug",
+  "title": "Host finding: the SP-uvz65lvm review's whole-suite runs were refused at the darwin seconds ceiling, 24.2 s and 24.4 s against 24 s, all 100 tests passing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The operator decides from the recorded test.run rows of the SP-uvz65lvm review (4c98c753 at 2026-10-13T20:29:56Z, 24150 ms, and c5d5e179 at 2026-10-13T20:30:28Z, 24392 ms, 100 passed, load average about 3.8, beside BG-uxs5ncx2's, BG-hgdsztln's and BG-x55qvsln's rows and this sprint's workers' 25 to 31 s runs) what the suite's darwin headroom should be; nothing changes the ceiling without that decision",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys;d=json.load(open('_tools/tests_ceiling.json'))['decision'];print(d);sys.exit(0 if d!='D-kl72euxy' else 1)"
+    ]
+  },
+  "repro_reason": "the refusal is host load and passes on a quiet run; what ends the finding is the operator's ceiling decision, recorded in tests_ceiling.json",
+  "touches": [
+    "_tools/tests_ceiling.json"
+  ],
+  "links": [
+    "parked: SP-uvz65lvm review"
+  ],
+  "notes": "Filed per the kb-sprint rule for a suite refused twice on a loaded host; kept beside BG-uxs5ncx2, BG-hgdsztln and BG-x55qvsln as the same pattern with this sprint's rows. The ceiling is the operator's decision only."
+}
