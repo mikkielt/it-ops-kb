@@ -19,10 +19,11 @@ Modes:
               fetch and record the fetch date. Default output is a summary per source (partial diff); --full
               adds a unified diff of the page text, --max-lines N caps it per source. Exit 0 = no change,
               1 = something changed, 2 = a fetch failed (as diff(1)).
-  --status    offline: when each selected source was last fetched, last changed, its age (the time since
-              its last check) and freshness lifetime (provider.lifetimes: its recorded changes' Poisson rate,
-              its Learn file's commits, a fraction of the time since its page date, or its provider's default),
-              and its last error.
+  --status    offline: when each selected source was last fetched, last changed, its age (as a lookup reads
+              it: the time since the newer of its last check and its facts' verified date; unknown counts as
+              stale unless the url is pinned) and freshness lifetime (provider.lifetimes: its recorded changes'
+              Poisson rate, its Learn file's commits, a fraction of the time since its page date, or its
+              provider's default), STALE where the age is past it, and its last error.
 
 Roots: every path above is relative to a root (kb/<root>/). --root NAME picks one of this repository's roots;
 without it --diff and --status work on the public root, and --verify, --refresh and --offline on every root with
@@ -326,20 +327,19 @@ def diff_sources(a, sources):
 
 
 def status(a, sources):
-    import provider  # not at load: the network modules --verify and --diff do not need
+    import kbfacts  # not at load: the lookup's freshness, which this reports as it decides it
     state = read_state()
     now = datetime.datetime.now(datetime.timezone.utc)
     chosen = select(a, sources, state)
     root = argparse.Namespace(path=KB, name=os.path.basename(os.path.normpath(KB)))  # what provider reads of a kbcommon.Root
-    life = provider.lifetimes({sid: sources[sid] for sid in chosen}, state, provider.providers(root), root, now.timestamp())
+    life = kbfacts.root_freshness({sid: sources[sid] for sid in chosen}, state, kbfacts.fresh_state(chosen)[1], root, now.timestamp())
     out = []
     for sid in chosen:
         st, lt = state.get(sid, {}), life[sid]
-        last = provider.last_check(st, sources[sid])
-        age = round((now.timestamp() - last) / provider.DAY, 1) if last is not None else None
+        age = None if lt["age_days"] is None else round(lt["age_days"], 1)
         out.append({"id": sid, "url": sources[sid]["url"], "fetched_utc": st.get("fetched_utc") or None, "age_days": age,
-                    "lifetime_days": None if lt["days"] is None else round(lt["days"], 1), "lifetime_basis": lt["basis"],
-                    "stale": lt["days"] is not None and age is not None and age > lt["days"],
+                    "lifetime_days": None if lt["lifetime_days"] is None else round(lt["lifetime_days"], 1),
+                    "lifetime_basis": lt["basis"], "stale": lt["stale"],
                     "changed_utc": st.get("changed_utc") or None, "checked_utc": st.get("checked_utc") or None,
                     "error": st.get("error") or None, "retrieved_utc": sources[sid].get("retrieved_utc")})
     if a.json:

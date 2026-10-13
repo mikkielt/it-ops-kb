@@ -37,6 +37,22 @@
   "depends_on": [
     "ST-qkpbwtsc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does fetch.py --status take a source's age and stale flag from the lookup's rule?",
+      "options": [
+        "kbfacts.root_freshness, the per-root body of source_freshness extracted and called by both",
+        "fetch.status calls kbfacts.source_freshness on every root's ledgers",
+        "fetch.status keeps its own copy of the rule"
+      ],
+      "recommendation": "kbfacts.root_freshness, the per-root body of source_freshness extracted and called by both",
+      "class": "design",
+      "answer": "kbfacts.root_freshness, the per-root body of source_freshness extracted and called by both",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-etslk6yu review"
   ],
