@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Two of the sprint goal's questions are answered from the live docs (the kb tools first) and written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs: (1) which Manual-mode cases the permissions page's Read-only commands section lists as still prompting for the built-in read-only Bash set (pack coverage none; the cases sit only in a _gaps.md entry), (2) which exception the permissions page gives to the startup warning for a Glob path rule passed in --allowedTools (pack coverage good, but no fact line states it). The other questions of the goal (WebFetch's model call and 100,000-character read, the changelog entries between v2.1.284 and v2.1.296, Bazel's --test_timeout wording) are good in the kb. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -19,6 +19,11 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/claude/powershell-tool.md",
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_gaps.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
   ]
 }

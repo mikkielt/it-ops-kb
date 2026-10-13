@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The settings fact on path rules for Write, NotebookEdit, Glob and MultiEdit names the --allowedTools exception for Glob",
   "status": "draft",
+  "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/claude/settings-and-scopes.md's fact that a path rule for Write, NotebookEdit, Glob or MultiEdit is warned about at startup names the source's exception, a Glob rule passed in --allowedTools, the form census.py dispatch uses. Found by the SP-htl7jkrm review (settings-and-scopes.md:84, S-pmhgjvef).",
@@ -20,7 +21,11 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-mivjdhxk"
+  ],
   "links": [
     "parked: SP-htl7jkrm review"
-  ]
+  ],
+  "notes": "Premise: the fact at kb/public/claude/settings-and-scopes.md:88 (path rules for Write, NotebookEdit, Glob and MultiEdit warned about at startup, S-pmhgjvef) does not name the --allowedTools exception for Glob. Premise run 2026-10-13: the check fails on base (the line holds no 'allowedTools', exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
 }

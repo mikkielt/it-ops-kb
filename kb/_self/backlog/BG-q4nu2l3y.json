@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "claude/hooks.md:127 says WebFetch runs its prompt on the page with a small, fast model, which the tools reference no longer says (a separate model call for most fetches)",
   "status": "draft",
+  "sprint": "SP-foopqq2x",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "claude/hooks.md:127 states what the tools reference's WebFetch section says on 2026-10-13: the prompt runs in a separate model call for most fetches, a page is read up to 100,000 characters per call, and a redirect to another host returns the original and target urls, and its anchor is re-taken",
+  "goal": "claude/hooks.md:127 states what the tools reference's WebFetch section says on 2026-10-13: the prompt runs in a separate model call for most fetches, a page is read up to 100,000 characters per call and a redirect to another host returns the original and target urls, with its anchor re-taken",
   "repro": {
     "run": [
       "python3",
@@ -14,5 +15,24 @@
       "import sys; t=open('kb/public/claude/hooks.md',encoding='utf-8').read(); sys.exit(1 if 'with a small, fast model' in t else 0)"
     ]
   },
-  "repro_reason": "the defect is a stated fact in an article, so no tool run shows it; the text check reads the one phrase the tools reference no longer holds"
+  "repro_reason": "the defect is a stated fact in an article, so no tool run shows it; the text check reads the one phrase the tools reference no longer holds",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; l=[x for x in open('kb/public/claude/hooks.md',encoding='utf-8') if x.startswith('- WebFetch converts')]; sys.exit(0 if l and 'separate model call' in l[0] and '100,000' in l[0] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/claude/hooks.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-kcayezcs"
+  ],
+  "notes": "Premise: kb/public/claude/hooks.md:127 says WebFetch runs its prompt with a small, fast model; the tools reference (S-3yod3u7q, re-read 2026-10-13) says a separate model call for most fetches. Premise run 2026-10-13: the repro fails on base ('with a small, fast model' present, exit 1) and the added check fails (no 'separate model call' on the line); agents/doc-lookup-sources.md:76 already carries the current wording to copy from. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
 }

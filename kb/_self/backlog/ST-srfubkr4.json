@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The Bazel --test_timeout DOC fact drops 'for that run', which the page does not say, or moves it to the DER fact",
   "status": "draft",
+  "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/agents/test-suite-size-and-agent-overengineering.md's DOC fact on --test_timeout (line 36, S-3dlofilm) keeps only the page's words: 'for that run' is not on the page, so it is dropped from the DOC line or carried by the DER fact beside it. Found by the SP-tjap3mdd review (S4).",
@@ -20,7 +21,11 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-3jo3wlr2"
+  ],
   "links": [
     "parked: SP-tjap3mdd review"
-  ]
+  ],
+  "notes": "Premise: kb/public/agents/test-suite-size-and-agent-overengineering.md:36 tags DOC S-3dlofilm a fact that says the timeout override is 'for that run', which the Bazel page does not say; line 37 is the DER fact beside it. Premise run 2026-10-13: the check fails on base (line 36 holds '--test_timeout', '[DOC S-3dlofilm]' and 'for that run', exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
 }

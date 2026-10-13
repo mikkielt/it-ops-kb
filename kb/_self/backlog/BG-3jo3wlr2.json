@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "agent-caching.md tags DOC its claim that no changelog entry between v2.1.284 and v2.1.296 changes the Sonnet 5.5 cache-read price",
   "status": "draft",
+  "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "The absence clause of the v2.1.284 fact in kb/public/agents/agent-caching.md (no entry between v2.1.284 and v2.1.296 changes the price) is a DER fact of its own that states the changelog read behind it, and the entry's quoted price stays DOC S1864; found by the SP-ilqhjn3k review",
+  "goal": "the absence clause of the v2.1.284 fact in kb/public/agents/agent-caching.md (no entry between v2.1.284 and v2.1.296 changes the price) is a DER fact of its own that states the changelog read behind it while the entry's quoted price stays DOC S1864",
   "repro": {
     "run": [
       "python3",
@@ -15,12 +16,26 @@
     ]
   },
   "repro_reason": "the defect is the tag of one kb fact; its behaviour is the text a lookup returns",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('kb/public/agents/agent-caching.md',encoding='utf-8').read().splitlines(); a=[x for x in t if 'no entry between' in x]; p=[x for x in t if '$0.20/Mtok cache reads' in x]; sys.exit(0 if a and p and all('[DER' in x and 'changelog' in x for x in a) and all('[DOC S1864]' in x for x in p) else 1)"
+      ]
+    }
+  ],
   "touches": [
     "kb/public/agents/agent-caching.md",
     "kb/public/_retrieval/doc2query/expansions.csv",
-    "kb/public/_anchors.csv"
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-7475tw3d"
   ],
   "links": [
     "parked: SP-ilqhjn3k review"
-  ]
+  ],
+  "notes": "Premise: kb/public/agents/agent-caching.md:47 tags [DOC S1864] one line that holds both the changelog's quoted price and the clause that no entry between v2.1.284 and v2.1.296 changes it, which is a reading of the changelog, not a page's words. Premise run 2026-10-13: the repro fails on base (absence clauses tagged DOC: 1, exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
 }
