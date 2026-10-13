@@ -2,7 +2,7 @@
   "id": "BG-geepi6yv",
   "kind": "bug",
   "title": "A section-kept fact whose anchor window starts at a heading line is compared by the parent section, so an edit to its body reads as unchanged",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P2",
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-tm4wlsve review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: resolve gives outcome verbatim, signal section, for a fact whose passage was edited when its anchor window starts at a heading unit. Run 2026-10-12 on origin/main: anchor_rows located heading \"Guide\" (the parent path) and resolve returned verbatim/section for the edited body: reproduces. The repro goes through anchor_rows and resolve, so any design that compares the section of every unit of the window (resolve holds the old text as prev) passes it. The test is the existing section_hash test in test_live_kb.py, extended with a page whose window starts at a heading. Found by the SP-tm4wlsve review (ST-3zlzfitj): an anchor heading is the path of its window first unit, and a heading line own unit sits under its parent path (factdiff.sections, section_unchanged, resolve)."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: resolve gives outcome verbatim, signal section, for a fact whose passage was edited when its anchor window starts at a heading unit. Run 2026-10-12 on origin/main: anchor_rows located heading \"Guide\" (the parent path) and resolve returned verbatim/section for the edited body: reproduces. The repro goes through anchor_rows and resolve, so any design that compares the section of every unit of the window (resolve holds the old text as prev) passes it. The test is the existing section_hash test in test_live_kb.py, extended with a page whose window starts at a heading. Found by the SP-tm4wlsve review (ST-3zlzfitj): an anchor heading is the path of its window first unit, and a heading line own unit sits under its parent path (factdiff.sections, section_unchanged, resolve).",
+  "claimed_by": "orch-djl7za6x"
 }
