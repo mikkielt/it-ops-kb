@@ -1,0 +1,26 @@
+{
+  "id": "BG-sddebrpa",
+  "kind": "bug",
+  "title": "content-rules.md:65 says a wrong-root gap is recorded as a rules finding, which ql_learn cannot make from a public lookup, and names the answering row SQ-<slug> where the rows are EV- ids",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kb/_self/content-rules.md's rule for a gap the gap step filed on the wrong root names a step the query-log tools can run (or a tool change makes ql_learn record it as a rules finding), and the row id form it names matches the rows ST-aezkm3zh added: the repro exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;ls=open('kb/_self/content-rules.md',encoding='utf-8').read().splitlines();sys.exit(1 if any('SQ-<slug>' in x for x in ls) else 0)"
+    ]
+  },
+  "repro_reason": "the doc's wording is the defect; the id form is the line the repro reads, the rules-finding step needs a reading of ql_learn",
+  "touches": [
+    "kb/_self/content-rules.md",
+    "kb/_self/querylog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-enudabdr review"
+  ]
+}

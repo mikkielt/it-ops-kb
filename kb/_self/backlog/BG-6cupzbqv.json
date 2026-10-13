@@ -1,0 +1,24 @@
+{
+  "id": "BG-6cupzbqv",
+  "kind": "bug",
+  "title": "PRICE_ASK's cost alternative is anchored at the start and its dot does not cross a newline, so a multi-line question with cost on a later line gets no priced note",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbfacts.PRICE_ASK matches 'Context: Intune rollout.\\nHow much does it cost?' as a money ask, as it did before BG-apytw7fo: the repro exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;sys.exit(0 if k.PRICE_ASK.search('Context: Intune rollout.\\nHow much does it cost?') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-enudabdr review"
+  ]
+}

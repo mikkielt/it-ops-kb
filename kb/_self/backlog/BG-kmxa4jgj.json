@@ -1,0 +1,25 @@
+{
+  "id": "BG-kmxa4jgj",
+  "kind": "bug",
+  "title": "PRICE_ASK drops the priced note for a price ask that names storage, capacity, data or RAM as the product, such as 'How much is OneDrive storage per user per month?'",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "kbfacts.PRICE_ASK matches a 'how much is <product> per user|device|month|year' price ask whose product names storage, capacity, data or RAM (OneDrive storage, Power BI Premium capacity, Sentinel data ingestion, a Cloud PC with 8 GB RAM), as it did before BG-apytw7fo, while 'How much memory per device does Intune need?' and 'how much data per month' still get no priced note: the repro exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;p=['How much is OneDrive storage per user per month?','How much is the Power BI Premium capacity per month?','How much is Microsoft Sentinel data ingestion per month?'];n=['How much memory per device does Intune need?'];bad=[q for q in p if not k.PRICE_ASK.search(q)]+[q for q in n if k.PRICE_ASK.search(q)];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-enudabdr review"
+  ]
+}
