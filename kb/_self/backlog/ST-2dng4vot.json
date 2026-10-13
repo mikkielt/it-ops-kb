@@ -2,7 +2,7 @@
   "id": "ST-2dng4vot",
   "kind": "story",
   "title": "Research sprint goal: Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-srqmriw6",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 4 of 15): the five questions were run through rag.py pack --root _self at plan time: Q1 to Q4 weak (the _self docs answer them: kb/_self/tools.md:144, :160, :37; no tested question matches), Q5 none (content-rules.md:84 holds the Learn mirror sentence; the pack reads no NOASSERTION word). Each question's row quotes a phrase the sprint's items keep or rewords with the doc, so the items carry the eval file in their touches and run after this story. No outside facts: every question is a tool rule the _self docs answer, so no kb/public fact is written; its done is the landed rows.",
-  "claimed_by": "orch-srqmriw6"
+  "evidence": {
+    "commit": "6204a92759c56d977e28452d338f112cf701ae99",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-2dng4vot"
+        ],
+        "exit": 0,
+        "sha256": "c2e1737d43e273d6"
+      }
+    ]
+  }
 }
