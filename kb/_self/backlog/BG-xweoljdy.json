@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "factdiff.py anchors --stale lists no anchor of the claude (api-limits.csv, ci-and-headless.md, messages-api.md), logs (microsoft-sentinel.md, otel-collector-receivers.md, otel-log-semconv.md, python-rust-json-stdout-logs.md) and python (uv-projects.md) articles, nor of the facts this sprint reworded in agents/doc-change-detection.md and agents/hybrid-retrieval.md: factdiff.py anchor --file F has pruned the rows of reworded or removed facts, and the only STALE lines left are linux-nftables rows another item carries",
+  "goal": "factdiff.py anchors --stale lists no anchor of the claude (api-limits.csv, ci-and-headless.md, messages-api.md), logs (microsoft-sentinel.md, otel-collector-receivers.md, otel-log-semconv.md, python-rust-json-stdout-logs.md) and python (uv-projects.md) articles, nor of the facts this sprint reworded in agents/doc-change-detection.md and agents/hybrid-retrieval.md: factdiff.py anchor --file F has pruned the rows of reworded or removed facts (the anchor rows of sources S-2xpbl25y S-3pftmimx S-4odritdm S-5uxkh3j5 S-7xvirecf S-a2wa7lbg S-bcbpadtc S-bkz7cb64 S-dejuwanz S-e2utk2wn S-e5rrs4ee S-etccrdda S-eu3n3hyf S-ezqg74ki S-fksbud2r S-fmhy7rbl S-fn6fxrr5 S-g2bbx2bz S-i6b6z3is S-if5q2jhk S-j7z4u43w S-lsfxdurw S-md4evt46 S-pmhgjvef S-qns6wzwe S-qo6uqong S-sqwzg5ex S-tyedhnrz S-wmmyfoun S-xc4ibwg4 S-xc5fkeod S-yrqtp5aq S-zcuxapgb S1217 S1800 S1864 S2131 S2157 S640 S642 S960 S961 S963 S964), and the only STALE lines left are linux-nftables rows another item carries",
   "repro": {
     "run": [
       "python3",
@@ -18,7 +18,7 @@
   "repro_reason": "the defect is rows of a ledger file; its behaviour is the tool's own stale listing",
   "clauses": [
     {
-      "clause": "factdiff.py anchors --stale lists no anchor of the claude (api-limits.csv, ci-and-headless.md, messages-api.md), logs (microsoft-sentinel.md, otel-collector-receivers.md, otel-log-semconv.md, python-rust-json-stdout-logs.md) and python (uv-projects.md) articles, nor of the facts this sprint reworded in agents/doc-change-detection.md and agents/hybrid-retrieval.md: factdiff.py anchor --file F has pruned the rows of reworded or removed facts",
+      "clause": "factdiff.py anchors --stale lists no anchor of the claude (api-limits.csv, ci-and-headless.md, messages-api.md), logs (microsoft-sentinel.md, otel-collector-receivers.md, otel-log-semconv.md, python-rust-json-stdout-logs.md) and python (uv-projects.md) articles, nor of the facts this sprint reworded in agents/doc-change-detection.md and agents/hybrid-retrieval.md: factdiff.py anchor --file F has pruned the rows of reworded or removed facts (the anchor rows of sources S-2xpbl25y S-3pftmimx S-4odritdm S-5uxkh3j5 S-7xvirecf S-a2wa7lbg S-bcbpadtc S-bkz7cb64 S-dejuwanz S-e2utk2wn S-e5rrs4ee S-etccrdda S-eu3n3hyf S-ezqg74ki S-fksbud2r S-fmhy7rbl S-fn6fxrr5 S-g2bbx2bz S-i6b6z3is S-if5q2jhk S-j7z4u43w S-lsfxdurw S-md4evt46 S-pmhgjvef S-qns6wzwe S-qo6uqong S-sqwzg5ex S-tyedhnrz S-wmmyfoun S-xc4ibwg4 S-xc5fkeod S-yrqtp5aq S-zcuxapgb S1217 S1800 S1864 S2131 S2157 S640 S642 S960 S961 S963 S964)",
       "check": 0
     },
     {
