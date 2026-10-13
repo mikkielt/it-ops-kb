@@ -1,0 +1,22 @@
+{
+  "id": "BG-x55qvsln",
+  "kind": "bug",
+  "title": "Host finding: the SP-7ff7c5ui review's whole-suite runs were refused at the darwin seconds ceiling, 24.3 s and 24.7 s against 24 s, all 100 tests passing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The operator decides from the recorded test.run rows of the SP-7ff7c5ui review (2026-10-13T14:30:25Z at 24277 ms and 2026-10-13T14:30:54Z at 24734 ms, 100 passed, load average 2.2 to 4.5, beside ST-nhax64i4's SP-b7wibqok rows and five workers' 25 to 32 s runs in this sprint) what the suite's darwin headroom should be; nothing changes the ceiling without that decision",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  },
+  "touches": [
+    "_tools/tests_ceiling.json"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui review"
+  ]
+}
