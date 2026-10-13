@@ -3405,3 +3405,34 @@ _Agent: kb-research_
 - See python/pytest-xdist.md, python/stdlib-os-loadavg.md, python/pytest.md.
 
 _Agent: kb-research_
+
+## QK-git-worktree-add-check-existing-local. How does `git worktree add <path> <branch>` check an existing local branch out again after its worktree was removed?
+- With a `<branch>` that exists, `add` checks it out in the new worktree when it is checked out nowhere else, and refuses otherwise unless `--force`; `-b` refuses an existing branch. [DOC S-j4qkzgvv]
+- `git worktree remove` deletes the worktree directory and its private `worktrees/<id>` entry and touches no ref, so the branch and its commits remain and no worktree holds it. [CODE S-ali5r4n7: builtin/worktree.c#remove_worktree, delete_git_dir]
+- A directory deleted by hand leaves its entry: `add` for that path dies "missing but already registered worktree", and the entry still holds its branch for any other path until `git worktree prune` (expiry defaults to everything) or `-f`. [CODE S-ali5r4n7: builtin/worktree.c#check_candidate_path, prune; DER S-tx5lxmr3, S-3qf7ndi6: the worktree list and the branch check]
+- Conclusion: after `git worktree remove`, `git worktree add <path> <branch>` brings the branch back at its tip with all its commits and without what was uncommitted (`remove` refuses an unclean worktree without `--force`); after a hand deletion, `git worktree prune` comes first. [DER S-j4qkzgvv, S-wyfuoqs5, S-ali5r4n7]
+- See gitlab/git-test-repositories.md.
+
+_Agent: kb-research_
+
+## QK-git-refuse-rebase-switch-branch-that. Why does git refuse to rebase or switch a branch that is checked out in another worktree?
+- `git checkout` and `git switch` refuse a branch another worktree has checked out or otherwise uses, and `--ignore-other-worktrees` checks it out anyway. [DOC S-3au2dknw, S-hwicl2h6]
+- "In use" includes a worktree whose detached `HEAD` is in the middle of a rebase or bisect of the branch and one with the branch in a rebase's update-refs; the message is "'<branch>' is already used by worktree at '<path>'". [CODE S-tx5lxmr3: worktree.c#is_shared_symref; CODE S-3qf7ndi6: branch.c#prepare_checked_out_branches, die_if_checked_out]
+- `git rebase <upstream> <branch>` runs the same check for an existing local branch, skipping only the current worktree, and has no override option; `git branch -f` and `git worktree add -B` refuse the same way. [CODE S-sx4rosvv: builtin/rebase.c#cmd_rebase; CODE S-3qf7ndi6: branch.c#validate_new_branchname; CODE S-ali5r4n7: builtin/worktree.c#add]
+- The source comment says the check is bypassed for the current branch "as it will not make things any worse". [CODE S-i3btr2xr: builtin/checkout.c#die_if_switching_to_a_branch_in_use]
+- Conclusion: refs are shared by every worktree while `HEAD`, index and files are each worktree's own, so a branch a second worktree has checked out would move under an index that no longer matches it; the refusal prevents that, and a branch is free for rebase or switch only once the worktree that holds it is removed or pruned. [DER S-j4qkzgvv, S-i3btr2xr: the shared and per-worktree files and the source comment]
+- Open: no page states the reason; it is the kb's reading of the code comment. [UNK]
+- See gitlab/git-test-repositories.md.
+
+_Agent: kb-research_
+
+## QK-cwd-blocks-directory-removal-macos-linux. Does a process's current working directory keep a directory from being removed on macOS and Linux?
+- POSIX leaves it unspecified whether `rmdir` of any process's current working directory succeeds or fails with `EBUSY`. [DOC S-vfd5kpka]
+- Linux `rmdir(2)` gives `EBUSY` only for a mount point or the caller's own root directory, and `getcwd(3)` reports `ENOENT` once the working directory has been unlinked. [DOC S-hlwenztu, S-kyzwo2d6]
+- Apple's `rmdir(2)` archive page lists `EBUSY` only for a mount point. [DOC S-2cf7ptty]
+- One run on macOS 26.5.2 (Python 3.13.2, 2026-10-13): a directory a live child had as its working directory was renamed and removed; the child's `getcwd` and relative file creation then failed with `ENOENT`. [DER S-vfd5kpka, S-kyzwo2d6, S-2cf7ptty: the run read against the documented cases]
+- Conclusion: unlike Windows, where a live process's working directory is locked against deletion, on Linux and macOS it does not keep the directory from being removed: the removal succeeds, reports no holder, and the holder meets `ENOENT`. [DER S-qz6kfi4i, S-vfd5kpka, S-hlwenztu, S-kyzwo2d6]
+- Open: a Linux run and other macOS versions or file systems; a recursive delete of a held tree. [UNK]
+- See python/stdlib-windows-portability.md.
+
+_Agent: kb-research_

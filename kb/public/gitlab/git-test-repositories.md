@@ -1,9 +1,9 @@
 ---
 topic: gitlab/git-test-repositories
 priority: P3
-applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`); Git for Windows v2.56.0.windows.2 (core.longpaths)"
-retrieved_utc: 2026-10-10
-sources: [S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
+applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, a branch a worktree holds, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`); Git for Windows v2.56.0.windows.2 (core.longpaths)"
+retrieved_utc: 2026-10-13
+sources: [S-3qf7ndi6, S-ali5r4n7, S-sx4rosvv, S-i3btr2xr, S-3au2dknw, S-hwicl2h6, S-hnrqsiz4, S-xcnkwrn4, S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
 status: complete
 ---
 
@@ -223,6 +223,63 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   `refs/remotes/<remote>/HEAD` can be stale because `create` never updates an existing one. [DER S-j4qkzgvv,
   S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2: the facts above and the failed-fetch fact in
   `gitlab/git-trailers-and-hooks.md`]
+
+### Checking a branch out again, and a branch another worktree holds
+- `git worktree add <path> <branch>` with a `<branch>` that already exists checks it out in the new worktree when
+  it is checked out nowhere else, and otherwise refuses unless `--force` is given: "If _<branch>_ does exist, it
+  will be checked out in the new worktree, if it's not checked out anywhere else". `-b` is for a new branch and
+  refuses an existing one. [DOC S-j4qkzgvv]
+- `git worktree remove` deletes the worktree's directory (after the clean check, when it exists) and then the
+  repository's private `worktrees/<id>` directory for it; it names and touches no ref, so the branch the
+  worktree held still exists and, with that entry gone, no worktree holds it. [CODE S-ali5r4n7:
+  builtin/worktree.c#remove_worktree, delete_git_dir]
+- So after a `git worktree remove`, `git worktree add <path> <branch>` (no `-b`) checks the same branch out
+  again at its tip, with every commit made in the removed worktree; what was uncommitted is not there,
+  since `remove` refuses an unclean worktree unless `--force`. [DER S-j4qkzgvv, S-wyfuoqs5, S-ali5r4n7: the
+  branch fact, the shared refs under `refs/` and the remove code above]
+- A worktree directory deleted by hand leaves its `worktrees/<id>` entry: `add` for the same path then dies
+  with "is a missing but already registered worktree" and names `add -f` (twice when the entry is locked),
+  `prune` or `remove`; `-f` deletes the stale entry and goes on. [CODE S-ali5r4n7:
+  builtin/worktree.c#check_candidate_path]
+- `git worktree prune` removes the entries of missing worktrees; its expiry defaults to "everything", so a
+  missing one is pruned at once unless it is locked. [CODE S-ali5r4n7: builtin/worktree.c#prune; CODE
+  S-tx5lxmr3: worktree.c#should_prune_worktree]
+- A working tree deleted without `git worktree remove` has its administrative files "eventually" removed
+  automatically (see `gc.worktreePruneExpire`), or sooner by `git worktree prune`. [DOC S-j4qkzgvv]
+- Git lists every `worktrees/<id>` entry whose `gitdir` file is readable without testing that the path exists,
+  and the branch check reads that entry's own `HEAD`, so an entry left by a hand-deleted directory still holds
+  its branch: `git worktree add <other-path> <branch>` dies "'<branch>' is already used by worktree at '<old
+  path>'" until `git worktree prune` (or `-f`). [DER S-tx5lxmr3, S-3qf7ndi6, S-ali5r4n7: get_linked_worktree
+  and get_worktrees_internal, die_if_checked_out, add_worktree]
+- `git checkout` and `git switch` refuse to check out a branch "already checked out or otherwise in use by
+  another worktree" (checkout) or "already checked out by another worktree" (switch); `--ignore-other-worktrees`
+  checks it out anyway, so one branch can be in use by more than one worktree. [DOC S-3au2dknw, S-hwicl2h6]
+- The check's own comment in the source: "The check is bypassed when the branch is already the current one, as
+  it will not make things any worse." It runs for `git checkout <branch>` and `git checkout -B <branch>`
+  unless `--ignore-other-worktrees` is given.
+  [CODE S-i3btr2xr: builtin/checkout.c#die_if_switching_to_a_branch_in_use]
+- "In use" is wider than a worktree's `HEAD` naming the branch: a worktree whose `HEAD` is detached in the
+  middle of a rebase or a bisect of that branch holds it too, and so does one with that branch in the
+  update-refs of a rebase in progress; the error text is "'<branch>' is already used by worktree at '<path>'".
+  [CODE S-tx5lxmr3: worktree.c#is_shared_symref; CODE S-3qf7ndi6: branch.c#prepare_checked_out_branches,
+  die_if_checked_out]
+- `git rebase <upstream> <branch>` switches to `<branch>` first, and when `<branch>` is an existing local branch
+  it runs `die_if_checked_out` for it with the current worktree skipped, so a branch held by any other worktree
+  refuses the rebase; the command has no `--ignore-other-worktrees`. [CODE S-sx4rosvv: builtin/rebase.c#cmd_rebase;
+  CODE S-3qf7ndi6: branch.c#die_if_checked_out]
+- Forcing a branch to move is refused the same way: creating a branch with `-f` over one that a worktree
+  uses dies "cannot force update the branch '<branch>' used by worktree at '<path>'", and `git worktree add -B`
+  runs the same check unless `--force`. [CODE S-3qf7ndi6: branch.c#validate_new_branchname; CODE S-ali5r4n7:
+  builtin/worktree.c#add (new_branch_force)]
+- No page states why git refuses. The kb's reading: refs under `refs/` are shared by every worktree while
+  `HEAD`, the index and the files are each worktree's own, so a commit in one worktree moves a branch that the
+  other worktree's index and files no longer match, and the source's "make things worse" comment is that case.
+  [DER S-j4qkzgvv, S-i3btr2xr: the shared and per-worktree files above and the comment; no vendor page states
+  the reason]
+- So a tool that rebases or switches a worker's branch from another checkout first needs the worker's worktree
+  gone (`git worktree remove`, then `prune` for a hand-deleted one), or runs the command inside the worktree
+  that holds the branch; `--ignore-other-worktrees` and `-f` leave two worktrees on one branch, which the check
+  exists to prevent. [DER S-3au2dknw, S-hwicl2h6, S-sx4rosvv, S-j4qkzgvv: the refusal and its overrides above]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).

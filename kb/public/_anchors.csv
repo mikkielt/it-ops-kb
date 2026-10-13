@@ -6441,21 +6441,35 @@ ec7a93f4a3d1,gitlab/git-refs.md,S-sgbkwka4,unlocated:no-match,,,,,2026-10-10
 ec7a93f4a3d1,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 02213c124346,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
+023fa140c657,gitlab/git-test-repositories.md,S-3qf7ndi6,located,,cannot;updat;forc;branch,d5d325608cfe7e5a,cannot force update the branch '%s',2026-10-13
+023fa140c657,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-13
 02a75c353b39,gitlab/git-test-repositories.md,S-b6uvvu45,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-kzv2kznr,located,,writ;repository;file;git;config,42f9519b9ba6635b,For writing options: write to the repository .git/config file.,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-miw74ti3,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
 0b03d5a78c10,gitlab/git-test-repositories.md,S-b6uvvu45,located,,non-zero;stder;error;exit;non;zero;object,d559cf71b8067217,"If <object> is of an invalid format, exit with non-zero status and emit an error on stderr.",2026-10-10
 0b6d55388093,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
+0dab76d422cc,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,eventually;automatically;see;remov,0fef2d3221c0bc19,will eventually be removed automatically,2026-10-13
+0eade743244a,gitlab/git-test-repositories.md,S-ali5r4n7,located,,register;already;miss;prun;remov;path;worktre,67ac713c0b6de987,'%s' is a missing but already registered worktree;,2026-10-13
 18341fff068d,gitlab/git-test-repositories.md,S-nv6io42x,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-q2ovao5z,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-vif3vb3s,unlocated:no-match,,,,,2026-10-10
 2ac25f977957,gitlab/git-test-repositories.md,S-vupwsv3m,unlocated:no-match,,,,,2026-10-10
+2e41099c9984,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-13
+2e41099c9984,gitlab/git-test-repositories.md,S-sx4rosvv,located,,die_if_checked_out;out;check;die,f935f0e3507500c0,"dieifcheckedout(buf.buf, 1);",2026-10-13
 2fd9bf69a867,gitlab/git-test-repositories.md,S-6foknrbi,located,,plain;real;gitdir;root;text;contain;point;path,d1ed3eb170c6c5f6,"Note: Also you can have a plain text file .git at the root of your working tree, containing gitdir: <path> to point at the real",2026-10-10
 30a2e502775a,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
+37781047cb95,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-13
+37781047cb95,gitlab/git-test-repositories.md,S-tx5lxmr3,located,,bisect;worktre,6780c356319dc685,"if (isworktreebeingbisected(wt, target))",2026-10-13
+38548518567f,gitlab/git-test-repositories.md,S-3au2dknw,located,,refus;already;another;worktre;otherwis;check;out;checkout,68033a0ec65cc800,refuses when the wanted branch is already checked out or otherwise in use by another worktree,2026-10-13
+38548518567f,gitlab/git-test-repositories.md,S-hwicl2h6,located,,ignor;ignore-other-worktr;worktr;already;another;refus;check;worktre,d6d29a537a0f091a,--ignore-other-worktrees:: git switch refuses when the wanted ref is already checked out by another worktree.,2026-10-13
 3b71ae74f4da,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
+3cb5e028e2c2,gitlab/git-test-repositories.md,S-i3btr2xr,located,,bypass;current;already;one;check;branch,ac47ca515683d5f2,"The check is bypassed when the branch is already the current one,",2026-10-13
+41cdc1fa00e2,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-13
+41cdc1fa00e2,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-13
+41cdc1fa00e2,gitlab/git-test-repositories.md,S-wyfuoqs5,located,Setup and Config > OPTIONS,unclean;unless;refus;forc;remov;worktre,f494ef72d7dd81f3,remove refuses to remove an unclean worktree unless --force is used.,2026-10-13
 41e151f551ac,gitlab/git-test-repositories.md,S-4aovy2cm,located,,eof;read;writ;stream;packfil;repository;one;data,3c5d5fc1622b864d,fast-import reads a mixed command/data stream from standard input and writes one or more packfiles directly into the current repository. When EOF is received on,2026-10-10
 432d5c80d2c7,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
 46dfcb3bea5e,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
@@ -6498,12 +6512,21 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 7e5ce895a03e,gitlab/git-test-repositories.md,S-wyfuoqs5,unlocated:no-match,,,,,2026-10-10
 7e9675824c2a,gitlab/git-test-repositories.md,S-dcbs6vpj,located,A '#' or ';' character indicates a comment.,alternat;git_dir;index;dir;environment;file;variabl;git,2e5ac2c6b4ad5b37,"This environment variable specifies an alternate index file. If not specified, the default of $GITDIR/index",2026-10-10
 83198680a7d4,gitlab/git-test-repositories.md,S-lnlroicz,unlocated:no-match,,,,,2026-10-10
+844ac17318ab,gitlab/git-test-repositories.md,S-3au2dknw,unlocated:no-match,,,,,2026-10-13
+844ac17318ab,gitlab/git-test-repositories.md,S-hwicl2h6,unlocated:no-match,,,,,2026-10-13
+844ac17318ab,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-13
+844ac17318ab,gitlab/git-test-repositories.md,S-sx4rosvv,unlocated:no-match,,,,,2026-10-13
+8a054cecf47b,gitlab/git-test-repositories.md,S-ali5r4n7,located,,prun;git;worktre,edac497bf8dbf942,"expire = TIMEMAX; ac = parseoptions(ac, av, prefix, options, gitworktreepruneusage,",2026-10-13
+8a054cecf47b,gitlab/git-test-repositories.md,S-tx5lxmr3,located,,miss;git;worktr;worktre,62a5cfb232a7b82b,"Repair worktree's /path/to/worktree/.git file if missing, corrupt, or not pointing at <repo>/worktrees/<id>.",2026-10-13
 8afccdb15bd9,gitlab/git-test-repositories.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-10
 8c3087d27585,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10
 90c59b9ff312,gitlab/git-test-repositories.md,S-lnlroicz,located,Setup and Config > OPTIONS,leav;side;favour;resolv;union;both;instead;line,9d203aa431a55d3f,"--union Instead of leaving conflicts in the file, resolve conflicts favouring our (or their or both) side of the lines.",2026-10-10
 93fa1d0590f5,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
 9836dbdfe3a7,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
+9d4eb3b07c9f,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,anywher;else;otherwis;check;out;exist;new;branch,14d9ccc8fe8c2ee0,"If <branch> does exist, it will be checked out in the new worktree, if it's not checked out anywhere else",2026-10-13
 a0bcf6b9ddfd,gitlab/git-test-repositories.md,S-lr3jwdq2,located,,found;sparse-checkout;clear;spars;checkout;skip-worktre;tree;skip,7800c979c96cf121,"sparse checkouts (setup by git sparse-checkout or by configuring core.sparseCheckout to true), if a file is marked as skip-worktree in the index but is found",2026-10-10
+a0dfb349d506,gitlab/git-test-repositories.md,S-i3btr2xr,unlocated:no-match,,,,,2026-10-13
+a0dfb349d506,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-13
 a59712db4475,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,fail;fetch;warn;local;first;guess-remot;overrid;guess,e86f0c57f09dc3a1,"--guess-remote is used, but no remote or local branches exist, then the command fails with a warning reminding the user to fetch from their remote",2026-10-10
 adaf163036ab,gitlab/git-test-repositories.md,S-j3galfta,unlocated:no-match,,,,,2026-10-10
 ae91c429766a,gitlab/git-test-repositories.md,S-lr3jwdq2,located,,may;sinc;still;track;ignor;tree;work;chang,55547e71ae67d68a,"to tell Git to ignore changes to files that are tracked. This does not work as expected, since Git may still check working tree files",2026-10-10
@@ -6525,6 +6548,9 @@ c90d95c00387,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2
 cb8c94688c1c,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10
 ce725e2ccbac,gitlab/git-test-repositories.md,S-nxowyi4h,unlocated:no-match,,,,,2026-10-10
 ce725e2ccbac,gitlab/git-test-repositories.md,S-qovha7ae,unlocated:no-match,,,,,2026-10-10
+d76bff318a0b,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-13
+d76bff318a0b,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-13
+d76bff318a0b,gitlab/git-test-repositories.md,S-tx5lxmr3,unlocated:no-match,,,,,2026-10-13
 d98929f427f5,gitlab/git-test-repositories.md,S-vif3vb3s,located,,databas;exist;referenc;miss;missing-ok;write-tre;object;writ,b68c376b8bbd0540,--missing-ok:: Normally git write-tree ensures that the objects referenced by the directory exist in the object database.,2026-10-10
 df195a31ee6e,gitlab/git-test-repositories.md,S-vupwsv3m,located,Setup and Config > GIT URLS,scp;scp-lik;slash;recogniz;befor;like;syntax;user,4d2fa08191dc9208,An alternative scp-like syntax may also be used with the ssh protocol: [<user>@]<host>:/<path-to-git-repo> This syntax is only recognized if there are no slashes before the,2026-10-10
 e7390a797009,gitlab/git-test-repositories.md,S-fqaj6jn5,unlocated:no-match,,,,,2026-10-10
@@ -6535,6 +6561,7 @@ e745c3bf4f0b,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2
 eb2ddc9d186f,gitlab/git-test-repositories.md,S-kzv2kznr,located,,git_config_key_;git_config_value_;process;git_config_count;count;pair;environment;key,7fe6ce6b91b2b6d6,"If GITCONFIGCOUNT is set to a positive number, all environment pairs GITCONFIGKEY<n> and GITCONFIGVALUE<n> up to that number will be added to the process's runtime",2026-10-10
 f16950d5443d,gitlab/git-test-repositories.md,S-y5k6dlda,unlocated:no-match,,,,,2026-10-10
 f3c796d9d1bb,gitlab/git-test-repositories.md,S-fqaj6jn5,unlocated:no-match,,,,,2026-10-10
+f65096690ab7,gitlab/git-test-repositories.md,S-ali5r4n7,located,,delet;git,a7ad9c6a30eddef7,ret |= deletegitdir(wt->id);,2026-10-13
 f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;remote-track;track;default;commit-ish;ish;commit,ef83b97725ae6d28,"mark it as ""upstream"" from the new branch. This is the default if <commit-ish> is a remote-tracking branch.",2026-10-10
 06baff0476f2,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 0fdf5b3d10ac,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,overall;code;exit;non-zero;zero;member;non;fail,ab87c93bdf2112f8,the remaining remotes in the group. The overall exit code is non-zero if any member push fails.,2026-10-10
@@ -11246,6 +11273,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 1cc518dc8459,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,chang;default;silent;flag;breakaway;child;creat;limit,375bc1e4ad71ff6b,(Child processes created using Win32\Process.Create are not associated with the job.) This default behavior can be changed by setting the extended limit JOB\OBJECT\LIMIT\BREAKAWAY\OK or JOB\OBJECT\LIMIT\SILENT\BREAKAWAY\OK,2026-10-10
 1d50e1c536a5,python/stdlib-windows-portability.md,S-edjp43o7,located,NAME > SYNOPSIS > DESCRIPTION > APPLICATION USAGE,between;some;allow;system;implementation;hard;file;link,662df3201399cbd6,Some implementations do allow hard links between file systems.,2026-10-10
 1e61b3e351ea,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10
+24dbcc644cea,python/stdlib-windows-portability.md,S-2cf7ptty,located,iOS Manual Pages,ebusy;mount;point;system;file;directory,edb442bed1f63d82,The directory to be removed is the mount point for a mounted file system,2026-10-13
 2e36ec81198d,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,0x00000008;alloc;allocconsol;later;cannot;detach;inherit;parent,c8edecc05947dcc5,"- DETACHED\PROCESS<br>- 0x00000008 | For console processes, the new process does not inherit its parent's console (the default). The new process can call the AllocConsole",2026-10-10
 2e3c045e3719,python/stdlib-windows-portability.md,S-qz6kfi4i,located,SetCurrentDirectory function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,colon;driv;each;letter;made;singl;designator;disk,b55a461a34dda75d,"Each process has a single current directory made up of two parts: A disk designator that is either a drive letter followed by a colon,",2026-10-10
 31ba4df98441,python/stdlib-windows-portability.md,S-ttcgrkbl,located,System Error Codes (0-499) (WinError.h) - Win32 apps | Microsoft Learn,0x20;shar;violation;becaus;being;another;access;process,e99a1c025e9f3989,ERROR\SHARING\VIOLATION 32 (0x20) The process cannot access the file because it is being used by another process.,2026-10-10
@@ -11257,6 +11285,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 403465dd38db,python/stdlib-windows-portability.md,S-dabwnzz5,located,,setsid;session;start_new_session;start;new;posix;call;true,79cac77bff5379a1,If startnewsession is true the setsid() system call will be made in the child process prior to the execution of the subprocess. .. availability:: POSIX,2026-10-10
 435ad9b80880,python/stdlib-windows-portability.md,S-f5bnvamj,unlocated:no-match,,,,,2026-10-10
 458d3c95b8f1,python/stdlib-windows-portability.md,S-e4zz24dq,located,Command prompt line string limitation - Windows Client | Microsoft Learn > More information > Examples,even;ignor;longer;though;win32;inherit;parameter;character,40b4a82adf1ec26e,"In a batch file, the total length of the following command line after you expand the parameters can't contain more than 8191 characters: ExecutableFile.exe parameter1",2026-10-10
+48a9a2602af2,python/stdlib-windows-portability.md,S-kyzwo2d6,located,getcwd(3) — Linux manual page > ERRORS top,enoent;unlink;work;directory;current,ff0cdc2176f5a196,The current working directory has been unlinked,2026-10-13
 56cfa90089ea,python/stdlib-windows-portability.md,S-ip5ugdeb,located,Hard Links and Junctions - Win32 apps | Microsoft Learn > Hard links,driv;exampl;map;network;ethel;ethel.txt;lucy;lucy.txt,531ab5e115e9baf7,"For example, in a system where C: and D: are local drives and Z: is a network drive mapped to \\fred\share, the following references are",2026-10-10
 5724a9258ee0,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 57c19c5865d4,python/stdlib-windows-portability.md,S-oavxfpsn,located,,wasi;unix;modul,4be45b3d5a7180da,".. availability:: Unix, not WASI. All functions in this module take a file descriptor fd as their first",2026-10-10
@@ -11271,6 +11300,9 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 7a3195cba863,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,breakaway;chang;job;limit;object;must;child;detach,b1fdcf3827912ec6,- CREATE\BREAKAWAY\FROM\JOB<br>- 0x01000000 | The child processes of a process associated with a job are not associated with the job. If the calling process is,2026-10-10
 804f4f510217,python/stdlib-windows-portability.md,S-qo63gfo7,located,errno — Standard errno system symbols¶,cross;cross-devic;errno.exdev;exdev;link;devic;errno,bbbacbec30995b0e,errno.EXDEV¶ Cross-device link,2026-10-10
 83b5addfb215,python/stdlib-windows-portability.md,S-ymqlfpgy,located,Process Creation Flags (WinBase.h) - Win32 apps | Microsoft Learn > Flags,0x0000020;break;ctrl;generat;generateconsolectrlevent;identifier;return;send,4da325595263111d,- CREATE\NEW\PROCESS\GROUP<br>- 0x00000200 | The new process is the root process of a new process group. The process group includes all processes that are descendants,2026-10-10
+8645f250365d,python/stdlib-windows-portability.md,S-2cf7ptty,unlocated:no-match,,,,,2026-10-13
+8645f250365d,python/stdlib-windows-portability.md,S-kyzwo2d6,unlocated:no-match,,,,,2026-10-13
+8645f250365d,python/stdlib-windows-portability.md,S-vfd5kpka,unlocated:no-match,,,,,2026-10-13
 91406b95a1ed,python/stdlib-windows-portability.md,S-ujjrcinq,unlocated:no-match,,,,,2026-10-10
 91406b95a1ed,python/stdlib-windows-portability.md,S-ymqlfpgy,unlocated:no-match,,,,,2026-10-10
 93523914709a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Job Objects,destroy;kill;last;clos;handl;limit;associat;object,2e0378c24c526c85,"However, if the job has the JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE flag specified, closing the last job object handle terminates all associated processes and then destroys the job object",2026-10-10
@@ -11282,18 +11314,24 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 a32f76a5dfb5,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10
 a32f76a5dfb5,python/stdlib-windows-portability.md,S-jwv5eevl,unlocated:no-match,,,,,2026-10-10
 a73e750819c7,python/stdlib-windows-portability.md,S-dabwnzz5,located,,start;posix;child,79cac77bff5379a1,If startnewsession is true the setsid() system call will be made in the child process prior to the execution of the subprocess. .. availability:: POSIX,2026-10-10
+a806f50a8153,python/stdlib-windows-portability.md,S-hlwenztu,located,rmdir(2) — Linux manual page > ERRORS top,root;call;currently;point;mount;process;directory,001b8366566f511f,currently used as a mount point or is the root directory of the calling process,2026-10-13
 a9df22e1bd5e,python/stdlib-windows-portability.md,S-ntbllsvy,located,,fail;creation;exclusiv;already;exist;open;file,b9cc58808515e18e,"'x' open for exclusive creation, failing if the file already exists",2026-10-10
 aa7894657f5a,python/stdlib-windows-portability.md,S-6bobcclf,located,CreateProcessW function (processthreadsapi.h) - Win32 apps | Microsoft Learn > Parameters,work;start;driv;current;call;null;directory;new,55cd1be3350c1628,"If this parameter is NULL, the new process will have the same current drive and directory as the calling process. (This feature is provided primarily",2026-10-10
 ae65873cefe9,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,volum;must;createhardlink;creat;hard;link;file,a36d2529a2863a36,"An additional hard link that is created with the CreateHardLink function allows you to have multiple directory entries for a file, that is, multiple hard",2026-10-10
 aea29fe4919c,python/stdlib-windows-portability.md,S-6bobcclf,unlocated:no-match,,,,,2026-10-10
 aea29fe4919c,python/stdlib-windows-portability.md,S-ttcgrkbl,unlocated:no-match,,,,,2026-10-10
 aef7cb26c281,python/stdlib-windows-portability.md,S-ntbllsvy,located,,linesep;os.linesep;newlin;writ;none;default,40ec9a086434ce45,"When writing output to the stream, if newline is None, any '\n' characters written are translated to the system default line separator, :data:os.linesep.",2026-10-10
+afa81617b6e1,python/stdlib-windows-portability.md,S-vfd5kpka,located,NAME > SYNOPSIS > DESCRIPTION,root;suc;unspecifi;current;ebusy;whether;work;fail,afbf40c0ac0f6d01,it is unspecified whether the function succeeds,2026-10-13
 b46adb26c4f0,python/stdlib-windows-portability.md,S-jwv5eevl,located,shutil — High-level file operations¶ > Directory and files operations¶,bits;flag;last;modification;time;permission;access;copi,8ae1888ff9bcea75,"Copy the permission bits, last access time, last modification time, and flags from src to dst. On Linux, copystat() also copies the",2026-10-10
 b5607506f998,python/stdlib-windows-portability.md,S-e4zz24dq,located,Command prompt line string limitation - Windows Client | Microsoft Learn > More information > Examples,cmd;cmd.ex;apply;batch;exe;character;line;environment,e46115323e20f51a,"cmd.exe /k ExecutableFile.exe parameter1, parameter2... parameterN This limitation applies to command lines that are contained in batch files when you use Command Prompt to run",2026-10-10
 b605e6c9fd2f,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
 b605e6c9fd2f,python/stdlib-windows-portability.md,S-oavxfpsn,unlocated:no-match,,,,,2026-10-10
 bc123c55f20b,python/stdlib-windows-portability.md,S-obrkrr52,located,JOBOBJECT_BASIC_LIMIT_INFORMATION (winnt.h) - Win32 apps | Microsoft Learn > Members,0x0000200;kill;last;clos;handl;terminat;caus;associat,40683d094c248ca8,- JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE<br>- 0x00002000 | Causes all processes associated with the job to terminate when the last handle to the job is closed. <br>This limit requires,2026-10-10
 c317c96bc805,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
+c873fc3aef8e,python/stdlib-windows-portability.md,S-hlwenztu,unlocated:no-match,,,,,2026-10-13
+c873fc3aef8e,python/stdlib-windows-portability.md,S-kyzwo2d6,unlocated:no-match,,,,,2026-10-13
+c873fc3aef8e,python/stdlib-windows-portability.md,S-qz6kfi4i,unlocated:no-match,,,,,2026-10-13
+c873fc3aef8e,python/stdlib-windows-portability.md,S-vfd5kpka,unlocated:no-match,,,,,2026-10-13
 c8b748540c6a,python/stdlib-windows-portability.md,S-dabwnzz5,located,,os.kill;create_new_consol;ignor;kill;consol;creat;new;subprocess,3f35ea195dfb4b39,This flag is necessary for using :func:os.kill on the subprocess. This flag is ignored if :data:CREATENEWCONSOLE is specified.,2026-10-10
 d56521463bda,python/stdlib-windows-portability.md,S-ntbllsvy,unlocated:no-match,,,,,2026-10-10
 d7a42ce41019,python/stdlib-windows-portability.md,S-6bobcclf,unlocated:no-match,,,,,2026-10-10
