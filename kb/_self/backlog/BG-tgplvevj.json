@@ -2,7 +2,7 @@
   "id": "BG-tgplvevj",
   "kind": "bug",
   "title": "auth/issuer-token-rotation and its answer call all four rotations cut-overs, though Discord's old-token validity after a reset is recorded as unknown",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
@@ -65,5 +65,42 @@
     "parked: SP-up5wchen review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: issuer-token-rotation.md line 13 says a rotation is a cut-over for all four issuers and line 50 repeats it, while line 56 records Discord's old-token validity after Reset Token as UNK; _answers.md line 2988 says all four rotations are cut-overs. Run 2026-10-12 at planning: the repro (the phrase in _answers.md) fails now; reproduces.",
-  "claimed_by": "orch-tcis5f23"
+  "evidence": {
+    "commit": "0a8aabe8df526e824d3268b048fe0c72fe85c928",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,re,sys; sys.exit(bool(re.search(sys.argv[2], pathlib.Path(sys.argv[1]).read_text())))",
+          "kb/public/auth/issuer-token-rotation.md",
+          "rotation is a cut-over"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; p,h,n,m=sys.argv[1:5]; s=pathlib.Path(p).read_text().split(h,1)[1].split(chr(10)+chr(35)*2+chr(32),1)[0]; sys.exit(not any(l.startswith(m) and n in l for l in s.splitlines()))",
+          "kb/public/_answers.md",
+          "## QK-issuer-token-lifetime",
+          "Discord",
+          "- Conclusion"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/public/_answers.md').read_text(); sys.exit('all four rotations are cut-overs' in t)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
