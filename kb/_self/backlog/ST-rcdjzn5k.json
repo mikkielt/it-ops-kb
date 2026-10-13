@@ -3,22 +3,34 @@
   "kind": "story",
   "title": "git-test-repositories says which git commands refuse a branch held through a rebase's update-refs, and with which error",
   "status": "draft",
+  "sprint": "SP-lsamtvsz",
   "priority": "P2",
   "rank": 0,
-  "goal": "The fact at kb/public/gitlab/git-test-repositories.md on update-refs holders is split: die_if_checked_out (checkout, switch, rebase, worktree add) knows HEAD, a detached rebase and bisect; update-refs blocks branch -f and new-branch validation only, with its own error text",
+  "goal": "The fact at kb/public/gitlab/git-test-repositories.md on update-refs holders is split in two: die_if_checked_out (checkout, switch, rebase, worktree add) knows HEAD, a detached rebase and bisect, whereas update-refs blocks branch -f and new-branch validation only, with its own error text",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/check.py"
+        "-c",
+        "import re,sys;t=open('kb/public/gitlab/git-test-repositories.md',encoding='utf-8').read();ps=re.split(r'\\n(?=- )',t);ok=any('update-refs' in p and re.search(r'branch (-f|--force)',p) for p in ps);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('kb/public/gitlab/git-test-repositories.md',encoding='utf-8').read();ps=re.split(r'\\n(?=- )',t);ok=any('update-refs' in p and 'die_if_checked_out' in re.sub(r'\\[[^\\]]*\\]','',p) and 'bisect' in p for p in ps);sys.exit(0 if ok else 1)"
       ]
     }
   ],
   "touches": [
-    "kb/public/gitlab/git-test-repositories.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/gitlab/git-test-repositories.md"
+  ],
+  "depends_on": [
+    "ST-e62uklfi"
   ],
   "links": [
     "parked: SP-b7wibqok review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: both checks fail (git-test-repositories.md:261-265 gives one 'in use' fact with update-refs beside a detached rebase and bisect, one error text, no branch -f). The worker reads git v2.55.0 branch.c and worktree.c, already source rows S-3qf7ndi6 and S-tx5lxmr3. expansions.csv left out of touches: no expansion row keys that fact."
 }

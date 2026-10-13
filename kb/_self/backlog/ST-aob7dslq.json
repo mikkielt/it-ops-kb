@@ -1,24 +1,30 @@
 {
   "id": "ST-aob7dslq",
   "kind": "story",
-  "title": "The five Cargo source rows the SP-tjap3mdd research added give rust-lang/cargo's licence as MIT OR Apache-2.0, as the other Cargo rows do",
+  "title": "The eight Cargo source rows with Apache-2.0 alone give rust-lang/cargo's licence as MIT OR Apache-2.0, as the other Cargo rows do",
   "status": "draft",
+  "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
-  "goal": "kb/public/_sources.csv rows S-miwhfdzy, S-7zyahsl3, S-jdu5egnj, S-uxljwlpn and S-zonbsokp give the licence of rust-lang/cargo as its README and LICENSE files state it (MIT OR Apache-2.0, as the other rust-lang/cargo rows at 797e8a9b say), not Apache-2.0 alone, confirmed against the repository at that sha. Found by the SP-tjap3mdd review (S4).",
+  "goal": "kb/public/_sources.csv rows S-miwhfdzy, S-7zyahsl3, S-jdu5egnj, S-uxljwlpn and S-zonbsokp (cargo 797e8a9b) and S-5bx2p3mo, S-d7xuprcc and S-wl3gkg3g (cargo 0.99.0 tag) give the licence of rust-lang/cargo as its README and LICENSE files state it (MIT OR Apache-2.0, as the other rust-lang/cargo rows at 797e8a9b say), not Apache-2.0 alone, confirmed against the repository at that sha or tag. Found by the SP-tjap3mdd review (S4), which names the first five of the eight rows.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import csv,sys; ids={'S-miwhfdzy','S-7zyahsl3','S-jdu5egnj','S-uxljwlpn','S-zonbsokp'}; rs=[r for r in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8')) if r['id'] in ids]; sys.exit(0 if len(rs)==5 and all(r['licence'].startswith('MIT OR Apache-2.0') for r in rs) else 1)"
+        "import csv,sys; ids={'S-miwhfdzy','S-7zyahsl3','S-jdu5egnj','S-uxljwlpn','S-zonbsokp','S-5bx2p3mo','S-d7xuprcc','S-wl3gkg3g'}; rs=[r for r in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8')) if r['id'] in ids]; sys.exit(0 if len(rs)==8 and all(r['licence'].startswith('MIT OR Apache-2.0') for r in rs) else 1)"
       ]
     }
   ],
   "touches": [
     "kb/public/_sources.csv"
   ],
+  "depends_on": [
+    "BG-nzrj2n32",
+    "ST-e62uklfi"
+  ],
   "links": [
     "parked: SP-tjap3mdd review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: check fails (eight rows carry 'Apache-2.0 (repository licence of rust-lang/cargo, from the GitHub API)': the five named plus S-5bx2p3mo, S-d7xuprcc, S-wl3gkg3g at tag 0.99.0, which the planner added to goal and check as the same defect). Depends on BG-nzrj2n32 (shares _sources.csv) and on the goal research story."
 }

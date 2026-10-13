@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "The sprint goal's weak-coverage questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills: which class fluent.runtime 0.4.0's fallback.py defines for localization (FluentLocalization, which the kb never names), and whether uv workspace members are editable by default and which article words it as always editable. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-13: the goal's eight questions ran through rag.py pack. Good: dhcp ServerRole Standby, AlmaLinux CIS data stream, xdist -n auto, removed cwd on Linux and macOS, git update-refs holders, rust-lang/cargo licence. Weak (named in the goal): fluent.runtime 0.4.0 class in fallback.py (kb never names FluentLocalization), uv workspace members editable wording (route split). Touches stay kb/public/**; the eight items depend on this story, so its facts land before they edit the same files."
 }

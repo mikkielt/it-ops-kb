@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "dhcp-failover.md's -ServerRole Standby fact states the cmdlet reference's example 2 but cites only the management page S-xl2d4tuq",
   "status": "draft",
+  "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "The fact in kb/public/windows/dhcp-failover.md that compares the management page's -ServerRole Standby example with the cmdlet reference's example 2 cites the cmdlet reference S-x2hxgchj beside S-xl2d4tuq; found by the SP-ilqhjn3k review",
+  "goal": "The fact in kb/public/windows/dhcp-failover.md that compares the management page's -ServerRole Standby example with the cmdlet reference's example 2 cites the cmdlet reference S-x2hxgchj beside S-xl2d4tuq, as found by the SP-ilqhjn3k review",
   "repro": {
     "run": [
       "python3",
@@ -18,7 +19,11 @@
   "touches": [
     "kb/public/windows/dhcp-failover.md"
   ],
+  "depends_on": [
+    "ST-e62uklfi"
+  ],
   "links": [
     "parked: SP-ilqhjn3k review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: repro exits 1, 'comparison lines missing S-x2hxgchj: 1' (line 38 cites S-xl2d4tuq alone). Depends on the goal research story so a fact it writes there lands first."
 }
