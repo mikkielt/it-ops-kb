@@ -2,7 +2,7 @@
   "id": "BG-7bpbuz6t",
   "kind": "bug",
   "title": "claude/powershell-tool.md says the read-only Bash set runs without a prompt in every mode, but the permissions page now names blockReadsOutsideWorkingDirectories and auto mode's classifier as exceptions",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-gcerxjsg",
   "priority": "P2",
@@ -69,5 +69,45 @@
     "parked: SP-df2cu4uj review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "d93b20977b2fee47cff4f16c25851b447e7e797d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path(\"kb/public/claude/powershell-tool.md\").read_text(); sys.exit(0 if \"blockReadsOutsideWorkingDirectories\" in t and \"classifier\" in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; r=[r for r in csv.DictReader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\")) if r[\"id\"]==\"S742\"]; sys.exit(0 if r and r[0][\"retrieved_utc\"]>=\"2026-10-12\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; sys.path.insert(0,\"_tools\"); import kbfacts; ks=[kbfacts.fact_key(u[\"text\"]) for u in kbfacts.units(\"public\") if u[\"path\"].endswith(\"claude/powershell-tool.md\") and \"blockReadsOutsideWorkingDirectories\" in u[\"text\"] and \"read-only\" in u[\"text\"]]; rows=[r for r in csv.DictReader(open(\"kb/public/_anchors.csv\",encoding=\"utf-8\")) if r[\"source_id\"]==\"S742\" and r[\"status\"]==\"located\" and r[\"fact\"] in ks]; sys.exit(0 if ks and rows else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('kb/public/claude/powershell-tool.md', encoding='utf-8').read(); sys.exit(1 if 'runs without a prompt in every mode' in t and 'blockReadsOutsideWorkingDirectories' not in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
