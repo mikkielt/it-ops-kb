@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "doc-change-detection's soft-404 summary and its Tech Community probe state one outcome",
   "status": "draft",
+  "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/agents/doc-change-detection.md's summary line that two compared texts can both be empty no longer cites the Tech Community probe whose made-up sibling answered a 302 and differed; the summary and the probe bullet state one outcome, and the DER inference names the redirect-following client BG-zsiguf72 saw. Found by the SP-u5q37ds3 review.",
@@ -13,13 +14,38 @@
         "-c",
         "import sys; t=[l for l in open('kb/public/agents/doc-change-detection.md', encoding='utf-8') if 'both be empty' in l]; sys.exit(1 if any('Tech Community probe' in l for l in t) else 0)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=[l for l in open('kb/public/agents/doc-change-detection.md',encoding='utf-8') if 'Bar-Yossef' in l and 'redirect' in l];sys.exit(0 if t and all('follow' in l for l in t) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/agents/doc-change-detection.md's summary line that two compared texts can both be empty no longer cites the Tech Community probe whose made-up sibling answered a 302 and differed",
+      "check": 0
+    },
+    {
+      "clause": "the summary and the probe bullet state one outcome",
+      "check": 0
+    },
+    {
+      "clause": "the DER inference names the redirect-following client BG-zsiguf72 saw. Found by the SP-u5q37ds3 review",
+      "check": 1
     }
   ],
   "touches": [
     "kb/public/agents/doc-change-detection.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-q3l5j2vz"
+  ],
   "links": [
     "parked: SP-u5q37ds3 review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: python3 -c \"import sys; t=[l for l in open('kb/public/agents/doc-change-detection.md', encoding='utf-8') if 'both be empty' in l]; sys.exit(1 if any('Tech Community probe' in l for l in t) else 0)\" exits 1 now (line 22 cites the probe). Anchors: BG-xweoljdy, last in the chain, re-anchors this article's reworded facts, so _anchors.csv is not in touches. Order: after BG-q3l5j2vz in the chain, before ST-ikj63sqj (same article)."
 }

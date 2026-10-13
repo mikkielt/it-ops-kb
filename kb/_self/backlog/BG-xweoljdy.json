@@ -3,16 +3,34 @@
   "kind": "bug",
   "title": "factdiff.py anchors --stale lists 31 anchors of facts that no longer exist in claude, logs and python articles, which anchor --file leaves because no cited source selects them",
   "status": "draft",
+  "sprint": "SP-uvz65lvm",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "factdiff.py anchors --stale prints stale=0: the anchors of reworded or removed facts in claude/api-limits.csv, claude/hooks.md, claude/messages-api.md, logs/microsoft-sentinel.md, logs/otel-collector-receivers.md, logs/otel-log-semconv.md and python/uv-projects.md are pruned, and a refresh that rewords a fact leaves none behind.",
+  "goal": "factdiff.py anchors --stale lists no anchor of the claude (api-limits.csv, ci-and-headless.md, messages-api.md), logs (microsoft-sentinel.md, otel-collector-receivers.md, otel-log-semconv.md, python-rust-json-stdout-logs.md) and python (uv-projects.md) articles, nor of the facts this sprint reworded in agents/doc-change-detection.md and agents/hybrid-retrieval.md: factdiff.py anchor --file F has pruned the rows of reworded or removed facts, and the only STALE lines left are linux-nftables rows another item carries",
   "repro": {
     "run": [
       "python3",
-      "_tools/factdiff.py",
-      "anchors",
-      "--stale"
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/factdiff.py','anchors','--stale'],capture_output=True,text=True).stdout;n=[l for l in o.splitlines() if l.startswith('STALE') and 'linux-nftables' not in l];print('stale outside linux-nftables:',len(n));sys.exit(1 if n else 0)"
     ]
-  }
+  },
+  "repro_reason": "the defect is rows of a ledger file; its behaviour is the tool's own stale listing",
+  "clauses": [
+    {
+      "clause": "factdiff.py anchors --stale lists no anchor of the claude (api-limits.csv, ci-and-headless.md, messages-api.md), logs (microsoft-sentinel.md, otel-collector-receivers.md, otel-log-semconv.md, python-rust-json-stdout-logs.md) and python (uv-projects.md) articles, nor of the facts this sprint reworded in agents/doc-change-detection.md and agents/hybrid-retrieval.md: factdiff.py anchor --file F has pruned the rows of reworded or removed facts",
+      "check": 0
+    },
+    {
+      "clause": "the only STALE lines left are linux-nftables rows another item carries",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "ST-bam42y6i"
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Ran at planning on the branch base: anchors --stale lists 47 rows; 37 are in the files the goal names (it also grew to ci-and-headless and python-rust-json-stdout-logs), 3 in agents/doc-lookup-sources.md (BG-6w4zexka carries), 7 in security/linux-nftables.md (ST-ko6bkda5 carries). anchor --file F --dry-run on claude/api-limits.csv prints pruned_stale=4 with sources=0, so the tool prunes by file already: the work is running it per file, and the goal's tool clause is not planned. Order: last, after the items that reword facts."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "_answers.md's QK-gone-memdocs answer tags the Internet Archive's missing captures DOC on the one home-page capture S-u2afup7q",
   "status": "draft",
+  "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
@@ -15,10 +16,37 @@
     ]
   },
   "repro_reason": "the defect is the tag of one ledger line; its behaviour is the text a lookup returns",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/_answers.md',encoding='utf-8').read().splitlines();a=[l for l in t if 'holds no capture' in l];sys.exit(0 if a and all('[DER ' in l for l in a) and any('DOC S-u2afup7q' in l for l in t) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The QK-gone-memdocs answer in kb/public/_answers.md tags the absence of Wayback captures of the memdocs API row, raw README and commit row DER with the lookup that found it, as the doc-lookup-sources article now does after BG-4lfjabfo",
+      "check": 0
+    },
+    {
+      "clause": "keeps the home-page capture DOC S-u2afup7q",
+      "check": 0
+    },
+    {
+      "clause": "found by the SP-ilqhjn3k review",
+      "check": 1
+    }
+  ],
   "touches": [
     "kb/public/_answers.md"
   ],
+  "depends_on": [
+    "BG-6w4zexka"
+  ],
   "links": [
     "parked: SP-ilqhjn3k review"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Order: after BG-6w4zexka, whose reworded CDX basis the answer's DER tag names."
 }
