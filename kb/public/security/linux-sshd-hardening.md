@@ -10,7 +10,7 @@ status: complete
 # sshd_config options CIS grades and sshd -T
 
 ## Summary
-`sshd -T` prints the effective configuration after `Include` and `Match` are applied, so it is the read to compare against a baseline rather than the file. The SCAP Security Guide's CIS Debian 12 mapping names 22 sshd recommendations (5.1.1 to 5.1.22); most are Level 1 Server, two are Level 2 Server only. This article is about OpenSSH on Linux; OpenSSH on Windows is in `windows/openssh-server.md`.
+`sshd -T` prints the effective configuration after `Include` and `Match` are applied, so it is the read to compare against a baseline rather than the file. The SCAP Security Guide's CIS Debian 12 mapping names 22 sshd recommendations (5.1.1 to 5.1.22); most are Level 1 Server, two (5.1.8 and 5.1.9) are graded Level 1 Workstation and Level 2 Server instead. This article is about OpenSSH on Linux; OpenSSH on Windows is in `windows/openssh-server.md`.
 
 ## Facts
 - `sshd -T` is extended test mode: it checks the configuration file, writes the effective configuration to standard output and exits; `sshd -t` only checks validity and key sanity and is meant for updating sshd reliably. [DOC S-rkyl5ijj]
