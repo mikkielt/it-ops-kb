@@ -2,7 +2,7 @@
   "id": "ST-bb6hw47o",
   "kind": "story",
   "title": "Review sprint: Freshness at lookup: revalidation counts, memos, ledger reads and status agree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vdrsfftl",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-vdrsfftl"
+  "evidence": {
+    "commit": "a68a814688986c4ff55c6cb3dd36f528c2f7d452",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "c48d20f65146cceb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "9fd2609b238f2483"
+      }
+    ]
+  }
 }
