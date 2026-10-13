@@ -69,7 +69,9 @@
         "every clause of the goal is a question"
       ],
       "recommendation": "each sentence of a goal clause that ends in ?, a lead-in of up to 8 words ending in a colon dropped; a goal with none reads no coverage",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "each sentence of a goal clause that ends in ?, a lead-in of up to 8 words ending in a colon dropped; a goal with none reads no coverage",
+      "by": "operator"
     },
     {
       "id": "roots-combine",
