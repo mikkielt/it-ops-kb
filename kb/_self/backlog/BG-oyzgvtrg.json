@@ -2,7 +2,7 @@
   "id": "BG-oyzgvtrg",
   "kind": "bug",
   "title": "arch/buildkit-build-secrets says BUILDX_METADATA_PROVENANCE selects the attestation content, which the docs give only for the --metadata-file output",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-up5wchen review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: buildkit-build-secrets.md:30 says attestations default to minimal and BUILDX_METADATA_PROVENANCE selects min, max or disabled. Run at planning: the repro exits 1 (no line pairs the variable with metadata-file) and the added check fails. The QK answer (_answers.md:2994-2999) holds no BUILDX_ variable; its 'max provenance attestations' line is read against S-wt5ys5zb and edited only if the page does not state it."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: buildkit-build-secrets.md:30 says attestations default to minimal and BUILDX_METADATA_PROVENANCE selects min, max or disabled. Run at planning: the repro exits 1 (no line pairs the variable with metadata-file) and the added check fails. The QK answer (_answers.md:2994-2999) holds no BUILDX_ variable; its 'max provenance attestations' line is read against S-wt5ys5zb and edited only if the page does not state it.",
+  "claimed_by": "orch-tjap3mdd"
 }
