@@ -2,7 +2,7 @@
   "id": "BG-tgplvevj",
   "kind": "bug",
   "title": "auth/issuer-token-rotation and its answer call all four rotations cut-overs, though Discord's old-token validity after a reset is recorded as unknown",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,6 @@
   "links": [
     "parked: SP-up5wchen review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: issuer-token-rotation.md line 13 says a rotation is a cut-over for all four issuers and line 50 repeats it, while line 56 records Discord's old-token validity after Reset Token as UNK; _answers.md line 2988 says all four rotations are cut-overs. Run 2026-10-12 at planning: the repro (the phrase in _answers.md) fails now; reproduces."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: issuer-token-rotation.md line 13 says a rotation is a cut-over for all four issuers and line 50 repeats it, while line 56 records Discord's old-token validity after Reset Token as UNK; _answers.md line 2988 says all four rotations are cut-overs. Run 2026-10-12 at planning: the repro (the phrase in _answers.md) fails now; reproduces.",
+  "claimed_by": "orch-tcis5f23"
 }
