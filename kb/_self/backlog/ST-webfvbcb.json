@@ -2,7 +2,7 @@
   "id": "ST-webfvbcb",
   "kind": "story",
   "title": "backlog.py new bug refuses a repro whose program check refuses",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uzwbt63u",
   "priority": "P2",
   "rank": 0,
@@ -84,5 +84,6 @@
     "merged: ST-btfulaeh",
     "merged: ST-si4peqq2"
   ],
-  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once. Merged at the 2026-10-12 draft triage: BG-asbzy5z4 (new --repro \"echo it's\" ends in a shlex ValueError traceback from bl_items.parse_cmd; set already exits 2), ST-btfulaeh (new and set accept python3 -I -c, check_program_refusal returns '-I is not a _tools/ script'; filed by SP-ceucrhca as a recurrence), ST-si4peqq2 (same goal, no real check). Today (run 2026-10-12) set --check python3 -I is already refused with exit 2 and new bug is not, so check 1's set half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: new bug --repro 'python3 -I -c ...' is accepted (exit 0, bug filed) and new bug --repro \"echo it's\" ends in a shlex ValueError traceback (reproduces)."
+  "notes": "SP-4phd36pa close (2026-10-11): new bug accepted four parked review bugs' sh -c repros (BG-az4r47gd and three others); backlog.py check then refused them (bl_intake.check_program_refusal) and the review story's done refused once. Merged at the 2026-10-12 draft triage: BG-asbzy5z4 (new --repro \"echo it's\" ends in a shlex ValueError traceback from bl_items.parse_cmd; set already exits 2), ST-btfulaeh (new and set accept python3 -I -c, check_program_refusal returns '-I is not a _tools/ script'; filed by SP-ceucrhca as a recurrence), ST-si4peqq2 (same goal, no real check). Today (run 2026-10-12) set --check python3 -I is already refused with exit 2 and new bug is not, so check 1's set half passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: new bug --repro 'python3 -I -c ...' is accepted (exit 0, bug filed) and new bug --repro \"echo it's\" ends in a shlex ValueError traceback (reproduces).",
+  "claimed_by": "orch-uzwbt63u"
 }
