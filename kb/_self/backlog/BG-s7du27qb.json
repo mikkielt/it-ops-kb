@@ -2,7 +2,7 @@
   "id": "BG-s7du27qb",
   "kind": "bug",
   "title": "The router's ledger scan reads and splits a ledger file once for each entry it holds, so a gap-cued question costs about 50 ms",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enudabdr",
   "priority": "P2",
   "rank": 0,

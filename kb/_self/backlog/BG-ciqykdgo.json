@@ -2,7 +2,7 @@
   "id": "BG-ciqykdgo",
   "kind": "bug",
   "title": "The research queue's ql_research.NOTE does not read a Closed note, so querylog.py queue keeps a _gaps.md entry the router reads as closed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,

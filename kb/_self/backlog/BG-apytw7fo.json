@@ -2,7 +2,7 @@
   "id": "BG-apytw7fo",
   "kind": "bug",
   "title": "pack's priced note reads any 'how much ... per user, device, month or year' as a money ask, so memory or data quantities get a check: and route split",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,

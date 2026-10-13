@@ -2,7 +2,7 @@
   "id": "BG-6hb4yabk",
   "kind": "bug",
   "title": "ql_apply's eval gate reads passed and n but not noted, so an auto-applied change that puts a note on an eval good passes it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-5fentnzk",
   "kind": "bug",
   "title": "ql_apply.plain_question leaves path.md:12:34 a path:line citation, so the guard rejects a real question's gap",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
