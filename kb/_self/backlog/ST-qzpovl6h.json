@@ -2,7 +2,7 @@
   "id": "ST-qzpovl6h",
   "kind": "story",
   "title": "A worker whose gate the class rule makes blocking goes on with the recommendation and the landing waits for the operator's answer",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uzwbt63u",
   "priority": "P3",
   "rank": 0,
@@ -115,5 +115,36 @@
     "merged: ST-jar3qpfu"
   ],
   "notes": "SP-ciqk6gt6 close: five gates were made blocking by the class rule after the work (TK-p7ajxp72 g2, TK-7nnd2bdm g1, TK-cagohpbu g2, TK-j5rcgylo g1, BG-rqxspwtb g3); each worker stopped and the orchestrator answered each with its recommendation. Recurred at SP-x5gjv4r7 (ST-xuhig3u6 g4 to g6, ST-ylje2dxh g3, ST-ifljijni g3; ST-ifljijni stopped before its docs) and SP-7n3d4jte (ST-b27c527d recorded four design gates, stopped before any code, a resumed session of 107 turns). Merged at the 2026-10-12 draft triage: BG-rwx7oh5s (a question naming a remote ref is class push; the push words fail closed, backlog.md), ST-6vtjmoyr (brief text on kinds of choice; 'implementation choice' absent from backlog.md), ST-gvf6yca7 (SP-ilje65fa, SP-tm4wlsve, SP-sbdy4hsx: github, mirror, origin/main words), ST-jar3qpfu (release, gitlab in a content gate), ST-fmjx3psu (BG-fl4sg2py: a worker narrowed the rows its goal names so a fixture test passed and called it no new choice; resumed to record g2 at SP-j2jn5ue4). Landing already waits: cmd_done refuses an open blocking gate (waits), so bl_land.py and bl_authority.py stay out of touches; check 1 guards that and the fail-closed class, and passes before the work. Planned at the 2026-10-12 draft triage (sprint 18 of 19, \"Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-12: agents/worker.md:22 and the dispatch brief's fixed rule still say commit it and stop for a gate gate add prints as made blocking (check 0 fails on it); the landing already waits (check 1 passes before the work).",
-  "claimed_by": "orch-uzwbt63u"
+  "evidence": {
+    "commit": "af898407e5490c63410c46fd69eaaa81ef352c20",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib, re, sys\nsys.path.insert(0, '_tools')\nimport bl_dispatch\nbrief = [r for r in bl_dispatch.worker_rules(pathlib.Path('.'), 'TK-aaaaaaaa', 'work/TK-aaaaaaaa') if 'made blocking' in r]\nrole = [l for l in pathlib.Path('agents/worker.md').read_text(encoding='utf-8').splitlines() if 'made blocking' in l]\ndocs = [l for l in pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8').splitlines() if 'made blocking' in l]\ntexts = brief + role + docs\nok = len(brief) == 1 and len(role) == 1 and docs and all(re.search(r'go(?:es)? on with (?:its|the|your) recommendation', t) for t in texts) \\\n    and not any(re.search(r'\\bstop(?:s|ped)?\\b', t) for t in brief + role)\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib, subprocess, sys, tempfile\nsys.path.insert(0, '_tools')\nimport bl_authority as a, bl_base as b\nwords = ['Which release note wording?', 'Is the gitlab remote the target?', 'Does origin hold it?', 'Is the mirror updated?']\ncls = [a.class_reasons({'touches': ['kb/public/x.md']}, {'id': 'g1', 'question': q, 'options': ['x', 'y']})[0] for q in words]\nt = pathlib.Path(tempfile.mkdtemp()); subprocess.run(['git', 'init', '-q', str(t)], check=True)\n(t / 'kb/_self/backlog').mkdir(parents=True)\ngate = {'id': 'g1', 'kind': 'blocking', 'question': 'q', 'options': ['x', 'y'], 'recommendation': 'x', 'class': 'push'}\nb.Backlog(t).save({'id': 'ST-aaaaaaaa', 'kind': 'story', 'title': 't', 'status': 'todo', 'goal': 'g', 'gates': [gate]})\nw = b.waits(b.Backlog(t), 'ST-aaaaaaaa', any_sprint=True)\nsys.exit(0 if cls == ['push'] * 4 and any('gate ST-aaaaaaaa/g1' in x for x in w) else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib, sys\nsys.path.insert(0, '_tools')\nimport bl_dispatch\nrules = ' '.join(bl_dispatch.worker_rules(pathlib.Path('.'), 'TK-aaaaaaaa', 'work/TK-aaaaaaaa'))\nrole = pathlib.Path('agents/worker.md').read_text(encoding='utf-8')\ndoc = pathlib.Path('kb/_self/backlog.md').read_text(encoding='utf-8')\nok = all('implementation choice' in t for t in (rules, role, doc)) and all('narrowing' in t for t in (rules, role))\nsys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
