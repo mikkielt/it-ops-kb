@@ -42,7 +42,7 @@
       "recommendation": "the first entry of the build's current gap draw (BP-1676858d, _gaps.md#0a9e79d0), one row added",
       "class": "design",
       "answer": "the first entry of the build's current gap draw (BP-1676858d, _gaps.md#0a9e79d0), one row added",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Filed by the BG-chs2di4p worker on 2026-10-12; taken into SP-kuhlsf2s by the orchestrator (acting as operator) since pool check, a check of BG-chs2di4p and later items, is red on main before any work: kind gap 4 rows, plan 5. Premise reproduces on origin/main 5ffb67920 (exit 1). Smallest fix preferred: one gap row for an open _gaps.md entry, the pool build rule kept; no other row changes.",

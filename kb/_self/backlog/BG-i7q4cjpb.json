@@ -86,7 +86,7 @@
       "recommendation": "run-4-weight-1.5",
       "class": "design",
       "answer": "run-4-weight-1.5",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -99,7 +99,7 @@
       "recommendation": "sentence-opening-lines-of-prose-paragraphs",
       "class": "design",
       "answer": "sentence-opening-lines-of-prose-paragraphs",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -112,7 +112,7 @@
       "recommendation": "rewrite-to-a-time-with-unit",
       "class": "design",
       "answer": "rewrite-to-a-time-with-unit",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
