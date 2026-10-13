@@ -36,6 +36,21 @@
   "depends_on": [
     "BG-f3d6lirf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which window does lookup_store merge an earlier stored result within, and which check time does the merged record keep?",
+      "options": [
+        "caller's window, earlier check time",
+        "caller's window, new check time"
+      ],
+      "recommendation": "caller's window, earlier check time",
+      "class": "design",
+      "answer": "caller's window, earlier check time",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-etslk6yu review"
   ],
