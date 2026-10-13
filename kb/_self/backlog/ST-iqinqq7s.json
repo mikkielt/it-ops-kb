@@ -2,7 +2,7 @@
   "id": "ST-iqinqq7s",
   "kind": "story",
   "title": "The Bazel --test_timeout fact keeps only the page's words as DOC and moves 'the declared timeout stays' to its DER fact",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,6 @@
   "links": [
     "parked: SP-rlincemn review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: test-suite-size-and-agent-overengineering.md:36 tags 'the timeout in the BUILD file stays as declared' as DOC S-3dlofilm. Run at planning: the story's check, replaced because _tools/check.py passes before the work, exits 1 and prints False."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: test-suite-size-and-agent-overengineering.md:36 tags 'the timeout in the BUILD file stays as declared' as DOC S-3dlofilm. Run at planning: the story's check, replaced because _tools/check.py passes before the work, exits 1 and prints False.",
+  "claimed_by": "orch-tjap3mdd"
 }
