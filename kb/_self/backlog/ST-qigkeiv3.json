@@ -2,7 +2,7 @@
   "id": "ST-qigkeiv3",
   "kind": "story",
   "title": "The phase-4 sample draws judge-confirmed sources at a rate that bounds stale confirms, and the report states their agreement",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-htl7jkrm",
   "priority": "P3",
@@ -78,5 +78,19 @@
     "parked: SP-yojt6y7v review"
   ],
   "notes": "Premise: census.sampled puts a source the judge confirmed in the ok group at the ok rate (0.05), with no group of its own. Premise run 2026-10-12: 100 planted confirmed rows noted 'judged supported by' gave 5 drawn, groups={ok}; reproduces. Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
-  "claimed_by": "orch-htl7jkrm"
+  "evidence": {
+    "commit": "57bd1f466262e6953144a9ec46d6884c7b345ff2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "census_sample_draws_judged_confirms"
+        ],
+        "exit": 0,
+        "sha256": "4d82b60d3721467a"
+      }
+    ]
+  }
 }
