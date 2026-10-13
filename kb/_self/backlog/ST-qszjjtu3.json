@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "A sprint item that rewords a doc the goal research's tested rows quote carries the _self eval file in its touches",
   "status": "draft",
+  "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
-  "goal": "When a sprint's goal research lands rows in kb/_self/_retrieval/lookup_eval.csv whose expect_text quotes a kb/_self doc, each committed sibling whose touches name that doc gets the eval file in its touches (or precheck warns before its claim), so a reworded line moves its row in the same item instead of failing the landing's eval. Found in the SP-djl7za6x retrospective: BG-geepi6yv rewrote tools.md's section-window sentence and its land stopped at rag.py eval on two rows ST-5jqqzrgy had just added.",
+  "goal": "precheck warns of each committed item whose touches name a kb/_self doc that an eval row added by the sprint's goal research story (a commit carrying its KB-Work) names in expect_paths and lack the _self eval file, so a reworded line moves its row in the same item and not at the landing's rag.py eval (SP-djl7za6x: BG-geepi6yv rewrote tools.md's section-window sentence and its land stopped at rag.py eval on two rows ST-5jqqzrgy had just added)",
   "checks": [
     {
       "run": [
@@ -18,9 +19,35 @@
   ],
   "touches": [
     "_tools/bl_plan.py",
-    "kb/_self/backlog.md"
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-7d3r4lhc"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which eval rows does precheck read to decide that a committed item's doc is quoted by the goal research's tested rows: only the rows added by commits carrying the research story's KB-Work (known once it has landed, so precheck is rerun then), or every row of the _self eval file that names the doc in expect_paths (known at planning, but it warns of nearly every _self doc item and puts the shared eval file in many items' touches)?",
+      "options": [
+        "rows added by the research story",
+        "every row naming the doc"
+      ],
+      "recommendation": "rows added by the research story",
+      "do": {
+        "rows added by the research story": "ST-qszjjtu3",
+        "every row naming the doc": "ST-qszjjtu3"
+      },
+      "class": "agents-rule",
+      "answer": "rows added by the research story",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-djl7za6x close"
-  ]
+  ],
+  "notes": "Gate g1 answered rows added by the research story (recommended): the rows are known once the research has landed, so the orchestrator reruns precheck then (ST-me3dmaxy, which depends on this item); reading every row that names a doc would warn of nearly every _self doc item and put the shared eval file in many touches. The test extends an existing land e2e test, as the ceiling leaves no id for a new one.\nPremise: _tools/bl_land.py and _tools/bl_plan.py hold no lookup_eval reference (grep count 0 in both), so precheck reads no eval row and warns of no sibling whose doc a research row quotes. Run at planning: the check exits 2 (the selector collects no test).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
 }

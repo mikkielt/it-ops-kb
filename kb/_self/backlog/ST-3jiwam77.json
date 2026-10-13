@@ -3,24 +3,47 @@
   "kind": "story",
   "title": "A goal research worker searches the kb for older answer and fact lines its new facts contradict, and fixes or files each before it lands",
   "status": "draft",
+  "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
-  "goal": "SP-23m5etrf retrospective: the goal research ST-gyr324rf added Cargo feature unification facts to agents/onnx-runtime-rust-ort.md:94 but left the older QK-ort conclusion in kb/public/_answers.md:2908 saying default-features = false removes any accelerator code path; the sprint review found it as an S1 and it cost a bug (BG-rogddb5j) and a second worker. The kb-research skill's steps tell the worker to run rag.py search on each new fact's claim and fix or file every kb line, ledgers included, that the new fact contradicts before the work commit.",
+  "goal": "The kb-research skill's step 3 tells a goal research worker to run rag.py search on each new fact's claim and fix or file every kb line, ledgers included, that the new fact contradicts before the work commit (SP-23m5etrf: ST-gyr324rf added Cargo feature unification facts to agents/onnx-runtime-rust-ort.md:94 and left the older QK-ort conclusion in _answers.md:2908 that default-features = false removes any accelerator code path, which the review found as an S1 and cost the bug BG-rogddb5j); agents/worker.md tells a worker that fixes a wrong or mis-tagged claim to run rag.py search for its key words across the root and its ledgers and to fix in the item or file beside it each other line that states the same claim before its work commit (SP-ilqhjn3k: BG-lcp6dhpz fixed the 0.10 re-pricing in _conflicts.md while claude/ci-and-headless.md:104 kept it, one more worker cycle)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys; t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read().lower(); ok='contradict' in t and 'rag.py search' in t; print('research skill sweeps contradicted lines:', ok); sys.exit(0 if ok else 1)"
+        "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read().split('## 3. Research',1)[1].split('## 4. Write',1)[0];ok=any('contradict' in l and 'rag.py search' in l for l in t.splitlines());print('research step 3 sweeps contradicted lines:',ok);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('agents/worker.md',encoding='utf-8').read();ok=any('rag.py search' in l and 'same claim' in l for l in t.splitlines());print('worker role file sweeps lines of the same claim:',ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The kb-research skill's step 3 tells a goal research worker to run rag.py search on each new fact's claim and fix or file every kb line, ledgers included, that the new fact contradicts before the work commit (SP-23m5etrf: ST-gyr324rf added Cargo feature unification facts to agents/onnx-runtime-rust-ort.md:94 and left the older QK-ort conclusion in _answers.md:2908 that default-features = false removes any accelerator code path, which the review found as an S1 and cost the bug BG-rogddb5j)",
+      "check": 0
+    },
+    {
+      "clause": "agents/worker.md tells a worker that fixes a wrong or mis-tagged claim to run rag.py search for its key words across the root and its ledgers and to fix in the item or file beside it each other line that states the same claim before its work commit (SP-ilqhjn3k: BG-lcp6dhpz fixed the 0.10 re-pricing in _conflicts.md while claude/ci-and-headless.md:104 kept it, one more worker cycle)",
+      "check": 1
+    }
+  ],
   "touches": [
-    ".claude/skills/kb-research/SKILL.md"
+    ".claude/skills/kb-research/SKILL.md",
+    "agents/worker.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/plugin.md"
   ],
   "links": [
     "parked: SP-23m5etrf close",
     "merged: ST-twgdb6gq"
   ],
-  "notes": "Merged from ST-twgdb6gq “Planning a content bug finds every kb line that states the same wrong claim and puts each file in the touches” at the 2026-10-13 draft triage: Same defect class as ST-3jiwam77 (a content fix leaves sibling lines stating the same claim; seen in SP-ilqhjn3k and SP-23m5etrf); a worker-side sweep step is cheaper than a bl_plan.py heuristic, and kb-research SKILL.md:74 covers a changed figure only in research, not in a content bug worker's skill. Its goal: When a planned bug fixes a wrong or mis-tagged claim in one kb file, planning runs rag.py search for the claim's key words across the root and its ledgers and lists each line stating the same claim, so each is fixed in the item or filed beside it before the start; seen in SP-ilqhjn3k, where BG-lcp6dhpz fixed the 0.10 re-pricing in _conflicts.md while claude/ci-and-headless.md:104 kept it (the review's S1 BG-uwm3hfnq, one more worker cycle), and BG-4lfjabfo fixed the capture-absence tag in doc-lookup-sources.md while _answers.md kept it (BG-q3l5j2vz); the goal research had cited ci-and-headless.md:104 as the answer without reading its second clause against bench_core.READ_BEFORE Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"plan_content_claim_siblings\"]} Its touches: _tools/bl_plan.py, _tools/test_backlog_portable.py, kb/_self/backlog.md"
+  "notes": "Merged ST-twgdb6gq at the 2026-10-13 draft triage: same defect class (a content fix leaves sibling lines stating the same claim, seen in SP-ilqhjn3k and SP-23m5etrf); a worker-side sweep is cheaper than a planning heuristic, and the research skill's step-3 figure sweep reaches only research, not a content bug worker. Also BG-4lfjabfo fixed the capture-absence tag in doc-lookup-sources.md while _answers.md kept it (BG-q3l5j2vz); the goal research had cited ci-and-headless.md:104 without reading its second clause against bench_core.READ_BEFORE.\nPremise: kb-research SKILL.md step 3 holds no line naming both 'contradict' and 'rag.py search', and agents/worker.md holds none naming 'rag.py search' with 'same claim'. Run at planning with precheck: both checks exit 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
 }

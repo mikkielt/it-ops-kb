@@ -1,0 +1,26 @@
+{
+  "id": "TK-f5iqw3zf",
+  "kind": "task",
+  "title": "done credits an item the goal research story's commit already delivered, and close credits its clause",
+  "status": "draft",
+  "parent": "ST-me3dmaxy",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "done accepts an item whose checks pass when a KB-Work commit of the sprint's goal research story changed a file in its touches (an item with no work commit of its own) and records that commit as its evidence so close --summary credits the item's goal clause to it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_research_carried_item"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
