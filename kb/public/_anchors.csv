@@ -97,6 +97,7 @@ f7fcd6ee875d,agents/a2a-protocol.md,S-xasyjfgi,unlocated:no-match,,,,,2026-10-10
 9e2b6b880caa,agents/a2a/a2a-proto-digest.md,S2121,unlocated:no-match,,,,,2026-10-10
 9e2b6b880caa,agents/a2a/a2a-proto-digest.md,S2122,unlocated:no-match,,,,,2026-10-10
 b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 1. Introduction¶ > 1.4 Normative Content¶,deriv;edit;spec;singl;schema;proto;generat;json,a44a45cfcb305d32,"In addition to the protocol requirements defined in this document, the file spec/a2a.proto is the single authoritative normative definition of all protocol data objects and",2026-10-10
+0fb2dae9ccc0,agents/agent-caching.md,S1864,located,Changelog > 2.1.284,0.20;mtok;5.5;sonnet;cach;read;added,ef95917ecfc62520,$2/$10 per Mtok with $0.20/Mtok cache reads,2026-10-13
 11c42d9b8243,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-12
 11c42d9b8243,agents/agent-caching.md,S2132,unlocated:no-match,,,,,2026-10-12
 11c42d9b8243,agents/agent-caching.md,S2135,unlocated:no-match,,,,,2026-10-12
@@ -124,6 +125,8 @@ b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Prot
 7cc4c5972ca4,agents/agent-caching.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,1-hour;5-minut;million;0.10;0.20;minut;0.25;5.1,f5767d20af36b981,"A cache hit costs 10% of the standard input price, which means caching pays off after one cache read for the 5-minute duration (1.25x write),",2026-10-12
 7f261bf16510,agents/agent-caching.md,S1512,located,The pipeline configuration would follow... > Job keywords > cache > cache:key > cache:key:files,generat;content;specifi;new;key;chang;cach;file,e36baf53384f02fa,Use cache:key:files to generate a new cache key when the content of the specified files change.,2026-10-12
 86411328ff25,agents/agent-caching.md,S2134,unlocated:no-match,,,,,2026-10-12
+8c6c1a9d2d8d,agents/agent-caching.md,S1864,located,Changelog > 2.1.296,million;0.10;0.20;max-budget-usd;usd;5.5;pric;budget,3cc5126977ecadc0,"Updated /cost, the status line, --max-budget-usd and the SDK's cost figures to price Sonnet 5.5 cache reads at $0.10 per million tokens (was $0.20)",2026-10-13
+8c6c1a9d2d8d,agents/agent-caching.md,S2131,unlocated:no-match,,,,,2026-10-13
 913620a5ecb7,agents/agent-caching.md,S2130,located,Prompt caching > Pricing,0.025x;0.05x;0.1x;025x;05x;multiplier;5.1;fabl,fb1c93b2b3c012ba,1 Cache hits and refreshes on Claude Fable 5.1 and Claude Mythos 5.1 are priced at 0.025x the base input price. 2 Cache hits and,2026-10-12
 913620a5ecb7,agents/agent-caching.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,0.025x;0.05x;025x;05x;0.1x;5.1;hit;base,6cc36c65e4541125,Cache read (hit)0.1x base input price (0.025x on Claude Fable 5.1 and Claude Mythos 5.1; 0.05x on Claude Opus 5.5 and Claude Sonnet 5.5)Same duration,2026-10-12
 92a9e8d7dfcd,agents/agent-caching.md,S2130,located,Prompt caching > Caching strategies and considerations > Cache limitations,preview;4.7;length;5.1;fabl;mytho;cacheabl;minimum,08eed27c6cf7ffa6,"On the Claude API, Claude Platform on AWS, Google Cloud, and Microsoft Foundry, the minimum cacheable prompt length is: 512 tokens for Claude Fable 5.1,",2026-10-12

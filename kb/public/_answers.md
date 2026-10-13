@@ -3335,3 +3335,12 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md.
 
 _Agent: kb-research_
+
+## QK-per-million-token-price-claude-code. What per-million-token price does Claude Code 2.1.295 or older count for Sonnet 5.5 cache reads?
+- $0.20 per million tokens. The v2.1.296 changelog entry says `/cost`, the status line, `--max-budget-usd` and the SDK's cost figures now price Sonnet 5.5 cache reads at $0.10 per million tokens, "was $0.20", and the v2.1.284 entry that added Sonnet 5.5 lists "$0.20/Mtok cache reads". [DOC S1864]
+- The pricing page lists $0.10 for Sonnet 5.5 cache reads, so a figure of those versions counts double the page. [DOC S2131]
+- Conclusion: a cost figure of Claude Code 2.1.295 or older (`/cost`, the status line, `--max-budget-usd`, a `claude -p` result's `total_cost_usd`) counts Sonnet 5.5 cache reads at $0.20, the page's $0.10 twice; the changelog states no price for a version before v2.1.284 and does not date the "was $0.20" any finer than "before v2.1.296". [DER S1864, S2131]
+- Open: what Anthropic invoiced for Sonnet 5.5 cache reads on those versions; no changelog entry, pricing page or prompt-caching page read says. [UNK]
+- See agents/agent-caching.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_

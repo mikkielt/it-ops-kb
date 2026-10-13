@@ -2,7 +2,7 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-10-12
+retrieved_utc: 2026-10-13
 sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512, S1864]
 status: complete
 ---
@@ -44,6 +44,8 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 - General implication: before building a bespoke cache-hit-rate dashboard, check whether Claude Code's built-in `/usage` line or OTel export already covers it — a team that treats "no new mechanism without an observed failure" as policy would need to name what a bespoke dashboard catches that the built-in ones do not [DER — general cost/complexity discipline for agent tooling].
 - The prices of Opus 5.5, Sonnet 5.5 and Haiku 5.5 in the Anthropic prompt caching facts above were read again on the pricing page on 2026-10-12 and had not changed [DOC S2131].
 - Claude Code's own cost figures (`/cost`, the status line, `--max-budget-usd`, the SDK's cost figures) price Sonnet 5.5 cache reads at $0.10 per million tokens from v2.1.296, where the changelog says they were $0.20 before; see `claude/ci-and-headless` for the runs that show it [DOC S1864].
+- The changelog entry of v2.1.284, which added Sonnet 5.5, lists its price as "$2/$10 per Mtok with $0.20/Mtok cache reads", the cache-read rate of Sonnet 5, and no entry between v2.1.284 and v2.1.296 changes it [DOC S1864].
+- Claude Code 2.1.295 or older counts Sonnet 5.5 cache reads at $0.20 per million tokens in `/cost`, the status line, `--max-budget-usd` and a `claude -p` result's `total_cost_usd`, double the pricing page's $0.10; the changelog states no price for a version before v2.1.284 and says nothing of what Anthropic invoiced for cache reads on any version [DER S1864, S2131: the v2.1.284 entry's $0.20 and the v2.1.296 entry's "was $0.20" read against the page's $0.10].
 
 ### OpenAI / Azure OpenAI (comparison)
 
