@@ -2,7 +2,7 @@
   "id": "BG-qnq3pjd2",
   "kind": "bug",
   "title": "BP-0181112b and BP-c552cb0f answer regexes still reject a correct paraphrase (word order, '1.5 seconds')",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,27 @@
     "parked: SP-kuhlsf2s review"
   ],
   "notes": "Premise: the repro prints [False, False] and exits 1 on 2026-10-13. BP-0181112b is a scenario row (answer in bench_scenarios.csv, pool row built from it); BP-c552cb0f is an eval row whose regex only bench_pool.csv holds, kept by source on every rebuild, so edit every pool row sharing source lookup_eval.csv:EV-sessionend-hook-input-fields-reason-budget. A new regex still matches a line of the question's pack (pool check says so). Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
-  "claimed_by": "orch-honlhzdc"
+  "evidence": {
+    "commit": "229472cd130e590501b82100023bbbe24ce3e3fc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;sys.path.insert(0,'_tools');import bench_pool as b;q='How do I back up a BitLocker recovery key to Entra ID and also send it to Splunk?';s=next(r for r in b.read_scenarios()[1] if r['question'].strip()==q);ok=[bool(re.search(s['answer'],a)) for a in ['The device object holds the recovery key','the recovery key is held in the device object']];p=b.check_problems(b.read_csv(b.PUBLIC_FILE));print(ok,p);sys.exit(0 if all(ok) and not p else 1)"
+        ],
+        "exit": 0,
+        "sha256": "622158bfffa99e53"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;R={x['id']:json.loads(x['checks'])[0] for x in b.read_csv(b.PUBLIC_FILE) if x['id'] in ('BP-0181112b','BP-c552cb0f')};r=[bool(re.search(R['BP-0181112b'],'The device object holds the recovery key')),bool(re.search(R['BP-c552cb0f'],'SessionEnd hooks share a budget of 1.5 seconds'))];print(r);sys.exit(0 if all(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d72c373df05f3aae"
+      }
+    ]
+  }
 }
