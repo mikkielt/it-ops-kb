@@ -2,7 +2,7 @@
   "id": "BG-i44ewtyl",
   "kind": "bug",
   "title": "security/linux-cis-ssg-openscap leaves AlmaLinux 8 and 10 scanning unanswered: SSG's rhel8 and rhel10 CIS profiles are not named and no gap is logged",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-23m5etrf",
   "priority": "P3",
   "rank": 0,

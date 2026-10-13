@@ -2,7 +2,7 @@
   "id": "BG-ab3tndhy",
   "kind": "bug",
   "title": "security/linux-cis-ssg-openscap's summary says SSG ships CIS profiles for Debian 11 to 13 and Ubuntu 22.04 to 26.04, though debian11 and ubuntu2604 have none",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-23m5etrf",
   "priority": "P3",
   "rank": 0,

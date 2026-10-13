@@ -2,7 +2,7 @@
   "id": "BG-y3oykyfl",
   "kind": "bug",
   "title": "arch/fluent-rust-typescript covers typed accessors and a literal lint for Rust and TypeScript but not Python, and no gap records the Python side",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-23m5etrf",
   "priority": "P2",
   "rank": 0,

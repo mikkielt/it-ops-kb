@@ -2,7 +2,7 @@
   "id": "BG-l22a5sfd",
   "kind": "bug",
   "title": "The observability research answers JSON logs to stdout for the Collector, Loki, Tempo and Grafana but not for the corpus service's own Python and Rust code",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-23m5etrf",
   "priority": "P2",
   "rank": 0,

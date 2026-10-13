@@ -2,7 +2,7 @@
   "id": "ST-sbrfjik3",
   "kind": "story",
   "title": "Review sprint: Research gaps: SSG CIS profiles for RHEL-family hosts, Python Fluent accessors, JSON logs from Python and Rust services, Cargo feature unification for ort",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-23m5etrf",
   "review": true,
   "priority": "P1",
