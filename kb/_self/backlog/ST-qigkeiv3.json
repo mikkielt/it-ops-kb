@@ -59,6 +59,17 @@
       "class": "agents-rule",
       "answer": "0.10",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What name does the phase-4 sample give the group of sources the batch judge confirmed (its CSV group column and the brief's heads)?",
+      "options": [
+        "judged",
+        "judge-confirmed"
+      ],
+      "recommendation": "judged",
+      "class": "agents-rule"
     }
   ],
   "links": [
