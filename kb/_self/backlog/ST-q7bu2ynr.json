@@ -1,0 +1,26 @@
+{
+  "id": "ST-q7bu2ynr",
+  "kind": "story",
+  "title": "A bug's --repro run at filing writes nothing into the filer's own item tree, so a worker never hand-edits an item file to undo it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py new bug runs a --repro command in an isolated copy (or refuses one that writes an item file), so a worker filing a bug whose repro runs backlog.py adds no gate or field to its own claimed item; found in SP-7ff7c5ui: BG-2rh4u36u's worker filed a bug whose repro added a stray gate g2 to BG-2rh4u36u and removed it by a hand edit of the item JSON",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "new_bug_repro_writes_no_item"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}

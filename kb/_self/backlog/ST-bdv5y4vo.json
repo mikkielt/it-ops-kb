@@ -1,0 +1,27 @@
+{
+  "id": "ST-bdv5y4vo",
+  "kind": "story",
+  "title": "A planned change to fact_for or pack ranking carries a check that compares each moved pick against the question's terms",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning gives an item that changes how fact_for or the pack ranks lines a check that lists every lookup_eval case whose pick moves to a line missing a question term the old pick held, so a ranking change cannot regress a case while every pool check passes; found in SP-7ff7c5ui: c0aac1f1c measured only that no committed pool check misses, and BG-us65hepy later found it had moved the SubagentStart/SubagentStop case off agent_transcript_path",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_ranking_change_compares_moved_picks"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}

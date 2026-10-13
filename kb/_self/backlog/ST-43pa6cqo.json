@@ -1,0 +1,26 @@
+{
+  "id": "ST-43pa6cqo",
+  "kind": "story",
+  "title": "precheck warns of a check whose only test stubs the function the goal changes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck SP warns of a committed item whose checks run only tests that replace the function its goal changes (a monkeypatch or assignment of that name), since such a check passes when the change reverts; found in SP-7ff7c5ui: BG-4flop3jv and BG-chs2di4p added scenario_pack's check route and FRESH_CHECK inside a test that replaced scenario_pack wholesale, so no suite test could fail on a revert until BG-4lxb2w34",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_warns_check_stubs_changed_function"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}

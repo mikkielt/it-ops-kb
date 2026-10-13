@@ -1,0 +1,26 @@
+{
+  "id": "ST-2w672xes",
+  "kind": "story",
+  "title": "A planned bug's title figure is read from its check's output at planning, not kept from the intake",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning rewrites a committed bug's title or goal figure (a row count, a share) to the number its check prints on the base, or check warns when the title's figure differs from the premise note's; found in SP-7ff7c5ui: BG-nht352ib was titled '13 of the aliases.csv rows' while its all-rows check printed 21 on the base, as its own plan note recorded",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_warns_title_figure_differs_premise"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}

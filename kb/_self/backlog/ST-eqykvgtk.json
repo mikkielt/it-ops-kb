@@ -1,0 +1,26 @@
+{
+  "id": "ST-eqykvgtk",
+  "kind": "story",
+  "title": "The research lint flags a fact that states a read date its cited source row does not record",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "researched or the contract lint refuses a fact that says a source was read or checked on a date later than that source row's retrieved_utc and dated notes, so a research story advances the row it re-read; found in the SP-7ff7c5ui review: claude/ci-and-headless.md:108 says the changelog was read on 2026-10-13 while S1864 still says 2026-10-12 (BG-4gwcjwno)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lint_fact_read_date_matches_source_row"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}

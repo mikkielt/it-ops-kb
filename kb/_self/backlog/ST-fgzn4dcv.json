@@ -1,0 +1,26 @@
+{
+  "id": "ST-fgzn4dcv",
+  "kind": "story",
+  "title": "precheck splits a goal's asserted values joined by a bare and, so a second assertion no check reads is a missing check",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck SP lists as separate goal clauses two asserted values a goal joins with a bare ' and ' (not only '; ' and ', and '), or warns that one repro reads only one of them; found in the SP-7ff7c5ui review: BG-2rh4u36u's goal asserted terms('26100') and terms('S-1-5-32-544'), its only repro read the first, and the second was proved by a hand run",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_splits_bare_and_assertions"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-6oljoq3c",
+  "kind": "story",
+  "title": "Parallel sprint workers run a changed-paths test selection, and the whole suite runs once at the landing or review, so four workers do not push each other over the seconds ceiling",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A worker's brief has it run python3 _tools/tests.py --changed origin/main (or its item's selection) instead of the whole suite, leaving the whole-suite run to the landing's done and the review; found in SP-7ff7c5ui: every worker's whole-suite run (five workers, 25 to 32 s, all 100 tests passing) was refused at the 24 s darwin ceiling while siblings ran, and each worker reran it to no effect",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_worker_runs_changed_selection"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-7ff7c5ui close"
+  ]
+}
