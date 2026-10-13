@@ -2,7 +2,7 @@
   "id": "ST-5jqqzrgy",
   "kind": "story",
   "title": "Research sprint goal: Freshness at lookup: revalidation compares the right window and remembers what it checked",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-djl7za6x",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
-  "claimed_by": "orch-djl7za6x"
+  "evidence": {
+    "commit": "cac624aa16e93fa259f5a6f3ec55a527ce8004c3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5jqqzrgy"
+        ],
+        "exit": 0,
+        "sha256": "4143fd013d32347f"
+      }
+    ]
+  }
 }
