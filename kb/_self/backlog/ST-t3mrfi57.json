@@ -2,7 +2,7 @@
   "id": "ST-t3mrfi57",
   "kind": "story",
   "title": "factdiff.py anchor --file retries a fact whose only anchor row is unlocated by a failed fetch",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,

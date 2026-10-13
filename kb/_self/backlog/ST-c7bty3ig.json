@@ -2,7 +2,7 @@
   "id": "ST-c7bty3ig",
   "kind": "story",
   "title": "The lookup revalidation's content-date pass of confirmable is stated in tools.md and its eval row, or the lookup drops it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,

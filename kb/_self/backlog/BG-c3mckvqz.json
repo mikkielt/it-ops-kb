@@ -2,7 +2,7 @@
   "id": "BG-c3mckvqz",
   "kind": "bug",
   "title": "provider.read_licence leaves a Learn mirror with LICENSE.md and LICENSE-CODE.md unread when GitHub answers NOASSERTION",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-srqmriw6",
   "priority": "P2",
   "rank": 0,

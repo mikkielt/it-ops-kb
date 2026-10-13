@@ -2,7 +2,7 @@
   "id": "ST-gv2acucc",
   "kind": "story",
   "title": "Detection and census treat a page with no words as the lookup does, or say why they keep the soft-404 verdict",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,
