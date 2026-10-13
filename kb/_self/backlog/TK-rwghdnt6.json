@@ -40,6 +40,19 @@
     "AGENTS.md",
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which backlog.md line says the sprint reviewer makes no paid model call, and what does the tested row anchor on? The notes name the Running a sprint line; the recommendation keeps the one passage that already holds the reviewer's model default.",
+      "options": [
+        "running-a-sprint",
+        "review-bullet"
+      ],
+      "recommendation": "running-a-sprint",
+      "class": "agents-rule"
+    }
+  ],
   "notes": "AGENTS.md is in touches for the docs map only (it maps skills/sprint/SKILL.md): its 4 KB cap leaves no room, so expect no edit; Self-Reviewed names it as read. Premise: the _self pack for 'may the sprint reviewer make paid model calls' is coverage weak on 2026-10-13 (precheck): reproduces. The tested row is added to kb/_self/_retrieval/lookup_eval.csv (a code-lane path: land with --wait-merge); the line it answers from is the reviewer sentence of kb/_self/backlog.md, Running a sprint (line 308 today).",
   "claimed_by": "orch-honlhzdc"
 }
