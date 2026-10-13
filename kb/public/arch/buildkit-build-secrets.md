@@ -27,7 +27,8 @@ A secret needed only while an image builds goes in through `docker build --secre
 - Unlike `ENV`, an `ARG` is not embedded in the image's environment, yet it is visible in `docker history` and in `max` mode provenance attestations; the reference notes the Buildx GitHub Actions attach them by default for a public repository. [DOC S-iuwgvvo2]
 - Environment variables set with `ENV` persist in containers instantiated from the image. [DOC S-wt5ys5zb]
 - The pre-defined proxy arguments (for example `HTTP_PROXY`) are left out of `docker history` and the cache key unless the Dockerfile redeclares them with `ARG`, which puts the value in the history again. [DOC S-iuwgvvo2]
-- Provenance attestations default to minimal content; `BUILDX_METADATA_PROVENANCE` selects `min`, `max` or `disabled`, and `BUILDX_NO_DEFAULT_ATTESTATIONS=1` turns the default attestations off. [DOC S-wt5ys5zb]
+- `BUILDX_METADATA_PROVENANCE` sets only the provenance information in the metadata file written through the `--metadata-file` flag: `min` (the default), `max`, or `disabled`, `false` or `0` for none. [DOC S-wt5ys5zb]
+- BuildKit v0.11 and later adds provenance attestations to the images it builds by default, and `BUILDX_NO_DEFAULT_ATTESTATIONS=1` turns those default attestations off. [DOC S-wt5ys5zb]
 - A value that was ever passed as a build argument or `ENV` and then pushed is readable by anyone who can pull the image or its attestation, so the fix is to revoke or roll it at its issuer (`auth/issuer-token-rotation.md`), not to rebuild without it. [DER S-wt5ys5zb, S-iuwgvvo2: history, attestation and image metadata keep the value]
 - For a private GitLab context the Docker example builds the `GIT_AUTH_HEADER` secret from the CI job's own token (`CI_JOB_TOKEN`), so the build needs no stored personal token. [DER S-k2cfmmuo: the GIT_AUTH_HEADER example]
 

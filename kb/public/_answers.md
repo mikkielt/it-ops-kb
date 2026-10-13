@@ -2993,7 +2993,9 @@ _Agent: kb-research_
 
 ## QK-buildkit-secret-mounts-build-args-history. How do BuildKit secret mounts differ from build arguments, and what does image history keep?
 - `RUN --mount=type=secret` exposes a secret from `--secret` to one instruction (default `/run/secrets/<id>`, mode 0400) without baking it into the image. [DOC S-k2cfmmuo, S-iuwgvvo2]
-- A build argument is visible in `docker history` and in `max` provenance attestations; an `ENV` persists in containers. [DOC S-iuwgvvo2, S-wt5ys5zb]
+- A build argument is visible in `docker history` and in `max` mode provenance attestations. [DOC S-iuwgvvo2]
+- An `ENV` persists in containers, and a build argument may persist in the image metadata, provenance attestations and image history. [DOC S-wt5ys5zb]
+- `BUILDX_METADATA_PROVENANCE` sets only the provenance written to the `--metadata-file` output, while `BUILDX_NO_DEFAULT_ATTESTATIONS=1` turns off the image's default provenance attestations. [DOC S-wt5ys5zb]
 - Conclusion: a value that was passed as `ARG` or `ENV` and pushed is readable from the image or its attestation, so it is revoked at the issuer, not just rebuilt without. [DER S-wt5ys5zb, S-iuwgvvo2]
 - See arch/buildkit-build-secrets.md, arch/docker-secrets-run-secrets.md.
 
