@@ -2,7 +2,7 @@
   "id": "ST-hhmkor4g",
   "kind": "story",
   "title": "Research sprint goal: Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mujl7ebh",
   "goal_research": true,
   "priority": "P1",
@@ -23,5 +23,19 @@
     "kb/public/_gaps.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
-  "claimed_by": "orch-mujl7ebh"
+  "evidence": {
+    "commit": "ac9e246da28b32cc8b1ac93c37804302f10da980",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-hhmkor4g"
+        ],
+        "exit": 0,
+        "sha256": "d62f9041525b8292"
+      }
+    ]
+  }
 }
