@@ -1,0 +1,24 @@
+{
+  "id": "ST-4u4grn6b",
+  "kind": "story",
+  "title": "The editable-dependency conflicts entry says only arch/python-single-package-extras gives the always-editable wording, not python/uv-projects",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/_conflicts.md's arch/python-single-package-extras entry on workspace members' editable default no longer says python/uv-projects.md gives 'always editable' as the dependency-source wording, which only arch/python-single-package-extras.md:39 does; uv-projects.md has no such wording. Found by the SP-tjap3mdd review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/_conflicts.md').read_text(encoding='utf-8').splitlines(); sys.exit(any('uv-projects.md' in l and 'dependency-source wording' in l and 'both' in l for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_conflicts.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd review"
+  ]
+}

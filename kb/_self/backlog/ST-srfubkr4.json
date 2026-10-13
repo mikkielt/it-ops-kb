@@ -1,0 +1,26 @@
+{
+  "id": "ST-srfubkr4",
+  "kind": "story",
+  "title": "The Bazel --test_timeout DOC fact drops 'for that run', which the page does not say, or moves it to the DER fact",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/agents/test-suite-size-and-agent-overengineering.md's DOC fact on --test_timeout (line 36, S-3dlofilm) keeps only the page's words: 'for that run' is not on the page, so it is dropped from the DOC line or carried by the DER fact beside it. Found by the SP-tjap3mdd review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/agents/test-suite-size-and-agent-overengineering.md').read_text(encoding='utf-8').splitlines(); sys.exit(any('--test_timeout' in l and '[DOC S-3dlofilm]' in l and 'for that run' in l for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/test-suite-size-and-agent-overengineering.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd review"
+  ]
+}

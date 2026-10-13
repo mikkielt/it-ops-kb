@@ -1,0 +1,25 @@
+{
+  "id": "ST-swbig7tc",
+  "kind": "story",
+  "title": "The python-single-package-extras editable fact's anchor quotes the editable or --no-editable sentence, not 'workspaces may be a better fit'",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/_anchors.csv's S1706 row for the arch/python-single-package-extras.md editable fact (key 53e9732a3a3e, lines 37-39) quotes a sentence of uv's dependencies page that the fact asserts (workspace members editable by default, or uv add --no-editable), re-anchored with factdiff.py anchor --quotes, so a change to those sentences shows as a changed fact. Found by the SP-tjap3mdd review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys; rs=[r for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['path'].endswith('python-single-package-extras.md') and r['source_id']=='S1706' and r['status']=='located' and 'editable' in r['quote'].lower()]; sys.exit(0 if rs else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_anchors.csv",
+    "kb/public/arch/python-single-package-extras.md"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd review"
+  ]
+}

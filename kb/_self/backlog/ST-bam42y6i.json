@@ -1,0 +1,27 @@
+{
+  "id": "ST-bam42y6i",
+  "kind": "story",
+  "title": "codebase-mapping and its rustc-wrapper answer say the rustc -vV spawn fails only when the outermost wrapper is unresolvable",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/agents/codebase-mapping.md's DER fact on the wrappers in front of rustc -vV (line 92) and the conclusion of QK-unresolvable-rustc-wrapper-rustc-workspace-wrapper in kb/public/_answers.md say the spawn fails only for an unresolvable outermost wrapper: with a valid RUSTC_WRAPPER and an unresolvable RUSTC_WORKSPACE_WRAPPER only rustc_fingerprint fails and the cache turns off, while Cargo's spawn succeeds. Found by the SP-tjap3mdd review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/agents/codebase-mapping.md').read_text(encoding='utf-8').splitlines()+pathlib.Path('kb/public/_answers.md').read_text(encoding='utf-8').splitlines(); sys.exit(any(('the spawn of that command fails too' in l or 'the same wrapper then fails the spawn' in l) for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/codebase-mapping.md",
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-tjap3mdd review"
+  ]
+}
