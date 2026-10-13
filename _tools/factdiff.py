@@ -975,6 +975,34 @@ def save_doc(sid, d):
 
 
 _madeup, _pages = {}, {}
+_unanswered, _unanswered_uses = {}, []  # request url -> "HTTP 503 ..." of a search or candidate page that answered an HTTP error; one entry per use
+
+
+def _http_error(url, status, what):
+    """Record that the search or candidate page `url` answered `status`, an HTTP error: no answer to the passage's search
+    (a 404 or 410 of a candidate page is an absent page, no error). Returns True when it was recorded."""
+    if not status or status == 200 or (what == "candidate page" and status in (404, 410)):
+        return False
+    _unanswered[url] = f"HTTP {status} from the {what} {url.split('?')[0]}"
+    return True
+
+
+def _used_unanswered(url):
+    """Count one use of the answer of `url`, cached or fresh: a passage whose search leaned on it is not known lost."""
+    if url in _unanswered:
+        _unanswered_uses.append(_unanswered[url])
+
+
+def search_lost(failed, used):
+    """Why the search for a passage did not finish, or "": the time budget, the HTTP errors of a search or candidate page
+    used since `used` (named), or a network error since `failed` (provider.failures() then). A request that answered
+    an HTTP error counts as a failure as one that got no answer does."""
+    if provider.spent():
+        return provider.BUDGET_ERROR
+    why = list(dict.fromkeys(_unanswered_uses[used:]))
+    if provider.failures() > failed:
+        why.append("network error during the search for the passage")
+    return "; ".join(why)[:300]
 
 
 def madeup_text(url):
@@ -991,6 +1019,8 @@ def page_doc(url, rows):
     if url not in _pages:
         d = provider.document(url, provider.for_url(url, rows) or {})
         _pages[url] = (Doc(d["text"]), d["text"]) if d.get("status") == 200 and d.get("text") else (None, None)
+        _http_error(url, d.get("status"), "candidate page")
+    _used_unanswered(url)
     return _pages[url]
 
 
@@ -1171,13 +1201,16 @@ def search_urls(fact, anchor, row, src_url, title=""):
     for q in queries:
         if not q.strip():
             continue
+        req = tpl.replace("{q}", urllib.parse.quote(q))
         if q not in _searches:
-            r = provider.request(tpl.replace("{q}", urllib.parse.quote(q)))
+            r = provider.request(req)
             try:
                 res = json.loads(r["body"]).get("results", []) if r["status"] == 200 else []
             except ValueError:
                 res = []
             _searches[q] = [x["url"] for x in res if x.get("url")]
+            _http_error(req, r["status"], "search")
+        _used_unanswered(req)
         hits = [u for u in _searches[q] if urllib.parse.urlsplit(u).path.rstrip("/") != urllib.parse.urlsplit(src_url).path.rstrip("/")
                 and not urllib.parse.urlsplit(u).path.endswith("/")]  # a hub or landing page holds no passage
         seg = [x for x in urllib.parse.urlsplit(src_url).path.split("/") if x and x != "en-us"][:1]
@@ -1467,7 +1500,7 @@ def new_passage(text, doc, cites=1):
 
 def lookup_outcomes(src, rows_f, facts, doc, lost, rows, cites=None):
     """{line key: outcome} of the fact rows `rows_f` of resolve (lookup_source's outcomes) for `facts`, whose current
-    document is `doc`; `lost`: the search for a passage did not finish; `cites`: resolve's."""
+    document is `doc`; `lost`: why the search for a passage did not finish (search_lost's), "" when it did; `cites`: resolve's."""
     text_of = {(key, rel): text for key, rel, _line, text in facts}
     cur = Doc(doc["text"]) if doc and doc.get("text") else None
     out = {}
@@ -1488,7 +1521,7 @@ def lookup_outcomes(src, rows_f, facts, doc, lost, rows, cites=None):
             rec.update(outcome="source-dated only", note="source changed; no located anchor")
         elif o in ("not-found", "dead"):
             if lost:  # the search for the passage did not finish: nothing is known of it
-                rec.update(note=provider.BUDGET_ERROR if provider.spent() else "network error during the search for the passage")
+                rec.update(note=lost)
             else:
                 rec.update(outcome="not found", note="source gone or replaced" if o == "dead" else r["note"])
         else:
@@ -1532,17 +1565,16 @@ def lookup_source(sid, src, res, facts, state, anchors, rows, cites=None):
             out[line_key(rel, key)] = {"outcome": "current" if located else "source-dated only", "target": "", "passage": "",
                                        "note": "source unchanged" + ("" if located else "; no located anchor")}
         if stale and doc and doc.get("text"):
-            failed = provider.failures()
+            failed, used = provider.failures(), len(_unanswered_uses)
             rows_f, _ = resolve(sid, src, verdict, doc, prev, stale, anchors, rows, None, True, None, cites)
-            out.update(lookup_outcomes(src, rows_f, stale, doc, provider.spent() or provider.failures() > failed, rows, cites))
+            out.update(lookup_outcomes(src, rows_f, stale, doc, search_lost(failed, used), rows, cites))
         for key, rel, _line, _text in stale:
             out.setdefault(line_key(rel, key), {"outcome": "source-dated only", "target": "", "passage": "",
                                                 "note": "source unchanged; its baseline is newer than the anchor's last confirmation"})
         return out, verdict, ""
-    failed = provider.failures()
+    failed, used = provider.failures(), len(_unanswered_uses)
     verdict, ev, rows_f, _ = resolve_source(sid, src, res, state, facts, anchors, rows, lookup=True, cites=cites)
-    lost = provider.spent() or provider.failures() > failed
-    return lookup_outcomes(src, rows_f, facts, doc, lost, rows, cites), verdict, ""
+    return lookup_outcomes(src, rows_f, facts, doc, search_lost(failed, used), rows, cites), verdict, ""
 
 
 def lookup_root(items, out, day, now, reuse=None):
@@ -1628,7 +1660,7 @@ def revalidate(printed, budget=REVALIDATE_BUDGET_S, reuse=None):
         return out
     with _lookup_guard:
         keep = ROOT
-        for cache in (_pages, _searches, _added, _madeup):  # a long-lived process (kb_mcp): no answer of an earlier run
+        for cache in (_pages, _searches, _added, _madeup, _unanswered, _unanswered_uses):  # a long-lived process (kb_mcp): no answer of an earlier run
             cache.clear()
         provider.new_run()
         try:
@@ -1641,7 +1673,7 @@ def revalidate(printed, budget=REVALIDATE_BUDGET_S, reuse=None):
                     lookup_root(items, out, day, time.time(), reuse)
         finally:
             ROOT = keep
-            for cache in (_pages, _searches, _added, _madeup):
+            for cache in (_pages, _searches, _added, _madeup, _unanswered, _unanswered_uses):
                 cache.clear()
     return out
 
