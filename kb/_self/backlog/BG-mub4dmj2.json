@@ -78,6 +78,21 @@
       "class": "agents-rule",
       "answer": "as the plugin file by every reader, and check warns of the link naming the target",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which touches does check's linked-touch warning cover: a touch that names a symlink (its target present or gone), or also a plain path that is gone?",
+      "options": [
+        "a touch that names a symlink, naming its target and whether it is gone; a plain gone path stays stale_touches' error",
+        "also a plain gone path, with no resolved path to name"
+      ],
+      "recommendation": "a touch that names a symlink, naming its target and whether it is gone; a plain gone path stays stale_touches' error",
+      "do": {
+        "a touch that names a symlink, naming its target and whether it is gone; a plain gone path stays stale_touches' error": "BG-mub4dmj2",
+        "also a plain gone path, with no resolved path to name": "BG-mub4dmj2"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [
