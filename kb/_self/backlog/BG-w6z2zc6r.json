@@ -36,6 +36,19 @@
   "touches": [
     "_tools/test_land_e2e.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which land scenarios of test_land_e2e.py keep the real kbgit.py sync --push as their landing's push and the commit hooks of a clone?",
+      "options": [
+        "one-real-sync",
+        "all-real-sync"
+      ],
+      "recommendation": "one-real-sync",
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-yojt6y7v run",
     "merged: BG-ucwq6kga",
