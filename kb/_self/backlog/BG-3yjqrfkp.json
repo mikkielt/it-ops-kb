@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "A gate question that says a package was uploaded to PyPI is classed push by the word uploaded, so a wording choice about a release date is made blocking",
   "status": "draft",
+  "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "class_reasons in _tools/bl_authority.py no longer classes a gate question as push for the word uploaded when it names an upload date of a package release, while a question about uploading the repository's own commits to a remote still classes push, and the repro command exits 0",
+  "goal": "class_reasons in _tools/bl_authority.py no longer classes a gate question as push for the word uploaded when it names an upload date of a package release, for the word gitlab inside a kb topic path (gitlab/git-commit-paths-and-symlinks) or for a display-only question that names a push only to count or list the commits it carries (how many unpushed commits land lists before its push), while a question about uploading the repository's own commits to a remote, or about pushing, publishing or uploading a release, still classes push, and the repro command exits 0",
   "repro": {
     "run": [
       "python3",
@@ -14,10 +15,54 @@
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.class_reasons({'touches':[]},{'question':'PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version do the install facts state?','options':['keep 1.2.14','move to 1.2.15']});sys.exit(1 if c[0]=='push' else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q:a.class_reasons({'touches':[]},{'question':q,'options':['a','b']})[0];no=['PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version do the install facts state?','Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-test-repositories?','How many of the checkouts unpushed commits does land list by name before its push?'];yes=['May we upload the repositorys commits to the remote?','Should land push the branch to origin?','Do we publish the tree to GitHub?','May we upload 1.2.16 to PyPI?'];sys.exit(0 if all(c(q)!='push' for q in no) and all(c(q)=='push' for q in yes) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "class_reasons in _tools/bl_authority.py no longer classes a gate question as push for the word uploaded when it names an upload date of a package release, for the word gitlab inside a kb topic path (gitlab/git-commit-paths-and-symlinks) or for a display-only question that names a push only to count or list the commits it carries (how many unpushed commits land lists before its push), while a question about uploading the repository's own commits to a remote, or about pushing, publishing or uploading a release, still classes push",
+      "check": 0
+    },
+    {
+      "clause": "the repro command exits 0",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which shapes of wording does class_reasons stop classing as a push gate?",
+      "options": [
+        "three shapes only: uploaded beside a date or time, a gitlab/ kb topic path, and a how-many or which count question whose push word is a noun after its or the; every other use of those words stays classed",
+        "the words themselves: uploaded and gitlab leave the word list for good"
+      ],
+      "recommendation": "three shapes only: uploaded beside a date or time, a gitlab/ kb topic path, and a how-many or which count question whose push word is a noun after its or the; every other use of those words stays classed",
+      "do": {
+        "three shapes only: uploaded beside a date or time, a gitlab/ kb topic path, and a how-many or which count question whose push word is a noun after its or the; every other use of those words stays classed": "BG-3yjqrfkp",
+        "the words themselves: uploaded and gitlab leave the word list for good": "BG-3yjqrfkp"
+      },
+      "class": "push",
+      "answer": "three shapes only: uploaded beside a date or time, a gitlab/ kb topic path, and a how-many or which count question whose push word is a noun after its or the; every other use of those words stays classed",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-tjap3mdd close",
     "merged: BG-r2elimmu",
     "merged: ST-rh2zpuq7"
   ],
-  "notes": "Merged from BG-r2elimmu “gate add classes a provisional gate push because its question names a gitlab/ kb topic path, and makes it blocking” at the 2026-10-13 draft triage: Repro run: derived_class returns 'push' for a question naming gitlab/git-commit-paths-and-symlinks, so it reproduces, but it is the same push-by-word defect (the \\bgitlab\\b alternative of the push regex) as BG-3yjqrfkp. Its goal: backlog.py gate add --kind provisional with a question that names a kb topic path under gitlab/ (gitlab/git-commit-paths-and-symlinks) is no push-class gate and stays provisional: the class matches a push or a remote write, not the word gitlab inside a kb path Its repro: {\"run\": [\"python3\", \"-c\", \"import sys; sys.path.insert(0,'_tools'); import bl_authority; sys.exit(0 if bl_authority.derived_class({}, {'id':'g1','question':'Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-test-repositories?','options':['a new topic','a section']}) == 'design' else 1)\"]} Merged from ST-rh2zpuq7 “gate add classes a question as push only when it changes what is pushed, not on the word push” at the 2026-10-13 draft triage: Classifier-by-word family (QUESTION_WORDS push at bl_authority.py:98; probe: a question naming 'uploaded' classes push, so BG-3yjqrfkp's repro still fails); BG-3yjqrfkp is the older P2 bug with a repro and should absorb the display-only-question case and BG-r2elimmu; the item's touches name bl_items.py but the classifier is bl_authority.py Its goal: bl_gate's class matcher gives class push to a gate whose options change a push's target or contents, not to a display-only question that names a push (ST-22oykpr5 g1, how many unpushed commits land lists, was made blocking class push) Its checks: {\"run\": [\"python3\", \"_tools/tests.py\", \"-k\", \"gate_class_push_needs_a_push_change\"]} Its touches: _tools/bl_items.py, _tools/test_backlog_portable.py"
+  "notes": "Merged from BG-r2elimmu at the 2026-10-13 draft triage: Repro run: derived_class returns 'push' for a question naming gitlab/git-commit-paths-and-symlinks, so it reproduces, but it is the same push-by-word defect (the \\bgitlab\\b alternative of the push regex) as BG-3yjqrfkp. Merged from ST-rh2zpuq7: Classifier-by-word family (QUESTION_WORDS push at bl_authority.py:98; probe: a question naming 'uploaded' classes push, so BG-3yjqrfkp's repro still fails); the display-only question (ST-22oykpr5 g1, how many unpushed commits land lists before its push, was made blocking class push) is folded into the goal; the classifier is bl_authority.py, not bl_items.py. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: its check runs three misclassed questions and four push ones through class_reasons. Orders before BG-t6xrawba and ST-oc7hsriu (same bl_authority.py, test_authority.py)."
 }

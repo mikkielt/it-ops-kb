@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "test_authority plants each secret word inside each token exception shape and asserts the secrets class holds",
   "status": "draft",
+  "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,
-  "goal": "Retrospective of SP-uzwbt63u: BG-xp3imb24's check listed which named texts stay secrets but not a secret word inside the span its new exception removes, so SECRET_TOKENS and PASSWORD_TOKENS fell to design and only the review caught it (BG-wuwypj42, S1). test_authority gains one test that, for each secrets word (secret, password, passphrase, credential, api, bearer, ssh) and each token exception shape bl_authority.without_token_counts removes (an upper-case NAME_TOKENS identifier, a phase or closed token, a model's token count), asserts class_reasons still returns secrets, so a later exception that removes a secret word fails the suite",
+  "goal": "test_authority holds one test that plants each secrets word (secret, password, passphrase, credential, api, bearer, ssh) inside each token exception shape bl_authority.without_token_counts removes (an upper-case NAME_TOKENS identifier, a phase or closed token, a model's token count, the unit-noun list BG-t6xrawba adds) and asserts class_reasons still returns secrets, so a later exception that removes a secret word fails the suite (SP-uzwbt63u: SECRET_TOKENS and PASSWORD_TOKENS fell to design, BG-wuwypj42, S1)",
   "checks": [
     {
       "run": [
@@ -17,9 +18,14 @@
     }
   ],
   "touches": [
-    "_tools/test_authority.py"
+    "_tools/test_authority.py",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-t6xrawba"
   ],
   "links": [
     "parked: SP-uzwbt63u close"
-  ]
+  ],
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: orders after BG-t6xrawba (its unit-noun exception is one more shape to plant). The suite sits at max_ids 100: extend test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_class_changes_nothing in test_authority.py and rename it to carry secrets_fail_closed_inside_token_exceptions, no new id. Premise run 2026-10-13 at planning: class_reasons of SECRET_TOKENS, PASSWORD_TOKENS, 'secret phase token', 'password closed token', 'api output tokens', 'credential token count', 'bearer input tokens' and 'ssh max tokens' each returns secrets on today's tree, so the planted test passes at once; the check fails before the work only because no test carries the selector."
 }

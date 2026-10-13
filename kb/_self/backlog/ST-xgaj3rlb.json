@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The worker role's gate add command names a --do per option, so a worker never hand-edits an item file for a missing do map",
   "status": "draft",
+  "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,
-  "goal": "agents/worker.md gives the provisional gate command as gate add ID --kind provisional --question Q --option O --option O --recommendation R, with no --do; backlog.py check then warns of each option with no do, and a gate the class rule makes blocking cannot be removed and re-added without the operator, so at SP-sqgyoiaz the ST-7rqeuzlm worker added the do maps of its two gates by editing the item JSON by hand and the ST-e44xoxkg worker left five gates with the warning. The role file's command names --do OPTION=ID for each option.",
+  "goal": "The worker role file (agents/worker.md) gives the provisional gate command with a --do OPTION=ID for each option, so a worker's gate has its do map from the start, backlog.py check warns of no missing do on it and no worker hand-edits an item file to add one (gate add takes --do only at creation and gate remove is operator-only: seen at SP-avwlotax and SP-sqgyoiaz)",
   "checks": [
     {
       "run": [
@@ -18,9 +19,31 @@
   "touches": [
     "agents/worker.md"
   ],
+  "depends_on": [
+    "ST-lp5pxtpe"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does the role file give each --do OPTION=ID of a worker's gate as its ID?",
+      "options": [
+        "the worker's own item id: the work it is doing carries the chosen option out",
+        "the id of a follow-up item the worker files for each option"
+      ],
+      "recommendation": "the worker's own item id: the work it is doing carries the chosen option out",
+      "do": {
+        "the worker's own item id: the work it is doing carries the chosen option out": "ST-xgaj3rlb",
+        "the id of a follow-up item the worker files for each option": "ST-xgaj3rlb"
+      },
+      "class": "agents-rule",
+      "answer": "the worker's own item id: the work it is doing carries the chosen option out",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-sqgyoiaz close",
     "merged: ST-2vhaoflk"
   ],
-  "notes": "Merged from ST-2vhaoflk “A worker's gate that the class rule makes blocking can get its do entries after it is added” at the 2026-10-13 draft triage: Premise holds (gate has only add/remove/host-unchecked, no `do` verb; bl_check.py:1049 warns; seen SP-avwlotax and SP-sqgyoiaz), but passing --do per option up front, which ST-xgaj3rlb states, removes the recurrence; the added-later `gate do` verb is optional Its goal: Retrospective of SP-avwlotax: ST-jv27pfin's worker added g2 as provisional; gate add printed 'made blocking' (class agents-rule) and backlog.py check then warned that g2 has no do for either option, which the worker could not repair: gate add takes --do only at creation and gate remove is operator-only. A gate's do entries can be added to an existing gate by its item's worker (or gate add's made-blocking message tells it to pass --do up front), so check has no such warning after a worker's gate. Its checks: {\"run\": [\"python3\", \"_tools/backlog.py\", \"gate\", \"do\", \"--help\"]} Its touches: _tools/bl_items.py, _tools/backlog.py, kb/_self/backlog.md, kb/_self/tools.md, kb/_self/code.md"
+  "notes": "Merged from ST-2vhaoflk “A worker's gate that the class rule makes blocking can get its do entries after it is added” at the 2026-10-13 draft triage: Premise holds (gate has only add/remove/host-unchecked, no `do` verb; bl_check.py:1049 warns; seen SP-avwlotax and SP-sqgyoiaz), but passing --do per option up front, which ST-xgaj3rlb states, removes the recurrence; the added-later `gate do` verb is optional Its goal: Retrospective of SP-avwlotax: ST-jv27pfin's worker added g2 as provisional; gate add printed 'made blocking' (class agents-rule) and backlog.py check then warned that g2 has no do for either option, which the worker could not repair: gate add takes --do only at creation and gate remove is operator-only. A gate's do entries can be added to an existing gate by its item's worker (or gate add's made-blocking message tells it to pass --do up front), so check has no such warning after a worker's gate. Its checks: {\"run\": [\"python3\", \"_tools/backlog.py\", \"gate\", \"do\", \"--help\"]} Its touches: _tools/bl_items.py, _tools/backlog.py, kb/_self/backlog.md, kb/_self/tools.md, kb/_self/code.md Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13 at planning: the role file's gate add ID --kind provisional line (agents/worker.md rule 6, first sub-bullet) holds no --do, and backlog.py gate has add, remove and host-unchecked only; the planned check fails before the work."
 }

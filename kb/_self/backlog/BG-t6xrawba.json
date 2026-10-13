@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "a gate whose options list tokens as a unit of measure is classed secrets and made blocking, so only the operator can answer a wording choice",
   "status": "draft",
+  "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,5 +15,42 @@
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(1 if a.class_reasons({'touches':['_tools/kbfacts.py']},{'id':'g2','question':'Which unit nouns after in make a cost question no money ask?','options':['units, points, tokens, requests, calls','units only']})[0]=='secrets' else 0)"
     ]
   },
-  "notes": "SP-4o3plg4l close, 2026-10-12: two more gates were made blocking as class secrets by the word tokens in an option (BG-pedsqeqs g2 on unit nouns, BG-j7pe3u46 g1 on Title-case name words); each stopped a worker and waited for the orchestrator."
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q,o:a.class_reasons({'touches':[]},{'question':q,'options':o})[0];ok=c('Which unit nouns after in make a cost question no money ask?',['units, points, tokens, requests, calls','units only'])=='design' and c('Which API token value does the CI job read?',['the PAT','the deploy key'])=='secrets' and c('Rotate the GitLab token?',['yes','no'])=='secrets' and c('Which unit nouns count?',['tokens','rows'])=='secrets';sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "depends_on": [
+    "BG-3yjqrfkp"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which texts does class_reasons read as a unit noun, so that tokens in them is no secret word?",
+      "options": [
+        "a list: tokens among two or more other unit nouns (units, points, requests, calls, rows, bytes, lines, words) in one option; a bare tokens or a credential-sense one stays classed",
+        "any option that holds the word tokens with a number or a count word before it"
+      ],
+      "recommendation": "a list: tokens among two or more other unit nouns (units, points, requests, calls, rows, bytes, lines, words) in one option; a bare tokens or a credential-sense one stays classed",
+      "do": {
+        "a list: tokens among two or more other unit nouns (units, points, requests, calls, rows, bytes, lines, words) in one option; a bare tokens or a credential-sense one stays classed": "BG-t6xrawba",
+        "any option that holds the word tokens with a number or a count word before it": "BG-t6xrawba"
+      },
+      "class": "secrets",
+      "answer": "a list: tokens among two or more other unit nouns (units, points, requests, calls, rows, bytes, lines, words) in one option; a bare tokens or a credential-sense one stays classed",
+      "by": "operator"
+    }
+  ],
+  "notes": "SP-4o3plg4l close, 2026-10-12: two more gates were made blocking as class secrets by the word tokens in an option (BG-pedsqeqs g2 on unit nouns, BG-j7pe3u46 g1 on Title-case name words); each stopped a worker and waited for the orchestrator. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: orders after BG-3yjqrfkp (same bl_authority.py); ST-oc7hsriu then plants each secret word inside the new unit-noun exception too."
 }
