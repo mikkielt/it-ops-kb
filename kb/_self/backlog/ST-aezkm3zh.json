@@ -39,6 +39,21 @@
     "kb/_self/_retrieval/lookup_eval.csv",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a public root's ledger entry cite a line of a _self doc, which check.py refuses as path:line: in words with the tested row's id, or with an anchor form kb/_self/<doc>.md \"term\"?",
+      "options": [
+        "in words with the tested row's id",
+        "anchor form with a term"
+      ],
+      "recommendation": "in words with the tested row's id",
+      "class": "design",
+      "answer": "in words with the tested row's id",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilqhjn3k close"
   ],
