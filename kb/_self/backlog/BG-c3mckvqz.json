@@ -2,7 +2,7 @@
   "id": "BG-c3mckvqz",
   "kind": "bug",
   "title": "provider.read_licence leaves a Learn mirror with LICENSE.md and LICENSE-CODE.md unread when GitHub answers NOASSERTION",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-srqmriw6",
   "priority": "P2",
   "rank": 0,
@@ -28,5 +28,6 @@
   "links": [
     "parked: SP-sbdy4hsx review"
   ],
-  "notes": "Premise: provider.read_licence of the PowerShell Learn page returned licence '' and note 'GitHub recognises no licence of the mirror MicrosoftDocs/PowerShell-Docs: read its licence file' (run 2026-10-13 at base, live: three unauthenticated GitHub requests, no credential). The repro is that live run; no offline pair is planned because the licence file's url form is the fix's choice. Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Premise: provider.read_licence of the PowerShell Learn page returned licence '' and note 'GitHub recognises no licence of the mirror MicrosoftDocs/PowerShell-Docs: read its licence file' (run 2026-10-13 at base, live: three unauthenticated GitHub requests, no credential). The repro is that live run; no offline pair is planned because the licence file's url form is the fix's choice. Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-srqmriw6"
 }
