@@ -1,0 +1,28 @@
+{
+  "id": "ST-dcud7dji",
+  "kind": "story",
+  "title": "census.py phase1_commit finds a one-domain census's phase-1 commit, so sample --brief reads its keys",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "census.phase1_commit(D) finds the phase-1 verdicts commit of a census of one domain (subject 'census D <domain> phase 1 verdicts') as well as a whole-kb one, so sample --brief's 'unchanged since phase 1' reads that commit's keys. Found by the SP-htl7jkrm review: the 2026-10-11 logs census was committed as 'census 2026-10-11 logs phase 1 verdicts' and phase1_commit('2026-10-11') returns '' (_tools/census.py:1274), so every same-day phase-1 anchor goes to the checker.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "census_phase1_commit_one_domain"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/census.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-htl7jkrm review"
+  ]
+}

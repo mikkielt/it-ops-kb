@@ -1,0 +1,27 @@
+{
+  "id": "ST-t3mrfi57",
+  "kind": "story",
+  "title": "factdiff.py anchor --file retries a fact whose only anchor row is unlocated by a failed fetch",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchor --file re-anchors a fact of the named file whose anchor row is unlocated:fetch-error, not-text or gone, as it does a fact with no row, or kb/_self/tools.md says such a row needs --source. Found by the SP-htl7jkrm review: a planted ledger with one unlocated:fetch-error row and a fetch that now answers 200 gave 'anchor: sources=0' and no fetch (_tools/factdiff.py:633).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_file_retries_unlocated"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-htl7jkrm review"
+  ]
+}

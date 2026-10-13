@@ -1,0 +1,27 @@
+{
+  "id": "ST-7475tw3d",
+  "kind": "story",
+  "title": "The answer on Edit rule paths states the observed denial under .claude/worktrees instead of a DER conclusion that no allowance is needed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/_answers.md's answer QK-edit-permission-rule-name-absolute-path no longer concludes [DER] that a worktree under .claude/worktrees/ needs no protected-path allowance; it states the observed denial of an absolute //path Edit rule at a checkout under .claude/worktrees (BG-6ecranz3's repro_reason, tagged as what it is) and the _gaps.md entry records that observation. Found by the SP-htl7jkrm review (kb/public/_answers.md:3285).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('kb/public/_answers.md', encoding='utf-8').read(); i=t.index('QK-edit-permission-rule-name-absolute-path'); s=t[i:i+3000]; sys.exit(0 if 'needs no protected-path allowance' not in s and 'denied' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-htl7jkrm review"
+  ]
+}
