@@ -56,7 +56,7 @@
       "recommendation": "phrase_run counts the distinct stems of a run",
       "class": "design",
       "answer": "phrase_run counts the distinct stems of a run",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

@@ -75,7 +75,7 @@
       "recommendation": "expand only",
       "class": "design",
       "answer": "expand only",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -88,7 +88,7 @@
       "recommendation": "narrow the filter to whole words",
       "class": "design",
       "answer": "narrow the filter to whole words",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
