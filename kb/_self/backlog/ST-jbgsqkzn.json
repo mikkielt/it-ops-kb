@@ -2,7 +2,7 @@
   "id": "ST-jbgsqkzn",
   "kind": "story",
   "title": "land's undelivered warning names the failed gate's first error line, and a check-trailers refusal by name",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-q5ldd25k",
   "priority": "P3",
   "rank": 0,
@@ -69,5 +69,6 @@
   "links": [
     "parked: SP-kwi4ilty review"
   ],
-  "notes": "Found at the SP-kwi4ilty review. Premise run 2026-10-12 on a planted distill.log: a gate line '  gate check-trailers origin/main..HEAD: FAILED: commits=3 bad=1' before 'apply --push: kbgit.py sync exit 1: nothing pushed to main' gives 'kbgit.py sync exit 1: nothing pushed to main' (PUSH_GATE needs '(exit N)'), and '  gate tests.py (changed): FAILED (exit 1): 1 failed, 40 passed in 9.1s' gives that summary line, the last output line kg_sync prints, not the first error. Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Found at the SP-kwi4ilty review. Premise run 2026-10-12 on a planted distill.log: a gate line '  gate check-trailers origin/main..HEAD: FAILED: commits=3 bad=1' before 'apply --push: kbgit.py sync exit 1: nothing pushed to main' gives 'kbgit.py sync exit 1: nothing pushed to main' (PUSH_GATE needs '(exit N)'), and '  gate tests.py (changed): FAILED (exit 1): 1 failed, 40 passed in 9.1s' gives that summary line, the last output line kg_sync prints, not the first error. Planned at the 2026-10-12 draft triage (sprint 16 of 19, \"Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-q5ldd25k"
 }
