@@ -42,8 +42,10 @@ such a document when the source holds none.
 
 Sections. A page whose only signal is the text hash is compared per heading section: `_fetch_state.csv` keeps in
 `sections` the hash of each section's normalized units (`sections()`), beside doc_sha256 and bound to it. detect
-reads a located fact whose anchor's `heading` names a section that hashes the same as at the baseline as `verbatim`
-with the row signal `section`, and resolves only the facts of edited sections; the source's evidence counts the sections.
+reads a located fact whose passage lies in sections that all hash the same as at the baseline as `verbatim` with the
+row signal `section`, and resolves only the facts of edited sections; the sections are those of every unit of the
+passage's window (a window that starts at a heading line spans its parent's section and its own), else the anchor's
+`heading` section and those below it; the source's evidence counts the sections.
 
 detect, apply and review (apply --dry-run: no row) each append one ops row `census.phase` to the query log (phase, date,
 ms, exit and the counts per verdict, fact outcome or review outcome; kb/_self/querylog.md): the census's own phases write
@@ -241,10 +243,26 @@ def section_counts(old, new):
     return len(keys) - same, same
 
 
-def section_unchanged(anchor, old, new):
-    """Whether the section holding an anchor's passage (its `heading`) hashes the same in both sets."""
-    k = section_key((anchor or {}).get("heading") or "")
-    return k in old and old[k] == new.get(k)
+def window_sections(anchor, doc, prev):
+    """Keys of the sections that hold an anchor's passage. An anchor's `heading` is the path of its window's first unit,
+    and a heading line's own unit sits under its parent's path, so a window that starts at a heading line spans its
+    parent's section and its own: with the previous text holding the passage, the section of every unit of its window;
+    else (an anchor placed on an earlier text) its `heading` section and every section below it in the current text,
+    which holds any section the window can enter."""
+    head = (anchor or {}).get("heading") or ""
+    if prev is not None and anchor.get("sha") in prev.shas:
+        i, k = prev.shas[anchor["sha"]]
+        return {section_key(p) for p, _ in prev.units[i:i + k]} | {section_key(head)}
+    keys = {section_key(head)}
+    for p, _ in (doc.units if doc is not None else []):
+        if not head or p[:200] == head or p[:200].startswith(head + " > "):
+            keys.add(section_key(p))
+    return keys
+
+
+def section_unchanged(keys, old, new):
+    """Whether every section of `keys` (window_sections) hashes the same in both sets."""
+    return bool(keys) and all(k in old and old[k] == new.get(k) for k in keys)
 
 
 class Doc:
@@ -1183,8 +1201,9 @@ def linked(src, doc, row, sitemaps=True):
 
 def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, lookup=False):
     """Log rows, one per fact of a source whose text changed, moved or died. `secs` is the (baseline, current) pair of
-    section sets of a page only its text hash found changed: a located fact whose anchor's section hashes the same in
-    both is `verbatim` with the signal `section`, not resolved (no passage search, no other page). `lookup`: the
+    section sets of a page only its text hash found changed: a located fact whose passage's sections (every unit of
+    its window, window_sections) hash the same in both is `verbatim` with the signal `section`, not resolved (no
+    passage search, no other page). `lookup`: the
     provider's sitemap is not read (linked)."""
     out = []
     row = provider.for_url(src["url"], rows) or {}
@@ -1198,7 +1217,7 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
         if d is not None and located and a["sha"] in d.shas:
             rec["outcome"] = "verbatim"
             found += 1
-        elif d is not None and located and secs and section_unchanged(a, *secs):
+        elif d is not None and located and secs and section_unchanged(window_sections(a, d, pd), *secs):
             rec.update(outcome="verbatim", signal=SECTION_SIGNAL, note="the section of its passage hashes the same as at the baseline")
             found += 1
         elif d is not None and verdict not in ("soft-404", "replaced"):

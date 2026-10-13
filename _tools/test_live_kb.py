@@ -712,7 +712,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -991,6 +991,21 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     found, _ = factdiff.resolve(sid, {"url": url}, v, doc, {"text": page}, facts, anchors, prov,
                                 (factdiff.stored_sections(base, None), factdiff.sections(edited)))
     assert [(r["outcome"], r.get("signal", "")) for r in found] == [("verbatim", factdiff.SECTION_SIGNAL), ("modified", "")], found
+    # a window that starts at a heading line: its anchor's heading is the parent's path and the body sits under the
+    # heading's own, so the section of every unit of the window is compared (the old text holds the window; else the
+    # heading's section and those below it): an edit of the body is no `section` verbatim, one outside them is
+    page2 = ("# Guide\n\n## Alpha\n\nAlpha text stays.\n\n## Retry limits\n\n"
+             "The Orion queue gives up after thirty failed attempts for every job.\n\n# Appendix\n\nAppendix text stays.\n")
+    fact2 = [("k1", "x.md", 3, "Retry limits: the Orion queue gives up after thirty failed attempts for every job.")]
+    row2 = factdiff.anchor_rows(sid, fact2, {"status": 200, "text": page2}, None, "2026-10-01")[0]
+    assert row2["heading"] == "Guide"
+    outcomes = lambda text, row, old: [(r["outcome"], r.get("signal", "")) for r in factdiff.resolve(  # noqa: E731
+        sid, {"url": url}, "changed", {"text": text}, {"text": old}, fact2, {("k1", "x.md", sid): row}, prov,
+        (factdiff.sections(old), factdiff.sections(text)))[0]]
+    body = page2.replace("thirty", "sixty")
+    assert outcomes(body, row2, page2) == [("modified", "")]
+    assert outcomes(body, {**row2, "sha": "0" * 16}, page2) == [("modified", "")]  # an anchor of an earlier text
+    assert outcomes(page2.replace("Appendix text stays", "Appendix text moved"), {**row2, "sha": "0" * 16}, page2) == [("verbatim", factdiff.SECTION_SIGNAL)]
     # detect's source row counts the sections, the run's line totals them; apply trusts a fact kept by its section only
     # when the baseline is no newer than the last confirmation
     monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": url, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
