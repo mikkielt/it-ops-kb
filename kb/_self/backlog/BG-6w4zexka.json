@@ -53,7 +53,8 @@
   "touches": [
     "kb/public/agents/doc-lookup-sources.md",
     "kb/public/_retrieval/doc2query/expansions.csv",
-    "kb/public/_anchors.csv"
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv"
   ],
   "depends_on": [
     "BG-zof4bcok"
