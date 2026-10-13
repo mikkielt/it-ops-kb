@@ -23,6 +23,21 @@
   "depends_on": [
     "ST-kp5oq4sr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which tag does settings-and-scopes.md:73 carry for the claim that git diff and git show run in a default -p session without a rule?",
+      "options": [
+        "DER citing S-pmhgjvef first",
+        "UNK on the permissions page's Read-only commands section"
+      ],
+      "recommendation": "DER citing S-pmhgjvef first",
+      "class": "design",
+      "answer": "DER citing S-pmhgjvef first",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-mujl7ebh review"
   ],
