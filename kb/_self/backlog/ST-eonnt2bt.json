@@ -1,0 +1,26 @@
+{
+  "id": "ST-eonnt2bt",
+  "kind": "story",
+  "title": "Planning puts kb/_self/code.md in the touches of an item that adds an import between _tools modules",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/code.md lists each bl_ module's imports, so the ST-cdkj7nza worker (SP-mujl7ebh) stopped when its bl_dispatch import of bl_plan needed a code.md line outside its touches, and the orchestrator widened them and resumed it; check warns of a code item whose goal or notes name a new import between _tools modules whose import list code.md documents, when code.md is not in its touches.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_warns_import_list_doc"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh close"
+  ]
+}

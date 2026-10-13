@@ -1,0 +1,24 @@
+{
+  "id": "ST-dx45bdjc",
+  "kind": "story",
+  "title": "kb/_self/backlog.md says dispatch starts detached where the worker may outlast its task and a review parks a gap with no repro as a story or a bug with --repro-reason",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "ST-hcnh5zy3 (SP-mujl7ebh) changed the kb-sprint skill's run and review steps but left kb/_self/backlog.md, which its in-flight sibling also touched, unchanged: its dispatch paragraph names no detached start (start_new_session, waiting on the pid) and no log outside _cache, and its Sprints review line names only --repro CMD for a parked bug; both lines say what the skill says.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read().splitlines();d=[l for l in t if 'backlog.py dispatch ID' in l and 'starts the worker' in l];sys.exit(0 if d and all('start_new_session' in l for l in d) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh close"
+  ]
+}

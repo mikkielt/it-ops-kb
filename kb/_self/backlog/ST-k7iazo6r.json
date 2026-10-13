@@ -1,0 +1,26 @@
+{
+  "id": "ST-k7iazo6r",
+  "kind": "story",
+  "title": "A headless worker is refused git worktree add, which its role file forbids and the shared allow rules permit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "agents/worker.md rule 2 says a worker never runs git worktree add, while .claude/settings.json allows Bash(git worktree add *) for every session, the orchestrator's included (found by the ST-4jbvwssm worker, SP-mujl7ebh); a worker that runs it is refused by a hook or by the settings dispatch gives it, and the orchestrator keeps the rule. The settings change is the operator's.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_worktree_add_refused"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-mujl7ebh close"
+  ]
+}
