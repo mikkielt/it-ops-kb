@@ -2,7 +2,7 @@
   "id": "BG-5fentnzk",
   "kind": "bug",
   "title": "ql_apply.plain_question leaves path.md:12:34 a path:line citation, so the guard rejects a real question's gap",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-kwi4ilty review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: the repro exits 1 (precheck): plain_question('see docs/a.md:12:34 here') still holds a LEDGER_CITE match. BG-6hb4yabk follows it (ql_apply.py, test_redact.py)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: the repro exits 1 (precheck): plain_question('see docs/a.md:12:34 here') still holds a LEDGER_CITE match. BG-6hb4yabk follows it (ql_apply.py, test_redact.py).",
+  "claimed_by": "orch-enudabdr"
 }
