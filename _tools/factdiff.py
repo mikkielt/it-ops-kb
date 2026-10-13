@@ -933,6 +933,7 @@ def baseline_head(st, doc, prev):
 
 
 VERDICTS = ("unchanged", "changed", "new", "moved", "gone", "soft-404", "replaced", "error", "pinned", "hinted")
+CHANGE_VERDICTS = ("changed", "replaced", "moved")  # a change detect saw: the state row's changed_utc is its check time
 OUTCOMES = ("verbatim", "moved", "modified", "not-found", "unanchored", "dead")
 AUTO = ("verbatim", "moved")  # applied with no model: the anchor's passage found word for word
 REVIEW = ("modified", "not-found", "unanchored", "dead")
@@ -1358,7 +1359,7 @@ def cmd_detect(a, tally):
             outc[r["outcome"]] += 1
             secn["facts"] += r.get("signal") == SECTION_SIGNAL
         if new is not None and not a.no_save:
-            state[sid] = new
+            state[sid] = {**new, "changed_utc": new["detected_utc"]} if verdict in CHANGE_VERDICTS else new
         if doc is not None and wants_snapshot(srcs[sid], doc) and not a.no_save:
             write_snapshot(srcs[sid], doc["text"], date)
     out = a.out or root_path(os.path.join(kbcommon.CENSUS_DIR, f"factdiff-{date}.csv"))
