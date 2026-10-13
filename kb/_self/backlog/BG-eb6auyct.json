@@ -2,7 +2,7 @@
   "id": "BG-eb6auyct",
   "kind": "bug",
   "title": "The router arm of the agent benchmark now revalidates stale sources live, so its times are not comparable with earlier rows",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-e4fm2ovk",
   "priority": "P3",
@@ -49,5 +49,18 @@
     "parked: SP-etslk6yu review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: agent_bench.route(q) calls kb_ask.plan(q) with revalidate left at its default \"stale\". Run at planning on main with kb_ask.plan stubbed: revalidate='stale', KB_NO_REVALIDATE unset, exit 1. bench_pool.router_run runs agent_bench.py --route, so the pool's router arm follows the same default; tools.md:23 names --route and needs the flag's line.",
-  "claimed_by": "orch-e4fm2ovk"
+  "evidence": {
+    "commit": "7c38e062f3546d2b1ceca7d683f8f723cc6dadfe",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os; sys.path.insert(0,'_tools'); os.environ.pop('KB_NO_REVALIDATE',None); import agent_bench, kb_ask; seen={}; kb_ask.tool_answer=lambda q: None; kb_ask.plan=lambda q, model=None, revalidate='stale': (seen.update(r=revalidate, e=os.environ.get('KB_NO_REVALIDATE')) or {'kind':'web'}); kb_ask.web_prompt=lambda q, p: ''; agent_bench._step=lambda *a, **k: {}; agent_bench.route('What is x?'); print(seen); sys.exit(0 if (seen['r'] is False or seen['e']=='1') else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f91a522ec63b3a8f"
+      }
+    ]
+  }
 }
