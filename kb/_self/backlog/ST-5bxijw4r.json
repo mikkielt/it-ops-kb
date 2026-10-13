@@ -2,7 +2,7 @@
   "id": "ST-5bxijw4r",
   "kind": "story",
   "title": "Research sprint goal: Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7ff7c5ui",
   "goal_research": true,
   "priority": "P1",
@@ -50,5 +50,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-7ff7c5ui"
+  "evidence": {
+    "commit": "4f1dff875e18bc8b6d638979692e78b84f3077c1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5bxijw4r"
+        ],
+        "exit": 0,
+        "sha256": "0d445d0327b40674"
+      }
+    ]
+  }
 }
