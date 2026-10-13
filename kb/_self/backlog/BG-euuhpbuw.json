@@ -1,0 +1,17 @@
+{
+  "id": "BG-euuhpbuw",
+  "kind": "bug",
+  "title": "ql_research's fact gate reads eval failures and off-kb good but not noted, so a researched fact that puts a note on an eval good is kept",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_research's gate refuses a researched fact whose rag.run_eval result has noted above rag.NOTED_BASELINE, as ql_apply's try_fix and rag.py eval do (found while fixing BG-6hb4yabk)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,inspect;sys.path.insert(0,'_tools');import ql_research;s=inspect.getsource(ql_research);sys.exit(0 if 'noted' in s or 'NOTED_BASELINE' in s else 1)"
+    ]
+  }
+}
