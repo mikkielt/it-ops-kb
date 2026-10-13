@@ -2,7 +2,7 @@
   "id": "ST-iiljf4vt",
   "kind": "story",
   "title": "Research sprint goal: Content fixes: answers, conflicts, gaps and source rows say what holds now",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Questions run through rag.py pack at plan time: cap on --max-budget-usd (good), os.copy_file_range EXDEV condition (good), Claude Code 2.1.295 or older Sonnet 5.5 cache-read price (weak: no article names 2.1.295), -ServerRole Standby (good), memdocs 404 and Internet Archive (good), memdocs licence (good), RRF k (good), census step models (weak on the public root; good on --root _self, tested SQ-census-judging-steps-model at kb/_self/token-efficiency.md:13, so it needs no outside fact), lock for concurrent writers on Windows and POSIX (good). Only the cache-read price question is narrowed in."
+  "notes": "Questions run through rag.py pack at plan time: cap on --max-budget-usd (good), os.copy_file_range EXDEV condition (good), Claude Code 2.1.295 or older Sonnet 5.5 cache-read price (weak: no article names 2.1.295), -ServerRole Standby (good), memdocs 404 and Internet Archive (good), memdocs licence (good), RRF k (good), census step models (weak on the public root; good on --root _self, tested SQ-census-judging-steps-model at kb/_self/token-efficiency.md:13, so it needs no outside fact), lock for concurrent writers on Windows and POSIX (good). Only the cache-read price question is narrowed in.",
+  "claimed_by": "orch-ilqhjn3k"
 }
