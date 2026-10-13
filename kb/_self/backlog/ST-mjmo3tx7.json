@@ -46,6 +46,36 @@
   "depends_on": [
     "ST-2zlpwzbs"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does the run to start count in the --max-usd check beside the finished runs and the runs in flight, and may the first run of a shape start when its price alone passes its part of the cap?",
+      "options": [
+        "Count only finished and in-flight runs: no run starts once they reach the cap, so the spend can pass it by one run",
+        "Count the run to start too, and start the first run of a shape whatever its price while its part of the cap is above 0: no estimated overshoot, and a cap below one run's price still starts one",
+        "Count the run to start with no exception: a cap below the first run's price starts none"
+      ],
+      "recommendation": "Count the run to start too, and start the first run of a shape whatever its price while its part of the cap is above 0: no estimated overshoot, and a cap below one run's price still starts one",
+      "class": "design",
+      "answer": "Count the run to start too, and start the first run of a shape whatever its price while its part of the cap is above 0: no estimated overshoot, and a cap below one run's price still starts one",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which price does a kind take in the estimate when no earlier record of its arm label holds a cell of that kind?",
+      "options": [
+        "The label's all-kinds cell, then another kb arm's cell of the same kind, its all cell, then the default",
+        "Another kb arm's cell of the same kind first, then the label's all-kinds cell, then the default",
+        "Refuse the dry run, naming the kind with no price"
+      ],
+      "recommendation": "The label's all-kinds cell, then another kb arm's cell of the same kind, its all cell, then the default",
+      "class": "design",
+      "answer": "The label's all-kinds cell, then another kb arm's cell of the same kind, its all cell, then the default",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kp3boz7z close"
   ],

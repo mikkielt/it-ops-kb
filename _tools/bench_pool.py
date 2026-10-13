@@ -1412,16 +1412,27 @@ def cell_rows(runs):
     return out
 
 
-def run_tasks(tasks, work, jobs=1, cap=None, emit=None):
+def run_tasks(tasks, work, jobs=1, cap=None, emit=None, price=None, paid=None):
     """([result of each task started], [the tasks not started]): `work(task)` runs up to `jobs` at once, each task started
     in list order; `emit(i, task, result)` sees the results in list order, on the calling thread, whatever order the
-    runs finish in. With `cap` (US dollars), no task is started once the spend of finished runs (bench_core.spent_usd,
-    since the call began) has reached it; the runs in flight finish."""
+    runs finish in. With `cap` (US dollars), a task starts only while the spend so far (bench_core.spent_usd, since the
+    call began), the runs in flight at `price(task)` each (less what `paid(task)` of it is already in the spend) and the
+    task at its own price stay within it: `jobs` runs in flight cannot carry the spend past it. Nothing in flight and
+    nothing spent starts a task whatever its price (a cap above 0), and without `price` every task is priced at 0, so only
+    the spend stops one; the runs in flight finish."""
     base = spent_usd()
     done, flight, nxt, emitted = {}, {}, 0, 0
+    price = price or (lambda task: 0.0)
+    left = lambda task: max(price(task) - (paid(task) if paid else 0.0), 0.0)  # noqa: E731
+
+    def room(task):
+        if cap is None:
+            return True
+        committed = spent_usd() - base + sum(left(tasks[i]) for f, i in flight.items() if not f.done())
+        return committed < cap and (committed == 0 or committed + price(task) <= cap)
     with ThreadPoolExecutor(max_workers=max(1, jobs)) as ex:
         while True:
-            while nxt < len(tasks) and len(flight) < jobs and not (cap is not None and spent_usd() - base >= cap):
+            while nxt < len(tasks) and len(flight) < jobs and room(tasks[nxt]):
                 flight[ex.submit(work, tasks[nxt])] = nxt
                 nxt += 1
             if not flight:
@@ -1446,12 +1457,13 @@ def interleaved(per_cell):
     return [t for turn in zip_longest(*per_cell) for t in turn if t is not None]
 
 
-def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
+def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc="", usd=None):
     """Every row on every cell (a web arm only on WEB_KINDS), `reps` times: the run records, in the order the runs are
     started, one of each cell in turn (`interleaved`), whatever order `jobs` parallel runs finish in. `rows` and `reps` are
     one value for every arm, or a dict by arm. `runner(arm, effort, row)` is one run's result; `sink(record, result)` sees
     each as it is made, in that order. With `cap` (run_tasks), `left` is extended with (label, "id#rep") of each run not
-    started. `cc` is the run's Claude Code version, which record_of prices an alias arm by."""
+    started, and `usd(label, kind)` is the expected cost of a run of a kind on a label, which a run in flight counts at
+    against the cap. `cc` is the run's Claude Code version, which record_of prices an alias arm by."""
     tasks = interleaved([[(arm, effort, label, row, rep) for row in per_arm(rows, arm) if accepts(arm, row["kind"])
                           for rep in range(1, per_arm(reps, arm) + 1)] for arm, effort, label in cells])
     runs = []
@@ -1460,7 +1472,8 @@ def run_pool(rows, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, 
         runs.append(record_of(t[3], t[0], t[2], r, cc))
         if sink:
             sink(runs[-1], r)
-    _, rest = run_tasks(tasks, lambda t: runner(t[0], t[1], t[3]), jobs, cap, emit)
+    price = (lambda t: usd(t[2], t[3]["kind"])) if usd else None
+    _, rest = run_tasks(tasks, lambda t: runner(t[0], t[1], t[3]), jobs, cap, emit, price)
     if left is not None:
         left += [(t[2], f"{t[3]['id']}#{t[4]}") for t in rest]
     for _, _, label in cells:
@@ -1503,17 +1516,19 @@ def session_fields(r, before):
     return out, last
 
 
-def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc=""):
+def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=None, cc="", usd=None):
     """Every group on every cell, `reps` times, each in one session of its own (`groups` and `reps`, as the rows and reps of
     run_pool, one value or a dict by arm): the run records in the order the sessions are started, one of each cell in turn
     (`interleaved`), with the arm label `SESSION_SUFFIX` added, the group's number, the question's `position` and the `session_fields`.
     `runner(arm, effort, row, sid, position)` is one question's result: the first starts the session `sid`, each later
     one resumes it. A failed question ends its session: the questions after it are recorded as errors. Up to `jobs`
     sessions run at once (a session's questions stay in order inside it), the records come in the order `jobs` 1 gives,
-    and `cap`, `left` and `cc` work as in run_pool, a session being the unit started or not (the name `group N#rep`)."""
+    and `cap`, `left`, `cc` and `usd` work as in run_pool, a session being the unit started or not (the name
+    `group N#rep`) and priced as its questions' kinds, less what its answered questions have cost."""
     tasks = interleaved([[(arm, effort, label + SESSION_SUFFIX, number, group, rep)
                           for number, group in enumerate(per_arm(groups, arm), 1) for rep in range(1, per_arm(reps, arm) + 1)]
                          for arm, effort, label in cells])
+    paid = {}  # id of a session's task: what its answered questions cost, which the run's spend already holds
 
     def session(t):
         arm, effort, _, _, group, _ = t
@@ -1522,6 +1537,8 @@ def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=
             r = {"error": f"the session ended at position {ended}"} if ended else runner(arm, effort, row, sid, position)
             if "error" in r:
                 ended = ended or position
+            else:
+                paid[id(t)] = paid.get(id(t), 0.0) + (r.get("cost") or 0.0)
             got.append(r)
         return got
     runs = []
@@ -1536,7 +1553,8 @@ def run_sessions(groups, cells, reps, runner, sink=None, jobs=1, cap=None, left=
             runs.append(rec)
             if sink:
                 sink(rec, r)
-    _, rest = run_tasks(tasks, session, jobs, cap, emit)
+    price = (lambda t: sum(usd(t[2], row["kind"]) for row in t[4])) if usd else None
+    _, rest = run_tasks(tasks, session, jobs, cap, emit, price, lambda t: paid.get(id(t), 0.0))
     if left is not None:
         left += [(t[2], f"group {t[3]}#{t[5]}") for t in rest]
     for _, _, label in cells:
@@ -1706,6 +1724,11 @@ class Leg(NamedTuple):
     def runs(self, arm):
         return (len(self.groups[arm]) * GROUP_SIZE if self.session else len(self.rows[arm])) * self.reps[arm]
 
+    def kind_runs(self, arm):
+        """{kind: runs} of `arm`'s cell in this leg, a session group's questions each by its own kind."""
+        rows = [r for g in self.groups[arm] for r in g] if self.session else self.rows[arm]
+        return {kind: n * self.reps[arm] for kind, n in Counter(r.get("kind") for r in rows).items()}
+
     def plan(self, arm):
         if self.session:
             return (f"{len(self.groups[arm])} groups x {self.reps[arm]} reps, {len(self.left[arm])} of {len(self.rows[arm])} "
@@ -1755,11 +1778,12 @@ def s_pool(b):
     if not total:
         raise Skip(f"the kinds chosen leave no run of the {len(pool)} pool rows (a session needs {GROUP_SIZE} rows of one arm)")
     jobs, cap, cc = max(1, getattr(b, "jobs", 1)), getattr(b, "max_usd", None), getattr(b, "cc", "")
+    history = read_rows(RESULTS)
     if getattr(b, "dry", False):
         for leg in legs:
             for arm, _, label in leg.cells:
                 print(f"pool: {label}{leg.suffix}: {leg.runs(arm)} runs ({leg.plan(arm)})")
-        usd = estimate_lines(legs, read_rows(RESULTS), jobs, cap)
+        usd = estimate_lines(legs, history, jobs, cap)
         sampled = f" (--sample {b.sample} per kind)" if getattr(b, "sample", None) else ""
         raise Skip(f"dry run: {len(pool)} pool rows{sampled}, shapes {'+'.join(leg.shape for leg in legs)}, "
                    f"{sum(len(leg.cells) for leg in legs)} cells, {total} runs, no model started; estimated spend ${usd:.2f}")
@@ -1774,17 +1798,20 @@ def s_pool(b):
                 kinds = {r["kind"] for g in leg.groups[arm] for r in g} if leg.session else {r["kind"] for r in leg.rows[arm]}
                 b.row("pool", "all", label + leg.suffix, "planned_kinds", "+".join(sorted(kinds)), leg.runs(arm))
     not_started, base = [], spent_usd()
-    want = [sum(runs * usd for _, _, _, runs, usd, *_ in estimates([leg], read_rows(RESULTS))) for leg in legs]
+    priced = [estimates([leg], history) for leg in legs]
+    want = [sum(runs * usd for _, _, _, runs, usd, *_ in leg_est) for leg_est in priced]
     for i, leg in enumerate(legs):
         if not any(leg.runs(arm) for arm, _, _ in leg.cells):
             continue
         share = leg_cap(cap, spent_usd() - base, want[i:])  # this shape's part of what is left of the cap
+        by_kind = {(label, kind): usd for _, _, label, *_, parts in priced[i] for kind, _, usd, _ in parts}
+        cost_of = lambda label, kind, by_kind=by_kind: by_kind.get((label, kind), 0.0)  # noqa: E731
         if leg.session:
-            runs = run_sessions(leg.groups, leg.cells, leg.reps, live_session_runner(b), sink, jobs, share, not_started, cc)
+            runs = run_sessions(leg.groups, leg.cells, leg.reps, live_session_runner(b), sink, jobs, share, not_started, cc, cost_of)
             for case, label, metric, value, n, model, note in session_rows(runs):
                 b.row("pool", case, label, metric, value, n, model, note)
         else:
-            runs = run_pool(leg.rows, leg.cells, leg.reps, live_runner(b, sh), sink, jobs, share, not_started, cc)
+            runs = run_pool(leg.rows, leg.cells, leg.reps, live_runner(b, sh), sink, jobs, share, not_started, cc, cost_of)
         for case, label, metric, value, n, model, note in cell_rows(runs):
             b.row("pool", case, label, metric, value, n, model, note)
     for label in dict.fromkeys(label for label, _ in not_started):
@@ -1808,14 +1835,21 @@ NO_MODEL_ARMS = ("hook",)  # no model: costs nothing
 TWIN_ORDER = ("sonnet-5-5", "opus-5-5", "haiku-5-5", "haiku-4-5")  # the kb arm whose figures stand in for another's, nearest first
 
 
-def newest_cell(history, label):
-    """(the record, {metric: row}) of the `all` cell of arm label `label` in the newest pool record of the results
-    `history` that holds one, else (None, {})."""
-    mine = [r for r in history if r["scenario"] == "pool" and r["arm"] == label and r["case"] == "all"]
+def newest_cell(history, label, case="all"):
+    """(the record, {metric: row}) of the cell `case` (`all`, or a kind) of arm label `label` in the newest pool record of
+    the results `history` that holds one, else (None, {})."""
+    mine = [r for r in history if r["scenario"] == "pool" and r["arm"] == label and r["case"] == case]
     if not mine:
         return None, {}
     record = max(r["record"] for r in mine)
     return record, {r["metric"]: r for r in mine if r["record"] == record}
+
+
+def kind_cells(history, label, kind):
+    """[(case, record, cell)] of arm label `label` in `history` to price a run of `kind` from: the cell of the kind in the
+    newest record that holds one, then the `all` cell of the newest record that holds that (without a kind, only it)."""
+    return [(case, record, cell) for case in ([kind] if kind else []) + ["all"]
+            for record, cell in [newest_cell(history, label, case)] if cell]
 
 
 def run_usd(tokens, model):
@@ -1826,49 +1860,77 @@ def run_usd(tokens, model):
             + tokens["out"] * p[2]) / 1e6
 
 
-def assumed_run(label, arm, history):
-    """(the cost in US dollars of one run of arm label `label`, the pinned model that prices it, its figures, where they
-    come from), the first of: the mean `cost` of the label's `all` cell in its newest record of the results `history`
-    (what the runs were billed, web searches and the model a tool calls inside it included); the mean tokens of the
-    `all` cell of a kb arm's label with the same effort and shape in another kb arm, the newest record first, `TWIN_ORDER`
-    after, priced as the arm's own model (an arm that has no record yet: the same tools, so about the same tokens);
-    DEFAULT_RUN (none for the hook arm) priced as the arm's model (the router as sonnet-5-5)."""
-    record, got = newest_cell(history, label)
-    if "cost" in got and (float(got["cost"]["value"]) > 0 or arm in NO_MODEL_ARMS):
-        return (float(got["cost"]["value"]), got["cost"]["model"] if got["cost"]["model"] in PRICE else "claude-sonnet-5-5", None,
-                f"the mean cost of the record {record}")
+def assumed_run(label, arm, history, kind=None):
+    """(the cost in US dollars of one run of arm label `label` on a row of `kind` (None: of any kind), the pinned model
+    that prices it, its figures, where they come from), the first of: the mean `cost` of the label's cell of the kind,
+    else of its `all` cell (`kind_cells`), in the newest record of the results `history` (what the runs were billed, web
+    searches and the model a tool calls inside it included); the mean tokens of the same cells of a kb arm's label with
+    the same effort and shape in another kb arm, the newest record first, `TWIN_ORDER` after, priced as the arm's own
+    model (an arm that has no record yet: the same tools, so about the same tokens); DEFAULT_RUN (none for the hook arm)
+    priced as the arm's model (the router as sonnet-5-5)."""
+    of = lambda case: "the record" if case == "all" else "the kind in the record"  # noqa: E731
+    for case, record, got in kind_cells(history, label, kind):
+        if "cost" in got and (float(got["cost"]["value"]) > 0 or arm in NO_MODEL_ARMS):
+            return (float(got["cost"]["value"]), got["cost"]["model"] if got["cost"]["model"] in PRICE else "claude-sonnet-5-5",
+                    None, f"the mean cost of {of(case)} {record}")
     model = resolve_model(agent_bench.MODEL.get(arm.removeprefix("web-"), "claude-sonnet-5-5"))
     rest, twins = label.removeprefix(arm), []
     for other in TWIN_ORDER if arm in KB_ARMS else ():
-        rec, cell = newest_cell(history, other + rest) if other != arm else (None, {})
-        if all(m in cell for m in ("input", "cache_read", "cache_write", "out")):
-            twins.append((rec, -TWIN_ORDER.index(other), cell, other))
+        for case, rec, cell in kind_cells(history, other + rest, kind) if other != arm else ():
+            if all(m in cell for m in ("input", "cache_read", "cache_write", "out")):
+                twins.append((rec, -TWIN_ORDER.index(other), cell, other, case))
+                break
     if twins:
-        record, _, cell, other = max(twins, key=lambda t: t[:2])
+        record, _, cell, other, case = max(twins, key=lambda t: t[:2])
         v = {m: float(cell[m]["value"]) for m in ("input", "cache_read", "cache_write", "out")}
         tokens = {"uncached": v["input"] - v["cache_read"] - v["cache_write"], "cache_write": v["cache_write"],
                   "cache_read": v["cache_read"], "out": v["out"]}
-        return run_usd(tokens, model), model, tokens, f"the means of {other}{rest} in the record {record}, priced as {model}"
+        return (run_usd(tokens, model), model, tokens,
+                f"the means of {'' if case == 'all' else 'the kind of '}{other}{rest} in the record {record}, priced as {model}")
     tokens = {k: 0 for k in DEFAULT_RUN} if arm in NO_MODEL_ARMS else dict(DEFAULT_RUN)
     return run_usd(tokens, model), model, tokens, "the default"
 
 
 def estimates(legs, history):
-    """[(leg, arm, label, runs, per-run USD, model, tokens, basis)] of every cell of the `legs`, priced by `assumed_run`."""
-    return [(leg, arm, label + leg.suffix, leg.runs(arm), *assumed_run(label + leg.suffix, arm, history))
-            for leg in legs for arm, _, label in leg.cells]
+    """[(leg, arm, label, runs, per-run USD, model, tokens, basis, parts)] of every cell of the `legs`: each kind of the
+    cell's rows priced by `assumed_run` at its own cost, `parts` being [(kind, runs, per-run USD, basis)] and the cell's
+    per-run USD the mean of them (its model the one most runs have, its tokens the mean of them, None when a part is priced
+    by a mean cost)."""
+    out = []
+    for leg in legs:
+        for arm, _, label in leg.cells:
+            label += leg.suffix
+            got = [(kind, n, assumed_run(label, arm, history, kind)) for kind, n in leg.kind_runs(arm).items()]
+            runs = sum(n for _, n, _ in got)
+            if not runs:
+                out.append((leg, arm, label, 0, *assumed_run(label, arm, history), []))
+                continue
+            models = Counter()
+            for _, n, (_, model, _, _) in got:
+                models[model] += n
+            tokens = ({k: sum(n * t[k] for _, n, (_, _, t, _) in got) / runs for k in DEFAULT_RUN}
+                      if all(t for _, _, (_, _, t, _) in got) else None)
+            bases = list(dict.fromkeys(basis for _, _, (_, _, _, basis) in got))
+            out.append((leg, arm, label, runs, sum(n * usd for _, n, (usd, *_) in got) / runs, models.most_common(1)[0][0], tokens,
+                        bases[0] if len(bases) == 1 else "by kind, below",
+                        [(kind, n, usd, basis) for kind, n, (usd, _, _, basis) in got]))
+    return out
 
 
 def estimate_lines(legs, history, jobs, cap):
-    """Print one line per cell of the `legs` with its expected spend, then the total; return the total in US dollars. An
-    estimate, not a measurement: each run is priced at `assumed_run`'s figure for its cell (a mean cost includes the web
-    searches its runs were billed; a price from tokens leaves them out), and the real spend depends on the runs."""
+    """Print one line per cell of the `legs` with its expected spend (and, where its kinds are priced differently, a line
+    per kind), then the total; return the total in US dollars. An estimate, not a measurement: each run is priced at
+    `assumed_run`'s figure for its kind on its cell (a mean cost includes the web searches its runs were billed; a price
+    from tokens leaves them out), and the real spend depends on the runs."""
     total = 0.0
-    for _, arm, label, runs, usd, model, tokens, basis in estimates(legs, history):
+    for _, arm, label, runs, usd, model, tokens, basis, parts in estimates(legs, history):
         total += runs * usd
         print(f"pool: {label}: estimate ${runs * usd:.2f} for {runs} runs at {'no model' if arm in NO_MODEL_ARMS else model}: per run "
               f"${usd:.4f}" + (f" (uncached {tokens['uncached']:,.0f}, cache write {tokens['cache_write']:,.0f}, cache read "
                                f"{tokens['cache_read']:,.0f}, output {tokens['out']:,.0f} tokens)" if tokens else "") + f" ({basis})")
+        if len({round(u, 4) for _, _, u, _ in parts}) > 1 or len({b for *_, b in parts}) > 1:
+            print(f"pool: {label}: by kind: " + ", ".join(f"{kind} {n} x ${u:.4f}" + (f" ({b})" if len({b for *_, b in parts}) > 1 else "")
+                                                         for kind, n, u, b in parts))
     print(f"pool: estimate ${total:.2f} in all at --jobs {jobs}: an estimate from the per-run costs above (bench_core's list "
           "prices where they come from tokens), not a measurement")
     if cap is not None and total > cap:
