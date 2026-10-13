@@ -2,7 +2,7 @@
   "id": "BG-4e7ja4zv",
   "kind": "bug",
   "title": "auth/http-message-signatures says no standard operation turns an age X25519 identity into a signing key and omits XEdDSA",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tcis5f23",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,41 @@
     "parked: SP-up5wchen review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: kb/public/auth/http-message-signatures.md line 40 says no standard operation turns an age identity into the signing key; XEdDSA appears nowhere in the article or the QK-ed25519 answer. Run 2026-10-12 at planning: grep of both found no XEdDSA; reproduces. Needs a new source for Signal's XEdDSA spec in _sources.csv (so _coverage.csv and _coverage.md via build_index.py); read the spec page before wording the trade-offs.",
-  "claimed_by": "orch-tcis5f23"
+  "evidence": {
+    "commit": "414c6e5e7640e1c63b296a2a7f993cbf9202f87d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; p,h,n=sys.argv[1:4]; s=pathlib.Path(p).read_text().split(h,1)[1].split(chr(10)+chr(35)*2+chr(32),1)[0]; sys.exit(n not in s)",
+          "kb/public/_answers.md",
+          "## QK-ed25519-http-signature",
+          "XEdDSA"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit(sys.argv[2] in pathlib.Path(sys.argv[1]).read_text())",
+          "kb/public/auth/http-message-signatures.md",
+          "no standard operation turns an age identity into the signing key"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path('kb/public/auth/http-message-signatures.md').read_text(); sys.exit('XEdDSA' not in t)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
