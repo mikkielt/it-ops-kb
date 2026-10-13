@@ -17,7 +17,7 @@ from pathlib import Path
 
 import kbusage
 import ql_store as store_
-from ql_base import (ENTRY, HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, lock_age,
+from ql_base import (HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, launch_places, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
 from ql_capture import (AGENT_ACTIONS, BRANCH_ACTION, OPEN_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS,
                         WORK_ITEM, add_usage, pack_lines)
@@ -1134,10 +1134,11 @@ def close_ended(spool, session_id, transcript_path):
 
 
 def detach(argv, log, note=None):
-    """Start `argv` detached from this process, its output appended to `log` (after the line `note`, when given); its
-    PID. POSIX: a new session. Windows: DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, plus CREATE_BREAKAWAY_FROM_JOB
-    when the job the hook runs in allows it (a job that forbids breakaway refuses the flag, and the child is started
-    without it)."""
+    """Start `argv` detached from this process, its output appended to `log` (after the line `note`, when given), with
+    the clone's main checkout as its working directory (`launch_places`: never the linked worktree of a worker whose
+    session end started it, which `land` would refuse while the run waits for the lock); its PID. POSIX: a new
+    session. Windows: DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP, plus CREATE_BREAKAWAY_FROM_JOB when the job the
+    hook runs in allows it (a job that forbids breakaway refuses the flag, and the child is started without it)."""
     log = Path(log)
     log.parent.mkdir(parents=True, exist_ok=True)
     try:
@@ -1148,7 +1149,8 @@ def detach(argv, log, note=None):
         if note:
             f.write(note + "\n")
             f.flush()
-        kw = dict(stdin=subprocess.DEVNULL, stdout=f, stderr=subprocess.STDOUT, cwd=str(HOME), close_fds=True)
+        kw = dict(stdin=subprocess.DEVNULL, stdout=f, stderr=subprocess.STDOUT, cwd=str(launch_places()[1]),
+                  close_fds=True)
         if os.name == "nt":
             flags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
             try:
@@ -1173,7 +1175,7 @@ def launch(event):
         return None
     spool = qdir / "spool"
     sid = event.get("session_id")
-    argv = [sys.executable, str(ENTRY), "distill", "--settle", str(LAUNCH_SETTLE_S)]
+    argv = [sys.executable, str(launch_places()[0]), "distill", "--settle", str(LAUNCH_SETTLE_S)]
     own = None
     if event["hook_event_name"] == "SessionEnd" and isinstance(sid, str) and SAFE_SESSION.fullmatch(sid) \
             and (spool / f"{sid}.jsonl").exists():
