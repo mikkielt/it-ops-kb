@@ -22,6 +22,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-5i4itd2d review"
-  ]
+    "parked: SP-5i4itd2d review",
+    "parked: SP-e4fm2ovk review"
+  ],
+  "notes": "SP-e4fm2ovk review (2026-10-13): the kbfacts.py part (now :1760, :1763) moved into BG-3ewsdo6l of that sprint; redact.py:20 still cites without kb/ and check.py skips it."
 }

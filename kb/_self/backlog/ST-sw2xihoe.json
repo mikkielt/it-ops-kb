@@ -1,0 +1,27 @@
+{
+  "id": "ST-sw2xihoe",
+  "kind": "story",
+  "title": "A pool session's in-flight price is not credited with the overrun of its answered questions, so jobs above 1 start no session the cap would pass",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_pool.run_tasks counts a session in flight at no less than its unanswered questions' prices, not max(price - paid, 0), so a session whose first question billed 2.5 times its price keeps its remaining questions' price in the cap check and run_sessions starts no further session the cap would pass (SP-e4fm2ovk review, gap 5, S4: the overshoot is bounded by the overrun)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "pool_session_overrun_in_flight"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py"
+  ],
+  "links": [
+    "parked: SP-e4fm2ovk review"
+  ]
+}

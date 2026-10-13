@@ -1,0 +1,25 @@
+{
+  "id": "ST-gtug2bqx",
+  "kind": "story",
+  "title": "benchmarks.md says the 2026-10-12 freshness p95 is the rounded rank and the 2026-09-28 kb-lookup-agent runs had two or three requests",
+  "status": "draft",
+  "parent": "EP-4nl2jr4q",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/benchmarks.md marks the 2026-10-12 freshness p95 (7.88 s, n=54) and its code.claude.com cell (n=17) as taken at the rounded rank (51 of 54, 16 of 17) before BG-v5f5tn5y moved it to the nearest rank, or a rerun replaces them; and the kb-lookup-agent bullet of the section on the three moved scenarios says the 2026-09-28 runs had two or three requests (run 1: 2 requests, 10.1k input), not three each (SP-e4fm2ovk review, gaps 2 and 4)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/benchmarks.md',encoding='utf-8').read();bad=[m for m,ok in (('rounded rank not named','rounded rank' in t),('three requests each still claimed','at three requests each' not in t)) if not ok];print(bad or 'ok');sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.md"
+  ],
+  "links": [
+    "parked: SP-e4fm2ovk review"
+  ]
+}
