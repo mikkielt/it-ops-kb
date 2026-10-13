@@ -44,6 +44,22 @@
     "ST-rppq26tf",
     "BG-zsiguf72"
   ],
+  "gates": [
+    {
+      "id": "window",
+      "kind": "provisional",
+      "question": "How long may a lookup remember that a provider host did not accept a connection before it asks the host again (kb/public/agents/doc-change-detection.md:112: seconds to a minute, growing with repeated failures to a cap, ending on the first success; one failed connect costs provider.TIMEOUT, 30 s)?",
+      "options": [
+        "60 s, doubled with each failure in a row, capped at 300 s",
+        "30 s, doubled with each failure in a row, capped at 300 s",
+        "one fixed window of 300 s, no growth"
+      ],
+      "recommendation": "60 s, doubled with each failure in a row, capped at 300 s",
+      "class": "design",
+      "answer": "60 s, doubled with each failure in a row, capped at 300 s",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-etslk6yu close"
   ],

@@ -263,7 +263,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_search_http_error_keeps_the_offline_stamp(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -323,6 +323,8 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     monkeypatch.setattr(provider, "request", request)
     monkeypatch.setattr(provider, "_repos", {})  # the repository answers and the GitHub request count are the process's
     monkeypatch.setattr(provider, "_gh_api", {"asked": 0, "left": None, "seen": 0.0})
+    monkeypatch.setattr(provider, "DOWN_DIR", str(tmp_path / "down"))  # the hosts that did not connect: the process's, and the files
+    monkeypatch.setattr(provider, "_down", {})
     monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "cache" / "factdiff"))
     monkeypatch.setattr(kbfacts, "source_rows", lambda: {sid: {"id": sid, "url": u} for sid, u in {**urls, D: urls[D]}.items()})
     monkeypatch.setattr(factdiff, "read_state", lambda: state)
@@ -361,12 +363,14 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     # a result younger than the provider's pacing is reused with no request; an offline source is asked again
     before = len(asked)
     monkeypatch.setattr(provider, "pacing", lambda row: 3600)
+    provider.host_seen(urls[C], "")  # C's connect timeout put the Learn host in its window (below): asked again here
     again = factdiff.revalidate(printed)
     kept = [k for k in rev["lines"] if k[0] != "public/dsc/d.md" and k[0] != "public/dsc/g.md"]
     assert {k: again["lines"][k] for k in kept} == {k: rev["lines"][k] for k in kept}
     assert again["sources"][A]["state"] == again["sources"][B]["state"] == "cached"
     assert not any(u.startswith((urls[A], urls[B])) for u in asked[before:]), asked[before:]  # only C, G and P were asked again
-    assert not [p for p in tmp_path.rglob("*") if p.is_file() and "revalidate" not in p.parts]  # only the stored results, under the cache
+    assert not [p for p in tmp_path.rglob("*") if p.is_file() and "revalidate" not in p.parts and "down" not in p.parts]  # only the stored results, under the cache
+    provider.host_seen(urls[C], "")  # C timed out again: the sections below ask the Learn host, not its window
     # a baseline taken after an anchor's last confirmation proves only that nothing changed since: a fact kept by its
     # section, or one of an unchanged source, is resolved against the page as apply's kept() leaves it, not `current`
     E, F, H = "S9990017", "S9990018", "S9990019"
@@ -412,6 +416,36 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     limited = factdiff.revalidate([line("public/dsc/k.md", 7, facts[2][0], facts[2][2], K)])["lines"][("public/dsc/k.md", 7)]
     assert limited["outcome"] == "" and limited["unchecked"][K] == f"HTTP 429 from the candidate page {host}audit", limited
     pages[host + "audit"] = audit_page
+    # a host that did not accept a connection is left alone for a window, by this process and (its record is under the
+    # cache) by another: the second pack asks it nothing though no result of it is stored, the host's other sources are
+    # skipped in the first pack, the window doubles with each failure in a row up to the cap, and an answer ends it
+    X, Y = "S9990021", "S9990022"
+    urls.update({X: "https://docs.example.com/x", Y: "https://docs.example.com/y"})
+    connects = []
+    monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: connects.append(url) or {**respond(0, error="URLError: timed out"), "final": url})
+    pair = [line("public/dsc/x.md", 2, "f8f8f8f8f8f8", "x", X), line("public/dsc/y.md", 2, "f9f9f9f9f9f9", "y", Y)]
+    first = factdiff.revalidate(pair)
+    assert len(connects) == 1 and first["sources"][X]["why"] == "network error: URLError: timed out", (connects, first)
+    assert first["sources"][Y]["state"] == "offline" and first["sources"][Y]["why"].startswith(provider.DOWN_PREFIX), first
+    second = factdiff.revalidate(pair)
+    assert len(connects) == 1 and second["sources"][X]["why"].startswith(provider.DOWN_PREFIX), (connects, second)
+    provider._down.clear()  # another process: only the file remembers
+    assert factdiff.revalidate(pair[:1])["sources"][X]["state"] == "offline" and len(connects) == 1, connects
+    rec = provider.host_down(urls[X])
+    assert rec and rec["count"] == 1 and rec["until"] - rec["at"] == provider.DOWN_BASE_S, rec
+    t = rec["until"]
+    assert provider.host_down(urls[X], t) is None
+    for n, window in enumerate((120, 240, provider.DOWN_CAP_S, provider.DOWN_CAP_S), 2):
+        provider.host_seen(urls[X], "URLError: timed out", t)
+        assert provider.host_down(urls[X], t + window - 1)["count"] == n and provider.host_down(urls[X], t + window) is None
+        t += window
+    provider.host_seen(urls[X], "URLError: timed out", t)
+    provider.host_seen(urls[X], "HTTP 503", t + 1)  # the host answered: no window
+    assert provider.host_down(urls[X], t + 2) is None
+    provider.host_seen(urls[X], "URLError: timed out", t + 3)
+    provider.host_seen(urls[X], provider.BUDGET_ERROR, t + 4)  # the budget used up shows nothing of the host
+    assert provider.host_down(urls[X], t + 5) is not None
+    provider.host_seen(urls[X], "")
     # the time budget: a source asked after it is used up is not checked, and says so
     monkeypatch.setattr(provider, "pacing", lambda row: 0)
     monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error=provider.BUDGET_ERROR), "final": url})
@@ -589,6 +623,8 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     # and says which sources it could not check; the kb: hook never goes to the network
     monkeypatch.undo()
     monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "live" / "factdiff"))
+    monkeypatch.setattr(provider, "DOWN_DIR", str(tmp_path / "live" / "down"))
+    monkeypatch.setattr(provider, "_down", {})
     question = good_row()["question"]
     offline = kbfacts.pack_many([question])["text"]
     monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error="URLError: stubbed"), "final": url})
