@@ -1415,7 +1415,8 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
     urls = {n: f"https://docs.example.com/S999000{n}" for n in range(1, 7)}
     rows = [{**{c: "" for c in census.COLS}, "id": f"S999000{n}", "url": urls[n], "bucket": b, "outcome": o}
             for n, b, o in ((1, "OK", ""), (2, "CHANGED", "updated"), (3, "CHANGED", "superseded"), (5, "GONE", "gone"),
-                            (6, "OK", ""))]
+                            (6, "OK", "confirmed"))]
+    rows[-1]["outcome_note"] = f"2 {census.JUDGED_NOTE} claude-haiku-5-5 (judge-2099-01-02.csv)"  # a source `judge` confirmed
     srcs = [{"id": f"S999000{n}", "url": urls[n], "superseded_by": "S9990004" if n == 3 else ""} for n in range(1, 7)]
     doc = factdiff.Doc(text)
     found = {s: factdiff.sha(s) for s in sentences}
@@ -1449,7 +1450,7 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
         return {"status": 404, "text": None, "error": ""}
 
     def args(**kw):
-        return argparse.Namespace(log=str(log), changed=1.0, ok=1.0, seed=1, brief=True, max_age=7, **kw)
+        return argparse.Namespace(log=str(log), changed=1.0, judged=1.0, ok=1.0, seed=1, brief=True, max_age=7, **kw)
 
     with monkeypatch.context() as m:
         m.setattr(socket.socket, "connect", lambda *a, **k: (_ for _ in ()).throw(AssertionError("sample used the network")))
@@ -1467,6 +1468,10 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
         out = capsys.readouterr().out
         agreed, _, left = out.partition("## For the checker")
         assert "checked=5 agreed by tool=2 for the checker=3" in out and dict(tally) == {"checked": 5, "agreed by tool": 2, "for the checker": 3}
+        # each group's counts apart, the judge's confirms among them: the report states their agreement on their own
+        assert ("by group, each stated apart in the report: changed checked=3 agreed by tool=1 for the checker=2; "
+                "judged checked=1 agreed by tool=0 for the checker=1; ok checked=1 agreed by tool=1 for the checker=0") in out
+        assert "S9990006  judged, outcome confirmed, bucket OK" in left
         # every fact word for word: agreed by tool with the proof (the facts, the document read, when it was fetched); a
         # superseded row is judged by the facts of the row that replaced it, against that row's document
         assert ("S9990001  ok, outcome -, bucket OK: 2 fact(s) found word for word in the current text of https://docs.example.com/S9990001 "
@@ -1487,7 +1492,7 @@ def census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_th
         assert census.cmd_sample(argparse.Namespace(**{**vars(args()), "brief": False}), Counter()) == 0
         listed = list(csv.DictReader(capsys.readouterr().out.splitlines()))
         assert [(r["group"], r["id"]) for r in listed] == [("changed", "S9990002"), ("changed", "S9990003"), ("changed", "S9990005"),
-                                                          ("ok", "S9990001"), ("ok", "S9990006")]
+                                                          ("judged", "S9990006"), ("ok", "S9990001")]
         assert census.cmd_sample(argparse.Namespace(**{**vars(args()), "log": str(tmp_path / "none.csv")}), Counter()) == 2
 
 
@@ -1528,7 +1533,8 @@ def census_sample_brief_agrees_by_tool_only_before_phase2_edits(tmp_path, monkey
     def brief():
         asked.clear()
         capsys.readouterr()
-        assert census.cmd_sample(argparse.Namespace(log=str(log), changed=1.0, ok=1.0, seed=1, brief=True, max_age=7), Counter()) == 0
+        assert census.cmd_sample(argparse.Namespace(log=str(log), changed=1.0, judged=1.0, ok=1.0, seed=1, brief=True, max_age=7),
+                                 Counter()) == 0
         return capsys.readouterr().out
 
     with monkeypatch.context() as m:
@@ -1557,7 +1563,34 @@ def census_sample_brief_agrees_by_tool_only_before_phase2_edits(tmp_path, monkey
         assert "S9990001  ok" in out.partition("## For the checker")[0] and out.count("passage (anchor placed in phase 2)") == 2
 
 
-def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path, monkeypatch, capsys):
+def census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate(tmp_path, capsys):
+    """The sources `judge` confirmed are a sample group of their own (`judged`) at `--judged`, apart from `ok`."""
+    note = f"3 {census.JUDGED_NOTE} claude-haiku-5-5 (judge-2099-01-02.csv)"
+    spec = [("J", "CHANGED", "confirmed", note, 100), ("K", "OK", "confirmed", "read in full", 20), ("O", "OK", "", "", 20),
+            ("C", "CHANGED", "updated", "", 30)]
+    rows = [{**{c: "" for c in census.COLS}, "id": f"S9{kind}{n:04d}", "url": f"https://docs.example.com/{kind}{n}", "bucket": b,
+             "outcome": o, "outcome_note": nt} for kind, b, o, nt, count in spec for n in range(count)]
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    log = tmp_path / "2099-01-02.csv"
+    kbcommon.write_csv(str(log), census.COLS, rows)
+    args = argparse.Namespace(log=str(log), changed=0.10, judged=0.10, ok=0.05, seed=1, brief=False)
+    got = census.sampled(rows, args)
+    by = Counter(g for g, _ in got)
+    # a judged confirm is drawn at 0.10 of its own, never from the ok group: 10 of 100 judged, 3 of 30 changed, and 0.05 of the
+    # 40 other confirmed and unchanged rows
+    assert by == {"changed": 3, "judged": 10, "ok": 2}
+    assert all(r["id"].startswith("S9J") for g, r in got if g == "judged")
+    assert not any(r["id"].startswith("S9J") for g, r in got if g == "ok")
+    # the flag sets the rate, and a group is never empty while it has a row
+    assert Counter(g for g, _ in census.sampled(rows, argparse.Namespace(**{**vars(args), "judged": 0.5, "ok": 0.0}))) \
+        == {"changed": 3, "judged": 50, "ok": 1}
+    capsys.readouterr()
+    assert census.cmd_sample(args, Counter()) == 0
+    listed = list(csv.DictReader(capsys.readouterr().out.splitlines()))
+    assert Counter(r["group"] for r in listed) == by and list(by) == ["changed", "judged", "ok"]
+
+
+def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path, monkeypatch, capsys):
     census_github_page_signals_decide_a_page_without_a_reader(tmp_path / "ghpage", monkeypatch)
     census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes(tmp_path / "dispatch", monkeypatch, capsys)
     factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_asks_learn_for_the_rest(tmp_path / "learngit", monkeypatch)
@@ -1571,6 +1604,7 @@ def test_census_queue_and_census_groups_are_sized_without_network_each_phase_wri
     census_baseline_is_written_from_a_compared_document_and_decides_a_page_with_no_date_at_the_next_census(tmp_path / "baseline", monkeypatch, capsys)
     census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest(tmp_path / "sample", monkeypatch, capsys)
     census_sample_brief_agrees_by_tool_only_before_phase2_edits(tmp_path / "phase2", monkeypatch, capsys)
+    census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate(tmp_path / "judged", capsys)
     census_run_and_finish_stop_at_a_failing_step_and_refuse_a_foreign_change(tmp_path, monkeypatch, capsys)
 
     # a data row is anchored on its values, never its column names; a row whose own name is not on the page stays unlocated
