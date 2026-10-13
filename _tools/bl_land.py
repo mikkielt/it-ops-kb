@@ -867,6 +867,24 @@ def wait_for_hooks(path, procs, root=None, wait=None, poll=HOOK_POLL_S, clock=ti
     return procs, max(0, int(clock() - start)), hooks
 
 
+def still_running_remedy(pids, hooks):
+    """What land tells the operator to do about the processes PIDS still running in a worker's worktree, HOOKS of them
+    session-end hooks: a hook's distill waits up to ql_distill.USAGE_LOCK_WAIT_S for the lock, longer than land waits,
+    and ends on its own, so land is run again; any other process is the worker's background work, ended."""
+    others = [pid for pid in pids if pid not in hooks]
+    steps = []
+    if others:
+        steps.append("end it (the worker ends every background command and monitor it started)")
+    if len(others) < len(pids):
+        try:
+            from ql_distill import USAGE_LOCK_WAIT_S
+            limit = f"USAGE_LOCK_WAIT_S ({USAGE_LOCK_WAIT_S} s)"
+        except ImportError:
+            limit = "USAGE_LOCK_WAIT_S"
+        steps.append(f"a session-end distill waits up to {limit} for the distill lock and ends on its own")
+    return f"{', and '.join(steps)}; then run land again"
+
+
 PROBE_SUFFIX = ".land-probe"  # + pid: the sibling name held_by_process renames a worktree to and back
 
 
@@ -1056,7 +1074,7 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
             named = ", ".join(f"pid {pid} ({comm or '?'}{', a session-end hook' if pid in hooks else ''})"
                               for pid, comm in procs)
             return (f"it is {state} and a process still runs there{f' after {waited}s' if waited else ''}: {named}; "
-                    f"end it (the worker ends every background command and monitor it started), then run land again")
+                    f"{still_running_remedy([pid for pid, _ in procs], hooks)}")
         if waited:
             say(f"land: waited {waited}s in {path.name} for the session-end hook to end"
                 if hooks else f"land: waited {waited}s in {path.name} for a process whose parent had exited to end")

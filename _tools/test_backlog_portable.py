@@ -707,16 +707,19 @@ def orphan_in(cwd, log, seconds=60):
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
-def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling(
+def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling_and_worker_distill_outside_worktree_and_refusal_names_the_distill_lock_wait(
         tmp_path, monkeypatch):
     """A run whose standard output is the clone's distill.log and whose parent has exited, younger than
     bl_procs.HOOK_GRACE_S, is a `hook` that the orphans check names with its age and passes; the same run once it is
     older, and a stray process with another standard output, fail it. The host check fails over SUITE_LOAD_PER_CORE
     per core, the load a whole-suite run no longer fits its seconds ceiling at, whatever LOAD_PER_CORE allows, and a
-    review story's `done` refuses a whole-suite run at that load, naming the host (a selection it lets through)."""
+    review story's `done` refuses a whole-suite run at that load, naming the host (a selection it lets through). A
+    distill a worker's session end starts has the clone's main checkout as its working directory and script, so no
+    process of it runs in the worker's worktree; where one still does, the refusal of `land` names the lock wait."""
     import bl_land
     import bl_procs
     import bl_selfcheck
+    import ql_base
     log = tmp_path / "_cache" / "querylog" / "distill.log"
     log.parent.mkdir(parents=True)
     pids = []
@@ -746,6 +749,44 @@ def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stra
                 os.kill(pid, 15)
             except OSError:
                 pass
+
+    clone = Repo(tmp_path / "clone")  # the main checkout, with a worker's linked worktree under .claude/worktrees
+    os.makedirs(clone.path)
+    clone.git("init", "-q", "-b", "main")
+    clone.write("_tools/querylog.py", "\n")
+    clone.git("add", "-A")
+    clone.git("commit", "-q", "-m", "base")
+    worker = Path(clone.file(".claude/worktrees/agent-ST-00000001"))
+    clone.git("worktree", "add", "-q", "-b", "work/ST-00000001", str(worker))
+    monkeypatch.setattr(ql_base, "HOME", worker)  # this copy of the tools is the worker's
+    monkeypatch.setattr(ql_base, "ENTRY", worker / "_tools" / "querylog.py")
+    entry, home = ql_base.launch_places()
+    assert home.resolve() == Path(clone.path).resolve(), home
+    assert entry.resolve() == (Path(clone.path) / "_tools" / "querylog.py").resolve(), entry
+    pid = ql_distill.detach([sys.executable, "-c", "import time; time.sleep(30)"],
+                            Path(clone.file("_cache/querylog/distill.log")))
+    try:
+        in_main, why = bl_land.live_processes(Path(clone.path))
+        if in_main is None:
+            pytest.skip(why)
+        in_worker, _ = bl_land.live_processes(worker)
+        assert pid in [p for p, _ in in_main] and pid not in [p for p, _ in in_worker], (in_main, in_worker)
+    finally:
+        try:
+            os.kill(pid, 15)
+        except OSError:
+            pass
+
+    running = [(4242, "python3")]  # a run still in the worktree: a hook (its distill waits for the lock) or not
+    monkeypatch.setattr(bl_land, "live_processes", lambda path: (running, None))
+    monkeypatch.setattr(bl_land, "wait_for_hooks", lambda path, procs, root=None: (running, 60, {4242}))
+    refused = bl_land.release_worker_worktree(Path(clone.path), worker, None, "work/ST-00000001")
+    assert refused and "pid 4242 (python3, a session-end hook)" in refused, refused
+    assert f"USAGE_LOCK_WAIT_S ({ql_distill.USAGE_LOCK_WAIT_S} s)" in refused and "end it" not in refused, refused
+    assert refused.endswith("then run land again"), refused
+    monkeypatch.setattr(bl_land, "wait_for_hooks", lambda path, procs, root=None: (running, 0, set()))
+    refused = bl_land.release_worker_worktree(Path(clone.path), worker, None, "work/ST-00000001")
+    assert refused and "end it" in refused and "USAGE_LOCK_WAIT_S" not in refused, refused
 
     monkeypatch.setattr(bl_selfcheck, "lock_facts", lambda now: [])  # the host's own locks are no part of the load
     assert bl_selfcheck.SUITE_LOAD_PER_CORE < bl_selfcheck.LOAD_PER_CORE
