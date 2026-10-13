@@ -2,7 +2,7 @@
   "id": "BG-us65hepy",
   "kind": "bug",
   "title": "fact_for's phrase signal moved the SubagentStart/SubagentStop case to a line without agent_transcript_path",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 1 of 15, \"Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 1 of 15, \"Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-7ff7c5ui"
 }
