@@ -2,7 +2,7 @@
   "id": "BG-7ofeobia",
   "kind": "bug",
   "title": "auth/shamir-secret-sharing says the sss and sss-cli share limits are not stated, while the sss README states 255 shares and 64-byte secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tcis5f23",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,6 @@
   "links": [
     "parked: SP-up5wchen review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: shamir-secret-sharing.md line 38 gives the sss / sss-cli limit as \"not stated in the README\" and no line pairs sss-cli with 255. Run 2026-10-12 at planning: the repro fails; reproduces. The 255, 64-byte and 113-byte figures are the goal's reading of S-tmotj3si (the sss README): the worker confirms them on that page before writing them and cites it."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: shamir-secret-sharing.md line 38 gives the sss / sss-cli limit as \"not stated in the README\" and no line pairs sss-cli with 255. Run 2026-10-12 at planning: the repro fails; reproduces. The 255, 64-byte and 113-byte figures are the goal's reading of S-tmotj3si (the sss README): the worker confirms them on that page before writing them and cites it.",
+  "claimed_by": "orch-tcis5f23"
 }
