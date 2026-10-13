@@ -2,7 +2,7 @@
   "id": "ST-qngjizfo",
   "kind": "story",
   "title": "Review sprint: Content fixes: agents, Python and architecture articles state what their sources say",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-tjap3mdd"
 }
