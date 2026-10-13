@@ -50,7 +50,7 @@
       "recommendation": "phase-1 commit keys",
       "class": "design",
       "answer": "phase-1 commit keys",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -64,7 +64,7 @@
       "recommendation": "anchor placed in phase 2",
       "class": "design",
       "answer": "anchor placed in phase 2",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

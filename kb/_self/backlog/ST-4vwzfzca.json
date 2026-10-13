@@ -54,7 +54,7 @@
       "recommendation": "Head states 0.84 USD for the rows dispatched and that the one measured was not complete (the eval row's expect_text follows)",
       "class": "design",
       "answer": "Head states 0.84 USD for the rows dispatched and that the one measured was not complete (the eval row's expect_text follows)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
