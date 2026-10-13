@@ -57,6 +57,18 @@
       "class": "agents-rule",
       "answer": "lock: a run is in flight while it holds the distill lock (the lock's recorded pid is its own) or is younger than USAGE_LOCK_WAIT_S plus a margin, and stuck beyond that",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How far past USAGE_LOCK_WAIT_S is a distill run that holds no lock still in flight before the orphans check fails it?",
+      "options": [
+        "120 s: HOOK_MARGIN_S = 120, so a run is stuck after USAGE_LOCK_WAIT_S + 120 s (720 s) without the lock",
+        "60 s: the margin is HOOK_GRACE_S, 60 s",
+        "300 s: five minutes, room for a slow take of the lock after the wait"
+      ],
+      "recommendation": "120 s: HOOK_MARGIN_S = 120, so a run is stuck after USAGE_LOCK_WAIT_S + 120 s (720 s) without the lock",
+      "class": "agents-rule"
     }
   ],
   "links": [
