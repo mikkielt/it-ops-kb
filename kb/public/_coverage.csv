@@ -105,7 +105,7 @@ auth/enterprise-access-model,P2,complete,auth/enterprise-access-model.md,7
 auth/threats,P2,complete,auth/threats.md;auth/threats.csv,11
 auth/transport-crypto,P2,complete,auth/transport-crypto.md,14
 auth/enrolment-tokens,P3,complete,auth/enrolment-tokens.md,7
-auth/http-message-signatures,P3,partial,auth/http-message-signatures.md,7
+auth/http-message-signatures,P3,partial,auth/http-message-signatures.md,8
 auth/issuer-token-rotation,P3,partial,auth/issuer-token-rotation.md,16
 auth/oauth-pkce-oidc-id-token,P3,partial,auth/oauth-pkce-oidc-id-token.md,6
 auth/postgres-column-encryption,P3,partial,auth/postgres-column-encryption.md,6
@@ -325,7 +325,7 @@ security/threat-model-inputs,P2,complete,security/threat-model-inputs.md;securit
 security/vulnerability-prioritization,P2,complete,security/vulnerability-prioritization.md;security/vuln-data-apis.csv,18
 security/linux-auditd,P3,complete,security/linux-auditd.md,4
 security/linux-cis-ssg-openscap,P3,partial,security/linux-cis-ssg-openscap.md,16
-security/linux-nftables,P3,complete,security/linux-nftables.md,4
+security/linux-nftables,P3,partial,security/linux-nftables.md,5
 security/linux-patching-and-pins,P3,partial,security/linux-patching-and-pins.md,10
 security/linux-sshd-hardening,P3,complete,security/linux-sshd-hardening.md,3
 security/linux-time-sync,P3,complete,security/linux-time-sync.md,4

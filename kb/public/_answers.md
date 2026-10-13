@@ -3003,7 +3003,7 @@ _Agent: kb-research_
 - `Signature-Input` names the covered components and the parameters `created`, `expires`, `nonce`, `keyid`, `alg`, `tag`; `ed25519` applies RFC 8032 Ed25519 to the signature base. [DOC S-vm4x5dhi]
 - The RFC sets no replay window: a maximum age from `created`, rejection past `expires`, nonce uniqueness and required covered headers are application requirements. [DOC S-vm4x5dhi]
 - age converts Ed25519 to X25519 for ssh-ed25519 keys; libsodium documents the same direction and recommends distinct keys for signing and encryption. [CODE S-xzzrbowg: agessh/agessh.go; DOC S-n3swpr6x]
-- Conclusion: an age identity does not yield its matching Ed25519 key, because the Montgomery `u` coordinate drops the sign of the Edwards `x`; keep an Ed25519 key as the root (age reads ssh-ed25519) or give the signer its own key. [DER S-s3lqlvdi, S-n3swpr6x, S-xzzrbowg]
+- Conclusion: an age identity does not yield its matching Ed25519 key through the documented conversions, because the Montgomery `u` coordinate drops the sign of the Edwards `x`; XEdDSA (QK-xeddsa-let-age-x25519-identity-sign) signs with the X25519 scalar itself and fixes the sign bit at zero, or keep an Ed25519 key as the root (age reads ssh-ed25519) or give the signer its own key. [DER S-s3lqlvdi, S-n3swpr6x, S-xzzrbowg, S-lzpaeug7]
 - Open: no documented key-separated derivation. [UNK]
 - See auth/http-message-signatures.md.
 
@@ -3285,5 +3285,26 @@ _Agent: kb-research_
 - Conclusion: a worktree under `.claude/worktrees/` needs no protected-path allowance; a rule that names a location other than the session's working directory is written `//<absolute path>/**`, and a `/path` rule resolves against the primary working directory, so it cannot name another worktree. [DER S-pmhgjvef, S-zcuxapgb]
 - Open: whether the `.claude/worktrees/` exception holds for a worktree nested under another worktree's `.claude/worktrees/` directory, or one made by `git worktree add` instead of Claude Code. [UNK]
 - See claude/settings-and-scopes.md.
+
+_Agent: kb-research_
+
+## QK-xeddsa-let-age-x25519-identity-sign. Does XEdDSA let an age X25519 identity sign, and what are its trade-offs against a separate Ed25519 key?
+- XEdDSA creates EdDSA-compatible signatures from the key formats of X25519: the signer takes a Montgomery private key `k` (any scalar), the verifier the Montgomery `u` coordinate, and the Edwards sign bit is fixed at zero; XEd25519 signatures are valid Ed25519 signatures once the public key is converted. [DOC S-lzpaeug7]
+- XEdDSA signatures are randomized (a new 64-byte random `Z` per signature), signing roughly doubles in time against EdDSA unless the point `E` is cached, and the specification leaves the joint security of signing and Diffie-Hellman with one key outside its scope. [DOC S-lzpaeug7]
+- libsodium recommends distinct keys for signing and encryption. [DOC S-n3swpr6x]
+- Conclusion: yes, an age identity (an RFC 7748 X25519 private key) can sign with XEdDSA, and the age recipient doubles as the verification key; the price against a separate Ed25519 key is a RNG needed at each signature, slower signing, one key for decryption and signing, and a verifier that converts the key and follows XEdDSA's verification rules. A separate Ed25519 key is deterministic, fits RFC 9421's `ed25519` algorithm and keeps the roles apart, at the cost of a second key to bind to the recipient. [DER S-lzpaeug7, S-bi6fdfos, S-n3swpr6x, S-vm4x5dhi]
+- Open: how the 32 bytes of an age identity become `k` (RFC 7748 clamping) is not stated on the XEdDSA page, and no age, sops or libsodium page read mentions XEdDSA. [UNK]
+- See auth/http-message-signatures.md.
+
+_Agent: kb-research_
+
+## QK-nft-flush-ruleset-remove-compared-flush. What does nft flush ruleset remove compared with flush table, and does an nft -f file with flush ruleset clear other roles' tables?
+- `flush ruleset` clears the whole ruleset: the manual page says it removes all tables and whatever they contain, leaving an empty ruleset with no packet filtering, and it can be limited to one address family. [DOC S-t7vpftda]
+- `flush table` acts on the one named table only: the manual says it flushes all chains and rules of that table, and the wiki states that it does not flush the sets defined in it. [DOC S-t7vpftda, S-nvc4ejpk]
+- A flush statement in an `nft -f` file runs when the file's transaction is swapped in, and the kernel handles the file's commands in one transaction. [DOC S-nvc4ejpk]
+- A file that starts with `flush ruleset` therefore removes every table on the host, including tables that another role or tool created, in the same transaction that adds the file's own tables. [DER S-nvc4ejpk, S-t7vpftda: the manual's "all tables" plus the wiki's single transaction]
+- Conclusion: a role that must leave other roles' tables alone uses `flush table <family> <name>` for its own table (and deletes or flushes its sets explicitly); `flush ruleset` is for a host where one file owns the whole ruleset, and `flush ruleset <family>` is limited by family, not by table. [DER S-t7vpftda, S-nvc4ejpk]
+- Open: whether `flush ruleset` from another process skips or fails on a table created with the `owner` flag; the manual does not say. [UNK]
+- See security/linux-nftables.md.
 
 _Agent: kb-research_

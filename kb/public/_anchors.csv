@@ -3346,6 +3346,46 @@ c985fd74daf1,auth/group-claims.md,S1285,located,Configure group claims and app r
 e1d8db422b48,auth/group-claims.md,S1284,unlocated:no-match,,,,,2026-10-10
 f5c9e8554d22,auth/group-claims.md,S1284,located,Configure group claims for applications by using Microsoft Entra ID - Microsoft Entra ID | Microsoft Learn > Add group claims to tokens for SAML applications using SSO configuration,direct;must;nest;member;includ;assign;user;application,c51aaddc1a4a8149,"With this option, nested groups are not included and the user must be a direct member of the group assigned to the application.",2026-10-10
 f5c9e8554d22,auth/group-claims.md,S1285,located,Configure group claims and app roles in tokens | Microsoft Learn > Groups and app roles,direct;must;includ;membership;member;application;assign;app,b25fd67dc6ad7ea9,"When an Enterprise App configuration requires assignment, only users with direct assignment to an application or membership in a group assigned to the app can",2026-10-10
+026e8c2e05dc,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+0bf316c82f28,auth/http-message-signatures.md,S-s3lqlvdi,unlocated:no-match,,,,,2026-10-13
+110898001864,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+1ca2b916cc69,auth/http-message-signatures.md,S-xzzrbowg,unlocated:no-match,,,,,2026-10-13
+28d1dba734ac,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+29675324c1f4,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+31aaa4de8335,auth/http-message-signatures.md,S-lzpaeug7,located,8. Security considerations,caller;pass;new;each;valu;random;byte,4e27401fe19d0425,The caller must pass in a new secret and random 64 byte value each time the signing function is called.,2026-10-13
+4ac3e94db0c1,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
+4ac3e94db0c1,auth/http-message-signatures.md,S-n3swpr6x,unlocated:no-match,,,,,2026-10-13
+5e269cafef17,auth/http-message-signatures.md,S-lzpaeug7,located,1. Introduction,enabl;format;singl;both;diffi;diffie-hellman;hellman;pair,3e686add06792869,enables use of a single key pair format for both elliptic curve Diffie-Hellman and signatures,2026-10-13
+6f35c2b27942,auth/http-message-signatures.md,S-lzpaeug7,located,8. Security considerations,careful;outsid;scop;topic;analysis;complicat;requir,1cfd9093e1c505f8,"In practice this is a complicated topic requiring careful analysis, and is outside the scope of the current document.",2026-10-13
+83d6a8823030,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
+83d6a8823030,auth/http-message-signatures.md,S-n3swpr6x,unlocated:no-match,,,,,2026-10-13
+83d6a8823030,auth/http-message-signatures.md,S-r3t6wvk5,unlocated:no-match,,,,,2026-10-13
+83d6a8823030,auth/http-message-signatures.md,S-xzzrbowg,unlocated:no-match,,,,,2026-10-13
+873738f34183,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+8db2dd34006a,auth/http-message-signatures.md,S-vm4x5dhi,located,,hint;alway;reject;signer;verifier;signatur,4daab1a90b06e6cf,Note that the expiration time is a hint from the signer and that a verifier can always reject a signature ahead of,2026-10-13
+993a21ba0eb2,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+9cb7124c067c,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+a4910a3be00a,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+a6ec296c0e76,auth/http-message-signatures.md,S-vm4x5dhi,located,,target-uri;uri;content-digest;method;authority;digest;target;content,3630e5be5c567b21,"Signature-Input: sig1=(""@method"" ""@target-uri"" ""@authority"" \ ""content-digest"" ""cache-control"");\",2026-10-13
+abbd5a6f1dba,auth/http-message-signatures.md,S-lzpaeug7,located,2. Preliminaries > 2.3. Elliptic curve conversions,allow;scalar;privat;montgomery;key,ab365e1b16d4712e,We allow a Montgomery private key to be any scalar.,2026-10-13
+acbcfe509e28,auth/http-message-signatures.md,S-bi6fdfos,unlocated:no-match,,,,,2026-10-13
+acbcfe509e28,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
+ad697f72f1cd,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+aed7b8d1db43,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+b2548a37c89a,auth/http-message-signatures.md,S-s3lqlvdi,unlocated:no-match,,,,,2026-10-13
+b7806f756d89,auth/http-message-signatures.md,S-lzpaeug7,located,7. Performance considerations,compar;doubl;every;roughly;call;calculate_key_pair;time;eddsa,18048c0d0f34d6c3,roughly doubles signing time compared to EdDSA,2026-10-13
+b865920ea39c,auth/http-message-signatures.md,S-ax3gmu7j,unlocated:no-match,,,,,2026-10-13
+b865920ea39c,auth/http-message-signatures.md,S-bi6fdfos,unlocated:no-match,,,,,2026-10-13
+be728e2614df,auth/http-message-signatures.md,S-n3swpr6x,located,Ed25519 to X25519 keys conversion > Usage,distinct;recommend;encryption;read;still;seed;byte;crypto_sign_ed25519_sk_to_curve25519,315b7a7db7d6eb4d,"However, the cryptosigned25519sktocurve25519() function only reads the first 32 bytes (the 32 byte seed returned by cryptosigned25519sktoseed()) and ignores the 32 remaining bytes. Notes If",2026-10-13
+ca7b4b4f00b8,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+cf96308cfc24,auth/http-message-signatures.md,S-vm4x5dhi,located,,want;replay;send;nonc;new;accept-signatur;attacker;accept,e6fe9de4292109a0,"If a verifier wants to trigger a new signature from a signer, it can send the Accept-Signature header field with a new nonce parameter. An",2026-10-13
+e11a15cd5dd7,auth/http-message-signatures.md,S-lzpaeug7,located,5. Curve25519,versa;vice;provid;valid;xed25519;ed25519;birational;keys,b78c1083e973017e,"XEd25519 signatures are valid Ed25519 signatures [1] and vice versa, provided the public keys are converted with the birational map.",2026-10-13
+fcf00870be19,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
+fcf00870be19,auth/http-message-signatures.md,S-n3swpr6x,unlocated:no-match,,,,,2026-10-13
+fcf00870be19,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
+ff96f9aa2664,auth/http-message-signatures.md,S-bi6fdfos,unlocated:no-match,,,,,2026-10-13
+ff96f9aa2664,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
+ff96f9aa2664,auth/http-message-signatures.md,S-n3swpr6x,unlocated:no-match,,,,,2026-10-13
 072c35d60fec,auth/kerberos.md,S-5yckwasl,located,Configuring Kerberos for IP Address | Microsoft Learn,attempt;other;protocol;back;default;enabl;fall;host,1501fc7281a1717f,By default Windows will not attempt Kerberos authentication for a host if the hostname is an IP address. It will fall back to other enabled,2026-10-10
 1482cf265ed3,auth/kerberos.md,S1205,unlocated:no-match,,,,,2026-10-10
 168891f0e92c,auth/kerberos.md,S1200,unlocated:fetch-error,,,,,2026-10-10
@@ -11402,6 +11442,32 @@ e403249ff376,security/framework-control-map.md,S1552,unlocated:fetch-error,,,,,2
 eb559ca1874c,security/framework-control-map.md,S1563,unlocated:no-match,,,,,2026-10-10
 fdfae000dfeb,security/framework-control-map.md,S-fr4o3437,unlocated:not-text,,,,,2026-10-10
 fdfae000dfeb,security/framework-control-map.md,S-n3ela3o4,unlocated:not-text,,,,,2026-10-10
+0627ef12f841,security/linux-nftables.md,S-h3233m5r,located,Including files,alphabetical;dot;empty;order;load;match;wildcard;directory,b30ac7e0037850de,"This allows having potentially empty include directories for statements like include ""/etc/firewall/rules/"". The wildcard matches are loaded in alphabetical order. NOTE: Files beginning with dot",2026-10-13
+161ce250e3a4,security/linux-nftables.md,S-h3233m5r,unlocated:no-match,,,,,2026-10-13
+161ce250e3a4,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,other;allow;tabl;flush;file,072cfe6257306860,,2026-10-13
+161ce250e3a4,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
+17c4e5a33202,security/linux-nftables.md,S-oz7g4upk,located,Named sets,0.9.7;5.10;character;comment;kernel;name;nftabl,5807772ff11fbf20,Set names must be 16 characters or less. The optional set comment attribute requires at least nftables 0.9.7 and kernel 5.10.,2026-10-13
+1911f06fdd83,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-13
+1911f06fdd83,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
+1da6989fd164,security/linux-nftables.md,S-h3233m5r,located,Including files,forc;work;absolut;includepath;path;search;directory;includ,6ad094a5d7fe5100,The directories to be searched for include files can be specified using the -I/--includepath option. You can override this behavior either by prepending './' to,2026-10-13
+304695b2102f,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
+417d5fd41fdd,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,chain;two;both;happen;one;statement;includ;tabl,c6475758aa154fa3,What happens when you include 2 files which each have a statement for the filter table? If you have two included files both with statements,2026-10-13
+42db2fc6cff9,security/linux-nftables.md,S-t7vpftda,located,NFT > RULESET,whatever;empty;unlik;valid;iptabl;remov;contain;kernel,73859d74b4149ce2,"this will remove all tables and whatever they contain, effectively leading to an empty ruleset",2026-10-13
+48d023e66e7a,security/linux-nftables.md,S-ycjp6jnv,unlocated:no-match,,,,,2026-10-13
+61eddd962417,security/linux-nftables.md,S-oz7g4upk,located,Named sets specifications,conflict;fail;load;specifi;auto;auto-merg;merg;interval,750e693c3dc167da,"Also, note that not using auto-merge will make such ruleset fail to load with something like: /etc/nftables/ruleset.nft:38:21-29: Error: conflicting intervals specified",2026-10-13
+847b23549169,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
+865ad75ae521,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,adds;statement;includ;tabl;flush;file,072cfe6257306860,,2026-10-13
+865ad75ae521,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
+92496d7aaad5,security/linux-nftables.md,S-t7vpftda,located,make table active again:,flush;rule;chain;tabl,c0c4bf09b8ba35d8,Flush all chains and rules of the specified table.,2026-10-13
+9425d08f11de,security/linux-nftables.md,S-h3233m5r,located,Scripting,header;my-ruleset.fil;restor;nativ;comment;ruleset;defin;script,cc56b5d4c6df3f13,"Fortunately, nftables provides a native scripting environment to address these concerns which basically allows you to include other ruleset files, define variables and add comments.",2026-10-13
+a52a51dd6fc8,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,3.17;defin;delet;explicitly;later;linux;sets;ruleset,f159597eff148bff,"Flushing Sets: flush table filter will not flush any sets defined in that table. To flush sets as well, use flush ruleset (available since Linux",2026-10-13
+afb3d8cfee4d,security/linux-nftables.md,S-h3233m5r,located,Defining variables,variabl;rule;defin,7ba2622fd1c05d05,add rule filter input ip saddr $googledns counter You can also define a variable for sets:,2026-10-13
+afb3d8cfee4d,security/linux-nftables.md,S-oz7g4upk,located,Named sets > nftables.conf syntax,variabl;referenc;defin;name;rule,d8740adec6df06ad,"You can then reference those sets later on using $VARIABLENAME notation. Here are some examples showing sets defined in one line, spanning multiple lines, and",2026-10-13
+c99dba3a665f,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,export;may;creat;becaus;list;load;exist;nft,907ca6d31448420f,you may have to create the table with nft create table ip filter before you can load the file,2026-10-13
+d2d2b17b69d3,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,equivalent;iptables-restor;kernel;transaction;iptabl;restor;load;one,4f3387f48f82a03d,"Duplicate Rules: If you prepend the flush table filter line at the very beginning of the filter-table file, you achieve atomic ruleset replacement equivalent to",2026-10-13
+d7d2e96da084,security/linux-nftables.md,S-t7vpftda,located,NFT > TABLES,manipulat;owner;exclud;content;other;creat;process;flag,52fd9d1f26d7ba79,Creating a table with flag owner excludes other processes from manipulating it or its contents.,2026-10-13
+e9e9219f33b8,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
+f1637f66c9dc,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Warning about Shell scripting + nftables,read;moment;new;operation;swap;configur;firewall;one,77bdf64e34f0e754,"This is different from bash scripts because nftables will read in all of the included config files, create the config object in memory alongside the",2026-10-13
 054ada1b6c92,security/logging-monitoring.md,S743,unlocated:no-match,,,,,2026-10-12
 054ada1b6c92,security/logging-monitoring.md,S1498,unlocated:no-match,,,,,2026-10-10
 12ed1069bdaa,security/logging-monitoring.md,S1527,unlocated:not-text,,,,,2026-10-10

@@ -320,3 +320,5 @@ EV-rate-limit-429-retry-after-per-caller,How does a server answer 429 with Retry
 EV-claude-code-hook-commands-inherit-environment,Do Claude Code hook commands inherit the environment variables of the claude process?,claude/hooks.md,good,
 EV-code-repository-ingested-into-kb-kb,"how is a code repository ingested into the kb (kb-ingest, CODE tag, pinned commit)",agents/codebase-mapping.md,good,
 EV-who-may-change-test-suite-ceiling,"Who may change a test-suite ceiling or limit that guards an agent: must a human approve it, or may the agent raise it?",agents/test-suite-size-and-agent-overengineering.md,good,
+EV-nft-flush-ruleset-remove-compared-flush,"What does nft flush ruleset remove compared with flush table, and does an nft -f file with flush ruleset clear other roles' tables?",security/linux-nftables.md,good,
+EV-xeddsa-let-age-x25519-identity-sign,"Does XEdDSA let an age X25519 identity sign, and what are its trade-offs against a separate Ed25519 key?",auth/http-message-signatures.md,good,
