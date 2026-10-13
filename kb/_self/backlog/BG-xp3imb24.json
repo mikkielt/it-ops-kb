@@ -2,7 +2,7 @@
   "id": "BG-xp3imb24",
   "kind": "bug",
   "title": "A gate whose question names a constant such as DISPATCH_BASE_TOKENS is classed secrets by the word token inside the identifier",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uzwbt63u",
   "priority": "P2",
   "rank": 0,

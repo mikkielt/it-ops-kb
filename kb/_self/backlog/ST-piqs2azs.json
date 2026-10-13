@@ -2,7 +2,7 @@
   "id": "ST-piqs2azs",
   "kind": "story",
   "title": "gate add --do accepts an option whose text holds '=', such as a tests-ceiling answer",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-uzwbt63u",
   "priority": "P3",
   "rank": 0,

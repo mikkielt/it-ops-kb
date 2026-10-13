@@ -2,7 +2,7 @@
   "id": "SP-uzwbt63u",
   "kind": "sprint",
   "title": "Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed",
-  "status": "planned",
+  "status": "active",
   "goal": "A worker whose gate the class rule makes blocking finishes on its recommendation and the landing waits for the operator's answer; a gate naming a token-count constant or a phase token is not classed secrets; new and set refuse a repro or check that backlog check refuses (a refused program, an unclosed quote) with exit 2 and nothing written; gate add --do takes an option whose text holds '='",
   "gates": [
     {
