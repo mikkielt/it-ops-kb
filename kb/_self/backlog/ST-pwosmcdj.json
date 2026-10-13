@@ -72,7 +72,7 @@
       "recommendation": "an automatic KB-Auto: querylog commit that changed one of the story's touches, on the integration main when that ref is fetched, authored no earlier than the item's latest claim commit on HEAD",
       "class": "querylog",
       "answer": "an automatic KB-Auto: querylog commit that changed one of the story's touches, on the integration main when that ref is fetched, authored no earlier than the item's latest claim commit on HEAD",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "precheck-reads",
@@ -85,7 +85,7 @@
       "recommendation": "the item's touches have a code-lane path (kblane) and a check or repro command text names _querylog, bl_cost or backlog.py cost",
       "class": "querylog",
       "answer": "the item's touches have a code-lane path (kblane) and a check or repro command text names _querylog, bl_cost or backlog.py cost",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

@@ -1,0 +1,25 @@
+{
+  "id": "BG-4vjyube6",
+  "kind": "bug",
+  "title": "researched reads a research story touching only kb/_self files in root _self alone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "bl_land.TOUCH_ROOT reads kb/_self/_retrieval/lookup_eval.csv as root _self, though research_touches leaves out _ roots, so a goal research story whose only touch is the _self eval file reads its questions' coverage in _self alone and is refused for a question the public root answers; the answered question-roots gate says every root when the touches name none. Found by the SP-sqgyoiaz review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;r=b.research_roots({'touches':['kb/_self/_retrieval/lookup_eval.csv']});print(r);sys.exit(1 if r==['_self'] else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-sqgyoiaz review"
+  ]
+}

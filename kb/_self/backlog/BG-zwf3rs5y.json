@@ -1,0 +1,25 @@
+{
+  "id": "BG-zwf3rs5y",
+  "kind": "bug",
+  "title": "researched skips a narrowed goal's question that has no question mark without a said line",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "goal_questions drops each '; '-separated piece that does not end in '?', so a narrowed goal written as a numbered list of questions (as ST-x7hxknkx and ST-gwxb3i3j were) has those questions passed unread with no FAIL or said line; researched names each piece it does not read as a question. Found by the SP-sqgyoiaz review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('(1) does git record a change; (2) how does git log report a file?');print(q);sys.exit(1 if len(q)<2 else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-sqgyoiaz review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-ms5dtnnr",
+  "kind": "bug",
+  "title": "close --summary credits a goal clause to the goal research story by the words of its generated title alone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "The research fallback of goal_clause_lines matches a clause against item_words, which holds the generated title 'Research sprint goal: <sprint title>', so a research story whose narrowed goal and kb touches carry nothing of a clause is credited with any clause that shares words with the sprint title, and that clause never prints unmet; the fallback reads the narrowed goal, mapped clauses and touches, not the generated title. Found by the SP-sqgyoiaz review (S2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'SP-a':{'kind':'sprint','goal':'close --summary credits each goal clause to the story that carried it; the beta writer works'},'ST-r':{'kind':'story','status':'done','goal_research':True,'title':'Research sprint goal: Close credits each goal clause to its carrier','goal':'Which git flag keeps a rename?','sprint':'SP-a','touches':['kb/public/git/**']},'ST-b':{'kind':'story','status':'done','title':'beta writer','goal':'the beta writer works','sprint':'SP-a'}};ln=[l for l in b.goal_clause_lines(types.SimpleNamespace(items=it,label=lambda i:i),'SP-a',['ST-r','ST-b']) if 'carried it' in l];print(ln);sys.exit(1 if ln and 'ST-r' in ln[0] else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-sqgyoiaz review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-2naamm5z",
+  "kind": "bug",
+  "title": "done takes a query-log delivery older than a store-only story as its evidence when the story has no claim commit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "delivery_evidence bounds the KB-Auto: querylog commit by the item's latest claim commit on HEAD, and with no claim commit there is no bound, so a story filed and never claimed with --commit is done by a delivery made before it existed; the bound falls back to the commit that added the item file. Found by the SP-sqgyoiaz review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "\nimport json,os,subprocess,sys,tempfile\nT=os.path.abspath(\"_tools\");root=tempfile.mkdtemp()\nenv=dict(os.environ,GIT_AUTHOR_NAME=\"t\",GIT_AUTHOR_EMAIL=\"t@e.x\",GIT_COMMITTER_NAME=\"t\",GIT_COMMITTER_EMAIL=\"t@e.x\")\ngit=lambda *a:subprocess.run([\"git\",\"-C\",root,*a],capture_output=True,text=True,env=env,check=True).stdout\nbl=lambda *a:subprocess.run([sys.executable,os.path.join(T,\"backlog.py\"),\"--root\",root,*a],capture_output=True,text=True,env=env)\ngit(\"init\",\"-q\",\"-b\",\"main\")\nopen(os.path.join(root,\"backlog.json\"),\"w\").write(json.dumps({\"item_dir\":\"items\",\"lane_module\":\"\",\"land_push\":[\"git\",\"status\"]}))\ngit(\"add\",\"-A\");git(\"commit\",\"-q\",\"-m\",\"init\")\nos.makedirs(os.path.join(root,\"kb/_querylog/2026-10\"));open(os.path.join(root,\"kb/_querylog/2026-10/r.jsonl\"),\"w\").write(\"{}\\n\")\ngit(\"add\",\"-A\");git(\"commit\",\"-q\",\"-m\",\"chore(kb): query log store, 1 run file(s)\\n\\nKB-Auto: querylog\")\nsid=bl(\"new\",\"sprint\",\"--title\",\"S\",\"--goal\",\"g\").stdout.split(\"new sprint \")[1].split()[0]\niid=bl(\"new\",\"story\",\"--title\",\"Deliver rows\",\"--goal\",\"rows delivered\",\"--touch\",\"kb/_querylog/**\",\"--check\",\"python3 -c \\\"import sys;sys.exit(0)\\\"\",\"--sprint\",sid).stdout.split()[2]\nbl(\"answer\",sid,\"start\",\"--answer\",\"approve\",\"--by\",\"operator\");bl(\"start\",sid)\np=bl(\"done\",iid,\"--dry-run\");print(p.returncode,p.stdout,p.stderr)\nsys.exit(1 if p.returncode==0 else 0)\n"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-sqgyoiaz review"
+  ]
+}

@@ -23,5 +23,6 @@
       ]
     }
   ],
+  "notes": "Review 2026-10-13: provisional gates delivery-bound and precheck-reads of ST-pwosmcdj confirmed by operator. The fresh-context reviewer found no S1; parked BG-ms5dtnnr (S2), BG-j2y4kbdc, BG-dricgbax, BG-2naamm5z (S3), BG-4vjyube6, BG-zwf3rs5y (S4).",
   "claimed_by": "orch-sqgyoiaz"
 }

@@ -1,0 +1,25 @@
+{
+  "id": "BG-dricgbax",
+  "kind": "bug",
+  "title": "precheck's after-merge warning fires on any check text that names _querylog, such as bench_querylog.py or a throwaway store",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_land.DELIVERY_READ matches the substring _querylog anywhere in a check or repro, so precheck's after-merge warning fires on a check that only builds a throwaway query-log store or runs bench_querylog.py or a test_querylog*.py selection, and on ST-pwosmcdj's own check; it matches a read of the committed store (kb/_querylog/) or of backlog.py cost figures only. Found by the SP-sqgyoiaz review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;sys.exit(1 if b.DELIVERY_READ.search('python3 _tools/bench_querylog.py --dry-run') else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-sqgyoiaz review"
+  ]
+}
