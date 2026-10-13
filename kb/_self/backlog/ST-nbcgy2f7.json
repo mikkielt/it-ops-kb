@@ -1,0 +1,27 @@
+{
+  "id": "ST-nbcgy2f7",
+  "kind": "story",
+  "title": "A planned narrowing of a question classifier carries a check of the side it keeps, with asks that share the narrowed words",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck warns of a committed item whose goal narrows a question classifier (a regex such as kbfacts.PRICE_ASK that decides a note, a route or a cue) when no check asks a question of the kept class that contains one of the words the narrowing excludes; in SP-enudabdr BG-apytw7fo excluded storage, capacity and data from price asks and its checks asked only licence and price wording, so 'How much is OneDrive storage per user per month?' lost its priced note (BG-kmxa4jgj)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_narrowing_keeps_class"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-enudabdr close"
+  ]
+}

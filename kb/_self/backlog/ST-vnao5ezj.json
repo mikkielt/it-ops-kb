@@ -1,0 +1,27 @@
+{
+  "id": "ST-vnao5ezj",
+  "kind": "story",
+  "title": "A rules story's check confirms the step a new rule names exists in the tools, not only that its tested question packs good",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning gives a story that adds a _self rule naming a tool step (a finding kind, a command, a note a tool reads) a check that runs or finds that step in the tools; in SP-enudabdr ST-aezkm3zh's rule says a wrong-root gap is recorded as a rules finding, which ql_learn.rules_miss makes only from a _self lookup, and its check read only pack coverage (BG-sddebrpa)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_rule_step_exists"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-enudabdr close"
+  ]
+}

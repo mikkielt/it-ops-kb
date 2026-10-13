@@ -1,0 +1,25 @@
+{
+  "id": "ST-glgrhz33",
+  "kind": "story",
+  "title": "code.md's routing paragraph describes both directions of the router broad-lookups probe, the per-expert phrasings ST-bbliwg6y added included",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/code.md's paragraph on the router_broad_lookups probe (line 59 at SP-enudabdr's close) says the probe also asks each kind expert's own phrasings built from the kb and fails naming each that misses its expert, as kb/_self/tools.md already does; and kb/_self/map.csv maps _tools/test_live_kb.py to code.md so a later change to the probe names it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;s=open('kb/_self/code.md',encoding='utf-8').read();sys.exit(0 if 'expert_phrasings' in s or 'own phrasings' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md",
+    "kb/_self/map.csv"
+  ],
+  "links": [
+    "parked: SP-enudabdr close"
+  ]
+}
