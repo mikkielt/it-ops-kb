@@ -6,7 +6,7 @@ bench_retrieval.py, bench_querylog.py and bench_install.py the scenarios. This m
 and benchmarks.py, the facade, holds the command line (kb/_self/code.md, Layout and Imports; the commands and the
 scenarios are described in kb/_self/reports/benchmarks.md).
 """
-import csv, datetime, io, json, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
+import csv, datetime, io, json, math, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
 from pathlib import Path
 
 import agent_bench
@@ -586,7 +586,7 @@ def stat_rows(b, scenario, case, arm, secs, note="", time_s=False):
     if time_s:  # the median in seconds too, as the tool-speed history gives it
         b.row(scenario, case, arm, "time", statistics.median(secs), len(ms), note=note)
     b.row(scenario, case, arm, "median_ms", statistics.median(ms), len(ms), note=note)
-    b.row(scenario, case, arm, "p95_ms", ms[max(0, int(round(0.95 * len(ms))) - 1)], len(ms), note=note)
+    b.row(scenario, case, arm, "p95_ms", ms[max(0, math.ceil(0.95 * len(ms)) - 1)], len(ms), note=note)
 
 
 MCP_CALLS = [("kb_pack", {"question": "default Windows LAPS password length"}), ("kb_search", {"query": "gMSA"}),
