@@ -2,7 +2,7 @@
   "id": "ST-aqvuanq7",
   "kind": "story",
   "title": "selfcheck's host check, and the review's done before its whole-suite run, name a host too loaded for the suite to meet its seconds ceiling",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qlpfcgs2",
   "priority": "P3",
   "rank": 0,
@@ -53,7 +53,8 @@
       },
       "class": "agents-rule",
       "answer": "0.5 per core (7 on 14 cores): SUITE_LOAD_PER_CORE of _tools/bl_selfcheck.py is 0.5 and done reads it too; it names the load near 10 of the SP-wwacrsqr review and no load of 2 to 5, at which the suite passed on a rerun in the closes",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "the gate picks a per-core load threshold the code carries (SUITE_LOAD_PER_CORE), not a host setup to prove; the host's load changes minute to minute, so no host command proves the answer, and the item's own test plants the load"
     }
   ],
   "links": [

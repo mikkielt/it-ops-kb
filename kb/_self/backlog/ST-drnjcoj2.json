@@ -2,7 +2,7 @@
   "id": "ST-drnjcoj2",
   "kind": "story",
   "title": "worker.md and tests.py's over-ceiling message say a refused run is retried or recorded, not answered by a gate that proposes a raise",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qlpfcgs2",
   "priority": "P2",
   "rank": 0,

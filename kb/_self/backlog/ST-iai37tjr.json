@@ -2,7 +2,7 @@
   "id": "ST-iai37tjr",
   "kind": "story",
   "title": "precheck warns when a sprint's committed selectors that collect no test outnumber the ids the test ceiling has left",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qlpfcgs2",
   "priority": "P2",
   "rank": 0,
