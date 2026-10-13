@@ -263,7 +263,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -365,6 +365,30 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert again["sources"][A]["state"] == again["sources"][B]["state"] == "cached"
     assert not any(u.startswith((urls[A], urls[B])) for u in asked[before:]), asked[before:]  # only C, G and P were asked again
     assert not [p for p in tmp_path.rglob("*") if p.is_file() and "revalidate" not in p.parts]  # only the stored results, under the cache
+    # a baseline taken after an anchor's last confirmation proves only that nothing changed since: a fact kept by its
+    # section, or one of an unchanged source, is resolved against the page as apply's kept() leaves it, not `current`
+    E, F, H = "S9990017", "S9990018", "S9990019"
+    gate = ("# Gateway\n\n## Limits\n\nThe Orion gateway keeps its request log for thirty days before it deletes it.\n\n"
+            "## Notes\n\nThe Orion gateway is listed in the console under the Nodes page.\n")
+    thirty, sixty = fill + gate, fill + gate.replace("thirty", "sixty")
+    edited = sixty.replace("Nodes page", "Gateways page")
+    gfact = ("g1g1g1g1g1g1", "The Orion gateway keeps its request log for thirty days before it deletes it.")
+    base = lambda sid: factdiff.baseline(sid, urls[sid], {"text": sixty, "final": urls[sid],  # noqa: E731
+                                                          "fetched_utc": "2026-02-01T00:00:00+00:00"}, provider.providers())
+    urls.update({E: host + "page-e", F: host + "page-f", H: host + "page-h"})
+    pages.update({urls[E]: lambda h: respond(body=edited.encode()), urls[F]: lambda h: respond(body=sixty.encode()),
+                  urls[H]: lambda h: respond(304)})
+    state.update({E: base(E), F: base(F), H: {**base(H), "etag": 'W/"1"'}})
+    cases = ((E, "dsc/e1.md", "2026-01-01"), (E, "dsc/e2.md", "2026-02-01"), (F, "dsc/f.md", "2026-01-01"), (H, "dsc/h.md", "2026-01-01"))
+    for sid, rel, day in cases:  # the anchors were placed on the thirty-day text; the baseline holds the sixty-day one
+        for r in factdiff.anchor_rows(sid, [(gfact[0], rel, 5, gfact[1])], {"status": 200, "text": thirty}, "quote", day):
+            anchors[(r["fact"], r["path"], sid)] = r
+    got = factdiff.revalidate([line("public/" + rel, 5, gfact[0], gfact[1], sid) for sid, rel, _ in cases])["lines"]
+    by_rel = {k[0].split("public/")[1]: v for k, v in got.items()}
+    assert by_rel["dsc/e1.md"]["outcome"] == "moved" and "sixty days" in by_rel["dsc/e1.md"]["passage"], by_rel["dsc/e1.md"]
+    assert by_rel["dsc/e2.md"]["outcome"] == "current" and "section is unchanged" in by_rel["dsc/e2.md"]["note"], by_rel["dsc/e2.md"]
+    assert by_rel["dsc/f.md"]["outcome"] == "moved" and "sixty days" in by_rel["dsc/f.md"]["passage"], by_rel["dsc/f.md"]
+    assert by_rel["dsc/h.md"]["outcome"] == "source-dated only" and "newer than the anchor" in by_rel["dsc/h.md"]["note"], by_rel["dsc/h.md"]
     # the time budget: a source asked after it is used up is not checked, and says so
     monkeypatch.setattr(provider, "pacing", lambda row: 0)
     monkeypatch.setattr(provider, "request", lambda url, headers=None, **k: {**respond(0, error=provider.BUDGET_ERROR), "final": url})

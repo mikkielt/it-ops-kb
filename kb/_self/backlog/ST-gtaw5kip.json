@@ -28,6 +28,21 @@
   "depends_on": [
     "BG-geepi6yv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A pinned source with no stored baseline date: does the lookup print current for its located anchor, or resolve it like a source whose baseline is newer than the anchor's confirmation?",
+      "options": [
+        "current",
+        "not current"
+      ],
+      "recommendation": "current",
+      "class": "design",
+      "answer": "current",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tm4wlsve review"
   ],
