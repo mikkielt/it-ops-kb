@@ -38,6 +38,21 @@
     "ST-y6syvkzo",
     "ST-um6nghoo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the land stop message print the removed worktree's path in the git worktree add command: absolute, or relative to the checkout land runs in (every line backlog.py prints withholds the user's name, which an absolute path under a home directory holds)?",
+      "options": [
+        "relative to the checkout",
+        "absolute path"
+      ],
+      "recommendation": "relative to the checkout",
+      "class": "agents-rule",
+      "answer": "relative to the checkout",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-up5wchen close",
     "merged: ST-iviphkbm"

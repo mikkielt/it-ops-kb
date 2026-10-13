@@ -1792,6 +1792,21 @@ def changed_articles(changed):
             if len(parts) > 2 and parts[0] == "kb" and parts[-1].endswith(".md")]
 
 
+def worktree_back(root, released, branch, iid):
+    """The lines a stop of land adds once it removed the worker worktrees RELEASED: the `git worktree add` command
+    that checks BRANCH out again at each one's path, so the fix is made there and land run again (which removes it
+    again). The path is relative to ROOT, the checkout the command runs in: every line backlog.py prints withholds
+    the user's name, which an absolute path under a home directory holds. Empty when none was removed."""
+    def where(path):
+        try:
+            return Path(os.path.relpath(path, root)).as_posix()
+        except ValueError:  # another drive (Windows): no relative path
+            return str(path)
+    return "".join(f"\nland removed the worker's worktree {where(path)}; to fix {branch} there, check it out again "
+                   f"from this checkout, then run backlog.py land {iid} again:\n"
+                   f"  git worktree add {shlex.quote(where(path))} {branch}" for path in released)
+
+
 def land_once(bl, a):
     """Land a finished item's branch: rebase it on the integration main, then by lane. Content: done --commit, the
     heavy checks when _tools/ changed (else the lint on the changed articles), sync --push. Code not yet on the integration main: the item's checks and
@@ -1819,12 +1834,14 @@ def land_once(bl, a):
     repos = land_repositories(bl, iid)  # a multi-repository item: each repository's request merged, worktrees removed
     other = checked_out_elsewhere(root, branch)
     agent_branch = None
+    released = []  # the worker worktrees this run removed: a stop after that names how to check the branch out again
     if other:  # a finished worker's clean worktree, locked by Claude Code or an unlocked agent-*, is removed
         why = release_worker_worktree(root, *other, branch=branch)
         if why:
             raise land_stop("branch", f"{branch} is checked out in the worktree {other[0]} and {why}: land it from "
                                       "there, or remove that worktree first")
         agent_branch = AGENT_BRANCH + other[0].name  # the Agent tool's branch of that worktree, deleted once landed
+        released.append(other[0])
     else:  # a worker detached at the branch's tip holds no branch: remove it too, and go on when it has to stay
         for path, lock in detached_workers(root, branch):
             why = release_worker_worktree(root, path, lock, branch=branch)
@@ -1832,6 +1849,7 @@ def land_once(bl, a):
                 say(f"land: kept the worktree {path}: {why}")
             else:
                 agent_branch = AGENT_BRANCH + path.name
+                released.append(path)
     start = git(root, "rev-parse", "HEAD").strip()
     start_ref = subprocess.run(["git", "symbolic-ref", "-q", "HEAD"], cwd=root, capture_output=True, text=True,
                                encoding="utf-8", errors="replace").stdout.strip()
@@ -1927,7 +1945,11 @@ def land_once(bl, a):
             landed = pushed = True
         return 0
     except kg_lock.MainLockTimeout as e:  # a live holder kept the main lock for the whole bound: report blocked
-        raise land_stop("fetch and rebase", str(e)) from None
+        raise land_stop("fetch and rebase", str(e) + worktree_back(root, released, branch, iid)) from None
+    except Refused as e:  # a stop after the worker's worktree was removed: the branch keeps every commit
+        if released:
+            raise Refused(str(e) + worktree_back(root, released, branch, iid)) from None
+        raise
     finally:  # back to where land started, whatever happened after the rebase switched to BRANCH
         back = (["switch", "-q", start_ref[len("refs/heads/"):]] if start_ref.startswith("refs/heads/")
                 else ["switch", "-q", "--detach", start])
