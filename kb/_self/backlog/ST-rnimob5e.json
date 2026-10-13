@@ -2,7 +2,7 @@
   "id": "ST-rnimob5e",
   "kind": "story",
   "title": "Research sprint goal: Content fixes: GitLab and Claude Code articles match their live pages",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gcerxjsg",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/_gaps.md"
   ],
-  "notes": "Planned 2026-10-12 with rag.py pack -q on the sprint goal's eight questions: good for the GitLab ones (project settings tables, schedule play limit, deploy token reach, pipeline security digest pin) and for the marketplace name rules; the three named in the goal are weak: the read-only Bash pack carried a check: line (powershell-tool.md never mentions blockReadsOutsideWorkingDirectories), the WebSearch line states the 200 limit without interactive or a refill version, and the modelUsage facts say the pinned key was not observed. Findings go to _gaps.md only; the items edit the articles."
+  "notes": "Planned 2026-10-12 with rag.py pack -q on the sprint goal's eight questions: good for the GitLab ones (project settings tables, schedule play limit, deploy token reach, pipeline security digest pin) and for the marketplace name rules; the three named in the goal are weak: the read-only Bash pack carried a check: line (powershell-tool.md never mentions blockReadsOutsideWorkingDirectories), the WebSearch line states the 200 limit without interactive or a refill version, and the modelUsage facts say the pinned key was not observed. Findings go to _gaps.md only; the items edit the articles.",
+  "claimed_by": "orch-gcerxjsg"
 }
