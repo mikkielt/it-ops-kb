@@ -134,8 +134,10 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           them a check or repro that passed doing nothing here (its output a
                                           no-op marker, such as no public remote, or all tests skipped) with no
                                           other passing check that runs tests and no operator accept on gate
-                                          host-bound; warns of each such check and of one that runs no code
-  backlog.py researched ID                the goal research story's check, which new sprint gives it: exit 0 once
+                                          host-bound; warns of each such check and of one that runs no code; a
+                                          story whose touches all lie in the query-log store takes an automatic
+                                          KB-Auto: querylog commit that changed one of them for a work commit
+  backlog.py researched ID               the goal research story's check, which new sprint gives it: exit 0 once
                                           its research is written by done's rules (a commit on HEAD whose KB-Work
                                           names it and changes a file other than item files, or its notes' No
                                           outside facts: <reason>), 1 before; read-only
@@ -163,7 +165,9 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           repro is the intake --status of a time-windowed detector (repeats,
                                           trailers), passing or not, naming when it can first pass; it lists
                                           each item's goal clauses with the check or repro its clauses mapping
-                                          names and warns of a clause no check reads
+                                          names and warns of a clause no check reads; it warns of a code-lane
+                                          item whose check or repro reads the committed query-log store or
+                                          cost figures: a separate item, done after the merge, proves them
   backlog.py close SPRINT [--summary]     delete a finished sprint, its items and the epics they finished
                                           (--summary: only list each of them with its status and the commit done
                                           recorded, the close commit's body, and change nothing; with --commit

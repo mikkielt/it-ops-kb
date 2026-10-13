@@ -60,6 +60,32 @@
       "class": "querylog",
       "answer": "done accepts the automatic query-log delivery commit (trailer KB-Auto: querylog) as evidence when every touch of the story is the query-log store and its checks pass",
       "by": "operator"
+    },
+    {
+      "id": "delivery-bound",
+      "kind": "provisional",
+      "question": "Which commits count as the delivery evidence a store-only story's done takes?",
+      "options": [
+        "an automatic KB-Auto: querylog commit that changed one of the story's touches, on the integration main when that ref is fetched, authored no earlier than the item's latest claim commit on HEAD",
+        "any KB-Auto: querylog commit on HEAD that changed a store file, with no claim or main bound"
+      ],
+      "recommendation": "an automatic KB-Auto: querylog commit that changed one of the story's touches, on the integration main when that ref is fetched, authored no earlier than the item's latest claim commit on HEAD",
+      "class": "querylog",
+      "answer": "an automatic KB-Auto: querylog commit that changed one of the story's touches, on the integration main when that ref is fetched, authored no earlier than the item's latest claim commit on HEAD",
+      "by": "agent"
+    },
+    {
+      "id": "precheck-reads",
+      "kind": "provisional",
+      "question": "How does precheck judge that a code-lane item's check or repro reads what only a delivery after the merge changes?",
+      "options": [
+        "the item's touches have a code-lane path (kblane) and a check or repro command text names _querylog, bl_cost or backlog.py cost",
+        "a warning of every code-lane item whose command text names _querylog, whatever its touches"
+      ],
+      "recommendation": "the item's touches have a code-lane path (kblane) and a check or repro command text names _querylog, bl_cost or backlog.py cost",
+      "class": "querylog",
+      "answer": "the item's touches have a code-lane path (kblane) and a check or repro command text names _querylog, bl_cost or backlog.py cost",
+      "by": "agent"
     }
   ],
   "links": [

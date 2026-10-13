@@ -1,7 +1,8 @@
 """The landing side of backlog.py (kb/_self/backlog.md, What done refuses, Landing; kb/_self/tools.md): `done`, which runs an
 item's checks and records the evidence, `land`, which rebases a worker's branch and runs the steps to the integration
 main, `close`, which deletes a finished sprint, and `researched`, the goal research story's check by done's rules;
-with what they share: the commits an item's trailers name (`item_commits`, `unlanded_code`, `out_of_scope`, and the
+with what they share: the commits an item's trailers name (`item_commits`, `unlanded_code`, `out_of_scope`,
+`delivery_evidence`, the automatic query-log delivery a store-only story takes for a work commit, and the
 ledger rows they changed for a source nothing names: `unrelated_baselines`), the runner of a check (`run_check`), the worker's worktree
 (`live_processes`, `release_worker_worktree`), the landed work/<id> branch (`delete_landed_branch`) and the stuck merge
 request line.
@@ -38,6 +39,49 @@ def item_commits(root, ids):
             paths = [p for p in git(root, "show", "--no-renames", "--name-only", "--format=", sha).splitlines() if p]
             if any(not item_file(p) for p in paths):
                 out[sha] = paths
+    return out
+
+
+def store_only(globs):
+    """True when GLOBS is not empty and every glob is inside the committed query-log store (bl_intake.STORE_REL)."""
+    store = bl_intake.STORE_REL
+    return bool(globs) and all(g == store or g.startswith(store + "/") for g in globs)
+
+
+def delivery_evidence(root, ids, globs):
+    """[short hashes], newest first, of the automatic query-log deliveries on HEAD (`querylog.py apply --push`: the
+    trailer KB-Auto: querylog and no KB-Work) that a story of the query-log store only (`store_only`) takes as its
+    evidence in place of a work commit: one that changed a file GLOBS match, that is on the integration main when that
+    ref is fetched, and that was authored no earlier than the item's latest claim commit on HEAD (the author time, which
+    a rebase keeps; no claim commit on HEAD, no bound). Its checks still run: they read what the delivery wrote."""
+    if not store_only(globs):
+        return []
+    fmt = ("%H%x00%at%x00%s%x00%(trailers:key=KB-Work,valueonly,separator=%x2C)%x00"
+           "%(trailers:key=KB-Auto,valueonly,separator=%x2C)%x1e")
+    claimed, auto = 0, []
+    for rec in git(root, "log", "HEAD", "--no-merges", f"--format={fmt}").split("\x1e"):
+        parts = rec.strip().split("\x00")
+        if len(parts) != 5 or not parts[1].isdigit():
+            continue
+        sha, at, subject, work, kinds = parts[0], int(parts[1]), parts[2], parts[3], parts[4]
+        if subject.startswith("chore(backlog): claim ") and set(id_re().findall(work)) & set(ids):
+            claimed = max(claimed, at)
+        if "querylog" in [k.strip() for k in kinds.split(",")]:
+            auto.append((sha, at))
+    import kbpublic
+    ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
+    fetched = subprocess.run(["git", "rev-parse", "--verify", "-q", ref], cwd=root, capture_output=True).returncode == 0
+    out = []
+    for sha, at in auto:
+        if at < claimed:
+            continue
+        paths = [p for p in git(root, "show", "--no-renames", "--name-only", "--format=", sha).splitlines() if p]
+        if not any(p.startswith(bl_intake.STORE_REL + "/") and in_scope(p, globs) for p in paths):
+            continue
+        if fetched and subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref], cwd=root,
+                                      capture_output=True).returncode:
+            continue  # not delivered yet: the push that makes it the integration main's has not happened
+        out.append(sha[:10])
     return out
 
 
@@ -427,14 +471,24 @@ def cmd_done(bl, a):
             reasons.append("uncommitted")
         family = [iid] + bl.descendants(iid)
         if (it.get("touches") and not research_without_facts(it) and not repos
-                and not item_commits(bl.root, [iid] + bl.descendants(iid))):
-            reasons.append("no-work-commit")
-            problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
-                            "and changes a file other than item files (git reads a trailer only in the message's last "
-                            "paragraph, with the others; a claim or planning commit is not the work; a goal research story "
-                            "needing no outside facts says so in its notes: No outside facts: <reason>)"
-                            + ("; the work of an item with `repos` is merged in its repositories, which land reads "
-                               "through their merge requests: run land" if item_repos(it) else ""))
+                and not item_commits(bl.root, family)):
+            delivered = delivery_evidence(bl.root, family, globs)
+            if delivered:  # a story of the query-log store only: the delivery is the work, its checks the proof
+                say(f"{bl.label(iid)}: no KB-Work commit; the evidence is the automatic query-log delivery "
+                    f"{', '.join(delivered[:3])} (trailer KB-Auto: querylog), which its checks read")
+            else:
+                reasons.append("no-work-commit")
+                problems.append(f"no commit on HEAD carries the trailer KB-Work: {iid} or one of its descendants' ids "
+                                "and changes a file other than item files (git reads a trailer only in the message's "
+                                "last paragraph, with the others; a claim or planning commit is not the work; a goal "
+                                "research story needing no outside facts says so in its notes: No outside facts: "
+                                "<reason>)"
+                                + ("; the work of an item with `repos` is merged in its repositories, which land reads "
+                                   "through their merge requests: run land" if item_repos(it) else "")
+                                + ("; a story whose touches are the query-log store only is also done by an automatic "
+                                   "querylog.py apply --push commit (trailer KB-Auto: querylog) that changed one of "
+                                   "them, on the integration main, authored after the claim: fetch it, then run done "
+                                   "again" if store_only(globs) else ""))
         late, remote, owners = unlanded_code(bl.root, family)
         if late:
             reasons.append("unlanded-code")
@@ -2699,6 +2753,25 @@ def clause_map(bl, iid):
     return lines, warns, unread
 
 
+DELIVERY_READ = re.compile(r"_querylog|\bbl_cost\b|\bbacklog\.py\W+(?:--root\W+\S+\W+)?cost\b")
+
+
+def after_merge_proof(bl, iid):
+    """The command (argument list) of a code-lane item's check or repro that reads the committed query-log store or
+    backlog.py's cost figures (DELIVERY_READ), else None. Only a query-log delivery after the merge changes what it
+    reads, and `land` runs a code item's checks and repro before it pushes the merge request, so it stops there. A
+    project with no `lane_module` has no code lane: None."""
+    name = setting("lane_module")
+    it = bl.items[iid]
+    if not name or not it.get("touches"):
+        return None
+    kblane = importlib.import_module(name)
+    if kblane.paths_lane(it["touches"])[0] != kblane.CODE:
+        return None
+    return next((c["run"] for c in clause_commands(it)
+                 if DELIVERY_READ.search(" ".join(str(x) for x in c.get("run") or []))), None)
+
+
 def intake_fingerprint(c):
     """The fingerprint FP of a check that is `backlog.py intake --status FP` (bl_intake.STATUS_REPRO and one more
     word), else None."""
@@ -2757,8 +2830,10 @@ def cmd_precheck(bl, a):
     traceback in that output is said to be a broken check, not a failing premise. After the checks it prints each
     committed item's goal clauses (split as close --summary splits a sprint goal) with the check or repro that reads each,
     from the item's `clauses` mapping (`set ID --add-clause CLAUSE=N`), and warns of a clause no check reads and of a
-    goal of several clauses with no mapping (`clause_map`). kb-sprint plan runs it before the start gate is asked, so
-    start stays fast."""
+    goal of several clauses with no mapping (`clause_map`). It warns of a code-lane item whose check or repro reads the
+    committed query-log store or backlog.py cost figures (`after_merge_proof`): land runs those before the merge
+    request is pushed, so only a separate item done after the merge can prove them. kb-sprint plan runs it before the
+    start gate is asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
@@ -2792,6 +2867,12 @@ def cmd_precheck(bl, a):
             "and why (a check that pins behaviour that must stay)")
     unread = 0
     for iid in precheck_items(bl, sid):
+        late = after_merge_proof(bl, iid)
+        if late:
+            say(f"warning: {bl.label(iid)}: `{shlex.join(late)}` reads the committed query-log store or backlog.py cost "
+                "figures, which only a query-log delivery after the merge changes, and land runs a code item's checks "
+                "and repro before it pushes the merge request, so it stops at checks: move that proof to a separate "
+                "item, done after the merge")
         lines, warns, n = clause_map(bl, iid)
         unread += n
         if lines:
