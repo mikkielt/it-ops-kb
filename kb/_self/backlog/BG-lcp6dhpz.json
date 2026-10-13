@@ -2,7 +2,7 @@
   "id": "BG-lcp6dhpz",
   "kind": "bug",
   "title": "The Sonnet 5.5 cache-read conflict's resolution says older runs are re-priced at 0.10, while bench_core.READ_BEFORE keeps them at 0.20",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,6 @@
   "links": [
     "parked: SP-ceucrhca review"
   ],
-  "notes": "Review gap 10 (S4): kb/public/_conflicts.md:746 against bench_core.READ_BEFORE. Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: repro prints 'ledger says re-priced at 0.10' (exit 1); bench_core.py:46 READ_BEFORE is ((2, 1, 296), 0.20) and read_price returns it for a version before 2.1.296."
+  "notes": "Review gap 10 (S4): kb/public/_conflicts.md:746 against bench_core.READ_BEFORE. Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: repro prints 'ledger says re-priced at 0.10' (exit 1); bench_core.py:46 READ_BEFORE is ((2, 1, 296), 0.20) and read_price returns it for a version before 2.1.296.",
+  "claimed_by": "orch-ilqhjn3k"
 }
