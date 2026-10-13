@@ -2985,7 +2985,7 @@ _Agent: kb-research_
 - Cloudflare tokens take an optional `not_before` and `expires_on`; "Roll" (`PUT /user/tokens/{id}/value`) invalidates the old value and keeps the permissions; `GET /user/tokens/verify` checks a token. [DOC S-pj2f4zxz, S-mk66h6ri, S-34drdif4, S-i7k2yzu3]
 - An R2 key pair is the token's `id` and the SHA-256 of its value, and temporary credentials derive from it with a TTL. [DOC S-xaij2xlf, S-azsoi3uw]
 - Discord's bot token is replaced with "Reset Token" on the Bot page. [DOC S-jnot5rsp]
-- Conclusion: all four rotations are cut-overs, not overlaps; an overlap needs a second credential, and the check is a read-only call with the new value before the old one is deleted. [DER S-tef353hj, S-mk66h6ri, S-xaij2xlf: old value invalidated by the call]
+- Conclusion: the GitLab, Cloudflare and R2 rotations are cut-overs, not overlaps, while whether Discord's old bot token stays valid after "Reset Token" is not stated; an overlap needs a second credential, and the check is a read-only call with the new value before the old one is deleted. [DER S-tef353hj, S-mk66h6ri, S-xaij2xlf: old value invalidated by the call; S-jnot5rsp: no statement on the old Discord token]
 - Open: Cloudflare TTL bounds and whether Discord's old bot token dies at reset. [UNK]
 - See auth/issuer-token-rotation.md.
 

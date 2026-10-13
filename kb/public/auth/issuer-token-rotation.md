@@ -10,7 +10,7 @@ status: partial
 # Issuer-side ceilings and rotation of API credentials
 
 ## Summary
-The four issuers differ in what they let a holder do to a credential: GitLab rotates a token in one call and revokes the old one at once, Cloudflare rolls a token's secret in place (the old value dies at once) or lets a token carry its own expiry, R2's S3 key pair is a function of a Cloudflare API token, and Discord's bot token is replaced from the developer portal. None keeps the old value valid for an overlap, so a rotation is a cut-over: write the new value to every consumer, then verify by using it. Extends `agents/api-tokens-issue-and-store.md` and `gitlab/deploy-keys-and-tokens.md`.
+The four issuers differ in what they let a holder do to a credential: GitLab rotates a token in one call and revokes the old one at once, Cloudflare rolls a token's secret in place (the old value dies at once) or lets a token carry its own expiry, R2's S3 key pair is a function of a Cloudflare API token, and Discord's bot token is replaced from the developer portal. GitLab, Cloudflare and R2 give no overlap, so rotating one of them is a cut-over: write the new value to every consumer, then verify by using it. Whether Discord's old bot token stays valid after "Reset Token" is not stated in the docs read. Extends `agents/api-tokens-issue-and-store.md` and `gitlab/deploy-keys-and-tokens.md`.
 
 ## Facts
 
@@ -47,7 +47,7 @@ The four issuers differ in what they let a holder do to a credential: GitLab rot
 - The app's **Public Key** (General Information) verifies that HTTP requests come from Discord, and is separate from the bot token. [DOC S-jnot5rsp]
 
 ### Rotation by minting at the issuer, then verifying by use
-- Because GitLab rotate and Cloudflare roll invalidate the old value in the same call, a consumer holding the old value fails from that moment; rotation is a cut-over, not an overlap. [DER S-tef353hj, S-pu7alvhx, S-mk66h6ri: the old token is revoked or invalidated by the call]
+- Because GitLab rotate and Cloudflare roll invalidate the old value in the same call, a consumer holding the old value fails from that moment; so do the S3 clients of an R2 key pair behind a rolled token, since its secret is a hash of the token value. These three rotations are cut-overs, not overlaps; Discord's old-token validity after "Reset Token" is the last open item below. [DER S-tef353hj, S-pu7alvhx, S-mk66h6ri, S-xaij2xlf: the old token is revoked or invalidated by the call; the key pair follows the token value]
 - An overlap needs a second credential: mint a new Cloudflare token (or GitLab token with another credential), switch consumers, check it with a read-only call, then delete or revoke the old one; `GET /user/tokens/verify` is the documented check for Cloudflare. [DER S-i7k2yzu3, S-mk66h6ri: tokens are independent objects; the verify endpoint]
 - A token must be rotated before its expiry: a GitLab token that has expired answers `401` to its own rotate call, and an R2 key pair follows its Cloudflare token's lifetime. [DER S-tef353hj, S-xaij2xlf: expiry blocks self-rotation; key pair is a function of the token]
 - Rolling a Cloudflare token that backs an R2 key pair changes the Secret Access Key (a hash of the new value) while the Access Key ID stays the same, so every S3 client holding the pair needs the new secret. [DER S-xaij2xlf, S-mk66h6ri: Secret Access Key = SHA-256 of the token value; roll replaces the value]
