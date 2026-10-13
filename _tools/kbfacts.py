@@ -3505,8 +3505,9 @@ def _ledger_items(question, name, kind, cue_stems, domain, root, open_only):
             continue
         if open_only and ("[UNK" not in e["text"] or OPEN_GAP.search(e["text"])):
             continue
-        lines = files.setdefault(e["file"], (read(e["file"]) or "").splitlines())
-        title = _entry_title(e, lines)
+        if e["file"] not in files:
+            files[e["file"]] = (read(e["file"]) or "").splitlines()
+        title = _entry_title(e, files[e["file"]])
         if open_only and title.startswith(("Closed", "Resolved")):
             continue
         held = set(terms(title))
