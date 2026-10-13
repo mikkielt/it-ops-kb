@@ -2,7 +2,7 @@
   "id": "ST-bu3ppwnx",
   "kind": "story",
   "title": "kbid.py add keeps every row when parallel research agents add sources at once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,6 @@
   "links": [
     "parked: SP-wwacrsqr close"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: kbid.add_source (kbid.py:268-303) reads the csv, inserts and writes atomically with no lock, so two concurrent adds lose one insert; the check names a test that does not exist yet (exit 2). The test goes in _tools/test_redact.py, which holds the kbid tests; a new test id needs room under max_ids of _tools/tests_ceiling.json, else it replaces one, and the ceiling is never edited. A stdlib lock only: fcntl is not on win32, so use an exclusive-create lock file or msvcrt as kb/_self/code.md portability says."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: kbid.add_source (kbid.py:268-303) reads the csv, inserts and writes atomically with no lock, so two concurrent adds lose one insert; the check names a test that does not exist yet (exit 2). The test goes in _tools/test_redact.py, which holds the kbid tests; a new test id needs room under max_ids of _tools/tests_ceiling.json, else it replaces one, and the ceiling is never edited. A stdlib lock only: fcntl is not on win32, so use an exclusive-create lock file or msvcrt as kb/_self/code.md portability says.",
+  "claimed_by": "orch-ilqhjn3k"
 }
