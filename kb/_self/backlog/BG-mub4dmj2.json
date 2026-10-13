@@ -92,7 +92,9 @@
         "a touch that names a symlink, naming its target and whether it is gone; a plain gone path stays stale_touches' error": "BG-mub4dmj2",
         "also a plain gone path, with no resolved path to name": "BG-mub4dmj2"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a touch that names a symlink, naming its target and whether it is gone; a plain gone path stays stale_touches' error",
+      "by": "operator"
     }
   ],
   "links": [
