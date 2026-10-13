@@ -1,0 +1,26 @@
+{
+  "id": "ST-3lt5defn",
+  "kind": "story",
+  "title": "Review sprint: Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour",
+  "status": "draft",
+  "sprint": "SP-ia6xayiy",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
