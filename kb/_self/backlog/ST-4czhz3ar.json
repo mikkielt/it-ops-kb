@@ -2,7 +2,7 @@
   "id": "ST-4czhz3ar",
   "kind": "story",
   "title": "Two gap entries the 2026-10-12 delivery filed are answered by the kb: census step models and RRF's k constant",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,6 @@
     "gap F-8324b5892fd4",
     "gap F-d92a053cc132"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: pack --root _self for the census question is coverage good (SQ-census-judging-steps-model, kb/_self/token-efficiency.md:13); the RRF pack leads with hybrid-retrieval.md:141-146 (k = 60 at :142) though its verdict is weak. Gaps lines 857 and 1034 carry no Resolved sub-bullet. The old check read the entry line itself for Resolved, which a sub-bullet never satisfies (see kb/public/_gaps.md:7-8), so the checks read the entry with its indented lines."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: pack --root _self for the census question is coverage good (SQ-census-judging-steps-model, kb/_self/token-efficiency.md:13); the RRF pack leads with hybrid-retrieval.md:141-146 (k = 60 at :142) though its verdict is weak. Gaps lines 857 and 1034 carry no Resolved sub-bullet. The old check read the entry line itself for Resolved, which a sub-bullet never satisfies (see kb/public/_gaps.md:7-8), so the checks read the entry with its indented lines.",
+  "claimed_by": "orch-ilqhjn3k"
 }
