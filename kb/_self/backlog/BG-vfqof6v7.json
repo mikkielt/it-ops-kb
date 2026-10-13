@@ -1,0 +1,17 @@
+{
+  "id": "BG-vfqof6v7",
+  "kind": "bug",
+  "title": "agents/doc-lookup-sources.md cites S2196 and S-yuwxbqz3 but its sources: header lists neither, and lists S-ehhvgjky, which no fact cites",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Make the sources: header of kb/public/agents/doc-lookup-sources.md match its body: add S2196 and S-yuwxbqz3, which the memdocs facts cite, and drop or cite S-ehhvgjky, so the contract lint no longer warns of the header, and regenerate the n_sources count of kb/public/_coverage.csv and _coverage.md (found by BG-zof4bcok, whose fix added S745 only).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;o=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py'],capture_output=True,text=True).stdout;n=[l for l in o.splitlines() if 'doc-lookup-sources.md' in l and 'header' in l];print(n);sys.exit(1 if n else 0)"
+    ]
+  }
+}
