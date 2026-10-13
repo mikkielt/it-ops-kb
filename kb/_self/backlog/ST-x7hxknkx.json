@@ -21,5 +21,18 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the facts on git commit with named paths and on a path under a symbolic link live: a new topic gitlab/git-commit-paths-and-symlinks, or a section of gitlab/git-test-repositories? Growing gitlab/git-test-repositories made the off-kb lookup row EV-configure-vmware-horizon-instant-clones read weak instead of none.",
+      "options": [
+        "a new topic gitlab/git-commit-paths-and-symlinks",
+        "a section of gitlab/git-test-repositories"
+      ],
+      "recommendation": "a new topic gitlab/git-commit-paths-and-symlinks",
+      "class": "push"
+    }
+  ],
   "claimed_by": "orch-q5ldd25k"
 }
