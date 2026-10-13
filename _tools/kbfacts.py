@@ -1159,9 +1159,14 @@ NONE_SENTENCE = ("The kb does not cover this. Do not answer from the hits below;
                  "(the lines below), research the rest in the live docs, never from memory.")
 
 
+VPREFIX = re.compile(r"^v(?=\d+\.\d)")  # the v of a version: v2.1.294 and 2.1.294 are one word
+
+
 @functools.lru_cache(maxsize=None)
 def stem(w):
-    """A light suffix stripper, the same for query and kb: disable/disabled/disabling -> disabl, settings -> set."""
+    """A light suffix stripper, the same for query and kb: disable/disabled/disabling -> disabl, settings -> set; a
+    version without its v prefix (v2.1.294 -> 2.1.294), so a question and a fact spell it either way."""
+    w = VPREFIX.sub("", w)
     for _ in range(2):  # settings -> setting -> sett
         for suf in ("ies", "ing", "ed", "es", "s"):
             if len(w) > len(suf) + 3 and w.endswith(suf) and not (suf == "s" and w.endswith(("ss", "us", "is"))):
@@ -1194,7 +1199,7 @@ def terms(text, camel=True):
     parts (approximateLastSignInDateTime -> approximate, last, sign, in, date, time; US_NPI -> us, npi)."""
     out = []
     for w in WORD.findall(text):
-        t = w.lower()
+        t = VPREFIX.sub("", w.lower())
         parts = [t] + ([p for p in re.split(r"[.\-]", t) if p] if ("-" in t or "." in t) else [])
         if "-" in t:
             parts += [p for p in t.split("-") if NUMBER.fullmatch(p)]
@@ -1718,7 +1723,8 @@ def _unit_key(u, art, meta, sums, exps):
     else:
         summ = None
     ex = exps.get(fact_key(u["text"]), ()) if exps and u["tags"] and not u.get("root") else ()
-    wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), (WORD.pattern, CAMEL.pattern, NUMBER.pattern, VERSION_ID.pattern))
+    patterns = (WORD.pattern, CAMEL.pattern, NUMBER.pattern, VERSION_ID.pattern, VPREFIX.pattern)
+    wdata = _weigh_data(frozenset(STOP), frozenset(kbid.STOP), patterns)
     raw = json.dumps([INDEX_VERSION, os.environ.get("KB_DOC2QUERY", ""), _weigh_code(), wdata,
                       TITLE_WEIGHT, SUMMARY_WEIGHT, EXPANSION_WEIGHT, u["path"], u["title"], u.get("lead", ""),
                       u["section"], u["text"], summ, list(ex), [q for _, q in u.get("anchors", ())]], ensure_ascii=False)

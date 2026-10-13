@@ -33,5 +33,20 @@
   "depends_on": [
     "BG-2rh4u36u"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the v prefix of a dotted version get dropped: in kbfacts.stem (every consumer of stem, terms and key_terms sees v2.1.294 as 2.1.294) or only in the pack's own index and rank calls?",
+      "options": [
+        "stem",
+        "pack-only"
+      ],
+      "recommendation": "stem",
+      "class": "design",
+      "answer": "stem",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-7ff7c5ui"
 }
