@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-djl7za6x close"
-  ]
+  ],
+  "notes": "Recurred in SP-u5q37ds3 (2026-10-13): BG-zsiguf72's check asserted only detect_source's verdict != soft-404 while the clause named the printed line (never not found); the review found it unmet for a located anchor (BG-xvvclquq, S1, fixed in the sprint)."
 }

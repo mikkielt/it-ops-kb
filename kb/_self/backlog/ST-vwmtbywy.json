@@ -1,0 +1,27 @@
+{
+  "id": "ST-vwmtbywy",
+  "kind": "story",
+  "title": "Planning a per-host failure memory names every request path it gates and the errors that start and end it, as gates before the start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A planned goal that makes a tool remember a host that failed (a down window, a breaker) lists, before the start gate, each request path of the tool that reads or records it (the source page, its search, candidate pages, a made-up sibling, a redirect target, a pinned url's repository) and which errors start or end it (a connect refused, a timeout cut by a budget, an HTTP error, a corrupt record), with a gate for each the goal leaves open. Retrospective of SP-u5q37ds3: ST-y45iz7uh asked only the window's length; its review found five gaps in the paths and errors it left open (ST-ujgqyr35, ST-ecxt66tw, ST-k445avpw, BG-gx4wphry).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_failure_memory_paths"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "_tools/test_backlog_portable.py",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 close"
+  ]
+}

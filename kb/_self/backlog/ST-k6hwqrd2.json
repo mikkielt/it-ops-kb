@@ -1,0 +1,27 @@
+{
+  "id": "ST-k6hwqrd2",
+  "kind": "story",
+  "title": "The goal research checks a DER inference against the probe it cites and the sprint's own bug evidence before it lands",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A goal research story that writes a DER fact citing a probe in the same article states the probe's outcome as the probe bullet does, and reads the sprint's bug items on the same host before it infers a tool's behaviour there; the research worker's brief says so. Retrospective of SP-u5q37ds3: ST-ra7u7hwd's summary said both soft-404 texts can be empty citing a probe whose made-up sibling answered a 302 and differed (parked as ST-3wfekziw), and held the failure memory in memory only while ST-y45iz7uh kept it under _cache/ (ST-ikj63sqj).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_brief_der_against_probe"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    ".claude/skills/kb-research/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-u5q37ds3 close"
+  ]
+}
