@@ -2,7 +2,7 @@
   "id": "BG-s7du27qb",
   "kind": "bug",
   "title": "The router's ledger scan reads and splits a ledger file once for each entry it holds, so a gap-cued question costs about 50 ms",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-enudabdr",
   "priority": "P2",
   "rank": 0,
@@ -44,5 +44,6 @@
   "depends_on": [
     "BG-apytw7fo"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 on the base: the repro exits 1 (precheck), so the count of reads is not below 10. The rag.py eval check passes before the work: it pins that the fix keeps every eval row passing. Follows BG-apytw7fo (kbfacts.py, test_live_kb.py: the probe's Text class works around the repeated split and can go)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 on the base: the repro exits 1 (precheck), so the count of reads is not below 10. The rag.py eval check passes before the work: it pins that the fix keeps every eval row passing. Follows BG-apytw7fo (kbfacts.py, test_live_kb.py: the probe's Text class works around the repeated split and can go).",
+  "claimed_by": "orch-enudabdr"
 }
