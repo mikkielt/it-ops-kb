@@ -213,6 +213,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
         return f'<html><div class="abs-license"><a href="{href}" title="Rights to this article" class="has_license">license</a>'
     cc = "http://creativecommons.org/licenses/"
     gh, gl, files = "https://api.github.com/repos/", "https://gitlab.com/api/v4/projects/", "/contents/"
+    raw = "https://raw.githubusercontent.com/"
     page = lambda mirror: f'<html><head><meta name="github_feedback_content_git_url" content="https://github.com/{mirror}/blob/main/docs/a.md" />'  # noqa: E731
     repo = lambda spdx, **kw: json.dumps({"license": {"spdx_id": spdx} if spdx else None, **kw})  # noqa: E731
     names = lambda *n: json.dumps([{"name": x, "type": "file"} for x in n])  # noqa: E731
@@ -240,6 +241,15 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
         learn + "page-e": (200, "<html><head><title>no mirror</title>"),
         learn + "page-f": (200, page("Org/Cc")), gh + "Org/Cc": (200, repo("CC-BY-4.0", archived=False)),
         gh + "Org/Cc" + files: (403, "{}"),
+        learn + "page-g": (200, page("Org/Pwsh")), gh + "Org/Pwsh": (200, repo("NOASSERTION", archived=False)),
+        gh + "Org/Pwsh" + files: (200, names("LICENSE.md", "LICENSE-CODE.md", "README.md")),
+        raw + "Org/Pwsh/HEAD/LICENSE.md": (200, "﻿# Attribution 4.0 International\n\nCreative Commons Corporation"),
+        learn + "page-h": (200, page("Org/Ncl")), gh + "Org/Ncl": (200, repo(None, archived=False)),
+        gh + "Org/Ncl" + files: (200, names("LICENSE")),
+        raw + "Org/Ncl/HEAD/LICENSE":(200, "Attribution-NonCommercial-ShareAlike 4.0 International\n"),
+        learn + "page-i": (200, page("Org/Own")), gh + "Org/Own": (200, repo(None, archived=False)),
+        gh + "Org/Own" + files: (200, names("LICENSE")),
+        raw + "Org/Own/HEAD/LICENSE": (200, "Our own terms\n"),
     }
     asked = []
 
@@ -288,6 +298,11 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert add(learn + "page-b")[3] == (terms + "public mirror Org/Old archived: its licence covers only the archived text)", "quote")
     assert add(learn + "page-c")[3] == (terms + "source repository Org/Private is not public: the GitHub API answers 404)", "quote")
     assert add(learn + "page-d")[3] == (terms + "public mirror Org/Graph: licence files LICENSE, LICENSE.md conflict)", "quote")
+    # GitHub's NOASSERTION (LICENSE.md beside LICENSE-CODE.md): the one licence file's Creative Commons title is read
+    assert add(learn + "page-g")[3] == ("CC BY 4.0 (public mirror Org/Pwsh)", "copy")
+    assert add(learn + "page-h")[3] == (terms + "public mirror Org/Ncl, CC BY-NC-SA 4.0: no reuse grant)", "quote")
+    code, out, err, got = add(learn + "page-i")  # a file that is no Creative Commons title: unread, nothing written
+    assert code == 2 and got is None and "recognises no licence of the mirror Org/Own" in err, err
     for u, why in ((learn + "page-e", "names no GitHub mirror"), (learn + "page-f", "could not be listed")):
         code, out, err, got = add(u)  # no mirror named, or the listing is rate limited: no pair is guessed
         assert code == 2 and got is None and why in err, (u, err)

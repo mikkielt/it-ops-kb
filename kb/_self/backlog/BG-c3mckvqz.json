@@ -25,6 +25,20 @@
   "depends_on": [
     "ST-k445avpw"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does provider._learn_licence read a Learn mirror's licence when GitHub's licence API gives no SPDX id (NOASSERTION or none)?",
+      "options": [
+        "Read the first line of the mirror root's one licence file (LICENSE-CODE aside) from raw.githubusercontent.com at HEAD; a Creative Commons legal-code title (Attribution[-NonCommercial][-ShareAlike][-NoDerivatives] N.N International, CC0 N.N Universal) gives the SPDX id and the usual copy or quote class; any other text stays unread",
+        "A fixed table of known mirrors and their licences in provider.py, no file read",
+        "Compare the whole licence file with the CC legal code text"
+      ],
+      "recommendation": "Read the first line of the mirror root's one licence file (LICENSE-CODE aside) from raw.githubusercontent.com at HEAD; a Creative Commons legal-code title (Attribution[-NonCommercial][-ShareAlike][-NoDerivatives] N.N International, CC0 N.N Universal) gives the SPDX id and the usual copy or quote class; any other text stays unread",
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-sbdy4hsx review"
   ],
