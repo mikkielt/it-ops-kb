@@ -654,7 +654,8 @@ def slow_first(finished):
     return run
 
 
-def test_bench_pool_jobs_parallel_rows_equal_one_job_cap_stops_and_the_record_date_holds(monkeypatch, tmp_path):
+def test_bench_pool_max_usd_in_flight_counts_the_runs_started_and_jobs_parallel_rows_equal_one_job_and_the_record_date_holds(monkeypatch, tmp_path):
+    import time
     import bench_pool as bp
     rows, cells = pool_rows(12), bp.plan_cells(["sonnet-5-5", "haiku-4-5"], bp.EFFORTS)
     spend = lambda: (round(bc.SPEND["usd"], 6), bc.SPEND["runs"])  # noqa: E731
@@ -678,6 +679,30 @@ def test_bench_pool_jobs_parallel_rows_equal_one_job_cap_stops_and_the_record_da
         # the runs start one of each cell in turn: the next one is the cell len(got) % 3 at its turn len(got) // 3
         assert (jobs > 1 or len(got) == 5) and left[0] == (one[len(got)]["label"], f"{one[len(got)]['id']}#{len(got) // 3 % 2 + 1}")
         assert {r["label"] for r in got} == {label for _, _, label in cells}  # the cap left every cell some runs
+        # a run priced at its kind's cost counts while in flight: four runs of $0.01 fit $0.045 at any `jobs`, no fifth starts
+        reset()
+        left = []
+        got = bp.run_pool(rows[:4], cells, 2, slow_first([]), None, jobs=jobs, cap=0.045, left=left, usd=lambda label, kind: 0.01)
+        assert got == one[:4] and len(left) == 20 and spend() == (0.04, 4)
+    # run_tasks: ten tasks of $1 on four jobs under a cap of $3 start three (not the five that finish before a fourth is
+    # looked at), whatever the order they finish in; a task with no price is priced at 0, and the first starts whatever it costs
+    for cap, started in ((3.0, 3), (3.5, 3), (4.0, 4)):
+        reset()
+        first = []
+
+        def work(task, first=first):
+            time.sleep(0.03 if task == 0 else 0.002)
+            first.append(task)
+            bc.spent(1.0, 0, 0)
+            return task
+        got, rest = bp.run_tasks(list(range(10)), work, jobs=4, cap=cap, price=lambda task: 1.0)
+        assert got == list(range(started)) and rest == list(range(started, 10)) and spend() == (float(started), started)
+    reset()
+    got, rest = bp.run_tasks(list(range(10)), lambda task: bc.spent(1.0, 0, 0) or task, jobs=4, cap=0.5, price=lambda task: 9.0)
+    assert (got, rest[0], spend()) == ([0], 1, (1.0, 1))  # one run over a cap below its price, then the spend stops the rest
+    reset()
+    got, rest = bp.run_tasks(list(range(10)), lambda task: task, jobs=4, cap=0.0, price=lambda task: 1.0)
+    assert got == [] and len(rest) == 10  # no cap above 0, no run
     groups, _ = bp.session_groups(rows)  # a group's six questions stay in order inside one session, the records equal one job's
     cell, order = [("sonnet-5-5", "low", "sonnet-5-5:low")], {}
     fresh = slow_first([])
@@ -691,6 +716,11 @@ def test_bench_pool_jobs_parallel_rows_equal_one_job_cap_stops_and_the_record_da
     fresh = slow_first([])
     assert bp.run_sessions(groups, cell, 2, session_runner, jobs=3) == flat
     assert len(order) == 4 and all(p == [1, 2, 3, 4, 5, 6] for p in order.values())
+    reset()  # a session is priced as its six questions: $0.06 each, so three jobs under $0.15 start two, not three
+    order.clear()
+    fresh, left = slow_first([]), []
+    capped = bp.run_sessions(groups, cell, 2, session_runner, jobs=3, cap=0.15, left=left, usd=lambda label, kind: 0.01)
+    assert len(order) == 2 and len(capped) == 12 and spend() == (0.12, 12) and [n for _, n in left] == ["group 2#1", "group 2#2"]
     days = iter(["2026-10-09", "2026-10-10"])  # one record date: read once, at the start; a later midnight changes no row
     monkeypatch.setattr(bc, "today", lambda: next(days))
     monkeypatch.setattr(bc, "git", lambda *a, **k: "abc1234")
@@ -703,21 +733,26 @@ def test_bench_pool_jobs_parallel_rows_equal_one_job_cap_stops_and_the_record_da
     assert {(r["record"], r["date"]) for r in b.rows} == {("2026-10-09", "2026-10-09")}
 
 
-def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_dry_run_estimates(monkeypatch, capsys):
+def test_bench_pool_dry_run_kind_prices_and_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row(monkeypatch, capsys):
     import types
     import bench_pool as bp
     monkeypatch.setitem(bc.SPEND, "usd", 0.0)
     monkeypatch.setitem(bc.SPEND, "runs", 0)
+    history = []  # the results file the estimates read: none at first
     monkeypatch.setattr(bp, "load_pool", lambda home, kinds=None: pool_rows(6))
     monkeypatch.setattr(bp, "live_runner", lambda b, sh: slow_first([]))
-    monkeypatch.setattr(bp, "read_rows", lambda path: [])
+    monkeypatch.setattr(bp, "read_rows", lambda path: history)
     b = types.SimpleNamespace(arms=["sonnet-5-5"], efforts=["low"], kinds=None, shape="fresh", seed=1, dry=False, reps=2, jobs=2,
                               max_usd=0.045, rows=[], status=0)
     b.row = lambda scenario, case, arm, metric, value, runs="", model="", note="": b.rows.append((case, arm, metric, value, note))
+    history.append({"scenario": "pool", "record": "2026-10-08", "case": "all", "arm": "sonnet-5-5:low", "model": "claude-sonnet-5-5",
+                    "metric": "cost", "value": "0.01"})  # a run costs $0.01 (what the fake runner bills): four fit $0.045
     bp.s_pool(b)
     stopped = [r for r in b.rows if r[2] == "spend_stopped"]
     assert b.status == 1 and len(stopped) == 1 and stopped[0][:3] == ("not started", "sonnet-5-5:low", "spend_stopped")
-    assert stopped[0][3] == len(stopped[0][4].split(", ")) and 12 - stopped[0][3] in (5, 6) and "#" in stopped[0][4]
+    assert stopped[0][3] == len(stopped[0][4].split(", ")) == 8 and "#" in stopped[0][4] and bc.SPEND["runs"] == 4
+    assert bc.SPEND["usd"] <= 0.045  # `jobs` 2 runs in flight did not carry it past the cap
+    history.clear()
     b.dry, b.rows = True, []
     with pytest.raises(bp.Skip) as e:  # the estimate prices the stated default tokens at bench_core's prices
         bp.s_pool(b)
@@ -742,14 +777,43 @@ def test_bench_pool_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row_and_
              "opus-5-5:low": 7.69, "opus-5-5:default": 8.02}
     record = [r for r in bc.read_rows() if r["scenario"] == "pool" and r["record"] == "2026-10-08"]
     arms, sessions = ["haiku-5-5", "haiku-4-5", "sonnet-5-5", "opus-5-5", "router", "hook", "web-haiku-5-5", "web-sonnet-5-5"], ["haiku-5-5", "sonnet-5-5"]
-    legs = [bp.Leg("fresh", bp.plan_cells(arms, bp.EFFORTS), {a: [0] * (13 if a.startswith("web-") else 35) for a in arms}, {}, {}, dict.fromkeys(arms, 1)),
-            bp.Leg("session", bp.plan_cells(sessions, bp.EFFORTS), {}, {a: [[0] * 6] * 5 for a in sessions}, {}, dict.fromkeys(sessions, 1))]
+    legs = [bp.Leg("fresh", bp.plan_cells(arms, bp.EFFORTS), {a: [{}] * (13 if a.startswith("web-") else 35) for a in arms}, {}, {}, dict.fromkeys(arms, 1)),
+            bp.Leg("session", bp.plan_cells(sessions, bp.EFFORTS), {}, {a: [[{}] * 6] * 5 for a in sessions}, {}, dict.fromkeys(sessions, 1))]
     est = {label: runs * usd for _, _, label, runs, usd, *_ in bp.estimates(legs, record)}
     assert all(abs(est[label] - usd) <= 0.25 * usd for label, usd in smoke.items()), {k: (est[k], v) for k, v in smoke.items()}
     mean = lambda label: float(next(r["value"] for r in record if r["arm"] == label and r["case"] == "all" and r["metric"] == "cost"))  # noqa: E731
     rest = {"web-haiku-5-5": 13, "web-sonnet-5-5": 13, **{f"{m}-5-5:{e}/session": 30 for m in ("haiku", "sonnet") for e in bp.EFFORTS}}
     full = sum(smoke.values()) + 35 * 0.021 + sum(n * mean(label) for label, n in rest.items())  # the router's one smoke run cost 0.021
     assert abs(sum(est.values()) - full) <= 0.25 * full and sum(est.values()) >= 12
+    # a kind is priced at its own mean cost in the label's newest record that has it, not at the mean over all kinds
+    # (SP-kp3boz7z: 60 runs of two kinds, estimated at the all-kinds mean $3.51 and billed $5.72 against a $5 cap)
+    kind_cell = lambda label, case, usd, rec="2026-10-09": [{**r, "case": case} for r in  # noqa: E731
+                                                            cell(rec, label, "claude-sonnet-5-5", cost=usd, **tokens)]
+    kinds = (kind_cell("sonnet-5-5:low", "all", 0.0585) + kind_cell("sonnet-5-5:low", "sc_absent", 0.03)
+             + kind_cell("sonnet-5-5:low", "sc_partial", 0.10) + kind_cell("sonnet-5-5:low", "sc_old", 0.07, "2026-10-01"))
+    assert bp.assumed_run("sonnet-5-5:low", "sonnet-5-5", kinds, "sc_partial")[0] == 0.10
+    assert bp.assumed_run("sonnet-5-5:low", "sonnet-5-5", kinds, "sc_partial")[3] == "the mean cost of the kind in the record 2026-10-09"
+    assert bp.assumed_run("sonnet-5-5:low", "sonnet-5-5", kinds, "sc_old")[3] == "the mean cost of the kind in the record 2026-10-01"
+    assert bp.assumed_run("sonnet-5-5:low", "sonnet-5-5", kinds, "fact")[0] == 0.0585  # a kind with no cell: the all cell
+    assert bp.assumed_run("sonnet-5-5:low", "sonnet-5-5", kinds)[0] == 0.0585
+    # the same kind of a kb twin when the label has no record: its means of that kind, priced as the arm's model
+    twin_kind = [{**r, "case": "fact"} for r in cell("2026-10-09", "haiku-5-5:low", "claude-haiku-5-5", cost=0.01, **tokens)]
+    got = bp.assumed_run("opus-5-5:low", "opus-5-5", twin_kind, "fact")
+    assert got[3] == "the means of the kind of haiku-5-5:low in the record 2026-10-09, priced as claude-opus-5-5"
+    assert bp.assumed_run("opus-5-5:low", "opus-5-5", twin_kind, "count")[3] == "the default"
+    rows = [{"kind": "sc_absent"}] * 15 + [{"kind": "sc_partial"}] * 15
+    leg = bp.Leg("fresh", bp.plan_cells(["sonnet-5-5"], ["low"]), {"sonnet-5-5": rows}, {}, {}, {"sonnet-5-5": 2})
+    [(_, _, label, runs, usd, _, _, basis, parts)] = bp.estimates([leg], kinds)
+    assert (label, runs) == ("sonnet-5-5:low", 60) and abs(runs * usd - (30 * 0.03 + 30 * 0.10)) < 1e-9  # $3.90, not 60 x $0.0585
+    assert [(k, n, u) for k, n, u, _ in parts] == [("sc_absent", 30, 0.03), ("sc_partial", 30, 0.10)]
+    capsys.readouterr()
+    assert abs(bp.estimate_lines([leg], kinds, 8, 3.8) - 3.9) < 1e-9
+    out = capsys.readouterr().out
+    assert "by kind: sc_absent 30 x $0.0300, sc_partial 30 x $0.1000" in out and "over --max-usd $3.80" in out
+    session = bp.Leg("session", leg.cells, {}, {"sonnet-5-5": [[{"kind": "sc_absent"}] * 4 + [{"kind": "sc_partial"}] * 2]}, {},
+                     {"sonnet-5-5": 1})  # a session's questions are priced each at its own kind
+    [(_, _, label, runs, usd, *_)] = bp.estimates([session], [{**r, "arm": r["arm"] + "/session"} for r in kinds])
+    assert (label, runs) == ("sonnet-5-5:low/session", 6) and abs(runs * usd - (4 * 0.03 + 2 * 0.10)) < 1e-9
 
 
 def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(monkeypatch, capsys):
@@ -785,7 +849,8 @@ def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(m
     monkeypatch.setattr(bp, "load_pool", lambda home, kinds=None: rows)
     monkeypatch.setattr(bp, "live_runner", lambda b, sh: fresh)
     monkeypatch.setattr(bp, "live_session_runner", lambda b: lambda arm, effort, row, sid, position: fresh(arm, effort, row))
-    monkeypatch.setattr(bp, "read_rows", lambda path: [])
+    history = []  # the results the estimates read: none, until a capped run below has each label's cost of $0.01 a run
+    monkeypatch.setattr(bp, "read_rows", lambda path: history)
 
     def record(**more):
         monkeypatch.setitem(bc.SPEND, "usd", 0.0)
@@ -812,15 +877,18 @@ def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(m
     assert any(c == "position 6" and a == "sonnet-5-5:low/session" for c, a, *_ in full.rows)  # the session shape's rows beside
     # one cap over both shapes: the fresh runs take their part of it by the estimates, the session runs the rest, and each shape
     # starts one run of every label in turn, so a cap below the cost leaves every label of both shapes some runs
-    late, _ = record(max_usd=3.505)
+    history += [{"scenario": "pool", "record": "2026-10-08", "case": "all", "arm": label, "model": "claude-sonnet-5-5", "metric": "cost",
+                 "value": "0.01"} for label in per_label(full)]
+    late, _ = record(max_usd=3.505)  # each part of the cap is filled to a run (a session: six) short of it, and none passes it
     stopped = {a: v for c, a, m, v, n, note in late.rows if m == "spend_stopped"}
     assert late.status == 1 and stopped and per_label(late).keys() == per_label(full).keys()
-    assert any(not a.endswith("/session") for a in stopped) and 3.505 <= bc.SPEND["usd"] <= 3.505 + 0.06
+    assert any(not a.endswith("/session") for a in stopped) and 3.505 - 0.12 <= bc.SPEND["usd"] <= 3.505
     assert "sessions not started" in capsys.readouterr().out
     early, _ = record(max_usd=1.0)
     stopped = {a: v for c, a, m, v, n, note in early.rows if m == "spend_stopped"}
     assert early.status == 1 and per_label(early).keys() == per_label(full).keys() and stopped.keys() == per_label(full).keys()
-    assert 1.0 <= bc.SPEND["usd"] <= 1.0 + 0.06 and all(0 < n < per_label(full)[a] for a, n in per_label(early).items())
+    assert 1.0 - 0.12 <= bc.SPEND["usd"] <= 1.0 and all(0 < n < per_label(full)[a] for a, n in per_label(early).items())
+    history.clear()
     # --dry-run: the plan per arm label and the estimate, no run
     capsys.readouterr()
     dry, msg = record(dry=True)

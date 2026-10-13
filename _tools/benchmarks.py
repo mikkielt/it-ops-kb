@@ -21,9 +21,10 @@
                                             per position the marginal input and the cache-read share; --jobs N
                                             runs up to N of its `claude -p` runs at once (a session's questions stay in
                                             order), the rows and their order the same as with 1; --max-usd X starts no
-                                            new run once the finished runs have cost X (those in flight finish), records
+                                            new run once the finished runs, those in flight and the run to start, each at
+                                            the mean cost of its kind, would pass X (those in flight finish), records
                                             a `spend_stopped` row per arm naming the runs not started and exits 1;
-                                            --dry-run also prints an estimate of the spend; --shape fresh,session runs both
+                                            --dry-run also prints an estimate of the spend, each kind at its own cost; --shape fresh,session runs both
                                             shapes in one run under the one --max-usd; --arm-reps and --arm-kinds give an
                                             arm (or ARM/session, in the session shape only) its own reps and kinds, the
                                             arms not named taking --reps and --kinds, and an arm they name that the run
@@ -153,7 +154,7 @@ def main(argv=None):
                    "separated (default: fresh)")
     r.add_argument("--seed", type=int, default=bench_pool.SEED, help="the seed that orders the groups of `pool --shape session`")
     r.add_argument("--jobs", type=int, default=1, help="`pool`: runs at once (default: 1)")
-    r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs cost this many US dollars")
+    r.add_argument("--max-usd", type=float, help="`pool`: start no new run once the finished runs, those in flight and the run to start, each at the mean cost of its kind, would pass this many US dollars")
     r.add_argument("--sample", type=int, help="`pool`, `freshness`: keep this many rows of each kind, drawn with --seed (default: every row)")
     r.add_argument("--arm-reps", action="append", metavar="ARM=N",
                    help="`pool`: the reps of an arm (ARM/session: of the session shape), comma separated or repeated; the arms "
