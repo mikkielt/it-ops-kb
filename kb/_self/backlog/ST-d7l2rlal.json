@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-7n3d4jte close"
   ],
-  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): the ST-b27c527d worker made a baseline clone at _cache/scratch/ST-b27c527d/base to time the suite before its change; its rm -rf was denied, and so was the orchestrator's, so the clone outlives the sprint in the orchestrator worktree. Touches are a guess: the planner runs referrers on close's cleanup first."
+  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): the ST-b27c527d worker made a baseline clone at _cache/scratch/ST-b27c527d/base to time the suite before its change; its rm -rf was denied, and so was the orchestrator's, so the clone outlives the sprint in the orchestrator worktree. Touches are a guess: the planner runs referrers on close's cleanup first. Recurred SP-qlpfcgs2: rm -rf denied for BG-w6z2zc6r's scratch clone trim, ST-iai37tjr's exp and base clones, and a .venv uv made in ST-owyktog7's worktree."
 }

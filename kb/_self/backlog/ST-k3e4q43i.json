@@ -1,0 +1,27 @@
+{
+  "id": "ST-k3e4q43i",
+  "kind": "story",
+  "title": "The next slowest suite tests (sync e2e, live kb, leaks) each run under 6 s alone, so the whole suite keeps its darwin ceiling with sibling workers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the slowest tests of _tools/test_sync_e2e.py, _tools/test_live_kb.py and _tools/test_leaks.py each run under 6 s alone in a tests.py --durations=5 run with every assertion kept, never by raising _tools/tests_ceiling.json (SP-qlpfcgs2: after the land scenarios were cut under 8 s, worker whole-suite runs still took 24.1 to 29 s against the 24 s darwin ceiling with two or three sibling workers, all 100 passing; these files then held the slowest tests at 6.1 to 8.6 s)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys;p=subprocess.run([sys.executable,\"_tools/tests.py\",\"_tools/test_sync_e2e.py\",\"_tools/test_live_kb.py\",\"_tools/test_leaks.py\",\"--no-reuse\",\"--durations=5\"],capture_output=True,text=True);t=[float(x) for x in re.findall(r\"^(\\d+\\.\\d+)s call\",p.stdout,re.M)];sys.exit(1 if p.returncode or not t or max(t)>=6 else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_sync_e2e.py",
+    "_tools/test_live_kb.py",
+    "_tools/test_leaks.py"
+  ],
+  "links": [
+    "parked: SP-qlpfcgs2 close"
+  ],
+  "notes": "Premise run 2026-10-13 (load near 1.5 on 14 cores): slowest calls 7.48, 7.28, 7.05, 6.09 s; the check exits 1. The review's whole-suite run passed on a quiet host."
+}

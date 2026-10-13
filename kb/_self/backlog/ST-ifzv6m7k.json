@@ -1,0 +1,28 @@
+{
+  "id": "ST-ifzv6m7k",
+  "kind": "story",
+  "title": "done names the host load when a check that bounds a test's wall time fails on a loaded host",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a done check that bounds wall time (a tests.py --durations run read against a seconds bound) is refused with the host's 5-minute load named when the load is over bl_selfcheck.SUITE_LOAD_PER_CORE per core, as a review's whole-suite run is, instead of failing as the work's own fault (SP-qlpfcgs2: BG-w6z2zc6r's 8 s bound failed at 8.10 s at a load near 7.8 on 14 cores while a sibling worker ran its suite, and passed on the retry)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_names_load_for_timed_check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qlpfcgs2 close"
+  ],
+  "notes": "Evidence: backlog.py ops SP-qlpfcgs2, done.refused BG-w6z2zc6r reasons=check-failed at 2026-10-13T08:12:07Z; the first land pass had removed the worker's worktree (ST-q3k2zl6u)."
+}

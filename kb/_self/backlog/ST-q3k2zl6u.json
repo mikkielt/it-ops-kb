@@ -18,5 +18,6 @@
   ],
   "links": [
     "parked: SP-gcerxjsg close"
-  ]
+  ],
+  "notes": "Recurred SP-qlpfcgs2 (2026-10-13): land BG-w6z2zc6r removed the worker's worktree, then done refused its timing check at 8.10 s over the 8 s bound under sibling load; the rerun had to wait for the merged code on origin/main."
 }

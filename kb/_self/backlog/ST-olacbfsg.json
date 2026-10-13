@@ -1,0 +1,29 @@
+{
+  "id": "ST-olacbfsg",
+  "kind": "story",
+  "title": "An item whose goal names the test ceiling has its open choices asked before the start, and its brief says a gate added there is class ceiling",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "planning asks every choice an item's goal leaves open as a gate before the start gate when the goal or touches name the test ceiling (its ids, headroom or seconds), and the worker's brief of such an item says that a gate it adds whose text names the test ceiling is class ceiling, which no agent session answers, so the work stops until the operator's terminal answers it (SP-qlpfcgs2: ST-iai37tjr's worker asked whether precheck always prints the headroom line; the gate was classed ceiling and the item was carried out of the sprint with its goal clause unmet)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_warns_ceiling_class_gate"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qlpfcgs2 close"
+  ],
+  "notes": "Evidence: ST-iai37tjr gate g1 on branch work/ST-iai37tjr (tip 8bfcef20e), class ceiling matched 'test ceiling' in its question; bl_authority refuses any answer from an agent session. The class is never weakened, so the remedy is earlier asking, not a narrower classifier."
+}
