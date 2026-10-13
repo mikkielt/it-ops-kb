@@ -59,6 +59,19 @@
       "class": "agents-rule",
       "answer": "Closed settles; Narrowed and Partly resolved stay open leads",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Do the queue's and close's output messages that said 'Resolved note' say 'settling note' now that a Closed note settles an entry?",
+      "options": [
+        "Reword to 'settling note' in ql_research.py's messages and docstrings",
+        "Leave the messages saying 'Resolved note'"
+      ],
+      "recommendation": "Reword to 'settling note' in ql_research.py's messages and docstrings",
+      "class": "agents-rule",
+      "answer": "Reword to 'settling note' in ql_research.py's messages and docstrings",
+      "by": "operator"
     }
   ],
   "links": [

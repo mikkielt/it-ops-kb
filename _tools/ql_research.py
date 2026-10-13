@@ -494,8 +494,9 @@ def research_one(g, entry, gate, research, day):
 
 QUEUE_TRIED_DAYS = 30  # a gap whose newest tried note is younger than this many days stays out of the queue
 OPEN_GAP_STAGES = ("gap", "candidate-fact")  # a gap finding whose _gaps.md entry no source settled yet
-NOTE = re.compile(r"\s+- (Resolved|Superseded|Partly resolved|Tried) (\d{4}-\d{2}-\d{2})\b")
-SETTLED = ("Resolved", "Superseded")  # the notes that close an entry; `Tried` and `Partly resolved` leave it open
+NOTE = re.compile(r"\s+- (Resolved|Superseded|Closed|Partly resolved|Tried) (\d{4}-\d{2}-\d{2})\b")
+# the notes that close an entry, as `kbfacts.OPEN_GAP` reads `Closed`; `Tried` and `Partly resolved` leave it open
+SETTLED = ("Resolved", "Superseded", "Closed")
 TOPIC_MARK = re.compile(r"\s*\(topic: [^)]*\)\s*$")
 OFF_DOMAINS = "off the kb's domains"  # the reason the gap step records for a candidate no topic can take
 REJECTED_STAGE = "candidate-gap"  # where the gap step leaves a candidate off the kb's domains, and --reject puts one
@@ -565,10 +566,10 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
     """`queue [N]`: the open gap findings of `store` (default kb/_querylog, the committed store) with their _gaps.md
     entries, each re-run with pack first: one that passes now gets a `fixed-since` record (one findings file) and
     leaves the queue. An entry whose newest tried note is younger than QUEUE_TRIED_DAYS on `day` (default: HEAD's
-    day) waits; an entry a Resolved note closed without its claim record is named, not queued. The rest are one item
+    day) waits; an entry a settling note closed without its claim record is named, not queued. The rest are one item
     per question (every gap finding that asked it, with its entry), ranked by the logged lookups that asked it, then by
     the oldest lookup, then by finding id; the top `limit` items (all when None) are printed grouped by topic. 1 when a
-    closed gap reappears (a later record, or its entry without a Resolved note), else 0."""
+    closed gap reappears (a later record, or its entry without a settling note), else 0."""
     from ql_apply import Gate  # imported here: ql_apply imports this module
     from ql_learn import passes
     store = Path(store or STORE)
@@ -584,7 +585,7 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
         loc = ledger_entry(gate, g) if g.get("stage") == CLOSED_STAGE and g.get("article") else None
         if loc and not settled(loc[2]):
             problems.append(f"{fid}: closed at {CLOSED_STAGE}, but its entry {shown(loc[0])}:{loc[1]} has no "
-                            f"Resolved note")
+                            f"settling note")
     items, fixed, waiting, unclosed = {}, [], [], []
     for g in open_gaps(store, last):
         e = by_entry.get(g.get("entry")) or {}
@@ -634,7 +635,7 @@ def queue(store=None, limit=None, gate=None, day=None, kb_commit=None, out=print
     for g in fixed:
         out(f"fixed-since {g['id']}: pack answers it on HEAD ({g['observed']['verdict']}); recorded")
     for fid, where in unclosed:
-        out(f"resolved {fid}: {where} has a Resolved note; record it with `querylog.py close {fid} --claim`")
+        out(f"resolved {fid}: {where} has a settling note; record it with `querylog.py close {fid} --claim`")
     for p in problems:
         out(f"problem: {p}")
     return 1 if problems else 0
@@ -644,12 +645,13 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
           written=None):
     """`close F-ID --claim|--tried NOTE|--reject`: one findings record for an open gap finding worked by
     `/kb-research`, or with --tried an eval finding whose newest record is no-fix (apply found no fix for the miss): its
-    record carries `tried` (the day) and the note, with no _gaps.md entry to write. --claim: its _gaps.md entry must carry a `Resolved <day>:` note (the content rules), and the finding
-    is promoted to claim (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes
-    under the entry, and the record carries `tried` (the day). --reject: its entry must be gone from the ledger (removed
+    record carries `tried` (the day) and the note, with no _gaps.md entry to write. --claim: its _gaps.md entry must
+    carry a settling note (SETTLED, dated: `Resolved <day>:` by the content rules), and the finding is promoted to claim
+    (by kb-research, `applied`). --tried: the dated note `  - Tried <day>: NOTE (topic: ...)` goes under the entry, and
+    the record carries `tried` (the day). --reject: its entry must be gone from the ledger (removed
     as off the kb's domains), and the finding is put back from its stage to candidate-gap (by kb-research), `rejected`
     with OFF_DOMAINS in `observed`: the record the gap step writes for a candidate no topic can take. 0; 1 refused (not
-    an open gap, no entry, no Resolved note for --claim, a resolved entry or an empty note for --tried, an entry still
+    an open gap, no entry, no settling note for --claim, a settled entry or an empty note for --tried, an entry still
     in the ledger for --reject). `written`: a list the findings file's path is appended to."""
     from ql_apply import Gate  # imported here: ql_apply imports this module
     store = Path(store or STORE)
@@ -697,7 +699,8 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
     keep = {k: v for k, v in g.items() if k != "observed"}
     if claim:
         if not settled(notes):
-            out(f"close: {where} has no `Resolved <date>:` note under it; close the entry by the content rules first")
+            out(f"close: {where} has no settling note under it (`Resolved <date>:` by the content rules); "
+                "close the entry first")
             return 1
         rec = {**keep, "state": "applied", "stage": CLOSED_STAGE,
                "promotions": [*(g.get("promotions") or []),
@@ -709,7 +712,7 @@ def close(fid, claim=False, tried=None, store=None, gate=None, day=None, kb_comm
             out("close: --tried needs a note of what was tried and what it still needs")
             return 1
         if settled(notes):
-            out(f"close: {where} has a Resolved note; record it with --claim")
+            out(f"close: {where} has a settling note; record it with --claim")
             return 1
         lines = path.read_text(encoding="utf-8").split("\n")
         _, end = entry_block(lines, fid)
