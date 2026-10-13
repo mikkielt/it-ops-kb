@@ -2,7 +2,7 @@
   "id": "ST-74agak3p",
   "kind": "story",
   "title": "Research sprint goal: Content fixes: agents, Python and architecture articles state what their sources say",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-tjap3mdd"
 }
