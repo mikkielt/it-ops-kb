@@ -9,7 +9,9 @@ origin/main where it was; a content landing that adds a CODE tag with no pointer
 which ran on that article's path alone, and a stop at a step after land removed the finished worker's worktree (that
 lint, a failed push) names the `git worktree add` command that checks the branch out again at the same path. Three: the checkout `land` runs in holds untracked intake drafts and nothing else:
 `land` moves them aside and says so before its clean tree step, keeps them there when it stops at a later step, and
-refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there. The fourth class,
+refuses at clean tree, moving nothing, when another file or an item that is no filed draft is there; the same scenario
+holds `check`'s moved-or-deleted touch rule, which counts a path as gone by the integration main's history and not by
+a work branch's own add and removal of it. The fourth class,
 on a throwaway repository: a finished worker's worktree that a session-end hook's run (its parent gone, its standard
 output the clone's distill.log) still holds is waited for and then removed; the wait is bounded by
 `bl_procs.HOOK_GRACE_S` and skipped for a process whose parent lives; the same class holds the landing of a
@@ -233,7 +235,8 @@ class TestStoppedLand:
 
 
 class TestOwnCheckoutDrafts:
-    def test_land_moves_own_checkout_drafts_then_refuses_other_files(self, scenario):
+    def test_land_moves_own_checkout_drafts_then_refuses_other_files_and_check_stale_touch_branch_added_removed(
+            self, scenario):
         repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
                                     hooks=False)
         before = origin_main(scenario)
@@ -268,6 +271,21 @@ class TestOwnCheckoutDrafts:
         assert (aside / "BG-4c5d6e7f.json").is_file() and (aside / "BG-0a1b2c3d.json").is_file(), out
         assert not Path(repo.file(second)).exists() and item(scenario, good)["status"] == "done"
         assert repo.rev("main") == origin_main(scenario) != before
+
+        # `check`'s moved-or-deleted touch rule reads the integration main's history: a file the branch added and
+        # removed before it reached main is no error, one main has and the branch removed is
+        ghost, held = "kb/_self/ghost.md", "kb/_self/good.md"
+        for rel in (ghost, held):
+            ok(repo, "new", "story", "--title", f"Touch {Path(rel).stem}", "--goal", "The doc.", "--touch", rel)
+        repo.commit("test: two stories outside a sprint", PLAN)
+        repo.git("checkout", "-q", "-b", "work/branch-only", "main")
+        repo.write(ghost, "# ghost\n")
+        repo.commit("test: the branch adds a doc", ghost)
+        repo.git("rm", "-q", ghost, held)
+        repo.commit("test: the branch removes it and a doc main has")
+        code, out = bl(repo, "check")
+        assert f"touches names {held}, which git history has and the working tree lacks" in out, out
+        assert ghost not in out, out
 
 
 def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(monkeypatch, capsys, scenario):

@@ -3,8 +3,8 @@ docs (`stale_touches`, `docs_after_code`, `docs_warnings`, with the `touch_paths
 they share), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which
 refuses a sprint on them and warns of the rest.
 
-Standard library only; imports `bl_base` and never `backlog` or `bl_check`: `bl_check` imports this module for the
-rules `check` runs, so the two form no cycle. It registers `start` with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in
+Standard library only; imports `bl_base` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
+never `backlog` or `bl_check`: `bl_check` imports this module for the rules `check` runs, so the two form no cycle. It registers `start` with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in
 the usage order."""
 import re
 import subprocess
@@ -80,13 +80,24 @@ def _git_out(root, *args):
     return r.stdout if r.returncode == 0 else None
 
 
+def history_ref(root):
+    """The revision whose history makes a touch's file gone: the integration main as last fetched
+    (`refs/remotes/<integration remote>/main`), else HEAD where the clone has no such ref."""
+    import kbpublic
+    ref = f"refs/remotes/{kbpublic.integration_remote(root)}/main"
+    return ref if (_git_out(root, "rev-parse", "--verify", "--quiet", ref) or "").strip() else "HEAD"
+
+
 def stale_touches(bl):
     """An error for each open item whose touches names a path without glob characters that the working tree lacks and
-    that has a commit in git log: a file a move or a deletion stranded, so the item's scope (and `done`'s
-    outside-touches refusal) names nothing. A path no commit ever had is a file the item is yet to create: no error.
-    The item whose own KB-Work commit (or a descendant's) removed the path is no error either: `done` refuses that
-    deletion unless its touches name the path."""
+    that has a commit in the integration main's git log (`history_ref`): a file a move or a deletion stranded, so the
+    item's scope (and `done`'s outside-touches refusal) names nothing. A path no commit of it ever had is a file the
+    item is yet to create: no error, so a file a work branch added and removed before it reached the integration main
+    is none either. The item whose own KB-Work commit (or a descendant's) removed the path, read from HEAD's history so
+    that a removal still on the branch counts, is no error either: `done` refuses that deletion unless its touches
+    name the path."""
     history, removers = {}, {}
+    ref = None
     out = []
     for iid, it in bl.items.items():
         if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES:
@@ -95,7 +106,8 @@ def stale_touches(bl):
             if not isinstance(t, str) or not t or re.search(r"[*?\[]", t) or (bl.root / t).exists():
                 continue
             if t not in history:
-                history[t] = bool((_git_out(bl.root, "log", "-1", "--format=%H", "HEAD", "--", t) or "").strip())
+                ref = ref or history_ref(bl.root)
+                history[t] = bool((_git_out(bl.root, "log", "-1", "--format=%H", ref, "--", t) or "").strip())
                 gone = _git_out(bl.root, "log", "-1", "--no-renames", "--diff-filter=D",
                                 "--format=%(trailers:key=KB-Work,valueonly,separator=%x2C)", "HEAD", "--", t)
                 removers[t] = set(id_re().findall(gone or ""))
