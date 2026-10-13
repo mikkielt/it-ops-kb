@@ -2,7 +2,7 @@
   "id": "BG-7v7icnjj",
   "kind": "bug",
   "title": "A stale-only lookup revalidation passes Doc.locate the count of the due sources, not the row's real citation count",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vdrsfftl",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-djl7za6x review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 at plan time: the repro fails on the base (exit 1: the printed line's ids are narrowed to the one due source, so Doc.locate gets 1, not 2). The fix may add a cites key to the printed items that factdiff.revalidate reads (cites[(key, path)] near factdiff.py line 1622) or keep the ids whole beside the due set. First of the sprint's chain on factdiff.py and kbfacts.py: BG-gx5b2yhu, BG-vzsk2t5t, ST-qkpbwtsc, BG-pcralmzy and ST-gkrivybp follow it. The test file is left out of the touches (the repro runs the changed path): an existing assertion in test_live_kb.py that pins the old count stops the work with a report."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 at plan time: the repro fails on the base (exit 1: the printed line's ids are narrowed to the one due source, so Doc.locate gets 1, not 2). The fix may add a cites key to the printed items that factdiff.revalidate reads (cites[(key, path)] near factdiff.py line 1622) or keep the ids whole beside the due set. First of the sprint's chain on factdiff.py and kbfacts.py: BG-gx5b2yhu, BG-vzsk2t5t, ST-qkpbwtsc, BG-pcralmzy and ST-gkrivybp follow it. The test file is left out of the touches (the repro runs the changed path): an existing assertion in test_live_kb.py that pins the old count stops the work with a report.",
+  "claimed_by": "orch-vdrsfftl"
 }
