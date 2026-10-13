@@ -2,7 +2,7 @@
   "id": "BG-4lxb2w34",
   "kind": "bug",
   "title": "No suite test runs scenario_pack's check route or FRESH_CHECK: every test stubs scenario_pack",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-7ff7c5ui",
   "priority": "P2",
   "rank": 0,
@@ -52,5 +52,6 @@
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 1 of 15, \"Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Plan 2026-10-13: precheck run: the test-run check and the repro fail on base (the test text lacks FRESH_CHECK and 'prints a check: line'); the ceiling guard check (tests_ceiling.json unchanged, no new test def in test_bench.py against the merge base) passes before the work by design: it only guards the 'no new test id' clause. The ceiling guard check passes before the work: a check that pins behaviour that must stay (no new test id, tests_ceiling.json untouched)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 1 of 15, \"Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Plan 2026-10-13: precheck run: the test-run check and the repro fail on base (the test text lacks FRESH_CHECK and 'prints a check: line'); the ceiling guard check (tests_ceiling.json unchanged, no new test def in test_bench.py against the merge base) passes before the work by design: it only guards the 'no new test id' clause. The ceiling guard check passes before the work: a check that pins behaviour that must stay (no new test id, tests_ceiling.json untouched).",
+  "claimed_by": "orch-7ff7c5ui"
 }
