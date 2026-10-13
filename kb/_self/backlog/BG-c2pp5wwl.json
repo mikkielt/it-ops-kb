@@ -2,7 +2,7 @@
   "id": "BG-c2pp5wwl",
   "kind": "bug",
   "title": "BG-gxxv3mzj's anchor run advanced the fetch-state baselines of about 15 sources outside it and dropped anchors, so detect no longer reports their changes (the 200 WebSearch limit in doc-lookup-sources.md among them)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
@@ -60,5 +60,36 @@
     "parked: SP-df2cu4uj review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Scope: the three named sources are cited by agents/doc-lookup-sources.md (S1809 also by agents/docs-maintenance-agents.md, S-3yod3u7q's WebSearch limit also repeated in _answers.md); the other sources are the rows of _fetch_state.csv that commit 5f16b6d63 changed without a re-read (git show 5f16b6d63 -- kb/public/_fetch_state.csv, less the four marked dead there). The checks read the three named sources and the WebSearch line; a worker lists the others in its commit message. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "22bc72a19b63b6cac90f3c9be80171686851a24b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/agents/doc-lookup-sources.md\").read_text().splitlines() if \"200 `WebSearch` calls\" in l]; sys.exit(0 if ls and \"interactive\" in ls[0] and \"v2.1.290\" in ls[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; r={x[\"id\"]:x[\"retrieved_utc\"] for x in csv.DictReader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\"))}; sys.exit(0 if all(r.get(i,\"\")>=\"2026-10-12\" for i in (\"S-3yod3u7q\",\"S1809\",\"S-eluaxz73\")) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=[l for l in open('kb/public/agents/doc-lookup-sources.md', encoding='utf-8') if '200 \\x60WebSearch\\x60 calls' in l]; sys.exit(1 if t and 'interactive' not in t[0] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
