@@ -2,7 +2,7 @@
   "id": "ST-c7bty3ig",
   "kind": "story",
   "title": "The lookup revalidation's content-date pass of confirmable is stated in tools.md and its eval row, or the lookup drops it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-djl7za6x review"
   ],
-  "notes": "Premise: factdiff.confirmable({baseline_utc: 2026-10-10T00:00:00Z, content_date: 2026-01-01}, 2026-09-01) is True and False with an empty content date, while kb/_self/tools.md's revalidation line (the [current DATE] reading) and eval row EV-pack-revalidate-decide-fact-current-moved name only the baseline (run 2026-10-13 at base). The doc is the smaller change: state the content-date pass there, or drop it in confirmable and add the lookup case. Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Test ids are near the ceiling: extend the existing test that covers confirmable or the revalidation path and append the selector words to its name, a new id only when none does."
+  "notes": "Premise: factdiff.confirmable({baseline_utc: 2026-10-10T00:00:00Z, content_date: 2026-01-01}, 2026-09-01) is True and False with an empty content date, while kb/_self/tools.md's revalidation line (the [current DATE] reading) and eval row EV-pack-revalidate-decide-fact-current-moved name only the baseline (run 2026-10-13 at base). The doc is the smaller change: state the content-date pass there, or drop it in confirmable and add the lookup case. Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Test ids are near the ceiling: extend the existing test that covers confirmable or the revalidation path and append the selector words to its name, a new id only when none does.",
+  "claimed_by": "orch-srqmriw6"
 }
