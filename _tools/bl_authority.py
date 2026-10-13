@@ -70,9 +70,10 @@ TOKEN_COUNT = re.compile(
     r"\btokens?[-_ ](?:counts?|usage|budgets?|limits?|costs?|efficiency|estimates?)\b|"
     r"\b(?:counts?|number|numbers) of tokens\b|\btokens per (?:second|minute|request|run)\b)", re.I)
 # An upper-case constant name with `TOKENS` in the plural as one of its parts, at least one other part before it, not
-# the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word among its parts (`API_TOKENS`) is no count.
+# the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word (`API_TOKENS`) or a secret word
+# (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.
 TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
-CRED_PART = re.compile(rf"^(?:{CRED_WORDS})$", re.I)
+CRED_PART = re.compile(rf"^(?:{CRED_WORDS}|(?:secret|password|passphrase|private|key|credential|pat|ssh)s?)$", re.I)
 
 
 def without_token_counts(text):
