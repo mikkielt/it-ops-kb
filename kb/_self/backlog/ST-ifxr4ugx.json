@@ -2,7 +2,7 @@
   "id": "ST-ifxr4ugx",
   "kind": "story",
   "title": "Review sprint: Land snags: session-end distill, a stopped land's worktree, an orchestrator behind main and a racy hook test",
-  "status": "todo",
+  "status": "done",
   "sprint": "SP-b7wibqok",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,27 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "evidence": {
+    "commit": "99908f4eca75eaa4891b08fb27f9d65f27a4da5b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "82868e33b9d3a85a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "732bbc49cdc388f1"
+      }
+    ]
+  }
 }
