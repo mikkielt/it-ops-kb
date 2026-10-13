@@ -57,7 +57,9 @@
         "move both facts to 1.2.15 and re-date the read to 2026-10-13"
       ],
       "recommendation": "keep 1.2.14 as the dated 2026-10-12 reading and note 1.2.15 in the Facts line",
-      "class": "push"
+      "class": "push",
+      "answer": "keep 1.2.14 as the dated 2026-10-12 reading and note 1.2.15 in the Facts line",
+      "by": "operator"
     }
   ],
   "links": [
