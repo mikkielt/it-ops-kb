@@ -2,7 +2,7 @@
   "id": "BG-7bpbuz6t",
   "kind": "bug",
   "title": "claude/powershell-tool.md says the read-only Bash set runs without a prompt in every mode, but the permissions page now names blockReadsOutsideWorkingDirectories and auto mode's classifier as exceptions",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-gcerxjsg",
   "priority": "P2",
@@ -68,5 +68,6 @@
   "links": [
     "parked: SP-df2cu4uj review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base.",
+  "claimed_by": "orch-gcerxjsg"
 }
