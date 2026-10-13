@@ -2,7 +2,7 @@
   "id": "ST-juhkvzel",
   "kind": "story",
   "title": "Review sprint: Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-honlhzdc",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-honlhzdc"
+  "evidence": {
+    "commit": "7846625408931af4a5c96dffaff75e5fa464d632",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "17ccd1beb21cfea3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "993a4f0925630da9"
+      }
+    ]
+  }
 }
