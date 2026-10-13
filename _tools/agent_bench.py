@@ -3,7 +3,9 @@
 
   agent_bench.py OUT.jsonl CONFIG[,CONFIG] SCENARIO[,SCENARIO] [REPS]
   agent_bench.py --summary OUT.jsonl [OUT.jsonl ...]
-  agent_bench.py --route "QUESTION"        the pinned route (`router-pinned`) on one question, its run as one JSON line
+  agent_bench.py --route "QUESTION" [--revalidate]
+                                        the pinned route (`router-pinned`) on one question, its run as one JSON line; the
+                                        pack is offline unless --revalidate asks the stale sources live
 
 Appends one JSON line per run: cost (USD), wall and API seconds, turns, uncached / cache-write / cache-read input
 tokens, output tokens, cost per model, tool calls of the main session and of subagents, and a regex check per
@@ -303,7 +305,7 @@ def _step(model, tools, system, user, steps, cwd=KB, env=None):
     return r
 
 
-def route(q, pin=None, cwd=KB, env=None):
+def route(q, pin=None, cwd=KB, env=None, revalidate=False):
     """kb_ask.py's routing as a benchmark run, step for step (its plan, prompts and models): tool answers cost nothing;
     a web pack (the kb lacks the question) goes to the researcher (live docs through the kb server's cached docs_search and docs_fetch) with the question,
     what the kb lacks and the nearest articles; a split pack with a `kb has:` and a `kb lacks:` line (a `-` line is empty: kb_ask.has_lacks)
@@ -313,7 +315,9 @@ def route(q, pin=None, cwd=KB, env=None):
     whose INSUFFICIENT escalates to the researcher with the pack. `pin` maps the routed aliases to full model names.
     The route lists `pack:KIND`, then each run (`reader:MODEL`, `researcher:MODEL`), with `escalate` between an
     escalation's two runs and `and` between a split's two. `pack_chars` is the length of the pack the reader is given.
-    The runs start in `cwd` with `env` as their whole environment."""
+    The runs start in `cwd` with `env` as their whole environment. The plan is the offline pack (kb_ask.plan's
+    `revalidate=False`), as before it revalidated stale sources, so the times stay comparable with earlier rows;
+    `revalidate` asks the stale sources live as kb_ask.py does by default."""
     sys.path.insert(0, os.path.join(KB, "_tools"))
     import kb_ask
     t = time.time()
@@ -322,7 +326,7 @@ def route(q, pin=None, cwd=KB, env=None):
         return {"wall_s": round(time.time() - t, 1), "api_s": 0, "cost": 0, "turns": 0, "in_uncached": 0,
                 "cache_write": 0, "cache_read": 0, "out": 0, "models": {}, "tools": {"kb_ask:tool": 1},
                 "sub_tools": {}, "route": ["kb_ask:tool"], "answer": tool}
-    p = kb_ask.plan(q)
+    p = kb_ask.plan(q, revalidate="stale" if revalidate else False)
     name = lambda m: (pin or {}).get(m, m)  # noqa: E731
     kind, researcher = p["kind"], name("sonnet")
     if kind == "web":
@@ -543,7 +547,7 @@ def main():
     if sys.argv[1:2] == ["--summary"]:
         return summary(sys.argv[2:])
     if sys.argv[1:2] == ["--route"]:  # one question through the pinned route, its run as one JSON line (benchmarks.py pool)
-        print(json.dumps(route(sys.argv[2], PIN)))
+        print(json.dumps(route(sys.argv[2], PIN, revalidate="--revalidate" in sys.argv[3:])))
         return
     out, cfgs, scens = sys.argv[1], sys.argv[2].split(","), sys.argv[3].split(",")
     reps = int(sys.argv[4]) if len(sys.argv) > 4 else 1

@@ -30,6 +30,21 @@
     "_tools/agent_bench.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which flag turns revalidation on for agent_bench's router arm, which is off by default?",
+      "options": [
+        "--revalidate on --route QUESTION (the name rag.py pack uses); the grid's router configs stay offline",
+        "no flag: the router arm never revalidates"
+      ],
+      "recommendation": "--revalidate on --route QUESTION (the name rag.py pack uses); the grid's router configs stay offline",
+      "class": "design",
+      "answer": "--revalidate on --route QUESTION (the name rag.py pack uses); the grid's router configs stay offline",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-etslk6yu review"
   ],
