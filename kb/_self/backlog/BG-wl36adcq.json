@@ -2,7 +2,7 @@
   "id": "BG-wl36adcq",
   "kind": "bug",
   "title": "ci-and-headless.md's modelUsage-key facts say a pinned undated claude-haiku-4-5 key was never observed, while benchmarks.csv's router-pinned rows show it, and tag repo observations DER on doc sources",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -92,5 +92,45 @@
     "parked: SP-55ddkrrx review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the three added checks all exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "244df68736285eaafdb4a8b41de86e07301870d1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; t=pathlib.Path(\"kb/public/claude/ci-and-headless.md\").read_text(); sys.exit(0 if \"2.1.284\" in t and \"2.1.282\" in t and \"a pinned undated `--model claude-haiku-4-5`, or a provider\" not in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,pathlib,sys; t=pathlib.Path(\"kb/public/claude/ci-and-headless.md\").read_text(); ids=[r[\"id\"] for r in csv.DictReader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\")) if \"benchmarks.csv\" in r[\"url\"] or \"benchmarks.csv\" in r[\"title\"]]; ls=[l for l in t.splitlines() if \"Observed on Claude Code\" in l and \"claude-haiku-4-5-20251001\" in l]; sys.exit(0 if ids and ls and all(any(i in l for i in ids) for l in ls) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/claude/ci-and-headless.md\").read_text().splitlines() if \"else on the version the alias names\" in l]; sys.exit(0 if all(\"CLAUDE_CODE_SUBAGENT_MODEL\" in l for l in ls) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/claude/ci-and-headless.md',encoding='utf-8').read();sys.exit(1 if 'or for a pinned undated' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
