@@ -1,0 +1,26 @@
+{
+  "id": "BG-6bb4zzdy",
+  "kind": "bug",
+  "title": "The worker brief's always-in-scope rule tells a content worker to add a source row its touches may not cover, so done refuses _sources.csv",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The fixed brief rule of bl_dispatch.WORKER_RULES says a source row is in scope only in a file the item's touches name (always_in_scope holds the coverage files, not _sources.csv), or _sources.csv rows a content item adds count as in scope, so a worker that follows the brief is not refused at done",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_base,bl_dispatch;t=' '.join(str(r) for r in bl_dispatch.WORKER_RULES);sys.exit(0 if bl_base.in_scope('kb/public/_sources.csv',['kb/public/gitlab/foo.md']) or 'source row in a file the touches name' in t else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-q5ldd25k review"
+  ]
+}

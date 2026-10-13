@@ -1,0 +1,25 @@
+{
+  "id": "BG-jylxv54r",
+  "kind": "bug",
+  "title": "ql_deliver.logged checks the distill.log size cap on every line, so a manual apply --push can truncate its own gate lines mid-run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "ql_deliver.logged decides once per run whether distill.log starts fresh (as ql_distill.detach does), so a run whose lines cross LOG_MAX_BYTES keeps its own gate lines and bl_land.last_push_failure names its failed gate",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile,pathlib;sys.path.insert(0,'_tools');import ql_deliver as q;d=pathlib.Path(tempfile.mkdtemp());l=d/q.LOG_NAME;l.write_text('a'*(q.LOG_MAX_BYTES-5));s=q.logged(d,lambda t:None);s('gate X: FAILED');s('y'*20);s('end');sys.exit(0 if 'gate X: FAILED' in l.read_text() else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_deliver.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-q5ldd25k review"
+  ]
+}
