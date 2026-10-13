@@ -1,0 +1,23 @@
+{
+  "id": "ST-hrigekjy",
+  "kind": "story",
+  "title": "The landing's lint fails on a cited source missing from the header of an article the landing changes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "land's lint step fails when an article the item changed cites a source its sources header lacks, so the goal research's S742 fact in settings-and-scopes.md does not land with only a warning among a hundred existing ones",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lint_header_sources_changed_article"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-foopqq2x close"
+  ],
+  "notes": "SP-foopqq2x retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+}

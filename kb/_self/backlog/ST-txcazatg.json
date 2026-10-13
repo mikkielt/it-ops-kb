@@ -1,0 +1,23 @@
+{
+  "id": "ST-txcazatg",
+  "kind": "story",
+  "title": "kbgit.py sync reads the remote ref after a push that timed out before it reports the push failed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When git push does not finish within KB_GIT_NETWORK_TIMEOUT, kbgit.py sync fetches origin and reports pushed: yes when the remote ref holds the local commits, so the SP-foopqq2x claim push that landed is not reported as failed with exit 1",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "sync_push_timeout_reads_remote"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-foopqq2x close"
+  ],
+  "notes": "SP-foopqq2x retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+}
