@@ -1,0 +1,25 @@
+{
+  "id": "ST-ibompquw",
+  "kind": "story",
+  "title": "Open items whose touches name a .claude/ link are re-pointed to the linked file, so check's linked-touch warning is not noise on 33 items",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Every open item whose touches name a .claude/ path that is a symlink names the file it links to instead (a one-off set --add-touch pass, or a check --fix that re-points it), so backlog.py check prints no linked-touch warning on main",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run(['python3','_tools/backlog.py','check'],capture_output=True,text=True);sys.exit(1 if r.returncode or ', a link to ' in r.stdout else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/**"
+  ],
+  "links": [
+    "parked: SP-q5ldd25k close"
+  ],
+  "notes": "Retrospective of SP-q5ldd25k: BG-mub4dmj2 added check's linked-touch warning, and backlog check warnings rose from 24 to 57 on landing, about 33 of them open items naming .claude/skills/kb-sprint/SKILL.md, .claude/agents/kb-worker.md and other links. No planning step re-pointed the existing items. Close the item with drop --why naming the planning commit that re-points them, or deliver a check --fix."
+}
