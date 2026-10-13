@@ -1,0 +1,27 @@
+{
+  "id": "ST-bjldbpap",
+  "kind": "story",
+  "title": "A planned goal about a provider's answer is read against every providers.csv row that has that column, not only Microsoft Learn's",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck warns of a committed item whose goal or touches name a provider-registry column's behaviour (search_api, not_found, raw_form) when its checks plant only one provider's response, naming the other rows of providers.csv that fill the column; in SP-vdrsfftl BG-gx5b2yhu's goal and checks took a search answer without a results list as no answer, Learn's shape only, so GitHub and arXiv searches that answer 200 became unanswered (BG-o3zppi2w)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_provider_column_rows"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vdrsfftl close"
+  ]
+}

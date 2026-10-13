@@ -1,0 +1,27 @@
+{
+  "id": "ST-mqsmco5u",
+  "kind": "story",
+  "title": "Planning a bug that changes a function's verdict lists the suite assertions that pin the old verdict, and puts their test file in the touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck warns of a committed bug or story whose goal changes what a named function returns (a window, a verdict, a count) when a test file outside its touches calls that function, naming the file, so planning adds it (set ID --add-touch) or records why not before the start; in SP-vdrsfftl BG-vzsk2t5t's touches left out the live kb test file, whose two fixtures pinned the old window_sections fallback, so its worker stopped with a gate and had to be resumed with widened touches",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_warns_test_pins_old_verdict"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vdrsfftl close"
+  ]
+}

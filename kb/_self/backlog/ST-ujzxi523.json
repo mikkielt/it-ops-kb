@@ -1,0 +1,27 @@
+{
+  "id": "ST-ujzxi523",
+  "kind": "story",
+  "title": "A planned widening of what a comparison reads carries a check that an unrelated change does not trip it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck warns of a committed item whose goal widens the set a detector compares (sections, windows, sources a verdict reads) when no check plants a change outside the widened set and asserts the verdict holds; in SP-vdrsfftl BG-vzsk2t5t's repro planted only the next section's edit, so the fallback that now reads the parent section flips on any sibling heading added on the page (BG-npdpbmw2)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_widening_keeps_unrelated"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vdrsfftl close"
+  ]
+}
