@@ -2,7 +2,7 @@
   "id": "BG-viwywxml",
   "kind": "bug",
   "title": "Gap row BP-bac81f87 names a _gaps.md entry that is no longer open and its pack is good, and pool check never judges a gap row's route",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-honlhzdc",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,27 @@
     "merged: BG-sclw54q6"
   ],
   "notes": "Merged from BG-sclw54q6 at the 2026-10-13 draft triage (same row BP-bac81f87, same fix): a stored gap row naming a closed entry fails a check at the landing that closes it, not at a later review. Premise: the repro prints ['BP-bac81f87'] and exits 1 on 2026-10-13; a pool build into a scratch copy of the committed file (no paid call, all checks cached) replaces four of the five gap rows (gap_section is re-drawn from the seed, so BP-f3952b33, BP-c6881637 and BP-91d04d4d may be no longer open either). Plan: edit the gap rows, not a whole-pool rebuild: the same build also redraws 24 offkb, cites, decision and snippet rows, so take only the gap rows from a scratch build. pool check judges a gap row by its source hash in _gaps.md (a missing entry counts as closed) and by bench_pool.scenario_pack's route. A new test goes in test_bench.py's pool check test. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
-  "claimed_by": "orch-honlhzdc"
+  "evidence": {
+    "commit": "ab8965581a8e611d57955e614f781f01a09bc6b8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_pool as b;rows=b.read_csv(b.PUBLIC_FILE);g=next(r for r in rows if r['kind']=='gap' and r['source']!='_gaps.md#8f38c7a9');closed={**g,'id':'BP-closed','source':'_gaps.md#8f38c7a9'};good=next(r for r in rows if r['kind']=='sc_present');routed={**g,'id':'BP-routed','question':good['question']};out=b.check_problems(rows+[closed,routed]);named=[i for i in ('BP-closed','BP-routed') if any(l.startswith(i+':') for l in out)];print(named);sys.exit(0 if len(named)==2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ee1f718e34725a57"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_pool as b;bad=[r['id'] for r in b.read_csv(b.PUBLIC_FILE) if r['kind']=='gap' and b.scenario_pack(r['question'])[0]!='web'];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
