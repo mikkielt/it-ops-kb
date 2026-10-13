@@ -2,7 +2,7 @@
   "id": "BG-zsiguf72",
   "kind": "bug",
   "title": "A lookup prints not found for a client-rendered page: the soft-404 test compares its empty text with an empty made-up page",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-u5q37ds3",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Premise: a lookup of a source whose fetched page has no words (one newline, as its made-up sibling's) prints not found. Run 2026-10-12 on the base: reproduces. The repro (live, S1203 of public/auth/flows.csv:10) printed outcome 'not found', note 'source gone or replaced', verdict soft-404; the added check plants the same case with no network (provider.document and provider.request answer one newline) and gets verdict soft-404 now, so it fails until detect_source asks no soft-404 test of a text with no words. The live repro exits 0 offline, so the planted check is the one that proves the fix."
+  "notes": "Premise: a lookup of a source whose fetched page has no words (one newline, as its made-up sibling's) prints not found. Run 2026-10-12 on the base: reproduces. The repro (live, S1203 of public/auth/flows.csv:10) printed outcome 'not found', note 'source gone or replaced', verdict soft-404; the added check plants the same case with no network (provider.document and provider.request answer one newline) and gets verdict soft-404 now, so it fails until detect_source asks no soft-404 test of a text with no words. The live repro exits 0 offline, so the planted check is the one that proves the fix.",
+  "claimed_by": "orch-u5q37ds3"
 }
