@@ -2,7 +2,7 @@
   "id": "ST-kjp54uiz",
   "kind": "story",
   "title": "The darwin suite ceiling takes the value the operator chooses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uvz65lvm",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,26 @@
     }
   ],
   "notes": "Filed 2026-10-12 at the operator's instruction: gate value stays open for the operator alone, never answered by a delegated or unattended session, even under a blanket approval; it is the only item that waits on it, kept out of any sprint until it is answered, then planned after ST-d2f346fz lands. Until ST-d2f346fz lands the gate reads class design; the class it is meant to have is ceiling.",
-  "claimed_by": "orch-c2-ceiling"
+  "evidence": {
+    "commit": "2c0101ae5e9307326b276990d53c996bb65e9703",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "--ceiling"
+        ],
+        "exit": 0,
+        "sha256": "6c7d362a97adc069"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "7a454958a87906a0"
+      }
+    ]
+  }
 }
