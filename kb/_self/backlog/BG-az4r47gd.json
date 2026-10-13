@@ -2,7 +2,7 @@
   "id": "BG-az4r47gd",
   "kind": "bug",
   "title": "gitlab/deploy-keys-and-tokens says a deploy token never reaches the REST API, though package registry endpoints accept it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-gcerxjsg",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-4phd36pa review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning 2026-10-12 (precheck): the repro and the added check both exit 1 on the base.",
+  "claimed_by": "orch-gcerxjsg"
 }
