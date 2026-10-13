@@ -96,7 +96,10 @@ other host or a record it cannot use; a GitHub request is unauthenticated (60 an
 
 Library use (factdiff.py, census.py): providers(), for_url(), document(), doc_text(), repository_state(), and for a
 lookup that must answer in time (factdiff.revalidate): budget() bounds every request of a block to a total, pacing()
-is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run.
+is the seconds a row's rate limit asks between two requests and new_run() forgets the answers of an earlier run;
+host_seen() and host_down() keep, in the process and under _cache/provider-down/, a host that did not accept a
+connection for a window that doubles with each failure in a row (DOWN_BASE_S up to DOWN_CAP_S), so a lookup asks it no
+more until the window is over.
 lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
 revalidation at question time and fetch.py --status read it.
 """
@@ -508,6 +511,78 @@ def pacing(row):
     `N requests/hour` or `N requests per hour`, never under DELAY; DELAY for a row that documents no hourly count."""
     m = re.search(r"(\d[\d,]*)\s+requests?\s*(?:/|per)\s*hour", (row or {}).get("rate_limit") or "")
     return max(DELAY, 3600 / max(1, int(m.group(1).replace(",", "")))) if m else DELAY
+
+
+# ---------------------------------------------------------------- hosts that did not accept a connection
+
+DOWN_BASE_S, DOWN_CAP_S = 60, 300  # first window; doubled with each failure in a row, up to the cap
+DOWN_PREFIX = "host did not accept a connection"
+DOWN_DIR = os.path.join(kbcommon.HOME, "_cache", "provider-down")  # beside the read and search caches, never committed
+_down = {}  # host -> {until, at, count, error}: this process's copy of the files under DOWN_DIR
+
+
+def _down_path(host):
+    return os.path.join(DOWN_DIR, re.sub(r"[^\w.-]", "_", host) + ".json")
+
+
+def _down_rec(host):
+    """The record of `host` with the later end, the process's or the file's (another process may have extended it), or None."""
+    best = _down.get(host)
+    try:
+        with open(_down_path(host), encoding="utf-8") as f:
+            rec = json.load(f)
+    except (OSError, ValueError):
+        return best
+    ok = isinstance(rec, dict) and all(isinstance(rec.get(k), (int, float)) for k in ("until", "at", "count"))
+    return rec if ok and (best is None or rec["until"] > best["until"]) else best
+
+
+def host_down(url, now=None):
+    """The record {until, at, count, error} of the host of `url` while its window runs (it did not accept a connection
+    at `at`, and is not asked until `until`), else None."""
+    now = time.time() if now is None else now
+    rec = _down_rec(urllib.parse.urlsplit(url).netloc.lower())
+    return rec if rec and rec["at"] <= now < rec["until"] else None
+
+
+def down_why(rec, now=None):
+    """The reason a source of a host in its window is not asked: how long ago the host failed and for how long more it is
+    left alone."""
+    now = time.time() if now is None else now
+    return (f"{DOWN_PREFIX} {max(0, round(now - rec['at']))} s ago ({rec.get('error', '')}); "
+            f"not asked again for {max(0, round(rec['until'] - now))} s")
+
+
+def host_seen(url, error, now=None):
+    """Record what a request to the host of `url` showed: `error` is the answer's `error` ("" for an HTTP answer of any
+    status). A connection that was not made (a URLError: refused, a name that did not resolve, a timeout of the
+    connect) starts the host's window, doubled when the host failed again after the earlier window ended; the time
+    budget used up shows nothing; anything else (the host answered, or accepted the connection) ends the window. A record
+    that cannot be written is kept in the process only."""
+    if error == BUDGET_ERROR:
+        return
+    host, now = urllib.parse.urlsplit(url).netloc.lower(), time.time() if now is None else now
+    if not error.startswith("URLError:"):
+        _down.pop(host, None)
+        try:
+            os.remove(_down_path(host))
+        except OSError:
+            pass
+        return
+    old = _down_rec(host)
+    if old is not None and old["at"] <= now < old["until"]:  # no request was made within the window: no new failure
+        return
+    count = old["count"] + 1 if old is not None and now - old["until"] < DOWN_CAP_S else 1  # a long quiet time starts over
+    rec = _down[host] = {"at": now, "until": now + min(DOWN_CAP_S, DOWN_BASE_S * 2 ** (count - 1)), "count": count,
+                         "error": error[:120]}
+    try:
+        os.makedirs(DOWN_DIR, exist_ok=True)
+        tmp = f"{_down_path(host)}.{os.getpid()}.tmp"
+        with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(rec, f)
+        os.replace(tmp, _down_path(host))
+    except OSError:
+        pass
 
 
 def request(url, headers=None, limit=20_000_000, method="GET"):

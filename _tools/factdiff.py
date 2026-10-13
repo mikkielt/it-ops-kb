@@ -1301,7 +1301,9 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
 
 def detect_pass(ids, srcs, state, rows, lookup=False):
     """{source id: detect_source's result} of the sources `ids`: one thread per host, a host's sources in turn (its
-    pacing), one source's failure an `error` verdict and never the end of the run."""
+    pacing), one source's failure an `error` verdict and never the end of the run. `lookup`: a host that did not accept a
+    connection (provider.host_seen) is not asked again while its window runs, here or in a later lookup of this or
+    another process: its sources are `error` with the reason and no request."""
     by_host = collections.defaultdict(list)
     for sid in ids:
         by_host[urllib.parse.urlsplit(srcs[sid]["url"]).netloc].append(sid)
@@ -1309,8 +1311,15 @@ def detect_pass(ids, srcs, state, rows, lookup=False):
     def host_job(host):
         res = []
         for sid in by_host[host]:
+            url = srcs[sid]["url"]
+            down = provider.host_down(url) if lookup and not provider.is_pinned(url) else None
+            if down:
+                res.append((sid, ("error", "", provider.down_why(down), None, None, None)))
+                continue
             try:
                 v = detect_source(sid, srcs[sid], state.get(sid, {}), rows, lookup)
+                if lookup and v[1] not in ("pin", "repository"):  # a pinned url's host is not what was asked
+                    provider.host_seen(url, v[2] if v[0] == "error" else "")
             except Exception as e:  # noqa: BLE001 - one source must never stop the run
                 v = ("error", "", f"{type(e).__name__}: {e}"[:200], None, None, None)
             res.append((sid, v))
@@ -1543,7 +1552,7 @@ def lookup_source(sid, src, res, facts, state, anchors, rows, cites=None):
     its note. `cites`: resolve's."""
     verdict, signal, ev, _, doc, prev = res
     if verdict == "error":  # a network error, the time budget, a limit or a status that is no answer
-        return None, verdict, ev if ev == provider.BUDGET_ERROR or ev.startswith(("HTTP ", "rate limited")) else f"network error: {ev}"
+        return None, verdict, ev if ev == provider.BUDGET_ERROR or ev.startswith(("HTTP ", "rate limited", provider.DOWN_PREFIX)) else f"network error: {ev}"
     if verdict == "pinned":
         st, why = provider.repository_state(src["url"])
         if st == "" and why:  # the text cannot change, but whether its repository still answers could not be asked
