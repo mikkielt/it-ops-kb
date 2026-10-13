@@ -1591,15 +1591,16 @@ b792d07750cd,agents/doc-lookup-sources.csv,S2180,unlocated:gone,,,,,2026-10-12
 f8da2e743152,agents/doc-lookup-sources.csv,S2188,unlocated:no-match,,,,,2026-10-12
 fa01deebc8f2,agents/doc-lookup-sources.csv,S2183,located,Additional resources > Resources for AI ingestion,index;llm;llm-optimiz;llms;llms.txt;page;txt;documentation,e5f93227628cc304,llms.txt LLM-optimized documentation index. Was this page helpful?,2026-10-12
 fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-13
-005f48ae3c59,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-12
+005f48ae3c59,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-13
 00719a946a97,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebFetch tool behavior,character;page;webfetch;call;fetch;web;read,00e32b4fa6846cf0,"WebFetch reads up to 100,000 characters of a page's content per call.",2026-10-13
+0751092baf08,agents/doc-lookup-sources.md,S-y6wauqrp,located,Introduction > API policies > API Preference,deprecation;integration;new;plan;rpc;xml;xml-rpc;json,fd5e15c79fa45976,No new integrations should use the XML-RPC APIs as they are planned for deprecation. Existing consumers should migrate to JSON/RSS/Index APIs.,2026-10-13
 07799601f49b,agents/doc-lookup-sources.md,S1809,unlocated:no-match,,,,,2026-10-13
 07799601f49b,agents/doc-lookup-sources.md,S2193,unlocated:no-match,,,,,2026-10-13
 07799601f49b,agents/doc-lookup-sources.md,S-eutmp4xp,unlocated:no-match,,,,,2026-10-12
 07799601f49b,agents/doc-lookup-sources.md,S-j7xzzcxj,unlocated:no-match,,,,,2026-10-13
-0dcbf46e3b99,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-12
-14997773f21d,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-12
-14997773f21d,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-12
+0dcbf46e3b99,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-13
+14997773f21d,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-13
+14997773f21d,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-13
 272dbb20de2d,agents/doc-lookup-sources.md,S2195,unlocated:no-match,,,,,2026-10-13
 2766e8299ac3,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets > Additional _Remote_ Server Toolsets,documentation;remot;server;api.githubcopilot.com;com;githubcopilot;api;read-only,0f8298239ae2ce35,"<picture><source media=""(prefers-color-scheme: dark)"" srcset=""../pkg/octicons/icons/book-dark.png""><source media=""(prefers-color-scheme: light)"" srcset=""../pkg/octicons/icons/book-light.png""><img src=""../pkg/octicons/icons/book-light.png"" width=""20"" height=""20"" alt=""book""></picture><br>githubsupportdocssearch | Retrieve documentation to answer GitHub product and support questions. Topics include: GitHub Actions",2026-10-13
 2aa3acce37ce,agents/doc-lookup-sources.md,S742,unlocated:no-match,,,,,2026-10-12
@@ -1612,23 +1613,39 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 32664f011198,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebSearch tool behavior,query;backend;urls;titl;anthropic;websearch;page;webfetch,4b5a66d389d27bab,WebSearch runs a query against Anthropic's web search backend and returns result titles and URLs. It doesn't fetch the result pages. To read a page,2026-10-13
 327b27033805,agents/doc-lookup-sources.md,S-rgy4dvjf,located,GitHub Docs > License,4.0;asset;dual;dual-licen;folder;licen;mit;code,c50f35585d67bd10,"This project is dual-licensed under: Creative Commons Attribution 4.0 - for documentation and content in the assets, content, and data folders (see LICENSE) MIT License",2026-10-12
 33acbb71b4f9,agents/doc-lookup-sources.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
+33acbb71b4f9,agents/doc-lookup-sources.md,S-mz6tic2a,unlocated:fetch-error,,,,,2026-10-13
 3830810d7c75,agents/doc-lookup-sources.md,S-pxvdwitn,located,Commercial Terms of Service > F. Intellectual Property,grant;intellectual;property;expressly;stat;content;except;right,84e34b3ae6bf9653,"Except as expressly stated in these Terms, these Terms do not grant either party any rights to the other's content or intellectual property, by implication",2026-10-12
+3b2a6ff025ce,agents/doc-lookup-sources.md,S-soqo5xvt,unlocated:no-match,,,,,2026-10-13
 3c056adb0a3c,agents/doc-lookup-sources.md,S745,located,Environment variables > Variables,refill;v2.1.290;call;non-interactiv;limit;terminal;interactiv;non,1915f2fee340983c,The default is 100 in an interactive terminal session. In a non-interactive session the default is 0,2026-10-13
 3e4f1b3ee401,agents/doc-lookup-sources.md,S2195,unlocated:no-match,,,,,2026-10-13
+3e4f1b3ee401,agents/doc-lookup-sources.md,S-4yvdwu5c,unlocated:no-match,,,,,2026-10-13
+3e4f1b3ee401,agents/doc-lookup-sources.md,S-ezhoiiyb,unlocated:no-match,,,,,2026-10-13
 3e4f1b3ee401,agents/doc-lookup-sources.md,S-fvspfpxd,unlocated:no-match,,,,,2026-10-13
+3e4f1b3ee401,agents/doc-lookup-sources.md,S-u5diy2cr,unlocated:no-match,,,,,2026-10-13
 3f2397abff99,agents/doc-lookup-sources.md,S-fvspfpxd,located,Legal and compliance > Security and trust > Security vulnerability reporting,pbc;reserv;right;applicabl;subject;term;servic;anthropic,f1a02cd2329d44a8,© Anthropic PBC. All rights reserved. Use is subject to applicable Anthropic Terms of Service.,2026-10-13
-4477a6a94659,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
+4477a6a94659,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 45f406ccb916,agents/doc-lookup-sources.md,S1809,unlocated:no-match,,,,,2026-10-13
 45f406ccb916,agents/doc-lookup-sources.md,S2193,located,DeepWiki MCP,authentication;free;remot;repository;deep;wiki;server;deepwiki,6522a4b8209c5c95,"The DeepWiki MCP server is a free, remote, no-authentication-required service that provides access to public repositories.",2026-10-13
 4b2b41fd1472,agents/doc-lookup-sources.md,S2193,unlocated:no-match,,,,,2026-10-13
 4c747b5cafc5,agents/doc-lookup-sources.md,S-j7xzzcxj,located,Adding Libraries > What Gets Indexed,ipynb;markdown;mdx;rst;txt;exampl;code;file,a53a98cb1e7622c4,"Context7 parses documentation files - .md, .mdx, .markdown, .rst, .txt, and .ipynb",2026-10-13
 4f5593dc0ecd,agents/doc-lookup-sources.md,S-fqi6xbbc,unlocated:no-match,,,,,2026-10-13
 4f5593dc0ecd,agents/doc-lookup-sources.md,S-ke227men,unlocated:no-match,,,,,2026-10-13
-546d1ad569ad,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
+546d1ad569ad,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 57995f3f8016,agents/doc-lookup-sources.md,S-b6tooge2,unlocated:no-match,,,,,2026-10-12
+587fd15a4ff9,agents/doc-lookup-sources.md,S1002,unlocated:no-match,,,,,2026-10-13
+587fd15a4ff9,agents/doc-lookup-sources.md,S-ezhoiiyb,located,About licenses,against;file;mean;spdx;take;match;api;licens,c9e901cb795caf5d,"Licensee matches the contents of a project's LICENSE file (if it exists) against a short list of known licenses. As a result, the API does",2026-10-13
 5bbc7f06a4aa,agents/doc-lookup-sources.md,S2188,located,Rate limits for the REST API > About primary rate limits > Primary rate limit for authenticated users,personal;access;token;hour;hub;api;github;git,1cc7eb61022319b7,"You can use a personal access token to make API requests. Additionally, you can authorize a GitHub App or OAuth app, which can then make",2026-10-12
+644d4ced9b6b,agents/doc-lookup-sources.md,S1811,unlocated:no-match,,,,,2026-10-13
+644d4ced9b6b,agents/doc-lookup-sources.md,S-yftp4qw3,unlocated:no-match,,,,,2026-10-13
+644d4ced9b6b,agents/doc-lookup-sources.md,S-ywdbre2n,unlocated:no-match,,,,,2026-10-13
+66e5e94d208d,agents/doc-lookup-sources.md,S-5uo7eb2c,unlocated:no-match,,,,,2026-10-13
+66e5e94d208d,agents/doc-lookup-sources.md,S-jkl2kuth,unlocated:no-match,,,,,2026-10-13
 68e5bf54326d,agents/doc-lookup-sources.md,S-xmqy75h7,located,How to use Microsoft Intune documentation - Microsoft Intune | Microsoft Learn > Notifications,doesn;privat;uses;repository;open;sourc;git;github,a8643fc768a4a921,"It also doesn't include changes from the private repository that Microsoft uses. Contribute The Microsoft Intune product family documentation library, like most Microsoft technical documentation,",2026-10-12
 6c3d14fc82ae,agents/doc-lookup-sources.md,S-eutmp4xp,unlocated:no-match,,,,,2026-10-12
+6e1939d3b5a3,agents/doc-lookup-sources.md,S-ezhoiiyb,located,About licenses,account;against;dependency;document;file;key;known;mean,c9e901cb795caf5d,"Licensee matches the contents of a project's LICENSE file (if it exists) against a short list of known licenses. As a result, the API does",2026-10-13
+731295253828,agents/doc-lookup-sources.md,S-cig7twfc,unlocated:no-match,,,,,2026-10-13
+73bc121c6706,agents/doc-lookup-sources.md,S2192,located,JSON API > Routes > Get a release,name;api;json;pypi;project,3aa0152c9193acc5,use the project-level JSON api at /pypi/<projectname>/json.,2026-10-13
+73bc121c6706,agents/doc-lookup-sources.md,S-y6wauqrp,located,Introduction > Integration guide > Querying PyPI for Package URLs,pypi.org;org;pypi,0ac9fbef0a4ebe26,"When copying a download link from https://pypi.org, you get a URL with a",2026-10-13
 7a3d03552b76,agents/doc-lookup-sources.md,S2183,located,Additional resources > Resources for AI ingestion,index;llm;llm-optimiz;llms;llms.txt;txt;documentation;optimiz,50f2f0f1da46f932,llms.txt LLM-optimized documentation index.,2026-10-12
 7a3d03552b76,agents/doc-lookup-sources.md,S2184,located,Anthropic Developer Documentation > English > Other pages,llms;txt;documentation;com;http;platform.claude.com;platform;claud,7af41c4da79f4d59,"For more comprehensive documentation, see [llms-full.txt](https://platform.claude.com/llms-full.txt)",2026-10-13
 7a6099f32135,agents/doc-lookup-sources.md,S2186,located,Setting up the GitHub MCP Server > Setting up the GitHub MCP server in Visual Studio,token;personal;oauth;remot;access;git;hub;server,adccefc34b280f0f,"The remote GitHub MCP server uses one-click OAuth authentication by default, but you can also manually configure it to use a personal access token (PAT)",2026-10-13
@@ -1637,42 +1654,55 @@ fa01deebc8f2,agents/doc-lookup-sources.csv,S2184,unlocated:no-match,,,,,2026-10-
 88eeab86f91f,agents/doc-lookup-sources.md,S2182,located,Search Model Context Protocol (MCP) server,address;rate;hour;request;limit;mintlify;user;server,4534e9dfd70aba9d,"To protect availability, Mintlify applies rate limits to MCP servers. ScopeLimitDescription Per user (IP address)5,000 requests per hourLimits how frequently a single user can query",2026-10-13
 8abfdeb51ac6,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebSearch tool behavior > Session search limit,terminal;websearch;main;interactiv;count;conversation;call;search,e03c36cee947c172,An interactive terminal session has a limit of 200 WebSearch calls. Searches from the main conversation and from subagents,2026-10-13
 8e15f36aed0b,agents/doc-lookup-sources.md,S-eutmp4xp,located,Context7 Platform - Up-to-date Code Docs For Any Prompt > Disclaimer,backend;crawl;engin;pars;privat;repository;sourc;api,dfc4441a3ef08beb,"2- This repository hosts the MCP server's source code. The supporting components - API backend, parsing engine, and crawling engine - are private and not",2026-10-12
-8ed8803ac2ff,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
-8ed8803ac2ff,agents/doc-lookup-sources.md,S-u2afup7q,located,Overview > Learn how to contribute,microsoftdoc;docs;github.com;learn;memdoc;com;github;microsoft,19a4523331dd77d9,It will then be published to Microsoft Learn and you will be listed as a contributor at: https://github.com/MicrosoftDocs/memdocs/graphs/contributors.,2026-10-12
 90bef4de93c3,agents/doc-lookup-sources.md,S2191,unlocated:no-match,,,,,2026-10-13
+921e8eb4119a,agents/doc-lookup-sources.md,S-4yvdwu5c,unlocated:no-match,,,,,2026-10-13
 938470fe7949,agents/doc-lookup-sources.md,S-fvspfpxd,located,,code.claude.com;com;docs;fetch;code;claud,4205c23534ed0997,Fetch the complete documentation index at: https://code.claude.com/docs/llms.txt,2026-10-13
 938470fe7949,agents/doc-lookup-sources.md,S-pxvdwitn,unlocated:no-match,,,,,2026-10-12
 94154ce52774,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebSearch tool behavior,sonnet;4.5;haiku;aws;opus;amazon;bedrock;foundry,0df67fa5aad132f7,"WebSearch is available on the Claude API, Claude Platform on AWS, and Microsoft Foundry. On Google Cloud's Agent Platform it works with Opus 4, Sonnet",2026-10-13
+9c4034a8c1c1,agents/doc-lookup-sources.md,S-4yvdwu5c,unlocated:no-match,,,,,2026-10-13
+9d01f99626dc,agents/doc-lookup-sources.md,S2006,unlocated:no-match,,,,,2026-10-13
+9d01f99626dc,agents/doc-lookup-sources.md,S-soqo5xvt,unlocated:no-match,,,,,2026-10-13
+9d01f99626dc,agents/doc-lookup-sources.md,S-u5diy2cr,unlocated:no-match,,,,,2026-10-13
+a079c6ed4093,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
+a079c6ed4093,agents/doc-lookup-sources.md,S2188,unlocated:no-match,,,,,2026-10-13
+a079c6ed4093,agents/doc-lookup-sources.md,S2196,unlocated:gone,,,,,2026-10-13
 a16e2414771b,agents/doc-lookup-sources.md,S2182,unlocated:no-match,,,,,2026-10-13
 af8857a29b32,agents/doc-lookup-sources.md,S2192,unlocated:no-match,,,,,2026-10-12
+b02fc3a79e76,agents/doc-lookup-sources.md,S2196,unlocated:gone,,,,,2026-10-13
+b02fc3a79e76,agents/doc-lookup-sources.md,S-rgpijsmb,unlocated:gone,,,,,2026-10-13
+b02fc3a79e76,agents/doc-lookup-sources.md,S-u2afup7q,located,MicrosoftDocs/memdocs > History,commit,129229745f65b009,"83,904 Commits",2026-10-13
+b02fc3a79e76,agents/doc-lookup-sources.md,S-yuwxbqz3,unlocated:gone,,,,,2026-10-13
 b135f9653e0f,agents/doc-lookup-sources.md,S-autbwi4y,unlocated:no-match,,,,,2026-10-13
 b36539db2efb,agents/doc-lookup-sources.md,S-ekcs6zhr,unlocated:no-match,,,,,2026-10-13
 b36539db2efb,agents/doc-lookup-sources.md,S-eluaxz73,unlocated:no-match,,,,,2026-10-13
 b37e1003dc74,agents/doc-lookup-sources.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 c574b2f599b6,agents/doc-lookup-sources.md,S452,located,,4.0;by-sa;doc;git;gitlab;lab;repository;under,fdc53a323342d84a,"Copyright (c) 2011-present GitLab Inc. Portions of this software are licensed as follows: All content residing under the ""doc/"" directory of this repository is licensed",2026-10-12
-ca00d0a346b8,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
+ca00d0a346b8,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
+ccdbabeacc80,agents/doc-lookup-sources.md,S-7ppiqh3x,unlocated:no-match,,,,,2026-10-13
 ce4c00bda3f1,agents/doc-lookup-sources.md,S2185,located,,generally;availabl;remot;server;mcp;git;github;hub,3ec343be24457800,Remote GitHub MCP Server is now generally available,2026-10-13
+d201a8b0ed67,agents/doc-lookup-sources.md,S-7ppiqh3x,located,Terms of Use for arXiv APIs > Limitations > Rate limits,connection;every;one;second;singl;thre;legacy;time,1beed283a2df64f0,"When using the legacy APIs (including OAI-PMH, RSS, and the arXiv API), make no more than one request every three seconds, and limit requests to",2026-10-13
 d2e9bb96358c,agents/doc-lookup-sources.md,S-3yod3u7q,located,Tools reference > WebFetch tool behavior,acceptedit;manual;preapprov;documentation;except;accept;built-in;built,80b9afbbeb881160,"In Manual and acceptEdits permission modes, WebFetch prompts before fetching, except for domains your permission rules already allow or deny and a built-in set of",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S2179,located,Connect to MCP servers > Troubleshooting,github;hub;git;check;connect;add;mcp;server,43f370d5dac9aa72,"Use the browser sign-in in Connect a server that requires sign-in, or for servers that take a token instead, like GitHub's, pass it with --header",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S2187,located,Remote GitHub MCP Server 🚀 > Remote MCP Toolsets > Additional _Remote_ Server Toolsets,search;git;hub;github;read-only;read;mcp,69883813a01f2dd9,"<picture><source media=""(prefers-color-scheme: dark)"" srcset=""../pkg/octicons/icons/book-dark.png""><source media=""(prefers-color-scheme: light)"" srcset=""../pkg/octicons/icons/book-light.png""><img src=""../pkg/octicons/icons/book-light.png"" width=""20"" height=""20"" alt=""book""></picture><br>githubsupportdocssearch | Retrieve documentation to answer GitHub product and support questions. Topics include: GitHub Actions",2026-10-13
 d5fef84b6dc7,agents/doc-lookup-sources.md,S-el34o4bb,unlocated:no-match,,,,,2026-10-13
-d685fb46c18c,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
+d685fb46c18c,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 d685fb46c18c,agents/doc-lookup-sources.md,S2193,unlocated:no-match,,,,,2026-10-13
 d685fb46c18c,agents/doc-lookup-sources.md,S-j7xzzcxj,unlocated:no-match,,,,,2026-10-13
-e0c82db826eb,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-12
-e0c82db826eb,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-12
+e09ae0030809,agents/doc-lookup-sources.md,S-t36jnjsm,located,About search > Ranking search results > Rate limit,requir;unauthenticat;allow;make;authenticat;code;minut;rate,fa3102da199c148b,"The Search code endpoint requires you to authenticate and limits you to 10 requests per minute{% endif %}. For unauthenticated requests, the rate limit allows",2026-10-13
+e0c82db826eb,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-13
+e0c82db826eb,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-13
 e0c82db826eb,agents/doc-lookup-sources.md,S2182,unlocated:no-match,,,,,2026-10-13
+e3427681419d,agents/doc-lookup-sources.md,S-mz6tic2a,unlocated:fetch-error,,,,,2026-10-13
 e3be435668cb,agents/doc-lookup-sources.md,S2190,located,,learn;overview;data;entra;enterpris;graph;server;mcp,edc3a32c632597f7,Overview of Microsoft MCP Server for Enterprise - Microsoft Graph | Microsoft Learn The Microsoft MCP Server for Enterprise https://mcp.svc.cloud.microsoft/enterprise is a programmatic interface for,2026-10-13
-e79c759b776f,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
-e79c759b776f,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-12
-e79c759b776f,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-12
-e8431c2394a1,agents/doc-lookup-sources.md,S2178,unlocated:fetch-error,,,,,2026-10-12
+e79c759b776f,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
+e79c759b776f,agents/doc-lookup-sources.md,S2180,unlocated:gone,,,,,2026-10-13
+e79c759b776f,agents/doc-lookup-sources.md,S2181,unlocated:gone,,,,,2026-10-13
+e8431c2394a1,agents/doc-lookup-sources.md,S2178,unlocated:fetch-error,,,,,2026-10-13
 f0b89e364b1b,agents/doc-lookup-sources.md,S2179,located,Connect to MCP servers > Add and verify a server,full-text;full;search;text;over;authentication;documentation;host,62b406fad82c7501,"The example below connects to the Claude Code documentation MCP server, a hosted server with full-text search over the Claude Code docs. It doesn't require",2026-10-13
 f3dd5c9c883a,agents/doc-lookup-sources.md,S2176,located,Microsoft Learn MCP Server release notes | Microsoft Learn > 2025,2025-11-07;availability;disclaimer;general;preview;remov;releas;microsoft,843aa2ce55b18d34,"This release includes the code sample search tool, which enhances retrieval of relevant code samples. 2025-11-07: Microsoft Learn MCP server is now generally available. We",2026-10-12
 f725a7b8ba80,agents/doc-lookup-sources.md,S2194,located,Context7 Platform - Up-to-date Code Docs For Any Prompt > Disclaimer,accuracy;cannot;contribut;guarante;community;library;context7,421d557d5a476ca1,"1- Context7 projects are community-contributed and while we strive to maintain high quality, we cannot guarantee the accuracy, completeness, or security of all library documentation.",2026-10-13
-f899a2cfec0a,agents/doc-lookup-sources.md,S-u2afup7q,unlocated:no-match,,,,,2026-10-12
 fb8c6c628e01,agents/doc-lookup-sources.md,S2195,located,Terms of Use | Microsoft Learn > Notice Specific to Documents Available on this Website,conflict;informational;certain;explicit;documentation;network;computer;non-commercial,4bd806e0315d52b4,"Certain documentation may be subject to explicit license terms separate from the terms contained here. To the extent the terms conflict, the explicit license terms",2026-10-13
-fd2f3b12aadd,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-12
+fd2f3b12aadd,agents/doc-lookup-sources.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 fe4cada4bba1,agents/doc-lookup-sources.md,S2189,located,GitLab MCP server,beta;generally;19.5;availabl;lab;git;gitlab,7e705c777f1f8b2b,Changed from beta to generally available in GitLab 19.5.,2026-10-13
 04c1732dcd7c,agents/docs-maintenance-agents.md,S1809,located,DeepWiki repository wikis,steer;list;file;wiki.json;json;devin;repo_not;repo,2ad4fdfad62643b9,"If a .devin/wiki.json file is found in your repository's root directory during wiki generation, we'll use the provided reponotes and pages to steer wiki generation.",2026-10-13
 120caa30d746,agents/docs-maintenance-agents.md,S1822,unlocated:no-match,,,,,2026-10-10
