@@ -16,6 +16,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -707,11 +708,12 @@ def orphan_in(cwd, log, seconds=60):
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
-def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling_and_worker_distill_outside_worktree_and_refusal_names_the_distill_lock_wait(
+def test_backlog_selfcheck_distill_run_holding_or_waiting_on_the_lock_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling_and_worker_distill_outside_worktree_and_refusal_names_the_distill_lock_wait(
         tmp_path, monkeypatch):
     """A run whose standard output is the clone's distill.log and whose parent has exited, younger than
-    bl_procs.HOOK_GRACE_S, is a `hook` that the orphans check names with its age and passes; the same run once it is
-    older, and a stray process with another standard output, fail it. The host check fails over SUITE_LOAD_PER_CORE
+    ql_distill.USAGE_LOCK_WAIT_S plus bl_procs.HOOK_MARGIN_S (waiting for the distill lock) or the pid the lock
+    records (holding it), is a `hook` that the orphans check names with its age and passes; the same run past
+    both, and a stray process with another standard output, fail it. The host check fails over SUITE_LOAD_PER_CORE
     per core, the load a whole-suite run no longer fits its seconds ceiling at, whatever LOAD_PER_CORE allows, and a
     review story's `done` refuses a whole-suite run at that load, naming the host (a selection it lets through). A
     distill a worker's session end starts has the clone's main checkout as its working directory and script, so no
@@ -740,9 +742,19 @@ def test_backlog_selfcheck_young_distill_run_is_a_hook_in_flight_and_an_old_stra
         assert check["state"] == "fail" and f"pid {stray} " in check["detail"], check
         assert f"pid {hook} " not in check["detail"], check  # the young hook is no orphan beside it
 
-        monkeypatch.setattr(bl_procs, "HOOK_GRACE_S", 0)  # the same run, no longer younger than the grace
+        assert bl_procs.hook_run_s() == ql_distill.USAGE_LOCK_WAIT_S + bl_procs.HOOK_MARGIN_S  # not HOOK_GRACE_S
+        monkeypatch.setattr(ql_distill, "USAGE_LOCK_WAIT_S", 0)  # the same run, no longer younger than the wait
+        monkeypatch.setattr(bl_procs, "HOOK_MARGIN_S", 0)
         check = bl_selfcheck.check_orphans(str(tmp_path))
         assert check["state"] == "fail" and f"pid {hook} " in check["detail"] and "2 orphan(s)" in check["detail"], check
+        lock = log.with_name(ql_base.LOCK_NAME)  # the same run past the wait that holds the lock: still at work
+        lock.write_text(json.dumps({"pid": hook, "started": "now", "started_epoch": time.time()}), encoding="utf-8")
+        check = bl_selfcheck.check_orphans(str(tmp_path))
+        assert check["state"] == "fail" and f"pid {hook} " not in check["detail"], check
+        assert f"pid {stray} " in check["detail"] and "1 orphan(s)" in check["detail"], check
+        lock.write_text(json.dumps({"pid": stray, "started": "now", "started_epoch": time.time()}), encoding="utf-8")
+        check = bl_selfcheck.check_orphans(str(tmp_path))  # a lock another pid holds is no hold of this one's
+        assert check["state"] == "fail" and "2 orphan(s)" in check["detail"], check
     finally:
         for pid in pids:
             try:
