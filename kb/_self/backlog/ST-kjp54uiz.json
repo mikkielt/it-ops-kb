@@ -2,10 +2,11 @@
   "id": "ST-kjp54uiz",
   "kind": "story",
   "title": "The darwin suite ceiling takes the value the operator chooses",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-uvz65lvm",
   "priority": "P2",
   "rank": 0,
-  "goal": "_tools/tests_ceiling.json's max_seconds.darwin and the decision it names hold the value the operator gave in gate value of this item, from their own terminal (the ceiling class of ST-d2f346fz); tests.py --ceiling and a full tests.py run pass on a quiet darwin host under it",
+  "goal": "_tools/tests_ceiling.json's max_seconds.darwin, max_ids and the decision it names hold the values the operator gave in gate value of this item, from their own terminal (the ceiling class of ST-d2f346fz): darwin 29 s and 120 ids, decision D-ilojyzhk; tests.py --ceiling and a full tests.py run pass on a quiet darwin host under it",
   "checks": [
     {
       "run": [
@@ -46,5 +47,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Filed 2026-10-12 at the operator's instruction: gate value stays open for the operator alone, never answered by a delegated or unattended session, even under a blanket approval; it is the only item that waits on it, kept out of any sprint until it is answered, then planned after ST-d2f346fz lands. Until ST-d2f346fz lands the gate reads class design; the class it is meant to have is ceiling."
+  "notes": "Filed 2026-10-12 at the operator's instruction: gate value stays open for the operator alone, never answered by a delegated or unattended session, even under a blanket approval; it is the only item that waits on it, kept out of any sprint until it is answered, then planned after ST-d2f346fz lands. Until ST-d2f346fz lands the gate reads class design; the class it is meant to have is ceiling.",
+  "claimed_by": "orch-c2-ceiling"
 }

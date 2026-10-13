@@ -1,9 +1,9 @@
 {
-  "decision": "D-kl72euxy",
+  "decision": "D-ilojyzhk",
   "max_files": 15,
-  "max_ids": 100,
+  "max_ids": 120,
   "max_seconds": {
-    "darwin": 24,
+    "darwin": 29,
     "linux": 60,
     "win32": 150
   }
