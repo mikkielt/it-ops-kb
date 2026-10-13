@@ -47,6 +47,19 @@
   "depends_on": [
     "ST-74agak3p"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "PyPI's project JSON now lists 1.2.15 (uploaded 2026-10-12 22:38 UTC) as latest, after the article's 2026-10-12 read of 1.2.14: which version do the install facts state?",
+      "options": [
+        "keep 1.2.14 as the dated 2026-10-12 reading and note 1.2.15 in the Facts line",
+        "move both facts to 1.2.15 and re-date the read to 2026-10-13"
+      ],
+      "recommendation": "keep 1.2.14 as the dated 2026-10-12 reading and note 1.2.15 in the Facts line",
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-qjg5r7jj review"
   ],

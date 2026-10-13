@@ -10,9 +10,10 @@ status: complete
 # LangGraph
 
 ## Summary
-- **LangGraph** is LangChain's low-level, open-source orchestration framework (`pip install
-  langgraph`, package `langgraph`, **MIT** licence, latest seen `1.2.14`) for building durable,
-  stateful, multi-actor agent workflows as graphs. [DOC S-v5hqqcqx]
+- **LangGraph** is a low-level orchestration framework (`uv add langgraph`, package `langgraph`,
+  **MIT** licence, latest version read 2026-10-12 `1.2.14`) for building, managing and deploying
+  long-running, stateful agents, with infrastructure for durable execution, streaming,
+  human-in-the-loop, persistence and memory. [DOC S-v5hqqcqx]
 - A workflow is a **`StateGraph`**: a shared **state** schema (TypedDict, dataclass or Pydantic
   model), **nodes** (functions that read/update state), and **edges** (fixed or conditional) that
   decide which node runs next; execution uses a Pregel-style message-passing model in discrete
@@ -32,8 +33,9 @@ status: complete
 ## Facts
 
 ### Package, graph construction
-- Install: `pip install langgraph` or `uv add langgraph`; licence **MIT**; latest version in PyPI's
-  project JSON (read 2026-10-12): `1.2.14`. [DOC S-v5hqqcqx]
+- Install: `uv add langgraph` (the README's Quick Install in PyPI's project JSON); licence **MIT**;
+  latest version in that JSON when read 2026-10-12: `1.2.14`; its release list now also shows
+  `1.2.15`, uploaded 2026-10-12 at 22:38 UTC. [DOC S-v5hqqcqx]
 - `StateGraph` state can be a `TypedDict`, `dataclass`, or Pydantic `BaseModel`; separate input and
   output schemas can be declared alongside the internal schema. [DOC S-bivxzhtv]
 - **Reducers**: annotate a state field with `Annotated[type, reducer_fn]` (e.g. `operator.add`) so a
