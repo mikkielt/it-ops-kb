@@ -2,7 +2,7 @@
   "id": "BG-6w4zexka",
   "kind": "bug",
   "title": "doc-lookup-sources.md's memdocs no-capture DER rests on the Wayback availability API, which doc-change-detection.md says cannot prove absence",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-uvz65lvm",
   "priority": "P3",
   "rank": 0,
@@ -62,5 +62,6 @@
     "parked: SP-ilqhjn3k review",
     "merged: BG-s5cpo5ml"
   ],
-  "notes": "Merged from BG-s5cpo5ml (anchors --stale lists three agents/doc-lookup-sources.md rows: S2177, S-u2afup7q x2): the anchor half of the same memdocs capture fact (doc-lookup-sources.md:54); re-anchoring before the reword is wasted, so the re-anchor is a clause here. Its repro: no STALE line for agents/doc-lookup-sources.md in factdiff.py anchors --stale. Order: after BG-zof4bcok (same article), before BG-q3l5j2vz (the answer follows the reworded basis). Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Merged from BG-s5cpo5ml (anchors --stale lists three agents/doc-lookup-sources.md rows: S2177, S-u2afup7q x2): the anchor half of the same memdocs capture fact (doc-lookup-sources.md:54); re-anchoring before the reword is wasted, so the re-anchor is a clause here. Its repro: no STALE line for agents/doc-lookup-sources.md in factdiff.py anchors --stale. Order: after BG-zof4bcok (same article), before BG-q3l5j2vz (the answer follows the reworded basis). Planned at the 2026-10-13 draft triage (sprint 7 of 15, \"Content fixes: doc lookup, change detection and retrieval articles and their anchors\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-uvz65lvm"
 }
