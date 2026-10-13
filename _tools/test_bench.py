@@ -299,8 +299,9 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
 
 
 def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line(tmp_path, capsys, monkeypatch):
-    import argparse
+    import argparse, re
     import bench_pool as bp
+    real_pack = bp.scenario_pack
     monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
     monkeypatch.setattr(bp, "source_stale", lambda ids: list(ids))
     pool_home(tmp_path, [f"fixture session question number {i} about topic {i} in detail" for i in range(26)])
@@ -332,6 +333,17 @@ def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_pic
                                                         if q == partial["question"] else scenario_pack(q)[1]))
     assert bp.cli(check, tmp_path) == 1  # the planted failure: a pack with no line the row's answer regex matches
     assert f"{partial['id']}: its answer regex matches no line of the pack for its question" in capsys.readouterr().out
+    import kbfacts
+    flagged = {"route": "", "text": "check: a cited line may not answer it\n- d0/a0.md:7 equals value1\n\nsources:\n  -> S-src00000  https://x"}
+    monkeypatch.setattr(kbfacts, "pack_many", lambda questions: flagged)  # the real scenario_pack reads this pack
+    monkeypatch.setattr(bp, "scenario_pack", real_pack)
+    assert real_pack(present["question"]) == ("check", flagged["text"])  # the pack prints a check: line and no route: line
+    assert bp.cli(check, tmp_path) == 1  # the planted failure: a good row whose pack prints a check: line, never read as good
+    seen = capsys.readouterr().out
+    assert f"{present['id']}: expected route good but the pack prints a check: line and no route: for its question" in seen
+    assert absent["id"] not in seen  # an sc_absent row marked a false good takes a check: line
+    assert not re.search(bp.FRESH_CHECK, "## public/d0/a0.md  Fixture topic  [partial, retrieved 2026-10-13]")  # a bare header's date
+    assert re.search(bp.FRESH_CHECK, "last confirmed 2026-10-13") and re.search(bp.FRESH_CHECK, "source changed since")
     monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
     present["checks"] = json.dumps([r"never printed"])
     bp.write_csv(out, rows)
