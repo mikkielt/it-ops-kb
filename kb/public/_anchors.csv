@@ -97,7 +97,6 @@ f7fcd6ee875d,agents/a2a-protocol.md,S-xasyjfgi,unlocated:no-match,,,,,2026-10-10
 9e2b6b880caa,agents/a2a/a2a-proto-digest.md,S2121,unlocated:no-match,,,,,2026-10-10
 9e2b6b880caa,agents/a2a/a2a-proto-digest.md,S2122,unlocated:no-match,,,,,2026-10-10
 b0c26162383b,agents/a2a/a2a-proto-digest.md,S2120,located,Agent2Agent (A2A) Protocol Specification¶ > 1. Introduction¶ > 1.4 Normative Content¶,deriv;edit;spec;singl;schema;proto;generat;json,a44a45cfcb305d32,"In addition to the protocol requirements defined in this document, the file spec/a2a.proto is the single authoritative normative definition of all protocol data objects and",2026-10-10
-0fb2dae9ccc0,agents/agent-caching.md,S1864,located,Changelog > 2.1.284,0.20;mtok;5.5;sonnet;cach;read;added,ef95917ecfc62520,$2/$10 per Mtok with $0.20/Mtok cache reads,2026-10-13
 11c42d9b8243,agents/agent-caching.md,S2130,unlocated:no-match,,,,,2026-10-12
 11c42d9b8243,agents/agent-caching.md,S2132,unlocated:no-match,,,,,2026-10-12
 11c42d9b8243,agents/agent-caching.md,S2135,unlocated:no-match,,,,,2026-10-12
@@ -147,6 +146,7 @@ b5e0c3c4f709,agents/agent-caching.md,S2132,located,Manage costs effectively > Tr
 c04b8036c05d,agents/agent-caching.md,S2135,located,Tools > Capabilities,hit;improv;reliably;deterministic;order;rate;cach;context,faea098453bdff07,Deterministic ordering enables clients to reliably cache the tool list and improves LLM prompt cache hit rates when tools are included in model context.,2026-10-12
 c22e0ae3fe6f,agents/agent-caching.md,S2133,unlocated:no-match,,,,,2026-10-12
 c3eaaab60663,agents/agent-caching.md,S2132,located,Manage costs effectively > Why usage climbs in a long session,drop;once;ttl;hour;lifetim;minut;cloud;key,5d7ff465a4122a54,The lifetime is an hour on a subscription and drops to five minutes once you're drawing on usage credits; on an API key or cloud,2026-10-12
+d1c252ede56b,agents/agent-caching.md,S1864,located,Changelog > 2.1.284,0.20;mtok;5.5;sonnet;cach;read;added,ef95917ecfc62520,$2/$10 per Mtok with $0.20/Mtok cache reads,2026-10-13
 eb275435b2f6,agents/agent-caching.md,S2135,located,Tools > Protocol Messages > List Changed Notification,stream;listen;open;declar;send;subscription;listchang;notification,dafbec0dfd2fbf9f,"When the list of available tools changes, servers that declared the listChanged capability SHOULD send a notification to clients that have opened a subscriptions/listen stream",2026-10-12
 eea8aa6eb85f,agents/agent-caching.md,S1864,located,Changelog > 2.1.296,million;0.10;0.20;figur;max-budget-usd;usd;5.5;pric,3cc5126977ecadc0,price Sonnet 5.5 cache reads at $0.10 per million tokens (was $0.20),2026-10-12
 f9afed7bacc7,agents/agent-caching.md,S2130,located,"Depending on the model, this non-tool-result user block either keeps prior thinking blocks or strips them (see the next paragraph) > 1-hour cache duration > Mixing different TTLs",ttls;5-minut;ttl;1-hour;hour;minut;cach,083233790aa1c9f1,"You can use both 1-hour and 5-minute cache controls in the same request, but with an important constraint: Cache entries with longer TTL must appear",2026-10-12
