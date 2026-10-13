@@ -2,7 +2,7 @@
   "id": "ST-kd5xblwz",
   "kind": "story",
   "title": "Research sprint goal: Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-e4fm2ovk",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Run at planning (rag.py pack -q x3, then --root _self): nearest-rank percentile coverage none in both roots, a statistical definition outside the kb's domains that the goal of BG-v5f5tn5y already states; the revalidation switch weak in public, answered in _self (tools.md:144); Claude list prices good (ci-and-headless.md:88-100), read by bench_core.PRICE. Its done needs 'No outside facts: the nearest-rank percentile is a mathematical definition stated in BG-v5f5tn5y, the revalidation switch is the repo's own code documented in tools.md:144, and the prices are covered' unless a worker finds a source the kb should hold."
+  "notes": "Run at planning (rag.py pack -q x3, then --root _self): nearest-rank percentile coverage none in both roots, a statistical definition outside the kb's domains that the goal of BG-v5f5tn5y already states; the revalidation switch weak in public, answered in _self (tools.md:144); Claude list prices good (ci-and-headless.md:88-100), read by bench_core.PRICE. Its done needs 'No outside facts: the nearest-rank percentile is a mathematical definition stated in BG-v5f5tn5y, the revalidation switch is the repo's own code documented in tools.md:144, and the prices are covered' unless a worker finds a source the kb should hold.",
+  "claimed_by": "orch-e4fm2ovk"
 }
