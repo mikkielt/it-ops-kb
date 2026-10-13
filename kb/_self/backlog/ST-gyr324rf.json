@@ -2,7 +2,7 @@
   "id": "ST-gyr324rf",
   "kind": "story",
   "title": "Research sprint goal: Research gaps: SSG CIS profiles for RHEL-family hosts, Python Fluent accessors, JSON logs from Python and Rust services, Cargo feature unification for ort",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-23m5etrf",
   "goal_research": true,
   "priority": "P1",
@@ -37,5 +37,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-23m5etrf"
+  "evidence": {
+    "commit": "f8bdbc3adeeb04e2ff77568804680c129341d2d6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-gyr324rf"
+        ],
+        "exit": 0,
+        "sha256": "a8b8f2fc1405a609"
+      }
+    ]
+  }
 }
