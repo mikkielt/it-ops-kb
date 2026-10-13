@@ -2,7 +2,7 @@
   "id": "ST-ct2jakvm",
   "kind": "story",
   "title": "The batch judge's dry-run constants are set from the measured Haiku 5.5 output per item",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-htl7jkrm",
   "priority": "P3",
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-yojt6y7v review"
   ],
-  "notes": "Premise: factdiff.JUDGE_REPLY_TOKENS is 80 and JUDGE_CALL_TOKENS 4000, which priced the logs census's judge dry run at 3,600 out and 18,134 in; the run read 19,592 out and 44,436 in over 4 calls (kb/_self/reports/fact-diff.md:297, 'Estimate against run'). Premise run 2026-10-12: import factdiff prints 80 4000; reproduces. Figures the check bounds (+-25%): output 19,592 over the 45 dry-run items is about 435 per item (range 333 to 555); input 44,436 less about 8,200 of passages over 4 calls is about 9,000 per call (range 6,000 to 12,000). The worker measures its own figure from that report and a judge ops row where one exists; census.py reads both constants (dry run, line 1699). Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Premise: factdiff.JUDGE_REPLY_TOKENS is 80 and JUDGE_CALL_TOKENS 4000, which priced the logs census's judge dry run at 3,600 out and 18,134 in; the run read 19,592 out and 44,436 in over 4 calls (kb/_self/reports/fact-diff.md:297, 'Estimate against run'). Premise run 2026-10-12: import factdiff prints 80 4000; reproduces. Figures the check bounds (+-25%): output 19,592 over the 45 dry-run items is about 435 per item (range 333 to 555); input 44,436 less about 8,200 of passages over 4 calls is about 9,000 per call (range 6,000 to 12,000). The worker measures its own figure from that report and a judge ops row where one exists; census.py reads both constants (dry run, line 1699). Planned at the 2026-10-12 draft triage (sprint 8 of 19, \"Census and fact diff: anchor runs write only their own rows, judge confirms are sampled, cost figures are measured\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-htl7jkrm"
 }
