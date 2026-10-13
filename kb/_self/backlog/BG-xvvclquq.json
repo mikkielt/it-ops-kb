@@ -2,7 +2,7 @@
   "id": "BG-xvvclquq",
   "kind": "bug",
   "title": "A lookup prints not found for a page with no words when the fact has a located anchor: the empty text is resolved and searched elsewhere",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-u5q37ds3",
   "priority": "P1",
   "rank": 0,
@@ -32,5 +32,28 @@
     "kb/_self/content-rules.md"
   ],
   "notes": "Premise run 2026-10-13 on origin/main a76187923: the repro exits 1, the line prints outcome not found with note no candidate page (verdict changed, anchor located). Reviewer probe: the same with state {} and with text '   ' or '<script>x</script>'.",
-  "claimed_by": "orch-u5q37ds3"
+  "evidence": {
+    "commit": "baa8d6af16936a4ab8396380b3b3e584c30d6618",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "revalidate_empty_page_located_anchor"
+        ],
+        "exit": 0,
+        "sha256": "b200f0eb33a098ad"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, tempfile, pathlib; sys.path.insert(0, '_tools'); import factdiff as f, provider, kbcommon; f.ROOT = kbcommon.root('public'); provider.DOWN_DIR = pathlib.Path(tempfile.mkdtemp()); page = '# Guide\\n\\nThe Orion queue stores jobs in the inbox for thirty days.\\n'; fact = [('k1', 'x.md', 3, 'The Orion queue stores jobs in the inbox for thirty days.')]; row = f.anchor_rows('S9990001', fact, {'status': 200, 'text': page}, None, '2026-01-01')[0]; provider.document = lambda url, row=None, etag='', lastmod='': {'status': 200, 'text': '\\n', 'error': '', 'etag': '', 'lastmod': '', 'version': {}, 'final': url, 'hops': [], 'raw': ''}; provider.request = lambda url, headers=None, **k: {'status': 200, 'headers': {'content-type': 'text/plain'}, 'body': b'\\n', 'final': url, 'hops': [], 'error': ''}; src = {'url': 'https://techcommunity.microsoft.com/blog/x/1'}; st = {'doc_sha256': 'deadbeef'}; res = f.detect_source('S9990001', src, st, [], lookup=True); out = f.lookup_source('S9990001', src, res, fact, {'S9990001': st}, {('k1', 'x.md', 'S9990001'): row}, [])[0] or {}; sys.exit(1 if any(o['outcome'] == 'not found' for o in out.values()) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
