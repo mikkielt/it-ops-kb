@@ -2,7 +2,7 @@
   "id": "ST-z7nrkh6v",
   "kind": "story",
   "title": "Review sprint: Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sqgyoiaz",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-sqgyoiaz"
 }
