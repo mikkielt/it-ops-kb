@@ -1375,6 +1375,7 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 02a99ba59f12,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-12
 02a99ba59f12,agents/doc-change-detection.md,S-xpbhjzu7,unlocated:no-match,,,,,2026-10-12
 034ab3393b8a,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-12
+09144ce257e9,agents/doc-change-detection.md,S-tjb5zoq2,unlocated:no-match,,,,,2026-10-13
 0f4215460890,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 1161b96c0360,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-12
 124aa0d4379a,agents/doc-change-detection.md,S-7ivxsp4z,located,,api;link;local;next;nextlink;top;search;com,0f96067b1589adf1,"""nextLink"": ""https://learn.microsoft.com/api/Search?search=device%20identity%20overview&locale=en-us&$top=3&accept=text%2Fmarkdown&$skip=3"",",2026-10-12
@@ -1383,6 +1384,7 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 157417510f93,agents/doc-change-detection.md,S-phkss6q3,unlocated:no-match,,,,,2026-10-12
 16a4d673d700,agents/doc-change-detection.md,S-oo5kmppv,unlocated:no-match,,,,,2026-10-12
 16a4d673d700,agents/doc-change-detection.md,S-znp63ln6,unlocated:no-match,,,,,2026-10-12
+1998d333c3b5,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Problems and considerations,fluctuat;reason;even;quickly;rais;switch;too;resolv,01048d35d987ea99,"For example, if the circuit breaker remains in the Open state for a long period, it can raise exceptions even if the reason for the",2026-10-13
 1b38b6121c60,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-12
 1bb312f15462,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 1bf8dfb0dae7,agents/doc-change-detection.md,S-ods72iyh,located,,interval;set;typical;fraction;encourag;heuristic;some;sinc,fe78f728dfd590d5,"[HTTP]), caches are encouraged to use a heuristic expiration value that is no more than some fraction of the interval since that time. A typical",2026-10-12
@@ -1392,6 +1394,7 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 2086710e4899,agents/doc-change-detection.md,S-lldnrkhv,unlocated:no-match,,,,,2026-10-12
 2099abdbac9a,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Editing an existing article,clarification;fixe;grammar;major;ms.dat;date;spell;format,53b9d929e8be75c8,"ms.date: Update the date if you're adding major content to the page, but not for fixes like clarification, formatting, grammar, or spelling.",2026-10-12
 23f538eb3f3c,agents/doc-change-detection.md,S-s6xjctzu,unlocated:no-match,,,,,2026-10-12
+246cc8009b50,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 248d821e6e75,agents/doc-change-detection.md,S-qvogwadn,unlocated:no-match,,,,,2026-10-12
 258d75fa0dba,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 29f2c90120d4,agents/doc-change-detection.md,S-znp63ln6,unlocated:no-match,,,,,2026-10-12
@@ -1421,6 +1424,9 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 4b1a6d22c32b,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 5218c34e9457,agents/doc-change-detection.md,S-o6lmrcgh,located,,path;open;endpoint;rest;api,935cf3053542c219,"If you omit the path parameter, you will receive the contents of the repository's root directory.\n\nThis endpoint supports the following custom media types. For more",2026-10-12
 55098332e2a0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
+5b65d533eaca,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
+62355725c83f,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
+62355725c83f,agents/doc-change-detection.md,S-yrqtp5aq,unlocated:no-match,,,,,2026-10-13
 631a70679ec8,agents/doc-change-detection.md,S-g3ciqhyh,located,Avoid polling,interval;x-poll-interval;again;befor;least;many;second;wait,abe3c4cd2b8960ae,"If a response includes an x-poll-interval header, wait at least that many seconds before you poll the same endpoint again.",2026-10-12
 68b0a7091ea4,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Renaming or deleting an existing article,whether;redirect_document_id;document;redirect,b256b81f1ac66571,redirectdocumentid indicates whether you would like to keep the document ID from the previous file.,2026-10-12
 6c32ef455421,agents/doc-change-detection.md,S-gceoq2qq,located,Detect Website Changes Automatically — Monitor Web Page Changes in Real Time > AI-powered website change detection — smart alerts and plain-language summaries,english;evaluat;plain-english;rule;against;intent;plain;dif,db00751a6ffbc86b,"AI change detection rules - write a plain-English intent once: ""notify me only when the price drops below $50"", ""alert me when the item comes",2026-10-12
@@ -1433,14 +1439,26 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 716428e80a5e,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-12
 781d0308f65e,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-12
 7948fdb43cf5,agents/doc-change-detection.md,S-wkj4aa2g,located,Measuring Attribution in Natural Language Generation Models,annotation;attributabl;generat;identifi;pipelin;stag;statement;support,f996e75dd68d3e3e,"In this work, we present a new evaluation framework entitled Attributable to Identified Sources (AIS) for assessing the output of natural language generation models, when",2026-10-12
+7ab5c8ec91d5,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Problems and considerations,duration;anticipat;delay;other;information;includ;remot;such,f2c04914d51e0734,A service can return HTTP 429 (too many requests) if it's throttling the client or HTTP 503 (service unavailable) if the service isn't available. The,2026-10-13
+7fe52f6e5275,agents/doc-change-detection.md,S-xc5fkeod,located,Circuit breaker resilience strategy > Anti-patterns > Reducing thrown exceptions,elap;method;halfopen;breakduration;half;async;break;open,916f69a6bfa21cf7,The circuit transition into the HalfOpen state when the Execute{Async} method is called and the BreakDuration elapsed.,2026-10-13
+80aa69178c39,agents/doc-change-detection.md,S-if5q2jhk,located,Outlier detection (proto) > config.cluster.v3.OutlierDetection,multipli;base;number;eject;time;host,92cc4e9a4c512808,The real time is equal to the base time multiplied by the number of times the host has been ejected,2026-10-13
+818dff0ec32b,agents/doc-change-detection.md,S-if5q2jhk,unlocated:no-match,,,,,2026-10-13
+818dff0ec32b,agents/doc-change-detection.md,S-tjb5zoq2,unlocated:no-match,,,,,2026-10-13
+818dff0ec32b,agents/doc-change-detection.md,S-tyedhnrz,unlocated:no-match,,,,,2026-10-13
+818dff0ec32b,agents/doc-change-detection.md,S-xc5fkeod,unlocated:no-match,,,,,2026-10-13
+8436d5d622ad,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > How Google processes JavaScript,actual;initial;model;shell;contain;execut;app;see,26422673db978582,the initial HTML does not contain the actual content,2026-10-13
 84f5f3ae3738,agents/doc-change-detection.md,S-stitrqhm,unlocated:no-match,,,,,2026-10-12
 84f5f3ae3738,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
+857a8c6df7e6,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
+857a8c6df7e6,agents/doc-change-detection.md,S-yrqtp5aq,unlocated:no-match,,,,,2026-10-13
 85dd35443cfa,agents/doc-change-detection.md,S-2r7j5aw2,located,About secondary rate limits > Checking the status of your rate limit,against;call;rate_limit;count;secondary;primary;rate;limit,55f96b7175cde198,You can call the GET /ratelimit endpoint for a periodic overview of all resource families for the authenticated user. Calling this endpoint does not count,2026-10-12
 85e8ef2d90d3,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 85fc2d10322f,agents/doc-change-detection.md,S-yvdwutca,located,Htmldate: Find the Publication Date of Web Pages > Performance,0.908;0.924;0.927;0.993;extensiv;fast;htmldat,8ba3b493e96c3501,htmldate\[all\] 1.10.0 (fast) | 0.924 | 0.927 | 0.861 | 0.925 | 1x htmldate\[all\] 1.10.0 (extensive) | 0.908 | 0.993 | 0.903 | 0.949 |,2026-10-12
+87d4d83aefcc,agents/doc-change-detection.md,S-wct3uoax,located,,unavailabl;retry-after;retry;expect,3e3b4c803b10d6ae,indicates how long the service is expected to be unavailable to the client,2026-10-13
 881411082933,agents/doc-change-detection.md,S2188,located,Rate limits for the REST API > About primary rate limits > Primary rate limit for unauthenticated users,address;application;originat;unauthenticat;hour;user;primary;request,39e327b73da769c4,"Unauthenticated requests are associated with the originating IP address, not with the user or application that made the request. The primary rate limit for unauthenticated",2026-10-12
 881411082933,agents/doc-change-detection.md,S-zlvv4mum,located,,address;application;hour;limit;originat;primary;user;request,39e327b73da769c4,"Unauthenticated requests are associated with the originating IP address, not with the user or application that made the request. The primary rate limit for unauthenticated",2026-10-12
 89ccbd3bd4c5,agents/doc-change-detection.md,S-m7xkty3c,unlocated:no-match,,,,,2026-10-12
+909dd83cd532,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 96eebf1662fb,agents/doc-change-detection.md,S-zb3jd525,located,,intune_en;intune_en-us_1.xml;intun;us_1;_sitemap;com;learn;learn.microsoft.com,095eee3433ce25f5,<loc>https://learn.microsoft.com/sitemaps/intuneen-us1.xml</loc>,2026-10-12
 98465666b107,agents/doc-change-detection.md,S-stitrqhm,located,,chang;metadata;ms.author;ms.servic;servic;move;bulk;updat,25e94a94479f928a,"""message"": ""[BULK UPDATE] Metadata: Move author/ms.author/ms.service/ms.subservice/manager to folder level (3/5)\n\nFolders: identity/devices, identity/monitoring-health\n\nChanges to docfx.json:\n- author/ms.author: Added folder entries for identity/devices, identity/monitoring-health\n- ms.service: Added identity/devices=entra-id, identity/monitoring-health=entra-id\n-",2026-10-12
 98465666b107,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
@@ -1454,12 +1472,17 @@ a3ed5853ab42,agents/doc-change-detection.md,S-ecrpwvoh,unlocated:no-match,,,,,20
 a62ee5778718,agents/doc-change-detection.md,S-ggcghqgu,unlocated:no-match,,,,,2026-10-12
 a83720ac44a2,agents/doc-change-detection.md,S-7ivxsp4z,unlocated:no-match,,,,,2026-10-12
 a83720ac44a2,agents/doc-change-detection.md,S-7n65j7bo,unlocated:no-match,,,,,2026-10-12
+a97e2d0cb2f6,agents/doc-change-detection.md,S-if5q2jhk,unlocated:no-match,,,,,2026-10-13
+a97e2d0cb2f6,agents/doc-change-detection.md,S-tyedhnrz,unlocated:no-match,,,,,2026-10-13
+a97e2d0cb2f6,agents/doc-change-detection.md,S-xc5fkeod,unlocated:no-match,,,,,2026-10-13
 aa79c1d5ade6,agents/doc-change-detection.md,S-7ivxsp4z,located,,date;last;lastupdateddat;updat,09e0842d2b7a8ee7,"""lastUpdatedDate"": ""2026-10-09T17:41:00+00:00"",",2026-10-12
 aa79c1d5ade6,agents/doc-change-detection.md,S-7n65j7bo,unlocated:no-match,,,,,2026-10-12
 aaa88f7580d0,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 aaa88f7580d0,agents/doc-change-detection.md,S-m7xkty3c,unlocated:no-match,,,,,2026-10-12
 aaa88f7580d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
+aafceaa1e4ff,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Solution,initially;few;increas;minut;plac;second;resolv;time-out,0fea709c17a57d56,"You can place the circuit breaker in the Open state for a few seconds initially. If the failure isn't resolved, increase the time-out to a",2026-10-13
 ab72fb8d60d7,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
+acbb0e1f8477,agents/doc-change-detection.md,S-xc5fkeod,located,Circuit breaker resilience strategy > Defaults > Note > Important,ignor;failureratio;minimumthroughput;samplingduration;throughput;minimum;ratio;sampl,4d85192b9febe242,If the MinimumThroughput is not reached during the SamplingDuration then the FailureRatio is ignored.,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-12
 acfae9242371,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-12
 acfae9242371,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-12
@@ -1484,10 +1507,13 @@ bf004c167f86,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,20
 c111db35dca3,agents/doc-change-detection.md,S-ghhbd6g6,unlocated:no-match,,,,,2026-10-12
 c111db35dca3,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-10-12
 c211c11b0cd6,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors > `404 Not Found` for an existing resource,existenc;avoid;privat;forbidden;instead;confirm;found;repository,00d89c49c030bfae,"If you make a request to access a private resource and your request isn't properly authenticated, you will receive a 404 Not Found response. {%",2026-10-12
+c2dce6186ec9,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 c595f49699d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
+c9782fbdadbd,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > Use meaningful HTTP status codes > Avoid soft 404 errors in single-page apps,impossibl;impractical;meaningful;status;http;code,ee06a7369af55893,using meaningful HTTP status codes can be impossible or impractical,2026-10-13
 cb43a9db108c,agents/doc-change-detection.md,S-7tff4woa,unlocated:no-match,,,,,2026-10-12
 ccf9e285650b,agents/doc-change-detection.md,S-niqtbnmc,unlocated:no-match,,,,,2026-10-12
 cf0730c38941,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-12
+cf94f1842d5e,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Solution,exce;expir;start;proxy;period;timer;number;threshold,18e8368f46a8f4d4,"If the number of recent failures exceeds a specified threshold within a given time period, the proxy is placed into the Open state and starts",2026-10-13
 d0dcb443f677,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
 d0dcb443f677,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
 d0de9a65dd25,agents/doc-change-detection.md,S-wze42rd7,located,Viewing wiki history,commit;messag;user;made;history;chang;wiki,1149162a878c6a8e,Wiki history includes: The user who made the change The commit message they provided,2026-10-12
@@ -1530,6 +1556,7 @@ f8d096540478,agents/doc-change-detection.md,S-7tff4woa,located,,apps;authenticat
 f939a872e323,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
 fa2cb870740e,agents/doc-change-detection.md,S2196,unlocated:gone,,,,,2026-10-12
 fa2cb870740e,agents/doc-change-detection.md,S-2r7j5aw2,unlocated:no-match,,,,,2026-10-12
+fb7acfd5cce7,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > How Google processes JavaScript,queu;status;http;code;render;googl;page,f62a56c761d1af52,Googlebot queues all pages with a 200 HTTP status code for rendering,2026-10-13
 fe90da5dc6b5,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-12
 ffc6fc39c93d,agents/doc-change-detection.md,S-g3ciqhyh,located,Avoid polling > Use conditional requests,authoriz;correctly;against;count;primary;authorization;conditional;endpoint,bc2c6381efa0fd24,Making a conditional request does not count against your primary rate limit if a 304 response is returned and the request was made while correctly,2026-10-12
 1674bc8cf9a9,agents/doc-lookup-sources.csv,S2185,unlocated:no-match,,,,,2026-10-12
@@ -2818,6 +2845,7 @@ aaf19e2707d3,arch/gitlab-ci-components.md,S1701,unlocated:no-match,,,,,2026-10-1
 c2ee83703bb1,arch/gitlab-ci-components.md,S1700,located,CI/CD components > Component project > Directory structure,subdirectory;template.yml;yml;templat;name;component,40ab1ecb7f284a7f,"Component filenames and subdirectory names can contain letters, numbers, underscores (), hyphens (-), and periods (.). For example, templates/secret-detection.enterprise.yml and templates/secret-detection.enterprise/template.yml are valid component filenames.",2026-10-10
 cfcfab2aa0b1,arch/gitlab-ci-components.md,S1700,unlocated:no-match,,,,,2026-10-10
 ff267c8143db,arch/gitlab-ci-components.md,S447,located,Keywords > Job keywords > `release` > `release:tag_name`,ci_commit_tag;tag;commit;name;rule,838077d005ecdc96,Use the $CICOMMITTAG CI/CD variable as the tagname. Use rules:if to configure the job to run only for new tags.,2026-10-10
+7cfccebaeadd,arch/http-rate-limit-429-retry-after.md,S-wct3uoax,unlocated:no-match,,,,,2026-10-13
 0737d0e7665e,arch/k8s-gmsa-windows.md,S400,unlocated:no-match,,,,,2026-10-10
 0737d0e7665e,arch/k8s-gmsa-windows.md,S1600,unlocated:no-match,,,,,2026-10-10
 0737d0e7665e,arch/k8s-gmsa-windows.md,S1601,unlocated:no-match,,,,,2026-10-10

@@ -3258,3 +3258,23 @@ _Agent: kb-research_
 - See agents/langgraph.md.
 
 _Agent: kb-research_
+
+## QK-client-rendered-web-page-answer-plain. How does a client-rendered web page, such as a Microsoft Tech Community blog post, answer a plain HTTP fetch with no JavaScript, and what does a soft-404 test compare?
+- Google describes the app shell model, in which "the initial HTML does not contain the actual content" and JavaScript must run to show it, and says single-page apps often cannot set meaningful status codes, which is how soft 404s arise. [DOC S-yrqtp5aq]
+- A plain `GET` of one Tech Community post on 2026-10-13 answered `200` with a shell: the `<title>`, a loading placeholder in `<div id="__next">`, and the post's text only inside a `__NEXT_DATA__` JSON block and the JSON-LD `BlogPosting` description. A made-up sibling answered `302` to the single sign-on login. [DER S1217]
+- The Bar-Yossef soft-404 test fetches the page and a random sibling and compares their content (identical or nearly identical, by shingling, or the same redirect target). [DOC S-xc4ibwg4]
+- Conclusion: on a client-rendered host whose server answers every path with the same shell, the test's two texts are equal and empty, so a live page reads as a soft 404; the comparison needs per-page text (title, embedded state, rendered page) and must not treat two empty texts as identical. [DER S-xc4ibwg4, S-yrqtp5aq, S1217: the test applied to the shell]
+- Open: whether the host serves rendered HTML to a crawler's user agent and whether the embedded state is supported. [UNK]
+- See agents/doc-change-detection.md.
+
+_Agent: kb-research_
+
+## QK-long-may-client-remember-that-host. How long may a client remember that a host did not accept connections before it asks again?
+- RFC 8305 (Happy Eyeballs v2) sets no period for remembering a refused or unanswered connection; it covers connection attempt delay and DNS caching. [DER S-tjb5zoq2]
+- Microsoft's Circuit Breaker pattern fails requests while Open, probes after a time-out in Half-Open, and suggests "a few seconds initially" then "a few minutes", with no number. [DOC S-tyedhnrz]
+- Polly's circuit breaker defaults to a 5 second break; Envoy's outlier detection ejects a host for 30 seconds times the number of ejections, capped at 300 seconds by default. [DOC S-xc5fkeod, S-if5q2jhk]
+- Conclusion: no standard fixes the time; libraries and proxies use seconds that grow with repeated failures up to minutes, end on the first success, and let a server's own `Retry-After` replace the default. [DER S-tyedhnrz, S-xc5fkeod, S-if5q2jhk, S-tjb5zoq2]
+- Open: a documentation provider's own statement of how soon to retry after a refused connection. [UNK]
+- See agents/doc-change-detection.md.
+
+_Agent: kb-research_
