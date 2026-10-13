@@ -341,7 +341,7 @@ EV-passage-compared-section-every-unit-window,which section is a passage that sp
 EV-apply-trusts-section-kept-fact-baseline-newer,when does factdiff apply trust a fact kept by its section as it trusts an unchanged source,tools.md,good,yes,only when the baseline is no newer than the last confirmation,
 EV-stored-revalidation-keeps-lines-of-earlier-questions,does a lookup that prints another fact of a source revalidated moments ago ask the source again,tools.md,good,yes,keeps the lines of its stored result still younger than that window,
 SQ-commit-hook-add-kb-work-trailer,how does the commit hook add the KB-Work trailer on a worker branch,git.md,good,yes,same checks as `check-trailers,
-EV-gate-add-made-blocking-worker-commits-gate-stops,what does a sprint worker do when gate add prints made blocking,backlog.md,good,yes,"a worker whose `gate add` prints `made blocking` commits the gate and stops with a report",
+EV-gate-add-made-blocking-worker-goes-on,what does a sprint worker do when gate add prints made blocking,backlog.md,good,yes,"commits the gate open, goes on with its recommendation, finishes the work on it and reports the gate",
 EV-gate-text-word-token-read-secrets-class,how is the word token in a gate's text read for the secrets class,backlog.md,good,yes,"the word token in a gate's text is a secret word too, except as a model's token count",
 EV-repro-check-programs-check-program-refusal,which programs may a backlog repro or check run,tools.md,good,yes,"a program other than `python3` on a `_tools/` script or inline code",
 EV-gate-add-do-gives-option-its-do-field,how does gate add --do split OPTION=CMD,backlog.md,good,yes,"`--do OPTION=CMD|ID` gives an option its `do` field",
