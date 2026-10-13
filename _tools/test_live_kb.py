@@ -313,7 +313,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -447,6 +447,19 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert by_rel["dsc/e2.md"]["outcome"] == "current" and "section is unchanged" in by_rel["dsc/e2.md"]["note"], by_rel["dsc/e2.md"]
     assert by_rel["dsc/f.md"]["outcome"] == "moved" and "sixty days" in by_rel["dsc/f.md"]["passage"], by_rel["dsc/f.md"]
     assert by_rel["dsc/h.md"]["outcome"] == "source-dated only" and "newer than the anchor" in by_rel["dsc/h.md"]["note"], by_rel["dsc/h.md"]
+    # the same baseline, newer than the anchors' confirmation, holds when the page's own content date is no newer than
+    # it (confirmable: the text compared with is no newer than the confirmation), and only then
+    O, Y = "S9990024", "S9990025"
+    urls.update({O: host + "page-o", Y: host + "page-y"})
+    pages.update({urls[s]: (lambda day: lambda h: respond(body=f"---\nupdated_at: {day}\n---\n{sixty}".encode()))(day)
+                  for s, day in ((O, "2026-01-01"), (Y, "2026-01-15"))})
+    state.update({O: base(O), Y: base(Y)})
+    for sid, rel in ((O, "dsc/o.md"), (Y, "dsc/y.md")):
+        for r in factdiff.anchor_rows(sid, [(gfact[0], rel, 5, gfact[1])], {"status": 200, "text": thirty}, "quote", "2026-01-01"):
+            anchors[(r["fact"], r["path"], sid)] = r
+    got = factdiff.revalidate([line("public/" + rel, 5, gfact[0], gfact[1], sid) for sid, rel in ((O, "dsc/o.md"), (Y, "dsc/y.md"))])["lines"]
+    assert got[("public/dsc/o.md", 5)]["outcome"] == "current", got
+    assert got[("public/dsc/y.md", 5)]["outcome"] == "moved" and "sixty days" in got[("public/dsc/y.md", 5)]["passage"], got
     # a page with no words (a client-rendered page's fetch is one newline) is no text to resolve against: its lines read
     # source-dated only though their anchors are located, and no other page is searched for the passage
     Z = "S9990023"
