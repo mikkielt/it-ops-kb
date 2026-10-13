@@ -2,7 +2,7 @@
   "id": "BG-iw3p4sw4",
   "kind": "bug",
   "title": "A lookup's stored revalidation keeps only the last question's lines, so a source past its lifetime is asked again for every new question",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-djl7za6x",
   "priority": "P2",
@@ -55,5 +55,28 @@
     "parked: SP-etslk6yu review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 6 of 19, \"Freshness at lookup: revalidation compares the right window and remembers what it checked\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: the stored result of a source keeps only the last store. Run 2026-10-12 on origin/main: the repro stores {A} then {B} for one source and lookup_cached for A returns None (exit 1): reproduces. The check varies the cache inputs: a stored result older than the reuse window is dropped, not merged, and a changed verdict replaces the stored lines. The test name carries lookup_store_merges_lines_within_reuse_window. Run after BG-f3d6lirf: all change factdiff.py. From the SP-etslk6yu review (factdiff.py lookup_cached, lookup_store): Q1 prints fact A of S and stores A, Q2 prints B and misses, re-asks and stores B, Q3 prints A and re-asks again; the existing test replays identical lines, so it never hits this.",
-  "claimed_by": "orch-djl7za6x"
+  "evidence": {
+    "commit": "16c1c77b4edf68e6c33c62c796faa2e3d6f682ed",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "lookup_store_merges_lines_within_reuse_window"
+        ],
+        "exit": 0,
+        "sha256": "324b1f64264b256f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,time; sys.path.insert(0,'_tools'); import factdiff as f, kbcommon; f.ROOT=kbcommon.root('public'); s='S-review-etslk6yu'; n=time.time(); f.lookup_store(s,{'checked':n,'lines':{'A':{'outcome':'current'}}}); f.lookup_store(s,{'checked':n,'lines':{'B':{'outcome':'current'}}}); sys.exit(0 if f.lookup_cached(s,['A'],3600,n) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
