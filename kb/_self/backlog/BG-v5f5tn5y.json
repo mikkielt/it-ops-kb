@@ -2,7 +2,7 @@
   "id": "BG-v5f5tn5y",
   "kind": "bug",
   "title": "The freshness benchmark's p95 uses round(), which rounds half to even, so the rank is one low for some sample sizes",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-e4fm2ovk",
   "priority": "P3",
@@ -34,5 +34,18 @@
     "parked: SP-etslk6yu review"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 5 of 19, \"Benchmark measurement: percentiles, a comparable router arm, a spend cap that holds and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: the repro runs bench_retrieval.fresh_rows on a fixture of 30 questions with walls 1..30 s and reads the p95_s row. Run at planning on main: p95_s 28.0, exit 1 (rank 28, expected 29). Not in the goal: bench_retrieval.py:124 (verdict p95) floors int(0.95 * n) the same way.",
-  "claimed_by": "orch-e4fm2ovk"
+  "evidence": {
+    "commit": "20019231dbb90217735d10a88e2e0891df4dfb2d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import bench_retrieval as r; rows=[]; b=type('B',(),{'row':lambda s,*a,**k: rows.append(a)})(); r.fresh_rows(b,[{'tally':{},'wall':float(i),'spent':0,'sources':{'live':0,'cached':0,'offline':0}} for i in range(1,31)],{},[],''); p=[x[4] for x in rows if x[3]=='p95_s']; print('p95', p); sys.exit(0 if p==[29.0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "deee7d58be940c76"
+      }
+    ]
+  }
 }
