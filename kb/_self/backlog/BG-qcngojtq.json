@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A question that names a version without its v prefix gets coverage none although the kb spells it v2.1.294",
   "status": "draft",
+  "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,6 +16,12 @@
     ]
   },
   "touches": [
-    "_tools/kbfacts.py"
+    "_tools/kbfacts.py",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-2rh4u36u"
   ]
 }
