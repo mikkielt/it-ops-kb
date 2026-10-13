@@ -250,16 +250,20 @@ def window_sections(anchor, doc, prev):
     """Keys of the sections that hold an anchor's passage. An anchor's `heading` is the path of its window's first unit,
     and a heading line's own unit sits under its parent's path, so a window that starts at a heading line spans its
     parent's section and its own: with the previous text holding the passage, the section of every unit of its window;
-    else (an anchor placed on an earlier text) its `heading` section and every section below it in the current text,
-    which holds any section the window can enter."""
+    else (an anchor placed on an earlier text) its `heading` section, every section below it in the current text and
+    the section of each of the SPAN - 1 units that follow a unit of that path, which holds any section the window can
+    enter (a window that runs from a body into the next heading and its body)."""
     head = (anchor or {}).get("heading") or ""
     if prev is not None and anchor.get("sha") in prev.shas:
         i, k = prev.shas[anchor["sha"]]
         return {section_key(p) for p, _ in prev.units[i:i + k]} | {section_key(head)}
     keys = {section_key(head)}
-    for p, _ in (doc.units if doc is not None else []):
+    us = doc.units if doc is not None else []
+    for i, (p, _) in enumerate(us):
         if not head or p[:200] == head or p[:200].startswith(head + " > "):
             keys.add(section_key(p))
+        if p[:200] == head:
+            keys.update(section_key(q) for q, _ in us[i + 1:i + SPAN])
     return keys
 
 
