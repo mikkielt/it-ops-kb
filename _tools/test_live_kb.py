@@ -736,7 +736,7 @@ def test_lookup_eval_fails_on_a_phrase_the_self_docs_do_not_hold(tmp_path):
     assert code == 1 and f"FAIL {row['id']}" in out and "failed=anchor" in out, out[-1500:]
 
 
-def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack(monkeypatch, tmp_path, capsys):
+def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_its_tool_and_prints_coverage_fact_lines_and_pack_freshness_stamp_and_a_pinned_source_of_a_404_repository_is_gone_pinned_repo_gone_and_a_page_whose_other_section_changed_keeps_the_facts_of_the_rest_section_hash_and_a_fact_whose_section_window_starts_at_heading_is_compared_by_every_unit_and_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_resolve_relocates_multi_citation_row_with_its_real_citation_count(monkeypatch, tmp_path, capsys):
     # the scatter check: the verdict benchmark's calibration runs pack over the tuned eval set's good rows and the
     # off-kb list, never over a held-out row, and the counts it prints are those of the notes the packs carry
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
@@ -1045,6 +1045,27 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     assert "sections: changed=1 unchanged=3 (facts kept by section=1)" in capsys.readouterr().out
     head = factdiff.read_log(log)[0]
     assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 3 unchanged"), head
+    # a data row two sources cite is weighed as anchoring weighed it (the cites of Doc.locate's second look): on the
+    # page both pages share, only the real count lets a row with many cells the page lacks relocate as modified
+    old3 = ("# Variables\n\n## SMSInstallUpdateTarget\n\nSpecifies whether the Install Software Updates step installs all updates "
+            "or only the mandatory ones.\n\n## Other\n\n" + " ".join(f"word{i}" for i in range(80)) + ".\n")
+    new3 = old3.replace("only the mandatory ones.", "only the mandatory ones that apply.")
+    absent = " ".join([f"beast{c}" for c in "abcdefghijklmnopqrstuvwxyz"] + [f"critter{c}" for c in "abcdef"])
+    cell = (f"variable=SMSInstallUpdateTarget; read_only_or_settable=settable; type=string; "
+            f"purpose=Install Software Updates step target: all or mandatory; scope={absent}; source_id=S9990003")
+    row3 = [("c3c3c3c3c3c3", "dsc/c.md", 7, cell)]
+    cites = factdiff.cite_counts({sid: row3, "S9990004": row3})
+    assert cites == {("c3c3c3c3c3c3", "dsc/c.md"): 2}
+    assert factdiff.Doc(old3).locate(cell, 1)[0] is None and factdiff.Doc(old3).locate(cell, 2)[0] is not None
+    anchored = factdiff.anchor_rows(sid, row3, {"status": 200, "text": old3}, "quote", "2026-10-01", cites)[0]
+    assert anchored["status"] == "located", anchored
+    pinned = {("c3c3c3c3c3c3", "dsc/c.md", sid): anchored}
+    relocate = lambda counts: [(r["outcome"], r["note"]) for r in factdiff.resolve(  # noqa: E731
+        sid, {"url": url}, "changed", {"text": new3}, {"text": old3}, row3, pinned, prov, None, True, None, counts)[0]]
+    got = relocate(cites)
+    assert [o for o, _ in got] == ["modified"] and "similarity" in got[0][1], got
+    monkeypatch.setattr(factdiff, "elsewhere", lambda *a, **k: ("not-found", "", "no page holds it"))  # the other pages: none asked
+    assert [o for o, _ in relocate(None)] == ["not-found"]  # one citation counted: the second look gives it up
 
 
 def test_unit_cache_prune_drops_old_files_of_other_root_sets_and_shrinks_the_slack_pruned_file(tmp_path, monkeypatch):
