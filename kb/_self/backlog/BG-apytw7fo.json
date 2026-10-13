@@ -2,7 +2,7 @@
   "id": "BG-apytw7fo",
   "kind": "bug",
   "title": "pack's priced note reads any 'how much ... per user, device, month or year' as a money ask, so memory or data quantities get a check: and route split",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,18 @@
     "merged: BG-euirq6se"
   ],
   "notes": "Merged from BG-euirq6se “pack's priced note fires on a unit cost asked as 'how many <units> does X cost', which asks for no money amount” at the 2026-10-13 draft triage: Same PRICE_ASK regex as BG-apytw7fo, same review (SP-4o3plg4l), same fix location. Repro still returns priced=True for the units question; BG-apytw7fo must absorb this question as a second false-priced case. Its goal: a good pack of 'How many resource units does a Graph getMemberGroups call cost?' carries no priced note and no route split, while 'What is the current price of a Microsoft 365 E5 licence?' keeps it (PRICE_ASK exempts a unit only after 'cost ... in'; found by the SP-4o3plg4l review) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.pack('How many resource units does a Graph getMemberGroups call cost?');print(p.get('priced'));sys.exit(1 if p.get('priced') else 0)\"]} Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13 on the base: the repro prints the three false-priced questions and exits 1 (precheck). Depends on nothing; BG-s7du27qb and ST-bbliwg6y follow it (kbfacts.py, test_live_kb.py).",
-  "claimed_by": "orch-enudabdr"
+  "evidence": {
+    "commit": "9afc9b9a74a04f173ebe27dd8d78d9c9722c7247",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kbfacts;bad=[q for q in ('How much memory per device does the Intune agent use?','How much data per month can the Graph usage reports return?','How many resource units does a Graph getMemberGroups call cost?') if kbfacts.pack(q).get('priced')]+[q for q in ('How much is a Microsoft 365 E5 licence per user per month?','What is the current price of a Microsoft 365 E5 licence?') if not kbfacts.PRICE_ASK.search(q)];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
