@@ -2,7 +2,7 @@
   "id": "ST-gcorm7uc",
   "kind": "story",
   "title": "Research sprint goal: Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-honlhzdc",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/_gaps.md"
   ],
-  "notes": "Planned at the 2026-10-13 sprint plan: the goal's four questions ran through rag.py pack -q (plugin install from a marketplace, CMPivot query timeout, SessionEnd hooks budget, where Entra holds a BitLocker recovery key) and all four are coverage good (public/claude/plugins.md, public/mecm/cmpivot.md:42-43, public/claude/hooks.md:65, public/windows/bitlocker.md). The sprint edits pool rows and report text, so its done needs 'No outside facts: every question of the goal is coverage good in the kb (plugins.md, cmpivot.md, hooks.md, bitlocker.md); the sprint changes benchmark pool rows, tools and report text only'."
+  "notes": "Planned at the 2026-10-13 sprint plan: the goal's four questions ran through rag.py pack -q (plugin install from a marketplace, CMPivot query timeout, SessionEnd hooks budget, where Entra holds a BitLocker recovery key) and all four are coverage good (public/claude/plugins.md, public/mecm/cmpivot.md:42-43, public/claude/hooks.md:65, public/windows/bitlocker.md). The sprint edits pool rows and report text, so its done needs 'No outside facts: every question of the goal is coverage good in the kb (plugins.md, cmpivot.md, hooks.md, bitlocker.md); the sprint changes benchmark pool rows, tools and report text only'.",
+  "claimed_by": "orch-honlhzdc"
 }
