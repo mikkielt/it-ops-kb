@@ -1,0 +1,20 @@
+{
+  "id": "SP-7ff7c5ui",
+  "kind": "sprint",
+  "title": "Lookup terms and benchmark statistics: build numbers, bare versions, inert aliases and nearest-rank p95",
+  "status": "planned",
+  "goal": "terms keeps a build number whole (26100 is not indexed as 2610); a version asked without its v prefix finds the facts that spell it v2.1.294; every aliases.csv row expands to its canonical; the benchmarks take p95_ms at the nearest rank (verdict scenario and bench_core.stat_rows); fact_for's pick for the SubagentStart/SubagentStop case holds agent_transcript_path; a suite test runs scenario_pack's check route and FRESH_CHECK; _self eval rows test the --do split rule and the token-count exceptions",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
