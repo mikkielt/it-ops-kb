@@ -2,7 +2,7 @@
   "id": "BG-4e7ja4zv",
   "kind": "bug",
   "title": "auth/http-message-signatures says no standard operation turns an age X25519 identity into a signing key and omits XEdDSA",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tcis5f23",
   "priority": "P2",
   "rank": 0,
@@ -65,5 +65,6 @@
   "links": [
     "parked: SP-up5wchen review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: kb/public/auth/http-message-signatures.md line 40 says no standard operation turns an age identity into the signing key; XEdDSA appears nowhere in the article or the QK-ed25519 answer. Run 2026-10-12 at planning: grep of both found no XEdDSA; reproduces. Needs a new source for Signal's XEdDSA spec in _sources.csv (so _coverage.csv and _coverage.md via build_index.py); read the spec page before wording the trade-offs."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: kb/public/auth/http-message-signatures.md line 40 says no standard operation turns an age identity into the signing key; XEdDSA appears nowhere in the article or the QK-ed25519 answer. Run 2026-10-12 at planning: grep of both found no XEdDSA; reproduces. Needs a new source for Signal's XEdDSA spec in _sources.csv (so _coverage.csv and _coverage.md via build_index.py); read the spec page before wording the trade-offs.",
+  "claimed_by": "orch-tcis5f23"
 }
