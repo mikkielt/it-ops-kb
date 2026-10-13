@@ -812,6 +812,20 @@ def gate_remove(bl, a):
     return 0
 
 
+def split_do(text, options):
+    """(option, command) of a `--do OPTION=CMD|ID` text, split at the `=` after the longest option it starts with.
+
+    An option's own text may hold `=` (a tests-ceiling answer, `ids=100 files=15`), so the first `=` is not the
+    split; none of the options starting the text is a refusal."""
+    text = text.strip()
+    for opt in sorted(options, key=len, reverse=True):
+        if text.startswith(opt):
+            rest = text[len(opt):].lstrip()
+            if rest.startswith("="):
+                return opt, rest[1:].strip()
+    return None, ""
+
+
 def gate_add(bl, a):
     """gate add: a gate with its question, options and recommendation."""
     iid = need(bl, a.id)
@@ -839,10 +853,10 @@ def gate_add(bl, a):
     if a.do:
         gate["do"] = {}
         for d in a.do:
-            opt, sep, how = d.partition("=")
-            opt, how = opt.strip(), how.strip()
-            if not sep or opt not in options or not how:
-                raise Rejected("gate add: --do OPTION=COMMAND, OPTION one of the --option values")
+            opt, how = split_do(d, options)
+            if opt is None or not how:
+                raise Rejected("gate add: --do OPTION=COMMAND, OPTION one of the --option values, split at the = "
+                               f"after the longest one the text starts with: {'; '.join(options)}")
             try:
                 gate["do"][opt] = how if how in bl.items else parse_cmd(how)
             except ValueError as e:
@@ -1176,7 +1190,8 @@ def args_gate(p):
     p.add_argument("--kind", default="blocking", help="blocking (default) or provisional")
     p.add_argument("--id", dest="gate_id", help="the gate's id (default g1, g2, ...)")
     p.add_argument("--do", action="append", metavar="OPTION=CMD|ID",
-                   help="the command that carries OPTION out, or the id of the item whose work adds it (repeatable)")
+                   help="the command that carries OPTION out, or the id of the item whose work adds it, split at "
+                        "the = after the longest --option value the text starts with (repeatable)")
     p.add_argument("--host-check", help="a command that exits 0 when the host setup the answer names holds here")
     p = gsub.add_parser("remove")
     p.add_argument("id")
