@@ -2,7 +2,7 @@
   "id": "BG-xyxwfiu6",
   "kind": "bug",
   "title": "security/linux-sshd-hardening's summary calls two sshd recommendations Level 2 Server only, though 5.1.8 and 5.1.9 are also Level 1 Workstation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-ajcomz6d review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: linux-sshd-hardening.md line 13 says two sshd recommendations are Level 2 Server only, while its own line 22 grades 5.1.8 and 5.1.9 Level 1 Workstation and Level 2 Server. Run 2026-10-12 at planning: grep shows both lines; the repro fails; reproduces. The edit is the untagged summary line only, so no doc2query rows move."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: linux-sshd-hardening.md line 13 says two sshd recommendations are Level 2 Server only, while its own line 22 grades 5.1.8 and 5.1.9 Level 1 Workstation and Level 2 Server. Run 2026-10-12 at planning: grep shows both lines; the repro fails; reproduces. The edit is the untagged summary line only, so no doc2query rows move.",
+  "claimed_by": "orch-tcis5f23"
 }
