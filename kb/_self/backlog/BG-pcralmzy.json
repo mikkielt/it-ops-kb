@@ -2,7 +2,7 @@
   "id": "BG-pcralmzy",
   "kind": "bug",
   "title": "fetch.py --status reads a source's age from its last check alone, so its STALE column disagrees with what a lookup revalidates",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-vdrsfftl",
   "priority": "P3",
@@ -57,5 +57,27 @@
     "parked: SP-etslk6yu review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 3 of 15, \"Freshness at lookup: revalidation counts, memos, ledger reads and status agree\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise run 2026-10-13: the repro fails on the base (exit 1: fetch.py --status reads age from the last check alone and leaves an age-unknown source not stale, source_freshness counts it stale). The doc check reads only the --status row of tools.md, which says age is the time since its last check. fetch.py's own --help text (the --status paragraph) says the same and is in its touches.",
-  "claimed_by": "orch-vdrsfftl"
+  "evidence": {
+    "commit": "81e4a15f6d18cc5d1d214d20e2d10f30d7ebd609",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; l=[x for x in open('kb/_self/tools.md', encoding='utf-8') if 'fetch.py --status --topic T' in x]; sys.exit(0 if len(l)==1 and 'time since its last check' not in l[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,subprocess,sys; sys.path.insert(0,'_tools'); import kbfacts; p=subprocess.run([sys.executable,'_tools/fetch.py','--status','--json'],capture_output=True,text=True); p.returncode and sys.exit(2); d=json.loads(p.stdout); f=kbfacts.source_freshness([r['id'] for r in d]); bad=[r['id'] for r in d if r['id'] in f and bool(r['stale'])!=bool(f[r['id']]['stale'])]; sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
