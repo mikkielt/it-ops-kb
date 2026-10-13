@@ -1,0 +1,25 @@
+{
+  "id": "BG-npdpbmw2",
+  "kind": "bug",
+  "title": "window_sections' section fallback flips on any sibling heading added or removed on the page, so an unrelated edit marks a fact edited in place",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "With no cached previous text, factdiff.window_sections adds the parent section's key for a unit after the anchor's heading (a sibling's heading line sits under the parent's path), and the parent section's hash covers every sibling heading, so adding, renaming or removing any H2 anywhere on the page fails section_unchanged for every fact under that parent and resolve reports it modified (a lookup prints [moved DATE] edited in place) though its own text and window are unchanged. The fallback compares the sections the window can enter without reading unrelated sibling headings, and an edit to the section immediately after the fact still fails it. Found by the SP-vdrsfftl review of BG-vzsk2t5t.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import factdiff as f; old='# Guide\\n\\n## Alpha\\n\\nAlpha body text here.\\n\\n## Beta\\n\\nBeta body text here.\\n\\n## Gamma\\n\\nGamma body text here.\\n'; new=old+'\\n## Delta\\n\\nA brand new section.\\n'; k=f.window_sections({'heading':'Guide > Alpha','sha':'x'}, f.Doc(new), None); sys.exit(0 if f.section_unchanged(k, f.sections(old), f.sections(new)) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-vdrsfftl review"
+  ]
+}

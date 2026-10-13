@@ -1,0 +1,24 @@
+{
+  "id": "BG-mvfm2wgk",
+  "kind": "bug",
+  "title": "The revalidation's search memo is keyed by the query, not the request, so a second provider's search reuses the first provider's hits",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.search_urls memoizes _searches by the query q while _unanswered is keyed by the expanded request, so a fact citing sources of two providers with a search_api asks only the first provider: the second gets the first's hits, and a first search that got no answer is not held against the second source, which reads not found. The search memo is keyed by the request, so each provider's search is asked once and its own outcome is used. Found by the SP-vdrsfftl review of BG-gx5b2yhu.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0,'_tools'); import factdiff as f, provider as p; seen=[]; p.request=lambda u, **k: seen.append(u) or {'status':200,'body':'{\"results\":[]}','headers':{}}; f.search_urls('Get-Thing returns a value', None, {'search_api':'https://a.example.com/s?q={q}'}, 'https://a.example.com/x'); f.search_urls('Get-Thing returns a value', None, {'search_api':'https://b.example.com/s?q={q}'}, 'https://b.example.com/x'); sys.exit(0 if [u for u in seen if 'b.example.com' in u] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-vdrsfftl review"
+  ]
+}
