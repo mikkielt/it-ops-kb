@@ -263,7 +263,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -407,6 +407,21 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     monkeypatch.setattr(provider, "pacing", lambda row: 3600)
     hints = factdiff.lookup_hints([A, B, C, D], srcs, rows_p)
     assert list(hints) == [B] and hints[B]["outcomes"] == {"current": 2} and hints[B]["checked_utc"][:10] == rev["date"], hints
+    # a lookup that asks only some lines of a source keeps the lines of its stored result still within the window beside
+    # the new ones, with the earlier check time, so another printed fact of it is not asked again and no line outlives
+    # the window of its own check; a result past the window, or one of another verdict, is replaced
+    M, t0 = "S9990098", time.time()
+    keep = lambda lines, at, verdict="unchanged": factdiff.lookup_store(  # noqa: E731
+        M, {"checked": at, "checked_utc": f"u{int(at - t0)}", "verdict": verdict, "lines": {k: {"outcome": "current"} for k in lines}}, 3600)
+    keep(["a"], t0)
+    keep(["b"], t0 + 60)
+    both = factdiff.lookup_cached(M, ["a", "b"], 3600, t0 + 120)
+    assert both and both["checked"] == t0 and both["checked_utc"] == "u0", both
+    assert factdiff.lookup_cached(M, ["a"], 3600, t0 + 3600) is None
+    keep(["c"], t0 + 4000)
+    assert list(factdiff.lookup_cached(M, [], 3600, t0 + 4000)["lines"]) == ["c"]
+    keep(["d"], t0 + 4060, "changed")
+    assert list(factdiff.lookup_cached(M, [], 3600, t0 + 4060)["lines"]) == ["d"]
     monkeypatch.setattr(provider, "request", request)  # the planted pages again, to see which are asked
     monkeypatch.setattr(factdiff, "write_state", lambda *a, **k: None)
     monkeypatch.setattr(factdiff, "select_ids", lambda a, s: [B])

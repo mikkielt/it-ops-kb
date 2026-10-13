@@ -1405,8 +1405,16 @@ def lookup_cached(sid, keys, pace, now):
     return rec if 0 <= age < pace and all(k in rec["lines"] for k in keys) else None
 
 
-def lookup_store(sid, rec):
-    """Keep a revalidation's result; a cache that cannot be written never stops a lookup."""
+def lookup_store(sid, rec, pace=provider.DELAY):
+    """Keep a revalidation's result; a cache that cannot be written never stops a lookup. The lines of the stored result
+    of an earlier revalidation of the source still younger than `pace` seconds (lookup_cached's window) with the same
+    verdict are kept beside `rec`'s, its own winning, and the record keeps that earlier `checked` and `checked_utc`: a
+    line is reused no longer than `pace` after the request that checked it. An older result, or one with another
+    verdict, is replaced."""
+    old = lookup_cached(sid, [], pace, rec["checked"])
+    if old is not None and old.get("verdict") == rec.get("verdict"):
+        rec = {**rec, "checked": old["checked"], "checked_utc": old.get("checked_utc", rec.get("checked_utc", "")),
+               "lines": {**old["lines"], **rec["lines"]}}
     path = lookup_cache_path(sid)
     try:
         os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1547,7 +1555,7 @@ def lookup_root(items, out, day, now, reuse=None):
         cites[(p["key"], kbfacts.bare(p["path"]))] = len(set(p["ids"]))
         for sid in p["ids"]:
             wanted[sid][(p["key"], kbfacts.bare(p["path"]))] = (p["line"], p["text"])
-    got, ask = {}, []
+    got, ask, paces = {}, [], {}
     for sid in sorted(wanted):
         src = srcs.get(sid)
         if src is None or not src.get("url"):
@@ -1556,7 +1564,7 @@ def lookup_root(items, out, day, now, reuse=None):
         if (src.get("superseded_by") or "").strip():
             out["sources"][sid] = {"state": "offline", "verdict": "", "why": f"superseded by {src['superseded_by'].strip()}"}
             continue
-        pace = max(provider.pacing(provider.for_url(src["url"], rows)), (reuse or {}).get(sid, 0))
+        paces[sid] = pace = max(provider.pacing(provider.for_url(src["url"], rows)), (reuse or {}).get(sid, 0))
         rec = lookup_cached(sid, [line_key(rel, k) for k, rel, _, _ in facts], pace, now)
         if rec is not None:
             got[sid] = (rec["lines"], rec.get("verdict", ""), "", rec.get("checked_utc", day), "cached")
@@ -1574,7 +1582,8 @@ def lookup_root(items, out, day, now, reuse=None):
             continue
         stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         lookup_store(sid, {"checked": now, "checked_utc": stamp, "verdict": verdict, "signal": res[1],
-                           "lines": {k: v for k, v in lines.items() if v["outcome"]}})
+                           "lines": {k: v for k, v in lines.items() if v["outcome"]}},
+                     paces[sid])
         got[sid] = (lines, verdict, "", stamp, "live")
     for sid, (lines, verdict, why, stamp, how) in got.items():
         out["sources"][sid] = {"state": how, "verdict": verdict, "why": why, "checked_utc": stamp}
