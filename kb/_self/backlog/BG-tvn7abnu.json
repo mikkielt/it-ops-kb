@@ -2,7 +2,7 @@
   "id": "BG-tvn7abnu",
   "kind": "bug",
   "title": "claude/plugins.csv: marketplace.json and plugin entry name rules and the eval --judge-model default are stale against the live pages",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-gcerxjsg",
   "priority": "P2",
   "rank": 0,
@@ -59,5 +59,36 @@
     "BG-7bpbuz6t"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 11 of 19, \"Content fixes: GitLab and Claude Code articles match their live pages\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Clause 4 (plugins.md:49 already states the new rule) was true at planning on 2026-10-12, so no check of its own fails now; the repro reads the csv rows against it. The csv rows are facts of kb/public/claude/plugins.csv anchored as file=...; field=name units: lines 37 and 86 are unlocated today, and the check on anchors needs all three located after the reword. Premise run at planning 2026-10-12 (precheck): the repro and the two added checks all exit 1 on the base.",
-  "claimed_by": "orch-gcerxjsg"
+  "evidence": {
+    "commit": "33fd9f106d777040d672380896d5f92c4afaa015",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=[l for l in pathlib.Path(\"kb/public/claude/plugins.csv\").read_text().splitlines() if \"claude plugin eval --judge-model\" in l]; sys.exit(0 if ls and not any(\"small fast model\" in l for l in ls) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; sys.path.insert(0,\"_tools\"); import kbfacts; ok={r[\"fact\"] for r in csv.DictReader(open(\"kb/public/_anchors.csv\",encoding=\"utf-8\")) if r[\"status\"]==\"located\"}; want=(\"file=marketplace.json; field=name;\",\"file=plugin entry; field=name;\",\"field=claude plugin eval --judge-model;\"); us=[u for u in kbfacts.units(\"public\") if u[\"path\"].endswith(\"plugins.csv\") and \"claude\" in u[\"path\"]]; sys.exit(0 if all(any(w in u[\"text\"] and kbfacts.fact_key(u[\"text\"]) in ok for u in us) for w in want) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/claude/plugins.csv',encoding='utf-8').read();sys.exit(1 if 'no spaces/control/bidi chars' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
