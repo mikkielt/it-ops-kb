@@ -2,7 +2,7 @@
   "id": "ST-gv2acucc",
   "kind": "story",
   "title": "Detection and census treat a page with no words as the lookup does, or say why they keep the soft-404 verdict",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-srqmriw6",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-u5q37ds3 review"
   ],
-  "notes": "Premise: factdiff.detect_source on a fetched page whose text is one newline (made-up sibling answers the same) gave lookup=True verdict new and lookup=False verdict soft-404, so census.py:950 reports GONE (run 2026-10-13 at base, planted document and sibling; line 1138 reads words_key(text) only when lookup). Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. The test named by the check drives census's check path (census.py:950) as well as detect_source, since the goal names both. Test ids are near the ceiling: extend the existing detect_source test and append the selector words to its name, a new id only when none does."
+  "notes": "Premise: factdiff.detect_source on a fetched page whose text is one newline (made-up sibling answers the same) gave lookup=True verdict new and lookup=False verdict soft-404, so census.py:950 reports GONE (run 2026-10-13 at base, planted document and sibling; line 1138 reads words_key(text) only when lookup). Planned at the 2026-10-13 draft triage (sprint 4 of 15, \"Freshness and census: the down window, the confirmable rule, soft 404s, unlocated anchors and mirror licences\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. The test named by the check drives census's check path (census.py:950) as well as detect_source, since the goal names both. Test ids are near the ceiling: extend the existing detect_source test and append the selector words to its name, a new id only when none does.",
+  "claimed_by": "orch-srqmriw6"
 }
