@@ -2,7 +2,7 @@
   "id": "ST-y45iz7uh",
   "kind": "story",
   "title": "A pack on a host that cannot reach a source's provider gives up fast instead of spending the revalidation budget on every pack",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-u5q37ds3",
   "priority": "P2",
@@ -64,5 +64,19 @@
     "parked: SP-etslk6yu close"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 7 of 19, \"Freshness at lookup: revalidation on HTTP errors, soft 404s, unreachable hosts and a changed registry\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed. Premise: on a host whose provider never connects, every pack asks the provider again. Run 2026-10-12 on the base with a stubbed provider.request answering URLError timeout and a second revalidate (stored results cleared): reproduces, the second pack makes 1 request to the host as the first did. The check names a test that does not exist yet (collects none): the worker extends the pack_revalidate test case with a stubbed connect timeout and names it revalidate_host_down_fast, adding no new test id. The record of a host that failed to connect lives under _cache/ (never committed) with a bounded window; the window's length is a choice for the worker (provider.pacing or the source's lifetime are the existing bounds). kb/_self/tools.md 'Revalidation at question time' names the offline causes: add the skipped host.",
-  "claimed_by": "orch-u5q37ds3"
+  "evidence": {
+    "commit": "db828d887e1eb5ae0d491e0d9e72b90eb2e5a936",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "revalidate_host_down_fast"
+        ],
+        "exit": 0,
+        "sha256": "b9b860dfc419ddd6"
+      }
+    ]
+  }
 }
