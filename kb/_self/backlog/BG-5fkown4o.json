@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kb/public/agents/langgraph.md's install facts (lines 13 and 35) state only what their cited source says: S-v5hqqcqx (https://pypi.org/pypi/langgraph/json) gives version 1.2.14, MIT and the README's 'uv add langgraph', not 'pip install langgraph'; the pip form is dropped or cited to a page that states it, and the facts are re-anchored with factdiff.py anchor --quotes",
+  "goal": "kb/public/agents/langgraph.md's install facts (lines 13 and 35) state only what their cited source says: S-v5hqqcqx (https://pypi.org/pypi/langgraph/json) gives version 1.2.14, MIT and the README's 'uv add langgraph', not 'pip install langgraph'; the pip form is dropped or cited to a page that states it; the orphan S-6buofrld anchor rows, whose source no langgraph.md fact cites, are pruned, and the facts are re-anchored with factdiff.py anchor --quotes",
   "repro": {
     "run": [
       "python3",
@@ -36,6 +36,10 @@
     },
     {
       "clause": "the facts are re-anchored with factdiff.py anchor --quotes",
+      "check": 0
+    },
+    {
+      "clause": "the orphan S-6buofrld anchor rows, whose source no langgraph.md fact cites, are pruned",
       "check": 0
     }
   ],
