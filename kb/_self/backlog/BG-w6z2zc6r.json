@@ -46,7 +46,9 @@
         "all-real-sync"
       ],
       "recommendation": "one-real-sync",
-      "class": "push"
+      "class": "push",
+      "answer": "one-real-sync",
+      "by": "operator"
     }
   ],
   "links": [
