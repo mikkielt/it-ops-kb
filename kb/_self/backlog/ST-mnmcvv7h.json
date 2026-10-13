@@ -2,7 +2,7 @@
   "id": "ST-mnmcvv7h",
   "kind": "story",
   "title": "The source rows whose licence cells say the MicrosoftDocs/memdocs mirror is archived or cite its LICENSE as the CC BY 4.0 grant say what holds now that it answers 404",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
@@ -44,5 +44,27 @@
     "parked: SP-df2cu4uj close"
   ],
   "notes": "Planned at the 2026-10-12 draft triage (sprint 12 of 19, \"Content fixes: answers, conflicts, gaps and source rows say what holds now\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at plan time on the base: 328 rows carry 'MicrosoftDocs/memdocs archived' in a cell and 118 rows read 'memdocs LICENSE' as a CC BY 4.0 licence (the first check exits 1). No row is deleted; reuse cells stay as they are unless the worker's reading of the Learn terms says otherwise.",
-  "claimed_by": "orch-ilqhjn3k"
+  "evidence": {
+    "commit": "4d2a26db26bf92b255496251797433467c53de27",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.exit(1 if 'MicrosoftDocs/memdocs archived' in open('kb/public/_sources.csv', encoding='utf-8').read() else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys;r=[x for x in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8')) if 'memdocs' in x['licence'] and 'CC BY 4.0' in x['licence'] and '404' not in x['licence']];print('memdocs CC BY 4.0 licence cells without 404:',len(r));sys.exit(1 if r else 0)"
+        ],
+        "exit": 0,
+        "sha256": "cce638353eb98e42"
+      }
+    ]
+  }
 }
