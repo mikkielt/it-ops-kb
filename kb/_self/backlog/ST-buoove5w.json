@@ -2,7 +2,7 @@
   "id": "ST-buoove5w",
   "kind": "story",
   "title": "Review sprint: Gates and filing: a misclassified gate does not stop a worker, and a refused repro is refused when filed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uzwbt63u",
   "review": true,
   "priority": "P1",
@@ -24,5 +24,26 @@
     }
   ],
   "notes": "Review 2026-10-13 (fresh-context headless Sonnet reviewer, read-only worktree): 5 gaps. S1 (orchestrator as operator, conservative on the secrets class): BG-wuwypj42 in this sprint. Parked: ST-25gqgwl7 (new accepts a trivial check), ST-nq4pme2q (kb-item skill still says stop), ST-4ozfackz (eval rows for the new rules). Not filed: ST-piqs2azs's goal still says '(or at the last =)' while g1 chose refuse; behaviour matches g1 and the item file is deleted at close. No provisional answers to confirm: every gate of the sprint was answered by operator.",
-  "claimed_by": "orch-uzwbt63u"
+  "evidence": {
+    "commit": "730b4f5272cee6f25d39198d74b5d0bdae2fa4ce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "9e9207b1c0224a6e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "293b9303fc2a22cb"
+      }
+    ]
+  }
 }
