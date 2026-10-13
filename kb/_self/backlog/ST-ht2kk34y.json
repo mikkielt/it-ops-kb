@@ -48,7 +48,9 @@
         "absolute path"
       ],
       "recommendation": "relative to the checkout",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "relative to the checkout",
+      "by": "operator"
     }
   ],
   "links": [
