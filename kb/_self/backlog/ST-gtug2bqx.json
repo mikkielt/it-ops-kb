@@ -2,7 +2,7 @@
   "id": "ST-gtug2bqx",
   "kind": "story",
   "title": "benchmarks.md says the 2026-10-12 freshness p95 is the rounded rank and the 2026-09-28 kb-lookup-agent runs had two or three requests",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-4nl2jr4q",
   "sprint": "SP-honlhzdc",
   "priority": "P3",
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-e4fm2ovk review"
   ],
-  "notes": "Premise: bench_retrieval.py now takes the freshness p95 at the nearest rank (walls[ceil(0.95*n)-1], BG-v5f5tn5y) while benchmarks.md still gives the record's 7.88 s (n=54) and 7.38 s (code.claude.com, n=17) with no mark, and its kb-lookup-agent bullet (line 774) says 'at three requests each' where line 1011 says 2 to 3 requests: the check fails on 2026-10-13. Edit the report text only: no figure of benchmarks.csv moves, so README.md stays out of touches. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed."
+  "notes": "Premise: bench_retrieval.py now takes the freshness p95 at the nearest rank (walls[ceil(0.95*n)-1], BG-v5f5tn5y) while benchmarks.md still gives the record's 7.88 s (n=54) and 7.38 s (code.claude.com, n=17) with no mark, and its kb-lookup-agent bullet (line 774) says 'at three requests each' where line 1011 says 2 to 3 requests: the check fails on 2026-10-13. Edit the report text only: no figure of benchmarks.csv moves, so README.md stays out of touches. Planned at the 2026-10-13 draft triage (sprint 5 of 15, \"Benchmark pool rows: answer regexes, stale rows, the gap row, a pool build that asks before paying and a corrected report\"): it serves the fitness tests of EP-gzr4mmkm: a lookup's verdict or the benchmark's measurement is wrong until it is fixed.",
+  "claimed_by": "orch-honlhzdc"
 }
