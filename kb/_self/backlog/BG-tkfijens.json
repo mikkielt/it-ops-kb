@@ -2,7 +2,7 @@
   "id": "BG-tkfijens",
   "kind": "bug",
   "title": "kb/public/_answers.md gives the os.copy_file_range EXDEV mapping without its Linux kernel older than 5.3 condition",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,

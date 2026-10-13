@@ -2,7 +2,7 @@
   "id": "BG-lcp6dhpz",
   "kind": "bug",
   "title": "The Sonnet 5.5 cache-read conflict's resolution says older runs are re-priced at 0.10, while bench_core.READ_BEFORE keeps them at 0.20",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,

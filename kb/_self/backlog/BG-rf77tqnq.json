@@ -2,7 +2,7 @@
   "id": "BG-rf77tqnq",
   "kind": "bug",
   "title": "dhcp-failover.md states only the cmdlet reference's reading of which server -ServerRole Standby makes the standby, though its conflict entry says the kb states both",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
   "rank": 0,

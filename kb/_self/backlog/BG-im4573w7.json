@@ -2,7 +2,7 @@
   "id": "BG-im4573w7",
   "kind": "bug",
   "title": "_answers.md still calls --max-budget-usd a hard cost cap and tags the archived memdocs as DOC on the dead rows S-rgpijsmb and S-yuwxbqz3",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",

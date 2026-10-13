@@ -2,7 +2,7 @@
   "id": "BG-4lfjabfo",
   "kind": "bug",
   "title": "agents/doc-lookup-sources.md tags as DOC on one Wayback capture that the archive holds no other capture, and tags the 404 probes DER on sources that do not hold them",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-lk5qdhah",
   "sprint": "SP-ilqhjn3k",
   "priority": "P3",
