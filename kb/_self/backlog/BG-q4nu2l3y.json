@@ -1,0 +1,18 @@
+{
+  "id": "BG-q4nu2l3y",
+  "kind": "bug",
+  "title": "claude/hooks.md:127 says WebFetch runs its prompt on the page with a small, fast model, which the tools reference no longer says (a separate model call for most fetches)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "claude/hooks.md:127 states what the tools reference's WebFetch section says on 2026-10-13: the prompt runs in a separate model call for most fetches, a page is read up to 100,000 characters per call, and a redirect to another host returns the original and target urls, and its anchor is re-taken",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; t=open('kb/public/claude/hooks.md',encoding='utf-8').read(); sys.exit(1 if 'with a small, fast model' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a stated fact in an article, so no tool run shows it; the text check reads the one phrase the tools reference no longer holds"
+}
