@@ -1,0 +1,22 @@
+{
+  "id": "ST-nx3dka7r",
+  "kind": "story",
+  "title": "A content item's goal wording about what a source says is read against that source before the start gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The sprint plan step for a content item whose goal states what a cited source says reads that wording against the source before the start gate, so ST-bam42y6i's goal phrase that only rustc_fingerprint fails, which the pinned Cargo source does not show, is rewritten at planning, not found by the SP-uvz65lvm review",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'read against the source it cites' in open('kb/_self/backlog.md').read() else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-uvz65lvm close"
+  ],
+  "notes": "SP-uvz65lvm retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+}

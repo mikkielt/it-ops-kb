@@ -1,0 +1,23 @@
+{
+  "id": "ST-2g6qd22j",
+  "kind": "story",
+  "title": "land finishes its after-push steps, or names the one that failed, when kbgit.py sync --push exits 0",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "After a push step that exits 0, land fast-forwards the orchestrator branch and deletes the work branch, or prints the failing after-push step and its error, so BG-prsp6j2z's land in SP-uvz65lvm (push exit 0 after 150 s, land.end exit 1, no after-step line) needs no second run to clean up",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_after_push_step_named"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-uvz65lvm close"
+  ],
+  "notes": "SP-uvz65lvm retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+}

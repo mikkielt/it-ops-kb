@@ -1,0 +1,23 @@
+{
+  "id": "ST-cbua42er",
+  "kind": "story",
+  "title": "A content-only item's brief says the sync gate runs the suite, so its worker does not run the whole tests.py",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "brief prints, for an item whose touches are kb content only, that kbgit.py sync runs the suite without the git scenarios and the worker runs no whole tests.py, so SP-uvz65lvm's content workers do not each spend two 25 to 31 s suite runs refused at the darwin ceiling",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_content_item_no_suite"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-uvz65lvm close"
+  ],
+  "notes": "SP-uvz65lvm retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+}

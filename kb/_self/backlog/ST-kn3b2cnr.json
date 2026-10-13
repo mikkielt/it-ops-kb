@@ -1,0 +1,23 @@
+{
+  "id": "ST-kn3b2cnr",
+  "kind": "story",
+  "title": "done's ledger guard accepts the anchor rows an anchor --file run prunes or re-anchors for an article the goal names",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "An _anchors.csv row added, dropped or changed for a fact of an article the item's goal names by path passes done's ledger rows check, so BG-xweoljdy's per-file anchor runs in SP-uvz65lvm land without 44 source ids pasted into its goal",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_ledger_anchor_named_article"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-uvz65lvm close"
+  ],
+  "notes": "SP-uvz65lvm retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+}
