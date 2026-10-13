@@ -2,7 +2,7 @@
   "id": "ST-rxqw57dk",
   "kind": "story",
   "title": "Review sprint: Workers finish within their turn cap and their brief: commit before the cap, a cap that fits, siblings' docs, no shared stash",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-mujl7ebh",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-mujl7ebh"
+  "evidence": {
+    "commit": "5869677a81d7112c80dcbe66b27e1b68a6669ba0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b2ca535a76204d5b"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f0e1bbbe82217c48"
+      }
+    ]
+  }
 }
