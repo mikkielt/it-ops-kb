@@ -121,7 +121,9 @@
         "refuses"
       ],
       "recommendation": "reads no coverage, says so and keeps the work-commit rule, as the knowledge state does",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "reads no coverage, says so and keeps the work-commit rule, as the knowledge state does",
+      "by": "operator"
     }
   ],
   "links": [
