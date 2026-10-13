@@ -6394,10 +6394,34 @@ d5ca5304a9a0,gitlab/detecting-mr-merges-in-ci.md,S-ijtwicvp,unlocated:no-match,,
 e7ce6a5d4ee1,gitlab/detecting-mr-merges-in-ci.md,S-hvhro6n5,unlocated:no-match,,,,,2026-10-10
 e7ce6a5d4ee1,gitlab/detecting-mr-merges-in-ci.md,S-mogzcl4y,unlocated:fetch-error,,,,,2026-10-10
 f868446b2797,gitlab/detecting-mr-merges-in-ci.md,S-a3twjpzx,located,Checkout v4,singl;history;depth;fetch-depth;tags;commit;branch;fetch,fe58e9c560313a1a,"This action checks-out your repository under $GITHUBWORKSPACE, so your workflow can access it. Only a single commit is fetched by default, for the ref/SHA that",2026-10-10
+076b84681222,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,located,------------------------ >8 ------------------------,match;added;already;index;without;record;pathspec;chang,76d765485b297f53,without recording the changes already added to the index,2026-10-13
+095adbcb6318,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,unlocated:no-match,,,,,2026-10-13
+095adbcb6318,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-13
+1910517786ab,gitlab/git-commit-paths-and-symlinks.md,S-eud6nij7,unlocated:no-match,,,,,2026-10-13
+1910517786ab,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,unlocated:no-match,,,,,2026-10-13
+1910517786ab,gitlab/git-commit-paths-and-symlinks.md,S-piib4adi,unlocated:no-match,,,,,2026-10-13
+229dce7cceeb,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,located,,during;partial;cannot;merg;commit,f05e5098ba6fbcd9,cannot do a partial commit during a merge.,2026-10-13
+2e85ba8333c4,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,located,,union;tree;path;head;index,2f2ad555355325fa,Take a union of paths in the index and the named tree,2026-10-13
+3a289ceeb1b6,gitlab/git-commit-paths-and-symlinks.md,S-4aovy2cm,unlocated:no-match,,,,,2026-10-13
+3a289ceeb1b6,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-13
+44c9415d5846,gitlab/git-commit-paths-and-symlinks.md,S-eud6nij7,located,,pathspec,c09f1658b99b6023,"PATHSPECSYMLINKLEADINGPATH, prefix, argv);",2026-10-13
+66ca20114082,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-13
+715d92ae866f,gitlab/git-commit-paths-and-symlinks.md,S-piib4adi,located,,beyond;link;symbolic;pathspec,163df1d3c2a9f61d,pathspec '%s' is beyond a symbolic link,2026-10-13
+786f6457ac91,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,located,,pathspec_prefer_full;prefer;full;pathspec;pars,91b836ca977652c2,"parsepathspec(&pathspec, 0, PATHSPECPREFERFULL, prefix, argv);",2026-10-13
+8fd8c000006e,gitlab/git-commit-paths-and-symlinks.md,S-4aovy2cm,unlocated:no-match,,,,,2026-10-13
+8fd8c000006e,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-13
+9bf46f43570f,gitlab/git-commit-paths-and-symlinks.md,S-xixlwvap,located,,link;symbolic;valu;field,14ceb9c0914b8306,Symbolic links and gitlinks have value 0 in this field.,2026-10-13
+dc85aa9047b2,gitlab/git-commit-paths-and-symlinks.md,S-zflhytlw,located,,plain;small;out;link;updat;text;check;fals,0d8c0d6aff6cf835,symbolic links are checked out as small plain files that contain the link text,2026-10-13
+df0763492432,gitlab/git-commit-paths-and-symlinks.md,S-4aovy2cm,located,,target;link;content,b578f9d16cad75c0,"A symlink, the content of the file will be the link target.",2026-10-13
+f3cbf6777abc,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,located,,sens;make;includ;path,d0acbeb44d4fb056,No paths with --include/--only does not make sense.,2026-10-13
+f5a62389cd1c,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,located,------------------------ >8 ------------------------,updat;work;content;tree;commit,daf0e17baac2be56,the updated working tree contents,2026-10-13
+fb3d1eee5a4b,gitlab/git-commit-paths-and-symlinks.md,S-kg2qicnp,unlocated:no-match,,,,,2026-10-13
+fb3d1eee5a4b,gitlab/git-commit-paths-and-symlinks.md,S-ziyhuwyc,unlocated:no-match,,,,,2026-10-13
 0660886216e7,gitlab/git-history-queries.md,S-gpllp4ih,unlocated:no-match,,,,,2026-10-10
 0e5577986c2c,gitlab/git-history-queries.md,S-hpl22yvu,unlocated:no-match,,,,,2026-10-10
 1d028d78787a,gitlab/git-history-queries.md,S-45u5kgbq,located,,renam;work;singl;follow;history;file,f733ea451933bb25,--follow:: Continue listing the history of a file beyond renames (works only for a single file).,2026-10-10
 1d028d78787a,gitlab/git-history-queries.md,S-kr4uocm7,located,,across;history;report;whil;follow;renam;log;file,e3e754f2b6f84ea5,"ifdef::git-log[] If generating diffs, detect and report renames for each commit. For following files across renames while traversing history, see",2026-10-10
+33c679e8a6ea,gitlab/git-history-queries.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-13
 48e2777168fb,gitlab/git-history-queries.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-10
 48e2777168fb,gitlab/git-history-queries.md,S-kr4uocm7,unlocated:no-match,,,,,2026-10-10
 60868100c9b0,gitlab/git-history-queries.md,S-vk5alhjj,unlocated:no-match,,,,,2026-10-10
@@ -6407,10 +6431,17 @@ f868446b2797,gitlab/detecting-mr-merges-in-ci.md,S-a3twjpzx,located,Checkout v4,
 746579e48f6b,gitlab/git-history-queries.md,S-kr4uocm7,located,,list;commit;file,8bca7f76d0f18dbf,Cause combined diffs (used for merge commits) to list the name of the file from all parents.,2026-10-10
 88203c892469,gitlab/git-history-queries.md,S-hpl22yvu,unlocated:no-match,,,,,2026-10-10
 88203c892469,gitlab/git-history-queries.md,S-kr4uocm7,unlocated:no-match,,,,,2026-10-10
+93c84f1d9b19,gitlab/git-history-queries.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-13
+93c84f1d9b19,gitlab/git-history-queries.md,S-kr4uocm7,unlocated:no-match,,,,,2026-10-13
 9889b5cc4f1a,gitlab/git-history-queries.md,S-45u5kgbq,unlocated:no-match,,,,,2026-10-10
 9889b5cc4f1a,gitlab/git-history-queries.md,S-vk5alhjj,unlocated:no-match,,,,,2026-10-10
+aae4cba5b0f5,gitlab/git-history-queries.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-13
 adb644ea5430,gitlab/git-history-queries.md,S-kr4uocm7,unlocated:no-match,,,,,2026-10-10
 b848be8c414f,gitlab/git-history-queries.md,S-kr4uocm7,unlocated:no-match,,,,,2026-10-10
+cb1eda3bdec0,gitlab/git-history-queries.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-13
+cb1eda3bdec0,gitlab/git-history-queries.md,S-zwbgb73y,unlocated:no-match,,,,,2026-10-13
+ccb311a224bc,gitlab/git-history-queries.md,S-dwkxab7d,located,,consideration;entirely;remov,fc3cceb3f82be80a,removed B from consideration entirely,2026-10-13
+ce074546d251,gitlab/git-history-queries.md,S-zwbgb73y,located,,parent,824efd8654cc3fbf,while (commit->parents != parent),2026-10-13
 dbe99e15b583,gitlab/git-history-queries.md,S-kr4uocm7,located,,imag;post;post-imag;name-only;tree;each;name;chang,158cc76b18e473e3,--name-only:: Show only the name of each changed file in the post-image tree.,2026-10-10
 f4bd03f30376,gitlab/git-history-queries.md,S-45u5kgbq,unlocated:no-match,,,,,2026-10-10
 f4bd03f30376,gitlab/git-history-queries.md,S-dwkxab7d,unlocated:no-match,,,,,2026-10-10

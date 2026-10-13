@@ -3436,3 +3436,15 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-git-record-change-under-symlinked-path. Does git record a change under a symlinked path as the link path or the file it resolves to, how does `git log` with a pathspec report a file a branch added and removed again, and does `git commit --only` commit only the named paths?
+- A symbolic link is an entry of its own: mode `120000` in a tree, with the link target as the object's content, and a "symbolic link" object type in the index. [DOC S-4aovy2cm, S-xixlwvap]
+- `git add` parses its pathspec with the symlink-leading-path flag and dies with "pathspec '%s' is beyond a symbolic link"; `builtin/commit.c` does not name the flag. [CODE S-piib4adi, S-eud6nij7, S-kg2qicnp]
+- `git commit <pathspec>` and `--only` commit the working tree contents of the named paths and disregard what is staged for other paths; the paths are looked up in the index and HEAD's tree, and a partial commit is refused during a merge, a cherry-pick and a rebase. [DOC S-ziyhuwyc; CODE S-kg2qicnp]
+- With a path limiter, the default history mode follows only the first parent a merge is TREESAME to, and `--full-history` follows all parents. [DOC S-dwkxab7d; CODE S-zwbgb73y]
+- One run on git 2.50.1 (Apple Git-155, macOS, 2026-10-13): an edit made through a file link showed as the resolved path and not as the link; `git commit --only <link>` committed nothing; a side branch's add and delete of a file showed in `git log -- <path>` only on the branch or with `--full-history` once merged by a merge commit. [DER S-4aovy2cm, S-ziyhuwyc, S-dwkxab7d: the run read against the documented rules]
+- Conclusion: a change under a symlinked path is recorded on the file the link resolves to, and the link's own path changes only when its target text or type does; `git log -- <path>` reports an added-and-removed file's two commits only where the walk reaches the branch (a ref, a linear history, or `--full-history`); and `git commit -- <paths>` commits only the named tracked paths, leaves other staged paths staged and refuses an untracked path. [DER S-4aovy2cm, S-ziyhuwyc, S-kg2qicnp, S-dwkxab7d, S-zwbgb73y]
+- Open: Git for Windows, `core.symlinks=false`, and git versions other than 2.50.1 were not run; no page states the path-beyond-a-link refusal. [UNK]
+- See gitlab/git-commit-paths-and-symlinks.md, gitlab/git-history-queries.md.
+
+_Agent: kb-research_
