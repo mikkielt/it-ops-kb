@@ -2,7 +2,7 @@
   "id": "BG-pvreiy2w",
   "kind": "bug",
   "title": "The QK-postgres-envelope answer tags a DEK per scope as DOC, though Google's page says a new DEK per write and per-scope keys are the topic's own derivation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tcis5f23",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-up5wchen review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.\n\nPremise: _answers.md line 3039 (QK-postgres-envelope) tags \"a DEK per scope\" [DOC S-yvalenhr], while the article's line 33 tags the per-site layout DER and line 30 gives Google's new DEK per write. Run 2026-10-12 at planning: the repro fails (the line carries both the phrase and the DOC tag); reproduces. If doc2query stale goes red after the edit, prune and add expansions.csv to the touches first."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 9 of 19, \"Content fixes: auth, encryption and Linux hardening articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.\n\nPremise: _answers.md line 3039 (QK-postgres-envelope) tags \"a DEK per scope\" [DOC S-yvalenhr], while the article's line 33 tags the per-site layout DER and line 30 gives Google's new DEK per write. Run 2026-10-12 at planning: the repro fails (the line carries both the phrase and the DOC tag); reproduces. If doc2query stale goes red after the edit, prune and add expansions.csv to the touches first.",
+  "claimed_by": "orch-tcis5f23"
 }
