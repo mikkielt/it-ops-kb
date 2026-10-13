@@ -72,6 +72,18 @@
       "class": "agents-rule",
       "answer": "skill-names-paths",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which facts does factdiff.py anchor --file re-anchor, and when does it narrow?",
+      "options": [
+        "no-row-or-quoted-file-alone",
+        "no-row-or-quoted-any-selector",
+        "all-facts-of-file"
+      ],
+      "recommendation": "no-row-or-quoted-file-alone",
+      "class": "agents-rule"
     }
   ],
   "links": [
