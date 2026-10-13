@@ -2,7 +2,7 @@
   "id": "ST-pwosmcdj",
   "kind": "story",
   "title": "An operational story finished by a query-log delivery can be done, not only dropped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sqgyoiaz",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,6 @@
     "parked: SP-kwi4ilty close",
     "merged: ST-vu4xal5j"
   ],
-  "notes": "Filed at the SP-kwi4ilty close (ST-rtzdy4nm was dropped because done refused it). Merged at the 2026-10-12 draft triage from ST-vu4xal5j: land stopped at checks for BG-ckrasbdn in SP-kwi4ilty from the same cause, evidence only a query-log delivery after the merge can make; one precheck warning, the remedy text of the first clause. The delivery commit carries the trailer KB-Auto: querylog and no KB-Work. precheck lives in bl_land.cmd_precheck, so the merged story's bl_plan.py touch became bl_land.py. Gate answered at planning: delivery-evidence.\nPremise: done --dry-run on a throwaway project (a claimed story touching kb/_querylog/** and a commit with trailer KB-Auto: querylog changing a file there) exits 1 with 'no commit on HEAD carries the trailer KB-Work', and precheck on a planted bug whose repro text reads kb/_querylog prints no warning (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Filed at the SP-kwi4ilty close (ST-rtzdy4nm was dropped because done refused it). Merged at the 2026-10-12 draft triage from ST-vu4xal5j: land stopped at checks for BG-ckrasbdn in SP-kwi4ilty from the same cause, evidence only a query-log delivery after the merge can make; one precheck warning, the remedy text of the first clause. The delivery commit carries the trailer KB-Auto: querylog and no KB-Work. precheck lives in bl_land.cmd_precheck, so the merged story's bl_plan.py touch became bl_land.py. Gate answered at planning: delivery-evidence.\nPremise: done --dry-run on a throwaway project (a claimed story touching kb/_querylog/** and a commit with trailer KB-Auto: querylog changing a file there) exits 1 with 'no commit on HEAD carries the trailer KB-Work', and precheck on a planted bug whose repro text reads kb/_querylog prints no warning (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-sqgyoiaz"
 }
