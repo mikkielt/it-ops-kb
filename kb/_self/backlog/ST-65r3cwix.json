@@ -83,7 +83,9 @@
         "all-facts-of-file"
       ],
       "recommendation": "no-row-or-quoted-file-alone",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "no-row-or-quoted-file-alone",
+      "by": "operator"
     }
   ],
   "links": [
