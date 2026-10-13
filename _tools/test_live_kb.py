@@ -263,7 +263,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -395,6 +395,18 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert by_rel["dsc/e2.md"]["outcome"] == "current" and "section is unchanged" in by_rel["dsc/e2.md"]["note"], by_rel["dsc/e2.md"]
     assert by_rel["dsc/f.md"]["outcome"] == "moved" and "sixty days" in by_rel["dsc/f.md"]["passage"], by_rel["dsc/f.md"]
     assert by_rel["dsc/h.md"]["outcome"] == "source-dated only" and "newer than the anchor" in by_rel["dsc/h.md"]["note"], by_rel["dsc/h.md"]
+    # a page with no words (a client-rendered page's fetch is one newline) is no text to resolve against: its lines read
+    # source-dated only though their anchors are located, and no other page is searched for the passage
+    Z = "S9990023"
+    urls[Z] = host + "page-z"
+    pages[urls[Z]] = lambda h: respond(body=b"\n")
+    state[Z] = factdiff.baseline(Z, urls[Z], when, provider.providers())
+    for r in factdiff.anchor_rows(Z, [(k, "dsc/z.md", ln, t) for k, ln, t in facts], {"status": 200, "text": old}, "quote", "2026-10-01"):
+        anchors[(r["fact"], r["path"], Z)] = r
+    asked.clear()
+    blank = factdiff.revalidate([line("public/dsc/z.md", ln, k, t, Z) for k, ln, t in facts[:4]])
+    assert [blank["lines"][("public/dsc/z.md", ln)]["outcome"] for ln in (5, 6, 7, 8)] == ["source-dated only"] * 4, blank
+    assert not any("api/search" in u or u.startswith(host + "audit") for u in asked), asked
     # the search answering an HTTP error is no answer: a passage gone from its page and not found elsewhere keeps the
     # offline stamp (no outcome, the request named), for each printed line asking it; a line resolved in place is unaffected
     K = "S9990020"
