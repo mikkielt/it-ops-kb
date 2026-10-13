@@ -1,7 +1,9 @@
 """`backlog.py land ID` end to end in a scenario clone, in three scenarios on three workers (a class each), and the step
 that frees a worker's worktree in a fourth class. One: an item whose branch sits in a finished worker's worktree that holds an untracked intake draft lands on origin/main: `land` moves
 the draft aside and says so, and still refuses any other untracked file; a research story's `done` needs its note on
-outside facts. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
+outside facts; a checkout that holds commits of its own names them before the push, as staying local, and after it
+rebases those that change item files only onto origin/main, or names the `git rebase` command for one that changes
+another file. Two: a commit of an item that changes a mapped tool and no doc is refused at `done` with stale-docs, and a
 `Self-Reviewed:` trailer naming the docs clears that; an item whose check fails stops `land` at its step and leaves
 origin/main where it was; a content landing that adds a CODE tag with no pointer to an article stops at step `lint`,
 which ran on that article's path alone, and a stop at a step after land removed the finished worker's worktree (that
@@ -96,14 +98,16 @@ def planned(scenario, *stories, hooks=True):
 # One class each: tests.py hands pytest-xdist whole scopes (a file, or a class in it), so the two scenarios run on
 # two workers instead of one after the other.
 class TestLandedItem:
-    def test_land_moves_intake_draft_then_fast_forwards_and_done_checks_notes(self, scenario, tmp_path):
-        repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
-                                    hooks=False)
+    def test_land_names_unpushed_commits_before_its_push_land_rebases_local_item_commits_and_moves_intake_draft_then_fast_forwards_and_done_checks_notes(
+            self, scenario, tmp_path):
+        stories = [(n, f"kb/_self/{n}.md", "python3 _tools/backlog.py list --kind sprint") for n in ("good", "other", "third")]
+        repo, sp, (good, other, third) = planned(scenario, *stories, hooks=False)
         env = plain_push(repo, tmp_path, land_push=["git", "push", "--no-verify", "origin", "HEAD:main"])
         before = origin_main(scenario)
 
-        work(repo, good, "kb/_self/good.md")
-        repo.git("checkout", "-q", "main")  # land runs on main, whose upstream is origin/main: it ends level with it
+        for iid, n in ((good, "good"), (other, "other"), (third, "third")):
+            work(repo, iid, f"kb/_self/{n}.md")
+            repo.git("checkout", "-q", "main")  # land runs on main, whose upstream is origin/main: it ends level with it
         worker = Path(repo.file(f".claude/worktrees/agent-{good}"))
         repo.git("worktree", "add", "-q", str(worker), f"work/{good}")
         draft, stray = "kb/_self/backlog/ST-0d1e2f3a.json", "kb/_self/stray.md"
@@ -113,7 +117,7 @@ class TestLandedItem:
         assert code != 0 and "uncommitted changes" in out and (worker / draft).is_file(), out  # nothing moves on a refusal
         (worker / stray).unlink()
         code, out = bl(repo, "land", good, env=env)
-        assert code == 0 and "landed" in out and "fast-forwarded main" in out, out
+        assert code == 0 and "landed" in out and "fast-forwarded main" in out and "not on origin/main" not in out, out
         kept = Path(repo.file("_cache/intake-drafts")) / worker.name / Path(draft).name
         assert "moved the untracked intake draft ST-0d1e2f3a.json" in out and kept.is_file() and not worker.exists(), out
         assert repo.rev("main") == origin_main(scenario) and repo.git("branch", "--show-current").strip() == "main"
@@ -124,6 +128,29 @@ class TestLandedItem:
         assert origin_main(scenario) != before
 
         research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", ok(repo, "list", "--sprint", sp)).group(1)
+        # a commit of the checkout's own that changes an item file: named before the push as staying local (the push is
+        # the item's branch alone), and rebased onto the pushed main after it, never pushed by land
+        note = "chore(backlog): note on the research story"
+        ok(repo, "set", research, "--notes", "Local note.")
+        repo.git("add", "-A", PLAN)
+        repo.git("commit", "-q", "--no-verify", "-m", note)
+        code, out = bl(repo, "land", other, env=env)
+        assert code == 0 and "main holds 1 commit(s) not on origin/main" in out and f"{note} (stays local)" in out, out
+        assert re.search(r"stays local.*landed", out, re.S) and "rebased main's 1 local commit(s), item files only" in out, out
+        assert repo.git("rev-list", "--count", "origin/main..main").strip() == "1", out
+        assert repo.git("rev-list", "--count", "main..origin/main").strip() == "0", out
+        assert note not in scenario.origin.git("log", "--format=%s", "main"), "land pushed the checkout's own commit"
+
+        # a commit that changes another file is named and the command given, the checkout left as it was
+        repo.write("kb/_self/local-note.md", "# local\n")
+        repo.git("add", "kb/_self/local-note.md")
+        repo.git("commit", "-q", "--no-verify", "-m", "docs(kb): local note")
+        tip = repo.rev("main")
+        code, out = bl(repo, "land", third, env=env)
+        assert code == 0 and "landed" in out and "main holds 2 commit(s) not on origin/main" in out, out
+        assert "one changes kb/_self/local-note.md, not an item file; git rebase origin/main)" in out, out
+        assert repo.rev("main") == tip and repo.git("rev-list", "--count", "main..origin/main").strip() == "2", out
+
         ok(repo, "claim", research, "--by", "t", "--commit")
         for notes, accepted in ((None, False), ("No outside facts:", False), ("Other. No outside facts: the goal is internal.", True)):
             if notes:

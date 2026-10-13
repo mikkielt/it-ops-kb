@@ -1756,11 +1756,74 @@ def land_checks(bl, iid):
     raise land_stop("checks", f"{len(failed)} check(s) of {bl.label(iid)} failed: nothing was pushed")
 
 
+def local_only(root, base, tip, names=False):
+    """[(sha, subject)] of the commits TIP has that BASE lacks, a commit whose patch BASE holds under another hash
+    left out (`git log --cherry-pick --right-only BASE...TIP`), oldest first; with NAMES the paths those commits change
+    too: [(sha, subject, [paths])]. [] when git cannot say: a note about the checkout never stops a landing."""
+    p = subprocess.run(["git", "log", "--cherry-pick", "--right-only", "--reverse", "--no-renames", "--name-only",
+                        "--format=%x1e%H%x00%s", f"{base}...{tip}"], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    out = []
+    for rec in (p.stdout.split("\x1e")[1:] if p.returncode == 0 else []):
+        head, _, files = rec.partition("\n")
+        sha, _, subject = head.partition("\x00")
+        out.append((sha, subject, [f for f in files.splitlines() if f]) if names else (sha, subject))
+    return out
+
+
+NAMED_COMMITS = 8  # commits listed when land names the starting checkout's unpushed ones; the rest are counted
+
+
+def name_unpushed(root, remote, start, start_ref, upstream, branch):
+    """Before the push, say which commits the checkout `land` started on holds that are not on the integration main,
+    and which of them the push carries: the push is the item's BRANCH alone (the claim commits under it among them),
+    so a commit of the checkout that the branch lacks stays local, and `fast_forward_start` deals with it after. Said
+    once, nothing when there are none or the checkout is on BRANCH itself."""
+    if start_ref == f"refs/heads/{branch}":
+        return
+    held = local_only(root, upstream, start)
+    if not held:
+        return
+    stays = {sha for sha, _ in local_only(root, branch, start)}
+    name = start_ref[len("refs/heads/"):] if start_ref.startswith("refs/heads/") else f"detached HEAD {start[:10]}"
+    say(f"land: {name} holds {len(held)} commit(s) not on {remote}/main; the push carries only {branch}, "
+        f"{sum(1 for sha, _ in held if sha in stays)} of them stay local:")
+    for sha, subject in held[:NAMED_COMMITS]:
+        say(f"  {sha[:10]} {subject} ({'stays local' if sha in stays else 'goes with ' + branch})")
+    if len(held) > NAMED_COMMITS:
+        say(f"  ... and {len(held) - NAMED_COMMITS} more")
+
+
+def rebase_local(root, remote, name, behind, upstream):
+    """Diverged: the checkout on NAME is BEHIND commits behind the integration main and holds commits of its own. When
+    those (the ones UPSTREAM lacks by patch) change item files only and none is a merge, `git rebase` puts them on the
+    pushed main and says so; otherwise, or when the rebase conflicts (it is aborted, nothing changed), the one command
+    is named and the checkout left alone."""
+    ahead = git(root, "rev-list", "--count", f"{upstream}..HEAD").strip()
+    merges = git(root, "rev-list", "--merges", "--count", f"{upstream}..HEAD").strip() != "0"
+    other = [p for _, _, paths in local_only(root, upstream, "HEAD", names=True) for p in paths if not item_file(p)]
+    left = f"land: left {name} {behind} commit(s) behind {remote}/main: it holds {ahead} local commit(s) "
+    command = f"git rebase {remote}/main"
+    if merges or other:
+        why = "a merge commit among them" if merges else f"one changes {other[0]}, not an item file"
+        say(f"{left}that it will not rebase on its own ({why}; {command})")
+        return
+    p = subprocess.run(["git", "rebase", "--quiet", upstream], cwd=root, capture_output=True, text=True,
+                       encoding="utf-8", errors="replace")
+    if p.returncode:
+        subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
+        say(f"{left}that do not rebase cleanly (rebase aborted, nothing changed; {command})")
+    else:
+        say(f"land: rebased {name}'s {ahead} local commit(s), item files only, onto {remote}/main "
+            f"({behind} commit(s) behind it; nothing pushed by the rebase)")
+
+
 def fast_forward_start(root, remote, start_ref, upstream):
     """After a pushed landing, bring the checkout `land` started on level with the integration main: `git merge
-    --ff-only` when it is on a branch whose `@{upstream}` is REMOTE/main and has no uncommitted changes. Anything
-    else is left alone and said, and the exit status never depends on it: the next `claim --commit` must start from
-    the pushed main, and a refusal here only costs a manual fast-forward."""
+    --ff-only` when it is on a branch whose `@{upstream}` is REMOTE/main and has no uncommitted changes; a checkout
+    that has diverged because it holds commits of its own that change item files only is rebased on it
+    (`rebase_local`). Anything else is left alone and said, and the exit status never depends on it: the next `claim
+    --commit` must start from the pushed main, and a refusal here only costs a manual fast-forward."""
     if not start_ref.startswith("refs/heads/"):
         return
     name = start_ref[len("refs/heads/"):]
@@ -1778,11 +1841,13 @@ def fast_forward_start(root, remote, start_ref, upstream):
         return
     p = subprocess.run(["git", "merge", "--ff-only", "--quiet", upstream], cwd=root, capture_output=True, text=True,
                        encoding="utf-8", errors="replace")
-    if p.returncode:
+    if p.returncode == 0:
+        say(f"land: fast-forwarded {name} {behind} commit(s) to {remote}/main")
+    elif git(root, "rev-list", "--count", f"{upstream}..HEAD").strip() != "0":
+        rebase_local(root, remote, name, behind, upstream)
+    else:
         why = ((p.stderr or p.stdout).strip().splitlines() or ["diverged"])[-1]
         say(f"land: left {name} {behind} commit(s) behind {remote}/main: it cannot fast-forward ({why})")
-    else:
-        say(f"land: fast-forwarded {name} {behind} commit(s) to {remote}/main")
 
 
 def changed_articles(changed):
@@ -1929,6 +1994,7 @@ def land_once(bl, a):
             lint = land_lint()
             if articles and lint[1]:
                 land_run(root, lint[0], [*lint[1], *articles])
+        name_unpushed(root, remote, start, start_ref, upstream, branch)
         land_run(root, *land_push(), whole=True, program=True)
         if late:
             # the request sync opened by push options: this pass's one read of it
