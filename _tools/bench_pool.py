@@ -6,8 +6,9 @@ pool under kb/_querylog/bench/, and `pool check` reads either back (kb/_self/too
 has at least one check regex, a kind the report groups by and the route a pack should take. The held-out rows name
 lookup_heldout.csv rows by id and hold no question text: `question_of` reads it at run time. The scenario rows
 (`sc_present`, `sc_partial`, `sc_absent`, `sc_offkb`, `sc_stale`) come from bench_scenarios.csv, and `pool check` asks the
-pack of each for its route (`scenario_problems`). The only paid step is one
-Sonnet call that writes the answer regexes of the eval rows, through bench_retrieval's blind-question call; a rebuild
+pack of each for its route (`scenario_problems`). The only paid step is one Sonnet call that writes the answer
+regexes of the eval rows, through bench_retrieval's blind-question call, and `pool build` makes it only with `--ask` or
+`--redo ID`; without either it lists the rows it would ask and the estimate, writes nothing and exits 1. A rebuild
 reuses the regexes of the file it replaces, so it asks nothing. `benchmarks.py run pool` is `s_pool` (the arms, the
 effort levels, the per-run record and the per-cell figures, described in kb/_self/reports/benchmarks.md); its
 `--shape session` runs the rows in groups of six, one `claude -p` session per group, and `--shape fresh,session` both in
@@ -1079,6 +1080,10 @@ class Asked(Exception):
     """A `--dry-run` that reached the paid call: carries nothing, the listing is printed."""
 
 
+class NotAsked(Exception):
+    """A build with neither `--ask` nor `--redo` that reached the paid call: carries nothing, the listing is printed."""
+
+
 def ask_estimate(items):
     """The list-price cost in USD of the one call that asks `items` (sonnet-5-5, an estimate: the prompt at 4 characters
     a token, the claude -p overhead as a cache write at the billing surface's rate, `write_rate`)."""
@@ -1086,9 +1091,10 @@ def ask_estimate(items):
     return (ASK_OVERHEAD * write_rate(p) + len(regex_prompt(items)) / 4 * p[1] + ASK_OUT * len(items) * p[2]) / 1e6
 
 
-def listed_ask(ask, dry_run, limits):
-    """`ask` behind the listing of the rows it would ask and the estimate; a dry run stops there (Asked), and with
-    `limits` a call of more than ASK_MAX_ROWS rows or ASK_MAX_USD is a PoolError."""
+def listed_ask(ask, dry_run, limits, leave=True):
+    """`ask` behind the listing of the rows it would ask and the estimate; a dry run stops there (Asked), and so does a
+    call with no `leave` (NotAsked: the build was given neither --ask nor --redo), and with `limits` a call of more
+    than ASK_MAX_ROWS rows or ASK_MAX_USD is a PoolError."""
     def asking(items):
         usd = ask_estimate(items)
         print(f"pool build: would ask {len(items)} rows in one call, estimated ${usd:.3f}")
@@ -1098,6 +1104,8 @@ def listed_ask(ask, dry_run, limits):
             raise PoolError(f"no call: more than {ASK_MAX_ROWS} rows or over ${ASK_MAX_USD:.2f}")
         if dry_run:
             raise Asked()
+        if not leave:
+            raise NotAsked()
         return ask(items)
     return asking
 
@@ -1127,16 +1135,20 @@ def cli(a, home=HOME):
     if a.pool_cmd == "build":
         out = Path(a.out) if a.out else Path(home) / (QUERYLOG_FILE if a.querylog else PUBLIC_FILE)
         redo, dry, replies = getattr(a, "redo", None) or [], getattr(a, "dry_run", False), getattr(a, "replies", None)
+        leave = bool(getattr(a, "ask", False) or redo)
         kept = []
         try:
-            if a.querylog and (redo or dry):
-                raise PoolError("--redo and --dry-run are for the public pool")
+            if a.querylog and (redo or dry or leave):
+                raise PoolError("--ask, --redo and --dry-run are for the public pool")
             if replies and (dry or not redo):
                 raise PoolError("--replies goes with --redo and not with --dry-run")
-            ask = csv_replies(replies) if replies else listed_ask(sonnet_regexes, dry, bool(redo))
+            ask = csv_replies(replies) if replies else listed_ask(sonnet_regexes, dry, bool(redo), leave)
             rows = build_querylog(home, a.seed, out) if a.querylog else build_public(home, a.seed, ask, out, redo, kept)
         except Asked:
             return 0
+        except NotAsked:
+            print("pool build: no call without --ask (or --redo ID); nothing written")
+            return 1
         except PoolError as e:
             print(f"pool build: {e}")
             return 1

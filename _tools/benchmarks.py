@@ -34,7 +34,7 @@
                                             records per provider host and for all the printed DOC lines current, moved,
                                             not found, source-dated only and not checked, the requests made and the
                                             wall time per question (no model; --dry-run prints the sources and requests)
-  benchmarks.py pool build [--querylog] [--seed N] [--out FILE] [--redo ID]... [--dry-run]
+  benchmarks.py pool build [--querylog] [--seed N] [--out FILE] [--ask] [--redo ID]... [--dry-run]
                                             [--replies FILE]
                                             write the stratified question pool, with a check per row, to
                                             kb/public/_retrieval/bench_pool.csv, or with --querylog the redacted
@@ -42,6 +42,9 @@
                                             the rows of kb/public/_retrieval/bench_scenarios.csv join the public
                                             pool as the kinds sc_present, sc_partial, sc_absent, sc_offkb and
                                             sc_stale, six each;
+                                            the paid call for the eval rows the file lacks is made only with --ask
+                                            or --redo; without either the build lists those rows and the estimated
+                                            spend, writes nothing and exits 1;
                                             --redo asks the paid call again for the eval rows it names (a pool row
                                             id or an eval case id), --dry-run lists the rows it would ask and the
                                             estimated spend, and asks nothing; --replies FILE answers the --redo
@@ -167,6 +170,8 @@ def main(argv=None):
     pb.add_argument("--querylog", action="store_true")
     pb.add_argument("--seed", type=int, default=bench_pool.SEED)
     pb.add_argument("--out")
+    pb.add_argument("--ask", action="store_true",
+                    help="make the paid call for the eval rows the --out file lacks (without --ask or --redo the build lists them and exits 1)")
     pb.add_argument("--redo", action="append", metavar="ID",
                     help="ask again for the check of this eval row (a pool row id or an eval case id); repeatable")
     pb.add_argument("--replies", metavar="FILE", help="with --redo: take the new checks from the eval rows of this pool csv, no model")
