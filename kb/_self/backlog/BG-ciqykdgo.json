@@ -2,7 +2,7 @@
   "id": "BG-ciqykdgo",
   "kind": "bug",
   "title": "The research queue's ql_research.NOTE does not read a Closed note, so querylog.py queue keeps a _gaps.md entry the router reads as closed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-enudabdr",
   "priority": "P3",
   "rank": 0,
@@ -78,5 +78,27 @@
     "parked: SP-lmf4ke4w review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 2 of 15, \"Pack notes, router cost and query-log apply guards read what they should\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on the base: the repro exits 1, NOTE does not match a Closed note (precheck). Gate g1 answered by operator: Closed settles; Narrowed and Partly resolved stay open leads. bl_cost.py is touched for the comment that names SETTLED (cost --research reads ql_research.SETTLED); the change is the tuple and NOTE.",
-  "claimed_by": "orch-enudabdr"
+  "evidence": {
+    "commit": "5790fd9a9c5a95af41ce60af4f7c681a75a05fc7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[x for x in open('kb/_self/querylog.md',encoding='utf-8').read().splitlines() if x.lstrip().startswith('- **Dated notes under the entry**')];print(len(ls),'line(s)');sys.exit(0 if len(ls)==1 and 'Closed <date>' in ls[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "72df47768d7bfe5f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import ql_research as q;m=q.NOTE.match('  - Closed 2026-10-10: answered');print('Closed note read:',bool(m and m.group(1) in q.SETTLED));sys.exit(0 if m and m.group(1) in q.SETTLED else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f93a36d3553273c6"
+      }
+    ]
+  }
 }
