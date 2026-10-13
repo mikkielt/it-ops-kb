@@ -1,0 +1,25 @@
+{
+  "id": "ST-hojn6yjd",
+  "kind": "story",
+  "title": "shamir-secret-sharing states the sss README's 255-share and 113-byte-share limits as a tagged DOC fact, not only in a table cell",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/auth/shamir-secret-sharing.md has a DOC fact line, anchored in kb/public/_anchors.csv, giving the sss README's limits (at most 255 shares, 64-byte secrets, 113-byte shares), so rag.py facts and factdiff see them; today they sit in the untagged tool table row (line 38). Found by the SP-tcis5f23 review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/rag.py','facts','auth/shamir-secret-sharing','--tag','DOC'],capture_output=True,text=True); sys.exit(o.returncode!=0 or '255' not in o.stdout)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/auth/shamir-secret-sharing.md",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 review"
+  ]
+}

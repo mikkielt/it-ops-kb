@@ -1,0 +1,26 @@
+{
+  "id": "ST-tgd7r5ji",
+  "kind": "story",
+  "title": "linux-nftables' idempotent own-table step says flush table leaves a loaded set's elements",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/security/linux-nftables.md's DER on the flush-table-first file (line 36) and its example say that flush table keeps the elements of a set the file loads (line 18, DOC), so an address removed from the file stays in the set after a reload and the table does not converge to the file without deleting or flushing the set too. Found by the SP-tcis5f23 review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/security/linux-nftables.md').read_text().splitlines(); sys.exit(not any('flush table' in l and 'element' in l and '[DER' in l for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/security/linux-nftables.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 review"
+  ]
+}

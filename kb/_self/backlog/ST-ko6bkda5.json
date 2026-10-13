@@ -1,0 +1,33 @@
+{
+  "id": "ST-ko6bkda5",
+  "kind": "story",
+  "title": "The facts SP-tcis5f23 reworded in postgres-column-encryption and linux-nftables get anchor rows, and the orphaned nftables rows go",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/auth/postgres-column-encryption.md line 39 (S-qt7piebc, S-rqc6efd7) and kb/public/security/linux-nftables.md lines 23, 36 and 52 have anchor rows with quotes in kb/public/_anchors.csv, and factdiff.py anchors --stale lists no linux-nftables key, so a later change to the CipherSweet pages or nft(8) shows as a changed fact, not as unanchored. Found by the SP-tcis5f23 review (S3): the items' touches did not hold _anchors.csv.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/factdiff.py','--root','public','anchors','--stale'],capture_output=True,text=True); sys.exit(o.returncode not in (0,1) or 'linux-nftables' in o.stdout)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys; o=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','--base','7e4ffe56a^','public/auth','public/security'],capture_output=True,text=True); t=o.stdout+o.stderr; sys.exit(o.returncode!=0 or 'postgres-column-encryption.md:39' in t or 'linux-nftables.md' in t)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_anchors.csv",
+    "kb/public/auth/postgres-column-encryption.md",
+    "kb/public/security/linux-nftables.md"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 review"
+  ]
+}

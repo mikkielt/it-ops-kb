@@ -1,0 +1,26 @@
+{
+  "id": "ST-vhllf3u4",
+  "kind": "story",
+  "title": "issuer-token-rotation names R2's S3 key pair, not R2, as the cut-over, since R2 temporary credentials overlap until they expire",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/auth/issuer-token-rotation.md lines 13 and 50 and the QK-issuer-token-lifetime conclusion in kb/public/_answers.md name the R2 S3 key pair behind a rolled token as the cut-over, not R2 as a whole, since a newly minted R2 temporary credential leaves its predecessor valid until its TTL (reference row and line 54). Found by the SP-tcis5f23 review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/auth/issuer-token-rotation.md').read_text().splitlines()+pathlib.Path('kb/public/_answers.md').read_text().splitlines(); sys.exit(any('GitLab, Cloudflare and R2' in l for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/auth/issuer-token-rotation.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 review"
+  ]
+}

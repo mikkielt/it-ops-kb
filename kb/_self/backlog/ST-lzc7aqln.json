@@ -1,0 +1,24 @@
+{
+  "id": "ST-lzc7aqln",
+  "kind": "story",
+  "title": "The Linux pull-agent answer names the flush an idempotent nft -f file needs and its own-table scope",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/_answers.md lines 2760 and 2764 (nft -f swaps a whole ruleset; idempotent steps with one nft -f file) say a file needs a flush first and that flush table scopes it to the agent's own table, as the security/linux-nftables article (its lines 17, 23 and 36) now says. Found by the SP-tcis5f23 review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import pathlib,sys; ls=pathlib.Path('kb/public/_answers.md').read_text().splitlines(); sys.exit(any(('swaps a whole ruleset' in l or 'idempotent steps (one' in l) and 'flush table' not in l for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-tcis5f23 review"
+  ]
+}
