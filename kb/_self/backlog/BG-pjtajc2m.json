@@ -2,7 +2,7 @@
   "id": "BG-pjtajc2m",
   "kind": "bug",
   "title": "The verdict benchmark's p95_ms floors int(0.95 * n), so the rank is one low for some sample sizes",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7ff7c5ui",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-4lxb2w34",
   "kind": "bug",
   "title": "No suite test runs scenario_pack's check route or FRESH_CHECK: every test stubs scenario_pack",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7ff7c5ui",
   "priority": "P2",
   "rank": 0,

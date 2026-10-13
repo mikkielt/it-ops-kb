@@ -2,7 +2,7 @@
   "id": "BG-nht352ib",
   "kind": "bug",
   "title": "13 of the aliases.csv rows ST-zrysu6ri added are inert: expand adds a canonical only when it is itself a row, so 'what is jdm' expands to nothing",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,

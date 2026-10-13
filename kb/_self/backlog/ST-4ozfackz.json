@@ -2,7 +2,7 @@
   "id": "ST-4ozfackz",
   "kind": "story",
   "title": "Tested _self eval rows for the --do split rule and the token-count identifier and phase-token exceptions",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,

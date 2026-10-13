@@ -2,7 +2,7 @@
   "id": "BG-qcngojtq",
   "kind": "bug",
   "title": "A question that names a version without its v prefix gets coverage none although the kb spells it v2.1.294",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,

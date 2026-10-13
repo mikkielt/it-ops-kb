@@ -2,7 +2,7 @@
   "id": "BG-us65hepy",
   "kind": "bug",
   "title": "fact_for's phrase signal moved the SubagentStart/SubagentStop case to a line without agent_transcript_path",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-7ff7c5ui",
   "priority": "P3",
   "rank": 0,
