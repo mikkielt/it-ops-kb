@@ -2,7 +2,7 @@
   "id": "BG-5fkown4o",
   "kind": "bug",
   "title": "agents/langgraph.md cites the PyPI project JSON for a pip install form the JSON does not state",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-tjap3mdd",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,6 @@
   "links": [
     "parked: SP-qjg5r7jj review"
   ],
-  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: langgraph.md lines 13 and 35 tag 'pip install langgraph' as DOC S-v5hqqcqx, whose PyPI JSON does not state it. Run at planning: the repro exits 1 (the pip form sits before the S-v5hqqcqx tag); the line-13 fact's anchor in _anchors.csv is unlocated:no-match, the line-35 fact's is located, so the second check fails until line 13 is re-anchored."
+  "notes": "Planned at the 2026-10-12 draft triage (sprint 10 of 19, \"Content fixes: agents, Python and architecture articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise: langgraph.md lines 13 and 35 tag 'pip install langgraph' as DOC S-v5hqqcqx, whose PyPI JSON does not state it. Run at planning: the repro exits 1 (the pip form sits before the S-v5hqqcqx tag); the line-13 fact's anchor in _anchors.csv is unlocated:no-match, the line-35 fact's is located, so the second check fails until line 13 is re-anchored.",
+  "claimed_by": "orch-tjap3mdd"
 }
