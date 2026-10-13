@@ -2,7 +2,7 @@
   "id": "BG-mivjdhxk",
   "kind": "bug",
   "title": "claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the same section lists more prompt cases",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,6 @@
   "links": [
     "parked: SP-gcerxjsg review"
   ],
-  "notes": "Premise: kb/public/claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the Read-only commands section of S742 also lists Manual-mode prompt cases (quoted in kb/public/_gaps.md:1104). Premise run 2026-10-13: the repro fails on base (line 37 holds 'two exceptions', exit 1); reproduces. The _gaps.md entry's 'Done' note repeats 'the two exceptions', so _gaps.md is in touches. The goal research story ST-kcayezcs reads the live page and records the prompt cases as facts first (this item depends on it through the chain), so this item rewords line 37 from them. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Premise: kb/public/claude/powershell-tool.md:37 says the permissions page names two exceptions to the read-only Bash set, though the Read-only commands section of S742 also lists Manual-mode prompt cases (quoted in kb/public/_gaps.md:1104). Premise run 2026-10-13: the repro fails on base (line 37 holds 'two exceptions', exit 1); reproduces. The _gaps.md entry's 'Done' note repeats 'the two exceptions', so _gaps.md is in touches. The goal research story ST-kcayezcs reads the live page and records the prompt cases as facts first (this item depends on it through the chain), so this item rewords line 37 from them. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-foopqq2x"
 }
