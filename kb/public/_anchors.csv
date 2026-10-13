@@ -728,9 +728,6 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 0f83424bf376,agents/codebase-mapping.md,S-qpokkcte,unlocated:no-match,,,,,2026-10-10
 0f9d8aa46c75,agents/codebase-mapping.md,S-d7lm5uzs,located,Lockfiles > Proposal,devcontainer-lock.json;local;lock;devcontainer.json;json;record;devcontainer;featur,afbc35ea7fdc2aab,"Local features and the deprecated GitHub releases features are not recorded in the lockfile. The lockfile is named devcontainer-lock.json, is located in the same folder",2026-10-10
 1372d05136a3,agents/codebase-mapping.md,S-caqpwc2e,unlocated:no-match,,,,,2026-10-10
-13c9bb74b1a4,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
-13c9bb74b1a4,agents/codebase-mapping.md,S-uxljwlpn,located,,wrapper;program,35cf05b642bb637d,let mut iter = self.wrappers.iter().rev().chain(once(&self.program));,2026-10-13
-13c9bb74b1a4,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
 1938b01a9b16,agents/codebase-mapping.md,S-loh54u4h,unlocated:no-match,,,,,2026-10-10
 19531f41d7e0,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
 19531f41d7e0,agents/codebase-mapping.md,S-gkpddy5i,unlocated:no-match,,,,,2026-10-13
@@ -791,6 +788,9 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 6282c7116c3b,agents/codebase-mapping.md,S-z35np3zd,located,How MSBuild builds projects - MSBuild | Microsoft Learn > User-configurable imports,driv;root;directory.build.prop;microsoft.common.prop;directory;prop;common;microsoft,97633f37baecfa8a,"That's commonly at the solution level for settings to control all the projects in the solution, but could also be higher up in the filesystem,",2026-10-10
 648565d2e264,agents/codebase-mapping.md,S-kxcc7a7a,unlocated:no-match,,,,,2026-10-10
 648565d2e264,agents/codebase-mapping.md,S-zelwtfks,unlocated:no-match,,,,,2026-10-13
+65c34fecc523,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
+65c34fecc523,agents/codebase-mapping.md,S-uxljwlpn,unlocated:no-match,,,,,2026-10-13
+65c34fecc523,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
 66233d1c8417,agents/codebase-mapping.md,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
 67212a29a8ae,agents/codebase-mapping.md,S-xdf63oro,located,,json_output_version;1.0;output-format;ptag;version;_typ;format;ctag,33890e010ea42391,"$ ctags --extras=+p --output-format=json --fields=-s input.py {""type"": ""ptag"", ""name"": ""JSONOUTPUTVERSION"", ""path"": ""1.0"", ""pattern"": ""in development""}",2026-10-10
 69524ed0f2a1,agents/codebase-mapping.md,S-me5pwvu4,located,go > Overview ¶ > Start a bug report ¶ > Edit go.mod from tools or scripts ¶,back;writ;instead;go.mod;json;print;mod,206cd3ebb0282f74,writing it back to go.mod. The -json flag prints the final go.mod file in JSON format instead of,2026-10-10
