@@ -2,7 +2,7 @@
   "id": "ST-qngjizfo",
   "kind": "story",
   "title": "Review sprint: Content fixes: agents, Python and architecture articles state what their sources say",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-tjap3mdd",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-tjap3mdd"
+  "evidence": {
+    "commit": "3dd6b0b065e8498607a4b6768367900a4f92e832",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "02566d3f6a5041d7"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "25c18a478a3c495a"
+      }
+    ]
+  }
 }
