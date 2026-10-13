@@ -2,7 +2,7 @@
   "id": "BG-pjtajc2m",
   "kind": "bug",
   "title": "The verdict benchmark's p95_ms floors int(0.95 * n), so the rank is one low for some sample sizes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-7ff7c5ui",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,27 @@
     "merged: BG-z4mcy4w4"
   ],
   "notes": "Merged from BG-z4mcy4w4 “bench_core.stat_rows' p95 rounds half to even with round(), so p95_ms is one rank low for n=30 and n=574” at the 2026-10-13 draft triage: Repro prints [28.0], so it reproduces (bench_core.py:589 round()); same defect class as BG-pjtajc2m (bench_retrieval.py:124 int()), the older P2 bug whose repro still stands: one 'p95 at nearest rank' item Its goal: bench_core.stat_rows takes p95 at the nearest rank, math.ceil(0.95 * n), as bench_retrieval's freshness p95 does since BG-v5f5tn5y, so 30 samples of 1..30 ms give p95_ms 29.0, not 28.0 (recorded querylog-hooks rows n=30 and tool-speed warm pack rows n=574 used the low rank); the repro exits 0 once it prints 29.0 (SP-e4fm2ovk review, gap 3; the verdict p95 is BG-pjtajc2m) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys;sys.path.insert(0,'_tools');import bench_core as c;rows=[];B=type('B',(),{'row':lambda s,*a,**k: rows.append(a)});c.stat_rows(B(),'x','y','z',[i/1000 for i in range(1,31)]);p=[a[4] for a in rows if a[3]=='p95_ms'];print(p);sys.exit(0 if p==[29.0] else 1)\"]} Its touches: _tools/bench_core.py",
-  "claimed_by": "orch-7ff7c5ui"
+  "evidence": {
+    "commit": "1ea8df5f3b6aad1c9f4b8d30a44c1a125763fa9a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_core as c;rows=[];B=type('B',(),{'row':lambda s,*a,**k: rows.append(a)});c.stat_rows(B(),'x','y','z',[i/1000 for i in range(1,31)]);p=[a[4] for a in rows if a[3]=='p95_ms'];print(p);sys.exit(0 if p==[29.0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "aa7010e2bc232ef0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,time; sys.path.insert(0,'_tools'); import bench_retrieval as r, kbfacts, rag; rows=[]; b=type('B',(),{'row':lambda s,*a,**k: rows.append(a)})(); rag.run_eval=lambda: {'passed':0,'n':0,'mean_chars':0}; rag.offkb_questions=lambda: []; rag.eval_cases=lambda: [(0,{'question':str(i)}) for i in range(10)]; kbfacts.pack=lambda q: {'verdict':'good'}; kbfacts.units=lambda untagged=True: []; r.scatter_rows=lambda b: None; it=iter([x for k in range(1,31) for x in (0.0,k/1000)]); time.perf_counter=lambda: next(it); r.s_verdict(b); p=[x[4] for x in rows if x[3]=='p95_ms']; print('p95', p); sys.exit(0 if len(p)==1 and abs(p[0]-29.0)<1e-6 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "deee7d58be940c76"
+      }
+    ]
+  }
 }
