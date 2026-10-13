@@ -22,7 +22,8 @@
     "_tools/factdiff.py",
     "_tools/test_live_kb.py",
     "kb/_self/tools.md",
-    "kb/_self/content-rules.md"
+    "kb/_self/content-rules.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "depends_on": [
     "BG-geepi6yv"
