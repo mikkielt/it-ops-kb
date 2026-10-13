@@ -970,14 +970,6 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     # router_broad_lookups: a kind expert never takes a question whose plain pack is good. The probe set is built from
     # the kb: one `What does the kb say about <title>?` per article (its topic where it has no heading), then the eval,
     # held-out and off-kb questions; each is named that kbfacts.routed answers while kbfacts.pack is good on an article
-    class Text(str):  # the ledger scan splits its file again for each entry it holds: one split of a text here
-        cut = None
-
-        def splitlines(self, *a):
-            if self.cut is None:
-                self.cut = str.splitlines(self)
-            return self.cut
-
     def hijacked(questions):
         out = []
         for q in dict.fromkeys(questions):
@@ -1000,8 +992,7 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
 
     def read_once(path):
         if path not in memo:
-            text = plain_read(path)
-            memo[path] = Text(text) if text else text
+            memo[path] = plain_read(path)
         return memo[path]
     with monkeypatch.context() as mp:
         mp.setattr(kbfacts, "read", read_once)
