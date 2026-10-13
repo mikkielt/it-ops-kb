@@ -101,7 +101,9 @@
         "no: the worker always carries the recommendation out"
       ],
       "recommendation": "yes: the rule names the exception, in the brief and the role file",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes: the rule names the exception, in the brief and the role file",
+      "by": "operator"
     }
   ],
   "links": [
