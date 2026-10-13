@@ -2,7 +2,7 @@
   "id": "ST-7475tw3d",
   "kind": "story",
   "title": "The answer on Edit rule paths states the observed denial under .claude/worktrees instead of a DER conclusion that no allowance is needed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-foopqq2x",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,6 @@
   "links": [
     "parked: SP-htl7jkrm review"
   ],
-  "notes": "Premise: kb/public/_answers.md:3295 (answer QK-edit-permission-rule-name-absolute-path) concludes [DER] that a worktree under .claude/worktrees/ needs no protected-path allowance, while BG-6ecranz3's observed run was denied at such a path (its repro_reason in git history). Premise run 2026-10-13: both checks fail on base (the phrase is present, no 'denied' in the _gaps.md entry at line 1102, exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Premise: kb/public/_answers.md:3295 (answer QK-edit-permission-rule-name-absolute-path) concludes [DER] that a worktree under .claude/worktrees/ needs no protected-path allowance, while BG-6ecranz3's observed run was denied at such a path (its repro_reason in git history). Premise run 2026-10-13: both checks fail on base (the phrase is present, no 'denied' in the _gaps.md entry at line 1102, exit 1); reproduces. Planned at the 2026-10-13 draft triage (sprint 6 of 15, \"Content fixes: Claude Code and agent articles state what their sources say\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-foopqq2x"
 }
