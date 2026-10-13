@@ -45,6 +45,21 @@
   "depends_on": [
     "BG-3yjnwfsu"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do the two answer regexes take the paraphrases: a reverse-order alternative with a bounded in-sentence window, or a looser unordered match (both terms anywhere in the answer)?",
+      "options": [
+        "reverse-order alternative, in-sentence window",
+        "unordered match of both terms anywhere in the answer"
+      ],
+      "recommendation": "reverse-order alternative, in-sentence window",
+      "class": "design",
+      "answer": "reverse-order alternative, in-sentence window",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kuhlsf2s review"
   ],
