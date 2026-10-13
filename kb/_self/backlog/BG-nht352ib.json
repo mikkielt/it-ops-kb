@@ -63,6 +63,34 @@
   "depends_on": [
     "BG-qcngojtq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the canonical name join the alias forms: in kbfacts.expand only, or in kbfacts._aliases (so aliases() and its other consumers see it)?",
+      "options": [
+        "expand only",
+        "_aliases"
+      ],
+      "recommendation": "expand only",
+      "class": "design",
+      "answer": "expand only",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How are the two rows whose canonical is already a part of the compound alias (test-suite, content-addressed) made to add their canonical: narrow expand's filter to words the question used whole, or remove or reword the rows?",
+      "options": [
+        "narrow the filter to whole words",
+        "remove the rows"
+      ],
+      "recommendation": "narrow the filter to whole words",
+      "class": "design",
+      "answer": "narrow the filter to whole words",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-lmf4ke4w review",
     "merged: BG-potjqhfd"
