@@ -7,7 +7,7 @@ sc_present,windows,How do I configure DHCP failover between two Windows Server D
 sc_present,sqlserver,How do I configure automatic seeding for a SQL Server Always On availability group?,SEEDING_MODE\s*=\s*AUTOMATIC,good,
 sc_partial,windows,How do I rotate the Windows LAPS password from Intune and forward the event to Splunk?,rotateLocalAdminPassword|Actions/ResetPassword,split,
 sc_partial,auth,How do I configure Windows Hello for Business with a YubiKey in Intune?,UsePassportForWork,split,
-sc_partial,intune,How do I set up AD CS certificate autoenrollment templates?,(?i)template setup on the CA,split,
+sc_partial,windows,How do I defer Windows quality updates with the Update CSP and send the update events to Splunk?,DeferQualityUpdatesPeriodInDays,split,
 sc_partial,intune,How do I set the SCEP certificate renewal threshold in Intune and renew a web server certificate with certbot?,(?i)renewal threshold,split,
 sc_partial,windows,How do I configure DHCP failover between two Windows Server DHCP servers and sync the leases to an Infoblox grid?,(?i)failover relationship,split,
 sc_partial,entra,How do I back up a BitLocker recovery key to Entra ID and also send it to Splunk?,"(?i)recovery keys?\b[^.]{0,40}\bdevice object",split,
