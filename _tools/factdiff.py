@@ -1044,7 +1044,7 @@ def madeup_text(url):
     """The text a made-up sibling url of `url` returns with 200 (None for a real 404), once per host and run."""
     host = urllib.parse.urlsplit(url).netloc
     if host not in _madeup:
-        r = provider.request(provider._sibling(url))
+        r = provider.gated_request(provider._sibling(url))
         _madeup[host] = provider.doc_text(r["body"], r["headers"].get("content-type", ""), url) if r["status"] == 200 else None
     return _madeup[host]
 
@@ -1238,7 +1238,7 @@ def search_urls(fact, anchor, row, src_url, title=""):
             continue
         req = tpl.replace("{q}", urllib.parse.quote(q))
         if q not in _searches:
-            r = provider.request(req)
+            r = provider.gated_request(req)
             res = None  # the provider's result list; None for an answer that is not one (a sign-in page, an error object)
             if r["status"] == 200:
                 try:
@@ -1341,9 +1341,10 @@ def resolve(sid, src, verdict, doc, prev, facts, anchors, rows, secs=None, looku
 
 def detect_pass(ids, srcs, state, rows, lookup=False):
     """{source id: detect_source's result} of the sources `ids`: one thread per host, a host's sources in turn (its
-    pacing), one source's failure an `error` verdict and never the end of the run. `lookup`: a host that did not accept a
-    connection (provider.host_seen) is not asked again while its window runs, here or in a later lookup of this or
-    another process: its sources are `error` with the reason and no request."""
+    pacing), one source's failure an `error` verdict and never the end of the run. `lookup` (revalidate, under
+    provider.down_window): a host that did not accept a connection (provider.host_seen) is not asked again while its
+    window runs, here or in a later lookup of this or another process, by any request of the lookup (provider.gated_request):
+    a source of it is `error` with the reason and no request."""
     by_host = collections.defaultdict(list)
     for sid in ids:
         by_host[urllib.parse.urlsplit(srcs[sid]["url"]).netloc].append(sid)
@@ -1351,15 +1352,8 @@ def detect_pass(ids, srcs, state, rows, lookup=False):
     def host_job(host):
         res = []
         for sid in by_host[host]:
-            url = srcs[sid]["url"]
-            down = provider.host_down(url) if lookup and not provider.is_pinned(url) else None
-            if down:
-                res.append((sid, ("error", "", provider.down_why(down), None, None, None)))
-                continue
             try:
                 v = detect_source(sid, srcs[sid], state.get(sid, {}), rows, lookup)
-                if lookup and v[1] not in ("pin", "repository"):  # a pinned url's host is not what was asked
-                    provider.host_seen(url, v[2] if v[0] == "error" else "")
             except Exception as e:  # noqa: BLE001 - one source must never stop the run
                 v = ("error", "", f"{type(e).__name__}: {e}"[:200], None, None, None)
             res.append((sid, v))
@@ -1720,7 +1714,7 @@ def revalidate(printed, budget=REVALIDATE_BUDGET_S, reuse=None):
             cache.clear()
         provider.new_run()
         try:
-            with provider.budget(budget):
+            with provider.budget(budget), provider.down_window():
                 for name, items in by_root.items():
                     try:
                         ROOT = kbcommon.root(name or "")

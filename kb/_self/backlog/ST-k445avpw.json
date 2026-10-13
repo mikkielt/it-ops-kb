@@ -47,6 +47,48 @@
   "depends_on": [
     "ST-c7bty3ig"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a request of the lookup revalidation read and record a host's down window, given that provider.request is also the detection runs' request and tests stub it?",
+      "options": [
+        "gated_request under down_window: provider.gated_request, called by each lookup request site, gated by a process flag that factdiff.revalidate sets with provider.down_window",
+        "lookup parameter: a lookup flag threaded through detect_source, resolve, elsewhere, page_doc, search_urls, madeup_text and repository_state",
+        "inside request: the gate and the recording inside provider.request itself"
+      ],
+      "recommendation": "gated_request under down_window: provider.gated_request, called by each lookup request site, gated by a process flag that factdiff.revalidate sets with provider.down_window",
+      "class": "design",
+      "answer": "gated_request under down_window: provider.gated_request, called by each lookup request site, gated by a process flag that factdiff.revalidate sets with provider.down_window",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What becomes of detect_pass's own host_down check before a source and its host_seen call after it, which take the source's own url, once every request records the window of the host it went to?",
+      "options": [
+        "removed: the source's page request is gated and records its hosts itself, the redirect target included, so the per-source check and call would only repeat it, for the source's host",
+        "kept: both stay beside the gated requests"
+      ],
+      "recommendation": "removed: the source's page request is gated and records its hosts itself, the redirect target included, so the per-source check and call would only repeat it, for the source's host",
+      "class": "design",
+      "answer": "removed: the source's page request is gated and records its hosts itself, the redirect target included, so the per-source check and call would only repeat it, for the source's host",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "A redirect hop of a request leads into a host that is in its window: is the hop refused, or only the outcome recorded?",
+      "options": [
+        "record only: the hop is followed, as the goal names only the recording of the target's window, and the window it finds ends or doubles as any request's",
+        "refuse the hop: provider._Chain raises a URLError for a target in its window"
+      ],
+      "recommendation": "record only: the hop is followed, as the goal names only the recording of the target's window, and the window it finds ends or doubles as any request's",
+      "class": "design",
+      "answer": "record only: the hop is followed, as the goal names only the recording of the target's window, and the window it finds ends or doubles as any request's",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-u5q37ds3 review",
     "merged: ST-ecxt66tw"

@@ -313,7 +313,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline_and_revalidate_down_window_every_request_and_revalidate_down_window_redirect_target(monkeypatch, tmp_path, capsys):
     code, out = tool("rag.py", "eval")
     m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
     assert m, out[-1500:]
@@ -325,7 +325,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
         assert real_request("https://learn.microsoft.com/x")["error"] == provider.BUDGET_ERROR
     host, sha = "https://learn.microsoft.com/en-us/test/", "a" * 40
     A, B, C, D, P, G = "S9990011", "S9990012", "S9990013", "S9990014", "S9990015", "S9990016"
-    urls = {A: host + "page-a", B: host + "page-b", C: host + "page-c", D: host + "page-d",
+    urls = {A: host + "page-a", B: host + "page-b", C: "https://wiki.example.com/page-c", D: host + "page-d",
             P: f"https://raw.githubusercontent.com/Org/Repo/{sha}/docs/f.md", G: "https://github.com/Org/Repo/issues/7"}
     fill = "".join(f"## Part {i}\n\nOrion node {i} reports its health and its queue depth to the console every {i + 7} minutes.\n\n"
                    for i in range(12))
@@ -350,11 +350,11 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert anchors[("e5e5e5e5e5e5", "dsc/a.md", A)]["status"] == "unlocated:no-match"
     state = {A: factdiff.baseline(A, urls[A], when, provider.providers()),
              B: {**factdiff.baseline(B, urls[B], when, provider.providers()), "etag": 'W/"1"'}}
-    asked, resolved, search_down = [], [], []
+    asked, resolved, search_down, found = [], [], [], [host + "audit"]  # found: the page the search lists
 
-    def respond(status=200, body=b"", headers=None, error=""):
+    def respond(status=200, body=b"", headers=None, error="", hops=()):
         return {"status": status, "headers": {"content-type": "text/markdown", **(headers or {})}, "body": body,
-                "final": "", "hops": [], "error": error}
+                "final": "", "hops": list(hops), "error": error}
     pages = {urls[A]: lambda h: respond(body=new.encode()),
              urls[B]: lambda h: respond(304) if h.get("If-None-Match") else respond(body=old.encode()),
              urls[C]: lambda h: respond(0, error="URLError: timed out"),
@@ -366,9 +366,9 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     def request(url, headers=None, limit=20_000_000, method="GET"):
         asked.append(url)
         if "learn.microsoft.com/api/search" in url:
-            if search_down:
-                return {**respond(search_down[0]), "final": url}
-            return {**respond(headers={"content-type": "application/json"}, body=json.dumps({"results": [{"url": host + "audit"}]}).encode()), "final": url}
+            if search_down:  # an HTTP status, or 0: a connection that was not made
+                return {**respond(search_down[0], error="URLError: timed out" if not search_down[0] else ""), "final": url}
+            return {**respond(headers={"content-type": "application/json"}, body=json.dumps({"results": [{"url": found[0]}]}).encode()), "final": url}
         return {**pages[url.split("?")[0]](headers or {}), "final": url}
     monkeypatch.setattr(provider, "request", request)
     monkeypatch.setattr(provider, "_repos", {})  # the repository answers and the GitHub request count are the process's
@@ -413,14 +413,14 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     # a result younger than the provider's pacing is reused with no request; an offline source is asked again
     before = len(asked)
     monkeypatch.setattr(provider, "pacing", lambda row: 3600)
-    provider.host_seen(urls[C], "")  # C's connect timeout put the Learn host in its window (below): asked again here
+    provider.host_seen(urls[C], "")  # C's connect timeout put its host in its window: asked again here
     again = factdiff.revalidate(printed)
     kept = [k for k in rev["lines"] if k[0] != "public/dsc/d.md" and k[0] != "public/dsc/g.md"]
     assert {k: again["lines"][k] for k in kept} == {k: rev["lines"][k] for k in kept}
     assert again["sources"][A]["state"] == again["sources"][B]["state"] == "cached"
     assert not any(u.startswith((urls[A], urls[B])) for u in asked[before:]), asked[before:]  # only C, G and P were asked again
     assert not [p for p in tmp_path.rglob("*") if p.is_file() and "revalidate" not in p.parts and "down" not in p.parts]  # only the stored results, under the cache
-    provider.host_seen(urls[C], "")  # C timed out again: the sections below ask the Learn host, not its window
+    provider.host_seen(urls[C], "")  # C timed out again: its window ends
     # a baseline taken after an anchor's last confirmation proves only that nothing changed since: a fact kept by its
     # section, or one of an unchanged source, is resolved against the page as apply's kept() leaves it, not `current`;
     # the edited Notes section lies beyond the units a window starting in Limits can run into (a section between)
@@ -493,6 +493,58 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     limited = factdiff.revalidate([line("public/dsc/k.md", 7, facts[2][0], facts[2][2], K)])["lines"][("public/dsc/k.md", 7)]
     assert limited["outcome"] == "" and limited["unchecked"][K] == f"HTTP 429 from the candidate page {host}audit", limited
     pages[host + "audit"] = audit_page
+    # a host that did not accept a connection is left alone by every request of the lookup, not by a source's own page
+    # alone: the second search of a passage makes no request, nor does a candidate page of a host in its window, a made-up
+    # sibling or the repository of a pinned url; and a redirect that ends at such a host puts the target in its window,
+    # not the host that answered the redirect
+    L, N = "S9990026", "S9990027"
+    urls.update({L: host + "page-l", N: host + "page-n"})
+    for sid, rel in ((L, "dsc/l.md"), (N, "dsc/n.md")):
+        pages[urls[sid]] = lambda h: respond(body=new.encode())
+        state[sid] = factdiff.baseline(sid, urls[sid], when, provider.providers())
+        for r in factdiff.anchor_rows(sid, [(k, rel, ln, t) for k, ln, t in facts], {"status": 200, "text": old}, "quote", "2026-10-01"):
+            anchors[(r["fact"], r["path"], sid)] = r
+    search_down.append(0)  # the search host does not accept a connection: four queries of two lines, one request
+    asked.clear()
+    dead = factdiff.revalidate([line("public/dsc/l.md", ln, k, t, L) for k, ln, t in facts[1:4]])["lines"]
+    assert sum("api/search" in u for u in asked) == 1, asked
+    assert [dead[("public/dsc/l.md", ln)]["outcome"] for ln in (6, 7, 8)] == ["moved", "", ""], dead
+    assert "no HTTP answer from the search" in dead[("public/dsc/l.md", 8)]["unchecked"][L], dead
+    assert provider.host_down(host) is not None
+    search_down.clear()
+    provider.host_seen(host, "")
+    mirror = "https://mirror.example.com/"
+    found[0] = mirror + "audit"  # the search lists a page of a host that is in its window
+    provider.host_seen(mirror, "URLError: timed out")
+    asked.clear()
+    cand = factdiff.revalidate([line("public/dsc/n.md", 7, facts[2][0], facts[2][2], N)])["lines"][("public/dsc/n.md", 7)]
+    assert any("api/search" in u for u in asked) and not any(u.startswith(mirror) for u in asked), asked
+    assert cand["outcome"] == "" and f"no HTTP answer from the candidate page {mirror}audit" in cand["unchecked"][N], cand
+    n_asked = len(asked)
+    with provider.down_window():  # the made-up sibling of a page of that host
+        assert factdiff.madeup_text(mirror + "a/b") is None
+    assert len(asked) == n_asked, asked
+    factdiff._madeup.clear()
+    provider.host_seen(mirror, "")
+    found[0] = host + "audit"
+    raw_pin = f"https://raw.githubusercontent.com/Org/Repo/{sha}/docs/f.md"
+    for dead_host, requests in (("raw.githubusercontent.com", []), ("api.github.com", [raw_pin])):  # the raw file, then the API
+        provider.host_seen(f"https://{dead_host}/", "URLError: timed out")
+        provider._gh_api.update(asked=0, left=None, seen=0.0)  # the 403 above left no REST request to ask
+        asked.clear()
+        pin = factdiff.revalidate([line("public/dsc/d.md", 2, "f6f6f6f6f6f6", "The Orion pin is fixed.", P)])["sources"][P]
+        assert pin["state"] == "offline" and provider.DOWN_PREFIX in pin["why"] and asked == requests, (pin, asked)
+        provider.host_seen(f"https://{dead_host}/", "")
+    old_host, new_host = "https://old.example.com/", "https://new.example.com/"
+    R1, R2 = "S9990028", "S9990029"
+    urls.update({R1: old_host + "r1", R2: old_host + "r2"})
+    for sid in (R1, R2):
+        pages[urls[sid]] = lambda h: respond(0, error="URLError: timed out", hops=[(301, new_host + "moved")])
+    asked.clear()
+    red = factdiff.revalidate([line("public/dsc/r1.md", 2, "fafafafafafa", "x", R1), line("public/dsc/r2.md", 2, "fbfbfbfbfbfb", "y", R2)])
+    assert provider.host_down(new_host) is not None and provider.host_down(old_host) is None, provider._down
+    assert asked == [urls[R1], urls[R2]] and red["sources"][R2]["why"] == "network error: URLError: timed out", (asked, red)
+    provider.host_seen(new_host, "")
     # a host that did not accept a connection is left alone for a window, by this process and (its record is under the
     # cache) by another: the second pack asks it nothing though no result of it is stored, the host's other sources are
     # skipped in the first pack, the window doubles with each failure in a row up to the cap, and an answer ends it
