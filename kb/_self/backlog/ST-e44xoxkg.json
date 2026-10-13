@@ -2,7 +2,7 @@
   "id": "ST-e44xoxkg",
   "kind": "story",
   "title": "A goal research story's check reads its narrowed questions' coverage, not only that a work commit exists",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sqgyoiaz",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,6 @@
   "links": [
     "parked: SP-4phd36pa close"
   ],
-  "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Recurred at SP-ajcomz6d (BG-ab3tndhy, BG-i44ewtyl: AlmaLinux 8 and 10 half-answered with no gap), SP-qjn563cf (BG-y3oykyfl, BG-l22a5sfd, BG-vdhzlmv3) and SP-up5wchen (BG-oyzgvtrg, BG-4e7ja4zv, BG-7ofeobia): researched passed on the work commit alone and only the fresh-context review found partial or wrong clauses. The questions are the narrowed goal's clauses (split as goal_clauses does); a project with no kb_root runs no pack and keeps today's work-commit rule. Gates answered at planning: question-coverage, question-roots.\nPremise: researched on a story with a real work commit (ST-bivdc2fa) and a narrowed goal that adds a question the kb has no word for (pack coverage none) exits 0 today, as it does for an answered question (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Filed as a retrospective draft at the SP-4phd36pa close. Recurred at SP-ajcomz6d (BG-ab3tndhy, BG-i44ewtyl: AlmaLinux 8 and 10 half-answered with no gap), SP-qjn563cf (BG-y3oykyfl, BG-l22a5sfd, BG-vdhzlmv3) and SP-up5wchen (BG-oyzgvtrg, BG-4e7ja4zv, BG-7ofeobia): researched passed on the work commit alone and only the fresh-context review found partial or wrong clauses. The questions are the narrowed goal's clauses (split as goal_clauses does); a project with no kb_root runs no pack and keeps today's work-commit rule. Gates answered at planning: question-coverage, question-roots.\nPremise: researched on a story with a real work commit (ST-bivdc2fa) and a narrowed goal that adds a question the kb has no word for (pack coverage none) exits 0 today, as it does for an answered question (run 2026-10-12, main a5a7459f2): premise reproduces.\nPlanned at the 2026-10-12 draft triage (sprint 19 of 19, \"Close credits each goal clause to its carrier, and a research story's check reads its questions' coverage\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-sqgyoiaz"
 }
