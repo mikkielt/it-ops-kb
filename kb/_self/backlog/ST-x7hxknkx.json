@@ -2,7 +2,7 @@
   "id": "ST-x7hxknkx",
   "kind": "story",
   "title": "Research sprint goal: Land snags: gate answers committed by the tool, link touches, stale-touch reads, generated coverage files and the undelivered warning",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-q5ldd25k",
   "goal_research": true,
   "priority": "P1",
@@ -36,5 +36,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-q5ldd25k"
+  "evidence": {
+    "commit": "5a63a52669b67bd8d652bc4b8683da07710124eb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-x7hxknkx"
+        ],
+        "exit": 0,
+        "sha256": "fb9c4f97a41f3ffe"
+      }
+    ]
+  }
 }
