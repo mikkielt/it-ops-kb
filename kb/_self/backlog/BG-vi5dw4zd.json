@@ -2,7 +2,7 @@
   "id": "BG-vi5dw4zd",
   "kind": "bug",
   "title": "_answers.md's AlmaLinux CIS conclusion says the upstream RHEL data stream is not the route, though its own Open line and linux-cis-ssg-openscap.md:38 leave that unconfirmed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-23m5etrf review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: repro exits 1 (the Conclusion line at _answers.md:3354 holds \"not with the upstream repository's RHEL data stream\"). expansions.csv left out of touches: _answers.md entries are not doc2query facts and no expansion row keys the AlmaLinux CIS facts."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: repro exits 1 (the Conclusion line at _answers.md:3354 holds \"not with the upstream repository's RHEL data stream\"). expansions.csv left out of touches: _answers.md entries are not doc2query facts and no expansion row keys the AlmaLinux CIS facts.",
+  "claimed_by": "orch-lsamtvsz"
 }
