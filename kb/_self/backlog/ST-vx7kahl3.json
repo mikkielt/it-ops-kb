@@ -2,7 +2,7 @@
   "id": "ST-vx7kahl3",
   "kind": "story",
   "title": "Research sprint goal: Content fixes: auth, encryption and Linux hardening articles and answers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6ukmjucf",
   "goal_research": true,
   "priority": "P1",
@@ -37,5 +37,19 @@
     }
   ],
   "notes": "Planned at the 2026-10-13 plan: Q1 (clamped scalar), Q2 (R2 cut-over), Q3 (sss limits) and Q5 (flush table and set elements) run good through rag.py pack -q; Q4 (DEK reuse departs from Google's advice, coverage none: the kb holds Google's advice, line 30 of postgres-column-encryption, not the departure) and Q6 (idempotent nft -f flush and own-table scope, weak) stay open for the research.",
-  "claimed_by": "orch-6ukmjucf"
+  "evidence": {
+    "commit": "dcead151b1b30d8f3604b539ceaff83e8a0a0959",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-vx7kahl3"
+        ],
+        "exit": 0,
+        "sha256": "6b1ad4aeca4b4be7"
+      }
+    ]
+  }
 }
