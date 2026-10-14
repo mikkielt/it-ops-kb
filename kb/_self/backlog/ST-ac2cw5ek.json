@@ -1,0 +1,30 @@
+{
+  "id": "ST-ac2cw5ek",
+  "kind": "story",
+  "title": "A story whose tasks are all done and whose checks pass on main is done by the orchestrator without a worker session",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint run step, and backlog.py next or brief, name a story whose child tasks are all done and whose checks all pass on the current main as one the orchestrator lands with backlog.py land ID directly, without dispatching a worker that only re-runs its checks",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "next_names_story_met_by_its_tasks"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 close"
+  ],
+  "notes": "Retrospective of SP-g2ssvhi2: ST-h66j7wm5's worker (17 turns, about $0.28) made no commit: both child tasks TK-zqeq54ma and TK-2auyrlan had landed and both checks passed on main; the worker only verified them."
+}

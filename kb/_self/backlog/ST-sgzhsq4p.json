@@ -1,0 +1,29 @@
+{
+  "id": "ST-sgzhsq4p",
+  "kind": "story",
+  "title": "A worker whose touches name a kb/_self doc runs the _self lookup eval before it reports, so a reword that costs a tested row a pack note is found before the landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The brief of an item whose touches name a kb/_self doc tells its worker to run the _self lookup eval through a command its permission rules allow (rag.py eval --root _self, or a backlog.py wrapper) and report its noted count against NOTED_BASELINE, so a doc reword that pushes a tested row's answer words out of the pack excerpt is fixed on the worker's branch, not found at land's eval step",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_self_doc_item_runs_self_eval"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 close"
+  ],
+  "notes": "Retrospective of SP-g2ssvhi2: BG-6bb4zzdy's land stopped at step rag.py eval (noted=14 above NOTED_BASELINE=13): its _sources.csv sentence lengthened the Plan list line of kb/_self/backlog.md, which prefixes the pack excerpt of every line under it, so SQ-may-review-retrospective-propose-raising-tests-ceiling lost its ceiling words and gained a check: line. The worker said it cannot run rag.py eval (worker rule SS1-055); the orchestrator found the row by hand and resumed the worker (one rework round, about $0.86)."
+}

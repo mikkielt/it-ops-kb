@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-mujl7ebh close"
-  ]
+  ],
+  "notes": "Recurred in SP-g2ssvhi2: TK-zqeq54ma added in-function imports of bl_cost, ql_capture and ql_distill to bl_dispatch.py, selfdoc stale named kb/_self/code.md (line 57) outside its touches, and the worker stopped; the orchestrator widened the touches on the branch and resumed it. TK-iyfruywl and ST-5z4e6z4i got code.md added before their claims for the same reason."
 }

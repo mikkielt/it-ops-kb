@@ -1,0 +1,29 @@
+{
+  "id": "ST-fe76odtm",
+  "kind": "story",
+  "title": "Planning puts _tools/bl_dispatch.py in the touches of an item whose goal changes what the worker brief says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check (or precheck) warns of a committed item whose goal or a goal clause names the worker's brief and whose touches do not name _tools/bl_dispatch.py, where the brief's text lives, so the planner adds it before the start gate",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "check_warns_brief_clause_without_dispatch_touch"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 close"
+  ],
+  "notes": "Retrospective of SP-g2ssvhi2: ST-5z4e6z4i's clause 6 ('the worker's brief names it') needed _tools/bl_dispatch.py, which its planned touches lacked; the orchestrator widened them before the claim (with _tools/test_land_e2e.py and kb/_self/code.md)."
+}
