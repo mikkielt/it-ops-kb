@@ -46,6 +46,21 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Should the platform words of the suite's seconds also cover linux and win32, beyond the darwin wording the goal lists?",
+      "options": [
+        "Yes: darwin, linux and win32",
+        "Only the wordings the goal lists"
+      ],
+      "recommendation": "Yes: darwin, linux and win32",
+      "class": "agents-rule",
+      "answer": "Yes: darwin, linux and win32",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-rlincemn review"
   ],
