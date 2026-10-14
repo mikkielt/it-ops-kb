@@ -2,7 +2,7 @@
   "id": "ST-lzc7aqln",
   "kind": "story",
   "title": "The Linux pull-agent answer names the flush an idempotent nft -f file needs and its own-table scope",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-tcis5f23 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (the lines on 'swaps a whole ruleset' and 'idempotent steps (one' hold no 'flush table' and no 'own table'); the draft's line numbers 2760 and 2764 are now 2765 and 2769, so the goal names the lines by their words. _answers.md has no doc2query rows (kbfacts.units reads articles only), so no expansions.csv touch."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (the lines on 'swaps a whole ruleset' and 'idempotent steps (one' hold no 'flush table' and no 'own table'); the draft's line numbers 2760 and 2764 are now 2765 and 2769, so the goal names the lines by their words. _answers.md has no doc2query rows (kbfacts.units reads articles only), so no expansions.csv touch.",
+  "claimed_by": "orch-6ukmjucf"
 }
