@@ -50,7 +50,7 @@
       },
       "class": "design",
       "answer": "bare_url helper, public_url unchanged",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Found by the SP-waxgh3kg fresh-context review: ql_distill.feedback_report and the gates (ql_store.feedback_problems, kb_mcp.kb_feedback) check only a lead url's scheme and host; a learn.microsoft.com url with prose in its query or fragment was stored whole as lead (probe: feedback_problems returned [] for it), and from there reaches the findings files and, for a conflict, _conflicts.md.",
