@@ -2,7 +2,7 @@
   "id": "ST-rgfoek35",
   "kind": "story",
   "title": "The held-out file holds about 100 real kb-user questions, with a measured answer rate and a floor set from it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-gzr4mmkm",
   "sprint": "SP-g2qseu5s",
   "priority": "P1",
@@ -66,5 +66,6 @@
       "check": 1
     }
   ],
-  "notes": "Premise (run 2026-10-14 on ae319c43c5): lookup_heldout.csv holds 20 rows, all expect good; the fitness test runs --min 16 (tools.md, token-efficiency.md). bench_pool.PLAN samples 20 held-out ids by seed only at pool build: the grown file leaves the committed bench_pool.csv as it is; a paid pool re-run over the grown file is a separate draft for the operator. The goal research story ST-bwj6gyfj must not touch lookup_heldout.csv. Process rules (planning 2026-10-14, the operator's held-out conditions): questions come from the query log store's lookup records where one fits (placeholders for private names, never a backlog item's text), else are written as a kb user would ask; expected paths and verdicts come from reading the articles (rag.py show, rag.py facts, git grep), never from rag.py pack or eval output on the new questions; before the commit, test only for rewordings with python3 -c \"import sys;sys.path.insert(0,'_tools');import rag;print(rag.heldout_rewordings('kb/public/_retrieval/lookup_heldout.csv','public'))\" (no pack runs) and replace any question it names; commit the rows, then run the eval: that first run is the one measurement, and no row changes after it (the frozen-rows check reads git history from ae319c43c5). The eval check passes on today's 20 rows by design (it guards REWORD and OFFKB refusals); the frozen-rows check fails until the grown rows are committed."
+  "notes": "Premise (run 2026-10-14 on ae319c43c5): lookup_heldout.csv holds 20 rows, all expect good; the fitness test runs --min 16 (tools.md, token-efficiency.md). bench_pool.PLAN samples 20 held-out ids by seed only at pool build: the grown file leaves the committed bench_pool.csv as it is; a paid pool re-run over the grown file is a separate draft for the operator. The goal research story ST-bwj6gyfj must not touch lookup_heldout.csv. Process rules (planning 2026-10-14, the operator's held-out conditions): questions come from the query log store's lookup records where one fits (placeholders for private names, never a backlog item's text), else are written as a kb user would ask; expected paths and verdicts come from reading the articles (rag.py show, rag.py facts, git grep), never from rag.py pack or eval output on the new questions; before the commit, test only for rewordings with python3 -c \"import sys;sys.path.insert(0,'_tools');import rag;print(rag.heldout_rewordings('kb/public/_retrieval/lookup_heldout.csv','public'))\" (no pack runs) and replace any question it names; commit the rows, then run the eval: that first run is the one measurement, and no row changes after it (the frozen-rows check reads git history from ae319c43c5). The eval check passes on today's 20 rows by design (it guards REWORD and OFFKB refusals); the frozen-rows check fails until the grown rows are committed.",
+  "claimed_by": "orch-g2qseu5s"
 }
