@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys;p=subprocess.run(['python3','_tools/backlog.py','brief','ST-cr6lmafy','--known-suite','suite seconds budget exceeded=BG-w6z2zc6r'],capture_output=True,text=True);s=p.stdout.split('## Known failing',1)[-1].split('## Fixed rules',1)[0];sys.exit(0 if p.returncode==0 and 'suite seconds budget exceeded' in s and 'BG-w6z2zc6r' in s else 1)"
+        "import subprocess,sys;p=subprocess.run(['python3','_tools/backlog.py','brief','ST-cr6lmafy','--known-suite','suite seconds budget exceeded=BG-w6z2zc6r'],capture_output=True,text=True);s=p.stdout.split('\\n## Known failing',1)[-1].split('\\n## Fixed rules',1)[0];sys.exit(0 if p.returncode==0 and 'suite seconds budget exceeded' in s and 'BG-w6z2zc6r' in s else 1)"
       ]
     }
   ],
@@ -59,7 +59,9 @@
         "reuse the TEST line form with TEXT in backticks, closing line unchanged"
       ],
       "recommendation": "line '- suite-level, no test: TEXT: BUG label'; closing line 'A failure listed here gets no new bug; a failure not named here is yours to file as a bug.'",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "line '- suite-level, no test: TEXT: BUG label'; closing line 'A failure listed here gets no new bug; a failure not named here is yours to file as a bug.'",
+      "by": "operator"
     }
   ],
   "links": [
