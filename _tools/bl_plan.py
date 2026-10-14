@@ -5,7 +5,8 @@ prints), the eval-file rule of an item that touches a doc the goal research's ro
 (`research_rows_warnings`, which `precheck` prints), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which refuses a
 sprint on them and warns of the rest.
 
-Standard library only; imports `bl_base` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
+Standard library only; imports `bl_base`, `bl_authority` (the class of a gate, which `free_text_host_gates` reads) and
+`bl_cli` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
 never `backlog` or `bl_check`: `bl_check` imports this module for the rules `check` runs, so the two form no cycle. It registers `start` with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in
 the usage order."""
 import re
@@ -14,6 +15,7 @@ import sys
 from pathlib import Path
 
 import bl_cli
+from bl_authority import derived_class
 from bl_base import (
     APPROVALS, CHECK_TIMEOUT_S, KB_CONTENT_RE, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written,
     glob_re, id_re, in_scope, link_target, need, repositories, resolved_touch, say, scope, split_touch,
@@ -347,7 +349,8 @@ def host_gates(bl, sid, answered=True):
 
 # Words that name a host setup in a gate's question or options (the operator's list): such a gate carries a
 # --host-check command, or `host_unchecked`, the reason it cannot be checked; start warns of one with neither.
-# `host` in another sense is no host setup: `host-bound`, a routed host, a web host, a url's host.
+# `host` in another sense is no host setup: `host-bound`, a routed host, a web host, a url's host. A gate of class
+# `agents-rule` settles a rule's wording, which may mention a loaded host, and sets nothing up on one: it is skipped.
 HOST_WORDS = re.compile(r"\b(?:(?<!routed )(?<!web )(?<!url )(?<!url's )hosts?(?!-bound)"
                         r"|services?|daemons?|credentials?|logins?|installed|enabled)\b", re.I)
 
@@ -355,7 +358,8 @@ HOST_WORDS = re.compile(r"\b(?:(?<!routed )(?<!web )(?<!url )(?<!url's )hosts?(?
 def free_text_host_gates(bl, sid):
     """(item id, gate, word) for each gate of the sprint's open items whose question or options name a host setup
     (HOST_WORDS) and that carries neither a `host_check` nor a `host_unchecked` reason: its setup is named only in
-    free text, so no host check proves it (start warns; ST-q4sgzlz6)."""
+    free text, so no host check proves it (start warns; ST-q4sgzlz6). A gate whose derived class is `agents-rule`
+    (a rule's wording: the item's touches and the gate's words) is no setup and is skipped."""
     out = []
     for i in bl.sprint_items(sid):
         if bl.items[i].get("status") in ("done", "dropped"):
@@ -363,6 +367,8 @@ def free_text_host_gates(bl, sid):
         for g in bl.items[i].get("gates", []):
             if not isinstance(g, dict) or g.get("id") == START_GATE or "host_check" in g \
                     or str(g.get("host_unchecked") or "").strip():
+                continue
+            if derived_class(bl.items[i], g) == "agents-rule":
                 continue
             text = " ".join(str(x) for x in [g.get("question", "")] + list(g.get("options") or []))
             m = HOST_WORDS.search(text)
@@ -460,8 +466,8 @@ def cmd_start(bl, a):
         say(f"  warning: {bl.label(i)} depends on {bl.label(d)}, outside this sprint ({where})")
     for i, g, word in free_text_host_gates(bl, sid):
         say(f"  warning: {bl.label(i)} gate {g.get('id')} names a host setup ({word!r}) with no --host-check: add the "
-            "command that proves it on this host (gate add --host-check CMD), or the reason it cannot be checked as "
-            "the gate's host_unchecked")
+            "command that proves it on this host (gate add --host-check CMD), or give the reason it cannot be "
+            f"checked: backlog.py gate host-unchecked {i} {g.get('id')} --reason TEXT")
     for i, when, other in waiting_triggers(bl, sid):
         say(f"  warning: {bl.label(i)} waits on an unfired trigger ({when})"
             + (f" that names a {other} host, not this one" if other else "")
