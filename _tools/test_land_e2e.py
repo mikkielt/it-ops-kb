@@ -943,12 +943,12 @@ class TestHookWait:
 
 
 def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_stale_doc_not_named_and_check_commits_nothing(
-        scenario):
+        scenario, tmp_path):
     """`stage-back ID` on a worker's worktree with two staging copies (a changed file and a new one): a copy whose
     recorded base differs is refused, a stale doc `--self-reviewed` does not name is refused, `--check` puts the
     worktree back as it was, and the run that names the docs adds one commit that holds the two files only."""
     skill, new = ".claude/skills/kb-gap/SKILL.md", ".claude/skills/demo/SKILL.md"
-    repo, sp, (iid,) = planned(scenario, ("gap", skill, "python3 _tools/backlog.py list --kind sprint"), hooks=False)
+    repo, sp, (iid,) = planned(scenario, ("gap", skill, "python3 _tools/selfdoc.py check"), hooks=False)
     ok(repo, "set", iid, "--add-touch", new)
     # the docs check must pass in this scenario whatever the working tree's docs hold: a dead section reference the
     # seed carries is mended in the clone, so the check's verdict is the staged copies' alone
@@ -958,8 +958,17 @@ def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_
     repo.commit("test: the second touch", PLAN, "kb/_self")
     wt = Path(repo.path) / ".claude" / "worktrees" / f"agent-{iid}"
     repo.git("worktree", "add", "-q", "-b", f"work/{iid}", str(wt), "main")
+    tree = Repo(wt, repo.env)
+    # the checks read the worktree's docs and the one tool they run: the other tools are left out of it (tracked, not
+    # checked out), so the docs check does not parse every tool of the clone three times over
+    bulk = [f for f in tree.git("ls-files", "_tools").splitlines()
+            if f.endswith(".py") and f.count("/") == 1 and f not in ("_tools/selfdoc.py", "_tools/kbcommon.py")]
+    tree.git("update-index", "--skip-worktree", *bulk)
+    for f in bulk:
+        (wt / f).unlink()
     scratch = Path(repo.path) / "_cache" / "scratch" / iid
-    code, out = bl(repo, "brief", iid)  # the worker's brief names the command that gives its report problems=0
+    # the brief's rules section is not what is read here, and its kb pack would build a cold index of the whole kb
+    code, out = bl(repo, "brief", iid, env=plain_push(repo, tmp_path, kb_root=""))  # the report's problems=0 command
     assert code == 0 and f"stage-back {iid} --check`" in out and "`problems=` count for what you staged" in out, out
     original = (wt / skill).read_bytes()
     for rel, text in ((skill, original.decode("utf-8") + "\nA line the worker added.\n"), (new, "# demo\n")):
@@ -968,8 +977,7 @@ def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_
         copy.write_text(text, encoding="utf-8", newline="\n")
     bases = scratch / "staging-bases.json"
     good = {skill: hashlib.sha256(original).hexdigest(), new: None}
-    head = Repo(wt, repo.env).rev("HEAD")
-    tree = Repo(wt, repo.env)
+    head = tree.rev("HEAD")
 
     def untouched():
         assert tree.rev("HEAD") == head and tree.git("status", "--porcelain").strip() == "", tree.git("status")
