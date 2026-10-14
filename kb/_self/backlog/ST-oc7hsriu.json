@@ -34,7 +34,9 @@
         "also underscore-glued lower-case forms such as ssh_max_tokens"
       ],
       "recommendation": "space-separated forms before the shape",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "space-separated forms before the shape",
+      "by": "operator"
     }
   ],
   "links": [
