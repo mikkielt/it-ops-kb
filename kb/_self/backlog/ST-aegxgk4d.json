@@ -1,0 +1,26 @@
+{
+  "id": "ST-aegxgk4d",
+  "kind": "story",
+  "title": "The brief_rules test's copied tool list follows rag.py's imports instead of a hard-coded four",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "test_backlog_portable.py's brief_rules test derives the _tools modules it copies from rag.py's top-level imports (or asserts its list against them), so a new import in rag.py fails with a named message instead of a Traceback in the pack line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_rules_are"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 review"
+  ],
+  "notes": "Found by the SP-ofvvong6 review (2026-10-14), S3: the list rag, kbcommon, kbid, kbfacts matches the static imports today; provider is imported lazily and not reached by the fixture."
+}

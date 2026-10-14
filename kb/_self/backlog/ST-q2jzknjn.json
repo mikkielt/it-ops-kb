@@ -1,0 +1,33 @@
+{
+  "id": "ST-q2jzknjn",
+  "kind": "story",
+  "title": "kb/public/python/pytest-xdist.md names tests.py's --dist load as this repo's mode and cites no deleted stress_test.py",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public/python/pytest-xdist.md names _tools/tests.py and --dist load as this repository's mode, drops loadscope as this repo's default, and cites no _tools/stress_test.py (deleted in 4d70166fe), with its CODE facts pinned to a commit that holds the file they cite",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/python/pytest-xdist.md').read();sys.exit(1 if 'stress_test' in t or \"this repo's default\" in t else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/python/pytest-xdist.md",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 review"
+  ],
+  "notes": "Found by the SP-ofvvong6 review (2026-10-14): lines 16-17, 33, 89-90 and 108 call loadscope this repo's mode and quote XDIST = ['-n', 'auto']; lines 16-17 and 108 attribute --dist load to _tools/stress_test.py, deleted in 4d70166fe on 2026-10-06; line 64 lists stress_test.py among tools that start one worker per CPU. Work it through /kb-refresh."
+}
