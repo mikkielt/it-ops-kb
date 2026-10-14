@@ -122,11 +122,14 @@ def test_heldout_reword_is_refused_at_the_gate(scenario):
     assert r.returncode == 1, r.stdout + r.stderr
     assert "REWORD HO-sync-e2e-heldout ~ EV-sync-e2e-heldout" in r.stdout, r.stdout
     assert scenario.origin.rev("main") == before
-    # a range that changes only a root's doc2query expansions runs the same check on that root's held-out file
+    # a range that changes only a root's doc2query expansions, or only one of its articles, runs the same check on
+    # that root's held-out file; a ledger of the root is no article
     import kg_sync
+    held = ["kb/public/_retrieval/lookup_heldout.csv"]
     paths = ["kb/public/_retrieval/doc2query/expansions.csv", "kb/public/windows/sync-e2e-heldout.md"]
-    assert [p for p, _ in kg_sync.heldout_checks(paths)] == ["kb/public/_retrieval/lookup_heldout.csv"]
-    assert kg_sync.heldout_checks(paths[1:]) == []
+    assert [p for p, _ in kg_sync.heldout_checks(paths)] == held
+    assert [p for p, _ in kg_sync.heldout_checks(paths[1:])] == held
+    assert kg_sync.heldout_checks(["kb/public/_answers.md", "kb/_self/git.md"]) == []
 
 
 def test_code_commit_goes_to_a_branch(scenario):

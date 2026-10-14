@@ -447,9 +447,10 @@ EXPANSIONS = "doc2query/expansions.csv"  # a root's doc2query expansions, under 
 
 def heldout_checks(paths):
     """[(repository path of a lookup_heldout.csv, why its reword check runs)]: the held-out file beside each changed
-    eval set, and the one of the root whose doc2query expansions changed (PATHS None: the held-out file of every
-    root). `rag.py eval --file` on it prints a REWORD line, and exits 1, for a held-out row that rewords a tuned row or
-    an expansion of its article, which nothing else in a landing reads."""
+    eval set, and the one of the root whose doc2query expansions or an article changed (PATHS None: the held-out file
+    of every root). `rag.py eval --file` on it prints a REWORD line, and exits 1, for a held-out row that rewords a
+    tuned row or an expansion of its article, which nothing else in a landing reads; an article edit can make a
+    held-out row match an existing expansion row, so an article alone selects it."""
     if paths is None:
         found = {kbcommon.repo_rel(os.path.join(kbcommon.DATA_DIR, HELDOUT_SET), r.path): "no base to compare with"
                  for r in kbcommon.roots()}
@@ -461,6 +462,9 @@ def heldout_checks(paths):
                 found[p[:-len(EXPANSIONS)] + HELDOUT_SET] = f"doc2query expansions changed: {p}"
             elif name in EVAL_SETS and data:
                 found[data + "/" + HELDOUT_SET] = f"an eval set changed: {p}"
+            elif p.endswith(".md") and not name.startswith("_") and p.count("/") >= 3 and p.startswith("kb/"):
+                root = "/".join(p.split("/")[:2])  # kb/<root>/<domain>/<slug>.md: an article of that root
+                found.setdefault(f"{root}/{kbcommon.DATA_DIR}/{HELDOUT_SET}", f"an article changed: {p}")
     return [(p, why) for p, why in sorted(found.items()) if Path(KB, p).is_file()]
 
 
@@ -596,7 +600,7 @@ def gate(r, up, host, fix_check=False, since=None):
     clears a doc), backlog.py check for backlog items, backlog.py selectors for a changed, deleted or renamed
     _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
     query log store, rag.py eval --file on the lookup_heldout.csv beside a changed lookup_eval.csv, lookup_heldout.csv
-    or doc2query/expansions.csv (heldout_checks: refused for a REWORD line), and tests.py
+    or doc2query/expansions.csv, or of the root of a changed article (heldout_checks: refused for a REWORD line), and tests.py
     --changed UP (KB_TESTS_FAST=1: nothing for backlog items and the query log store, the suite without the git
     scenarios for kb content only, the whole suite for any other path).
     `fix_check` (the pre-push hook) adds `fix --check` and build_index.py --check first; sync runs fix itself, which
