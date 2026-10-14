@@ -2,7 +2,7 @@
   "id": "BG-vi5dw4zd",
   "kind": "bug",
   "title": "_answers.md's AlmaLinux CIS conclusion says the upstream RHEL data stream is not the route, though its own Open line and linux-cis-ssg-openscap.md:38 leave that unconfirmed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,18 @@
     "parked: SP-23m5etrf review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: repro exits 1 (the Conclusion line at _answers.md:3354 holds \"not with the upstream repository's RHEL data stream\"). expansions.csv left out of touches: _answers.md entries are not doc2query facts and no expansion row keys the AlmaLinux CIS facts.",
-  "claimed_by": "orch-lsamtvsz"
+  "evidence": {
+    "commit": "ad2ee6d103d9a77f66e70e6bff4f44fa6b01c30c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; sys.exit(1 if any(l.startswith('- Conclusion: AlmaLinux 8 and 10') and \"not with the upstream repository's RHEL data stream\" in l for l in pathlib.Path('kb/public/_answers.md').read_text().splitlines()) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
