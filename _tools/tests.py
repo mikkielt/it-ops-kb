@@ -314,8 +314,7 @@ def run_pytest(args):
     os.close(fd)
     start = time.monotonic()
     try:
-        code = subprocess.run(cmd + ["-n", str(worker_count(args)), "--dist", "loadscope", "--no-loadscope-reorder",
-                                    f"--junitxml={xml}"] + args,
+        code = subprocess.run(cmd + ["-n", str(worker_count(args)), "--dist", "load", f"--junitxml={xml}"] + args,
                               cwd=KB).returncode
         return {"exit": code, "ms": int((time.monotonic() - start) * 1000), "files": junit_files(xml)}
     finally:
