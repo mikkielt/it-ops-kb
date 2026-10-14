@@ -117,7 +117,9 @@
         "outcome is required, and one of pack or question; the row keeps the id as field fb": "ST-j5gd7ixn",
         "only pack or question is required; the row keeps the id as field feedback_id": "ST-j5gd7ixn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "outcome is required, and one of pack or question; the row keeps the id as field fb",
+      "by": "operator"
     },
     {
       "id": "g2",
