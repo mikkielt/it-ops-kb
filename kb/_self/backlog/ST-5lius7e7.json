@@ -2,7 +2,7 @@
   "id": "ST-5lius7e7",
   "kind": "story",
   "title": "Research sprint goal: Lookup feedback: a pack handle, kb_feedback, and distill and learn turn reports into checked findings",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-waxgh3kg",
   "goal_research": true,
   "priority": "P1",
@@ -40,5 +40,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-waxgh3kg"
+  "evidence": {
+    "commit": "4b14d08eb0ced4e666c2f4820a6bee83fc9ee655",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5lius7e7"
+        ],
+        "exit": 0,
+        "sha256": "0e5ababc6bc746a5"
+      }
+    ]
+  }
 }
