@@ -41,6 +41,21 @@
     "kb/_self/web-sources.md",
     "kb/_self/plugin.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does each sweep rule sit and how wide is its search?",
+      "options": [
+        "research bullet in step 3 + worker rule 3 sentence, search -k 30 with --index on the root, grep fallback without kb_root",
+        "new numbered worker rule and a separate research sub-step"
+      ],
+      "recommendation": "research bullet in step 3 + worker rule 3 sentence, search -k 30 with --index on the root, grep fallback without kb_root",
+      "class": "agents-rule",
+      "answer": "research bullet in step 3 + worker rule 3 sentence, search -k 30 with --index on the root, grep fallback without kb_root",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-23m5etrf close",
     "merged: ST-twgdb6gq"
