@@ -1,0 +1,35 @@
+{
+  "id": "BG-256h2xwg",
+  "kind": "bug",
+  "title": "BG-3yjqrfkp's push-word exceptions read past a real push: a count question that asks to act on the push and a gitlab/ remote ref are classed design",
+  "status": "todo",
+  "sprint": "SP-hlt2tdel",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "class_reasons in _tools/bl_authority.py classes push again a question that names a push action beside a how-many and display word (How many times should the worker retry the push after the list is shown?) and a gitlab/ remote ref that is no kb topic path (Should land reset to gitlab/main?, Should the worker force-update gitlab/main?), as it did before SP-hlt2tdel, while the three shapes BG-3yjqrfkp's goal names (an upload date, the kb topic path gitlab/git-commit-paths-and-symlinks, a display-only count question) stay no push gate (found by the SP-hlt2tdel review)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q:a.class_reasons({'touches':[]},{'question':q,'options':['a','b']})[0];yes=['How many times should the worker retry the push after the list is shown?','How many commits does land list, and should the worker run the push?','Should land reset to gitlab/main?','Should the worker force-update gitlab/main?'];sys.exit(0 if all(c(q)=='push' for q in yes) else 1)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q:a.class_reasons({'touches':[]},{'question':q,'options':['a','b']})[0];no=['PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version do the install facts state?','Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-test-repositories?','How many of the checkouts unpushed commits does land list by name before its push?'];sys.exit(0 if all(c(q)!='push' for q in no) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Filed by the SP-hlt2tdel review (fresh-context reviewer gaps 1 and 2, reviewer severity S2; filed S1 in the sprint by the operator policy that an operator-only class is never weakened). Before the sprint (7afd58817) both reviewer probes classed push; after BG-3yjqrfkp they class design: PUSH_NOUN (bl_authority.py:190) never checks that the push is display-only, TOPIC_PATH (bl_authority.py:186) blanks any gitlab/<slug>. The suite is at its test-id ceiling: extend an existing test_authority test, add no test id; never raise the ceiling."
+}

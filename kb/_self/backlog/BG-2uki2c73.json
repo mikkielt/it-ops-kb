@@ -1,0 +1,26 @@
+{
+  "id": "BG-2uki2c73",
+  "kind": "bug",
+  "title": "A token-named .md path with bearer, ssh, passphrase or PAT in its name is blanked by TOKEN_DOC and classed design, and test_authority plants no doc-name shape",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "class_reasons in _tools/bl_authority.py keeps the secrets class for a .md name that holds token beside a secrets word (docs/bearer-token.md, ssh-token.md, passphrase-token-store.md, PAT-token.md), and the secrets_fail_closed_inside_token_exceptions test plants each secrets word in the doc-name shape too (SP-hlt2tdel review gap 4, ST-oc7hsriu)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q:a.class_reasons({'touches':[]},{'question':q,'options':['a','b']})[0];sys.exit(0 if all(c('Should the worker edit docs/'+n+'?')=='secrets' for n in ['bearer-token.md','ssh-token.md','passphrase-token-store.md','PAT-token.md']) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel review"
+  ]
+}

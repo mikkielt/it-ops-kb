@@ -1,0 +1,26 @@
+{
+  "id": "BG-owfgwtyl",
+  "kind": "bug",
+  "title": "A credential list qualified by a word outside the fixed credential list (service, Slack, private tokens, units, points) or a credential noun in the question with the unit list in an option is classed design",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "class_reasons in _tools/bl_authority.py keeps the secrets class for a unit-noun list whose tokens carry a credential qualifier (service tokens, Slack tokens, private tokens, API with two spaces or a possessive) and for a question that names a credential owner (the API) beside an option that starts with tokens, while a plain unit-noun list stays design (SP-hlt2tdel review gap 3 and the orchestrator's cross-join probe, BG-t6xrawba)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q,o=['a','b']:a.class_reasons({'touches':[]},{'question':q,'options':o})[0];ok=all(c(q)=='secrets' for q in ['Print service tokens, units, points','Should the worker print Slack tokens, rows, lines to the log?','Print private tokens, rows, lines']) and c('Which counts does the cost line name for the API',['tokens, units, points','units only'])=='secrets';sys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel review"
+  ]
+}

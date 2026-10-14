@@ -1,0 +1,25 @@
+{
+  "id": "BG-qdswfli3",
+  "kind": "bug",
+  "title": "start's host-setup warning goes silent on every gate of an item whose touches derive agents-rule, not only on a rule-wording gate",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "free_text_host_gates in _tools/bl_plan.py skips only a gate whose own wording is about a rule, so a gate naming a service account on an item touching _tools/bl_items.py still warns at start (SP-hlt2tdel review gap 5, ST-dbyng654)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_plan as p;B=type('B',(),{'items':{'ST-1':{'touches':['_tools/bl_items.py'],'status':'todo','gates':[{'id':'g1','question':'Which service account must the daemon run as on the host?','options':['a','b']}]}},'sprint_items':lambda self,s:['ST-1']});sys.exit(0 if p.free_text_host_gates(B(),'SP-x') else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel review"
+  ]
+}

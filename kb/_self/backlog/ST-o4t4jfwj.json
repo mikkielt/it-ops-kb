@@ -1,0 +1,25 @@
+{
+  "id": "ST-o4t4jfwj",
+  "kind": "story",
+  "title": "The sprint skill names brief and dispatch's --known-suite TEXT=BUG, so an orchestrator passes the known seconds-ceiling refusal to every worker",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md's run step 3 names --known-suite TEXT=BUG beside --known and --probe for brief and dispatch (SP-hlt2tdel review gap 6, ST-cr6lmafy)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if '--known-suite' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel review"
+  ]
+}

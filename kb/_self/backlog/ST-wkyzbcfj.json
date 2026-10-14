@@ -1,0 +1,29 @@
+{
+  "id": "ST-wkyzbcfj",
+  "kind": "story",
+  "title": "Every gate add command a worker is given names a --do per option: the brief's fixed rules and the role file's blocking-gate bullet",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_dispatch.WORKER_RULES' gate add command and agents/worker.md rule 6's blocking-gate bullet name a --do OPTION=ID per option, and the provisional bullet's reason names the blocking case check warns of, so a worker's blocking gate is never added without its do map (SP-hlt2tdel review gap 7; ST-oc7hsriu's worker added g1 with no do from the brief in this sprint)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_dispatch as d;t=' '.join(r if isinstance(r,str) else ' '.join(r) for r in d.WORKER_RULES);ls=[l for l in open('agents/worker.md',encoding='utf-8') if 'gate add ID --kind blocking' in l];sys.exit(0 if 'gate add' in t and '--do' in t and ls and all('--do' in l for l in ls) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel review"
+  ],
+  "notes": "The check reads a role-file line holding 'gate add ID --kind blocking': the blocking bullet (agents/worker.md rule 6, second sub-bullet) has no command today, so the work gives it one in that form."
+}
