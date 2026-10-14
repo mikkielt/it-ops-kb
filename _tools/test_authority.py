@@ -49,7 +49,7 @@ def edit_gate(root, iid, **kw):
     f.write_text(json.dumps(it, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_class_changes_nothing():
+def test_operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions():
     plain = {"id": "g", "question": "Which name?", "options": ["a", "b"]}
     for touches, cls in ((["_tools/kbgit.py"], "push"), ([".claude/skills/*.md"], "agents-rule"),
                          ([".claude"], "agents-rule"), (["_tools/kbpublic.py"], "push"), (["_tools/"], "ceiling"),
@@ -84,6 +84,23 @@ def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_
         assert ba.gate_class({"touches": []}, {**plain, "question": question}) == "ceiling", question
         assert ba.names_ceiling(question), question
     assert ba.gate_class({"touches": []}, {**plain, "question": "Which retry ceiling does the fetch take?"}) == "design"
+    # each secrets word planted inside each shape `without_token_counts` and `without_unit_lists` blank keeps `secrets`: an
+    # exception that removed the word with the shape would fall the gate to design (SECRET_TOKENS, PASSWORD_TOKENS)
+    def secrets(question, *options):
+        return ba.class_reasons({"touches": []}, {**plain, "question": question, "options": list(options) or ["a", "b"]})[0]
+    for word in ("secret", "password", "passphrase", "credential", "api", "bearer", "ssh"):
+        up = word.upper()
+        shapes = (f"{up}_TOKENS", f"DISPATCH_{up}_TOKENS", f"{up}_MAX_TOKENS",  # an upper-case identifier
+                  f"{word} phase token", f"{word} closed token",  # an ops-row value
+                  f"{word} output tokens", f"{word} input tokens", f"{word} max tokens", f"{word} token count",
+                  f"{word} output_tokens", f"{word} count of tokens",  # a model's token count
+                  f"{word} tokens, units, points", f"{word} tokens and units or points")  # a unit-noun list
+        for shape in shapes:
+            assert secrets(f"Which {shape} does the run take?") == "secrets", shape
+            assert secrets("Which one?", f"{shape} for x", "b") == "secrets", shape  # in an option, as each is read alone
+        # a unit-noun list straddling the question and an option is no list of one text: its `tokens` keeps the class
+        assert secrets(f"Count {word} units,", "tokens, points", "b") == "secrets", word
+        assert secrets(f"Count {word} units, points,", "tokens", "b") == "secrets", word
 
 
 def test_gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):
