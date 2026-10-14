@@ -34,7 +34,9 @@
         "per-commit but compare to the item's last commit, not HEAD"
       ],
       "recommendation": "per-commit: each item commit read against its own parent, kept when it differs at HEAD from the first such parent",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "per-commit: each item commit read against its own parent, kept when it differs at HEAD from the first such parent",
+      "by": "operator"
     }
   ],
   "links": [
