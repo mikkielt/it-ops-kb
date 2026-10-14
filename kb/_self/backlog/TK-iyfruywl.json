@@ -42,6 +42,60 @@
     "kb/_self/backlog.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does stage-back know the base a staging copy was made from?",
+      "options": [
+        "dispatch records the digest of the worktree's file in staging-bases.json of the scratch directory when it stages the copy",
+        "compare with the file at the worktree's HEAD"
+      ],
+      "recommendation": "dispatch records the digest of the worktree's file in staging-bases.json of the scratch directory when it stages the copy",
+      "class": "agents-rule",
+      "answer": "dispatch records the digest of the worktree's file in staging-bases.json of the scratch directory when it stages the copy",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does stage-back do with a staging copy that has no recorded base (made before dispatch recorded bases)?",
+      "options": [
+        "refuse it, naming the file, so the orchestrator copies it back by hand",
+        "accept it when the worktree's file equals the file at HEAD"
+      ],
+      "recommendation": "refuse it, naming the file, so the orchestrator copies it back by hand",
+      "class": "agents-rule",
+      "answer": "refuse it, naming the file, so the orchestrator copies it back by hand",
+      "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What does stage-back --check run over the staged copies?",
+      "options": [
+        "selfdoc.py check, and the list of stale docs without failing on them",
+        "selfdoc.py check and the item's own checks"
+      ],
+      "recommendation": "selfdoc.py check, and the list of stale docs without failing on them",
+      "class": "agents-rule",
+      "answer": "selfdoc.py check, and the list of stale docs without failing on them",
+      "by": "operator"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How do the session's own trailers (Co-Authored-By, Session) reach the commit stage-back makes?",
+      "options": [
+        "--trailer 'Key: value', repeatable, written after KB-Work as claim and answer do",
+        "read from the environment"
+      ],
+      "recommendation": "--trailer 'Key: value', repeatable, written after KB-Work as claim and answer do",
+      "class": "agents-rule",
+      "answer": "--trailer 'Key: value', repeatable, written after KB-Work as claim and answer do",
+      "by": "operator"
+    }
+  ],
   "notes": "Orchestrator (2026-10-14): kb/_self/code.md added to the touches before the claim; a new import or facade entry in bl_dispatch.py and backlog.py makes selfdoc stale name it (as it did for TK-zqeq54ma).",
   "claimed_by": "orch-g2ssvhi2"
 }

@@ -19,6 +19,7 @@ multi-repository item (`multirepo_land`): each repository's request read once, a
 repository and state, a dirty, locked or live-process worktree refused by name with none removed, the clean ones
 removed, the branches on the default branch deleted, each merge commit written as evidence, and the leftovers close
 removes."""
+import hashlib
 import json
 import os
 import re
@@ -920,3 +921,61 @@ class TestHookWait:
         procs, waited, _ = bl_land.wait_for_hooks(Path("w"), [(4242, "python3")], clock=lambda: now[0],
                                                   sleep=lambda s: sleeps.append(s))
         assert procs == [(4242, "python3")] and waited == 0 and sleeps == []
+
+
+def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_stale_doc_not_named_and_check_commits_nothing(
+        scenario):
+    """`stage-back ID` on a worker's worktree with two staging copies (a changed file and a new one): a copy whose
+    recorded base differs is refused, a stale doc `--self-reviewed` does not name is refused, `--check` puts the
+    worktree back as it was, and the run that names the docs adds one commit that holds the two files only."""
+    skill, new = ".claude/skills/kb-gap/SKILL.md", ".claude/skills/demo/SKILL.md"
+    repo, sp, (iid,) = planned(scenario, ("gap", skill, "python3 _tools/backlog.py list --kind sprint"), hooks=False)
+    ok(repo, "set", iid, "--add-touch", new)
+    # the docs check must pass in this scenario whatever the working tree's docs hold: a dead section reference the
+    # seed carries is mended in the clone, so the check's verdict is the staged copies' alone
+    p = subprocess.run([sys.executable, "_tools/selfdoc.py", "check"], cwd=repo.path, capture_output=True, text=True)
+    for path, heading in re.findall(r"^PROBLEM (\S+?):\d+: \(\S+, (.+?)\) names no heading", p.stdout, re.M):
+        repo.write(path, repo.read(path).replace(heading, "Sprints"))
+    repo.commit("test: the second touch", PLAN, "kb/_self")
+    wt = Path(repo.path) / ".claude" / "worktrees" / f"agent-{iid}"
+    repo.git("worktree", "add", "-q", "-b", f"work/{iid}", str(wt), "main")
+    scratch = Path(repo.path) / "_cache" / "scratch" / iid
+    original = (wt / skill).read_bytes()
+    for rel, text in ((skill, original.decode("utf-8") + "\nA line the worker added.\n"), (new, "# demo\n")):
+        copy = scratch / "staging" / rel
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        copy.write_text(text, encoding="utf-8", newline="\n")
+    bases = scratch / "staging-bases.json"
+    good = {skill: hashlib.sha256(original).hexdigest(), new: None}
+    head = Repo(wt, repo.env).rev("HEAD")
+    tree = Repo(wt, repo.env)
+
+    def untouched():
+        assert tree.rev("HEAD") == head and tree.git("status", "--porcelain").strip() == "", tree.git("status")
+        assert (wt / skill).read_bytes() == original and not (wt / new).exists()
+
+    bases.write_text(json.dumps({**good, skill: "0" * 64}), encoding="utf-8")  # the worktree's file is not its base
+    code, out = bl(repo, "stage-back", iid)
+    assert code == 1 and f"{skill}: the worktree's file is not the one its copy was made from" in out, out
+    untouched()
+
+    bases.write_text(json.dumps(good), encoding="utf-8")
+    code, out = bl(repo, "stage-back", iid, "--check")
+    assert code == 0 and "selfdoc.py check: problems=0" in out, out
+    stale = re.search(r"selfdoc\.py stale --since HEAD: (.+)", out).group(1).split(", ")
+    assert "AGENTS.md" in stale and "committed" not in out, out
+    untouched()
+
+    code, out = bl(repo, "stage-back", iid)  # the stale docs are not named: refused, nothing committed
+    assert code == 1 and "not named by --self-reviewed" in out and "refused" in out, out
+    untouched()
+
+    args = [x for d in stale for x in ("--self-reviewed", d)]
+    code, out = bl(repo, "stage-back", iid, *args, "--trailer", "Session: stage-back test")
+    assert code == 0 and re.search(r"committed \w+ chore\(backlog\): stage-back", out), out
+    assert tree.git("rev-list", "--count", f"{head}..HEAD").strip() == "1", out
+    assert sorted(tree.git("show", "--name-only", "--format=", "HEAD").split()) == sorted([new, skill])
+    trailers = tree.git("log", "-1", "--format=%(trailers:only,unfold)").splitlines()
+    assert f"KB-Work: {iid}" in trailers and f"Self-Reviewed: {', '.join(stale)}" in trailers, trailers
+    assert "Session: stage-back test" in trailers and (wt / new).read_text(encoding="utf-8") == "# demo\n"
+    assert tree.git("status", "--porcelain").strip() == ""
