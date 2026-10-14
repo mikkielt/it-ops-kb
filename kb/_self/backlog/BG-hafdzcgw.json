@@ -1,0 +1,24 @@
+{
+  "id": "BG-hafdzcgw",
+  "kind": "bug",
+  "title": "kg_sync.heldout_checks selects the held-out file for a .md under an underscore directory, such as _retrieval/notes.md or _snapshots/README.md",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kg_sync.heldout_checks in _tools/kg_sync.py counts as an article only kb/<root>/<domain>/<slug>.md whose every path part below the root has no leading underscore, so kb/public/_retrieval/notes.md and kb/public/_snapshots/README.md select nothing, and a changed article still selects its root's lookup_heldout.csv. Found by the SP-g2qseu5s review (S4, kg_sync.py:465): an extra reword check runs, no wrong refusal.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kg_sync;r=[p for p in ('kb/public/_retrieval/notes.md','kb/public/_snapshots/README.md') if kg_sync.heldout_checks([p])];print(r);sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/test_sync_e2e.py"
+  ],
+  "links": [
+    "parked: SP-g2qseu5s review"
+  ]
+}

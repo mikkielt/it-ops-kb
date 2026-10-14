@@ -80,7 +80,7 @@
       },
       "class": "design",
       "answer": "Re-check the name before claiming; the third writer's lock survives; the displaced holder re-verifies its lock (held()) just before the write and exits 2 asking for a rerun",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
