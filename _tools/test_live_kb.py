@@ -356,7 +356,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert all("Authorization" not in h for _, h in asked), asked
 
 
-def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline_and_revalidate_down_window_every_request_and_revalidate_down_window_redirect_target(monkeypatch, tmp_path, capsys):
+def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_pack_handle_is_the_last_line_of_the_pack_kb_pack_and_the_kb_hook_print_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline_and_revalidate_down_window_every_request_and_revalidate_down_window_redirect_target(monkeypatch, tmp_path, capsys):
     counted = []
     for code, out in eval_live():
         m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+ mean_chars=\d+ noted=(\d+)", out, re.M)
@@ -758,6 +758,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     # younger than the lifetime; revalidate false, KB_NO_REVALIDATE and the kb: hook ask nothing
     monkeypatch.setenv("KB_NO_UPSTREAM", "1")
     monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "live" / "factdiff"))
+    monkeypatch.setattr(kbfacts, "pack_store", lambda: str(tmp_path / "packs"))
     pre = kbfacts.pack_many([question])
     cited = list(dict.fromkeys(i for r in pre["results"] for p in r.get("printed", []) for i in p["ids"]))
     assert cited, pre["text"][-800:]
@@ -795,6 +796,19 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     monkeypatch.setattr(factdiff, "revalidate", lambda *a, **k: pytest.fail("the kb: hook revalidated"))
     res = kb_hook.answer("kb: " + question)
     assert res and res["decision"] == "block" and "[stale" not in res["reason"] and "revalidate" not in res["reason"]
+    # the pack handle: the last offline line, the same on every server and in the hook, kept for a bounded time and count
+    handle = first.splitlines()[-1]
+    assert re.fullmatch(r"pack: P-[0-9a-f]{8}", handle) and handle in res["reason"].splitlines()
+    assert kb_mcp.kb_pack({"question": question, "revalidate": False}).splitlines()[-1] == handle
+    assert kbfacts.pack_many([question + " again"])["pack"] != handle[len("pack: "):]
+    rec = kbfacts.stored_pack(handle[len("pack: "):])
+    assert rec["questions"] == [question] and rec["commit"] == kbfacts.kb_commit() and rec["lines"][-1] == handle
+    assert kbfacts.pack_handle([question], commit="a" * 40) != kbfacts.pack_handle([question], commit="b" * 40)
+    old_file = tmp_path / "packs" / (handle[len("pack: "):] + ".json")
+    os.utime(old_file, (1, 1))
+    monkeypatch.setattr(kbfacts, "PACK_HANDLE_KEEP", 1)
+    kbfacts.pack_many([question + " more"])
+    assert not old_file.exists() and len(list((tmp_path / "packs").glob("P-*.json"))) == 1
     stage["late"] = False  # every source inside its lifetime: nothing is asked, and the last line says so
     monkeypatch.setattr(factdiff, "revalidate", ask)
     quiet = kb_mcp.kb_pack({"question": question}).splitlines()

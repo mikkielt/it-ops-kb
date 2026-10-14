@@ -97,6 +97,68 @@
       "class": "agents-rule",
       "answer": "7 days and 500 handles",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does ql_capture read the pack handle: a separate pack_handle(text) reader beside pack_lines, or inside pack_lines?",
+      "options": [
+        "separate pack_handle(text); pack_lines keeps its list shape",
+        "pack_lines returns the handle too, changing the shape its consumers read"
+      ],
+      "recommendation": "separate pack_handle(text); pack_lines keeps its list shape",
+      "do": {
+        "separate pack_handle(text); pack_lines keeps its list shape": "ST-brjhg6wl",
+        "pack_lines returns the handle too, changing the shape its consumers read": "ST-brjhg6wl"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which lookups print the pack handle line: pack_many (rag.py pack, kb_pack, kb_ask.py) and the kb: hook, or only rag.py pack and kb_pack?",
+      "options": [
+        "pack_many and the kb: hook, so kb_pack and kb_ask.py print the same text",
+        "only rag.py pack and kb_pack"
+      ],
+      "recommendation": "pack_many and the kb: hook, so kb_pack and kb_ask.py print the same text",
+      "do": {
+        "pack_many and the kb: hook, so kb_pack and kb_ask.py print the same text": "ST-brjhg6wl",
+        "only rag.py pack and kb_pack": "ST-brjhg6wl"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does the pack handle hash the revalidate argument?",
+      "options": [
+        "no: every pack argument but revalidate, so stdio and kb_http.py give one handle",
+        "yes: revalidate is hashed too"
+      ],
+      "recommendation": "no: every pack argument but revalidate, so stdio and kb_http.py give one handle",
+      "do": {
+        "no: every pack argument but revalidate, so stdio and kb_http.py give one handle": "ST-brjhg6wl",
+        "yes: revalidate is hashed too": "ST-brjhg6wl"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Where does the handle store live and what does it hold?",
+      "options": [
+        "packs/ of the index directory (_cache/ of the clone), one JSON file per handle with questions, printed lines, commit and time",
+        "a new directory beside the query log spool"
+      ],
+      "recommendation": "packs/ of the index directory (_cache/ of the clone), one JSON file per handle with questions, printed lines, commit and time",
+      "do": {
+        "packs/ of the index directory (_cache/ of the clone), one JSON file per handle with questions, printed lines, commit and time": "ST-brjhg6wl",
+        "a new directory beside the query log spool": "ST-brjhg6wl"
+      },
+      "class": "querylog",
+      "answer": "packs/ of the index directory (_cache/ of the clone), one JSON file per handle with questions, printed lines, commit and time",
+      "by": "agent"
     }
   ],
   "links": [

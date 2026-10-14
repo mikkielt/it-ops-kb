@@ -52,6 +52,7 @@ TAGS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK", "DECISION")
 KB_LINE = re.compile(r"^\s*(- |\[[\d.]+\] )([\w-]+(?:/[\w.-]+)+:[1-9]\d*)(?![\w:])(.*)$")  # a pack line, a search hit
 LINE_TAG = re.compile(r"\[(DOC|CODE|DER|COMMUNITY|UNK|DECISION)\b[^\]]*\]\s*$")
 COVERAGE = re.compile(r"^coverage: (good|weak|none)\b", re.M)
+PACK_HANDLE = re.compile(r"^pack: (P-[0-9a-f]{8})\s*$", re.M)  # the line kbfacts.handled adds to a pack's text
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
@@ -406,12 +407,19 @@ def pack_lines(text):
     return out or None
 
 
+def pack_handle(text):
+    """The `P-<8 hex>` of the `pack:` line a kb_pack or rag.py pack result ends with (kbfacts.handled), the last one
+    when a pack holds several; None when it has none."""
+    found = PACK_HANDLE.findall(text or "")
+    return found[-1] if found else None
+
+
 def pack_summary(text):
-    """{verdict, verdicts, articles, lines} of a kb tool's result text (the pack's `coverage:` lines, `## path` heads
-    and kb lines)."""
+    """{verdict, verdicts, articles, lines, pack} of a kb tool's result text (the pack's `coverage:` lines, `## path`
+    heads, kb lines and `pack:` handle)."""
     verdicts = COVERAGE.findall(text)
     articles = list(dict.fromkeys(re.findall(r"^## (\S+/\S+)", text, re.M)))[:20]
-    out = {"articles": articles or None, "lines": pack_lines(text)}
+    out = {"articles": articles or None, "lines": pack_lines(text), "pack": pack_handle(text)}
     if verdicts:
         out["verdict"] = min(verdicts, key=VERDICTS.index)
         if len(verdicts) > 1:

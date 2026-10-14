@@ -76,7 +76,7 @@ def respond(prompt):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import kbcommon, kbfacts
     try:
-        res = kbfacts.pack_routed(question)
+        res = kbfacts.handled(kbfacts.pack_routed(question), [question])
     except kbcommon.RootError as e:  # a malformed ROOT_FILE or a clash between roots: never block the prompt on it
         return ({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                         "additionalContext": f"it-ops-kb could not read its roots: {e}"}},
@@ -175,8 +175,10 @@ def routed(res):
             "documentation on the web) and label that part 'live docs, not in the kb' with its url; never fill it "
             "from memory. Do not search the kb again.")
     if route == "web":
+        handle = [ln for ln in lines if ln.startswith("pack: P-")]  # the pack's handle, after its footer
         lines = [ln for ln in lines[:lines.index("")] if ln.startswith(HEAD_LINES)] if "" in lines else \
             [ln for ln in lines if ln.startswith(HEAD_LINES)]
+        lines += [ln for ln in handle if ln not in lines]
         what = "The kb has no coverage for this question, so no fact lines follow. State what it has and lacks from " \
                "the lines below, then " + live
     else:
@@ -370,7 +372,8 @@ def main():
         print(json.dumps(out, ensure_ascii=False))
     if row is not None:  # a kb: prompt: one spool row (kb/_self/querylog.md, Capture); a plain prompt loads nothing
         import ql_capture
-        row["lines"] = ql_capture.pack_lines(row.pop("pack", ""))
+        text = row.pop("pack", "")
+        row["lines"], row["pack"] = ql_capture.pack_lines(text), ql_capture.pack_handle(text)
         ql_capture.record("kb_hook", event.get("session_id"), prompt_id=event.get("prompt_id"), **row)
 
 
