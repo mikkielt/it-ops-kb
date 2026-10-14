@@ -362,3 +362,7 @@ EV-kbid-add-learn-licence-through-public-mirror,How does kbid.py add read the li
 EV-sprint-reviewer-makes-no-paid-model-call,may the sprint reviewer make paid model calls,backlog.md,good,yes,the reviewer makes no paid model call,kb-sprint:review
 EV-research-item-source-rows-outside-touches,may a research item add source rows outside its touches,backlog.md,good,yes,has that root's `_sources.csv` in them,kb-backlog:plan;kb-sprint:plan
 EV-review-confirms-provisional-answer-after-reviewer-report,when does the review confirm a provisional answer relative to the reviewer report,backlog.md,good,yes,only after the reviewer's report is in,kb-sprint:review
+EV-which-words-make-gate-class-push-or-secrets,which words make a backlog gate class push or secrets,backlog.md,good,yes,"public repository give `push` and `.env`, rotate keys `secrets`",
+EV-sprint-worker-brief-names-known-failing-tests-and-files-bugs,how a sprint worker's brief names known failing tests and files bugs,backlog.md,good,yes,a failure the brief does not name is the worker's to file,
+EV-gate-add-takes-do-map-per-option,how gate add takes a do map per option,backlog.md,good,yes,"`--do OPTION=CMD|ID` gives an option its `do` field, the argv that carries it out or the id of the item whose work adds that command",
+EV-backlog-start-warns-gate-names-host-setup,when backlog start warns of a gate that names a host setup,tools.md,good,yes,warns of a gate whose question or options name a host setup (`bl_plan.HOST_WORDS`,
