@@ -2,7 +2,7 @@
   "id": "BG-chw4sg54",
   "kind": "bug",
   "title": "Concurrent dispatch runs race on the claims ledger: a shared tmp file crashes a dispatch and orphans its worker",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g2ssvhi2",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,6 @@
   "links": [
     "parked: SP-uzwbt63u close"
   ],
-  "notes": "Found at the SP-uzwbt63u close: four backlog.py dispatch runs started at once all write the claims ledger through bl_dispatch.record_worker, which reads the ledger, then writes a fixed kb-backlog-claims.json.tmp and os.replace()s it; two dispatches died with FileNotFoundError on the replace after their claude -p had started, leaving two orphaned workers (parent pid 1, no worker_session recorded at exit), and the read-modify-write lost the other two items' worker_pid. Premise (planner, 2026-10-13): the repro (six processes, 30 record_worker calls each) exits 1 on this tree before the work. bl_items.cmd_claim writes the same ledger without the lock: outside this item's touches, so the worker files it as a bug (gate on the lock's scope). Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Found at the SP-uzwbt63u close: four backlog.py dispatch runs started at once all write the claims ledger through bl_dispatch.record_worker, which reads the ledger, then writes a fixed kb-backlog-claims.json.tmp and os.replace()s it; two dispatches died with FileNotFoundError on the replace after their claude -p had started, leaving two orphaned workers (parent pid 1, no worker_session recorded at exit), and the read-modify-write lost the other two items' worker_pid. Premise (planner, 2026-10-13): the repro (six processes, 30 record_worker calls each) exits 1 on this tree before the work. bl_items.cmd_claim writes the same ledger without the lock: outside this item's touches, so the worker files it as a bug (gate on the lock's scope). Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-g2ssvhi2"
 }
