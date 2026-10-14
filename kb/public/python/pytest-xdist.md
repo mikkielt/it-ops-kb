@@ -17,11 +17,14 @@ configuration itself; this article covers what changes when `-n` is used, which 
 comment "a class's scenario is built once, on one worker") use in this repository.
 
 ## Facts
-- `-n auto` uses as many worker processes as the machine has physical CPU cores; `-n logical` uses
-  logical cores instead (needs `psutil`, and falls back to `-n auto` behaviour if `psutil` is missing
-  or fails); `-n 0` disables xdist and runs everything in the main process; `-n <N>` requests exactly
-  `N` workers. `--maxprocesses=N` caps the worker count and `--max-worker-restart` bounds how many
-  crashed workers get restarted. [DOC S-t7c2nvll]
+- `-n auto` uses as many worker processes as the machine has physical CPU cores when `psutil` is
+  importable, and otherwise the count comes from the fallbacks in the resolution order below;
+  `-n logical` uses logical cores instead (needs `psutil`, and falls back to `-n auto` behaviour if
+  `psutil` is missing or fails); `-n 0` disables xdist and runs everything in the main process;
+  `-n <N>` requests exactly `N` workers. `--maxprocesses=N` caps the worker count and
+  `--max-worker-restart` bounds how many crashed workers get restarted. [DER S-t7c2nvll, S-qejsavhl:
+  the docs' physical-core statement, and the resolution order below, where physical cores come from
+  `psutil` only]
 - `--dist load` is the **default** distribution mode: pending tests go to any available worker with no
   guaranteed order or grouping. [DOC S-t7c2nvll]
 - `--dist loadscope` groups tests by module (for plain test functions) and by class (for test

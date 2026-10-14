@@ -22,6 +22,21 @@
   "depends_on": [
     "ST-e62uklfi"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which tag does the reworded -n auto fact carry, given the docs page states physical cores and psutil only under -n logical?",
+      "options": [
+        "DOC S-t7c2nvll kept",
+        "DER S-t7c2nvll, S-qejsavhl: docs statement plus the resolution order from the plugin source"
+      ],
+      "recommendation": "DER S-t7c2nvll, S-qejsavhl: docs statement plus the resolution order from the plugin source",
+      "class": "design",
+      "answer": "DER S-t7c2nvll, S-qejsavhl: docs statement plus the resolution order from the plugin source",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-qlpfcgs2 review"
   ],
