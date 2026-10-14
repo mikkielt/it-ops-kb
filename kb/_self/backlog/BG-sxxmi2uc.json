@@ -2,7 +2,7 @@
   "id": "BG-sxxmi2uc",
   "kind": "bug",
   "title": "census.today, kbdecide, provider and kg_history date a run by the local day while factdiff.today names the UTC day",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2qseu5s",
   "priority": "P2",
   "rank": 0,
@@ -62,5 +62,28 @@
     }
   ],
   "notes": "SP-wjp5qllo review (S3) found it again: census.today() (census.py:265) and kbdecide.py:294 are still the local day, and census run passes --date to factdiff detect and apply, so a census in the window dates verified_utc and confirmed one day off from the UTC checked_utc stamps. Premise (2026-10-14, ae319c43c5): census.today() under TZ Etc/GMT-14 vs Etc/GMT+12 gives two days, exit 1; kbdecide.day(None) (the goal's kbdecide._today is the function day; kblog.py imports it) and provider.probed_utc and kg_history's future-date check use the local day too; factdiff.today() is UTC. The repro now compares census, kbdecide and factdiff in the two extreme zones. One helper in kbcommon.py (factdiff imports provider, so provider cannot import factdiff). Test: a TZ assertion in a census helper of test_redact.py's test_census_queue_and_census_groups id, TZ restored with time.tzset; no new id. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise.",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "f8f29e642830777390fb5e8ce07b577244b0343d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_census_queue_and_census_groups"
+        ],
+        "exit": 0,
+        "sha256": "2e95a628c19ee7f3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,time,sys;sys.path.insert(0,'_tools');import census,kbdecide,factdiff;d=[];[(os.environ.__setitem__('TZ',z),time.tzset(),d.append((census.today(),kbdecide.day(None),factdiff.today()))) for z in ('Etc/GMT-14','Etc/GMT+12')];print(d);sys.exit(0 if len({x for t in d for x in t})==1 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "997b8198c2e5c7e4"
+      }
+    ]
+  }
 }
