@@ -77,7 +77,7 @@ _K = "|".join(KINDS)
 SKIP_DIRS = {"_tools", kbcommon.DATA_DIR, "_private", "_cache", "_census", "_self", "artifacts", kbcommon.SNAPSHOTS}
 TAG = re.compile(rf"\[(?:{_K})\b[^\]]*\]")
 ID = kbid.SOURCE_ID
-_PART_SPLIT = re.compile(rf"\s*(?:[;,]\s*(?=(?:{_K})\b)|;\s*(?=(?:{kbid.ID_PATTERN})\b\s*:))")
+_PART_SPLIT = re.compile(rf"\s*(?:[;,]\s*(?=(?:{_K})\b)|;\s*(?=(?:{kbid.ID_PATTERN})\b(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*\s*:))")
 _PART = re.compile(rf"({_K})(?:/({_K}))?\b\s*(?:from\s+)?"
                    rf"((?:{kbid.ID_PATTERN})(?:[\s,]+(?:{kbid.ID_PATTERN})\b)*)?(.*)", re.S)  # every root's id prefix
 _SOURCE_KINDS = ("DOC", "CODE", "DER", "COMMUNITY")  # the kinds whose parts name source ids
@@ -2429,13 +2429,18 @@ SCATTER_DOMAINS = 2  # a `good` whose best articles lie in this many domains or 
 SCATTER_SCORE = 15  # whose best unit scores under this, gets the scatter `check:` note; rag.scatter_calibration fits it
 PASSING_UNITS = 5  # a plain key word the kb holds in this many units or fewer, in no article about it, is mentioned in passing
 PASSING_MISSING = 0.25  # and the lead's printed facts miss at least this share of the key words, the rare word itself included
+_QUANTITY = r"(?:memory|ram|data|storage|disk|space|bandwidth|traffic|cpu|throughput|capacity)"  # what a `how much` may count
 PRICE_ASK = re.compile(  # a question for a price; a cost counted in units (`in resource units`, `how many units ... cost`) or a
-    # memory or data quantity (`how much memory per device`) is no money; a licence word asks for money whatever is counted
-    r"(?i)\b(?:price|prices|pricing)\b"
+    # memory or data quantity (`how much memory per device`) is no money; a licence word asks for money whatever is counted;
+    # `how much is OneDrive storage per user` names a product, so a quantity word asks for none only right after `how much`
+    # or, with no `is`/`are` verb after it, anywhere in the line; a line of its own is read alone (a cost asked on a later one)
+    r"(?im)\b(?:price|prices|pricing)\b"
     r"|^(?!.*\bhow many\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b).*?"
     r"\bcosts?\b(?!.*\bin\s+(?:\w+\s+){0,2}(?:units?|points?|tokens?|requests?|calls?)\b)"
     r"|\bhow much\b(?=.*\b(?:licen[cs]es?|subscriptions?|seats?)\b)"
-    r"|\bhow much\b(?!.*\b(?:memory|ram|data|storage|disk|space|bandwidth|traffic|cpu|throughput|capacity)\b)"
+    r"|\bhow much\b"
+    r"(?!\s+(?:(?:extra|more|additional|total|free|local|available)\s+)?" + _QUANTITY + r"\b)"
+    r"(?!(?!\s+(?:is|are|was|were|will|would)\b).*\b" + _QUANTITY + r"\b)"
     r"(?=.*\bper\s+(?:user|device|month|year)\b)")
 AMOUNT = re.compile(r"(?i)[$€£]\s?\d|\b\d[\d,.]*\s?(?:usd|eur|gbp|pln|dollars?|euros?)\b|\b(?:usd|eur|gbp|pln)\s?\d")  # an amount
 
