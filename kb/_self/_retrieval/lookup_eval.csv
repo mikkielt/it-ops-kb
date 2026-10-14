@@ -361,3 +361,4 @@ EV-factdiff-anchor-file-anchors-only-facts-with-no-row,Which facts does factdiff
 EV-kbid-add-learn-licence-through-public-mirror,How does kbid.py add read the licence of a Learn page through its public mirror?,content-rules.md,good,yes,"a Learn page through its public mirror (live and licensed `copy`; private, gone, archived or with licence files in conflict, `LICENSE-CODE` aside: `quote`)",
 EV-sprint-reviewer-makes-no-paid-model-call,may the sprint reviewer make paid model calls,backlog.md,good,yes,the reviewer makes no paid model call,kb-sprint:review
 EV-research-item-source-rows-outside-touches,may a research item add source rows outside its touches,backlog.md,good,yes,has that root's `_sources.csv` in them,kb-backlog:plan;kb-sprint:plan
+EV-review-confirms-provisional-answer-after-reviewer-report,when does the review confirm a provisional answer relative to the reviewer report,backlog.md,good,yes,only after the reviewer's report is in,kb-sprint:review
