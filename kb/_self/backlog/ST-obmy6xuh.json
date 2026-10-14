@@ -2,7 +2,7 @@
   "id": "ST-obmy6xuh",
   "kind": "story",
   "title": "Review sprint: Lookup feedback: a pack handle, kb_feedback, and distill and learn turn reports into checked findings",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-waxgh3kg",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-waxgh3kg"
+  "evidence": {
+    "commit": "44704e54dc034c3e16a3f82fc4631dcbf50af3b6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "31bdd27ca9b1dfe3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "96cd28905ec1ea82"
+      }
+    ]
+  }
 }
