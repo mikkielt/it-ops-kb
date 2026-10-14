@@ -54,7 +54,9 @@
         "eval file against origin/main"
       ],
       "recommendation": "commits carrying the research story's KB-Work",
-      "class": "push"
+      "class": "push",
+      "answer": "commits carrying the research story's KB-Work",
+      "by": "operator"
     }
   ],
   "links": [
