@@ -2,7 +2,7 @@
   "id": "TK-zqeq54ma",
   "kind": "task",
   "title": "dispatch's worker leaves a work row in the spool land reads, or dispatch names where its rows went",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-h66j7wm5",
   "priority": "P2",
   "rank": 1,
@@ -22,5 +22,6 @@
     "_tools/test_backlog_portable.py",
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "orch-g2ssvhi2"
 }
