@@ -2,7 +2,7 @@
   "id": "ST-3qwyj3oo",
   "kind": "story",
   "title": "Review sprint: Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lsamtvsz",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-lsamtvsz"
 }
