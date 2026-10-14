@@ -1,0 +1,17 @@
+{
+  "id": "BG-sxxmi2uc",
+  "kind": "bug",
+  "title": "census.today, kbdecide, provider and kg_history date a run by the local day while factdiff.today names the UTC day",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "census.today() and the other local-date defaults (kbdecide._today, provider probed_utc, kg_history --date check) name the same day at any hour in any time zone, the UTC day factdiff.today() names, so a census date and the factdiff logs and stamps of one run do not differ by a day",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,time,sys;sys.path.insert(0,'_tools');import census;d=[];[(os.environ.__setitem__('TZ',z),time.tzset(),d.append(census.today())) for z in ('Etc/GMT-14','Etc/GMT+12')];print(d);sys.exit(0 if d[0]==d[1] else 1)"
+    ]
+  }
+}
