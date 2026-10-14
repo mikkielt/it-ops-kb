@@ -2,7 +2,7 @@
   "id": "ST-ceuiynmz",
   "kind": "story",
   "title": "Research sprint goal: The suite's slowest work is cut: the land scenarios and check.py's code citation scan",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j65ihctq",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-j65ihctq"
 }
