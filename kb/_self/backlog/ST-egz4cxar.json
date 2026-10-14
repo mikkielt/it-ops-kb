@@ -2,7 +2,7 @@
   "id": "ST-egz4cxar",
   "kind": "story",
   "title": "A goal research worker's alias rows reach the kb, though a research item's touches may never name _tools/aliases.csv",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-qjn563cf close"
   ],
-  "notes": "Gate g1 answered follow-up item (recommended): kbfacts.aliases reads _tools/aliases.csv plus each root's own _retrieval/aliases.csv, but ql_apply and the public root's convention keep product names in _tools/aliases.csv only, and a content lane carries _tools/aliases.csv (kblane _FILES), so a follow-up item with that touch is the smallest route and adds no second place for product names.\nPremise: kb-research SKILL.md step 4 holds no line naming 'aliases.csv' with 'follow-up' (its retrieval-data bullet names _tools/aliases.csv rows with no route for a worker whose touches exclude it). Run at planning with precheck: the check exits 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Gate g1 answered follow-up item (recommended): kbfacts.aliases reads _tools/aliases.csv plus each root's own _retrieval/aliases.csv, but ql_apply and the public root's convention keep product names in _tools/aliases.csv only, and a content lane carries _tools/aliases.csv (kblane _FILES), so a follow-up item with that touch is the smallest route and adds no second place for product names.\nPremise: kb-research SKILL.md step 4 holds no line naming 'aliases.csv' with 'follow-up' (its retrieval-data bullet names _tools/aliases.csv rows with no route for a worker whose touches exclude it). Run at planning with precheck: the check exits 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-ce5iig4g"
 }
