@@ -208,6 +208,20 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           exit 1 when the session exits non-zero or reports is_error. --dry-run
                                           prints the worktree, scratch, brief path and argv and makes, writes and
                                           starts nothing; --model names another model than sonnet only when given
+  backlog.py stage-back ID [--check] [--self-reviewed DOC]... [--trailer 'Key: value']...
+                                          copy the item's staging copies (SCRATCH/staging/, the `.claude/` files
+                                          dispatch named) that differ from the worktree's file into its worktree,
+                                          run `selfdoc.py check` there, then the docs `selfdoc.py stale --since HEAD`
+                                          lists (each named by --self-reviewed, else refused) and the item's own
+                                          checks, and commit the copies alone on work/ID with KB-Work (one commit
+                                          for each repository), the Self-Reviewed trailer naming --self-reviewed
+                                          and the --trailer lines after KB-Work. Refused (exit 1, nothing copied
+                                          or committed): a copy whose base differs (the worktree's file is not the
+                                          digest dispatch recorded for it in SCRATCH/staging-bases.json), a
+                                          worktree with uncommitted changes, one not on work/ID, a failed check or
+                                          an unnamed stale doc (the worktree is put back as it was). --check runs
+                                          `selfdoc.py check` and lists the stale docs, commits nothing and puts the
+                                          worktree back as it was; exit 1 when the check has a problem
   backlog.py cost ID [--runs] [--rework] [--format text|json]
                                           the tokens the query log's work sidecars (kb/_querylog/work/) hold for the
                                           item and its descendants (for a sprint, its items too; a sprint's own line
@@ -329,7 +343,7 @@ from bl_plan import has_scope, stale_touches  # noqa: F401 - tests read them as 
 from bl_plan import start_approved  # noqa: F401 - test_layout reads it as backlog.start_approved
 
 import bl_cost  # noqa: F401 - registers `cost`
-import bl_dispatch  # noqa: F401 - registers `brief` and `dispatch`
+import bl_dispatch  # noqa: F401 - registers `brief`, `dispatch` and `stage-back`
 import bl_procs  # noqa: F401 - registers procs
 import bl_stall  # noqa: F401 - registers stalled
 import bl_ops  # noqa: F401 - registers `ops`
@@ -341,7 +355,7 @@ bl_cli.register("config", cmd_config, help="print the project settings with each
 # The usage order of the subcommands: each module registers its own when imported, and this puts them in order.
 USAGE = ("new", "similar", "check", "fmt", "selectors", "list", "tree", "find", "show", "next", "held", "claim",
          "release", "answer", "set", "move", "reopen", "gate", "fire", "done", "researched", "land", "merge", "drop", "start", "precheck",
-         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
+         "host-check", "close", "tidy", "horizon", "goal", "brief", "dispatch", "stage-back", "referrers", "cost", "red-pipeline", "intake", "procs", "stalled", "ops",
          "selfcheck", "config")
 bl_cli.order(USAGE)
 

@@ -6,7 +6,11 @@ item's claim, and ends with a line naming the spool that holds the session's fil
 one on the host that they do not). In a workspace whose backlog.json declares `repositories`, dispatch also makes a worktree of each
 repository the item's `repos` names at `<worktree_dir>/<id>/<repo>`, on the same branch name from that repository's
 fetched origin default branch; a repository whose fetch fails refuses the dispatch naming it, and `repos_if_needed`
-gets none. `--dry-run` prints what it would run and writes and starts nothing.
+gets none. `--dry-run` prints what it would run and writes and starts nothing. Dispatch also records, for each
+`.claude/` file it stages a copy of, the digest of the worktree's file (`staging-bases.json` in the scratch directory);
+`backlog.py stage-back ID` copies the copies that differ into the worktree, refuses one whose base differs from that
+record, runs `selfdoc.py check`, the docs `selfdoc.py stale --since HEAD` lists and the item's checks there, and commits
+the copies alone with `KB-Work`; `--check` runs the docs check only and puts the worktree back as it was.
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
@@ -17,6 +21,7 @@ the docs and `##` headings the item's touches map to). Standard library only; im
 import argparse
 import contextlib
 import csv
+import hashlib
 import io
 import json
 import os
@@ -30,9 +35,10 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
-from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, external_lines, git, id_re, item_repos,
-                     link_target, need, repositories, research_touches, resolved_touch, say, scope, scratch_dir, setting, split_touch,
-                     touches_overlap, withhold, worker_dir)
+from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
+                     external_lines, git, id_re, item_repos, link_target, need, repositories, research_touches, resolved_touch,
+                     run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
+                     worker_dir)
 from bl_land import WORK_PREFIX, WORKER_NAME
 from bl_plan import shared_doc
 
@@ -43,6 +49,7 @@ BRIEF_NAME = "brief.md"
 RESULT_NAME = "result.json"  # the session's --output-format json output
 STDERR_NAME = "stderr.log"
 STAGING = "staging"  # under the scratch directory: copies of the `.claude/` files the item's touches name
+BASES_NAME = "staging-bases.json"  # beside it: the digest of each worktree file when its copy was made (stage-back)
 DEFAULT_MODEL = "sonnet"
 EFFORT = "high"
 # --max-turns by item kind (kb/public/claude/ci-and-headless.md: print mode only, an error at the limit, no default)
@@ -595,22 +602,190 @@ def repo_defaults(bl, iid):
             if not repo_worktree_path(bl.root, iid, n).is_dir()}
 
 
+def staged_places(bl, iid, wt, p):
+    """(git root of the worker's worktree of P's repository (the workspace's: WT), its file P, this checkout's file P)
+    for the staged path P."""
+    repo, rest = split_touch(p)
+    declared = repositories()
+    if repo in declared:
+        top = repo_worktree_path(bl.root, iid, repo)
+        return top, top / rest, Path(bl.root) / declared[repo] / rest
+    return wt, wt / rest, Path(bl.root) / rest
+
+
+def digest(path):
+    """The sha256 of the file at PATH as hex, None when it is no file."""
+    try:
+        return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def read_bases(scratch):
+    """{staged path: digest of the worktree's file when its copy was staged, None for a file it had none of}: the
+    record `stage_copies` keeps in the scratch directory; {} when there is none."""
+    try:
+        data = json.loads((scratch / BASES_NAME).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
 def stage_copies(bl, iid, wt):
     """Copy each `.claude/` file the touches name from the worker's worktree of its repository (the workspace's:
     WT) else this checkout to its staging path in the scratch directory, unless a copy is already there (the
-    worker's edits are kept)."""
-    scratch, declared = scratch_path(bl.root, iid), repositories()
+    worker's edits are kept); the digest of the worktree's file is recorded for each copy made, the base
+    `stage-back` compares."""
+    scratch = scratch_path(bl.root, iid)
+    bases = read_bases(scratch)
     for p in staged_files(bl, iid):
         dest = scratch.joinpath(STAGING, *p.split("/"))
-        repo, rest = split_touch(p)
-        if repo in declared:
-            cands = (repo_worktree_path(bl.root, iid, repo) / rest, Path(bl.root) / declared[repo] / rest)
-        else:
-            cands = (wt / rest, Path(bl.root) / rest)
+        if dest.exists():
+            continue
+        _, *cands = staged_places(bl, iid, wt, p)
+        bases[p] = digest(cands[0])
         src = next((c for c in cands if c.is_file()), None)
-        if src is not None and not dest.exists():
+        if src is not None:
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(src, dest)
+    write_text(scratch / BASES_NAME, json.dumps(bases, indent=1, sort_keys=True) + "\n")
+
+
+def stage_back_copies(bl, iid, wt, scratch):
+    """[(path, copy, worktree file, git root)] of the staging copies that differ from the worktree's file, in the
+    order of the item's touches. Refused (Refused, each problem on a line) a copy whose base differs: the
+    worktree's file is not the one the copy was made from, or the dispatch recorded none (`BASES_NAME`)."""
+    bases, out, problems = read_bases(scratch), [], []
+    for p in staged_files(bl, iid):
+        copy = scratch.joinpath(STAGING, *p.split("/"))
+        if not copy.is_file():
+            continue
+        top, target, _ = staged_places(bl, iid, wt, p)
+        if target.is_file() and target.read_bytes() == copy.read_bytes():
+            continue
+        if p not in bases:
+            problems.append(f"{p}: dispatch recorded no base for its copy (made before it did): copy it back by hand")
+        elif digest(target) != bases[p]:
+            problems.append(f"{p}: the worktree's file is not the one its copy was made from (the base differs): "
+                            f"copy the worktree's file again and redo the edit")
+        else:
+            out.append((p, copy, target, top))
+    if problems:
+        raise Refused("stage-back: " + "\n".join(problems))
+    return out
+
+
+def restore_originals(originals):
+    """Put each TARGET back as it was ({path: bytes, or None for a file there was none of}), removing the directories
+    the copy made that are empty again."""
+    for target, data in originals.items():
+        if data is None:
+            with contextlib.suppress(OSError):
+                target.unlink()
+            for d in target.parents:
+                try:
+                    d.rmdir()
+                except OSError:
+                    break
+        else:
+            target.write_bytes(data)
+
+
+def stage_back_checks(bl, iid, wt, check_only, reviewed):
+    """Run the checks over the worktree as it is, with the staging copies in it: `selfdoc.py check` (where the
+    worktree has it) and, with no CHECK_ONLY, the docs `selfdoc.py stale --since HEAD` lists that REVIEWED does not
+    name and the item's own checks. (ok, the lines said): `ok` False when one fails."""
+    ok, lines = True, []
+    tool = wt / "_tools" / "selfdoc.py"
+    if tool.is_file():
+        p = subprocess.run([sys.executable, str(tool), "check"], cwd=wt, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        out = (p.stdout or "") + (p.stderr or "")
+        last = (out.strip().splitlines() or ["no output"])[-1]
+        lines.append(f"selfdoc.py check: {last}")
+        if p.returncode:
+            ok = False
+            lines += [f"  {x}" for x in out.strip().splitlines()[:-1][-12:]]
+        p = subprocess.run([sys.executable, str(tool), "stale", "--since", "HEAD"], cwd=wt, capture_output=True,
+                           text=True, encoding="utf-8", errors="replace")
+        stale = re.findall(r"^STALE (\S+) ", p.stdout or "", re.M)
+        left = [d for d in stale if d not in reviewed]
+        lines.append("selfdoc.py stale --since HEAD: " + (", ".join(stale) if stale else "stale=0"))
+        if left and not check_only:
+            ok = False
+            lines.append(f"  not named by --self-reviewed: {', '.join(left)} (read each; name it once found still "
+                         f"correct, else it needs an edit)")
+    else:
+        lines.append("no _tools/selfdoc.py in the worktree: the docs check is skipped")
+    if check_only:
+        return ok, lines
+    it = bl.items[iid]
+    for c in list(it.get("checks", [])) + ([it["repro"]] if it.get("repro") else []):
+        good, code, out = run_check(wt, c)
+        lines.append(f"{'ok  ' if good else 'FAIL'} exit={code} {shlex.join(c['run'])}")
+        if not good:
+            ok = False
+            lines += [f"  {x}" for x in out.strip().splitlines()[-8:]]
+    return ok, lines
+
+
+def cmd_stage_back(bl, a):
+    """`stage-back ID`: copy the item's staging copies into its worker's worktree, check them there and commit them
+    alone on `work/ID`, or with `--check` check them and put the worktree back as it was."""
+    iid = need(bl, a.id)
+    wt, scratch = worktree_path(bl.root, iid), scratch_path(bl.root, iid)
+    if not wt.is_dir():
+        raise Refused(f"stage-back: {bl.label(iid)} has no worktree at {wt}: dispatch makes it")
+    for t in a.trailer:
+        why = trailer_problem(t)
+        if why:
+            raise Rejected(why)
+    branch = git_in(wt, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+    if branch != worker_branch(iid):
+        raise Refused(f"stage-back: {wt} is on {branch or 'no branch'}, not {worker_branch(iid)}")
+    copies = stage_back_copies(bl, iid, wt, scratch)
+    if not copies:
+        say(f"stage-back {bl.label(iid)}: no staging copy under {scratch / STAGING} differs from the worktree's "
+            "file; nothing copied, nothing committed")
+        return 0
+    for top in dict.fromkeys(c[3] for c in copies):
+        dirty = git_in(top, "status", "--porcelain", "--untracked-files=no").stdout.strip()
+        if dirty:
+            raise Refused(f"stage-back: {top} has uncommitted changes, which a copy-in must not mix with the copies:"
+                          f"\n{dirty}")
+    originals = {}
+    try:
+        for _, copy, target, _ in copies:
+            originals[target] = target.read_bytes() if target.is_file() else None
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(copy, target)
+        ok, lines = stage_back_checks(bl, iid, wt, a.check, set(a.self_reviewed))
+        for line in lines:
+            say(line)
+        if a.check or not ok:
+            restore_originals(originals)
+            originals = {}
+            say(f"stage-back {bl.label(iid)}: " + ("checked " if a.check else "refused: ")
+                + f"{len(copies)} copy(ies), worktree as it was" + ("" if ok else ", nothing committed"))
+            return 0 if ok else 1
+        subject = withhold(f'chore(backlog): stage-back {iid} "{bl.items[iid].get("title", "")}"')
+        trailers = list(a.trailer) + ([f"Self-Reviewed: {', '.join(a.self_reviewed)}"] if a.self_reviewed else [])
+        for top in dict.fromkeys(c[3] for c in copies):
+            paths = [str(c[2].relative_to(top)) for c in copies if c[3] == top]
+            git_in(top, "add", "--", *paths)
+            msg = commit_message(subject, [iid], trailers, "Copied back from the staging copies:\n"
+                                 + "\n".join(f"- {x}" for x in paths))
+            p = subprocess.run(["git", "-C", str(top), "commit", "-q", "-F", "-", "--only", "--", *paths],
+                               input=msg, capture_output=True, text=True, encoding="utf-8", errors="replace")
+            if p.returncode:
+                git_in(top, "reset", "-q", "--", *paths)
+                raise Refused(f"stage-back: git commit failed in {top}: {(p.stderr or p.stdout).strip()}")
+            say(f"committed {git_in(top, 'rev-parse', '--short=10', 'HEAD').stdout.strip()} {subject} "
+                f"({len(paths)} file(s))")
+            originals = {t: d for t, d in originals.items() if not any(c[2] == t and c[3] == top for c in copies)}
+        return 0
+    finally:
+        restore_originals(originals)  # a refusal or an error leaves the worktree as it was
 
 
 def cmd_brief(bl, a):
@@ -760,3 +935,17 @@ def args_dispatch(p):
 bl_cli.register("brief", cmd_brief, args_brief, help="print the worker's brief for an item")
 bl_cli.register("dispatch", cmd_dispatch, args_dispatch,
                 help="make the worker's worktree and scratch, write its brief and start the headless session")
+
+
+def args_stage_back(p):
+    p.add_argument("id")
+    p.add_argument("--check", action="store_true",
+                   help="run the docs check over the staged copies and commit nothing: the worktree is put back as it was")
+    p.add_argument("--self-reviewed", action="append", default=[], metavar="DOC",
+                   help="a doc read and found still correct, named in the commit's Self-Reviewed trailer (repeatable)")
+    p.add_argument("--trailer", action="append", default=[], metavar="'Key: value'",
+                   help="a trailer of the session's own after KB-Work in the commit (repeatable)")
+
+
+bl_cli.register("stage-back", cmd_stage_back, args_stage_back,
+                help="copy a worker's staging copies into its worktree, check them there and commit them alone")
