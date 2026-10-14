@@ -40,6 +40,23 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does code_comment_lines find comment and docstring lines without ast.parse and tokenize (ast.parse alone of the tool files takes 0.41 s, over the 0.3 s limit)?",
+      "options": [
+        "lexical scan of each file's text",
+        "ast.parse of files holding a citation, statement bodies only"
+      ],
+      "recommendation": "lexical scan of each file's text",
+      "do": {
+        "lexical scan of each file's text": "ST-2jsyxkpf",
+        "ast.parse of files holding a citation, statement bodies only": "ST-2jsyxkpf"
+      },
+      "class": "secrets"
+    }
+  ],
   "notes": "Premise, measured 2026-10-14 on a quiet darwin host: check.py on the live tree takes 1.32 s, and code_citation_errors 0.78 to 0.80 s of it (best of three in one process); profiled, code_citation_errors is 1.73 of 2.30 s, almost all in code_comment_lines: ast.parse plus ast.walk over all 90 _tools/*.py files (609 237 walk calls) and tokenize, to find docstring and comment lines. check.py runs 12 times in a whole-suite run (7 in test_sync_e2e.py's and test_prepush_e2e.py's gate runs, 14.1 s summed), and once in every real sync gate. A docstring is the first statement of a module, class or def body, so the scan needs no walk of expression nodes; a file whose text holds no kb/ citation needs no parse.",
   "claimed_by": "orch-j65ihctq"
 }
