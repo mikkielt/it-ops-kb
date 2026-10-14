@@ -82,8 +82,9 @@ WORKER_RULES = (
     "File a bug for any defect outside the item, do not fix it: commit the new item file alone, in a commit of its "
     "own on `{branch}` whose `KB-Work` names the new bug, and name the bug in your report.",
     "Besides the touches, every item may change {always} (the item files and the generated coverage files): a source "
-    "row whose count regenerates a coverage file is in scope, so add it with its fact; do not drop it as outside the "
-    "touches.",
+    "row in a file the touches name is in scope, so add it with its fact, and the coverage files its count "
+    "regenerates are too; a source row in a file they do not name (a root's `_sources.csv` is none of those paths) "
+    "is outside the touches, so stop with a report naming the file.",
     "A doc that needs an edit outside the touches stops the work with a report; `Self-Reviewed:` names only docs "
     "read and found still correct.",
     ("selfdoc.py",
