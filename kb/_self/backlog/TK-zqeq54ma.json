@@ -23,5 +23,20 @@
     "kb/_self/tools.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does dispatch's closing line find where the worker's session rows went: search only the spools land and cost read, or also the other plugin data spools of the host?",
+      "options": [
+        "search the spools land and cost read, plus CLAUDE_PLUGIN_DATA and ~/.claude/plugins/data/*/querylog/spool",
+        "search only the spools land and cost read"
+      ],
+      "recommendation": "search the spools land and cost read, plus CLAUDE_PLUGIN_DATA and ~/.claude/plugins/data/*/querylog/spool",
+      "class": "querylog",
+      "answer": "search the spools land and cost read, plus CLAUDE_PLUGIN_DATA and ~/.claude/plugins/data/*/querylog/spool",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-g2ssvhi2"
 }

@@ -765,6 +765,75 @@ def test_backlog_headless_worker_cost_is_its_items_and_orchestrator_cost_not_att
     assert split["work"]["prompts"] == 6 and split["rework"]["prompts"] == 0 and split["items"] == []
 
 
+@pytest.mark.skipif(os.name == "nt", reason="the stand-in session is an executable script")
+def test_backlog_dispatch_worker_leaves_work_rows_in_the_spool_land_reads_or_its_closing_line_names_where_they_went(
+        tmp_path):
+    """A worker `dispatch` starts whose session wrote a `branch` row naming its item into the spool land and cost
+    read: the closing line says that spool holds it. The same row in another plugin data spool of the host: the line
+    names that spool and says land and cost do not read it. A session file with no such row, and no file at all: the
+    line says each. The stand-in `claude` writes the session's spool file where the test says."""
+    (tmp_path / "repo").mkdir()
+    root = Repo(tmp_path / "repo")
+    root.git("init", "-q", "-b", "main")
+    root.write("a.txt", "a\n")
+    root.git("add", "-A")
+    root.git("commit", "-q", "-m", "base")
+    data, home = tmp_path / "data", tmp_path / "home"
+    read_spool = data / "querylog" / "spool"
+    other_spool = home / ".claude" / "plugins" / "data" / "it-ops-kb-inline" / "querylog" / "spool"
+    read_spool.mkdir(parents=True)
+    (data / "querylog" / "config.json").write_text(json.dumps({"mode": "local"}), encoding="utf-8")
+    other_spool.mkdir(parents=True)
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "claude"
+    fake.write_text(f"#!{sys.executable}\n"
+                    "import json, os, sys\n"
+                    "sys.stdin.read()\n"
+                    "target, item = os.environ.get('FAKE_SPOOL_FILE'), os.environ['FAKE_ITEM']\n"
+                    "if target:\n"
+                    "    row = {'id': 'r1', 'ts': '2026-10-10T10:00:00.000Z', 'surface': 'work', 'v': 1,\n"
+                    "           'session_id': 'sess-1', 'item': item, 'action': os.environ.get('FAKE_ACTION', 'branch')}\n"
+                    "    open(target, 'w', encoding='utf-8').write(json.dumps(row) + '\\n')\n"
+                    "print(json.dumps({'session_id': 'sess-1', 'is_error': False}))\n", encoding="utf-8")
+    fake.chmod(0o755)
+    env = {**root.env, "CLAUDE_PLUGIN_DATA": str(data), "CLAUDE_PLUGIN_ROOT": str(bl_base.ROOT), "HOME": str(home),
+           "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+
+    def bl(*args, extra=None):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env={**env, **(extra or {})})
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout + p.stderr
+
+    code, out = bl("new", "task", "--title", "Worked", "--goal", "Goal", "--touch", "a.txt", "--check", "python3 -c pass")
+    assert code == 0, out
+    iid = re.search(r"[A-Z]{2}-[a-z2-7]{8}", out).group(0)
+    assert bl("claim", iid, "--by", "tester")[0] == 0
+
+    def shown(path):  # `say` withholds the user's name in a path
+        return bl_base.withhold(str(path))
+
+    def closing(**extra):
+        code, out = bl("dispatch", iid, extra={"FAKE_ITEM": iid, **extra})
+        assert code == 0, out
+        return next(ln for ln in out.splitlines() if ln.startswith(f"rows of {iid}"))
+
+    line = closing(FAKE_SPOOL_FILE=str(read_spool / "sess-1.jsonl"))
+    assert "session sess-1 left a branch, agent-start or agent-stop row" in line and f"{shown(read_spool)} (1 row(s))" in line
+    assert line.endswith("a spool land and cost read"), line
+    (read_spool / "sess-1.jsonl").unlink()
+    line = closing(FAKE_SPOOL_FILE=str(other_spool / "sess-1.jsonl"), FAKE_ACTION="agent-stop")
+    assert f"in {shown(other_spool)} (1 row(s)), a spool land and cost do not read (they read {shown(read_spool)}" in line, line
+    assert "land will name its work rows missing" in line
+    line = closing(FAKE_SPOOL_FILE=str(other_spool / "sess-1.jsonl"), FAKE_ACTION="claim")
+    assert f"has a spool file in {shown(other_spool)} but no row of {iid} that attributes it" in line, line
+    (other_spool / "sess-1.jsonl").unlink()
+    line = closing()
+    assert "no spool holds a file of session sess-1" in line and f"searched {shown(read_spool)}" in line, line
+    assert f"; {shown(other_spool)})" in line, line
+
+
 def orphan_in(cwd, log, seconds=60):
     """The pid of a python process that sleeps in the directory CWD, its standard output appended to LOG and its
     parent (the launcher that started it) already gone: what a session-end hook's distill is for a few seconds."""

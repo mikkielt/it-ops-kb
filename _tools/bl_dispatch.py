@@ -1,7 +1,9 @@
 """The worker's brief and its start (kb/_self/backlog.md, Running a sprint; kb/_self/tools.md): `backlog.py brief ID`
 prints the brief a sprint worker is given, and `backlog.py dispatch ID` makes the worker's worktree and scratch
 directory, writes the brief there and starts the headless session from it, recording the session's pid and id on the
-item's claim. In a workspace whose backlog.json declares `repositories`, dispatch also makes a worktree of each
+item's claim, and ends with a line naming the spool that holds the session's file and whether it holds a `branch`,
+`agent-start` or `agent-stop` row naming the item (`rows_line`; the spool is one `land` and `cost` read, or another
+one on the host that they do not). In a workspace whose backlog.json declares `repositories`, dispatch also makes a worktree of each
 repository the item's `repos` names at `<worktree_dir>/<id>/<repo>`, on the same branch name from that repository's
 fetched origin default branch; a repository whose fetch fails refuses the dispatch naming it, and `repos_if_needed`
 gets none. `--dry-run` prints what it would run and writes and starts nothing.
@@ -666,7 +668,77 @@ def cmd_dispatch(bl, a):
         record_worker(bl.root, iid, worker_session=session)
     say(f"worker of {iid} exited {code}: session {session or 'unknown'} (resume it with `claude -p --resume "
         f"<session>`), output {result}, stderr {errlog}")
+    say(rows_line(bl.root, iid, session))
     return 1 if failed else 0
+
+
+def other_spools(read):
+    """The query-log spools of this host that `land` and `cost` do not read (READ: `bl_cost.spool_dirs`): the plugin
+    data spool the environment names (`CLAUDE_PLUGIN_DATA`, where a session running the plugin's hooks writes) and the
+    ones under the user's `.claude/plugins/data/*/querylog/spool`. Directories only, nothing made."""
+    found = []
+    env = os.environ.get("CLAUDE_PLUGIN_DATA")
+    if env:
+        found.append(Path(env) / "querylog" / "spool")
+    with contextlib.suppress(RuntimeError, OSError):
+        found += sorted((Path.home() / ".claude" / "plugins" / "data").glob("*/querylog/spool"))
+    out = []
+    for d in found:
+        if d.is_dir() and not any(same_dir(d, r) for r in [*read, *out]):
+            out.append(d)
+    return out
+
+
+def same_dir(a, b):
+    try:
+        return os.path.samefile(a, b)
+    except OSError:
+        return False
+
+
+def rows_line(root, iid, session):
+    """The closing line about a finished worker's work rows: where the spool file of its session is and whether it
+    holds a `branch`, `agent-start` or `agent-stop` row naming the item (the rows `land` and `cost` attribute a
+    worker's session by), and whether the spool is one they read (`bl_cost.spool_dirs`) or another one on this host
+    (`other_spools`). Read only; a line even when the session id is unknown or no spool holds a file of it."""
+    try:
+        import bl_cost
+        import ql_capture
+        import ql_distill
+        read = [Path(d) for d in (bl_cost.spool_dirs(root) or [])]
+        actions = (ql_capture.BRANCH_ACTION, *ql_capture.AGENT_ACTIONS)
+        named = f"a branch, agent-start or agent-stop row naming {iid}"
+        reads = ", ".join(map(str, read)) or "none: capture writes no spool on this clone"
+        if not session:
+            return (f"rows of {iid}: its session id is unknown, so no spool was searched for {named}; land and cost "
+                    f"read {reads}")
+        placed = []
+        for d in [*read, *other_spools(read)]:
+            f = d / f"{session}.jsonl"
+            if not f.is_file():
+                continue
+            rows = ql_distill.spool_rows(f)[0]
+            count = sum(1 for r in rows if r.get("surface") == "work" and r.get("item") == iid
+                        and r.get("action") in actions)
+            placed.append((d, count, any(same_dir(d, r) for r in read)))
+        holding = [p for p in placed if p[1]]
+        if any(p[2] for p in holding):
+            where = "; ".join(f"{d} ({n} row(s))" for d, n, mine in holding if mine)
+            return f"rows of {iid}: session {session} left {named} in {where}, a spool land and cost read"
+        if holding:
+            where = "; ".join(f"{d} ({n} row(s))" for d, n, _ in holding)
+            return (f"rows of {iid}: session {session} left {named} in {where}, a spool land and cost do not read "
+                    f"(they read {reads}): land will name its work rows missing")
+        if placed:
+            where = "; ".join(str(d) for d, _, _ in placed)
+            return (f"rows of {iid}: session {session} has a spool file in {where} but no row of {iid} that attributes it, "
+                    f"no branch, agent-start or agent-stop (the first prompt was not on `{worker_branch(iid)}` with the item doing, or the capture hooks did not run there); "
+                    f"land and cost read {reads}")
+        return (f"rows of {iid}: no spool holds a file of session {session} (searched {reads}"
+                + "".join(f"; {d}" for d in other_spools(read)) + "): the capture hooks did not write it, or "
+                "distill already took it (`backlog.py cost " + iid + "`)")
+    except Exception as e:  # noqa: BLE001 - the dispatch's exit never depends on a line about its rows
+        return f"rows of {iid}: not searched ({type(e).__name__}: {e})"
 
 
 def args_brief(p):
