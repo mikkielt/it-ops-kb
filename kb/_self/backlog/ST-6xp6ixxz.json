@@ -1,0 +1,22 @@
+{
+  "id": "ST-6xp6ixxz",
+  "kind": "story",
+  "title": "The /kb-backlog filing skill names a kb root's _anchors.csv for an item that rewords or adds a DOC fact",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/backlog/SKILL.md names the root's _anchors.csv beside expansions.csv in the touches of a research or refresh item that may reword or add a DOC fact, so kb/_self/backlog.md's 'filed by /kb-backlog or scheduled by /kb-sprint plan' holds for the filing half (SP-ce5iig4g review: skills/backlog/SKILL.md:31 names expansions.csv only)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/backlog/SKILL.md',encoding='utf-8').read().splitlines();ok=any('_anchors.csv' in l and 'expansions.csv' in l for l in t);print('backlog skill names _anchors.csv beside expansions.csv:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/backlog/SKILL.md",
+    "kb/_self/plugin.md"
+  ]
+}
