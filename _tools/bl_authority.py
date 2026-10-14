@@ -92,16 +92,20 @@ def unit_list_without_credential(text, m):
     return "tokens" in words and len(others) >= 2 and not CRED_BEFORE.search(text[:m.start()])
 
 
+def without_unit_lists(text):
+    """The text with each list that names `tokens` among unit nouns replaced by a space. `text` is one option or the
+    question alone: `class_reasons` calls it for each of them, so a list never runs across the join of two."""
+    return UNIT_LIST.sub(lambda m: " " if unit_list_without_credential(text, m) else m.group(0), text)
+
+
 def without_token_counts(text):
-    """The text with each token-count phrase, each upper-case identifier of token counts, each Markdown doc name that
-    holds `token` and each list that names `tokens` among unit nouns replaced by a space: what the `secrets` words are
-    searched in, so a model's token counts, a constant such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token`, a doc
-    such as `token-efficiency.md` and `units, points, tokens, requests` are no secret."""
+    """The text with each token-count phrase, each upper-case identifier of token counts and each Markdown doc name that
+    holds `token` replaced by a space: what the `secrets` words are searched in, so a model's token counts, a constant
+    such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token` and a doc such as `token-efficiency.md` are no secret."""
     text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
-    text = TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
-    return UNIT_LIST.sub(lambda m: " " if unit_list_without_credential(text, m) else m.group(0), text)
+    return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
 
 
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
@@ -240,10 +244,14 @@ def class_reasons(item, gate):
     for t in touches:
         if names_secret(t):
             found.setdefault("secrets", []).append(f"touch '{t}'")
-    text = f"{gate.get('question', '')} {' '.join(map(str, gate.get('options', []) or []))} {command_words(gate)}"
+    options = [str(o) for o in gate.get("options", []) or []]
+    text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
     push_text = without_benign_push_words(text, str(gate.get("question", "")))
+    # a unit-noun list is read within the question or one option, never across the join of two texts
+    secrets_text = without_token_counts(" ".join(
+        without_unit_lists(str(p)) for p in [gate.get("question", ""), *options, command_words(gate)]))
     for cls, rx in QUESTION_WORDS.items():
-        m = rx.search(without_token_counts(text) if cls == "secrets" else push_text if cls == "push" else text)
+        m = rx.search(secrets_text if cls == "secrets" else push_text if cls == "push" else text)
         if m:
             found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
     m = RULE_WORD.search(text)
