@@ -2,7 +2,7 @@
   "id": "BG-npdpbmw2",
   "kind": "bug",
   "title": "Revalidation marks a fact moved when a sibling heading changes, turns off soft-404 detection after one failed request, and lets a corrupt provider-down record block a host",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
@@ -91,7 +91,8 @@
       "recommendation": "clamp: read a record whose until lies past at + DOWN_CAP_S, or past now + DOWN_CAP_S, as ending at that bound, so a real recent failure still holds the host for at most the cap",
       "class": "design",
       "answer": "clamp: read a record whose until lies past at + DOWN_CAP_S, or past now + DOWN_CAP_S, as ending at that bound, so a real recent failure still holds the host for at most the cap",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "a design choice in provider.host_down's code (clamp vs ignore a far-future record), not a host setup: 'host' names the documentation host the record is about; check 2 proves the answer on any machine"
     }
   ],
   "links": [

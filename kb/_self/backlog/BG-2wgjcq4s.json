@@ -2,7 +2,7 @@
   "id": "BG-2wgjcq4s",
   "kind": "bug",
   "title": "A weak or none pack offers kb_feedback on servers without the tool, the kb: hook drops the feedback: line, and tools.md says every check: line sets a route",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,

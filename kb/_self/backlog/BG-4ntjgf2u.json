@@ -2,7 +2,7 @@
   "id": "BG-4ntjgf2u",
   "kind": "bug",
   "title": "The backlog-tool rules of SP-q5ldd25k read weak on the _self root with no tested row, and the rule to run a flag through referrers gives a command that exits 2",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vk3wf746",
   "priority": "P3",
   "rank": 0,

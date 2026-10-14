@@ -2,7 +2,7 @@
   "id": "SP-vk3wf746",
   "kind": "sprint",
   "title": "Lookups print the right notes and revalidation marks only real changes",
-  "status": "planned",
+  "status": "active",
   "goal": "A price ask that names storage, capacity, data or RAM, or asks the cost on a later line, gets the priced note, and a tag part that lists several sources after a semicolon cites each; a weak or none pack offers kb_feedback only on a server that serves it, the kb: hook keeps that feedback: line, and tools.md names which check: lines set a route; revalidation reads each search provider's answer by its own shape and asks each provider's request once, so a GitHub, arXiv or PyPI answer is not recorded as no answer and a second provider gets its own hits; a sibling heading added to a page does not mark a fact moved, a failed made-up-page request does not switch off soft-404 detection, and a corrupt provider-down record cannot keep a host unasked past its cap; and the backlog-tool rules SP-q5ldd25k added read good on the _self root through tested rows, with the referrers command for a flag shown in a form that runs",
   "gates": [
     {

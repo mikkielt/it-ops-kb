@@ -2,7 +2,7 @@
   "id": "BG-o3zppi2w",
   "kind": "bug",
   "title": "search_urls reads only Learn's results list, asks hosts whose answer it cannot read, and memoizes by query, so GitHub, arXiv and PyPI answers are no answer and a second provider reuses the first's hits",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,

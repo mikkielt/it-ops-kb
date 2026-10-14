@@ -2,7 +2,7 @@
   "id": "BG-kmxa4jgj",
   "kind": "bug",
   "title": "PRICE_ASK drops the priced note for a storage, capacity, data or RAM product and for a cost asked on a later line, and parse_tag leaves a listed source uncited",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
