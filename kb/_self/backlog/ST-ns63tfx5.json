@@ -2,7 +2,7 @@
   "id": "ST-ns63tfx5",
   "kind": "story",
   "title": "backlog.py land waits for the merge request of a code-lane item without --wait-merge, or names the lane before its first push",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,6 @@
     "parked: SP-ceucrhca close",
     "parked: SP-e4fm2ovk close"
   ],
-  "notes": "Retrospective SP-ceucrhca 2026-10-12: land ST-wkuogen4 without --wait-merge pushed code/ST-wkuogen4 and exited saying to run land again; every later landing of the sprint (BG-axnjcayu, ST-gngo7etc, ST-wtpwtlk4) went through the code lane and was run with --wait-merge. SP-e4fm2ovk close (2026-10-13): it happened twice more: land BG-v5f5tn5y (a _tools fix) and land ST-2zlpwzbs (kb/_self/reports/benchmarks.md only) without --wait-merge each pushed code/<id>, stopped as not done, and needed a second land with --wait-merge. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise read in the tree (2026-10-13): cmd_land returns after the first pass when --wait-merge is None, so a code-lane land pushes code/<id> and exits asking for a rerun; the check exits 2 (selector collects no test: the test is the work). Gate g1 is class push, answered with the conservative option: print the lane and the rerun before the push, no wait by default."
+  "notes": "Retrospective SP-ceucrhca 2026-10-12: land ST-wkuogen4 without --wait-merge pushed code/ST-wkuogen4 and exited saying to run land again; every later landing of the sprint (BG-axnjcayu, ST-gngo7etc, ST-wtpwtlk4) went through the code lane and was run with --wait-merge. SP-e4fm2ovk close (2026-10-13): it happened twice more: land BG-v5f5tn5y (a _tools fix) and land ST-2zlpwzbs (kb/_self/reports/benchmarks.md only) without --wait-merge each pushed code/<id>, stopped as not done, and needed a second land with --wait-merge. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise read in the tree (2026-10-13): cmd_land returns after the first pass when --wait-merge is None, so a code-lane land pushes code/<id> and exits asking for a rerun; the check exits 2 (selector collects no test: the test is the work). Gate g1 is class push, answered with the conservative option: print the lane and the rerun before the push, no wait by default.",
+  "claimed_by": "orch-ia6xayiy"
 }
