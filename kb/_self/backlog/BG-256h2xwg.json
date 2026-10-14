@@ -2,7 +2,7 @@
   "id": "BG-256h2xwg",
   "kind": "bug",
   "title": "BG-3yjqrfkp's push-word exceptions read past a real push: a count question that asks to act on the push and a gitlab/ remote ref are classed design",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hlt2tdel",
   "priority": "P1",
   "rank": 0,
@@ -51,5 +51,27 @@
     }
   ],
   "notes": "Filed by the SP-hlt2tdel review (fresh-context reviewer gaps 1 and 2, reviewer severity S2; filed S1 in the sprint by the operator policy that an operator-only class is never weakened). Before the sprint (7afd58817) both reviewer probes classed push; after BG-3yjqrfkp they class design: PUSH_NOUN (bl_authority.py:190) never checks that the push is display-only, TOPIC_PATH (bl_authority.py:186) blanks any gitlab/<slug>. The suite is at its test-id ceiling: extend an existing test_authority test, add no test id; never raise the ceiling.",
-  "claimed_by": "orch-hlt2tdel"
+  "evidence": {
+    "commit": "53cd69596beabf8d0e166719c013dedea3248a31",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q:a.class_reasons({'touches':[]},{'question':q,'options':['a','b']})[0];no=['PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version do the install facts state?','Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-test-repositories?','How many of the checkouts unpushed commits does land list by name before its push?'];sys.exit(0 if all(c(q)!='push' for q in no) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=lambda q:a.class_reasons({'touches':[]},{'question':q,'options':['a','b']})[0];yes=['How many times should the worker retry the push after the list is shown?','How many commits does land list, and should the worker run the push?','Should land reset to gitlab/main?','Should the worker force-update gitlab/main?'];sys.exit(0 if all(c(q)=='push' for q in yes) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
