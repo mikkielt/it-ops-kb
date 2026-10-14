@@ -2,7 +2,7 @@
   "id": "ST-3lt5defn",
   "kind": "story",
   "title": "Review sprint: Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-ia6xayiy"
 }
