@@ -2,7 +2,7 @@
   "id": "ST-brjhg6wl",
   "kind": "story",
   "title": "kb_pack and rag.py pack print a pack handle that a later call can name, and the mcp capture row keeps it",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-x4cqj7zo",
   "sprint": "SP-waxgh3kg",
   "priority": "P2",
@@ -102,5 +102,6 @@
   "links": [
     "kb:public/mcp/spec-overview.md"
   ],
-  "notes": "Premise: python3 _tools/rag.py pack 'Intune enrollment device limit' prints a coverage line, fact lines and a url footer, and no handle a later call could name; kb_mcp.py never sees session_id or prompt_id (kb/_self/querylog.md, Surfaces), so a report could join its lookup only by time window today. Planned 2026-10-13 (SP-waxgh3kg). Premise run on base: rag.py pack 'Intune enrollment device limit' printed coverage good, fact lines and a sources footer, and no pack handle line: reproduces. rag.py eval passes before the work by design: it pins that every row keeps passing once the handle line is added. Tests are named by -k, so extend an existing test's name with pack_handle (the test-id ceiling), not a new test; the tests live in _tools/test_live_kb.py (pack, kb_mcp) and _tools/test_redact.py (capture row), never _tools/tests.py (the runner). Gates answered at planning: AGENTS.md stays unchanged, store bound 7 days and 500 handles."
+  "notes": "Premise: python3 _tools/rag.py pack 'Intune enrollment device limit' prints a coverage line, fact lines and a url footer, and no handle a later call could name; kb_mcp.py never sees session_id or prompt_id (kb/_self/querylog.md, Surfaces), so a report could join its lookup only by time window today. Planned 2026-10-13 (SP-waxgh3kg). Premise run on base: rag.py pack 'Intune enrollment device limit' printed coverage good, fact lines and a sources footer, and no pack handle line: reproduces. rag.py eval passes before the work by design: it pins that every row keeps passing once the handle line is added. Tests are named by -k, so extend an existing test's name with pack_handle (the test-id ceiling), not a new test; the tests live in _tools/test_live_kb.py (pack, kb_mcp) and _tools/test_redact.py (capture row), never _tools/tests.py (the runner). Gates answered at planning: AGENTS.md stays unchanged, store bound 7 days and 500 handles.",
+  "claimed_by": "orch-waxgh3kg"
 }
