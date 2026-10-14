@@ -15,7 +15,7 @@ brief's staging part names it, so a worker's report states its `problems=` count
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
-tests the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
+tests and whole-suite failures that are no test the orchestrator names, the fixed worker rules and the rules of the project's own docs (`rules_section`, the
 one function that builds that part: backlog.json's `kb_root` gives the cited fact lines of a kb root, its `docs_map`
 the docs and `##` headings the item's touches map to). Standard library only; imports `bl_base`, `bl_cli`,
 `bl_items` (for the `goal` text) and `bl_land` (the worker's branch and worktree names), never `backlog`."""
@@ -246,14 +246,18 @@ def staged_files(bl, iid):
 
 # ------------------------------------------------------------------ the brief
 
-def known_failures(bl, known):
-    """The `--known TEST=BUG` pairs as brief lines: the test id, then the bug filed for it with its title."""
+def known_failures(bl, known, known_suite=()):
+    """The `--known TEST=BUG` pairs as brief lines: the test id, then the bug filed for it with its title; then each
+    `--known-suite TEXT=BUG`, a failure of the whole suite that is no test (the darwin seconds ceiling), the same way."""
     out = []
-    for k in known:
-        test, _, bug = k.rpartition("=")
-        if not test or not id_re().fullmatch(bug):
-            raise Rejected(f"--known {k!r}: expected TEST=BUG, BUG a backlog id")
-        out.append(f"- `{test}`: {bl.label(bug)}" if bug in bl.items else f"- `{test}`: {bug}")
+    for flag, pairs in (("--known", known), ("--known-suite", known_suite)):
+        what = "TEST" if flag == "--known" else "TEXT"
+        for k in pairs:
+            test, _, bug = k.rpartition("=")
+            if not test or not id_re().fullmatch(bug):
+                raise Rejected(f"{flag} {k!r}: expected {what}=BUG, BUG a backlog id")
+            shown = f"`{test}`" if flag == "--known" else f"suite-level, no test: {test}"
+            out.append(f"- {shown}: {bl.label(bug)}" if bug in bl.items else f"- {shown}: {bug}")
     return out
 
 
@@ -413,7 +417,7 @@ def role_file_line(root):
             f"`${{CLAUDE_PLUGIN_ROOT}}` in it is `{plugin}`: write that path where a command shows the variable.")
 
 
-def compose_brief(bl, iid, known=(), probe=None, turns=None):
+def compose_brief(bl, iid, known=(), probe=None, turns=None, known_suite=()):
     """The brief for ITEM's worker, as text: its fixed rules name the turn cap TURNS, else the cap of the item's kind.
     Reads the backlog and runs the rules pack; writes nothing."""
     it = bl.items[iid]
@@ -460,8 +464,8 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None):
     sib = siblings(bl, iid)
     out += (sib + ["Leave those files alone, and write no test that depends on their content."]) if sib else ["None."]
     out += ["", "## Known failing tests on this host"]
-    kf = known_failures(bl, known)
-    out += (kf + ["A failure not named here is yours to file as a bug."]) if kf else \
+    kf = known_failures(bl, known, known_suite)
+    out += (kf + ["A failure listed here gets no new bug; a failure not named here is yours to file as a bug."]) if kf else \
         ["None known to the orchestrator. A failure you meet is yours to file as a bug."]
     out += ["", "## Fixed rules", *[f"- {r}" for r in worker_rules(bl.root, iid, branch, turns)], "",
             "## Rules of the docs your touches map to", *rules_section(bl, iid), "",
@@ -794,7 +798,7 @@ def cmd_stage_back(bl, a):
 
 def cmd_brief(bl, a):
     iid = need(bl, a.id)
-    sys.stdout.write(withhold(compose_brief(bl, iid, a.known, a.probe)))
+    sys.stdout.write(withhold(compose_brief(bl, iid, a.known, a.probe, known_suite=a.known_suite)))
     return 0
 
 
@@ -821,7 +825,7 @@ def cmd_dispatch(bl, a):
         raise Refused(f"{bl.label(iid)} is {it.get('status')}, not doing: claim it (and push the claim) before dispatch")
     if shutil.which(argv[0]) is None:
         raise Rejected(f"dispatch: {argv[0]} is not on PATH")
-    text = compose_brief(bl, iid, a.known, a.probe, turns)
+    text = compose_brief(bl, iid, a.known, a.probe, turns, a.known_suite)
     defaults = repo_defaults(bl, iid)  # a repository whose fetch fails refuses the dispatch before anything is made
     make_worktree(bl.root, iid, wt)
     for n, co in repo_checkouts(bl, iid):
@@ -925,6 +929,9 @@ def args_brief(p):
     p.add_argument("id")
     p.add_argument("--known", action="append", default=[], metavar="TEST=BUG",
                    help="a test known to fail on this host and the bug filed for it (repeatable)")
+    p.add_argument("--known-suite", action="append", default=[], metavar="TEXT=BUG",
+                   help="a whole-suite failure that is no test (the darwin seconds ceiling) and the bug filed for it "
+                        "(repeatable)")
     p.add_argument("--probe", metavar="TEXT", help="the result of the one probe run for a bug of unproven cause")
 
 

@@ -49,6 +49,17 @@
       "class": "agents-rule",
       "answer": "accept: the text is printed with the id as given, like --known",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does the brief print a --known-suite failure and its closing line?",
+      "options": [
+        "line '- suite-level, no test: TEXT: BUG label'; closing line 'A failure listed here gets no new bug; a failure not named here is yours to file as a bug.'",
+        "reuse the TEST line form with TEXT in backticks, closing line unchanged"
+      ],
+      "recommendation": "line '- suite-level, no test: TEXT: BUG label'; closing line 'A failure listed here gets no new bug; a failure not named here is yours to file as a bug.'",
+      "class": "agents-rule"
     }
   ],
   "links": [

@@ -183,16 +183,19 @@ kb/_self/backlog/ (kb/_self/backlog.md is the runbook). Standard library only; n
                                           --opt-in: only when backlog.json's `hooks` names horizon)
   backlog.py goal ID                      a /goal condition for the item: its end state, checks and scope; then
                                           the answered gates of its parent chain, which its work keeps to
-  backlog.py brief ID [--known TEST=BUG]... [--probe TEXT]
+  backlog.py brief ID [--known TEST=BUG]... [--known-suite TEXT=BUG]... [--probe TEXT]
                                           the brief a sprint worker is given, printed: the item's JSON and goal
                                           text, its external tracker ids with their urls, the role file, the
                                           worker's worktree and scratch directory (_cache/scratch/ID/), the
                                           in-flight sibling items with the files their touches change, the known
-                                          failing tests (--known TEST=BUG, repeatable; BUG a backlog id), the fixed
+                                          failing tests (--known TEST=BUG, repeatable; BUG a backlog id) and
+                                          suite-level failures that are no test (--known-suite TEXT=BUG, the
+                                          darwin seconds ceiling), the fixed
                                           worker rules and the rules of the docs the item's touches map to
                                           (`rag.py pack --root _self --item ID`, or a line saying it is absent);
                                           writes nothing, starts nothing, exit 0
-  backlog.py dispatch ID [--dry-run] [--model NAME] [--max-turns N] [--known TEST=BUG]... [--probe TEXT]
+  backlog.py dispatch ID [--dry-run] [--model NAME] [--max-turns N] [--known TEST=BUG]... [--known-suite TEXT=BUG]...
+                                          [--probe TEXT]
                                           start the item's headless worker: make its worktree
                                           (<worktree_dir>/agent-ID on work/ID from this checkout's HEAD) and the
                                           scratch directory, write the brief there (brief.md) and run `claude -p
