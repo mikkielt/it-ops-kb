@@ -18,7 +18,8 @@ output the clone's distill.log) still holds is waited for and then removed; the 
 multi-repository item (`multirepo_land`): each repository's request read once, a request that is not merged refused by
 repository and state, a dirty, locked or live-process worktree refused by name with none removed, the clean ones
 removed, the branches on the default branch deleted, each merge commit written as evidence, and the leftovers close
-removes."""
+removes. A class of its own, so it has a worker of its own, holds a code-lane item's land without `--wait-merge`, which
+names the lane and the rerun before its push."""
 import hashlib
 import json
 import os
@@ -322,6 +323,24 @@ def test_done_research_carried_item_takes_the_research_commit_as_evidence_and_re
     done = json.loads(repo.read(f"{PLAN}/{mine}.json"))
     assert done["status"] == "done" and done["evidence"]["commit"] == sha, done
     assert done["evidence"]["carried_by"] == research and done["evidence"]["checks"][0]["exit"] == 0, done
+
+
+class TestCodeLaneLand:
+    def test_land_code_lane_without_wait_merge_names_the_lane_and_the_rerun_before_its_push_and_with_the_flag_does_not(
+            self, scenario, tmp_path):
+        """A land of an item whose commits go through the code lane, run without --wait-merge, says before its push
+        that the lane is code and that `land ID --wait-merge SECONDS` finishes it in one run; with the flag it does not."""
+        nested = "kb/_self/lane/host.md"  # a code-lane path of the kb's lanes
+        repo, sp, (iid,) = planned(scenario, ("lane", nested, "python3 _tools/backlog.py list --kind sprint"), hooks=False)
+        work(repo, iid, nested)
+        repo.git("checkout", "-q", "main")
+        env = plain_push(repo, tmp_path, land_stale=[], land_eval=[], land_lint=[], land_push=["python3", "-c", "pass"])
+        code, out = bl(repo, "land", iid, env=env)
+        notice = f"goes through the code lane: this run pushes the merge request of branch code/{iid}"
+        assert code == 0 and notice in out and f"backlog.py land {iid} --wait-merge SECONDS" in out, out
+        assert out.index(notice) < out.index("is not done yet"), out
+        code, out = bl(repo, "land", iid, "--wait-merge", "0", env=env)
+        assert "goes through the code lane" not in out and "--wait-merge SECONDS" not in out, out
 
 
 def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(monkeypatch, capsys, scenario):
