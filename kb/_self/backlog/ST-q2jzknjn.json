@@ -2,7 +2,7 @@
   "id": "ST-q2jzknjn",
   "kind": "story",
   "title": "pytest-xdist.md names tests.py's --dist load as this repo's mode, cites no deleted stress_test.py, and says what decides -n auto before psutil",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,
@@ -75,5 +75,35 @@
     "merged: BG-d5v5iepy"
   ],
   "notes": "Found by the SP-ofvvong6 review (2026-10-14): lines 16-17, 33, 89-90 and 108 call loadscope this repo's mode and quote XDIST = ['-n', 'auto']; lines 16-17 and 108 attribute --dist load to _tools/stress_test.py, deleted in 4d70166fe on 2026-10-06; line 64 lists stress_test.py among tools that start one worker per CPU. Work it through /kb-refresh. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, a wrong answer about this repo: tests.py:317 runs -n <integer> --dist load (worker_count, :782-796), never -n auto or loadscope; stress_test.py is gone; the article says otherwise at :16-17, :30-34 (tagged DOC though it states the repo), :64, :89-90, :108, :111. Merged from BG-d5v5iepy (same file): xdist v3.8.0 plugin.py:16-17 reads PYTEST_XDIST_AUTO_NUM_WORKERS first and :315 calls the pytest_xdist_auto_num_workers hook before psutil.cpu_count (:27-32); the article's :20-27 says psutil decides. Its repro is check 2. Planning 2026-10-14: doc2query/expansions.csv dropped from the touches: the verifier found no expansion row keyed to the facts this item rewords (only settings-and-scopes.md:90, BG-oi3ncidh's, has one). Planning: python3 _tools/check.py passes before the work by design (the content contract must stay clean).",
-  "claimed_by": "orch-xt4t63xw"
+  "evidence": {
+    "commit": "2161e4116b46be7f962954d81544d8ea29335f91",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('kb/public/python/pytest-xdist.md').read();sys.exit(1 if 'stress_test' in t or \"this repo's default\" in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "1fd4973a0a634a58"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('kb/public/python/pytest-xdist.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- `-n auto` uses')];sys.exit(0 if p and 'PYTEST_XDIST_AUTO_NUM_WORKERS' in p[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
