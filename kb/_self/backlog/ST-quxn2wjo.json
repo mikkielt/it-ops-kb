@@ -2,7 +2,7 @@
   "id": "ST-quxn2wjo",
   "kind": "story",
   "title": "Learn and apply turn feedback into findings the existing gates check, and no report edits a fact",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-x4cqj7zo",
   "sprint": "SP-waxgh3kg",
   "priority": "P2",
@@ -77,5 +77,6 @@
   "depends_on": [
     "ST-qqyvoqyj"
   ],
-  "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base learn reads judged only (ql_learn.py:158). querylog.py check passes before the work by design: it pins that learn and apply keep a valid store. Large story (9 clauses, 5 modules): a worker out of turns releases and reports, it does not widen touches. Extend an existing test's name with feedback_findings (test-id ceiling); tests in _tools/test_redact.py. No report edits a fact: apply writes only findings, the _conflicts.md not-settled entry and the existing alias and expansion gates."
+  "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base learn reads judged only (ql_learn.py:158). querylog.py check passes before the work by design: it pins that learn and apply keep a valid store. Large story (9 clauses, 5 modules): a worker out of turns releases and reports, it does not widen touches. Extend an existing test's name with feedback_findings (test-id ceiling); tests in _tools/test_redact.py. No report edits a fact: apply writes only findings, the _conflicts.md not-settled entry and the existing alias and expansion gates.",
+  "claimed_by": "orch-waxgh3kg"
 }
