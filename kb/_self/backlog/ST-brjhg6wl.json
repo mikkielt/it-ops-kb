@@ -2,7 +2,7 @@
   "id": "ST-brjhg6wl",
   "kind": "story",
   "title": "kb_pack and rag.py pack print a pack handle that a later call can name, and the mcp capture row keeps it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-x4cqj7zo",
   "sprint": "SP-waxgh3kg",
   "priority": "P2",

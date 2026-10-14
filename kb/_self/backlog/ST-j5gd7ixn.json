@@ -2,7 +2,7 @@
   "id": "ST-j5gd7ixn",
   "kind": "story",
   "title": "kb_feedback: an agent reports a missed or misleading lookup in closed fields, and the server spools it",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-x4cqj7zo",
   "sprint": "SP-waxgh3kg",
   "priority": "P2",
