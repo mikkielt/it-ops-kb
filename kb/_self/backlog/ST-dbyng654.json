@@ -2,7 +2,7 @@
   "id": "ST-dbyng654",
   "kind": "story",
   "title": "start's host-setup warning does not fire on a rule gate whose wording only names a host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,
@@ -81,5 +81,27 @@
     "merged: ST-4yv2thhh"
   ],
   "notes": "Merged from ST-4yv2thhh “start's host-setup warning names the gate host-unchecked command” at the 2026-10-12 draft triage: Premise holds: the host-setup warning text at _tools/bl_plan.py:368 names no gate host-unchecked command. Same warning in the same function as ST-dbyng654, so one commit covers both: the warning names gate host-unchecked ID GATE --reason TEXT. Recurred SP-qlpfcgs2 start (gate load of ST-aqvuanq7, a per-core load threshold) and SP-uzwbt63u start (2026-10-13: BG-xp3imb24 g2, the word credential in an option of a classing rule; ST-webfvbcb g2, the word host in host-check): each an answered design gate with no host setup. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: only start warns (bl_plan.free_text_host_gates; no test covers it today, the check runs it on a planted stub); a new test id is over max_ids, so extend an existing start test or add none. Premise run 2026-10-13 at planning: free_text_host_gates on a stub sprint returns the rule gate 'How often is a refused suite rerun on a loaded host?' (the word host) as well as the setup gate, so the planted check fails before the work; the warning text at bl_plan.py:400 names no gate host-unchecked command.",
-  "claimed_by": "orch-hlt2tdel"
+  "evidence": {
+    "commit": "bc75afa09475c4ee1366814531fa7351d24c6ec6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_plan as p;b=type('B',(),{})();b.items={'ST-1':{'status':'draft','touches':['_tools/bl_plan.py'],'gates':[{'id':'g1','question':'How often is a refused suite rerun on a loaded host?','options':['once','three times']}]},'ST-2':{'status':'draft','touches':['kb/public/x.md'],'gates':[{'id':'g1','question':'Which service runs the proxy?','options':['install the proxy service on the host','none']}]}};b.sprint_items=lambda s:['ST-1','ST-2'];r=p.free_text_host_gates(b,'SP-1');sys.exit(0 if [x[0] for x in r]==['ST-2'] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;s=open('_tools/bl_plan.py',encoding='utf-8').read().split('names a host setup (',1)[-1].split('for i, when, other',1)[0];sys.exit(0 if 'gate host-unchecked' in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
