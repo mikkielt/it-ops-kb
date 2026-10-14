@@ -2,7 +2,7 @@
   "id": "ST-hojn6yjd",
   "kind": "story",
   "title": "shamir-secret-sharing states the sss README's 255-share and 113-byte-share limits as a tagged DOC fact, not only in a table cell",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,27 @@
     "parked: SP-tcis5f23 review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: rag.py facts auth/shamir-secret-sharing --tag DOC --format detailed shows no line holding 255 and 113 (they sit only in table row 38), and the article has no row in _anchors.csv; both checks exit 1. The first draft check read the default 160-character cut of facts output, so it now reads --format detailed.",
-  "claimed_by": "orch-6ukmjucf"
+  "evidence": {
+    "commit": "4417b7bd1ba2f51483be13ff7ff726170b6fec12",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/rag.py','facts','auth/shamir-secret-sharing','--tag','DOC','--format','detailed'],capture_output=True,text=True); sys.exit(o.returncode!=0 or not any('255' in l and '113' in l for l in o.stdout.splitlines()))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; sys.path.insert(0,'_tools'); import kbfacts; ks=[kbfacts.fact_key(u['text']) for u in kbfacts.units('public') if u['path'].endswith('/shamir-secret-sharing.md') and '255' in u['text'] and '113' in u['text'] and '[DOC' in u['text']]; rows={r['fact'] for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['status']=='located'}; sys.exit(0 if ks and all(k in rows for k in ks) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
