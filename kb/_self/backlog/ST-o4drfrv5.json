@@ -2,7 +2,7 @@
   "id": "ST-o4drfrv5",
   "kind": "story",
   "title": "Research sprint goal: The suite has id room for new tests, and workers run the whole suite at most once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sc5yk65l",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-sc5yk65l"
 }
