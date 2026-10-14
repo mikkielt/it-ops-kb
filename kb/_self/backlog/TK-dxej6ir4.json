@@ -2,7 +2,7 @@
   "id": "TK-dxej6ir4",
   "kind": "task",
   "title": "precheck warns of a content item that rewords a DOC fact and lacks its root's _anchors.csv",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7d3r4lhc",
   "priority": "P2",
   "rank": 0,
@@ -56,5 +56,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "29eccbe485ba731540f3e9111ff8040e9455e998",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "plan_reword_names_anchors"
+        ],
+        "exit": 0,
+        "sha256": "7de9537a0efdc1d4"
+      }
+    ]
+  }
 }
