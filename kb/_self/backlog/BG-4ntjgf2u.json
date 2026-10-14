@@ -75,7 +75,9 @@
         "allow_weak no, check wording": "BG-4ntjgf2u",
         "allow_weak yes": "BG-4ntjgf2u"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "allow_weak no, check wording",
+      "by": "operator"
     }
   ],
   "links": [
