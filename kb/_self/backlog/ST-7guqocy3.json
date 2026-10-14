@@ -1,0 +1,25 @@
+{
+  "id": "ST-7guqocy3",
+  "kind": "story",
+  "title": "A worker opens no gate whose other option would fail the item's own check",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The worker rule says a choice the item's checks already decide (one option fails a check) is no gate: the worker names the check in its report instead. SP-vk3wf746 close: BG-4ntjgf2u's worker opened blocking gate g1 (allow_weak yes or no) though check 0 reads coverage: good, which allow_weak yes would not pin.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('agents/worker.md',encoding='utf-8').read();sys.exit(0 if 'fail the item' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 close"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-3mfjrjom",
+  "kind": "story",
+  "title": "A commit whose KB-Work check-trailers would refuse is refused by the commit-msg hook, not only warned of",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbgit.py commit-msg exits non-zero, leaving no commit, for a message whose KB-Work check-trailers refuses (a planning commit naming an item whose file it does not change), so no later step (a review's done --commit, whose evidence names the tip) builds on a commit that must be rewritten before the push. SP-vk3wf746 close: the review's parking commit named the review story in KB-Work, the hook only printed the refusal, done --commit recorded it as evidence, and the commit and the done had to be reset and run again.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "commit_msg_refuses_planning_kb_work"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbgit.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "_tools/kg_trailers.py"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-tjstbejz",
+  "kind": "story",
+  "title": "start's host-setup warning does not fire on a design gate that names a documentation host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py start warns of a gate with no --host-check only when the gate names a setup of the machine the work runs on, not when 'host' names a documentation or web host the code is about. SP-vk3wf746 start: BG-npdpbmw2 g1 (clamp a provider-down record) drew the warning and needed gate host-unchecked by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "start_host_warning_skips_web_host_gate"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 close"
+  ]
+}

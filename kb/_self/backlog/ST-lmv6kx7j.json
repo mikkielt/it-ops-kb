@@ -1,0 +1,28 @@
+{
+  "id": "ST-lmv6kx7j",
+  "kind": "story",
+  "title": "Planning gives each case a sprint goal clause lists (providers, statuses) a check in the item that carries the clause",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck SP warns when a sprint goal clause names a list of cases (such as 'a GitHub, arXiv or PyPI answer' or 'a failed request') and the carrying item's goal or checks name only some of them, so a narrower item goal is widened or the clause reworded before the start gate. SP-vk3wf746 close: BG-o3zppi2w checked GitHub and arXiv shapes but no PyPI answer, and BG-npdpbmw2 named status 0 where the sprint goal said a failed request; the review found both (BG-x4lhztge, BG-2ksqvskp).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_warns_sprint_clause_case_list"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 close"
+  ]
+}
