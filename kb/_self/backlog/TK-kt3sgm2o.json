@@ -6,7 +6,7 @@
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,
-  "goal": "Run the rag.py eval of the held-out file (--root public --all) once on the tip that holds TK-hsbjikhg's rows and record the pass count, the failing ids and the date in this item's notes; failing rows stay in the file, unchanged (maintaining.md, Conduct for changes); then set the fitness test's --min to the value gate floor's answer gives from the measured count, and write it in kb/_self/tools.md (the command and its Rate: at least F of N; measured M of N on DATE line) and kb/_self/token-efficiency.md, so the fitness test command passes at that floor",
+  "goal": "The held-out file's pass count is measured once on the tip that holds TK-hsbjikhg's rows, its failing ids and date in this item's notes and its failing rows left as committed; and kb/_self/tools.md and kb/_self/token-efficiency.md give the fitness test's --min as gate floor's answer computes it from that count, beside the Rate line (at least F of N, measured M of N on DATE), at which the fitness test passes",
   "checks": [
     {
       "run": [
@@ -14,6 +14,23 @@
         "-c",
         "import re,csv,sys,subprocess;t=open('kb/_self/tools.md',encoding='utf-8').read()+open('kb/_self/token-efficiency.md',encoding='utf-8').read();m=set(re.findall(r'lookup_heldout\\.csv --root public --min (\\d+)',t));n=len(list(csv.DictReader(open('kb/public/_retrieval/lookup_heldout.csv',encoding='utf-8'))));r=re.search(r'Rate: at least (\\d+) of (\\d+); measured (\\d+) of (\\d+)',t);print(m,n,r and r.groups());ok=n>=95 and len(m)==1 and r and int(r.group(2))==n==int(r.group(4)) and r.group(1)==next(iter(m)) and int(r.group(3))>=int(r.group(1));sys.exit(1 if not ok else subprocess.run([sys.executable,'_tools/rag.py','eval','--file','kb/public/_retrieval/lookup_heldout.csv','--root','public','--min',next(iter(m))]).returncode)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,csv,io;f='kb/public/_retrieval/lookup_heldout.csv';log=subprocess.run(['git','log','--reverse','--format=%H','ae319c43c5..HEAD','--',f],capture_output=True,text=True).stdout.split();rows=lambda r:subprocess.run(['git','show',r+':'+f],capture_output=True,text=True).stdout;first=next((c for c in log if len(list(csv.DictReader(io.StringIO(rows(c)))))>=95),None);print('first grown commit:',first);sys.exit(0 if first and rows(first)==open(f,encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The held-out file's pass count is measured once on the tip that holds TK-hsbjikhg's rows, its failing ids and date in this item's notes and its failing rows left as committed",
+      "check": 1
+    },
+    {
+      "clause": "and kb/_self/tools.md and kb/_self/token-efficiency.md give the fitness test's --min as gate floor's answer computes it from that count, beside the Rate line (at least F of N, measured M of N on DATE), at which the fitness test passes",
+      "check": 0
     }
   ],
   "touches": [

@@ -25,6 +25,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The _answers.md pull-agent line that says nft -f swaps a whole ruleset names add table before flush table and that named sets need flush set or destroy set, as line 2769 and QK-flush-idempotent-nft-f-file-need already say, so flush table no longer reads as sufficient and a first run on a missing table does not fail",
+      "check": 1
+    },
+    {
+      "clause": "and kb/public/security/linux-nftables.md's idempotent own-table step does not say the file's first statement is flush table inet NAME, since the same line, the example and the Reference table put add table first",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_answers.md",
     "kb/public/security/linux-nftables.md",

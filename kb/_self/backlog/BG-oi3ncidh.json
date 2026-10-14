@@ -16,6 +16,16 @@
     ]
   },
   "repro_reason": "a kb content defect: the fact text is the behaviour a lookup returns",
+  "clauses": [
+    {
+      "clause": "The DOC S742 fact on the Glob --allowedTools warning exception in kb/public/claude/settings-and-scopes.md states only what the permissions page says",
+      "check": 0
+    },
+    {
+      "clause": "whether the exempted rule is consulted is a DER fact with its reading shown, or an UNK, or is dropped",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/claude/settings-and-scopes.md",
     "kb/public/_anchors.csv",

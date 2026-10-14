@@ -24,6 +24,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The answer regexes of the six cmpivot timeout rows (BP-d306eaa8, BP-8f566d80, BP-70d0bf39, BP-b124a0c0, BP-1f52a1d6, BP-6ca01fa4) and of BP-c552cb0f match as agent_bench scores them (re.search with no flags): they take a capitalised 'Ten minutes', 'One hour' or 'Cannot block termination' and reject '0.1 hour'",
+      "check": 1
+    },
+    {
+      "clause": "the answer regex of sc_stale row BP-43472201 (bench_scenarios.csv and bench_pool.csv, in step) matches mcp__server__* and mcp__server as permissions-mcp.md:44 states, besides mcp__server__tool",
+      "check": 1
+    },
+    {
+      "clause": "and pool check passes",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_retrieval/bench_pool.csv",
     "kb/public/_retrieval/bench_scenarios.csv"
@@ -35,5 +49,5 @@
     "parked: SP-honlhzdc review",
     "merged: BG-molorsr3"
   ],
-  "notes": "Merged from BG-molorsr3 at the 2026-10-14 planning (same files, same kind of fix: data rows only). Premise (2026-10-14, ae319c43c5): the merged repro prints eight False, exit 1; bench_pool.check_problems is empty now (2 s) and must stay so. agent_bench.check compiles the regex with no flags; changing scoring itself is out of scope (it would re-score recorded runs). Only bench_scenarios.csv line 31 (BP-43472201) needs the scenarios edit."
+  "notes": "Merged from BG-molorsr3 at the 2026-10-14 planning (same files, same kind of fix: data rows only). Premise (2026-10-14, ae319c43c5): the merged repro prints eight False, exit 1; bench_pool.check_problems is empty now (2 s) and must stay so. agent_bench.check compiles the regex with no flags; changing scoring itself is out of scope (it would re-score recorded runs). Only bench_scenarios.csv line 31 (BP-43472201) needs the scenarios edit. Planning 2026-10-14: the pool check passes before the work by design (it must stay clean after the regex edits); the repro fails on the premise."
 }

@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "The feedback: hint line prints only where kb_feedback is served: a kb_http.py or --roots server, which does not list the tool, prints no hint, and plugin.md and token-efficiency.md say which servers print it; the kb: hook's web-route context keeps the feedback: line of a weak or none pack beside HEAD_LINES and the pack: line (kb_hook.routed), as tools.md says; tools.md's route-lines passage names the check: lines that set route: split and the scatter note as the one that sets none; and a test runs kb_pack on a limited server and the hook on a none pack and asserts both",
+  "goal": "The feedback: hint line prints only where kb_feedback is served, so a kb_http.py or --roots server, which does not list the tool, prints no hint; token-efficiency.md says which servers print it; the kb: hook's web-route context keeps the feedback: line of a weak or none pack beside HEAD_LINES and the pack: line (kb_hook.routed), as tools.md says; tools.md's route-lines passage names the check: lines that set route: split and the scatter note as the one that sets none; and the extended test_redact.py test asserts the limited server's pack and the hook's none pack",
   "repro": {
     "run": [
       "python3",
@@ -30,6 +30,35 @@
         "-k",
         "test_an_ops_row_has_a_closed_shape"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,re;t=open('kb/_self/token-efficiency.md',encoding='utf-8').read();s=[x for x in re.split(r'(?<=[.;])\\s+',t) if 'feedback:'+chr(96)+' line' in x];print(s[:1]);sys.exit(0 if s and all(('--roots' in x or 'kb_http' in x or 'served' in x) for x in s) else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The feedback: hint line prints only where kb_feedback is served, so a kb_http.py or --roots server, which does not list the tool, prints no hint",
+      "check": 3
+    },
+    {
+      "clause": "token-efficiency.md says which servers print it",
+      "check": 2
+    },
+    {
+      "clause": "the kb: hook's web-route context keeps the feedback: line of a weak or none pack beside HEAD_LINES and the pack: line (kb_hook.routed), as tools.md says",
+      "check": 3
+    },
+    {
+      "clause": "tools.md's route-lines passage names the check: lines that set route: split and the scatter note as the one that sets none",
+      "check": 0
+    },
+    {
+      "clause": "and the extended test_redact.py test asserts the limited server's pack and the hook's none pack",
+      "check": 1
     }
   ],
   "touches": [
@@ -52,5 +81,5 @@
     "merged: BG-idrvnwvx",
     "merged: BG-kxy4fyxc"
   ],
-  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL: kbfacts.handled (kbfacts.py:3494) adds feedback: kb_feedback(...) to every weak/none pack, though kb_mcp.handle serves no kb_feedback when limited() (calling it returns Unknown tool); kb_hook.routed's web branch keeps only HEAD_LINES and the pack: line (kb_hook.py:176-182). Merged here: BG-idrvnwvx (the same line, the same docs) and BG-kxy4fyxc (tools.md route-lines passage: route_of sets split for unmatched, spread, missing and noted, never the scatter note; keep the EV-check-notes-good-pack-print-them and EV-check-lines-good-pack-set-route phrase 'unlike the scatter note, sets route: split'). The repro checks both halves; check 0 is BG-kxy4fyxc's. Smallest fix: handled skips the ask when kbcommon.serving(); kb_http.py needs no edit. Test: helper feedback_is_spooled_once_and_refuses_open_fields of test_redact.py's test_an_ops_row_has_a_closed_shape... id (limited context about :172-176, none-pack footer :180-187), plus a kb_hook.respond on a gibberish kb: prompt; no new id (about +0.5 s)."
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL: kbfacts.handled (kbfacts.py:3494) adds feedback: kb_feedback(...) to every weak/none pack, though kb_mcp.handle serves no kb_feedback when limited() (calling it returns Unknown tool); kb_hook.routed's web branch keeps only HEAD_LINES and the pack: line (kb_hook.py:176-182). Merged here: BG-idrvnwvx (the same line, the same docs) and BG-kxy4fyxc (tools.md route-lines passage: route_of sets split for unmatched, spread, missing and noted, never the scatter note; keep the EV-check-notes-good-pack-print-them and EV-check-lines-good-pack-set-route phrase 'unlike the scatter note, sets route: split'). The repro checks both halves; check 0 is BG-kxy4fyxc's. Smallest fix: handled skips the ask when kbcommon.serving(); kb_http.py needs no edit. Test: helper feedback_is_spooled_once_and_refuses_open_fields of test_redact.py's test_an_ops_row_has_a_closed_shape... id (limited context about :172-176, none-pack footer :180-187), plus a kb_hook.respond on a gibberish kb: prompt; no new id (about +0.5 s). Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise. plugin.md:11 already says kb_feedback is absent under --roots and from kb_http.py, so the goal names only token-efficiency.md for the hint."
 }

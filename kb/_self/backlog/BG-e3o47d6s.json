@@ -1,0 +1,21 @@
+{
+  "id": "BG-e3o47d6s",
+  "kind": "bug",
+  "title": "The gate classifier gives the push class to a content gate that only names GitLab as a product",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bl_authority.gate_class classes a gate whose question names GitLab (or GitHub) only as the product a kb fact is about, on an item that touches only kb articles, by what the gate decides (design), not push; a gate that chooses a push target or a remote stays push. Found at the 2026-10-14 correctness planning: BG-tl74zfyr's gate g1 (row or reason for GitLab's MCP server) was classed push (matched 'GitLab').",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;it={'id':'BG-x','kind':'bug','touches':['kb/public/agents/doc-lookup-sources.md']};g={'id':'g1','question':\"Does GitLab's GA MCP server get a row in doc-lookup-sources.csv, or does the article state why it is left out?\",'options':['reason: no row','row: add a ranked row'],'recommendation':'reason: no row'};c=a.gate_class(it,g);print(c);sys.exit(1 if c=='push' else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py"
+  ]
+}

@@ -7,7 +7,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "With no cached previous text, factdiff.window_sections compares the sections the window can enter without reading unrelated sibling headings, so adding, renaming or removing an H2 elsewhere on the page does not fail section_unchanged for a fact whose own text and window are unchanged, while an edit to the fact's own section or the section right after it still fails it; factdiff.madeup_text does not cache a status-0 answer of the made-up sibling as a 404, so a network failure does not turn off soft-404 detection for the host's other sources; and provider.host_down ignores, or clamps to DOWN_CAP_S, a record whose until lies more than DOWN_CAP_S after its at or after now",
+  "goal": "With no cached previous text, factdiff.window_sections compares the sections the window can enter without reading unrelated sibling headings, so adding, renaming or removing an H2 elsewhere on the page does not fail section_unchanged for a fact whose own text and window are unchanged, while an edit to the fact's own section or the section right after it still fails it; factdiff.madeup_text does not cache a status-0 answer of the made-up sibling as a 404, so a network failure does not turn off soft-404 detection for the host's other sources; and provider.host_down reads a record whose until lies more than DOWN_CAP_S after its at, or after now, as ending at that bound (gate g1: clamp)",
   "repro": {
     "run": [
       "python3",
@@ -34,7 +34,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys,json,time,tempfile;sys.path.insert(0,'_tools');import provider;provider.DOWN_DIR=tempfile.mkdtemp();now=time.time();json.dump({'at':now,'until':now+1e9,'count':1,'error':'URLError: x'},open(provider._down_path('example.com'),'w'));sys.exit(1 if provider.host_down('https://example.com/a') else 0)"
+        "import sys,json,time,tempfile;sys.path.insert(0,'_tools');import provider;provider.DOWN_DIR=tempfile.mkdtemp();now=time.time();c=provider.DOWN_CAP_S;json.dump({'at':now-2*c,'until':now+1e9,'count':1,'error':'URLError: x'},open(provider._down_path('old.example.com'),'w'));json.dump({'at':now,'until':now+1e9,'count':1,'error':'URLError: x'},open(provider._down_path('new.example.com'),'w'));a=bool(provider.host_down('https://old.example.com/a'));b=bool(provider.host_down('https://new.example.com/a'));print(a,b);sys.exit(0 if (not a and b) else 1)"
       ]
     },
     {
@@ -54,6 +54,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "With no cached previous text, factdiff.window_sections compares the sections the window can enter without reading unrelated sibling headings, so adding, renaming or removing an H2 elsewhere on the page does not fail section_unchanged for a fact whose own text and window are unchanged, while an edit to the fact's own section or the section right after it still fails it",
+      "check": 0
+    },
+    {
+      "clause": "factdiff.madeup_text does not cache a status-0 answer of the made-up sibling as a 404, so a network failure does not turn off soft-404 detection for the host's other sources",
+      "check": 1
+    },
+    {
+      "clause": "and provider.host_down reads a record whose until lies more than DOWN_CAP_S after its at, or after now, as ending at that bound (gate g1: clamp)",
+      "check": 2
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/provider.py",
@@ -65,10 +79,25 @@
   "depends_on": [
     "BG-o3zppi2w"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does provider.host_down clamp a provider-down record whose until lies beyond DOWN_CAP_S, or ignore it?",
+      "options": [
+        "clamp: read a record whose until lies past at + DOWN_CAP_S, or past now + DOWN_CAP_S, as ending at that bound, so a real recent failure still holds the host for at most the cap",
+        "ignore: read such a record as no record, so the host is asked at once"
+      ],
+      "recommendation": "clamp: read a record whose until lies past at + DOWN_CAP_S, or past now + DOWN_CAP_S, as ending at that bound, so a real recent failure still holds the host for at most the cap",
+      "class": "design",
+      "answer": "clamp: read a record whose until lies past at + DOWN_CAP_S, or past now + DOWN_CAP_S, as ending at that bound, so a real recent failure still holds the host for at most the cap",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-vdrsfftl review",
     "merged: BG-ugucwe42",
     "merged: BG-gx4wphry"
   ],
-  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer (a lookup prints [moved DATE] edited in place for an unchanged fact): window_sections adds the parent's key because a sibling heading unit sits under the parent, and the parent's hash covers every H2 line (repro keys printed 3 sections). Merged here: BG-ugucwe42 (madeup_text, factdiff.py:1044-1051, stores None for any status but 200) and BG-gx4wphry (provider._down_rec, provider.py:529-538, accepts any numeric until). Check 0 also proves the edit-right-after half. Tests: sections asserts of test_pool_rows_are_answered_by_their_tool_... (:1393-1417, 1.8 s) and the revalidate mega-test (madeup about :572-574, down window :610-623); no new id. web-sources.md is mapped to provider.py: read it, edit only if it states the down-record rule."
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer (a lookup prints [moved DATE] edited in place for an unchanged fact): window_sections adds the parent's key because a sibling heading unit sits under the parent, and the parent's hash covers every H2 line (repro keys printed 3 sections). Merged here: BG-ugucwe42 (madeup_text, factdiff.py:1044-1051, stores None for any status but 200) and BG-gx4wphry (provider._down_rec, provider.py:529-538, accepts any numeric until). Check 0 also proves the edit-right-after half. Tests: sections asserts of test_pool_rows_are_answered_by_their_tool_... (:1393-1417, 1.8 s) and the revalidate mega-test (madeup about :572-574, down window :610-623); no new id. web-sources.md is mapped to provider.py: read it, edit only if it states the down-record rule. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise. Planning: check 2 re-pointed to gate g1's answer (clamp): a far-future record written 2 x DOWN_CAP_S ago no longer holds the host, a fresh one still does; it fails now (both hold)."
 }

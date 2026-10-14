@@ -18,7 +18,8 @@
   "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
   "touches": [
     "kb/public/auth/postgres-column-encryption.md",
-    "kb/public/_answers.md"
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv"
   ],
   "depends_on": [
     "BG-u3edtq34"

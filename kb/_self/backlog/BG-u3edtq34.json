@@ -16,6 +16,16 @@
     ]
   },
   "repro_reason": "a kb content defect: the fact text is the behaviour a lookup returns",
+  "clauses": [
+    {
+      "clause": "The _answers.md fact on Bazel's --test_timeout keeps only the page's words under [DOC S-3dlofilm] (an override when manually running under conditions known to be slow)",
+      "check": 0
+    },
+    {
+      "clause": "the DER note at agents/test-suite-size-and-agent-overengineering.md:37 says the per-run reading is the kb's own, not stated by the page",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_answers.md",
     "kb/public/agents/test-suite-size-and-agent-overengineering.md",

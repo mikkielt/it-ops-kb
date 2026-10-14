@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "The _gaps.md entry 'Which exceptions the permissions page names to the built-in read-only Bash command set' points at the line that now holds the blockReadsOutsideWorkingDirectories fact, or names the article section, and marks its 2026-10-13 reading of powershell-tool.md:37 as past",
+  "goal": "The _gaps.md entry 'Which exceptions the permissions page names to the built-in read-only Bash command set' no longer points at settings-and-scopes.md:73 or reads powershell-tool.md:37 as naming no exception: it names the article lines that now state the exception (powershell-tool.md's permissions.blockReadsOutsideWorkingDirectories fact, settings-and-scopes.md's) and is marked resolved, or partly resolved with what still lacks a source",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,12 @@
     ]
   },
   "repro_reason": "a kb ledger defect: the entry text is what a lookup returns",
+  "clauses": [
+    {
+      "clause": "The _gaps.md entry 'Which exceptions the permissions page names to the built-in read-only Bash command set' no longer points at settings-and-scopes.md:73 or reads powershell-tool.md:37 as naming no exception: it names the article lines that now state the exception (powershell-tool.md's permissions.blockReadsOutsideWorkingDirectories fact, settings-and-scopes.md's) and is marked resolved, or partly resolved with what still lacks a source",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/_gaps.md"
   ],

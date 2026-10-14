@@ -27,6 +27,16 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "cmd_repin in _tools/census.py re-reads the facts and anchors after each re-point (the one read before the loop at census.py:2399 goes), so a second pinned source cited by the same fact still finds its anchor in the same run",
+      "check": 1
+    },
+    {
+      "clause": "--dry-run prints the same outcome as the real run",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/census.py",
     "_tools/test_redact.py",
@@ -39,5 +49,5 @@
   "links": [
     "parked: SP-ilje65fa review"
   ],
-  "notes": "Premise (2026-10-14, ae319c43c5, by reading; no kb fact triggers it today): census.py:2399 reads facts and anchors once, :2461-2468 re-keys anchors in memory to the reworded fact's new key while facts keep the old key, so a second pinned source's repin_plan misses its anchor; --dry-run never re-keys. Goal narrowed at planning to the re-read fix, so the repro (the single read line) is sound for it; the behaviour is proved by extending census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit (test_redact.py:1444) with a fact citing two pinned sources that both end superseded in one real run, the dry run's count equal to the real run's; no new id."
+  "notes": "Premise (2026-10-14, ae319c43c5, by reading; no kb fact triggers it today): census.py:2399 reads facts and anchors once, :2461-2468 re-keys anchors in memory to the reworded fact's new key while facts keep the old key, so a second pinned source's repin_plan misses its anchor; --dry-run never re-keys. Goal narrowed at planning to the re-read fix, so the repro (the single read line) is sound for it; the behaviour is proved by extending census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit (test_redact.py:1444) with a fact citing two pinned sources that both end superseded in one real run, the dry run's count equal to the real run's; no new id. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise."
 }

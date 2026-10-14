@@ -7,7 +7,7 @@
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "Each line of kb/public/agents/codebase-mapping.md and kb/public/_answers.md that says only rustc_fingerprint fails with a valid RUSTC_WRAPPER and an unresolvable RUSTC_WORKSPACE_WRAPPER also says, from Cache::cached_output in the pinned Cargo source S-f6y5we3c, that a wrapper exiting non-zero on its unresolvable first argument makes Rustc::new fail; found by the SP-uvz65lvm review",
+  "goal": "Each line of kb/public/agents/codebase-mapping.md and kb/public/_answers.md that says only rustc_fingerprint fails with a valid RUSTC_WRAPPER and an unresolvable RUSTC_WORKSPACE_WRAPPER also says, from Cache::cached_output in the pinned Cargo source S-f6y5we3c, that a wrapper exiting non-zero on its unresolvable first argument makes Rustc::new fail",
   "repro": {
     "run": [
       "python3",
@@ -16,6 +16,12 @@
     ]
   },
   "repro_reason": "the defect is the wording of two kb facts; no tool behaviour reads it",
+  "clauses": [
+    {
+      "clause": "Each line of kb/public/agents/codebase-mapping.md and kb/public/_answers.md that says only rustc_fingerprint fails with a valid RUSTC_WRAPPER and an unresolvable RUSTC_WORKSPACE_WRAPPER also says, from Cache::cached_output in the pinned Cargo source S-f6y5we3c, that a wrapper exiting non-zero on its unresolvable first argument makes Rustc::new fail",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/agents/codebase-mapping.md",
     "kb/public/_answers.md",

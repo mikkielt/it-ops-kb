@@ -6,7 +6,7 @@
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,
-  "goal": "Add about 80 rows to kb/public/_retrieval/lookup_heldout.csv (95 to 105 in all, HO- ids, the file's columns): questions a kb user would ask, worded as a session asks them (from the query log store's lookup records where one fits, placeholders for private names; never a backlog item's text), at least 50 expecting good with the article that answers them, at least 10 partial (weak, or good with allow_weak yes) and at least 10 absent (none, no paths); expected paths and verdicts come from reading the articles (rag.py show, facts, git grep), never from rag.py pack or eval output on the new questions; commit the rows before the first eval run of them; no row is a line of lookup_eval.csv, doc2query/expansions.csv or doc2query/offkb_questions.txt, and a REWORD line from eval is fixed by replacing the question with one no tuned row resembles",
+  "goal": "Add about 80 rows to kb/public/_retrieval/lookup_heldout.csv, 95 to 105 in all with unique HO- ids and the file's columns, at least 50 expecting good with the article that answers them, at least 10 partial (weak, or good with allow_weak yes) and at least 10 absent (none, no paths), each a question a kb user would ask, worded as a session asks it; the rows stay as first committed, with no edit after their first eval run; no row rewords a tuned row or a doc2query expansion, and the eval refuses none",
   "checks": [
     {
       "run": [
@@ -27,6 +27,31 @@
         "--min",
         "1"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys,csv,io;f='kb/public/_retrieval/lookup_heldout.csv';log=subprocess.run(['git','log','--reverse','--format=%H','ae319c43c5..HEAD','--',f],capture_output=True,text=True).stdout.split();rows=lambda r:subprocess.run(['git','show',r+':'+f],capture_output=True,text=True).stdout;first=next((c for c in log if len(list(csv.DictReader(io.StringIO(rows(c)))))>=95),None);print('first grown commit:',first);sys.exit(0 if first and rows(first)==open(f,encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Add about 80 rows to kb/public/_retrieval/lookup_heldout.csv, 95 to 105 in all with unique HO- ids and the file's columns, at least 50 expecting good with the article that answers them, at least 10 partial (weak, or good with allow_weak yes) and at least 10 absent (none, no paths), each a question a kb user would ask, worded as a session asks it",
+      "check": 0
+    },
+    {
+      "clause": "the rows stay as first committed, with no edit after their first eval run",
+      "check": 2
+    },
+    {
+      "clause": "no row rewords a tuned row or a doc2query expansion",
+      "check": 1
+    },
+    {
+      "clause": "the eval refuses none",
+      "check": 1
     }
   ],
   "touches": [
@@ -34,5 +59,6 @@
   ],
   "depends_on": [
     "ST-bwj6gyfj"
-  ]
+  ],
+  "notes": "Process rules (planning 2026-10-14, the operator's held-out conditions): questions come from the query log store's lookup records where one fits (placeholders for private names, never a backlog item's text), else are written as a kb user would ask; expected paths and verdicts come from reading the articles (rag.py show, rag.py facts, git grep), never from rag.py pack or eval output on the new questions; before the commit, test only for rewordings with python3 -c \"import sys;sys.path.insert(0,'_tools');import rag;print(rag.heldout_rewordings('kb/public/_retrieval/lookup_heldout.csv','public'))\" (no pack runs) and replace any question it names; commit the rows, then run the eval: that first run is the one measurement, and no row changes after it (the frozen-rows check reads git history from ae319c43c5). The eval check passes on today's 20 rows by design (it guards REWORD and OFFKB refusals); the frozen-rows check fails until the grown rows are committed."
 }

@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: every item of SP-vk3wf746 fixes this repo's own tools (kbfacts, kb_hook, factdiff, provider) or its _self rule rows, verified at planning (2026-10-14) with planted inputs, evidence in each item's notes; no external source decides any of them."
 }
