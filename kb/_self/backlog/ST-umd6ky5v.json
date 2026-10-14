@@ -27,8 +27,5 @@
     "kb/_self/tools.md",
     "README.md"
   ],
-  "depends_on": [
-    "ST-j5gd7ixn"
-  ],
   "notes": "Every scenario but the pool makes paid runs whatever --dry-run says (BG-wapzksub); this scenario's --dry-run must make none, and the story's own check runs no paid run."
 }

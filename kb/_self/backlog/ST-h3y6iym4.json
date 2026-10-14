@@ -28,8 +28,5 @@
     "kb/_self/querylog.md",
     "kb/_self/token-efficiency.md"
   ],
-  "depends_on": [
-    "ST-brjhg6wl"
-  ],
   "notes": "Premise: _tools/kb_hook.py handles kb: and kb+: only; a person who sees a wrong answer has no channel but a new prompt the pipeline reads as another lookup. AGENTS.md is capped at 4096 bytes and nearly full: naming kb!: there needs a cut elsewhere in the same commit (wc -c AGENTS.md). Comment text: D-rd64qovu."
 }

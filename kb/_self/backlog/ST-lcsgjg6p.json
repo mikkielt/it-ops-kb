@@ -35,8 +35,5 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
     "kb/_self/plugin.md"
-  ],
-  "depends_on": [
-    "ST-quxn2wjo"
   ]
 }
