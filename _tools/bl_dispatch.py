@@ -10,7 +10,8 @@ gets none. `--dry-run` prints what it would run and writes and starts nothing. D
 `.claude/` file it stages a copy of, the digest of the worktree's file (`staging-bases.json` in the scratch directory);
 `backlog.py stage-back ID` copies the copies that differ into the worktree, refuses one whose base differs from that
 record, runs `selfdoc.py check`, the docs `selfdoc.py stale --since HEAD` lists and the item's checks there, and commits
-the copies alone with `KB-Work`; `--check` runs the docs check only and puts the worktree back as it was.
+the copies alone with `KB-Work`; `--check` runs the docs check only and puts the worktree back as it was, and the
+brief's staging part names it, so a worker's report states its `problems=` count for what it staged.
 
 The brief is the item's JSON and goal text, its external tracker ids with their urls, the worker's role file, its
 worktree and scratch directory, the in-flight sibling items with the files their touches change, the known failing
@@ -441,10 +442,13 @@ def compose_brief(bl, iid, known=(), probe=None, turns=None):
         out += ["## Staging copies",
                 "`.claude/` is protected for you (a headless session in permission mode `default`): do NOT edit "
                 "these files in the worktree. Edit the staging copy instead, never commit it and never copy it "
-                "into the worktree; the orchestrator copies it back, runs "
+                "into the worktree; the orchestrator copies it back with "
+                f"`{backlog_cmd(bl.root)} stage-back {iid}`, which runs "
                 + ("`selfdoc.py check` and the item's checks" if has_tool(bl.root, "selfdoc.py") else "the item's checks")
-                + ", and commits it on your branch. In your report, say what you changed in each and which "
-                "headings or anchors other docs point at that you touched.",
+                + f", and commits it on your branch. Once your own work is committed, run `{backlog_cmd(bl.root)} "
+                f"stage-back {iid} --check`: it runs the docs check over your copies and commits nothing, and your "
+                "report states its `problems=` count for what you staged. In your report, say what you changed in "
+                "each and which headings or anchors other docs point at that you touched.",
                 *[f"- {p} -> {scratch / STAGING / p}" for p in staged], ""]
     links = [(g, link_target(g)) for g in dict.fromkeys(scope(bl, iid)) if link_target(g) and g not in staged]
     if links:
