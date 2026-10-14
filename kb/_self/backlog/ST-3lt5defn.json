@@ -2,7 +2,7 @@
   "id": "ST-3lt5defn",
   "kind": "story",
   "title": "Review sprint: Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ia6xayiy",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-ia6xayiy"
+  "evidence": {
+    "commit": "efde927367464b65d9c5faa69588e7cf1406e27d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "dffc155e6c1807d6"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a66709d88c17acae"
+      }
+    ]
+  }
 }
