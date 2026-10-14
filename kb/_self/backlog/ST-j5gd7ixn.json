@@ -2,7 +2,7 @@
   "id": "ST-j5gd7ixn",
   "kind": "story",
   "title": "kb_feedback: an agent reports a missed or misleading lookup in closed fields, and the server spools it",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-x4cqj7zo",
   "sprint": "SP-waxgh3kg",
   "priority": "P2",
@@ -161,5 +161,37 @@
     "kb:public/claude/permissions-mcp.md"
   ],
   "notes": "Premise: every tool in _tools/kb_mcp.py TOOL_LIST carries READ_ONLY and none takes a report; the only feedback today is Haiku's judged and best at distill. The tool writes only the local spool under _cache/, in line with D-tvjml75q; the docs that call the server read-only (the kb_mcp.py docstring, kb/_self/plugin.md, kb/_self/tools.md) say instead that kb_feedback appends to the local spool. Exceptions only: D-ocy63n4a. Planned 2026-10-13 (SP-waxgh3kg). Premise run on base: grep -i feedback _tools/kb_mcp.py finds only a comment on submit_feedback, every TOOL_LIST entry carries READ_ONLY and none takes a report: reproduces. rag.py eval passes before the work by design: it pins that a weak or none pack's new footer line breaks no eval row. The url gate is inline in ql_research.candidate_problems: extract one predicate there (ql_research.py is in touches) that kb_mcp and ql_store both call. Extend an existing test's name with kb_feedback, no new test id; tests in _tools/test_live_kb.py and _tools/test_redact.py. Gate answered: settings.json names mcp__kb__kb_feedback in the allow list.",
-  "claimed_by": "orch-waxgh3kg"
+  "evidence": {
+    "commit": "b33bb03db2ef99147a024233e41a7767781f3c59",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "5c3a7412c2cbb6c3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "kb_feedback"
+        ],
+        "exit": 0,
+        "sha256": "d96e7244a378624e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; s=open('.claude/settings.json').read(); p=open('kb/_self/plugin.md').read(); sys.exit(0 if 'mcp__kb__kb_feedback' in s and 'kb_feedback' in p else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
