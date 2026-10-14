@@ -64,6 +64,25 @@
     "kb/_self/content-rules.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does kbid.py add keep a row when a waiter's clear displaced a live holder's lock and a third writer made a lock before the link back?",
+      "options": [
+        "Re-check the name before claiming; the third writer's lock survives; the displaced holder re-verifies its lock (held()) just before the write and exits 2 asking for a rerun",
+        "Re-check the name before claiming only; no verify before the write"
+      ],
+      "recommendation": "Re-check the name before claiming; the third writer's lock survives; the displaced holder re-verifies its lock (held()) just before the write and exits 2 asking for a rerun",
+      "do": {
+        "Re-check the name before claiming; the third writer's lock survives; the displaced holder re-verifies its lock (held()) just before the write and exits 2 asking for a rerun": "BG-h6aqngbp",
+        "Re-check the name before claiming only; no verify before the write": "BG-h6aqngbp"
+      },
+      "class": "design",
+      "answer": "Re-check the name before claiming; the third writer's lock survives; the displaced holder re-verifies its lock (held()) just before the write and exits 2 asking for a rerun",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilqhjn3k review",
     "merged: BG-u7gtwn5s"

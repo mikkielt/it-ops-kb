@@ -285,7 +285,7 @@ def add_source(root, url, title, publisher, licence, reuse, version="", sha256="
     if optional["artifact_sha256"] and not re.fullmatch(r"[0-9a-f]{64}", optional["artifact_sha256"]):
         raise ValueError(f"--sha256 is not 64 hexadecimal characters: {sha256!r}")
     path = os.path.join(root.path, kbcommon.SOURCES)
-    with _sources_lock(path, f"{root.name}/{kbcommon.SOURCES}"):  # read, insert and write are one step
+    with _sources_lock(path, f"{root.name}/{kbcommon.SOURCES}") as held:  # read, insert and write are one step
         try:
             with open(path, encoding="utf-8-sig", newline="") as f:
                 header, rows = kbcommon.parse_csv(f"{root.name}/{kbcommon.SOURCES}", f.read(), ADD_COLS)
@@ -305,6 +305,8 @@ def add_source(root, url, title, publisher, licence, reuse, version="", sha256="
         new = {c: "" for c in header}
         new.update(given, id=sid, url=url, retrieved_utc=today or datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d"))
         rows.insert(next((i for i, r in enumerate(rows) if _row_key(r["id"]) > _row_key(sid)), len(rows)), new)
+        if not held():  # a waiter's clear displaced the lock: another add may have read the same rows
+            raise ValueError(f"the lock on {root.name}/{kbcommon.SOURCES} was lost before the row was written: run `add` again")
         kbcommon.write_csv(path, header, rows, atomic=True)
     return sid, True
 
@@ -315,25 +317,37 @@ LOCK_STALE_S = 30.0  # a holder keeps the lock for the milliseconds of one read 
 
 
 def _clear_stale(lock):
-    """Remove `lock` when the file at that name is older than LOCK_STALE_S: the waiter claims it by renaming it to a
-    name of its own (one waiter's rename succeeds, the others find no file), judges the claimed file, not the name, and
-    puts a lock that is not stale back (a link, which never replaces one a writer has made since)."""
+    """Remove `lock` when the file at that name is older than LOCK_STALE_S. The name is looked at again first: a lock
+    a writer made since the caller judged it is fresh and stays where it is. A waiter that still wins a race claims the
+    file by renaming it to a name of its own (one waiter's rename succeeds, the others find no file), judges the
+    claimed file, not the name, and puts a lock that is not stale back with a link, which never replaces a lock a third
+    writer made meanwhile: that one survives. A link that fails otherwise is raised (ValueError), the claimed file kept."""
+    try:
+        if time.time() - os.stat(lock).st_mtime <= LOCK_STALE_S:
+            return
+    except OSError:  # released since
+        return
     mine = f"{lock}.clear.{os.getpid()}.{os.urandom(4).hex()}"
     try:
         os.replace(lock, mine)
     except OSError:
         return
     try:
-        if time.time() - os.stat(mine).st_mtime <= LOCK_STALE_S:
-            try:
-                os.link(mine, lock)
-            except OSError:
-                pass
-    finally:
-        try:
+        if time.time() - os.stat(mine).st_mtime > LOCK_STALE_S:
             os.unlink(mine)
-        except OSError:
-            pass
+            return
+    except OSError:
+        return
+    try:
+        os.link(mine, lock)
+    except FileExistsError:  # a third writer made a lock since: it survives, the displaced holder finds it lost
+        pass
+    except OSError as e:
+        raise ValueError(f"cannot put the live lock {lock} back (kept as {mine}): {e}")
+    try:
+        os.unlink(mine)
+    except OSError:
+        pass
 
 
 @contextlib.contextmanager
@@ -341,39 +355,60 @@ def _sources_lock(path, label):
     """Hold the exclusive lock of one _sources.csv for the block: the file `<path>.lock`, made by exclusive create (no
     fcntl, so the same on every OS) and removed on exit and on an error. A concurrent add waits for it, so two adds
     never read the same rows, and never write the one `.tmp` file together. A lock file older than LOCK_STALE_S is a
-    crashed writer's and a waiter clears it (`_clear_stale`). ValueError when the lock is still held after the bound."""
+    crashed writer's and a waiter clears it (`_clear_stale`). ValueError when the lock is still held after the bound.
+    A lock the call made is removed when writing its owner line fails. The block gets `held()`, true while the lock
+    file is still this holder's."""
     lock = path + LOCK_SUFFIX
     me = f"pid={os.getpid()}\nstarted={datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}\n"
-    deadline = time.monotonic() + 2 * LOCK_STALE_S
-    while True:
-        try:
-            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
-            break
-        except FileExistsError:
-            pass
-        except OSError as e:  # a directory that is missing or read-only: the read below says so
-            raise ValueError(f"cannot lock {label}: {e}")
-        try:
-            age = time.time() - os.stat(lock).st_mtime
-        except OSError:  # released since: look again
-            continue
-        if age > LOCK_STALE_S:
-            _clear_stale(lock)
-            continue
-        if time.monotonic() > deadline:
-            raise ValueError(f"{label} is locked by another `kbid.py add` ({lock}); remove the file if no add runs")
-        time.sleep(LOCK_POLL_S)
-    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
-        f.write(me)
-    try:
-        yield
-    finally:
+
+    def held():
+        """True while the lock file at the name is still this holder's own."""
         try:
             with open(lock, encoding="utf-8") as f:
-                mine = f.read() == me
+                return f.read() == me
         except OSError:
-            mine = False
-        if mine:
+            return False
+
+    deadline = time.monotonic() + 2 * LOCK_STALE_S
+    created = False
+    try:
+        while True:
+            try:
+                fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                created = True
+                break
+            except FileExistsError:
+                pass
+            except OSError as e:  # a directory that is missing or read-only: the read below says so
+                raise ValueError(f"cannot lock {label}: {e}")
+            try:
+                age = time.time() - os.stat(lock).st_mtime
+            except OSError:  # released since: look again
+                continue
+            if age > LOCK_STALE_S:
+                _clear_stale(lock)
+                continue
+            if time.monotonic() > deadline:
+                raise ValueError(f"{label} is locked by another `kbid.py add` ({lock}); remove the file if no add runs")
+            time.sleep(LOCK_POLL_S)
+        try:
+            f = os.fdopen(fd, "w", encoding="utf-8", newline="\n")
+        except BaseException:
+            os.close(fd)
+            raise
+        with f:
+            f.write(me)
+    except BaseException:
+        if created:  # the file is this call's own (made by exclusive create): never leave it for the next add to wait out
+            try:
+                os.unlink(lock)
+            except OSError:
+                pass
+        raise
+    try:
+        yield held
+    finally:
+        if held():
             try:
                 os.unlink(lock)
             except OSError:

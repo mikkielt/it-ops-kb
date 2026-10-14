@@ -8,3 +8,5 @@ _fetch_state.csv.tmp
 .pytest_cache/
 .uv-cache/
 .claude/worktrees/
+_sources.csv.lock
+_sources.csv.lock.clear.*
