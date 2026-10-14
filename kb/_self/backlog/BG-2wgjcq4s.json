@@ -1,0 +1,28 @@
+{
+  "id": "BG-2wgjcq4s",
+  "kind": "bug",
+  "title": "A weak or none pack prints the kb_feedback hint on servers that have no kb_feedback tool",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The feedback: hint line prints only where kb_feedback is served: a kb_http.py or --roots server, which does not list the tool, prints no hint, and plugin.md and token-efficiency.md say which servers print it; a test runs kb_pack on a limited server and asserts no hint line.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import kbcommon, kb_mcp; kbcommon.serve_only(['public']); r = kb_mcp.handle({'jsonrpc': '2.0', 'id': 1, 'method': 'tools/call', 'params': {'name': 'kb_pack', 'arguments': {'question': 'zzqx frobnicate the quux widget lattice'}}}); t = r['result']['content'][0]['text']; print(t.splitlines()[:3]); sys.exit(1 if 'feedback: kb_feedback' in t else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/kb_mcp.py",
+    "_tools/kb_http.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg review"
+  ]
+}

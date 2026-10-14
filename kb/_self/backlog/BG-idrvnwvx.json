@@ -1,0 +1,25 @@
+{
+  "id": "BG-idrvnwvx",
+  "kind": "bug",
+  "title": "The kb: hook drops the feedback: line from a none pack, though gate g2 and tools.md say it prints it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The kb: hook's web-route context keeps the feedback: line of a weak or none pack beside HEAD_LINES and the pack: line (kb_hook.routed), or tools.md is corrected to say it does not; a test of kb_hook.respond on a none pack asserts the chosen behaviour.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys, json; sys.path.insert(0, '_tools'); import kb_hook; r = json.dumps(kb_hook.respond('kb: zzqx frobnicate the quux widget lattice')[0]); print(r[-200:]); sys.exit(0 if 'feedback: kb_feedback' in r else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kb_hook.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg review"
+  ]
+}

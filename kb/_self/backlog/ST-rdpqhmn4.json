@@ -1,0 +1,27 @@
+{
+  "id": "ST-rdpqhmn4",
+  "kind": "story",
+  "title": "A feedback row joins the latest lookup that printed its pack handle before the report, not the earliest",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "join_feedback maps a pack handle to the latest lookup that printed it no later than the feedback row's time (today handles.setdefault keeps the first session's group, ql_distill.py join_feedback), so a report on a handle looked up in two sessions joins the one it followed; querylog.md's exact-join wording names that rule; a test plants the two-session case (handle in s1 at 08:00 and s2 at 09:00, report at 09:05 joins s2).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "feedback_handle_latest_lookup"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg review"
+  ]
+}

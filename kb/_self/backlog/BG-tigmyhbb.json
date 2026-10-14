@@ -1,0 +1,27 @@
+{
+  "id": "BG-tigmyhbb",
+  "kind": "bug",
+  "title": "A kb_feedback call is captured as a lookup tool, so the digest counts tool issues under kb_feedback and a feedback-only prompt becomes a lookup entry",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "ql_distill.entry_of leaves kb_feedback out of an entry's lookup tools, so a tool_issue counts only under the tools the lookup used (ql_report.feedback_lines), and a prompt whose only kb call is kb_feedback makes no lookup entry whose question is the feedback's question argument; a test plants both cases.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.path.insert(0, '_tools'); import ql_distill; rs = [{'id': 'r1', 'ts': '2026-10-14T08:00:00Z', 'surface': 'mcp', 'tool': 'kb_pack', 'verdict': 'none'}, {'id': 'r2', 'ts': '2026-10-14T08:00:05Z', 'surface': 'mcp', 'tool': 'kb_feedback'}]; e = ql_distill.entry_of(rs, None); print(e and e[0].get('tools')); sys.exit(1 if e and 'kb_feedback' in (e[0].get('tools') or []) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_distill.py",
+    "_tools/ql_report.py",
+    "_tools/ql_capture.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg review"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-vpwkr76k",
+  "kind": "story",
+  "title": "A kb_feedback report repeated after its first row was delivered records no second row or own entry",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A repeated kb_feedback report (same pack handle and closed fields) after its first row was delivered records no second row or own entry: the repeat check (ql_capture, today it reads only rows still in the spool) reads a bounded record that outlives delivery, or distill drops a report its stored entry already holds; a test delivers one report and repeats it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "feedback_repeat_after_delivery"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/ql_distill.py",
+    "_tools/test_redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg review"
+  ]
+}
