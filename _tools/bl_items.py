@@ -18,7 +18,10 @@ from bl_base import (
 from bl_check import (
     ITEM_FILES_ROUTE, bl_intake, item_files_only, noop_warnings, refused_command_errors, text_only_repro, validate,
 )  # bl_intake: the module refused_command_errors reads check_program_refusal from, so `new` and `check` agree
-from bl_land import REOPENED_REFS, cleanup_gate_do, clauses_left_behind, prune_reopened_refs, run_check, own_failure
+from bl_land import (
+    REOPENED_REFS, RESEARCH_DEFAULT_GOAL, cleanup_gate_do, clauses_left_behind, prune_reopened_refs, run_check,
+    own_failure,
+)
 from bl_view import (
     is_near, similar,
 )
@@ -115,11 +118,7 @@ def cmd_new(bl, a):
         rid = new_id("story")
         rs = {"id": rid, "kind": "story", "title": f"Research sprint goal: {it['title']}"[:TEXT_MAX],
               "status": "draft", "sprint": it["id"], "goal_research": True, "priority": "P1", "rank": 0,
-              "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for "
-                      "the gaps, and the findings are written as kb facts and gap entries through the kb skills, so "
-                      "each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/"
-                      "lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands "
-                      "through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+              "goal": RESEARCH_DEFAULT_GOAL,
               "checks": [{**c, "run": [rid if w == RESEARCH_ID else w for w in c["run"]]} for c in research_checks()],
               "touches": ["kb/public/**"]}
         bl.save(rs)
@@ -678,7 +677,7 @@ def cmd_move(bl, a):
             + (f", {len(edits) - 1} task(s) and subtask(s) follow" if len(edits) > 1 else ""))
         for clause in left:
             say(f"goal clause left in {bl.label(old)}: {clause[:120]!r}: no other item of the sprint carries it, and "
-                f"close --summary would list it unmet; rescope the goal: set {old} --goal G --by operator")
+                f"close --summary would name no item for it; rescope the goal: set {old} --goal G --by operator")
     else:
         say(f"move {label}: unchanged")
     return 0

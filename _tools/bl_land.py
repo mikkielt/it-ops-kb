@@ -2675,8 +2675,20 @@ def fold_word(w):
     return w[:-1] if len(w) > 3 and w.endswith("s") and not w.endswith("ss") else w
 
 
+# words of four letters or more that name no work: function words and the backlog's own vocabulary, which a title or
+# goal holds whatever it is about, so sharing one proves nothing (`close --summary` credited a story with a clause on
+# `that`, `each`, `goal`, `story` and `clause` alone)
+CLAUSE_STOPWORDS = frozenset((
+    "that this these those each with from into onto over than then them they their there what which when where who "
+    "have been were will would should could does only also such some more most both same just like about after "
+    "before goal story storie clause item sprint").split())
+
+
 def clause_words(text):
-    return {fold_word(w) for w in re.findall(r"[a-z0-9_]+", str(text).lower()) if len(w) > 3}
+    """The words a clause is matched on: four letters or more, a plural or verb `s` folded, `CLAUSE_STOPWORDS` left
+    out."""
+    found = (w for w in re.findall(r"[a-z0-9_]+", str(text).lower()) if len(w) > 3)
+    return {fold_word(w) for w in found if w not in CLAUSE_STOPWORDS and fold_word(w) not in CLAUSE_STOPWORDS}
 
 
 def clause_parts(clause):
@@ -2692,6 +2704,26 @@ def item_words(bl, iid):
     return clause_words(f"{it.get('title', '')} {it.get('goal', '')} {mapped}")
 
 
+# the goal `new sprint` files on the sprint's goal research story: a research story still holding it has no narrowed goal
+RESEARCH_DEFAULT_GOAL = (
+    "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the "
+    "findings are written as kb facts and gap entries through the kb skills, so each committed item can name the "
+    "knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): "
+    "a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.")
+
+
+def research_words(bl, iid):
+    """The words a goal research story's fallback credit reads: its narrowed goal (nothing from a goal that still
+    starts with the generated default), its mapped clauses and the path words of its touches. Never its title, which
+    `new sprint` generates from the sprint's own title."""
+    it = bl.items[iid]
+    goal = str(it.get("goal") or "")
+    default_lead = RESEARCH_DEFAULT_GOAL.partition(",")[0]  # the generated goal's first clause: a narrowed goal replaces it
+    narrowed = "" if goal.strip().startswith(default_lead) else goal
+    mapped = " ".join(str(e.get("clause", "")) for e in it.get("clauses") or [] if isinstance(e, dict))
+    return clause_words(f"{narrowed} {mapped}") | touch_words(bl, iid)
+
+
 def touch_words(bl, iid):
     """The words of the path of each of a story's touches inside a named kb root (`kb/public/intune/*.md`: `intune`),
     the root's name and the globs left out: what a research story's touches say it covers."""
@@ -2705,15 +2737,15 @@ def touch_words(bl, iid):
 def carries_clause(bl, cw, iid, fallback=False):
     """The one carrier filter, read by `goal_clause_lines` and `clauses_left_behind`: the share of the clause's words
     (cw) item `iid` holds, 0 when it cannot carry. A review story never carries a clause; a goal research story carries
-    one only as a fallback (`fallback`, `close --summary` alone), by its narrowed goal and its touches' path words, and
-    `move` never counts it."""
+    one only as a fallback (`fallback`: `close --summary`, and the `move` message that follows it), by its narrowed
+    goal, mapped clauses and its touches' path words (`research_words`), never by its generated title."""
     it = bl.items[iid]
     if not cw or it.get("review"):
         return 0
     if it.get("goal_research"):
         if not fallback:
             return 0
-        words = item_words(bl, iid) | touch_words(bl, iid)
+        words = research_words(bl, iid)
     else:
         words = item_words(bl, iid)
     share = len(cw & words) / len(cw)
@@ -2768,14 +2800,16 @@ def goal_clause_lines(bl, sid, items):
 
 def clauses_left_behind(bl, sid, iid):
     """The goal clauses of sprint `sid` that item `iid` carries (its title, goal and mapped clauses hold at least
-    CLAUSE_COVER of the clause's words) and no other item of the sprint that is not dropped does: what moving `iid`
-    out leaves in the goal. Its tasks and subtasks go with it; a review or goal research story carries nothing."""
+    CLAUSE_COVER of the clause's words) and no other item of the sprint that is not dropped does, a goal research
+    story's fallback credit (`carries_clause` with `fallback`) counting as another's: what moving `iid` out leaves in
+    the goal unmet in `close --summary`. Its tasks and subtasks go with it; a review or goal research story moved
+    carries nothing."""
     moving = {iid, *bl.descendants(iid)}  # its tasks and subtasks leave with it
     others = [i for i in bl.sprint_items(sid) if i not in moving and bl.items[i].get("status") != "dropped"]
     left = []
     for c in goal_clauses(bl.items[sid].get("goal", "")):
         cw = clause_words(c)
-        if carries_clause(bl, cw, iid) and not any(carries_clause(bl, cw, i) for i in others):
+        if carries_clause(bl, cw, iid) and not any(carries_clause(bl, cw, i, fallback=True) for i in others):
             left.append(c)
     return left
 
