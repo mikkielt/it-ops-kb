@@ -19,7 +19,8 @@
   "touches": [
     "kb/public/agents/doc-lookup-sources.md",
     "kb/public/agents/doc-lookup-sources.csv",
-    "kb/public/_anchors.csv"
+    "kb/public/_anchors.csv",
+    "kb/public/_gaps.md"
   ],
   "depends_on": [
     "BG-oi3ncidh"
