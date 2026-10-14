@@ -2,7 +2,7 @@
   "id": "ST-oftholty",
   "kind": "story",
   "title": "A worker distill launched with the worktree as plugin root keeps the hook's own plugin data spool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,19 @@
     "parked: SP-b7wibqok review"
   ],
   "notes": "Found at the SP-b7wibqok review. Premise (planner, 2026-10-13): with CLAUDE_PLUGIN_ROOT set to a linked worktree and CLAUDE_PLUGIN_DATA set, ql_base.plugin_data() is that data directory while launch_places() returns the main checkout's entry and working directory, not the copy's own (a probe script printed 'entry is the copy's own: False', 'cwd is HOME: False'), so a --session distill started from the hook reads the clone's spool, not the plugin data one. The test extends the launch_places test at test_backlog_portable.py near the existing one; kb/_self/usage.md (the session's end bullet) and kb/_self/querylog.md quote the launch directory. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-g2ssvhi2"
+  "evidence": {
+    "commit": "e85c994e46c62337ade569e0c07245d824159c09",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "launch_places_keeps_plugin_data_spool"
+        ],
+        "exit": 0,
+        "sha256": "5d1716f312368035"
+      }
+    ]
+  }
 }
