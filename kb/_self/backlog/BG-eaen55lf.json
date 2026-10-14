@@ -2,7 +2,7 @@
   "id": "BG-eaen55lf",
   "kind": "bug",
   "title": "lint.py exits 0 and lints nothing for a path outside kb/ or a kb/_self doc, since its no-file refusal exempts any existing kb path and any path git has history for",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
@@ -62,5 +62,6 @@
     "parked: SP-7nv2ffr2 review",
     "merged: ST-3g3snqb5"
   ],
-  "notes": "Merged from ST-3g3snqb5 at the 2026-10-13 draft triage: test lint_kb_prefixed_path_lints_article does not exist; same files (lint.py, test_live_kb.py). The suite holds 100 of max_ids 100, so no new test id: the existing lint test in test_live_kb.py is extended with the kb/<root>/<path> assertion, and its second check reads the shape of that call. Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: lint.py _tools/check.py exits 0 and lints nothing; the first check (also README.md and kb/) exits 1 before the work."
+  "notes": "Merged from ST-3g3snqb5 at the 2026-10-13 draft triage: test lint_kb_prefixed_path_lints_article does not exist; same files (lint.py, test_live_kb.py). The suite holds 100 of max_ids 100, so no new test id: the existing lint test in test_live_kb.py is extended with the kb/<root>/<path> assertion, and its second check reads the shape of that call. Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: lint.py _tools/check.py exits 0 and lints nothing; the first check (also README.md and kb/) exits 1 before the work.",
+  "claimed_by": "orch-wjp5qllo"
 }
