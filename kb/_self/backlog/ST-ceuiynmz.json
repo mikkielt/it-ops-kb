@@ -2,7 +2,7 @@
   "id": "ST-ceuiynmz",
   "kind": "story",
   "title": "Research sprint goal: The suite's slowest work is cut: the land scenarios and check.py's code citation scan",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j65ihctq",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,19 @@
   "touches": [
     "kb/public/**"
   ],
-  "claimed_by": "orch-j65ihctq"
+  "evidence": {
+    "commit": "b42098860b7d7bf0ff9062e62a7ce963526b99d1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ceuiynmz"
+        ],
+        "exit": 0,
+        "sha256": "0d1872c20e03740e"
+      }
+    ]
+  }
 }
