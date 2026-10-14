@@ -46,6 +46,25 @@
   "depends_on": [
     "BG-sxxmi2uc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does cmd_repin see the reworded fact and its anchors for the next source: write the anchors file after each re-pointed source and re-read both from disk, or keep the anchors in memory and re-read only the facts?",
+      "options": [
+        "write the anchors after each re-pointed source, re-read facts and anchors from disk",
+        "re-read only the facts, keep the anchors in memory"
+      ],
+      "recommendation": "write the anchors after each re-pointed source, re-read facts and anchors from disk",
+      "do": {
+        "write the anchors after each re-pointed source, re-read facts and anchors from disk": "BG-rxdpo5g5",
+        "re-read only the facts, keep the anchors in memory": "BG-rxdpo5g5"
+      },
+      "class": "design",
+      "answer": "write the anchors after each re-pointed source, re-read facts and anchors from disk",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilje65fa review"
   ],

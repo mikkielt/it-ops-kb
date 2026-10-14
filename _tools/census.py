@@ -2397,7 +2397,8 @@ def cmd_repin(a, tally):
     date, root = a.date or today(), factdiff.ROOT
     rows, srcs = read_log(a.log), {r["id"]: r for r in read_sources()}
     say = lambda msg: print(("would " if a.dry_run else "") + msg, flush=True)  # noqa: E731
-    facts, anchors = factdiff.cited_facts(), factdiff.read_anchors()
+    read_state = lambda: (factdiff.cited_facts(), factdiff.read_anchors())  # noqa: E731
+    facts, anchors = read_state()
     by_url = {kbid.normalize_url(s["url"]): s for s in srcs.values()}
     ids_of = {}  # new url -> the id its row has, or will have
     log = {r["id"]: r for r in rows}
@@ -2453,7 +2454,7 @@ def cmd_repin(a, tally):
             continue
         moved, bad = set(), 0
         for key, rel, line, text in plan["matched"]:
-            cur = fact_key_at(rel, line) or key  # an earlier source's re-pointing may have reworded this fact
+            cur = fact_key_at(rel, line) or key
             if not factdiff.repoint(rel, cur, sid, new_id):
                 bad += 1
                 print(f"repin {sid}: {rel}:{line} could not be re-pointed")
@@ -2476,6 +2477,9 @@ def cmd_repin(a, tally):
             unlist_source(rel, sid)
         files |= moved
         failed += bad
+        if moved:  # a fact the next source cites too is reworded now, so its key and anchors are read as they stand
+            factdiff.write_anchors(anchors)
+            facts, anchors = read_state()
         if not bad:
             superseded[sid] = new_id
             added.setdefault(new_id, set()).update(moved)
