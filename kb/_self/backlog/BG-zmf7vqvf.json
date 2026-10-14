@@ -2,7 +2,7 @@
   "id": "BG-zmf7vqvf",
   "kind": "bug",
   "title": "_gaps.md entry on the read-only Bash set's exceptions points at settings-and-scopes.md:73 for a fact now at another line, and says powershell-tool.md:37 names no exception as if current",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-foopqq2x review"
   ],
-  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL and a wrong answer: the entry (_gaps.md:1103) says the kb names no exception, but claude/powershell-tool.md:37 now states permissions.blockReadsOutsideWorkingDirectories and the auto-mode classifier wait, and settings-and-scopes.md:78 holds the blockReads fact (:73 is the -p default fact). Best fix: mark the entry resolved or partly resolved with what remains (which Manual-mode cases still prompt), not only re-point it."
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL and a wrong answer: the entry (_gaps.md:1103) says the kb names no exception, but claude/powershell-tool.md:37 now states permissions.blockReadsOutsideWorkingDirectories and the auto-mode classifier wait, and settings-and-scopes.md:78 holds the blockReads fact (:73 is the -p default fact). Best fix: mark the entry resolved or partly resolved with what remains (which Manual-mode cases still prompt), not only re-point it.",
+  "claimed_by": "orch-xt4t63xw"
 }
