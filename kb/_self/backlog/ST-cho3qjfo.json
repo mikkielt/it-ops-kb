@@ -1,0 +1,24 @@
+{
+  "id": "ST-cho3qjfo",
+  "kind": "story",
+  "title": "goal_questions reads a goal research story's first question apart from the lead sentence before it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.goal_questions splits a question from a preceding sentence that ends in a full stop, so a research story goal of the form new sprint writes (a lead sentence, then questions) names its first question alone and researched packs it alone (SP-ce5iig4g: ST-bg2kr4rw's first question was packed joined to the lead sentence and read weak; the orchestrator had to put a '; ' after the lead sentence to pass)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "goal_questions_lead_sentence"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ]
+}
