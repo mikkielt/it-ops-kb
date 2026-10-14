@@ -1,13 +1,13 @@
 """Redaction and the query log's privacy guards: redact.py's rules, what distill stores of a captured prompt, the closed
 shape of an ops row, the store check that blocks a leak, and apply's rule for a weak rules miss over the fixture store.
 Planted values are assembled at run time."""
-import argparse, csv, hashlib, json, os, re, shutil, socket, subprocess, sys, types, urllib.error
+import argparse, csv, hashlib, json, os, re, shutil, socket, subprocess, sys, time, types, urllib.error
 from collections import Counter
 from pathlib import Path
 
 import pytest
 
-import census, factdiff, kb_hook, kb_mcp, kbcommon, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_research, ql_store, redact
+import census, factdiff, kb_hook, kb_mcp, kbcommon, kbdecide, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_research, ql_store, redact
 from conftest import KB, TOOLS, git_env
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -662,6 +662,18 @@ def cached_doc(cache, sid, text):
 
 
 def census_queue_is_sized_without_network(tmp_path, monkeypatch):
+    # a run's date is the UTC day in every zone: the census date, kbdecide's default and factdiff's stamps agree
+    days = set()
+    try:
+        with monkeypatch.context() as m:
+            for zone in ("Etc/GMT-14", "Etc/GMT+12"):
+                m.setenv("TZ", zone)
+                time.tzset()
+                days |= {census.today(), kbdecide.day(None), factdiff.today(), kbcommon.today()}
+    finally:
+        time.tzset()
+    assert len(days) == 1
+
     def refuse(*a, **k):
         raise AssertionError("the queue touched the network")
 

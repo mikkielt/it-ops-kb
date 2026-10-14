@@ -250,7 +250,7 @@ def cmd_tag_census(a):
     if rev_parse(f"refs/tags/{name}"):
         print(f"tag {name} already exists")
         return 2
-    if a.date > datetime.date.today().isoformat():
+    if a.date > kbcommon.today():
         print(f"WARN {a.date} is in the future")
     if (git("status", "--porcelain", "--untracked-files=no") or "").strip():
         print("WARN uncommitted changes are not part of the census (the tag is on HEAD)")

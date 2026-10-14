@@ -42,6 +42,23 @@
   "depends_on": [
     "BG-h6aqngbp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the one UTC-day helper live: kbcommon.today() with factdiff.today() and census.today() delegating, or factdiff.today() alone?",
+      "options": [
+        "kbcommon.today()",
+        "factdiff.today()"
+      ],
+      "recommendation": "kbcommon.today()",
+      "do": {
+        "kbcommon.today()": "BG-sxxmi2uc",
+        "factdiff.today()": "BG-sxxmi2uc"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "SP-wjp5qllo review (S3) found it again: census.today() (census.py:265) and kbdecide.py:294 are still the local day, and census run passes --date to factdiff detect and apply, so a census in the window dates verified_utc and confirmed one day off from the UTC checked_utc stamps. Premise (2026-10-14, ae319c43c5): census.today() under TZ Etc/GMT-14 vs Etc/GMT+12 gives two days, exit 1; kbdecide.day(None) (the goal's kbdecide._today is the function day; kblog.py imports it) and provider.probed_utc and kg_history's future-date check use the local day too; factdiff.today() is UTC. The repro now compares census, kbdecide and factdiff in the two extreme zones. One helper in kbcommon.py (factdiff imports provider, so provider cannot import factdiff). Test: a TZ assertion in a census helper of test_redact.py's test_census_queue_and_census_groups id, TZ restored with time.tzset; no new id. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise.",
   "claimed_by": "orch-g2qseu5s"
 }

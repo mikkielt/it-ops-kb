@@ -262,7 +262,8 @@ SHALLOW_SINCE = "2026-01-01"
 
 
 def today():
-    return datetime.date.today().isoformat()
+    """The UTC date, the one factdiff.today() names, so a census date and the run's stamps agree."""
+    return kbcommon.today()
 
 
 def run(args, cwd=None, timeout=300):
