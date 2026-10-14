@@ -34,7 +34,9 @@
         "HEAD"
       ],
       "recommendation": "newest",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "newest",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-ce5iig4g"
