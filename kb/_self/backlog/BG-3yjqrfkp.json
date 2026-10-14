@@ -2,7 +2,7 @@
   "id": "BG-3yjqrfkp",
   "kind": "bug",
   "title": "A gate question that says a package was uploaded to PyPI is classed push by the word uploaded, so a wording choice about a release date is made blocking",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,
@@ -64,5 +64,6 @@
     "merged: BG-r2elimmu",
     "merged: ST-rh2zpuq7"
   ],
-  "notes": "Merged from BG-r2elimmu at the 2026-10-13 draft triage: Repro run: derived_class returns 'push' for a question naming gitlab/git-commit-paths-and-symlinks, so it reproduces, but it is the same push-by-word defect (the \\bgitlab\\b alternative of the push regex) as BG-3yjqrfkp. Merged from ST-rh2zpuq7: Classifier-by-word family (QUESTION_WORDS push at bl_authority.py:98; probe: a question naming 'uploaded' classes push, so BG-3yjqrfkp's repro still fails); the display-only question (ST-22oykpr5 g1, how many unpushed commits land lists before its push, was made blocking class push) is folded into the goal; the classifier is bl_authority.py, not bl_items.py. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: its check runs three misclassed questions and four push ones through class_reasons. Orders before BG-t6xrawba and ST-oc7hsriu (same bl_authority.py, test_authority.py)."
+  "notes": "Merged from BG-r2elimmu at the 2026-10-13 draft triage: Repro run: derived_class returns 'push' for a question naming gitlab/git-commit-paths-and-symlinks, so it reproduces, but it is the same push-by-word defect (the \\bgitlab\\b alternative of the push regex) as BG-3yjqrfkp. Merged from ST-rh2zpuq7: Classifier-by-word family (QUESTION_WORDS push at bl_authority.py:98; probe: a question naming 'uploaded' classes push, so BG-3yjqrfkp's repro still fails); the display-only question (ST-22oykpr5 g1, how many unpushed commits land lists before its push, was made blocking class push) is folded into the goal; the classifier is bl_authority.py, not bl_items.py. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: its check runs three misclassed questions and four push ones through class_reasons. Orders before BG-t6xrawba and ST-oc7hsriu (same bl_authority.py, test_authority.py).",
+  "claimed_by": "orch-hlt2tdel"
 }
