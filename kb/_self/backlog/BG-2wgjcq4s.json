@@ -1,28 +1,56 @@
 {
   "id": "BG-2wgjcq4s",
   "kind": "bug",
-  "title": "A weak or none pack prints the kb_feedback hint on servers that have no kb_feedback tool",
+  "title": "A weak or none pack offers kb_feedback on servers without the tool, the kb: hook drops the feedback: line, and tools.md says every check: line sets a route",
   "status": "draft",
+  "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "The feedback: hint line prints only where kb_feedback is served: a kb_http.py or --roots server, which does not list the tool, prints no hint, and plugin.md and token-efficiency.md say which servers print it; a test runs kb_pack on a limited server and asserts no hint line.",
+  "goal": "The feedback: hint line prints only where kb_feedback is served: a kb_http.py or --roots server, which does not list the tool, prints no hint, and plugin.md and token-efficiency.md say which servers print it; the kb: hook's web-route context keeps the feedback: line of a weak or none pack beside HEAD_LINES and the pack: line (kb_hook.routed), as tools.md says; tools.md's route-lines passage names the check: lines that set route: split and the scatter note as the one that sets none; and a test runs kb_pack on a limited server and the hook on a none pack and asserts both",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0, '_tools'); import kbcommon, kb_mcp; kbcommon.serve_only(['public']); r = kb_mcp.handle({'jsonrpc': '2.0', 'id': 1, 'method': 'tools/call', 'params': {'name': 'kb_pack', 'arguments': {'question': 'zzqx frobnicate the quux widget lattice'}}}); t = r['result']['content'][0]['text']; print(t.splitlines()[:3]); sys.exit(1 if 'feedback: kb_feedback' in t else 0)"
+      "import sys,json;sys.path.insert(0,'_tools');import kbcommon,kb_mcp,kb_hook;q='zzqx frobnicate the quux widget lattice';hook=json.dumps(kb_hook.respond('kb: '+q)[0]);kbcommon.serve_only(['public']);r=kb_mcp.handle({'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'kb_pack','arguments':{'question':q}}})['result']['content'][0]['text'];bad=[n for n,v in (('hook web route keeps feedback line','feedback: kb_feedback' in hook),('limited server prints no hint','feedback: kb_feedback' not in r)) if not v];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(1 if 'pack with a '+chr(96)+'check:'+chr(96)+' line or a word held nowhere' in t else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_an_ops_row_has_a_closed_shape"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/kb_mcp.py",
-    "_tools/kb_http.py",
-    "_tools/test_live_kb.py",
+    "_tools/kb_hook.py",
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
     "kb/_self/plugin.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "AGENTS.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/embedding.md"
+  ],
+  "depends_on": [
+    "BG-kmxa4jgj"
   ],
   "links": [
-    "parked: SP-waxgh3kg review"
-  ]
+    "parked: SP-waxgh3kg review",
+    "merged: BG-idrvnwvx",
+    "merged: BG-kxy4fyxc"
+  ],
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL: kbfacts.handled (kbfacts.py:3494) adds feedback: kb_feedback(...) to every weak/none pack, though kb_mcp.handle serves no kb_feedback when limited() (calling it returns Unknown tool); kb_hook.routed's web branch keeps only HEAD_LINES and the pack: line (kb_hook.py:176-182). Merged here: BG-idrvnwvx (the same line, the same docs) and BG-kxy4fyxc (tools.md route-lines passage: route_of sets split for unmatched, spread, missing and noted, never the scatter note; keep the EV-check-notes-good-pack-print-them and EV-check-lines-good-pack-set-route phrase 'unlike the scatter note, sets route: split'). The repro checks both halves; check 0 is BG-kxy4fyxc's. Smallest fix: handled skips the ask when kbcommon.serving(); kb_http.py needs no edit. Test: helper feedback_is_spooled_once_and_refuses_open_fields of test_redact.py's test_an_ops_row_has_a_closed_shape... id (limited context about :172-176, none-pack footer :180-187), plus a kb_hook.respond on a gibberish kb: prompt; no new id (about +0.5 s)."
 }

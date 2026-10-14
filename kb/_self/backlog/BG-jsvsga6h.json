@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The sync gate's held-out reword check does not run on a landing that changes only articles, though an article edit can match a held-out row to an existing expansion",
   "status": "draft",
+  "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,15 +12,29 @@
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kg_sync;sys.exit(0 if kg_sync.heldout_checks(['kb/public/python/stdlib.md']) else 1)"
+      "import sys;sys.path.insert(0,'_tools');import kg_sync;r=kg_sync.heldout_checks(['kb/public/auth/audit-events.md']);print(r);sys.exit(0 if r else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_heldout_reword_is_refused_at_the_gate"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kg_sync.py",
     "_tools/test_sync_e2e.py",
     "kb/_self/git.md"
   ],
+  "depends_on": [
+    "BG-rxdpo5g5"
+  ],
   "links": [
     "parked: SP-7nv2ffr2 review"
-  ]
+  ],
+  "notes": "Premise (2026-10-14, ae319c43c5): heldout_checks(['kb/public/auth/audit-events.md']) is [], exit 1; test_sync_e2e.py:129 pins the wrong behaviour (asserts [] for an article path): flip it, no new id. Cost: the held-out eval runs 20 rows in 0.76 s (measured 2026-10-14), about 4 s at 100 rows, so running it on every article landing needs no scope gate. The repro now names an existing article."
 }

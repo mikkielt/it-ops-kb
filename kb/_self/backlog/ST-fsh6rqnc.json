@@ -1,0 +1,22 @@
+{
+  "id": "ST-fsh6rqnc",
+  "kind": "story",
+  "title": "A paid pool re-run measures the grown held-out set, on the operator's approval",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Once the operator approves its spend, the question pool is rebuilt over the grown kb/public/_retrieval/lookup_heldout.csv (pool build) and one paid pool run (benchmarks.py run pool, the arms the operator names, with its --dry-run estimate in this item's notes before the approval) records the heldout kind's right-answer rate on rows the earlier pool runs never saw, in kb/_self/reports/benchmarks.csv and the report",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=[x for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if x['scenario']=='pool' and x['date']>'2026-10-14' and 'heldout' in x['case']];print(len(r));sys.exit(0 if r else 1)"
+      ]
+    }
+  ],
+  "relates_to": [
+    "ST-rgfoek35"
+  ],
+  "notes": "Filed 2026-10-14 by the correctness + held-out planning session: the operator asked that a paid pool re-run wait for their later approval, so this stays a draft in no sprint. It blocks the held-out fitness test's model-side reading (EP-gzr4mmkm) only once ST-rgfoek35 lands. Never plan it without the operator's approval of the spend."
+}

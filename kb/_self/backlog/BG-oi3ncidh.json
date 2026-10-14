@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "settings-and-scopes.md's DOC S742 fact on the Glob --allowedTools exception adds that the rule is no more consulted than in a settings file, a reading the page does not state",
   "status": "draft",
+  "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -20,8 +21,11 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-te2qmu34"
+  ],
   "links": [
     "parked: SP-foopqq2x review"
   ],
-  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, small overclaim. The permissions page (code.claude.com/docs/en/permissions.md) says a path rule for Write, NotebookEdit, Glob or MultiEdit is accepted but never consulted, and warns at startup, except for a Glob rule passed in --allowedTools: the exception's scope is grammatically open; settings-and-scopes.md:90 resolves it under [DOC S742]. The fact has a located anchor and expansion row key 85cf70cbde5e: re-key it if the text changes."
 }

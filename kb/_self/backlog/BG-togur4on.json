@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-uvz65lvm review"
-  ]
+  ],
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL but bookkeeping only (S4): doc-change-detection.md:114's tag label describes the per-process sources while the fact adapts them to a shared file per host. Left parked by the correctness planning (not a wrong answer)."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "postgres-column-encryption's summary and the QK-postgres-envelope Conclusion state the per-site DEK's departure",
   "status": "draft",
+  "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -17,10 +18,13 @@
   "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
   "touches": [
     "kb/public/auth/postgres-column-encryption.md",
-    "kb/public/_answers.md",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_answers.md"
+  ],
+  "depends_on": [
+    "BG-u3edtq34"
   ],
   "links": [
     "parked: SP-6ukmjucf review"
-  ]
+  ],
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, an omission in the summary and the QK conclusion (:13, _answers.md:3051): the body already says the per-site DEK departs from Google's DEK practices (:33-34). The summary prose and the answers line have no anchor or expansion rows: expansions.csv dropped from the touches."
 }

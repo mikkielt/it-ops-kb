@@ -13,5 +13,6 @@
       "-c",
       "import sys,inspect;sys.path.insert(0,'_tools');import ql_research;s=inspect.getsource(ql_research);sys.exit(0 if 'noted' in s or 'NOTED_BASELINE' in s else 1)"
     ]
-  }
+  },
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier: REAL (ql_research.research_one compares failed and offkb_good only, not noted <= rag.NOTED_BASELINE as ql_apply.try_fix and rag.py eval do), but no kb user sees a wrong answer: left parked by the correctness planning. A test needs a Gate stub; nearest: test_redact.py test_apply_keeps_a_lead_that_does_not_answer."
 }

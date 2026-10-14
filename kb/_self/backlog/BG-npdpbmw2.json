@@ -1,12 +1,13 @@
 {
   "id": "BG-npdpbmw2",
   "kind": "bug",
-  "title": "window_sections' section fallback flips on any sibling heading added or removed on the page, so an unrelated edit marks a fact edited in place",
+  "title": "Revalidation marks a fact moved when a sibling heading changes, turns off soft-404 detection after one failed request, and lets a corrupt provider-down record block a host",
   "status": "draft",
+  "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "With no cached previous text, factdiff.window_sections adds the parent section's key for a unit after the anchor's heading (a sibling's heading line sits under the parent's path), and the parent section's hash covers every sibling heading, so adding, renaming or removing any H2 anywhere on the page fails section_unchanged for every fact under that parent and resolve reports it modified (a lookup prints [moved DATE] edited in place) though its own text and window are unchanged. The fallback compares the sections the window can enter without reading unrelated sibling headings, and an edit to the section immediately after the fact still fails it. Found by the SP-vdrsfftl review of BG-vzsk2t5t.",
+  "goal": "With no cached previous text, factdiff.window_sections compares the sections the window can enter without reading unrelated sibling headings, so adding, renaming or removing an H2 elsewhere on the page does not fail section_unchanged for a fact whose own text and window are unchanged, while an edit to the fact's own section or the section right after it still fails it; factdiff.madeup_text does not cache a status-0 answer of the made-up sibling as a 404, so a network failure does not turn off soft-404 detection for the host's other sources; and provider.host_down ignores, or clamps to DOWN_CAP_S, a record whose until lies more than DOWN_CAP_S after its at or after now",
   "repro": {
     "run": [
       "python3",
@@ -14,12 +15,60 @@
       "import sys; sys.path.insert(0,'_tools'); import factdiff as f; old='# Guide\\n\\n## Alpha\\n\\nAlpha body text here.\\n\\n## Beta\\n\\nBeta body text here.\\n\\n## Gamma\\n\\nGamma body text here.\\n'; new=old+'\\n## Delta\\n\\nA brand new section.\\n'; k=f.window_sections({'heading':'Guide > Alpha','sha':'x'}, f.Doc(new), None); sys.exit(0 if f.section_unchanged(k, f.sections(old), f.sections(new)) else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import factdiff as f;old='# Guide\\n\\n## Alpha\\n\\nAlpha body text here.\\n\\n## Beta\\n\\nBeta body text here.\\n\\n## Gamma\\n\\nGamma body text here.\\n';add=old+'\\n## Delta\\n\\nA brand new section.\\n';beta=old.replace('Beta body text here.','Beta body CHANGED text.');alpha=old.replace('Alpha body text here.','Alpha body CHANGED text.');a={'heading':'Guide > Alpha','sha':'x'};ok=lambda n:f.section_unchanged(f.window_sections(a,f.Doc(n),None),f.sections(old),f.sections(n));r=(ok(add),ok(beta),ok(alpha));print(r);sys.exit(0 if r==(True,False,False) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import factdiff as f,provider as p;n=[0];p.request=lambda u,**k:n.__setitem__(0,n[0]+1) or ({'status':0,'body':'','headers':{}} if n[0]==1 else {'status':200,'body':'<html>a page</html>','headers':{'content-type':'text/html'}});f.madeup_text('https://h.example.com/a/b');f.madeup_text('https://h.example.com/c/d');print(n[0]);sys.exit(0 if n[0]==2 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,json,time,tempfile;sys.path.insert(0,'_tools');import provider;provider.DOWN_DIR=tempfile.mkdtemp();now=time.time();json.dump({'at':now,'until':now+1e9,'count':1,'error':'URLError: x'},open(provider._down_path('example.com'),'w'));sys.exit(1 if provider.host_down('https://example.com/a') else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_pool_rows_are_answered_by_their_tool"
+      ]
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
+    "_tools/provider.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "BG-o3zppi2w"
   ],
   "links": [
-    "parked: SP-vdrsfftl review"
-  ]
+    "parked: SP-vdrsfftl review",
+    "merged: BG-ugucwe42",
+    "merged: BG-gx4wphry"
+  ],
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer (a lookup prints [moved DATE] edited in place for an unchanged fact): window_sections adds the parent's key because a sibling heading unit sits under the parent, and the parent's hash covers every H2 line (repro keys printed 3 sections). Merged here: BG-ugucwe42 (madeup_text, factdiff.py:1044-1051, stores None for any status but 200) and BG-gx4wphry (provider._down_rec, provider.py:529-538, accepts any numeric until). Check 0 also proves the edit-right-after half. Tests: sections asserts of test_pool_rows_are_answered_by_their_tool_... (:1393-1417, 1.8 s) and the revalidate mega-test (madeup about :572-574, down window :610-623); no new id. web-sources.md is mapped to provider.py: read it, edit only if it states the down-record rule."
 }

@@ -4,10 +4,11 @@
   "title": "census.py repin plans each source from the facts and anchors read once, so a fact citing two pinned sources loses its anchor after the first is re-pointed",
   "status": "draft",
   "parent": "EP-mkzkd7in",
+  "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "cmd_repin re-reads, or re-keys in memory, the facts and anchors after each re-point, so a second pinned source cited by the same fact still finds its anchor in the same run, and --dry-run prints the same outcome as the real run.",
+  "goal": "cmd_repin in _tools/census.py re-reads the facts and anchors after each re-point (the one read before the loop at census.py:2399 goes), so a second pinned source cited by the same fact still finds its anchor in the same run, and --dry-run prints the same outcome as the real run.",
   "repro": {
     "run": [
       "python3",
@@ -16,11 +17,27 @@
     ]
   },
   "repro_reason": "found by reading census.py cmd_repin in the SP-ilje65fa review; no kb fact today cites two pinned sources that both qualify, so the repro reads the single read of facts and anchors before the loop",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_census_queue_and_census_groups"
+      ]
+    }
+  ],
   "touches": [
     "_tools/census.py",
-    "_tools/test_redact.py"
+    "_tools/test_redact.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "BG-sxxmi2uc"
   ],
   "links": [
     "parked: SP-ilje65fa review"
-  ]
+  ],
+  "notes": "Premise (2026-10-14, ae319c43c5, by reading; no kb fact triggers it today): census.py:2399 reads facts and anchors once, :2461-2468 re-keys anchors in memory to the reworded fact's new key while facts keep the old key, so a second pinned source's repin_plan misses its anchor; --dry-run never re-keys. Goal narrowed at planning to the re-read fix, so the repro (the single read line) is sound for it; the behaviour is proved by extending census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit (test_redact.py:1444) with a fact citing two pinned sources that both end superseded in one real run, the dry run's count equal to the real run's; no new id."
 }

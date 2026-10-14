@@ -1,25 +1,48 @@
 {
   "id": "BG-kmxa4jgj",
   "kind": "bug",
-  "title": "PRICE_ASK drops the priced note for a price ask that names storage, capacity, data or RAM as the product, such as 'How much is OneDrive storage per user per month?'",
+  "title": "PRICE_ASK drops the priced note for a storage, capacity, data or RAM product and for a cost asked on a later line, and parse_tag leaves a listed source uncited",
   "status": "draft",
+  "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "kbfacts.PRICE_ASK matches a 'how much is <product> per user|device|month|year' price ask whose product names storage, capacity, data or RAM (OneDrive storage, Power BI Premium capacity, Sentinel data ingestion, a Cloud PC with 8 GB RAM), as it did before BG-apytw7fo, while 'How much memory per device does Intune need?' and 'how much data per month' still get no priced note: the repro exits 0",
+  "goal": "kbfacts.PRICE_ASK matches a 'how much is <product> per user|device|month|year' price ask whose product names storage, capacity, data or RAM (OneDrive storage, Power BI Premium capacity, Sentinel data ingestion) and a multi-line question that asks the cost on a later line ('Context: Intune rollout.\\nHow much does it cost?'), while 'How much memory per device does Intune need?', 'how much data per month' and a Graph resource-unit cost still get no priced note; and kbfacts.parse_tag reads a kind-less part after a ';' that lists several source ids before its colon ([CODE S-a: p#x; S-b, S-c: q#y]) as further sources of the part before it, as it reads a single id there, with lint.py and rag.py eval at errors=0 and every row passing",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;p=['How much is OneDrive storage per user per month?','How much is the Power BI Premium capacity per month?','How much is Microsoft Sentinel data ingestion per month?'];n=['How much memory per device does Intune need?'];bad=[q for q in p if not k.PRICE_ASK.search(q)]+[q for q in n if k.PRICE_ASK.search(q)];print(bad);sys.exit(1 if bad else 0)"
+      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;pos=['How much is OneDrive storage per user per month?','How much is the Power BI Premium capacity per month?','How much is Microsoft Sentinel data ingestion per month?','Context: Intune rollout.\\nHow much does it cost?'];neg=['How much memory per device does Intune need?','How much memory per device does the Intune agent use?','How much data per month can the Graph usage reports return?','How many resource units does a Graph getMemberGroups call cost?'];bad=[q for q in pos if not k.PRICE_ASK.search(q)]+[q for q in neg if k.PRICE_ASK.search(q)];print(bad);sys.exit(1 if bad else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kbfacts;p=kbfacts.parse_tag('[CODE S-sipjyeoi: a.go#x; S-gfjnysog, S-aaaaaaaa: b.go#y]');ids=[i for x in p for i in x['ids']];print('ids parsed:',ids);sys.exit(0 if {'S-gfjnysog','S-aaaaaaaa'}<=set(ids) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_pack_notes_a_subject_held_in_passing"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kbfacts.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
-    "parked: SP-enudabdr review"
-  ]
+    "parked: SP-enudabdr review",
+    "merged: BG-6cupzbqv",
+    "merged: BG-b44kbbxe"
+  ],
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer: rag.py pack 'How much is the Power BI Premium capacity per month?' is coverage good with no price note. Merged here: BG-6cupzbqv (the same PRICE_ASK regex, kbfacts.py:2432-2439: the cost alternative is anchored and its dot stops at a newline) and BG-b44kbbxe (parse_tag's _PART_SPLIT lookahead takes one id before the colon; latent, no live tag has the form). The repro covers both PRICE_ASK halves; check 0 is BG-b44kbbxe's repro. Test: extend TestPackNotesOnAPlantedRoot::test_pack_notes_a_subject_held_in_passing_... (test_live_kb.py, assert block about :1115-1124, 3.9 s selection) with the new positives, negatives and one parse_tag assert; no new id. content-rules.md (Ids, canonical forms) says the list is read."
 }

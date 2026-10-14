@@ -1,0 +1,38 @@
+{
+  "id": "TK-hsbjikhg",
+  "kind": "task",
+  "title": "Write about 80 new held-out rows from real kb-user questions, committed before any eval run of them",
+  "status": "draft",
+  "parent": "ST-rgfoek35",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Add about 80 rows to kb/public/_retrieval/lookup_heldout.csv (95 to 105 in all, HO- ids, the file's columns): questions a kb user would ask, worded as a session asks them (from the query log store's lookup records where one fits, placeholders for private names; never a backlog item's text), at least 50 expecting good with the article that answers them, at least 10 partial (weak, or good with allow_weak yes) and at least 10 absent (none, no paths); expected paths and verdicts come from reading the articles (rag.py show, facts, git grep), never from rag.py pack or eval output on the new questions; commit the rows before the first eval run of them; no row is a line of lookup_eval.csv, doc2query/expansions.csv or doc2query/offkb_questions.txt, and a REWORD line from eval is fixed by replacing the question with one no tuned row resembles",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=list(csv.DictReader(open('kb/public/_retrieval/lookup_heldout.csv',encoding='utf-8')));g=sum(x['expect_verdict']=='good' and not x['allow_weak'] for x in r);p=sum(x['expect_verdict']=='weak' or (x['expect_verdict']=='good' and x['allow_weak']=='yes') for x in r);n=sum(x['expect_verdict']=='none' for x in r);ids=[x['id'] for x in r];print(len(r),g,p,n);sys.exit(0 if 95<=len(r)<=105 and g>=50 and p>=10 and n>=10 and len(set(ids))==len(ids) and all(i.startswith('HO-') for i in ids) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--file",
+        "kb/public/_retrieval/lookup_heldout.csv",
+        "--root",
+        "public",
+        "--min",
+        "1"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_heldout.csv"
+  ],
+  "depends_on": [
+    "ST-bwj6gyfj"
+  ]
+}

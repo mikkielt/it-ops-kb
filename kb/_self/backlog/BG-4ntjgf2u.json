@@ -1,12 +1,13 @@
 {
   "id": "BG-4ntjgf2u",
   "kind": "bug",
-  "title": "kb/_self/_retrieval/lookup_eval.csv has no tested row for the backlog-tool rules of SP-q5ldd25k, so their packs read weak or none though backlog.md and tools.md answer them",
+  "title": "The backlog-tool rules of SP-q5ldd25k read weak on the _self root with no tested row, and the rule to run a flag through referrers gives a command that exits 2",
   "status": "draft",
+  "sprint": "SP-vk3wf746",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kb/_self/_retrieval/lookup_eval.csv holds a tested row, expected article and verdict good, for each of these questions asked as the sprint asks them: which history the moved-or-deleted touch rule of backlog.py check reads (backlog.md Sprints, a touches path follows the file); how a link touch under .claude/ is read (backlog.md, the plugin file is edited directly, no staging copy); how land's undelivered warning names the failed gate and its first error line (backlog.md Landing, bl_land.last_push_failure); which paths are always in scope (backlog.md Working on items, kb/_self/backlog/**); who commits an item file answered with --root WORKTREE (backlog.md Running a sprint); whether a manual querylog.py apply --push writes distill.log (querylog.md Delivery); and python3 _tools/rag.py eval passes. A tested row is a code-lane path (_tools/kblane.py): the item lands through backlog.py land ID --wait-merge SECONDS.",
+  "goal": "kb/_self/_retrieval/lookup_eval.csv holds a tested row, expected article and verdict good, for each of the six questions check 0 asks (the moved-or-deleted touch rule's history, a link touch under .claude/, land's undelivered warning, the paths always in scope, who commits an item file answered with --root WORKTREE, a manual querylog.py apply --push and distill.log), each answered by the backlog.md or querylog.md line that states it, and rag.py eval --root _self passes every row; and skills/sprint/SKILL.md plan step 2, skills/backlog/SKILL.md and kb/_self/backlog.md Sprints, where they say a removed or renamed flag is run through backlog.py referrers as a term, show the form that runs (referrers -- --flag)",
   "repro": {
     "run": [
       "python3",
@@ -14,5 +15,40 @@
       "import sys; t=open('kb/_self/_retrieval/lookup_eval.csv',encoding='utf-8').read(); sys.exit(0 if 'undelivered' in t else 1)"
     ]
   },
-  "repro_reason": "the defect is a pack verdict on a question worded as the sprint asks it; a command that exits non-zero for it would restate the eval row the fix adds"
+  "repro_reason": "the defect is a pack verdict on a question worded as the sprint asks it; a command that exits non-zero for it would restate the eval row the fix adds",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;qs=['Which history does the moved-or-deleted touch rule of backlog.py check read?','How is a link touch under .claude/ read in a backlog item?','What does land undelivered warning name?','Which paths are always in scope of a backlog item?','Who commits an item file answered with --root WORKTREE?','Does a manual querylog.py apply --push write distill.log?'];bad=[q for q in qs if not subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self',q],capture_output=True,text=True).stdout.startswith('coverage: good')];print(len(bad),'of',len(qs),'not good');sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=''.join(open(p,encoding='utf-8').read() for p in ('skills/sprint/SKILL.md','skills/backlog/SKILL.md','kb/_self/backlog.md'));sys.exit(0 if 'referrers -- --' in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "skills/sprint/SKILL.md",
+    "skills/backlog/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "merged: BG-sq2qycqc"
+  ],
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier: REAL: all six packs read coverage: weak on --root _self (check 0 exits 1, 6 of 6 not good); the answering lines: backlog.md:209 and :219 (moved-or-deleted touch), :44 and :210 (.claude/ link touch), :294 and tools.md:70 (undelivered warning), :270, :311, :389 (always_in_scope), :316 (--root WORKTREE), querylog.md:216 (manual apply --push). rag.py eval --root _self passes 367 of 367 now (2.6 s). Merged here: BG-sq2qycqc (backlog.py referrers --add-touch exits 2; referrers -- --add-touch works; the docs fix is the smaller one, check 1). lookup_eval.csv under kb/_self is a code-lane path (kblane): this item lands with backlog.py land ID --wait-merge 1800, its done and the push after its code/<id> merge request merges. A doc rewording must keep any expect_text phrase the eval rows read."
 }

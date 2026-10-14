@@ -1,11 +1,12 @@
 {
   "id": "ST-q2jzknjn",
   "kind": "story",
-  "title": "kb/public/python/pytest-xdist.md names tests.py's --dist load as this repo's mode and cites no deleted stress_test.py",
+  "title": "pytest-xdist.md names tests.py's --dist load as this repo's mode, cites no deleted stress_test.py, and says what decides -n auto before psutil",
   "status": "draft",
+  "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/public/python/pytest-xdist.md names _tools/tests.py and --dist load as this repository's mode, drops loadscope as this repo's default, and cites no _tools/stress_test.py (deleted in 4d70166fe), with its CODE facts pinned to a commit that holds the file they cite",
+  "goal": "kb/public/python/pytest-xdist.md names _tools/tests.py and --dist load as this repository's mode, drops loadscope as this repo's default, and cites no _tools/stress_test.py (deleted in 4d70166fe), with its CODE facts pinned to a commit that holds the file they cite; and its -n auto fact says PYTEST_XDIST_AUTO_NUM_WORKERS and the pytest_xdist_auto_num_workers hook decide the count before psutil, as plugin.py's resolution order does",
   "checks": [
     {
       "run": [
@@ -19,15 +20,26 @@
         "python3",
         "_tools/check.py"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('kb/public/python/pytest-xdist.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- `-n auto` uses')];sys.exit(0 if p and 'PYTEST_XDIST_AUTO_NUM_WORKERS' in p[0] else 1)"
+      ]
     }
   ],
   "touches": [
     "kb/public/python/pytest-xdist.md",
     "kb/public/_sources.csv",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_anchors.csv"
+  ],
+  "depends_on": [
+    "BG-tl74zfyr"
   ],
   "links": [
-    "parked: SP-ofvvong6 review"
+    "parked: SP-ofvvong6 review",
+    "merged: BG-d5v5iepy"
   ],
-  "notes": "Found by the SP-ofvvong6 review (2026-10-14): lines 16-17, 33, 89-90 and 108 call loadscope this repo's mode and quote XDIST = ['-n', 'auto']; lines 16-17 and 108 attribute --dist load to _tools/stress_test.py, deleted in 4d70166fe on 2026-10-06; line 64 lists stress_test.py among tools that start one worker per CPU. Work it through /kb-refresh."
+  "notes": "Found by the SP-ofvvong6 review (2026-10-14): lines 16-17, 33, 89-90 and 108 call loadscope this repo's mode and quote XDIST = ['-n', 'auto']; lines 16-17 and 108 attribute --dist load to _tools/stress_test.py, deleted in 4d70166fe on 2026-10-06; line 64 lists stress_test.py among tools that start one worker per CPU. Work it through /kb-refresh. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, a wrong answer about this repo: tests.py:317 runs -n <integer> --dist load (worker_count, :782-796), never -n auto or loadscope; stress_test.py is gone; the article says otherwise at :16-17, :30-34 (tagged DOC though it states the repo), :64, :89-90, :108, :111. Merged from BG-d5v5iepy (same file): xdist v3.8.0 plugin.py:16-17 reads PYTEST_XDIST_AUTO_NUM_WORKERS first and :315 calls the pytest_xdist_auto_num_workers hook before psutil.cpu_count (:27-32); the article's :20-27 says psutil decides. Its repro is check 2. Planning 2026-10-14: doc2query/expansions.csv dropped from the touches: the verifier found no expansion row keyed to the facts this item rewords (only settings-and-scopes.md:90, BG-oi3ncidh's, has one)."
 }

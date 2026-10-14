@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The XEdDSA gap entry says an age identity signs as its own verification key only for the clamped scalar",
   "status": "draft",
+  "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
@@ -18,7 +19,11 @@
   "touches": [
     "kb/public/_gaps.md"
   ],
+  "depends_on": [
+    "ST-cuhumswq"
+  ],
   "links": [
     "parked: SP-6ukmjucf review"
-  ]
+  ],
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL (S4). _gaps.md:1456 says an age identity can sign without a derived key, unconditionally; auth/http-message-signatures.md:43 and _answers.md:3306 say only when XEdDSA's k is the clamped X25519 scalar. A search --index reader gets the unconditional form."
 }

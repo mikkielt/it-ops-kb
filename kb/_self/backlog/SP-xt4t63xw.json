@@ -1,0 +1,21 @@
+{
+  "id": "SP-xt4t63xw",
+  "kind": "sprint",
+  "title": "Public facts say only what their sources say",
+  "status": "planned",
+  "goal": "Each public fact, answer and gap entry a review found wrong or overclaimed states only what its cited source says, under the tag that source supports, with its anchors and doc2query expansions kept in line; and doc-lookup-sources.md says why the MCP server of S2189, generally available since 19.5, has no row in the table",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ],
+  "notes": "Planning 2026-10-14: kb/public/_anchors.csv is in the touches of 6 of 11 items, so they are chained with depends_on (research story first, then BG-m5fiqwh6, BG-lsmiqf7l, BG-u3edtq34, BG-te2qmu34, BG-oi3ncidh, BG-tl74zfyr, ST-q2jzknjn, BG-gbz7ngqc; BG-7qzsyq4k then BG-zmf7vqvf on _gaps.md): each is a small fact edit, run one after another by design."
+}

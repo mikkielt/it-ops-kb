@@ -20,5 +20,6 @@
   ],
   "links": [
     "parked: SP-lsamtvsz review"
-  ]
+  ],
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL but bookkeeping only (S4), no wrong answer: :57 rests on :55 (Apple rmdir(2), S-2cf7ptty) and :56 but omits S-2cf7ptty; S-2cf7ptty is the Apple page, not the macOS run. Left parked by the correctness planning (not a wrong answer)."
 }

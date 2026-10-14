@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "git-test-repositories lists git checkout and git worktree add as always running die_if_checked_out, though --ignore-other-worktrees and --force skip it",
   "status": "draft",
+  "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -11,14 +12,19 @@
     "run": [
       "python3",
       "-c",
-      "import re,sys;t=open('kb/public/gitlab/git-test-repositories.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- \"In use\" is wider')];sys.exit(0 if p and '--ignore-other-worktrees' in p[0] else 1)"
+      "import re,sys;t=open('kb/public/gitlab/git-test-repositories.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- \"In use\" is wider')];sys.exit(0 if p and '--ignore-other-worktrees' in p[0] and '--force' in p[0] else 1)"
     ]
   },
   "repro_reason": "the gap is one fact's wording in a kb article; no code path prints it",
   "touches": [
-    "kb/public/gitlab/git-test-repositories.md"
+    "kb/public/gitlab/git-test-repositories.md",
+    "kb/public/_sources.csv"
+  ],
+  "depends_on": [
+    "ST-q2jzknjn"
   ],
   "links": [
     "parked: SP-lsamtvsz review"
-  ]
+  ],
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL. git v2.55.0 builtin/checkout.c:1647 returns before die_if_checked_out under ignore_other_worktrees (also when the main HEAD symref already names the branch, :1650-1652); builtin/worktree.c:487 calls it only if !opts->force (and :870 for -B); builtin/rebase.c:1704 calls it unconditionally. git-test-repositories.md:261-268 lists them all with no skip. builtin/checkout.c and builtin/worktree.c have no source row: two CODE rows at v2.55.0 in kb/public/_sources.csv and the article header. Repro now also requires --force."
 }

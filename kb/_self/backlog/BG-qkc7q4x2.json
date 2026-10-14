@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-foopqq2x review"
   ],
-  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1."
+  "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL but bookkeeping only (S4, filed S3): the listed members are right (verbatim from the permissions page) but the DER tag omits the page's id (S-pmhgjvef or S742, the same url). Left parked by the correctness planning (not a wrong answer)."
 }
