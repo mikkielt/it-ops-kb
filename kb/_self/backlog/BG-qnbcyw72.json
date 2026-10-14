@@ -1,0 +1,19 @@
+{
+  "id": "BG-qnbcyw72",
+  "kind": "bug",
+  "title": "tests.py full run on this darwin host takes 32 s against the 29 s ceiling (two runs, 112 tests pass, refused over seconds)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A full tests.py run on this host finishes within the darwin seconds ceiling, or the cause of the 32 s run (host load or a slow test) is named",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/tests.py"
+    ]
+  },
+  "touches": [
+    "_tools/tests.py"
+  ]
+}
