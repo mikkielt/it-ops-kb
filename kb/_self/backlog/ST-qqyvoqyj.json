@@ -2,7 +2,7 @@
   "id": "ST-qqyvoqyj",
   "kind": "story",
   "title": "Distill joins feedback rows to their lookups and the store keeps them in closed fields only",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-x4cqj7zo",
   "sprint": "SP-waxgh3kg",
   "priority": "P2",
@@ -66,5 +66,6 @@
   "depends_on": [
     "ST-j5gd7ixn"
   ],
-  "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base has no feedback field (grep -i feedback finds only judged and best in ql_distill, ql_store, ql_learn). querylog.py check passes before the work by design: it pins that the store with feedback entries stays valid. depends_on ST-h3y6iym4 (kb!: rows) dropped at planning: it is a draft outside this sprint and the join works on any feedback row that carries a handle or session and prompt id, so kb_feedback rows alone satisfy it. Extend an existing test's name with feedback_store (test-id ceiling); the url gate predicate comes from ST-j5gd7ixn. Tests in _tools/test_redact.py and _tools/test_leaks.py."
+  "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base has no feedback field (grep -i feedback finds only judged and best in ql_distill, ql_store, ql_learn). querylog.py check passes before the work by design: it pins that the store with feedback entries stays valid. depends_on ST-h3y6iym4 (kb!: rows) dropped at planning: it is a draft outside this sprint and the join works on any feedback row that carries a handle or session and prompt id, so kb_feedback rows alone satisfy it. Extend an existing test's name with feedback_store (test-id ceiling); the url gate predicate comes from ST-j5gd7ixn. Tests in _tools/test_redact.py and _tools/test_leaks.py.",
+  "claimed_by": "orch-waxgh3kg"
 }
