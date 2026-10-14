@@ -21,5 +21,22 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "gaps",
+      "kind": "provisional",
+      "question": "Three of the five goal questions are weak or none in the public root, and researched needs coverage good or an open _gaps.md entry for each; the _self root documents their answers, which content-rules.md says no public gap or fact may hold. How is the story finished?",
+      "options": [
+        "note only: No outside facts note, no public gap entries, bug BG-wng7cyo2 for researched to read the _self root",
+        "three open public gap entries (one per weak question) so researched exits 0 now",
+        "narrow the story's goal to the two good questions (operator set --goal)"
+      ],
+      "recommendation": "note only: No outside facts note, no public gap entries, bug BG-wng7cyo2 for researched to read the _self root",
+      "class": "design",
+      "answer": "note only: No outside facts note, no public gap entries, bug BG-wng7cyo2 for researched to read the _self root",
+      "by": "agent"
+    }
+  ],
+  "notes": "No outside facts: the five questions ask repository rules that kb/_self documents (content-rules.md ledgers and retrieval data, tools.md, backlog.md) and no outside source states; the live docs hold nothing on them, and a public fact or gap entry for a rule the _self root answers is refused by content-rules.md (a public root holds no _self rule).",
   "claimed_by": "orch-ce5iig4g"
 }
