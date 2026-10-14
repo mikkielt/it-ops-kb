@@ -2,7 +2,7 @@
   "id": "BG-rxdpo5g5",
   "kind": "bug",
   "title": "census.py repin plans each source from the facts and anchors read once, so a fact citing two pinned sources loses its anchor after the first is re-pointed",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",
@@ -69,5 +69,28 @@
     "parked: SP-ilje65fa review"
   ],
   "notes": "Premise (2026-10-14, ae319c43c5, by reading; no kb fact triggers it today): census.py:2399 reads facts and anchors once, :2461-2468 re-keys anchors in memory to the reworded fact's new key while facts keep the old key, so a second pinned source's repin_plan misses its anchor; --dry-run never re-keys. Goal narrowed at planning to the re-read fix, so the repro (the single read line) is sound for it; the behaviour is proved by extending census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_at_the_newer_commit (test_redact.py:1444) with a fact citing two pinned sources that both end superseded in one real run, the dry run's count equal to the real run's; no new id. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise.",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "638609e8459836ed6af9bbcffd5d737edce60a12",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_census_queue_and_census_groups"
+        ],
+        "exit": 0,
+        "sha256": "1dba8f7245d25787"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; s=open('_tools/census.py').read(); sys.exit(1 if 'facts, anchors = factdiff.cited_facts(), factdiff.read_anchors()' in s else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
