@@ -151,7 +151,9 @@
         "also refuse a malformed pack handle, a question over QUESTION_MAX_CHARS and a source_url the leak scan flags, accept a handle no stored pack has, and answer 'not recorded FB-<id>' (no error) when capture writes nothing": "ST-j5gd7ixn",
         "refuse only the goal's list, and answer 'recorded' even when capture writes nothing": "ST-j5gd7ixn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "also refuse a malformed pack handle, a question over QUESTION_MAX_CHARS and a source_url the leak scan flags, accept a handle no stored pack has, and answer 'not recorded FB-<id>' (no error) when capture writes nothing",
+      "by": "operator"
     }
   ],
   "links": [
