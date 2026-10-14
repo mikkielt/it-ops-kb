@@ -1,7 +1,7 @@
 """The checks the kb's content lives by, over the live kb: check.py (sources, citations, tags), build_index.py --check
 (the generated index), the lookup eval (rag.py eval), the pack format and the questions it routes by kind to the tool that holds the answer, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
 index's unit cache is pinned on a planted fixture root, not on the live kb."""
-import argparse, collections, csv, datetime, hashlib, json, math, os, re, sqlite3, subprocess, sys, time
+import argparse, collections, csv, datetime, hashlib, json, math, os, re, shutil, sqlite3, subprocess, sys, time
 from pathlib import Path
 
 import pytest
@@ -102,6 +102,25 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     live = next(Path(kbcommon.PUBLIC).glob("*/*.md")).relative_to(kbcommon.HOME).as_posix()
     code, out = tool(lint, live, env=env)
     assert code == 0 and "errors=0" in out, out[-2000:]
+    # a path from the repository, `kb/<root>/<path>`, names the planted article too (a copy of the tools under a
+    # repository whose kb/public is the fixture root, so the prefix lies under a root); a file outside the roots, the
+    # kb directory itself and a kb/_self doc that does not exist select nothing
+    box = tmp_path / "box"
+    shutil.copytree(TOOLS, box / "_tools", ignore=shutil.ignore_patterns("__pycache__", "test_*", "fixtures"))
+    shutil.copytree(root, box / "kb" / "public")
+    box_lint = box / ".claude" / "skills" / "kb-verify" / "lint.py"
+    box_lint.parent.mkdir(parents=True)
+    shutil.copy(os.path.join(TOOLS, lint), box_lint)
+    box_env = {k: v for k, v in env.items() if k != "KB_ROOTS"}
+
+    def lints_prefixed(lint, prefixed):
+        return tool(lint, prefixed, env=box_env)
+
+    code, out = lints_prefixed(str(box_lint), "kb/public/print/queues.md")
+    assert code == 1 and re.findall(r"^ERROR (\S+): Facts line holds a second bullet", out, re.M) == flagged, out[-2000:]
+    for outside in ("_tools/check.py", "README.md", "kb/", "kb/_self/no-such-doc.md"):
+        code, out = lints_prefixed(str(box_lint), outside)
+        assert code == 1 and repr(outside) in out and "errors=" not in out, (outside, out[-2000:])
     # a DOC fact the change adds: anchored by the quote its page holds (located), or by none (no-match, warned of); the
     # old fact's anchor is no-match too, as 37% of the ledger's are, and raises nothing
     page = "Held jobs wait until an operator releases them. Queues pause without losing their jobs."

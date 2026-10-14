@@ -58,6 +58,21 @@
   "depends_on": [
     "BG-gflil3ya"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the lint test reach a kb/<root>/<path> argument, and which existing non-article paths of a root stay exempt? Sandbox copy of _tools under tmp_path with kb/public as the fixture root (checkout never written; the prefix really lies under a root), history exempting only a path absent now; or a root planted under the real kb/ and history exempting any path of a root",
+      "options": [
+        "sandbox copy; only deleted paths exempt",
+        "plant under real kb/; any path with history exempt"
+      ],
+      "recommendation": "sandbox copy; only deleted paths exempt",
+      "class": "agents-rule",
+      "answer": "sandbox copy; only deleted paths exempt",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-7nv2ffr2 review",
     "merged: ST-3g3snqb5"
