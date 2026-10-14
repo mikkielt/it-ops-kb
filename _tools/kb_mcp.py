@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""`kb`: a read-only MCP server over stdio for this knowledge base (stdlib only). The Claude Code plugin starts it.
+"""`kb`: an MCP server over stdio for this knowledge base (stdlib only), read-only but for one tool, kb_feedback, which
+appends a report to the local query log spool. The Claude Code plugin starts it.
 
   python3 _tools/kb_mcp.py            serve on stdin/stdout (newline-delimited JSON-RPC 2.0); logs go to stderr
   python3 _tools/kb_mcp.py --status   print kb_status once and exit (a quick check from a shell)
@@ -10,9 +11,9 @@
                                      add --scope local`: this machine and this clone only), skipping names already there,
                                      but replacing a `kb` server that runs another clone's kb_mcp.py
 
-Tools (all read-only; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network, but kb_pack
-on the team's own server, which checks the printed facts' cited sources against their pages when `revalidate` asks and,
-unasked, for a source past its freshness lifetime):
+Tools (read-only but kb_feedback; the kb_* tools wrap rag.py and kbfacts.py and read the kb files, never the network, but
+kb_pack on the team's own server, which checks the printed facts' cited sources against their pages when `revalidate`
+asks and, unasked, for a source past its freshness lifetime):
   kb_pack    the evidence pack for a question, like `rag.py pack`: a coverage verdict (good, weak, none), the best fact
              lines grouped by article with path:line and tag, and one footer of the cited sources' urls. Call it first.
              Operator decisions come beside the facts, labelled decided or proposed (`include_invalidated` adds the
@@ -50,6 +51,16 @@ unasked, for a source past its freshness lifetime):
              imports=true matches only the packages the files declare (imports, manifests), not comments or strings;
              a server limited to named roots (--roots) refuses paths, which would read its own files, and takes text
 
+  kb_feedback  (the team's own server only: off under --roots, and kb_http.py never serves it) an agent's report on one
+             lookup: `pack` (the `pack: P-<8 hex>` handle) or `question`, `outcome` (answered, partly, missed, misled),
+             up to 10 `lines` ({line: root/path:line, issue: wrong, stale, irrelevant, helpful}), `best` (an article
+             path), `source_url`, `claim` (one sentence, at most 40 words) and `tool_issue` (bad-args, unclear-output,
+             too-long, error). A line no kb file has, a best that is no article, a url a research candidate may not
+             have (ql_research.public_url), a claim the leak scan flags and a call with neither pack nor question are
+             tool errors. An accepted call appends one `feedback` row to the spool's tools file and returns
+             `recorded FB-<8 hex>`, the hash of the fields: the same report again writes nothing. It writes nothing else
+             (no kb file, no network); it is the one tool whose annotations are not read-only.
+
 Live docs (the unlimited stdio server only: off under --roots and with KB_LIVE_DOCS=0, and kb_http.py never serves them): two more tools call the remote
 documentation servers of .claude-plugin/it-ops-kb-docs/.mcp.json over Streamable HTTP and keep each answer 7 days on disk
 (`_cache/live-docs/`, or ${CLAUDE_PLUGIN_DATA}/live-docs; KB_DOCS_CACHE names another directory), keyed by server, tool
@@ -80,7 +91,7 @@ TOOLS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, TOOLS)
 import rag, kbcommon, kbfacts, kbpublic  # noqa: E402
 
-NAME, VERSION = "kb", "1.6.0"
+NAME, VERSION = "kb", "1.7.0"
 MODERN = "2026-07-28"
 LEGACY = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
 SUPPORTED = [MODERN, *LEGACY]
@@ -97,6 +108,8 @@ INSTRUCTIONS = (
     "answer); COMMUNITY and UNK are leads, not answers. Cite path:line and the footer url. Counts, lists, who cites "
     "X: kb_audit, kb_facts, kb_source cited=true. Never start a general-purpose agent for one; the kb-lookup agent "
     "only for long research.")
+FEEDBACK_CLAUSE = (
+    " A lookup that missed or misled: one kb_feedback call (pack= the pack: handle, outcome, the lines at fault).")
 DOCS = "Documentation facts from it-ops-kb (not live device or directory data). "
 ROOT = {"type": "string", "description": "one root, e.g. 'public'"}
 FORMAT = {"type": "string", "enum": ["concise", "detailed"],
@@ -197,6 +210,32 @@ TOOL_LIST = [
          "additionalProperties": False},
      "annotations": {"title": "kb topics for code", **READ_ONLY}},
 ]
+FEEDBACK_TOOL = {
+    "name": "kb_feedback", "title": "Report a missed or misleading lookup",
+    "description": "Report how one kb lookup went (not kb facts, not live data): `pack` is the `pack: P-...` handle of a "
+                   "kb_pack (or give `question`), `outcome` answered, partly, missed or misled; name the kb lines at "
+                   "fault, the article that should have answered, a public url and one sentence. Appends to the local "
+                   "query log spool; the same report again records nothing. Use after a weak or none pack, or a pack "
+                   "whose lines were wrong.",
+    "inputSchema": {"type": "object", "properties": {
+        "pack": {"type": "string", "description": "the handle a kb_pack printed on its `pack:` line, e.g. 'P-0a1b2c3d'"},
+        "question": {"type": "string", "description": "the question asked, when there is no handle"},
+        "outcome": {"type": "string", "enum": ["answered", "partly", "missed", "misled"],
+                    "description": "answered: the pack answered; partly; missed: no answer; misled: a wrong or stale answer"},
+        "lines": {"type": "array", "maxItems": 10, "description": "kb lines the report is about",
+                  "items": {"type": "object", "properties": {
+                      "line": {"type": "string", "description": "root/path:line as the pack printed it"},
+                      "issue": {"type": "string", "enum": ["wrong", "stale", "irrelevant", "helpful"]}},
+                      "required": ["line", "issue"], "additionalProperties": False}},
+        "best": {"type": "string", "description": "the article that should have answered (a path, e.g. 'public/auth/kerberos.md')"},
+        "source_url": {"type": "string", "description": "a public http(s) page that holds the answer"},
+        "claim": {"type": "string", "description": "the missing or wrong fact in one sentence of at most 40 words"},
+        "tool_issue": {"type": "string", "enum": ["bad-args", "unclear-output", "too-long", "error"],
+                       "description": "what was wrong with the tool itself, if anything"}},
+        "required": ["outcome"], "additionalProperties": False},
+    "annotations": {"title": "Report a missed or misleading lookup", "readOnlyHint": False, "destructiveHint": False,
+                    "idempotentHint": True, "openWorldHint": False},
+}
 
 
 class ToolError(Exception):
@@ -574,6 +613,79 @@ def kb_topics_for(args):
         return kbfacts.format_topics_for(kbfacts.topics_for(paths, text, base, imports=args.get("imports") is True))
 
 
+def feedback_line(ref):
+    """`root/path:line` of a report's line as the tools print it, ToolError when no kb file has that line."""
+    path, _, number = str(ref or "").strip().rpartition(":")
+    if not path or not number.isdigit() or int(number) < 1:
+        raise ToolError(f"{ref!r}: a line is root/path:line, e.g. public/auth/kerberos.md:42")
+    full = kbfacts.locate(path)
+    rel = shown_path(full) if kbfacts.showable(full) else ""
+    if not rel or {".git", "_private", "_cache"} & set(rel.split("/")) or not os.path.isfile(full):
+        raise ToolError(f"{path}: no such kb file")
+    with guarded():
+        text = rag.read_text(full)
+    if text is None or int(number) > len(text.splitlines()):
+        raise ToolError(f"{rel} has no line {number}")
+    return f"{rel}:{int(number)}"
+
+
+def kb_feedback(args):
+    if limited():
+        raise ToolError("kb_feedback is not served here: this server is limited to named roots")
+    import ql_capture, ql_research, redact
+    from ql_store import QUESTION_MAX_CHARS
+    known = {"pack", "question", "outcome", "lines", "best", "source_url", "claim", "tool_issue"}
+    if set(args) - known:
+        raise ToolError(f"unknown argument(s): {', '.join(sorted(set(args) - known))}")
+    pack = re.sub(r"^pack:\s*", "", str(args.get("pack") or "").strip())
+    question = " ".join(str(args.get("question") or "").split())
+    if pack and not kbfacts.PACK_HANDLE.fullmatch(pack):
+        raise ToolError(f"pack {pack[:40]!r} is no pack handle (P- and 8 hex digits, the `pack:` line of a kb_pack)")
+    if not pack and not question:
+        raise ToolError("give pack (the handle of the lookup) or question")
+    if len(question) > QUESTION_MAX_CHARS:
+        raise ToolError(f"question is over {QUESTION_MAX_CHARS} characters")
+    outcome = args.get("outcome")
+    if outcome not in ql_capture.FEEDBACK_OUTCOMES:
+        raise ToolError(f"outcome must be one of {', '.join(ql_capture.FEEDBACK_OUTCOMES)}")
+    tool_issue = args.get("tool_issue")
+    if tool_issue is not None and tool_issue not in ql_capture.FEEDBACK_TOOL_ISSUES:
+        raise ToolError(f"tool_issue must be one of {', '.join(ql_capture.FEEDBACK_TOOL_ISSUES)}")
+    raw = args.get("lines") or []
+    if not isinstance(raw, list) or len(raw) > ql_capture.FEEDBACK_LINES_MAX:
+        raise ToolError(f"lines is a list of at most {ql_capture.FEEDBACK_LINES_MAX} {{line, issue}}")
+    lines = []
+    for item in raw:
+        if not isinstance(item, dict) or set(item) - {"line", "issue"} or item.get("issue") not in ql_capture.FEEDBACK_ISSUES:
+            raise ToolError(f"each line is {{line: root/path:line, issue: {', '.join(ql_capture.FEEDBACK_ISSUES)}}}")
+        lines.append({"line": feedback_line(item.get("line")), "issue": item["issue"]})
+    best = str(args.get("best") or "").strip()
+    if best:
+        with guarded():
+            full = kbfacts.locate(best)
+            best = kbfacts.qpath_of(full) if kbfacts.showable(full) and os.path.isfile(full) else ""
+            if best not in kbfacts.articles():
+                best = ""
+        if not best:
+            raise ToolError(f"best {str(args.get('best'))[:80]!r} is no article of the kb")
+    url = str(args.get("source_url") or "").strip()
+    if url and (len(url) > ql_capture.ARG_MAX_CHARS or not ql_research.public_url(url)):
+        raise ToolError("source_url is not a public http(s) page")
+    claim = " ".join(str(args.get("claim") or "").split())
+    if claim and len(claim.split()) > ql_capture.FEEDBACK_CLAIM_WORDS:
+        raise ToolError(f"claim is over {ql_capture.FEEDBACK_CLAIM_WORDS} words: one sentence")
+    with guarded():
+        flagged = [kind for text in (claim, url) if text for kind, _ in redact.scan(text)]
+    if flagged:
+        raise ToolError(f"claim or source_url holds what the leak scan flags ({', '.join(sorted(set(flagged)))}): "
+                        "use a placeholder")
+    fb, state = ql_capture.record_feedback({"pack": pack, "question": question, "outcome": outcome, "lines": lines,
+                                            "best": best, "source_url": url, "claim": claim, "tool_issue": tool_issue})
+    if state == "off":
+        return f"not recorded {fb}: the query log writes nothing on this machine"
+    return f"recorded {fb}"
+
+
 HANDLERS = {"kb_pack": kb_pack, "kb_facts": kb_facts, "kb_audit": kb_audit, "kb_search": kb_search, "kb_show": kb_show, "kb_source": kb_source, "kb_status": kb_status,
             "kb_topics_for": kb_topics_for}
 
@@ -811,6 +923,11 @@ def error(msg_id, code, message, data=None):
     return {"jsonrpc": "2.0", "id": msg_id, "error": err}
 
 
+def instructions():
+    """INSTRUCTIONS, with the kb_feedback clause where the tool is served (not under --roots, never by kb_http.py)."""
+    return INSTRUCTIONS if limited() else INSTRUCTIONS + FEEDBACK_CLAUSE
+
+
 def server_info():
     return {"name": NAME, "title": "it-ops-kb", "version": VERSION}
 
@@ -832,19 +949,21 @@ def handle(msg):
     if method == "initialize":  # legacy handshake
         want = params.get("protocolVersion")
         return result(msg_id, {"protocolVersion": want if want in LEGACY else LEGACY[0], "capabilities": caps,
-                               "serverInfo": server_info(), "instructions": INSTRUCTIONS})
+                               "serverInfo": server_info(), "instructions": instructions()})
     if method == "server/discover":
-        return result(msg_id, {"supportedVersions": SUPPORTED, "capabilities": caps, "instructions": INSTRUCTIONS,
+        return result(msg_id, {"supportedVersions": SUPPORTED, "capabilities": caps, "instructions": instructions(),
                                "ttlMs": 3600000, "cacheScope": "public",
                                "_meta": {"io.modelcontextprotocol/serverInfo": server_info()}})
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000,
-                               "cacheScope": "public"})
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL])
+                               + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
-        handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else HANDLERS
+        handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else dict(HANDLERS)
+        if not limited():
+            handlers["kb_feedback"] = kb_feedback
         if name not in handlers:
             return error(msg_id, -32602, f"Unknown tool: {name}")
         if not isinstance(args, dict):

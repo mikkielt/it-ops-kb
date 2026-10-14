@@ -1,13 +1,14 @@
 # Plugin: layout rules, installing it elsewhere, a team's own roots
 
-The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) with two read-only plugins. Sections 1-2 are the rules for changing them; sections 3-7 are the runbook an agent follows to set the kb up in another project (a person only asks for it).
+The repository root is a Claude Code plugin marketplace (`.claude-plugin/marketplace.json`) with two plugins that read the kb and write nothing to it (the one write is `kb_feedback`'s append to the local query log spool). Sections 1-2 are the rules for changing them; sections 3-7 are the runbook an agent follows to set the kb up in another project (a person only asks for it).
 
 ## 1. What each plugin ships
 
 **`it-ops-kb`** (the repository root, `.claude-plugin/plugin.json`):
-- **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio). Every tool description starts "Documentation facts from it-ops-kb (not live device or directory data)", so a project that also has live MECM/AD tools keeps them apart. Tools:
+- **the `kb` MCP server** (`_tools/kb_mcp.py`, stdlib Python over stdio). Every lookup tool's description starts "Documentation facts from it-ops-kb (not live device or directory data)", so a project that also has live MECM/AD tools keeps them apart. Tools:
   - `kb_pack`: the evidence pack (coverage verdict, fact lines with `path:line`, source urls, and a last line `pack: P-<8 hex>`, its handle); `questions` batches up to 6 parts in one call; the operator's decisions of the served roots come beside the facts (labelled `decided` or `proposed (not confirmed)`; `include_invalidated: true` adds the invalidated, with why; `root="_self"` serves the clone's rule docs, and a server limited to named roots refuses it), and `kb_show` lists those tied to the lines it shows; the active LOG rows (observed signal, never coverage) of the matched articles follow under `observed signal (LOG, not a fact):`, in `kb_show` and `kb_audit` too. `revalidate: true` (the team's own server only) asks the cited sources of the printed lines now, within a time budget, and marks each line current, moved (with the new passage), not found or source-dated only; a source it could not ask keeps its offline stamp, and the pack says so. Left out, it asks only the cited sources past their freshness lifetime (the days a source's facts count as fresh after a check, estimated from its own change history; `kb/_self/tools.md`, "Freshness lifetime"), whose footer line carries a `[stale: ...]` stamp; `revalidate: false` or `KB_NO_REVALIDATE=1` in the server's environment asks none. It is always loaded (`anthropic/alwaysLoad`), so the first lookup needs no tool-search round trip.
   - `kb_facts`, `kb_audit`, `kb_search`, `kb_show`, `kb_source`, `kb_status` (the copy's commit and date, the latest census, and how many commits it is behind the marketplace clone or upstream branch it follows, as of the last fetch). When the copy is behind, every `kb_pack` opens with a `kb copy: N commits behind ...` line naming the update command, so a model tells the user without calling `kb_status`.
+  - `kb_feedback` (the team's own server only; absent under `--roots` and from `kb_http.py`): an agent's report on one lookup, `pack` (the `pack:` handle) or `question`, `outcome` (answered, partly, missed, misled), up to 10 `lines`, `best`, `source_url`, `claim` and `tool_issue`, in closed fields. It is the one tool with `readOnlyHint` false: it appends one `feedback` row to the local query log spool (`kb/_self/querylog.md`, Surfaces) and writes nothing else, and the same report again records nothing. A weak or none `kb_pack` prints the call ready on a `feedback:` line, a good one none; the server's instructions carry one clause for it.
   - `kb_topics_for`: the kb topics that code touches (MSAL classes, AdminService routes, Negotiate/SPN, LDAP libraries, Graph scopes, ...), from `kb/public/_retrieval/signals.csv`.
   - `docs_search`, `docs_fetch`: the live docs servers of `it-ops-kb-docs` called over HTTP by the server itself, each answer kept 7 days in `${CLAUDE_PLUGIN_DATA}/live-docs`, so a repeated search costs no call and no output; they reach the network (`openWorldHint`), are labelled "live docs, not in the kb", and are absent under `--roots` and with `KB_LIVE_DOCS=0` (`kb/_self/tools.md`).
   - `response_format`: `kb_facts`, `kb_audit` and `kb_search` answer `concise` by default (no url footer), `kb_pack` `detailed`.
@@ -111,8 +112,8 @@ Set up the it-ops-kb knowledge base for this project, read-only:
    claude mcp add --scope local --transport http mcp-docs https://modelcontextprotocol.io/mcp
 4. In .claude/settings.local.json add permissions.deny entries "mcp__claude-code-docs__submit_feedback" and
    "mcp__mcp-docs__submit_feedback", and permissions.allow entries "mcp__kb__kb_pack", "mcp__kb__kb_facts",
-   "mcp__kb__kb_audit", "mcp__kb__kb_search", "mcp__kb__kb_show", "mcp__kb__kb_source", "mcp__kb__kb_status" and
-   "mcp__kb__kb_topics_for".
+   "mcp__kb__kb_audit", "mcp__kb__kb_search", "mcp__kb__kb_show", "mcp__kb__kb_source", "mcp__kb__kb_status", "mcp__kb__kb_topics_for" and
+   "mcp__kb__kb_feedback".
 5. Append this note to the project's CLAUDE.md:
    ## it-ops-kb
    For Windows endpoint management, identity, MCP, Claude Code and AI-agent questions, look in it-ops-kb first:

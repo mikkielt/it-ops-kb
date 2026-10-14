@@ -103,6 +103,51 @@
       "class": "agents-rule",
       "answer": "allow list: name mcp__kb__kb_feedback explicitly",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which fields does kb_feedback require, and what does its spool row call the report id?",
+      "options": [
+        "outcome is required, and one of pack or question; the row keeps the id as field fb",
+        "only pack or question is required; the row keeps the id as field feedback_id"
+      ],
+      "recommendation": "outcome is required, and one of pack or question; the row keeps the id as field fb",
+      "do": {
+        "outcome is required, and one of pack or question; the row keeps the id as field fb": "ST-j5gd7ixn",
+        "only pack or question is required; the row keeps the id as field feedback_id": "ST-j5gd7ixn"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where is the weak or none pack's kb_feedback line made, and what does it say?",
+      "options": [
+        "kbfacts.handled adds feedback: kb_feedback(pack=\"P-<8 hex>\", outcome=\"missed\") above the pack: line, so rag.py pack, kb_pack, kb_ask.py and the kb: hook print it",
+        "only kb_pack in kb_mcp.py adds the line"
+      ],
+      "recommendation": "kbfacts.handled adds feedback: kb_feedback(pack=\"P-<8 hex>\", outcome=\"missed\") above the pack: line, so rag.py pack, kb_pack, kb_ask.py and the kb: hook print it",
+      "do": {
+        "kbfacts.handled adds feedback: kb_feedback(pack=\"P-<8 hex>\", outcome=\"missed\") above the pack: line, so rag.py pack, kb_pack, kb_ask.py and the kb: hook print it": "ST-j5gd7ixn",
+        "only kb_pack in kb_mcp.py adds the line": "ST-j5gd7ixn"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What does kb_feedback refuse or answer beyond the goal's list?",
+      "options": [
+        "also refuse a malformed pack handle, a question over QUESTION_MAX_CHARS and a source_url the leak scan flags, accept a handle no stored pack has, and answer 'not recorded FB-<id>' (no error) when capture writes nothing",
+        "refuse only the goal's list, and answer 'recorded' even when capture writes nothing"
+      ],
+      "recommendation": "also refuse a malformed pack handle, a question over QUESTION_MAX_CHARS and a source_url the leak scan flags, accept a handle no stored pack has, and answer 'not recorded FB-<id>' (no error) when capture writes nothing",
+      "do": {
+        "also refuse a malformed pack handle, a question over QUESTION_MAX_CHARS and a source_url the leak scan flags, accept a handle no stored pack has, and answer 'not recorded FB-<id>' (no error) when capture writes nothing": "ST-j5gd7ixn",
+        "refuse only the goal's list, and answer 'recorded' even when capture writes nothing": "ST-j5gd7ixn"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [

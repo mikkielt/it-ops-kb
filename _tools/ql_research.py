@@ -318,6 +318,19 @@ def parse_research(reply):
     return facts[:RESEARCH_FACTS_MAX]
 
 
+def public_url(url):
+    """Whether `url` is an http(s) page on a public DNS name, the url gate of a research candidate (candidate_problems)
+    and of a kb_feedback report: no user part, a DNS name, its last label no private one (PRIVATE_TLDS)."""
+    try:
+        u = urlsplit(str(url).strip())
+        host = (u.hostname or "").lower()
+        user = u.username
+    except ValueError:
+        return False
+    return u.scheme in ("http", "https") and not user and bool(HOSTNAME.fullmatch(host)) \
+        and host.rsplit(".", 1)[-1] not in PRIVATE_TLDS
+
+
 def candidate_problems(c, facts):
     """Why a candidate fact cannot be written, before its quote is checked: its text (one sentence of our own, no
     tag, nothing the leak scan flags, not already a fact), tag, url (http(s), a public DNS name), source fields and
@@ -333,10 +346,7 @@ def candidate_problems(c, facts):
         out.append("text or url holds what the leak scan flags")
     if c["tag"] not in RESEARCH_TAGS:
         out.append(f"tag {one_line(c['tag'], 20)!r} is not one of {', '.join(RESEARCH_TAGS)}")
-    u = urlsplit(c["url"].strip())
-    host = (u.hostname or "").lower()
-    if u.scheme not in ("http", "https") or u.username or not HOSTNAME.fullmatch(host) \
-            or host.rsplit(".", 1)[-1] in PRIVATE_TLDS:
+    if not public_url(c["url"]):
         out.append("url is not a public http(s) page")
     if c["reuse"] not in kbcommon.REUSE:
         out.append(f"reuse {one_line(c['reuse'], 20)!r} is not a reuse class")

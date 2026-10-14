@@ -3368,7 +3368,8 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     sources now and marks them with the outcome (revalidate_pack); "stale" (kb_pack's default, kb_ask.py) asks only
     the cited sources past their freshness lifetime and prints the stale stamp of each; False (the kb: hook, which
     never goes to the network) leaves the pack as it was.
-    The text's last line before a revalidation's is `pack: P-<8 hex>`, the handle `pack` holds (handled).
+    The text's last line before a revalidation's is `pack: P-<8 hex>`, the handle `pack` holds (handled); a weak or
+    none pack has a `feedback:` line above it naming a ready kb_feedback call.
     A single question gives exactly pack()'s text, or its routed answer. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
@@ -3484,11 +3485,14 @@ def stored_pack(handle):
 
 def handled(res, questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
     """`res` (pack_many's or pack_routed's result) with a last line `pack: P-<8 hex>` (pack_handle) added to `text`
-    and the handle in `res["pack"]`, and the offline pack stored (keep_pack). Never raises."""
+    and the handle in `res["pack"]`, and the offline pack stored (keep_pack). A weak or none pack gets one line
+    above the handle, `feedback: kb_feedback(pack="P-<8 hex>", outcome="missed")` (a good pack none): the call an agent
+    makes when the lookup did not answer, with its handle filled in. Never raises."""
     try:
         commit = kb_commit()
         handle = pack_handle(questions, budget, domain, fmt, root, invalidated, item, commit)
-        res["text"] = f"{res['text']}\npack: {handle}"
+        ask = f'feedback: kb_feedback(pack="{handle}", outcome="missed")\n' if res.get("verdict") in ("weak", "none") else ""
+        res["text"] = f"{res['text']}\n{ask}pack: {handle}"
         res["pack"] = handle
         qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
         keep_pack(handle, qs, res["text"], commit)
