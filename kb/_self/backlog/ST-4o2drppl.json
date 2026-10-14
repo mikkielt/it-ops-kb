@@ -72,6 +72,74 @@
       "class": "design",
       "answer": "cut repeated work inside the scenarios: fewer land and done runs per assertion, one clone where two are made, unit-level calls where an assertion needs no git; no new test id",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does test_land_e2e.py stop its scenarios waiting for conftest's kb_seed build, which a file-alone run pays in each of its seven scenario setups?",
+      "options": [
+        "a kb_seed fixture of its own in test_land_e2e.py that builds the same seed with git fast-import, sharing conftest's directory and hand-over file, so a run holds one seed",
+        "leave kb_seed to conftest.py and file a story for it, since conftest.py is outside the touches"
+      ],
+      "recommendation": "a kb_seed fixture of its own in test_land_e2e.py that builds the same seed with git fast-import, sharing conftest's directory and hand-over file, so a run holds one seed",
+      "do": {
+        "a kb_seed fixture of its own in test_land_e2e.py that builds the same seed with git fast-import, sharing conftest's directory and hand-over file, so a run holds one seed": "ST-4o2drppl",
+        "leave kb_seed to conftest.py and file a story for it, since conftest.py is outside the touches": "ST-4o2drppl"
+      },
+      "class": "design",
+      "answer": "a kb_seed fixture of its own in test_land_e2e.py that builds the same seed with git fast-import, sharing conftest's directory and hand-over file, so a run holds one seed",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which git binary do test_land_e2e.py's scenarios and the tools they run start on macOS, where /usr/bin/git is a shim that starts the Command Line Tools' git?",
+      "options": [
+        "the real binary first on PATH for this file's scenarios when /usr/bin/git is the macOS shim (a session fixture), the host's own git elsewhere",
+        "/usr/bin/git as before"
+      ],
+      "recommendation": "the real binary first on PATH for this file's scenarios when /usr/bin/git is the macOS shim (a session fixture), the host's own git elsewhere",
+      "do": {
+        "the real binary first on PATH for this file's scenarios when /usr/bin/git is the macOS shim (a session fixture), the host's own git elsewhere": "ST-4o2drppl",
+        "/usr/bin/git as before": "ST-4o2drppl"
+      },
+      "class": "design",
+      "answer": "the real binary first on PATH for this file's scenarios when /usr/bin/git is the macOS shim (a session fixture), the host's own git elsewhere",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How do test_land_e2e.py's scenarios run consecutive backlog.py commands that need no git step between them (the sprint plan, the done checks of one item, the reopen-ref stories)?",
+      "options": [
+        "in one process of the clone's own backlog.main (a batch helper), each command's exit code and output kept, what a command runs still a subprocess",
+        "one backlog.py process per command"
+      ],
+      "recommendation": "in one process of the clone's own backlog.main (a batch helper), each command's exit code and output kept, what a command runs still a subprocess",
+      "do": {
+        "in one process of the clone's own backlog.main (a batch helper), each command's exit code and output kept, what a command runs still a subprocess": "ST-4o2drppl",
+        "one backlog.py process per command": "ST-4o2drppl"
+      },
+      "class": "design",
+      "answer": "in one process of the clone's own backlog.main (a batch helper), each command's exit code and output kept, what a command runs still a subprocess",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Which of test_land_e2e.py's landings run backlog.json's land_lint step, whose lint.py run costs 0.25 s a landing?",
+      "options": [
+        "the stopped-land scenario's lint landing only, and the own-checkout and landed-item scenarios skip it (land_lint empty in their config copy), since none of their assertions reads lint and the sync gate or that scenario covers it",
+        "every landing runs it as before"
+      ],
+      "recommendation": "the stopped-land scenario's lint landing only, and the own-checkout and landed-item scenarios skip it (land_lint empty in their config copy), since none of their assertions reads lint and the sync gate or that scenario covers it",
+      "do": {
+        "the stopped-land scenario's lint landing only, and the own-checkout and landed-item scenarios skip it (land_lint empty in their config copy), since none of their assertions reads lint and the sync gate or that scenario covers it": "ST-4o2drppl",
+        "every landing runs it as before": "ST-4o2drppl"
+      },
+      "class": "design",
+      "answer": "the stopped-land scenario's lint landing only, and the own-checkout and landed-item scenarios skip it (land_lint empty in their config copy), since none of their assertions reads lint and the sync gate or that scenario covers it",
+      "by": "agent"
     }
   ],
   "notes": "Premise, measured 2026-10-14 on a quiet darwin host before SP-ofvvong6: test_land_e2e.py alone takes 65.6 s of serial setup plus call time (11 tests; 80 s inside a full run, the most of any file: 36 percent of the suite's 220 s); SP-ofvvong6's ST-e6bueg2y cuts stage_back's cold index build (about 6 s), leaving about 59 s. Alone: TestLandedItem 8.7 s, empty_selection 7.5 s, TestOwnCheckoutDrafts 6.3 s. A subprocess trace of a full run: TestLandedItem 428 subprocesses, 399 of them git (3 land runs of about 2.4 s each, done --dry-run three times), empty_selection 299 (254 git), TestStoppedLand 326 (304 git), TestOwnCheckoutDrafts 213 (194 git, one kbgit.py sync --push 3.4 s with check.py 1.5 s); the most frequent git calls across the suite are remote -v (389), config --get kb.integrationRemote (227), rev-parse HEAD (143) and --show-toplevel (138), and the 6 land scenario setups each wait about 1.8 s for the shared kb_seed. With --dist load the wall time follows the suite's total work (about 220 s of serial test time over 12 workers gives 24.4 s), so every 9 s of serial time cut is about 1 s of wall time. Precheck, 2026-10-14: the check reads 58.6 s on the base under bl_base.check_env (warm pack index), against 65.6 s in a bare run; after SP-ofvvong6's stage_back cut about 55 s is expected, so the cut this story owes is about 10 s of serial time.",
