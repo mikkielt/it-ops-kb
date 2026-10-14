@@ -69,8 +69,11 @@ RULES_HEADINGS_MAX = 30  # ... and this many `##` headings of one doc
 # `{backlog}` is `backlog_cmd`: `python3 _tools/backlog.py`, or the plugin's by its full path.
 WORKER_RULES = (
     ("tests.py",
-     "Run the item's own checks; you may run `python3 _tools/tests.py`, which takes the host test lock and waits its "
-     "turn; never `tests.py --changed` (parallel runs load the host into false timeouts).",
+     "Run the item's own checks while you work. No whole `python3 _tools/tests.py` for an item whose touches are kb "
+     "content only (paths under `kb/`, `AGENTS.md`, `README.md`, `CLAUDE.md`): the sync gate runs what that change "
+     "needs. For any other item run the whole suite at most once, before your report (it takes the host test lock and "
+     "waits its turn), and a selection (`tests.py -k NAME`) as you need; never `tests.py --changed` (parallel runs "
+     "load the host into false timeouts).",
      "Run the item's own checks, then the project's own checks its documents name: this project has no "
      "`_tools/tests.py`, so the kb's test runner and its host test lock do not apply."),
     ("tests_ceiling.json",
