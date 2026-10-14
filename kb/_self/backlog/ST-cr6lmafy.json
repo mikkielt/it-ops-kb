@@ -2,7 +2,7 @@
   "id": "ST-cr6lmafy",
   "kind": "story",
   "title": "A worker brief names a known whole-suite failure that is not a test, such as the seconds ceiling, so the worker files no duplicate bug",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,6 @@
   "links": [
     "parked: SP-7n3d4jte close"
   ],
-  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): the ST-b27c527d worker filed BG-6jaaptm6 for the darwin seconds ceiling although its brief's --probe named BG-ucwq6kga and BG-w6z2zc6r; --known takes only TEST=BUG, so the ceiling had to go in a free-text probe. Touches are a guess: the planner runs referrers on --known first. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: the brief code is bl_dispatch.py (no bl_brief.py); known_failures, compose_brief and the --known argparse in bl_dispatch.py:634 and its usage text in backlog.py are the sites; the suite sits at max_ids 100, so extend the brief test in test_backlog_portable.py and rename it to carry brief_known_suite_failure, no new id. Premise run 2026-10-13 at planning: backlog.py brief ST-cr6lmafy --known-suite ... exits 2 (unrecognized argument), and the brief's known-failures section takes only TEST=BUG pairs (known_failures raises Rejected without a bug id); the planned check fails before the work."
+  "notes": "Retrospective of SP-7n3d4jte (2026-10-12): the ST-b27c527d worker filed BG-6jaaptm6 for the darwin seconds ceiling although its brief's --probe named BG-ucwq6kga and BG-w6z2zc6r; --known takes only TEST=BUG, so the ceiling had to go in a free-text probe. Touches are a guess: the planner runs referrers on --known first. Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: the brief code is bl_dispatch.py (no bl_brief.py); known_failures, compose_brief and the --known argparse in bl_dispatch.py:634 and its usage text in backlog.py are the sites; the suite sits at max_ids 100, so extend the brief test in test_backlog_portable.py and rename it to carry brief_known_suite_failure, no new id. Premise run 2026-10-13 at planning: backlog.py brief ST-cr6lmafy --known-suite ... exits 2 (unrecognized argument), and the brief's known-failures section takes only TEST=BUG pairs (known_failures raises Rejected without a bug id); the planned check fails before the work.",
+  "claimed_by": "orch-hlt2tdel"
 }
