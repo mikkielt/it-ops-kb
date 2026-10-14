@@ -2,7 +2,7 @@
   "id": "BG-kmxa4jgj",
   "kind": "bug",
   "title": "PRICE_ASK drops the priced note for a storage, capacity, data or RAM product and for a cost asked on a later line, and parse_tag leaves a listed source uncited",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
@@ -61,5 +61,6 @@
     "merged: BG-6cupzbqv",
     "merged: BG-b44kbbxe"
   ],
-  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer: rag.py pack 'How much is the Power BI Premium capacity per month?' is coverage good with no price note. Merged here: BG-6cupzbqv (the same PRICE_ASK regex, kbfacts.py:2432-2439: the cost alternative is anchored and its dot stops at a newline) and BG-b44kbbxe (parse_tag's _PART_SPLIT lookahead takes one id before the colon; latent, no live tag has the form). The repro covers both PRICE_ASK halves; check 0 is BG-b44kbbxe's repro. Test: extend TestPackNotesOnAPlantedRoot::test_pack_notes_a_subject_held_in_passing_... (test_live_kb.py, assert block about :1115-1124, 3.9 s selection) with the new positives, negatives and one parse_tag assert; no new id. content-rules.md (Ids, canonical forms) says the list is read. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise."
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer: rag.py pack 'How much is the Power BI Premium capacity per month?' is coverage good with no price note. Merged here: BG-6cupzbqv (the same PRICE_ASK regex, kbfacts.py:2432-2439: the cost alternative is anchored and its dot stops at a newline) and BG-b44kbbxe (parse_tag's _PART_SPLIT lookahead takes one id before the colon; latent, no live tag has the form). The repro covers both PRICE_ASK halves; check 0 is BG-b44kbbxe's repro. Test: extend TestPackNotesOnAPlantedRoot::test_pack_notes_a_subject_held_in_passing_... (test_live_kb.py, assert block about :1115-1124, 3.9 s selection) with the new positives, negatives and one parse_tag assert; no new id. content-rules.md (Ids, canonical forms) says the list is read. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise.",
+  "claimed_by": "orch-vk3wf746"
 }
