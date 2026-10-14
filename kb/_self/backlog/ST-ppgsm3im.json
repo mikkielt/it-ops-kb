@@ -2,7 +2,7 @@
   "id": "ST-ppgsm3im",
   "kind": "story",
   "title": "A refresh that re-points a fact to another source checks each part of the fact against the new source",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ce5iig4g",
   "priority": "P2",
   "rank": 0,
@@ -27,5 +27,6 @@
   "links": [
     "parked: SP-qjg5r7jj close"
   ],
-  "notes": "Premise: kb-refresh SKILL.md step 3 holds no line naming 'each part' with 're-point' or 're-cite', so a refresh worker keeps a re-pointed fact's parts the new source does not state. Run at planning with precheck: the check exits 1 (False). The check reads the skill, not a test: a test that asserts a skill's wording is never written (kb/_self/code.md, Checks and their tests); the draft's -k selector was replaced.\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Premise: kb-refresh SKILL.md step 3 holds no line naming 'each part' with 're-point' or 're-cite', so a refresh worker keeps a re-pointed fact's parts the new source does not state. Run at planning with precheck: the check exits 1 (False). The check reads the skill, not a test: a test that asserts a skill's wording is never written (kb/_self/code.md, Checks and their tests); the draft's -k selector was replaced.\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-ce5iig4g"
 }
