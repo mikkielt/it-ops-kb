@@ -2,7 +2,7 @@
   "id": "BG-zwf3rs5y",
   "kind": "bug",
   "title": "researched skips a narrowed goal's question that has no question mark without a said line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -60,5 +60,6 @@
   "links": [
     "parked: SP-sqgyoiaz review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (goal_questions returns 1 of the 2 pieces), check 0 exits 1 (the unread piece is neither read nor said). Gate g1 answered: say it on a line, exit code unchanged."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (goal_questions returns 1 of the 2 pieces), check 0 exits 1 (the unread piece is neither read nor said). Gate g1 answered: say it on a line, exit code unchanged.",
+  "claimed_by": "orch-ia6xayiy"
 }
