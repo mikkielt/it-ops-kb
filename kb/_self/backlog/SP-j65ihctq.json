@@ -2,7 +2,7 @@
   "id": "SP-j65ihctq",
   "kind": "sprint",
   "title": "The suite's slowest work is cut: the land scenarios and check.py's code citation scan",
-  "status": "planned",
+  "status": "active",
   "goal": "check.py's code citation scan reads the tool files without walking every node of their syntax trees, so code_citation_errors on the live tree takes at most 0.3 s with the same findings; test_land_e2e.py's scenarios keep every assertion and take at most 45 s of serial test time alone; a full tests.py run on a quiet darwin host takes at most 23 s with no test id lost",
   "gates": [
     {

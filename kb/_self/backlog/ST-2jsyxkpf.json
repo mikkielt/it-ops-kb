@@ -2,7 +2,7 @@
   "id": "ST-2jsyxkpf",
   "kind": "story",
   "title": "check.py's code citation scan reads each tool file without walking every node of its syntax tree",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-j65ihctq",
   "priority": "P1",
   "rank": 0,
