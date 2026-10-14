@@ -10,8 +10,9 @@ import csv, datetime, re, sys
 from pathlib import Path
 
 from ql_base import HOME, one_line, places, restore, run_cmd, write_text
-from ql_learn import article_facts, article_of, domain_article, held_article, passes, pasted_text, unknown_words
-from ql_research import add_under, research_one
+from ql_learn import (article_facts, article_of, domain_article, feedback_reports, held_article, passes, pasted_text,
+                      report_claim, spool_claims, unknown_words)
+from ql_research import add_under, fact_lines, quotecheck, research_one
 from ql_store import (APPLY_STATES, FIX_KINDS, RULES_ROOT, failed_counts, finding_states, store_entries, write_findings)
 
 FAILED_RETRIES = 0  # times a finding recorded apply-failed is applied again: never
@@ -181,6 +182,11 @@ class Gate:
 
     def id_prefix(self, article):
         return self.root(article).id_prefix
+
+    def source_url(self, sid):
+        """The url of a kb source's row, else None."""
+        import kbfacts
+        return (kbfacts.source_rows().get(sid) or {}).get("url") or None
 
     def research_files(self, article):
         """Every file research may write for `article`, so a failed gate can put each back: the article, its root's
@@ -633,16 +639,71 @@ def gap_one(g, entry, gate, day):
              "observed": {"verdict": res.get("verdict"), "topic": topic}}]
 
 
+# ---------------------------------------------------------------- conflict findings: a report that a line is wrong
+
+def conflict_one(f, claim, gate, day, fetcher=None):
+    """The record of one open conflict finding (a line a report marked wrong, with the page it names), or None when
+    nothing can be decided now: no `claim` (a report's claim lives in the spool, and the row is gone or on another
+    machine) or a page that could not be fetched, so a later apply tries again. The claim is checked with
+    `quotecheck` on the page (its `lead` url, else its source's): only a claim on the page becomes an entry of the
+    article's root `_conflicts.md`, under its topic, naming the line and the page, "not settled", with no claim text
+    (a quote is checked, never stored) and no fact written, `applied`; else `rejected` with the reason. An entry that
+    adds an error to the root's ledgers is put back, `rejected`."""
+    article, _, n = f["line"].rpartition(":")
+    if not claim:
+        return None
+    try:
+        text = gate.file(article).read_text(encoding="utf-8")
+    except OSError:
+        text = ""
+    was = dict(fact_lines(text)).get(int(n)) if n.isdigit() else None
+    if was is None:
+        return {**without_observed(f), "state": "rejected", "observed": {"gate": ["no tagged fact at that line"]}}
+    url = f.get("lead") or (gate.source_url(f["source_id"]) if f.get("source_id") else None)
+    if not url:
+        return {**without_observed(f), "state": "rejected", "observed": {"gate": ["no page to check the claim on"]}}
+    import redact
+    if redact.scan(claim):
+        return {**without_observed(f), "state": "rejected", "observed": {"gate": ["the claim holds what the leak scan flags"]}}
+    ok, why = quotecheck(url, claim, fetcher)
+    if not ok:
+        if why.startswith("page not fetched"):
+            return None
+        return {**without_observed(f), "state": "rejected", "observed": {"gate": [why]}}
+    import kbfacts
+    topic = gate.topic(article)
+    path = gate.ledger(article, "_conflicts.md")
+    existed = path.is_file()
+    old = path.read_text(encoding="utf-8") if existed else ""
+    if f["id"] not in old:
+        before = len(gate.ledger_errors(article))
+        body = one_line(kbfacts.TAG.sub("", was).strip().lstrip("-*| ").rstrip(" |"), 240)
+        write_text(path, add_under(old, topic, (
+            f"- **{body}** (line {n} of the article) and {url} disagree: a report through kb_feedback says that page "
+            f"states otherwise, and the query log found its claim on the page {day} (finding {f['id']}); the claim "
+            f"is not kept; not settled. [UNK] (topic: {topic})")))
+        if len(gate.ledger_errors(article)) > before:
+            if existed:
+                write_text(path, old)
+            else:
+                path.unlink()
+            return {**without_observed(f), "state": "rejected",
+                    "observed": {"gate": ["a ledger entry check.py refuses"]}}
+    return {**without_observed(f), "state": "applied", "article": article, "observed": {"topic": topic}}
+
+
 # ---------------------------------------------------------------- one apply
 
-def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=None, day=None):
+def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=None, day=None, spool=None, fetcher=None):
     """One apply over `store` (default: the local store beside the spool), in the working tree of this clone: every
     open eval finding with its open fix finding, in id order; then each open rules finding (`rules_one`); then the gap step (each open gap candidate whose miss
     reproduces under an article becomes a _gaps.md entry under that article's topic); then, when `research` (a
     Researcher) has runs left, research on the gap findings; then one findings file with each outcome. Source findings
     are left as they are, and so are the findings in `hold` (pending on a conflict branch) and those recorded
-    apply-failed more than FAILED_RETRIES times, even when a later record opens them again. 0; 1 when `rag.py eval`
-    fails before an eval change."""
+    apply-failed more than FAILED_RETRIES times, even when a later record opens them again. Between the gap step
+    and research, each open conflict finding (`conflict_one`) is checked with the claim its report's spool row holds
+    (`spool`, default the spool beside the store's querylog directory), the page fetched by `fetcher`, else the
+    research step's. 0; 1 when `rag.py eval` fails before an eval change."""
     store = Path(store or places()[0] / "store")
     gate = gate or Gate()
     day = day or datetime.datetime.now(datetime.timezone.utc).date().isoformat()
@@ -690,6 +751,19 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
         entry = entry_of(g)
         if entry:
             new += gap_one(g, entry, gate, day)
+    conflicts = sorted((r for r in last.values() if r.get("kind") == "conflict" and r.get("state") == "open"
+                        and actionable(r) and r.get("entry") in by_entry), key=lambda r: r["id"])
+    spooled = spool_claims(spool) if conflicts or (research is not None and research.left()) else []
+    for f in conflicts:
+        e = by_entry[f["entry"]]
+
+        def about(rep, f=f):
+            return any(x.get("line") == f["line"] and x.get("issue") == "wrong" for x in rep.get("lines") or []) \
+                and (rep.get("lead") == f.get("lead") if f.get("lead") else f.get("source_id") in (rep.get("sources") or []))
+        rec = conflict_one(f, report_claim(e, spooled, about), gate, day,
+                           fetcher or (research.fetcher if research is not None else None))
+        if rec is not None:
+            new.append(rec)
     runs = {"runs": 0, "facts": 0, "conflicts": 0}
     if research is not None and research.left():
         now = {**last, **{r["id"]: r for r in new}}
@@ -698,7 +772,8 @@ def apply(store=None, gate=None, kb_commit=None, out=print, hold=(), research=No
         for g in todo:
             if not research.left():
                 break
-            rec = research_one(g, entry_of(g), gate, research, day)
+            rec = research_one(g, entry_of(g), gate, research, day,
+                               report_claim(by_entry[g["entry"]], spooled, lambda rep: bool(rep.get("lead"))))
             runs["runs"] += 1
             if rec is not None:
                 new = [r for r in new if r["id"] != rec["id"]] + [rec]

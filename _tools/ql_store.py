@@ -64,7 +64,7 @@ PRIVATE_TLDS = ("local", "lan", "corp", "internal", "intra", "home", "localdomai
                 "invalid", "example")
 
 FINDINGS = "findings"
-FINDING_KINDS = ("eval", "alias", "expansion", "gap", "source", "rules")
+FINDING_KINDS = ("eval", "alias", "expansion", "gap", "source", "rules", "conflict")
 FIX_KINDS = ("alias", "expansion")
 LEARN_STATES = ("open", "fixed-since")  # the states learn writes; a record in any other state is apply's to change
 APPLY_STATES = ("applied", "rejected", "no-fix")  # fix written / fix failed its gates / a miss with no accepted fix
@@ -72,10 +72,10 @@ APPLY_FAILED = "apply-failed"  # its automatic commit turned CI red and was reve
 FINDING_STATES = LEARN_STATES + APPLY_STATES + (APPLY_FAILED,)
 STAGES = ("miss", "candidate-gap", "gap", "candidate-fact", "claim")
 PROMOTERS = ("learn", "apply", "research", "kb-research")  # kb-research: a person's `/kb-research --queue` run
-SIGNALS = ("stage", "route")  # a host that needs staging, a fetch by a tool its route avoids
+SIGNALS = ("stage", "route", "stale")  # a host that needs staging, a fetch by a tool its route avoids, a source a report called stale
 FINDING_ID = re.compile(r"F-[0-9a-f]{12}")
 FINDING_KEYS = ("id", "kind", "state", "stage", "promotions", "entry", "expect", "article", "terms", "tried", "signal",
-                "host", "level", "needs", "triggers", "tool", "route", "observed")
+                "host", "level", "needs", "triggers", "tool", "route", "line", "lead", "source_id", "observed")
 CLOSED_STAGE = "claim"  # a gap finding at this stage is closed: its _gaps.md entry is resolved
 
 USAGE = "usage"
@@ -700,7 +700,11 @@ def record_problems(r, where, ids, k):
             out.append(f"{where}: a source finding is never applied")
         if r.get("signal") not in SIGNALS:
             out.append(f"{where}: unknown signal {r.get('signal')!r}")
-        if not public_host(r.get("host"), k):
+        if r.get("signal") == "stale":
+            import kbid
+            if not (isinstance(r.get("source_id"), str) and kbid.SOURCE_ID.fullmatch(r["source_id"])):
+                out.append(f"{where}: a stale source finding names no source id")
+        elif not public_host(r.get("host"), k):
             out.append(f"{where}: source host is not a public host")
         return out
     if r.get("kind") not in FINDING_KINDS:
@@ -727,6 +731,20 @@ def record_problems(r, where, ids, k):
                    f"{r['tried']!r:.40}")
     if r.get("kind") == "rules" and r.get("stage") != "miss":
         out.append(f"{where}: a rules finding stays at stage miss: no public gap or fact comes of it")
+    if r.get("kind") == "conflict":
+        if r.get("stage") != "miss":
+            out.append(f"{where}: a conflict finding stays at stage miss: it writes a ledger entry and no fact")
+        if not (isinstance(r.get("line"), str) and CITATION.fullmatch(r["line"])):
+            out.append(f"{where}: a conflict finding names no kb path:line")
+    if "lead" in r:
+        import redact
+        import ql_research
+        lead = r["lead"]
+        if r.get("kind") not in ("gap", "conflict"):
+            out.append(f"{where}: a `lead` url belongs to a gap or conflict finding only")
+        elif not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and ql_research.public_url(lead)
+                  and not redact.scan(lead, k)):
+            out.append(f"{where}: lead is not a url that passes the candidate url gate")
     if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(str(r.get("article", ""))):
         out.append(f"{where}: a gap finding at stage {r.get('stage')} names no article")
     return out

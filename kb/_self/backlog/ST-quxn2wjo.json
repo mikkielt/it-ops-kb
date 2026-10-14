@@ -77,6 +77,144 @@
   "depends_on": [
     "ST-qqyvoqyj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does a gap or conflict finding get its report's claim, when the store keeps only closed fields (D-666asy3d) and distill (ST-qqyvoqyj) keeps the claim in the spool only",
+      "options": [
+        "apply reads the claim from the spool row whose closed shape equals the stored report, and a finding carries only its gated lead or source id; a row already delivered leaves the finding without a claim",
+        "a closed claim field on the stored report or the finding"
+      ],
+      "recommendation": "apply reads the claim from the spool row whose closed shape equals the stored report, and a finding carries only its gated lead or source id; a row already delivered leaves the finding without a claim",
+      "do": {
+        "apply reads the claim from the spool row whose closed shape equals the stored report, and a finding carries only its gated lead or source id; a row already delivered leaves the finding without a claim": "ST-quxn2wjo",
+        "a closed claim field on the stored report or the finding": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "apply reads the claim from the spool row whose closed shape equals the stored report, and a finding carries only its gated lead or source id; a row already delivered leaves the finding without a claim",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Should the query log's recorded fields keep a report's claim beyond the spool, so a conflict check or research run in a later apply, on another machine or after delivery, still has it",
+      "options": [
+        "no: the query log's store keeps closed fields only (D-666asy3d); a claim reaches the conflict check and research only while the spool row exists, and a conflict finding without it waits open",
+        "yes: a closed claim field (at most FEEDBACK_CLAIM_WORDS words, leak-scanned) on the stored report"
+      ],
+      "recommendation": "no: the query log's store keeps closed fields only (D-666asy3d); a claim reaches the conflict check and research only while the spool row exists, and a conflict finding without it waits open",
+      "do": {
+        "no: the query log's store keeps closed fields only (D-666asy3d); a claim reaches the conflict check and research only while the spool row exists, and a conflict finding without it waits open": "ST-quxn2wjo",
+        "yes: a closed claim field (at most FEEDBACK_CLAIM_WORDS words, leak-scanned) on the stored report": "ST-quxn2wjo"
+      },
+      "class": "querylog",
+      "answer": "no: the query log's store keeps closed fields only (D-666asy3d); a claim reaches the conflict check and research only while the spool row exists, and a conflict finding without it waits open",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which report decides a lookup's judgement when several joined it, and how does the outcome misled count",
+      "options": [
+        "the last report with an outcome in time order, and misled counts as missed",
+        "a person's report before an agent's, and misled counts as partly"
+      ],
+      "recommendation": "the last report with an outcome in time order, and misled counts as missed",
+      "do": {
+        "the last report with an outcome in time order, and misled counts as missed": "ST-quxn2wjo",
+        "a person's report before an agent's, and misled counts as partly": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "the last report with an outcome in time order, and misled counts as missed",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "What does a conflict entry in a root's _conflicts.md hold, since the claim is checked on the page and a quote is never stored",
+      "options": [
+        "the line, the page's url, the finding id and not settled, tagged UNK, without the claim's words",
+        "the claim's words as the page's quote, tagged with a new source row"
+      ],
+      "recommendation": "the line, the page's url, the finding id and not settled, tagged UNK, without the claim's words",
+      "do": {
+        "the line, the page's url, the finding id and not settled, tagged UNK, without the claim's words": "ST-quxn2wjo",
+        "the claim's words as the page's quote, tagged with a new source row": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "the line, the page's url, the finding id and not settled, tagged UNK, without the claim's words",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Does apply check a conflict finding's claim on the page only for a user whose research opt-in is on",
+      "options": [
+        "no: the check runs no model and only fetches the page, so it runs in every apply",
+        "yes: only with research on, under its daily run count"
+      ],
+      "recommendation": "no: the check runs no model and only fetches the page, so it runs in every apply",
+      "do": {
+        "no: the check runs no model and only fetches the page, so it runs in every apply": "ST-quxn2wjo",
+        "yes: only with research on, under its daily run count": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "no: the check runs no model and only fetches the page, so it runs in every apply",
+      "by": "agent"
+    },
+    {
+      "id": "g6",
+      "kind": "provisional",
+      "question": "To which tool does the digest count a report's tool issue, since a report names none",
+      "options": [
+        "each kb tool its lookup used, and a dash when the entry lists none",
+        "only the pack tool"
+      ],
+      "recommendation": "each kb tool its lookup used, and a dash when the entry lists none",
+      "do": {
+        "each kb tool its lookup used, and a dash when the entry lists none": "ST-quxn2wjo",
+        "only the pack tool": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "each kb tool its lookup used, and a dash when the entry lists none",
+      "by": "agent"
+    },
+    {
+      "id": "g7",
+      "kind": "provisional",
+      "question": "How does a stale mark become a finding and when does it close, and what does a wrong mark without a page make",
+      "options": [
+        "a source finding with signal stale per cited source id, fixed-since once the source was retrieved after the newest report; a wrong mark with no page makes no finding and is counted in the digest",
+        "a stale source finding that stays open until a person closes it; a wrong mark with no page makes a gap finding"
+      ],
+      "recommendation": "a source finding with signal stale per cited source id, fixed-since once the source was retrieved after the newest report; a wrong mark with no page makes no finding and is counted in the digest",
+      "do": {
+        "a source finding with signal stale per cited source id, fixed-since once the source was retrieved after the newest report; a wrong mark with no page makes no finding and is counted in the digest": "ST-quxn2wjo",
+        "a stale source finding that stays open until a person closes it; a wrong mark with no page makes a gap finding": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "a source finding with signal stale per cited source id, fixed-since once the source was retrieved after the newest report; a wrong mark with no page makes no finding and is counted in the digest",
+      "by": "agent"
+    },
+    {
+      "id": "g8",
+      "kind": "provisional",
+      "question": "What names do the new findings and their fields take in the findings files",
+      "options": [
+        "kind conflict at stage miss with fields line and lead or source_id; a gap finding's field lead; signal stale with source_id on a source finding",
+        "kind feedback-conflict with a url field and no source id"
+      ],
+      "recommendation": "kind conflict at stage miss with fields line and lead or source_id; a gap finding's field lead; signal stale with source_id on a source finding",
+      "do": {
+        "kind conflict at stage miss with fields line and lead or source_id; a gap finding's field lead; signal stale with source_id on a source finding": "ST-quxn2wjo",
+        "kind feedback-conflict with a url field and no source id": "ST-quxn2wjo"
+      },
+      "class": "design",
+      "answer": "kind conflict at stage miss with fields line and lead or source_id; a gap finding's field lead; signal stale with source_id on a source finding",
+      "by": "agent"
+    }
+  ],
   "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base learn reads judged only (ql_learn.py:158). querylog.py check passes before the work by design: it pins that learn and apply keep a valid store. Large story (9 clauses, 5 modules): a worker out of turns releases and reports, it does not widen touches. Extend an existing test's name with feedback_findings (test-id ceiling); tests in _tools/test_redact.py. No report edits a fact: apply writes only findings, the _conflicts.md not-settled entry and the existing alias and expansion gates.",
   "claimed_by": "orch-waxgh3kg"
 }
