@@ -2,7 +2,7 @@
   "id": "BG-ms5dtnnr",
   "kind": "bug",
   "title": "close --summary credits a goal clause to the goal research story by the words of its generated title alone",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -98,5 +98,36 @@
     "merged: BG-fl6qmkkx"
   ],
   "notes": "Merged at the 2026-10-13 draft triage: BG-j2y4kbdc (bl_items.py:681 and tools.md:77 still say the clause would be listed unmet though a goal research story is credited as fallback; its repro read bl_items.py for 'would list it unmet') and BG-fl6qmkkx (its repro, now check 0, exits 1: ST-x credited with 'carried it'; one fix pass in bl_land.py goal_clause_lines and clause_words). Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ST-r credited with 'carried it'), check 0 exits 1 (ST-x credited), check 1 exits 1 (bl_items.py and tools.md still say 'would list it unmet').",
-  "claimed_by": "orch-ia6xayiy"
+  "evidence": {
+    "commit": "ceb31198b29cbebf35b076fe409f1716ac6de264",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'SP-a':{'kind':'sprint','goal':'close --summary credits each goal clause to the story that carried it; the beta writer works'},'ST-x':{'kind':'story','status':'done','sprint':'SP-a','title':'A goal research story check reads its narrowed questions coverage, not only that a work commit exists','goal':'The check of a goal research story reads each question its narrowed goal names (rag.py pack coverage, or a gap entry for it), so done refuses research that left a question unanswered: at SP-4phd36pa backlog.py researched ST-bivdc2fa proved only a work commit while the fresh-context review that read the seven clauses found four S3 wording gaps (BG-az4r47gd, BG-lmp4mxmo, BG-drzst6zj, BG-o2spkwnz)'},'ST-b':{'kind':'story','status':'done','sprint':'SP-a','title':'beta writer','goal':'the beta writer works'}};ln=[l for l in b.goal_clause_lines(types.SimpleNamespace(items=it,label=lambda i:i),'SP-a',['ST-x','ST-b']) if 'carried it' in l];print(ln);sys.exit(1 if ln and 'ST-x' in ln[0] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "88b2d07fb67bd06c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;ls=[p for p in ('_tools/bl_items.py','kb/_self/tools.md') if 'would list it unmet' in open(p,encoding='utf-8').read()];print(ls);sys.exit(1 if ls else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'SP-a':{'kind':'sprint','goal':'close --summary credits each goal clause to the story that carried it; the beta writer works'},'ST-r':{'kind':'story','status':'done','goal_research':True,'title':'Research sprint goal: Close credits each goal clause to its carrier','goal':'Which git flag keeps a rename?','sprint':'SP-a','touches':['kb/public/git/**']},'ST-b':{'kind':'story','status':'done','title':'beta writer','goal':'the beta writer works','sprint':'SP-a'}};ln=[l for l in b.goal_clause_lines(types.SimpleNamespace(items=it,label=lambda i:i),'SP-a',['ST-r','ST-b']) if 'carried it' in l];print(ln);sys.exit(1 if ln and 'ST-r' in ln[0] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "88b2d07fb67bd06c"
+      }
+    ]
+  }
 }
