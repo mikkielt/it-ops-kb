@@ -2,7 +2,7 @@
   "id": "ST-fla2es24",
   "kind": "story",
   "title": "The sprint review confirms a provisional answer only after the fresh-context reviewer has read the work it allowed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-5i4itd2d close"
   ],
-  "notes": "SP-j2jn5ue4 (2026-10-12): the orchestrator, acting as operator, confirmed BG-fl4sg2py g2 (eval-sourced rows only) before the fresh-context reviewer ran; the reviewer then found that narrowing untested (ST-vwifqi4n) and the identifier rule it judges incomplete (BG-zopsjnou). Seen in SP-htl7jkrm (2026-10-13): the orchestrator confirmed ST-4vwzfzca g1 and ST-jwdxugeo g1/g2 before the fresh-context reviewer ran; the reviewer's gap on phase1_commit then showed ST-jwdxugeo g1's answer does not hold for a one-domain census. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): check 0 exits 1 (pack coverage weak, no tested question), check 1 exits 1 (the review section's first --confirm comes before the fresh-context reviewer: step 1 vs step 3)."
+  "notes": "SP-j2jn5ue4 (2026-10-12): the orchestrator, acting as operator, confirmed BG-fl4sg2py g2 (eval-sourced rows only) before the fresh-context reviewer ran; the reviewer then found that narrowing untested (ST-vwifqi4n) and the identifier rule it judges incomplete (BG-zopsjnou). Seen in SP-htl7jkrm (2026-10-13): the orchestrator confirmed ST-4vwzfzca g1 and ST-jwdxugeo g1/g2 before the fresh-context reviewer ran; the reviewer's gap on phase1_commit then showed ST-jwdxugeo g1's answer does not hold for a one-domain census. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): check 0 exits 1 (pack coverage weak, no tested question), check 1 exits 1 (the review section's first --confirm comes before the fresh-context reviewer: step 1 vs step 3).",
+  "claimed_by": "orch-ia6xayiy"
 }
