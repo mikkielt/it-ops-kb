@@ -2,7 +2,7 @@
   "id": "ST-fiezb2nb",
   "kind": "story",
   "title": "Review sprint: The suite has id room for new tests, and workers run the whole suite at most once",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-sc5yk65l",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-sc5yk65l"
+  "evidence": {
+    "commit": "1dbeb8d853faba337132f01c8e45ec974ecfa295",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "f9fa99257489b172"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "21e0fe83fad0675e"
+      }
+    ]
+  }
 }
