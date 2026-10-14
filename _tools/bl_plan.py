@@ -1,7 +1,8 @@
 """The plan side of backlog.py (kb/_self/backlog.md, Planning a sprint; kb/_self/tools.md): the rules about code and its
 docs (`stale_touches`, `docs_after_code`, `docs_warnings`, with the `touch_paths`, `dependencies` and `dependents`
 they share), the `_anchors.csv` rule of an item that rewords a DOC fact (`anchors_warnings`, which `precheck`
-prints), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which refuses a
+prints), the eval-file rule of an item that touches a doc the goal research's rows quote
+(`research_rows_warnings`, which `precheck` prints), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which refuses a
 sprint on them and warns of the rest.
 
 Standard library only; imports `bl_base` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
@@ -243,6 +244,29 @@ def anchors_warnings(bl, ids):
             out.append(f"warning: {bl.label(iid)}: its goal words a DOC fact reworded or added and its touches name an "
                        f"article of the kb root {name} without that root's {ANCHORS_FILE}: add {anchors} to its "
                        "touches, so its worker re-anchors the fact with factdiff.py anchor --file")
+    return out
+
+
+SELF_EVAL = "kb/_self/_retrieval/lookup_eval.csv"  # the _self lookup eval: its rows' expect_paths are relative to kb/_self/
+
+
+def research_rows_warnings(bl, ids, docs):
+    """One warning for each open item among IDS whose scope (its touches and its descendants') names one of DOCS (the
+    kb/_self docs that eval rows added by the sprint's goal research story name in expect_paths, which
+    `bl_land.research_rows` reads from its commits) and has no touch that covers SELF_EVAL: the item rewords a line one
+    of those rows quotes, and with the file outside its scope the row is moved at the landing's `rag.py eval`, not in
+    the item. The research story itself is no item to warn of."""
+    out = []
+    for iid in sorted(ids):
+        it = bl.items[iid]
+        if it.get("kind") == "sprint" or it.get("goal_research") or it.get("status") not in OPEN_STATUSES:
+            continue
+        touches = [t for t in scope(bl, iid) if isinstance(t, str)]
+        named = sorted(d for d in docs if any(glob_re(g).match(d) for g in touches))
+        if named and not any(glob_re(g).match(SELF_EVAL) for g in touches):
+            out.append(f"warning: {bl.label(iid)}: its touches name {', '.join(named)}, which eval rows added by the "
+                       f"sprint's goal research story name in expect_paths, without {SELF_EVAL}: add it to its "
+                       "touches, so a reworded line moves its row in this item and not at the landing's rag.py eval")
     return out
 
 
