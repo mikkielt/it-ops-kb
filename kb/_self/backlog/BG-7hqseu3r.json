@@ -2,7 +2,8 @@
   "id": "BG-7hqseu3r",
   "kind": "bug",
   "title": "_gaps.md entry on who may change a suite's declared limit says Bazel's test encyclopedia states a per-run --test_timeout override, which the page words as an override when manually running under slow conditions",
-  "status": "draft",
+  "status": "doing",
+  "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -14,5 +15,10 @@
       "import sys;l=[x for x in open('kb/public/_gaps.md',encoding='utf-8') if 'Who may change a suite' in x];ok=bool(l) and not any('per-run' in x for x in l);print(ok);sys.exit(0 if ok else 1)"
     ]
   },
-  "repro_reason": "a kb content defect: the gap entry text is the behaviour a lookup returns"
+  "repro_reason": "a kb content defect: the gap entry text is the behaviour a lookup returns",
+  "touches": [
+    "kb/public/_gaps.md"
+  ],
+  "notes": "Premise run 2026-10-14 on origin/main: repro prints False (the one 'Who may change a suite' line in _gaps.md says per-run). Moved into SP-xt4t63xw by the orchestrator: a gap entry overclaiming its source, inside the sprint goal; touches only _gaps.md, which no open sprint item holds.",
+  "claimed_by": "orch-xt4t63xw"
 }
