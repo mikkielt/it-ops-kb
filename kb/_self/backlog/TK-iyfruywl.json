@@ -91,7 +91,9 @@
         "read from the environment"
       ],
       "recommendation": "--trailer 'Key: value', repeatable, written after KB-Work as claim and answer do",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "--trailer 'Key: value', repeatable, written after KB-Work as claim and answer do",
+      "by": "operator"
     }
   ],
   "notes": "Orchestrator (2026-10-14): kb/_self/code.md added to the touches before the claim; a new import or facade entry in bl_dispatch.py and backlog.py makes selfdoc stale name it (as it did for TK-zqeq54ma).",
