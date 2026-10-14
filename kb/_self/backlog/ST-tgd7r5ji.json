@@ -2,7 +2,7 @@
   "id": "ST-tgd7r5ji",
   "kind": "story",
   "title": "linux-nftables' idempotent own-table step says flush table leaves a loaded set's elements",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,18 @@
     "parked: SP-tcis5f23 review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: the draft check passed on today's base because the SNIPPET line 52 already holds 'flush table', 'element' and [DER; it now reads line 36 (the idempotent step must name the elements) and line 52 (it must not call a reload onto a filled set 'not covered by the sources read', since line 18 is DOC) and exits 1.",
-  "claimed_by": "orch-6ukmjucf"
+  "evidence": {
+    "commit": "27fe53843e80679bb1d3de8c6dd34b0b0f1da42e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=pathlib.Path('kb/public/security/linux-nftables.md').read_text().splitlines(); a=[l for l in ls if 'single idempotent step' in l]; s=[l for l in ls if l.startswith('- SNIPPET') and 'flush table inet filter' not in l and 'inet filter' in l]; sys.exit(0 if a and s and all('element' in l and '[DER' in l for l in a) and all('not covered by the sources read' not in l for l in s) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
