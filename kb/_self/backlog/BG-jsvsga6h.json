@@ -2,7 +2,7 @@
   "id": "BG-jsvsga6h",
   "kind": "bug",
   "title": "The sync gate's held-out reword check does not run on a landing that changes only articles, though an article edit can match a held-out row to an existing expansion",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,
@@ -37,5 +37,28 @@
     "parked: SP-7nv2ffr2 review"
   ],
   "notes": "Premise (2026-10-14, ae319c43c5): heldout_checks(['kb/public/auth/audit-events.md']) is [], exit 1; test_sync_e2e.py:129 pins the wrong behaviour (asserts [] for an article path): flip it, no new id. Cost: the held-out eval runs 20 rows in 0.76 s (measured 2026-10-14), about 4 s at 100 rows, so running it on every article landing needs no scope gate. The repro now names an existing article. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise.",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "10f18b2cc3f27ab81dd569fe25928d6bb688f7db",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_heldout_reword_is_refused_at_the_gate"
+        ],
+        "exit": 0,
+        "sha256": "97f6e607bc0a1e16"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kg_sync;r=kg_sync.heldout_checks(['kb/public/auth/audit-events.md']);print(r);sys.exit(0 if r else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4a62df3c707c96ce"
+      }
+    ]
+  }
 }
