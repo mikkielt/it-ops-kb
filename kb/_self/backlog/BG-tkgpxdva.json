@@ -2,7 +2,7 @@
   "id": "BG-tkgpxdva",
   "kind": "bug",
   "title": "The benchmark pool's answer regexes miss capitalised durations, take 0.1 hour, and reject the mcp__server__* and mcp__server rule forms",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,6 @@
     "parked: SP-honlhzdc review",
     "merged: BG-molorsr3"
   ],
-  "notes": "Merged from BG-molorsr3 at the 2026-10-14 planning (same files, same kind of fix: data rows only). Premise (2026-10-14, ae319c43c5): the merged repro prints eight False, exit 1; bench_pool.check_problems is empty now (2 s) and must stay so. agent_bench.check compiles the regex with no flags; changing scoring itself is out of scope (it would re-score recorded runs). Only bench_scenarios.csv line 31 (BP-43472201) needs the scenarios edit. Planning 2026-10-14: the pool check passes before the work by design (it must stay clean after the regex edits); the repro fails on the premise."
+  "notes": "Merged from BG-molorsr3 at the 2026-10-14 planning (same files, same kind of fix: data rows only). Premise (2026-10-14, ae319c43c5): the merged repro prints eight False, exit 1; bench_pool.check_problems is empty now (2 s) and must stay so. agent_bench.check compiles the regex with no flags; changing scoring itself is out of scope (it would re-score recorded runs). Only bench_scenarios.csv line 31 (BP-43472201) needs the scenarios edit. Planning 2026-10-14: the pool check passes before the work by design (it must stay clean after the regex edits); the repro fails on the premise.",
+  "claimed_by": "orch-g2qseu5s"
 }
