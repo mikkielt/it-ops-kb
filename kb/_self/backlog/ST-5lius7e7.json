@@ -2,7 +2,7 @@
   "id": "ST-5lius7e7",
   "kind": "story",
   "title": "Research sprint goal: Lookup feedback: a pack handle, kb_feedback, and distill and learn turn reports into checked findings",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-waxgh3kg",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-waxgh3kg"
 }
