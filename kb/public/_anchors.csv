@@ -11400,7 +11400,9 @@ f66b656055e4,python/stdlib-cprofile-pstats.md,S-tkdyngyx,unlocated:no-match,,,,,
 f66b656055e4,python/stdlib-cprofile-pstats.md,S-vydvtba3,unlocated:no-match,,,,,2026-10-10
 fa8b9b691b12,python/stdlib-cprofile-pstats.md,S-5y7wwygh,located,... do something ...,thre;whil;total;spent;caller;each;cumulativ;number,c1704ae03dd1835e,"With :mod:cProfile, each caller is preceded by three numbers: the number of times this specific call was made, and the total and cumulative times spent",2026-10-10
 05afa6cda853,python/stdlib-datetime-iso-week.md,S-gaeidf4e,located,datetime — Basic date and time types¶ > date objects¶,thursday;begin;dec;jan;ends;monday;sunday;iso,a54a0ed7b9efc69f,"For example, 2004 begins on a Thursday, so the first week of ISO year 2004 begins on Monday, 29 Dec 2003 and ends on Sunday,",2026-10-10
+1518afcd0a27,python/stdlib-datetime-iso-week.md,S-gaeidf4e,located,datetime — Basic date and time types¶ > date objects¶,current;local;return;date,f8584946cd7f345b,Return the current local date.,2026-10-14
 1827dcfe5731,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
+1adca2f49c9f,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-14
 279fddca1109,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
 61ecc4ccad72,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
 7e5f919a442c,python/stdlib-datetime-iso-week.md,S-gaeidf4e,located,datetime — Basic date and time types¶ > date objects¶,monday;sunday;first;iso;week;year,513e25a20d11ba0c,Monday and ends on a Sunday. The first week of an ISO year is the first,2026-10-10

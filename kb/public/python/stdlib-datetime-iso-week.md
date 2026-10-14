@@ -2,7 +2,7 @@
 topic: python/stdlib-datetime-iso-week
 priority: P3
 applies_to: [python, datetime, iso-8601]
-retrieved_utc: 2026-10-07
+retrieved_utc: 2026-10-14
 sources: [S-gaeidf4e]
 status: complete
 ---
@@ -72,6 +72,15 @@ probes ran on Python 3.13.2, macOS (Darwin 25.5.0), 2026-10-07.
   `datetime(2026, 10, 4, 23, 30, tzinfo=timezone.utc)` is week 40, and the same instant after
   `astimezone` to UTC+2 (2026-10-05 01:30) is week 41. So a detector that closes weeks fixes one zone, normally UTC, before
   it takes the week. [DER S-gaeidf4e: `datetime.isocalendar()` is `self.date().isocalendar()`; the two weeks observed on 3.13.2, macOS, 2026-10-07]
+- `date.today()` returns "the current local date", equivalent to `date.fromtimestamp(time.time())`, and
+  `datetime.today()` and `datetime.now()` without `tz` return the local date and time with `tzinfo` `None`; the
+  docs prefer `datetime.now(tz)` over `today()` and `utcnow()`. [DOC S-gaeidf4e]
+- So `date.today()` is the day of the host's time zone, not the UTC day: with `TZ=Europe/Warsaw` on 3.13.2, the
+  instant 2026-10-14 23:30 UTC gave `date.fromtimestamp(t)` 2026-10-15 but
+  `datetime.fromtimestamp(t, timezone.utc).date()` 2026-10-14. Code that compares a day with a UTC-stamped value
+  (a `checked_utc` field, a UTC midnight) takes its day from `datetime.now(timezone.utc).date()`, and the two
+  agree only outside the hours between local and UTC midnight. [DER S-gaeidf4e: `today()` is local, `now(tz)`
+  converts to `tz`; the two dates observed on 3.13.2, macOS, 2026-10-14]
 
 ## Reference
 - Related: `python/pytest.md` (`-k` selection and exit code 5 for a selector that matches no test).
