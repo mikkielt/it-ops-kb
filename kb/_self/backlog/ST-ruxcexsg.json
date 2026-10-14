@@ -50,7 +50,9 @@
         "each sibling rule beside the check it extends"
       ],
       "recommendation": "after the phrase-absence rule, as one run of sentences",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "after the phrase-absence rule, as one run of sentences",
+      "by": "operator"
     }
   ],
   "links": [
