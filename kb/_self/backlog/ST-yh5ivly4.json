@@ -1,0 +1,28 @@
+{
+  "id": "ST-yh5ivly4",
+  "kind": "story",
+  "title": "land's wait-merge names a merge request stuck in GitLab's preparing state and its close-and-reopen remedy",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "While land --wait-merge waits, it reads the request's detailed_merge_status, and a request still preparing after a few minutes (no diff refs, no pipeline) is named with the remedy that merged it (close and reopen the request, then backlog.py merge), instead of waiting out the whole timeout",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "wait_merge_names_preparing"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_forge.py",
+    "_tools/test_forge.py"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 close"
+  ],
+  "notes": "SP-ofvvong6 retrospective: ST-e6bueg2y wait-merge exit=1 after 1881 s (ops 2026-10-14T16:36Z); merge requests 1055 and 1056 sat in detailed_merge_status preparing with no diff refs and no pipeline; backlog.py merge got 405 then 422, the rebase API 500; closing and reopening each request made it mergeable within a minute."
+}

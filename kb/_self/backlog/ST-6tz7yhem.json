@@ -1,0 +1,27 @@
+{
+  "id": "ST-6tz7yhem",
+  "kind": "story",
+  "title": "dispatch ends the processes a worker session leaves running in its worktree, so land does not stop at step branch",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "After a headless worker exits, dispatch ends the processes whose working directory is the worker's worktree and whose parent is gone (orphaned MCP servers the session started), and names each it ended, so backlog.py land does not stop at step branch on them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dispatch_ends_orphans_in_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 close"
+  ],
+  "notes": "SP-ofvvong6 retrospective: land BG-fdo6bgax stopped at step branch (ops land.end exit=1 2026-10-14T15:57:45Z) because two gk mcp processes (GitKraken plugin MCP, ppid 1) kept their cwd in the worker worktree after the session exited; each of the three workers left such a pair; the orchestrator ended them by hand."
+}

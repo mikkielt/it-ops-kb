@@ -1,0 +1,27 @@
+{
+  "id": "ST-oxiauxnh",
+  "kind": "story",
+  "title": "The contract lint flags a repository path an article names as this repo's that HEAD does not hold",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-verify's lint.py warns when a kb article names a _tools/ path as this repository's and the file is absent at HEAD, so a research fact cannot cite a deleted tool unnoticed",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lint_flags_missing_repo_path"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-verify/lint.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 close"
+  ],
+  "notes": "SP-ofvvong6 retrospective: the research ST-sxf575kx corrected an example line of kb/public/python/pytest-xdist.md to attribute --dist load to _tools/stress_test.py, deleted in 4d70166fe; check.py, lint and eval all passed; the review found it (ST-q2jzknjn)."
+}

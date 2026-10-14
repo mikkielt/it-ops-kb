@@ -1,0 +1,27 @@
+{
+  "id": "ST-xahz4kok",
+  "kind": "story",
+  "title": "factdiff.py anchor --file --quotes anchors CODE-tagged facts, so a research item need not re-anchor a whole topic",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchor --file F --quotes accepts a fact tagged CODE as a tagged fact, and anchoring one article's facts rewrites no _anchors.csv or _fetch_state.csv row of another topic",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "anchor_quotes_code_fact"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 close"
+  ],
+  "notes": "SP-ofvvong6 retrospective: the ST-sxf575kx worker reported factdiff.py anchor --file ... --quotes refused its CODE facts as no tagged fact; it fell back to anchor --topic python/pytest-xdist, which also re-dated other topics rows in kb/public/_anchors.csv and _fetch_state.csv (a noisy diff it could not revert)."
+}

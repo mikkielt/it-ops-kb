@@ -1,0 +1,32 @@
+{
+  "id": "ST-psjlw377",
+  "kind": "story",
+  "title": "The goal research story lands before the items whose mechanism it researches are dispatched",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The sprint skill's run step says the goal research story is worked and landed before dispatching an item whose goal names the mechanism the research settles, and a finding that contradicts a committed item's goal wording becomes a gate on that item before its dispatch; selfdoc.py check stays green",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md').read();sys.exit(0 if 'contradicts a committed item' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 close"
+  ],
+  "notes": "SP-ofvvong6 retrospective: the orchestrator dispatched research ST-sxf575kx in parallel with BG-fdo6bgax; the research found --dist load hands consecutive chunks, not one test at a time, after BG-fdo6bgax had landed docs and a goal clause saying one at a time (parked as ST-nblpdvup)."
+}

@@ -1,0 +1,32 @@
+{
+  "id": "ST-u2jerng3",
+  "kind": "story",
+  "title": "An item whose check bounds the suite's wall time is dispatched and landed while no sibling worker runs the suite",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The sprint skill's run step says an item whose checks bound the whole suite's wall time (perfcheck.py time) is dispatched alone or after its siblings' suite runs end, and is landed on a quiet host, so its land checks do not fail on load the orchestrator made; selfdoc.py check stays green",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md').read();sys.exit(0 if 'perfcheck.py time' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-ofvvong6 close"
+  ],
+  "notes": "SP-ofvvong6 retrospective: BG-fdo6bgax land step checks exit=1 (2026-10-14T15:59Z): perfcheck time 29.3 s and 34.3 s against 27 s at load 8 to 11, while the ST-e6bueg2y worker ran suites; its worker needed four runs for one pass (26.9 s); the same checks passed at 16:38Z at load 4 and in the review rerun. Related: ST-qtbpuyff."
+}
