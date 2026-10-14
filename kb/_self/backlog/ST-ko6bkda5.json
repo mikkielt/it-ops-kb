@@ -45,6 +45,21 @@
   "depends_on": [
     "ST-lzc7aqln"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which linux-nftables facts and rows does this item anchor, given the sprint added lines 39 and 41 and left one orphaned postgres row?",
+      "options": [
+        "Only the goal's named facts; later facts at nftables lines 39 and 41 and the orphaned S-yvalenhr row stay for their own items",
+        "Also anchor nftables lines 39 and 41 and prune the orphaned row"
+      ],
+      "recommendation": "Only the goal's named facts; later facts at nftables lines 39 and 41 and the orphaned S-yvalenhr row stay for their own items",
+      "class": "design",
+      "answer": "Only the goal's named facts; later facts at nftables lines 39 and 41 and the orphaned S-yvalenhr row stay for their own items",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tcis5f23 review",
     "merged: ST-btdvup3d",

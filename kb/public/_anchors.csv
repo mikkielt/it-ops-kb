@@ -3077,7 +3077,7 @@ fb34585ef252,arch/kerberos-linux-containers.md,S1604,unlocated:no-match,,,,,2026
 3090c46e5a25,arch/python-single-package-extras.md,S1707,unlocated:no-match,,,,,2026-10-10
 373ffeaecc49,arch/python-single-package-extras.md,S1522,located,Locking environments > Locking requirements,all-extra;extra;format;requirements.in;support;group;lock;compil,a676f43491b1470a,$ uv pip compile pyproject.toml --all-extras Note extras are not supported with the requirements.in format. To lock a dependency group in the current project directory's,2026-10-10
 4360e3b9a11e,arch/python-single-package-extras.md,S1705,unlocated:no-match,,,,,2026-10-10
-53e9732a3a3e,arch/python-single-package-extras.md,S1706,located,"See ""Environment Markers"" for more information > Dependency sources > Path",better;fit;repository;multipl;may;workspac;packag,becd1d8a45270898,"For multiple packages in the same repository, workspaces may be a better fit",2026-10-13
+53e9732a3a3e,arch/python-single-package-extras.md,S1706,located,"See ""Environment Markers"" for more information > Editable dependencies",no-editabl;out;editabl;workspac;add;dependency,b11e721b68a3af59,"Or, to opt-out of using an editable dependency in a workspace: uv add --no-editable ./path/foo",2026-10-14
 9b72880c4e9f,arch/python-single-package-extras.md,S1706,unlocated:no-match,,,,,2026-10-10
 9b72880c4e9f,arch/python-single-package-extras.md,S1708,unlocated:no-match,,,,,2026-10-10
 bf4d657dcfef,arch/python-single-package-extras.md,S1706,unlocated:no-match,,,,,2026-10-10
@@ -3762,8 +3762,8 @@ fe3ab6c9dbe2,auth/permissions-matrix.csv,S-sxtmngif,unlocated:no-match,,,,,2026-
 29f7810933af,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
 29f9d3494d29,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
 2d186c7da2b2,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.8. Notes > F.26.8.3. Security Limitations,among;attack;channel;ciphertext;resist;side;side-channel;vari,44a5f743a6a36dff,"The implementation does not resist side-channel attacks. For example, the time required for a pgcrypto decryption function to complete varies among ciphertexts of a given",2026-10-14
-2df6bf58c81f,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
-2df6bf58c81f,auth/postgres-column-encryption.md,S-rqc6efd7,unlocated:no-match,,,,,2026-10-14
+2df6bf58c81f,auth/postgres-column-encryption.md,S-qt7piebc,located,Security Properties and Threat Model for CipherSweet > Informal Security Analysis > FIPSCrypto > FIPSCrypto Fast Blind Indexes,hmac-sha384;sha384;fast;hmac;blind;index,4addf721d2f7b76e,"Fast blind indexes calculate a hash using HMAC-SHA384, then truncates the output to a desired number of bits",2026-10-14
+2df6bf58c81f,auth/postgres-column-encryption.md,S-rqc6efd7,located,Blind Indexing > FIPSCrypto,pbkdf2;pbkdf2-sha384;sha384;fast;iteration,1849f2303891efec,Fast: PBKDF2-SHA384 with 1 iteration,2026-10-14
 3b78d4b9e35c,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.5. Random-Data Functions,gen_random_byt;byte;gen;random;count;return,bcda2d209dbbcb31,genrandombytes(count integer) returns bytea,2026-10-14
 3d144df3b712,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
 3d144df3b712,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
@@ -6923,10 +6923,12 @@ f410ec77ab16,gitlab/package-registries.md,S-2fkrq2c6,located,Secrets Management 
 9312186c402c,gitlab/pipelines-rules.md,S451,located,View releases > Create a release > Release assets as Generic packages,glab;pipelin;job;releas,c44706727e40533d,"From a CI/CD pipeline, build your package files. Create a release with the glab CLI job:",2026-10-10
 9b00000ecb65,gitlab/pipelines-rules.md,S451,located,View releases > Create a release > Use a custom SSL CA certificate authority,ci_commit_tag;tag_nam;commit;name;tag,6e22d3a04275b94f,tagname: '$CICOMMITTAG',2026-10-10
 a3d1ecf9e4f3,gitlab/pipelines-rules.md,S446,located,,result;test;target;sourc;merg;pipelin,cec5afa5353dbbfe,"To run a pipeline that tests the result of merging the source and target branches together,",2026-10-10
+b412e94c9726,gitlab/pipelines-rules.md,S448,located,Create a pipeline schedule > Run manually,minut;once;manually;run;pipelin;schedul,247cd083bd5a2eee,You can manually run scheduled pipelines once per minute.,2026-10-14
 c19755c1c250,gitlab/pipelines-rules.md,S448,located,Create a pipeline schedule > Run manually,uses;manually;permission;owner;run;pipelin;schedul,cae552c57fe2ca19,"When you run a scheduled pipeline manually, it uses your permissions instead of the schedule owner's permissions.",2026-10-10
 c2f15a193289,gitlab/pipelines-rules.md,S446,located,Prerequisites,18.1;lab;git;runner;access;protect;gitlab;variabl,586da8ee2341470f,Control access to protected variables and runners {{< history >}} Introduced in GitLab 18.1,2026-10-10
 e4490668166a,gitlab/pipelines-rules.md,S453,unlocated:no-match,,,,,2026-10-10
 ff67e03b5f5b,gitlab/pipelines-rules.md,S446,located,,push;tab;branch;sourc;run;pipelin,f95eed4b58a3a826,Push a new commit to the source branch for a merge request. Go to the Pipelines tab in a merge request and select Run pipeline.,2026-10-10
+4a86f3d1b700,gitlab/project-settings-api.md,S-4yvdwu5c,located,Prerequisites > Manage projects > Create a project,visibility;featur;level;project,6221e762f7bdb509,"To set the visibility level of individual project features, see Project feature visibility level",2026-10-14
 2d592a545504,gitlab/protected-branches-tags.md,S446,unlocated:no-match,,,,,2026-10-10
 469aef9099a8,gitlab/protected-branches-tags.md,S-4o7kkuoi,located,,protect;branch;push;mirror,b8e8393a8894b9ae,"When you push a change to the upstream repository, the push mirror receives it in five minutes, or one minute if the setting Only mirror",2026-10-10
 504bf409fe68,gitlab/protected-branches-tags.md,S445,located,Configure protected tags > Delete a protected tag,maintainer;owner;role;list;delet;allow;creat;tag,bc8563384b7639a5,Be in the Allowed to create list of roles or users for that tag. The Maintainer or Owner role in the project. To delete a,2026-10-10
@@ -11994,19 +11996,19 @@ f869ca6ffc12,security/linux-cis-ssg-openscap.md,S-cxnklaym,unlocated:no-match,,,
 92496d7aaad5,security/linux-nftables.md,S-t7vpftda,located,make table active again:,flush;rule;chain;tabl,c0c4bf09b8ba35d8,Flush all chains and rules of the specified table.,2026-10-13
 9425d08f11de,security/linux-nftables.md,S-h3233m5r,located,Scripting,header;my-ruleset.fil;restor;nativ;comment;ruleset;defin;script,cc56b5d4c6df3f13,"Fortunately, nftables provides a native scripting environment to address these concerns which basically allows you to include other ruleset files, define variables and add comments.",2026-10-13
 a52a51dd6fc8,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,3.17;defin;delet;explicitly;later;linux;sets;ruleset,f159597eff148bff,"Flushing Sets: flush table filter will not flush any sets defined in that table. To flush sets as well, use flush ruleset (available since Linux",2026-10-13
-ad09bd012dd6,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-14
-ad09bd012dd6,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
+ad09bd012dd6,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,ruleset;tabl;flush;file,4777fe77adfe9ec5,"If you prepend the flush table filter line at the very beginning of the filter-table file, you achieve atomic ruleset replacement",2026-10-14
+ad09bd012dd6,security/linux-nftables.md,S-t7vpftda,located,make table active again:,flush;tabl,9b7de998f458d442,flush Flush all chains and rules of the specified table.,2026-10-14
 afb3d8cfee4d,security/linux-nftables.md,S-h3233m5r,located,Defining variables,variabl;rule;defin,7ba2622fd1c05d05,add rule filter input ip saddr $googledns counter You can also define a variable for sets:,2026-10-13
 afb3d8cfee4d,security/linux-nftables.md,S-oz7g4upk,located,Named sets > nftables.conf syntax,variabl;referenc;defin;name;rule,d8740adec6df06ad,"You can then reference those sets later on using $VARIABLENAME notation. Here are some examples showing sets defined in one line, spanning multiple lines, and",2026-10-13
-c317a18f33df,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,adds;other;statement;includ;tabl;flush;file,072cfe6257306860,,2026-10-14
-c317a18f33df,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
+c317a18f33df,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,transaction;flush;file,4655eaa49cb92d92,The kernel handles the rule commands in the file in one single transaction,2026-10-14
+c317a18f33df,security/linux-nftables.md,S-t7vpftda,located,NFT > RULESET,remov;ruleset;tabl,73859d74b4149ce2,"this will remove all tables and whatever they contain, effectively leading to an empty ruleset",2026-10-14
 c99dba3a665f,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,export;may;creat;becaus;list;load;exist;nft,907ca6d31448420f,you may have to create the table with nft create table ip filter before you can load the file,2026-10-13
 d2d2b17b69d3,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,equivalent;iptables-restor;kernel;transaction;iptabl;restor;load;one,4f3387f48f82a03d,"Duplicate Rules: If you prepend the flush table filter line at the very beginning of the filter-table file, you achieve atomic ruleset replacement equivalent to",2026-10-13
 d7d2e96da084,security/linux-nftables.md,S-t7vpftda,located,NFT > TABLES,manipulat;owner;exclud;content;other;creat;process;flag,52fd9d1f26d7ba79,Creating a table with flag owner excludes other processes from manipulating it or its contents.,2026-10-13
-e0c7f97daffa,security/linux-nftables.md,S-h3233m5r,unlocated:no-match,,,,,2026-10-14
-e0c7f97daffa,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,other;allow;filter;tabl;flush;file,072cfe6257306860,,2026-10-14
-e0c7f97daffa,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-14
-e0c7f97daffa,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-h3233m5r,located,Defining variables,ruleset,021cb53610a87257,You can use the define keyword to define variables,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,flush;file,4655eaa49cb92d92,The kernel handles the rule commands in the file in one single transaction,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-oz7g4upk,located,Named sets > nftables.conf syntax,later;notation;referenc;sets,6c1cd3d5af67e299,You can then reference those sets later on using $VARIABLENAME notation.,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-t7vpftda,located,delete the rule with handle 5 > SETS,fail;destroy;exist;delet;specifi,76372773de436c70,"destroy Delete the specified set, it does not fail if it does not exist.",2026-10-14
 e9e9219f33b8,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
 f1637f66c9dc,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Warning about Shell scripting + nftables,read;moment;new;operation;swap;configur;firewall;one,77bdf64e34f0e754,"This is different from bash scripts because nftables will read in all of the included config files, create the config object in memory alongside the",2026-10-13
 f58f62467bb7,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,chain;other;one;tabl;flush;rule;file,072cfe6257306860,,2026-10-14
