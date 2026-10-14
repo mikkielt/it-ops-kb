@@ -2,7 +2,7 @@
   "id": "BG-ms5dtnnr",
   "kind": "bug",
   "title": "close --summary credits a goal clause to the goal research story by the words of its generated title alone",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,

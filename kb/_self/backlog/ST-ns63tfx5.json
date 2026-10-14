@@ -2,7 +2,7 @@
   "id": "ST-ns63tfx5",
   "kind": "story",
   "title": "backlog.py land waits for the merge request of a code-lane item without --wait-merge, or names the lane before its first push",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-ph7dcjhz",
   "kind": "bug",
   "title": "done's ledger check attributes to an item the _fetch_state.csv and _anchors.csv rows a later commit of another item changed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,

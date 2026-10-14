@@ -2,7 +2,7 @@
   "id": "ST-2ietdnca",
   "kind": "story",
   "title": "done accepts an anchor run's prune of _anchors.csv rows whose source no fact of the article cites, without the goal naming that source",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,

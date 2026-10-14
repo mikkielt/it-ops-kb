@@ -2,7 +2,7 @@
   "id": "ST-ruxcexsg",
   "kind": "story",
   "title": "Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,

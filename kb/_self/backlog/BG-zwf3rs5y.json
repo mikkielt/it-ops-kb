@@ -2,7 +2,7 @@
   "id": "BG-zwf3rs5y",
   "kind": "bug",
   "title": "researched skips a narrowed goal's question that has no question mark without a said line",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
