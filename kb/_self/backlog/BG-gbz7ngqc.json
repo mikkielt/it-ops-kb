@@ -1,0 +1,24 @@
+{
+  "id": "BG-gbz7ngqc",
+  "kind": "bug",
+  "title": "git-test-repositories lists git checkout and git worktree add as always running die_if_checked_out, though --ignore-other-worktrees and --force skip it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/gitlab/git-test-repositories.md's 'In use is wider' fact says git checkout/switch skip die_if_checked_out under --ignore-other-worktrees and git worktree add under --force, citing git v2.55.0 builtin/checkout.c and builtin/worktree.c",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open('kb/public/gitlab/git-test-repositories.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- \"In use\" is wider')];sys.exit(0 if p and '--ignore-other-worktrees' in p[0] else 1)"
+    ]
+  },
+  "repro_reason": "the gap is one fact's wording in a kb article; no code path prints it",
+  "touches": [
+    "kb/public/gitlab/git-test-repositories.md"
+  ],
+  "links": [
+    "parked: SP-lsamtvsz review"
+  ]
+}

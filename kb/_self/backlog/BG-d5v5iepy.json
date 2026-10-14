@@ -1,0 +1,24 @@
+{
+  "id": "BG-d5v5iepy",
+  "kind": "bug",
+  "title": "pytest-xdist.md's -n auto fact omits that PYTEST_XDIST_AUTO_NUM_WORKERS and the hook win before psutil",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/python/pytest-xdist.md's -n auto fact says PYTEST_XDIST_AUTO_NUM_WORKERS and the pytest_xdist_auto_num_workers hook decide the count before psutil, as plugin.py's resolution order does",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open('kb/public/python/pytest-xdist.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- `-n auto` uses')];sys.exit(0 if p and 'PYTEST_XDIST_AUTO_NUM_WORKERS' in p[0] else 1)"
+    ]
+  },
+  "repro_reason": "the gap is one fact's wording in a kb article; no code path prints it",
+  "touches": [
+    "kb/public/python/pytest-xdist.md"
+  ],
+  "links": [
+    "parked: SP-lsamtvsz review"
+  ]
+}
