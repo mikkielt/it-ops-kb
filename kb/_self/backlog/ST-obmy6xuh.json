@@ -2,7 +2,7 @@
   "id": "ST-obmy6xuh",
   "kind": "story",
   "title": "Review sprint: Lookup feedback: a pack handle, kb_feedback, and distill and learn turn reports into checked findings",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-waxgh3kg",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-waxgh3kg"
 }
