@@ -37,6 +37,21 @@
       "class": "push",
       "answer": "reason: no row; doc-lookup-sources.md :37 and :110 say it serves instance data, not documentation, so it fails applies_to, and how GitHub's row differs",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does doc-lookup-sources.md state why GitLab's MCP server has no row: only on the lines :37 and :110, or also in the Summary, with the status and auth fact split from the purposes fact?",
+      "options": [
+        "all three places: Summary, a split of the :37 fact into status, auth, purposes and url facts, and the Reference line, with one DER fact that gives the reason and the GitHub rank 5 contrast",
+        "only the two lines the goal names, :37 and :110, reworded in place"
+      ],
+      "recommendation": "all three places: Summary, a split of the :37 fact into status, auth, purposes and url facts, and the Reference line, with one DER fact that gives the reason and the GitHub rank 5 contrast",
+      "do": {
+        "all three places: Summary, a split of the :37 fact into status, auth, purposes and url facts, and the Reference line, with one DER fact that gives the reason and the GitHub rank 5 contrast": "BG-tl74zfyr",
+        "only the two lines the goal names, :37 and :110, reworded in place": "BG-tl74zfyr"
+      },
+      "class": "push"
     }
   ],
   "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: the kb's GA claim is right (docs.gitlab.com/user/model_context_protocol/mcp_server/: Generally available, changed from beta in GitLab 19.5; doc-lookup-sources.md:17, :37, :110 say so). The table's applies_to (:4) is stable MCP servers and APIs that return current official documentation; the GitLab server serves a GitLab instance's project, issue and MR data. The stated reason for leaving it out (needs a token) does not separate it from rank 5, GitHub's remote MCP, which needs a token and is in the table. Its tool list is JS-rendered and was not read.",
