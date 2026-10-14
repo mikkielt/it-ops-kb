@@ -52,9 +52,9 @@ def pytest_configure(config):
 
 
 def pytest_collection_modifyitems(config, items):
-    """The slow files first (SLOW_FIRST, file order within each group): tests.py hands whole files to the workers in
-    this order (--no-loadscope-reorder), so each slow file starts on a worker of its own and the quick ones fill in
-    behind, instead of two slow files sharing one worker."""
+    """The slow files first (SLOW_FIRST, file order within each group): tests.py hands the tests to the workers one at
+    a time in this order (--dist load), so the long scenarios start first on workers of their own and the quick tests
+    fill in behind."""
     items.sort(key=lambda it: 0 if any(s in it.nodeid.split("::")[0] for s in SLOW_FIRST) else 1)
 
 
