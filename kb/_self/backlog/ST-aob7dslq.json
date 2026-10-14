@@ -2,7 +2,7 @@
   "id": "ST-aob7dslq",
   "kind": "story",
   "title": "The eight Cargo source rows with Apache-2.0 alone give rust-lang/cargo's licence as MIT OR Apache-2.0, as the other Cargo rows do",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,6 @@
   "links": [
     "parked: SP-tjap3mdd review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: check fails (eight rows carry 'Apache-2.0 (repository licence of rust-lang/cargo, from the GitHub API)': the five named plus S-5bx2p3mo, S-d7xuprcc, S-wl3gkg3g at tag 0.99.0, which the planner added to goal and check as the same defect). Depends on BG-nzrj2n32 (shares _sources.csv) and on the goal research story."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: check fails (eight rows carry 'Apache-2.0 (repository licence of rust-lang/cargo, from the GitHub API)': the five named plus S-5bx2p3mo, S-d7xuprcc, S-wl3gkg3g at tag 0.99.0, which the planner added to goal and check as the same defect). Depends on BG-nzrj2n32 (shares _sources.csv) and on the goal research story.",
+  "claimed_by": "orch-lsamtvsz"
 }
