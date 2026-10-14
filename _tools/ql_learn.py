@@ -6,11 +6,11 @@ a miss whose pack on HEAD is none with an article in the lead that holds every w
 findings file holds the records that change a finding's state (none: no file). A weak or none lookup in the kb's own
 rule docs (an entry with `root` _self) is a `rules` finding of its own, never one of those.
 """
-import csv, re
+import csv, json, re
 from pathlib import Path
 
 from ql_base import HOME, places
-from ql_capture import host_path
+from ql_capture import FEEDBACK, host_path
 from ql_store import (FETCH_KEYS, LEARN_STATES, RULES_ROOT, SOURCES_MAX, STAGES, finding_id, finding_states, store_entries,
                       write_findings)
 
@@ -149,15 +149,34 @@ def share_trigger(per_root):
 
 # ---------------------------------------------------------------- the findings
 
+FEEDBACK_JUDGED = {"answered": "answered", "partly": "partly", "missed": "missed", "misled": "missed"}  # a report's outcome as a judgement: a misled lookup is a miss
+
+
+def feedback_reports(e):
+    """The closed reports of an entry's `feedback`, in time order (none for an entry without one)."""
+    f = e.get("feedback")
+    return [r for r in f if isinstance(r, dict)] if isinstance(f, list) else []
+
+
+def judged_of(e):
+    """The judgement of a lookup: the outcome of its last feedback report (`misled` as `missed`), which replaces
+    Haiku's `judged` for the entry; else Haiku's."""
+    for r in reversed(feedback_reports(e)):
+        if r.get("outcome") in FEEDBACK_JUDGED:
+            return FEEDBACK_JUDGED[r["outcome"]]
+    return e.get("judged")
+
+
 def is_miss(e):
-    """A judged miss: Haiku judged the lookup missed or partly answered, or the pack's verdict was weak or none; but a
-    weak pack that Haiku judged answered is no miss (a verdict none stays one). A lookup in the rule docs is no
-    public miss (`rules_miss`)."""
+    """A judged miss: the lookup was judged missed or partly answered (`judged_of`: a report's outcome, else Haiku),
+    or the pack's verdict was weak or none; but a weak pack judged answered is no miss (a verdict none stays one). A
+    lookup in the rule docs is no public miss (`rules_miss`)."""
     if not isinstance(e.get("question"), str) or e.get("root") == RULES_ROOT:
         return False
-    if e.get("judged") in ("missed", "partly"):
+    judged = judged_of(e)
+    if judged in ("missed", "partly"):
         return True
-    return e.get("verdict") == "none" or (e.get("verdict") == "weak" and e.get("judged") != "answered")
+    return e.get("verdict") == "none" or (e.get("verdict") == "weak" and judged != "answered")
 
 
 QUESTION_WORDS = 30  # the most words of a question a person or skill asks; a longer one is pasted text
@@ -324,11 +343,12 @@ def held_article(res, lead_of=None, facts=None):
     return lead if any(all(holds_word(w, text) for w in lacks) for _, text in lines) else None
 
 
-def miss_findings(e, res, sources=None):
+def miss_findings(e, res, sources=None, lead=None):
     """The findings of one judged miss after its re-run on HEAD: eval (an article answers it) with its fix, alias
     (the question uses a word the kb never holds) or expansion (every word is known: a paraphrase), or a gap
     candidate (no candidate article answers it). All `fixed-since` when the re-run passes. `sources`: the source ids
-    that led to the article `e["best"]` (a false none), kept in the eval finding's `observed`."""
+    that led to the article `e["best"]` (a false none), kept in the eval finding's `observed`. `lead`: the gated url
+    a feedback report gave (a gap finding carries it, for the research run)."""
     best = e.get("best")
     ok = passes(res, best)
     state = "fixed-since" if ok else "open"
@@ -336,7 +356,7 @@ def miss_findings(e, res, sources=None):
     if not best:
         return [{"id": finding_id("gap", e["id"]), "kind": "gap", "state": state, "stage": "candidate-gap",
                  "promotions": [{"from": "miss", "to": "candidate-gap", "by": "learn"}], "entry": e["id"],
-                 "observed": obs}]
+                 **({"lead": lead} if lead else {}), "observed": obs}]
     out = [{"id": finding_id("eval", e["id"]), "kind": "eval", "state": state, "stage": "miss", "entry": e["id"],
             "expect": best, "observed": {**obs, "sources": list(sources)} if sources else obs}]
     if not ok:
@@ -348,6 +368,107 @@ def miss_findings(e, res, sources=None):
             out.append({"id": finding_id("expansion", e["id"]), "kind": "expansion", "state": "open", "stage": "miss",
                         "entry": e["id"], "article": best, "observed": obs})
     return out
+
+
+# ---------------------------------------------------------------- feedback: what the reports add to a lookup's findings
+
+def feedback_best(e, articles=None):
+    """The article the last report that names one (`best`) gives, when it is an article of the kb, else None."""
+    import kbfacts
+    arts = kbfacts.articles() if articles is None else articles
+    for r in reversed(feedback_reports(e)):
+        if isinstance(r.get("best"), str) and r["best"] in arts:
+            return r["best"]
+    return None
+
+
+def feedback_lead(e):
+    """The gated lead url of the last report that has one, else None."""
+    return next((r["lead"] for r in reversed(feedback_reports(e)) if isinstance(r.get("lead"), str)), None)
+
+
+def fact_source_ids(text):
+    """The source ids the tags of a fact line cite, sorted."""
+    import kbfacts
+    return sorted({i for tag in kbfacts.TAG.findall(text) for i in kbfacts.ID.findall(tag)})
+
+
+def source_retrieved(sid):
+    """The `retrieved_utc` day of a source row, else None."""
+    import kbfacts
+    return ((kbfacts.source_rows().get(sid) or {}).get("retrieved_utc") or "")[:10] or None
+
+
+def feedback_findings(entries, facts=None, retrieved=None):
+    """The findings the reports of the store's entries add, each from closed fields only: a `conflict` finding (stage
+    miss) per line a report marked `wrong` when it names a page (its `lead`, else the first of its `sources`: `lead`
+    or `source_id` of the finding), which apply checks and records; a report-only `source` finding (signal `stale`)
+    per source id that a line marked `stale` cites, `fixed-since` once the source was retrieved after the newest such
+    report. `helpful` and `irrelevant` marks make no finding: the digest counts them."""
+    facts = facts or article_facts
+    retrieved = retrieved or source_retrieved
+    out, stale = {}, {}
+    for _, e in entries:
+        for rep in feedback_reports(e):
+            page = rep.get("lead") or next(iter(rep.get("sources") or []), None)
+            for x in rep.get("lines") or []:
+                if not (isinstance(x, dict) and isinstance(x.get("line"), str)):
+                    continue
+                if x.get("issue") == "wrong" and page:
+                    fid = finding_id("conflict", e["id"], x["line"])
+                    out[fid] = {"id": fid, "kind": "conflict", "state": "open", "stage": "miss", "entry": e["id"],
+                                "line": x["line"], **({"lead": rep["lead"]} if rep.get("lead") else {"source_id": page})}
+                elif x.get("issue") == "stale":
+                    path, _, n = x["line"].rpartition(":")
+                    text = next((t for ln, t in facts(path) if str(ln) == n), None)
+                    for sid in fact_source_ids(text or ""):
+                        s = stale.setdefault(sid, {"entries": set(), "lines": set(), "day": ""})
+                        s["entries"].add(e["id"])
+                        s["lines"].add(x["line"])
+                        s["day"] = max(s["day"], str(e.get("day") or ""))
+    for sid, s in sorted(stale.items()):
+        since = retrieved(sid)
+        fid = finding_id("source", "stale", sid)
+        out[fid] = {"id": fid, "kind": "source", "state": "fixed-since" if since and since > s["day"] else "open",
+                    "signal": "stale", "source_id": sid,
+                    "observed": {"entries": len(s["entries"]), "lines": sorted(s["lines"])[:5]}}
+    return list(out.values())
+
+
+def spool_claims(spool=None):
+    """[(closed report, claim)] of the feedback rows the local spool still holds with a `claim`, the report in the
+    closed shape the store keeps (ql_distill.feedback_report), so a stored report finds its row by equality. The
+    claim is free text and lives in the spool only (the store keeps closed fields): once distill has delivered a row it
+    is gone, and a report whose row is gone has no claim."""
+    import ql_distill
+    spool = Path(spool) if spool else places()[0] / "spool"
+    out, pages = [], KbPages()
+    for p in sorted(spool.glob("*.jsonl")) if spool.is_dir() else []:
+        try:
+            lines = p.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for ln in lines:
+            try:
+                r = json.loads(ln)
+            except ValueError:
+                continue
+            claim = " ".join(r["claim"].split()) if isinstance(r, dict) and isinstance(r.get("claim"), str) else ""
+            if claim and r.get("surface") == FEEDBACK:
+                for rep in ql_distill.closed_reports([ql_distill.feedback_report(r, None, pages)]):
+                    out.append((rep, claim))
+    return out
+
+
+def report_claim(e, claims, wanted=None):
+    """The claim of the last report of entry `e` that `wanted` accepts (default: any) and a spool row (`claims`, from
+    `spool_claims`) holds, else None."""
+    for rep in reversed(feedback_reports(e)):
+        if wanted is None or wanted(rep):
+            for shape, claim in claims:
+                if shape == rep:
+                    return claim
+    return None
 
 
 # ---------------------------------------------------------------- a false none: the kb cites a page the lookup fetched
@@ -524,12 +645,17 @@ def learn(store=None, pack=None, kb_commit=None, registry=None, routes=None, cou
             derived[rec["id"]] = rec
         elif is_miss(e) and not pasted_text(e["question"]):
             res = pack(e["question"])
-            hit = pages.match(e)  # a false none: the kb cites a page the lookup fetched, so an eval and no gap
+            said = feedback_best(e)  # a report named the article that answers it: an eval finding for it
+            hit = (said, sorted({i for r in feedback_reports(e) for i in r.get("sources") or []})[:SOURCES_MAX] or None) \
+                if said else pages.match(e)  # a false none: the kb cites a page the lookup fetched
             held = None if hit else held_article(res)  # or the pack's lead article holds the words it says it lacks
             hit = hit or ((held, None) if held else None)
-            for rec in miss_findings({**e, "best": hit[0]} if hit else e, res, hit[1] if hit else None):
+            for rec in miss_findings({**e, "best": hit[0]} if hit else e, res, hit[1] if hit else None,
+                                     feedback_lead(e)):
                 derived[rec["id"]] = rec
     for rec in source_findings(entries, registry, routes, counts):
+        derived[rec["id"]] = rec
+    for rec in feedback_findings(entries):
         derived[rec["id"]] = rec
     last = finding_states(store)
     new = []

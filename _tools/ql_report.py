@@ -8,12 +8,12 @@ from pathlib import Path
 
 from ql_base import HOME, STORE, logging_off, places, run_cmd, write_text
 from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
-from ql_learn import FAILED, host_fetches, is_miss
+from ql_learn import FAILED, feedback_reports, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RULES_ROOT,
                       RUN_ID, SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
                       run_ids, store_entries, usage_files, usage_records, work_files, work_line_problems, ops_files,
                       ops_line_problems)
-from ql_capture import VERDICTS
+from ql_capture import FEEDBACK_ISSUES, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
 DIGEST_BUDGET_S = 3  # the SessionStart digest prints nothing when reading the store took longer
@@ -241,6 +241,34 @@ def rules_lines(rules, open_findings):
             f"rules sets run: {sum(1 for e in rules if e.get('set'))}, open rules findings: {open_findings}"]
 
 
+def feedback_lines(entries):
+    """The digest's feedback block, for the week's lookups with reports (`feedback`), only closed values: `feedback:
+    reports N (outcome n, ...)`, the marks of lines by issue class (`helpful` and `irrelevant` are only counted here,
+    never applied) and the tool issues per tool, each report's `tool_issue` counted under every kb tool its lookup
+    used (`tools`), `-` when the entry lists none. Nothing when the week has no report."""
+    reps = [(e, r) for e in entries for r in feedback_reports(e)]
+    if not reps:
+        return []
+    out = [f"feedback: reports {len(reps)} ("
+           + _counts((o, sum(1 for _, r in reps if r.get("outcome") == o)) for o in FEEDBACK_OUTCOMES) + ")"]
+    marks = [(i, sum(1 for _, r in reps for x in r.get("lines") or [] if isinstance(x, dict) and x.get("issue") == i))
+             for i in FEEDBACK_ISSUES]
+    if any(n for _, n in marks):
+        out.append("feedback lines: " + _counts(marks))
+    tools = {}
+    for e, r in reps:
+        if r.get("tool_issue") in FEEDBACK_TOOL_ISSUES:
+            used = [t for t in e.get("tools") or [] if isinstance(t, str)] or ["-"]
+            for tool in sorted(set(used)):
+                tools.setdefault(tool, {}).setdefault(r["tool_issue"], 0)
+                tools[tool][r["tool_issue"]] += 1
+    if tools:
+        out.append("feedback tool issues: " + "; ".join(
+            f"{tool} {sum(c.values())} ({_counts((i, c[i]) for i in FEEDBACK_TOOL_ISSUES if i in c)})"
+            for tool, c in sorted(tools.items())))
+    return out
+
+
 def digest(store=None, week=None, backlog=None):
     """(week, lines, whether the week holds anything) of the committed store (default kb/_querylog) for the ISO week
     `week` (default: the week of the newest entry). Only the store and `week` go in, so every clone at the same
@@ -314,6 +342,7 @@ def digest(store=None, week=None, backlog=None):
              f"verdicts: {_counts(verdicts)}",
              f"judged: {_counts(judged_)}",
              f"misses: {len(misses)}, fixed: {sum(fixed.values())} ({_counts(fixed.items())})",
+             *feedback_lines(entries),
              f"fetches: {nfetch}, failed {failed}, result characters {chars}",
              *rules_lines(rules, sum(1 for r in state.values() if r.get("kind") == "rules" and r.get("state") == "open")),
              *usage_lines(entries, usage_records(store)),
@@ -447,7 +476,7 @@ SHOW_ID = re.compile(r"[0-9A-Za-z-]{1,40}")  # a run id, an entry id, or the sta
 SHOW_ARTICLE = re.compile(r"[\w.-]+(?:/[\w.-]+)*")  # an article path or its tail, `laps.md` included
 SHOW_QUESTION_CHARS = 80  # the question a run's entry list keeps of each entry
 FINDING_FIELDS = ("expect", "article", "terms", "tried", "signal", "host", "level", "needs", "triggers", "tool",
-                  "route")  # what `show --findings` prints of a record besides its id, kind, state, stage and entry
+                  "route", "line", "lead", "source_id")  # what `show --findings` prints of a record besides its id, kind, state, stage and entry
 
 
 class ShowRefused(ValueError):
