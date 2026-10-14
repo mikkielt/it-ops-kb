@@ -45,7 +45,9 @@
         "article lookup and action words": "BG-256h2xwg",
         "shape alone": "BG-256h2xwg"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "article lookup and action words",
+      "by": "operator"
     }
   ],
   "notes": "Filed by the SP-hlt2tdel review (fresh-context reviewer gaps 1 and 2, reviewer severity S2; filed S1 in the sprint by the operator policy that an operator-only class is never weakened). Before the sprint (7afd58817) both reviewer probes classed push; after BG-3yjqrfkp they class design: PUSH_NOUN (bl_authority.py:190) never checks that the push is display-only, TOPIC_PATH (bl_authority.py:186) blanks any gitlab/<slug>. The suite is at its test-id ceiling: extend an existing test_authority test, add no test id; never raise the ceiling.",
