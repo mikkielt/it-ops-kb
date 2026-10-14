@@ -2,7 +2,7 @@
   "id": "BG-fdo6bgax",
   "kind": "bug",
   "title": "The whole suite's darwin wall time is bounded by two module scopes, test_land_e2e.py and test_backlog_portable.py, each 22 to 29 s of serial tests on one worker",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ofvvong6",
   "priority": "P1",
   "rank": 0,
@@ -66,5 +66,6 @@
     "kb/_self/maintaining.md",
     "kb/_self/querylog.md"
   ],
-  "notes": "Merged at the 2026-10-14 test-suite overhaul plan: BG-qnbcyw72 (full run 30 to 37 s against 29 s on darwin through SP-ia6xayiy, SP-hlt2tdel and the workers of 2026-10-14, 112 passing: the same symptom, whose cause this item names and removes), BG-nnpssuqa and ST-nhax64i4 (host findings of SP-waxgh3kg and SP-b7wibqok asking the operator for headroom: the operator decided on 2026-10-14 that the limits stay, D-ilojyzhk, and the suite is made faster instead). Measured on 2026-10-14 on a quiet darwin host, 12 workers, 112 ids: loadscope 31.1 s pytest (33.1 s tests.py), the module scope of test_land_e2e.py's five plain functions 30.2 s serial on one worker and test_backlog_portable.py's 17 functions 27.0 s; --dist load 24.4, 24.7, 24.9 and 23.7 s (one run at 28.0 s during the planner's own back-to-back runs, load average 6), --dist worksteal 25.1 s; worker count is no lever (load at 14 workers 25.5 s, at 8 27.7 s); ordering the tests by measured duration, longest first, was slower (27.7 s). The suite has no order dependence: load and reordered runs passed 112 of 112. test_prepush_e2e.py's module fixture is built per worker under load (2.6 s setup), included in the figures."
+  "notes": "Merged at the 2026-10-14 test-suite overhaul plan: BG-qnbcyw72 (full run 30 to 37 s against 29 s on darwin through SP-ia6xayiy, SP-hlt2tdel and the workers of 2026-10-14, 112 passing: the same symptom, whose cause this item names and removes), BG-nnpssuqa and ST-nhax64i4 (host findings of SP-waxgh3kg and SP-b7wibqok asking the operator for headroom: the operator decided on 2026-10-14 that the limits stay, D-ilojyzhk, and the suite is made faster instead). Measured on 2026-10-14 on a quiet darwin host, 12 workers, 112 ids: loadscope 31.1 s pytest (33.1 s tests.py), the module scope of test_land_e2e.py's five plain functions 30.2 s serial on one worker and test_backlog_portable.py's 17 functions 27.0 s; --dist load 24.4, 24.7, 24.9 and 23.7 s (one run at 28.0 s during the planner's own back-to-back runs, load average 6), --dist worksteal 25.1 s; worker count is no lever (load at 14 workers 25.5 s, at 8 27.7 s); ordering the tests by measured duration, longest first, was slower (27.7 s). The suite has no order dependence: load and reordered runs passed 112 of 112. test_prepush_e2e.py's module fixture is built per worker under load (2.6 s setup), included in the figures.",
+  "claimed_by": "orch-ofvvong6"
 }
