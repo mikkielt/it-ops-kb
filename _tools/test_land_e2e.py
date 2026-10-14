@@ -25,18 +25,103 @@ import json
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
 
-from conftest import Repo, requires_git
+from conftest import KB, Repo, git_env, requires_git, seed_files
 
 pytestmark = [pytest.mark.git, requires_git]
 
 NOSYNC = {"KB_SYNC_NO_TESTS": "1"}
 PLAN = "kb/_self/backlog"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def real_git():
+    """macOS's /usr/bin/git only starts the Command Line Tools' git, which costs three git starts' time (9 ms for 3 ms
+    here), and a landing runs about 75 git commands: the real binary first on PATH for these scenarios and every tool
+    they run, where the shim is what `git` would resolve to. Any other host runs the `git` it has."""
+    found = shutil.which("git")
+    real = None
+    if sys.platform == "darwin" and found == "/usr/bin/git":
+        p = subprocess.run([found, "--exec-path"], capture_output=True, text=True)
+        cand = Path(p.stdout.strip()).parents[1] / "bin" / "git" if p.returncode == 0 and p.stdout.strip() else None
+        real = cand if cand and cand.is_file() else None
+    with pytest.MonkeyPatch.context() as mp:
+        if real:
+            mp.setenv("PATH", os.pathsep.join([str(real.parent), os.environ.get("PATH", "")]))
+        yield
+
+
+def import_seed(bare):
+    """The commit of seed_files() in the bare repository BARE, as conftest's kb_seed makes it, but written as one
+    uncompressed pack by `git fast-import` (a file's bytes, its mode and a link's target): the 1.2 s of `git add` and
+    repack that conftest pays make every scenario of this file wait that long for the seed. A file holding a carriage
+    return is hashed by git itself, through the attributes, so a line-ending rule applies as `git add` applies it."""
+    entries = []  # (rel, mode, bytes), or (rel, mode, None) for a file git hashes itself
+    for rel in seed_files():
+        path = os.path.join(KB, rel)
+        if os.path.islink(path):
+            mode, data = b"120000", os.readlink(path).encode("utf-8")
+        else:
+            with open(path, "rb") as f:
+                data = f.read()
+            mode = b"100755" if os.name != "nt" and os.stat(path).st_mode & 0o111 else b"100644"
+        entries.append((rel, mode, None if b"\r" in data else data))
+    held = [rel for rel, _, data in entries if data is None]
+    shas = {}
+    if held:
+        env = git_env(GIT_DIR=str(bare), GIT_WORK_TREE=KB)
+        p = subprocess.run(["git", "-c", "core.autocrlf=false", "hash-object", "-w", "--stdin-paths"], cwd=KB, env=env,
+                           input="\n".join(held) + "\n", capture_output=True, text=True, encoding="utf-8")
+        assert p.returncode == 0, p.stderr
+        shas = dict(zip(held, p.stdout.split()))
+    stream = [b"commit refs/heads/main\ncommitter t <t@example.com> 0 +0000\ndata 4\nbase\n"]
+    for rel, mode, data in entries:
+        name = rel.encode("utf-8")
+        if data is None:
+            stream.append(b"M %s %s %s\n" % (mode, shas[rel].encode("ascii"), name))
+        else:
+            stream.append(b"M %s inline %s\ndata %d\n%s\n" % (mode, name, len(data), data))
+    stream.append(b"done\n")
+    p = subprocess.run(["git", "-c", "core.compression=0", "-c", "pack.compression=0", "fast-import", "--quiet",
+                        "--done"], cwd=bare, env=git_env(), input=b"".join(stream), capture_output=True)
+    assert p.returncode == 0, p.stderr.decode("utf-8", "replace")
+    return Repo(bare).rev("HEAD")
+
+
+@pytest.fixture(scope="session")
+def kb_seed(tmp_path_factory):
+    """conftest's kb_seed for this file's scenarios, built by import_seed: the same directory and hand-over file, so a
+    run holds one seed whichever test asks for it first."""
+    base = tmp_path_factory.getbasetemp()
+    tmp = (base.parent if os.environ.get("PYTEST_XDIST_WORKER") else base) / "kb-seed"
+    done = tmp / "seed.json"
+    try:
+        tmp.mkdir()
+    except FileExistsError:
+        deadline = time.monotonic() + 300
+        while not done.exists():
+            assert time.monotonic() < deadline, f"no seed at {tmp}"
+            time.sleep(0.05)
+        got = json.loads(done.read_text(encoding="utf-8"))
+        assert "error" not in got, got
+        return Path(got["bare"]), got["base"]
+    got = {"error": "not built"}
+    try:
+        bare = tmp / "seed.git"
+        Repo(tmp).git("init", "-q", "--bare", "-b", "main", str(bare))
+        got = {"bare": str(bare), "base": import_seed(bare)}
+    finally:
+        part = done.with_suffix(".part")
+        part.write_text(json.dumps(got), encoding="utf-8")
+        os.replace(part, done)
+    return Path(got["bare"]), got["base"]
 
 
 def bl(repo, *args, env=NOSYNC):
@@ -78,21 +163,55 @@ def work(repo, iid, rel):
     repo.git("commit", "-q", "-m", f"docs(kb): {iid} work", "-m", f"KB-Work: {iid}")
 
 
+BATCH = """import contextlib, io, json, re, sys
+sys.path.insert(0, sys.argv[1])
+import backlog
+ids, done = [], []
+for argv in json.loads(sys.argv[2]):
+    argv = [ids[a["id"]] if isinstance(a, dict) else a for a in argv]
+    raw = io.BytesIO()
+    out = io.TextIOWrapper(raw, encoding="utf-8", newline="\\n")
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        try:
+            code = backlog.main(argv)
+        except SystemExit as e:
+            code = e.code
+    out.flush()
+    found = re.search(r"\\b((?:ST|SP|TK|BG)-[a-z0-9]+)\\b", raw.getvalue().decode("utf-8"))
+    ids.append(found.group(1) if found else None)
+    done.append([code, raw.getvalue().decode("utf-8")])
+sys.__stdout__.write(json.dumps(done))
+"""
+
+
+def batch(repo, *steps, env=NOSYNC):
+    """STEPS (each a `backlog.py` argument list) run one after another in a single process of the clone's own
+    `backlog.main`, the 0.1 s of start-up paid once: [(exit code, output)] for each. An argument `{"id": N}` is the
+    id that step N printed. What a step runs (git, checks) is a subprocess of it, as in a run of its own."""
+    p = subprocess.run([sys.executable, "-c", BATCH, repo.file("_tools"), json.dumps(steps)], cwd=repo.path,
+                       env={**repo.env, **env}, capture_output=True, text=True, encoding="utf-8", errors="replace")
+    assert p.returncode == 0, p.stdout + p.stderr
+    return [tuple(r) for r in json.loads(p.stdout)]
+
+
 def planned(scenario, *stories, hooks=True):
     """A clone whose backlog is the fixture one (the live items removed, so a planning slip in one of them cannot fail
     `backlog.py check` inside a scenario) and whose started sprint has the stories ((name, kb path, check) each)
-    claimed and pushed to origin/main: (clone, sprint id, story ids). The fixture is one commit and one plain push, and a
-    scenario whose landing never reaches the real sync passes `hooks=False`: the commit hooks cost 0.2 s a commit."""
+    claimed and pushed to origin/main: (clone, sprint id, story ids). The fixture is one process, one commit and one
+    plain push, and a scenario whose landing never reaches the real sync passes `hooks=False`: the commit hooks cost
+    0.2 s a commit."""
     repo = scenario.clone(hooks=hooks)
     repo.git("config", "core.fileMode", "false")
-    repo.git("rm", "-q", "-r", "--ignore-unmatch", PLAN)
-    sp = new_id(ok(repo, "new", "sprint", "--title", "Landing sprint"))
-    ids = [new_id(ok(repo, "new", "story", "--title", f"Landing {n}", "--sprint", sp, "--goal", f"The doc {n}.md exists.",
-                     "--touch", rel, "--check", chk)) for n, rel, chk in stories]
-    ok(repo, "answer", sp, "start", "--answer", "approve", "--by", "operator")
-    ok(repo, "start", sp)
-    for iid in ids:
-        ok(repo, "claim", iid, "--by", "t")
+    shutil.rmtree(repo.file(PLAN))  # the commit below records the removal
+    steps = [("new", "sprint", "--title", "Landing sprint")]
+    steps += [("new", "story", "--title", f"Landing {n}", "--sprint", {"id": 0}, "--goal", f"The doc {n}.md exists.",
+               "--touch", rel, "--check", chk) for n, rel, chk in stories]
+    steps += [("answer", {"id": 0}, "start", "--answer", "approve", "--by", "operator"), ("start", {"id": 0})]
+    steps += [("claim", {"id": i + 1}, "--by", "t") for i in range(len(stories))]
+    results = batch(repo, *steps)
+    for step, (code, out) in zip(steps, results):
+        assert code == 0, f"backlog.py {' '.join(map(str, step))}: {out}"
+    sp, ids = new_id(results[0][1]), [new_id(out) for _, out in results[1:1 + len(stories)]]
     repo.git("add", "-A", PLAN)
     repo.git("commit", "-q", "--no-verify", "-m", f"chore(backlog): plan {sp}")
     repo.git("push", "-q", "--no-verify", "origin", "main")
@@ -106,7 +225,7 @@ class TestLandedItem:
             self, scenario, tmp_path):
         stories = [(n, f"kb/_self/{n}.md", "python3 _tools/backlog.py list --kind sprint") for n in ("good", "other", "third")]
         repo, sp, (good, other, third) = planned(scenario, *stories, hooks=False)
-        env = plain_push(repo, tmp_path, land_push=["git", "push", "--no-verify", "origin", "HEAD:main"])
+        env = plain_push(repo, tmp_path, land_push=["git", "push", "--no-verify", "origin", "HEAD:main"], land_lint=[])
         before = origin_main(scenario)
 
         for iid, n in ((good, "good"), (other, "other"), (third, "third")):
@@ -155,11 +274,13 @@ class TestLandedItem:
         assert "one changes kb/_self/local-note.md, not an item file; git rebase origin/main)" in out, out
         assert repo.rev("main") == tip and repo.git("rev-list", "--count", "main..origin/main").strip() == "2", out
 
-        ok(repo, "claim", research, "--by", "t", "--commit")
-        for notes, accepted in ((None, False), ("No outside facts:", False), ("Other. No outside facts: the goal is internal.", True)):
-            if notes:
-                ok(repo, "set", research, "--notes", notes)
-            code, out = bl(repo, "done", research, "--dry-run")  # no commit changes a non-item file: only the note lets it pass
+        cases = ((None, False), ("No outside facts:", False), ("Other. No outside facts: the goal is internal.", True))
+        steps = [("claim", research, "--by", "t", "--commit")]
+        for notes, _ in cases:
+            steps += ([("set", research, "--notes", notes)] if notes else []) + [("done", research, "--dry-run")]
+        results = batch(repo, *steps)  # no commit changes a non-item file: only the note lets a done pass
+        assert all(code == 0 for step, (code, _) in zip(steps, results) if step[0] != "done"), results
+        for (notes, accepted), (code, out) in zip(cases, [r for step, r in zip(steps, results) if step[0] == "done"]):
             assert (code == 0 and "would be done" in out) == accepted and (accepted or "KB-Work" in out), out
 
 
@@ -238,9 +359,10 @@ class TestStoppedLand:
 
 class TestOwnCheckoutDrafts:
     def test_land_moves_own_checkout_drafts_then_refuses_other_files_and_check_stale_touch_branch_added_removed(
-            self, scenario):
+            self, scenario, tmp_path):
         repo, sp, (good,) = planned(scenario, ("good", "kb/_self/good.md", "python3 _tools/backlog.py list --kind sprint"),
                                     hooks=False)
+        env = plain_push(repo, tmp_path, land_lint=[])  # the default push stays: the sync gate lints the landing itself
         before = origin_main(scenario)
         work(repo, good, "kb/_self/good.md")
         repo.git("checkout", "-q", "main")  # land runs on main in this checkout, which holds the hook's drafts
@@ -255,19 +377,20 @@ class TestOwnCheckoutDrafts:
         draft, handmade, stray = plant("BG-0a1b2c3d", filed), plant("BG-0e1f2a3b", ["parked: later"]), "kb/_self/stray.md"
         repo.write(stray, "# stray\n")
         for other in (stray, handmade):  # one file that is no filed draft keeps every draft where it is
-            code, out = bl(repo, "land", good)
+            code, out = bl(repo, "land", good, env=env)
             assert code != 0 and "land stopped at step clean tree" in out and "moved the untracked" not in out, out
             assert Path(repo.file(draft)).is_file() and not aside.exists(), out
             (Path(repo.file(other))).unlink()
 
-        code, out = bl(repo, "land", good, "--branch", "work/ST-00000000")  # a later step stops it: drafts stay aside
+        # a later step stops it: the drafts stay aside
+        code, out = bl(repo, "land", good, "--branch", "work/ST-00000000", env=env)
         assert code != 0 and "land stopped at step branch" in out, out
         assert "moved the untracked intake draft BG-0a1b2c3d.json out of this checkout" in out, out
         assert (aside / "BG-0a1b2c3d.json").is_file() and not Path(repo.file(draft)).exists(), out
         assert origin_main(scenario) == before and repo.git("status", "--porcelain").strip() == ""
 
         second = plant("BG-4c5d6e7f", ["fingerprint ba9876543210", "detector trailers"])
-        code, out = bl(repo, "land", good)
+        code, out = bl(repo, "land", good, env=env)
         assert code == 0 and "landed" in out, out
         assert "moved the untracked intake draft BG-4c5d6e7f.json out of this checkout" in out, out
         assert (aside / "BG-4c5d6e7f.json").is_file() and (aside / "BG-0a1b2c3d.json").is_file(), out
@@ -400,10 +523,11 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     repo, sp, (good, rows, probe_id) = planned(
         scenario, ("good", "kb/_self/good.md", gone), ("rows", "kb/_querylog/rows.jsonl", exits),
         ("probe", "_tools/probe.py", probe), hooks=False)
-    code, out = bl(repo, "precheck", sp)  # a code-lane item whose check reads the store: only a delivery after the merge
+    (code, out), dropped = batch(repo, ("precheck", sp), ("drop", probe_id, "--why", "only its precheck line was read"))
     warned = [ln for ln in out.splitlines() if ln.startswith("warning: ") and "query-log" in ln]
+    # a code-lane item whose check reads the store: only a delivery after the merge
     assert code == 0 and len(warned) == 1 and f"{probe_id}" in warned[0] and "after the merge" in warned[0], out
-    ok(repo, "drop", probe_id, "--why", "only its precheck line was read")
+    assert dropped[0] == 0, dropped
     # a story of the store only has no KB-Work commit: the automatic delivery that is on origin/main is its evidence
     repo.write("kb/_querylog/rows.jsonl", "{}\n")
     repo.git("add", "kb/_querylog/rows.jsonl")
@@ -423,10 +547,11 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     stories = ok(repo, "list", "--sprint", sp)
     research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", stories).group(1)
     review = re.search(r"(ST-[a-z0-9]+)\s.*Review sprint", stories).group(1)
-    ok(repo, "claim", research, "--by", "t", "--commit")
-    ok(repo, "set", research, "--notes", "No outside facts: the goal is internal.")
-    ok(repo, "done", research, "--commit")
-    ok(repo, "set", review, "--check", "python3 _tools/backlog.py list --kind sprint")  # not the whole suite
+    results = batch(repo, ("claim", research, "--by", "t", "--commit"),
+                    ("set", research, "--notes", "No outside facts: the goal is internal."),
+                    ("done", research, "--commit"),
+                    ("set", review, "--check", "python3 _tools/backlog.py list --kind sprint"))  # not the whole suite
+    assert all(code == 0 for code, _ in results), results
     repo.git("add", "-A")
     repo.git("commit", "-q", "--no-verify", "-m", "test: a cheap review check")
     assert repo.git("status", "--porcelain").strip() == ""
@@ -441,9 +566,11 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     assert evidence["gone"] == [["python3", "-c", gone.split('"')[1]]], evidence
     assert json.loads(repo.read(f"{PLAN}/{review}.json"))["status"] == "done"
 
+    def story_step(*more):
+        return ("new", "story", "--title", "Reopen refs", "--goal", "The doc.", "--touch", "kb/_self/good.md", *more)
+
     def story(*more):
-        return new_id(ok(repo, "new", "story", "--title", "Reopen refs", "--goal", "The doc.", "--touch",
-                         "kb/_self/good.md", *more))
+        return new_id(ok(repo, *story_step(*more)))
 
     def marks():
         return set(repo.git("for-each-ref", "--format=%(refname:strip=2)", "refs/kb-reopened/").split())
@@ -453,7 +580,9 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
         for i in ids:
             repo.git("update-ref", f"refs/kb-reopened/{i}", blob)
 
-    first, second = story(), story()
+    two = batch(repo, story_step(), story_step())
+    assert all(code == 0 for code, _ in two), two
+    first, second = (new_id(out) for _, out in two)
     repo.commit("test: two stories outside a sprint", PLAN)
     old = Repo(Path(repo.path).parent / "older", repo.env)
     repo.git("worktree", "add", "-q", "-b", "older", old.path, "main")  # branched before `late` is filed
@@ -950,12 +1079,7 @@ def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_
     skill, new = ".claude/skills/kb-gap/SKILL.md", ".claude/skills/demo/SKILL.md"
     repo, sp, (iid,) = planned(scenario, ("gap", skill, "python3 _tools/selfdoc.py check"), hooks=False)
     ok(repo, "set", iid, "--add-touch", new)
-    # the docs check must pass in this scenario whatever the working tree's docs hold: a dead section reference the
-    # seed carries is mended in the clone, so the check's verdict is the staged copies' alone
-    p = subprocess.run([sys.executable, "_tools/selfdoc.py", "check"], cwd=repo.path, capture_output=True, text=True)
-    for path, heading in re.findall(r"^PROBLEM (\S+?):\d+: \(\S+, (.+?)\) names no heading", p.stdout, re.M):
-        repo.write(path, repo.read(path).replace(heading, "Sprints"))
-    repo.commit("test: the second touch", PLAN, "kb/_self")
+    repo.commit("test: the second touch", PLAN)
     wt = Path(repo.path) / ".claude" / "worktrees" / f"agent-{iid}"
     repo.git("worktree", "add", "-q", "-b", f"work/{iid}", str(wt), "main")
     tree = Repo(wt, repo.env)
@@ -966,6 +1090,14 @@ def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_
     tree.git("update-index", "--skip-worktree", *bulk)
     for f in bulk:
         (wt / f).unlink()
+    # the docs check must pass whatever the working tree's docs hold: a dead section reference the seed carries is
+    # mended in the worktree (one commit before its base is read), so the check's verdict is the staged copies' alone
+    p = subprocess.run([sys.executable, "_tools/selfdoc.py", "check"], cwd=wt, capture_output=True, text=True)
+    dead = re.findall(r"^PROBLEM (\S+?):\d+: \(\S+, (.+?)\) names no heading", p.stdout, re.M)
+    for path, heading in dead:
+        tree.write(path, tree.read(path).replace(heading, "Sprints"))
+    if dead:
+        tree.commit("test: mend dead section references", *sorted({path for path, _ in dead}))
     scratch = Path(repo.path) / "_cache" / "scratch" / iid
     # the brief's rules section is not what is read here, and its kb pack would build a cold index of the whole kb
     code, out = bl(repo, "brief", iid, env=plain_push(repo, tmp_path, kb_root=""))  # the report's problems=0 command
