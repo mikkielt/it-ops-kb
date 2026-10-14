@@ -69,7 +69,7 @@ def run_check(name, status="COMPLETED", conclusion="SUCCESS"):
             "workflowName": "Tests", "detailsUrl": "https://github.com/group/kb/actions/runs/1/job/2"}
 
 
-def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary_forge_pipeline(settings):
+def read_a_request_and_a_pipeline_in_one_vocabulary(settings):
     # glab arm: the project is forge_project, the open request is the one read, whatever else its branch has
     root = settings(forge_project="other/proj")
     listed = [mr(3, "closed"), mr(4, "merged", merged_at="2026-10-09T14:47:45Z"), mr(5, "opened")]
@@ -146,8 +146,7 @@ def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary_forge_pipeli
     assert bl_intake.latest_pipeline(root, "build", run)[0]["red"] is True
 
 
-def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project_forge_stalled(settings, monkeypatch,
-                                                                                         capsys):
+def merge_on_the_glab_arm_only_land_one_project_and_stalled(settings, monkeypatch, capsys):
     root = settings(forge_project="other/proj")
     single = mr(5, "opened", detailed_merge_status="mergeable", head_pipeline={"id": 77, "status": "success"})
     run = Recorded(GITLAB_URL, [("merge_requests/5", single), ("merge_requests?source_branch", [mr(5, "opened")]),
@@ -262,3 +261,10 @@ def test_forge_arms_merge_on_the_glab_arm_only_forge_land_forge_one_project_forg
     run = Recorded(GITHUB_URL, [("gh pr list", [pr(5, "OPEN", [run_check("build", conclusion="FAILURE")])])])
     bl = SimpleNamespace(root=root, items={"TK-aaaaaaaa": bl.items["TK-aaaaaaaa"]}, order_key=lambda i: i, label=lambda i: i)
     assert bl_stall.collect(bl, now=0, run=run)["items"][0]["signals"] == ["mr-dead"]
+
+
+def test_forge_arms_read_a_request_and_a_pipeline_in_one_vocabulary_and_merge_on_the_glab_arm_only_forge_land_forge_one_project_forge_stalled(
+        settings, monkeypatch, capsys):
+    read_a_request_and_a_pipeline_in_one_vocabulary(settings)
+    capsys.readouterr()  # the second half reads what only it printed
+    merge_on_the_glab_arm_only_land_one_project_and_stalled(settings, monkeypatch, capsys)

@@ -87,18 +87,16 @@ def scan():
     return out
 
 
-def test_tracked_files_hold_no_secret():
+def test_tracked_files_hold_no_secret_and_authored_files_hold_placeholders_only():
     found = [h for h in scan() if h[1] == "secret"]
     assert not found, "possible secrets (file only):\n" + "\n".join(f"  {f}" for f, _, _ in found[:20])
-
-
-def test_authored_files_hold_placeholders_only():
     found = [h for h in scan() if h[1] != "secret"]
     assert not found, "real-looking values (placeholders only, or allowlist with a reason):\n" + "\n".join(
         f"  {f}: {k} {v}" for f, k, v in found[:20])
 
 
-def test_scan_reports_each_planted_leak_and_honours_the_allowlist():
+def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_hook_denies_a_routed_host_and_passes_the_rest(
+        tmp_path, monkeypatch):
     values = planted()
     for kind, value in values.items():
         assert kind in [k for k, _ in kbpublic.file_hits("notes.md", f"see {value} here", {})], kind
@@ -109,12 +107,9 @@ def test_scan_reports_each_planted_leak_and_honours_the_allowlist():
     assert [k for k, _ in kbpublic.file_hits("notes.md", " ".join(values.values()), allow)] == ["home"]
     # vendor exports are read for secrets only
     assert [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", " ".join(values.values()), {})] == ["secret"]
-
-
-def test_webfetch_hook_denies_a_routed_host_and_passes_the_rest(tmp_path, monkeypatch):
-    """The PreToolUse guard on WebFetch (kb_hook.webfetch_deny): a host the routes table routes away from WebFetch is
-    denied with the row's find and read routes as the reason; another host, a url with no host and an unreadable
-    table pass. Both hook files wire it synchronously (an async hook cannot deny)."""
+    # the PreToolUse guard on WebFetch (kb_hook.webfetch_deny): a host the routes table routes away from WebFetch is
+    # denied with the row's find and read routes as the reason; another host, a url with no host and an unreadable
+    # table pass. Both hook files wire it synchronously (an async hook cannot deny).
     import kb_hook, ql_learn
     ev = lambda url: {"hook_event_name": "PreToolUse", "tool_name": "WebFetch", "tool_input": {"url": url}}
     out = kb_hook.webfetch_deny(ev("https://learn.microsoft.com/en-us/intune/"))["hookSpecificOutput"]
