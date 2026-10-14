@@ -619,6 +619,16 @@ def test_backlog_brief_rules_are_the_mapped_docs_headings_or_the_kb_roots_fact_l
                                      "artifact_sha256,used_in,superseded_by\n", encoding="utf-8")
     for name in ("_answers.md", "_conflicts.md", "_gaps.md"):
         (fx / name).write_text("# " + name + "\n", encoding="utf-8")
+    # the project's own rag.py (with the modules it imports) beside a kb of its own that holds the fixture root alone,
+    # so the pack indexes one article and not the whole kb
+    (repo / "_tools").mkdir()
+    for mod in ("rag", "kbcommon", "kbid", "kbfacts"):
+        shutil.copy(os.path.join(TOOLS, mod + ".py"), repo / "_tools" / f"{mod}.py")
+    (repo / "kb" / "public").mkdir(parents=True)
+    (repo / "kb" / "_self").mkdir()
+    (repo / "kb" / "public" / "_root.md").write_text(
+        "---\nroot: public\nid_prefix: PUB\nvisibility: public\ndescription: an empty public root\n---\n",
+        encoding="utf-8")
     root = Repo(repo)
     root.git("init", "-q", "-b", "main")
     cfg = tmp_path / "cfg.json"
