@@ -453,7 +453,7 @@ def test_backlog_external_ids_trailer_is_accepted_by_check_trailers_and_a_malfor
     assert code == 1 and "not a trailer: 'KB-Ref: PROJ-123'" in out
 
 
-def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_nothing_and_multirepo_dispatch_makes_a_worktree_per_required_repository(tmp_path, monkeypatch):
+def test_backlog_brief_known_suite_failure_and_dispatch_prints_the_workers_brief_and_dry_run_starts_nothing_and_multirepo_dispatch_makes_a_worktree_per_required_repository(tmp_path, monkeypatch):
     (tmp_path / "repo").mkdir()
     root = Repo(tmp_path / "repo")
     root.git("init", "-q", "-b", "main")
@@ -478,7 +478,8 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
         ids[name] = made("task", f"{name} item", "--parent", story, "--touch", touch, "--check", "python3 -c pass",
                          *(["--external", "jira=PROJ-123"] if name == "work" else []))
         assert bl("claim", ids[name], "--by", "tester")[0] == 0
-    code, out = bl("brief", ids["work"], "--known", "tests/test_x.py::test_y=BG-aaaaaaaa")
+    code, out = bl("brief", ids["work"], "--known", "tests/test_x.py::test_y=BG-aaaaaaaa",
+                   "--known-suite", "suite seconds budget exceeded=BG-bbbbbbbb")
     assert code == 0, out
     assert "agents/worker.md" in out and ".claude/agents/kb-worker.md" not in out  # no role file here: the plugin's
     assert f"_cache/scratch/{ids['work']}/" in out
@@ -487,6 +488,10 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
     assert f"- {ids['sibling']} \u201csibling item\u201d: b.txt" in out  # the in-flight sibling and its files
     assert f"- {ids['work']} \u201cwork item\u201d" not in out
     assert "- `tests/test_x.py::test_y`: BG-aaaaaaaa" in out
+    assert "- suite-level, no test: suite seconds budget exceeded: BG-bbbbbbbb" in out  # --known-suite, the id as given
+    assert "A failure listed here gets no new bug" in out.split("## Known failing", 1)[1].split("## Fixed rules", 1)[0]
+    bad_code, bad = bl("brief", ids["work"], "--known-suite", "no bug id here")
+    assert bad_code == 2 and "--known-suite 'no bug id here': expected TEXT=BUG" in bad
     plugin_backlog = bl_base.withhold(f"python3 {Path(TOOLS).parent.as_posix()}/_tools/backlog.py")  # no _tools/ here:
     # the plugin's, by its full path (the printed brief withholds the user's name in it, as the line above does)
     assert f"KB-Work: {ids['work']}" in out and f"`{plugin_backlog} gate add {ids['work']} --kind provisional" in out
@@ -556,7 +561,7 @@ def test_backlog_brief_dispatch_prints_the_workers_brief_and_dry_run_starts_noth
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
             cmd = bl_dispatch.cmd_dispatch(wbl, argparse.Namespace(id=iid, dry_run=True, model=None, max_turns=None,
-                                                                   known=[], probe=None, **kw))
+                                                                   known=[], known_suite=[], probe=None, **kw))
         assert cmd == 0
         return buf.getvalue().replace("\\", "/")
 
