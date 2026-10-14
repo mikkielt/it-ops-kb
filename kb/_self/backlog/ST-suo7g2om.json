@@ -2,7 +2,7 @@
   "id": "ST-suo7g2om",
   "kind": "story",
   "title": "The per-site DEK note in QK-postgres-envelope and postgres-column-encryption states how it departs from Google's DEK-per-write advice",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,6 @@
   "links": [
     "parked: SP-tcis5f23 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (answer line 3049 and article line 33 cite Google's premises with no 'depart'); reproduces."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (answer line 3049 and article line 33 cite Google's premises with no 'depart'); reproduces.",
+  "claimed_by": "orch-6ukmjucf"
 }
