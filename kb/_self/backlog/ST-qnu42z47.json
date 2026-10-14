@@ -1,0 +1,29 @@
+{
+  "id": "ST-qnu42z47",
+  "kind": "story",
+  "title": "A worker's report maps each constraint of an operator-answered gate to the code and a probe, so a narrowing the answer names is not dropped",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The worker rules ask a worker whose item holds an answered gate to list each constraint the answer text names (such as 'in one option') with the code line and the probe that hold it, and the brief prints the answered gates' answers in full (SP-hlt2tdel: BG-t6xrawba's g1 answer said the unit-noun list is read in one option; the worker matched the joined question and options, named it only as a limit in its report, and the orchestrator sent it back)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_maps_gate_answer_constraints"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "agents/worker.md",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel close"
+  ]
+}

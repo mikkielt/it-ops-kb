@@ -1,0 +1,28 @@
+{
+  "id": "ST-c5twwnja",
+  "kind": "story",
+  "title": "Planning gives an item that adds an exception to a gate classifier fail-closed probes: the exception shape beside a real trigger of the class it lowers",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A planned check of an item that makes bl_authority read past a word (a class-lowering exception) also asserts the class holds when the exception's shape sits beside a real trigger (an action verb on the push, a remote ref, a credential qualifier, each secrets word in each shape), and precheck warns of such an item whose checks hold no such probe (SP-hlt2tdel: BG-3yjqrfkp's check passed while its exceptions read past real pushes, filed as BG-256h2xwg S1 by the review; ST-oc7hsriu's check passed with the doc-name shape unplanted)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_warns_lowering_exception_without_fail_closed_probe"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-hlt2tdel close"
+  ]
+}
