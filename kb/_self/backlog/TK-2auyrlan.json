@@ -2,7 +2,7 @@
   "id": "TK-2auyrlan",
   "kind": "task",
   "title": "land names why an item has no work rows, a claim in the orchestrator's own session included",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-h66j7wm5",
   "priority": "P2",
   "rank": 2,
@@ -48,5 +48,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-g2ssvhi2"
+  "evidence": {
+    "commit": "399e421ecc3641ca2d0ae55d7caa7c4e11449ee3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "land_names_why_no_work_rows"
+        ],
+        "exit": 0,
+        "sha256": "f515c72f94114c5c"
+      }
+    ]
+  }
 }
