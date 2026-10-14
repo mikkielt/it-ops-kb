@@ -52,7 +52,7 @@
   260-character MAX_PATH leave that many characters; git for Windows without core.longpaths fails past it).
 Messages name files by their qualified path `<root>/<path>`, or by their path in this repository outside the roots.
 """
-import argparse, ast, csv, datetime, io, os, re, subprocess, sys, tokenize
+import argparse, csv, datetime, os, re, subprocess, sys
 from collections import Counter
 from pathlib import Path
 import kbcommon, kbfacts, kbid, selfdoc
@@ -517,23 +517,87 @@ CITE_TERM = re.compile(r'\s*"([^"\n]+)"')  # the term a citation may carry: `pat
 ANCHOR_CITE = re.compile(r'(?<![\w./:-])(kb/(?:[\w.-]+/)+[\w.-]+\.md)\s+"([^"\n]+)"')  # `path.md "term"`: no line
 
 
+CODE_TOKEN = re.compile(r"[#\"']|^[ \t]*(?:async[ \t]+def|def|class)\b", re.M)  # a comment, a string, a def or class
+HEADER_TOKEN = re.compile(r"[#\"'()\[\]{}:]")  # in a def or class header: up to the colon that ends it
+STRING_BODY = {  # per opening quote: the rest of the literal, to its first unescaped closing quote
+    q: re.compile(body.replace("Q", q[0]), re.S) for q, body in (
+        ('"', r'[^Q\\\n]*(?:\\.[^Q\\\n]*)*Q'), ("'", r'[^Q\\\n]*(?:\\.[^Q\\\n]*)*Q'),
+        ('"""', r'[^Q\\]*(?:(?:\\.|Q(?!QQ))[^Q\\]*)*QQQ'), ("'''", r'[^Q\\]*(?:(?:\\.|Q(?!QQ))[^Q\\]*)*QQQ'))}
+DOC_GAP = re.compile(r"(?:\s|﻿|#[^\n]*)*[rRuU]?")  # all that may stand between a header's colon and a docstring
+DOC_JOIN = re.compile(r"[ \t]*(?:\\\n[ \t]*)*[rRuU]?")  # between two string literals that make one
+DOC_END = re.compile(r"[ \t]*(?:[#;\n]|\Z)")  # a docstring is a statement by itself, not the start of an expression
+
+
 def code_comment_lines(path):
     """(line number, text) of every comment line and docstring line of a Python file, sorted; none when it is
-    unreadable or does not parse (a string literal that is no docstring, a test fixture, is no citation)."""
+    unreadable or does not tokenize (a string literal that is no docstring, a test fixture, is no citation). A
+    docstring is a string literal right after the colon of a def or class header, or first in the file, so the
+    scan reads each file once as text, never walking the nodes of its syntax tree."""
     try:
         with open(path, encoding="utf-8") as f:
             text = f.read()
-        tree = ast.parse(text)
-        res = {t.start[0]: t.string for t in tokenize.generate_tokens(io.StringIO(text).readline)
-               if t.type == tokenize.COMMENT}
-    except (OSError, UnicodeDecodeError, SyntaxError, ValueError, tokenize.TokenError):
+    except (OSError, UnicodeDecodeError):
         return []
-    lines = text.splitlines()
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
-            doc = node.body[0]
-            if isinstance(doc, ast.Expr) and isinstance(doc.value, ast.Constant) and isinstance(doc.value.value, str):
-                res.update((n, lines[n - 1]) for n in range(doc.lineno, doc.end_lineno + 1))
+    events = []  # in file order: [start, end, is docstring]
+    doc_from, join_from, pos = 0, None, 0  # where a docstring may start; where a string would extend one
+    find = CODE_TOKEN.search
+    m = find(text, pos)
+    while m:
+        start = m.start()
+        c = text[start]
+        if c == "#":
+            end = text.find("\n", start)
+            end = len(text) if end < 0 else end
+            events.append([start, end, False])
+            pos = end
+        elif c in "\"'":
+            q = c * 3 if text.startswith(c * 3, start) else c
+            body = STRING_BODY[q].match(text, start + len(q))
+            if body is None:
+                return []
+            end = body.end()
+            if doc_from is not None and DOC_GAP.fullmatch(text, doc_from, start):
+                events.append([start, end, True])
+                doc_from, join_from = None, end
+            elif join_from is not None and DOC_JOIN.fullmatch(text, join_from, start):
+                events[-1][1] = join_from = end
+            else:
+                doc_from = join_from = None
+            pos = end
+        else:
+            pos, depth = m.end(), 0
+            while True:
+                h = HEADER_TOKEN.search(text, pos)
+                if h is None:
+                    return []
+                pos, c = h.end(), h.group()
+                if c == "#":
+                    end = text.find("\n", pos)
+                    end = len(text) if end < 0 else end
+                    events.append([h.start(), end, False])
+                    pos = end
+                elif c in "\"'":
+                    q = c * 3 if text.startswith(c * 3, h.start()) else c
+                    body = STRING_BODY[q].match(text, h.start() + len(q))
+                    if body is None:
+                        return []
+                    pos = body.end()
+                elif c in "([{":
+                    depth += 1
+                elif c in ")]}":
+                    depth -= 1
+                elif depth <= 0:
+                    break
+            doc_from, join_from = pos, None
+        m = find(text, pos)
+    lines, res, number, at = text.split("\n"), {}, 1, 0
+    for start, end, doc in events:
+        number += text.count("\n", at, start)
+        at = start
+        if not doc:
+            res.setdefault(number, text[start:end])
+        elif DOC_END.match(text, end):
+            res.update((n, lines[n - 1]) for n in range(number, number + text.count("\n", start, end) + 1))
     return sorted(res.items())
 
 

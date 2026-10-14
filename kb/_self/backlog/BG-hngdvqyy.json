@@ -1,0 +1,17 @@
+{
+  "id": "BG-hngdvqyy",
+  "kind": "bug",
+  "title": "The gate classifier gives a gate that only names the Python tokenize module the secrets class",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "A gate whose text only names the Python tokenize module is classed design, not secrets, while a token, secret or credential in it still classes secrets",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.derived_class({'touches':[]},{'id':'g1','question':'Use the tokenize module or a regex scan?','options':['tokenize','regex']})=='design' else 1)"
+    ]
+  }
+}
