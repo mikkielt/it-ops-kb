@@ -2,7 +2,7 @@
   "id": "ST-ikbuvyo6",
   "kind": "story",
   "title": "Research sprint goal: The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wjp5qllo",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Planned 2026-10-13: pack -q on the sprint's open questions (date.today() local vs UTC date, pytest --durations, git log on a deleted path) gave coverage good for all three (public/python/stdlib-datetime-iso-week.md, public/python/pytest.md:82, public/gitlab/git-history-queries.md:34); only the literal datetime.date.today() is not in the kb, and the fix needs no outside fact. Its done needs 'No outside facts: the sprint's items change this repository's own tools, tests and docs; the Python datetime, pytest and git facts they rest on are in the kb.'",
-  "claimed_by": "orch-wjp5qllo"
+  "evidence": {
+    "commit": "0256a94e31f72583a270649da9f29323993d3d18",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ikbuvyo6"
+        ],
+        "exit": 0,
+        "sha256": "03fd9fa07a7cbbf8"
+      }
+    ]
+  }
 }
