@@ -4,9 +4,10 @@
   "title": "Research: coordinating agents across repositories (GitLab multi-project pipelines, Claude Code multi-repository sessions)",
   "status": "draft",
   "parent": "EP-klpp2paw",
+  "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research (new topic gitlab/multi-project-pipelines where no article fits) and closing the cross-session-messaging gap on cross-repository coordination: How do GitLab multi-project pipelines and trigger jobs start a downstream project's pipeline, pass variables and mirror its status? How do CI/CD job token scopes allow or limit one project's job acting on another project? How does Claude Code work on several repositories at once, in one local session or in a cloud session?",
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/multi-project-pipelines where no article fits, closing the cross-session-messaging gap on cross-repository coordination: How do GitLab multi-project pipelines and trigger jobs start a downstream project's pipeline, pass variables to it and mirror its status? How do CI/CD job token scopes allow or limit one project's job acting on another project? How does Claude Code work on several repositories at once in a local session or a cloud session?",
   "checks": [
     {
       "run": [
@@ -28,5 +29,8 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv",
     "kb/public/_retrieval/signals.csv"
+  ],
+  "depends_on": [
+    "ST-7v2bhvbw"
   ]
 }

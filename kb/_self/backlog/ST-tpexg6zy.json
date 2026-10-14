@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: each of the sprint's eleven committed stories is itself a research item whose goal names its questions, checked by backlog.py researched; this goal research story adds no facts of its own."
 }

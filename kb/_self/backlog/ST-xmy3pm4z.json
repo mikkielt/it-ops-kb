@@ -4,9 +4,10 @@
   "title": "Research: Entra agent identities with Azure RBAC, ABAC conditions and custom security attributes",
   "status": "draft",
   "parent": "EP-klpp2paw",
+  "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research and closing the agent-rbac UNK on agent identities and ABAC: Can a Microsoft Entra agent identity hold an Azure RBAC role assignment, and can that assignment carry an ABAC condition? Can custom security attributes be assigned to agent identities, and how do Conditional Access policies select agents by them? Which Microsoft Graph permissions and roles let an administrator assign those attributes to agents?",
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research, closing the agent-rbac UNK on agent identities and ABAC: Can a Microsoft Entra agent identity hold an Azure RBAC role assignment that carries an ABAC condition? Can custom security attributes be assigned to agent identities to select them in Conditional Access policies? Which Microsoft Graph permissions or roles let an administrator assign those attributes to agents?",
   "checks": [
     {
       "run": [
@@ -26,5 +27,8 @@
     "kb/public/_conflicts.md",
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-a25p6qsy"
   ]
 }

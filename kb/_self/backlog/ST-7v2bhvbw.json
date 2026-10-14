@@ -4,9 +4,10 @@
   "title": "Research: syncing agent state between workstations without a server (Syncthing, DFS Replication, git, CRDTs)",
   "status": "draft",
   "parent": "EP-klpp2paw",
+  "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research (new topic agents/peer-state-sync where no article fits) and closing the cross-session-messaging gap on peer sharing of agent state: How does Syncthing handle a file changed on two devices, and what do its file versioning modes keep? How does DFS Replication resolve conflicting updates between members, and where does it keep the losing copy? How does an Automerge document merge concurrent changes from peers without a server? What does git's own documentation say about using a repository as a distributed store that several machines push to?",
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/peer-state-sync where no article fits, closing the cross-session-messaging gap on peer sharing of agent state: How does Syncthing handle a file changed on two devices and what do its file versioning modes keep? How does DFS Replication resolve conflicting updates between members and where does it keep the losing copy? How does an Automerge document merge concurrent changes from peers without a server? What does git's own documentation say about a repository that several machines push to?",
   "checks": [
     {
       "run": [
@@ -27,5 +28,8 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv",
     "kb/public/_retrieval/signals.csv"
+  ],
+  "depends_on": [
+    "ST-xlr5flob"
   ]
 }
