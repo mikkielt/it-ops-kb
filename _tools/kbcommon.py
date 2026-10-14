@@ -47,7 +47,7 @@ Layout. The paths below are the only place that says where knowledge sits in thi
 _tools/, the roots in KB_DIR, the kb's own docs in SELF. KB is the public root, the default of the tools that work on
 one root.
 """
-import csv, io, os, re, sys
+import csv, datetime, io, os, re, sys
 
 
 def utf8_stdio():
@@ -126,6 +126,11 @@ CONTEXT_KINDS = {
     "article": re.compile(r"(?:[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9._-]*)+|_self/[a-z0-9][a-z0-9-]*(?:#[^\s#;][^#;]*)?)"),
     "domain": re.compile(r"[a-z0-9][a-z0-9-]*(?:/[a-z0-9][a-z0-9-]*)?"),  # a domain directory of the root (<root>/<domain> in kb/_self)
 }
+
+
+def today():
+    """The UTC date, the day every stamp and log of a run names, whatever the host's time zone."""
+    return datetime.datetime.now(datetime.timezone.utc).date().isoformat()
 
 
 def split_list(text):

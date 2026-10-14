@@ -1507,7 +1507,7 @@ def probe(row, url):
         + (["version"] if order and order[0] in ("git_commit_id", "updated_at", "dateModified", "article:modified_time", TIMELINE) else []) \
         + (["git"] if git_ok else []) + ["hash"]
     found["signals"] = ";".join(sig)
-    found["probed_utc"] = datetime.date.today().isoformat()
+    found["probed_utc"] = kbcommon.today()
     return found, ev
 
 

@@ -291,7 +291,7 @@ def decision_id(text, context, gate=""):
 def day(text):
     """The date `text` (YYYY-MM-DD) names, today when it is None; Refused when it is not a real date."""
     if text is None:
-        return datetime.date.today().isoformat()
+        return kbcommon.today()
     try:
         datetime.date.fromisoformat(text)
     except ValueError:
