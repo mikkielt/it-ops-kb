@@ -187,7 +187,90 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
     assert ok["verdict"] == "good" and "feedback:" not in ok["text"] and ok["text"].splitlines()[-1] == f"pack: {ok['pack']}"
 
 
-def test_store_check_passes_a_clean_store_and_names_the_run_file_with_a_leak(tmp_path, capsys):
+def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monkeypatch):
+    """distill over a spool of two lookups and six feedback rows: a pack handle joins a tools row (across prompt
+    windows), a session's own row joins its prompt, a tools row in a window joins that window's lookup, and the two
+    rows that join none are entries of their own; Haiku maps the person's comment, whose text, and the agent's claim,
+    reach no store file; the spool is empty once delivered; and the store gates refuse each open feedback field."""
+    import datetime
+    qdir = tmp / "querylog"
+    spool = qdir / "spool"
+    spool.mkdir(parents=True)
+    (qdir / "config.json").write_text(json.dumps({"mode": "local"}), encoding="utf-8", newline="\n")
+    art = "public/windows/laps.md"
+    line = f"{art}:24"
+    comment, claim = "the length shown is stale and the pack was too long", "The default length is 14."
+    n = iter(range(1, 100))
+
+    def row(surface, ts, **f):
+        return {"id": f"{next(n):08x}-0000-4000-8000-000000000000", "ts": f"2026-10-01T{ts}Z", "surface": surface,
+                "v": 1, **f}
+
+    def lookup(pid, t0, handle):
+        return [row("prompt", f"{t0}:00.000", session_id=SID, prompt_id=pid, prompt="kb: LAPS length?", kb_intent="lookup"),
+                row("mcp", f"{t0}:05.000", session_id=SID, prompt_id=pid, tool="kb_pack", verdict="good", pack=handle,
+                    args={"question": "Windows LAPS password length"}, articles=[art],
+                    lines=[{"line": line, "tag": "DOC", "verdict": "good"}]),
+                row("stop", f"{t0}:30.000", session_id=SID, prompt_id=pid, answer=f"It is 14 ({line}).")]
+    report = {"outcome": "misled", "lines": [{"line": line, "issue": "wrong"}], "best": art,
+              "source_url": "https://learn.microsoft.com/windows/laps", "claim": claim, "tool_issue": "too-long"}
+    own = row("feedback", "10:40:00.000", fb="FB-0000000a", pack="P-ffffffff", outcome="missed",
+              question="How do I rotate the LAPS password?", source_url="https://docs.example.net/laps/rotate")
+    rows = lookup("p1", "10:00", "P-0a1b2c3d") + lookup("p2", "10:10", "P-1b2c3d4e") + [
+        row("feedback", "10:12:00.000", session_id=SID, prompt_id="p2", judged_by="user", comment=comment),
+        row("feedback", "10:05:00.000", fb="FB-00000001", pack="P-0a1b2c3d", **report)]
+    tools = [rows.pop(), row("feedback", "10:10:20.000", fb="FB-00000002", outcome="answered", tool_issue="error"), own,
+             row("feedback", "10:50:00.000", fb="FB-0000000b", judged_by="agent", comment=comment)]
+    (spool / f"{SID}.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n")
+    (spool / f"{SID}.end").touch()
+    (spool / "tools-2026-10-01.jsonl").write_text("".join(json.dumps(r) + "\n" for r in tools), encoding="utf-8",
+                                                  newline="\n")
+    monkeypatch.setattr("ql_learn.KbPages.named_ids", lambda self, text: ["S-jmzxsdjr"] if "learn.microsoft" in text else [])
+    asked = []
+
+    def haiku(prompt):
+        items = json.loads(prompt[prompt.index("\n\n[") + 2:])
+        if prompt.startswith(ql_distill.FEEDBACK_TASK):
+            asked.append(items)
+            return json.dumps([{"i": i["i"], "outcome": "partly", "lines": [{"line": line, "issue": "stale"}],
+                                "tool_issue": "too-long", "text": comment} for i in items])
+        return json.dumps([{"i": i["i"], "judged": "answered", "best": None, "identifying": False} for i in items])
+
+    rc = ql_distill.distill(qdir=qdir, cfg=qdir / "config.json", haiku=haiku, kb_commit="0" * 40, out=lambda s: None,
+                            now_dt=datetime.datetime(2026, 10, 5, tzinfo=datetime.timezone.utc))
+    assert rc == 0 and len(asked) == 1 and [i["lines"] for i in asked[0]] == [[line], []]  # one batch, the comments only; a row with no lookup has none to classify
+    store = qdir / "store"
+    assert ql_store.store_problems(store) == []
+    entries = [e for _, e in ql_store.store_entries(store)]
+    by_surface = {s: [e for e in entries if e["surface"] == s] for s in ("prompt", "feedback")}
+    first, second = sorted(by_surface["prompt"], key=lambda e: e["id"])
+    assert first["feedback"] == [{"outcome": "misled", "judged_by": "agent", "lines": [{"line": line, "issue": "wrong"}],
+                                  "best": art, "sources": ["S-jmzxsdjr"], "tool_issue": "too-long"}]  # by its handle
+    assert second["feedback"] == [  # the tools row of its window, then its own session's row (mapped), by time
+        {"outcome": "answered", "judged_by": "agent", "tool_issue": "error"},
+        {"outcome": "partly", "judged_by": "user", "lines": [{"line": line, "issue": "stale"}], "tool_issue": "too-long"}]
+    alone = sorted(by_surface["feedback"], key=lambda e: e.get("question", ""))
+    assert [e["feedback"] for e in alone] == [
+        [{"outcome": "partly", "judged_by": "agent", "tool_issue": "too-long"}],  # Haiku named a line it was not given
+        [{"outcome": "missed", "judged_by": "agent", "lead": "https://docs.example.net/laps/rotate"}]]
+    assert alone[1]["question"] == "How do I rotate the LAPS password?" and "question" not in alone[0]
+    text = "".join(f.read_text(encoding="utf-8") for f in store.rglob("*.jsonl"))
+    assert comment not in text and claim not in text and "comment" not in text and "claim" not in text
+    assert not list(spool.glob("*.jsonl")) and not list(spool.glob("*.end"))  # delivered rows go, as other rows
+    # the gates: one planted failure for each open field of a stored report
+    good = second["feedback"][1]
+    assert ql_store.feedback_problems([good, alone[1]["feedback"][0]], "e") == []
+    for bad in ({**good, "comment": comment}, {**good, "claim": claim}, {**good, "lines": [{"line": line, "issue": "bogus"}]},
+                {**good, "lines": [{"line": "see the docs", "issue": "wrong"}]}, {**good, "best": "../outside.md"},
+                {**good, "lead": "http://pl-srv-0042.corp/page"}, {**good, "outcome": "fine"}, {**good, "judged_by": "bot"}):
+        assert ql_store.feedback_problems([bad], "e"), bad
+    planted = {**first, "feedback": [{**good, "comment": comment}]}
+    assert any("free text" in p for p in ql_store.entry_problems(planted, "e", None))
+    assert ql_store.entry_problems({k: v for k, v in alone[0].items() if k != "feedback"}, "e", None)  # none of its own
+
+
+def test_store_check_passes_a_clean_store_and_names_the_run_file_with_a_leak_and_distill_joins_feedback_rows_to_their_lookups_and_the_feedback_store_gates_refuse_each_open_field(tmp_path, capsys, monkeypatch):
+    feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp_path / "fb", monkeypatch)
     store = tmp_path / "store"
     shutil.copytree(FIXTURE_STORE, store)
     assert ql_store.check(str(store)) == 0  # `querylog.py check DIR` is this function

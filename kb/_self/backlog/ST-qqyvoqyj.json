@@ -66,6 +66,76 @@
   "depends_on": [
     "ST-j5gd7ixn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What shape does an entry's feedback field have when several reports join one lookup (recommended: a list, because merging would lose which line a report judged and who judged it)",
+      "options": [
+        "a list of 1 to 5 closed reports in time order",
+        "one object that merges the reports"
+      ],
+      "recommendation": "a list of 1 to 5 closed reports in time order",
+      "do": {
+        "a list of 1 to 5 closed reports in time order": "ST-qqyvoqyj",
+        "one object that merges the reports": "ST-qqyvoqyj"
+      },
+      "class": "design",
+      "answer": "a list of 1 to 5 closed reports in time order",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does a spool feedback row say it is a person's report with a comment to map (the contract kb!: rows will follow)",
+      "options": [
+        "judged_by user and a rule-redacted comment, mapped when the row has no outcome",
+        "a separate surface or an unclassified outcome value"
+      ],
+      "recommendation": "judged_by user and a rule-redacted comment, mapped when the row has no outcome",
+      "do": {
+        "judged_by user and a rule-redacted comment, mapped when the row has no outcome": "ST-qqyvoqyj",
+        "a separate surface or an unclassified outcome value": "ST-qqyvoqyj"
+      },
+      "class": "querylog",
+      "answer": "judged_by user and a rule-redacted comment, mapped when the row has no outcome",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does distill do with a feedback row that arrives after its lookup's entry was already written to the local store",
+      "options": [
+        "the row becomes an entry of its own",
+        "the row is dropped, the stored entry is not rewritten"
+      ],
+      "recommendation": "the row becomes an entry of its own",
+      "do": {
+        "the row becomes an entry of its own": "ST-qqyvoqyj",
+        "the row is dropped, the stored entry is not rewritten": "ST-qqyvoqyj"
+      },
+      "class": "design",
+      "answer": "the row becomes an entry of its own",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "When the Haiku mapping of a comment cannot run (no budget, a failed call), what happens to its entry",
+      "options": [
+        "the entry waits in the spool for the next run",
+        "the entry is written without that report"
+      ],
+      "recommendation": "the entry waits in the spool for the next run",
+      "do": {
+        "the entry waits in the spool for the next run": "ST-qqyvoqyj",
+        "the entry is written without that report": "ST-qqyvoqyj"
+      },
+      "class": "design",
+      "answer": "the entry waits in the spool for the next run",
+      "by": "agent"
+    }
+  ],
   "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base has no feedback field (grep -i feedback finds only judged and best in ql_distill, ql_store, ql_learn). querylog.py check passes before the work by design: it pins that the store with feedback entries stays valid. depends_on ST-h3y6iym4 (kb!: rows) dropped at planning: it is a draft outside this sprint and the join works on any feedback row that carries a handle or session and prompt id, so kb_feedback rows alone satisfy it. Extend an existing test's name with feedback_store (test-id ceiling); the url gate predicate comes from ST-j5gd7ixn. Tests in _tools/test_redact.py and _tools/test_leaks.py.",
   "claimed_by": "orch-waxgh3kg"
 }

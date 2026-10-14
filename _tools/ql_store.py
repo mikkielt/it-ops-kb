@@ -16,14 +16,15 @@ import datetime, hashlib, json, re, subprocess
 from pathlib import Path
 
 from ql_base import HOME, PIPELINE_VERSION, STORE, json_lines, write_text
-from ql_capture import ARG_MAX_CHARS, OPS, OPS_COUNT_MAX, OPS_EVENTS, TAGS, VERDICTS, WORK_ITEM, ops_problems
+from ql_capture import (ARG_MAX_CHARS, FEEDBACK, FEEDBACK_ISSUES, FEEDBACK_JUDGES, FEEDBACK_LINES_MAX, FEEDBACK_OUTCOMES,
+                        FEEDBACK_TOOL_ISSUES, OPS, OPS_COUNT_MAX, OPS_EVENTS, TAGS, VERDICTS, WORK_ITEM, ops_problems)
 
 HEADER_KEYS = ("run", "pipeline", "retrieval", "kb_commit", "counts")
 COUNT_KEYS = ("entries", "dropped", "waiting")
 SKIPPED_KEY = "skipped"  # a count a header holds only when distill skipped spool rows
 ENTRY_KEYS = ("id", "surface", "day", "intent", "tools", "route", "question", "verdict", "articles", "citations",
               "cited", "judged", "best", "fetches", "sources", "tool", "fetcher", "host", "path", "outcome", "chars",
-              "root", "tested", "set", "item", "model", "answer_lines", "key_missing")
+              "root", "tested", "set", "item", "model", "answer_lines", "key_missing", "feedback")
 RULES_ROOT = "_self"  # the `root` of a kb_ask row of a lookup in the kb's own rule docs (kb/_self)
 RULES_KEYS = ("root", "tested", "set", "item", "model", "answer_lines", "key_missing")  # an entry holds them only with `root`
 CITATION_KEYS = ("line", "tag", "verdict")
@@ -33,8 +34,10 @@ INTENTS = ("lookup", "skill", "change")
 FETCH_KEYS = ("tool", "fetcher", "host", "path", "outcome", "n", "chars")
 RAW_KEYS = ("prompt", "answer", "session_id", "prompt_id", "transcript_path", "cwd", "user", "hostname", "command",
             "args", "ts")  # spool fields a run file never holds
-SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop")
+SURFACES = ("prompt", "kb_hook", "mcp", "kb_ask", "tool_fetch", "fetch", "stop", FEEDBACK)
 ROW_SURFACES = SURFACES + ("usage", "work", OPS)  # spool rows; `usage`, `work` and `ops` rows go to the sidecars, never an entry
+FEEDBACK_KEYS = ("outcome", "judged_by", "lines", "best", "sources", "lead", "tool_issue")  # one report of an entry's `feedback`
+FEEDBACK_REPORTS_MAX = 5  # reports one entry's `feedback` keeps
 TEXT_KEYS = ("question",)
 JUDGED = ("answered", "partly", "missed")
 QUESTION_MAX_CHARS = 500
@@ -463,6 +466,55 @@ def closed_problems(e, where):
             if key in e and not ok(e[key])]
 
 
+def feedback_problems(f, where, k=None):
+    """The gates on an entry's `feedback`: 1 to FEEDBACK_REPORTS_MAX reports, each holding only the closed fields of
+    FEEDBACK_KEYS: an outcome and a judge of their classes; `lines` of a kb path:line and an issue class; a `best`
+    article path; `sources` ids; a `lead` url that passes the research candidate's url gate (ql_research.public_url)
+    and the leak scan; a tool issue class. A comment, a claim or any other field is free text and is refused."""
+    import kbid, redact
+    import ql_research
+    if not (isinstance(f, list) and 0 < len(f) <= FEEDBACK_REPORTS_MAX):
+        return [f"{where}: `feedback` is not a list of 1 to {FEEDBACK_REPORTS_MAX} reports"]
+    out = []
+    for i, r in enumerate(f):
+        w = f"{where}: feedback[{i}]"
+        if not isinstance(r, dict):
+            out.append(f"{w} is not an object")
+            continue
+        extra = sorted(set(r) - set(FEEDBACK_KEYS))
+        if extra:
+            out.append(f"{w}: free text or unknown fields in feedback: {', '.join(extra)}")
+        if r.get("outcome") not in FEEDBACK_OUTCOMES:
+            out.append(f"{w}: outcome is not one of {', '.join(FEEDBACK_OUTCOMES)}")
+        if r.get("judged_by") not in FEEDBACK_JUDGES:
+            out.append(f"{w}: judged_by is not one of {', '.join(FEEDBACK_JUDGES)}")
+        lines = r.get("lines")
+        if "lines" in r and not (isinstance(lines, list) and 0 < len(lines) <= FEEDBACK_LINES_MAX):
+            out.append(f"{w}: lines are not a list of 1 to {FEEDBACK_LINES_MAX} {{line, issue}}")
+        for x in lines if isinstance(lines, list) else []:
+            if not (isinstance(x, dict) and set(x) == {"line", "issue"}):
+                out.append(f"{w}: a line that is not {{line, issue}}: {x!r:.60}")
+                continue
+            if not (isinstance(x["line"], str) and CITATION.fullmatch(x["line"])):
+                out.append(f"{w}: a line that is not a kb path:line: {x['line']!r:.60}")
+            if x["issue"] not in FEEDBACK_ISSUES:
+                out.append(f"{w}: an issue class that is none of {', '.join(FEEDBACK_ISSUES)}: {x['issue']!r:.40}")
+        if "best" in r and not (isinstance(r["best"], str) and ARTICLE.fullmatch(r["best"])):
+            out.append(f"{w}: best is not a kb path: {r['best']!r:.60}")
+        srcs = r.get("sources")
+        if "sources" in r and not (isinstance(srcs, list) and 0 < len(srcs) <= SOURCES_MAX and len(set(map(str, srcs))) == len(srcs)
+                                   and all(isinstance(x, str) and kbid.SOURCE_ID.fullmatch(x) for x in srcs)):
+            out.append(f"{w}: sources are not 1 to {SOURCES_MAX} source ids, each once")
+        if "lead" in r:
+            lead = r["lead"]
+            if not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and ql_research.public_url(lead)
+                    and not redact.scan(lead, k)):
+                out.append(f"{w}: lead is not a url that passes the candidate url gate")
+        if "tool_issue" in r and r["tool_issue"] not in FEEDBACK_TOOL_ISSUES:
+            out.append(f"{w}: tool_issue is not one of {', '.join(FEEDBACK_TOOL_ISSUES)}")
+    return out
+
+
 def entry_problems(e, where, k):
     import redact
     out = []
@@ -492,6 +544,10 @@ def entry_problems(e, where, k):
         if not isinstance(v, str) or redact.scan(v, k) or redact.redact(v, k) != v:
             out.append(f"{where}: an identifier in `{key}`")
     out += closed_problems(e, where)
+    if "feedback" in e:
+        out += feedback_problems(e["feedback"], where, k)
+    elif e.get("surface") == FEEDBACK:
+        out.append(f"{where}: a feedback entry without `feedback`")
     cits = e.get("citations")
     if cits is not None:
         if not (isinstance(cits, list) and cits and len(cits) <= CITATIONS_MAX):

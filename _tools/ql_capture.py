@@ -59,6 +59,8 @@ FEEDBACK_ISSUES = ("wrong", "stale", "irrelevant", "helpful")  # what a report s
 FEEDBACK_TOOL_ISSUES = ("bad-args", "unclear-output", "too-long", "error")
 FEEDBACK_LINES_MAX = 10
 FEEDBACK_CLAIM_WORDS = 40
+FEEDBACK_JUDGES = ("agent", "user")  # who made a report: a kb_feedback call, or a person's (the row's `judged_by`)
+FEEDBACK_UNCLASSIFIED = "unclassified"  # a person's comment no deterministic reader mapped: distill's Haiku maps it
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
