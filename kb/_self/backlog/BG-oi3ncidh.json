@@ -2,7 +2,7 @@
   "id": "BG-oi3ncidh",
   "kind": "bug",
   "title": "settings-and-scopes.md's DOC S742 fact on the Glob --allowedTools exception adds that the rule is no more consulted than in a settings file, a reading the page does not state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
@@ -59,5 +59,18 @@
     "parked: SP-foopqq2x review"
   ],
   "notes": "Found by the SP-foopqq2x fresh-context review (headless Sonnet, read-only, 2026-10-13); parked per the review step: not S1. Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, small overclaim. The permissions page (code.claude.com/docs/en/permissions.md) says a path rule for Write, NotebookEdit, Glob or MultiEdit is accepted but never consulted, and warns at startup, except for a Glob rule passed in --allowedTools: the exception's scope is grammatically open; settings-and-scopes.md:90 resolves it under [DOC S742]. The fact has a located anchor and expansion row key 85cf70cbde5e: re-key it if the text changes.",
-  "claimed_by": "orch-xt4t63xw"
+  "evidence": {
+    "commit": "011f18c33f18a6c8f557d6522d20c74df2e8a4bd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;f=[l for l in open('kb/public/claude/settings-and-scopes.md',encoding='utf-8') if 'passed in `--allowedTools`' in l and '[DOC S742]' in l];ok=bool(f) and not any('no more consulted' in l for l in f);print(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      }
+    ]
+  }
 }
