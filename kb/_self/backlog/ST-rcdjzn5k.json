@@ -29,6 +29,21 @@
   "depends_on": [
     "ST-e62uklfi"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which facts besides the two the goal names go into the split: placement of checkout -B and worktree add -B against the two checks?",
+      "options": [
+        "bullet-added",
+        "two-bullets-only"
+      ],
+      "recommendation": "bullet-added",
+      "class": "design",
+      "answer": "bullet-added",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-b7wibqok review"
   ],
