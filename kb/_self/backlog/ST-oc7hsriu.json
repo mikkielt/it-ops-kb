@@ -2,7 +2,7 @@
   "id": "ST-oc7hsriu",
   "kind": "story",
   "title": "test_authority plants each secret word inside each token exception shape and asserts the secrets class holds",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,
@@ -43,5 +43,19 @@
     "parked: SP-uzwbt63u close"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 14 of 15, \"Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Planned: orders after BG-t6xrawba (its unit-noun exception is one more shape to plant). The suite sits at max_ids 100: extend test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_class_changes_nothing in test_authority.py and rename it to carry secrets_fail_closed_inside_token_exceptions, no new id. Premise run 2026-10-13 at planning: class_reasons of SECRET_TOKENS, PASSWORD_TOKENS, 'secret phase token', 'password closed token', 'api output tokens', 'credential token count', 'bearer input tokens' and 'ssh max tokens' each returns secrets on today's tree, so the planted test passes at once; the check fails before the work only because no test carries the selector.",
-  "claimed_by": "orch-hlt2tdel"
+  "evidence": {
+    "commit": "d2001bd27adcfcb3d9ead3dce24c1e1d5d17348d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "secrets_fail_closed_inside_token_exceptions"
+        ],
+        "exit": 0,
+        "sha256": "ced9669c7bc8a5dc"
+      }
+    ]
+  }
 }
