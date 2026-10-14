@@ -169,13 +169,15 @@ def backlog_answer(forward):
 
 def routed(res):
     """The context for a pack with a route (`web` or `split`): the differential instruction, then the pack (split) or
-    only its coverage, check:, freshness:, route:, kb has: and kb lacks: lines (web: no fact lines), cut to LIMIT."""
+    only its coverage, check:, freshness:, route:, kb has: and kb lacks: lines, then its feedback: and pack: lines (web:
+    no fact lines), cut to LIMIT."""
     route, lines = res["route"], res["text"].splitlines()
     live = ("research only what the kb lacks in the live docs (the docs servers when available, else the official "
             "documentation on the web) and label that part 'live docs, not in the kb' with its url; never fill it "
             "from memory. Do not search the kb again.")
     if route == "web":
-        handle = [ln for ln in lines if ln.startswith("pack: P-")]  # the pack's handle, after its footer
+        # the feedback: line and the pack's handle, after its footer
+        handle = [ln for ln in lines if ln.startswith(("feedback: kb_feedback(", "pack: P-"))]
         lines = [ln for ln in lines[:lines.index("")] if ln.startswith(HEAD_LINES)] if "" in lines else \
             [ln for ln in lines if ln.startswith(HEAD_LINES)]
         lines += [ln for ln in handle if ln not in lines]

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-import census, factdiff, kb_mcp, kbcommon, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_research, ql_store, redact
+import census, factdiff, kb_hook, kb_mcp, kbcommon, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_research, ql_store, redact
 from conftest import KB, TOOLS, git_env
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -185,6 +185,17 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
                                               f"pack: {none['pack']}"]
     ok = kbfacts.pack_many([good], revalidate=False)
     assert ok["verdict"] == "good" and "feedback:" not in ok["text"] and ok["text"].splitlines()[-1] == f"pack: {ok['pack']}"
+    # a server limited to named roots lists no kb_feedback, so its pack prints no call for it; the hook's web route keeps both lines
+    with monkeypatch.context() as limited:
+        limited.setattr(kbcommon, "_SERVED", ["public"])
+        bare = kbfacts.pack_many(["zqxv wlkj nmbp qrtz"], revalidate=False)
+        assert bare["verdict"] == "none" and "feedback:" not in bare["text"], bare["text"]
+        assert bare["text"].splitlines()[-1] == f"pack: {bare['pack']}"
+    out, row = kb_hook.respond("kb: zqxv wlkj nmbp qrtz")
+    ctx = out["hookSpecificOutput"]["additionalContext"]
+    assert row["verdict"] == "none" and "route: web" in ctx, ctx
+    assert ctx.splitlines()[-2:] == [f'feedback: kb_feedback(pack="{none["pack"]}", outcome="missed")',
+                                     f"pack: {none['pack']}"], ctx
 
 
 def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monkeypatch):
