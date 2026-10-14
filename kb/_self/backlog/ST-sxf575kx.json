@@ -2,7 +2,7 @@
   "id": "ST-sxf575kx",
   "kind": "story",
   "title": "Research sprint goal: A full test run fits its darwin limit again: tests spread one at a time over the workers",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ofvvong6",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-ofvvong6"
 }
