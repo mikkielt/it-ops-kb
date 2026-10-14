@@ -2,7 +2,7 @@
   "id": "ST-e6bueg2y",
   "kind": "story",
   "title": "The stage-back and brief-rules tests no longer build a cold rag index of the whole kb only to read a brief line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ofvvong6",
   "priority": "P1",
   "rank": 0,
@@ -93,5 +93,29 @@
     }
   ],
   "notes": "Premise, measured 2026-10-14 on a quiet darwin host: rag.py pack on a fresh clone builds its index cold in 5.8 s, against 0.57 s in a second clone given the first one's index (KB_INDEX; the index is keyed by content). stage_back takes 12.2 s alone, of which brief's rules pack (rag.py pack --root _self --item, run by bl_dispatch.pack_lines) is 7.1 s, while the test's brief assertions read only its stage-back lines; brief_rules takes 6.4 s alone, of which rag.py pack --root fixture is 7.1 s under the full run (its KB_INDEX is a fresh temp directory). A subprocess trace of the whole suite shows a cold pack in these 2 of 112 tests only. Under --dist load stage_back is the run's longest test (14.7 to 18.3 s). A KB_INDEX shared by every scenario of a run did not help (24.7 to 25.3 s): one cold build per run remains, and setting it for the live-kb tests made them build cold too (26.2 to 26.9 s), so the cut is per test. Precheck, 2026-10-14: under bl_base.check_env (done, review and precheck runs) KB_INDEX is the main worktree's _cache, so stage_back's pack finds a built index there: 6.74 s alone, against 12.23 s in a bare pytest run (pack 5.82 s cold); brief_rules sets its own KB_INDEX and stays cold either way (6.47 s). Both checks fail on the base, as they should.",
-  "claimed_by": "orch-ofvvong6"
+  "evidence": {
+    "commit": "d2c37fae6e115231219fc1669916587425e35280",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;p=subprocess.run([sys.executable,'_tools/tests.py','-k','stage_back_commits or brief_rules_are','--no-reuse','--durations=0'],capture_output=True,text=True);d=[(m[1],float(m[0])) for m in re.findall(r'^(\\d+\\.\\d+)s call\\s+\\S+::(\\w+)',p.stdout,re.M)];s=[v for k,v in d if k.startswith('test_stage_back_commits')];b=[v for k,v in d if k.startswith('test_backlog_brief_rules_are')];print(d);sys.exit(1 if p.returncode or not s or not b or max(s)>6 or max(b)>2.5 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "0b9e6b2f442b234f"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "origin/main"
+        ],
+        "exit": 0,
+        "sha256": "32d3595b9fb32181"
+      }
+    ]
+  }
 }
