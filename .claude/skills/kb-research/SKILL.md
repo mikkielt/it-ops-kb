@@ -100,6 +100,7 @@ The contract in brief (the sections read above hold the rest):
 - New source rows take their id from `python3 _tools/kbid.py add` (it prints it); `kbid.py url <URL>` looks one up; never invent one.
 - Failed lookups go to `_gaps.md` under the anchor topic's heading: what you looked for and where, ending `(topic: <domain>/<slug>)`.
 - Retrieval data (the "Ledgers and retrieval data" section): `kb/public/_retrieval/signals.csv` rows for a new topic's code names, `_tools/aliases.csv` rows for a product's other names, and a `kb/public/_retrieval/lookup_eval.csv` row for each step-1 pack that missed an article the kb already had (`none` or `weak` although an article answered it).
+  - A goal research worker (a sprint's research item whose touches lie inside one kb root, never `_tools/`) does not write `_tools/aliases.csv` rows: it is outside its touches, and a restored file leaves the rows in scratch. It files a follow-up backlog item (`python3 _tools/backlog.py new story --title T --goal G --touch _tools/aliases.csv --check CMD --commit`, the check a command that finds the rows in `_tools/aliases.csv`; no `--sprint`, since a new story goes to the backlog unless the operator adds it to the running sprint) whose goal lists every alias row for the new topics' other names in full, so they land with a content lane, and names it in the report.
 
 ## 5. Check
 - `python3 _tools/build_index.py` regenerates `_coverage.csv`, the root's `_coverage.md` table and `used_in` from what you wrote.
