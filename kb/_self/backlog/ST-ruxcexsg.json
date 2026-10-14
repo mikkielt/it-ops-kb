@@ -40,6 +40,21 @@
   "depends_on": [
     "ST-fla2es24"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where in plan step 6 and the Sprints Plan paragraph do the command-form rule and the six sibling rules go?",
+      "options": [
+        "after the phrase-absence rule, as one run of sentences",
+        "each sibling rule beside the check it extends"
+      ],
+      "recommendation": "after the phrase-absence rule, as one run of sentences",
+      "class": "agents-rule",
+      "answer": "after the phrase-absence rule, as one run of sentences",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-4jfepy6u close",
     "merged: ST-bmhbyr6d",
