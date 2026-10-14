@@ -28,4 +28,4 @@ sc_stale,windows,How do I set DHCP failover load balance percentages?,-LoadBalan
 sc_stale,agents,How do I make an MCP server's tool list change notify clients?,notifications/tools/list_changed,good,
 sc_stale,claude,How do I set the MCP tool output token limit in Claude Code?,MAX_MCP_OUTPUT_TOKENS,good,
 sc_stale,claude,How do I install a Claude Code plugin from a marketplace?,(?i)<[\w.-]+>@<[\w.-]+>|plugin install\b[^\n]*?[\w.-]+@[\w.-]+,good,
-sc_stale,claude,How do I write a permission rule for an MCP tool in Claude Code?,mcp__<server>__<tool>|mcp__\w+__\w+,good,
+sc_stale,claude,How do I write a permission rule for an MCP tool in Claude Code?,mcp__<server>__<tool>|mcp__\w+,good,
