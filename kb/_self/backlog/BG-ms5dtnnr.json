@@ -2,7 +2,7 @@
   "id": "BG-ms5dtnnr",
   "kind": "bug",
   "title": "close --summary credits a goal clause to the goal research story by the words of its generated title alone",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -71,5 +71,6 @@
     "merged: BG-j2y4kbdc",
     "merged: BG-fl6qmkkx"
   ],
-  "notes": "Merged at the 2026-10-13 draft triage: BG-j2y4kbdc (bl_items.py:681 and tools.md:77 still say the clause would be listed unmet though a goal research story is credited as fallback; its repro read bl_items.py for 'would list it unmet') and BG-fl6qmkkx (its repro, now check 0, exits 1: ST-x credited with 'carried it'; one fix pass in bl_land.py goal_clause_lines and clause_words). Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ST-r credited with 'carried it'), check 0 exits 1 (ST-x credited), check 1 exits 1 (bl_items.py and tools.md still say 'would list it unmet')."
+  "notes": "Merged at the 2026-10-13 draft triage: BG-j2y4kbdc (bl_items.py:681 and tools.md:77 still say the clause would be listed unmet though a goal research story is credited as fallback; its repro read bl_items.py for 'would list it unmet') and BG-fl6qmkkx (its repro, now check 0, exits 1: ST-x credited with 'carried it'; one fix pass in bl_land.py goal_clause_lines and clause_words). Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ST-r credited with 'carried it'), check 0 exits 1 (ST-x credited), check 1 exits 1 (bl_items.py and tools.md still say 'would list it unmet').",
+  "claimed_by": "orch-ia6xayiy"
 }
