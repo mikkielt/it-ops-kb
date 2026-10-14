@@ -65,7 +65,9 @@
         "public projection hash 9611bd64ccae on github.com": "ST-q2jzknjn",
         "private commit hash 2e20688770e2 on gitlab.com": "ST-q2jzknjn"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "public projection hash 9611bd64ccae on github.com",
+      "by": "operator"
     }
   ],
   "links": [
