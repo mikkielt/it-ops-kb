@@ -1,0 +1,24 @@
+{
+  "id": "BG-25w54mly",
+  "kind": "bug",
+  "title": "QK-who-may-change-test-suite-ceiling's DER note still says Bazel documents a per-run override",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/_answers.md's QK-who-may-change-test-suite-ceiling DER note words Bazel's --test_timeout as the page does (an override when manually running under conditions known to be slow, https://bazel.build/reference/test-encyclopedia), with no 'documented ... per-run override'. Found by the SP-xt4t63xw review (S4, _answers.md:3256).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=' '.join(open('kb/public/_answers.md',encoding='utf-8').read().split());sys.exit(1 if 'documented mechanisms and per-run override' in t else 0)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the text is what a lookup returns",
+  "touches": [
+    "kb/public/_answers.md"
+  ],
+  "links": [
+    "parked: SP-xt4t63xw review"
+  ]
+}

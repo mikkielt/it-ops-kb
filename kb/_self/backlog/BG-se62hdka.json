@@ -1,0 +1,25 @@
+{
+  "id": "BG-se62hdka",
+  "kind": "bug",
+  "title": "doc-lookup-sources.md:41's DER note cites S2187 for what the repos toolset reads, which the page does not list",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/agents/doc-lookup-sources.md's DER note on why GitLab's MCP server has no row names the kb's own rank 5 row of doc-lookup-sources.csv for what GitHub's read-only repos toolset reads (file contents, commits, tags), since S2187 (remote-server.md) describes the toolset only as 'GitHub Repository related tools', and leans on no unrecorded GitLab tools page. Found by the SP-xt4t63xw review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=' '.join(open('kb/public/agents/doc-lookup-sources.md',encoding='utf-8').read().split());sys.exit(1 if '[DER S2189, S2186, S2187' in t else 0)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the text is what a lookup returns",
+  "touches": [
+    "kb/public/agents/doc-lookup-sources.md",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-xt4t63xw review"
+  ]
+}

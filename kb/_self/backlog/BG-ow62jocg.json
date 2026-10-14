@@ -1,0 +1,25 @@
+{
+  "id": "BG-ow62jocg",
+  "kind": "bug",
+  "title": "pytest-xdist.md says tests.py turns an explicit -n auto into os.cpu_count() workers, though the user's -n auto follows and wins, and states a fixture reading under CODE",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/python/pytest-xdist.md's tests.py fact says what run_pytest at the pinned S-vt5s6nsz does with an explicit -n auto (its own -n <worker_count> comes first and the user's -n auto, later in the argv, is the one xdist reads, so os.cpu_count() is only the recorded count), and the reading that a module- or class-scoped fixture is built once on each worker is a DER sentence, not under [CODE S-vt5s6nsz]. Found by the SP-xt4t63xw review (S4, pytest-xdist.md:35-39).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=' '.join(open('kb/public/python/pytest-xdist.md',encoding='utf-8').read().split());sys.exit(1 if 'and `os.cpu_count()` for an explicit `-n auto` in its arguments)' in t else 0)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the text is what a lookup returns",
+  "touches": [
+    "kb/public/python/pytest-xdist.md",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-xt4t63xw review"
+  ]
+}
