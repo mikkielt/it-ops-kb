@@ -1,0 +1,23 @@
+{
+  "id": "BG-v6bpucd2",
+  "kind": "bug",
+  "title": "check.py's lexical code scan drops every citation of a file that holds a nested-quote f-string",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "code_comment_lines reads a file holding a Python 3.12 nested-quote f-string such as f\"{d[\"it's\"]}\" as ast and tokenize did: its comment lines are kept and a # inside the f-string is no comment",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,tempfile,os;sys.path.insert(0,'_tools');import check;p=os.path.join(tempfile.mkdtemp(),'x.py');open(p,'w').write('x = f\\x22{d[\\x22it\\x27s\\x22]}\\x22\\n# c\\n');sys.exit(0 if check.code_comment_lines(p) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/check.py"
+  ],
+  "links": [
+    "parked: SP-j65ihctq review"
+  ]
+}

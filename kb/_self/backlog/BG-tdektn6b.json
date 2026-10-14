@@ -1,0 +1,24 @@
+{
+  "id": "BG-tdektn6b",
+  "kind": "bug",
+  "title": "test_land_e2e.py's session-scoped real_git fixture leaves its PATH change in place for later test files on the same worker",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The real Command Line Tools git that test_land_e2e.py puts first on PATH applies to that file's tests only: the fixture is module-scoped, so a later file on the same xdist worker runs with the PATH it started with",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import re,sys;t=open('_tools/test_land_e2e.py').read();sys.exit(1 if re.search(r'scope=.session., autouse=True\\)\\s*\\ndef real_git',t) else 0)"
+    ]
+  },
+  "repro_reason": "the PATH leak shows only in which git a later module's subprocess resolves on a darwin host with the shim; the fixture's scope in the source is what decides it",
+  "touches": [
+    "_tools/test_land_e2e.py"
+  ],
+  "links": [
+    "parked: SP-j65ihctq review"
+  ]
+}
