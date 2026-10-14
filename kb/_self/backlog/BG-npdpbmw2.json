@@ -2,7 +2,7 @@
   "id": "BG-npdpbmw2",
   "kind": "bug",
   "title": "Revalidation marks a fact moved when a sibling heading changes, turns off soft-404 detection after one failed request, and lets a corrupt provider-down record block a host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
@@ -135,5 +135,65 @@
     "merged: BG-gx4wphry"
   ],
   "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer (a lookup prints [moved DATE] edited in place for an unchanged fact): window_sections adds the parent's key because a sibling heading unit sits under the parent, and the parent's hash covers every H2 line (repro keys printed 3 sections). Merged here: BG-ugucwe42 (madeup_text, factdiff.py:1044-1051, stores None for any status but 200) and BG-gx4wphry (provider._down_rec, provider.py:529-538, accepts any numeric until). Check 0 also proves the edit-right-after half. Tests: sections asserts of test_pool_rows_are_answered_by_their_tool_... (:1393-1417, 1.8 s) and the revalidate mega-test (madeup about :572-574, down window :610-623); no new id. web-sources.md is mapped to provider.py: read it, edit only if it states the down-record rule. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise. Planning: check 2 re-pointed to gate g1's answer (clamp): a far-future record written 2 x DOWN_CAP_S ago no longer holds the host, a fresh one still does; it fails now (both hold).",
-  "claimed_by": "orch-vk3wf746"
+  "evidence": {
+    "commit": "46cdcac53fa1528d344ec296f26b224f71d2e123",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import factdiff as f;old='# Guide\\n\\n## Alpha\\n\\nAlpha body text here.\\n\\n## Beta\\n\\nBeta body text here.\\n\\n## Gamma\\n\\nGamma body text here.\\n';add=old+'\\n## Delta\\n\\nA brand new section.\\n';beta=old.replace('Beta body text here.','Beta body CHANGED text.');alpha=old.replace('Alpha body text here.','Alpha body CHANGED text.');a={'heading':'Guide > Alpha','sha':'x'};ok=lambda n:f.section_unchanged(f.window_sections(a,f.Doc(n),None),f.sections(old),f.sections(n));r=(ok(add),ok(beta),ok(alpha));print(r);sys.exit(0 if r==(True,False,False) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9e3899e0b2fcc826"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import factdiff as f,provider as p;n=[0];p.request=lambda u,**k:n.__setitem__(0,n[0]+1) or ({'status':0,'body':'','headers':{}} if n[0]==1 else {'status':200,'body':'<html>a page</html>','headers':{'content-type':'text/html'}});f.madeup_text('https://h.example.com/a/b');f.madeup_text('https://h.example.com/c/d');print(n[0]);sys.exit(0 if n[0]==2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "53c234e5e8472b6a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,json,time,tempfile;sys.path.insert(0,'_tools');import provider;provider.DOWN_DIR=tempfile.mkdtemp();now=time.time();c=provider.DOWN_CAP_S;json.dump({'at':now-2*c,'until':now+1e9,'count':1,'error':'URLError: x'},open(provider._down_path('old.example.com'),'w'));json.dump({'at':now,'until':now+1e9,'count':1,'error':'URLError: x'},open(provider._down_path('new.example.com'),'w'));a=bool(provider.host_down('https://old.example.com/a'));b=bool(provider.host_down('https://new.example.com/a'));print(a,b);sys.exit(0 if (not a and b) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6bb666d23e647f13"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate"
+        ],
+        "exit": 0,
+        "sha256": "2a373641bd652d03"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_pool_rows_are_answered_by_their_tool"
+        ],
+        "exit": 0,
+        "sha256": "1123b914396b352c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0,'_tools'); import factdiff as f; old='# Guide\\n\\n## Alpha\\n\\nAlpha body text here.\\n\\n## Beta\\n\\nBeta body text here.\\n\\n## Gamma\\n\\nGamma body text here.\\n'; new=old+'\\n## Delta\\n\\nA brand new section.\\n'; k=f.window_sections({'heading':'Guide > Alpha','sha':'x'}, f.Doc(new), None); sys.exit(0 if f.section_unchanged(k, f.sections(old), f.sections(new)) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
