@@ -1,27 +1,62 @@
 {
   "id": "ST-qtbpuyff",
   "kind": "story",
-  "title": "A code-lane worker runs its selection and the changed-path tests, and the whole suite at most once, so parallel workers and landings do not push each other over the ceiling",
+  "title": "A worker runs the whole suite at most once, and none for a content-only item, so parallel workers do not load the host into refused runs",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-sc5yk65l",
+  "priority": "P1",
   "rank": 0,
-  "goal": "The brief of a code-lane item tells its worker to run its own check selections and tests.py --changed origin/main while it works and the whole suite at most once before its report (SP-waxgh3kg: each of four code workers ran the whole suite two or three times, every run refused over seconds while landings ran theirs on the same host); a test of brief ID on a code item asserts the line.",
+  "goal": "bl_dispatch.WORKER_RULES' tests.py rule tells a worker to run its item's own checks while it works, no whole tests.py for an item whose touches are kb content only (the sync gate runs what that change needs) and the whole suite at most once, before its report, for any other item; an existing brief test of _tools/test_backlog_portable.py asserts both lines and is renamed to carry brief_whole_suite_at_most_once, adding no test id; kb/_self/backlog.md's One suite rule says the same",
   "checks": [
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "brief_code_item_suite_once"
+        "brief_whole_suite_at_most_once"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;t=subprocess.run([sys.executable,'_tools/selfdoc.py','section','backlog','Working on items'],capture_output=True,text=True).stdout;l=[x for x in t.splitlines() if '**One suite**' in x];sys.exit(0 if l and 'at most once' in l[0] else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/perfcheck.py','ids'],capture_output=True,text=True);n=len(o.stdout.split());print(n);sys.exit(0 if o.returncode==0 and 0<n<=90 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_dispatch.WORKER_RULES' tests.py rule tells a worker to run its item's own checks while it works, no whole tests.py for an item whose touches are kb content only (the sync gate runs what that change needs) and the whole suite at most once, before its report, for any other item",
+      "check": 0
+    },
+    {
+      "clause": "an existing brief test of _tools/test_backlog_portable.py asserts both lines and is renamed to carry brief_whole_suite_at_most_once, adding no test id",
+      "check": 2
+    },
+    {
+      "clause": "kb/_self/backlog.md's One suite rule says the same",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/bl_dispatch.py",
     "_tools/test_backlog_portable.py",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "agents/worker.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-5zcl2sof"
   ],
   "links": [
     "parked: SP-waxgh3kg close"
-  ]
+  ],
+  "notes": "2026-10-14 overhaul plan: merged ST-6oljoq3c (SP-7ff7c5ui: workers run --changed or their selection, not the whole suite), ST-76pmwfim (SP-lsamtvsz: content workers each ran 29 to 40 s suites) and ST-cbua42er (SP-uvz65lvm: a content-only item's worker runs no whole suite). The --changed half of the first two is not taken: today's rule forbids a worker tests.py --changed (parallel runs loaded the host, SP-flkl5gom), and a static reach count of 2026-10-14 shows a --changed run of any _tools change selects all 14 test files (74 of 75 tool modules are reached by every test file), so it is no lighter than the whole suite. Premise: today's rule (bl_dispatch.py WORKER_RULES, tests.py) lets a worker run the whole suite any number of times; the host test lock serializes the runs, but each waits on the others and loads the host while siblings work (SP-waxgh3kg: four code workers ran it two or three times each, all refused over seconds)."
 }

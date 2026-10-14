@@ -3,19 +3,18 @@
   "kind": "bug",
   "title": "The whole suite's darwin wall time is bounded by two module scopes, test_land_e2e.py and test_backlog_portable.py, each 22 to 29 s of serial tests on one worker",
   "status": "draft",
-  "priority": "P2",
+  "sprint": "SP-ofvvong6",
+  "priority": "P1",
   "rank": 0,
-  "severity": "S3",
-  "goal": "With the slowest tests of ST-k3e4q43i cut, a whole-suite darwin run is bounded by the module scope of _tools/test_land_e2e.py (about 29 s of serial tests: stage_back 12.5 s, empty_selection 8.6 s and three more) and of _tools/test_backlog_portable.py (about 24 s): python3 _tools/perfcheck.py time --max-seconds 20 _tools/test_land_e2e.py _tools/test_backlog_portable.py exits 0 with every assertion kept (a scope split into classes of its own, as the land e2e's classes are, or a scenario's repeated clone and commit work cut), and _tools/tests_ceiling.json is not raised. Measured on 2026-10-14: a whole-suite run without ST-k3e4q43i's cuts took 29.3 s against the 29 s ceiling and with them 29.6 s, the same two scopes the longest.",
+  "severity": "S2",
+  "goal": "tests.py hands the suite's tests to its workers one at a time (pytest-xdist --dist load in run_pytest, conftest's SLOW_FIRST order kept so the long scenarios start first), so no module or class scope bounds a full run's wall time; a full tests.py run on a quiet darwin host takes at most 27 s (python3 _tools/perfcheck.py time --max-seconds 27 exits 0) with no test id lost; kb/_self/code.md's Git in tests section and the other docs that name the distribution mode say the new one",
   "repro": {
     "run": [
       "python3",
       "_tools/perfcheck.py",
       "time",
       "--max-seconds",
-      "20",
-      "_tools/test_land_e2e.py",
-      "_tools/test_backlog_portable.py"
+      "27"
     ]
   },
   "checks": [
@@ -25,14 +24,47 @@
         "_tools/perfcheck.py",
         "time",
         "--max-seconds",
-        "20",
-        "_tools/test_land_e2e.py",
-        "_tools/test_backlog_portable.py"
+        "27"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--base",
+        "origin/main"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;t=subprocess.run([sys.executable,'_tools/selfdoc.py','section','code','Git in tests'],capture_output=True,text=True).stdout;sys.exit(1 if 'loadscope' in t or 'Git in tests' not in t else 0)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "tests.py hands the suite's tests to its workers one at a time (pytest-xdist --dist load in run_pytest, conftest's SLOW_FIRST order kept so the long scenarios start first), so no module or class scope bounds a full run's wall time",
+      "check": 0
+    },
+    {
+      "clause": "a full tests.py run on a quiet darwin host takes at most 27 s (python3 _tools/perfcheck.py time --max-seconds 27 exits 0) with no test id lost",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/code.md's Git in tests section and the other docs that name the distribution mode say the new one",
+      "check": 2
+    }
+  ],
   "touches": [
-    "_tools/test_land_e2e.py",
-    "_tools/test_backlog_portable.py"
-  ]
+    "_tools/tests.py",
+    "_tools/conftest.py",
+    "kb/_self/code.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/querylog.md"
+  ],
+  "notes": "Merged at the 2026-10-14 test-suite overhaul plan: BG-qnbcyw72 (full run 30 to 37 s against 29 s on darwin through SP-ia6xayiy, SP-hlt2tdel and the workers of 2026-10-14, 112 passing: the same symptom, whose cause this item names and removes), BG-nnpssuqa and ST-nhax64i4 (host findings of SP-waxgh3kg and SP-b7wibqok asking the operator for headroom: the operator decided on 2026-10-14 that the limits stay, D-ilojyzhk, and the suite is made faster instead). Measured on 2026-10-14 on a quiet darwin host, 12 workers, 112 ids: loadscope 31.1 s pytest (33.1 s tests.py), the module scope of test_land_e2e.py's five plain functions 30.2 s serial on one worker and test_backlog_portable.py's 17 functions 27.0 s; --dist load 24.4, 24.7, 24.9 and 23.7 s (one run at 28.0 s during the planner's own back-to-back runs, load average 6), --dist worksteal 25.1 s; worker count is no lever (load at 14 workers 25.5 s, at 8 27.7 s); ordering the tests by measured duration, longest first, was slower (27.7 s). The suite has no order dependence: load and reordered runs passed 112 of 112. test_prepush_e2e.py's module fixture is built per worker under load (2.6 s setup), included in the figures."
 }
