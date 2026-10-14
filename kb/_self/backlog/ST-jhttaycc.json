@@ -1,0 +1,28 @@
+{
+  "id": "ST-jhttaycc",
+  "kind": "story",
+  "title": "A worker's design gate offers no option to raise the test ceiling, so the design choice stays answerable while the work runs",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the worker's brief says that a gate it adds never offers raising the test ceiling (its ids or seconds) as an option, since the option alone classes the whole gate ceiling and stops an unattended sprint until the operator's terminal answers it, and a work item that cannot meet its bound without a higher ceiling stops with a report instead",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_no_ceiling_option"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo close"
+  ],
+  "notes": "SP-wjp5qllo retrospective: ST-k3e4q43i's worker added gate g1 (how to get three tests under 6 s) with options 'cut work and split', 'cut work inside each test', 'raise the darwin seconds ceiling'; the third option made the gate class ceiling, the unattended orchestrator could not answer it, and the sprint stopped blocked (report 2026-10-14 06:11) until the operator answered the recommended, non-ceiling option at 07:52. Related: ST-olacbfsg (ask open choices before the start), which this recurs."
+}

@@ -1,0 +1,28 @@
+{
+  "id": "ST-b6gorus3",
+  "kind": "story",
+  "title": "close removes the sprint's own orchestrator and reviewer worktrees once their commits are on main",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py close, or tidy --apply, removes the closing sprint's orchestrator worktree (orch-<sprint>) and its detached reviewer worktree once every commit they hold is on origin/main and they are clean, printing each removal or what keeps one, so finished sprints leave no worktree behind",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_removes_orchestrator_worktree"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo close"
+  ],
+  "notes": "SP-wjp5qllo retrospective: git worktree list shows over 50 orch-* worktrees and their nested review-* worktrees from closed sprints (SP-g2ssvhi2's report: 'git worktree remove denied; tidy keeps checked-out branches'); close removes only worker worktrees, so each sprint's orchestrator and reviewer worktrees stay until removed by hand."
+}

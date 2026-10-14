@@ -25,5 +25,5 @@
   "links": [
     "parked: SP-qlpfcgs2 close"
   ],
-  "notes": "Evidence: ST-iai37tjr gate g1 on branch work/ST-iai37tjr (tip 8bfcef20e), class ceiling matched 'test ceiling' in its question; bl_authority refuses any answer from an agent session. The class is never weakened, so the remedy is earlier asking, not a narrower classifier."
+  "notes": "Evidence: ST-iai37tjr gate g1 on branch work/ST-iai37tjr (tip 8bfcef20e), class ceiling matched 'test ceiling' in its question; bl_authority refuses any answer from an agent session. The class is never weakened, so the remedy is earlier asking, not a narrower classifier. Recurred in SP-wjp5qllo: ST-k3e4q43i's goal named the darwin ceiling; its worker's gate g1 offered 'raise the darwin seconds ceiling' as an option, was classed ceiling, and stopped the unattended sprint until the operator answered it from a terminal."
 }
