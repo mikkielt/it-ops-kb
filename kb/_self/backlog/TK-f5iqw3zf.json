@@ -2,7 +2,7 @@
   "id": "TK-f5iqw3zf",
   "kind": "task",
   "title": "done credits an item the goal research story's commit already delivered, and close credits its clause",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-me3dmaxy",
   "priority": "P2",
   "rank": 0,
@@ -39,5 +39,19 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "f937d10bebfd4333c418459a50b725213fe19478",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "done_research_carried_item"
+        ],
+        "exit": 0,
+        "sha256": "76ceee4505c7e948"
+      }
+    ]
+  }
 }
