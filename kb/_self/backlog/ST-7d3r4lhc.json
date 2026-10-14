@@ -2,7 +2,7 @@
   "id": "ST-7d3r4lhc",
   "kind": "story",
   "title": "Planning puts a kb root's _anchors.csv in the touches of a content item that rewords a cited DOC fact, and its worker re-anchors it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -44,5 +44,6 @@
   "links": [
     "parked: SP-tcis5f23 close"
   ],
-  "notes": "Shaped as two tasks: TK-ebm2hp7a (the plan step and the worker role file, text) and TK-dxej6ir4 (precheck's warning, code); its gate g1 sits on TK-dxej6ir4 (how precheck decides an item rewords a DOC fact: its goal's words, answered) and the tasks carry the touches. A reworded line is anchored by factdiff.py anchor --file, which kb-refresh and kb-research already name; the worker role file and plan step 2 do not.\nPremise: _tools/bl_plan.py holds no _anchors.csv rule and bl_land.py's precheck reads no root's _anchors.csv (grep count 0 in bl_plan.py; bl_land.py's three hits are the done-time ledger diff), skills/sprint/SKILL.md plan step 2 names expansions.csv with no _anchors.csv, and agents/worker.md names no factdiff.py anchor. Run at planning: both story checks exit 1 (False; the selector collects no test, exit 2).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Shaped as two tasks: TK-ebm2hp7a (the plan step and the worker role file, text) and TK-dxej6ir4 (precheck's warning, code); its gate g1 sits on TK-dxej6ir4 (how precheck decides an item rewords a DOC fact: its goal's words, answered) and the tasks carry the touches. A reworded line is anchored by factdiff.py anchor --file, which kb-refresh and kb-research already name; the worker role file and plan step 2 do not.\nPremise: _tools/bl_plan.py holds no _anchors.csv rule and bl_land.py's precheck reads no root's _anchors.csv (grep count 0 in bl_plan.py; bl_land.py's three hits are the done-time ledger diff), skills/sprint/SKILL.md plan step 2 names expansions.csv with no _anchors.csv, and agents/worker.md names no factdiff.py anchor. Run at planning: both story checks exit 1 (False; the selector collects no test, exit 2).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-ce5iig4g"
 }
