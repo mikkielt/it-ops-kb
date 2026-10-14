@@ -32,5 +32,22 @@
   "depends_on": [
     "ST-tpexg6zy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which langgraph commit should the PostgresStore CODE facts be pinned to?",
+      "options": [
+        "the latest commit that changed store/postgres/base.py, bfcfea55 (2026-10-08)",
+        "the latest langgraph-checkpoint-postgres release tag"
+      ],
+      "recommendation": "the latest commit that changed store/postgres/base.py, bfcfea55 (2026-10-08)",
+      "do": {
+        "the latest commit that changed store/postgres/base.py, bfcfea55 (2026-10-08)": "ST-xlr5flob",
+        "the latest langgraph-checkpoint-postgres release tag": "ST-xlr5flob"
+      },
+      "class": "push"
+    }
+  ],
   "claimed_by": "orch-state"
 }
