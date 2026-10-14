@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-b7wibqok close"
-  ]
+  ],
+  "notes": "SP-lsamtvsz evidence (2026-10-14): four parallel content workers' whole-suite runs refused at the 29 s darwin ceiling (32/30, 40, 31, 29, 31 s), each passing on a quiet rerun; test_code_commit_goes_to_a_branch failed once on a loaded run of ST-aob7dslq's worker and passed on the next two. The review's whole-suite run passed."
 }

@@ -1,0 +1,23 @@
+{
+  "id": "ST-s75xqjp2",
+  "kind": "story",
+  "title": "A fact whose quote is not held by the source it cites is a lint finding on its article",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-verify lint reports each fact factdiff.py anchor marks 'quote not held' (its quote is not found in any source the fact cites) with the article path and line, so a fact that names one page and cites another shows before a review finds it. In SP-lsamtvsz BG-3rr3cvji's fact stated the cmdlet reference's example 2 while citing only the management page, and the research run saw 'quote not held' for S-jjpbp7g2 on the fluent format_value fact with no lint line for either.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lint_reports_quote_not_held"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-lsamtvsz close"
+  ],
+  "notes": "SP-lsamtvsz retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+}

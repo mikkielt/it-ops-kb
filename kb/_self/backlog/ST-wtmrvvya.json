@@ -1,0 +1,23 @@
+{
+  "id": "ST-wtmrvvya",
+  "kind": "story",
+  "title": "A goal research story records a sibling item's defect as a finding instead of landing its fix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The research story's brief names each sibling item of the sprint with its goal and touches, and says a defect a sibling carries is reported as a finding in the research's notes, not fixed in the research commit. In SP-lsamtvsz the research ST-e62uklfi (touches kb/public/**) renamed Localization to FluentLocalization in the four files BG-nzrj2n32 owned, so the bug's worker had only its repro's negation mentions left and the sibling's planned check no longer read the work.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_brief_names_sibling_goals"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-lsamtvsz close"
+  ],
+  "notes": "SP-lsamtvsz retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+}

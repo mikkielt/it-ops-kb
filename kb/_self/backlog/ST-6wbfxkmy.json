@@ -1,0 +1,23 @@
+{
+  "id": "ST-6wbfxkmy",
+  "kind": "story",
+  "title": "A DOC fact a change adds without an anchor quote is caught at that change's landing, not left to a later item",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The landing's lint step fails the change that adds a DOC fact whose source has no anchor with a quote, naming the fact, so the anchor row lands in the same item; and texts-catalogue-formats.md's FluentLocalization fact (S1710) gets its anchor. In SP-lsamtvsz the research commit ffc605f25 added that fact with only a lint warning; the next item that touched the line (BG-nzrj2n32) saw the warning but _anchors.csv was outside its touches.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "lint_added_doc_fact_unanchored_fails"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-lsamtvsz close"
+  ],
+  "notes": "SP-lsamtvsz retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "ST-76pmwfim",
+  "kind": "story",
+  "title": "A content-lane worker runs the test selection the sync gate runs, not the whole suite, so parallel workers do not push each other over the ceiling",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The brief of a worker whose item touches only kb content tells it to run python3 _tools/tests.py --changed origin/main (the selection kbgit.py sync runs for that change) instead of the whole suite. In SP-lsamtvsz four parallel content workers each ran the whole suite: ST-4u4grn6b 32 s then 30 s, ST-b4swnror 40 s, ST-rcdjzn5k 31 s, BG-dwxlx7nv 29 s, ST-aob7dslq 31 s against the 29 s darwin ceiling; every landing's gate then ran only the content selection.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_content_item_runs_changed_selection"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-lsamtvsz close"
+  ],
+  "notes": "SP-lsamtvsz retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+}
