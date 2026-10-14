@@ -55,6 +55,25 @@
   "depends_on": [
     "BG-2wgjcq4s"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does search_urls tell a 200 answer outside a provider's shape from an answer with no hits, where the parsers in provider.SEARCH_SHAPES read a JSON object with no list as no hits?",
+      "options": [
+        "object-without-list is no result list",
+        "parser error only is no result list"
+      ],
+      "recommendation": "object-without-list is no result list",
+      "do": {
+        "object-without-list is no result list": "BG-o3zppi2w",
+        "parser error only is no result list": "BG-o3zppi2w"
+      },
+      "class": "design",
+      "answer": "object-without-list is no result list",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-vdrsfftl review",
     "merged: BG-ybwm6y3l",
