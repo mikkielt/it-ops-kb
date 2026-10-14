@@ -3048,7 +3048,7 @@ _Agent: kb-research_
 - Envelope encryption: a KEK wraps the DEK, the wrapped DEK is stored near the data and the plaintext DEK is not; Google advises a new DEK for each write, never one DEK for the data of two users, and KEKs stored centrally. [DOC S-yvalenhr]
 - A DEK per scope (per site) is the topic's layout and departs from Google's two DEK practices (a new DEK every write, never one DEK for two users): one wrapped DEK per site beside its rows is reused across the site's writes and shared by its users, so KEK rotation rewraps DEKs only, a site's DEK rotation re-encrypts all its rows, and one unwrap opens every user's rows of the site (costs: QK-per-site-dek-reused-across-writes). [DER S-yvalenhr: DEK per write, a DEK never shared between users, a KEK wrapping many DEKs, stored near the data]
 - A blind index is a truncated keyed hash; it leaks equality and frequency, bounded by `C = R / 2^(sum min(L_i, K_i))` and worst for small domains. [DOC S-qt7piebc]
-- Conclusion: per-site DEKs and a separate blind-index key, both wrapped outside the database; index only high-entropy fields and keep the output short. [DER S-yvalenhr, S-qt7piebc]
+- Conclusion: per-site DEKs (which depart from Google's new-DEK-per-write and never-one-DEK-for-two-users advice, costs in QK-per-site-dek-reused-across-writes) and a separate blind-index key, both wrapped outside the database; index only high-entropy fields and keep the output short. [DER S-yvalenhr, S-qt7piebc]
 - Open: key arguments in server logs. [UNK]
 - See auth/postgres-column-encryption.md.
 

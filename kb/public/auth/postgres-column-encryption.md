@@ -10,7 +10,7 @@ status: partial
 # Envelope encryption of Postgres columns, per-site data keys and blind indexes
 
 ## Summary
-Encrypting a column in PostgreSQL protects against a stolen disk or backup, not against a server administrator, because pgcrypto runs inside the server and sees both key and plaintext. Envelope encryption keeps one data key per scope (here per site), wraps it under a key that stays outside the database, and rotates the wrapping key without touching the rows. A blind index makes an encrypted column searchable for equality by storing a truncated keyed hash; it leaks which rows are equal and how often, and the leak is bounded by the truncation. Extends `auth/key-management-options.md` and `prior-art/secret-vault-encryption.md`.
+Encrypting a column in PostgreSQL protects against a stolen disk or backup, not against a server administrator, because pgcrypto runs inside the server and sees both key and plaintext. Envelope encryption keeps one data key per scope (here per site, which departs from Google's advice of a new data key per write and never one key for two users), wraps it under a key that stays outside the database, and rotates the wrapping key without touching the rows. A blind index makes an encrypted column searchable for equality by storing a truncated keyed hash; it leaks which rows are equal and how often, and the leak is bounded by the truncation. Extends `auth/key-management-options.md` and `prior-art/secret-vault-encryption.md`.
 
 ## Facts
 

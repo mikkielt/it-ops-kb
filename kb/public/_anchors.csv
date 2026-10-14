@@ -3865,10 +3865,10 @@ fe3ab6c9dbe2,auth/permissions-matrix.csv,S-sxtmngif,unlocated:no-match,,,,,2026-
 4b607f6c05c4,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
 5187b613fc5d,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
 6afbe7eb0f87,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.3. PGP Encryption Functions > F.26.3.8. Options for PGP Functions > F.26.3.8.12. ignore-cipher-failure,faulty;fix;unavailabl;behavior;correct;ignore-cipher-failur;decryption;failur,d5a55c3de2cf24eb,"Instructs pgcrypto to use an incorrect decryption algorithm matching the historical behavior prior to the fix for CVE-2026-14663, by completely ignoring failures from the OpenSSL",2026-10-14
+6c51272b79db,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
 748813e5b05d,auth/postgres-column-encryption.md,S-rxmbolsc,unlocated:not-text,,,,,2026-10-14
 7a6225d15e56,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
 7bdd0fe7b8fb,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
-7c0d8494bdeb,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
 85a5989234a6,auth/postgres-column-encryption.md,S-rxmbolsc,unlocated:not-text,,,,,2026-10-14
 8662d964a002,auth/postgres-column-encryption.md,S-rxmbolsc,unlocated:not-text,,,,,2026-10-14
 88d39c00a687,auth/postgres-column-encryption.md,S-yvalenhr,located,Introduction > How to decrypt data using envelope encryption,leav;never;unwrap;decrypt;kek;wrap;dek;data,330877b8f9aea1c6,"DEK, identify the KEK that wrapped the DEK, use the KEK to unwrap the DEK, and then use the unwrapped DEK to decrypt the data.",2026-10-14
