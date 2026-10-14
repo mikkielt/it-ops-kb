@@ -1,0 +1,23 @@
+{
+  "id": "ST-4nvaiif4",
+  "kind": "story",
+  "title": "A test proves close --summary credits a goal clause to an item done through the goal research story's commit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A land e2e test runs close --summary on a sprint whose item was done through a research commit (evidence carried_by) and asserts the clause it carries names that item and its line names the research commit, the half of TK-f5iqw3zf's goal no check read (SP-ce5iig4g: its worker relied on goal_clause_lines' word share without running close, and planning mapped one check to a two-clause goal)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "close_credits_research_carried"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_land_e2e.py",
+    "_tools/bl_land.py"
+  ]
+}
