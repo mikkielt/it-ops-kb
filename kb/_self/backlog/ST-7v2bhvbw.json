@@ -2,7 +2,7 @@
   "id": "ST-7v2bhvbw",
   "kind": "story",
   "title": "Research: syncing agent state between workstations without a server (Syncthing, DFS Replication, git, CRDTs)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",

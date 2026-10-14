@@ -2,7 +2,7 @@
   "id": "ST-bke44brb",
   "kind": "story",
   "title": "Research: managed memory services for agents (Claude memory tool, Foundry agent memory, Cloudflare Agents state)",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",

@@ -2,7 +2,7 @@
   "id": "SP-5dffnlxn",
   "kind": "sprint",
   "title": "Shared agent state, governance and multi-agent operations",
-  "status": "planned",
+  "status": "active",
   "goal": "The public kb answers, with cited official facts or open gap entries naming where they were sought, how agents lock shared state, sync it between workstations, coordinate across repositories, hold Azure roles and attributes as Entra agent identities, are troubleshot, are authorized by policy as code, keep managed memory, are identified outside Entra, are sandboxed, sign their commits, and are reconciled by GitOps tools.",
   "gates": [
     {
