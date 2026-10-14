@@ -1,0 +1,21 @@
+{
+  "id": "BG-nnpssuqa",
+  "kind": "bug",
+  "title": "Host finding: the SP-waxgh3kg review's whole-suite runs were refused at the darwin seconds ceiling, 29.1 s and 29.1 s against 29 s, all 112 tests passing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The operator decides from the recorded test.run rows of the SP-waxgh3kg review (5dcdeaf5 at 2026-10-14T09:20:59Z, 29099 ms, and 8156d5eb at 2026-10-14T09:21:43Z, 29116 ms, 112 passed, load average about 4.4; a third run passed minutes later, beside BG-qnbcyw72's worker runs of 30 to 37 s) what the suite's darwin headroom should be; nothing changes the ceiling without that decision",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,sys;d=json.load(open('_tools/tests_ceiling.json'))['decision'];print(d);sys.exit(0 if d!='D-ilojyzhk' else 1)"
+    ]
+  },
+  "repro_reason": "the refusal is host load and passes on a quiet run; what ends the finding is the operator's ceiling decision, recorded in tests_ceiling.json",
+  "links": [
+    "parked: SP-waxgh3kg review"
+  ]
+}

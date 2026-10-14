@@ -1,0 +1,31 @@
+{
+  "id": "ST-yzwnhwcr",
+  "kind": "story",
+  "title": "The review step names the route for a defect whose repro needs a fixture test: a parked story whose check is that test",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The sprint skill's review step 4 says that a gap whose repro needs a fixture test that does not exist yet is parked as a story with --check naming that test, since new bug --repro refuses a selection that collects no test (SP-waxgh3kg: two review gaps were refused as bugs and parked as stories); selfdoc.py check stays green.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('skills/sprint/SKILL.md').read(); sys.exit(0 if 'needs a fixture test' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}

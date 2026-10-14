@@ -1,0 +1,27 @@
+{
+  "id": "ST-vswvo7ie",
+  "kind": "story",
+  "title": "A code-lane landing's second pass skips re-running the item's checks when the rebase onto the merged main changed no file the item's checks read",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "land ID --wait-merge's second pass reuses the first pass's check results when the rebased branch's tree equals the tree the first pass checked plus only the merge commit (no file outside the item's own changes moved), so a code item's checks run once per landing instead of twice (SP-waxgh3kg: checks 75 s in the first pass and again 75 s at done, for ST-qqyvoqyj and ST-quxn2wjo); a check still re-runs when main moved under the item; a test drives both cases on a fixture.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "land_second_pass_reuses_checks"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}

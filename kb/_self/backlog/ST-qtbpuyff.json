@@ -1,0 +1,27 @@
+{
+  "id": "ST-qtbpuyff",
+  "kind": "story",
+  "title": "A code-lane worker runs its selection and the changed-path tests, and the whole suite at most once, so parallel workers and landings do not push each other over the ceiling",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The brief of a code-lane item tells its worker to run its own check selections and tests.py --changed origin/main while it works and the whole suite at most once before its report (SP-waxgh3kg: each of four code workers ran the whole suite two or three times, every run refused over seconds while landings ran theirs on the same host); a test of brief ID on a code item asserts the line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_code_item_suite_once"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}

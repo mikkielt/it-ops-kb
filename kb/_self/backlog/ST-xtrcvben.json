@@ -1,0 +1,27 @@
+{
+  "id": "ST-xtrcvben",
+  "kind": "story",
+  "title": "Workers stop appending refused-run notes to a host-finding bug, whose notes fill to the cap, and name the test.run rows in their report instead",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The worker rules (bl_dispatch.WORKER_RULES) tell a worker whose whole-suite run is refused over seconds to name the run's test.run row id in its report and add no note to the open host-finding bug (SP-waxgh3kg: five workers appended to BG-qnbcyw72 until its notes reached TEXT_MAX and the review's own finding could not be added); the review files one host finding per sprint as the skill says; a test of brief ID asserts the rule's line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_refused_run_names_test_run"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}

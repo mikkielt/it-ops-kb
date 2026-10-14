@@ -1,0 +1,27 @@
+{
+  "id": "ST-oa2ly47s",
+  "kind": "story",
+  "title": "A worker adding a closed-field gate plants a failure in each part of a field that can carry free text (a url's host, path, query and fragment)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The worker rules (bl_dispatch.WORKER_RULES) say that an item adding a gate that keeps free text out of a stored field plants one failure per part of the field that can carry text (for a url: host, path, query and fragment), not one per field; a brief of an item whose goal names a closed-field gate prints that rule; a test of brief ID on such an item asserts the line.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "brief_closed_field_gate_parts"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}

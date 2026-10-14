@@ -1,0 +1,31 @@
+{
+  "id": "ST-fbm3y3dy",
+  "kind": "story",
+  "title": "Planning reads each chained item's goal for a field an earlier item keeps out of the store and a later item reads",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The sprint skill's plan step 6 tells the planner to read the goals of items that depend on each other for a field one item's goal keeps out of a store (closed fields only, a value dropped) that a later item's goal reads (SP-waxgh3kg: ST-qqyvoqyj kept the claim out, ST-quxn2wjo's findings needed it), and to settle the conflict as a gate before the start; selfdoc.py check stays green.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('skills/sprint/SKILL.md').read(); sys.exit(0 if 'keeps out of a store' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}

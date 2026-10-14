@@ -1,0 +1,31 @@
+{
+  "id": "ST-pfqz32mn",
+  "kind": "story",
+  "title": "The run step names where an orchestrator writes a background dispatch or land log, so a fresh worktree without _cache/ does not fail the command",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The sprint skill's run step 3 says a dispatch or land started in the background writes its log under the scratch directory dispatch prints (or the session's own scratch), not under a _cache/ path a fresh orchestrator worktree has not made yet (SP-waxgh3kg: the first two dispatches failed on a redirect into a missing _cache/); selfdoc.py check stays green.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/selfdoc.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; t=open('skills/sprint/SKILL.md').read(); sys.exit(0 if 'background writes its log' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-waxgh3kg close"
+  ]
+}
