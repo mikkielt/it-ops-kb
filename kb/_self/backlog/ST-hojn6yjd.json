@@ -2,7 +2,7 @@
   "id": "ST-hojn6yjd",
   "kind": "story",
   "title": "shamir-secret-sharing states the sss README's 255-share and 113-byte-share limits as a tagged DOC fact, not only in a table cell",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,

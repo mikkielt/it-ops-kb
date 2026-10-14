@@ -2,7 +2,7 @@
   "id": "ST-istb5myb",
   "kind": "story",
   "title": "http-message-signatures and its XEdDSA answer say the age recipient is the verification key only when XEdDSA's scalar is the clamped identity",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,

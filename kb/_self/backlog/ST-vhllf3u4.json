@@ -2,7 +2,7 @@
   "id": "ST-vhllf3u4",
   "kind": "story",
   "title": "issuer-token-rotation names R2's S3 key pair, not R2, as the cut-over, since R2 temporary credentials overlap until they expire",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,

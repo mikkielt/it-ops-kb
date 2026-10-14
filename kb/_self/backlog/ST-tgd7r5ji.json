@@ -2,7 +2,7 @@
   "id": "ST-tgd7r5ji",
   "kind": "story",
   "title": "linux-nftables' idempotent own-table step says flush table leaves a loaded set's elements",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
