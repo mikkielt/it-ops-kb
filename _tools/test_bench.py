@@ -2,7 +2,7 @@
 cache reads by that model's own read ratio, and a tiered price records the tier the run's tokens fall in; the question pool
 (bench_pool.py) builds on a fixture kb and store, with its counts per kind, a seed that decides, held-out rows without text
 and the query log kept out of the public file."""
-import json
+import inspect, json
 
 import pytest
 
@@ -14,7 +14,7 @@ def req(model, uncached, write, read, out):
                                       "cache_read_input_tokens": read, "output_tokens": out}}
 
 
-def test_bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio():
+def bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio():
     s = bc.usage_sum([req("claude-sonnet-5-5", 100, 1000, 10000, 500)], "sonnet", "2.1.284")
     assert s["model"] == "claude-sonnet-5-5" and s["tier"] == ""
     assert s["effective"] == 100 + 2 * 1000 + 0.1 * 10000  # the read price over the input price: 0.20 / 2.0
@@ -42,7 +42,7 @@ def test_bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio():
     assert (opus["effective"], haiku["effective"]) == (500, 1000)
 
 
-def test_bench_price_tier_is_recorded_and_alias_follows_the_run():
+def bench_price_tier_is_recorded_and_alias_follows_the_run():
     run = [req("claude-haiku-5-5", 100, 1000, 10000, 500), req("claude-haiku-5-5", 100, 0, 150000, 500)]
     s = bc.usage_sum(run, "haiku")
     assert s["tier"] == ">100k" and bc.usage_sum(run[:1], "haiku")["tier"] == "<=100k"
@@ -119,7 +119,7 @@ def scenario_pack(question):
     return route[kind.group()] if kind else "web", "- d0/a0.md:7 equals value1\n\nsources:\n  -> S-src00000  https://x"
 
 
-def test_bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch, capsys):
+def bench_pool_build_counts_seed_heldout_and_querylog_stay_apart(tmp_path, monkeypatch, capsys):
     import argparse, re
     import bench_pool as bp
     monkeypatch.setattr(bp, "scenario_pack", scenario_pack)
@@ -307,7 +307,7 @@ def pool_stream(answer, chars=480, model="claude-sonnet-5-5", final_out=80, cost
     return "\n".join(json.dumps(e) for e in events)
 
 
-def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line(tmp_path, capsys, monkeypatch):
+def bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line(tmp_path, capsys, monkeypatch):
     import argparse, re
     import bench_pool as bp
     real_pack = bp.scenario_pack
@@ -384,7 +384,7 @@ def test_bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_pic
     assert f"`pool build --redo {stale['id']}`" in seen and hand["id"] not in seen  # the near-miss row is not judged
 
 
-def test_bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
+def bench_pool_scenario_rows_derived_cells_and_report_tables(monkeypatch):
     import agent_bench
     import bench_pool as bp
     import bench_report as br
@@ -494,7 +494,7 @@ class FreshBench:
                           "runs": str(runs), "note": note})
 
 
-def test_bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
+def bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows(tmp_path, monkeypatch, capsys):
     import benchmarks as bm
     import bench_core as bc
     import bench_pool as bp
@@ -581,7 +581,7 @@ def test_bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_
     assert bm.main(["report", "--check"]) == 0
 
 
-def test_bench_pool_session_shape_groups_resume_marginal_input_and_cache_share(monkeypatch):
+def bench_pool_session_shape_groups_resume_marginal_input_and_cache_share(monkeypatch):
     import agent_bench
     import bench_pool as bp
     import bench_report as br
@@ -685,7 +685,7 @@ def slow_first(finished):
     return run
 
 
-def test_bench_pool_max_usd_in_flight_counts_the_runs_started_and_jobs_parallel_rows_equal_one_job_and_the_record_date_holds(monkeypatch, tmp_path):
+def bench_pool_max_usd_in_flight_counts_the_runs_started_and_jobs_parallel_rows_equal_one_job_and_the_record_date_holds(monkeypatch, tmp_path):
     import time
     import bench_pool as bp
     rows, cells = pool_rows(12), bp.plan_cells(["sonnet-5-5", "haiku-4-5"], bp.EFFORTS)
@@ -764,7 +764,7 @@ def test_bench_pool_max_usd_in_flight_counts_the_runs_started_and_jobs_parallel_
     assert {(r["record"], r["date"]) for r in b.rows} == {("2026-10-09", "2026-10-09")}
 
 
-def test_bench_pool_dry_run_kind_prices_and_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row(monkeypatch, capsys):
+def bench_pool_dry_run_kind_prices_and_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row(monkeypatch, capsys):
     import types
     import bench_pool as bp
     monkeypatch.setitem(bc.SPEND, "usd", 0.0)
@@ -847,7 +847,7 @@ def test_bench_pool_dry_run_kind_prices_and_jobs_scenario_stops_at_the_cap_with_
     assert (label, runs) == ("sonnet-5-5:low/session", 6) and abs(runs * usd - (4 * 0.03 + 2 * 0.10)) < 1e-9
 
 
-def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(monkeypatch, capsys):
+def bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(monkeypatch, capsys):
     import types
     import agent_bench
     import benchmarks as bm
@@ -941,7 +941,7 @@ def test_bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap(m
     assert "--arm-kinds: sonnet-5-5/session is not run by this command (the --shape has no session)" in err
 
 
-def test_bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(monkeypatch, tmp_path, capsys):
+def bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(monkeypatch, tmp_path, capsys):
     import types
     import agent_bench
     import benchmarks as bm
@@ -1023,7 +1023,7 @@ def test_bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record(mo
     assert any(p.startswith("(a) sonnet-5-5:low: rows, and no `planned_kinds` row") for p in bp.verify_problems(newer, "2026-10-20")[0])
 
 
-def test_bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend_repairs_a_record(monkeypatch, tmp_path, capsys):
+def bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend_repairs_a_record(monkeypatch, tmp_path, capsys):
     import agent_bench
     import benchmarks as bm
     import bench_pool as bp
@@ -1061,3 +1061,41 @@ def test_bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend
     assert verify() == 1 and "(c) spend of sonnet-5-5:default, sonnet-5-5:low" in capsys.readouterr().out
     assert bm.main(["pool", "respend", "--file", str(out)]) == 0 and "sonnet-5-5:default left the spend row of 2 labels" in capsys.readouterr().out
     assert verify() == 0 and bm.main(["pool", "respend", "--file", str(out)]) == 0 and "overlaps another" in capsys.readouterr().out
+
+
+def together(tmp_path, monkeypatch, capsys, *bodies):
+    """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
+    output of theirs left to read."""
+    for n, body in enumerate(bodies):
+        root = tmp_path / f"part{n}"
+        root.mkdir()
+        capsys.readouterr()
+        with pytest.MonkeyPatch.context() as mp:
+            have = {"tmp_path": root, "monkeypatch": mp, "capsys": capsys}
+            body(**{k: v for k, v in have.items() if k in inspect.signature(body).parameters})
+
+
+def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, capsys):
+    together(tmp_path, monkeypatch, capsys, bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio,
+             bench_price_tier_is_recorded_and_alias_follows_the_run,
+             bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows)
+
+
+def test_bench_pool_build_check_scenario_rows_and_session_shape(tmp_path, monkeypatch, capsys):
+    together(tmp_path, monkeypatch, capsys, bench_pool_build_counts_seed_heldout_and_querylog_stay_apart,
+             bench_pool_check_reports_stale_pick_of_a_row_whose_check_misses_the_picked_line,
+             bench_pool_scenario_rows_derived_cells_and_report_tables,
+             bench_pool_session_shape_groups_resume_marginal_input_and_cache_share)
+
+
+def test_bench_pool_max_usd_in_flight_dry_run_kind_prices_and_record_plans(tmp_path, monkeypatch, capsys):
+    together(tmp_path, monkeypatch, capsys,
+             bench_pool_max_usd_in_flight_counts_the_runs_started_and_jobs_parallel_rows_equal_one_job_and_the_record_date_holds,
+             bench_pool_dry_run_kind_prices_and_jobs_scenario_stops_at_the_cap_with_a_spend_stopped_row,
+             bench_pool_record_plans_arm_reps_kinds_sample_both_shapes_and_one_cap)
+
+
+def test_bench_pool_verify_names_each_planted_break_and_a_rerun_of_one_label_narrows_the_spend_row(tmp_path, monkeypatch,
+                                                                                                    capsys):
+    together(tmp_path, monkeypatch, capsys, bench_pool_verify_exits_1_naming_each_planted_break_of_a_fake_record,
+             bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend_repairs_a_record)

@@ -49,7 +49,7 @@ def edit_gate(root, iid, **kw):
     f.write_text(json.dumps(it, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
-def test_operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions():
+def operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions():
     plain = {"id": "g", "question": "Which name?", "options": ["a", "b"]}
     for touches, cls in ((["_tools/kbgit.py"], "push"), ([".claude/skills/*.md"], "agents-rule"),
                          ([".claude"], "agents-rule"), (["_tools/kbpublic.py"], "push"), (["_tools/"], "ceiling"),
@@ -115,7 +115,7 @@ def test_operator_class_is_derived_from_touches_and_question_a_lower_stored_clas
         assert secrets(f"Count {word} units, points,", "tokens", "b") == "secrets", word
 
 
-def test_gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):
+def gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):
     iid = new_item(tmp_path, touch="src/a.py")
     code, out = add_gate(tmp_path, iid, "Which password do we rotate?", "--kind", "provisional")
     assert code == 0, out
@@ -175,7 +175,7 @@ def test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_ope
     assert code == 0, out
 
 
-def test_an_agent_cannot_confirm_an_operator_gate(tmp_path):
+def an_agent_cannot_confirm_an_operator_gate(tmp_path):
     iid = new_item(tmp_path, touch="AGENTS.md")
     assert add_gate(tmp_path, iid, "Which name?")[0] == 0
     edit_gate(tmp_path, iid, answer="a", provisional=True)  # an agent's hand-written provisional answer
@@ -186,7 +186,7 @@ def test_an_agent_cannot_confirm_an_operator_gate(tmp_path):
         assert path(tmp_path, iid).read_bytes() == before, by
 
 
-def test_check_reports_an_operator_gate_an_agent_answered_as_an_error(tmp_path):
+def check_reports_an_operator_gate_an_agent_answered_as_an_error(tmp_path):
     iid = new_item(tmp_path, touch="src/a.py")
     assert add_gate(tmp_path, iid, "Push to which remote?")[0] == 0
     assert bl(tmp_path, "check")[0] == 0
@@ -195,7 +195,7 @@ def test_check_reports_an_operator_gate_an_agent_answered_as_an_error(tmp_path):
     assert code == 1 and iid in out and "operator" in out, out
 
 
-def test_a_gate_class_an_agent_wrote_lower_is_reported_by_check_and_still_refused(tmp_path):
+def a_gate_class_an_agent_wrote_lower_is_reported_by_check_and_still_refused(tmp_path):
     iid = new_item(tmp_path, touch="src/a.py")
     assert add_gate(tmp_path, iid, "Which password do we rotate?")[0] == 0
     edit_gate(tmp_path, iid, **{"class": "design"})
@@ -206,7 +206,7 @@ def test_a_gate_class_an_agent_wrote_lower_is_reported_by_check_and_still_refuse
     assert code in (1, 2) and path(tmp_path, iid).read_bytes() == before, out
 
 
-def test_a_delegate_grant_needs_the_operator(tmp_path):
+def a_delegate_grant_needs_the_operator(tmp_path):
     iid = new_item(tmp_path, kind="sprint", touch="src/a.py")
     before = path(tmp_path, iid).read_bytes()
     code, out = bl(tmp_path, "set", iid, "--delegate", "mgr")
@@ -268,3 +268,22 @@ def test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_opera
     assert {p: p.read_bytes() for p in tmp_path.rglob("*") if p.is_file() and p.suffix == ".csv"} == snap
     for words, agent in (("left", True), (text, False)):  # past the ceiling rule: what stops it is the scratch root
         assert "terminal of their own" not in kbdecide((*record, words), "--by", "operator", agent=agent)[1], words
+
+
+def together(tmp_path, *bodies):
+    """Run each body of a merged test on a root of its own, as its own test would, so no item of one is read by the next."""
+    for n, body in enumerate(bodies):
+        root = tmp_path / f"root{n}"
+        root.mkdir()
+        body(root)
+
+
+def test_operator_class_is_derived_and_gate_add_makes_an_operator_class_gate_blocking(tmp_path):
+    operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions()
+    together(tmp_path, gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says)
+
+
+def test_an_agent_cannot_confirm_an_operator_gate_check_reports_an_answer_or_a_lowered_class_and_a_delegate_grant_needs_the_operator(
+        tmp_path):
+    together(tmp_path, an_agent_cannot_confirm_an_operator_gate, check_reports_an_operator_gate_an_agent_answered_as_an_error,
+             a_gate_class_an_agent_wrote_lower_is_reported_by_check_and_still_refused, a_delegate_grant_needs_the_operator)
