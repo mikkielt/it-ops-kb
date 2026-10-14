@@ -100,7 +100,8 @@ ROOT = None  # kbcommon.Root under work
 
 
 def today():
-    return datetime.date.today().isoformat()
+    """The UTC date, the day every `checked_utc` stamp of a run names, whatever the host's time zone."""
+    return datetime.datetime.now(datetime.timezone.utc).date().isoformat()
 
 
 # ---------------------------------------------------------------- text units
