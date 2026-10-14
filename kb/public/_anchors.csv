@@ -11988,14 +11988,14 @@ f869ca6ffc12,security/linux-cis-ssg-openscap.md,S-cxnklaym,unlocated:no-match,,,
 42db2fc6cff9,security/linux-nftables.md,S-t7vpftda,located,NFT > RULESET,whatever;empty;unlik;valid;iptabl;remov;contain;kernel,73859d74b4149ce2,"this will remove all tables and whatever they contain, effectively leading to an empty ruleset",2026-10-13
 48d023e66e7a,security/linux-nftables.md,S-ycjp6jnv,unlocated:no-match,,,,,2026-10-13
 53eefcdb1857,security/linux-nftables.md,S-t7vpftda,located,delete the rule with handle 5 > SETS,remov;element;specifi,dbd78610542ce14f,Remove all elements from the specified set.,2026-10-14
-5fb59695aab5,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-14
-5fb59695aab5,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
 61eddd962417,security/linux-nftables.md,S-oz7g4upk,located,Named sets specifications,conflict;fail;load;specifi;auto;auto-merg;merg;interval,750e693c3dc167da,"Also, note that not using auto-merge will make such ruleset fail to load with something like: /etc/nftables/ruleset.nft:38:21-29: Error: conflicting intervals specified",2026-10-13
 847b23549169,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
 84ff99312b15,security/linux-nftables.md,S-t7vpftda,located,NFT > ADDRESS FAMILIES,identifier;without;default;specifi;family;address,286f79579de57043,"If an identifier is specified without an address family, the ip family is used by default",2026-10-14
 92496d7aaad5,security/linux-nftables.md,S-t7vpftda,located,make table active again:,flush;rule;chain;tabl,c0c4bf09b8ba35d8,Flush all chains and rules of the specified table.,2026-10-13
 9425d08f11de,security/linux-nftables.md,S-h3233m5r,located,Scripting,header;my-ruleset.fil;restor;nativ;comment;ruleset;defin;script,cc56b5d4c6df3f13,"Fortunately, nftables provides a native scripting environment to address these concerns which basically allows you to include other ruleset files, define variables and add comments.",2026-10-13
 a52a51dd6fc8,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,3.17;defin;delet;explicitly;later;linux;sets;ruleset,f159597eff148bff,"Flushing Sets: flush table filter will not flush any sets defined in that table. To flush sets as well, use flush ruleset (available since Linux",2026-10-13
+ad09bd012dd6,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-14
+ad09bd012dd6,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
 afb3d8cfee4d,security/linux-nftables.md,S-h3233m5r,located,Defining variables,variabl;rule;defin,7ba2622fd1c05d05,add rule filter input ip saddr $googledns counter You can also define a variable for sets:,2026-10-13
 afb3d8cfee4d,security/linux-nftables.md,S-oz7g4upk,located,Named sets > nftables.conf syntax,variabl;referenc;defin;name;rule,d8740adec6df06ad,"You can then reference those sets later on using $VARIABLENAME notation. Here are some examples showing sets defined in one line, spanning multiple lines, and",2026-10-13
 c317a18f33df,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,adds;other;statement;includ;tabl;flush;file,072cfe6257306860,,2026-10-14
