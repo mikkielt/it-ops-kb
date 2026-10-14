@@ -134,7 +134,9 @@
         "kbfacts.handled adds feedback: kb_feedback(pack=\"P-<8 hex>\", outcome=\"missed\") above the pack: line, so rag.py pack, kb_pack, kb_ask.py and the kb: hook print it": "ST-j5gd7ixn",
         "only kb_pack in kb_mcp.py adds the line": "ST-j5gd7ixn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "kbfacts.handled adds feedback: kb_feedback(pack=\"P-<8 hex>\", outcome=\"missed\") above the pack: line, so rag.py pack, kb_pack, kb_ask.py and the kb: hook print it",
+      "by": "operator"
     },
     {
       "id": "g3",
