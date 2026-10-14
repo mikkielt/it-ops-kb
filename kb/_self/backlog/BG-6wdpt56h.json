@@ -1,0 +1,18 @@
+{
+  "id": "BG-6wdpt56h",
+  "kind": "bug",
+  "title": "pytest.md says tests.py uses -m \"not stress\" to exclude a stress suite that no longer exists, and uv-projects.md shows tests.py-style -n auto",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/python/pytest.md:41 no longer says _tools/tests.py uses -m \"not stress\" to exclude the stress suite (stress_test.py was deleted in 4d70166fe; tests.py's only -m is FAST_M = \"not git\"), and kb/public/python/uv-projects.md:208 does not describe a tests.py-style wrapper as running -n auto when tests.py passes -n <worker_count> --dist load",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=' '.join(open('kb/public/python/pytest.md',encoding='utf-8').read().split());sys.exit(1 if 'uses to exclude the stress suite' in t else 0)"
+    ]
+  },
+  "repro_reason": "the defect is a sentence in a kb article, so only its text can be tested"
+}
