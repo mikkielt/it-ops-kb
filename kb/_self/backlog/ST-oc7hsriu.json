@@ -2,7 +2,7 @@
   "id": "ST-oc7hsriu",
   "kind": "story",
   "title": "test_authority plants each secret word inside each token exception shape and asserts the secrets class holds",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,

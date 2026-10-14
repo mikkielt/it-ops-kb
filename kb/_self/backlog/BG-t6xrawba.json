@@ -2,7 +2,7 @@
   "id": "BG-t6xrawba",
   "kind": "bug",
   "title": "a gate whose options list tokens as a unit of measure is classed secrets and made blocking, so only the operator can answer a wording choice",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,

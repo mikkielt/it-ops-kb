@@ -2,7 +2,7 @@
   "id": "ST-xgaj3rlb",
   "kind": "story",
   "title": "The worker role's gate add command names a --do per option, so a worker never hand-edits an item file for a missing do map",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,

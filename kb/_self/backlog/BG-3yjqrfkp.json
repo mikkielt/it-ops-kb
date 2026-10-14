@@ -2,7 +2,7 @@
   "id": "BG-3yjqrfkp",
   "kind": "bug",
   "title": "A gate question that says a package was uploaded to PyPI is classed push by the word uploaded, so a wording choice about a release date is made blocking",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P2",
   "rank": 0,

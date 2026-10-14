@@ -2,7 +2,7 @@
   "id": "ST-cr6lmafy",
   "kind": "story",
   "title": "A worker brief names a known whole-suite failure that is not a test, such as the seconds ceiling, so the worker files no duplicate bug",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,

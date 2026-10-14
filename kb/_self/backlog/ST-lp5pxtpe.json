@@ -2,7 +2,7 @@
   "id": "ST-lp5pxtpe",
   "kind": "story",
   "title": "A worker searches the backlog before it files a bug, so it files no duplicate of an open draft",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,

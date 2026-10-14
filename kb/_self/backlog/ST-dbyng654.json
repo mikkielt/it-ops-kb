@@ -2,7 +2,7 @@
   "id": "ST-dbyng654",
   "kind": "story",
   "title": "start's host-setup warning does not fire on a rule gate whose wording only names a host",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-hlt2tdel",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "SP-hlt2tdel",
   "kind": "sprint",
   "title": "Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map",
-  "status": "planned",
+  "status": "active",
   "goal": "A brief names a known suite-level failure so a worker files no duplicate bug; a worker runs backlog.py find before it files a bug; the worker role's gate add names a --do per option; a gate question that names a package's upload date, a gitlab/ kb path or a display-only push is no push gate; a gate that lists tokens as a unit noun is class design, not secrets; test_authority holds the secrets class inside each token exception shape; start's host-setup warning stays silent on a rule gate that only names a host",
   "gates": [
     {
