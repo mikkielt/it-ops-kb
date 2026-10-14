@@ -65,7 +65,9 @@
         "accept it when the worktree's file equals the file at HEAD"
       ],
       "recommendation": "refuse it, naming the file, so the orchestrator copies it back by hand",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "refuse it, naming the file, so the orchestrator copies it back by hand",
+      "by": "operator"
     },
     {
       "id": "g3",
