@@ -24,6 +24,19 @@
   "depends_on": [
     "BG-zwf3rs5y"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does ledger_moves tell the item's own rows from another commit's?",
+      "options": [
+        "per-commit: each item commit read against its own parent, kept when it differs at HEAD from the first such parent",
+        "per-commit but compare to the item's last commit, not HEAD"
+      ],
+      "recommendation": "per-commit: each item commit read against its own parent, kept when it differs at HEAD from the first such parent",
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-7nv2ffr2 review"
   ],
