@@ -2,7 +2,7 @@
   "id": "ST-4u4grn6b",
   "kind": "story",
   "title": "The editable-dependency conflicts entry says only arch/python-single-package-extras gives the always-editable wording, not python/uv-projects",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-tjap3mdd review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: check fails (_conflicts.md:772 final sentence names python/uv-projects.md beside arch/python-single-package-extras as giving the dependency-source wording; uv-projects.md has no 'always editable' text, grep). The goal research story's uv question (coverage weak, route split) runs first."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: check fails (_conflicts.md:772 final sentence names python/uv-projects.md beside arch/python-single-package-extras as giving the dependency-source wording; uv-projects.md has no 'always editable' text, grep). The goal research story's uv question (coverage weak, route split) runs first.",
+  "claimed_by": "orch-lsamtvsz"
 }
