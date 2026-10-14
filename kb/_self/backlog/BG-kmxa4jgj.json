@@ -56,6 +56,25 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does PRICE_ASK tell a priced product named by a quantity word from a quantity ask?",
+      "options": [
+        "A quantity word right after how much, or anywhere on the line when no is/are follows how much; a line read alone (re.M)",
+        "Drop the quantity exclusion and rely on the cost alternatives"
+      ],
+      "recommendation": "A quantity word right after how much, or anywhere on the line when no is/are follows how much; a line read alone (re.M)",
+      "do": {
+        "A quantity word right after how much, or anywhere on the line when no is/are follows how much; a line read alone (re.M)": "BG-kmxa4jgj",
+        "Drop the quantity exclusion and rely on the cost alternatives": "BG-kmxa4jgj"
+      },
+      "class": "design",
+      "answer": "A quantity word right after how much, or anywhere on the line when no is/are follows how much; a line read alone (re.M)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-enudabdr review",
     "merged: BG-6cupzbqv",

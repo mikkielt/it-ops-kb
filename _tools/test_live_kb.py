@@ -1119,7 +1119,12 @@ class TestPackNotesOnAPlantedRoot:
             "How many resource units does a Graph getMemberGroups call cost?",
             "How much memory per device does the Intune agent use?", "How much data per month can the Graph usage reports return?"))
         assert all(kbfacts.PRICE_ASK.search(q) for q in (
-            "How much is a Microsoft 365 E5 licence per user per month?", "What is the current price of a Microsoft 365 E5 licence?"))
+            "How much is a Microsoft 365 E5 licence per user per month?", "What is the current price of a Microsoft 365 E5 licence?",
+            "How much is OneDrive storage per user per month?", "How much is the Power BI Premium capacity per month?",  # a product named by its quantity
+            "How much is Microsoft Sentinel data ingestion per month?", "Context: Intune rollout.\nHow much does it cost?"))
+        assert not kbfacts.PRICE_ASK.search("How much memory per device does Intune need?")
+        parts = kbfacts.parse_tag("[CODE S-sipjyeoi: a.go#x; S-gfjnysog, S-aaaaaaaa: b.go#y]")  # a list of ids before the colon
+        assert [p["ids"] for p in parts] == [["S-sipjyeoi"], ["S-gfjnysog", "S-aaaaaaaa"]] and {p["kind"] for p in parts} == {"CODE"}
         assert kbfacts.AMOUNT.search("It costs $36 per user a month") and kbfacts.AMOUNT.search("36 EUR")
         assert not kbfacts.AMOUNT.search("Windows 10/11 Enterprise E3/E5 licence") and kbfacts.PRICE_ASK.search("How much does it cost")
         code, out = tool("rag.py", "pack", good_row()["question"])
