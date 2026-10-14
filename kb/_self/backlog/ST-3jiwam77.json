@@ -2,7 +2,7 @@
   "id": "ST-3jiwam77",
   "kind": "story",
   "title": "A goal research worker searches the kb for older answer and fact lines its new facts contradict, and fixes or files each before it lands",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,6 @@
     "parked: SP-23m5etrf close",
     "merged: ST-twgdb6gq"
   ],
-  "notes": "Merged ST-twgdb6gq at the 2026-10-13 draft triage: same defect class (a content fix leaves sibling lines stating the same claim, seen in SP-ilqhjn3k and SP-23m5etrf); a worker-side sweep is cheaper than a planning heuristic, and the research skill's step-3 figure sweep reaches only research, not a content bug worker. Also BG-4lfjabfo fixed the capture-absence tag in doc-lookup-sources.md while _answers.md kept it (BG-q3l5j2vz); the goal research had cited ci-and-headless.md:104 without reading its second clause against bench_core.READ_BEFORE.\nPremise: kb-research SKILL.md step 3 holds no line naming both 'contradict' and 'rag.py search', and agents/worker.md holds none naming 'rag.py search' with 'same claim'. Run at planning with precheck: both checks exit 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Merged ST-twgdb6gq at the 2026-10-13 draft triage: same defect class (a content fix leaves sibling lines stating the same claim, seen in SP-ilqhjn3k and SP-23m5etrf); a worker-side sweep is cheaper than a planning heuristic, and the research skill's step-3 figure sweep reaches only research, not a content bug worker. Also BG-4lfjabfo fixed the capture-absence tag in doc-lookup-sources.md while _answers.md kept it (BG-q3l5j2vz); the goal research had cited ci-and-headless.md:104 without reading its second clause against bench_core.READ_BEFORE.\nPremise: kb-research SKILL.md step 3 holds no line naming both 'contradict' and 'rag.py search', and agents/worker.md holds none naming 'rag.py search' with 'same claim'. Run at planning with precheck: both checks exit 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-ce5iig4g"
 }
