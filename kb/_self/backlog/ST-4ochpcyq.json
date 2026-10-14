@@ -2,7 +2,7 @@
   "id": "ST-4ochpcyq",
   "kind": "story",
   "title": "Review sprint: Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2ssvhi2",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-g2ssvhi2"
+  "evidence": {
+    "commit": "748ddae1f2cfbca233a0140b5412fc752e7b99ef",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "37471a1fb17b06f3"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "176479a484962008"
+      }
+    ]
+  }
 }
