@@ -2,7 +2,7 @@
   "id": "BG-gbz7ngqc",
   "kind": "bug",
   "title": "git-test-repositories lists git checkout and git worktree add as always running die_if_checked_out, though --ignore-other-worktrees and --force skip it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,18 @@
     "parked: SP-lsamtvsz review"
   ],
   "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL. git v2.55.0 builtin/checkout.c:1647 returns before die_if_checked_out under ignore_other_worktrees (also when the main HEAD symref already names the branch, :1650-1652); builtin/worktree.c:487 calls it only if !opts->force (and :870 for -B); builtin/rebase.c:1704 calls it unconditionally. git-test-repositories.md:261-268 lists them all with no skip. builtin/checkout.c and builtin/worktree.c have no source row: two CODE rows at v2.55.0 in kb/public/_sources.csv and the article header. Repro now also requires --force.",
-  "claimed_by": "orch-xt4t63xw"
+  "evidence": {
+    "commit": "68469eb379b447367be2f09f0faaf25701d02de5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;t=open('kb/public/gitlab/git-test-repositories.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- \"In use\" is wider')];sys.exit(0 if p and '--ignore-other-worktrees' in p[0] and '--force' in p[0] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
