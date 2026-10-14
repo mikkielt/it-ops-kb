@@ -31,11 +31,41 @@ def pinned():
 
 
 @functools.lru_cache(maxsize=None)
+def screens():
+    """(secret searches, the `(?i)` secrets' search or None, placeholder searches): each matches wherever a production
+    shape (kbcommon.SECRETS and the placeholders-only shapes) matches, and is cheaper. A `\\b` makes the regex engine
+    try every character, so a screen drops it, and the shapes written `(?i)` are searched together in the casefolded
+    text. A screen only chooses the files the production patterns (kbcommon.leak_hits, kbpublic.file_hits) judge."""
+    drop = lambda rx: re.compile(rx.replace("\\b", ""))  # noqa: E731
+    folded = [f"(?:{p[4:]})" for p in kbcommon.SECRETS if p.startswith("(?i)")]
+    return ([drop(p) for p in kbcommon.SECRETS if not p.startswith("(?i)")], drop("|".join(folded)) if folded else None,
+            [drop(x) for x in (kbcommon.LEAK_HOME, kbcommon.LEAK_IPV4, kbcommon.LEAK_EMAIL, kbcommon.LEAK_GUID)])
+
+
+def candidate(t, vendored):
+    """The text the leak scan's own verdict (kbcommon.leak_hits) reads to decide whether a file may hold a hit, or None
+    when no screen matches it: a text a secret screen matches whole, and for an authored file one a placeholder screen
+    matches only its matching lines (each placeholder shape lies within one line, so the lines hold every hit)."""
+    secrets, folded, placeholders = screens()
+    if any(rx.search(t) for rx in secrets) or (folded and folded.search(t.casefold())):
+        return t
+    if vendored:
+        return None
+    spans = set()
+    for rx in placeholders:
+        for m in rx.finditer(t):
+            end = t.find("\n", m.end())
+            spans.add((t.rfind("\n", 0, m.start()) + 1, len(t) if end < 0 else end))
+    return "\n".join(t[a:b] for a, b in sorted(spans)) or None
+
+
+@functools.lru_cache(maxsize=None)
 def scan():
     """[(file, kind, value)] the tracked files hold, as the push guards read them (kbpublic.file_hits) with the
     reviewed allowlist. Vendor exports, snapshots, pinned artifacts and the query log store are read for secrets only
     and files of internal roots are left out of the placeholders rule. One pass over the text finds the files that
-    may hold a hit; file_hits then gives the verdict, so the test and the guards agree."""
+    may hold a hit (candidate: the screens, then the leak scan's own verdict on what they pass); file_hits then gives
+    the verdict, so the test and the guards agree."""
     allow, pins = allowlist(), pinned()
     internal = tuple(kbcommon.repo_rel(".", r.path) + "/" for r in kbcommon.roots() if r.visibility != "public")
     secrets = re.compile(kbcommon.secrets_rx())
@@ -45,10 +75,13 @@ def scan():
         if t is None:
             continue
         vendored = f in pins or "/artifacts/" in f or f"/{kbcommon.SNAPSHOTS}/" in f or f.startswith("kb/_querylog/")
+        probe = candidate(t, vendored)
+        if probe is None:
+            continue
         if vendored:
-            if not secrets.search(t):
+            if not secrets.search(probe):
                 continue
-        elif not kbcommon.leak_hits(t, allow):
+        elif not kbcommon.leak_hits(probe, allow):
             continue
         out += [(f, k, v) for k, v in kbpublic.file_hits(f, t, allow, pins) if k == "secret" or not f.startswith(internal)]
     return out
