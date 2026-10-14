@@ -258,19 +258,32 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   it will not make things any worse." It runs for `git checkout <branch>` and `git checkout -B <branch>`
   unless `--ignore-other-worktrees` is given.
   [CODE S-i3btr2xr: builtin/checkout.c#die_if_switching_to_a_branch_in_use]
-- "In use" is wider than a worktree's `HEAD` naming the branch: a worktree whose `HEAD` is detached in the
-  middle of a rebase or a bisect of that branch holds it too, and so does one with that branch in the
-  update-refs of a rebase in progress; the error text is "'<branch>' is already used by worktree at '<path>'".
-  [CODE S-tx5lxmr3: worktree.c#is_shared_symref; CODE S-3qf7ndi6: branch.c#prepare_checked_out_branches,
-  die_if_checked_out]
+- "In use" is wider than a worktree's `HEAD` naming the branch, and git has two checks that differ in how
+  wide. `die_if_checked_out` (run by `git checkout`, `git switch`, `git rebase <upstream> <branch>` and
+  `git worktree add <path> <branch>`) asks `is_shared_symref` of each worktree: a `HEAD` that is a symref to
+  the branch, or a `HEAD` detached in the middle of a rebase of that branch or a bisect started from it,
+  counts as holding it. A branch named only in the update-refs of a rebase running with `--update-refs` is not
+  held for this check, so these four commands do not refuse it. The error text is "'<branch>' is already used
+  by worktree at '<path>'". [CODE S-tx5lxmr3: worktree.c#is_shared_symref, is_worktree_being_rebased,
+  is_worktree_being_bisected; CODE S-3qf7ndi6: branch.c#die_if_checked_out]
+- The wider check is `branch_checked_out` (`prepare_checked_out_branches`): it collects each worktree's `HEAD`
+  branch, the branch of a rebase in progress, the branch a bisect started from, and every ref in the
+  update-refs state of a rebase in that worktree. In `branch.c` the only caller is `validate_new_branchname`,
+  which asks it when `force` is set, so `git branch -f <branch>` (through `create_branch`) refuses a branch that another worktree holds through
+  update-refs, with its own error text "cannot force update the branch '<branch>' used by worktree at '<path>'",
+  not the "is already used by" one. [CODE S-3qf7ndi6: branch.c#prepare_checked_out_branches,
+  branch_checked_out, validate_new_branchname, create_branch]
 - `git rebase <upstream> <branch>` switches to `<branch>` first, and when `<branch>` is an existing local branch
   it runs `die_if_checked_out` for it with the current worktree skipped, so a branch held by any other worktree
   refuses the rebase; the command has no `--ignore-other-worktrees`. [CODE S-sx4rosvv: builtin/rebase.c#cmd_rebase;
   CODE S-3qf7ndi6: branch.c#die_if_checked_out]
-- Forcing a branch to move is refused the same way: creating a branch with `-f` over one that a worktree
-  uses dies "cannot force update the branch '<branch>' used by worktree at '<path>'", and `git worktree add -B`
-  runs the same check unless `--force`. [CODE S-3qf7ndi6: branch.c#validate_new_branchname; CODE S-ali5r4n7:
-  builtin/worktree.c#add (new_branch_force)]
+- `git checkout -B <branch>` goes through `die_if_checked_out` (unless `--ignore-other-worktrees`), and its
+  `create_branch` call passes `clobber_head_ok`, which skips `validate_new_branchname`: a branch held only
+  through update-refs is not refused there. `git worktree add -B <branch>` runs `die_if_checked_out` too
+  unless `--force`, then runs `git branch --force <branch>`, so with `--force` the `branch -f` refusal above
+  still applies to a branch some worktree holds through `HEAD`, a rebase, a bisect or update-refs.
+  [CODE S-i3btr2xr: builtin/checkout.c#checkout_branch; CODE S-3qf7ndi6: branch.c#create_branch; CODE
+  S-ali5r4n7: builtin/worktree.c#add (new_branch_force)]
 - No page states why git refuses. The kb's reading: refs under `refs/` are shared by every worktree while
   `HEAD`, the index and the files are each worktree's own, so a commit in one worktree moves a branch that the
   other worktree's index and files no longer match, and the source's "make things worse" comment is that case.
