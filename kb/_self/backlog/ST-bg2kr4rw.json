@@ -37,6 +37,6 @@
       "by": "operator"
     }
   ],
-  "notes": "No outside facts: the five questions ask repository rules that kb/_self documents (content-rules.md ledgers and retrieval data, tools.md, backlog.md) and no outside source states; the live docs hold nothing on them, and a public fact or gap entry for a rule the _self root answers is refused by content-rules.md (a public root holds no _self rule).",
+  "notes": "No outside facts: the five questions ask repository rules that kb/_self documents (content-rules.md ledgers and retrieval data, tools.md, backlog.md) and no outside source states; the live docs hold nothing on them, and a public fact or gap entry for a rule the _self root answers is refused by content-rules.md (a public root holds no _self rule). Operator answer to gate gaps (2026-10-14, delegated session): the goal narrowed to the two questions the public pack answers good; the three left out are repository rules the sibling stories ST-3jiwam77, ST-egz4cxar and ST-7d3r4lhc write, chosen over public gap entries content-rules.md refuses and over waiting on BG-wng7cyo2 (a draft), as the smallest reversible way to finish.",
   "claimed_by": "orch-ce5iig4g"
 }
