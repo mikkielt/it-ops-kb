@@ -74,6 +74,28 @@ TOKEN_COUNT = re.compile(
 # (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.
 TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
 CRED_PART = re.compile(rf"^(?:{CRED_WORDS}|(?:secret|password|passphrase|private|key|credential|pat|ssh)s?)$", re.I)
+# `tokens` as one of the unit nouns of a list (`units, points, tokens, requests, calls`): a run of three or more list
+# elements that holds `tokens` and at least two other unit nouns, with no credential word right before `tokens`. A bare
+# `tokens` or `tokens, rows` and a credential sense (`API tokens, units, points`) keep the class.
+UNIT_NOUN = r"(?:units|points|requests|calls|rows|bytes|lines|words)"
+LIST_ELEMENT = rf"(?:{UNIT_NOUN}|tokens)"
+LIST_SEP = r"(?:[ \t]*,[ \t]*(?:(?:and|or)[ \t]+)?|[ \t]+(?:and|or)[ \t]+)"
+UNIT_LIST = re.compile(rf"(?<![\w-])\b{LIST_ELEMENT}(?:{LIST_SEP}{LIST_ELEMENT}){{2,}}\b", re.I)
+CRED_BEFORE = re.compile(rf"\b(?:{CRED_WORDS})[-_ ]$", re.I)
+
+
+def unit_list_without_credential(text, m):
+    """Whether the UNIT_LIST match `m` in `text` lists `tokens` among two or more other unit nouns and no credential
+    word stands right before the list (`API tokens, units, points`)."""
+    words = re.findall(r"[a-z]+", m.group(0).lower())
+    others = [w for w in words if w not in ("tokens", "and", "or")]
+    return "tokens" in words and len(others) >= 2 and not CRED_BEFORE.search(text[:m.start()])
+
+
+def without_unit_lists(text):
+    """The text with each list that names `tokens` among unit nouns replaced by a space. `text` is one option or the
+    question alone: `class_reasons` calls it for each of them, so a list never runs across the join of two."""
+    return UNIT_LIST.sub(lambda m: " " if unit_list_without_credential(text, m) else m.group(0), text)
 
 
 def without_token_counts(text):
@@ -222,10 +244,14 @@ def class_reasons(item, gate):
     for t in touches:
         if names_secret(t):
             found.setdefault("secrets", []).append(f"touch '{t}'")
-    text = f"{gate.get('question', '')} {' '.join(map(str, gate.get('options', []) or []))} {command_words(gate)}"
+    options = [str(o) for o in gate.get("options", []) or []]
+    text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
     push_text = without_benign_push_words(text, str(gate.get("question", "")))
+    # a unit-noun list is read within the question or one option, never across the join of two texts
+    secrets_text = without_token_counts(" ".join(
+        without_unit_lists(str(p)) for p in [gate.get("question", ""), *options, command_words(gate)]))
     for cls, rx in QUESTION_WORDS.items():
-        m = rx.search(without_token_counts(text) if cls == "secrets" else push_text if cls == "push" else text)
+        m = rx.search(secrets_text if cls == "secrets" else push_text if cls == "push" else text)
         if m:
             found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
     m = RULE_WORD.search(text)
