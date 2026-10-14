@@ -24,6 +24,21 @@
   "depends_on": [
     "ST-suo7g2om"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does line 36 of linux-nftables.md state that flush table keeps a loaded set's elements?",
+      "options": [
+        "Reword line 36 in place",
+        "Add a separate new fact line"
+      ],
+      "recommendation": "Reword line 36 in place",
+      "class": "design",
+      "answer": "Reword line 36 in place",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
   ],
