@@ -2,7 +2,7 @@
   "id": "BG-tl74zfyr",
   "kind": "bug",
   "title": "doc-lookup-sources does not say why GitLab's MCP server, generally available since GitLab 19.5, has no row in the table",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,
@@ -58,5 +58,18 @@
     }
   ],
   "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: the kb's GA claim is right (docs.gitlab.com/user/model_context_protocol/mcp_server/: Generally available, changed from beta in GitLab 19.5; doc-lookup-sources.md:17, :37, :110 say so). The table's applies_to (:4) is stable MCP servers and APIs that return current official documentation; the GitLab server serves a GitLab instance's project, issue and MR data. The stated reason for leaving it out (needs a token) does not separate it from rank 5, GitHub's remote MCP, which needs a token and is in the table. Its tool list is JS-rendered and was not read.",
-  "claimed_by": "orch-xt4t63xw"
+  "evidence": {
+    "commit": "873317acc02809cf5b84870237898d64ffc22acd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;c=open('kb/public/agents/doc-lookup-sources.csv',encoding='utf-8').read();m=[l for l in open('kb/public/agents/doc-lookup-sources.md',encoding='utf-8') if 'GitLab' in l and 'applies_to' in l];print('GitLab MCP' in c,len(m));sys.exit(0 if 'GitLab MCP' in c or m else 1)"
+        ],
+        "exit": 0,
+        "sha256": "9e9c1ef31d2bd203"
+      }
+    ]
+  }
 }
