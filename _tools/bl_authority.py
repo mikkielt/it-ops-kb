@@ -16,6 +16,7 @@ import fnmatch
 import os
 import posixpath
 import re
+from pathlib import Path
 
 from bl_base import START_GATE
 
@@ -176,27 +177,43 @@ def rule_paths(text):
 
 
 # Three wordings that hold a `push` word and are no push: the upload date of a package release (`uploaded` beside a
-# date or a time), a kb topic path (`gitlab/git-commit-paths-and-symlinks`, a domain `gitlab` before a slug) and a
-# display-only count question, where the push is a noun after `its` or `the` that only places a count or a list
-# (`how many unpushed commits does land list before its push?`). Every other use of those words keeps the class.
+# date or a time), a kb topic path (`gitlab/git-commit-paths-and-symlinks`, a domain `gitlab` before the hyphenated slug
+# of an article that exists under `kb/*/gitlab/`: `gitlab/main` and any other ref is no topic) and a display-only count
+# question, where the push is a noun after a preposition (`before its push`) that only places a count or a list
+# (`how many unpushed commits does land list before its push?`) and no word of the question acts on it or asks for it
+# (`should`, `retry`, `run`, `force`). Every other use of those words keeps the class.
 UPLOAD_DATE = re.compile(
     r"\buploaded\s+(?:(?:on|at|in)\s+)?(?=\d{4}-\d{2}-\d{2}\b|\d{1,2}:\d{2}\b|\d{1,2}\s+"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|"
     r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b)", re.I)
-TOPIC_PATH = re.compile(r"\bgitlab/[a-z0-9][a-z0-9.-]*[a-z0-9]\b")
+TOPIC_PATH = re.compile(r"\bgitlab/([a-z0-9][a-z0-9.-]*[a-z0-9])\b")
 COUNT_QUESTION = re.compile(r"\bhow (?:many|much)\b|\b(?:which|what) (?:count|number)\b", re.I)
 DISPLAY_WORD = re.compile(r"\b(?:list|lists|listed|listing|show|shows|print|prints|count|counts|name|names|report|reports)\b",
                           re.I)
-PUSH_NOUN = re.compile(r"\b(?:its|the) push\b", re.I)
+PUSH_NOUN = re.compile(r"\b(?:before|after|prior to|ahead of|until|during) (?:its|the) push\b", re.I)
+PUSH_ACTION = re.compile(
+    r"\b(?:should|may|must|shall|can|could|would|will|need|needs|do|did|retry|retries|run|runs|rerun|force|forced|redo|"
+    r"undo|skip|repeat|perform|execute|trigger|start|make|allow|approve|abort|cancel|reset|revert|enable|disable)\b",
+    re.I)
+
+
+def topic_slugs():
+    """The hyphenated slugs of the articles under `kb/*/gitlab/` of this checkout (an empty set where there is no
+    `kb/` beside `_tools/`, so a `gitlab/` path then keeps the class)."""
+    kb = Path(__file__).resolve().parent.parent / "kb"
+    return {f.stem for f in kb.glob("*/gitlab/*.md") if "-" in f.stem}
 
 
 def without_benign_push_words(text, question=None):
     """The text with the three wordings above replaced by a space: what the `push` words are searched in. `question` is
     the gate's question: a count question's push noun is blanked only in it, so an option that says `push` keeps the
-    class, and only when the question also holds a display word (`list`, `count`, `show`)."""
-    if question and question in text and COUNT_QUESTION.search(question) and DISPLAY_WORD.search(question):
+    class, and only when the question also holds a display word (`list`, `count`, `show`) and no word that acts on the
+    push or asks for it."""
+    if (question and question in text and COUNT_QUESTION.search(question) and DISPLAY_WORD.search(question)
+            and not PUSH_ACTION.search(question)):
         text = text.replace(question, PUSH_NOUN.sub(" ", question), 1)
-    return TOPIC_PATH.sub(" ", UPLOAD_DATE.sub(" ", text))
+    slugs = topic_slugs()
+    return TOPIC_PATH.sub(lambda m: " " if m.group(1) in slugs else m.group(0), UPLOAD_DATE.sub(" ", text))
 
 
 def command_words(gate):

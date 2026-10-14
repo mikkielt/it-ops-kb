@@ -84,6 +84,18 @@ def test_operator_class_is_derived_from_touches_and_question_a_lower_stored_clas
         assert ba.gate_class({"touches": []}, {**plain, "question": question}) == "ceiling", question
         assert ba.names_ceiling(question), question
     assert ba.gate_class({"touches": []}, {**plain, "question": "Which retry ceiling does the fetch take?"}) == "design"
+    # the three wordings class design (an upload date, a kb topic path, a display-only count question); a push the
+    # question acts on or asks for, and a `gitlab/` ref that is no kb topic, keep `push`
+    for question, cls in (("PyPI lists 1.2.15, uploaded 2026-10-12 22:38 UTC, as latest: which version?", "design"),
+                          ("Where do the facts live: gitlab/git-commit-paths-and-symlinks or gitlab/git-refs?", "design"),
+                          ("How many unpushed commits does land list by name before its push?", "design"),
+                          ("How many times should the worker retry the push after the list is shown?", "push"),
+                          ("How many commits does land list, and should the worker run the push?", "push"),
+                          ("How many commits does land list before the push, and may the worker force it?", "push"),
+                          ("Should land reset to gitlab/main?", "push"),
+                          ("Should the worker force-update gitlab/main?", "push"),
+                          ("Where do the facts live: gitlab/git-refs or gitlab/hotfix-branch?", "push")):
+        assert ba.class_reasons({"touches": []}, {**plain, "question": question})[0] == cls, question
     # each secrets word planted inside each shape `without_token_counts` and `without_unit_lists` blank keeps `secrets`: an
     # exception that removed the word with the shape would fall the gate to design (SECRET_TOKENS, PASSWORD_TOKENS)
     def secrets(question, *options):
