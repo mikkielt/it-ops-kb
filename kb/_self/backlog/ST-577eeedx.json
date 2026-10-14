@@ -2,7 +2,7 @@
   "id": "ST-577eeedx",
   "kind": "story",
   "title": "Research sprint goal: Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hlt2tdel",
   "goal_research": true,
   "priority": "P1",
@@ -23,5 +23,19 @@
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "notes": "Planned 2026-10-13: rag.py pack on the four questions gave coverage weak for each, in the public kb (off-domain: Scrum, Rust, xdist lines) and in --root _self (the rules at backlog.md:134, 130, 318 and tools.md:60, 81 answer them, no tested question matches). Its done needs 'No outside facts: the four questions are the kb's own rules, answered by kb/_self and no vendor source states them' unless the worker adds a tested _self eval row.",
-  "claimed_by": "orch-hlt2tdel"
+  "evidence": {
+    "commit": "952e60b95b77738f86d6d99baeb2c3feb0942f14",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-577eeedx"
+        ],
+        "exit": 0,
+        "sha256": "baed07d84a6814c8"
+      }
+    ]
+  }
 }
