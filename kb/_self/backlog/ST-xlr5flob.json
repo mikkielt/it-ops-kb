@@ -7,7 +7,7 @@
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/shared-state-concurrency where no article fits: How do Amazon S3 conditional writes with If-None-Match and If-Match let several writers update one object without lost updates? How do Azure Blob Storage ETags and blob leases give optimistic and pessimistic concurrency? What does the Redis documentation say a distributed lock guarantees and what it does not? How does LangGraph's PostgresStore write an item when two writers put the same key, read from its source at a pinned commit?",
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/shared-state-concurrency where no article fits; questions: How do Amazon S3 conditional writes with If-None-Match and If-Match let several writers update one object without lost updates? How do Azure Blob Storage ETags and blob leases give optimistic and pessimistic concurrency? What does the Redis documentation say a distributed lock guarantees and what it does not? How does LangGraph's PostgresStore write an item when two writers put the same key, read from its source at a pinned commit?",
   "checks": [
     {
       "run": [
@@ -47,6 +47,23 @@
         "the latest langgraph-checkpoint-postgres release tag": "ST-xlr5flob"
       },
       "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does this item's goal end its lead-in with '; questions: ' so researched reads the first question alone, as SP-ce5iig4g did for ST-bg2kr4rw?",
+      "options": [
+        "punctuate the lead-in, words unchanged",
+        "leave the goal as planned and let researched fail its first question"
+      ],
+      "recommendation": "punctuate the lead-in, words unchanged",
+      "do": {
+        "punctuate the lead-in, words unchanged": "ST-xlr5flob",
+        "leave the goal as planned and let researched fail its first question": "ST-xlr5flob"
+      },
+      "class": "design",
+      "answer": "punctuate the lead-in, words unchanged",
+      "by": "agent"
     }
   ],
   "claimed_by": "orch-state"
