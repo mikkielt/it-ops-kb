@@ -2,7 +2,7 @@
   "id": "TK-2auyrlan",
   "kind": "task",
   "title": "land names why an item has no work rows, a claim in the orchestrator's own session included",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-h66j7wm5",
   "priority": "P2",
   "rank": 2,
@@ -32,5 +32,6 @@
     "_tools/test_land_e2e.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-g2ssvhi2"
 }
