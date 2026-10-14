@@ -741,6 +741,9 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 1e13ee6025a4,agents/codebase-mapping.md,S-ci5jq2sq,located,"type: (int, int) -> int",clean;indentation;classdef;docstr;functiondef;asyncfunctiondef;true;def,7d4c85ab0f22f033,":class:FunctionDef, :class:AsyncFunctionDef, :class:ClassDef, or :class:Module node), or None if it has no docstring. If clean is true, clean up the docstring's indentation with",2026-10-10
 2131cc06e1bd,agents/codebase-mapping.md,S-gfjnysog,unlocated:no-match,,,,,2026-10-13
 2131cc06e1bd,agents/codebase-mapping.md,S-sipjyeoi,unlocated:no-match,,,,,2026-10-13
+23fe85ff1a4a,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-14
+23fe85ff1a4a,agents/codebase-mapping.md,S-uxljwlpn,unlocated:no-match,,,,,2026-10-14
+23fe85ff1a4a,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-14
 2446edc057b4,agents/codebase-mapping.md,S-vstmwlcx,unlocated:no-match,,,,,2026-10-10
 2558661a1366,agents/codebase-mapping.md,S-5mnhlz54,unlocated:no-match,,,,,2026-10-10
 2558661a1366,agents/codebase-mapping.md,S-kyv336v3,unlocated:no-match,,,,,2026-10-10
@@ -790,9 +793,6 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 648565d2e264,agents/codebase-mapping.md,S-kxcc7a7a,unlocated:no-match,,,,,2026-10-10
 648565d2e264,agents/codebase-mapping.md,S-zelwtfks,unlocated:no-match,,,,,2026-10-13
 649bd4782db8,agents/codebase-mapping.md,S-ot3h76t5,located,,ast.pars;ast;ignor;pars;comment;token,95d3de3c19a9854a,"Added :data:TYPECOMMENT, :data:TYPEIGNORE, :data:COLONEQUAL. Added :data:!AWAIT and :data:!ASYNC tokens back (they're needed to support parsing older Python versions for :func:ast.parse with",2026-10-14
-65c34fecc523,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
-65c34fecc523,agents/codebase-mapping.md,S-uxljwlpn,unlocated:no-match,,,,,2026-10-13
-65c34fecc523,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
 66233d1c8417,agents/codebase-mapping.md,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
 665df78eaa42,agents/codebase-mapping.md,S-ot3h76t5,located,,continu;over;physical;generat;logical;line,b51e404e193a8996,generated when a logical line of code is continued over multiple physical lines,2026-10-14
 67212a29a8ae,agents/codebase-mapping.md,S-xdf63oro,located,,json_output_version;1.0;output-format;ptag;version;_typ;format;ctag,33890e010ea42391,"$ ctags --extras=+p --output-format=json --fields=-s input.py {""type"": ""ptag"", ""name"": ""JSONOUTPUTVERSION"", ""path"": ""1.0"", ""pattern"": ""in development""}",2026-10-10
