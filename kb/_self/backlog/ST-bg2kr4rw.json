@@ -2,7 +2,7 @@
   "id": "ST-bg2kr4rw",
   "kind": "story",
   "title": "Research sprint goal: Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ce5iig4g",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-ce5iig4g"
 }
