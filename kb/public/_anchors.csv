@@ -3904,30 +3904,7 @@ ba9df5380042,auth/role-source-options.md,S1287,unlocated:no-match,,,,,2026-10-10
 ba9df5380042,auth/role-source-options.md,S1355,unlocated:no-match,,,,,2026-10-10
 bb8ff6a718ba,auth/role-source-options.md,S1286,located,JavaScript,api;see;object;checkmembergroup;directory;check;member;group,b11376ff92af51aa,,2026-10-10
 eb651403573a,auth/role-source-options.md,S1287,unlocated:no-match,,,,,2026-10-10
-043d471ceebe,auth/shamir-secret-sharing.md,S-pidk4hju,located,,2.0;licens;mpl;mpl-2.0;packag,a668e01753b529ac,// SPDX-License-Identifier: MPL-2.0 package shamir,2026-10-14
-0c931f055cce,auth/shamir-secret-sharing.md,S-pidk4hju,unlocated:no-match,,,,,2026-10-14
-10ccdd015f3a,auth/shamir-secret-sharing.md,S-ujdydznw,unlocated:no-match,,,,,2026-10-14
-1b60a672d45b,auth/shamir-secret-sharing.md,S-r3t6wvk5,located,2.2.8 - Key groups > Key groups,split;fragment;shar;threshold;need;each;group;decrypt,5d199e3c1f06bf9c,"Shamir's Secret Sharing to split the data key such that each key group has a fragment, each key in the key group can decrypt that",2026-10-14
-1f5207fd7c0c,auth/shamir-secret-sharing.md,S-pidk4hju,unlocated:no-match,,,,,2026-10-14
-20ccd5b8dc04,auth/shamir-secret-sharing.md,S-tmotj3si,unlocated:no-match,,,,,2026-10-14
-27784cc20cad,auth/shamir-secret-sharing.md,S-ujdydznw,unlocated:no-match,,,,,2026-10-14
-4be9d3a6e4d9,auth/shamir-secret-sharing.md,S-r3t6wvk5,unlocated:no-match,,,,,2026-10-14
-4be9d3a6e4d9,auth/shamir-secret-sharing.md,S-tmotj3si,unlocated:no-match,,,,,2026-10-14
-541cb33940d4,auth/shamir-secret-sharing.md,S-eb3lde4q,located,Usage,0.1;branch;git;secret-share-split;split;cargo;install;sss-cli,4ecfac71cac25d63,"cargo install --git https://github.com/dsprenkels/sss-cli --branch v0.1 # Make 4 shares with recombination threshold 3 echo ""Tyler Durden isn't real."" | secret-share-split -n 4 -t 3",2026-10-14
-66d454a232e5,auth/shamir-secret-sharing.md,S-bi6fdfos,unlocated:no-match,,,,,2026-10-14
-66d454a232e5,auth/shamir-secret-sharing.md,S-tmotj3si,unlocated:no-match,,,,,2026-10-14
-66d454a232e5,auth/shamir-secret-sharing.md,S-ujdydznw,unlocated:no-match,,,,,2026-10-14
-8568f3f8ea65,auth/shamir-secret-sharing.md,S-tmotj3si,located,Shamir secret sharing library > Technical details,lowest;term;polynomial;shamir;secret,f51f7313978a8703,Shamir secret sharing works by generating a polynomial (e.g. 33x³ + 8x² + 29x + 42). The lowest term is the secret and is just,2026-10-14
-8900b5f15ac4,auth/shamir-secret-sharing.md,S-kanbehag,unlocated:no-match,,,,,2026-10-14
-8900b5f15ac4,auth/shamir-secret-sharing.md,S-ujdydznw,unlocated:no-match,,,,,2026-10-14
-9f23466bbef9,auth/shamir-secret-sharing.md,S-eb3lde4q,located,,combin;split;tool;sss;secret;shar,4a115e3610bf6e8e,"secret-share-{split,combine} ![Build Status](https://travis-ci.org/dsprenkels/sss-cli) This tool allows for securely splitting and recombining secrets using a secure",2026-10-14
-b2f2f0f25a13,auth/shamir-secret-sharing.md,S-ujdydznw,unlocated:no-match,,,,,2026-10-14
-b41e47e919ed,auth/shamir-secret-sharing.md,S-ujdydznw,unlocated:no-match,,,,,2026-10-14
 ba76788b4e69,auth/shamir-secret-sharing.md,S-tmotj3si,located,Shamir secret sharing library > Usage,maximum;each;implement;number;byte;shar,c25bc8d2a2420bc3,113 bytes each. This library is implemented in such a way that the maximum number of shares is 255.,2026-10-14
-bb610dd18ebd,auth/shamir-secret-sharing.md,S-pkor3bz3,unlocated:no-match,,,,,2026-10-14
-bb610dd18ebd,auth/shamir-secret-sharing.md,S-qt5gzwb2,unlocated:no-match,,,,,2026-10-14
-da3d91ad9295,auth/shamir-secret-sharing.md,S-tmotj3si,unlocated:no-match,,,,,2026-10-14
-e2eeb57b5867,auth/shamir-secret-sharing.md,S-tmotj3si,unlocated:no-match,,,,,2026-10-14
 07183c2751c1,auth/sql-authz.md,S1206,unlocated:no-match,,,,,2026-10-10
 07183c2751c1,auth/sql-authz.md,S1207,located,Microsoft Entra authentication for SQL Server overview - SQL Server | Microsoft Learn > Connect SQL Server to Azure with Microsoft Entra ID > Setting up Microsoft Entra authentication without Azure Ar,registration;registry;certificat;without;arc;window;server;azur,0ae0d86071e0dc73,"You can also set up Microsoft Entra authentication for SQL Server on Windows without using Azure Arc. This approach involves manually configuring certificates, registry settings,",2026-10-10
 07183c2751c1,auth/sql-authz.md,S-jyoprgy5,unlocated:no-match,,,,,2026-10-10
