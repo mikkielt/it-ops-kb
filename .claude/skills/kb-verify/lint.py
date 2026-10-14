@@ -5,8 +5,10 @@
   lint.py auth public/dsc    only topics whose path starts with one of these prefixes (a path in its root, a
                              qualified path `<root>/<path>`, or that path from the repository, `kb/<root>/<path>`, or
                              absolute); findings name files by their qualified path. An argument that matches no file
-                             of any root, is no other existing file and no path git has a history of (a deleted
-                             article) exits 1 naming it, so a mistyped path never reads as a clean lint
+                             of any root, is no file or directory of kb/_self/ (the kb's own docs, under no root) and
+                             no path of a root or of kb/_self/ git has a history of (a deleted article, as a landing
+                             passes it) exits 1 naming it, so a mistyped path, a file outside kb/ or kb/ itself
+                             never reads as a clean lint
   lint.py --json             machine output
   lint.py --candidates [PREFIX...]   migration lists, not findings: DOC facts that cite only source-code files, not
                              published contracts such as schemas (CODE candidates; kbfacts.contract_source), and
@@ -195,32 +197,39 @@ def qualified(arg):
     return arg
 
 
-def kb_file(path):
-    """Whether `path` (qualified, or from `kb/` or the repository) names an existing file or directory of a root or of
-    the kb directory (its own docs, `kb/_self/`, are under no root)."""
-    root, rel = kbcommon.split(path)
-    if root:
-        return os.path.exists(os.path.join(root.path, rel))
+def kb_self(path):
+    """Whether `path` (from `kb/`, from the repository, or absolute) names an existing file or directory of the kb's
+    own docs, `kb/_self/`, which are under no root and which a landing passes."""
     for base in (kbcommon.KB_DIR, kbcommon.HOME):
         full = os.path.normpath(os.path.join(base, path))
-        if os.path.exists(full) and (full + os.sep).startswith(kbcommon.KB_DIR + os.sep):
+        if os.path.exists(full) and (full + os.sep).startswith(kbcommon.SELF + os.sep):
             return True
     return False
 
 
 def refused(args):
     """The arguments (as qualified() gives them) that select nothing: no .md file of any root starts with it, it names
-    no existing file or directory of a root or of kb/ (the kb's own docs are under no root, and a landing passes
-    them), and git has no history of the path (a deleted article, which a landing's changed paths hold)."""
+    no existing file or directory of `kb/_self/` (the kb's own docs are under no root, and a landing passes them), and
+    git has no history of it in its root or in `kb/_self/` (a deleted article, which a landing's changed paths hold).
+    A path that exists and is no article, or lies outside the roots and `kb/_self/` (a tool, README.md, `kb/`
+    itself), is refused, history or not."""
     files = list(root_files())
     out = []
     for a in args:
         path = a.rstrip("/")
-        if any(wanted(root, p, [a]) for root, p in files) or kb_file(path):
+        if any(wanted(root, p, [a]) for root, p in files) or kb_self(path):
             continue
         root, rel = kbcommon.split(path)
-        homes = [(root.path, rel)] if root else [(kbcommon.KB_DIR, path), (kbcommon.HOME, path)]
-        if any((git_out(at, "log", "-1", "--format=%H", "--", p) or "").strip() for at, p in homes):
+        if root:
+            home = (root.path, rel)
+        elif path.startswith("_self/"):
+            home = (kbcommon.KB_DIR, path)
+        elif path.startswith("kb/_self/"):
+            home = (kbcommon.HOME, path)
+        else:
+            home = None
+        if (home and not os.path.exists(os.path.join(*home))
+                and (git_out(home[0], "log", "-1", "--format=%H", "--", home[1]) or "").strip()):
             continue
         out.append(a)
     return out
