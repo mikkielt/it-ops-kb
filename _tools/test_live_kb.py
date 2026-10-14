@@ -2,6 +2,7 @@
 (the generated index), the lookup eval (rag.py eval), the pack format and the questions it routes by kind to the tool that holds the answer, and the plugin's one set of the sprint text. Each gate also fails on a planted input. The pack
 index's unit cache is pinned on a planted fixture root, not on the live kb."""
 import argparse, collections, csv, datetime, hashlib, json, math, os, re, shutil, sqlite3, subprocess, sys, time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
@@ -46,6 +47,14 @@ def fixture_root(path, cited):
     for name in ("_answers.md", "_conflicts.md"):
         write(path / name, "# " + name + "\n")
     write(path / "_gaps.md", "# Gaps\n")
+
+
+def eval_live():
+    """(exit code, output) of `rag.py eval` over the live kb's eval sets: one process for each root and one for kb/_self,
+    side by side (eval_cases takes each root's file in turn, so together they ask the default run's questions)."""
+    names = [r.name for r in kbcommon.roots()] + [kbfacts.SELF_ROOT]
+    with ThreadPoolExecutor(len(names)) as pool:
+        return list(pool.map(lambda name: tool("rag.py", "eval", "--root", name), names))
 
 
 def test_check_py_passes_on_the_live_kb():
@@ -348,10 +357,14 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
 
 
 def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline_and_revalidate_down_window_every_request_and_revalidate_down_window_redirect_target(monkeypatch, tmp_path, capsys):
-    code, out = tool("rag.py", "eval")
-    m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+", out, re.M)
-    assert m, out[-1500:]
-    assert code == 0 and int(m.group(1)) > 0 and m.group(1) == m.group(2), out[-3000:]
+    counted = []
+    for code, out in eval_live():
+        m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+ mean_chars=\d+ noted=(\d+)", out, re.M)
+        assert m, out[-1500:]
+        assert code == 0 and m.group(1) == m.group(2), out[-3000:]
+        counted.append(tuple(int(x) for x in m.group(1, 3)))
+    # the default run's noted ceiling is over all its questions, the runs' own is over each root's
+    assert sum(q for q, _ in counted) > 0 and sum(n for _, n in counted) <= rag.NOTED_BASELINE, counted
     # pack --revalidate asks the cited sources of the printed fact lines, resolves only those lines' anchors and marks
     # each; every response is planted (a url not listed raises), and nothing is written but under the cache directory
     real_request = provider.request
@@ -985,8 +998,15 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
     with open(heldout, encoding="utf-8", newline="") as f:
         held_questions = {r["question"] for r in csv.DictReader(f)}
-    real, asked, rows = kbfacts.pack, [], []
-    monkeypatch.setattr(kbfacts, "pack", lambda q, *a, **k: asked.append(q) or real(q, *a, **k))
+    real, asked, rows, packed = kbfacts.pack, [], [], {}
+
+    def counting(q, *a, **k):
+        asked.append(q)
+        out = real(q, *a, **k)
+        if not (a or k):  # the plain pack of each question is what the checks below weigh
+            packed.setdefault(q, out)
+        return out
+    monkeypatch.setattr(kbfacts, "pack", counting)
 
     class Rows:
         def row(self, scenario, case, arm, metric, value, runs="", model="", note=""):
@@ -996,7 +1016,7 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
     offkb = rag.offkb_questions()
     assert held_questions and not held_questions & set(asked), held_questions & set(asked)
     assert set(asked) == {r["question"] for r in eval_rows() if r["expect_verdict"] == "good"} | set(offkb)
-    packs = {q: real(q) for q in set(asked)}
+    packs = {q: packed[q] if q in packed else real(q) for q in set(asked)}
     noted = {q: "check: the best articles lie in" in p["text"] for q, p in packs.items()}
     scatter = {(arm, metric): (value, note) for case, arm, metric, value, note in rows}
     off = [q for q in offkb if packs[q]["top_score"] is not None]  # a `good` the note applies to
@@ -1031,415 +1051,430 @@ def test_pack_scatter_check_notes_a_scattered_weak_good_and_pack_routes_kind_to_
         w.writerows(plan)
     res = rag.run_eval(str(plant))
     assert res["noted"] == len(held[:1]) and [r["noted"] for r in res["rows"]] == [True] * len(held[:1]) + [False], res["noted"]
-    # planted: a root whose lead article holds the question's subject in passing, a price asked with no amount stated,
-    # and a question its lead article answers outright, which stays clean
-    fx = tmp_path / "passing"
-    fixture_root(fx, SID)
-    facts = {"hardening": ("Print server hardening", ["Encryption at rest protects the sweeper files of the Spooler service."]),
-             "capacity": ("Print capacity", ["The recommended number of queues is 50 for the Spooler.",
-                                             "Spooled files live on disk, and the Spooler keeps them."]),
-             "licensing": ("Licensing", ["The Spooler service plan includes the sweeper licence per print server.",
-                                         "A licence for the Spooler service plan is bought through the reseller."]),
-             "labels": ("Labels", ["The price tag of an item is printed on its label."]),
-             "sizing": ("Sizing", [f"The recommended number of {w} is {n}." for n, w in enumerate(
-                 "gadgets widgets lamps fans pumps valves".split(), 2)]),
-             "relay": ("Relay", ["The Relay Gateway service listens on port 9100 for print jobs.",
-                                 "Archived queues keep a retention window of 30 days for the Spooler.",
-                                 "The relay agent writes its logs to the local disk."]),
-             "misc": ("Miscellany", [f"Item {w} behaves in its own way {n}." for n, w in enumerate(
-                 "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau".split())])}
-    for slug, (title, lines) in facts.items():
-        write(fx / "print" / f"{slug}.md",
-              f"---\ntopic: print/{slug}\npriority: P1\napplies_to: \"PL-SRV-0042 print servers\"\nretrieved_utc: 2026-09-26\n"
-              f"sources: [{SID}]\nstatus: partial\n---\n\n# {title}\n\n## Summary\nA fixture.\n\n## Facts\n"
-              + "".join(f"- {line} [DOC {SID}]\n" for line in lines) + "\n## Reference\n\n## Examples\n")
-    env = {**os.environ, "KB_ROOTS": str(fx), "KB_INDEX": str(tmp_path / "packidx")}
-    env.pop("KB_DOC2QUERY", None)
 
-    def fixture_pack(question):
-        p = subprocess.run([sys.executable, "-c", PACK_FIXTURE, TOOLS, question], capture_output=True, text=True,
-                           encoding="utf-8", errors="replace", env=env)
-        assert p.returncode == 0, p.stdout[-1500:] + p.stderr[-1500:]
-        return p.stdout
-    for question, kind in (("What is the recommended number of sweeper files for the Spooler?", "held by only a few lines"),
-                           ("What is the price of the Spooler service plan licence?", "asks for a price"),
-                           ("How do I set the Relay Gateway retention window for the Spooler queues?", "Relay Gateway beside")):
-        out = fixture_pack(question)
-        assert re.search(r"^coverage: good\b", out, re.M) and "check: " in out and kind in out, out[:1200]
-        assert re.search(r"^route: split$", out, re.M) and re.search(r"^kb lacks: \S", out, re.M), out[:1200]
-    # one key word of five missing from the lead's facts, its rare word printed there, is a paraphrase: clean
-    for question in ("What is the recommended number of queues for the Spooler?",
-                     "What is the recommended number of queues for the Spooler item?",
-                     "What port does the Relay Gateway service listen on for print jobs?"):
-        out = fixture_pack(question)
-        assert re.search(r"^coverage: good\b", out, re.M) and not re.search(r"^(check|route):", out, re.M), out[:1200]
-    assert not kbfacts.PRICE_ASK.search("What does it cost in resource units?")
-    assert kbfacts.PRICE_ASK.search("How much is a licence per user per month?") and not kbfacts.PRICE_ASK.search("How much memory does it use?")
-    assert kbfacts.PRICE_ASK.search("What does it cost per user?") and kbfacts.PRICE_ASK.search("What is the price in units of 5?")
-    assert not any(kbfacts.PRICE_ASK.search(q) for q in (  # a unit cost or a memory or data quantity asks for no money
-        "How many resource units does a Graph getMemberGroups call cost?",
-        "How much memory per device does the Intune agent use?", "How much data per month can the Graph usage reports return?"))
-    assert all(kbfacts.PRICE_ASK.search(q) for q in (
-        "How much is a Microsoft 365 E5 licence per user per month?", "What is the current price of a Microsoft 365 E5 licence?"))
-    assert kbfacts.AMOUNT.search("It costs $36 per user a month") and kbfacts.AMOUNT.search("36 EUR")
-    assert not kbfacts.AMOUNT.search("Windows 10/11 Enterprise E3/E5 licence") and kbfacts.PRICE_ASK.search("How much does it cost")
-    code, out = tool("rag.py", "pack", good_row()["question"])
-    assert code == 0, out[-1500:]
-    assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
-    assert re.search(r"\S+\.md:\d+.*\[(DOC|CODE|DER|COMMUNITY|UNK)\b", out), out[:1500]
-    assert kbfacts.routed(good_row()["question"]) is None  # a question of no kind a tool decides ranks as pack ranks it
-    # router_broad_lookups: a kind expert never takes a question whose plain pack is good. The probe set is built from
-    # the kb: one `What does the kb say about <title>?` per article (its topic where it has no heading), then the eval,
-    # held-out and off-kb questions; each is named that kbfacts.routed answers while kbfacts.pack is good on an article
-    def hijacked(questions):
-        out = []
-        for q in dict.fromkeys(questions):
-            res = kbfacts.routed(q)
-            plain = kbfacts.pack(q) if res else None
-            if res and plain["verdict"] == "good" and plain["paths"]:
-                out.append(f"{q} (routed by kind: {', '.join(res['routed']['kinds'])}; pack good on {plain['paths'][0]})")
-        return out
 
-    def title_of(path, meta):
-        head = re.search(r"^# (.+)$", kbfacts.read(path) or "", re.M)
-        return head.group(1).strip() if head else meta["topic"].rsplit("/", 1)[-1].replace("-", " ")
-    with open(heldout, encoding="utf-8", newline="") as f:
-        held_rows = [r["question"] for r in csv.DictReader(f)]
-    probe = [f"What does the kb say about {title_of(p, m)}?" for p, m in sorted(kbfacts.articles().items())]
-    probe += [r["question"] for r in eval_rows()] + held_rows + offkb
-    assert len(probe) > len(kbfacts.articles()) + len(eval_rows()), len(probe)
-    memo = {}
-    plain_read = kbfacts.read
+class TestPackNotesOnAPlantedRoot:
+    def test_pack_notes_a_subject_held_in_passing_a_price_asked_with_no_amount_and_a_name_split_over_facts_on_a_planted_root(self, tmp_path):
+        # the three notes of the pack on a planted root, and a clean pack of the live kb for a question of its own
+        # planted: a root whose lead article holds the question's subject in passing, a price asked with no amount stated,
+        # and a question its lead article answers outright, which stays clean
+        fx = tmp_path / "passing"
+        fixture_root(fx, SID)
+        facts = {"hardening": ("Print server hardening", ["Encryption at rest protects the sweeper files of the Spooler service."]),
+                 "capacity": ("Print capacity", ["The recommended number of queues is 50 for the Spooler.",
+                                                 "Spooled files live on disk, and the Spooler keeps them."]),
+                 "licensing": ("Licensing", ["The Spooler service plan includes the sweeper licence per print server.",
+                                             "A licence for the Spooler service plan is bought through the reseller."]),
+                 "labels": ("Labels", ["The price tag of an item is printed on its label."]),
+                 "sizing": ("Sizing", [f"The recommended number of {w} is {n}." for n, w in enumerate(
+                     "gadgets widgets lamps fans pumps valves".split(), 2)]),
+                 "relay": ("Relay", ["The Relay Gateway service listens on port 9100 for print jobs.",
+                                     "Archived queues keep a retention window of 30 days for the Spooler.",
+                                     "The relay agent writes its logs to the local disk."]),
+                 "misc": ("Miscellany", [f"Item {w} behaves in its own way {n}." for n, w in enumerate(
+                     "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau".split())])}
+        for slug, (title, lines) in facts.items():
+            write(fx / "print" / f"{slug}.md",
+                  f"---\ntopic: print/{slug}\npriority: P1\napplies_to: \"PL-SRV-0042 print servers\"\nretrieved_utc: 2026-09-26\n"
+                  f"sources: [{SID}]\nstatus: partial\n---\n\n# {title}\n\n## Summary\nA fixture.\n\n## Facts\n"
+                  + "".join(f"- {line} [DOC {SID}]\n" for line in lines) + "\n## Reference\n\n## Examples\n")
+        env = {**os.environ, "KB_ROOTS": str(fx), "KB_INDEX": str(tmp_path / "packidx")}
+        env.pop("KB_DOC2QUERY", None)
 
-    def read_once(path):
-        if path not in memo:
-            memo[path] = plain_read(path)
-        return memo[path]
-    with monkeypatch.context() as mp:
-        mp.setattr(kbfacts, "read", read_once)
-        found = hijacked(probe)
-        assert not found, found
-        # router_broad_lookups_expert_phrasings: each kind expert's own phrasings of what the kb holds (a source id it
-        # cites in each shape, a decision row of each status, each domain, the first open gap and conflict entries'
-        # titles, with each cue word) are named that kbfacts.routed does not answer by that expert, so a narrowed cue
-        # that drops a common phrasing fails at its item's landing, not in a later review
-        cited_memo, cited_lines = {}, kbfacts.cited_lines  # the same id is scanned for once, whatever the phrasing
+        def fixture_pack(question):
+            p = subprocess.run([sys.executable, "-c", PACK_FIXTURE, TOOLS, question], capture_output=True, text=True,
+                               encoding="utf-8", errors="replace", env=env)
+            assert p.returncode == 0, p.stdout[-1500:] + p.stderr[-1500:]
+            return p.stdout
+        for question, kind in (("What is the recommended number of sweeper files for the Spooler?", "held by only a few lines"),
+                               ("What is the price of the Spooler service plan licence?", "asks for a price"),
+                               ("How do I set the Relay Gateway retention window for the Spooler queues?", "Relay Gateway beside")):
+            out = fixture_pack(question)
+            assert re.search(r"^coverage: good\b", out, re.M) and "check: " in out and kind in out, out[:1200]
+            assert re.search(r"^route: split$", out, re.M) and re.search(r"^kb lacks: \S", out, re.M), out[:1200]
+        # one key word of five missing from the lead's facts, its rare word printed there, is a paraphrase: clean
+        for question in ("What is the recommended number of queues for the Spooler?",
+                         "What is the recommended number of queues for the Spooler item?",
+                         "What port does the Relay Gateway service listen on for print jobs?"):
+            out = fixture_pack(question)
+            assert re.search(r"^coverage: good\b", out, re.M) and not re.search(r"^(check|route):", out, re.M), out[:1200]
+        assert not kbfacts.PRICE_ASK.search("What does it cost in resource units?")
+        assert kbfacts.PRICE_ASK.search("How much is a licence per user per month?") and not kbfacts.PRICE_ASK.search("How much memory does it use?")
+        assert kbfacts.PRICE_ASK.search("What does it cost per user?") and kbfacts.PRICE_ASK.search("What is the price in units of 5?")
+        assert not any(kbfacts.PRICE_ASK.search(q) for q in (  # a unit cost or a memory or data quantity asks for no money
+            "How many resource units does a Graph getMemberGroups call cost?",
+            "How much memory per device does the Intune agent use?", "How much data per month can the Graph usage reports return?"))
+        assert all(kbfacts.PRICE_ASK.search(q) for q in (
+            "How much is a Microsoft 365 E5 licence per user per month?", "What is the current price of a Microsoft 365 E5 licence?"))
+        assert kbfacts.AMOUNT.search("It costs $36 per user a month") and kbfacts.AMOUNT.search("36 EUR")
+        assert not kbfacts.AMOUNT.search("Windows 10/11 Enterprise E3/E5 licence") and kbfacts.PRICE_ASK.search("How much does it cost")
+        code, out = tool("rag.py", "pack", good_row()["question"])
+        assert code == 0, out[-1500:]
+        assert re.search(r"^coverage: good\b", out, re.M), out[:1500]
+        assert re.search(r"\S+\.md:\d+.*\[(DOC|CODE|DER|COMMUNITY|UNK)\b", out), out[:1500]
+        assert kbfacts.routed(good_row()["question"]) is None  # a question of no kind a tool decides ranks as pack ranks it
 
-        def cited_once(ids):
-            if tuple(ids) not in cited_memo:
-                cited_memo[tuple(ids)] = cited_lines(ids)
-            return cited_memo[tuple(ids)]
-        mp.setattr(kbfacts, "cited_lines", cited_once)
 
-        def phrasings():
+class TestRouterBroadLookups:
+    def test_router_broad_lookups_leave_each_question_whose_plain_pack_is_good_to_the_pack_and_each_expert_phrasing_routes(self, monkeypatch):
+        heldout = os.path.join(os.path.dirname(EVAL_CSV), rag.HELDOUT_FILE)
+        offkb = rag.offkb_questions()
+        # router_broad_lookups: a kind expert never takes a question whose plain pack is good. The probe set is built from
+        # the kb: one `What does the kb say about <title>?` per article (its topic where it has no heading), then the eval,
+        # held-out and off-kb questions; each is named that kbfacts.routed answers while kbfacts.pack is good on an article
+        def hijacked(questions):
             out = []
-            by_shape = {}
-            for sid in sorted(kbfacts.source_rows()):
-                by_shape.setdefault(sid.startswith("S-"), []).append(sid)  # the two shapes: S-xxxxxxxx, S1800
-            shapes = []
-            for ids in by_shape.values():
-                cited = kbfacts.cited_lines(ids[:12])
-                shapes.append(next(i for i in ids[:12] if cited.get(i)))  # the first of the shape the kb cites
-            for sid in shapes:
-                for word in ("mention", "refer to", "name", "cite"):
-                    for between in ("", "the source ", "source ", "the source id ", "source id ", "the source ID "):
-                        out.append(("cites", sid, f"Which articles {word} {between}{sid}?"))
-                out += [("cites", sid, q.format(sid)) for q in ("Which articles is {} used by?", "Where is {} mentioned in?",
-                                                                 "What is {} referenced by?", "Who cites {}?")]
-            decided = {}
-            for d in kbfacts.decision_rows():
-                decided.setdefault(d["status"], d["id"])
-            for did in decided.values():
-                out += [("decision", did, q.format(did)) for q in ("What did the operator decide in {}?",
-                                                                    "What does {} say?", "Show the decision {}.")]
-            out += [("count", "kb", q) for q in ("How many articles does the kb have?", "What is the total number of topics in the kb?",
-                                                 "List all articles of the kb with status partial.")]
-            for dom in sorted({kbfacts.bare(p).split("/", 1)[0] for p in kbfacts.articles() if "/" in kbfacts.bare(p)}):
-                out += [("count", dom, f"How many articles are in {dom}?"), ("count", dom, f"Which articles in {dom} are partial?")]
-            ledgers = (("conflict", kbcommon.CONFLICTS, ("Which sources disagree about {}?", "Do the sources conflict on {}?",
-                                                         "What do the sources contradict on {}?", "Are the sources inconsistent on {}?")),
-                       ("gap", kbcommon.GAPS, ("What does the kb say about {}?", "What does the kb cover on {}?",
-                                               "Does the kb document {}?", "Does the kb have {}?")))
-            for kind, ledger, asks in ledgers:
-                taken = 0
-                for e in kbfacts.ledger_entries(ledger):
-                    lines = (kbfacts.read(e["file"]) or "").splitlines()
-                    title = kbfacts._entry_title(e, lines)
-                    open_gap = "[UNK" in e["text"] and not kbfacts.OPEN_GAP.search(e["text"]) and not title.startswith(("Closed", "Resolved"))
-                    topic = {t for t in kbfacts.key_terms(title) if t not in kbfacts.LEDGER_STEMS}
-                    if len(topic) < kbfacts.TOPIC_MIN or kbfacts.ID.search(title) or (kind == "gap" and not open_gap):
-                        continue  # a title the expert answers by design only when it names three topic words, no source id
-                    out += [(kind, title, q.format(title)) for q in asks]
-                    taken += 1
-                    if taken == 6:
-                        break
-            return out
-
-        def unrouted(asks):
-            out = []
-            for kind, _, q in asks:
+            for q in dict.fromkeys(questions):
                 res = kbfacts.routed(q)
-                if not res or kind not in res["routed"]["kinds"]:
-                    out.append(f"{q} (expects the {kind} expert; routed by: {', '.join(res['routed']['kinds']) if res else 'none'})")
+                plain = kbfacts.pack(q) if res else None
+                if res and plain["verdict"] == "good" and plain["paths"]:
+                    out.append(f"{q} (routed by kind: {', '.join(res['routed']['kinds'])}; pack good on {plain['paths'][0]})")
             return out
-        asks = phrasings()
-        assert {k for k, _, _ in asks} == {k for k, _, _ in kbfacts.EXPERTS}, {k for k, _, _ in asks}
-        assert len({s for k, s, _ in asks if k == "cites"}) == 2, "a cited id of each shape"
-        missed = unrouted(asks)
-        assert not missed, missed
-        # planted: a cite cue narrowed to the bare forms loses the phrasings with `the source` between word and id, and
-        # keeps `mention S...`
-        with monkeypatch.context() as narrow:
-            narrow.setattr(kbfacts, "CITE_CUE", re.compile(rf"\bcit\w+\b|\b(?:mention|refer|name)\w*\s+(?-i:{kbfacts.ID.pattern})", re.I))
-            lost = unrouted([a for a in asks if a[0] == "cites"])
-        assert any("mention the source S" in q for q in lost) and not any(re.search(r"mention S", q) for q in lost), lost
-        # planted: an expert whose cue shows on every question and that answers every one is named for a good pack
-        loose = lambda q, domain, root, invalidated: [{"key": ("planted.md", 1), "kind": "gap", "path": "planted.md",  # noqa: E731
-                                                       "title": "planted", "lacks": True, "lines": ["- planted.md:1 [gap]"]}]
-        mp.setattr(kbfacts, "EXPERTS", (("gap", re.compile("."), loose),))
-        named = hijacked([good_row()["question"]])
-        assert len(named) == 1 and named[0].startswith(good_row()["question"] + " (routed by kind: gap;"), named
-    # the pool's count, decision, conflict and gap rows: the kb: hook blocks on the answer of the tool that holds it,
-    # each line with its path:line, and the row's own checks read it
-    rows = bench_pool.load_pool(kinds={"count", "decision", "conflict", "gap"})
-    assert {r["kind"] for r in rows} == {"count", "decision", "conflict", "gap"}
-    for r in rows:
-        res = kb_hook.answer("kb: " + r["question"])
-        assert res and res["decision"] == "block", (r["id"], res)
-        for check in json.loads(r["checks"]):
-            assert re.search(check, res["reason"]), (r["id"], check, res["reason"][:800])
-        assert r["kind"] == "count" or re.search(r"^- \S+:[1-9]\d* ", res["reason"], re.M), (r["id"], res["reason"][:800])
-    # experts that both answer are fused by rank alone (k = 60): a key in both lists leads; equal scores go to the key
-    fused = kbfacts.rrf([[("a.md", 1), ("b.md", 1)], [("b.md", 1), ("c.md", 1)]])
-    assert [k for k, _ in fused] == [("b.md", 1), ("a.md", 1), ("c.md", 1)], fused
-    assert [k for k, _ in kbfacts.rrf([[("z.md", 2)], [("a.md", 9)]])] == [("a.md", 9), ("z.md", 2)]
-    # a question about one model: the pack leads with that model's row of the models table, not prose that names it
-    code, out = tool("rag.py", "pack", "Claude Sonnet 5.5 model release capabilities pricing context window", "--budget", "300")
-    assert code == 0, out[-1500:]
-    assert re.search(r"^## (\S+)", out, re.M).group(1).endswith("claude/models.csv"), out[:1500]
-    # the freshness stamp: each cited source's footer line ends with its last confirmation and signal, read with no
-    # network; a printed fact whose anchor is not located, or was verified before its source changed, carries a mark
-    import socket
-    def no_network(*a, **k):
-        raise AssertionError("pack opened a network connection")
-    monkeypatch.setattr(socket, "create_connection", no_network)
-    monkeypatch.setattr(socket.socket, "connect", no_network)
-    res = kbfacts.pack(good_row()["question"])
-    footer = res["text"].split("\nsources:\n", 1)[1].splitlines()
-    stamp = r"  \[(confirmed \d{4}-\d\d-\d\d|unconfirmed), (pinned|git|etag|lastmod|version|hash|no baseline)\]$"
-    assert footer and all(re.search(stamp, ln) for ln in footer), footer
-    assert all(kbfacts.source_stamp(i) in ln for i, ln in zip(res["sources"], footer))
-    # the stamp reads only the anchor and fetch-state rows of the sources it cites, the rows a whole read holds for
-    # them; a url's signals come from a memo file once seen, with no provider call, and from provider alone otherwise
-    cited = set(res["sources"])
-    with monkeypatch.context() as mp:
-        mp.setattr(kbfacts, "_FRESH", [None, {}, {}, {}, set(), 0, False])
-        anchors, verified, state = kbfacts.fresh_state(cited)
-        want_a, want_s = {}, {}
-        for r in kbfacts.kbcommon.roots():
-            for row in csv.DictReader(open(os.path.join(r.path, kbfacts.kbcommon.ANCHORS), encoding="utf-8-sig", newline="")):
-                if row["source_id"] in cited:
-                    want_a[(row["fact"], row["path"], row["source_id"])] = (row["status"] == "located", row["verified_utc"])
-            for row in csv.DictReader(open(os.path.join(r.path, kbfacts.kbcommon.STATE), encoding="utf-8-sig", newline="")):
-                if row["id"] in cited:
-                    want_s[row["id"]] = row
-        assert anchors == want_a and state == want_s and want_a and set(verified) <= cited, (len(anchors), len(want_a))
-        assert {k[2] for k in anchors} <= cited and set(state) <= cited
-        # the scoped read of a ledger returns what a whole csv read does for each id: a key in the last column, a bare
-        # quote mid-field, a quoted field holding a doubled quote or a newline, a row with fewer or more fields
-        planted = tmp_path / "planted.csv"
-        planted.write_text('a,note,id\nx,5" pipe,S1\ny,"say ""x"" then, more",S2\nz,plain,S3\nw,"multi\nline ""q""",S4\n'
-                           'short,S5\nlong,v,S6,extra\n', encoding="utf-8", newline="")
-        whole = list(csv.DictReader(open(planted, encoding="utf-8", newline="")))
-        assert kbfacts._ledger_rows(str(planted), "id", None) == whole and len(whole) == 6
-        for sid in ("S1", "S2", "S3", "S4", "S6"):
-            assert kbfacts._ledger_rows(str(planted), "id", {sid}) == [r for r in whole if r["id"] == sid], sid
-        mp.setenv("KB_INDEX", str(tmp_path / "signals"))
-        mp.setattr(kbfacts, "_SIGNALS", {})
-        mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
-        urls = [u for _, u, _ in res["source_rows"]]
-        want = {u: provider.signals(provider.for_url(u, provider.providers()) or {}, u) for u in urls}
-        assert {u: kbfacts.provider_signals(u) for u in urls} == want and provider.ROOT_FILE == "_providers.csv"
-        mp.setattr(kbfacts, "_SIGNALS", {})
-        mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
-        mp.setattr(provider, "signals", lambda *a, **k: 1 / 0)
-        assert {u: kbfacts.provider_signals(u) for u in urls} == want
-    # a registry that changes in one process (a server, a hook): the rows are asked again under the new key, so the
-    # next url's signals are the new row's, and the memo file holds them under that key
-    with monkeypatch.context() as mp:
-        mp.setenv("KB_INDEX", str(tmp_path / "registry"))
-        mp.setattr(kbfacts, "_SIGNALS", {})
-        mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
-        mp.setattr(kbfacts, "_PROVIDER_ROWS", [])
-        cur = {"key": "A", "rows": [{"provider": "x", "match": "example.test", "signals": "etag;lastmod"}]}
-        mp.setattr(kbfacts, "_registry_key", lambda: cur["key"])
-        mp.setattr(provider, "providers", lambda root=None: cur["rows"])
-        assert kbfacts.provider_signals("https://example.test/a") == ["etag", "lastmod", "hash"]
-        cur.update(key="B", rows=[{"provider": "x", "match": "example.test", "signals": "version"}])
-        assert kbfacts.provider_signals("https://example.test/b") == ["version", "hash"]
-        memo = json.loads(next((tmp_path / "registry").glob("kbkey-signals-*.json")).read_text(encoding="utf-8"))
-        assert memo == {"key": "B", "signals": {"https://example.test/b": ["version", "hash"]}}, memo
-    unit = next(u for u in kbfacts.units("public") if any(p["kind"] != "UNK" and p["ids"] for p in u["tags"]))
-    sid = next(i for p in unit["tags"] if p["kind"] != "UNK" for i in p["ids"])
-    key, rel = kbfacts.fact_key(unit["text"]), kbfacts.bare(unit["path"])
-    rows = {sid: {"id": sid, "url": "https://example.com/p"}}
 
-    def mark(anchor, changed):
-        state = {sid: {"changed_utc": changed}}
-        monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: ({(key, rel, sid): anchor} if anchor else {}, {}, state))
-        return kbfacts.fresh_mark(unit, rows)
-    assert mark((True, "2026-10-10"), "") == ""
-    assert mark((True, "2026-10-10"), "2026-10-09T08:00:00Z") == ""
-    assert mark((True, "2026-10-10"), "2026-10-11T08:00:00Z") == "source changed"
-    assert mark((False, "2026-10-10"), "") == "unanchored"
-    assert mark(None, "2026-10-11T08:00:00Z") == "unanchored"
-    # a pinned source whose repository answers 404 is gone with the signal `repository`, one request per repository and
-    # run, and its facts are listed for re-sourcing as a dead source's are; a missing ref, a rate limit and a live
-    # repository leave it pinned (planted: every url not listed raises, so an unplanned request fails the test)
-    sha, api, asked = "a" * 40, "https://api.github.com/repos/Org/", []
-    raw = lambda repo, name="f.md": f"https://raw.githubusercontent.com/Org/{repo}/{sha}/docs/{name}"  # noqa: E731
-    gitlab = f"https://gitlab.com/org/gone/-/raw/{sha}/x.md"
-    answers = {raw("Gone"): 404, api + "Gone": 404, raw("Moved"): 404, api + "Moved": 200, raw("Limited"): 404, api + "Limited": 403,
-               raw("Live"): 200, "https://gitlab.com/api/v4/projects/org%2Fgone": 404}
+        def title_of(path, meta):
+            head = re.search(r"^# (.+)$", kbfacts.read(path) or "", re.M)
+            return head.group(1).strip() if head else meta["topic"].rsplit("/", 1)[-1].replace("-", " ")
+        with open(heldout, encoding="utf-8", newline="") as f:
+            held_rows = [r["question"] for r in csv.DictReader(f)]
+        probe = [f"What does the kb say about {title_of(p, m)}?" for p, m in sorted(kbfacts.articles().items())]
+        probe += [r["question"] for r in eval_rows()] + held_rows + offkb
+        assert len(probe) > len(kbfacts.articles()) + len(eval_rows()), len(probe)
+        memo = {}
+        plain_read = kbfacts.read
 
-    def request(url, headers=None, limit=20_000_000, method="GET"):
-        asked.append(url)
-        return {"status": answers[url], "headers": {}, "body": b"", "final": url, "hops": [], "error": ""}
-    monkeypatch.setattr(provider, "request", request)
-    monkeypatch.setattr(provider, "_repos", {})
-    monkeypatch.setattr(provider, "_gh_api", {"asked": 0, "left": None})
-    prov = provider.providers()
-    got = {n: factdiff.detect_source("S9990001", {"url": u}, {}, prov)[:3] for n, u in (
-        ("gone", raw("Gone")), ("same repository", raw("Gone", "g.md")), ("moved", raw("Moved")), ("limited", raw("Limited")),
-        ("live", raw("Live")), ("gitlab", gitlab))}
-    assert [n for n, v in got.items() if v[:2] == ("gone", "repository")] == ["gone", "same repository", "gitlab"], got
-    assert all(v[0] == "pinned" and v[1] == "pin" for n, v in got.items() if n in ("moved", "limited", "live")), got
-    assert got["gone"][2] == f"repository {api}Gone answers 404" and len(asked) == len(set(asked)) == 8, asked
-    fact = ("0123456789ab", "dsc/d.md", 5, "The Orion scheduler restarts every night at three o'clock. [CODE S9990001]")
-    found, _ = factdiff.resolve("S9990001", {"url": raw("Gone")}, "gone", None, None, [fact], {}, prov)
-    assert [r["outcome"] for r in found] == ["dead"] and "dead" in factdiff.REVIEW
-    monkeypatch.setattr(census, "repo_dir", lambda repo, base=None: (None, f"clone failed: {repo}"))
-    check = lambda u: census.check_one({"url": u, "retrieved_utc": "2026-09-26"}, census.classify(u))[1]  # noqa: E731
-    assert [check(u)["bucket"] for u in (raw("Gone"), gitlab, raw("Moved"), raw("Limited"))] == ["GONE", "GONE"] + ["NEEDS-READING"] * 2
-    assert "answers 404" in check(raw("Gone"))["evidence"] and len(asked) == 8  # the census asked no repository again
-    # a host whose only signal is the text hash: the page is compared per heading section. The baseline holds each
-    # section's hash beside the page's; an edit in Beta moves Beta's and no other, so the fact of Alpha (its anchor
-    # placed on an earlier text, so its passage is not word for word in the baseline, and Beta lies beyond the units a
-    # window starting in Alpha can run into: a section between) is kept by its section with the row signal `section`,
-    # no passage search, and only the fact of the edited section is resolved
-    page = ("# Guide\n\n## Alpha\n\nThe Orion scheduler restarts every night at three o'clock.\n\n"
-            "## Middle\n\nMiddle text stays unchanged.\n\n"
-            "## Beta\n\nThe Orion queue holds ten thousand jobs before it refuses new ones.\n")
-    edited = page.replace("ten thousand", "twenty thousand")
-    url, sid = "https://code.claude.com/docs/en/guide", "S9990003"
-    monkeypatch.setattr(factdiff, "ROOT", kbcommon.root("public"))
-    monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
-    facts = [("0123456789ab", "dsc/a.md", 5, "The Orion scheduler restarts every night at three o'clock."),
-             ("ba9876543210", "dsc/b.md", 6, "The Orion queue holds ten thousand jobs before it refuses new ones.")]
-    anchors = {(r["fact"], r["path"], sid): r for r in factdiff.anchor_rows(sid, facts, {"status": 200, "text": page}, "quote", "2026-10-01")}
-    assert [r["heading"] for r in anchors.values()] == ["Guide > Alpha", "Guide > Beta"]
-    anchors[("0123456789ab", "dsc/a.md", sid)]["sha"] = "0" * 16
-    base = factdiff.baseline(sid, url, {"text": page, "final": url, "fetched_utc": "2026-10-01T00:00:00+00:00"}, prov)
-    assert base["doc_sha256"] == hashlib.sha256(page.encode()).hexdigest() and base["sections"].count(":") == 5
-    assert factdiff.section_counts(factdiff.sections(page), factdiff.sections(edited)) == (1, 4)
-    # the stored set belongs to its text: another document's hash leaves it unread, and the previous fetch's text stands in
-    assert factdiff.stored_sections(base, None) == factdiff.sections(page)
-    assert factdiff.stored_sections({**base, "doc_sha256": "f" * 64}, None) == {}
-    assert factdiff.stored_sections({**base, "sections": ""}, {"text": page}) == factdiff.sections(page)
-    monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
-        "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": len(edited), "raw": None,
-        "version": {}, "text": edited, "ctype": "text/markdown"})
-    v, signal, ev, new, doc, prev = factdiff.detect_source(sid, {"url": url}, base, prov)
-    assert (v, signal) == ("changed", "hash") and new["sections"] == factdiff.sections_column(edited, new["doc_sha256"])
-    found, _ = factdiff.resolve(sid, {"url": url}, v, doc, {"text": page}, facts, anchors, prov,
-                                (factdiff.stored_sections(base, None), factdiff.sections(edited)))
-    assert [(r["outcome"], r.get("signal", "")) for r in found] == [("verbatim", factdiff.SECTION_SIGNAL), ("modified", "")], found
-    # a window that starts at a heading line: its anchor's heading is the parent's path and the body sits under the
-    # heading's own, so the section of every unit of the window is compared (the old text holds the window; else the
-    # heading's section, those below it and those of the units a window can run into): an edit of the body is no
-    # `section` verbatim, one outside them is
-    page2 = ("# Guide\n\n## Alpha\n\nAlpha text stays.\n\n## Retry limits\n\n"
-             "The Orion queue gives up after thirty failed attempts for every job.\n\n# Appendix\n\nAppendix text stays.\n")
-    fact2 = [("k1", "x.md", 3, "Retry limits: the Orion queue gives up after thirty failed attempts for every job.")]
-    row2 = factdiff.anchor_rows(sid, fact2, {"status": 200, "text": page2}, None, "2026-10-01")[0]
-    assert row2["heading"] == "Guide"
-    outcomes = lambda text, row, old: [(r["outcome"], r.get("signal", "")) for r in factdiff.resolve(  # noqa: E731
-        sid, {"url": url}, "changed", {"text": text}, {"text": old}, fact2, {("k1", "x.md", sid): row}, prov,
-        (factdiff.sections(old), factdiff.sections(text)))[0]]
-    body = page2.replace("thirty", "sixty")
-    assert outcomes(body, row2, page2) == [("modified", "")]
-    assert outcomes(body, {**row2, "sha": "0" * 16}, page2) == [("modified", "")]  # an anchor of an earlier text
-    assert outcomes(page2.replace("Appendix text stays", "Appendix text moved"), {**row2, "sha": "0" * 16}, page2) == [("verbatim", factdiff.SECTION_SIGNAL)]
-    # detect's source row counts the sections, the run's line totals them; apply trusts a fact kept by its section only
-    # when the baseline is no newer than the last confirmation
-    monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": url, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
-    monkeypatch.setattr(factdiff, "cited_facts", lambda prefix=None: {sid: facts})
-    monkeypatch.setattr(factdiff, "read_anchors", lambda: anchors)
-    monkeypatch.setattr(factdiff, "read_state", lambda: {sid: base})
-    monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: [sid])
-    log = tmp_path / "log.csv"
-    args = argparse.Namespace(date="2026-10-12", out=str(log), no_save=False, sitemaps=False)
-    saved = {}
-    monkeypatch.setattr(factdiff, "write_state", saved.update)
-    monkeypatch.setattr(factdiff, "write_snapshot", lambda *a, **k: None)
-    assert factdiff.cmd_detect(args, collections.Counter()) == 1  # the fact of Beta waits for review
-    assert "sections: changed=1 unchanged=4 (facts kept by section=1)" in capsys.readouterr().out
-    head = factdiff.read_log(log)[0]
-    assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 4 unchanged"), head
-    # detect writes the state row's changed_utc of a changed source (its check time), so a fact's `source changed` mark
-    # reads it against the anchor's verified_utc; a source it finds unchanged keeps the one it had
-    assert not base.get("changed_utc") and saved[sid]["changed_utc"] == saved[sid]["detected_utc"] != "", saved
-    mine = {"path": "public/dsc/b.md", "line": 6, "text": facts[1][3], "tags": [{"kind": "DOC", "ids": [sid]}]}
-    monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: (
-        {(kbfacts.fact_key(mine["text"]), kbfacts.bare(mine["path"]), sid): (True, "2026-10-01")}, {}, {sid: saved[sid]}))
-    assert kbfacts.fresh_mark(mine, {sid: {"id": sid, "url": url}}) == "source changed"
-    kept = {**saved[sid], "changed_utc": "2026-10-05T00:00:00Z"}
-    monkeypatch.setattr(factdiff, "read_state", lambda: {sid: kept})
-    again = str(tmp_path / "again.csv")
-    assert factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=again, no_save=False, sitemaps=False), collections.Counter()) == 0
-    assert factdiff.read_log(again)[0]["verdict"] == "unchanged" and saved[sid]["changed_utc"] == "2026-10-05T00:00:00Z"
-    # a page with no words (a client-rendered page's fetch is one newline) matches a made-up sibling page that has none
-    # either (two empty texts have jaccard 1.0): detection, as the lookup, calls it no soft 404, and census.py check
-    # reads its facts for review, not GONE (a provider whose 404s are hard skips the test, so the page is another host's)
-    shell = "https://techcommunity.microsoft.com/blog/test/shell"
-    assert (provider.for_url(shell, prov) or {}).get("not_found") != "hard-404"
-    monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
-        "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": 1, "raw": None,
-        "version": {}, "text": "\n", "ctype": "text/html"})
-    monkeypatch.setattr(factdiff, "madeup_text", lambda u: "\n")
-    monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": shell, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
-    assert factdiff.jaccard("\n", "\n") >= factdiff.SOFT404_MIN
-    for lookup in (False, True):
-        v, signal = factdiff.detect_source(sid, {"url": shell}, {}, prov, lookup)[:2]
-        assert (v, signal) == ("new", ""), (lookup, v, signal)
-    monkeypatch.setattr(factdiff, "read_state", lambda: {})
-    monkeypatch.setattr(factdiff, "sitemap_added", lambda *a, **k: {})  # no other page is asked for the passage
-    monkeypatch.setattr(factdiff, "search_urls", lambda *a, **k: [])
-    blank = str(tmp_path / "blank.csv")
-    factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=blank, no_save=False, sitemaps=False), collections.Counter())
-    assert factdiff.read_log(blank)[0]["verdict"] == "new"
-    assert census.factdiff_verdicts(blank, {sid: "2026-10-01"})[sid][1]["bucket"] != "GONE"
-    # a data row two sources cite is weighed as anchoring weighed it (the cites of Doc.locate's second look): on the
-    # page both pages share, only the real count lets a row with many cells the page lacks relocate as modified
-    old3 = ("# Variables\n\n## SMSInstallUpdateTarget\n\nSpecifies whether the Install Software Updates step installs all updates "
-            "or only the mandatory ones.\n\n## Other\n\n" + " ".join(f"word{i}" for i in range(80)) + ".\n")
-    new3 = old3.replace("only the mandatory ones.", "only the mandatory ones that apply.")
-    absent = " ".join([f"beast{c}" for c in "abcdefghijklmnopqrstuvwxyz"] + [f"critter{c}" for c in "abcdef"])
-    cell = (f"variable=SMSInstallUpdateTarget; read_only_or_settable=settable; type=string; "
-            f"purpose=Install Software Updates step target: all or mandatory; scope={absent}; source_id=S9990003")
-    row3 = [("c3c3c3c3c3c3", "dsc/c.md", 7, cell)]
-    cites = factdiff.cite_counts({sid: row3, "S9990004": row3})
-    assert cites == {("c3c3c3c3c3c3", "dsc/c.md"): 2}
-    assert factdiff.Doc(old3).locate(cell, 1)[0] is None and factdiff.Doc(old3).locate(cell, 2)[0] is not None
-    anchored = factdiff.anchor_rows(sid, row3, {"status": 200, "text": old3}, "quote", "2026-10-01", cites)[0]
-    assert anchored["status"] == "located", anchored
-    pinned = {("c3c3c3c3c3c3", "dsc/c.md", sid): anchored}
-    relocate = lambda counts: [(r["outcome"], r["note"]) for r in factdiff.resolve(  # noqa: E731
-        sid, {"url": url}, "changed", {"text": new3}, {"text": old3}, row3, pinned, prov, None, True, None, counts)[0]]
-    got = relocate(cites)
-    assert [o for o, _ in got] == ["modified"] and "similarity" in got[0][1], got
-    monkeypatch.setattr(factdiff, "elsewhere", lambda *a, **k: ("not-found", "", "no page holds it"))  # the other pages: none asked
-    assert [o for o, _ in relocate(None)] == ["not-found"]  # one citation counted: the second look gives it up
+        def read_once(path):
+            if path not in memo:
+                memo[path] = plain_read(path)
+            return memo[path]
+        with monkeypatch.context() as mp:
+            mp.setattr(kbfacts, "read", read_once)
+            found = hijacked(probe)
+            assert not found, found
+            # router_broad_lookups_expert_phrasings: each kind expert's own phrasings of what the kb holds (a source id it
+            # cites in each shape, a decision row of each status, each domain, the first open gap and conflict entries'
+            # titles, with each cue word) are named that kbfacts.routed does not answer by that expert, so a narrowed cue
+            # that drops a common phrasing fails at its item's landing, not in a later review
+            cited_memo, cited_lines = {}, kbfacts.cited_lines  # the same id is scanned for once, whatever the phrasing
+
+            def cited_once(ids):
+                if tuple(ids) not in cited_memo:
+                    cited_memo[tuple(ids)] = cited_lines(ids)
+                return cited_memo[tuple(ids)]
+            mp.setattr(kbfacts, "cited_lines", cited_once)
+
+            def phrasings():
+                out = []
+                by_shape = {}
+                for sid in sorted(kbfacts.source_rows()):
+                    by_shape.setdefault(sid.startswith("S-"), []).append(sid)  # the two shapes: S-xxxxxxxx, S1800
+                shapes = []
+                for ids in by_shape.values():
+                    cited = kbfacts.cited_lines(ids[:12])
+                    shapes.append(next(i for i in ids[:12] if cited.get(i)))  # the first of the shape the kb cites
+                for sid in shapes:
+                    for word in ("mention", "refer to", "name", "cite"):
+                        for between in ("", "the source ", "source ", "the source id ", "source id ", "the source ID "):
+                            out.append(("cites", sid, f"Which articles {word} {between}{sid}?"))
+                    out += [("cites", sid, q.format(sid)) for q in ("Which articles is {} used by?", "Where is {} mentioned in?",
+                                                                     "What is {} referenced by?", "Who cites {}?")]
+                decided = {}
+                for d in kbfacts.decision_rows():
+                    decided.setdefault(d["status"], d["id"])
+                for did in decided.values():
+                    out += [("decision", did, q.format(did)) for q in ("What did the operator decide in {}?",
+                                                                        "What does {} say?", "Show the decision {}.")]
+                out += [("count", "kb", q) for q in ("How many articles does the kb have?", "What is the total number of topics in the kb?",
+                                                     "List all articles of the kb with status partial.")]
+                for dom in sorted({kbfacts.bare(p).split("/", 1)[0] for p in kbfacts.articles() if "/" in kbfacts.bare(p)}):
+                    out += [("count", dom, f"How many articles are in {dom}?"), ("count", dom, f"Which articles in {dom} are partial?")]
+                ledgers = (("conflict", kbcommon.CONFLICTS, ("Which sources disagree about {}?", "Do the sources conflict on {}?",
+                                                             "What do the sources contradict on {}?", "Are the sources inconsistent on {}?")),
+                           ("gap", kbcommon.GAPS, ("What does the kb say about {}?", "What does the kb cover on {}?",
+                                                   "Does the kb document {}?", "Does the kb have {}?")))
+                for kind, ledger, asks in ledgers:
+                    taken = 0
+                    for e in kbfacts.ledger_entries(ledger):
+                        lines = (kbfacts.read(e["file"]) or "").splitlines()
+                        title = kbfacts._entry_title(e, lines)
+                        open_gap = "[UNK" in e["text"] and not kbfacts.OPEN_GAP.search(e["text"]) and not title.startswith(("Closed", "Resolved"))
+                        topic = {t for t in kbfacts.key_terms(title) if t not in kbfacts.LEDGER_STEMS}
+                        if len(topic) < kbfacts.TOPIC_MIN or kbfacts.ID.search(title) or (kind == "gap" and not open_gap):
+                            continue  # a title the expert answers by design only when it names three topic words, no source id
+                        out += [(kind, title, q.format(title)) for q in asks]
+                        taken += 1
+                        if taken == 6:
+                            break
+                return out
+
+            def unrouted(asks):
+                out = []
+                for kind, _, q in asks:
+                    res = kbfacts.routed(q)
+                    if not res or kind not in res["routed"]["kinds"]:
+                        out.append(f"{q} (expects the {kind} expert; routed by: {', '.join(res['routed']['kinds']) if res else 'none'})")
+                return out
+            asks = phrasings()
+            assert {k for k, _, _ in asks} == {k for k, _, _ in kbfacts.EXPERTS}, {k for k, _, _ in asks}
+            assert len({s for k, s, _ in asks if k == "cites"}) == 2, "a cited id of each shape"
+            missed = unrouted(asks)
+            assert not missed, missed
+            # planted: a cite cue narrowed to the bare forms loses the phrasings with `the source` between word and id, and
+            # keeps `mention S...`
+            with monkeypatch.context() as narrow:
+                narrow.setattr(kbfacts, "CITE_CUE", re.compile(rf"\bcit\w+\b|\b(?:mention|refer|name)\w*\s+(?-i:{kbfacts.ID.pattern})", re.I))
+                lost = unrouted([a for a in asks if a[0] == "cites"])
+            assert any("mention the source S" in q for q in lost) and not any(re.search(r"mention S", q) for q in lost), lost
+            # planted: an expert whose cue shows on every question and that answers every one is named for a good pack
+            loose = lambda q, domain, root, invalidated: [{"key": ("planted.md", 1), "kind": "gap", "path": "planted.md",  # noqa: E731
+                                                           "title": "planted", "lacks": True, "lines": ["- planted.md:1 [gap]"]}]
+            mp.setattr(kbfacts, "EXPERTS", (("gap", re.compile("."), loose),))
+            named = hijacked([good_row()["question"]])
+            assert len(named) == 1 and named[0].startswith(good_row()["question"] + " (routed by kind: gap;"), named
+
+
+class TestPoolRowsAndDetect:
+    def test_pool_rows_are_answered_by_their_tool_and_pack_stamps_freshness_with_no_network_and_detect_marks_changed_sources(self, monkeypatch, tmp_path, capsys):
+        # the pool's count, decision, conflict and gap rows: the kb: hook blocks on the answer of the tool that holds it,
+        # each line with its path:line, and the row's own checks read it
+        rows = bench_pool.load_pool(kinds={"count", "decision", "conflict", "gap"})
+        assert {r["kind"] for r in rows} == {"count", "decision", "conflict", "gap"}
+        for r in rows:
+            res = kb_hook.answer("kb: " + r["question"])
+            assert res and res["decision"] == "block", (r["id"], res)
+            for check in json.loads(r["checks"]):
+                assert re.search(check, res["reason"]), (r["id"], check, res["reason"][:800])
+            assert r["kind"] == "count" or re.search(r"^- \S+:[1-9]\d* ", res["reason"], re.M), (r["id"], res["reason"][:800])
+        # experts that both answer are fused by rank alone (k = 60): a key in both lists leads; equal scores go to the key
+        fused = kbfacts.rrf([[("a.md", 1), ("b.md", 1)], [("b.md", 1), ("c.md", 1)]])
+        assert [k for k, _ in fused] == [("b.md", 1), ("a.md", 1), ("c.md", 1)], fused
+        assert [k for k, _ in kbfacts.rrf([[("z.md", 2)], [("a.md", 9)]])] == [("a.md", 9), ("z.md", 2)]
+        # a question about one model: the pack leads with that model's row of the models table, not prose that names it
+        code, out = tool("rag.py", "pack", "Claude Sonnet 5.5 model release capabilities pricing context window", "--budget", "300")
+        assert code == 0, out[-1500:]
+        assert re.search(r"^## (\S+)", out, re.M).group(1).endswith("claude/models.csv"), out[:1500]
+        # the freshness stamp: each cited source's footer line ends with its last confirmation and signal, read with no
+        # network; a printed fact whose anchor is not located, or was verified before its source changed, carries a mark
+        import socket
+        def no_network(*a, **k):
+            raise AssertionError("pack opened a network connection")
+        monkeypatch.setattr(socket, "create_connection", no_network)
+        monkeypatch.setattr(socket.socket, "connect", no_network)
+        res = kbfacts.pack(good_row()["question"])
+        footer = res["text"].split("\nsources:\n", 1)[1].splitlines()
+        stamp = r"  \[(confirmed \d{4}-\d\d-\d\d|unconfirmed), (pinned|git|etag|lastmod|version|hash|no baseline)\]$"
+        assert footer and all(re.search(stamp, ln) for ln in footer), footer
+        assert all(kbfacts.source_stamp(i) in ln for i, ln in zip(res["sources"], footer))
+        # the stamp reads only the anchor and fetch-state rows of the sources it cites, the rows a whole read holds for
+        # them; a url's signals come from a memo file once seen, with no provider call, and from provider alone otherwise
+        cited = set(res["sources"])
+        with monkeypatch.context() as mp:
+            mp.setattr(kbfacts, "_FRESH", [None, {}, {}, {}, set(), 0, False])
+            anchors, verified, state = kbfacts.fresh_state(cited)
+            want_a, want_s = {}, {}
+            for r in kbfacts.kbcommon.roots():
+                for row in csv.DictReader(open(os.path.join(r.path, kbfacts.kbcommon.ANCHORS), encoding="utf-8-sig", newline="")):
+                    if row["source_id"] in cited:
+                        want_a[(row["fact"], row["path"], row["source_id"])] = (row["status"] == "located", row["verified_utc"])
+                for row in csv.DictReader(open(os.path.join(r.path, kbfacts.kbcommon.STATE), encoding="utf-8-sig", newline="")):
+                    if row["id"] in cited:
+                        want_s[row["id"]] = row
+            assert anchors == want_a and state == want_s and want_a and set(verified) <= cited, (len(anchors), len(want_a))
+            assert {k[2] for k in anchors} <= cited and set(state) <= cited
+            # the scoped read of a ledger returns what a whole csv read does for each id: a key in the last column, a bare
+            # quote mid-field, a quoted field holding a doubled quote or a newline, a row with fewer or more fields
+            planted = tmp_path / "planted.csv"
+            planted.write_text('a,note,id\nx,5" pipe,S1\ny,"say ""x"" then, more",S2\nz,plain,S3\nw,"multi\nline ""q""",S4\n'
+                               'short,S5\nlong,v,S6,extra\n', encoding="utf-8", newline="")
+            whole = list(csv.DictReader(open(planted, encoding="utf-8", newline="")))
+            assert kbfacts._ledger_rows(str(planted), "id", None) == whole and len(whole) == 6
+            for sid in ("S1", "S2", "S3", "S4", "S6"):
+                assert kbfacts._ledger_rows(str(planted), "id", {sid}) == [r for r in whole if r["id"] == sid], sid
+            mp.setenv("KB_INDEX", str(tmp_path / "signals"))
+            mp.setattr(kbfacts, "_SIGNALS", {})
+            mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
+            urls = [u for _, u, _ in res["source_rows"]]
+            want = {u: provider.signals(provider.for_url(u, provider.providers()) or {}, u) for u in urls}
+            assert {u: kbfacts.provider_signals(u) for u in urls} == want and provider.ROOT_FILE == "_providers.csv"
+            mp.setattr(kbfacts, "_SIGNALS", {})
+            mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
+            mp.setattr(provider, "signals", lambda *a, **k: 1 / 0)
+            assert {u: kbfacts.provider_signals(u) for u in urls} == want
+        # a registry that changes in one process (a server, a hook): the rows are asked again under the new key, so the
+        # next url's signals are the new row's, and the memo file holds them under that key
+        with monkeypatch.context() as mp:
+            mp.setenv("KB_INDEX", str(tmp_path / "registry"))
+            mp.setattr(kbfacts, "_SIGNALS", {})
+            mp.setattr(kbfacts, "_SIGNALS_KEY", [None])
+            mp.setattr(kbfacts, "_PROVIDER_ROWS", [])
+            cur = {"key": "A", "rows": [{"provider": "x", "match": "example.test", "signals": "etag;lastmod"}]}
+            mp.setattr(kbfacts, "_registry_key", lambda: cur["key"])
+            mp.setattr(provider, "providers", lambda root=None: cur["rows"])
+            assert kbfacts.provider_signals("https://example.test/a") == ["etag", "lastmod", "hash"]
+            cur.update(key="B", rows=[{"provider": "x", "match": "example.test", "signals": "version"}])
+            assert kbfacts.provider_signals("https://example.test/b") == ["version", "hash"]
+            memo = json.loads(next((tmp_path / "registry").glob("kbkey-signals-*.json")).read_text(encoding="utf-8"))
+            assert memo == {"key": "B", "signals": {"https://example.test/b": ["version", "hash"]}}, memo
+        unit = next(u for u in kbfacts.units("public") if any(p["kind"] != "UNK" and p["ids"] for p in u["tags"]))
+        sid = next(i for p in unit["tags"] if p["kind"] != "UNK" for i in p["ids"])
+        key, rel = kbfacts.fact_key(unit["text"]), kbfacts.bare(unit["path"])
+        rows = {sid: {"id": sid, "url": "https://example.com/p"}}
+
+        def mark(anchor, changed):
+            state = {sid: {"changed_utc": changed}}
+            monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: ({(key, rel, sid): anchor} if anchor else {}, {}, state))
+            return kbfacts.fresh_mark(unit, rows)
+        assert mark((True, "2026-10-10"), "") == ""
+        assert mark((True, "2026-10-10"), "2026-10-09T08:00:00Z") == ""
+        assert mark((True, "2026-10-10"), "2026-10-11T08:00:00Z") == "source changed"
+        assert mark((False, "2026-10-10"), "") == "unanchored"
+        assert mark(None, "2026-10-11T08:00:00Z") == "unanchored"
+        # a pinned source whose repository answers 404 is gone with the signal `repository`, one request per repository and
+        # run, and its facts are listed for re-sourcing as a dead source's are; a missing ref, a rate limit and a live
+        # repository leave it pinned (planted: every url not listed raises, so an unplanned request fails the test)
+        sha, api, asked = "a" * 40, "https://api.github.com/repos/Org/", []
+        raw = lambda repo, name="f.md": f"https://raw.githubusercontent.com/Org/{repo}/{sha}/docs/{name}"  # noqa: E731
+        gitlab = f"https://gitlab.com/org/gone/-/raw/{sha}/x.md"
+        answers = {raw("Gone"): 404, api + "Gone": 404, raw("Moved"): 404, api + "Moved": 200, raw("Limited"): 404, api + "Limited": 403,
+                   raw("Live"): 200, "https://gitlab.com/api/v4/projects/org%2Fgone": 404}
+
+        def request(url, headers=None, limit=20_000_000, method="GET"):
+            asked.append(url)
+            return {"status": answers[url], "headers": {}, "body": b"", "final": url, "hops": [], "error": ""}
+        monkeypatch.setattr(provider, "request", request)
+        monkeypatch.setattr(provider, "_repos", {})
+        monkeypatch.setattr(provider, "_gh_api", {"asked": 0, "left": None})
+        prov = provider.providers()
+        got = {n: factdiff.detect_source("S9990001", {"url": u}, {}, prov)[:3] for n, u in (
+            ("gone", raw("Gone")), ("same repository", raw("Gone", "g.md")), ("moved", raw("Moved")), ("limited", raw("Limited")),
+            ("live", raw("Live")), ("gitlab", gitlab))}
+        assert [n for n, v in got.items() if v[:2] == ("gone", "repository")] == ["gone", "same repository", "gitlab"], got
+        assert all(v[0] == "pinned" and v[1] == "pin" for n, v in got.items() if n in ("moved", "limited", "live")), got
+        assert got["gone"][2] == f"repository {api}Gone answers 404" and len(asked) == len(set(asked)) == 8, asked
+        fact = ("0123456789ab", "dsc/d.md", 5, "The Orion scheduler restarts every night at three o'clock. [CODE S9990001]")
+        found, _ = factdiff.resolve("S9990001", {"url": raw("Gone")}, "gone", None, None, [fact], {}, prov)
+        assert [r["outcome"] for r in found] == ["dead"] and "dead" in factdiff.REVIEW
+        monkeypatch.setattr(census, "repo_dir", lambda repo, base=None: (None, f"clone failed: {repo}"))
+        check = lambda u: census.check_one({"url": u, "retrieved_utc": "2026-09-26"}, census.classify(u))[1]  # noqa: E731
+        assert [check(u)["bucket"] for u in (raw("Gone"), gitlab, raw("Moved"), raw("Limited"))] == ["GONE", "GONE"] + ["NEEDS-READING"] * 2
+        assert "answers 404" in check(raw("Gone"))["evidence"] and len(asked) == 8  # the census asked no repository again
+        # a host whose only signal is the text hash: the page is compared per heading section. The baseline holds each
+        # section's hash beside the page's; an edit in Beta moves Beta's and no other, so the fact of Alpha (its anchor
+        # placed on an earlier text, so its passage is not word for word in the baseline, and Beta lies beyond the units a
+        # window starting in Alpha can run into: a section between) is kept by its section with the row signal `section`,
+        # no passage search, and only the fact of the edited section is resolved
+        page = ("# Guide\n\n## Alpha\n\nThe Orion scheduler restarts every night at three o'clock.\n\n"
+                "## Middle\n\nMiddle text stays unchanged.\n\n"
+                "## Beta\n\nThe Orion queue holds ten thousand jobs before it refuses new ones.\n")
+        edited = page.replace("ten thousand", "twenty thousand")
+        url, sid = "https://code.claude.com/docs/en/guide", "S9990003"
+        monkeypatch.setattr(factdiff, "ROOT", kbcommon.root("public"))
+        monkeypatch.setattr(factdiff, "CACHE", str(tmp_path / "cache"))
+        facts = [("0123456789ab", "dsc/a.md", 5, "The Orion scheduler restarts every night at three o'clock."),
+                 ("ba9876543210", "dsc/b.md", 6, "The Orion queue holds ten thousand jobs before it refuses new ones.")]
+        anchors = {(r["fact"], r["path"], sid): r for r in factdiff.anchor_rows(sid, facts, {"status": 200, "text": page}, "quote", "2026-10-01")}
+        assert [r["heading"] for r in anchors.values()] == ["Guide > Alpha", "Guide > Beta"]
+        anchors[("0123456789ab", "dsc/a.md", sid)]["sha"] = "0" * 16
+        base = factdiff.baseline(sid, url, {"text": page, "final": url, "fetched_utc": "2026-10-01T00:00:00+00:00"}, prov)
+        assert base["doc_sha256"] == hashlib.sha256(page.encode()).hexdigest() and base["sections"].count(":") == 5
+        assert factdiff.section_counts(factdiff.sections(page), factdiff.sections(edited)) == (1, 4)
+        # the stored set belongs to its text: another document's hash leaves it unread, and the previous fetch's text stands in
+        assert factdiff.stored_sections(base, None) == factdiff.sections(page)
+        assert factdiff.stored_sections({**base, "doc_sha256": "f" * 64}, None) == {}
+        assert factdiff.stored_sections({**base, "sections": ""}, {"text": page}) == factdiff.sections(page)
+        monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
+            "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": len(edited), "raw": None,
+            "version": {}, "text": edited, "ctype": "text/markdown"})
+        v, signal, ev, new, doc, prev = factdiff.detect_source(sid, {"url": url}, base, prov)
+        assert (v, signal) == ("changed", "hash") and new["sections"] == factdiff.sections_column(edited, new["doc_sha256"])
+        found, _ = factdiff.resolve(sid, {"url": url}, v, doc, {"text": page}, facts, anchors, prov,
+                                    (factdiff.stored_sections(base, None), factdiff.sections(edited)))
+        assert [(r["outcome"], r.get("signal", "")) for r in found] == [("verbatim", factdiff.SECTION_SIGNAL), ("modified", "")], found
+        # a window that starts at a heading line: its anchor's heading is the parent's path and the body sits under the
+        # heading's own, so the section of every unit of the window is compared (the old text holds the window; else the
+        # heading's section, those below it and those of the units a window can run into): an edit of the body is no
+        # `section` verbatim, one outside them is
+        page2 = ("# Guide\n\n## Alpha\n\nAlpha text stays.\n\n## Retry limits\n\n"
+                 "The Orion queue gives up after thirty failed attempts for every job.\n\n# Appendix\n\nAppendix text stays.\n")
+        fact2 = [("k1", "x.md", 3, "Retry limits: the Orion queue gives up after thirty failed attempts for every job.")]
+        row2 = factdiff.anchor_rows(sid, fact2, {"status": 200, "text": page2}, None, "2026-10-01")[0]
+        assert row2["heading"] == "Guide"
+        outcomes = lambda text, row, old: [(r["outcome"], r.get("signal", "")) for r in factdiff.resolve(  # noqa: E731
+            sid, {"url": url}, "changed", {"text": text}, {"text": old}, fact2, {("k1", "x.md", sid): row}, prov,
+            (factdiff.sections(old), factdiff.sections(text)))[0]]
+        body = page2.replace("thirty", "sixty")
+        assert outcomes(body, row2, page2) == [("modified", "")]
+        assert outcomes(body, {**row2, "sha": "0" * 16}, page2) == [("modified", "")]  # an anchor of an earlier text
+        assert outcomes(page2.replace("Appendix text stays", "Appendix text moved"), {**row2, "sha": "0" * 16}, page2) == [("verbatim", factdiff.SECTION_SIGNAL)]
+        # detect's source row counts the sections, the run's line totals them; apply trusts a fact kept by its section only
+        # when the baseline is no newer than the last confirmation
+        monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": url, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
+        monkeypatch.setattr(factdiff, "cited_facts", lambda prefix=None: {sid: facts})
+        monkeypatch.setattr(factdiff, "read_anchors", lambda: anchors)
+        monkeypatch.setattr(factdiff, "read_state", lambda: {sid: base})
+        monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: [sid])
+        log = tmp_path / "log.csv"
+        args = argparse.Namespace(date="2026-10-12", out=str(log), no_save=False, sitemaps=False)
+        saved = {}
+        monkeypatch.setattr(factdiff, "write_state", saved.update)
+        monkeypatch.setattr(factdiff, "write_snapshot", lambda *a, **k: None)
+        assert factdiff.cmd_detect(args, collections.Counter()) == 1  # the fact of Beta waits for review
+        assert "sections: changed=1 unchanged=4 (facts kept by section=1)" in capsys.readouterr().out
+        head = factdiff.read_log(log)[0]
+        assert head["verdict"] == "changed" and head["evidence"].endswith("sections: 1 changed, 4 unchanged"), head
+        # detect writes the state row's changed_utc of a changed source (its check time), so a fact's `source changed` mark
+        # reads it against the anchor's verified_utc; a source it finds unchanged keeps the one it had
+        assert not base.get("changed_utc") and saved[sid]["changed_utc"] == saved[sid]["detected_utc"] != "", saved
+        mine = {"path": "public/dsc/b.md", "line": 6, "text": facts[1][3], "tags": [{"kind": "DOC", "ids": [sid]}]}
+        monkeypatch.setattr(kbfacts, "fresh_state", lambda sids: (
+            {(kbfacts.fact_key(mine["text"]), kbfacts.bare(mine["path"]), sid): (True, "2026-10-01")}, {}, {sid: saved[sid]}))
+        assert kbfacts.fresh_mark(mine, {sid: {"id": sid, "url": url}}) == "source changed"
+        kept = {**saved[sid], "changed_utc": "2026-10-05T00:00:00Z"}
+        monkeypatch.setattr(factdiff, "read_state", lambda: {sid: kept})
+        again = str(tmp_path / "again.csv")
+        assert factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=again, no_save=False, sitemaps=False), collections.Counter()) == 0
+        assert factdiff.read_log(again)[0]["verdict"] == "unchanged" and saved[sid]["changed_utc"] == "2026-10-05T00:00:00Z"
+        # a page with no words (a client-rendered page's fetch is one newline) matches a made-up sibling page that has none
+        # either (two empty texts have jaccard 1.0): detection, as the lookup, calls it no soft 404, and census.py check
+        # reads its facts for review, not GONE (a provider whose 404s are hard skips the test, so the page is another host's)
+        shell = "https://techcommunity.microsoft.com/blog/test/shell"
+        assert (provider.for_url(shell, prov) or {}).get("not_found") != "hard-404"
+        monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
+            "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": 1, "raw": None,
+            "version": {}, "text": "\n", "ctype": "text/html"})
+        monkeypatch.setattr(factdiff, "madeup_text", lambda u: "\n")
+        monkeypatch.setattr(factdiff, "sources", lambda: {sid: {"id": sid, "url": shell, "reuse": "quote", "retrieved_utc": "2026-10-02"}})
+        assert factdiff.jaccard("\n", "\n") >= factdiff.SOFT404_MIN
+        for lookup in (False, True):
+            v, signal = factdiff.detect_source(sid, {"url": shell}, {}, prov, lookup)[:2]
+            assert (v, signal) == ("new", ""), (lookup, v, signal)
+        monkeypatch.setattr(factdiff, "read_state", lambda: {})
+        monkeypatch.setattr(factdiff, "sitemap_added", lambda *a, **k: {})  # no other page is asked for the passage
+        monkeypatch.setattr(factdiff, "search_urls", lambda *a, **k: [])
+        blank = str(tmp_path / "blank.csv")
+        factdiff.cmd_detect(argparse.Namespace(date="2026-10-12", out=blank, no_save=False, sitemaps=False), collections.Counter())
+        assert factdiff.read_log(blank)[0]["verdict"] == "new"
+        assert census.factdiff_verdicts(blank, {sid: "2026-10-01"})[sid][1]["bucket"] != "GONE"
+        # a data row two sources cite is weighed as anchoring weighed it (the cites of Doc.locate's second look): on the
+        # page both pages share, only the real count lets a row with many cells the page lacks relocate as modified
+        old3 = ("# Variables\n\n## SMSInstallUpdateTarget\n\nSpecifies whether the Install Software Updates step installs all updates "
+                "or only the mandatory ones.\n\n## Other\n\n" + " ".join(f"word{i}" for i in range(80)) + ".\n")
+        new3 = old3.replace("only the mandatory ones.", "only the mandatory ones that apply.")
+        absent = " ".join([f"beast{c}" for c in "abcdefghijklmnopqrstuvwxyz"] + [f"critter{c}" for c in "abcdef"])
+        cell = (f"variable=SMSInstallUpdateTarget; read_only_or_settable=settable; type=string; "
+                f"purpose=Install Software Updates step target: all or mandatory; scope={absent}; source_id=S9990003")
+        row3 = [("c3c3c3c3c3c3", "dsc/c.md", 7, cell)]
+        cites = factdiff.cite_counts({sid: row3, "S9990004": row3})
+        assert cites == {("c3c3c3c3c3c3", "dsc/c.md"): 2}
+        assert factdiff.Doc(old3).locate(cell, 1)[0] is None and factdiff.Doc(old3).locate(cell, 2)[0] is not None
+        anchored = factdiff.anchor_rows(sid, row3, {"status": 200, "text": old3}, "quote", "2026-10-01", cites)[0]
+        assert anchored["status"] == "located", anchored
+        pinned = {("c3c3c3c3c3c3", "dsc/c.md", sid): anchored}
+        relocate = lambda counts: [(r["outcome"], r["note"]) for r in factdiff.resolve(  # noqa: E731
+            sid, {"url": url}, "changed", {"text": new3}, {"text": old3}, row3, pinned, prov, None, True, None, counts)[0]]
+        got = relocate(cites)
+        assert [o for o, _ in got] == ["modified"] and "similarity" in got[0][1], got
+        monkeypatch.setattr(factdiff, "elsewhere", lambda *a, **k: ("not-found", "", "no page holds it"))  # the other pages: none asked
+        assert [o for o, _ in relocate(None)] == ["not-found"]  # one citation counted: the second look gives it up
 
 
 def test_unit_cache_prune_drops_old_files_of_other_root_sets_and_shrinks_the_slack_pruned_file(tmp_path, monkeypatch):

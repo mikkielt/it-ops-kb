@@ -23,15 +23,20 @@ def sync(repo):
     return repo.kbgit("sync", "--push", env=ENV)
 
 
-def article(c, name, sid):
-    """A small kb article citing the source `sid`, then the index rebuilt, committed."""
+def article(c, name, sid, hooks=True):
+    """A small kb article citing the source `sid`, then the index rebuilt, committed (`hooks` False: past the commit
+    hooks, for a scenario that tests the gate and not them)."""
     c.write(f"kb/public/windows/sync-e2e-{name}.md",
             f"---\ntopic: windows/sync-e2e-{name}\npriority: P3\napplies_to: [test]\nretrieved_utc: 2026-09-26\n"
             f"sources: [{sid}]\nstatus: partial\n---\n# Sync e2e {name}\n\n## Summary\n\nTest.\n\n## Facts\n\n"
             f"- A probe fact. [DOC {sid}]\n\n## Reference\n\n## Examples\n")
     p = c.tool("build_index.py")
     assert p.returncode == 0, p.stdout + p.stderr
-    c.commit(f"docs(kb): sync e2e {name}")
+    if hooks:
+        c.commit(f"docs(kb): sync e2e {name}")
+    else:
+        c.git("add", "-A")
+        c.git("commit", "-q", "--no-verify", "-m", f"docs(kb): sync e2e {name}")
 
 
 def gate_tests_reuse(c, monkeypatch, capsys):
@@ -72,7 +77,7 @@ def gate_tests_reuse(c, monkeypatch, capsys):
     assert ("changed", 1, False) in rows and json.loads(c.read("_cache/tests/results.json"))["runs"]
 
 
-def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario, monkeypatch, capsys):
+def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario):
     c = clone(scenario)
     article(c, "content", "S100")
     r = sync(c)
@@ -80,12 +85,26 @@ def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario, mon
     pushed = c.rev("HEAD")
     assert scenario.origin.rev("main") == pushed
     assert "KB-Topics:" in c.git("log", "-1", "--format=%B")
-    article(c, "planted", "S999999")  # a source id the table lacks: check.py fails
-    r = sync(c)
-    assert r.returncode == 1, r.stdout + r.stderr
-    assert "check.py" in r.stdout and "ok: sources" not in r.stdout, r.stdout
-    assert scenario.origin.rev("main") == pushed
-    gate_tests_reuse(c, monkeypatch, capsys)
+
+
+class TestRedGate:
+    def test_a_red_gate_leaves_main_where_the_last_push_put_it(self, scenario):
+        # the commit before it reaches main by a plain push, so the one sync here is the red one
+        c = clone(scenario)
+        article(c, "content", "S100", hooks=False)
+        c.git("push", "-q", "--no-verify", "origin", "HEAD:main")
+        pushed = c.rev("HEAD")
+        assert scenario.origin.rev("main") == pushed
+        article(c, "planted", "S999999", hooks=False)  # a source id the table lacks: check.py fails
+        r = sync(c)
+        assert r.returncode == 1, r.stdout + r.stderr
+        assert "check.py" in r.stdout and "ok: sources" not in r.stdout, r.stdout
+        assert scenario.origin.rev("main") == pushed
+
+
+class TestGateTestsReuse:
+    def test_a_passing_gate_test_run_is_reused_for_the_same_tree_and_not_after_an_edit(self, scenario, monkeypatch, capsys):
+        gate_tests_reuse(clone(scenario), monkeypatch, capsys)
 
 
 def test_heldout_reword_is_refused_at_the_gate(scenario):
@@ -114,21 +133,28 @@ def test_code_commit_goes_to_a_branch(scenario):
     c = clone(scenario)
     before = scenario.origin.rev("main")
     c.write("_tools/sync_e2e_probe.txt", "code\n")
-    # a code change needs a KB-Work or KB-Auto trailer (check-trailers); the scenario has no sprint to name. A
-    # Self-Reviewed line above a blank line is no trailer git reads: the commit-msg hook warns, sync refuses the push
     c.git("add", "_tools/sync_e2e_probe.txt")
-    stray = "not a trailer: 'Self-Reviewed: kb/_self/git.md'"
-    p = c.run_git("commit", "-q", "-m", "chore(tools): sync end-to-end probe", "-m", "Self-Reviewed: kb/_self/git.md",
-                  "-m", "KB-Auto: querylog")
-    assert p.returncode == 0 and stray in p.stderr, p.stdout + p.stderr
-    r = sync(c)
-    assert r.returncode == 1 and stray in r.stdout, r.stdout + r.stderr
-    assert scenario.origin.rev("main") == before
-    c.git("commit", "-q", "--amend", "-m", "chore(tools): sync end-to-end probe\n\nSelf-Reviewed: kb/_self/git.md\n"
-          "KB-Auto: querylog")
+    c.git("commit", "-q", "-m", "chore(tools): sync end-to-end probe\n\nSelf-Reviewed: kb/_self/git.md\nKB-Auto: querylog")
     head = c.rev("HEAD")
     r = sync(c)
     assert r.returncode == 0, r.stdout + r.stderr
     assert scenario.origin.rev("main") == before
     branches = scenario.origin.git("for-each-ref", "--format=%(refname:short) %(objectname)", "refs/heads/code/")
     assert [ln.split()[1] for ln in branches.splitlines()] == [head], branches
+
+
+class TestStrayTrailer:
+    def test_a_code_commit_with_no_trailer_git_reads_is_refused(self, scenario):
+        c = clone(scenario)
+        before = scenario.origin.rev("main")
+        c.write("_tools/sync_e2e_probe.txt", "code\n")
+        # a code change needs a KB-Work or KB-Auto trailer (check-trailers); the scenario has no sprint to name. A
+        # Self-Reviewed line above a blank line is no trailer git reads: the commit-msg hook warns, sync refuses the push
+        c.git("add", "_tools/sync_e2e_probe.txt")
+        stray = "not a trailer: 'Self-Reviewed: kb/_self/git.md'"
+        p = c.run_git("commit", "-q", "-m", "chore(tools): sync end-to-end probe", "-m", "Self-Reviewed: kb/_self/git.md",
+                      "-m", "KB-Auto: querylog")
+        assert p.returncode == 0 and stray in p.stderr, p.stdout + p.stderr
+        r = sync(c)
+        assert r.returncode == 1 and stray in r.stdout, r.stdout + r.stderr
+        assert scenario.origin.rev("main") == before

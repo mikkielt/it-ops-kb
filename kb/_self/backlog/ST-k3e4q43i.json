@@ -24,6 +24,20 @@
   "depends_on": [
     "BG-eaen55lf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How do the slowest tests of test_sync_e2e.py, test_live_kb.py and test_leaks.py get under 6 s with every assertion kept?",
+      "options": [
+        "cut work and split merged scenarios into new tests",
+        "cut work inside each test only",
+        "raise the darwin seconds ceiling"
+      ],
+      "recommendation": "cut work and split merged scenarios into new tests",
+      "class": "ceiling"
+    }
+  ],
   "links": [
     "parked: SP-qlpfcgs2 close",
     "merged: BG-vrijmdre"
