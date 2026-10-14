@@ -32,7 +32,9 @@
         "A new numbered rule after rule 5"
       ],
       "recommendation": "Rule 3 (Done bar), beside the sweep of a fixed claim's other statements, under 'Where kb_root is set'",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Rule 3 (Done bar), beside the sweep of a fixed claim's other statements, under 'Where kb_root is set'",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-ce5iig4g"
