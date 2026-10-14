@@ -2,7 +2,7 @@
   "id": "BG-h6aqngbp",
   "kind": "bug",
   "title": "kbid.py add's stale-lock clear can take a live holder's lock, so two adds hold the sources lock at once after a crash",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2qseu5s",
   "priority": "P2",
   "rank": 0,
@@ -88,5 +88,46 @@
     "merged: BG-u7gtwn5s"
   ],
   "notes": "Merged from BG-u7gtwn5s “kbid.py add leaks its sources lock when writing the lock file fails, and .gitignore does not list the lock or its clear names” at the 2026-10-13 draft triage: Reproduces (lock left after a failed os.fdopen) but is the same _sources_lock/_clear_stale code of kbid.py and the same SP-ilqhjn3k review as BG-h6aqngbp. Must absorb: remove the created lock when fdopen or the owner-line write raises, and list _sources.csv.lock and _sources.csv.lock.clear.* in .gitignore (currently no lock entry). Its goal: _sources_lock in _tools/kbid.py removes the lock it created when os.fdopen or the write of its owner line raises (or the process is interrupted before the try), so the next add does not stall for LOCK_STALE_S, and .gitignore lists _sources.csv.lock and _sources.csv.lock.clear.*; found by the SP-ilqhjn3k review (reading _tools/kbid.py:366) Its repro: {\"run\": [\"python3\", \"-c\", \"import sys,os,tempfile;sys.path.insert(0,'_tools');import kbid;d=tempfile.mkdtemp();p=os.path.join(d,'_sources.csv');f=os.fdopen;os.fdopen=lambda *a,**k:(_ for _ in ()).throw(OSError('planted'));exec('try:\\\\n with kbid._sources_lock(p,p): pass\\\\nexcept OSError: pass');os.fdopen=f;left=os.path.exists(p+'.lock');print('lock left after a failed write:',left);sys.exit(1 if left else 0)\"]} Its touches: _tools/kbid.py, _tools/test_redact.py, .gitignore Premise (2026-10-14, ae319c43c5, read-only verifier): the repro exits 1 (a fresh lock C is displaced by the clear); the absorbed BG-u7gtwn5s part also reproduces (check 0 exits 1: lock left after a failed os.fdopen); .gitignore has no lock entry. Test: extend helper kbid_parallel_add_keeps_every_row_and_leaves_no_torn_one (test_redact.py, run by the id test_census_queue_and_census_groups...), no new test id. Planning: the selection check passes before the work by design (pins behaviour; the work extends it, no new id).",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "b7e0e69c945eccb8c7a0c1a3841cb133c421d2f7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile;sys.path.insert(0,'_tools');import kbid;d=tempfile.mkdtemp();p=os.path.join(d,'_sources.csv');f=os.fdopen;os.fdopen=lambda *a,**k:(_ for _ in ()).throw(OSError('planted'));exec('try:\\n with kbid._sources_lock(p,p): pass\\nexcept OSError: pass');os.fdopen=f;left=os.path.exists(p+'.lock');print('lock left:',left);sys.exit(1 if left else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ae7b430bbc561fc5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_census_queue_and_census_groups"
+        ],
+        "exit": 0,
+        "sha256": "e6b2caca5978e4d0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.gitignore',encoding='utf-8').read();sys.exit(0 if '_sources.csv.lock' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,tempfile;sys.path.insert(0,'_tools');import kbid;d=tempfile.mkdtemp();lock=os.path.join(d,'s.lock');open(lock,'w').write('C');o=os.link;os.link=lambda a,b:(open(b,'w').write('D'),o(a,b))[1];kbid._clear_stale(lock);os.link=o;t=open(lock).read();print('lock now held by',t);sys.exit(1 if t!='C' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d612fff71b167a2f"
+      }
+    ]
+  }
 }
