@@ -57,6 +57,17 @@
       "class": "push",
       "answer": "three shapes only: uploaded beside a date or time, a gitlab/ kb topic path, and a how-many or which count question whose push word is a noun after its or the; every other use of those words stays classed",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How narrow is the count-question shape in class_reasons: which words make a question display-only?",
+      "options": [
+        "the question holds how many/how much (or which/what count/number) and a display word (list, show, print, count, name, report); only the noun its/the push in the question is read past, never an option's",
+        "any question that holds how many, whatever its other words, with the noun in options read past too"
+      ],
+      "recommendation": "the question holds how many/how much (or which/what count/number) and a display word (list, show, print, count, name, report); only the noun its/the push in the question is read past, never an option's",
+      "class": "push"
     }
   ],
   "links": [
