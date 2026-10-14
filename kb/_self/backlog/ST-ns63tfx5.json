@@ -49,7 +49,9 @@
         "only just before the push"
       ],
       "recommendation": "at the start of the code lane's steps, whenever --wait-merge is absent, so a stop at scope or checks still shows it",
-      "class": "push"
+      "class": "push",
+      "answer": "at the start of the code lane's steps, whenever --wait-merge is absent, so a stop at scope or checks still shows it",
+      "by": "operator"
     }
   ],
   "links": [
