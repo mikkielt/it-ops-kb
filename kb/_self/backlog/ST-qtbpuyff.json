@@ -2,7 +2,7 @@
   "id": "ST-qtbpuyff",
   "kind": "story",
   "title": "A worker runs the whole suite at most once, and none for a content-only item, so parallel workers do not load the host into refused runs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sc5yk65l",
   "priority": "P1",
   "rank": 0,

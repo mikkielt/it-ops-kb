@@ -2,7 +2,7 @@
   "id": "ST-fiezb2nb",
   "kind": "story",
   "title": "Review sprint: The suite has id room for new tests, and workers run the whole suite at most once",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-sc5yk65l",
   "review": true,
   "priority": "P1",
