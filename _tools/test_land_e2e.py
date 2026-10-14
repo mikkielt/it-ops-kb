@@ -464,11 +464,13 @@ def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(m
     assert marks() == {first}, out  # `good` and `late` went with the sprint
 
 
-def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate_error_and_land_names_check_trailers_refusal_and_manual_push_logs_distill(tmp_path, monkeypatch, capsys):
+def test_land_names_why_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate_error_and_land_names_check_trailers_refusal_and_manual_push_logs_distill(tmp_path, monkeypatch, capsys):
     """A landing that exits 0 with no line of the item in the committed work sidecars says which of three it is: a
     worker's row in the spool (rows late, a `land:` line naming the session and its state, no warning), a work sidecar
     naming the item that sits in a local store the integration main lacks (undelivered, the store named), or no worker's
-    row anywhere (missing, the claim of the orchestrator's own session not counting); a sidecar the checkout holds says
+    row anywhere (missing, the claim of the orchestrator's own session not counting as one, and the line saying why: the
+    state of the spool file of the session `dispatch` recorded, or that the item was claimed and worked in the
+    orchestrator's own session, whose window `backlog.py cost` attributes); a sidecar the checkout holds says
     nothing, and the exit is 0 in each. A push run by hand (the default `out`) writes its lines to that distill.log
     too, so the warning names the failed gate of the last run, not an older automatic run's; a run whose standard
     output already is that file writes each line once."""
@@ -510,6 +512,55 @@ def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate
     session.write_text(rows(iid, "claim") + rows(other, "branch"), encoding="utf-8")  # the orchestrator's own claim
     out = landed()
     assert len(out) == 1 and out[0].startswith(f"warning: {iid} landed with no work rows (missing)"), out
+    assert f"claimed and worked in the orchestrator's own session {sid[:8]} (still open in " in out[0], out
+    assert f"`backlog.py cost {iid}` attributes the prompts of that claim's window" in out[0], out
+    assert "dispatch recorded" not in out[0] and "a worker started without the capture hooks" not in out[0], out
+    # that window is the item's in `backlog.py cost`: the open session's claim row gives the item a line
+    item_file = root / "kb" / "_self" / "backlog" / f"{iid}.json"
+    item_file.parent.mkdir(parents=True)
+    item_file.write_text(json.dumps({"id": iid, "kind": "task", "status": "doing"}), encoding="utf-8")
+    import bl_cost
+    import kbusage
+    model, counts = "claude-sonnet-5-5", {"requests": 2, "in": 100, "cw": 0, "cw1h": 0, "cr": 0, "out": 1}
+    usage = {"id": "u1", "ts": "2026-10-10T10:00:01Z", "surface": "usage", "session_id": sid, "prompt_id": "p1",
+             "reader": kbusage.READER_VERSION, "usage": {"main": {model: counts}, "start": 0}}
+    with open(session, "a", encoding="utf-8") as f:
+        f.write(json.dumps(usage) + "\n")
+    lines, info = bl_cost.open_lines(root)
+    assert info and info[0]["worked"] == {iid} and info[0]["session"] == sid, info
+    assert [x["item"] for x in lines] == [iid] and lines[0]["direct"][model]["in"] == 100, lines
+    assert "orchestrator's own session" in landed()[0]  # the usage row changes nothing the warning says
+    session.write_text(rows(other, "claim"), encoding="utf-8")  # planted: a claim of another item names nothing here
+    out = landed()
+    assert out[0].startswith(f"warning: {iid} landed with no work rows (missing)"), out
+    assert "orchestrator's own session" not in out[0] and "a worker started without the capture hooks" in out[0], out
+    assert bl_cost.open_lines(root) == ([], [])  # and `cost` attributes nothing of that session to the item
+
+    # dispatch recorded the worker's session: the warning names what its spool file is, or that none is in the spools
+    worker, ledger = "deadbeef-dispatched-worker", tmp_path / "claims.json"
+    ledger.write_text(json.dumps({iid: {"by": "t", "session": sid, "worker_session": worker}}), encoding="utf-8")
+    monkeypatch.setattr(bl_land, "claims_ledger", lambda r: (str(root), ledger))
+    out = landed()
+    assert len(out) == 1 and out[0].startswith(f"warning: {iid} landed with no work rows (missing)"), out
+    assert f"dispatch recorded worker session {worker[:8]} for it: no spool file of it in " in out[0], out
+    assert "distill already took it and no committed work sidecar names the item" in out[0], out
+    wfile = spool / f"{worker}.jsonl"
+    wfile.write_text(rows(other, "branch").replace(sid, worker), encoding="utf-8")  # its prompt was on another branch
+    out = landed()
+    assert f"dispatch recorded worker session {worker[:8]} for it: its spool file " in out[0], out
+    assert f"{worker}.jsonl is still open and holds no branch, agent-start or agent-stop row naming it" in out[0], out
+    wfile.with_suffix(".end").write_text("", encoding="utf-8")
+    assert f"{worker}.jsonl is closed and not distilled and holds no branch" in landed()[0]
+    wfile.with_suffix(".end").unlink()
+    wfile.write_text(rows(iid, "branch").replace(sid, worker), encoding="utf-8")  # its branch row: late, no warning
+    out = landed()
+    assert len(out) == 1 and out[0].startswith(f"land: {iid}'s work rows are late: session {worker[:8]}"), out
+    wfile.unlink()
+    session.write_text(rows(iid, "claim") + rows(other, "branch"), encoding="utf-8")
+    out = landed()  # both reasons at once: the worker's absent file and the orchestrator's claim
+    assert "no spool file of it in" in out[0] and "orchestrator's own session" in out[0], out
+    ledger.unlink()  # no ledger record of the dispatch: only the claim
+    assert "dispatch recorded" not in landed()[0]
 
     sidecar = store / "work" / "2026-10" / "20261010T100000Z-0a1b2c3d.jsonl"
     sidecar.parent.mkdir(parents=True)

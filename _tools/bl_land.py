@@ -22,8 +22,8 @@ import bl_intake
 import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
-    external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line,
-    main_worktree_spool, need, rel_dir, repositories, research_story, research_touches, run, say, scope, setting,
+    claims_ledger, external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos,
+    line, main_worktree_spool, need, rel_dir, repositories, research_story, research_touches, run, say, scope, setting,
     split_touch, waits, worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, other_clone, trivial_command
@@ -819,6 +819,50 @@ def last_push_failure(store):
     return None
 
 
+def ledger_worker_session(root, iid):
+    """The `worker_session` that `dispatch` recorded for IID in this working tree's claims ledger
+    (`bl_dispatch.record_worker`, a file in the git dir), or None: no ledger, no record or no session in it."""
+    ledger = claims_ledger(root)[1]
+    try:
+        rec = json.loads(Path(ledger).read_text(encoding="utf-8")).get(iid) if ledger else None
+    except (OSError, ValueError, AttributeError):
+        return None
+    session = rec.get("worker_session") if isinstance(rec, dict) else None
+    return session if isinstance(session, str) and session else None
+
+
+def missing_reasons(root, iid, ids, seen, where):
+    """[phrase] why no worker's row of the item is in a spool (`ops_work_rows`' missing case). SEEN is {session id:
+    (spool directory, session)} of every session the spools hold (`ql_distill.read_spool`). The session `dispatch`
+    recorded for the item says what its spool file is: absent from every spool read, or there and open or closed
+    and not distilled, with no `branch`, `agent-start` or `agent-stop` row naming the item. A `claim` row of the item
+    in another session says it was claimed, and worked, in the orchestrator's own session: its window (the prompts
+    from the claim to the done, `ql_distill.work_windows`) is the item's in `backlog.py cost` once that session has
+    closed and distill has run. Empty when neither is found."""
+    def state(s):
+        return "closed and not distilled" if s["closed"] else "still open"
+
+    out, worker = [], ledger_worker_session(root, iid)
+    if worker:
+        if worker in seen:
+            d, s = seen[worker]
+            out.append(f"dispatch recorded worker session {worker[:8]} for it: its spool file {d / (worker + '.jsonl')} "
+                       f"is {state(s)} and holds no branch, agent-start or agent-stop row naming it (its first prompt "
+                       f"was not on `work/{iid}` with the item doing, or the capture hooks did not run there)")
+        else:
+            out.append(f"dispatch recorded worker session {worker[:8]} for it: no spool file of it in {where}, so the "
+                       "capture hooks did not write it or distill already took it and no committed work sidecar "
+                       "names the item")
+    for sid in sorted(seen):
+        d, s = seen[sid]
+        if sid != worker and any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") == "claim"
+                                 for r in s["rows"]):
+            out.append(f"it was claimed and worked in the orchestrator's own session {sid[:8]} ({state(s)} in {d}): "
+                       f"`backlog.py cost {iid}` attributes the prompts of that claim's window, from the claim to the "
+                       "done, once the session has ended and distill has run")
+    return out
+
+
 def ops_work_rows(root, iid):
     """[line] the landing of IID says about its work rows, none when nothing is amiss. A line of the committed work
     sidecars (`bl_cost.cost_lines`) that names the item or a descendant of it ends it: the rows are delivered. Else
@@ -834,9 +878,10 @@ def ops_work_rows(root, iid):
       started with the Agent tool runs inside the orchestrator's session and writes those, never a `branch` row), is
       no warning: its session is open or not distilled yet, so its rows are late, said as a `land:` line naming the
       session and its state;
-    - none of these: `warning: ... missing`, the line a worker that ran without the capture hooks leaves. The
-      orchestrator's own `claim`, `done` and `release` rows are no worker's: it claims every item it delegates, so its
-      row would always be met.
+    - none of these: `warning: ... missing`, the line a worker that ran without the capture hooks leaves, with the
+      reasons `missing_reasons` finds: the state of the spool file of the session `dispatch` recorded for the item,
+      and a `claim` row of the item in the orchestrator's own session. The orchestrator's own `claim`, `done` and
+      `release` rows are no worker's: it claims every item it delegates, so its row would always be met.
     [] too when capture is off, no spool directory exists (and no store holds an undelivered sidecar) or
     anything cannot be read."""
     try:
@@ -850,7 +895,7 @@ def ops_work_rows(root, iid):
         remote = kbpublic.integration_remote(root)
         main_ref = f"refs/remotes/{remote}/main:kb/_querylog"
         stores = [d.parent / "store" for d in dirs]
-        late = []
+        late, seen = [], {}
         for store in stores:
             held = []
             for p in ql_store.work_files(store):
@@ -876,6 +921,7 @@ def ops_work_rows(root, iid):
         worker_actions = (ql_capture.BRANCH_ACTION, *ql_capture.AGENT_ACTIONS)
         for d in spools:
             for sid, s in sorted(ql_distill.read_spool(d, time.time())[0].items()):
+                seen.setdefault(sid, (d, s))
                 if any(r.get("surface") == "work" and r.get("item") in ids and r.get("action") in worker_actions
                        for r in s["rows"]):
                     late.append(f"session {sid[:8]} of it is {'closed and not distilled' if s['closed'] else 'still open'}"
@@ -884,6 +930,11 @@ def ops_work_rows(root, iid):
             return [f"land: {iid}'s work rows are late: {'; '.join(late)}; `backlog.py cost` shows its figures once "
                     "the session has ended and distill has run"]
         where = ", ".join(str(d) for d in spools)
+        why = missing_reasons(root, iid, ids, seen, where)
+        if why:
+            return [f"warning: {iid} landed with no work rows (missing): no worker session of it left a branch, "
+                    f"agent-start or agent-stop row in {where} and no committed work sidecar names it; "
+                    + "; ".join(why)]
         return [f"warning: {iid} landed with no work rows (missing): no worker session of it left a branch, "
                 f"agent-start or agent-stop row in {where} and no committed work sidecar names it (a worker started "
                 "without the capture hooks?)"]

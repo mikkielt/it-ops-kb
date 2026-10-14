@@ -33,5 +33,18 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does land name why an item has no work rows: keep the one missing warning and append the reasons (the dispatched worker session's spool file state from the claims ledger, a claim row of the item in the orchestrator's own session), or print a separate line for each reason?",
+      "options": [
+        "append the reasons to the missing warning",
+        "a separate land: line for each reason beside the unchanged warning"
+      ],
+      "recommendation": "append the reasons to the missing warning",
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-g2ssvhi2"
 }
