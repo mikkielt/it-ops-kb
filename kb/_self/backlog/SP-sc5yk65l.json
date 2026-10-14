@@ -1,0 +1,20 @@
+{
+  "id": "SP-sc5yk65l",
+  "kind": "sprint",
+  "title": "The suite has id room for new tests, and workers run the whole suite at most once",
+  "status": "planned",
+  "goal": "the quick unit tests of six test files are merged into fewer ids with every assertion kept, so the suite collects at most 90 test ids; a worker's brief tells a content-only item's worker to run no whole tests.py and a code item's worker to run it at most once, before its report, adding no test id; a full tests.py run on a quiet darwin host still takes at most 23 s",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
