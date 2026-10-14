@@ -2,7 +2,7 @@
   "id": "BG-lsmiqf7l",
   "kind": "bug",
   "title": "codebase-mapping.md:92 and the QK-unresolvable-rustc-wrapper answer say only rustc_fingerprint fails with a valid RUSTC_WRAPPER, but cached_output turns a non-zero rustc -vV exit into an error",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-uvz65lvm review"
   ],
-  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL. cargo 797e8a9 util/rustc.rs: Rustc::new calls cache.cached_output(&cmd, 0)? (:68) and cached_output returns Err when the process exit is not success (:256-300), so a valid RUSTC_WRAPPER exiting non-zero fails Rustc::new too; codebase-mapping.md:102 (not :92) and _answers.md:3358 say only rustc_fingerprint fails. Repro tightened to require the words non-zero after the phrase. The :102 anchor rows are unlocated: regenerate; no expansions row, so expansions.csv may stay untouched. Planning 2026-10-14: doc2query/expansions.csv dropped from the touches: the verifier found no expansion row keyed to the facts this item rewords (only settings-and-scopes.md:90, BG-oi3ncidh's, has one)."
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL. cargo 797e8a9 util/rustc.rs: Rustc::new calls cache.cached_output(&cmd, 0)? (:68) and cached_output returns Err when the process exit is not success (:256-300), so a valid RUSTC_WRAPPER exiting non-zero fails Rustc::new too; codebase-mapping.md:102 (not :92) and _answers.md:3358 say only rustc_fingerprint fails. Repro tightened to require the words non-zero after the phrase. The :102 anchor rows are unlocated: regenerate; no expansions row, so expansions.csv may stay untouched. Planning 2026-10-14: doc2query/expansions.csv dropped from the touches: the verifier found no expansion row keyed to the facts this item rewords (only settings-and-scopes.md:90, BG-oi3ncidh's, has one).",
+  "claimed_by": "orch-xt4t63xw"
 }
