@@ -2,7 +2,7 @@
   "id": "TK-xuydpv7l",
   "kind": "task",
   "title": "The run step reruns precheck after the research story lands, and plan words a clause no stronger than its check",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-me3dmaxy",
   "priority": "P2",
   "rank": 0,
@@ -20,5 +20,18 @@
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "8d6faa7bbb54afbd09a93cdb9640ba1b65969ac1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t.split('## run [SP]',1)[1].split('\\n## ',1)[0];p=t.split('## plan',1)[1].split('\\n## ',1)[0];a=any('precheck' in l and 'research' in l and 'tighten' in l for l in s.splitlines());b='no stronger than its check' in p;print('run step reruns precheck after the research story and tightens:',a,'plan words a clause no stronger than its check:',b);sys.exit(0 if a and b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b4036d3566753b"
+      }
+    ]
+  }
 }
