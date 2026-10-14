@@ -65,7 +65,9 @@
         "keep the number in the question, say unread pieces for every goal"
       ],
       "recommendation": "strip the number, say each unread piece on a skip: line only when the goal names a question",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "strip the number, say each unread piece on a skip: line only when the goal names a question",
+      "by": "operator"
     }
   ],
   "links": [
