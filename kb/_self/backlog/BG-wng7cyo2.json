@@ -1,0 +1,23 @@
+{
+  "id": "BG-wng7cyo2",
+  "kind": "bug",
+  "title": "researched refuses a goal research story whose questions the _self root answers: it reads only the roots the touches name",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "researched (bl_land.unanswered_questions, question_coverage) counts a narrowed-goal question answered when rag.py pack --root _self gives good for it, beside the roots the touches name, and a question weak in the touched roots and good or tested in _self needs no public gap entry, which content-rules.md refuses for a rule of this project's own tools; kb/_self/backlog.md says so where it describes researched",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/backlog.py",
+      "researched",
+      "ST-bg2kr4rw"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ]
+}
