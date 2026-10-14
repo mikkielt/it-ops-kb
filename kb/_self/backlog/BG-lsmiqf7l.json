@@ -2,7 +2,7 @@
   "id": "BG-lsmiqf7l",
   "kind": "bug",
   "title": "codebase-mapping.md:92 and the QK-unresolvable-rustc-wrapper answer say only rustc_fingerprint fails with a valid RUSTC_WRAPPER, but cached_output turns a non-zero rustc -vV exit into an error",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,

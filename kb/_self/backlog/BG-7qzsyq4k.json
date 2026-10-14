@@ -2,7 +2,7 @@
   "id": "BG-7qzsyq4k",
   "kind": "bug",
   "title": "The XEdDSA gap entry says an age identity signs as its own verification key only for the clamped scalar",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,

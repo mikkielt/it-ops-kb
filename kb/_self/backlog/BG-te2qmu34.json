@@ -2,7 +2,7 @@
   "id": "BG-te2qmu34",
   "kind": "bug",
   "title": "postgres-column-encryption's summary and the QK-postgres-envelope Conclusion state the per-site DEK's departure",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,

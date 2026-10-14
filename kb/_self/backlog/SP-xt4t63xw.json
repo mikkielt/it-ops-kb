@@ -2,7 +2,7 @@
   "id": "SP-xt4t63xw",
   "kind": "sprint",
   "title": "Public facts say only what their sources say",
-  "status": "planned",
+  "status": "active",
   "goal": "Each public fact, answer and gap entry a review found wrong or overclaimed states only what its cited source says, under the tag that source supports, with its anchors and doc2query expansions kept in line; and doc-lookup-sources.md says why the MCP server of S2189, generally available since 19.5, has no row in the table",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "BG-zmf7vqvf",
   "kind": "bug",
   "title": "_gaps.md entry on the read-only Bash set's exceptions points at settings-and-scopes.md:73 for a fact now at another line, and says powershell-tool.md:37 names no exception as if current",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,

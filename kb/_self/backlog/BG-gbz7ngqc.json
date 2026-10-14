@@ -2,7 +2,7 @@
   "id": "BG-gbz7ngqc",
   "kind": "bug",
   "title": "git-test-repositories lists git checkout and git worktree add as always running die_if_checked_out, though --ignore-other-worktrees and --force skip it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,

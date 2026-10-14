@@ -2,7 +2,7 @@
   "id": "ST-q2jzknjn",
   "kind": "story",
   "title": "pytest-xdist.md names tests.py's --dist load as this repo's mode, cites no deleted stress_test.py, and says what decides -n auto before psutil",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,

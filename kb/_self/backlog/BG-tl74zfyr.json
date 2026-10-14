@@ -2,7 +2,7 @@
   "id": "BG-tl74zfyr",
   "kind": "bug",
   "title": "doc-lookup-sources does not say why GitLab's MCP server, generally available since GitLab 19.5, has no row in the table",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,

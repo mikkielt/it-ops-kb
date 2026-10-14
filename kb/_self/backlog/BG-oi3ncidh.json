@@ -2,7 +2,7 @@
   "id": "BG-oi3ncidh",
   "kind": "bug",
   "title": "settings-and-scopes.md's DOC S742 fact on the Glob --allowedTools exception adds that the rule is no more consulted than in a settings file, a reading the page does not state",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
