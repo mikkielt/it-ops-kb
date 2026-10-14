@@ -1,0 +1,25 @@
+{
+  "id": "BG-m5fiqwh6",
+  "kind": "bug",
+  "title": "The Linux pull-agent answer's firewall line puts add table before flush table and names the named-set caveat",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The _answers.md pull-agent line that says nft -f swaps a whole ruleset names add table before flush table and that named sets need flush set or destroy set, as line 2769 and QK-flush-idempotent-nft-f-file-need already say, so flush table no longer reads as sufficient and a first run on a missing table does not fail. Found by the SP-6ukmjucf review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; ls=[l for l in open('kb/public/_answers.md',encoding='utf-8') if 'swaps a whole ruleset' in l]; sys.exit(0 if ls and all(all(n in l for n in ['add table', 'set']) for l in ls) else 1)"
+    ]
+  },
+  "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
+  "touches": [
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-6ukmjucf review"
+  ]
+}

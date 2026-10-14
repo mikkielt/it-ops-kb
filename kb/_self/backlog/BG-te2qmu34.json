@@ -1,0 +1,26 @@
+{
+  "id": "BG-te2qmu34",
+  "kind": "bug",
+  "title": "postgres-column-encryption's summary and the QK-postgres-envelope Conclusion state the per-site DEK's departure",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The Summary of kb/public/auth/postgres-column-encryption.md (one data key per scope, here per site) and the Conclusion of QK-postgres-envelope-encryption-pgcrypto-blind-index-leakage (per-site DEKs) say the per-site DEK departs from Google's DEK-per-write advice or point to QK-per-site-dek-reused-across-writes, as the facts ST-suo7g2om reworded do. Found by the SP-6ukmjucf review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; a=[l for l in open('kb/public/auth/postgres-column-encryption.md',encoding='utf-8') if 'one data key per scope' in l]; b=[l for l in open('kb/public/_answers.md',encoding='utf-8') if l.startswith('- Conclusion: per-site DEKs')]; sys.exit(0 if a and all('depart' in l for l in a) and all('depart' in l or 'QK-per-site-dek' in l for l in b) else 1)"
+    ]
+  },
+  "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
+  "touches": [
+    "kb/public/auth/postgres-column-encryption.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-6ukmjucf review"
+  ]
+}

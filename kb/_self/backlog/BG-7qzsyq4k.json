@@ -1,0 +1,24 @@
+{
+  "id": "BG-7qzsyq4k",
+  "kind": "bug",
+  "title": "The XEdDSA gap entry says an age identity signs as its own verification key only for the clamped scalar",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/_gaps.md's partly-resolved XEdDSA entry, which says an age identity can sign without a derived key, carries the clamp condition ST-istb5myb put in http-message-signatures and its answer: the age recipient is the verification key only when XEdDSA's k is the clamped X25519 scalar. Found by the ST-istb5myb worker and the SP-6ukmjucf review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; ls=[l for l in open('kb/public/_gaps.md',encoding='utf-8') if 'can sign without a derived key' in l]; sys.exit(0 if ls and all(all(n in l for n in ['clamp']) for l in ls) else 1)"
+    ]
+  },
+  "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
+  "touches": [
+    "kb/public/_gaps.md"
+  ],
+  "links": [
+    "parked: SP-6ukmjucf review"
+  ]
+}

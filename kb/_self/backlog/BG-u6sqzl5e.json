@@ -1,0 +1,23 @@
+{
+  "id": "BG-u6sqzl5e",
+  "kind": "bug",
+  "title": "postgres-column-encryption's reworded per-site layout fact has a located anchor row, and its stale S-yvalenhr row goes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The per-site layout fact of kb/public/auth/postgres-column-encryption.md that ST-suo7g2om reworded (S-yvalenhr) has an anchor row in kb/public/_anchors.csv, and the stale row 7c0d8494bdeb it left is pruned, so factdiff.py --root public anchors --stale lists no postgres-column-encryption key. Found by the SP-6ukmjucf review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/factdiff.py','--root','public','anchors','--stale'],capture_output=True,text=True); sys.exit(o.returncode not in (0,1) or 'postgres-column-encryption' in o.stdout)"
+    ]
+  },
+  "touches": [
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-6ukmjucf review"
+  ]
+}

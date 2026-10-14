@@ -1,0 +1,26 @@
+{
+  "id": "BG-hcez7cj3",
+  "kind": "bug",
+  "title": "linux-nftables' idempotent step no longer calls flush table the file's first statement",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/security/linux-nftables.md's idempotent own-table step does not say the file's first statement is flush table inet NAME, since the same line, the example and the Reference table put add table first. Found by the SP-6ukmjucf review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys; sys.exit(any('first statement is `flush table' in l for l in open('kb/public/security/linux-nftables.md',encoding='utf-8')))"
+    ]
+  },
+  "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
+  "touches": [
+    "kb/public/security/linux-nftables.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-6ukmjucf review"
+  ]
+}

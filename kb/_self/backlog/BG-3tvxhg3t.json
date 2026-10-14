@@ -1,0 +1,24 @@
+{
+  "id": "BG-3tvxhg3t",
+  "kind": "bug",
+  "title": "The facts the SP-6ukmjucf goal research added to linux-nftables have located anchor rows with quotes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The linux-nftables facts ST-vx7kahl3 added on flush set and destroy set per owned named set have located rows with a non-empty quote in kb/public/_anchors.csv, not only unlocated:no-match rows or a located row with an empty quote (f58f62467bb7 / S-nvc4ejpk), so a change to the nftables pages shows as a changed fact. Found by the SP-6ukmjucf review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,sys; sys.path.insert(0,'_tools'); import kbfacts; ks={kbfacts.fact_key(u['text']) for u in kbfacts.units('public') if u['path'].endswith('/linux-nftables.md') and 'destroy set' in u['text'] and 'flush set' in u['text']}; ok={r['fact'] for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['status']=='located' and r['quote'].strip()}; sys.exit(0 if ks and ks<=ok else 1)"
+    ]
+  },
+  "repro_reason": "a content bug: the defect is the wording of a kb line, which only its text shows",
+  "touches": [
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-6ukmjucf review"
+  ]
+}
