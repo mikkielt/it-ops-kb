@@ -2268,7 +2268,13 @@ def land_once(bl, a):
                     raise land_stop("done", str(e)) from None
                 land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         if late:  # the code lane pushes an auto-merging merge request: its proof runs before that, not after
-            stray = out_of_scope(root, item_commits(root, family), own_globs(scope(bl, iid)))
+            if getattr(a, "wait_merge", None) is None:  # a two-pass landing is read before its push, not after it
+                say(f"land: {bl.label(iid)} goes through the code lane: this run pushes the merge request of branch "
+                    f"{code_branch} and stops there as not done yet, without waiting for it; to land it in one run "
+                    f"(reading {remote}/main every {WAIT_POLL} s until the merge request has merged) run "
+                    f"backlog.py land {iid} --wait-merge SECONDS, else run backlog.py land {iid} again once it has "
+                    "merged")
+            stray =out_of_scope(root, item_commits(root, family), own_globs(scope(bl, iid)))
             if stray:  # done's scope rule, read before the merge request opens rather than after it merged
                 raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
                                          "refuse it once the merge request merged; nothing was pushed: "

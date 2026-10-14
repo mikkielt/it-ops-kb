@@ -39,6 +39,17 @@
       "class": "push",
       "answer": "print the lane and the --wait-merge rerun before the first push, no wait without the flag",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where and when does land print the code-lane notice: at the start of the code lane's steps (before scope, checks and the push) whenever --wait-merge is absent, or only just before the push?",
+      "options": [
+        "at the start of the code lane's steps, whenever --wait-merge is absent, so a stop at scope or checks still shows it",
+        "only just before the push"
+      ],
+      "recommendation": "at the start of the code lane's steps, whenever --wait-merge is absent, so a stop at scope or checks still shows it",
+      "class": "push"
     }
   ],
   "links": [

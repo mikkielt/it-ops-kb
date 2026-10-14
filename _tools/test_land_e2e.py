@@ -324,6 +324,23 @@ def test_done_research_carried_item_takes_the_research_commit_as_evidence_and_re
     assert done["evidence"]["carried_by"] == research and done["evidence"]["checks"][0]["exit"] == 0, done
 
 
+def test_land_code_lane_without_wait_merge_names_the_lane_and_the_rerun_before_its_push_and_with_the_flag_does_not(
+        scenario, tmp_path):
+    """A land of an item whose commits go through the code lane, run without --wait-merge, says before its push that
+    the lane is code and that `land ID --wait-merge SECONDS` finishes it in one run; with the flag it does not say it."""
+    nested = "kb/_self/lane/host.md"  # a code-lane path of the kb's lanes
+    repo, sp, (iid,) = planned(scenario, ("lane", nested, "python3 _tools/backlog.py list --kind sprint"), hooks=False)
+    work(repo, iid, nested)
+    repo.git("checkout", "-q", "main")
+    env = plain_push(repo, tmp_path, land_stale=[], land_eval=[], land_lint=[], land_push=["python3", "-c", "pass"])
+    code, out = bl(repo, "land", iid, env=env)
+    notice = f"goes through the code lane: this run pushes the merge request of branch code/{iid}"
+    assert code == 0 and notice in out and f"backlog.py land {iid} --wait-merge SECONDS" in out, out
+    assert out.index(notice) < out.index("is not done yet"), out
+    code, out = bl(repo, "land", iid, "--wait-merge", "0", env=env)
+    assert "goes through the code lane" not in out and "--wait-merge SECONDS" not in out, out
+
+
 def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(monkeypatch, capsys, scenario):
     """Planted failure: tests.py -k zzz_no_such_test exits 2 before any worker starts, names its selector in one line
     and records exit 2 with selected 0; a done item's check that collects nothing is found gone once, kept in its
