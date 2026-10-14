@@ -28,6 +28,19 @@
     "kb/_self/backlog.md",
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the review's confirmation step go relative to the reviewer, and what does the reviewer's brief hold about provisional answers?",
+      "options": [
+        "confirm step after the reviewer's report; the brief lists each provisional answer with the diff of the commits that carry it",
+        "confirm step after the reviewer's report; the brief holds only the sprint diff"
+      ],
+      "recommendation": "confirm step after the reviewer's report; the brief lists each provisional answer with the diff of the commits that carry it",
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-5i4itd2d close"
   ],
