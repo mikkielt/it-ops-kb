@@ -76,6 +76,14 @@ def test_operator_class_is_derived_from_touches_and_question_and_a_lower_stored_
         assert got[0] == cls, (question, got)
     named = ba.class_reasons({"touches": []}, {**plain, "question": "Which rule in AGENTS.md?"})[1]
     assert any("'rule'" in r for r in named), named
+    # the wordings the rules use for the suite ceiling class `ceiling` on an item whose touches name no ceiling file
+    for question in ("Raise the darwin seconds ceiling to 40 s?", "Which value does the suite's ceiling take?",
+                     "Is a ceiling for the test suite needed?", "Does the tests.py ceiling change?",
+                     "Raise max_seconds for darwin?", "Is the darwin ceiling still 20?",
+                     "Is the linux ceiling still 60?"):
+        assert ba.gate_class({"touches": []}, {**plain, "question": question}) == "ceiling", question
+        assert ba.names_ceiling(question), question
+    assert ba.gate_class({"touches": []}, {**plain, "question": "Which retry ceiling does the fetch take?"}) == "design"
 
 
 def test_gate_add_makes_an_operator_class_gate_blocking_whatever_kind_says(tmp_path):

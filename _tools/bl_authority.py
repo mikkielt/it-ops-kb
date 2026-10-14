@@ -92,7 +92,9 @@ def without_token_counts(text):
 # is no `agents-rule` word of its own (a design question about which rows count by rule is no rule-guarding work): it
 # classes only where the item's touches or the gate's text name a rule-guarding path or file (`rule_paths`).
 QUESTION_WORDS = {
-    "ceiling": re.compile(r"\btests?[-_ ]ceiling|\bsuite[-_ ]ceiling|\bceiling of the (?:test )?suite", re.I),
+    "ceiling": re.compile(r"\btests?[-_ ]ceiling|\bsuite(?:['\u2019]s)?[-_ ]ceiling|\bceiling (?:of|for) the (?:test )?suite|"
+                          r"\bseconds[-_ ]ceiling|\b(?:darwin|linux|win32)(?:['\u2019]s)?[-_ ]ceiling|"
+                          r"\btests\.py[-_ ]ceiling|\bmax_seconds\b", re.I),
     "secrets": re.compile(r"secret|credential|password|passphrase|token|\bPATs?\b|\bbearer\b|\bssh\b|api[- ]key|"
                           r"private key|\.env\b|rotat\w*\s+(?:\w+\s+){0,2}keys?\b", re.I),
     "push": re.compile(r"\bpush(?:ing)?\b|publish|force[- ]push|\bremote\b|\bgithub\b|\bgitlab\b|\borigin\b|"
@@ -102,6 +104,9 @@ QUESTION_WORDS = {
     "agents-rule": re.compile(r"AGENTS\.md|CLAUDE\.md|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
 }
+# The `ceiling` words are the wordings the rules use for the suite's ceiling (`seconds ceiling`, `darwin ceiling`, `the
+# suite's ceiling`, `ceiling for the test suite`, `tests.py ceiling`, `max_seconds`), so a gate that names the seconds
+# of a platform is `ceiling` on an item whose touches name no ceiling file.
 # The start of the text `tests.ceiling_token` builds: `names_ceiling` finds it with no word boundary, as `read_ceiling` does.
 CEILING_TOKEN = re.compile(r"tests-ceiling ids=", re.I)
 RULE_WORD = re.compile(r"\brule\b", re.I)
