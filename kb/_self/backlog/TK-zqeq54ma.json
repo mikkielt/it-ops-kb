@@ -2,7 +2,7 @@
   "id": "TK-zqeq54ma",
   "kind": "task",
   "title": "dispatch's worker leaves a work row in the spool land reads, or dispatch names where its rows went",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-h66j7wm5",
   "priority": "P2",
   "rank": 1,
@@ -40,5 +40,19 @@
     }
   ],
   "notes": "Orchestrator (2026-10-14): code.md added to the touches; selfdoc stale names it for bl_dispatch.py's new imports (code.md:57).",
-  "claimed_by": "orch-g2ssvhi2"
+  "evidence": {
+    "commit": "2a7063f248ab5fd11080e2a356800897af829840",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "dispatch_worker_leaves_work_rows"
+        ],
+        "exit": 0,
+        "sha256": "4485babd6a0206d8"
+      }
+    ]
+  }
 }
