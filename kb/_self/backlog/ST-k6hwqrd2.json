@@ -63,7 +63,9 @@
         "one new section"
       ],
       "recommendation": "step 3 and step 4 bullets, maintaining.md row",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "step 3 and step 4 bullets, maintaining.md row",
+      "by": "operator"
     }
   ],
   "links": [
