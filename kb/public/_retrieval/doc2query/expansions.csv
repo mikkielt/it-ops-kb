@@ -843,6 +843,3 @@ c84024fb6ad5,Does find with an unquoted glob prompt even though find is in the r
 9e6acb1f510f,cd with git or redirect prompts in Manual mode read-only commands
 9e6acb1f510f,Which combinations of cd with another read-only command still prompt in Manual mode?
 9e6acb1f510f,Does cd packages/api && ls run without a permission prompt?
-85cf70cbde5e,Glob path rule --allowedTools startup warning exception
-85cf70cbde5e,Which exception does the permissions page give to the startup warning for a Glob path rule passed in --allowedTools?
-85cf70cbde5e,Is a Glob(path) rule given with --allowedTools warned about at startup although path rules for Glob are never consulted?
