@@ -34,6 +34,27 @@
   "depends_on": [
     "BG-te2qmu34"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Is the unstated 'no more consulted' reading dropped, kept as DER, or kept as UNK? Recommended drop: the UNK already stands in _gaps.md:1107, so nothing is lost.",
+      "options": [
+        "drop",
+        "DER",
+        "UNK"
+      ],
+      "recommendation": "drop",
+      "do": {
+        "drop": "BG-oi3ncidh",
+        "DER": "BG-oi3ncidh",
+        "UNK": "BG-oi3ncidh"
+      },
+      "class": "design",
+      "answer": "drop",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-foopqq2x review"
   ],
