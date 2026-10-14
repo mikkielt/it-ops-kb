@@ -200,6 +200,7 @@ def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monk
     art = "public/windows/laps.md"
     line = f"{art}:24"
     comment, claim = "the length shown is stale and the pack was too long", "The default length is 14."
+    prose = "note=the+docs+are+wrong+free+text"
     n = iter(range(1, 100))
 
     def row(surface, ts, **f):
@@ -215,7 +216,7 @@ def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monk
     report = {"outcome": "misled", "lines": [{"line": line, "issue": "wrong"}], "best": art,
               "source_url": "https://learn.microsoft.com/windows/laps", "claim": claim, "tool_issue": "too-long"}
     own = row("feedback", "10:40:00.000", fb="FB-0000000a", pack="P-ffffffff", outcome="missed",
-              question="How do I rotate the LAPS password?", source_url="https://docs.example.net/laps/rotate")
+              question="How do I rotate the LAPS password?", source_url=f"https://docs.example.net/laps/rotate?{prose}#{prose}")
     rows = lookup("p1", "10:00", "P-0a1b2c3d") + lookup("p2", "10:10", "P-1b2c3d4e") + [
         row("feedback", "10:12:00.000", session_id=SID, prompt_id="p2", judged_by="user", comment=comment),
         row("feedback", "10:05:00.000", fb="FB-00000001", pack="P-0a1b2c3d", **report)]
@@ -256,13 +257,16 @@ def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monk
     assert alone[1]["question"] == "How do I rotate the LAPS password?" and "question" not in alone[0]
     text = "".join(f.read_text(encoding="utf-8") for f in store.rglob("*.jsonl"))
     assert comment not in text and claim not in text and "comment" not in text and "claim" not in text
+    assert "free+text" not in text  # a source_url's query and fragment are dropped before the gate
     assert not list(spool.glob("*.jsonl")) and not list(spool.glob("*.end"))  # delivered rows go, as other rows
     # the gates: one planted failure for each open field of a stored report
     good = second["feedback"][1]
     assert ql_store.feedback_problems([good, alone[1]["feedback"][0]], "e") == []
     for bad in ({**good, "comment": comment}, {**good, "claim": claim}, {**good, "lines": [{"line": line, "issue": "bogus"}]},
                 {**good, "lines": [{"line": "see the docs", "issue": "wrong"}]}, {**good, "best": "../outside.md"},
-                {**good, "lead": "http://pl-srv-0042.corp/page"}, {**good, "outcome": "fine"}, {**good, "judged_by": "bot"}):
+                {**good, "lead": "http://pl-srv-0042.corp/page"}, {**good, "outcome": "fine"}, {**good, "judged_by": "bot"},
+                {**good, "lead": f"https://learn.microsoft.com/en-us/intune/page?{prose}#more+free+text"},
+                {**good, "lead": "https://learn.microsoft.com/en-us/intune/page#more"}):
         assert ql_store.feedback_problems([bad], "e"), bad
     planted = {**first, "feedback": [{**good, "comment": comment}]}
     assert any("free text" in p for p in ql_store.entry_problems(planted, "e", None))

@@ -6,7 +6,7 @@ their _gaps.md entries for `/kb-research --queue`, and records what that researc
 """
 import collections, csv, datetime, io, json, re
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 from ql_base import (DISABLED_NAME, HOME, STORE, Replay, claude_p, one_line, places, read_json, read_mode,
                      read_research, restore, run_cmd, write_text)
@@ -340,6 +340,16 @@ def public_url(url):
         return False
     return u.scheme in ("http", "https") and not user and bool(HOSTNAME.fullmatch(host)) \
         and host.rsplit(".", 1)[-1] not in PRIVATE_TLDS
+
+
+def bare_url(url):
+    """`url` with scheme, host and path only: its query and fragment, where free text can ride, dropped. What a
+    feedback report keeps as `lead` (ql_distill.feedback_report) and the store gate compares a stored one with."""
+    try:
+        u = urlsplit(str(url).strip())
+        return urlunsplit((u.scheme, u.netloc, u.path, "", ""))
+    except ValueError:
+        return ""
 
 
 def candidate_problems(c, facts):
