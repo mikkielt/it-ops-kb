@@ -2,7 +2,7 @@
   "id": "ST-yfzirxqy",
   "kind": "story",
   "title": "Review sprint: Lookups print the right notes and revalidation marks only real changes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vk3wf746",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-vk3wf746"
+  "evidence": {
+    "commit": "2222ca874f3c4c23a8deb0326c083412fa47b116",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "6297e636166f0b31"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "f4c2923a9415acdf"
+      }
+    ]
+  }
 }
