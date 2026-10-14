@@ -2,7 +2,7 @@
   "id": "ST-k3e4q43i",
   "kind": "story",
   "title": "The next slowest suite tests (sync e2e, live kb, leaks) each run under 6 s alone, so the whole suite keeps its darwin ceiling with sibling workers",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,

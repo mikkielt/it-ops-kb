@@ -2,7 +2,7 @@
   "id": "ST-ikbuvyo6",
   "kind": "story",
   "title": "Research sprint goal: The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjp5qllo",
   "goal_research": true,
   "priority": "P1",

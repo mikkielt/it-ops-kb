@@ -2,7 +2,7 @@
   "id": "BG-gflil3ya",
   "kind": "bug",
   "title": "factdiff.revalidate dates a run by the local day and stamps checked_utc in UTC, so test_live_kb fails between local midnight and UTC midnight",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,

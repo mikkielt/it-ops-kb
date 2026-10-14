@@ -2,7 +2,7 @@
   "id": "BG-em43tgls",
   "kind": "bug",
   "title": "selfdoc.py check fails: kb/_self/code.md:46 names the heading 'Sprints: plan and review' that kb/_self/backlog.md does not have",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,

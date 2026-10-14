@@ -2,7 +2,7 @@
   "id": "BG-eaen55lf",
   "kind": "bug",
   "title": "lint.py exits 0 and lints nothing for a path outside kb/ or a kb/_self doc, since its no-file refusal exempts any existing kb path and any path git has history for",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,

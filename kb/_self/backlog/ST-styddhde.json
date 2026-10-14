@@ -2,7 +2,7 @@
   "id": "ST-styddhde",
   "kind": "story",
   "title": "Review sprint: The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-wjp5qllo",
   "review": true,
   "priority": "P1",
