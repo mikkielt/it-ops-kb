@@ -51,6 +51,23 @@
   "depends_on": [
     "BG-tl74zfyr"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which commit and url form pins the CODE source row for _tools/tests.py (S-vt5s6nsz), as S-e5rrs4ee does for the repository's own benchmark rows?",
+      "options": [
+        "public projection hash 9611bd64ccae on github.com",
+        "private commit hash 2e20688770e2 on gitlab.com"
+      ],
+      "recommendation": "public projection hash 9611bd64ccae on github.com",
+      "do": {
+        "public projection hash 9611bd64ccae on github.com": "ST-q2jzknjn",
+        "private commit hash 2e20688770e2 on gitlab.com": "ST-q2jzknjn"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-ofvvong6 review",
     "merged: BG-d5v5iepy"
