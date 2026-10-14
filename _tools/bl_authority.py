@@ -74,16 +74,34 @@ TOKEN_COUNT = re.compile(
 # (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.
 TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
 CRED_PART = re.compile(rf"^(?:{CRED_WORDS}|(?:secret|password|passphrase|private|key|credential|pat|ssh)s?)$", re.I)
+# `tokens` as one of the unit nouns of a list (`units, points, tokens, requests, calls`): a run of three or more list
+# elements that holds `tokens` and at least two other unit nouns, with no credential word right before `tokens`. A bare
+# `tokens` or `tokens, rows` and a credential sense (`API tokens, units, points`) keep the class.
+UNIT_NOUN = r"(?:units|points|requests|calls|rows|bytes|lines|words)"
+LIST_ELEMENT = rf"(?:{UNIT_NOUN}|tokens)"
+LIST_SEP = r"(?:[ \t]*,[ \t]*(?:(?:and|or)[ \t]+)?|[ \t]+(?:and|or)[ \t]+)"
+UNIT_LIST = re.compile(rf"(?<![\w-])\b{LIST_ELEMENT}(?:{LIST_SEP}{LIST_ELEMENT}){{2,}}\b", re.I)
+CRED_BEFORE = re.compile(rf"\b(?:{CRED_WORDS})[-_ ]$", re.I)
+
+
+def unit_list_without_credential(text, m):
+    """Whether the UNIT_LIST match `m` in `text` lists `tokens` among two or more other unit nouns and no credential
+    word stands right before the list (`API tokens, units, points`)."""
+    words = re.findall(r"[a-z]+", m.group(0).lower())
+    others = [w for w in words if w not in ("tokens", "and", "or")]
+    return "tokens" in words and len(others) >= 2 and not CRED_BEFORE.search(text[:m.start()])
 
 
 def without_token_counts(text):
-    """The text with each token-count phrase, each upper-case identifier of token counts and each Markdown doc name that
-    holds `token` replaced by a space: what the `secrets` words are searched in, so a model's token counts, a constant
-    such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token` and a doc such as `token-efficiency.md` are no secret."""
+    """The text with each token-count phrase, each upper-case identifier of token counts, each Markdown doc name that
+    holds `token` and each list that names `tokens` among unit nouns replaced by a space: what the `secrets` words are
+    searched in, so a model's token counts, a constant such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token`, a doc
+    such as `token-efficiency.md` and `units, points, tokens, requests` are no secret."""
     text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
-    return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
+    text = TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
+    return UNIT_LIST.sub(lambda m: " " if unit_list_without_credential(text, m) else m.group(0), text)
 
 
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
