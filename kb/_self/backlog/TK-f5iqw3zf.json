@@ -23,5 +23,19 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which commit of the goal research story does done record as the evidence of an item it carries, and how is the carrying marked?",
+      "options": [
+        "newest",
+        "oldest",
+        "HEAD"
+      ],
+      "recommendation": "newest",
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-ce5iig4g"
 }

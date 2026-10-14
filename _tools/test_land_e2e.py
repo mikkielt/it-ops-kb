@@ -288,6 +288,41 @@ class TestOwnCheckoutDrafts:
         assert ghost not in out, out
 
 
+def test_done_research_carried_item_takes_the_research_commit_as_evidence_and_refuses_one_that_changed_no_touched_file(
+        scenario):
+    """An item with no KB-Work commit of its own is done when a KB-Work commit of the sprint's goal research story
+    changed a file of its touches and its checks pass: the evidence commit is that commit, its `carried_by` the story.
+    Planted failures, each refused as having no work commit: no commit of the research story yet, a research commit
+    that changed no file of the item's touches, and a sibling whose touches the research commit did not change."""
+    carried, bare = "kb/public/agents/carried.md", "kb/_self/bare.md"
+    check = "python3 _tools/backlog.py list --kind sprint"
+    repo, sp, (mine, other) = planned(scenario, ("carried", carried, check), ("bare", bare, check), hooks=False)
+    research = re.search(r"(ST-[a-z0-9]+)\s.*Research sprint goal", ok(repo, "list", "--sprint", sp)).group(1)
+
+    code, out = bl(repo, "done", mine, "--dry-run")  # no commit of the research story yet
+    assert code != 0 and "no commit on HEAD carries the trailer KB-Work" in out, out
+
+    repo.write("kb/public/agents/other-note.md", "# note\n")  # a research commit that changed no file of the touches
+    repo.git("add", "kb/public/agents/other-note.md")
+    repo.git("commit", "-q", "-m", "docs(kb): research", "-m", f"KB-Work: {research}")
+    code, out = bl(repo, "done", mine, "--dry-run")
+    assert code != 0 and "no commit on HEAD carries the trailer KB-Work" in out, out
+
+    repo.write(carried, "# carried\n\nThe research wrote the fact.\n")
+    repo.git("add", carried)
+    repo.git("commit", "-q", "-m", "docs(kb): research", "-m", f"KB-Work: {research}")
+    sha = repo.rev("HEAD")
+    code, out = bl(repo, "done", other, "--dry-run")  # its touches are not the research commit's
+    assert code != 0 and "no commit on HEAD carries the trailer KB-Work" in out, out
+    code, out = bl(repo, "done", mine, "--dry-run")
+    assert code == 0 and "would be done" in out and f"the evidence is {sha[:10]}" in out, out
+    code, out = bl(repo, "done", mine)
+    assert code == 0 and f"done {mine}" in out and f"at {sha[:10]}" in out, out
+    done = json.loads(repo.read(f"{PLAN}/{mine}.json"))
+    assert done["status"] == "done" and done["evidence"]["commit"] == sha, done
+    assert done["evidence"]["carried_by"] == research and done["evidence"]["checks"][0]["exit"] == 0, done
+
+
 def test_empty_selection_refused_gone_once_done_dry_run_gone_and_reopened_refs(monkeypatch, capsys, scenario):
     """Planted failure: tests.py -k zzz_no_such_test exits 2 before any worker starts, names its selector in one line
     and records exit 2 with selected 0; a done item's check that collects nothing is found gone once, kept in its

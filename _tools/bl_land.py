@@ -87,6 +87,21 @@ def delivery_evidence(root, ids, globs):
     return out
 
 
+def research_carried(bl, iid, globs):
+    """(commit, story id) of the newest KB-Work commit on HEAD of the sprint's goal research story (or one of its
+    descendants) that changed a file GLOBS match, never an always-in-scope one; None when the item is that story or one
+    of its descendants, is the review, has no sprint or research story, or none of the story's commits changed such a
+    file. `done` takes it, for an item with no work commit of its own, as the work the item's checks read."""
+    it = bl.items[iid]
+    sid = bl.sprint_of(iid)
+    story = research_story(bl, sid) if sid else None
+    if not story or it.get("review") or iid == story or story in bl.ancestors(iid):
+        return None
+    commits = item_commits(bl.root, [story] + bl.descendants(story))
+    hit = [sha for sha, paths in commits.items() if any(in_scope(p, globs) and not in_scope(p, ()) for p in paths)]
+    return (hit[-1], story) if hit else None
+
+
 def unlanded_code(root, ids):
     """(short hashes, remote, owners) of the code-lane KB-Work commits on HEAD naming any of the ids that are not
     ancestors of refs/remotes/<integration>/main as last fetched; the hashes are [] when all are, and ["(no such ref)"]
@@ -526,6 +541,7 @@ def cmd_done(bl, a):
     if kind == "sprint":
         raise Refused("a sprint is closed with backlog.py close")
     reasons = []
+    carried = None  # (commit, story id) of the goal research story's commit that stands for the item's work
     if kind == "epic":
         problems = [f"open child {line(bl, c)}" for c in bl.children(iid)
                     if bl.items[c].get("status") not in ("done", "dropped")]
@@ -560,8 +576,12 @@ def cmd_done(bl, a):
         family = [iid] + bl.descendants(iid)
         if (it.get("touches") and not research_without_facts(it) and not repos
                 and not item_commits(bl.root, family)):
-            delivered = delivery_evidence(bl.root, family, globs)
-            if delivered:  # a story of the query-log store only: the delivery is the work, its checks the proof
+            carried = research_carried(bl, iid, mine)
+            delivered = [] if carried else delivery_evidence(bl.root, family, globs)
+            if carried:  # the goal research story's commit already changed a file of the touches: its checks the proof
+                say(f"{bl.label(iid)}: no KB-Work commit of its own; the evidence is {carried[0][:10]}, a commit of the "
+                    f"goal research story {bl.label(carried[1])} that changed a file of its touches")
+            elif delivered:  # a story of the query-log store only: the delivery is the work, its checks the proof
                 say(f"{bl.label(iid)}: no KB-Work commit; the evidence is the automatic query-log delivery "
                     f"{', '.join(delivered[:3])} (trailer KB-Auto: querylog), which its checks read")
             else:
@@ -570,7 +590,8 @@ def cmd_done(bl, a):
                                 "and changes a file other than item files (git reads a trailer only in the message's "
                                 "last paragraph, with the others; a claim or planning commit is not the work; a goal "
                                 "research story needing no outside facts says so in its notes: No outside facts: "
-                                "<reason>)"
+                                "<reason>; a KB-Work commit of the sprint's goal research story that changed a file "
+                                "of its touches is its work too)"
                                 + ("; the work of an item with `repos` is merged in its repositories, which land reads "
                                    "through their merge requests: run land" if item_repos(it) else "")
                                 + ("; a story whose touches are the query-log store only is also done by an automatic "
@@ -657,10 +678,12 @@ def cmd_done(bl, a):
         say(f"{bl.label(iid)} would be done")
         return 0
     head = git(bl.root, "rev-parse", "HEAD").strip()
-    it.update(status="done", evidence={"commit": head, "checks": results, **({"repositories": repos} if repos else {})})
+    at = carried[0] if carried else head  # a carried item's evidence commit is the research story's, which close names
+    it.update(status="done", evidence={"commit": at, **({"carried_by": carried[1]} if carried else {}),
+                                       "checks": results, **({"repositories": repos} if repos else {})})
     it.pop("claimed_by", None)
     bl.save(it)
-    say(f"done {bl.label(iid)} at {head[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
+    say(f"done {bl.label(iid)} at {at[:10]}" + ("" if a.commit else f"; commit this with the trailer KB-Work: {iid}"))
     commit_written(bl, a, "done", iid)
     return 0
 
