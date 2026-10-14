@@ -38,7 +38,9 @@
         "confirm step after the reviewer's report; the brief holds only the sprint diff"
       ],
       "recommendation": "confirm step after the reviewer's report; the brief lists each provisional answer with the diff of the commits that carry it",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "confirm step after the reviewer's report; the brief lists each provisional answer with the diff of the commits that carry it",
+      "by": "operator"
     }
   ],
   "links": [
