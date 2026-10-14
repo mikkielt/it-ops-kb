@@ -1061,7 +1061,7 @@ def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugin
     # the paths every item may change are named, as `in_scope` counts them; a project that sets none gets no such line
     globs = bl_base.always_in_scope()
     assert globs and all(f"`{g}`" in kb and f"`{g}`" in host for g in globs)
-    assert "a source row whose count regenerates a coverage file is in scope" in kb
+    assert "a source row in a file the touches name is in scope" in kb and "`_sources.csv` is none of those" in kb
     monkeypatch.setattr(bl_dispatch, "always_in_scope", lambda: ())
     none = "\n".join(bl_dispatch.worker_rules(tmp_path, "TK-aaaaaaaa", "work/TK-aaaaaaaa"))
     assert "Besides the touches" not in none and "A doc that needs an edit outside the touches" in none
