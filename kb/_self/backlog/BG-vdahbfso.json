@@ -1,0 +1,25 @@
+{
+  "id": "BG-vdahbfso",
+  "kind": "bug",
+  "title": "done's ledger check reports an _anchors.csv row an item added and a later commit dropped as added",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "ledger_change returns ['added'] for an _anchors.csv row absent both at the first parent and at HEAD (b and a both None, b is None tested first), so ledger_moves names a row an item's commit added and a later commit dropped though its net change is nothing, against its docstring's 'a later revert clears it' (SP-ia6xayiy review, S2, from BG-ph7dcjhz's per-commit rewrite): a row absent at both ends counts no change",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land;d=tempfile.mkdtemp();g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@t','-c','commit.gpgsign=false',*a],check=True,capture_output=True,text=True).stdout.strip();g('init','-q');p=os.path.join(d,'_anchors.csv');w=lambda s:open(p,'w').write('fact,path,source_id,verified_utc\\nf1,a.md,S100,x\\n'+s);w('');g('add','.');g('commit','-qm','base');w('f2,a.md,S900,x\\n');g('commit','-qam','A');A=g('rev-parse','HEAD');w('');g('commit','-qam','B');m=bl_land.ledger_moves(d,{A:['_anchors.csv']});print(m);sys.exit(1 if m else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ia6xayiy review"
+  ]
+}

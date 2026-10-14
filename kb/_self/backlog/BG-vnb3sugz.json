@@ -1,0 +1,24 @@
+{
+  "id": "BG-vnb3sugz",
+  "kind": "bug",
+  "title": "close --summary credits a clause to an item that shares only generic verbs with it, ranked before the true carrier",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "CLAUSE_STOPWORDS leaves generic verbs (name, read), so an item sharing 3 of a clause's 6 words through them reaches CLAUSE_COVER and the story-before-bug order lists it before the carrier: at SP-ia6xayiy close --summary listed 'researched names each narrowed-goal piece it does not read as a question' as ST-ruxcexsg, BG-zwf3rs5y, BG-ms5dtnnr, the carrier BG-zwf3rs5y second (SP-ia6xayiy review, S3, from BG-ms5dtnnr): an item sharing only generic verbs and one subject word does not carry the clause",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,types;sys.path.insert(0,'_tools');import bl_land as b;it={'ST-x':{'kind':'story','status':'done','title':'Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase','goal':'an item that changes how researched reads a goal gets a check that runs researched on the sprint own goal research story'}};cw=b.clause_words('researched names each narrowed-goal piece it does not read as a question');s=b.carries_clause(types.SimpleNamespace(items=it,label=lambda i:i),cw,'ST-x');print(sorted(cw),s);sys.exit(1 if s else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ia6xayiy review"
+  ]
+}

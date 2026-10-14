@@ -1,0 +1,24 @@
+{
+  "id": "BG-fol7jkye",
+  "kind": "bug",
+  "title": "goal_questions strips a number such as (2) or '2.' from inside a question, not only from its start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "goal_questions' NUMBERED_PIECE.sub is unanchored, so 'Does it support (1) a or (2) b?' is read as 'Does it support a or (2) b?' and 'See section 2. Does it matter?' as 'See section Does it matter?' (SP-ia6xayiy review, S3, from BG-zwf3rs5y): only a leading number is stripped, a number inside a question is kept",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('Does it support (1) a or (2) b?');print(q);sys.exit(0 if q==['Does it support (1) a or (2) b?'] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ia6xayiy review"
+  ]
+}

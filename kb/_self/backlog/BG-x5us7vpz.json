@@ -1,0 +1,25 @@
+{
+  "id": "BG-x5us7vpz",
+  "kind": "bug",
+  "title": "goal_questions leaves the first numbered piece unread when a lead-in precedes it, and researched's no-question message omits numbered pieces it skipped",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "goal_questions' tail branch anchors NUMBERED_PIECE.match at the piece start, so 'Answer these: 1. does X work; 2. does Y work' yields only ['does Y work']; when every piece is unread ('Questions: 1. a 2. b') researched says the goal names no question and prints no skip: line, and kb/_self/tools.md omits the 'only when the goal names a question' condition of the skip lines (SP-ia6xayiy review, S3, from BG-zwf3rs5y): a lead-in before a numbered piece is split off as the ? branch does, and the tools.md row states the skip condition",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('Answer these: 1. does X work; 2. does Y work');print(q);sys.exit(0 if len(q)==2 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ia6xayiy review"
+  ]
+}
