@@ -93,7 +93,7 @@
       },
       "class": "design",
       "answer": "keep each old body whole as a plain helper function that the merged test calls, on a directory and monkeypatch of its own",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

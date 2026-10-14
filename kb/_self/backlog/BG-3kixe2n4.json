@@ -1,0 +1,27 @@
+{
+  "id": "BG-3kixe2n4",
+  "kind": "bug",
+  "title": "The brief test id renamed for the at-most-once suite rule is missing from _tools/test_ids_dropped.txt, so perfcheck ids against the pre-sprint base names it MISSING",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "_tools/test_ids_dropped.txt lists the old id test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugins_and_brief_names_always_in_scope under a reason naming its renamed successor, so perfcheck.py ids --base a3b124ffe --allow-removed _tools/test_ids_dropped.txt exits 0",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/perfcheck.py",
+      "ids",
+      "--base",
+      "a3b124ffe",
+      "--allow-removed",
+      "_tools/test_ids_dropped.txt"
+    ]
+  },
+  "touches": [
+    "_tools/test_ids_dropped.txt"
+  ],
+  "links": [
+    "parked: SP-sc5yk65l review"
+  ]
+}
