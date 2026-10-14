@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions that the kb answers weakly or not at all are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills. How does a goal research worker find the older kb lines its new facts contradict? What does a refresh do when it re-points a fact to another source? Where do the alias rows for a new topic's other names go? Which ledger is a reworded DOC fact re-anchored in? How is an item done when the goal research story already delivered its change? Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit. The question of how a worker checks a DER fact against the probe it cites has a good pack and is left out. These are repository rules that kb/_self documents and no outside source states: a story that finds no outside fact is done with a No outside facts line in its notes.",
+  "goal": "The sprint goal's open questions that the kb answers weakly or not at all are answered with the kb tools first and the live docs for the gaps, with the findings written as kb facts and gap entries through the kb skills; What does a refresh do when it re-points a fact to another source? How is an item done when the goal research story already delivered its change? Three questions are left out by the operator's answer to gate gaps, since they are repository rules that only kb/_self states and a public fact or gap entry for them is refused by content-rules.md: the sweep for older lines a new fact contradicts (ST-3jiwam77 writes it), where a new topic's alias rows go (ST-egz4cxar) and which ledger re-anchors a reworded DOC fact (ST-7d3r4lhc). Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit. The question of how a worker checks a DER fact against the probe it cites has a good pack and is left out. These are repository rules that kb/_self documents and no outside source states: a story that finds no outside fact is done with a No outside facts line in its notes.",
   "checks": [
     {
       "run": [
@@ -33,8 +33,8 @@
       ],
       "recommendation": "note only: No outside facts note, no public gap entries, bug BG-wng7cyo2 for researched to read the _self root",
       "class": "design",
-      "answer": "note only: No outside facts note, no public gap entries, bug BG-wng7cyo2 for researched to read the _self root",
-      "by": "agent"
+      "answer": "narrow the story's goal to the two good questions (operator set --goal)",
+      "by": "operator"
     }
   ],
   "notes": "No outside facts: the five questions ask repository rules that kb/_self documents (content-rules.md ledgers and retrieval data, tools.md, backlog.md) and no outside source states; the live docs hold nothing on them, and a public fact or gap entry for a rule the _self root answers is refused by content-rules.md (a public root holds no _self rule).",
