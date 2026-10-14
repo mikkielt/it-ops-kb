@@ -128,7 +128,9 @@
         "pack_many and the kb: hook, so kb_pack and kb_ask.py print the same text": "ST-brjhg6wl",
         "only rag.py pack and kb_pack": "ST-brjhg6wl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "pack_many and the kb: hook, so kb_pack and kb_ask.py print the same text",
+      "by": "operator"
     },
     {
       "id": "g3",
