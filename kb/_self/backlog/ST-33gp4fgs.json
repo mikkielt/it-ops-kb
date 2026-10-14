@@ -2,7 +2,7 @@
   "id": "ST-33gp4fgs",
   "kind": "story",
   "title": "Review sprint: Gates and filing: words do not misclass a gate, workers file no duplicates and add gates with their do map",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-hlt2tdel",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-hlt2tdel"
+  "evidence": {
+    "commit": "146b4f3ba52707edae471cadf690703375555392",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "a614df61fab5f1c8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "4fd1e64ace5e165b"
+      }
+    ]
+  }
 }
