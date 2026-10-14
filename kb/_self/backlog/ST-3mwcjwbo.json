@@ -1,0 +1,25 @@
+{
+  "id": "ST-3mwcjwbo",
+  "kind": "story",
+  "title": "done credits a goal research commit as an item's work only for a file of the item's own, not a shared ledger every research commit edits",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.research_carried counts a research commit for an item only when it changed a file of the item's touches other than a root's shared ledgers (_answers.md, _sources.csv, _anchors.csv, _gaps.md, _conflicts.md, _retrieval/ files), so a sibling touching kb/public/_sources.csv is not done through a research commit that added a source row (SP-ce5iig4g review: _tools/bl_land.py:90 takes any touched file but the always-in-scope ones)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "done_research_carried_shared_ledger"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ]
+}
