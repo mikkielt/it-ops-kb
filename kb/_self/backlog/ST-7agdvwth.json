@@ -1,0 +1,29 @@
+{
+  "id": "ST-7agdvwth",
+  "kind": "story",
+  "title": "A plugin-data worker distill keeps the worktree's entry script but runs with the main checkout as its working directory",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "With CLAUDE_PLUGIN_DATA set and CLAUDE_PLUGIN_ROOT a worker's worktree, ql_base.launch_places returns the worktree's own querylog.py entry and the clone's main checkout as the working directory, so the session-end distill still reads the plugin data spool and bl_procs.classify does not call a waiting distill an orphan that makes land refuse the worktree",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "launch_places_plugin_data_cwd_main_checkout"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_base.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 review"
+  ],
+  "notes": "Found by the SP-g2ssvhi2 review (S2): ST-oftholty's fix (88137f72a) returns (ENTRY, HOME) when plugin_data() is set, so ql_distill.detach (ql_distill.py:1152) starts the distill with cwd in the worker's worktree; bl_procs.hook_logs (bl_procs.py:169) matches only <checkout>/_cache/querylog/distill.log, so a plugin-data distill waiting on the lock classifies as orphan, not hook, and land refuses the worktree and selfcheck fails for up to USAGE_LOCK_WAIT_S. The landed test asserts (worker entry, worker) and bakes that in."
+}

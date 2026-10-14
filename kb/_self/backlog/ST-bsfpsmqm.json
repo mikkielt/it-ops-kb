@@ -1,0 +1,28 @@
+{
+  "id": "ST-bsfpsmqm",
+  "kind": "story",
+  "title": "A dispatch whose record_worker fails after the worker started still waits for the worker and records its exit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When bl_dispatch.record_worker raises after Popen (the ledger lock refused after its wait, an OSError on the lock or the ledger), cmd_dispatch still waits for the worker and prints its exit line and session, or ends the worker, so no failure of the ledger write orphans a running worker",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dispatch_record_failure_still_waits_for_worker"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 review"
+  ],
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:836 and :848 call record_worker inside the with block after Popen; a Refused or OSError from it propagates out of cmd_dispatch without proc.wait(), so the worker keeps running unrecorded. BG-chw4sg54 removed only the shared-temp-file FileNotFoundError."
+}

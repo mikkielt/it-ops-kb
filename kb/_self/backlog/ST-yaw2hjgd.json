@@ -1,0 +1,29 @@
+{
+  "id": "ST-yaw2hjgd",
+  "kind": "story",
+  "title": "stage-back skips a staging copy equal to its recorded base instead of refusing the whole copy-back",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py stage-back ID leaves out a staging copy whose bytes equal its recorded base (the worker did not edit it) even when the worktree's file has since changed, and copies, checks and commits the edited copies, refusing only an edited copy whose base differs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "stage_back_skips_copy_equal_to_base"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 review"
+  ],
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:668-676 (stage_back_copies) calls an unedited copy whose worktree file moved 'base differs' and refuses the whole stage-back, so the edited copies are not copied back either."
+}

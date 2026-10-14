@@ -1,0 +1,28 @@
+{
+  "id": "ST-jrs7supe",
+  "kind": "story",
+  "title": "The claims ledger lock clears a stale lock file once, so two waiters never both hold it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_dispatch.ledger_lock clears a lock file older than LEDGER_LOCK_STALE_S only when it is still the file it judged stale (an owner token or an atomic rename), so two waiters that both see a stale lock never enter the read-modify-write together",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ledger_lock_stale_clear_has_one_owner"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 review"
+  ],
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:519-523; waiter A unlinks the stale lock and creates a fresh one, waiter B (holding the old stat) unlinks A's fresh lock and creates its own, and both are inside. Only a crashed writer's leftover lock opens the window."
+}

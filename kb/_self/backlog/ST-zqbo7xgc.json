@@ -1,0 +1,31 @@
+{
+  "id": "ST-zqbo7xgc",
+  "kind": "story",
+  "title": "backlog.py claim writes the claims ledger under the lock record_worker takes, so a dispatch running beside a claim keeps its record",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_items.cmd_claim reads and writes the claims ledger inside bl_dispatch.ledger_lock with a temp file of its own, so a claim made while a dispatch's record_worker runs loses neither the claim's record nor the worker's worker_pid and worker_session",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "claim_and_record_worker_keep_each_record"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_dispatch.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-g2ssvhi2 review"
+  ],
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_items.py:236-240 writes the ledger with write_text (truncate, then write) from a read taken at the start of cmd_claim; a locked record_worker reading the truncated file gets ValueError and writes a ledger of its item alone, or claim's stale write drops a worker_session record_worker just wrote, and land then names no worker session. BG-chw4sg54's gate g1 was answered 'record_worker only', which left this open; its notes said the worker would file it, and the worker filed nothing."
+}
