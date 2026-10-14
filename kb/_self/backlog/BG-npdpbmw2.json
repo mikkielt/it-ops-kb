@@ -93,6 +93,40 @@
       "answer": "clamp: read a record whose until lies past at + DOWN_CAP_S, or past now + DOWN_CAP_S, as ending at that bound, so a real recent failure still holds the host for at most the cap",
       "by": "operator",
       "host_unchecked": "a design choice in provider.host_down's code (clamp vs ignore a far-future record), not a host setup: 'host' names the documentation host the record is about; check 2 proves the answer on any machine"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does window_sections read the sections a window can enter with no previous text without the sibling headings?",
+      "options": [
+        "skip: leave out the section of a following unit under an ancestor of the anchor's heading (a sibling's heading line), keeping the section of the sibling's body",
+        "headings: keep the parent's section and compare the sibling heading lines separately"
+      ],
+      "recommendation": "skip: leave out the section of a following unit under an ancestor of the anchor's heading (a sibling's heading line), keeping the section of the sibling's body",
+      "do": {
+        "skip: leave out the section of a following unit under an ancestor of the anchor's heading (a sibling's heading line), keeping the section of the sibling's body": "BG-npdpbmw2",
+        "headings: keep the parent's section and compare the sibling heading lines separately": "BG-npdpbmw2"
+      },
+      "class": "design",
+      "answer": "skip: leave out the section of a following unit under an ancestor of the anchor's heading (a sibling's heading line), keeping the section of the sibling's body",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does madeup_text treat an answer with no HTTP status, and how is a str body of that answer read?",
+      "options": [
+        "uncached: return None without caching a status-0 answer (the next source asks again), and provider.doc_text takes a str body as UTF-8",
+        "cached-short: cache the status-0 answer for a short time"
+      ],
+      "recommendation": "uncached: return None without caching a status-0 answer (the next source asks again), and provider.doc_text takes a str body as UTF-8",
+      "do": {
+        "uncached: return None without caching a status-0 answer (the next source asks again), and provider.doc_text takes a str body as UTF-8": "BG-npdpbmw2",
+        "cached-short: cache the status-0 answer for a short time": "BG-npdpbmw2"
+      },
+      "class": "design",
+      "answer": "uncached: return None without caching a status-0 answer (the next source asks again), and provider.doc_text takes a str body as UTF-8",
+      "by": "agent"
     }
   ],
   "links": [

@@ -248,13 +248,20 @@ def section_counts(old, new):
     return len(keys) - same, same
 
 
+def _ancestor(path, head):
+    """Whether `path` is a proper ancestor of the heading path `head` (the root path '' included)."""
+    return bool(head) and (not path or head.startswith(path + " > "))
+
+
 def window_sections(anchor, doc, prev):
     """Keys of the sections that hold an anchor's passage. An anchor's `heading` is the path of its window's first unit,
     and a heading line's own unit sits under its parent's path, so a window that starts at a heading line spans its
     parent's section and its own: with the previous text holding the passage, the section of every unit of its window;
     else (an anchor placed on an earlier text) its `heading` section, every section below it in the current text and
     the section of each of the SPAN - 1 units that follow a unit of that path, which holds any section the window can
-    enter (a window that runs from a body into the next heading and its body)."""
+    enter (a window that runs from a body into the next heading and its body). A following unit under an ancestor of
+    that path is a sibling's heading line, whose section hashes every sibling heading of the page: it is left out, as
+    the section of the sibling's body that the window then enters names the sibling by its heading."""
     head = (anchor or {}).get("heading") or ""
     if prev is not None and anchor.get("sha") in prev.shas:
         i, k = prev.shas[anchor["sha"]]
@@ -265,7 +272,7 @@ def window_sections(anchor, doc, prev):
         if not head or p[:200] == head or p[:200].startswith(head + " > "):
             keys.add(section_key(p))
         if p[:200] == head:
-            keys.update(section_key(q) for q, _ in us[i + 1:i + SPAN])
+            keys.update(section_key(q) for q, _ in us[i + 1:i + SPAN] if not _ancestor(q[:200], head))
     return keys
 
 
@@ -1042,10 +1049,13 @@ def search_lost(failed, used):
 
 
 def madeup_text(url):
-    """The text a made-up sibling url of `url` returns with 200 (None for a real 404), once per host and run."""
+    """The text a made-up sibling url of `url` returns with 200 (None for a real 404), once per host and run; an answer
+    with no HTTP status is not kept, so a network failure leaves soft-404 detection on for the host's other sources."""
     host = urllib.parse.urlsplit(url).netloc
     if host not in _madeup:
         r = provider.gated_request(provider._sibling(url))
+        if not r["status"]:
+            return None  # no answer is no 404: a later source of the host asks again
         _madeup[host] = provider.doc_text(r["body"], r["headers"].get("content-type", ""), url) if r["status"] == 200 else None
     return _madeup[host]
 
