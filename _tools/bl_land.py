@@ -417,25 +417,40 @@ TOUCH_ROOT = re.compile(r"kb/([^/*?\[\]]+)/")  # a touch inside a named kb root 
 COVERAGE_ORDER = ("none", "weak", "good")
 
 
-def goal_questions(goal):
-    """The questions a narrowed goal names: each sentence of the goal that ends in `?`, a lead-in of up to
-    QUESTION_LEAD_WORDS words ending in `: ` left off, in order, each once. The goal is cut where `goal_clauses` cuts
-    it, but a question is read whole: a piece that names no question is joined to the next across a `, and ` (a
-    question's own comma-and, `which item ..., and what does it print?`) and dropped at a `; `, which ends a clause.
-    A goal with no such sentence (the default goal of a research story, which `new sprint` files) names none."""
+NUMBERED_PIECE = re.compile(r"(?:\(\d+\)|\d+[.)])\s+")  # `(1) `, `1) `, `1. `: a piece of a goal written as a numbered list
+
+
+def goal_questions(goal, skipped=None):
+    """The questions a narrowed goal names: each sentence of the goal that ends in `?`, and each numbered piece
+    (`(1) does git record a change`) that has no `?`, the number and a lead-in of up to QUESTION_LEAD_WORDS words
+    ending in `: ` left off, in order, each once. The goal is cut where `goal_clauses` cuts it, but a question is read
+    whole: a piece that names no question is joined to the next across a `, and ` (a question's own comma-and, `which
+    item ..., and what does it print?`) and left unread at a `; `, which ends a clause, or at the goal's end: SKIPPED,
+    when a list, takes each such piece, so a caller says what it did not read. A goal with no such sentence (the
+    default goal of a research story, which `new sprint` files) names none."""
     parts = re.split(f"({CLAUSE_SPLIT.pattern})", str(goal or ""))
     out, cur = [], ""
+
+    def question(piece):
+        piece = NUMBERED_PIECE.sub("", piece.strip(), count=1)
+        lead, sep, rest = piece.partition(": ")
+        if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS:
+            piece = rest.strip()
+        return piece
+
     for n in range(0, len(parts), 2):
         cur = parts[n] if not cur else cur + parts[n - 1] + parts[n]
         sentences = [x.strip() for x in re.split(r"(?<=\?)\s+", cur.strip()) if x.strip()]
         tail = sentences.pop() if sentences and not sentences[-1].endswith("?") else ""  # the text a `?` has not ended
-        for piece in sentences:
-            lead, sep, rest = piece.partition(": ")
-            if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS:
-                piece = rest.strip()
-            out.append(piece)
-        joins = n + 2 < len(parts) and not parts[n + 1].startswith(";")
-        cur = tail if joins else ""
+        out.extend(question(piece) for piece in sentences)
+        if n + 2 < len(parts) and not parts[n + 1].startswith(";"):
+            cur = tail
+            continue
+        cur = ""
+        if NUMBERED_PIECE.match(tail) and question(tail):
+            out.append(question(tail))
+        elif tail and skipped is not None:
+            skipped.append(tail)
     return list(dict.fromkeys(out))
 
 
@@ -471,14 +486,18 @@ def unanswered_questions(bl, it):
     or ''): a question is answered when its coverage in the roots the touches name (every root with none) is `good`,
     or an open gap entry names it. Nothing is read, and the line says so, when the project's `kb_root`
     setting is empty (it is no kb), when `bl` is another clone than the one these tools run from (its pack reads this
-    clone's kb), and when the goal names no question. Each question read is said on a line of its own."""
+    clone's kb), and when the goal names no question. Each question read is said on a line of its own, and each piece
+    of the goal that is read as no question on a `skip:` line, which leaves the verdict as it is."""
     if not setting("kb_root"):
         return [], "coverage not read: the project's kb_root is empty"
     if other_clone(bl):
         return [], "coverage not read: --root names another clone, whose kb this process does not read"
-    questions = goal_questions(it.get("goal"))
+    unread = []
+    questions = goal_questions(it.get("goal"), unread)
     if not questions:
-        return [], "coverage not read: the goal names no question (a sentence ending in `?`)"
+        return [], "coverage not read: the goal names no question (a sentence ending in `?` or a numbered piece)"
+    for piece in unread:
+        say(f"  skip: not read as a question (no `?`, not numbered): {piece}")
     roots = research_roots(it)
     left = []
     for q in questions:

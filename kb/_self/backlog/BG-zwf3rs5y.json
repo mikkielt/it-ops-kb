@@ -55,6 +55,19 @@
       "class": "agents-rule",
       "answer": "say it on a line, the exit code unchanged (a numbered piece such as (1) is read as a question)",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does researched read a numbered piece and where does it say an unread one?",
+      "options": [
+        "strip the number, say each unread piece on a skip: line only when the goal names a question",
+        "keep the number in the question, say unread pieces for every goal"
+      ],
+      "recommendation": "strip the number, say each unread piece on a skip: line only when the goal names a question",
+      "class": "agents-rule",
+      "answer": "strip the number, say each unread piece on a skip: line only when the goal names a question",
+      "by": "operator"
     }
   ],
   "links": [
