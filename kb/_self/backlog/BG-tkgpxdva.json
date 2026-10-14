@@ -2,7 +2,7 @@
   "id": "BG-tkgpxdva",
   "kind": "bug",
   "title": "The benchmark pool's answer regexes miss capitalised durations, take 0.1 hour, and reject the mcp__server__* and mcp__server rule forms",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,
@@ -50,5 +50,27 @@
     "merged: BG-molorsr3"
   ],
   "notes": "Merged from BG-molorsr3 at the 2026-10-14 planning (same files, same kind of fix: data rows only). Premise (2026-10-14, ae319c43c5): the merged repro prints eight False, exit 1; bench_pool.check_problems is empty now (2 s) and must stay so. agent_bench.check compiles the regex with no flags; changing scoring itself is out of scope (it would re-score recorded runs). Only bench_scenarios.csv line 31 (BP-43472201) needs the scenarios edit. Planning 2026-10-14: the pool check passes before the work by design (it must stay clean after the regex edits); the repro fails on the premise.",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "24e3724c8cd37cddaf8df91cb39c036af173a38e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_pool as b;p=b.check_problems(b.read_csv(b.PUBLIC_FILE));print(p);sys.exit(1 if p else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys,json;sys.path.insert(0,'_tools');import bench_pool as b;R={r['id']:json.loads(r['checks'])[0] for r in b.read_csv(b.PUBLIC_FILE)};ids=['BP-d306eaa8','BP-8f566d80','BP-70d0bf39','BP-b124a0c0','BP-1f52a1d6','BP-6ca01fa4'];ok=[all([re.search(R[i],'Ten minutes.'),re.search(R[i],'One hour.'),not re.search(R[i],'0.1 hour')]) for i in ids]+[bool(re.search(R['BP-c552cb0f'],'Cannot block termination')),all(re.search(R['BP-43472201'],a) for a in ('mcp__server__*','mcp__server'))];print(ok);sys.exit(0 if all(ok) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "75eea4a042f0c08c"
+      }
+    ]
+  }
 }
