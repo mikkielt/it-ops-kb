@@ -23,8 +23,8 @@ import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
     external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line,
-    main_worktree_spool, need, rel_dir, repositories, research_touches, run, say, scope, setting, split_touch, waits,
-    worker_dir,
+    main_worktree_spool, need, rel_dir, repositories, research_story, research_touches, run, say, scope, setting,
+    split_touch, waits, worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, other_clone, trivial_command
 
@@ -2792,6 +2792,38 @@ def precheck_items(bl, sid):
             and not bl.items[iid].get("review") and not bl.items[iid].get("goal_research")]
 
 
+def research_rows(bl, sid):
+    """The kb/_self docs (sorted paths) that the rows of `bl_plan.SELF_EVAL` added by the sprint's goal research story
+    name in expect_paths: for each commit on HEAD that carries the story's KB-Work (`item_commits`) and changes the eval
+    file, the rows it has that its first parent's file lacks. [] when the sprint has no research story, none of its
+    commits changed the file, or the file is unreadable in a revision."""
+    story = research_story(bl, sid)
+    if not story:
+        return []
+    docs = set()
+    for sha, paths in item_commits(bl.root, [story]).items():
+        if bl_plan.SELF_EVAL not in paths:
+            continue
+        try:
+            now = git(bl.root, "show", f"{sha}:{bl_plan.SELF_EVAL}")
+        except Refused:
+            continue
+        try:
+            before = git(bl.root, "show", f"{sha}^:{bl_plan.SELF_EVAL}")
+        except Refused:
+            before = ""
+        known = {tuple(r) for r in csv.reader(io.StringIO(before))}
+        table = list(csv.reader(io.StringIO(now)))
+        if not table or "expect_paths" not in table[0]:
+            continue
+        col = table[0].index("expect_paths")
+        for row in table[1:]:
+            if tuple(row) in known or len(row) <= col:
+                continue
+            docs.update(f"kb/_self/{p.strip()}" for p in row[col].split(";") if p.strip())
+    return sorted(docs)
+
+
 def precheck_rows(bl, sid):
     """[(item id, check, exit code, passed, output)] of each check, and of a bug its repro after them, of the sprint's
     open committed items (`precheck_items`), run once on the checkout as it is (before any work commit), as `done`
@@ -2923,7 +2955,11 @@ def cmd_precheck(bl, a):
     request is pushed, so only a separate item done after the merge can prove them. It warns of an item whose goal
     words a DOC fact reworded or added (the words DOC, reword, reworded) and whose touches name an article of a kb root
     with no touch that covers that root's `_anchors.csv` (`bl_plan.anchors_warnings`), naming the root and the file to
-    add. kb-sprint plan runs it before the start gate is asked, so start stays fast."""
+    add. It warns of an item whose touches name a kb/_self doc that eval rows added by the sprint's goal research story
+    (its commits, `research_rows`) name in expect_paths and have no touch that covers the _self eval file
+    (`bl_plan.research_rows_warnings`), so a reworded line moves its row in the item; it reads those rows once the
+    research story has landed, so the orchestrator runs it again then. kb-sprint plan runs it before the start gate is
+    asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
@@ -2956,6 +2992,7 @@ def cmd_precheck(bl, a):
             f"nothing yet; make it fail until the work is done, or say in the item's notes that it {PRECHECK_NOTE} "
             "and why (a check that pins behaviour that must stay)")
     unread = 0
+    quoted = research_rows(bl, sid)
     for iid in precheck_items(bl, sid):
         late = after_merge_proof(bl, iid)
         if late:
@@ -2964,6 +3001,8 @@ def cmd_precheck(bl, a):
                 "and repro before it pushes the merge request, so it stops at checks: move that proof to a separate "
                 "item, done after the merge")
         for text in bl_plan.anchors_warnings(bl, [iid]):
+            say(text)
+        for text in bl_plan.research_rows_warnings(bl, [iid], quoted):
             say(text)
         lines, warns, n = clause_map(bl, iid)
         unread += n

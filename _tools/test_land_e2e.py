@@ -562,12 +562,15 @@ def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate
     assert log.read_text(encoding="utf-8").count("apply: run=1 records=2") == 1
 
 
-def test_precheck_plan_reword_names_anchors_of_a_root_whose_article_a_reworded_doc_fact_item_touches(
+def test_precheck_plan_reword_names_anchors_of_a_root_whose_article_a_reworded_doc_fact_item_touches_and_research_rows_sibling_eval_touch(
         tmp_path, monkeypatch, capsys):
     """`precheck` warns of an item whose goal words a DOC fact reworded or added and whose touches name an article of a
     kb root (a directory with its `_root.md`) with no touch that covers that root's `_anchors.csv`, naming the root and
     the file to add. Planted failures: the item with only the article is warned of; a touch of the file, or a glob that
-    covers it, a goal without the words, a `.csv` of the root and a doc outside a kb root are not."""
+    covers it, a goal without the words, a `.csv` of the root and a doc outside a kb root are not. It also warns of an
+    item whose touches name a kb/_self doc that a row the sprint's goal research story added (a commit with its
+    KB-Work) names in expect_paths, without the _self eval file: the doc a row of an earlier commit names, the file
+    itself, a glob that covers it, a row of another item's commit and the research story are not."""
     import bl_land
     from bl_base import Backlog
     for rel in ("kb/public/_root.md", "kb/_self/backlog.md"):
@@ -593,6 +596,35 @@ def test_precheck_plan_reword_names_anchors_of_a_root_whose_article_a_reworded_d
     assert warned == {"ST-aaaaaaa1", "ST-aaaaaaa7"}, warned
     one = bl_land.bl_plan.anchors_warnings(plan, ["ST-aaaaaaa1"])
     assert len(one) == 1 and "kb root public" in one[0] and "add kb/public/_anchors.csv to its touches" in one[0], one
+
+    eval_file = "kb/_self/_retrieval/lookup_eval.csv"
+    head = "id,question,expect_paths,expect_verdict,allow_weak,expect_text,sets\n"
+    repo = Repo(tmp_path)
+    repo.git("init", "-q", "-b", "main")
+    repo.write(eval_file, head + 'SE-001,"what does land refuse, and when",git.md,good,yes,it refuses,kb-item:land\n')
+    repo.commit("base")
+    repo.write("kb/_self/tools.md", "x\n")
+    repo.commit("another item\n\nKB-Work: ST-aaaaaaby")
+    repo.append(eval_file, "SE-002,what does a section window hold,tools.md;code.md,good,yes,a window,kb-item:land\n")
+    repo.commit("research rows\n\nKB-Work: ST-aaaaaabz")
+    assert bl_land.research_rows(Backlog(tmp_path), "SP-aaaaaaa0") == []  # no research story yet
+    plan.save({"id": "ST-aaaaaabz", "kind": "story", "title": "Research", "status": "done", "sprint": "SP-aaaaaaa0",
+               "goal_research": True, "goal": "Research.", "touches": [eval_file]})
+    assert bl_land.research_rows(Backlog(tmp_path), "SP-aaaaaaa0") == ["kb/_self/code.md", "kb/_self/tools.md"]
+    doc_cases = {"ST-aaaaaab2": ["kb/_self/tools.md"],
+                 "ST-aaaaaab3": ["kb/_self/tools.md", eval_file],
+                 "ST-aaaaaab4": ["kb/_self/git.md"],
+                 "ST-aaaaaab5": ["kb/_self/code.*"],
+                 "ST-aaaaaab6": ["kb/_self/tools.md", "kb/_self/_retrieval/*.csv"],
+                 "ST-aaaaaab7": ["kb/_self/backlog.md"]}
+    for iid, touches in doc_cases.items():
+        plan.save({"id": iid, "kind": "story", "title": iid, "status": "todo", "sprint": "SP-aaaaaaa0",
+                   "goal": "The doc says so.", "touches": touches})
+    capsys.readouterr()
+    assert bl_land.cmd_precheck(Backlog(tmp_path), type("A", (), {"sprint": "SP-aaaaaaa0"})) == 0
+    warned = {ln.split(":")[1].split()[0] for ln in capsys.readouterr().out.splitlines()
+              if ln.startswith("warning: ") and eval_file in ln}
+    assert warned == {"ST-aaaaaab2", "ST-aaaaaab5"}, warned
 
 
 def orphan_in(cwd, log, release, give_up=120):
