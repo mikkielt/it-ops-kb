@@ -2,7 +2,7 @@
   "id": "ST-bg2kr4rw",
   "kind": "story",
   "title": "Research sprint goal: Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ce5iig4g",
   "goal_research": true,
   "priority": "P1",
@@ -38,5 +38,19 @@
     }
   ],
   "notes": "No outside facts: the five questions ask repository rules that kb/_self documents (content-rules.md ledgers and retrieval data, tools.md, backlog.md) and no outside source states; the live docs hold nothing on them, and a public fact or gap entry for a rule the _self root answers is refused by content-rules.md (a public root holds no _self rule). Operator answer to gate gaps (2026-10-14, delegated session): the goal narrowed to the two questions the public pack answers good; the three left out are repository rules the sibling stories ST-3jiwam77, ST-egz4cxar and ST-7d3r4lhc write, chosen over public gap entries content-rules.md refuses and over waiting on BG-wng7cyo2 (a draft), as the smallest reversible way to finish.",
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "af0dcf66c15a55f71669dbccd0bb390744715876",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-bg2kr4rw"
+        ],
+        "exit": 0,
+        "sha256": "8d71f30ba61c65e0"
+      }
+    ]
+  }
 }
