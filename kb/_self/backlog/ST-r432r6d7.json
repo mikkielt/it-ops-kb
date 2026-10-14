@@ -2,7 +2,7 @@
   "id": "ST-r432r6d7",
   "kind": "story",
   "title": "Review sprint: Content fixes: doc lookup, change detection and retrieval articles and their anchors",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-uvz65lvm",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-uvz65lvm"
+  "evidence": {
+    "commit": "581c8bf74d608d8983c55ffb1d43d159e695d09c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "4555bc1ac680e792"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "550f89c14b1fdad8"
+      }
+    ]
+  }
 }
