@@ -2,7 +2,7 @@
   "id": "ST-b4swnror",
   "kind": "story",
   "title": "stdlib-windows-portability says which result of a removed working directory is documented for Linux and which a macOS run showed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -26,5 +26,18 @@
     "parked: SP-b7wibqok review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: new check fails (line 57 says the holder meets ENOENT on its next relative path or getcwd for Linux and macOS together; getcwd ENOENT is documented for Linux at line 54, the relative open only in the one macOS run of line 56). The check reads the bullet that starts '- So on Linux and macOS', so a worker keeps that bullet's opening words. expansions.csv left out of touches: no expansion row keys these facts.",
-  "claimed_by": "orch-lsamtvsz"
+  "evidence": {
+    "commit": "c1206dd3cddfdd2e2b9fcdd0d3c2bb9e9fb04968",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys;L=[l for l in open('kb/public/python/stdlib-windows-portability.md',encoding='utf-8') if l.startswith('- So on Linux and macOS')];t=L[0] if L else '';g=[m.start() for m in re.finditer('getcwd',t)];r=[m.start() for m in re.finditer('relative',t)];ok=bool(g) and bool(r) and all(re.search('Linux|documented',t[max(0,i-100):i+100]) for i in g) and all('macOS' in t[max(0,i-100):i+100] for i in r);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
