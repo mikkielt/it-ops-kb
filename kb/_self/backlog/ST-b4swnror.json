@@ -2,7 +2,7 @@
   "id": "ST-b4swnror",
   "kind": "story",
   "title": "stdlib-windows-portability says which result of a removed working directory is documented for Linux and which a macOS run showed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-b7wibqok review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: new check fails (line 57 says the holder meets ENOENT on its next relative path or getcwd for Linux and macOS together; getcwd ENOENT is documented for Linux at line 54, the relative open only in the one macOS run of line 56). The check reads the bullet that starts '- So on Linux and macOS', so a worker keeps that bullet's opening words. expansions.csv left out of touches: no expansion row keys these facts."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: new check fails (line 57 says the holder meets ENOENT on its next relative path or getcwd for Linux and macOS together; getcwd ENOENT is documented for Linux at line 54, the relative open only in the one macOS run of line 56). The check reads the bullet that starts '- So on Linux and macOS', so a worker keeps that bullet's opening words. expansions.csv left out of touches: no expansion row keys these facts.",
+  "claimed_by": "orch-lsamtvsz"
 }
