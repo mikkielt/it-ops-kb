@@ -2,7 +2,7 @@
   "id": "TK-dxej6ir4",
   "kind": "task",
   "title": "precheck warns of a content item that rewords a DOC fact and lacks its root's _anchors.csv",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-7d3r4lhc",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,6 @@
       "answer": "goal words",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "orch-ce5iig4g"
 }
