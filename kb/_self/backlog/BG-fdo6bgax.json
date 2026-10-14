@@ -2,7 +2,7 @@
   "id": "BG-fdo6bgax",
   "kind": "bug",
   "title": "The whole suite's darwin wall time is bounded by two module scopes, test_land_e2e.py and test_backlog_portable.py, each 22 to 29 s of serial tests on one worker",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ofvvong6",
   "priority": "P1",
   "rank": 0,

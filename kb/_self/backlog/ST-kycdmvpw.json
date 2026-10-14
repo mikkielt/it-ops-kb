@@ -2,7 +2,7 @@
   "id": "ST-kycdmvpw",
   "kind": "story",
   "title": "Review sprint: A full test run fits its darwin limit again: tests spread one at a time over the workers",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ofvvong6",
   "review": true,
   "priority": "P1",

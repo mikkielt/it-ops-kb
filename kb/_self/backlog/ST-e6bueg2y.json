@@ -2,7 +2,7 @@
   "id": "ST-e6bueg2y",
   "kind": "story",
   "title": "The stage-back and brief-rules tests no longer build a cold rag index of the whole kb only to read a brief line",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ofvvong6",
   "priority": "P1",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "SP-ofvvong6",
   "kind": "sprint",
   "title": "A full test run fits its darwin limit again: tests spread one at a time over the workers",
-  "status": "planned",
+  "status": "active",
   "goal": "tests.py hands the suite's tests to its workers one at a time, so no module or class scope bounds a full run's wall time; the land and brief tests that build a cold rag index only to read a brief line no longer build one; a full tests.py run on a quiet darwin host takes at most 27 s with no test id lost",
   "gates": [
     {
