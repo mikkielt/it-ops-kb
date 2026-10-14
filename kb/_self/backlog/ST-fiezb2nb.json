@@ -2,7 +2,7 @@
   "id": "ST-fiezb2nb",
   "kind": "story",
   "title": "Review sprint: The suite has id room for new tests, and workers run the whole suite at most once",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sc5yk65l",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-sc5yk65l"
 }
