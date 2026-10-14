@@ -153,6 +153,30 @@ def rule_paths(text):
     return out
 
 
+# Three wordings that hold a `push` word and are no push: the upload date of a package release (`uploaded` beside a
+# date or a time), a kb topic path (`gitlab/git-commit-paths-and-symlinks`, a domain `gitlab` before a slug) and a
+# display-only count question, where the push is a noun after `its` or `the` that only places a count or a list
+# (`how many unpushed commits does land list before its push?`). Every other use of those words keeps the class.
+UPLOAD_DATE = re.compile(
+    r"\buploaded\s+(?:(?:on|at|in)\s+)?(?=\d{4}-\d{2}-\d{2}\b|\d{1,2}:\d{2}\b|\d{1,2}\s+"
+    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\b|"
+    r"(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b)", re.I)
+TOPIC_PATH = re.compile(r"\bgitlab/[a-z0-9][a-z0-9.-]*[a-z0-9]\b")
+COUNT_QUESTION = re.compile(r"\bhow (?:many|much)\b|\b(?:which|what) (?:count|number)\b", re.I)
+DISPLAY_WORD = re.compile(r"\b(?:list|lists|listed|listing|show|shows|print|prints|count|counts|name|names|report|reports)\b",
+                          re.I)
+PUSH_NOUN = re.compile(r"\b(?:its|the) push\b", re.I)
+
+
+def without_benign_push_words(text, question=None):
+    """The text with the three wordings above replaced by a space: what the `push` words are searched in. `question` is
+    the gate's question: a count question's push noun is blanked only in it, so an option that says `push` keeps the
+    class, and only when the question also holds a display word (`list`, `count`, `show`)."""
+    if question and question in text and COUNT_QUESTION.search(question) and DISPLAY_WORD.search(question):
+        text = text.replace(question, PUSH_NOUN.sub(" ", question), 1)
+    return TOPIC_PATH.sub(" ", UPLOAD_DATE.sub(" ", text))
+
+
 def command_words(gate):
     """The words of a gate's `do` and `host_check` commands (argv lists, or a string)."""
     out = []
@@ -199,8 +223,9 @@ def class_reasons(item, gate):
         if names_secret(t):
             found.setdefault("secrets", []).append(f"touch '{t}'")
     text = f"{gate.get('question', '')} {' '.join(map(str, gate.get('options', []) or []))} {command_words(gate)}"
+    push_text = without_benign_push_words(text, str(gate.get("question", "")))
     for cls, rx in QUESTION_WORDS.items():
-        m = rx.search(without_token_counts(text) if cls == "secrets" else text)
+        m = rx.search(without_token_counts(text) if cls == "secrets" else push_text if cls == "push" else text)
         if m:
             found.setdefault(cls, []).append(f"matched '{m.group(0)}'")
     m = RULE_WORD.search(text)
