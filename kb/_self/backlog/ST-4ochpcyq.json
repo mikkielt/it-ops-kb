@@ -2,7 +2,7 @@
   "id": "ST-4ochpcyq",
   "kind": "story",
   "title": "Review sprint: Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g2ssvhi2",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-g2ssvhi2"
 }
