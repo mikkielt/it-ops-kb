@@ -2,7 +2,7 @@
   "id": "BG-gflil3ya",
   "kind": "bug",
   "title": "factdiff.revalidate dates a run by the local day and stamps checked_utc in UTC, so test_live_kb fails between local midnight and UTC midnight",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
@@ -24,5 +24,6 @@
   "links": [
     "parked: SP-kuhlsf2s close"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: the repro prints ['2026-10-14', '2026-10-13'] for TZ Etc/GMT-14 and Etc/GMT+12 and exits 1; factdiff.today() is the local date."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run 2026-10-13: the repro prints ['2026-10-14', '2026-10-13'] for TZ Etc/GMT-14 and Etc/GMT+12 and exits 1; factdiff.today() is the local date.",
+  "claimed_by": "orch-wjp5qllo"
 }
