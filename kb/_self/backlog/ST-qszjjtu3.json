@@ -2,7 +2,7 @@
   "id": "ST-qszjjtu3",
   "kind": "story",
   "title": "A sprint item that rewords a doc the goal research's tested rows quote carries the _self eval file in its touches",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -63,5 +63,19 @@
     "parked: SP-djl7za6x close"
   ],
   "notes": "Gate g1 answered rows added by the research story (recommended): the rows are known once the research has landed, so the orchestrator reruns precheck then (ST-me3dmaxy, which depends on this item); reading every row that names a doc would warn of nearly every _self doc item and put the shared eval file in many touches. The test extends an existing land e2e test, as the ceiling leaves no id for a new one.\nPremise: _tools/bl_land.py and _tools/bl_plan.py hold no lookup_eval reference (grep count 0 in both), so precheck reads no eval row and warns of no sibling whose doc a research row quotes. Run at planning: the check exits 2 (the selector collects no test).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "7a6650d2f589b4ad33ab7778801b0847f0b755c4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "research_rows_sibling_eval_touch"
+        ],
+        "exit": 0,
+        "sha256": "1f2436411b2f250f"
+      }
+    ]
+  }
 }
