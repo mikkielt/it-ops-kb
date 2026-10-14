@@ -2,7 +2,7 @@
   "id": "ST-ruxcexsg",
   "kind": "story",
   "title": "Planning gives an item whose rule text names a command form a check that runs that command form, not only a read of the phrase",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,6 @@
     "merged: ST-w73hk57t",
     "merged: ST-wqp3xyp6"
   ],
-  "notes": "Merged at the 2026-10-13 draft triage, doc rules only (no planner warning, no bl_plan.py change): ST-bmhbyr6d (a clause with two conditions: a planted case per condition, BG-4flop3jv), ST-l2t3uv6s (a wording bug check reads the claim by its items, BG-ab3tndhy), ST-lco3gszi (an item that changes researched gets a check that runs it on the sprint own goal research story, SP-sqgyoiaz), ST-rlzq6jup (each recovery path of a lock story gets a planted check, SP-ilqhjn3k), ST-w73hk57t (a skill-text check reads the step its goal names, BG-adgc5qf2), ST-wqp3xyp6 (a rule that calls a path in scope gets a check that runs in_scope, BG-6bb4zzdy). Their own test selections (precheck_clause_each_condition, plan_concurrency_recovery_checks, skill_text_check_reads_named_step, precheck_brief_rule_scope) were planner changes and stay out. Check 0 reads the command-form rule in both docs; check 1 reads the six other rules in plan step 6 and the Sprints Plan paragraph. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. At plan time (2026-10-13) both checks exit 1 (step 6 and the Sprints Plan paragraph hold none of the seven phrases)."
+  "notes": "Merged at the 2026-10-13 draft triage, doc rules only (no planner warning, no bl_plan.py change): ST-bmhbyr6d (a clause with two conditions: a planted case per condition, BG-4flop3jv), ST-l2t3uv6s (a wording bug check reads the claim by its items, BG-ab3tndhy), ST-lco3gszi (an item that changes researched gets a check that runs it on the sprint own goal research story, SP-sqgyoiaz), ST-rlzq6jup (each recovery path of a lock story gets a planted check, SP-ilqhjn3k), ST-w73hk57t (a skill-text check reads the step its goal names, BG-adgc5qf2), ST-wqp3xyp6 (a rule that calls a path in scope gets a check that runs in_scope, BG-6bb4zzdy). Their own test selections (precheck_clause_each_condition, plan_concurrency_recovery_checks, skill_text_check_reads_named_step, precheck_brief_rule_scope) were planner changes and stay out. Check 0 reads the command-form rule in both docs; check 1 reads the six other rules in plan step 6 and the Sprints Plan paragraph. Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. At plan time (2026-10-13) both checks exit 1 (step 6 and the Sprints Plan paragraph hold none of the seven phrases).",
+  "claimed_by": "orch-ia6xayiy"
 }
