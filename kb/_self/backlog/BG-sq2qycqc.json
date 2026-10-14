@@ -10,9 +10,8 @@
   "repro": {
     "run": [
       "python3",
-      "_tools/backlog.py",
-      "referrers",
-      "--add-touch"
+      "-c",
+      "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','referrers','--add-touch'],capture_output=True,text=True);print(p.returncode,p.stderr.strip()[-120:]);sys.exit(0 if p.returncode==0 else 1)"
     ]
   },
   "touches": [
@@ -22,5 +21,6 @@
   ],
   "links": [
     "parked: SP-4jfepy6u review"
-  ]
+  ],
+  "notes": "2026-10-14 triage: the old repro (referrers --add-touch) exited 2, an argparse usage error read as an error, not a failure; re-filed as a python3 -c wrapper that exits 1 while referrers refuses a flag-like term. A fix that only documents the -- separator in the skills re-points this repro to a check on the docs' form. Premise holds on ae319c43c5: referrers -- --add-touch works, the skill text names no separator."
 }
