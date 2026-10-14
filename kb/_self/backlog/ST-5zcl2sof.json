@@ -77,6 +77,25 @@
     "_tools/test_authority.py",
     "_tools/test_ids_dropped.txt"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are the merged tests built so every assertion stays and the live selectors still collect?",
+      "options": [
+        "keep each old body whole as a plain helper function that the merged test calls, on a directory and monkeypatch of its own",
+        "inline the old bodies into one function each"
+      ],
+      "recommendation": "keep each old body whole as a plain helper function that the merged test calls, on a directory and monkeypatch of its own",
+      "do": {
+        "keep each old body whole as a plain helper function that the merged test calls, on a directory and monkeypatch of its own": "ST-5zcl2sof",
+        "inline the old bodies into one function each": "ST-5zcl2sof"
+      },
+      "class": "design",
+      "answer": "keep each old body whole as a plain helper function that the merged test calls, on a directory and monkeypatch of its own",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ilje65fa review",
     "merged: ST-7ibioci3"
