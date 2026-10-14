@@ -470,7 +470,7 @@ def feedback_problems(f, where, k=None):
     """The gates on an entry's `feedback`: 1 to FEEDBACK_REPORTS_MAX reports, each holding only the closed fields of
     FEEDBACK_KEYS: an outcome and a judge of their classes; `lines` of a kb path:line and an issue class; a `best`
     article path; `sources` ids; a `lead` url that passes the research candidate's url gate (ql_research.public_url)
-    and the leak scan; a tool issue class. A comment, a claim or any other field is free text and is refused."""
+    and the leak scan, with no query or fragment; a tool issue class. A comment, a claim or any other field is free text and is refused."""
     import kbid, redact
     import ql_research
     if not (isinstance(f, list) and 0 < len(f) <= FEEDBACK_REPORTS_MAX):
@@ -510,6 +510,8 @@ def feedback_problems(f, where, k=None):
             if not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and ql_research.public_url(lead)
                     and not redact.scan(lead, k)):
                 out.append(f"{w}: lead is not a url that passes the candidate url gate")
+            elif ql_research.bare_url(lead) != lead:
+                out.append(f"{w}: lead is a url with a query or a fragment, free text can ride there")
         if "tool_issue" in r and r["tool_issue"] not in FEEDBACK_TOOL_ISSUES:
             out.append(f"{w}: tool_issue is not one of {', '.join(FEEDBACK_TOOL_ISSUES)}")
     return out

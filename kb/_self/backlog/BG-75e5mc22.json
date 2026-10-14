@@ -34,6 +34,25 @@
     "kb/_self/usage.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the url cut live: a new ql_research.bare_url used by the distill step and the store gate, or a query and fragment refusal inside ql_research.public_url, which research candidates and kb_feedback also pass?",
+      "options": [
+        "bare_url helper, public_url unchanged",
+        "refuse a query or fragment in public_url"
+      ],
+      "recommendation": "bare_url helper, public_url unchanged",
+      "do": {
+        "bare_url helper, public_url unchanged": "BG-75e5mc22",
+        "refuse a query or fragment in public_url": "BG-75e5mc22"
+      },
+      "class": "design",
+      "answer": "bare_url helper, public_url unchanged",
+      "by": "agent"
+    }
+  ],
   "notes": "Found by the SP-waxgh3kg fresh-context review: ql_distill.feedback_report and the gates (ql_store.feedback_problems, kb_mcp.kb_feedback) check only a lead url's scheme and host; a learn.microsoft.com url with prose in its query or fragment was stored whole as lead (probe: feedback_problems returned [] for it), and from there reaches the findings files and, for a conflict, _conflicts.md.",
   "claimed_by": "orch-waxgh3kg"
 }
