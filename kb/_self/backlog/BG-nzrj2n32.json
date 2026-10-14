@@ -38,7 +38,7 @@
       "recommendation": "Reword each so the old name appears once as plain text, as Localization without the Fluent prefix, followed by none of those characters",
       "class": "delete",
       "answer": "Reword each so the old name appears once as plain text, as Localization without the Fluent prefix, followed by none of those characters",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
