@@ -83,7 +83,9 @@
         "a separate rule every project gets"
       ],
       "recommendation": "inside the always-in-scope rule (left out where a project sets no always_in_scope)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "inside the always-in-scope rule (left out where a project sets no always_in_scope)",
+      "by": "operator"
     }
   ],
   "links": [
