@@ -2,7 +2,7 @@
   "id": "ST-jbqgwjjv",
   "kind": "story",
   "title": "Review sprint: The suite's slowest work is cut: the land scenarios and check.py's code citation scan",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j65ihctq",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-j65ihctq"
+  "evidence": {
+    "commit": "eaed3c9cd862a3e0aa73451830ba4bec6662d6b8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "12ef2246bf2e411a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "359c5e851c922474"
+      }
+    ]
+  }
 }
