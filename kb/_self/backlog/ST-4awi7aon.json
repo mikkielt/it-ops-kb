@@ -1,0 +1,26 @@
+{
+  "id": "ST-4awi7aon",
+  "kind": "story",
+  "title": "A planned rewrite of a row-diff function carries a planted case for each row transition, added then dropped included",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item that rewrites how a function compares ledger or table rows across commits carries a planted check for each row transition (added, dropped, changed, changed back, added then dropped), not only the case its goal names; at SP-ia6xayiy BG-ph7dcjhz's per-commit ledger_moves passed its repro (another item's later commit) and the existing drop-and-restore test while an _anchors.csv row added then dropped was reported as added (the review's S2 gap, BG-vdahbfso)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','which planted cases does a planned rewrite of a row diff function carry','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-ia6xayiy close"
+  ]
+}

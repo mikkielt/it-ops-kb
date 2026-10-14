@@ -15,5 +15,6 @@
   },
   "touches": [
     "_tools/tests.py"
-  ]
+  ],
+  "notes": "SP-ia6xayiy (2026-10-14): every worker's whole-suite run was refused over the darwin ceiling (BG-ms5dtnnr 33 s and 31 s, BG-zwf3rs5y 33 s, BG-ph7dcjhz 33 s, ST-2ietdnca 34 s and 31 s at load 6.17, ST-ns63tfx5 30 s at load about 5, ST-fla2es24 32 s twice, ST-ruxcexsg 30 s), with at most two workers running; the review's done ran it at 29.07 s (refused) and passed on the one retry with no other suite on the host. The ceiling is the operator's: unchanged."
 }

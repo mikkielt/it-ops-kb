@@ -1,0 +1,26 @@
+{
+  "id": "ST-eqpfper2",
+  "kind": "story",
+  "title": "Planning asks the implementation choice of a fix whose touches guard a rule before the start, so no worker adds a blocking gate that only ratifies its own implemented recommendation",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 and kb/_self/backlog.md Sprints say: an item whose touches guard a rule (class agents-rule) has each implementation choice its goal leaves open (where a check reads, what a stoplist holds, which base a diff reads) recorded as a gate and answered before the start, so its worker does not stop on a blocking gate it added mid-work; at SP-ia6xayiy 7 of 7 work items' workers added such gates (BG-ms5dtnnr g2 g3, BG-zwf3rs5y g2, BG-ph7dcjhz g1, ST-2ietdnca g1, ST-ns63tfx5 g2, ST-fla2es24 g1, ST-ruxcexsg g1), each made blocking and each answered with the recommendation the work already carried",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;r=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','when does planning ask the implementation choice of a fix whose touches guard a rule','--budget','300'],capture_output=True,text=True);o=r.stdout;h=o.splitlines()[0] if o else '';print(h or r.stderr[:200]);sys.exit(r.returncode or int(not h.startswith('coverage: good (tested question')))"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-ia6xayiy close"
+  ]
+}

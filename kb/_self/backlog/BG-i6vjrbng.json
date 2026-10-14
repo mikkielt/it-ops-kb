@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-x5gjv4r7 close"
-  ]
+  ],
+  "notes": "Seen again at SP-ia6xayiy close (2026-10-14): backlog.py ops SP-ia6xayiy prints lane=content on the land.end rows of BG-ms5dtnnr, BG-zwf3rs5y, BG-ph7dcjhz, ST-2ietdnca, ST-ns63tfx5, ST-fla2es24 and ST-ruxcexsg, each of which pushed code/<id> and waited for its merge request; the land.end rows of BG-ph7dcjhz, ST-ns63tfx5 and ST-ruxcexsg print before their last kbgit.py-sync-push step row."
 }
