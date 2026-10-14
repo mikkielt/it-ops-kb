@@ -1,0 +1,30 @@
+{
+  "id": "ST-52lihy7z",
+  "kind": "story",
+  "title": "Research: provenance of agent commits (GitLab signed commits, push rules, protected branches, SLSA)",
+  "status": "draft",
+  "parent": "EP-klpp2paw",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research (new topic gitlab/commit-signing-and-provenance where no article fits): How does GitLab verify GPG, SSH and X.509 signed commits, and how does a push rule reject unsigned commits? How do protected branches and merge request approval rules limit what a bot or agent account can push or merge? What does SLSA build provenance require, and how does GitLab CI generate artifact provenance?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-52lihy7z"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/gitlab/commit-signing-and-provenance.md",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_retrieval/signals.csv"
+  ]
+}

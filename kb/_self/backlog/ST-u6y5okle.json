@@ -1,0 +1,30 @@
+{
+  "id": "ST-u6y5okle",
+  "kind": "story",
+  "title": "Research: workload identity for agents outside Entra (SPIFFE and SPIRE, Kubernetes service account tokens)",
+  "status": "draft",
+  "parent": "EP-klpp2paw",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research (new topic auth/spiffe-workload-identity where no article fits): What is a SPIFFE ID and an SVID, and how does SPIRE attest a workload before issuing one? How are X.509 and JWT SVIDs rotated and verified between services? How do projected Kubernetes service account tokens give a pod a short-lived, audience-bound identity?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-u6y5okle"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/auth/spiffe-workload-identity.md",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_retrieval/signals.csv"
+  ]
+}

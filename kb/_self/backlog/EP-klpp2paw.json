@@ -1,0 +1,9 @@
+{
+  "id": "EP-klpp2paw",
+  "kind": "epic",
+  "title": "Shared agent state, governance and multi-agent operations are covered by cited facts",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The public kb answers, from official sources, how agents share and lock state, sync it between workstations, coordinate across repositories, are identified, authorized by role, group, attribute and policy, isolated in sandboxes, traced through signed commits, governed by GitOps reconcilers, keep managed memory, and are troubleshot; each question the epic's stories name gets coverage good or an open gap entry naming where official sources were searched."
+}

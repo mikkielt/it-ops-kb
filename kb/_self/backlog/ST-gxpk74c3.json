@@ -1,0 +1,30 @@
+{
+  "id": "ST-gxpk74c3",
+  "kind": "story",
+  "title": "Research: policy-as-code and policy-based access control for agents (OPA/Rego, Cedar, Azure Policy)",
+  "status": "draft",
+  "parent": "EP-klpp2paw",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research (new topic agents/policy-as-code where no article fits): How does Open Policy Agent evaluate an authorization query with Rego, and how are policy bundles distributed to agents? How do Cedar policies express permit, forbid and attribute conditions, and what does Amazon Verified Permissions add? What can Azure Policy deny, audit or remediate for resources an automation creates, and how are its definitions kept as code?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-gxpk74c3"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/policy-as-code.md",
+    "kb/public/_sources.csv",
+    "kb/public/_answers.md",
+    "kb/public/_gaps.md",
+    "kb/public/_conflicts.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_retrieval/signals.csv"
+  ]
+}
