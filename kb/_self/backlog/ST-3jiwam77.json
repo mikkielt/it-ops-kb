@@ -51,7 +51,9 @@
         "new numbered worker rule and a separate research sub-step"
       ],
       "recommendation": "research bullet in step 3 + worker rule 3 sentence, search -k 30 with --index on the root, grep fallback without kb_root",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "research bullet in step 3 + worker rule 3 sentence, search -k 30 with --index on the root, grep fallback without kb_root",
+      "by": "operator"
     }
   ],
   "links": [
