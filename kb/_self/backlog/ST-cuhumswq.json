@@ -2,7 +2,7 @@
   "id": "ST-cuhumswq",
   "kind": "story",
   "title": "Research sprint goal: Public facts say only what their sources say",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xt4t63xw",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: each committed item of SP-xt4t63xw was verified at planning (2026-10-14) against its cited source read raw (the git, cargo, xdist and cpython files at their pinned tags, the Bazel, permissions and GitLab MCP pages), with the evidence in each item's notes; each item's worker re-reads the sources it cites as the research skill does, so the goal needs no separate research pass.",
-  "claimed_by": "orch-xt4t63xw"
+  "evidence": {
+    "commit": "756e0e2cb1d50e308ac5c2c4f12ff182b56b2680",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-cuhumswq"
+        ],
+        "exit": 0,
+        "sha256": "0c0cf34f07ca3e8d"
+      }
+    ]
+  }
 }
