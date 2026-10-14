@@ -69,7 +69,9 @@
         "tests.py CONTENT set: paths under kb/, AGENTS.md, README.md, CLAUDE.md": "ST-qtbpuyff",
         "only paths under kb/": "ST-qtbpuyff"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "tests.py CONTENT set: paths under kb/, AGENTS.md, README.md, CLAUDE.md",
+      "by": "operator"
     }
   ],
   "links": [
