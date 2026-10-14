@@ -70,7 +70,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/content-addressed-ids-jsonl` | P3 | partial | `arch/content-addressed-ids-jsonl.md` | 30 |
 | `arch/datalog-engines-rust` | P3 | partial | `arch/datalog-engines-rust.md` | 15 |
 | `arch/docker-secrets-run-secrets` | P3 | complete | `arch/docker-secrets-run-secrets.md` | 2 |
-| `arch/fluent-rust-typescript` | P3 | partial | `arch/fluent-rust-typescript.md` | 52 |
+| `arch/fluent-rust-typescript` | P3 | partial | `arch/fluent-rust-typescript.md` | 53 |
 | `arch/gorules-zen-engine` | P3 | partial | `arch/gorules-zen-engine.md` | 35 |
 | `arch/heartbeat-dead-man-monitors` | P3 | partial | `arch/heartbeat-dead-man-monitors.md` | 3 |
 | `arch/http-rate-limit-429-retry-after` | P3 | partial | `arch/http-rate-limit-429-retry-after.md` | 9 |

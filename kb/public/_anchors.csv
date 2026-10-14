@@ -3009,6 +3009,92 @@ cea5288dd93a,arch/buildkit-build-secrets.md,S-wt5ys5zb,located,Similarities and 
 876df89617b2,arch/docs-home-options.md,S1733,unlocated:no-match,,,,,2026-10-10
 c2361928e28c,arch/docs-home-options.md,S1731,located,GitLab Pages access control,disabl;enabl;default;login;manag;redirect;self;self-manag,bed1fe9026baa307,Group SAML SSO support for Pages introduced in GitLab 18.2 with a feature flag named ffoauthredirecttossologin. Disabled by default. Group SAML SSO support for OAuth,2026-10-10
 d4e43dc46cbe,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
+00599b0732a9,arch/fluent-rust-typescript.md,S-dftqctth,located,,format_valu;args;dict;valu;format;msg_id;union;msg,b95a1e7706e463fa,"def formatvalue(self, msgid: str, args: Union[Dict[str, Any], None] = None) -> str:",2026-10-14
+00599b0732a9,arch/fluent-rust-typescript.md,S-jjpbp7g2,unlocated:no-match,,,,,2026-10-14
+0376a0c7de83,arch/fluent-rust-typescript.md,S-edmvqoen,unlocated:no-match,,,,,2026-10-14
+0376a0c7de83,arch/fluent-rust-typescript.md,S-ey42zwsk,unlocated:no-match,,,,,2026-10-14
+0376a0c7de83,arch/fluent-rust-typescript.md,S-zsnubksc,unlocated:no-match,,,,,2026-10-14
+059be04f89d8,arch/fluent-rust-typescript.md,S-l53lrqoz,located,eslint-plugin-i18next,aims;user;without;rule;no-literal-str;string;literal,3b8137e49a69af9f,Rule no-literal-string This rule aims to avoid developers to display literal string directly to users without translating them.,2026-10-14
+059be04f89d8,arch/fluent-rust-typescript.md,S-nmwvmitf,unlocated:no-match,,,,,2026-10-14
+091929c9e8b1,arch/fluent-rust-typescript.md,S-adkxxbxo,located,Struct IntlLangMemoizer > Auto Trait Implementations§,send;sync;memoizer,ba8546e0d637af45,impl !Send for IntlLangMemoizer § impl !Sync for IntlLangMemoizer,2026-10-14
+091929c9e8b1,arch/fluent-rust-typescript.md,S-sui7jilt,unlocated:no-match,,,,,2026-10-14
+091929c9e8b1,arch/fluent-rust-typescript.md,S-xxelwvq6,unlocated:no-match,,,,,2026-10-14
+18035162e78e,arch/fluent-rust-typescript.md,S-qucwxqjo,unlocated:no-match,,,,,2026-10-14
+18035162e78e,arch/fluent-rust-typescript.md,S-v5hog4zh,unlocated:no-match,,,,,2026-10-14
+198b0d91d6b9,arch/fluent-rust-typescript.md,S-ejm4457f,unlocated:no-match,,,,,2026-10-14
+198b0d91d6b9,arch/fluent-rust-typescript.md,S-tj5gqic5,unlocated:no-match,,,,,2026-10-14
+19af5a52a022,arch/fluent-rust-typescript.md,S-lj3rgbhb,unlocated:no-match,,,,,2026-10-14
+19af5a52a022,arch/fluent-rust-typescript.md,S-yxzyna3l,unlocated:no-match,,,,,2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-2msclknw,located,,0.12.0;2.0;apach;apache-2.0;mit;fluent-syntax;syntax;crat,9e9cdaa33370241d,"""license"": ""Apache-2.0 OR MIT"", ""links"": { ""dependencies"": ""/api/v1/crates/fluent-syntax/0.12.0/dependencies"",",2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-3zcwxrkd,unlocated:no-match,,,,,2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-ewnl7di2,located,,0.7.2;2.0;apach;apache-2.0;mit;fluent-fallback;fallback;fluent,b8a3e51113a94702,"""license"": ""Apache-2.0 OR MIT"", ""links"": { ""dependencies"": ""/api/v1/crates/fluent-fallback/0.7.2/dependencies"",",2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-f67paqny,located,,2.0;apach;apache-2.0;mit;0.0.8;fluent-resmgr;resmgr;crat,f8e409f391e88bb6,"""license"": ""Apache-2.0 OR MIT"", ""links"": { ""dependencies"": ""/api/v1/crates/fluent-resmgr/0.0.8/dependencies"",",2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-ihysyyjh,unlocated:no-match,,,,,2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-j6vzyt5y,located,,0.9.6;2.0;apach;apache-2.0;mit;unic-langid;crat;langid,1b6ada5901d9bd9b,"""license"": ""MIT OR Apache-2.0"", ""links"": { ""dependencies"": ""/api/v1/crates/unic-langid/0.9.6/dependencies"",",2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-pkdj2ggv,unlocated:no-match,,,,,2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-ueumbn4x,unlocated:gone,,,,,2026-10-14
+1c5501f42659,arch/fluent-rust-typescript.md,S-lj3rgbhb,unlocated:no-match,,,,,2026-10-14
+1e82cde2ad90,arch/fluent-rust-typescript.md,S-qetvxk3e,unlocated:no-match,,,,,2026-10-14
+2383432bf66c,arch/fluent-rust-typescript.md,S-2viytftj,unlocated:no-match,,,,,2026-10-14
+2a1e91791bf4,arch/fluent-rust-typescript.md,S-ngxalogc,unlocated:no-match,,,,,2026-10-14
+3171886047f3,arch/fluent-rust-typescript.md,S-c7rozbcf,unlocated:no-match,,,,,2026-10-14
+3171886047f3,arch/fluent-rust-typescript.md,S-vktfavae,located,,plural;rule;first;local;bundl,7e3dcf6465992adc,"The first element in locales should be the /// language this bundle represents, and will be used to determine the /// correct plural rules for",2026-10-14
+3523e8137f25,arch/fluent-rust-typescript.md,S-un2vqcl3,unlocated:no-match,,,,,2026-10-14
+385ce158afe8,arch/fluent-rust-typescript.md,S-ey42zwsk,unlocated:no-match,,,,,2026-10-14
+3b537477687b,arch/fluent-rust-typescript.md,S-43gqmseb,unlocated:no-match,,,,,2026-10-14
+3b537477687b,arch/fluent-rust-typescript.md,S-dftqctth,unlocated:no-match,,,,,2026-10-14
+3b537477687b,arch/fluent-rust-typescript.md,S-ejm4457f,located,Fluent Linter,check;file;ftl;moz;moz-fluent-linter;fluent;linter,ce6dc685d9969f23,![Unit Tests](https://github.com/mozilla-l10n/moz-fluent-linter/actions/workflows/tests.yml) This script is largely based on the Fluent Linter used in mozilla-central for Firefox localization. It allows to check reference FTL files for,2026-10-14
+3e809d03da07,arch/fluent-rust-typescript.md,S-c7rozbcf,located,Open Source,1.0;april;fluent;relea;syntax,c5346bfb1210e6f8,Fluent Syntax 1.0 was released in April 2019.,2026-10-14
+3e809d03da07,arch/fluent-rust-typescript.md,S-zqefeiow,located,"Changelog > @fluent/bundle 0.13.0 (July 25, 2019)",0.13.0;1.0;support;syntax;bundl;fluent,b53eac72823f5c39,"Rename fluent to @fluent/bundle. fluent 0.13.0 (July 25, 2019) Support Fluent Syntax 1.0.",2026-10-14
+453afcac5139,arch/fluent-rust-typescript.md,S-fnbm2hx6,unlocated:no-match,,,,,2026-10-14
+4560ec693f5a,arch/fluent-rust-typescript.md,S-fte52rkq,unlocated:no-match,,,,,2026-10-14
+4560ec693f5a,arch/fluent-rust-typescript.md,S-vktfavae,unlocated:no-match,,,,,2026-10-14
+49ce2399a924,arch/fluent-rust-typescript.md,S-vktfavae,unlocated:no-match,,,,,2026-10-14
+4e04acd64993,arch/fluent-rust-typescript.md,S-43gqmseb,unlocated:no-match,,,,,2026-10-14
+4e04acd64993,arch/fluent-rust-typescript.md,S-dftqctth,unlocated:no-match,,,,,2026-10-14
+4e04acd64993,arch/fluent-rust-typescript.md,S-edmvqoen,unlocated:no-match,,,,,2026-10-14
+500a43168e20,arch/fluent-rust-typescript.md,S-ueumbn4x,unlocated:gone,,,,,2026-10-14
+500a43168e20,arch/fluent-rust-typescript.md,S-v5arxcqi,located,,bundl;fluentresourc;fluent;resourc,d011d51836129b24,/// use fluentbundle::FluentResource;,2026-10-14
+5af26ed81ee4,arch/fluent-rust-typescript.md,S-5bmxcoy4,located,i18n-embed-fl,i18n-emb;provid;check;compil;time;macro;fluent;i18n,01f7ce43ea9b454c,This crate provides a macro to perform compile time checks when using the i18n-embed crate and the fluent localization system.,2026-10-14
+5af26ed81ee4,arch/fluent-rust-typescript.md,S-mobvrkio,unlocated:no-match,,,,,2026-10-14
+613ced4877e8,arch/fluent-rust-typescript.md,S-fte52rkq,unlocated:no-match,,,,,2026-10-14
+636762588388,arch/fluent-rust-typescript.md,S-5ehlhbmd,unlocated:no-match,,,,,2026-10-14
+636762588388,arch/fluent-rust-typescript.md,S-puf5y636,located,Changelog,0.15.3;community;harbor;maintainer;mozilla;non;non-mozilla;safe,b58f79b688e65bd1,"fluent-bundle 0.15.3 (March 16, 2024) This is a 'safe harbor' release prior to bringing on non-Mozilla community maintainers",2026-10-14
+64d07ce496d2,arch/fluent-rust-typescript.md,S-adkxxbxo,located,Struct IntlLangMemoizer > Auto Trait Implementations§,send;sync;intllangmemoizer;memoizer;lang;intl,ba8546e0d637af45,impl !Send for IntlLangMemoizer § impl !Sync for IntlLangMemoizer,2026-10-14
+64d07ce496d2,arch/fluent-rust-typescript.md,S-sui7jilt,located,Struct IntlLangMemoizer > Auto Trait Implementations§,send;sync;intllangmemoizer;intl;lang;memoizer,5963a1d086229b74,impl Send for IntlLangMemoizer § impl Sync for IntlLangMemoizer,2026-10-14
+64d07ce496d2,arch/fluent-rust-typescript.md,S-xxelwvq6,located,Struct FluentBundle > Trait Implementations§,default;intl;intllangmemoizer;lang;memoizer;fluentbundl;bundl;fluent,544ea4576e3dd3eb,"impl<R> Default for FluentBundle<R, IntlLangMemoizer>",2026-10-14
+6fc30ac5ccda,arch/fluent-rust-typescript.md,S-5qwcsz2g,unlocated:no-match,,,,,2026-10-14
+72b23418df50,arch/fluent-rust-typescript.md,S-zqefeiow,unlocated:no-match,,,,,2026-10-14
+75c57b6c80c6,arch/fluent-rust-typescript.md,S-u5ks3e5h,located,@fluent/langneg > Strategies > API use:,negotiatelanguag;negotiat;match;strategy;languag;availabl;request,daf2414aebd9522c,"let supported = negotiateLanguages(requested, available, { strategy: ""matching"",",2026-10-14
+7b32cd99f682,arch/fluent-rust-typescript.md,S-43gqmseb,unlocated:no-match,,,,,2026-10-14
+8cc47e5bf271,arch/fluent-rust-typescript.md,S-2ctin4w5,located,Fluent LangNeg,1.0;corpus;experienc;field;path;test,dbf5cd06d930d198,"corpus of tests, which means that it parses, serializes and negotiates as expected. The negotiation methods can operate on lists of LanguageIdentifier or Locale. The",2026-10-14
+8cc47e5bf271,arch/fluent-rust-typescript.md,S-34inydkn,located,Changelog,0.14.2;2.0;apach;dual;mit;fluent-langneg;langneg;fluent,fb750975f4c13e50,"fluent-langneg 0.14.2 (October 23, 2025) Relicense with dual Apache 2.0 or MIT licensing, matches fluent-rs crates",2026-10-14
+8e818146b935,arch/fluent-rust-typescript.md,S-yf4y3ooe,unlocated:no-match,,,,,2026-10-14
+987e5be9e41c,arch/fluent-rust-typescript.md,S-ngxalogc,unlocated:no-match,,,,,2026-10-14
+987e5be9e41c,arch/fluent-rust-typescript.md,S-v5arxcqi,unlocated:no-match,,,,,2026-10-14
+9978fdd8f5b8,arch/fluent-rust-typescript.md,S-ccvjl7yh,unlocated:no-match,,,,,2026-10-14
+9978fdd8f5b8,arch/fluent-rust-typescript.md,S-jm4q5smn,unlocated:no-match,,,,,2026-10-14
+9aef6343bf01,arch/fluent-rust-typescript.md,S-o4mezmn2,located,,abstract;abstractresourceloader;fluentlocalization;fluentresourceloader;localization;loader;import;resourc,91ed2a592606b297,"from .fallback import FluentLocalization, AbstractResourceLoader, FluentResourceLoader",2026-10-14
+a6832c6069ce,arch/fluent-rust-typescript.md,S-c7rozbcf,unlocated:no-match,,,,,2026-10-14
+b2c68fcdde3a,arch/fluent-rust-typescript.md,S-lj3rgbhb,unlocated:no-match,,,,,2026-10-14
+b3840b08e3d5,arch/fluent-rust-typescript.md,S-edmvqoen,unlocated:no-match,,,,,2026-10-14
+b3840b08e3d5,arch/fluent-rust-typescript.md,S-lj3rgbhb,unlocated:no-match,,,,,2026-10-14
+b3840b08e3d5,arch/fluent-rust-typescript.md,S-vktfavae,unlocated:no-match,,,,,2026-10-14
+b6e3a9439986,arch/fluent-rust-typescript.md,S-6dmythvr,located,,mutex;over;memoizer;new;concurrent;fluentbundl;bundl;fluent,dc174f97e3e3f240,/// A constructor analogous to [FluentBundle::new] but operating /// on a concurrent version of [IntlLangMemoizer] over [Mutex](std::sync::Mutex).,2026-10-14
+ca0a8a57a5fd,arch/fluent-rust-typescript.md,S-vktfavae,unlocated:no-match,,,,,2026-10-14
+cbd69d1924f7,arch/fluent-rust-typescript.md,S-v5arxcqi,located,,result;vec;parsererror;parser;runtim;try;try_new;new,c249308741e177b9,"pub fn trynew(source: String) -> Result<Self, (Self, Vec<ParserError>)> { let mut errors = None; let res = InnerFluentResource::new(source, |source| match parseruntime(source.asstr()) {",2026-10-14
+cf19112c6627,arch/fluent-rust-typescript.md,S-vktfavae,unlocated:no-match,,,,,2026-10-14
+d3d548e8b57e,arch/fluent-rust-typescript.md,S-lj3rgbhb,unlocated:no-match,,,,,2026-10-14
+d3d548e8b57e,arch/fluent-rust-typescript.md,S-vktfavae,unlocated:no-match,,,,,2026-10-14
+d53c9673ff33,arch/fluent-rust-typescript.md,S-nqeg3xk3,unlocated:no-match,,,,,2026-10-14
+d53c9673ff33,arch/fluent-rust-typescript.md,S-wxarrmdh,unlocated:no-match,,,,,2026-10-14
+d8fa2fca114c,arch/fluent-rust-typescript.md,S-yxzyna3l,located,@fluent/bundle > Compatibility,date;datetimeformat;intl.datetimeformat;intl.numberformat;intl.pluralrul;number;numberformat;plural,f043c492e66527ec,"Intl.DateTimeFormat (standard, well-supported) Intl.NumberFormat (standard, well-supported) Intl.PluralRules (standard, well-supported)",2026-10-14
+e04fc46d9b2f,arch/fluent-rust-typescript.md,S-fi73q2gh,unlocated:no-match,,,,,2026-10-14
+e5caacd41f2e,arch/fluent-rust-typescript.md,S-dftqctth,located,,creation;fallback;handl;languag;localization;string;bundl,304c35ee0da54cb1,"This handles language fallback, bundle creation and string localization.",2026-10-14
+ef8a812033d3,arch/fluent-rust-typescript.md,S-wo2rtyeb,unlocated:no-match,,,,,2026-10-14
+f0fc0ccf798a,arch/fluent-rust-typescript.md,S1709,unlocated:no-match,,,,,2026-10-14
+f0fc0ccf798a,arch/fluent-rust-typescript.md,S-c7rozbcf,located,Open Source,1.0;fluent;python;rust;syntax,a62da25da9c98067,"Fluent Syntax 1.0 was released in April 2019. Client- and server-side implementations in JS, Python, and Rust.",2026-10-14
+f0fc0ccf798a,arch/fluent-rust-typescript.md,S-vktfavae,located,,one;syntax;ftl;bundl;fluent,df2d6bc2db21c528,"/// Next, call [addresource](FluentBundle::addresource) one or more times, supplying translations in the FTL syntax.",2026-10-14
 0720df36e6b0,arch/gitlab-ci-components.md,S1700,located,Not recommended > CI/CD Catalog > View the CI/CD Catalog,guest;reporter;privat;visibl;role;sourc;user;project,61cde999b4863c82,"Private are visible only to users assigned the Guest, Planner, Reporter, Developer, Maintainer, or Owner role for the source component project.",2026-10-10
 086dca5695ae,arch/gitlab-ci-components.md,S1512,unlocated:no-match,,,,,2026-10-12
 086dca5695ae,arch/gitlab-ci-components.md,S1700,unlocated:no-match,,,,,2026-10-10
@@ -3111,6 +3197,7 @@ d95ccede3bd3,arch/sql-auth-containers.md,S1605,unlocated:no-match,,,,,2026-10-10
 f1bb143695e2,arch/sql-auth-containers.md,S1207,unlocated:no-match,,,,,2026-10-10
 f1bb143695e2,arch/sql-auth-containers.md,S1610,located,Using Microsoft Entra ID with the ODBC Driver - ODBC Driver for SQL Server | Microsoft Learn > New and/or Modified DSN and Connection String Keywords,exist;mode;instanc;activedirectorymsi;msi;client;identity;window,48f6bf06268a1dd4,"Authentication | (not set)(default), (empty string), SqlPassword, ActiveDirectoryIntegrated, ActiveDirectoryInteractive, ActiveDirectoryMsi, ActiveDirectoryServicePrincipal, ActiveDirectoryPassword [DEPRECATED] | Controls the authentication mode.(not set) - Authentication mode determined by other",2026-10-10
 f7a6a8d0ca2d,arch/sql-auth-containers.md,S1610,unlocated:no-match,,,,,2026-10-10
+16903281c4b3,arch/texts-catalogue-formats.md,S1709,located,,install;pip;fluent.runtim;0.4.0;runtim;fluent,f78aa50bea55fdc0,fluent.runtime 0.4.0 Localization library for expressive translations. pip install fluent.runtime,2026-10-14
 21f2ef299372,arch/texts-catalogue-formats.md,S1717,unlocated:no-match,,,,,2026-10-10
 22e03167ccff,arch/texts-catalogue-formats.md,S-zqoo6bqj,located,Tabular Model Definition Language (TMDL) | Microsoft Learn > TMDL folder structure,schema;linguistic;cultur;each;one;file,dda3797ab83a7c91,One file for each culture linguistic schema.,2026-10-10
 2f05c60428d4,arch/texts-catalogue-formats.md,S1712,located,,power;shell;powershell,c4978804d8d7e1b9,aboutScriptInternationalization - PowerShell | Microsoft Learn,2026-10-10
@@ -3119,14 +3206,13 @@ f7a6a8d0ca2d,arch/sql-auth-containers.md,S1610,unlocated:no-match,,,,,2026-10-10
 3a6fa2b0c9f0,arch/texts-catalogue-formats.md,S1716,unlocated:no-match,,,,,2026-10-10
 3a6fa2b0c9f0,arch/texts-catalogue-formats.md,S1717,unlocated:no-match,,,,,2026-10-10
 41218bc87ba4,arch/texts-catalogue-formats.md,S-u6o4ef53,located,Plan Translation for Multiple-Language Reports in Power BI - Power BI | Microsoft Learn > Report label translation,button;titl;localiz;text;model;semantic;report,f73fc9e722d070ec,Report label translation provides localized values for text elements on a report that aren't directly associated with a semantic model object. Examples of report labels,2026-10-10
+469c990cd33f,arch/texts-catalogue-formats.md,S1710,located,Using fluent.runtime¶ > Using FluentLocalization¶,entrypoint;application;main;fluentlocalization;localization;fluent,7d40e985dba78103,The main entrypoint for your application is a FluentLocalization.,2026-10-14
 4917a3557294,arch/texts-catalogue-formats.md,S-7sn3nxho,unlocated:no-match,,,,,2026-10-10
 530a0bab9841,arch/texts-catalogue-formats.md,S1715,located,Use Tabular Model Definition Language (TMDL) view in Power BI - Power BI | Microsoft Learn > Common use cases for TMDL view,translation;graphical;creat;interfac;metadata;edit;desktop;power,6bd513079a2311be,"However, I can't create or edit it using the graphical interface of Power BI Desktop. Solution: Open the TMDL view, create a new empty tab",2026-10-10
 85ba94d1e5c0,arch/texts-catalogue-formats.md,S1716,unlocated:no-match,,,,,2026-10-10
 8655326be0e5,arch/texts-catalogue-formats.md,S1711,unlocated:no-match,,,,,2026-10-10
 8d5a2c1a22f5,arch/texts-catalogue-formats.md,S1712,located,about_Script_Internationalization - PowerShell | Microsoft Learn > Examples,default;match;cultur;psuicultur;import-localizeddata;localiz;localizeddata;section,24284ecc0989aacd,"The expression submitted to ConvertFrom-StringData is a here-string that contains the day names in the default UI culture, en-US, in key/value pairs. The ConvertFrom-StringData cmdlet",2026-10-10
 8d5a2c1a22f5,arch/texts-catalogue-formats.md,S1713,located,Import-LocalizedData > Examples > Example 5: Replace default text strings in a script,stor;convert;convertfrom;convertfrom-stringdata;stringdata;section;psuicultur;hashtabl,9cbf65f13176bbf6,"In this example, the DATA section of the TestScript.ps1 script contains a ConvertFrom-StringData command that converts the contents of the DATA section to a hashtable",2026-10-10
-981c299a198a,arch/texts-catalogue-formats.md,S1709,unlocated:no-match,,,,,2026-10-10
-981c299a198a,arch/texts-catalogue-formats.md,S1710,unlocated:no-match,,,,,2026-10-10
 9f773dc55b56,arch/texts-catalogue-formats.md,S1714,located,Translations in Analysis Services tabular models | Microsoft Learn,power;premium;support;column;servic;tool;analysis;client,82c2d954326f83ac,"Applies to: SQL Server 2017 and later Analysis Services Azure Analysis Services Fabric/Power BI Premium In tabular models, an object can have multiple translations of",2026-10-10
 b419ed4b1c19,arch/texts-catalogue-formats.md,S1712,located,about_Script_Internationalization - PowerShell | Microsoft Learn > Examples,hash;key;tabl;valu;convert;convertfrom;convertfrom-stringdata;stringdata,635158ca2a7e83b0,The ConvertFrom-StringData cmdlet converts the key/value pairs in the here-string into a hash table and then saves it in the value of the $Day variable.,2026-10-10
 be4df8b6bf28,arch/texts-catalogue-formats.md,S1710,unlocated:no-match,,,,,2026-10-10

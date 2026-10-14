@@ -3389,11 +3389,31 @@ _Agent: kb-research_
 _Agent: kb-research_
 
 ## QK-python-s-fluent-runtime-have-typed. Does Python's fluent.runtime have typed message accessors or a lint for literal message ids?
-- `fluent.runtime` 0.4.0 ships `py.typed`, but `Localization.format_value`, `FluentBundle.has_message` and `get_message` take the message id as `str`, and `format_value` returns the id itself when no bundle has it. [CODE S-43gqmseb, S-dftqctth, S-jjpbp7g2]
+- `fluent.runtime` 0.4.0 ships `py.typed`, but `FluentLocalization.format_value`, `FluentBundle.has_message` and `get_message` take the message id as `str`, and `format_value` returns the id itself when no bundle has it. [CODE S-43gqmseb, S-dftqctth, S-jjpbp7g2]
 - The package has no accessor generator, and `moz-fluent-linter` reads `.ftl` files, not Python source. [DER S-43gqmseb, S-ejm4457f: package directory and the linter's inputs]
 - Conclusion: neither typed accessors nor a literal-id lint exist in the official Python packages; typed ids are a project-side wrapper (`Literal` or `Enum` of ids from the FTL AST). [DER S-dftqctth, S-43gqmseb, S-edmvqoen]
 - Open: any third-party Python lint rule for message ids. [UNK]
 - See arch/fluent-rust-typescript.md.
+
+_Agent: kb-research_
+
+## QK-class-fluent-runtime-0-4-0. Which class does `fallback.py` of fluent.runtime 0.4.0 define for localization?
+- `fallback.py` at tag `fluent.runtime@0.4.0` defines `FluentLocalization` (language fallback, bundle creation and string localization over a resource loader), plus `AbstractResourceLoader` and `FluentResourceLoader`; it defines no class named `Localization`. [CODE S-dftqctth]
+- The package `__init__.py` imports `FluentLocalization` from `.fallback` and lists it in `__all__` beside `FluentBundle`, `FluentResource`, `AbstractResourceLoader` and `FluentResourceLoader`. [CODE S-o4mezmn2]
+- The usage page of the same release builds `FluentLocalization(["de", "en-US"], ["main.ftl"], loader)`. [DOC S1710]
+- Conclusion: the localization class is `FluentLocalization`; the earlier kb wording `Localization` (articles and one answer) was wrong and is corrected. [DER S-dftqctth, S-o4mezmn2, S1710: code and docs agree]
+- Open: this answer is for 0.4.0; PyPI listed 0.4.0 as the latest release on 2026-10-14, so a later release may rename the class. [UNK]
+- See arch/fluent-rust-typescript.md, arch/texts-catalogue-formats.md.
+
+_Agent: kb-research_
+
+## QK-uv-workspace-members-editable-default-page. Are uv workspace members editable by default, and which page words it as always editable?
+- uv's dependencies page says "uv uses editable installation for workspace packages by default" and gives `uv add --no-editable ./path/foo` to opt out in a workspace; the locking and syncing page says `uv sync` installs workspace members editable and `--no-editable` opts out. [DOC S1706, S-wmmyfoun]
+- The same dependencies page, in its workspace-member source section, says workspace members are "always" editable; in uv 0.12.19 that is `docs/concepts/projects/dependencies.md` line 476, against the default-with-opt-out sentence at line 853. [DOC S1706]
+- Of the kb's articles, `arch/python-single-package-extras.md` states default-with-opt-out and names the page's "always editable" wording; `python/uv-projects.md` states the same without the opt-out sentence for dependencies and has no "always" wording.
+- Conclusion: editable is the default for workspace members and `--no-editable` is the documented opt-out; "always editable" is the wording of the uv dependencies page's source section, which the page's own editable-dependencies section contradicts. [DER S1706, S-wmmyfoun: both sentences on one page; the sync page agrees with the opt-out]
+- Open: which sentence the uv maintainers intend; recorded as a conflict (`_conflicts.md`, "Workspace members always editable"). The page at tag 0.13.0, the latest uv on PyPI on 2026-10-14, carries both sentences unchanged. [UNK]
+- See arch/python-single-package-extras.md, python/uv-projects.md.
 
 _Agent: kb-research_
 
