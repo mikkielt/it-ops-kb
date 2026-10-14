@@ -2,7 +2,7 @@
   "id": "BG-dwxlx7nv",
   "kind": "bug",
   "title": "pytest-xdist.md says -n auto counts physical cores without the psutil condition its new macOS fact states",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-qlpfcgs2 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: repro (replaced: the old one read only the first physical line) exits 1, the -n auto bullet before '-n logical' has no psutil condition. expansions.csv left out of touches: no expansion row keys that fact (doc2query batch checked)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: repro (replaced: the old one read only the first physical line) exits 1, the -n auto bullet before '-n logical' has no psutil condition. expansions.csv left out of touches: no expansion row keys that fact (doc2query batch checked).",
+  "claimed_by": "orch-lsamtvsz"
 }
