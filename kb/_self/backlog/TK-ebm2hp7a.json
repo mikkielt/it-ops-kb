@@ -2,7 +2,7 @@
   "id": "TK-ebm2hp7a",
   "kind": "task",
   "title": "The plan step and the worker role file name _anchors.csv for a reworded DOC fact",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-7d3r4lhc",
   "priority": "P2",
   "rank": 0,
@@ -37,5 +37,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "e7826ea979f9084170cfbe8c47bf89d45490eed2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;a=open('skills/sprint/SKILL.md',encoding='utf-8').read().splitlines();b=open('agents/worker.md',encoding='utf-8').read().splitlines();x=any('expansions.csv' in l and '_anchors.csv' in l for l in a);y=any('factdiff.py anchor' in l for l in b);print('plan step names _anchors.csv:',x,'worker role re-anchors:',y);sys.exit(0 if x and y else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8ab4c59e0fdd3690"
+      }
+    ]
+  }
 }
