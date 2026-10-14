@@ -41,6 +41,19 @@
       "class": "agents-rule",
       "answer": "goal words",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which touches does precheck read as an article of a kb root, and which goal words match: how narrow is the rule the goal leaves open?",
+      "options": [
+        "md or non-csv glob below a domain directory, goal words DOC (upper case) and reword/rewords/reworded/rewording, scope of the item and its descendants",
+        "any path below kb/<root>/"
+      ],
+      "recommendation": "md or non-csv glob below a domain directory, goal words DOC (upper case) and reword/rewords/reworded/rewording, scope of the item and its descendants",
+      "class": "agents-rule",
+      "answer": "md or non-csv glob below a domain directory, goal words DOC (upper case) and reword/rewords/reworded/rewording, scope of the item and its descendants",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-ce5iig4g"

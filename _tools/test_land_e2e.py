@@ -562,6 +562,39 @@ def test_land_no_work_rows_late_or_missing_and_undelivered_land_names_first_gate
     assert log.read_text(encoding="utf-8").count("apply: run=1 records=2") == 1
 
 
+def test_precheck_plan_reword_names_anchors_of_a_root_whose_article_a_reworded_doc_fact_item_touches(
+        tmp_path, monkeypatch, capsys):
+    """`precheck` warns of an item whose goal words a DOC fact reworded or added and whose touches name an article of a
+    kb root (a directory with its `_root.md`) with no touch that covers that root's `_anchors.csv`, naming the root and
+    the file to add. Planted failures: the item with only the article is warned of; a touch of the file, or a glob that
+    covers it, a goal without the words, a `.csv` of the root and a doc outside a kb root are not."""
+    import bl_land
+    from bl_base import Backlog
+    for rel in ("kb/public/_root.md", "kb/_self/backlog.md"):
+        (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / rel).write_text("x\n", encoding="utf-8", newline="\n")
+    article = "kb/public/ad/topic.md"
+    cases = {"ST-aaaaaaa1": ("A DOC fact of the article is reworded.", [article]),
+             "ST-aaaaaaa2": ("A DOC fact of the article is reworded.", [article, "kb/public/_anchors.csv"]),
+             "ST-aaaaaaa3": ("The article rewords a fact.", [article, "kb/public/_*.csv"]),
+             "ST-aaaaaaa4": ("The article holds a new fact.", [article]),
+             "ST-aaaaaaa5": ("A DOC fact of the table is added.", ["kb/public/ad/table.csv"]),
+             "ST-aaaaaaa6": ("A DOC fact of the doc is reworded.", ["kb/_self/backlog.md"]),
+             "ST-aaaaaaa7": ("A DOC fact of the article is added.", ["kb/public/ad/*.md"])}
+    plan = Backlog(tmp_path)
+    plan.save({"id": "SP-aaaaaaa0", "kind": "sprint", "title": "Sprint", "status": "planned"})
+    for iid, (goal, touches) in cases.items():
+        plan.save({"id": iid, "kind": "story", "title": iid, "status": "todo", "sprint": "SP-aaaaaaa0", "goal": goal,
+                   "touches": touches})
+    monkeypatch.setattr(bl_land, "precheck_rows", lambda bl, sid: [])
+    assert bl_land.cmd_precheck(Backlog(tmp_path), type("A", (), {"sprint": "SP-aaaaaaa0"})) == 0
+    warned = {ln.split(":")[1].split()[0] for ln in capsys.readouterr().out.splitlines()
+              if ln.startswith("warning: ") and "_anchors.csv" in ln}
+    assert warned == {"ST-aaaaaaa1", "ST-aaaaaaa7"}, warned
+    one = bl_land.bl_plan.anchors_warnings(plan, ["ST-aaaaaaa1"])
+    assert len(one) == 1 and "kb root public" in one[0] and "add kb/public/_anchors.csv to its touches" in one[0], one
+
+
 def orphan_in(cwd, log, release, give_up=120):
     """The pid of a python process that stays in the directory CWD until the file RELEASE exists (or GIVE_UP seconds
     pass), its standard output appended to LOG and its parent (the launcher that started it) already gone: what a

@@ -1,7 +1,8 @@
 """The plan side of backlog.py (kb/_self/backlog.md, Planning a sprint; kb/_self/tools.md): the rules about code and its
 docs (`stale_touches`, `docs_after_code`, `docs_warnings`, with the `touch_paths`, `dependencies` and `dependents`
-they share), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which
-refuses a sprint on them and warns of the rest.
+they share), the `_anchors.csv` rule of an item that rewords a DOC fact (`anchors_warnings`, which `precheck`
+prints), the host-check gates, where a dependency outside a sprint stands (`outside_deps`) and `start`, which refuses a
+sprint on them and warns of the rest.
 
 Standard library only; imports `bl_base` (and `kbpublic`, where `history_ref` reads the integration remote's name) and
 never `backlog` or `bl_check`: `bl_check` imports this module for the rules `check` runs, so the two form no cycle. It registers `start` with `bl_cli` itself when imported, and `backlog.py`'s USAGE puts it in
@@ -13,8 +14,9 @@ from pathlib import Path
 
 import bl_cli
 from bl_base import (
-    APPROVALS, CHECK_TIMEOUT_S, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written, glob_re, id_re, in_scope,
-    link_target, need, repositories, resolved_touch, say, scope, split_touch, within_repository,
+    APPROVALS, CHECK_TIMEOUT_S, KB_CONTENT_RE, OPEN, RECURRING_MIN, Refused, START_GATE, WORKSPACE, commit_written,
+    glob_re, id_re, in_scope, link_target, need, repositories, resolved_touch, say, scope, split_touch,
+    within_repository,
 )
 
 OPEN_STATUSES = OPEN  # the statuses of an item still to do
@@ -205,6 +207,42 @@ def docs_after_code(bl, ids):
                 out.append(f"{bl.label(iid)}: touches only docs of code that {bl.label(dep)}, which it depends on, "
                            f"touches: {', '.join(held)} (put them in {bl.label(dep)}'s touches: the sync gate's "
                            "selfdoc stale needs code and its docs in one range)")
+    return out
+
+
+REWORDS_DOC_FACT = re.compile(r"\bDOC\b|\b[Rr]eword(?:s|ed|ing)?\b")  # a goal that words a DOC fact reworded or added
+ANCHORS_FILE = "_anchors.csv"  # a kb root's anchor ledger (kbcommon.ANCHORS), at the root's top
+
+
+def anchors_warnings(bl, ids):
+    """One warning for each open item among IDS whose goal words a DOC fact reworded or added (REWORDS_DOC_FACT) and
+    whose scope (its touches and its descendants') names an article of a kb root (a `.md` path, or a glob that is no
+    `.csv`, below a domain directory of `kb/<root>/`, the root holding its `_root.md` in the working tree) with no touch
+    that covers that root's `_anchors.csv`: a fact whose words change is no longer the one its anchor row keys, so the
+    item's worker re-anchors it (`factdiff.py anchor --file`) and the ledger is in its scope. Only the goal's words
+    decide, not the touches alone; a root is warned of once for each item."""
+    out = []
+    for iid in sorted(ids):
+        it = bl.items[iid]
+        if it.get("kind") == "sprint" or it.get("status") not in OPEN_STATUSES or \
+                not REWORDS_DOC_FACT.search(str(it.get("goal") or "")):
+            continue
+        touches = [t for t in scope(bl, iid) if isinstance(t, str)]
+        names = []
+        for t in touches:
+            parts = t.split("/")
+            if not KB_CONTENT_RE.fullmatch(t) or ".." in parts or len(parts) < 4 or parts[2].startswith("_") \
+                    or not (t.endswith(".md") or (re.search(r"[*?]", t) and not t.endswith(".csv"))):
+                continue
+            if parts[1] not in names and (Path(bl.root) / "kb" / parts[1] / "_root.md").is_file():
+                names.append(parts[1])
+        for name in names:
+            anchors = f"kb/{name}/{ANCHORS_FILE}"
+            if any(glob_re(g).match(anchors) for g in touches):
+                continue
+            out.append(f"warning: {bl.label(iid)}: its goal words a DOC fact reworded or added and its touches name an "
+                       f"article of the kb root {name} without that root's {ANCHORS_FILE}: add {anchors} to its "
+                       "touches, so its worker re-anchors the fact with factdiff.py anchor --file")
     return out
 
 

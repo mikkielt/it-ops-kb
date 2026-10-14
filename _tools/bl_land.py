@@ -19,6 +19,7 @@ from pathlib import Path
 
 import bl_cli
 import bl_intake
+import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
     external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos, line,
@@ -2919,8 +2920,10 @@ def cmd_precheck(bl, a):
     from the item's `clauses` mapping (`set ID --add-clause CLAUSE=N`), and warns of a clause no check reads and of a
     goal of several clauses with no mapping (`clause_map`). It warns of a code-lane item whose check or repro reads the
     committed query-log store or backlog.py cost figures (`after_merge_proof`): land runs those before the merge
-    request is pushed, so only a separate item done after the merge can prove them. kb-sprint plan runs it before the
-    start gate is asked, so start stays fast."""
+    request is pushed, so only a separate item done after the merge can prove them. It warns of an item whose goal
+    words a DOC fact reworded or added (the words DOC, reword, reworded) and whose touches name an article of a kb root
+    with no touch that covers that root's `_anchors.csv` (`bl_plan.anchors_warnings`), naming the root and the file to
+    add. kb-sprint plan runs it before the start gate is asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
         raise Refused(f"precheck needs a sprint: {bl.label(sid)} is a {bl.items[sid].get('kind')}")
@@ -2960,6 +2963,8 @@ def cmd_precheck(bl, a):
                 "figures, which only a query-log delivery after the merge changes, and land runs a code item's checks "
                 "and repro before it pushes the merge request, so it stops at checks: move that proof to a separate "
                 "item, done after the merge")
+        for text in bl_plan.anchors_warnings(bl, [iid]):
+            say(text)
         lines, warns, n = clause_map(bl, iid)
         unread += n
         if lines:
