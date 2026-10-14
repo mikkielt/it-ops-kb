@@ -2,7 +2,7 @@
   "id": "ST-egwi5yca",
   "kind": "story",
   "title": "Review sprint: Content fixes: auth, encryption and Linux hardening articles and answers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6ukmjucf",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-6ukmjucf"
+  "evidence": {
+    "commit": "3d2b8ab848306fab66a331e7c09c1d3b8b267629",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "33787080a8712601"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "89dd6316033d5434"
+      }
+    ]
+  }
 }
