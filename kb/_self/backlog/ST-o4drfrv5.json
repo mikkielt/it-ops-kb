@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal is about this repository's own suite (merging ids of six test files, the worker brief's whole-suite rule, the darwin seconds ceiling); kb_pack on public answers the generic pytest-xdist part (public/python/pytest-xdist.md:30,68,72-74: loadscope units, collection of the whole suite per worker) and the _self docs answer the rest (kb/_self/code.md:46, kb/_self/backlog.md:265,319, kb/_self/tools.md:43,45,60); no source or live doc has a fact the goal lacks.",
   "claimed_by": "orch-sc5yk65l"
 }
