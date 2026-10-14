@@ -2,7 +2,7 @@
   "id": "ST-vhllf3u4",
   "kind": "story",
   "title": "issuer-token-rotation names R2's S3 key pair, not R2, as the cut-over, since R2 temporary credentials overlap until they expire",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,6 @@
   "links": [
     "parked: SP-tcis5f23 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (article line 13 and answer line 2993 name 'GitLab, Cloudflare and R2' as the cut-overs without the key pair); reproduces."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (article line 13 and answer line 2993 name 'GitLab, Cloudflare and R2' as the cut-overs without the key pair); reproduces.",
+  "claimed_by": "orch-6ukmjucf"
 }
