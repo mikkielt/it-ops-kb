@@ -2,7 +2,7 @@
   "id": "BG-75e5mc22",
   "kind": "bug",
   "title": "A feedback lead url keeps its query and fragment, so free text reaches the committed query-log store",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-waxgh3kg",
   "priority": "P1",
   "rank": 0,
@@ -34,5 +34,6 @@
     "kb/_self/usage.md",
     "kb/_self/code.md"
   ],
-  "notes": "Found by the SP-waxgh3kg fresh-context review: ql_distill.feedback_report and the gates (ql_store.feedback_problems, kb_mcp.kb_feedback) check only a lead url's scheme and host; a learn.microsoft.com url with prose in its query or fragment was stored whole as lead (probe: feedback_problems returned [] for it), and from there reaches the findings files and, for a conflict, _conflicts.md."
+  "notes": "Found by the SP-waxgh3kg fresh-context review: ql_distill.feedback_report and the gates (ql_store.feedback_problems, kb_mcp.kb_feedback) check only a lead url's scheme and host; a learn.microsoft.com url with prose in its query or fragment was stored whole as lead (probe: feedback_problems returned [] for it), and from there reaches the findings files and, for a conflict, _conflicts.md.",
+  "claimed_by": "orch-waxgh3kg"
 }
