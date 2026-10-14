@@ -24,6 +24,37 @@
   "depends_on": [
     "ST-k6hwqrd2"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where and how does kb-refresh step 3 state the re-point rule?",
+      "options": [
+        "new bullet after the Replaced source bullet",
+        "extend the Replaced source bullet only"
+      ],
+      "recommendation": "new bullet after the Replaced source bullet",
+      "do": {
+        "new bullet after the Replaced source bullet": [
+          "add",
+          "a",
+          "bullet",
+          "naming",
+          "each",
+          "part,",
+          "re-point",
+          "and",
+          "re-cite"
+        ],
+        "extend the Replaced source bullet only": [
+          "reword",
+          "that",
+          "bullet"
+        ]
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-qjg5r7jj close"
   ],
