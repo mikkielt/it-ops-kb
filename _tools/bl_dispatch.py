@@ -87,8 +87,12 @@ WORKER_RULES = (
     "with staged or uncommitted changes.",
     "Run tests in the foreground, and end every background command and monitor you started before you return: "
     "`land` refuses a branch while a process still runs in your worktree.",
-    "File a bug for any defect outside the item, do not fix it: commit the new item file alone, in a commit of its "
-    "own on `{branch}` whose `KB-Work` names the new bug, and name the bug in your report.",
+    "File a bug for any defect outside the item, do not fix it: first run `{backlog} find WORDS` with the defect's key "
+    "words, and when it lists an item not done or dropped (a draft, todo or doing one, or a host-load bug) that "
+    "states the defect, add your evidence to it as a note (`{backlog} set ID --add-notes TEXT`), commit that item "
+    "file alone, in a commit of its own on `{branch}` whose `KB-Work` names that item, and file no duplicate; else "
+    "`{backlog} new bug`, commit the new item file alone, in a commit of its own on `{branch}` whose `KB-Work` names "
+    "the new bug, and name the bug in your report.",
     "Besides the touches, every item may change {always} (the item files and the generated coverage files): a source "
     "row in a file the touches name is in scope, so add it with its fact, and the coverage files its count "
     "regenerates are too; a source row in a file they do not name (a root's `_sources.csv` is none of those paths) "

@@ -453,7 +453,7 @@ def test_backlog_external_ids_trailer_is_accepted_by_check_trailers_and_a_malfor
     assert code == 1 and "not a trailer: 'KB-Ref: PROJ-123'" in out
 
 
-def test_backlog_brief_known_suite_failure_and_dispatch_prints_the_workers_brief_and_dry_run_starts_nothing_and_multirepo_dispatch_makes_a_worktree_per_required_repository(tmp_path, monkeypatch):
+def test_backlog_brief_known_suite_failure_and_brief_find_before_filing_and_dispatch_prints_the_workers_brief_and_dry_run_starts_nothing_and_multirepo_dispatch_makes_a_worktree_per_required_repository(tmp_path, monkeypatch):
     (tmp_path / "repo").mkdir()
     root = Repo(tmp_path / "repo")
     root.git("init", "-q", "-b", "main")
@@ -497,6 +497,8 @@ def test_backlog_brief_known_suite_failure_and_dispatch_prints_the_workers_brief
     assert f"KB-Work: {ids['work']}" in out and f"`{plugin_backlog} gate add {ids['work']} --kind provisional" in out
     assert "python3 _tools/backlog.py" not in out and f"(`{plugin_backlog} goal {ids['work']}`)" in out
     assert f"`{plugin_backlog} done {ids['work']}` exits 0" in out  # the goal text's own `done` command too
+    assert f"first run `{plugin_backlog} find WORDS`" in out and f"`{plugin_backlog} set ID --add-notes TEXT`" in out
+    assert out.index(f"{plugin_backlog} find WORDS") < out.index(f"`{plugin_backlog} new bug`")  # find before filing
     assert "this project has no `_tools/tests.py`" in out and "never `tests.py --changed`" not in out  # its own checks
     assert "`tests.py` result" not in out and "the result of the project's own checks" in out
     assert "No docs map is set for this project" in out  # the throwaway repository has no docs map and no _tools/rag.py
