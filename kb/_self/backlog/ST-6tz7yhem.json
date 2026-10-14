@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-ofvvong6 close"
   ],
-  "notes": "SP-ofvvong6 retrospective: land BG-fdo6bgax stopped at step branch (ops land.end exit=1 2026-10-14T15:57:45Z) because two gk mcp processes (GitKraken plugin MCP, ppid 1) kept their cwd in the worker worktree after the session exited; each of the three workers left such a pair; the orchestrator ended them by hand."
+  "notes": "SP-ofvvong6 retrospective: land BG-fdo6bgax stopped at step branch (ops land.end exit=1 2026-10-14T15:57:45Z) because two gk mcp processes (GitKraken plugin MCP, ppid 1) kept their cwd in the worker worktree after the session exited; each of the three workers left such a pair; the orchestrator ended them by hand. SP-j65ihctq retrospective, recurrence: land ST-ceuiynmz stopped at step branch (ops land.end exit=1 2026-10-14T17:14:00Z) on a gk mcp pair (ppid 1) left in the worker worktree; ST-2jsyxkpf's worker left one too, which the orchestrator ended before its land; ST-4o2drppl's worker left none."
 }

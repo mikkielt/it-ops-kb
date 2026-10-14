@@ -13,5 +13,6 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.derived_class({'touches':[]},{'id':'g1','question':'Use the tokenize module or a regex scan?','options':['tokenize','regex']})=='design' else 1)"
     ]
-  }
+  },
+  "notes": "SP-j65ihctq retrospective: the misclass made ST-2jsyxkpf's design gate g1 blocking class secrets, so its landing waited on an operator answer for a choice with no secret in it."
 }

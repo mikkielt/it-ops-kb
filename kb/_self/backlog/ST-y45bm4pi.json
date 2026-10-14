@@ -20,5 +20,6 @@
   ],
   "links": [
     "parked: SP-7ff7c5ui close"
-  ]
+  ],
+  "notes": "SP-j65ihctq retrospective, recurrence: the orchestrator wrote a KB-Work line on its review park commit, which the hook appends itself (see ST-ix5wl2lt)."
 }
