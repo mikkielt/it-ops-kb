@@ -44,6 +44,17 @@
       "class": "agents-rule",
       "answer": "rows added by the research story",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does precheck read the rows the goal research story added: from its KB-Work commits on HEAD (rows a commit has that its first parent's eval file lacks), or from the sprint's eval file against origin/main?",
+      "options": [
+        "commits carrying the research story's KB-Work",
+        "eval file against origin/main"
+      ],
+      "recommendation": "commits carrying the research story's KB-Work",
+      "class": "push"
     }
   ],
   "links": [
