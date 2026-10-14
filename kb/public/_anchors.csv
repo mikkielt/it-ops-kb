@@ -753,6 +753,7 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 35040eaa69de,agents/codebase-mapping.md,S-4xsjlwlt,unlocated:no-match,,,,,2026-10-10
 35cbd6387308,agents/codebase-mapping.md,S-e2zwkzvw,located,Corepack,distribut;longer;start;v25;node;node.j;corepack,5380d95da603e7f9,Corepack will no longer be distributed starting with Node.js v25.,2026-10-10
 35d7b3daadf1,agents/codebase-mapping.md,S-f3dxxlte,located,Target frameworks in SDK-style projects - .NET | Microsoft Learn > How to specify a target framework > TargetFramework values are aliases,translat;targetframeworkmoniker;alia;moniker;sdk;targetframework;property;framework,0ed9626853fdcd13,"The TargetFramework property value (for example, net10.0) is a friendly name-an alias-that the .NET SDK translates into canonical moniker properties. Specifically, the SDK sets the",2026-10-10
+379175fe7232,agents/codebase-mapping.md,S-ot3h76t5,located,,interpret;string;token,08c66cf0f9cbc620,The token string is not interpreted,2026-10-14
 39fd7cfeff6c,agents/codebase-mapping.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-10
 3af290111386,agents/codebase-mapping.md,S-zihpu7lj,unlocated:no-match,,,,,2026-10-10
 3c3572b4f0f9,agents/codebase-mapping.md,S-x6akuiwp,located,MSB1027 diagnostic code - MSBuild | Microsoft Learn > Message text,auto;file;msbuild.rsp;noautorespons;referenc;respons;rsp;msb1027,949f023d882ef08a,"MSB1027: The -noAutoResponse switch cannot be specified in the MSBuild.rsp auto-response file, nor in any response file that is referenced by the auto-response file.",2026-10-10
@@ -788,10 +789,12 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 6282c7116c3b,agents/codebase-mapping.md,S-z35np3zd,located,How MSBuild builds projects - MSBuild | Microsoft Learn > User-configurable imports,driv;root;directory.build.prop;microsoft.common.prop;directory;prop;common;microsoft,97633f37baecfa8a,"That's commonly at the solution level for settings to control all the projects in the solution, but could also be higher up in the filesystem,",2026-10-10
 648565d2e264,agents/codebase-mapping.md,S-kxcc7a7a,unlocated:no-match,,,,,2026-10-10
 648565d2e264,agents/codebase-mapping.md,S-zelwtfks,unlocated:no-match,,,,,2026-10-13
+649bd4782db8,agents/codebase-mapping.md,S-ot3h76t5,located,,ast.pars;ast;ignor;pars;comment;token,95d3de3c19a9854a,"Added :data:TYPECOMMENT, :data:TYPEIGNORE, :data:COLONEQUAL. Added :data:!AWAIT and :data:!ASYNC tokens back (they're needed to support parsing older Python versions for :func:ast.parse with",2026-10-14
 65c34fecc523,agents/codebase-mapping.md,S-f6y5we3c,unlocated:no-match,,,,,2026-10-13
 65c34fecc523,agents/codebase-mapping.md,S-uxljwlpn,unlocated:no-match,,,,,2026-10-13
 65c34fecc523,agents/codebase-mapping.md,S-zonbsokp,unlocated:no-match,,,,,2026-10-13
 66233d1c8417,agents/codebase-mapping.md,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
+665df78eaa42,agents/codebase-mapping.md,S-ot3h76t5,located,,continu;over;physical;generat;logical;line,b51e404e193a8996,generated when a logical line of code is continued over multiple physical lines,2026-10-14
 67212a29a8ae,agents/codebase-mapping.md,S-xdf63oro,located,,json_output_version;1.0;output-format;ptag;version;_typ;format;ctag,33890e010ea42391,"$ ctags --extras=+p --output-format=json --fields=-s input.py {""type"": ""ptag"", ""name"": ""JSONOUTPUTVERSION"", ""path"": ""1.0"", ""pattern"": ""in development""}",2026-10-10
 69524ed0f2a1,agents/codebase-mapping.md,S-me5pwvu4,located,go > Overview ¶ > Start a bug report ¶ > Edit go.mod from tools or scripts ¶,back;writ;instead;go.mod;json;print;mod,206cd3ebb0282f74,writing it back to go.mod. The -json flag prints the final go.mod file in JSON format instead of,2026-10-10
 697f1a20df91,agents/codebase-mapping.md,S-afgd57ln,unlocated:no-match,,,,,2026-10-10
@@ -837,8 +840,10 @@ fca2957f5e7e,agents/codebase-mapping.csv,S-j2laoer5,unlocated:no-match,,,,,2026-
 88c89231e4d9,agents/codebase-mapping.md,S-qb643f4y,unlocated:no-match,,,,,2026-10-10
 8caefe6ae255,agents/codebase-mapping.md,S-cltv4idz,unlocated:no-match,,,,,2026-10-13
 8caefe6ae255,agents/codebase-mapping.md,S-nkxy23mu,unlocated:no-match,,,,,2026-10-10
+8ce2796d6c9e,agents/codebase-mapping.md,S-k6rik7wf,located,,anywher;complet;expression;docstr;may;rais;file;line,40439356c458c982,Raised when either a docstring or expression that may be split over several lines is not completed anywhere in the file,2026-10-14
 8d4e9008a153,agents/codebase-mapping.md,S-3cfiqwbl,located,Synopsis > Description,alway;dot;return;field;package.json;json;packag;valu,18fccd9bd7df56aa,"The syntax to retrieve and set fields is a dot separated representation of the nested object properties to be found within your package.json, it's the",2026-10-10
 91d867d242b0,agents/codebase-mapping.md,S-orgevefw,located,cargo-metadata(1) > OPTIONS > Output Options,fetch;member;workspac;dependency,ded32865f0173dae,"<dd class=""option-desc""><p>Output information only about the workspace members and don't fetch dependencies.</p>",2026-10-10
+9204ae2ab3fc,agents/codebase-mapping.md,S-k6rik7wf,located,,comment;scanner;return;token,e7a85a9be69da4b9,The scanner in this module returns comments as tokens,2026-10-14
 93ae3b7cda7b,agents/codebase-mapping.md,S-2u4dktv3,unlocated:no-match,,,,,2026-10-10
 93ae3b7cda7b,agents/codebase-mapping.md,S-f62n2ltd,unlocated:no-match,,,,,2026-10-10
 93ae3b7cda7b,agents/codebase-mapping.md,S-mrtq3wwm,unlocated:no-match,,,,,2026-10-10
@@ -892,9 +897,13 @@ b9c5c565170f,agents/codebase-mapping.md,S-xmboehyd,located,dotnet package list c
 c1b1d4d47538,agents/codebase-mapping.md,S-j645b5a2,unlocated:no-match,,,,,2026-10-10
 c39e5757fae8,agents/codebase-mapping.md,S-6k54ouks,unlocated:no-match,,,,,2026-10-10
 cab8ac3c9012,agents/codebase-mapping.md,S-hssujrgr,unlocated:no-match,,,,,2026-10-10
+cec95884f1d9,agents/codebase-mapping.md,S-ci5jq2sq,unlocated:no-match,,,,,2026-10-14
+cec95884f1d9,agents/codebase-mapping.md,S-k6rik7wf,unlocated:no-match,,,,,2026-10-14
+cec95884f1d9,agents/codebase-mapping.md,S-ot3h76t5,unlocated:no-match,,,,,2026-10-14
 cf9e97e5f877,agents/codebase-mapping.md,S-3dlonliy,unlocated:no-match,,,,,2026-10-10
 cf9e97e5f877,agents/codebase-mapping.md,S-xdf63oro,unlocated:no-match,,,,,2026-10-10
 d1f2951b7127,agents/codebase-mapping.md,S-rgn6ezsf,unlocated:no-match,,,,,2026-10-10
+d62a3cfb8549,agents/codebase-mapping.md,S-k6rik7wf,located,,byte;string;tokeniz,0f9e729dd1d5af3e,Tokenize a source reading unicode strings instead of bytes.,2026-10-14
 d78c319ddb27,agents/codebase-mapping.md,S-f3dxxlte,located,Target frameworks in SDK-style projects - .NET | Microsoft Learn > How to specify a target framework > TargetFramework values are aliases,targetframeworkmoniker;alia;moniker;property;project;framework;net;target,ad8fc449d4a55a97,"For example, net10.0-windows translates to TargetFrameworkMoniker = .NETCoreApp,Version=v10.0 and TargetPlatformMoniker = Windows,Version=7.0. Because the alias is just a name, the TargetFramework value can be any",2026-10-10
 d78c319ddb27,agents/codebase-mapping.md,S-mrtq3wwm,unlocated:no-match,,,,,2026-10-10
 d78c319ddb27,agents/codebase-mapping.md,S-vpvmrtpz,located,Language versioning - C# reference | Microsoft Learn > C# language version reference,lang;langversion;project;framework;target;default;languag;net,9d30777d1e635085,"Specifying default uses the latest version of the language that the compiler supports, without taking into account the target framework. For example, building a project",2026-10-10

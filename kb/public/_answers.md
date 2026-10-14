@@ -3520,3 +3520,12 @@ _Agent: kb-research_
 - See python/pytest-xdist.md.
 
 _Agent: kb-research_
+
+## QK-python-tool-find-comment-docstring-lines. How does a Python tool find the comment and docstring lines of a file without walking every AST node?
+- The tree holds no comments (the parser ignores `COMMENT` tokens), so comment lines come from `tokenize.generate_tokens`, whose tokens carry the start row and the physical line. [DOC S-k6rik7wf, S-ot3h76t5]
+- Only a module, class, function or async function node carries a docstring, as the first statement of its `body`; `ast.get_docstring` reads it there. [DOC S-ci5jq2sq]
+- Conclusion: comments from the token stream and docstring ranges (`lineno` to `end_lineno`) from the `body[0]` of those four node kinds, found by descending into bodies, give the lines without a visit to every expression node. [DER S-k6rik7wf, S-ot3h76t5, S-ci5jq2sq]
+- Open: the cost of a token pass or of `ast.walk` against source size is stated by neither page. [UNK]
+- See agents/codebase-mapping.md.
+
+_Agent: kb-research_
