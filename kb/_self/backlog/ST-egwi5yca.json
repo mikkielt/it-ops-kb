@@ -2,7 +2,7 @@
   "id": "ST-egwi5yca",
   "kind": "story",
   "title": "Review sprint: Content fixes: auth, encryption and Linux hardening articles and answers",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6ukmjucf",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-6ukmjucf"
 }
