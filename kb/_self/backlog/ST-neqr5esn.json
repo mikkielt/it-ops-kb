@@ -1,0 +1,24 @@
+{
+  "id": "ST-neqr5esn",
+  "kind": "story",
+  "title": "precheck warns of an item that rewords a DOC fact whose touches name a whole kb root (kb/public/**) or a root-level article glob",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_plan.anchors_warnings warns of an item whose goal words a DOC fact reworded or added and whose touches are kb/<root>/** or kb/<root>/*.md without that root's _anchors.csv, as it does for a domain-level article touch (SP-ce5iig4g review: the len(parts) < 4 test at _tools/bl_plan.py:235 skips kb/public/**, the usual research and refresh scope)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_reword_names_anchors_root_glob"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/tools.md"
+  ]
+}
