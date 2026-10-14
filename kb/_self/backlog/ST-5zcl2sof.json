@@ -2,7 +2,7 @@
   "id": "ST-5zcl2sof",
   "kind": "story",
   "title": "The suite has id room: the quick unit tests of six files are merged into fewer ids, every assertion kept",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-sc5yk65l",
   "priority": "P1",
   "rank": 0,
@@ -81,5 +81,6 @@
     "parked: SP-ilje65fa review",
     "merged: ST-7ibioci3"
   ],
-  "notes": "Merged from ST-7ibioci3 (each census and factdiff item check selects its own test, not one combined census test id carrying six selectors) at the 2026-10-12 draft triage: the six census/factdiff selectors (census_retry, census_baseline, census_repin, census_github_page, factdiff_learn_git, factdiff_anchor) each get their own test once room exists; that split is a follow-up for the room this story makes, not part of it. 2026-10-14 overhaul plan: the limits are fixed (D-ilojyzhk), so ids are freed by merging; tests_ceiling.json left the touches. Measured: 112 ids; the six files hold 42 ids and 23 s of 220 s serial time (ceiling 9 ids 0.0 s, bench 12 1.6 s, forge 2 0.5 s, kbingest 6 2.0 s, leaks 5 7.5 s, authority 8 8.0 s), so merging costs no wall time under --dist load; e.g. 9 to 2, 12 to 4, 2 to 1, 6 to 2, 5 to 3, 8 to 4 frees 26 (86 left). 138 open items' selectors collect no test yet. The one live selector in these files, test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate, stays a substring."
+  "notes": "Merged from ST-7ibioci3 (each census and factdiff item check selects its own test, not one combined census test id carrying six selectors) at the 2026-10-12 draft triage: the six census/factdiff selectors (census_retry, census_baseline, census_repin, census_github_page, factdiff_learn_git, factdiff_anchor) each get their own test once room exists; that split is a follow-up for the room this story makes, not part of it. 2026-10-14 overhaul plan: the limits are fixed (D-ilojyzhk), so ids are freed by merging; tests_ceiling.json left the touches. Measured: 112 ids; the six files hold 42 ids and 23 s of 220 s serial time (ceiling 9 ids 0.0 s, bench 12 1.6 s, forge 2 0.5 s, kbingest 6 2.0 s, leaks 5 7.5 s, authority 8 8.0 s), so merging costs no wall time under --dist load; e.g. 9 to 2, 12 to 4, 2 to 1, 6 to 2, 5 to 3, 8 to 4 frees 26 (86 left). 138 open items' selectors collect no test yet. The one live selector in these files, test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate, stays a substring.",
+  "claimed_by": "orch-sc5yk65l"
 }
