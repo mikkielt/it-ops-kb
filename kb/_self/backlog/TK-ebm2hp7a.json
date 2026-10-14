@@ -2,7 +2,7 @@
   "id": "TK-ebm2hp7a",
   "kind": "task",
   "title": "The plan step and the worker role file name _anchors.csv for a reworded DOC fact",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-7d3r4lhc",
   "priority": "P2",
   "rank": 0,
@@ -21,5 +21,6 @@
     "agents/worker.md",
     "kb/_self/backlog.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "orch-ce5iig4g"
 }
