@@ -56,7 +56,9 @@
         "Only the wordings the goal lists"
       ],
       "recommendation": "Yes: darwin, linux and win32",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Yes: darwin, linux and win32",
+      "by": "operator"
     }
   ],
   "links": [
