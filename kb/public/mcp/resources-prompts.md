@@ -3,7 +3,7 @@ topic: mcp/resources-prompts
 priority: P2
 applies_to: "MCP specification 2026-07-28"
 retrieved_utc: 2026-09-26
-sources: [S-uq2hafxi, S-mjxgvchf, S-dwlcyci7, S-twgov237, S-3s4qysez, S-7uw4d77y, S-onc3gpse]
+sources: [S-uq2hafxi, S-mjxgvchf, S-dwlcyci7, S-twgov237, S-3s4qysez, S-7uw4d77y, S-onc3gpse, S-iw3x3th7, S1862]
 status: complete
 ---
 # Resources, prompts, completion, discovery and their utilities (2026-07-28)
@@ -56,6 +56,14 @@ OpenTelemetry.
 - `DiscoverResult` fields: `supportedVersions` (array, client picks one), `capabilities`, `_meta['io.modelcontextprotocol/serverInfo']` (name/version, servers SHOULD include it), `instructions` (optional natural-language guidance for LLMs). Response supports caching (`ttlMs`, `cacheScope`). [DOC S-dwlcyci7]
 - Calling `server/discover` is optional for clients — any RPC can be invoked inline, handling `UnsupportedProtocolVersionError` if unsupported. It is useful to get identity/capabilities/versions in one call instead of probing `tools/list`/`prompts/list`/`resources/list` separately, and as a stdio backward-compatibility probe: since stdio has no per-request HTTP status to drive fallback, a client supporting both modern and legacy (`initialize`-handshake) servers SHOULD send `server/discover` first. [DOC S-dwlcyci7]
 - `serverInfo` is self-reported and not verified by the protocol; clients SHOULD NOT change behavior based on it or rely on it for security decisions. [DOC S-dwlcyci7]
+
+### Server instructions: how they reach the client and the model
+- In a 2025-11-25 or earlier revision a server sends its guidance as the optional `instructions` field of the `InitializeResult`, the answer to the client's `initialize` request (the sample result reads `"instructions": "Optional instructions for the client"`). [DOC S-iw3x3th7]
+- In 2026-07-28 the same optional string is a field of the `DiscoverResult` instead. No later request or result in either revision carries it again, so a client holds the text from that one answer for the connection. [DER S-iw3x3th7, S-dwlcyci7]
+- The 2026-07-28 text calls it "natural-language guidance for LLMs on how to use this server effectively". Neither revision's text states a rule for the client (no MUST or SHOULD): whether the string enters the model's context, where, or with what limit is each client's own choice. [DER S-iw3x3th7, S-dwlcyci7]
+- Claude Code puts the server's instructions in the model's context at the start of a session beside the tool names. With tool search on, which is the default, the full tool schemas stay deferred and only tool names and server instructions load, so the string is how a server tells Claude when to search for its tools. [DOC S1862]
+- Claude Code cuts server instructions longer than 4,096 characters, and Claude sees only the text before the cut. The same limit applies to the description of a tool that loads upfront; a tool description loaded through tool search has a 16,384-character limit. Before v2.1.296 the shorter limit was 2,048 characters. [DOC S1862]
+- `CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH` (Claude Code v2.1.280 or later) sets both limits for every MCP server in the session to one number of characters, so a value of 8192 raises the shorter limit and lowers the longer one. [DOC S1862]
 
 ### Pagination
 - Cursor-based, not numbered pages: the cursor is an opaque string token; page size is server-determined and clients MUST NOT assume a fixed size. [DOC S-7uw4d77y]

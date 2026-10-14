@@ -238,7 +238,7 @@ mcp/tasks-extension,P1,complete,mcp/tasks-extension.md,7
 mcp/tools,P1,complete,mcp/tools.md,7
 mcp/transports-stdio,P1,complete,mcp/transports-stdio.md,6
 mcp/registry-and-extensions,P2,complete,mcp/registry-and-extensions.md,17
-mcp/resources-prompts,P2,complete,mcp/resources-prompts.md,7
+mcp/resources-prompts,P2,complete,mcp/resources-prompts.md,9
 mcp/transports-streamable-http,P2,complete,mcp/transports-streamable-http.md,11
 mecm/adminservice,P0,complete,mecm/adminservice.md;mecm/adminservice-routes.csv,21
 mecm/application-model,P0,complete,mecm/application-model.md,4
