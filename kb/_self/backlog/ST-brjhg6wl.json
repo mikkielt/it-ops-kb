@@ -164,7 +164,7 @@
       },
       "class": "querylog",
       "answer": "packs/ of the index directory (_cache/ of the clone), one JSON file per handle with questions, printed lines, commit and time",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

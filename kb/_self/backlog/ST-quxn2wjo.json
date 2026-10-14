@@ -93,7 +93,7 @@
       },
       "class": "design",
       "answer": "apply reads the claim from the spool row whose closed shape equals the stored report, and a finding carries only its gated lead or source id; a row already delivered leaves the finding without a claim",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -110,7 +110,7 @@
       },
       "class": "querylog",
       "answer": "no: the query log's store keeps closed fields only (D-666asy3d); a claim reaches the conflict check and research only while the spool row exists, and a conflict finding without it waits open",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -127,7 +127,7 @@
       },
       "class": "design",
       "answer": "the last report with an outcome in time order, and misled counts as missed",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -144,7 +144,7 @@
       },
       "class": "design",
       "answer": "the line, the page's url, the finding id and not settled, tagged UNK, without the claim's words",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -161,7 +161,7 @@
       },
       "class": "design",
       "answer": "no: the check runs no model and only fetches the page, so it runs in every apply",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g6",
@@ -178,7 +178,7 @@
       },
       "class": "design",
       "answer": "each kb tool its lookup used, and a dash when the entry lists none",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g7",
@@ -195,7 +195,7 @@
       },
       "class": "design",
       "answer": "a source finding with signal stale per cited source id, fixed-since once the source was retrieved after the newest report; a wrong mark with no page makes no finding and is counted in the digest",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g8",
@@ -212,7 +212,7 @@
       },
       "class": "design",
       "answer": "kind conflict at stage miss with fields line and lead or source_id; a gap finding's field lead; signal stale with source_id on a source finding",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base learn reads judged only (ql_learn.py:158). querylog.py check passes before the work by design: it pins that learn and apply keep a valid store. Large story (9 clauses, 5 modules): a worker out of turns releases and reports, it does not widen touches. Extend an existing test's name with feedback_findings (test-id ceiling); tests in _tools/test_redact.py. No report edits a fact: apply writes only findings, the _conflicts.md not-settled entry and the existing alias and expansion gates.",

@@ -82,7 +82,7 @@
       },
       "class": "design",
       "answer": "a list of 1 to 5 closed reports in time order",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -99,7 +99,7 @@
       },
       "class": "querylog",
       "answer": "judged_by user and a rule-redacted comment, mapped when the row has no outcome",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -116,7 +116,7 @@
       },
       "class": "design",
       "answer": "the row becomes an entry of its own",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -133,7 +133,7 @@
       },
       "class": "design",
       "answer": "the entry waits in the spool for the next run",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planned 2026-10-13 (SP-waxgh3kg). No Premise line: new behaviour, base has no feedback field (grep -i feedback finds only judged and best in ql_distill, ql_store, ql_learn). querylog.py check passes before the work by design: it pins that the store with feedback entries stays valid. depends_on ST-h3y6iym4 (kb!: rows) dropped at planning: it is a draft outside this sprint and the join works on any feedback row that carries a handle or session and prompt id, so kb_feedback rows alone satisfy it. Extend an existing test's name with feedback_store (test-id ceiling); the url gate predicate comes from ST-j5gd7ixn. Tests in _tools/test_redact.py and _tools/test_leaks.py.",
