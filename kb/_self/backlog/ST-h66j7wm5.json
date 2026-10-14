@@ -2,7 +2,7 @@
   "id": "ST-h66j7wm5",
   "kind": "story",
   "title": "A dispatched worker's session leaves work rows land can attribute, so cost reads every item of a sprint",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,
@@ -65,5 +65,6 @@
     "parked: SP-htl7jkrm close",
     "merged: ST-t5z6vddy"
   ],
-  "notes": "Retrospective of SP-htl7jkrm: ST-ksgrpumr's land warned 'landed with no work rows (missing): no worker session of it left a branch, agent-start or agent-stop row' while its siblings dispatched the same way showed late rows; ST-65r3cwix landed with its work sidecar undelivered; cost --rework SP-htl7jkrm read 0 runs at review time. Recurred in SP-tcis5f23 (2026-10-13): cost --rework at the close read 0 runs and only the orchestrator's open session; worker spend from their result.json: research 2.20 USD, seven bugs 0.33-0.66 USD each, reviewer 1.64 USD. Absorbs ST-t5z6vddy (2026-10-13 triage): BG-pzgeq5t4 and BG-tyh3t5oj, worked in the orchestrator's own session, landed with 'no work rows (missing)' (goal clause 3); add _tools/ql_capture.py, _tools/bl_cost.py or kb/_self/usage.md to a task's touches only if the fix needs them. Premise (planner, 2026-10-13): backlog.py cost --rework SP-tcis5f23 now reads 8 items with sonnet rows, so the rows came late or elsewhere, not never; land's 'missing' line only guesses 'a worker started without the capture hooks?', so clause 2 (name why) stays unmet. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Retrospective of SP-htl7jkrm: ST-ksgrpumr's land warned 'landed with no work rows (missing): no worker session of it left a branch, agent-start or agent-stop row' while its siblings dispatched the same way showed late rows; ST-65r3cwix landed with its work sidecar undelivered; cost --rework SP-htl7jkrm read 0 runs at review time. Recurred in SP-tcis5f23 (2026-10-13): cost --rework at the close read 0 runs and only the orchestrator's open session; worker spend from their result.json: research 2.20 USD, seven bugs 0.33-0.66 USD each, reviewer 1.64 USD. Absorbs ST-t5z6vddy (2026-10-13 triage): BG-pzgeq5t4 and BG-tyh3t5oj, worked in the orchestrator's own session, landed with 'no work rows (missing)' (goal clause 3); add _tools/ql_capture.py, _tools/bl_cost.py or kb/_self/usage.md to a task's touches only if the fix needs them. Premise (planner, 2026-10-13): backlog.py cost --rework SP-tcis5f23 now reads 8 items with sonnet rows, so the rows came late or elsewhere, not never; land's 'missing' line only guesses 'a worker started without the capture hooks?', so clause 2 (name why) stays unmet. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-g2ssvhi2"
 }
