@@ -55,6 +55,25 @@
   "depends_on": [
     "ST-5zcl2sof"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which paths count as kb content only in the worker rule that allows no whole tests.py? Recommended: the set tests.py --changed treats as content, so rule and gate agree.",
+      "options": [
+        "tests.py CONTENT set: paths under kb/, AGENTS.md, README.md, CLAUDE.md",
+        "only paths under kb/"
+      ],
+      "recommendation": "tests.py CONTENT set: paths under kb/, AGENTS.md, README.md, CLAUDE.md",
+      "do": {
+        "tests.py CONTENT set: paths under kb/, AGENTS.md, README.md, CLAUDE.md": "ST-qtbpuyff",
+        "only paths under kb/": "ST-qtbpuyff"
+      },
+      "class": "agents-rule",
+      "answer": "tests.py CONTENT set: paths under kb/, AGENTS.md, README.md, CLAUDE.md",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-waxgh3kg close"
   ],

@@ -1083,7 +1083,7 @@ def test_plugin_sprint_ships_the_skills_and_the_worker_parameterised_by_the_plug
         assert hook("config")[0] == 2 and hook("horizon", "--hook", "--opt-in") == (0, "")
 
 
-def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugins_and_brief_names_always_in_scope(
+def test_plugin_sprint_role_file_is_the_projects_else_the_plugins_and_brief_names_always_in_scope_and_brief_whole_suite_at_most_once(
         tmp_path, monkeypatch):
     import bl_dispatch
     plugin = bl_dispatch.PLUGIN_ROOT
@@ -1110,6 +1110,9 @@ def test_plugin_sprint_role_file_is_the_projects_when_it_has_one_else_the_plugin
     assert bl_dispatch.backlog_cmd(tmp_path) == "python3 _tools/backlog.py"
     kb = "\n".join(bl_dispatch.worker_rules(tmp_path, "TK-aaaaaaaa", "work/TK-aaaaaaaa")) + bl_dispatch.report_line(tmp_path)
     assert "`python3 _tools/backlog.py gate add TK-aaaaaaaa --kind" in kb and "never `tests.py --changed`" in kb
+    assert "No whole `python3 _tools/tests.py` for an item whose touches are kb content only" in kb  # none for content
+    assert "run the whole suite at most once, before your report" in kb  # one, at most, for any other item
+    assert "at most once" not in host  # a project without the kb's runner has no such line
     assert "`_tools/tests_ceiling.json`" in kb and "`selfdoc.py stale --since <the item's base>`" in kb
     assert "`tests.py` result, `selfdoc.py stale --since origin/main` result, the staging" in kb
     assert "the project's own checks" not in kb and str(plugin.as_posix()) not in kb
