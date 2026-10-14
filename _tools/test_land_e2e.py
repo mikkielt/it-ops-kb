@@ -940,6 +940,8 @@ def test_stage_back_commits_the_copies_alone_and_refuses_a_differing_base_and_a_
     wt = Path(repo.path) / ".claude" / "worktrees" / f"agent-{iid}"
     repo.git("worktree", "add", "-q", "-b", f"work/{iid}", str(wt), "main")
     scratch = Path(repo.path) / "_cache" / "scratch" / iid
+    code, out = bl(repo, "brief", iid)  # the worker's brief names the command that gives its report problems=0
+    assert code == 0 and f"stage-back {iid} --check`" in out and "`problems=` count for what you staged" in out, out
     original = (wt / skill).read_bytes()
     for rel, text in ((skill, original.decode("utf-8") + "\nA line the worker added.\n"), (new, "# demo\n")):
         copy = scratch / "staging" / rel
