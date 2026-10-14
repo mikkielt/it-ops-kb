@@ -41,7 +41,7 @@
       "recommendation": "State flush table and own table in each line, point to the QK answer for named sets",
       "class": "design",
       "answer": "State flush table and own table in each line, point to the QK answer for named sets",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
