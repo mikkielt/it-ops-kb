@@ -56,7 +56,9 @@
         "HEAD, the article after the item's own edits"
       ],
       "recommendation": "Parent of the item's oldest work commit; any non-UNK part's ids of a tagged unit of the article's md or csv text there; an article missing there counts the row",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Parent of the item's oldest work commit; any non-UNK part's ids of a tagged unit of the article's md or csv text there; an article missing there counts the row",
+      "by": "operator"
     }
   ],
   "links": [
