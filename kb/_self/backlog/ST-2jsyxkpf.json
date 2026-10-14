@@ -2,7 +2,7 @@
   "id": "ST-2jsyxkpf",
   "kind": "story",
   "title": "check.py's code citation scan reads each tool file without walking every node of its syntax tree",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-j65ihctq",
   "priority": "P1",
   "rank": 0,
@@ -60,5 +60,28 @@
     }
   ],
   "notes": "Premise, measured 2026-10-14 on a quiet darwin host: check.py on the live tree takes 1.32 s, and code_citation_errors 0.78 to 0.80 s of it (best of three in one process); profiled, code_citation_errors is 1.73 of 2.30 s, almost all in code_comment_lines: ast.parse plus ast.walk over all 90 _tools/*.py files (609 237 walk calls) and tokenize, to find docstring and comment lines. check.py runs 12 times in a whole-suite run (7 in test_sync_e2e.py's and test_prepush_e2e.py's gate runs, 14.1 s summed), and once in every real sync gate. A docstring is the first statement of a module, class or def body, so the scan needs no walk of expression nodes; a file whose text holds no kb/ citation needs no parse.",
-  "claimed_by": "orch-j65ihctq"
+  "evidence": {
+    "commit": "92e431981a3917c24503b83cbad6fe3e4d7da36a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,time;sys.path.insert(0,'_tools');import check;t=[];[(t.append(time.perf_counter()),check.code_citation_errors(),t.append(time.perf_counter())) for _ in range(3)];b=min(t[i+1]-t[i] for i in range(0,6,2));print(round(b,3));sys.exit(0 if b<=0.3 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ca618dd3e3a2ab5a"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "check_names_code_line_citation"
+        ],
+        "exit": 0,
+        "sha256": "d55850a5cfc48680"
+      }
+    ]
+  }
 }
