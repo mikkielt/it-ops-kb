@@ -2,7 +2,7 @@
   "id": "ST-b4swnror",
   "kind": "story",
   "title": "stdlib-windows-portability says which result of a removed working directory is documented for Linux and which a macOS run showed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,

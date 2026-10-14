@@ -2,7 +2,7 @@
   "id": "BG-vi5dw4zd",
   "kind": "bug",
   "title": "_answers.md's AlmaLinux CIS conclusion says the upstream RHEL data stream is not the route, though its own Open line and linux-cis-ssg-openscap.md:38 leave that unconfirmed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-rcdjzn5k",
   "kind": "story",
   "title": "git-test-repositories says which git commands refuse a branch held through a rebase's update-refs, and with which error",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P2",
   "rank": 0,

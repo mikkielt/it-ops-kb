@@ -2,7 +2,7 @@
   "id": "BG-dwxlx7nv",
   "kind": "bug",
   "title": "pytest-xdist.md says -n auto counts physical cores without the psutil condition its new macOS fact states",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-3rr3cvji",
   "kind": "bug",
   "title": "dhcp-failover.md's -ServerRole Standby fact states the cmdlet reference's example 2 but cites only the management page S-xl2d4tuq",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,

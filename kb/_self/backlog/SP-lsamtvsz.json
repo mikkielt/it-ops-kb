@@ -2,7 +2,7 @@
   "id": "SP-lsamtvsz",
   "kind": "sprint",
   "title": "Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows",
-  "status": "planned",
+  "status": "active",
   "goal": "dhcp-failover.md's -ServerRole Standby comparison cites the cmdlet reference S-x2hxgchj; _answers.md's AlmaLinux CIS conclusion leaves the upstream RHEL data stream unconfirmed; pytest-xdist.md's -n auto fact states the psutil condition; stdlib-windows-portability separates the documented Linux getcwd ENOENT from the one macOS relative-open ENOENT run; the _conflicts.md editable-default entry names only arch/python-single-package-extras for 'always editable'; fluent-rust-typescript.md, its answer, the S-dftqctth title and texts-catalogue-formats name FluentLocalization; git-test-repositories splits update-refs holders from die_if_checked_out; the Cargo source rows give rust-lang/cargo's licence as MIT OR Apache-2.0",
   "gates": [
     {

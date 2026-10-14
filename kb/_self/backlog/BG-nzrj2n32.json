@@ -2,7 +2,7 @@
   "id": "BG-nzrj2n32",
   "kind": "bug",
   "title": "arch/fluent-rust-typescript.md and its answer name fluent.runtime 0.4.0's class Localization, though fallback.py defines FluentLocalization",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,

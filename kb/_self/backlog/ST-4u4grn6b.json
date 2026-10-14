@@ -2,7 +2,7 @@
   "id": "ST-4u4grn6b",
   "kind": "story",
   "title": "The editable-dependency conflicts entry says only arch/python-single-package-extras gives the always-editable wording, not python/uv-projects",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
