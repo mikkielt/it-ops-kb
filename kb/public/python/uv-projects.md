@@ -205,6 +205,6 @@ and `uv sync --extra`/`--all-extras`, and `python/pytest-xdist.md` and `python/r
 - A CI job on a scheduled host runs `uv sync --frozen --no-dev` to install only the published
   runtime dependencies of `PL-SRV-0042`, skipping dev-only tooling and never touching the network to
   re-resolve.
-- A `_tools/tests.py`-style wrapper calls `uv run --frozen python -m pytest -n auto` so tests always
-  run against the committed `uv.lock`, and fails loudly if `uv` itself is missing rather than silently
-  falling back.
+- A `_tools/tests.py`-style wrapper calls `uv run --frozen python -m pytest` (adding its own `-n`
+  worker count) so tests always run against the committed `uv.lock`, and fails loudly if `uv` itself is
+  missing rather than silently falling back.

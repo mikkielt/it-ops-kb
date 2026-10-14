@@ -11359,14 +11359,13 @@ feae9863963a,python/pytest-xdist.md,S-t7c2nvll,located,,class;xdist_group;xdist;
 09de9c6b01dd,python/pytest.md,S-447ck3rx,unlocated:no-match,,,,,2026-10-10
 09de9c6b01dd,python/pytest.md,S-ju3i6uxq,unlocated:no-match,,,,,2026-10-10
 09de9c6b01dd,python/pytest.md,S-o7ja7dp2,unlocated:no-match,,,,,2026-10-10
-17bf38c5e29a,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
+11ee7678b0af,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-14
 18922d7fc2ff,python/pytest.md,S-o7ja7dp2,unlocated:no-match,,,,,2026-10-10
 1fc47e3327ad,python/pytest.md,S-4riqrsyi,unlocated:no-match,,,,,2026-10-10
 20776688e158,python/pytest.md,S-f5tpmzia,located,,fail;pass;run;collect;pytest;test;exit;code,da95487d2f005b4b,Running pytest can result in seven different exit codes: :Exit code 0: All tests were collected and passed successfully :Exit code 1: Tests were collected,2026-10-10
 24e2731f98e1,python/pytest.md,S-gmz4iyf3,unlocated:no-match,,,,,2026-10-10
 2942eb359750,python/pytest.md,S-gmz4iyf3,unlocated:no-match,,,,,2026-10-10
 2942eb359750,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
-3c7e2b6d0a3d,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
 48aac22a218a,python/pytest.md,S-7pmymrvf,unlocated:no-match,,,,,2026-10-10
 4a8a51043f6a,python/pytest.md,S-kobs45hd,unlocated:no-match,,,,,2026-10-10
 4c4a637e6bd2,python/pytest.md,S-447ck3rx,unlocated:no-match,,,,,2026-10-10
@@ -11394,6 +11393,7 @@ ade1dd75f701,python/pytest.md,S-4riqrsyi,unlocated:no-match,,,,,2026-10-10
 ba8e1e862956,python/pytest.md,S-4riqrsyi,located,,current;except;latter;nearly;python;directory;sys.path;path,15be2a9c75f29ec0,"Running pytest with pytest [...] instead of python -m pytest [...] yields nearly equivalent behaviour, except that the latter will add the current directory to",2026-10-10
 ba8e1e862956,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
 c12ec3c8f71b,python/pytest.md,S-ljxwhc7m,unlocated:no-match,,,,,2026-10-10
+d19dda0ece7a,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-14
 d867024e4101,python/pytest.md,S-muz57uar,located,Summaries for sessionfinish.,select;deselect;collect;test,c7e35e29436cbe4e,{selected}/{self.numcollected} tests collected ({deselected} deselected),2026-10-13
 dc55f9a8b301,python/pytest.md,S-mgv7bfqe,unlocated:no-match,,,,,2026-10-10
 e6aa16299937,python/pytest.md,S-f5tpmzia,unlocated:no-match,,,,,2026-10-10

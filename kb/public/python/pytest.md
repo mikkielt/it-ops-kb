@@ -39,9 +39,9 @@ the built-in fixtures (`capsys`, `monkeypatch`, `tmp_path`, `tmp_path_factory`) 
   unregistered marker raises an error instead of only a warning. `--strict-markers` is the equivalent
   CLI flag. [DOC S-mgv7bfqe]
 - `-k EXPR` selects tests by substring/expression match on test (and parent) names; `-m EXPR` selects
-  tests by marker expression (e.g. `-m "not stress"`, as this repo's `tests.py` uses to exclude the
-  stress suite, and `-m "not stress and not git"` for `KB_TESTS_FAST=1`). [DER S-mgv7bfqe: `-m`/`-k`
-  are documented pytest option flags; the specific expressions are this repo's own `_tools/tests.py`.]
+  tests by marker expression (e.g. `-m "not git"`, which this repo's `tests.py` passes for
+  `KB_TESTS_FAST=1` to leave out the git scenarios). [DER S-mgv7bfqe: `-m`/`-k` are documented pytest
+  option flags; the specific expression is this repo's own `_tools/tests.py` (`FAST_M`).]
 - Built-in fixtures have exactly five possible scopes: `function` (default), `class`, `module`,
   `package` and `session`, declared with `@pytest.fixture(scope=...)`. A higher-scoped fixture (e.g.
   `session`) is instantiated once for all the tests sharing that scope, not once per test function.
@@ -53,8 +53,8 @@ the built-in fixtures (`capsys`, `monkeypatch`, `tmp_path`, `tmp_path_factory`) 
   (`"all"` — default, keep everything; `"failed"` — keep only directories from failed/errored tests;
   `"none"` — always remove) and `tmp_path_retention_count` (default `"3"`, how many recent *sessions'*
   worth of directories to retain per the policy). This repository sets
-  `tmp_path_retention_policy = "failed"` because "each stress case copies the kb; keeping every
-  passing run's copies filled a disk (74 GB over 4 runs, 2026-09-26)" (comment in `pyproject.toml`).
+  `tmp_path_retention_policy = "failed"` because "a git scenario copies the kb; keeping every
+  passing run's copies fills a disk" (comment in `pyproject.toml`).
   [DOC S-mgv7bfqe]
 - `capsys` captures text written to `sys.stdout`/`sys.stderr` during a test (`capsysbinary` captures
   bytes instead; `capfd`/`capfdbinary` capture at the file-descriptor level, which also catches output
@@ -109,7 +109,7 @@ markers = ["slow", "serial"]
 ```
 
 ## Examples
-- `pytest -m "not stress" -k Leak _tools` runs everything except the `stress`-marked suite, further
+- `pytest -m "not git" -k Leak _tools` runs everything except the `git`-marked tests, further
   narrowed to test names containing `Leak` — the pattern `_tools/tests.py -k Leak` builds on.
 - A fixture shared by every test in a module (`@pytest.fixture(scope="module")`) is created once per
   module rather than once per test function; a `session`-scoped fixture is created once per pytest
