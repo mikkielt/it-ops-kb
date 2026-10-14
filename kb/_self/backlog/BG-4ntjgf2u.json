@@ -61,6 +61,23 @@
     "skills/backlog/SKILL.md",
     "kb/_self/backlog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How do the six new eval rows pin their answers: allow_weak no with the question worded exactly as the item's check asks it, or allow_weak yes?",
+      "options": [
+        "allow_weak no, check wording",
+        "allow_weak yes"
+      ],
+      "recommendation": "allow_weak no, check wording",
+      "do": {
+        "allow_weak no, check wording": "BG-4ntjgf2u",
+        "allow_weak yes": "BG-4ntjgf2u"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "merged: BG-sq2qycqc"
   ],
