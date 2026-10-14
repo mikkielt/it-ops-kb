@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-yzs3bj6f close"
-  ]
+  ],
+  "notes": "SP-sc5yk65l retrospective: ST-qtbpuyff renamed a brief test id of test_backlog_portable.py without a _tools/test_ids_dropped.txt line; its land and sync gates passed, and only the review's perfcheck ids --base against the pre-sprint commit named it MISSING (BG-3kixe2n4)."
 }

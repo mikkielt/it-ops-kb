@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-ia6xayiy close"
   ],
-  "notes": "SP-hlt2tdel close, 2026-10-14: five more worker gates were made blocking and only ratified the implemented recommendation (BG-3yjqrfkp g2 and BG-256h2xwg g1 class push by the word push, ST-oc7hsriu g1 class secrets by the word secret, ST-cr6lmafy g2 and ST-dbyng654 g2 class agents-rule); each stopped its landing until the orchestrator answered it by operator."
+  "notes": "SP-hlt2tdel close, 2026-10-14: five more worker gates were made blocking and only ratified the implemented recommendation (BG-3yjqrfkp g2 and BG-256h2xwg g1 class push by the word push, ST-oc7hsriu g1 class secrets by the word secret, ST-cr6lmafy g2 and ST-dbyng654 g2 class agents-rule); each stopped its landing until the orchestrator answered it by operator. SP-sc5yk65l retrospective, recurrence: ST-qtbpuyff's worker added blocking gate g1 (class agents-rule) mid-work on what 'kb content only' means in the worker rule, a definition the goal left open; it was answered by the operator with the worker's own implemented recommendation (the tests.py CONTENT set)."
 }

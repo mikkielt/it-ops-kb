@@ -1,0 +1,27 @@
+{
+  "id": "ST-ilqmaty4",
+  "kind": "story",
+  "title": "precheck names the skills and role files that restate a worker rule an item changes, so planning puts each in its touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck warns of a committed item whose goal changes a rule in bl_dispatch.WORKER_RULES or a kb/_self rule section when a skill or role file outside its touches restates that rule's old wording, naming each file and line",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_rule_restating_files"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-sc5yk65l close"
+  ],
+  "notes": "SP-sc5yk65l retrospective: ST-qtbpuyff changed the worker suite rule in bl_dispatch.WORKER_RULES, kb/_self/backlog.md and tools.md, but .claude/skills/kb-verify/SKILL.md step 5 still paraphrased the old rule (filed as BG-crckmrxc by the review); no planning step listed the files that restate the rule."
+}
