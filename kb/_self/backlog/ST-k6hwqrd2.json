@@ -53,6 +53,21 @@
   "depends_on": [
     "ST-egz4cxar"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the three research rules sit in kb-research SKILL.md, and which doc names them?",
+      "options": [
+        "step 3 and step 4 bullets, maintaining.md row",
+        "one new section"
+      ],
+      "recommendation": "step 3 and step 4 bullets, maintaining.md row",
+      "class": "agents-rule",
+      "answer": "step 3 and step 4 bullets, maintaining.md row",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-u5q37ds3 close",
     "merged: ST-7snky6yx",
