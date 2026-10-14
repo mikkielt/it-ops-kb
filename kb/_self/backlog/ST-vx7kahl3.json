@@ -21,6 +21,21 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which statements does the kb give as the flush an idempotent nft -f file needs, and as which tag?",
+      "options": [
+        "DER: add table, flush table, then flush set or destroy set per owned named set",
+        "keep only flush table inet NAME and record the set-element gap as UNK"
+      ],
+      "recommendation": "DER: add table, flush table, then flush set or destroy set per owned named set",
+      "class": "design",
+      "answer": "DER: add table, flush table, then flush set or destroy set per owned named set",
+      "by": "agent"
+    }
+  ],
   "notes": "Planned at the 2026-10-13 plan: Q1 (clamped scalar), Q2 (R2 cut-over), Q3 (sss limits) and Q5 (flush table and set elements) run good through rag.py pack -q; Q4 (DEK reuse departs from Google's advice, coverage none: the kb holds Google's advice, line 30 of postgres-column-encryption, not the departure) and Q6 (idempotent nft -f flush and own-table scope, weak) stay open for the research.",
   "claimed_by": "orch-6ukmjucf"
 }

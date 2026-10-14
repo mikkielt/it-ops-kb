@@ -3320,6 +3320,28 @@ _Agent: kb-research_
 
 _Agent: kb-research_
 
+## QK-per-site-dek-reused-across-writes. How does a per-site DEK reused across writes and shared by a site's users depart from Google's new-DEK-per-write and never-one-DEK-for-two-users advice, and what does it cost?
+- Google's page advises generating a new DEK every time data is written, so DEKs need no rotation, and not using the same DEK for data from two different users. [DOC S-yvalenhr]
+- The per-site layout reuses one DEK for every write of the site and shares it among the site's users, so it departs from both practices; the page gives no sanctioned variant, so the layout is this kb's design choice. [DER S-yvalenhr]
+- Cost: the site DEK has to be rotated, and each rotation re-encrypts all the site's rows; one unwrap opens every user's rows of the site, and one user's rows cannot be made unreadable alone by dropping a key. [DER S-yvalenhr]
+- Cost with AES-GCM: NIST SP 800-38D bounds the invocations of the authenticated encryption function with one key at 2^32 (random IVs, or deterministic IVs not of 96 bits) and requires that no IV is repeated under the key, so all of a site's writes count against one key and one uniqueness rule. [DOC S-rxmbolsc]
+- Conclusion: reuse trades key count for rotation cost, blast radius and a per-key invocation budget; a site that accepts it keeps the DEK wrapped, rotates it on a schedule and counts or deterministically numbers its IVs. [DER S-yvalenhr, S-rxmbolsc]
+- Open: whether pgcrypto's PGP functions are subject to the GCM invocation limit is not stated on the pages read. [UNK]
+- See auth/postgres-column-encryption.md.
+
+_Agent: kb-research_
+
+## QK-flush-idempotent-nft-f-file-need. Which flush does an idempotent nft -f file need, and what is its own-table scope?
+- `flush table <family> NAME` clears the chains and rules of the one named table and leaves a set's elements; `flush set` removes the elements of one set; identifiers without a family use `ip`. [DOC S-t7vpftda, S-nvc4ejpk]
+- `add table` does not fail when the table exists and `create table` does; `destroy table` and `destroy set` do not fail when the object is missing. [DOC S-t7vpftda]
+- An idempotent file therefore starts with `add table <family> NAME`, then `flush table <family> NAME`, then `flush set` or `destroy set` for each named set it owns, then the table block. [DER S-nvc4ejpk, S-t7vpftda]
+- Own-table scope: the one table of that family and name; a same-named table of another family and the tables of other roles stay, while `flush ruleset` (even `flush ruleset inet`) removes whole families of tables. [DER S-t7vpftda]
+- Conclusion: one `flush table` is idempotent for chains and rules only; a named set needs its own flush or destroy, and the family must be written out for an `inet` table. [DER S-nvc4ejpk, S-t7vpftda]
+- Open: whether a set declared with `elements` in a table block replaces or adds to an existing set's elements, and the nft release that introduced `destroy`. [UNK]
+- See security/linux-nftables.md.
+
+_Agent: kb-research_
+
 ## QK-gline-rs-s-exact-ort-pin. Can gline-rs's exact ort pin =2.0.0-rc.9 resolve beside a service's own =2.0.0-rc.13 pin in one Cargo build?
 - The Cargo book says Cargo unifies the requirements on one crate when the versions are SemVer-compatible and errors when two compatible versions cannot be unified; its example is two exact pins of `log`, `=0.4.11` and `=0.4.8`. [DOC S-miwhfdzy]
 - Versions are compatible when their left-most non-zero major, minor or patch component is the same, and the resolver's key for one activated version per crate reads only those three numbers, so `2.0.0-rc.9` and `2.0.0-rc.13` have one key. [DOC S-7zyahsl3; CODE S-jdu5egnj: core/resolver/types.rs#SemverCompatibility]

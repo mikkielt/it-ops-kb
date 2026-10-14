@@ -2,7 +2,7 @@
 topic: security/linux-nftables
 priority: P3
 applies_to: "nftables ruleset files, sets and atomic load with nft -f on Linux hosts"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-14
 sources: [S-nvc4ejpk, S-oz7g4upk, S-h3233m5r, S-ycjp6jnv, S-t7vpftda]
 status: partial
 ---
@@ -33,13 +33,19 @@ status: partial
 - Interval sets with overlapping elements fail to load with "conflicting intervals specified" unless the set has `auto-merge`, which collapses adjacent or overlapping elements. [DOC S-oz7g4upk]
 - The wiki states that a set name has at most 16 characters and that a set `comment` needs nftables 0.9.7 and kernel 5.10. [DOC S-oz7g4upk]
 - In the SSG control file for CIS Debian 12 (benchmark v1.1.0 mapping), recommendations 4.3.1 to 4.3.10 cover nftables (installed, a table exists, base chains exist, loopback traffic, default deny policy, service enabled, rules permanent); all are Level 1 Server and Level 1 Workstation, two are manual (outbound and established connections; iptables flushed). [CODE S-ycjp6jnv: controls/cis_debian12.yml#4.3.1]
-- A ruleset file whose first statement is `flush table inet NAME` and that is applied with `nft -f` is a single idempotent step for a pull agent that owns only that table: a second run swaps in the same content and clears nothing else, so the tables other roles own on the host stay. The table has to exist before the file loads (`nft create table inet NAME`, as the wiki advises). The same file with a bare `flush ruleset` first removes every table on the host, so it fits only a host the agent owns outright. [DER S-nvc4ejpk, S-t7vpftda: atomic swap plus flush-first avoids duplicate rules; `flush table` limits the clearing to one table, `flush ruleset` removes all tables]
+- A ruleset file whose first statement is `flush table inet NAME` and that is applied with `nft -f` is a single idempotent step for a pull agent that owns only that table: a second run swaps in the same content and clears nothing else, so the tables other roles own on the host stay. The table has to exist before the file loads (`nft create table inet NAME`, as the wiki advises, or `add table inet NAME` first in the file, which does not fail on a later run); a named set's elements need the extra statement below. The same file with a bare `flush ruleset` first removes every table on the host, so it fits only a host the agent owns outright. [DER S-nvc4ejpk, S-t7vpftda: atomic swap plus flush-first avoids duplicate rules; `flush table` limits the clearing to one table, `flush ruleset` removes all tables]
+- The manual says that all nftables identifiers are family specific and that "If an identifier is specified without an address family, the ip family is used by default"; a table is identified by its family and its name. [DOC S-t7vpftda]
+- The manual says of `add` and `create` for a table: "The only difference between add and create is that the former will not return an error if the specified table already exists"; `destroy table` deletes a table and "does not fail if it does not exist". [DOC S-t7vpftda]
+- Own-table scope of a flush-first file: the table is named by family and name, so `flush table inet NAME` clears the chains and rules of that one table only, leaves a table of the same name in another family (`flush table NAME` alone means the `ip` one, which is a different table from `inet NAME`), and leaves the file's named sets and their elements in place; `flush ruleset inet` is limited by family, not by table, and removes every `inet` table of other roles too. [DER S-t7vpftda, S-nvc4ejpk: tables identified by family and name, ip by default, `flush table` clears chains and rules, the wiki on sets]
+- The manual says of a set that `destroy set` "does not fail if it does not exist", and lists `flush set` ("Remove all elements from the specified set") and `{add | delete | destroy} element` for a named set. [DOC S-t7vpftda]
+- The flush an idempotent `nft -f` file needs is more than one statement when it holds a named set: `flush table <family> NAME` clears the table's chains and rules but leaves the set's elements, so the file also empties each set it owns, by `flush set <family> NAME SET` when the set exists or `destroy set <family> NAME SET` (no error when it is missing) before the table block re-declares it; and `add table <family> NAME` goes first so the table exists on the first run and a second run does not fail, where `create table` fails once the table exists. A second run then ends with the same chains, rules and elements and no stale ones. [DER S-nvc4ejpk, S-t7vpftda: wiki on `flush table` leaving sets, the manual's `add`/`create`, `flush set` and `destroy set`]
+- Open: whether a set declared with `elements` inside a `table` block replaces or adds to the elements of a set that already exists is not stated on the pages read (the wiki says only that importing an existing set is allowed from Linux 3.17), nor from which nft release `destroy` is available, nor what `add set` does for an existing set; the shape above empties or destroys the set first so it depends on none of them except `destroy`'s release. [UNK: not stated on the pages read]
 
 ## Reference
 | need | form | source |
 |---|---|---|
 | load atomically | `nft -f FILE` | S-nvc4ejpk |
-| replace one role's table | `flush table inet NAME` first in the file | S-nvc4ejpk, S-t7vpftda |
+| replace one role's table | `add table inet NAME`, then `flush table inet NAME`, first in the file; `destroy set` or `flush set` for each owned named set | S-nvc4ejpk, S-t7vpftda |
 | replace the host's whole ruleset | `flush ruleset` (optionally one family) first in the file | S-t7vpftda |
 | script header | `#!/usr/sbin/nft -f` | S-h3233m5r |
 | variable | `define NAME = { ... }`, `$NAME` | S-h3233m5r |
@@ -49,10 +55,12 @@ status: partial
 Not read: how each distribution loads `/etc/nftables.conf` at boot (see `_gaps.md`, topic `security/linux-nftables`).
 
 ## Examples
-- SNIPPET: a ruleset file that replaces only the agent's own table `inet filter` atomically (the tables other roles own are not touched; a bare `flush ruleset` first would remove them too, as in the facts above) and keeps an updatable allow set; context: nftables 0.9.4 or later, the table created beforehand with `nft create table inet filter`, placeholder documentation addresses; `flush table` leaves a loaded set's elements in place, so a reload onto a table whose set already holds elements is not covered by the sources read; checked: no [DER S-nvc4ejpk, S-t7vpftda, S-h3233m5r, S-oz7g4upk: flush-first file, `define`, named set]
+- SNIPPET: a ruleset file that replaces only the agent's own table `inet filter` atomically (the tables other roles own are not touched; a bare `flush ruleset` first would remove them too, as in the facts above) and keeps an updatable allow set; context: an nft release that has `destroy` (the release is not stated on the manual page), placeholder documentation addresses; `add table` makes a first run and a second run alike, `flush table` leaves a set's elements in place, so `destroy set` drops the set before the table block re-declares it with its elements; checked: no [DER S-nvc4ejpk, S-t7vpftda, S-h3233m5r, S-oz7g4upk: flush-first file, `define`, named set, `destroy set`]
 ```
 #!/usr/sbin/nft -f
+add table inet filter
 flush table inet filter
+destroy set inet filter admin_nets
 define ssh_admins = { 192.0.2.10, 192.0.2.11 }
 table inet filter {
   set admin_nets { type ipv4_addr; flags interval; elements = $ssh_admins }

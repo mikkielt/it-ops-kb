@@ -3755,6 +3755,41 @@ f887f1d58bea,auth/permissions-matrix.csv,S468,unlocated:no-match,,,,,2026-10-10
 f887f1d58bea,auth/permissions-matrix.csv,S469,unlocated:no-match,,,,,2026-10-10
 fe3ab6c9dbe2,auth/permissions-matrix.csv,S-2z2zfj3l,unlocated:no-match,,,,,2026-10-10
 fe3ab6c9dbe2,auth/permissions-matrix.csv,S-sxtmngif,unlocated:no-match,,,,,2026-10-10
+0c8240d6efb7,auth/postgres-column-encryption.md,S-byvcl63n,located,18.8. Encryption Options > Warning,access;complet;moment;someon;supply;decryption;such;decrypt,f1a88d2d17c2f04c,The client supplies the decryption key and the data is decrypted on the server and then sent to the client. The decrypted data and the,2026-10-14
+19bb90ffe2c3,auth/postgres-column-encryption.md,S-r3t6wvk5,unlocated:no-match,,,,,2026-10-14
+19bb90ffe2c3,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+2739225623a2,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.8. Notes > F.26.8.3. Security Limitations,clear;move;server;insid;between;client;run;databas,4215229ba69cd258,All pgcrypto functions run inside the database server. That means that all the data and passwords move between pgcrypto and client applications in clear text.,2026-10-14
+29f7810933af,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
+29f9d3494d29,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
+2d186c7da2b2,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.8. Notes > F.26.8.3. Security Limitations,among;attack;channel;ciphertext;resist;side;side-channel;vari,44a5f743a6a36dff,"The implementation does not resist side-channel attacks. For example, the time required for a pgcrypto decryption function to complete varies among ciphertexts of a given",2026-10-14
+2df6bf58c81f,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
+2df6bf58c81f,auth/postgres-column-encryption.md,S-rqc6efd7,unlocated:no-match,,,,,2026-10-14
+3b78d4b9e35c,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.5. Random-Data Functions,gen_random_byt;byte;gen;random;count;return,bcda2d209dbbcb31,genrandombytes(count integer) returns bytea,2026-10-14
+3d144df3b712,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
+3d144df3b712,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
+4b607f6c05c4,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
+5187b613fc5d,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+6afbe7eb0f87,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.3. PGP Encryption Functions > F.26.3.8. Options for PGP Functions > F.26.3.8.12. ignore-cipher-failure,faulty;fix;unavailabl;behavior;correct;ignore-cipher-failur;decryption;failur,d5a55c3de2cf24eb,"Instructs pgcrypto to use an incorrect decryption algorithm matching the historical behavior prior to the fix for CVE-2026-14663, by completely ignoring failures from the OpenSSL",2026-10-14
+748813e5b05d,auth/postgres-column-encryption.md,S-rxmbolsc,unlocated:not-text,,,,,2026-10-14
+7a6225d15e56,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
+7bdd0fe7b8fb,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+7c0d8494bdeb,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+85a5989234a6,auth/postgres-column-encryption.md,S-rxmbolsc,unlocated:not-text,,,,,2026-10-14
+8662d964a002,auth/postgres-column-encryption.md,S-rxmbolsc,unlocated:not-text,,,,,2026-10-14
+88d39c00a687,auth/postgres-column-encryption.md,S-yvalenhr,located,Introduction > How to decrypt data using envelope encryption,leav;never;unwrap;decrypt;kek;wrap;dek;data,330877b8f9aea1c6,"DEK, identify the KEK that wrapped the DEK, use the KEK to unwrap the DEK, and then use the unwrapped DEK to decrypt the data.",2026-10-14
+900774c2b002,auth/postgres-column-encryption.md,S-qt7piebc,unlocated:no-match,,,,,2026-10-14
+90f742143a49,auth/postgres-column-encryption.md,S-yvalenhr,located,Introduction,kek;wrap;envelop;stor;dek;encryption;encrypt;data,9b191497257ebf6b,"How to encrypt data using envelope encryption The process of encrypting data is to generate a DEK locally, encrypt data with the DEK, use a",2026-10-14
+919cba10ab64,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+a5c60bad397e,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
+a5c60bad397e,auth/postgres-column-encryption.md,S-byvcl63n,unlocated:no-match,,,,,2026-10-14
+af2201a30ff0,auth/postgres-column-encryption.md,S-alffetzh,unlocated:no-match,,,,,2026-10-14
+af2201a30ff0,auth/postgres-column-encryption.md,S-qt7piebc,located,Security Properties and Threat Model for CipherSweet > Informal Security Analysis > FIPSCrypto > FIPSCrypto Fast Blind Indexes,truncat;bits;hmac;blind;index,4addf721d2f7b76e,"Fast blind indexes calculate a hash using HMAC-SHA384, then truncates the output to a desired number of bits (zero-padding the remaining bits in the",2026-10-14
+b31b0c3f93fe,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+bb6599349e6a,auth/postgres-column-encryption.md,S-yvalenhr,unlocated:no-match,,,,,2026-10-14
+cc8521235ce6,auth/postgres-column-encryption.md,S-qt7piebc,located,Security Properties and Threat Model for CipherSweet > Security Properties of CipherSweet > Blind Indexes,lookup;one-way;way;bloom;filter;deterministic;one;truncat,1f2b9dcada82f4f8,A deterministic one-way hash of the plaintext Truncated to a specified number of bits Treated as a Bloom filter for database lookups,2026-10-14
+da523ba2088b,auth/postgres-column-encryption.md,S-qt7piebc,located,Security Properties and Threat Model for CipherSweet > Security Properties of CipherSweet > Client-Side Perspective,recommend;additional;every;primary;data;field;ciphertext;encrypt,aa99211c6cb31f88,"to ciphertexts, we highly recommend using the primary key as additional associated data (AAD) on every encrypted field.",2026-10-14
+e639fc80831f,auth/postgres-column-encryption.md,S-byvcl63n,located,18.8. Encryption Options > Warning,appear;trust;cannot;never;unencrypt;databas;administrator;client,168c9453ed685951,"If the system administrator for the server's machine cannot be trusted, it is necessary for the client to encrypt the data; this way, unencrypted data",2026-10-14
+ecc36f933189,auth/postgres-column-encryption.md,S-alffetzh,located,F.26. pgcrypto — cryptographic functions > F.26.1. General Hashing Functions > F.26.3. PGP Encryption Functions > F.26.3.10. Limitations of PGP Code,regular;several;subkey;gpg;keys;support;pgcrypto;pgp,301dc79191efd819,"No support for several subkeys. This may seem like a problem, as this is common practice. On the other hand, you should not use your",2026-10-14
 03a9c94dbfce,auth/propagation-latency.csv,S-jpsjsa5i,unlocated:no-match,,,,,2026-10-10
 03a9c94dbfce,auth/propagation-latency.csv,S-ljhugmcx,unlocated:no-match,,,,,2026-10-10
 35a938c517c0,auth/propagation-latency.csv,S1375,located,ALTER LOGIN (Transact-SQL) > Arguments > *login_name* > PASSWORD = *hashed_password*,open;sign;out;membership;member;role;forc;group,be08a3095798969d,"To force changes in the identity, such as a password reset or change in Windows group membership, the login must sign out from the authentication",2026-10-10
@@ -11942,31 +11977,39 @@ f3141afbfd25,security/linux-cis-ssg-openscap.md,S-kbvw7lhl,located,AlmaLinux OS 
 f3141afbfd25,security/linux-cis-ssg-openscap.md,S-q7m3pvv2,located,,v2.0.0;profil;alma;cis;almalinux;benchmark;linux,80ae796a948283db,"Benchmark™, v2.0.0, released 2024-06-20. This profile includes Center for Internet Security® AlmaLinux OS 9 CIS Benchmarks™ content.",2026-10-13
 f869ca6ffc12,security/linux-cis-ssg-openscap.md,S-cxnklaym,unlocated:no-match,,,,,2026-10-13
 0627ef12f841,security/linux-nftables.md,S-h3233m5r,located,Including files,alphabetical;dot;empty;order;load;match;wildcard;directory,b30ac7e0037850de,"This allows having potentially empty include directories for statements like include ""/etc/firewall/rules/"". The wildcard matches are loaded in alphabetical order. NOTE: Files beginning with dot",2026-10-13
-161ce250e3a4,security/linux-nftables.md,S-h3233m5r,unlocated:no-match,,,,,2026-10-13
-161ce250e3a4,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,other;allow;tabl;flush;file,072cfe6257306860,,2026-10-13
-161ce250e3a4,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
 17c4e5a33202,security/linux-nftables.md,S-oz7g4upk,located,Named sets,0.9.7;5.10;character;comment;kernel;name;nftabl,5807772ff11fbf20,Set names must be 16 characters or less. The optional set comment attribute requires at least nftables 0.9.7 and kernel 5.10.,2026-10-13
-1911f06fdd83,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-13
-1911f06fdd83,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
 1da6989fd164,security/linux-nftables.md,S-h3233m5r,located,Including files,forc;work;absolut;includepath;path;search;directory;includ,6ad094a5d7fe5100,The directories to be searched for include files can be specified using the -I/--includepath option. You can override this behavior either by prepending './' to,2026-10-13
 304695b2102f,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
+32d278b563cf,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-14
+32d278b563cf,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
+34b1c3c32446,security/linux-nftables.md,S-t7vpftda,located,NFT > TABLES,former;differenc;already;between;error;creat;return;exist,c11fb3eccdfc2cb1,The only difference between add and create is that the former will not return an error if the specified table already exists,2026-10-14
 417d5fd41fdd,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,chain;two;both;happen;one;statement;includ;tabl,c6475758aa154fa3,What happens when you include 2 files which each have a statement for the filter table? If you have two included files both with statements,2026-10-13
 42db2fc6cff9,security/linux-nftables.md,S-t7vpftda,located,NFT > RULESET,whatever;empty;unlik;valid;iptabl;remov;contain;kernel,73859d74b4149ce2,"this will remove all tables and whatever they contain, effectively leading to an empty ruleset",2026-10-13
 48d023e66e7a,security/linux-nftables.md,S-ycjp6jnv,unlocated:no-match,,,,,2026-10-13
+53eefcdb1857,security/linux-nftables.md,S-t7vpftda,located,delete the rule with handle 5 > SETS,remov;element;specifi,dbd78610542ce14f,Remove all elements from the specified set.,2026-10-14
+5fb59695aab5,security/linux-nftables.md,S-nvc4ejpk,unlocated:no-match,,,,,2026-10-14
+5fb59695aab5,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
 61eddd962417,security/linux-nftables.md,S-oz7g4upk,located,Named sets specifications,conflict;fail;load;specifi;auto;auto-merg;merg;interval,750e693c3dc167da,"Also, note that not using auto-merge will make such ruleset fail to load with something like: /etc/nftables/ruleset.nft:38:21-29: Error: conflicting intervals specified",2026-10-13
 847b23549169,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
-865ad75ae521,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,adds;statement;includ;tabl;flush;file,072cfe6257306860,,2026-10-13
-865ad75ae521,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-13
+84ff99312b15,security/linux-nftables.md,S-t7vpftda,located,NFT > ADDRESS FAMILIES,identifier;without;default;specifi;family;address,286f79579de57043,"If an identifier is specified without an address family, the ip family is used by default",2026-10-14
 92496d7aaad5,security/linux-nftables.md,S-t7vpftda,located,make table active again:,flush;rule;chain;tabl,c0c4bf09b8ba35d8,Flush all chains and rules of the specified table.,2026-10-13
 9425d08f11de,security/linux-nftables.md,S-h3233m5r,located,Scripting,header;my-ruleset.fil;restor;nativ;comment;ruleset;defin;script,cc56b5d4c6df3f13,"Fortunately, nftables provides a native scripting environment to address these concerns which basically allows you to include other ruleset files, define variables and add comments.",2026-10-13
 a52a51dd6fc8,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,3.17;defin;delet;explicitly;later;linux;sets;ruleset,f159597eff148bff,"Flushing Sets: flush table filter will not flush any sets defined in that table. To flush sets as well, use flush ruleset (available since Linux",2026-10-13
 afb3d8cfee4d,security/linux-nftables.md,S-h3233m5r,located,Defining variables,variabl;rule;defin,7ba2622fd1c05d05,add rule filter input ip saddr $googledns counter You can also define a variable for sets:,2026-10-13
 afb3d8cfee4d,security/linux-nftables.md,S-oz7g4upk,located,Named sets > nftables.conf syntax,variabl;referenc;defin;name;rule,d8740adec6df06ad,"You can then reference those sets later on using $VARIABLENAME notation. Here are some examples showing sets defined in one line, spanning multiple lines, and",2026-10-13
+c317a18f33df,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,adds;other;statement;includ;tabl;flush;file,072cfe6257306860,,2026-10-14
+c317a18f33df,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
 c99dba3a665f,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,export;may;creat;becaus;list;load;exist;nft,907ca6d31448420f,you may have to create the table with nft create table ip filter before you can load the file,2026-10-13
 d2d2b17b69d3,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,equivalent;iptables-restor;kernel;transaction;iptabl;restor;load;one,4f3387f48f82a03d,"Duplicate Rules: If you prepend the flush table filter line at the very beginning of the filter-table file, you achieve atomic ruleset replacement equivalent to",2026-10-13
 d7d2e96da084,security/linux-nftables.md,S-t7vpftda,located,NFT > TABLES,manipulat;owner;exclud;content;other;creat;process;flag,52fd9d1f26d7ba79,Creating a table with flag owner excludes other processes from manipulating it or its contents.,2026-10-13
+e0c7f97daffa,security/linux-nftables.md,S-h3233m5r,unlocated:no-match,,,,,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,other;allow;filter;tabl;flush;file,072cfe6257306860,,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-14
+e0c7f97daffa,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
 e9e9219f33b8,security/linux-nftables.md,S-oz7g4upk,unlocated:no-match,,,,,2026-10-13
 f1637f66c9dc,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Warning about Shell scripting + nftables,read;moment;new;operation;swap;configur;firewall;one,77bdf64e34f0e754,"This is different from bash scripts because nftables will read in all of the included config files, create the config object in memory alongside the",2026-10-13
+f58f62467bb7,security/linux-nftables.md,S-nvc4ejpk,located,Atomic rule replacement > Atomic Rule Replacement > Notes,chain;other;one;tabl;flush;rule;file,072cfe6257306860,,2026-10-14
+f58f62467bb7,security/linux-nftables.md,S-t7vpftda,unlocated:no-match,,,,,2026-10-14
 054ada1b6c92,security/logging-monitoring.md,S743,unlocated:no-match,,,,,2026-10-12
 054ada1b6c92,security/logging-monitoring.md,S1498,unlocated:no-match,,,,,2026-10-10
 12ed1069bdaa,security/logging-monitoring.md,S1527,unlocated:not-text,,,,,2026-10-10

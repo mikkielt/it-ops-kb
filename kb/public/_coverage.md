@@ -114,7 +114,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/http-message-signatures` | P3 | partial | `auth/http-message-signatures.md` | 8 |
 | `auth/issuer-token-rotation` | P3 | partial | `auth/issuer-token-rotation.md` | 16 |
 | `auth/oauth-pkce-oidc-id-token` | P3 | partial | `auth/oauth-pkce-oidc-id-token.md` | 6 |
-| `auth/postgres-column-encryption` | P3 | partial | `auth/postgres-column-encryption.md` | 6 |
+| `auth/postgres-column-encryption` | P3 | partial | `auth/postgres-column-encryption.md` | 7 |
 | `auth/shamir-secret-sharing` | P3 | partial | `auth/shamir-secret-sharing.md` | 9 |
 | `auth/sops-age-recipients` | P3 | complete | `auth/sops-age-recipients.md` | 3 |
 | `autopilot/device-identity` | P1 | complete | `autopilot/device-identity.md` | 12 |

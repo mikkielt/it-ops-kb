@@ -2,8 +2,8 @@
 topic: auth/postgres-column-encryption
 priority: P3
 applies_to: "Envelope encryption of PostgreSQL columns with per-site data keys (pgcrypto or client side) and blind indexes (keyed HMAC under a separate key) with their leakage"
-retrieved_utc: 2026-10-11
-sources: [S-byvcl63n, S-alffetzh, S-yvalenhr, S-qt7piebc, S-rqc6efd7, S-r3t6wvk5]
+retrieved_utc: 2026-10-14
+sources: [S-byvcl63n, S-alffetzh, S-yvalenhr, S-qt7piebc, S-rqc6efd7, S-r3t6wvk5, S-rxmbolsc]
 status: partial
 ---
 
@@ -31,6 +31,12 @@ Encrypting a column in PostgreSQL protects against a stolen disk or backup, not 
 - Practices for KEKs: store them centrally, choose the DEK granularity by use case (one KEK may wrap many DEKs), and rotate them regularly and after a suspected incident; fewer KEKs than DEKs keeps the central key store small. [DOC S-yvalenhr]
 - Decryption retrieves the data and the wrapped DEK, asks the KEK holder to unwrap the DEK, and decrypts locally; in that design the KEK never leaves the key service. [DOC S-yvalenhr]
 - A per-site layout follows: one DEK per site, stored wrapped in a key table beside the site's rows with the id of the KEK that wrapped it, and a ciphertext column that names its DEK; rotating the KEK means re-wrapping the site keys, while rotating a site's DEK means re-encrypting that site's rows. [DER S-yvalenhr: DEK per scope wrapped by a KEK, stored near the data; KEK rotation affects only wrapped DEKs]
+- The per-site layout departs from both of Google's DEK practices: one DEK is reused for every write of the site (Google: a new DEK each write) and is shared by all of the site's users (Google: not the same DEK for data from two different users); the page names no reason for either practice beyond "no need to rotate", so the layout is this kb's design choice, not a variant Google describes. [DER S-yvalenhr: the two DEK practices against the per-site layout]
+- What the reuse costs, first: a new DEK per write is what makes DEK rotation unnecessary on Google's page, so a reused site DEK has to be rotated, and every rotation re-encrypts all of the site's rows; the cost grows with the site's data. [DER S-yvalenhr: "you don't need to rotate the DEKs" follows from a new DEK per write]
+- What the reuse costs, second: one wrapped DEK unwrapped once opens all of a site's users' rows, where Google's rule keeps one unwrap from exposing two users; and a single user's rows cannot be made unreadable alone by destroying a key, only by re-encrypting the site's rows under a new DEK. [DER S-yvalenhr: DEK scope equals the set of rows one key opens]
+- NIST SP 800-38D (November 2007) limits one GCM key: for random IVs, and for deterministic IVs of a length other than 96 bits, the total number of invocations of the authenticated encryption function "shall not exceed 2^32, including all IV lengths and all instances of the authenticated encryption function with the given key". [DOC S-rxmbolsc]
+- The same document says that across all instances with one key "if even one IV is ever repeated", the implementation "may be vulnerable to the forgery attacks"; it is a uniqueness rule on the key's whole life. [DOC S-rxmbolsc]
+- What the reuse costs, third: with AES-GCM column ciphertext, a site DEK reused for all of the site's writes counts every write of every user against the one key's 2^32 limit and its no-repeated-IV rule, so the writers need random IVs counted against the limit or one shared counter, where a DEK per write is invoked once; the pages read do not say the limit applies to pgcrypto's PGP functions. [DER S-rxmbolsc: the key limit and the IV uniqueness rule applied to a DEK shared by all writes]
 - Where the KEK or DEK passes through SQL arguments to pgcrypto, the database server and its administrator see it, so an untrusted server needs wrapping and column encryption in the application with only ciphertext and wrapped keys in the database. [DER S-byvcl63n, S-alffetzh: key and plaintext are present on the server during pgcrypto calls]
 - A KEK that is an age identity or a sops-managed file is a file-level KEK with the rotation properties in `auth/sops-age-recipients.md` (no revocation of past commits), not a service that can deny an unwrap call. [DER S-yvalenhr, S-r3t6wvk5: KEK must stay out of the database; what age and sops can revoke]
 
