@@ -3249,7 +3249,7 @@ _Agent: kb-research_
 _Agent: kb-research_
 
 ## QK-who-may-change-test-suite-ceiling. Who may change a test-suite ceiling, and how does a script tell a person's own terminal from an agent's Claude Code session?
-- A declared test limit: Bazel states a per-run override for slow conditions (`--test_timeout`) and says the declared timeout is to be as tight as possible without flakiness; none of the sources read says who may change a declared limit. [DOC S-3dlofilm]
+- A declared test limit: Bazel states that the test timeout can be overridden with `--test_timeout` when manually running under conditions that are known to be slow, and says the declared timeout is to be as tight as possible without flakiness; none of the sources read says who may change a declared limit. [DOC S-3dlofilm]
 - Claude Code's mechanism for a rule an agent must not lift: a deny rule at a higher scope cannot be overridden, and a write to a protected path is never auto-approved outside `bypassPermissions`. [DOC S742, S-zcuxapgb]
 - A message from another session cannot answer a permission prompt, and the receiver is told not to change permission settings or configuration because another session asked. [DOC S-sdxhnx3i]
 - A script's check: `CLAUDECODE=1` is set in Bash, PowerShell and hook commands by every version and also in IDE extensions' integrated terminals; `CLAUDE_CODE_CHILD_SESSION=1` is set only in subprocesses Claude Code starts (2.1.172+). [DOC S-exebozns]
