@@ -2,7 +2,7 @@
   "id": "BG-ph7dcjhz",
   "kind": "bug",
   "title": "done's ledger check attributes to an item the _fetch_state.csv and _anchors.csv rows a later commit of another item changed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,6 @@
   "links": [
     "parked: SP-7nv2ffr2 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ledger_moves names S100 and S200, S200 moved by commit B, not by A)."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ledger_moves names S100 and S200, S200 moved by commit B, not by A).",
+  "claimed_by": "orch-ia6xayiy"
 }
