@@ -29,6 +29,21 @@
   "depends_on": [
     "ST-tgd7r5ji"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do the two pull-agent answer lines carry the flush and own-table scope: restate in full or state the flush table step and point to QK-flush-idempotent-nft-f-file-need for named sets?",
+      "options": [
+        "State flush table and own table in each line, point to the QK answer for named sets",
+        "Restate the full add table, flush table, flush set or destroy set sequence in both lines"
+      ],
+      "recommendation": "State flush table and own table in each line, point to the QK answer for named sets",
+      "class": "design",
+      "answer": "State flush table and own table in each line, point to the QK answer for named sets",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
   ],
