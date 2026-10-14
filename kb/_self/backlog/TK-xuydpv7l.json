@@ -2,7 +2,7 @@
   "id": "TK-xuydpv7l",
   "kind": "task",
   "title": "The run step reruns precheck after the research story lands, and plan words a clause no stronger than its check",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-me3dmaxy",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
   "touches": [
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
-  ]
+  ],
+  "claimed_by": "orch-ce5iig4g"
 }
