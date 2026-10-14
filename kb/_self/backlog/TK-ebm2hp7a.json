@@ -22,5 +22,18 @@
     "kb/_self/backlog.md",
     "kb/_self/plugin.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where in agents/worker.md does the re-anchor rule go, and is it limited to kb roots?",
+      "options": [
+        "Rule 3 (Done bar), beside the sweep of a fixed claim's other statements, under 'Where kb_root is set'",
+        "A new numbered rule after rule 5"
+      ],
+      "recommendation": "Rule 3 (Done bar), beside the sweep of a fixed claim's other statements, under 'Where kb_root is set'",
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-ce5iig4g"
 }
