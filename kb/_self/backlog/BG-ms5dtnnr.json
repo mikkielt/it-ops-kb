@@ -74,7 +74,9 @@
         "a stoplist for the research fallback only"
       ],
       "recommendation": "CLAUSE_STOPWORDS in clause_words: function words of four letters or more plus goal, story, clause, item, sprint, for every clause match (credit, similar, left-behind)",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "CLAUSE_STOPWORDS in clause_words: function words of four letters or more plus goal, story, clause, item, sprint, for every clause match (credit, similar, left-behind)",
+      "by": "operator"
     },
     {
       "id": "g3",
