@@ -2,7 +2,7 @@
   "id": "BG-6bb4zzdy",
   "kind": "bug",
   "title": "The worker brief's always-in-scope rule tells a content worker to add a source row its touches may not cover, so done refuses _sources.csv",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,
@@ -79,5 +79,6 @@
     "parked: SP-q5ldd25k review",
     "merged: ST-4q4zv34i"
   ],
-  "notes": "Found at the SP-q5ldd25k review: bl_base.always_in_scope holds the item files and the coverage files, not _sources.csv, yet the fixed brief rule tells a content worker a source row is in scope, so done refuses it. Absorbs ST-4q4zv34i (2026-10-13 triage): no code names _sources.csv (bl_plan, bl_base, bl_land, bl_dispatch); SP-4o3plg4l's research ST-z7eii5h6 stopped with three DOC facts and their source rows unlanded until its touches were widened and it was resumed (a second session, about 2.9 USD more); the pack for 'may a research item add source rows outside its touches' reads weak. Premise (planner, 2026-10-13): the repro exits 1 and python3 _tools/rag.py pack --root _self 'may a research item add source rows outside its touches' prints coverage: weak. Today new sprint files the goal research story with kb/public/**, which covers a root's _sources.csv; the plan rule matters when a planner narrows it to articles. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates."
+  "notes": "Found at the SP-q5ldd25k review: bl_base.always_in_scope holds the item files and the coverage files, not _sources.csv, yet the fixed brief rule tells a content worker a source row is in scope, so done refuses it. Absorbs ST-4q4zv34i (2026-10-13 triage): no code names _sources.csv (bl_plan, bl_base, bl_land, bl_dispatch); SP-4o3plg4l's research ST-z7eii5h6 stopped with three DOC facts and their source rows unlanded until its touches were widened and it was resumed (a second session, about 2.9 USD more); the pack for 'may a research item add source rows outside its touches' reads weak. Premise (planner, 2026-10-13): the repro exits 1 and python3 _tools/rag.py pack --root _self 'may a research item add source rows outside its touches' prints coverage: weak. Today new sprint files the goal research story with kb/public/**, which covers a root's _sources.csv; the plan rule matters when a planner narrows it to articles. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
+  "claimed_by": "orch-g2ssvhi2"
 }
