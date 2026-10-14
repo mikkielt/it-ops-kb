@@ -17,5 +17,6 @@
   "touches": [
     "_tools/bl_authority.py",
     "_tools/test_authority.py"
-  ]
+  ],
+  "notes": "Second trigger word, 2026-10-14: ST-xlr5flob gate g1 ('Which langgraph commit should the PostgresStore CODE facts be pinned to?', options: the latest commit that changed store/postgres/base.py, or the latest langgraph-checkpoint-postgres release tag) was classed push (matched 'release') on an item whose touches are kb/public content only; 'release' there names an upstream package release a CODE fact is pinned to, not a push. The fix should cover 'release' (and 'tag') in content gates, not only product names."
 }
