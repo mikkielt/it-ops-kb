@@ -2,7 +2,7 @@
   "id": "ST-k3e4q43i",
   "kind": "story",
   "title": "The next slowest suite tests (sync e2e, live kb, leaks) each run under 6 s alone, so the whole suite keeps its darwin ceiling with sibling workers",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,18 @@
     "merged: BG-vrijmdre"
   ],
   "notes": "Premise run 2026-10-13 (load near 1.5 on 14 cores): slowest calls 7.48, 7.28, 7.05, 6.09 s; the check exits 1. The review's whole-suite run passed on a quiet host. Merged from BG-vrijmdre at the 2026-10-13 draft triage: its first half (faster tests, a worker's run passes under 3 to 4 siblings) is this item, with its SP-uzwbt63u timings as evidence; its second half (judge time against host load, not read as over the ceiling) changes ceiling semantics, is the operator's call under ST-kjp54uiz and is not planned; tests.py:44 already says run again or record a host finding. Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates.",
-  "claimed_by": "orch-wjp5qllo"
+  "evidence": {
+    "commit": "aadc0d65c08ae4a97a85b2612da783babb7abf00",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,subprocess,sys;p=subprocess.run([sys.executable,\"_tools/tests.py\",\"_tools/test_sync_e2e.py\",\"_tools/test_live_kb.py\",\"_tools/test_leaks.py\",\"--no-reuse\",\"--durations=5\"],capture_output=True,text=True);t=[float(x) for x in re.findall(r\"^(\\d+\\.\\d+)s call\",p.stdout,re.M)];sys.exit(1 if p.returncode or not t or max(t)>=6 else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
