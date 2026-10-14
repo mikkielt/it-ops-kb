@@ -19,11 +19,13 @@ import kbusage
 import ql_store as store_
 from ql_base import (HOME, LOCK_NAME, LOCK_STALE_S, acquire, claude_p, iso, json_lines, launch_places, lock_age,
                      logging_off, one_line, places, plugin_data, read_json, read_mode, release, run_cmd, write_text)
-from ql_capture import (AGENT_ACTIONS, BRANCH_ACTION, OPEN_ACTIONS, OPS, ROW_FORMAT, SAFE_SESSION, TAGS, VERDICTS,
-                        WORK_ITEM, add_usage, pack_lines)
-from ql_store import (ANSWER_LINE, ANSWER_LINES_MAX, ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, JUDGED, KEY_MISSING_MAX,
-                      KEY_WORD, NAME, OUTCOME, QUESTION_MAX_CHARS, ROW_SURFACES, RULES_ROOT, SET_NAME, SKIPPED_KEY,
-                      SOURCES_MAX, TESTED_ID, TESTED_MAX, URL_PATH, public_host)
+from ql_capture import (AGENT_ACTIONS, ARG_MAX_CHARS, BRANCH_ACTION, FEEDBACK, FEEDBACK_ISSUES, FEEDBACK_JUDGES,
+                        FEEDBACK_LINES_MAX, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, OPEN_ACTIONS, OPS, ROW_FORMAT,
+                        SAFE_SESSION, TAGS, VERDICTS, WORK_ITEM, add_usage, pack_lines)
+from ql_store import (ANSWER_LINE, ANSWER_LINES_MAX, ARTICLE, CITATION, CITATIONS_MAX, ENTRY_KEYS, FEEDBACK_KEYS,
+                      FEEDBACK_REPORTS_MAX, JUDGED, KEY_MISSING_MAX, KEY_WORD, NAME, OUTCOME, QUESTION_MAX_CHARS,
+                      ROW_SURFACES, RULES_ROOT, SET_NAME, SKIPPED_KEY, SOURCES_MAX, TESTED_ID, TESTED_MAX, URL_PATH,
+                      public_host)
 
 HAIKU_MODEL = "haiku"
 HAIKU_BATCH_ENTRIES = 25
@@ -44,6 +46,7 @@ CONSUMED_NAME = "consumed.json"  # {tools file: [row ids]}: tools rows already d
 WORKED_NAME = "worked.json"  # {session id: [prompt ids]}: prompts whose usage a work sidecar already holds
 BACKLOG_REL = "kb/_self/backlog"  # the item files that name each item's sprint (sprint_finder)
 KB_SURFACES = ("kb_hook", "mcp", "kb_ask", "tool_fetch")
+PACK_HANDLE = re.compile(r"P-[0-9a-f]{8}")  # the handle a pack prints (ql_capture.pack_handle)
 REPLY_CITE = re.compile(r"(?<![\w./-])(?:kb/)?((?:[\w-]+/)+[\w.-]+:[1-9]\d*)")  # a path:line a reply names
 DISTILL_TASK = (
     "Each entry below is one lookup in an IT knowledge base, already stripped of addresses, ids, paths and secrets: "
@@ -55,6 +58,16 @@ DISTILL_TASK = (
     "customer, a team; product, vendor and technology names and placeholders such as PL-..., jan.kowalski, CORP and "
     "corp.example.com do not count). Reply with only a JSON array, one object per entry, in order, with no other "
     'fields: [{"i": 0, "judged": "answered", "best": null, "identifying": false}, ...].')
+FEEDBACK_TASK = (
+    "Each entry below is a person's comment on one lookup in an IT knowledge base, already stripped of addresses, ids, "
+    "paths and secrets, with `lines`: the kb lines (path:line) the lookup returned or the comment named. Map each "
+    "comment to closed classes; write no text of your own. Give only: `outcome`: \"answered\", \"partly\", "
+    "\"missed\" or \"misled\", what the comment says the lookup did, or null when it says none; `lines`: "
+    "[{\"line\": one of the entry's `lines`, \"issue\": \"wrong\", \"stale\", \"irrelevant\" or "
+    "\"helpful\"}] for the lines the comment judges, [] when none; `tool_issue`: \"bad-args\", "
+    "\"unclear-output\", \"too-long\" or \"error\" when the comment is about how the tool behaved, else null. "
+    "Reply with only a JSON array, one object per entry, in order, with no other fields: "
+    '[{"i": 0, "outcome": "missed", "lines": [], "tool_issue": null}, ...].')
 
 
 def ts_of(r):
@@ -475,6 +488,176 @@ def routed_of(rs):
     return routed
 
 
+# ---------------------------------------------------------------- feedback
+
+def pack_handles(rows):
+    """The pack handles the kb rows of one lookup recorded (`pack`, ql_capture.pack_handle), as a set."""
+    return {r["pack"] for r in rows if r.get("surface") in KB_SURFACES and isinstance(r.get("pack"), str)
+            and PACK_HANDLE.fullmatch(r["pack"])}
+
+
+def feedback_report(r, k, pages):
+    """One feedback row in the closed shape an entry's `feedback` keeps (querylog.md, Store), each field only when
+    the row's value has that shape: `outcome` (FEEDBACK_OUTCOMES), `judged_by` (`agent` unless the row says `user`),
+    `lines` (a kb path:line with an issue class, each line once), `best` (an article path), `sources` (the ids of the
+    kb sources whose url the row's `source_url` is: `pages.named_ids`) or else `lead` (that url, when it passes the
+    research candidate url gate and the leak scan), `tool_issue`; and `comment`, the row's text when the row has
+    no outcome, which only Haiku's mapping reads (never stored). `claim` and every other field stay out."""
+    import redact, ql_research
+    seen, lines = set(), []
+    for x in r.get("lines") if isinstance(r.get("lines"), list) else []:
+        if isinstance(x, dict) and isinstance(x.get("line"), str) and CITATION.fullmatch(x["line"]) \
+                and x.get("issue") in FEEDBACK_ISSUES and x["line"] not in seen:
+            seen.add(x["line"])
+            lines.append({"line": x["line"], "issue": x["issue"]})
+    url = r.get("source_url").strip() if isinstance(r.get("source_url"), str) else ""
+    sources, lead = [], None
+    if url and len(url) <= ARG_MAX_CHARS:
+        sources = pages.named_ids(url)
+        if not sources and ql_research.public_url(url) and not redact.scan(url, k):
+            lead = url
+    outcome = r.get("outcome") if r.get("outcome") in FEEDBACK_OUTCOMES else None
+    comment = r.get("comment").strip() if isinstance(r.get("comment"), str) else ""
+    return {"outcome": outcome, "judged_by": r.get("judged_by") if r.get("judged_by") in FEEDBACK_JUDGES else "agent",
+            "lines": lines[:FEEDBACK_LINES_MAX],
+            "best": r.get("best") if isinstance(r.get("best"), str) and ARTICLE.fullmatch(r["best"]) else None,
+            "sources": sources or None, "lead": lead,
+            "tool_issue": r.get("tool_issue") if r.get("tool_issue") in FEEDBACK_TOOL_ISSUES else None,
+            "comment": comment if comment and outcome is None else None}
+
+
+def closed_reports(reports):
+    """The `feedback` an entry stores: the reports that have an outcome, each only in the closed fields (FEEDBACK_KEYS,
+    none empty), each once, at most FEEDBACK_REPORTS_MAX. A report with no outcome (a comment no mapping classified)
+    is left out, and so is every comment."""
+    out = []
+    for rep in reports:
+        if rep.get("outcome") is None:
+            continue
+        c = {key: rep[key] for key in FEEDBACK_KEYS if rep.get(key) not in (None, [], "")}
+        if c not in out:
+            out.append(c)
+    return out[:FEEDBACK_REPORTS_MAX]
+
+
+def feedback_entry(r, k):
+    """(entry without its `feedback`, why it is dropped or None) of a feedback row that joins no lookup: its id is the
+    row's, its `question` (when the row has one) goes through the rules and the leak scan like any question, and the
+    report of the row is its `feedback`."""
+    import redact
+    entry = {"id": r["id"], "surface": FEEDBACK, "day": ts_of(r)[:10]}
+    asked = " ".join(str(r.get("question") or "").split())
+    if asked:
+        question = redact.finish(one_line(asked, QUESTION_MAX_CHARS), k)
+        if not question:
+            return ordered(entry), "the leak scan"
+        entry["question"] = question[:QUESTION_MAX_CHARS]
+    return ordered(entry), None
+
+
+def feedback_items(pairs, k):
+    """The batch Haiku maps: per report with a comment, the rule-redacted comment (cut to HAIKU_TEXT_MAX_CHARS) and the
+    kb lines it may classify (the lookup's citations and the lines the report named)."""
+    import redact
+    items = []
+    for i, (t, rep) in enumerate(pairs):
+        lines = [c["line"] for c in t["entry"].get("citations") or []]
+        lines += [x["line"] for x in rep["lines"] if x["line"] not in lines]
+        items.append({"i": i, "comment": redact.redact(rep["comment"], k)[:HAIKU_TEXT_MAX_CHARS], "lines": lines})
+    return items
+
+
+def parse_feedback(reply, items):
+    """[{outcome, lines, tool_issue}] of a Haiku reply to FEEDBACK_TASK; ValueError when it is not that JSON. Only a
+    closed value is kept: an outcome or tool issue of its class, a line the item listed with an issue class; any other
+    field of the reply, free text included, is left out."""
+    a, b = reply.find("["), reply.rfind("]")
+    if a < 0 or b < a:
+        raise ValueError("no JSON array in the reply")
+    got = json.loads(reply[a:b + 1])
+    if not isinstance(got, list) or len(got) != len(items):
+        raise ValueError(f"expected {len(items)} entries")
+    out = []
+    for i, (r, it) in enumerate(zip(got, items)):
+        if not isinstance(r, dict) or r.get("i") != i:
+            raise ValueError(f"entry {i} is malformed")
+        lines, seen = [], set()
+        for x in r.get("lines") if isinstance(r.get("lines"), list) else []:
+            if isinstance(x, dict) and x.get("line") in it["lines"] and x.get("issue") in FEEDBACK_ISSUES \
+                    and x["line"] not in seen:
+                seen.add(x["line"])
+                lines.append({"line": x["line"], "issue": x["issue"]})
+        out.append({"outcome": r.get("outcome") if r.get("outcome") in FEEDBACK_OUTCOMES else None, "lines": lines,
+                    "tool_issue": r.get("tool_issue") if r.get("tool_issue") in FEEDBACK_TOOL_ISSUES else None})
+    return out
+
+
+def apply_mapping(rep, mapped):
+    """Haiku's mapping into a report: its outcome, the lines the report had none of, its tool issue when it had none."""
+    rep["outcome"] = mapped["outcome"]
+    have = {x["line"] for x in rep["lines"]}
+    rep["lines"] = (rep["lines"] + [x for x in mapped["lines"] if x["line"] not in have])[:FEEDBACK_LINES_MAX]
+    rep["tool_issue"] = rep["tool_issue"] or mapped["tool_issue"]
+
+
+def run_time(run):
+    """The spool-time prefix (`yyyy-mm-ddThh:mm:ss`) of a run id, or "" when it is none."""
+    m = store_.RUN_ID.fullmatch(str(run))
+    return f"{run[0:4]}-{run[4:6]}-{run[6:8]}T{run[9:11]}:{run[11:13]}:{run[13:15]}" if m else ""
+
+
+def join_feedback(sessions, tools_rows, attached, todo, stored_at, today, k):
+    """Join the feedback rows (`tools_rows`, [(row, tools file, its window or None)], and those of the closed
+    sessions) to their lookups, and give the rows that join
+    none an entry of their own. A row joins, in order: the lookup whose kb row recorded its `pack` handle; the prompt
+    its `session_id` and `prompt_id` name; the prompt window that holds its time (as every tools row does, `attached`
+    for the tools rows). It attaches (its report joins the entry's `reports`, and a tools row is consumed with the
+    entry) when that lookup is a closed session's entry, written no earlier than the row (`stored_at`: a stored
+    entry holds only what the spool held at its run); a session's own row joins only its own prompt. A tools row whose
+    lookup is in an open session, or that has no lookup and whose day is not over, waits. Appends the entries of its
+    own to `todo`."""
+    import ql_learn
+    pages = ql_learn.KbPages()
+    by_group = {(t["sid"], t["key"]): t for t in todo if t["sid"] is not None and not t.get("own")}
+    handles = {}
+    for sid, s in sessions.items():
+        for key, rs, _, _ in s["groups"]:
+            for h in pack_handles(rs + [r for _, r in attached.get((sid, key), [])]):
+                handles.setdefault(h, (sid, key))
+    rows = list(tools_rows)
+    for sid, s in sessions.items():
+        if s["closed"]:
+            rows += [(r, None, (sid, key)) for key, rs, _, _ in s["groups"] for r in rs if r.get("surface") == FEEDBACK]
+    rows.sort(key=lambda x: (ts_of(x[0]), x[0]["id"]))
+    for r, name, window in rows:
+        target = window
+        h, sid, pid = r.get("pack"), r.get("session_id"), r.get("prompt_id")
+        if name is not None:  # a tools row: its handle, else its session and prompt, else its window
+            if isinstance(h, str) and h in handles:
+                target = handles[h]
+            elif isinstance(sid, str) and isinstance(pid, str) and sid in sessions \
+                    and any(g[0] == pid for g in sessions[sid]["groups"]):
+                target = (sid, pid)
+            if target is None and name[6:16] >= today:
+                continue  # no lookup yet: it waits for its day to end
+            if target is not None and not sessions[target[0]]["closed"]:
+                continue  # its lookup's session is open: the row waits with it
+        t = by_group.get(target) if target is not None else None
+        report = feedback_report(r, k, pages)
+        if t is not None and (name is not None or target == window):
+            at = stored_at.get(t["entry"]["id"])
+            if not at or ts_of(r)[:19] < at:
+                t["reports"].append(report)
+                if name is not None:
+                    t["tools"].append((name, r))
+                continue
+        entry, why = feedback_entry(r, k)
+        own = {"entry": entry, "texts": None, "drop": why, "sid": window[0] if window and name is None else None,
+               "key": window[1] if window and name is None else None, "tools": [(name, r)] if name else [],
+               "ts": ts_of(r), "reports": [report], "own": True}
+        todo.append(own)
+
+
 # ---------------------------------------------------------------- work windows
 
 CLOSED_STATUSES = ("done", "dropped")  # an item file status after which a `branch` row may be stale (kept_rows)
@@ -876,19 +1059,22 @@ def _plan(qdir, t_now, today, k):
                 if n in tools and isinstance(ids, list)}
     for s in sessions.values():
         s["groups"] = groups(s)
-    attached, left = assign(sessions, {n: [r for r in rs if r.get("surface") != OPS] for n, rs in tools.items()},
-                            consumed)  # an ops row joins no prompt: plan_ops reads it from `tools`
+    attached, left = assign(sessions, {n: [r for r in rs if r.get("surface") not in (OPS, FEEDBACK)]
+                                       for n, rs in tools.items()}, consumed)  # an ops row joins no prompt: plan_ops reads it from `tools`
+    fb_attached, fb_left = assign(sessions, {n: [r for r in rs if r.get("surface") == FEEDBACK]
+                                             for n, rs in tools.items()}, consumed)  # joined to a lookup below
 
-    todo = []  # {entry, texts, sid, key, tools}: one per kb lookup of a closed session or a finished day
+    todo = []  # {entry, texts, sid, key, tools, reports}: one per kb lookup of a closed session or a finished day
     for sid, s in sessions.items():
         if not s["closed"]:
             continue
         for key, rs, _, _ in s["groups"]:
             extra = attached.get((sid, key), [])
-            built = entry_of(rs + [r for _, r in extra], k)
+            mine = [r for r in rs if r.get("surface") != FEEDBACK]
+            built = entry_of(mine + [r for _, r in extra], k) if mine or extra else None
             if built:
                 todo.append({"entry": built[0], "texts": built[1], "drop": built[2], "sid": sid, "key": key,
-                             "tools": extra, "ts": ts_of(rs[0]), "usage": usage_of(rs)})
+                             "tools": extra, "ts": ts_of(rs[0]), "usage": usage_of(rs), "reports": []})
             else:
                 s.setdefault("skipped", []).append(extra)  # tools rows of a prompt that never used the kb
     for name, rs in left.items():
@@ -898,9 +1084,13 @@ def _plan(qdir, t_now, today, k):
             built = entry_of([r], k)
             if built:
                 todo.append({"entry": built[0], "texts": built[1], "drop": built[2], "sid": None, "key": None,
-                             "tools": [(name, r)], "ts": ts_of(r)})
+                             "tools": [(name, r)], "ts": ts_of(r), "reports": []})
             else:
                 consumed.setdefault(name, set()).add(r["id"])
+    stored_at = {e["id"]: run_time(run) for run, e in store_.store_entries(qdir / "store")}
+    fb_rows = [(r, name, window) for window, items in fb_attached.items() for name, r in items]
+    fb_rows += [(r, name, None) for name, rs in fb_left.items() for r in rs]
+    join_feedback(sessions, fb_rows, attached, todo, stored_at, today, k)
     todo.sort(key=lambda t: (t["ts"], t["entry"]["id"]))
     return spool, sessions, tools, consumed, todo, skipped
 
@@ -916,18 +1106,54 @@ def _distill(qdir, haiku, now_dt, run_id, kb_commit, out, keep=False, spend=None
     done = [t for t in todo if t["entry"]["id"] in stored]
     todo = [t for t in todo if t["entry"]["id"] not in stored]
 
-    dropped = [t for t in todo if t["drop"]]  # the leak scan caught its question
-    need = [t for t in todo if t["texts"] and not t["drop"]]
-    written = [t for t in todo if not t["texts"] and not t["drop"]]
     waiting = []
     calls = read_json(qdir / CALLS_NAME, {})
     used = calls.get("calls", 0) if isinstance(calls, dict) and calls.get("day") == today else 0
     budget = max(0, min(HAIKU_BATCHES_PER_RUN, HAIKU_DAILY_CALLS - used))
+    ran = 0  # the Haiku calls this run made: the feedback mapping first, then the judgement
+    pairs = [(t, rep) for t in todo if not t["drop"] for rep in t["reports"] if rep.get("comment")]
+    stuck = set()  # entries whose comment's mapping waits (no budget, a failed call): they wait whole
+    for n in range(0, len(pairs), HAIKU_BATCH_ENTRIES):
+        batch = pairs[n:n + HAIKU_BATCH_ENTRIES]
+        if ran >= budget:
+            stuck |= {id(t) for t, _ in batch}
+            continue
+        ran += 1
+        used += 1
+        write_text(qdir / CALLS_NAME, json.dumps({"day": today, "calls": used}) + "\n")
+        items = feedback_items(batch, k)
+        try:
+            reply = haiku(FEEDBACK_TASK + "\n\n" + json.dumps(items, ensure_ascii=False))
+        except (OSError, subprocess.SubprocessError) as e:
+            out(f"distill: Haiku call failed ({type(e).__name__}); its entries wait")
+            stuck |= {id(t) for t, _ in pairs[n:]}
+            break
+        try:
+            mapped = parse_feedback(reply, items)
+        except ValueError:
+            mapped = [None] * len(batch)  # a reply that is not the expected JSON maps nothing: those reports go
+        for (t, rep), m in zip(batch, mapped):
+            if m:
+                apply_mapping(rep, m)
+            rep["comment"] = None  # a comment is read once and never kept
+    waiting += [t for t in todo if id(t) in stuck and not t["drop"]]
+    todo = [t for t in todo if id(t) not in stuck or t["drop"]]
+    for t in todo:
+        t["reports"] = closed_reports(t["reports"])
+        if t["reports"]:
+            t["entry"] = ordered({**t["entry"], "feedback": t["reports"]})
+        elif t.get("own"):
+            t["drop"] = t["drop"] or "no report"  # a feedback row that no mapping gave an outcome
+
+    dropped = [t for t in todo if t["drop"]]  # the leak scan caught its question
+    need = [t for t in todo if t["texts"] and not t["drop"]]
+    written = [t for t in todo if not t["texts"] and not t["drop"]]
     batches = [need[i:i + HAIKU_BATCH_ENTRIES] for i in range(0, len(need), HAIKU_BATCH_ENTRIES)]
     for n, batch in enumerate(batches):
-        if n >= budget:
+        if ran >= budget:
             waiting += batch
             continue
+        ran += 1
         used += 1
         write_text(qdir / CALLS_NAME, json.dumps({"day": today, "calls": used}) + "\n")
         items = haiku_items([t["texts"] for t in batch], [t["texts"]["candidates"] for t in batch], k)
