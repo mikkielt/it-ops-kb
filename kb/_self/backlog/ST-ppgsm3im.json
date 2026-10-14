@@ -52,7 +52,9 @@
           "bullet"
         ]
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "new bullet after the Replaced source bullet",
+      "by": "operator"
     }
   ],
   "links": [
