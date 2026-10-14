@@ -2,7 +2,7 @@
   "id": "TK-kt3sgm2o",
   "kind": "task",
   "title": "Measure the grown held-out file's answer rate once and set the fitness test floor from it",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,6 @@
       "answer": "measured-minus-5: --min = M minus 5 (at most 5 rows may regress before the test fails), and Rate: at least M-5 of N; measured M of N",
       "by": "operator"
     }
-  ]
+  ],
+  "claimed_by": "orch-g2qseu5s"
 }
