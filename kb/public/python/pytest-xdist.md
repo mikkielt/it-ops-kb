@@ -2,8 +2,8 @@
 topic: python/pytest-xdist
 priority: P2
 applies_to: [pytest-xdist, pytest]
-retrieved_utc: 2026-10-13
-sources: [S-t7c2nvll, S-lthpihsc, S-ng5lgn3p, S-qejsavhl, S-ew7mucsg, S-d77lvlq4, S-eaoeu53g]
+retrieved_utc: 2026-10-14
+sources: [S-t7c2nvll, S-lthpihsc, S-ng5lgn3p, S-qejsavhl, S-ew7mucsg, S-d77lvlq4, S-eaoeu53g, S-g7bkixrp, S-tt4fugbi, S-3cbnj3pk]
 status: complete
 ---
 
@@ -75,6 +75,15 @@ comment "a class's scenario is built once, on one worker") use in this repositor
 - Load on the host does not change the worker count or the grouping: `-n auto` is resolved from CPU counts and an environment variable only (the order above), and the scheduler orders units by test count, so a loaded host runs the same units on the same number of workers with fewer CPU cycles for each. Each worker's start, collection and every unit then take longer, and the longest unit and the slowest worker's start are the parts that stretch the end of the run. [DER S-eaoeu53g, S-qejsavhl: the worker-count resolution order and the scheduler's inputs; the effect of load on duration follows from sharing CPUs]
 - On macOS `os.sched_getaffinity` does not exist (`hasattr` is False on CPython 3.13.2 for macOS, checked 2026-10-13), so without `psutil` `-n auto` starts one worker per logical CPU there, as on Windows; `os.getloadavg()` reports how many threads are running or runnable against that count (`python/stdlib-os-loadavg.md`). [DER S-qejsavhl, S-ew7mucsg: the resolution order above and a run on macOS]
 
+### Wall time of a load and a worksteal run
+- `--dist load` hands out consecutive tests from the front of the collection, not single tests: with at least two tests per worker, each worker's first chunk is `max(min(len(collection) // workers // 4, maxschedchunk), 2)` tests, so with `--maxschedchunk` unset it is a quarter of a worker's even share; with fewer than two tests per worker, tests go one each, round-robin. [CODE S-g7bkixrp: src/xdist/scheduler/load.py#LoadScheduling.schedule]
+- A `load` worker is topped up when its pending tests fall below `max(2, len(global pending) // workers // 4)`, to `max(2, len(global pending) // workers // 2)`, at most `max(2 - own pending, maxschedchunk)` tests per step; the step is skipped when the test that just finished took 0.1 s or more and the worker still holds two or more. Chunks therefore shrink as the global queue drains. [CODE S-g7bkixrp: src/xdist/scheduler/load.py#LoadScheduling.check_schedule]
+- Only `--dist load --maxschedchunk 1` hands tests singly, and even then each worker holds two (the running test and the next): the first chunk is 2 and a finished test is replaced by one. A chunk already sent stays with its worker until that worker crashes; `load` has no stealing. [CODE S-g7bkixrp: src/xdist/scheduler/load.py#LoadScheduling.schedule, check_schedule, remove_node]
+- Because `load` cuts the collection into consecutive chunks, tests of one module or class usually land on the same worker, and a long module is split only at chunk boundaries; `load` and `worksteal` both wait for every worker's identical full collection before the first test, as `loadscope` does. [DER S-g7bkixrp, S-tt4fugbi, S-eaoeu53g: the chunking above and the collection barrier]
+- `--dist worksteal` first splits the whole collection into equal consecutive slices, one per worker (`len(pending) // workers_remaining` each). A worker with fewer than two pending tests is idle: when the global queue is empty, the scheduler asks the worker with the longest queue for `min(len // 2, len - 2)` of its last tests, one request at a time, and shuts idle workers down when nothing is stealable. [CODE S-tt4fugbi: src/xdist/scheduler/worksteal.py#WorkStealingScheduling.check_schedule]
+- The worker gives back stolen tests only if every requested one is still queued, else none; a test it has started is never moved. `WorkStealingScheduling` never reads `--maxschedchunk`, whose help text names `--dist=load` only. [CODE S-3cbnj3pk, S-tt4fugbi, S-qejsavhl: src/xdist/remote.py#steal, src/xdist/scheduler/worksteal.py#WorkStealingScheduling.__init__, src/xdist/plugin.py#pytest_addoption]
+- So a suite with two very slow modules runs unevenly under `load` with default chunks: each slow module's tests sit in the chunks of one or two workers, and the rest of the run waits for them. `worksteal` moves the unstarted tail of such a queue to an idle worker, and `load --maxschedchunk 1` lets every idle worker take the next test; each worker that runs any test of a module or class sets up that scope's fixtures itself, so spreading a scope costs one more setup per extra worker. [DER S-g7bkixrp, S-tt4fugbi, S-ng5lgn3p: the chunk, steal and per-worker fixture rules above]
+
 ## Reference
 ```toml
 # this repo's pyproject.toml dev group provides pytest-xdist; _tools/tests.py invokes it as:
@@ -99,6 +108,7 @@ class TestA:
 - `pytest -n auto --dist loadscope` (this repo's default) keeps every test in one module or class on
   a single worker, so a module-scoped fixture that copies the kb tree is built once per module rather
   than once per test.
-- `pytest -n auto --dist load` (`_tools/stress_test.py`'s mode) distributes tests one at a time with
-  no grouping, which is fine when each test builds its own isolated fixture rather than sharing a
-  module- or class-scoped one.
+- `pytest -n auto --dist load` (`_tools/stress_test.py`'s mode) sends each worker consecutive chunks
+  of tests, which is fine when each test builds its own isolated fixture rather than sharing a
+  module- or class-scoped one; adding `--maxschedchunk 1` makes it hand tests out singly (two held
+  per worker).

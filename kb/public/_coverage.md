@@ -288,7 +288,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `privacy/morfeusz-polish-lemmatisation` | P3 | partial | `privacy/morfeusz-polish-lemmatisation.md` | 27 |
 | `privacy/spacy-pipeline-pinning` | P3 | partial | `privacy/spacy-pipeline-pinning.md` | 27 |
 | `python/pytest` | P2 | complete | `python/pytest.md` | 15 |
-| `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 7 |
+| `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 10 |
 | `python/ruff` | P2 | complete | `python/ruff.md` | 13 |
 | `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 6 |
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 15 |

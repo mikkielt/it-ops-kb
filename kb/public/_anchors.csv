@@ -11161,7 +11161,7 @@ c46a693e407a,privacy/spacy-model-licence.md,S851,unlocated:no-match,,,,,2026-10-
 cc4a9b44c0ed,privacy/spacy-model-licence.md,S833,located,,core;en_core_web_lg;install;spacy;web;download;python;presidio,378543ad49b4f286,"""!pip install presidioanalyzer presidioanonymizer\n"", ""!python -m spacy download encoreweblg""",2026-10-10
 d04ce44229c0,privacy/spacy-model-licence.md,S850,located,en_core_web_lg-3.8.0 > No results found > Details: https://spacy.io/models/en#en_core_web_lg,3.0;clear;clearnlp;conversion;net;nlp;note;onto,2978f80424cfa483,"OntoNotes 5 (Ralph Weischedel, Martha Palmer, Mitchell Marcus, Eduard Hovy, Sameer Pradhan, Lance Ramshaw, Nianwen Xue, Ann Taylor, Jeff Kaufman, Michelle Franchini, Mohammed El-Bachouti, Robert",2026-10-10
 12761989ebfb,python/imports-and-modules.md,S-uwxacpum,unlocated:no-match,,,,,2026-10-10
-2120e56082b9,python/imports-and-modules.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
+2120e56082b9,python/imports-and-modules.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 316852631715,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
 4d386896c5ad,python/imports-and-modules.md,S-q5frtccp,unlocated:no-match,,,,,2026-10-10
 64f40bbe7eb9,python/imports-and-modules.md,S-o7nczrbn,unlocated:no-match,,,,,2026-10-10
@@ -11184,12 +11184,12 @@ e486eade00a7,python/imports-and-modules.md,S-ci5jq2sq,unlocated:no-match,,,,,202
 e486eade00a7,python/imports-and-modules.md,S-pnak2iyz,unlocated:no-match,,,,,2026-10-10
 e486eade00a7,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,2026-10-10
 05ec4a8309b1,python/interpreter-startup.md,S-6wxmp67t,located,include <stdlib.h>             // _sys_nerr,emit;replac;syntaxwarn;syntaxerror;warn;syntax;rais;error,240f915aa4c51fdd,"/ Emits a SyntaxWarning and returns 0 on success. If a SyntaxWarning is raised as error, replaces it with a SyntaxError",2026-10-10
-09aa977feed7,python/interpreter-startup.md,S-d77lvlq4,located,,site-dependent;later;dependent;sys.path;call;site;disabl;import,fc7d3442c12a5517,Disable the import of the module :mod:site and the site-dependent manipulations of :data:sys.path that it entails. Also disable these manipulations if :mod:site is explicitly imported,2026-10-10
+09aa977feed7,python/interpreter-startup.md,S-d77lvlq4,located,,site-dependent;later;dependent;sys.path;call;site;disabl;import,fc7d3442c12a5517,Disable the import of the module :mod:site and the site-dependent manipulations of :data:sys.path that it entails. Also disable these manipulations if :mod:site is explicitly imported,2026-10-14
 0aaba0a7c7a0,python/interpreter-startup.md,S-4yatj52m,located,,accurat;replac;exception;report;syntaxerror;syntax;err;error,39f32e241293ec12,if (PyErrExceptionMatches(category)) { / Replace the Syntax/DeprecationWarning exception with a SyntaxError to get a more accurate error report /,2026-10-10
 1793f77d52f0,python/interpreter-startup.md,S-4yatj52m,unlocated:no-match,,,,,2026-10-10
-2dfd4b08fa7b,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
+2dfd4b08fa7b,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 2e356f2838bc,python/interpreter-startup.md,S-4yatj52m,unlocated:no-match,,,,,2026-10-10
-2e356f2838bc,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
+2e356f2838bc,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 2e356f2838bc,python/interpreter-startup.md,S-j7sjakc5,unlocated:no-match,,,,,2026-10-10
 2e356f2838bc,python/interpreter-startup.md,S-nidh245i,unlocated:no-match,,,,,2026-10-10
 2e356f2838bc,python/interpreter-startup.md,S-q5frtccp,unlocated:no-match,,,,,2026-10-10
@@ -11197,21 +11197,21 @@ e486eade00a7,python/imports-and-modules.md,S-y3vaig55,unlocated:no-match,,,,,202
 3ee3488335e2,python/interpreter-startup.md,S-nidh245i,unlocated:no-match,,,,,2026-10-10
 3f80a5475fd5,python/interpreter-startup.md,S-nidh245i,located,,syntax;syntaxwarn;compil;henc;may;suppress;emit;warn,1b196a4045397895,":exc:SyntaxWarning | Base class for warnings about dubious syntax | (typically emitted when compiling Python | source code, and hence may not be suppressed",2026-10-10
 495c9a732a29,python/interpreter-startup.md,S-q5frtccp,located,Built-in Exceptions¶ > Warnings¶,typically;dubious;emit;syntaxwarn;compil;sourc;usually;report,74ccd2059dbccf4d,"exception SyntaxWarning¶ Base class for warnings about dubious syntax. This warning is typically emitted when compiling Python source code, and usually won't be reported",2026-10-10
-56fac1235ea4,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
-83d5b33546fb,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
-8cb909d9556a,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
+56fac1235ea4,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+83d5b33546fb,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+8cb909d9556a,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 8cb909d9556a,python/interpreter-startup.md,S-nidh245i,unlocated:no-match,,,,,2026-10-10
-988f6b809ac2,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
-a9a19a05a0d2,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
+988f6b809ac2,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+a9a19a05a0d2,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 a9a19a05a0d2,python/interpreter-startup.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 ad8013215d88,python/interpreter-startup.md,S-nidh245i,unlocated:no-match,,,,,2026-10-10
 c74b1f8e993d,python/interpreter-startup.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
-c7dab74dd96c,python/interpreter-startup.md,S-d77lvlq4,located,,pythondontwritebytecod;writ;sourc;pyc;import;file;modul;python,f8a180c7d72b7880,"If given, Python won't try to write .pyc files on the import of source modules. See also :envvar:PYTHONDONTWRITEBYTECODE.",2026-10-10
+c7dab74dd96c,python/interpreter-startup.md,S-d77lvlq4,located,,pythondontwritebytecod;writ;sourc;pyc;import;file;modul;python,f8a180c7d72b7880,"If given, Python won't try to write .pyc files on the import of source modules. See also :envvar:PYTHONDONTWRITEBYTECODE.",2026-10-14
 d024fdd530e3,python/interpreter-startup.md,S-uhm2nnel,located,Compute the list of all permutations of l,3.1;deprecation;deprecationwarn;0o37;warn;octal;produc;valu,7f16e1476096d34d,.. versionchanged:: 3.11 Octal escapes with value larger than 0o377 (255) produce a :exc:DeprecationWarning.,2026-10-10
 ee334c5549de,python/interpreter-startup.md,S-dabwnzz5,unlocated:no-match,,,,,2026-10-10
 f0c169bcd9c3,python/interpreter-startup.md,S-j7sjakc5,located,,none;return;stder;string;sys;sys.stder;fals;quiet,8868f80511d6ef27,"If quiet is 0 or 1, and doraise is false, the default behaviour is enabled: an error string is written to sys.stderr, and the function",2026-10-10
-fd385ca5aec7,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
-fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,python_cpu_count;overrid;cpu_count;cpu;count;3.13;python,2530d652d55ded52,".. versionchanged:: 3.13 If :option:-X cpucount <-X> is given or :envvar:PYTHONCPUCOUNT is set, :func:cpucount returns the override value n.",2026-10-10
+fd385ca5aec7,python/interpreter-startup.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+fd385ca5aec7,python/interpreter-startup.md,S-ew7mucsg,located,release semaphore,python_cpu_count;overrid;cpu_count;cpu;count;3.13;python,2530d652d55ded52,".. versionchanged:: 3.13 If :option:-X cpucount <-X> is given or :envvar:PYTHONCPUCOUNT is set, :func:cpucount returns the override value n.",2026-10-14
 f1605ea7890b,python/maturin-pyo3-wheels.md,S-sne3yj7b,located,maturin-action > Inputs,auto;compatibl;control;ignor;lowest;other;publish;tag,9457792d2ec05030,"Control the manylinux platform tag on linux, ignored on other platforms, use auto to build for lowest compatible",2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-c6fbhzyz,unlocated:no-match,,,,,2026-10-13
 f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-hisnadiu,unlocated:no-match,,,,,2026-10-13
@@ -11238,35 +11238,49 @@ f4adf2ec89e1,python/maturin-pyo3-wheels.md,S-yfykoru4,unlocated:no-match,,,,,202
 6a2f386d05b0,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,list;nearest-rank;nearest;valu;method;rank;percentil,17fa25702aed590a,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
 b0fba6c5235a,python/percentile-nearest-rank.md,S-g5oa4uyp,located,"percentile(), percentiles() - Kusto | Microsoft Learn",ascend;percent;wikipedia;list;smallest;nearest;nearest-rank;rank,ad2e3bd0f551873f,"Nearest-rank percentile P-th percentile (0 &lt; P &lt;= 100) of a list of ordered values, sorted in ascending order, is the smallest value in the",2026-10-13
 b2936907fa0a,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > Calculation methods > The nearest-rank method,alway;distinct;fewer;largest;member;100th;result;list,e103682830fd451c,Using the nearest-rank method on lists with fewer than 100 distinct values can result in the same value being used for more than one percentile.,2026-10-13
-020860d757a9,python/pytest-xdist.md,S-eaoeu53g,located,,queu;order;number;test;work,303e4f031172d0d2,Insert tests scopes into work queue ordered by number of tests.,2026-10-13
-0ed6403f3d09,python/pytest-xdist.md,S-eaoeu53g,located,Check that all nodes collected the same tests,abort;different;run;collect;test,5f30c0474b8741fe,"Different tests collected, aborting run",2026-10-13
-1ec7c93c2713,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10
-22d73764a3b1,python/pytest-xdist.md,S-eaoeu53g,located,,unit;work,c3394a802479ea5c,Ensure nodes start with at least two work units if possible (#277),2026-10-13
-3dc321aef61e,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
-3dc321aef61e,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
-3dc321aef61e,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-10
-3dc321aef61e,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10
-53322026e36e,python/pytest-xdist.md,S-t7c2nvll,located,,both;none;back;default;environment;fall;return;hook,df5428b9c491d9d3,"asked for ""auto"" or ""logical"", and it can return None to fall back to the default. If both the hook and environment variable are specified,",2026-10-10
-5700a24223a9,python/pytest-xdist.md,S-ng5lgn3p,located,,best;distribut;fail;find;reason;run;without;disabl,962eb54b64de1506,The --pdb option is disabled when distributing tests with pytest-xdist for this reason. It is generally likely best to use pytest-xdist to find failing tests,2026-10-10
-6ac8061e498a,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-10
-757efdfa912f,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-13
-757efdfa912f,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-13
-8229af010c31,python/pytest-xdist.md,S-ng5lgn3p,unlocated:no-match,,,,,2026-10-10
-8804db099980,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-10
-98da808bd17f,python/pytest-xdist.md,S-ng5lgn3p,located,,across;iterabl;produc;other;valu;mark;pytest.mark.parametriz;unorder,38f9620b5f515454,"It is not possible to have tests that differ in order or their amount across workers. This is especially true with pytest.mark.parametrize, when values are",2026-10-10
-99366b4585c3,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10
-995e657da22c,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-10
-995e657da22c,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
-a55594ae66ef,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10
-ad68d654f78d,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-13
-ad68d654f78d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-13
-b2e3492bd293,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-13
-b2e3492bd293,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-13
-c520ad0c8d9b,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-10
-dcd897e9d861,python/pytest-xdist.md,S-lthpihsc,located,,count;gw2;name;pytest_xdist_worker_count;total;e.g;session;xdist,21c24d8613328d8c,"The name of the worker, e.g., ""gw2"". .. envvar:: PYTESTXDISTWORKERCOUNT The total number of workers in this session, e.g., ""4"" when -n 4 is given",2026-10-10
-ded7bd2119bc,python/pytest-xdist.md,S-t7c2nvll,located,,pend;default;order;distribution;load;mode;guarant;availabl,dd07cc3b9c789132,".. distribution modes: --dist load (default): Sends pending tests to any worker that is available, without any guaranteed order.",2026-10-10
-fe0630a254fb,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-10
-feae9863963a,python/pytest-xdist.md,S-t7c2nvll,located,,class;xdist_group;xdist;group;test,092b04544f2874a2,"class TestA: @pytest.mark.xdistgroup(""group1"")",2026-10-10
+020860d757a9,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
+039bc1590489,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
+057b80d6d62a,python/pytest-xdist.md,S-3cbnj3pk,unlocated:no-match,,,,,2026-10-14
+057b80d6d62a,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+057b80d6d62a,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
+0ed6403f3d09,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
+1b5fe7c0f55d,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+1b5fe7c0f55d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+1ec7c93c2713,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+22d73764a3b1,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
+3dc321aef61e,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+3dc321aef61e,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
+3dc321aef61e,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+3dc321aef61e,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+40cd5dd3c72f,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
+53322026e36e,python/pytest-xdist.md,S-t7c2nvll,located,,both;none;back;default;environment;fall;return;hook,df5428b9c491d9d3,"asked for ""auto"" or ""logical"", and it can return None to fall back to the default. If both the hook and environment variable are specified,",2026-10-14
+55d74b84b772,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
+55d74b84b772,python/pytest-xdist.md,S-ng5lgn3p,unlocated:no-match,,,,,2026-10-14
+55d74b84b772,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
+5700a24223a9,python/pytest-xdist.md,S-ng5lgn3p,located,,best;distribut;fail;find;reason;run;without;disabl,962eb54b64de1506,The --pdb option is disabled when distributing tests with pytest-xdist for this reason. It is generally likely best to use pytest-xdist to find failing tests,2026-10-14
+581502ec4fef,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
+6ac8061e498a,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+757efdfa912f,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
+757efdfa912f,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+7c86459d3015,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
+8229af010c31,python/pytest-xdist.md,S-ng5lgn3p,unlocated:no-match,,,,,2026-10-14
+8804db099980,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+90c3ae58196b,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
+90c3ae58196b,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
+90c3ae58196b,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
+98da808bd17f,python/pytest-xdist.md,S-ng5lgn3p,located,,across;iterabl;produc;other;valu;mark;pytest.mark.parametriz;unorder,38f9620b5f515454,"It is not possible to have tests that differ in order or their amount across workers. This is especially true with pytest.mark.parametrize, when values are",2026-10-14
+995e657da22c,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+995e657da22c,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
+a55594ae66ef,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+ad68d654f78d,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
+ad68d654f78d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+b2e3492bd293,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
+b2e3492bd293,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+c520ad0c8d9b,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+dcd897e9d861,python/pytest-xdist.md,S-lthpihsc,located,,count;gw2;name;pytest_xdist_worker_count;total;e.g;session;xdist,21c24d8613328d8c,"The name of the worker, e.g., ""gw2"". .. envvar:: PYTESTXDISTWORKERCOUNT The total number of workers in this session, e.g., ""4"" when -n 4 is given",2026-10-14
+ded7bd2119bc,python/pytest-xdist.md,S-t7c2nvll,located,,pend;default;order;distribution;load;mode;guarant;availabl,dd07cc3b9c789132,".. distribution modes: --dist load (default): Sends pending tests to any worker that is available, without any guaranteed order.",2026-10-14
+fe0630a254fb,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+feae9863963a,python/pytest-xdist.md,S-t7c2nvll,located,,class;xdist_group;xdist;group;test,092b04544f2874a2,"class TestA: @pytest.mark.xdistgroup(""group1"")",2026-10-14
 006adc97c057,python/pytest.md,S-h5gurdir,located,,tmp_path_factory;uniqu;factory;session;return;tmp;each;function,0539d37061b9037f,which is unique to each test function. :fixture:tmppathfactory Make session-scoped temporary directories and return,2026-10-10
 006adc97c057,python/pytest.md,S-tivsgmaq,located,Set dynamically by pytest_configure() above.,invocation;pathlib.path;each;uniqu;function;pathlib;test;return,5974a8427957bef9,"""""""Return a temporary directory (as :class:pathlib.Path object) which is unique to each test function invocation.",2026-10-10
 054985102dcd,python/pytest.md,S-kobs45hd,unlocated:no-match,,,,,2026-10-10
@@ -11427,12 +11441,12 @@ b912ae2f2626,python/stdlib-datetime-iso-week.md,S-gaeidf4e,located,datetime — 
 c3f91eb18129,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
 cc9472a3671d,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
 cd9221fcfe72,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,,,2026-10-10
-030ab1e16d05,python/stdlib-os-loadavg.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-13
+030ab1e16d05,python/stdlib-os-loadavg.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 13814f26e534,python/stdlib-os-loadavg.md,S-ctjl4gek,located,define POSIX_FADVISE_AIX_BUG,unobtainabl;averag;load,77f95d0d8360fe3b,"PyErrSetString(PyExcOSError, ""Load averages are unobtainable"");",2026-10-13
 31e1e80c626b,python/stdlib-os-loadavg.md,S-fm6og32s,unlocated:no-match,,,,,2026-10-13
 327fc4b789c5,python/stdlib-os-loadavg.md,S-e6rzsvfi,located,,averunnabl;loadavg,1d2cadbbe9d9ea32,"fillloadavg64(&averunnable, &loadinfo64);",2026-10-13
-3491b8f34671,python/stdlib-os-loadavg.md,S-ew7mucsg,located,release semaphore,minut;queu;averag;over;load;last;run;oserror,101c9b801e91a6a8,"Return the number of processes in the system run queue averaged over the last 1, 5, and 15 minutes",2026-10-13
-3571c17d3f9c,python/stdlib-os-loadavg.md,S-ew7mucsg,located,release semaphore,minut;averag;load,edf895474c376b57,"1, 5, and 15 minutes or raises :exc:OSError if the load average was",2026-10-13
+3491b8f34671,python/stdlib-os-loadavg.md,S-ew7mucsg,located,release semaphore,getloadavg;minut;queu;averag;over;load;last;run,6e2cee2614c48de1,".. function:: getloadavg() Return the number of processes in the system run queue averaged over the last 1, 5, and 15 minutes or raises :exc:OSError",2026-10-14
+3571c17d3f9c,python/stdlib-os-loadavg.md,S-ew7mucsg,located,release semaphore,minut;averag;load,edf895474c376b57,"1, 5, and 15 minutes or raises :exc:OSError if the load average was",2026-10-14
 3a5c617ffa0a,python/stdlib-os-loadavg.md,S-fm6og32s,located,,constant;minut;over;sampl;second;averag;interval,194f2ca1c9cc8057,"Constants for averages over 1, 5, and 15 minutes when sampling at 5 second intervals.",2026-10-13
 4c8df196e674,python/stdlib-os-loadavg.md,S-7bno7nz5,unlocated:no-match,,,,,2026-10-13
 4c8df196e674,python/stdlib-os-loadavg.md,S-fm6og32s,unlocated:no-match,,,,,2026-10-13
@@ -11503,7 +11517,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 0c37e66a63be,python/stdlib-windows-portability.md,S-sjuwcuhk,located,,accidental;catch;posix;widely;meant;uses;recommend;command,106a4fcebae4fe35,"catch accidental uses of the typical POSIX command on Windows, but is not meant to be widely used or recommended.",2026-10-12
 0e0b4c186190,python/stdlib-windows-portability.md,S-t5ahy22o,located,RemoveDirectoryA function (fileapi.h) - Win32 apps | Microsoft Learn > Remarks,creat;createdirectory;found;posix;whil;fail;handl;open,983d479ca2375644,The use of POSIX delete causes the directory to be deleted while handles remain open. Subsequent calls to CreateDirectory to open the directory fail with,2026-10-10
 1372d5a7463a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,createprocess;default;child;creat;associat;process;job,67fae0aedbc84ddd,"After a process is associated with a job, by default any child processes it creates using CreateProcess are also associated with the job.",2026-10-10
-13d1074fbd9b,python/stdlib-windows-portability.md,S-ew7mucsg,located,,excl;o_creat;o_excl;creat,c838c5394ac23386,OCREAT OEXCL,2026-10-10
+13d1074fbd9b,python/stdlib-windows-portability.md,S-ew7mucsg,located,,excl;o_creat;o_excl;creat,c838c5394ac23386,OCREAT OEXCL,2026-10-14
 1ac5ae214581,python/stdlib-windows-portability.md,S-hjy5rcb2,located,IsProcessInJob function (jobapi.h) - Win32 apps | Microsoft Learn > Remarks,cannot;name;queryinformationjobobject;null;object;query;information;handl,2cb69d80923f82e7,"An application cannot obtain a handle to the job object in which it is running unless it has the name of the job object. However,",2026-10-10
 1bf4f99e3db1,python/stdlib-windows-portability.md,S-6bobcclf,located,CreateProcessW function (processthreadsapi.h) - Win32 apps | Microsoft Learn > Parameters,length;limit;max;maximum;createprocessw;character;includ;lpcommandlin,0c2696f4d72f4d59,"The maximum length of this string is 32,767 characters, including the Unicode terminating null character. If lpApplicationName is NULL, the module name portion of lpCommandLine",2026-10-10
 1cc518dc8459,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Processes in Jobs,chang;default;silent;flag;breakaway;child;creat;limit,375bc1e4ad71ff6b,(Child processes created using Win32\Process.Create are not associated with the job.) This default behavior can be changed by setting the extended limit JOB\OBJECT\LIMIT\BREAKAWAY\OK or JOB\OBJECT\LIMIT\SILENT\BREAKAWAY\OK,2026-10-10
@@ -11526,7 +11540,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 5724a9258ee0,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 57c19c5865d4,python/stdlib-windows-portability.md,S-oavxfpsn,located,,wasi;unix;modul,4be45b3d5a7180da,".. availability:: Unix, not WASI. All functions in this module take a file descriptor fd as their first",2026-10-10
 59300f9d3f51,python/stdlib-windows-portability.md,S-sjuwcuhk,located,,official;omit;releas;tag;start;may,caa24ead2d62073f,"For compatibility, the V: may be omitted in cases where the tag refers to an official release and starts with",2026-10-12
-5b974aabd403,python/stdlib-windows-portability.md,S-ew7mucsg,located,,fileexistserror;already;mkdir;exist;rais;error;directory;file,e460b7968a6e23bd,".. function:: mkdir(path, mode=0o777, , dirfd=None) Create a directory named path with numeric mode mode. If the directory already exists, :exc:FileExistsError is raised.",2026-10-10
+5b974aabd403,python/stdlib-windows-portability.md,S-ew7mucsg,located,,fileexistserror;already;mkdir;exist;rais;error;directory;file,e460b7968a6e23bd,".. function:: mkdir(path, mode=0o777, , dirfd=None) Create a directory named path with numeric mode mode. If the directory already exists, :exc:FileExistsError is raised.",2026-10-14
 5be915ea9759,python/stdlib-windows-portability.md,S-edjp43o7,located,NAME > SYNOPSIS > DESCRIPTION > ERRORS,exdev;between;different;support;entry;system;named;implementation,178c896d063b5be3,[EXDEV] The file named by path1 and the directory in which the directory entry named by path2 is to be created are on different file,2026-10-10
 5ce2042281ca,python/stdlib-windows-portability.md,S-sjuwcuhk,unlocated:no-match,,,,,2026-10-12
 6648c8869eb9,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,server;support;window;function;creat;hard;link,0822071be3f761ab,"Symbolic link behavior-If the path points to a symbolic link, the function creates a hard link to the symbolic link. In Windows 8 and Windows",2026-10-10
@@ -11544,7 +11558,7 @@ dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,20
 93523914709a,python/stdlib-windows-portability.md,S-ujjrcinq,located,Job Objects - Win32 apps | Microsoft Learn > Managing Job Objects,destroy;kill;last;clos;handl;limit;associat;object,2e0378c24c526c85,"However, if the job has the JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE flag specified, closing the last job object handle terminates all associated processes and then destroys the job object",2026-10-10
 945cf42fde93,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶,thereof;inaccessibl;invalid;subclass;oserror;modul;operat;accept,3187314fa1ef2188,"All functions in this module raise OSError (or subclasses thereof) in the case of invalid or inaccessible file names and paths, or other arguments that",2026-10-10
 998b479205ed,python/stdlib-windows-portability.md,S-qz6kfi4i,located,SetCurrentDirectory function (winbase.h) - Win32 apps | Microsoft Learn > Remarks,delet;execut;lock;moved;prevent;renam;whil;being,0623f6e4edacd421,"The current directory for a process is locked while the process is executing. That prevents the directory from being deleted, moved, or renamed.",2026-10-10
-99d886ec74a4,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
+99d886ec74a4,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 9ae0feeb1da2,python/stdlib-windows-portability.md,S-oqrlzkwe,located,CreateHardLinkW function (winbase.h) - Win32 apps | Microsoft Learn > Return value,getlasterror;last;zero;return;error;creat;hard;link,c1b5529d42e2c45b,"If the function fails, the return value is zero (0). To get extended error information, call GetLastError. The maximum number of hard links that can",2026-10-10
 9ef4f42a9a05,python/stdlib-windows-portability.md,S-5brdhqgo,located,os — Miscellaneous operating system interfaces¶ > File Descriptor Operations¶,5.3;errno.exdev;exdev;older;resid;errno;otherwis;kernel,c0a4ec1d6a9c1140,"In Linux kernel older than 5.3, the files pointed to by src and dst must reside in the same filesystem, otherwise an OSError is raised",2026-10-10
 a32f76a5dfb5,python/stdlib-windows-portability.md,S-5brdhqgo,unlocated:no-match,,,,,2026-10-10
@@ -11560,10 +11574,10 @@ aef7cb26c281,python/stdlib-windows-portability.md,S-ntbllsvy,located,,linesep;os
 afa81617b6e1,python/stdlib-windows-portability.md,S-vfd5kpka,located,NAME > SYNOPSIS > DESCRIPTION,root;suc;unspecifi;current;ebusy;whether;work;fail,afbf40c0ac0f6d01,it is unspecified whether the function succeeds,2026-10-13
 b46adb26c4f0,python/stdlib-windows-portability.md,S-jwv5eevl,located,shutil — High-level file operations¶ > Directory and files operations¶,bits;flag;last;modification;time;permission;access;copi,8ae1888ff9bcea75,"Copy the permission bits, last access time, last modification time, and flags from src to dst. On Linux, copystat() also copies the",2026-10-10
 b5607506f998,python/stdlib-windows-portability.md,S-e4zz24dq,located,Command prompt line string limitation - Windows Client | Microsoft Learn > More information > Examples,cmd;cmd.ex;apply;batch;exe;character;line;environment,e46115323e20f51a,"cmd.exe /k ExecutableFile.exe parameter1, parameter2... parameterN This limitation applies to command lines that are contained in batch files when you use Command Prompt to run",2026-10-10
-b605e6c9fd2f,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
+b605e6c9fd2f,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 b605e6c9fd2f,python/stdlib-windows-portability.md,S-oavxfpsn,unlocated:no-match,,,,,2026-10-10
 bc123c55f20b,python/stdlib-windows-portability.md,S-obrkrr52,located,JOBOBJECT_BASIC_LIMIT_INFORMATION (winnt.h) - Win32 apps | Microsoft Learn > Members,0x0000200;kill;last;clos;handl;terminat;caus;associat,40683d094c248ca8,- JOB\OBJECT\LIMIT\KILL\ON\JOB\CLOSE<br>- 0x00002000 | Causes all processes associated with the job to terminate when the last handle to the job is closed. <br>This limit requires,2026-10-10
-c317c96bc805,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-10
+c317c96bc805,python/stdlib-windows-portability.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
 c873fc3aef8e,python/stdlib-windows-portability.md,S-hlwenztu,unlocated:no-match,,,,,2026-10-13
 c873fc3aef8e,python/stdlib-windows-portability.md,S-kyzwo2d6,unlocated:no-match,,,,,2026-10-13
 c873fc3aef8e,python/stdlib-windows-portability.md,S-qz6kfi4i,unlocated:no-match,,,,,2026-10-13

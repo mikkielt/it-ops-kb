@@ -3510,3 +3510,13 @@ _Agent: kb-research_
 - See python/percentile-nearest-rank.md.
 
 _Agent: kb-research_
+
+## QK-pytest-xdist-distribution-hands-tests-workers. Which pytest-xdist distribution hands tests to workers one at a time, and how do load and worksteal schedule them?
+- `--dist load` sends consecutive chunks: a first chunk of `max(min(len(collection) // workers // 4, maxschedchunk), 2)` tests per worker, then top-ups of up to `max(2 - own pending, maxschedchunk)` tests. [CODE S-g7bkixrp: src/xdist/scheduler/load.py#LoadScheduling.schedule, check_schedule]
+- `--maxschedchunk 1` makes `load` hand tests singly, with the running test and the next held by each worker; `--maxschedchunk` is read by `load` only. [CODE S-g7bkixrp, S-tt4fugbi, S-qejsavhl: load.py#check_schedule, worksteal.py#WorkStealingScheduling.__init__, plugin.py#pytest_addoption]
+- `--dist worksteal` starts from equal consecutive slices and moves the last half (keeping two) of the longest queue to a worker with fewer than two pending tests, once the global queue is empty, one request at a time; the worker returns stolen tests only if all are still queued. [CODE S-tt4fugbi, S-3cbnj3pk: worksteal.py#check_schedule, remote.py#steal]
+- Conclusion: a scope of one slow module is spread over workers by `worksteal` (late, tail only) or by `load --maxschedchunk 1` (test by test), not by `loadscope`; both also set a module's or class's fixtures up once per worker that runs any of its tests. [DER S-g7bkixrp, S-tt4fugbi, S-ng5lgn3p, S-eaoeu53g]
+- Open: which of the two ends a given suite sooner on a quiet host is a measurement, not a source fact. [UNK]
+- See python/pytest-xdist.md.
+
+_Agent: kb-research_
