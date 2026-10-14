@@ -2,7 +2,7 @@
   "id": "TK-kt3sgm2o",
   "kind": "task",
   "title": "Measure the grown held-out file's answer rate once and set the fitness test floor from it",
-  "status": "doing",
+  "status": "done",
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,
@@ -57,5 +57,27 @@
     }
   ],
   "notes": "Measured once 2026-10-14 on the tip holding TK-hsbjikhg's rows: rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 1 gave questions=99 passed=86. Failing ids (13): HO-settings-catalog-not-configured, HO-mcp-token-passthrough, HO-cm-baseline-update-limit, HO-dc-count-small-domain, HO-wol-bios-setting, HO-gpp-map-network-drive, HO-quick-assist-helpdesk, HO-win32-app-max-package-size, HO-onedrive-known-folder-move, HO-temporary-access-pass, HO-purview-retention-label-teams, HO-lets-encrypt-internal-web, HO-hyperv-checkpoint-merge. Rows left as committed. Floor per gate floor (measured-minus-5): --min 81 = 86 - 5.",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "24a6782dfa05168d92330a88c3c2af140dfcc524",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,csv,sys,subprocess;t=open('kb/_self/tools.md',encoding='utf-8').read()+open('kb/_self/token-efficiency.md',encoding='utf-8').read();m=set(re.findall(r'lookup_heldout\\.csv --root public --min (\\d+)',t));n=len(list(csv.DictReader(open('kb/public/_retrieval/lookup_heldout.csv',encoding='utf-8'))));r=re.search(r'Rate: at least (\\d+) of (\\d+); measured (\\d+) of (\\d+)',t);print(m,n,r and r.groups());ok=n>=95 and len(m)==1 and r and int(r.group(2))==n==int(r.group(4)) and r.group(1)==next(iter(m)) and int(r.group(3))>=int(r.group(1));sys.exit(1 if not ok else subprocess.run([sys.executable,'_tools/rag.py','eval','--file','kb/public/_retrieval/lookup_heldout.csv','--root','public','--min',next(iter(m))]).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "fde20a23c4abe411"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys,csv,io;f='kb/public/_retrieval/lookup_heldout.csv';log=subprocess.run(['git','log','--reverse','--format=%H','ae319c43c5..HEAD','--',f],capture_output=True,text=True).stdout.split();rows=lambda r:subprocess.run(['git','show',r+':'+f],capture_output=True,text=True).stdout;first=next((c for c in log if len(list(csv.DictReader(io.StringIO(rows(c)))))>=95),None);print('first grown commit:',first);sys.exit(0 if first and rows(first)==open(f,encoding='utf-8').read() else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a4b5751e930c05c8"
+      }
+    ]
+  }
 }
