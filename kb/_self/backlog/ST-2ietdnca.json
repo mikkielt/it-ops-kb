@@ -45,6 +45,22 @@
   "depends_on": [
     "BG-ph7dcjhz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which base and citation reading decides that a dropped _anchors.csv row's source is cited by no fact of its article?",
+      "options": [
+        "Parent of the item's oldest work commit; any non-UNK part's ids of a tagged unit of the article's md or csv text there; an article missing there counts the row",
+        "Parent of the first commit that changed the row",
+        "HEAD, the article after the item's own edits"
+      ],
+      "recommendation": "Parent of the item's oldest work commit; any non-UNK part's ids of a tagged unit of the article's md or csv text there; an article missing there counts the row",
+      "class": "agents-rule",
+      "answer": "Parent of the item's oldest work commit; any non-UNK part's ids of a tagged unit of the article's md or csv text there; an article missing there counts the row",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-tjap3mdd close"
   ],

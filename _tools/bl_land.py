@@ -243,13 +243,26 @@ def ledger_change(state, key, b, a, detection):
     return key[2] or "", cols, ", ".join(sorted(cols))
 
 
+def article_sources(root, rev, path):
+    """The source ids the facts of the article PATH cite at REV (a fact's UNK part cites none: no anchor run anchors
+    it), None when REV has no such file."""
+    import kbfacts
+    text = blob_text(root, rev, path)
+    if not text:
+        return None
+    units = kbfacts.csv_units(path, text) if path.endswith(".csv") else kbfacts.md_units(path, text)
+    return {sid for u in units for part in u["tags"] if part["kind"] != "UNK" for sid in part["ids"]}
+
+
 def ledger_moves(root, commits):
     """{source id: [`<ledger>: <what changed>`]} of the ledger rows the item's own COMMITS ({commit: [paths]}, oldest
     first) changed and HEAD still has changed: a row counts when one of those commits changed it (each commit
     against its own parent, so a row only another item's commit advanced is not the item's), and it differs at HEAD
     from the parent of the first of them, so a later revert clears it. A _fetch_state.csv row changes when its
     detection columns (factdiff.BASELINE_KEYS and the text hashes, not checked_utc) differ, an _anchors.csv row
-    when it is added, dropped or changed in a column other than verified_utc."""
+    when it is added, dropped or changed in a column other than verified_utc. A dropped _anchors.csv row of a source
+    that no fact of its article cites at the item's base (the parent of the first commit) is an orphan row an anchor
+    run prunes: it is no move."""
     import factdiff
     detection = tuple(factdiff.BASELINE_KEYS) + STATE_BASELINE
     first = {}  # (path, row key): the row at the parent of the first item commit that changed it
@@ -266,12 +279,19 @@ def ledger_moves(root, commits):
                 if (path, key) not in first and ledger_change(state, key, before.get(key), after.get(key),
                                                               detection)[1]:
                     first[(path, key)] = before.get(key)
-    now = {}
+    base = f"{next(iter(commits))}^" if first else None
+    now, cited = {}, {}
     out = {}
     for (path, key), b in first.items():
         if path not in now:
             now[path] = ledger_rows(blob_text(root, "HEAD", path), Path(path).name == STATE_LEDGER)
         sid, cols, what = ledger_change(Path(path).name == STATE_LEDGER, key, b, now[path].get(key), detection)
+        if cols == ["dropped"] and Path(path).name == ANCHOR_LEDGER:
+            article = (Path(path).parent / (key[1] or "")).as_posix()
+            if article not in cited:
+                cited[article] = article_sources(root, base, article)
+            if cited[article] is not None and sid not in cited[article]:
+                continue
         if cols:
             out.setdefault(sid, set()).add(f"{path}: {what}")
     return {sid: sorted(w) for sid, w in out.items()}

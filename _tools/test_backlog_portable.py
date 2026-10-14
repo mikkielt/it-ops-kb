@@ -289,6 +289,44 @@ def test_backlog_done_refuses_unrelated_fetch_state_and_anchor_rows_until_the_go
     assert code == 0 and "would be done" in out, out
 
 
+def test_backlog_done_orphan_anchor_rows_are_pruned_without_the_goal_naming_the_source_while_a_cited_one_is_refused(
+        tmp_path):
+    """An anchor run drops the _anchors.csv row of S900, which no fact of a.md cites at the base: it lands without the
+    goal naming S900; a later commit dropping the row of S100, which a fact of a.md cites, is refused."""
+    root = Repo(tmp_path)
+    root.git("init", "-q", "-b", "main")
+
+    def bl(*args):
+        p = subprocess.run([sys.executable, os.path.join(TOOLS, "backlog.py"), "--root", root.path, *args],
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", env=root.env)
+        assert "Traceback" not in p.stderr, p.stderr
+        return p.returncode, p.stdout + p.stderr
+
+    def anchors(*rows):
+        return "fact,path,source_id,status,quote,verified_utc\n" + "".join(
+            f"{f},a.md,{s},{st},{q},2026-10-01\n" for f, s, st, q in rows)
+
+    f1, f9 = ("f1", "S100", "located", "q1"), ("f9", "S900", "unlocated:no-match", "")
+    root.write("backlog.json", json.dumps({"lane_module": ""}))
+    root.write("kb/public/_anchors.csv", anchors(f1, f9))
+    root.write("kb/public/a.md", "- Fact one. [DOC S100]\n")
+    code, out = bl("new", "story", "--title", "Re-anchor one article", "--goal", "Re-anchor the facts of one article",
+                   "--touch", "kb/public/**", "--check", "python3 -c pass")
+    assert code == 0, out
+    iid = re.search(r"[A-Z]{2}-[a-z2-7]{8}", out).group(0)
+    item = json.loads(root.read(f"_backlog/{iid}.json"))
+    root.write(f"_backlog/{iid}.json", json.dumps({**item, "status": "doing"}, indent=2) + "\n")
+    root.commit("base")
+    root.write("kb/public/_anchors.csv", anchors(f1))
+    root.commit(f"prune the orphan row\n\nKB-Work: {iid}")
+    code, out = bl("done", iid, "--dry-run")
+    assert code == 0 and "would be done" in out, out
+    root.write("kb/public/_anchors.csv", anchors())
+    root.commit(f"drop a cited row\n\nKB-Work: {iid}")
+    code, out = bl("done", iid, "--dry-run")
+    assert code == 1 and "S100 (kb/public/_anchors.csv: dropped)" in out and "S900" not in out, out
+
+
 TRACKERS = {"jira": {"pattern": "[A-Z][A-Z0-9]+-[0-9]+", "url": "https://jira.corp.example.com/browse/{id}"},
             "gitlab": {"pattern": "[0-9]+", "url": "https://gitlab.corp.example.com/group/proj/-/issues/{id}",
                        "ref": "#{id}"}}
