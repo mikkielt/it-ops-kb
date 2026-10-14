@@ -21,7 +21,7 @@ is the closest thing to a format with tooling on more than one of the four consu
 ## Facts
 - `fluent.runtime` (PyPI) is the official Python implementation of Fluent, currently at 0.4.0,
   installed via `pip install fluent.runtime`, and supporting Fluent spec 1.0. [DOC S1709]
-- The usage page names `FluentLocalization` as the main entrypoint of an application, built from locales, resource ids and a `FluentResourceLoader`; the class name is not `Localization` (see [fluent-rust-typescript.md](fluent-rust-typescript.md)). [DOC S1710]
+- The usage page names `FluentLocalization` as the main entrypoint of an application, built from locales, resource ids and a `FluentResourceLoader`; the class name has no form without the Fluent prefix (see [fluent-rust-typescript.md](fluent-rust-typescript.md)). [DOC S1710]
 - Fluent (FTL) syntax supports terms (`-term-name`), attributes (`.tooltip`), message references, and
   selector expressions for plurals/gender — features a real, multi-consumer label catalogue would want.
   [DOC S1711]

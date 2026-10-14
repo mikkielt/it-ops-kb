@@ -3398,10 +3398,10 @@ _Agent: kb-research_
 _Agent: kb-research_
 
 ## QK-class-fluent-runtime-0-4-0. Which class does `fallback.py` of fluent.runtime 0.4.0 define for localization?
-- `fallback.py` at tag `fluent.runtime@0.4.0` defines `FluentLocalization` (language fallback, bundle creation and string localization over a resource loader), plus `AbstractResourceLoader` and `FluentResourceLoader`; it defines no class named `Localization`. [CODE S-dftqctth]
+- `fallback.py` at tag `fluent.runtime@0.4.0` defines `FluentLocalization` (language fallback, bundle creation and string localization over a resource loader), plus `AbstractResourceLoader` and `FluentResourceLoader`; no class named Localization without the Fluent prefix exists in that file. [CODE S-dftqctth]
 - The package `__init__.py` imports `FluentLocalization` from `.fallback` and lists it in `__all__` beside `FluentBundle`, `FluentResource`, `AbstractResourceLoader` and `FluentResourceLoader`. [CODE S-o4mezmn2]
 - The usage page of the same release builds `FluentLocalization(["de", "en-US"], ["main.ftl"], loader)`. [DOC S1710]
-- Conclusion: the localization class is `FluentLocalization`; the earlier kb wording `Localization` (articles and one answer) was wrong and is corrected. [DER S-dftqctth, S-o4mezmn2, S1710: code and docs agree]
+- Conclusion: the localization class is `FluentLocalization`; the earlier kb wording, Localization without the Fluent prefix (articles and one answer), was wrong and is corrected. [DER S-dftqctth, S-o4mezmn2, S1710: code and docs agree]
 - Open: this answer is for 0.4.0; PyPI listed 0.4.0 as the latest release on 2026-10-14, so a later release may rename the class. [UNK]
 - See arch/fluent-rust-typescript.md, arch/texts-catalogue-formats.md.
 

@@ -26,6 +26,21 @@
     "BG-vi5dw4zd",
     "ST-e62uklfi"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The corrected fact, answer and article lines kept a negation of the old class name; the item's repro matches the bare name before a backtick, period, slash or parenthesis. How are those four mentions worded?",
+      "options": [
+        "Reword each so the old name appears once as plain text, as Localization without the Fluent prefix, followed by none of those characters",
+        "Delete the negations and keep only FluentLocalization"
+      ],
+      "recommendation": "Reword each so the old name appears once as plain text, as Localization without the Fluent prefix, followed by none of those characters",
+      "class": "delete",
+      "answer": "Reword each so the old name appears once as plain text, as Localization without the Fluent prefix, followed by none of those characters",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-23m5etrf review"
   ],
