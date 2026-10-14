@@ -2,7 +2,7 @@
   "id": "BG-6bb4zzdy",
   "kind": "bug",
   "title": "The worker brief's always-in-scope rule tells a content worker to add a source row its touches may not cover, so done refuses _sources.csv",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-s7m5l3wa",
   "kind": "story",
   "title": "Research sprint goal: Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2ssvhi2",
   "goal_research": true,
   "priority": "P1",

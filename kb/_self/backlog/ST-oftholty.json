@@ -2,7 +2,7 @@
   "id": "ST-oftholty",
   "kind": "story",
   "title": "A worker distill launched with the worktree as plugin root keeps the hook's own plugin data spool",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,

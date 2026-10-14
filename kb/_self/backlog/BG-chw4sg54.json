@@ -2,7 +2,7 @@
   "id": "BG-chw4sg54",
   "kind": "bug",
   "title": "Concurrent dispatch runs race on the claims ledger: a shared tmp file crashes a dispatch and orphans its worker",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2ssvhi2",
   "priority": "P2",
   "rank": 0,

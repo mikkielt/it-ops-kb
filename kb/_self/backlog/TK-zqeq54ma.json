@@ -2,7 +2,7 @@
   "id": "TK-zqeq54ma",
   "kind": "task",
   "title": "dispatch's worker leaves a work row in the spool land reads, or dispatch names where its rows went",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-h66j7wm5",
   "priority": "P2",
   "rank": 1,

@@ -2,7 +2,7 @@
   "id": "ST-5z4e6z4i",
   "kind": "story",
   "title": "backlog.py stage-back ID copies a headless worker's .claude/ staging copies into its worktree, checks and commits them",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,

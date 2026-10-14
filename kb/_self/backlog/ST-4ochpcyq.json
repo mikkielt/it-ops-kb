@@ -2,7 +2,7 @@
   "id": "ST-4ochpcyq",
   "kind": "story",
   "title": "Review sprint: Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2ssvhi2",
   "review": true,
   "priority": "P1",

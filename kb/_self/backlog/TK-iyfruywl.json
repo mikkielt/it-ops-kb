@@ -2,7 +2,7 @@
   "id": "TK-iyfruywl",
   "kind": "task",
   "title": "backlog.py stage-back ID copies, checks and commits a worker's staging copies, or with --check only checks them",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-5z4e6z4i",
   "priority": "P2",
   "rank": 1,
