@@ -2,7 +2,7 @@
   "id": "ST-jbqgwjjv",
   "kind": "story",
   "title": "Review sprint: The suite's slowest work is cut: the land scenarios and check.py's code citation scan",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-j65ihctq",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-j65ihctq"
 }
