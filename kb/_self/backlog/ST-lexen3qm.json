@@ -1,0 +1,26 @@
+{
+  "id": "ST-lexen3qm",
+  "kind": "story",
+  "title": "Planning leaves out of an item's touches a doc its worker only self-reviews, so items that read the same doc run side by side",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A planned item's touches name only the files its change edits; a doc the docs map names for it that the work only reads is listed for its Self-Reviewed trailer and not counted by held --overlaps, so items that share only a reviewed doc run in parallel",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "overlaps_skip_review_only_docs"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-g2qseu5s close"
+  ],
+  "notes": "SP-g2qseu5s retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: kb/_self/tools.md was in the touches of BG-h6aqngbp, BG-sxxmi2uc, BG-rxdpo5g5 and TK-kt3sgm2o; only TK-kt3sgm2o edited it (the three bug workers named it in Self-Reviewed), yet TK-kt3sgm2o was held back twice behind the code-lane chain."
+}

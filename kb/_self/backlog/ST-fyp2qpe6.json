@@ -1,0 +1,25 @@
+{
+  "id": "ST-fyp2qpe6",
+  "kind": "story",
+  "title": "close --summary credits a goal clause to the item that holds its words of four letters or more, so a clause carried by short words (UTC, day, run) goes to the wrong item",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.clause_words keeps the short domain words a clause is carried by (UTC, day, run and the like, by a short-word list or a two-letter floor with the stopwords), so close --summary credits the clause 'every tool dates a run by the UTC day' to the item that dates runs by the UTC day and not to an item that only shares 'tool' and 'date'",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_land;w=bl_land.clause_words('every tool dates a run by the UTC day');print(w);sys.exit(0 if 'utc' in w else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-g2qseu5s close"
+  ],
+  "notes": "SP-g2qseu5s retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: close --summary of SP-g2qseu5s named TK-kt3sgm2o (held-out floor in kb/_self/tools.md, 'DATE') as the carrier of clause 2 'every tool dates a run by the UTC day', which BG-sxxmi2uc carried; clause_words drops 'utc', 'day' and 'run' (under four letters)."
+}

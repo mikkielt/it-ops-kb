@@ -1,0 +1,26 @@
+{
+  "id": "ST-tu2vdtql",
+  "kind": "story",
+  "title": "precheck refuses to accept a check that passes before the work as the only check of a goal clause",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck SP (and check) flags a goal clause whose only mapped check already passes on the base, even when the item's notes say the check pins behaviour, so a clause such as 'a failed link is not swallowed' gets a check that fails until the work is done",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_flags_clause_proved_by_passing_check"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-g2qseu5s close"
+  ],
+  "notes": "SP-g2qseu5s retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: BG-h6aqngbp mapped 'a failed link is not swallowed' only to tests.py -k test_census_queue_and_census_groups, noted as passing before the work by design; the SP-g2qseu5s review found that removing the link-failure branch or the held() check leaves it green (parked ST-gdcd6ows)."
+}

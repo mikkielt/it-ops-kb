@@ -1,0 +1,26 @@
+{
+  "id": "ST-ll7f6v4i",
+  "kind": "story",
+  "title": "A goal research story whose notes say no outside facts holds no kb root touches, so its claim meets no other session's claimed article",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "new sprint, or check at planning, leaves a goal research story whose notes say 'No outside facts' with no kb/<root>/** touch (or warns of one), so held --overlaps does not report it against another session's claimed articles and ledgers",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "research_no_outside_facts_no_touches"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py"
+  ],
+  "links": [
+    "parked: SP-g2qseu5s close"
+  ],
+  "notes": "SP-g2qseu5s retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: ST-bwj6gyfj kept touches kb/public/** while its notes said no outside facts; held --overlaps ST-bwj6gyfj exited 1 against ST-xlr5flob (another session's SP-5dffnlxn) on nine kb/public files; the worker changed nothing."
+}
