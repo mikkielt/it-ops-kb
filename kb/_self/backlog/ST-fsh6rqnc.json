@@ -15,8 +15,5 @@
       ]
     }
   ],
-  "relates_to": [
-    "ST-rgfoek35"
-  ],
   "notes": "Filed 2026-10-14 by the correctness + held-out planning session: the operator asked that a paid pool re-run wait for their later approval, so this stays a draft in no sprint. It blocks the held-out fitness test's model-side reading (EP-gzr4mmkm) only once ST-rgfoek35 lands. Never plan it without the operator's approval of the spend."
 }
