@@ -2,7 +2,7 @@
   "id": "ST-54gmldzo",
   "kind": "story",
   "title": "A gate question that names the seconds, darwin or suite's ceiling is classed ceiling, not design",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-wjp5qllo",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,6 @@
   "links": [
     "parked: SP-rlincemn review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Plan run 2026-10-13: precheck shows all three checks fail before the work; the only open gate whose question names the ceiling is ST-kjp54uiz's value gate (already class ceiling), so the wider wordings re-class no other open gate."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 12 of 15, \"The suite and its gates: faster slow tests, a UTC day, lint that lints, a green selfdoc check and ceiling wordings classed ceiling\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Plan run 2026-10-13: precheck shows all three checks fail before the work; the only open gate whose question names the ceiling is ST-kjp54uiz's value gate (already class ceiling), so the wider wordings re-class no other open gate.",
+  "claimed_by": "orch-wjp5qllo"
 }
