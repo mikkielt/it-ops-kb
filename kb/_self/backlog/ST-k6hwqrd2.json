@@ -2,7 +2,7 @@
   "id": "ST-k6hwqrd2",
   "kind": "story",
   "title": "The goal research checks a DER inference against the probe it cites and the sprint's own bug evidence before it lands",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
