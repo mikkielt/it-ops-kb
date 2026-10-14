@@ -2,7 +2,7 @@
   "id": "TK-iyfruywl",
   "kind": "task",
   "title": "backlog.py stage-back ID copies, checks and commits a worker's staging copies, or with --check only checks them",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-5z4e6z4i",
   "priority": "P2",
   "rank": 1,
@@ -39,6 +39,9 @@
     "_tools/backlog.py",
     "_tools/test_land_e2e.py",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
-  ]
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Orchestrator (2026-10-14): kb/_self/code.md added to the touches before the claim; a new import or facade entry in bl_dispatch.py and backlog.py makes selfdoc stale name it (as it did for TK-zqeq54ma).",
+  "claimed_by": "orch-g2ssvhi2"
 }
