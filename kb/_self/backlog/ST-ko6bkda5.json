@@ -2,7 +2,7 @@
   "id": "ST-ko6bkda5",
   "kind": "story",
   "title": "The facts SP-tcis5f23 reworded in postgres-column-encryption and linux-nftables get anchor rows, and the orphaned nftables rows go",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -66,5 +66,45 @@
     "merged: ST-swbig7tc"
   ],
   "notes": "Merged from ST-btdvup3d “The facts SP-gcerxjsg reworded in gitlab/project-settings-api and gitlab/pipelines-rules get anchor rows” at the 2026-10-13 draft triage: Premise reproduces: its check exits 1, and both facts (project-settings-api.md 'appear in neither', pipelines-rules.md S448 'once per minute') have no row in kb/public/_anchors.csv. Same job as ST-ko6bkda5 (anchor rows for facts a sprint reworded) on the same ledger; one carrier avoids serialized items on _anchors.csv. Its goal, checks and touches (kb/public/_anchors.csv) are folded into this item's goal and checks. Merged from ST-swbig7tc at the 2026-10-13 draft triage (item in git history): Reproduces: the S1706 row for fact key 53e9732a3a3e is located but quotes 'workspaces may be a better fit', not the editable or --no-editable sentence the fact asserts, so a change to those sentences shows nothing. A single re-anchor on the same ledger as ST-ko6bkda5. Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: all four checks exit 1 on today's base (the merged items' premises reproduce); depends on the other content items of the sprint, since their rewording fixes the text the rows quote.",
-  "claimed_by": "orch-6ukmjucf"
+  "evidence": {
+    "commit": "e703379d61dae190de27cc868ac930dc042c83c3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run([sys.executable,'_tools/factdiff.py','--root','public','anchors','--stale'],capture_output=True,text=True); sys.exit(o.returncode not in (0,1) or 'linux-nftables' in o.stdout)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys; o=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py','--base','7e4ffe56a^','public/auth','public/security'],capture_output=True,text=True); t=o.stdout+o.stderr; sys.exit(o.returncode!=0 or 'postgres-column-encryption.md:39' in t or 'linux-nftables.md' in t)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; rs=[r for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['path'].endswith('python-single-package-extras.md') and r['source_id']=='S1706' and r['status']=='located' and 'editable' in r['quote'].lower()]; sys.exit(0 if rs else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; sys.path.insert(0,'_tools'); import kbfacts; ks=[kbfacts.fact_key(u['text']) for u in kbfacts.units('public') if (u['path'].endswith('/project-settings-api.md') and 'appear in neither' in u['text']) or (u['path'].endswith('/pipelines-rules.md') and 'once per minute' in u['text'] and 'S448' in u['text'])]; rows={r['fact'] for r in csv.DictReader(open('kb/public/_anchors.csv',encoding='utf-8')) if r['status']=='located'}; sys.exit(0 if len(ks)==2 and all(k in rows for k in ks) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
