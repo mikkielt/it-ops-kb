@@ -2,7 +2,7 @@
   "id": "BG-npdpbmw2",
   "kind": "bug",
   "title": "Revalidation marks a fact moved when a sibling heading changes, turns off soft-404 detection after one failed request, and lets a corrupt provider-down record block a host",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
@@ -100,5 +100,6 @@
     "merged: BG-ugucwe42",
     "merged: BG-gx4wphry"
   ],
-  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer (a lookup prints [moved DATE] edited in place for an unchanged fact): window_sections adds the parent's key because a sibling heading unit sits under the parent, and the parent's hash covers every H2 line (repro keys printed 3 sections). Merged here: BG-ugucwe42 (madeup_text, factdiff.py:1044-1051, stores None for any status but 200) and BG-gx4wphry (provider._down_rec, provider.py:529-538, accepts any numeric until). Check 0 also proves the edit-right-after half. Tests: sections asserts of test_pool_rows_are_answered_by_their_tool_... (:1393-1417, 1.8 s) and the revalidate mega-test (madeup about :572-574, down window :610-623); no new id. web-sources.md is mapped to provider.py: read it, edit only if it states the down-record rule. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise. Planning: check 2 re-pointed to gate g1's answer (clamp): a far-future record written 2 x DOWN_CAP_S ago no longer holds the host, a fresh one still does; it fails now (both hold)."
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL and a wrong answer (a lookup prints [moved DATE] edited in place for an unchanged fact): window_sections adds the parent's key because a sibling heading unit sits under the parent, and the parent's hash covers every H2 line (repro keys printed 3 sections). Merged here: BG-ugucwe42 (madeup_text, factdiff.py:1044-1051, stores None for any status but 200) and BG-gx4wphry (provider._down_rec, provider.py:529-538, accepts any numeric until). Check 0 also proves the edit-right-after half. Tests: sections asserts of test_pool_rows_are_answered_by_their_tool_... (:1393-1417, 1.8 s) and the revalidate mega-test (madeup about :572-574, down window :610-623); no new id. web-sources.md is mapped to provider.py: read it, edit only if it states the down-record rule. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise. Planning: check 2 re-pointed to gate g1's answer (clamp): a far-future record written 2 x DOWN_CAP_S ago no longer holds the host, a fresh one still does; it fails now (both hold).",
+  "claimed_by": "orch-vk3wf746"
 }
