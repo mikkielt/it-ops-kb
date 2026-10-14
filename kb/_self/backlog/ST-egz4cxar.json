@@ -2,7 +2,7 @@
   "id": "ST-egz4cxar",
   "kind": "story",
   "title": "A goal research worker's alias rows reach the kb, though a research item's touches may never name _tools/aliases.csv",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,18 @@
     "parked: SP-qjn563cf close"
   ],
   "notes": "Gate g1 answered follow-up item (recommended): kbfacts.aliases reads _tools/aliases.csv plus each root's own _retrieval/aliases.csv, but ql_apply and the public root's convention keep product names in _tools/aliases.csv only, and a content lane carries _tools/aliases.csv (kblane _FILES), so a follow-up item with that touch is the smallest route and adds no second place for product names.\nPremise: kb-research SKILL.md step 4 holds no line naming 'aliases.csv' with 'follow-up' (its retrieval-data bullet names _tools/aliases.csv rows with no route for a worker whose touches exclude it). Run at planning with precheck: the check exits 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "8d41cef297f67ae579fe762791a7a1e76c88e3d1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read().split('## 4. Write',1)[1].split('## 5. Check',1)[0];ok=any('aliases.csv' in l and 'follow-up' in l for l in t.splitlines());print('research step 4 sends alias rows to a follow-up item:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5fd508f1526877f7"
+      }
+    ]
+  }
 }
