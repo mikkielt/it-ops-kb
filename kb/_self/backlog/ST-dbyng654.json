@@ -57,6 +57,21 @@
       "answer": "a gate of class agents-rule (a rule's wording, classed by the item's touches and the gate's words); every other gate with a host word still warns",
       "by": "operator",
       "host_unchecked": "A design choice about which gates a warning skips: the word host in it names no host setup."
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which class does the warning's skip read: the class derived from the item's touches and the gate's words, or the class in force (the stricter of the stored class and the derived one)?",
+      "options": [
+        "the derived class (a stored class written into an item file cannot silence the warning)",
+        "the class in force (the stricter of the stored and the derived class)"
+      ],
+      "recommendation": "the derived class (a stored class written into an item file cannot silence the warning)",
+      "do": {
+        "the derived class (a stored class written into an item file cannot silence the warning)": "ST-dbyng654",
+        "the class in force (the stricter of the stored and the derived class)": "ST-dbyng654"
+      },
+      "class": "agents-rule"
     }
   ],
   "links": [
