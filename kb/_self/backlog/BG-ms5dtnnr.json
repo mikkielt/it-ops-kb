@@ -64,6 +64,32 @@
       "class": "agents-rule",
       "answer": "carry nothing from the generated default goal: the fallback reads a narrowed goal, mapped clauses and touches only",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does the stoplist apply and what does it hold?",
+      "options": [
+        "CLAUSE_STOPWORDS in clause_words: function words of four letters or more plus goal, story, clause, item, sprint, for every clause match (credit, similar, left-behind)",
+        "a stoplist for the research fallback only"
+      ],
+      "recommendation": "CLAUSE_STOPWORDS in clause_words: function words of four letters or more plus goal, story, clause, item, sprint, for every clause match (credit, similar, left-behind)",
+      "class": "agents-rule",
+      "answer": "CLAUSE_STOPWORDS in clause_words: function words of four letters or more plus goal, story, clause, item, sprint, for every clause match (credit, similar, left-behind)",
+      "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does move's left-behind check follow the research fallback, and how is the generated default goal told?",
+      "options": [
+        "clauses_left_behind counts a goal research story's fallback credit as another carrier (carries_clause fallback=True) and its message says close --summary would name no item for it; the default goal is the RESEARCH_DEFAULT_GOAL constant in bl_land (new sprint files it), told by its first clause",
+        "keep clauses_left_behind as is and only reword the message to say a goal research story may be credited as the fallback"
+      ],
+      "recommendation": "clauses_left_behind counts a goal research story's fallback credit as another carrier (carries_clause fallback=True) and its message says close --summary would name no item for it; the default goal is the RESEARCH_DEFAULT_GOAL constant in bl_land (new sprint files it), told by its first clause",
+      "class": "agents-rule",
+      "answer": "clauses_left_behind counts a goal research story's fallback credit as another carrier (carries_clause fallback=True) and its message says close --summary would name no item for it; the default goal is the RESEARCH_DEFAULT_GOAL constant in bl_land (new sprint files it), told by its first clause",
+      "by": "operator"
     }
   ],
   "links": [
