@@ -587,6 +587,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     with provider.down_window():  # the made-up sibling of a page of that host
         assert factdiff.madeup_text(mirror + "a/b") is None
     assert len(asked) == n_asked, asked
+    assert "mirror.example.com" not in factdiff._madeup  # no answer is no 404: the host's other sources ask again
     factdiff._madeup.clear()
     provider.host_seen(mirror, "")
     found[0] = host + "audit"
@@ -637,6 +638,9 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     provider.host_seen(urls[X], "URLError: timed out", t + 3)
     provider.host_seen(urls[X], provider.BUDGET_ERROR, t + 4)  # the budget used up shows nothing of the host
     assert provider.host_down(urls[X], t + 5) is not None
+    far = {"at": t + 3, "until": t + 3 + 1e9, "count": 1, "error": "URLError: timed out"}  # a record that runs past the cap
+    provider._down["docs.example.com"] = far
+    assert provider.host_down(urls[X], t + 3 + provider.DOWN_CAP_S - 1) and provider.host_down(urls[X], t + 3 + provider.DOWN_CAP_S) is None
     provider.host_seen(urls[X], "")
     # the time budget: a source asked after it is used up is not checked, and says so
     monkeypatch.setattr(provider, "pacing", lambda row: 0)
@@ -1416,6 +1420,11 @@ class TestPoolRowsAndDetect:
         assert factdiff.stored_sections(base, None) == factdiff.sections(page)
         assert factdiff.stored_sections({**base, "doc_sha256": "f" * 64}, None) == {}
         assert factdiff.stored_sections({**base, "sections": ""}, {"text": page}) == factdiff.sections(page)
+        # with no previous text the window's sections are read without the page's sibling headings: an H2 added at the
+        # end moves none, an edit of the section right after the fact's own does
+        keys = factdiff.window_sections(anchors[("0123456789ab", "dsc/a.md", sid)], factdiff.Doc(page), None)
+        added, middle = page + "\n## Extra\n\nA new section.\n", page.replace("stays unchanged", "was reworded")
+        assert [factdiff.section_unchanged(keys, factdiff.sections(page), factdiff.sections(t)) for t in (added, middle)] == [True, False]
         monkeypatch.setattr(provider, "document", lambda u, row=None, etag="", lastmod="": {
             "status": 200, "final": u, "hops": [], "etag": "", "lastmod": "", "error": "", "bytes": len(edited), "raw": None,
             "version": {}, "text": edited, "ctype": "text/markdown"})

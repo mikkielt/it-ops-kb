@@ -526,15 +526,28 @@ def _down_path(host):
     return os.path.join(DOWN_DIR, re.sub(r"[^\w.-]", "_", host) + ".json")
 
 
-def _down_rec(host):
-    """The record of `host` with the later end, the process's or the file's (another process may have extended it), or None."""
+def _down_end(rec, now):
+    """`rec` with its end cut to DOWN_CAP_S after its `at` and after `now`: no window runs longer than the cap, so a
+    record that says otherwise (a corrupt or hand-edited one) still holds the host for at most the cap."""
+    until = min(rec["until"], rec["at"] + DOWN_CAP_S, now + DOWN_CAP_S)
+    return rec if until == rec["until"] else dict(rec, until=until)
+
+
+def _down_rec(host, now=None):
+    """The record of `host` with the later end, the process's or the file's (another process may have extended it), or
+    None; an end past the cap is read as the cap's (_down_end)."""
+    now = time.time() if now is None else now
     best = _down.get(host)
+    if best is not None:
+        best = _down_end(best, now)
     try:
         with open(_down_path(host), encoding="utf-8") as f:
             rec = json.load(f)
     except (OSError, ValueError):
         return best
     ok = isinstance(rec, dict) and all(isinstance(rec.get(k), (int, float)) for k in ("until", "at", "count"))
+    if ok:
+        rec = _down_end(rec, now)
     return rec if ok and (best is None or rec["until"] > best["until"]) else best
 
 
@@ -542,7 +555,7 @@ def host_down(url, now=None):
     """The record {until, at, count, error} of the host of `url` while its window runs (it did not accept a connection
     at `at`, and is not asked until `until`), else None."""
     now = time.time() if now is None else now
-    rec = _down_rec(urllib.parse.urlsplit(url).netloc.lower())
+    rec = _down_rec(urllib.parse.urlsplit(url).netloc.lower(), now)
     return rec if rec and rec["at"] <= now < rec["until"] else None
 
 
@@ -570,7 +583,7 @@ def host_seen(url, error, now=None):
         except OSError:
             pass
         return
-    old = _down_rec(host)
+    old = _down_rec(host, now)
     if old is not None and old["at"] <= now < old["until"]:  # no request was made within the window: no new failure
         return
     count = old["count"] + 1 if old is not None and now - old["until"] < DOWN_CAP_S else 1  # a long quiet time starts over
@@ -804,8 +817,10 @@ MD_LINK = re.compile(r"!\[[^\]]*\]\([^)]*\)|\[([^\]]*)\]\([^)]*\)")
 def doc_text(body, ctype, url=""):
     """The normalized document text of a response: Markdown keeps its headings and loses its front matter, link
     targets, images and HTML comments; HTML is reduced to its main text with `#` headings (fetch._PageText); other
-    text (code, JSON, YAML) is kept with `\\n` line ends. None for binary content."""
+    text (code, JSON, YAML) is kept with `\\n` line ends. None for binary content. A `str` body is taken as UTF-8."""
     import fetch  # the reducer is shared with fetch.py --diff
+    if isinstance(body, str):
+        body = body.encode("utf-8")
     head = body[:1024]
     if b"\0" in head or re.search(r"zip|pdf|octet-stream|image/", ctype or ""):
         return None
