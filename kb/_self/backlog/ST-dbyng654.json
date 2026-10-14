@@ -71,7 +71,9 @@
         "the derived class (a stored class written into an item file cannot silence the warning)": "ST-dbyng654",
         "the class in force (the stricter of the stored and the derived class)": "ST-dbyng654"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the derived class (a stored class written into an item file cannot silence the warning)",
+      "by": "operator"
     }
   ],
   "links": [
