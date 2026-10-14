@@ -2,7 +2,7 @@
   "id": "ST-aob7dslq",
   "kind": "story",
   "title": "The eight Cargo source rows with Apache-2.0 alone give rust-lang/cargo's licence as MIT OR Apache-2.0, as the other Cargo rows do",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-lsamtvsz",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,18 @@
     "parked: SP-tjap3mdd review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 9 of 15, \"Content fixes: Python, Windows, GitLab and architecture articles, conflicts and source rows\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run 2026-10-13 on base: check fails (eight rows carry 'Apache-2.0 (repository licence of rust-lang/cargo, from the GitHub API)': the five named plus S-5bx2p3mo, S-d7xuprcc, S-wl3gkg3g at tag 0.99.0, which the planner added to goal and check as the same defect). Depends on BG-nzrj2n32 (shares _sources.csv) and on the goal research story.",
-  "claimed_by": "orch-lsamtvsz"
+  "evidence": {
+    "commit": "594f9be07b359df6231fb94bb09bafacc27fd521",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys; ids={'S-miwhfdzy','S-7zyahsl3','S-jdu5egnj','S-uxljwlpn','S-zonbsokp','S-5bx2p3mo','S-d7xuprcc','S-wl3gkg3g'}; rs=[r for r in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8')) if r['id'] in ids]; sys.exit(0 if len(rs)==8 and all(r['licence'].startswith('MIT OR Apache-2.0') for r in rs) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
