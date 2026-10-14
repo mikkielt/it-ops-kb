@@ -2,7 +2,7 @@
   "id": "ST-hojn6yjd",
   "kind": "story",
   "title": "shamir-secret-sharing states the sss README's 255-share and 113-byte-share limits as a tagged DOC fact, not only in a table cell",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-tcis5f23 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: rag.py facts auth/shamir-secret-sharing --tag DOC --format detailed shows no line holding 255 and 113 (they sit only in table row 38), and the article has no row in _anchors.csv; both checks exit 1. The first draft check read the default 160-character cut of facts output, so it now reads --format detailed."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: rag.py facts auth/shamir-secret-sharing --tag DOC --format detailed shows no line holding 255 and 113 (they sit only in table row 38), and the article has no row in _anchors.csv; both checks exit 1. The first draft check read the default 160-character cut of facts output, so it now reads --format detailed.",
+  "claimed_by": "orch-6ukmjucf"
 }
