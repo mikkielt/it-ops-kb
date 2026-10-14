@@ -1476,7 +1476,9 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
                      "Quartz retention defaults to thirty days on new installs.\n",
              "g.md": "# Limits\n\nThe Falcon gateway accepts at most forty connections per node.\n\nCobalt tokens expire after twelve hours.\n",
              "h.md": "# Cache\n\nNimbus caches answers for ten minutes.\n",
-             "i.md": "# Logs\n\nHelium logs rotate daily.\n"}
+             "i.md": "# Logs\n\nHelium logs rotate daily.\n",
+             "j.md": "# Pools\n\nArgon pools hold at most sixty sessions.\n",
+             "k.md": "# Sessions\n\nArgon pools hold at most sixty sessions.\n"}
     (up / "docs").mkdir()
     for name, text in files.items():
         (up / "docs" / name).write_text(text, encoding="utf-8")
@@ -1487,6 +1489,8 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
     (up / "docs" / "f.md").write_text(files["f.md"] + "\nA later paragraph about Zephyr exports.\n", encoding="utf-8")
     (up / "docs" / "g.md").write_text(files["g.md"].replace("twelve", "six"), encoding="utf-8")
     (up / "docs" / "i.md").write_text(files["i.md"] + "\nUnrelated note.\n", encoding="utf-8")
+    for name in ("j.md", "k.md"):
+        (up / "docs" / name).write_text(files[name] + "\nUnrelated note.\n", encoding="utf-8")
     git(up, "commit", "-q", "-am", "two")
     c2 = git(up, "rev-parse", "HEAD")
     git(up, "tag", "1.0.1")
@@ -1501,7 +1505,8 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
     (root / "_root.md").write_text("---\nroot: public\nid_prefix: S\nvisibility: public\ndescription: scratch\n---\n", encoding="utf-8")
     raw = "https://raw.githubusercontent.com/Org/Repo/"
     urls = {"S9001": f"{raw}{c1}/docs/f.md", "S9002": f"{raw}{c1}/docs/g.md", "S9003": f"{raw}{c1}/docs/h.md",
-            "S9004": f"{raw}1.0.0/docs/i.md", "S9005": "https://github.com/Org/Repo/releases/tag/1.0.0"}
+            "S9004": f"{raw}1.0.0/docs/i.md", "S9005": "https://github.com/Org/Repo/releases/tag/1.0.0",
+            "S9006": f"{raw}{c1}/docs/j.md", "S9007": f"{raw}{c1}/docs/k.md"}
     cols = ["id", "url", "title", "publisher", "licence", "reuse", "retrieved_utc", "version_or_date", "artifact_sha256", "used_in",
             "superseded_by"]
     kbcommon.write_csv(str(root / "_sources.csv"), cols, [
@@ -1517,6 +1522,10 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
     article.write_text("---\ntopic: dsc/d\npriority: P1\nretrieved_utc: 2026-09-26\nsources: [S9001, S9002, S9003, S9004, S9005]\n"
                        "status: complete\n---\n# D\n\n## Facts\n"
                        + "".join(f"- {t} [CODE {sid}]\n" for t, sid in facts.values()), encoding="utf-8")
+    both = "Argon pools hold at most sixty sessions."  # one fact citing two pinned sources, each moved by the same run
+    other = root / "dsc" / "e.md"
+    other.write_text("---\ntopic: dsc/e\npriority: P1\nretrieved_utc: 2026-09-26\nsources: [S9006, S9007]\nstatus: complete\n---\n"
+                     f"# E\n\n## Facts\n- {both} [CODE S9006, S9007]\n", encoding="utf-8")
     keys = {n: kbfacts.fact_key(f"{t} [CODE {sid}]") for n, (t, sid) in facts.items()}
     (root / "_retrieval" / "doc2query" / "expansions.csv").write_text(f"key,question\n{keys['fA']},When does Orion restart\n",
                                                                        encoding="utf-8")
@@ -1525,7 +1534,7 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
         c = census.classify(u)
         log_rows.append(census_row(sid, url=u, kind=c["kind"], repo=c["repo"], pin=c["pin"], path=c["path"], used_in="dsc/d.md",
                                    bucket="NEWER-VERSION" if sid in ("S9004", "S9005") else "CHANGED",
-                                   proof=f"main@{c2[:12]}" if sid in ("S9001", "S9002", "S9003") else "",
+                                   proof=f"main@{c2[:12]}" if sid in ("S9001", "S9002", "S9003", "S9006", "S9007") else "",
                                    note="newer=1.0.1" if sid in ("S9004", "S9005") else f"latest={c2}"))
     log = tmp_path / "2099-01-02.csv"
     kbcommon.write_csv(str(log), census.COLS, log_rows)
@@ -1558,6 +1567,12 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
                                           {"status": 200, "text": old}, "copy", "2026-09-26"):
                 assert r["status"] == "located", r
                 anchors[(r["fact"], r["path"], r["source_id"])] = r
+        for sid, name in (("S9006", "j.md"), ("S9007", "k.md")):
+            old = provider.doc_text(files[name].encode(), "text/plain", urls[sid])
+            for r in factdiff.anchor_rows(sid, [(kbfacts.fact_key(f"{both} [CODE S9006, S9007]"), "dsc/e.md", 0,
+                                                 f"{both} [CODE S9006, S9007]")], {"status": 200, "text": old}, "copy", "2026-09-26"):
+                assert r["status"] == "located", r
+                anchors[(r["fact"], r["path"], r["source_id"])] = r
         factdiff.write_anchors(anchors)  # S9003 has none: nothing was ever located in it
         rows = census.read_log(str(log))
         # before: the pinned file with a fact not found, and the one whose fact names the pinned tag, queue only those facts
@@ -1567,10 +1582,10 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
         assert items["S9004"][0]["note"].startswith("the fact names the pinned version at ")
         queue = {q["id"]: q for q in census.reading_queue(rows, [])}
         assert [(i, queue[i]["mode"], queue[i]["items"]) for i in sorted(queue)] == [
-            ("S9001", "document", 0), ("S9002", "review", 1), ("S9003", "document", 0), ("S9004", "review", 1), ("S9005", "document", 0)]
+            ("S9001", "document", 0), ("S9002", "review", 1), ("S9003", "document", 0), ("S9004", "review", 1), ("S9005", "document", 0), ("S9006", "document", 0), ("S9007", "document", 0)]
 
         def state():
-            return {p.name: p.read_bytes() for p in (root / "_sources.csv", root / "_anchors.csv", article, log,
+            return {p.name: p.read_bytes() for p in (root / "_sources.csv", root / "_anchors.csv", article, other, log,
                                                       root / "_retrieval" / "doc2query" / "expansions.csv")}
 
         def repin(dry=False, commit=False):
@@ -1581,11 +1596,15 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
         code, text = repin(dry=True)
         assert code == 0 and state() == before and committed == []
         assert f"would add source {new_id} {new_url}" in text and "would re-point 2 fact(s) of S9001" in text
+        assert "would re-point 1 fact(s) of S9006" in text and "would re-point 1 fact(s) of S9007" in text
         assert "repin S9002: stays in the queue: 1 of 2 fact(s) not found word for word" in text
         assert "repin S9003: stays in the queue: no located anchors" in text
         assert "repin S9004: stays in the queue: 1 of 2 fact(s) not found word for word" in text
         assert "repin S9005: stays in the queue: the url names a release, not a file" in text
+        plan = re.search(r"^repin 2099-01-03: (.*?) \(dry run", text, re.M).group(1)
+        assert plan == "sources superseded=3 left in the queue=4 new source rows=3 facts re-pointed=4"
         code, text = repin(commit=True)
+        assert plan in text  # the real run ends as the dry run said, the second source of the shared fact included
         assert code == 0 and f"repin S9001: re-pinned to {new_id}: {c1[:12]} -> {c2[:12]}, 2 fact(s) found word for word" in text
         srcs = {r["id"]: r for r in csv.DictReader(open(root / "_sources.csv", encoding="utf-8", newline=""))}
         assert srcs["S9001"]["superseded_by"] == new_id and srcs[new_id]["url"] == new_url and srcs[new_id]["used_in"] == "dsc/d.md"
@@ -1599,13 +1618,17 @@ def census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_
         got = factdiff.read_anchors()
         assert {(moved[n], "dsc/d.md", new_id) for n in moved} <= set(got) and got[(moved["fA"], "dsc/d.md", new_id)]["verified_utc"] == "2099-01-03"
         assert not any(k[2] == "S9001" for k in got) and len(got) == len(anchors)
+        ids6, ids7 = (kbid.source_id(f"{raw}{c2}/docs/{n}.md") for n in ("j", "k"))
+        shared = kbfacts.fact_key(f"{both} [CODE {ids6}, {ids7}]")
+        assert {(shared, "dsc/e.md", ids6), (shared, "dsc/e.md", ids7)} <= set(got) and not any(k[2] in ("S9006", "S9007") for k in got)
+        assert f"- {both} [CODE {ids6}, {ids7}]" in other.read_text(encoding="utf-8") and srcs["S9007"]["superseded_by"] == ids7
         assert (root / "_retrieval" / "doc2query" / "expansions.csv").read_text(encoding="utf-8") == \
             f"key,question\n{moved['fA']},When does Orion restart\n"
         out = {r["id"]: (r["outcome"], r["outcome_note"]) for r in census.read_log(str(log))}
         assert out["S9001"] == ("superseded", f"re-pinned to {new_id}: {c1[:12]} -> {c2[:12]}, 2 fact(s) found word for word")
         assert [out[i] for i in ("S9002", "S9003", "S9004", "S9005")] == [("", "")] * 4
         assert [a[0] for a in committed] == ["add", "commit"] and "KB-Verified: 2099-01-03" in committed[1]
-        assert any(x.endswith("d.md") for x in committed[0]) and "re-pin 1 source(s)" in committed[1][committed[1].index("-m") + 1]
+        assert any(x.endswith("d.md") for x in committed[0]) and "re-pin 3 source(s)" in committed[1][committed[1].index("-m") + 1]
         # a second run finds no candidate for the row it settled and writes the same bytes
         done = state()
         code, text = repin(commit=True)
