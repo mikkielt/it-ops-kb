@@ -109,7 +109,7 @@
       },
       "class": "design",
       "answer": "skip: leave out the section of a following unit under an ancestor of the anchor's heading (a sibling's heading line), keeping the section of the sibling's body",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -126,7 +126,7 @@
       },
       "class": "design",
       "answer": "uncached: return None without caching a status-0 answer (the next source asks again), and provider.doc_text takes a str body as UTF-8",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

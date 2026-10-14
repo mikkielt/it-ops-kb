@@ -1,0 +1,25 @@
+{
+  "id": "BG-2ksqvskp",
+  "kind": "bug",
+  "title": "madeup_text caches a 429, 500 or 503 answer of the made-up sibling as a real 404, turning off soft-404 detection for the host",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.madeup_text keeps only a 200 or a 404 (or 410) answer of the made-up sibling for the host; any other status (429, 5xx) is not kept, so a later source of the host asks again and soft-404 detection stays on, as the sprint goal's 'a failed made-up-page request' asks. Found by the SP-vk3wf746 review (S3, factdiff.py:1059).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import factdiff as f,provider as p;n=[0];p.gated_request=lambda u,**k:n.__setitem__(0,n[0]+1) or ({'status':503,'body':b'','headers':{}} if n[0]==1 else {'status':200,'body':b'<html>a page</html>','headers':{'content-type':'text/html'}});f.madeup_text('https://h.example.com/a/b');f.madeup_text('https://h.example.com/c/d');print(n[0]);sys.exit(0 if n[0]==2 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-cgbpg3lq",
+  "kind": "bug",
+  "title": "PRICE_ASK misses a storage price asked without is or are after how much, and prices a RAM or data-limit requirement ask",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbfacts.PRICE_ASK gives the priced note to a storage or data price asked with another verb ('How much do I pay for storage per user per month?', 'How much does OneDrive storage run per user per month?', 'How much for extra storage per user per month?') and none to a requirement ask worded with is ('How much is RAM required per device?', 'How much is the minimum RAM per device for Windows 11?'), with the existing positives and negatives of test_pack_notes_a_subject_held_in_passing kept. Found by the SP-vk3wf746 review (S3, kbfacts.py:2443).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kbfacts as k;qs=['How much do I pay for storage per user per month?','How much does OneDrive storage run per user per month?','How much for extra storage per user per month?'];neg=['How much is RAM required per device?','How much is the minimum RAM per device for Windows 11?'];bad=[q for q in qs if not k.PRICE_ASK.search(q)]+[q for q in neg if k.PRICE_ASK.search(q)];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 review"
+  ]
+}

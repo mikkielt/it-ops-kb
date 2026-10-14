@@ -1,0 +1,25 @@
+{
+  "id": "BG-x4lhztge",
+  "kind": "bug",
+  "title": "search_urls records a PyPI 404 as no answer, asks PyPI with a space-joined query, and drops a PyPI hit as a hub page",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.search_urls reads a PyPI search as provider.search does: it joins the query with the provider's joiner (provider.search_shape's second value, '-' for PyPI), reads a PyPI 404 as an answer with no hits, not an unanswered search, and keeps a PyPI project hit whose package_url ends in '/' instead of dropping it as a hub page. Found by the SP-vk3wf746 review (S3 factdiff.py:1269, S4 factdiff.py:1283; the PyPI half of the sprint goal's GitHub, arXiv or PyPI clause).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import json,factdiff as f,provider as p;row={'search_api':'https://pypi.org/pypi/{q}/json'};p.gated_request=lambda u,**k:{'status':404,'body':b'','headers':{}};f.search_urls('presidio analyzer returns entities',None,row,'https://pypi.org/project/presidio-analyzer/');a=[r for r in f._unanswered if 'pypi.org' in r];f._searches.clear();f._unanswered.clear();p.gated_request=lambda u,**k:{'status':200,'body':json.dumps({'info':{'name':'requests','package_url':'https://pypi.org/project/requests/'},'releases':{}}),'headers':{}};b=f.search_urls('requests sends http',None,row,'https://pypi.org/project/old/');print(a,b);sys.exit(0 if not a and b else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-vk3wf746 review"
+  ]
+}
