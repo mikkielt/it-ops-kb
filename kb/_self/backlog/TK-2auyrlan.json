@@ -43,7 +43,9 @@
         "a separate land: line for each reason beside the unchanged warning"
       ],
       "recommendation": "append the reasons to the missing warning",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "append the reasons to the missing warning",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-g2ssvhi2"
