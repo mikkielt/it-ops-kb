@@ -1223,12 +1223,31 @@ def near(url, urls, n=5):
 _searches = {}
 
 
+def _search_hits(parse, body):
+    """The urls of a provider's 200 search answer read by its shape (`parse`: provider.search_shape's); ValueError (or the
+    parser's own error) for a body outside it: a sign-in page, a JSON list, an object holding no list at all (an error
+    object). An empty list of the shape is an answer with no hits."""
+    urls = [h["url"] for h in parse(body) if h.get("url")]
+    if not urls:
+        try:
+            obj = json.loads(body)
+        except ValueError:  # an Atom feed: the parser read it
+            return urls
+        if isinstance(obj, dict) and not any(isinstance(v, list) for v in obj.values()):
+            raise ValueError("no list in the answer")
+    return urls
+
+
 def search_urls(fact, anchor, row, src_url, title=""):
     """Candidate pages for a passage that left its page, from the provider's search (search_api): first the old page's
     title (a moved page keeps it), then the anchor's quote, then the fact's words; SEARCH_TOP pages per query."""
     tpl = (row.get("search_api") or "-").strip()
     if tpl in ("-", "") or "{q}" not in tpl:
         return []
+    shape = provider.search_shape(tpl)
+    if shape is None:  # an answer this module cannot read is no answer worth a request
+        return []
+    parse = shape[0]
     queries = [re.split(r"\s+[|:-]\s+(?:Microsoft Learn|Microsoft Entra|Microsoft Intune|Configuration Manager)", title)[0]] if title else []
     if anchor and anchor.get("quote"):
         queries.append(" ".join(anchor["quote"].split()[:12]))
@@ -1238,21 +1257,19 @@ def search_urls(fact, anchor, row, src_url, title=""):
         if not q.strip():
             continue
         req = tpl.replace("{q}", urllib.parse.quote(q))
-        if q not in _searches:
+        if req not in _searches:  # by the request: two providers' searches of one query are two answers
             r = provider.gated_request(req)
-            res = None  # the provider's result list; None for an answer that is not one (a sign-in page, an error object)
+            res = None  # the urls of the provider's result list, read by its shape; None for an answer outside it (a sign-in page)
             if r["status"] == 200:
                 try:
-                    body = json.loads(r["body"])
-                except ValueError:
-                    body = None
-                res = body.get("results") if isinstance(body, dict) else None
-                res = res if isinstance(res, list) else None
-            _searches[q] = [x["url"] for x in res or [] if isinstance(x, dict) and x.get("url")]
+                    res = _search_hits(parse, r["body"])
+                except (ValueError, SyntaxError, AttributeError, TypeError):  # SyntaxError: the Atom feed's ParseError
+                    res = None
+            _searches[req] = res or []
             if not _http_error(req, r["status"], "search") and res is None:
                 _unanswered[req] = f"no result list from the search {req.split('?')[0]}"
         _used_unanswered(req)
-        hits = [u for u in _searches[q] if urllib.parse.urlsplit(u).path.rstrip("/") != urllib.parse.urlsplit(src_url).path.rstrip("/")
+        hits = [u for u in _searches[req] if urllib.parse.urlsplit(u).path.rstrip("/") != urllib.parse.urlsplit(src_url).path.rstrip("/")
                 and not urllib.parse.urlsplit(u).path.endswith("/")]  # a hub or landing page holds no passage
         seg = [x for x in urllib.parse.urlsplit(src_url).path.split("/") if x and x != "en-us"][:1]
         hits.sort(key=lambda u: 0 if seg and f"/{seg[0]}/" in u else 1)  # the source's own docset first

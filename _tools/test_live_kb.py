@@ -540,6 +540,22 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     limited = factdiff.revalidate([line("public/dsc/k.md", 7, facts[2][0], facts[2][2], K)])["lines"][("public/dsc/k.md", 7)]
     assert limited["outcome"] == "" and limited["unchecked"][K] == f"HTTP 429 from the candidate page {host}audit", limited
     pages[host + "audit"] = audit_page
+    # a provider's search is read by its own shape and memoized by its request: a GitHub answer with an empty list is an
+    # answer with no hits, a row with no known shape is asked nothing, and two searches of one query are two answers
+    gh_asked, gh_body = [], {"total_count": 0, "items": []}
+    monkeypatch.setattr(provider, "request", lambda url, **k: gh_asked.append(url) or {**respond(body=json.dumps(gh_body).encode()), "final": url})
+    gh = lambda kind: {"search_api": f"https://api.github.com/search/{kind}?q={{q}}&per_page=10"}  # noqa: E731
+    gh_fact, gh_src = "The Get-Thing cmdlet returns a value.", "https://github.com/o/r/blob/main/x.md"
+    factdiff.search_urls(gh_fact, None, gh("code"), gh_src)
+    assert len(gh_asked) == 1 and not factdiff._unanswered, (gh_asked, factdiff._unanswered)
+    gh_body = {"total_count": 1, "items": [{"html_url": "https://github.com/o/r/blob/main/y.md", "path": "y.md", "full_name": "o/r"}]}
+    assert factdiff.search_urls(gh_fact, None, gh("repositories"), gh_src) == ["https://github.com/o/r/blob/main/y.md"]
+    assert len(gh_asked) == 2 and "repositories" in gh_asked[1], gh_asked
+    assert factdiff.search_urls(gh_fact, None, {"search_api": "https://unknown.example.com/s?q={q}"}, gh_src) == [] and len(gh_asked) == 2
+    gh_body = {"message": "Bad credentials"}  # an error object holds no list: no result list
+    factdiff.search_urls("Another words passage here", None, gh("code"), gh_src)
+    assert [r for r in factdiff._unanswered.values() if r.startswith("no result list from the search https://api.github.com")]
+    monkeypatch.setattr(provider, "request", request)
     # a host that did not accept a connection is left alone by every request of the lookup, not by a source's own page
     # alone: the second search of a passage makes no request, nor does a candidate page of a host in its window, a made-up
     # sibling or the repository of a pinned url; and a redirect that ends at such a host puts the target in its window,
