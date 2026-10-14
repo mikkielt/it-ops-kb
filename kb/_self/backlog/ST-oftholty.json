@@ -38,7 +38,7 @@
       "recommendation": "extend the existing test and append launch_places_keeps_plugin_data_spool to its name",
       "class": "design",
       "answer": "extend the existing test and append launch_places_keeps_plugin_data_spool to its name",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

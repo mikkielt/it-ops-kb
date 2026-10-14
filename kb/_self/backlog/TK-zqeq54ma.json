@@ -36,7 +36,7 @@
       "recommendation": "search the spools land and cost read, plus CLAUDE_PLUGIN_DATA and ~/.claude/plugins/data/*/querylog/spool",
       "class": "querylog",
       "answer": "search the spools land and cost read, plus CLAUDE_PLUGIN_DATA and ~/.claude/plugins/data/*/querylog/spool",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Orchestrator (2026-10-14): code.md added to the touches; selfdoc stale names it for bl_dispatch.py's new imports (code.md:57).",
