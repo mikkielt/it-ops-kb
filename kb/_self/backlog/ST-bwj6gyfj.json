@@ -2,7 +2,7 @@
   "id": "ST-bwj6gyfj",
   "kind": "story",
   "title": "Research sprint goal: Ledgers, dates and the held-out set hold",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2qseu5s",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the integrity items fix this repo's tools (kbid, census, kbdecide, provider, kg_history, kg_sync) and benchmark rows, verified at planning (2026-10-14); the held-out practice the held-out story follows is already in the kb (agents/agent-evaluation.md, Keeping a held-out set apart from the tuning set, DOC S-bdecdv65) and in kb/_self/tools.md and maintaining.md. This story must not touch kb/public/_retrieval/lookup_heldout.csv.",
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "56fab18cd27ccdb47f08eec32dc377b72d94b48f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-bwj6gyfj"
+        ],
+        "exit": 0,
+        "sha256": "475a921bc05e1a12"
+      }
+    ]
+  }
 }
