@@ -2,7 +2,7 @@
   "id": "BG-ph7dcjhz",
   "kind": "bug",
   "title": "done's ledger check attributes to an item the _fetch_state.csv and _anchors.csv rows a later commit of another item changed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ia6xayiy",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,18 @@
     "parked: SP-7nv2ffr2 review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 13 of 15, \"Landing and close: clause credit by carrier, ledger checks by item, the code-lane wait and checks that run behaviour\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Premise run at plan time (2026-10-13): the repro exits 1 (ledger_moves names S100 and S200, S200 moved by commit B, not by A).",
-  "claimed_by": "orch-ia6xayiy"
+  "evidence": {
+    "commit": "5100d2ae60efa3db86c4295f87bf1a3e79cb479e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,os,subprocess,tempfile;sys.path.insert(0,'_tools');import bl_land;d=tempfile.mkdtemp();g=lambda *a:subprocess.run(['git','-C',d,'-c','user.name=t','-c','user.email=t@t','-c','commit.gpgsign=false',*a],check=True,capture_output=True,text=True).stdout.strip();g('init','-q');p=os.path.join(d,'_fetch_state.csv');w=lambda s1,s2:open(p,'w').write('id,etag\\nS100,'+s1+'\\nS200,'+s2+'\\n');w('a','a');g('add','.');g('commit','-qm','base');w('b','a');g('commit','-qam','A');A=g('rev-parse','HEAD');w('b','b');g('commit','-qam','B');m=bl_land.ledger_moves(d,{A:['_fetch_state.csv']});print(m);sys.exit(0 if set(m)=={'S100'} else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f5a40010b9caff4b"
+      }
+    ]
+  }
 }
