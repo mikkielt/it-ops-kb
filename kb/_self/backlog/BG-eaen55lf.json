@@ -68,7 +68,9 @@
         "plant under real kb/; any path with history exempt"
       ],
       "recommendation": "sandbox copy; only deleted paths exempt",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "sandbox copy; only deleted paths exempt",
+      "by": "operator"
     }
   ],
   "links": [
