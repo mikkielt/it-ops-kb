@@ -2,7 +2,7 @@
   "id": "ST-k6hwqrd2",
   "kind": "story",
   "title": "The goal research checks a DER inference against the probe it cites and the sprint's own bug evidence before it lands",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -74,5 +74,36 @@
     "merged: ST-wlidipt6"
   ],
   "notes": "Recurred in SP-htl7jkrm (2026-10-13): ST-ksgrpumr concluded [DER] that a worktree under .claude/worktrees needs no protected-path allowance while BG-6ecranz3 in the same sprint records the observed denial. Merged at the 2026-10-13 draft triage: ST-7snky6yx (a research worker checks the repo's own records before writing a fact as not observed; SP-55ddkrrx: ST-a5f7dxbx wrote an UNK fact at ci-and-headless.md:99 that benchmarks.csv's router-pinned rows contradict, BG-wl36adcq; its turn-budget half is covered by dispatch's turn caps; kb-worker.md is a link to agents/worker.md) and ST-wlidipt6 (read the call sites before stating what a CODE fact covers; SP-b7wibqok's review caught one). The brief's bl_dispatch.py code names no research rules: the worker reads kb-research SKILL.md, so the touches are the skill and its docs, and the checks read it (no test asserts skill wording).\nPremise: kb-research SKILL.md holds no line naming 'DER' with 'probe', none naming 'not observed' with 'benchmarks.csv', none naming 'bug' with 'same host', and none naming 'call site' with 'CODE'. Run at planning with precheck: all three checks exit 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
-  "claimed_by": "orch-ce5iig4g"
+  "evidence": {
+    "commit": "5afe4d9eb27763a721716666367ec1161eca613b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read();ok=any('DER' in l and 'probe' in l for l in t.splitlines());print('research skill states a DER fact against the probe it cites:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e6062389fc6dae02"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read();ls=t.splitlines();a=any('not observed' in l and 'benchmarks.csv' in l for l in ls);b=any('bug' in l and 'same host' in l for l in ls);print('research skill reads measured records:',a,'and the sprint bug items on the same host:',b);sys.exit(0 if a and b else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c9d342c066c141aa"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read();ok=any('call site' in l and 'CODE' in l for l in t.splitlines());print('research skill reads the call sites before a CODE fact names commands:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7f03c2b86f69d8fa"
+      }
+    ]
+  }
 }
