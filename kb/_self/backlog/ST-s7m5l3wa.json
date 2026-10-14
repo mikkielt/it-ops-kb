@@ -2,7 +2,7 @@
   "id": "ST-s7m5l3wa",
   "kind": "story",
   "title": "Research sprint goal: Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2ssvhi2",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Planner run (2026-10-13): rag.py pack -q x5 --root _self: land's work-row warning, the claims-ledger worker_pid and worker_session, and the session-end distill's spool read weak, each answered by the _self line named in the goal; 'may a research item add source rows outside its touches' reads weak (BG-6bb4zzdy adds its tested row); the staging-copy check order is good (SS1-078). Outside facts: kb/public/claude/hooks.md and plugins.md answer hooks in a headless run and CLAUDE_PLUGIN_DATA with good packs. Every answer is in kb/_self, a doc the committed items change, so its done needs No outside facts: the weak questions are the project's own rules and tool behaviour, not provider documentation. No outside facts: the weak questions are the project's own rules and tool behaviour, answered by kb/_self/backlog.md:293 and :310, kb/_self/plugin.md:22, kb/_self/usage.md:73 and kb/_self/tools.md:61,69, not provider documentation; the source-row question is BG-6bb4zzdy's tested row, and the committed items change those docs.",
-  "claimed_by": "orch-g2ssvhi2"
+  "evidence": {
+    "commit": "9d2d72164f01f2af990fdf3189ca6076b8ea9ce8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-s7m5l3wa"
+        ],
+        "exit": 0,
+        "sha256": "32875ad386edb4a7"
+      }
+    ]
+  }
 }
