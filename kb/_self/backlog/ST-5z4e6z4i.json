@@ -2,7 +2,7 @@
   "id": "ST-5z4e6z4i",
   "kind": "story",
   "title": "backlog.py stage-back ID copies a headless worker's .claude/ staging copies into its worktree, checks and commits them",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2ssvhi2",
   "priority": "P3",
   "rank": 0,
@@ -112,5 +112,37 @@
     "merged: ST-v5fdysq2"
   ],
   "notes": "Retrospective of SP-sbdy4hsx: every code story touched .claude/ files, so the orchestrator copied each worker's staging copies back by hand (13 files over 4 items), ran selfdoc.py check and the item's checks there, and wrote a second commit with Self-Reviewed for each. Recurred: SP-etslk6yu close (ST-f2n2h22c's kb-census and kb-refresh SKILL.md copies); SP-htl7jkrm (a hand copy-back without Self-Reviewed stopped ST-65r3cwix's land at step stale; ST-qigkeiv3 and BG-6ecranz3 needed the same). Absorbs ST-v5fdysq2 (2026-10-12 triage): only the orchestrator's copy-back caught a dead heading reference in a staged kb-verify step 5 (SP-qg7ncs6d, SP-pbekfhaz); selfdoc.py check takes no staging option, so the worker's problems=0 comes from stage-back --check (clause 6: the test asserts the brief names it). Premise (planner, 2026-10-13): backlog.py stage-back --help exits 2, invalid choice. Gate: the Self-Reviewed trailer of the copy-back commit. backlog.py USAGE in the facade must list the new command or the parser refuses to start. Planned at the 2026-10-13 draft triage (sprint 11 of 15, \"Worker runs are counted: work and usage rows reach cost, dispatch is safe in parallel, staged copies come back by tool\"): it fixes a failure that recurred in recent sprints and blocks the EP-gzr4mmkm fitness test that a content sprint lands on headless Sonnet workers with no operator step beyond its gates. Recurred in SP-ce5iig4g: four items (ST-3jiwam77, ST-egz4cxar, ST-k6hwqrd2, ST-ppgsm3im) left .claude/skills staging copies the orchestrator copied back, checked and committed by hand; one copy (ST-egz4cxar) needed a fix the item's keyword check did not catch. Orchestrator (2026-10-14, before the claim): touches widened with _tools/bl_dispatch.py (the brief's staging text that clause 6 changes lives there), _tools/test_land_e2e.py (the stage_back_commits test TK-iyfruywl landed, which check 0 runs) and kb/_self/code.md (selfdoc stale names it for bl_dispatch.py).",
-  "claimed_by": "orch-g2ssvhi2"
+  "evidence": {
+    "commit": "39433a505ed96b02b1c94a256f40ea4d31000cdd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "stage_back_commits"
+        ],
+        "exit": 0,
+        "sha256": "ff4a1847d8407dfe"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read().split('## run [SP]')[1].split('## review SP')[0];sys.exit(0 if 'stage-back' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','stage-back','--help'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and '--check' in p.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
