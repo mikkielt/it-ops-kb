@@ -60,7 +60,10 @@ def launch_places():
     """(entry script, working directory) a detached distill starts with: the clone's main checkout, never a linked
     worktree HOME is. A worker's session-end distill outlives its session and waits for the lock, so a working
     directory in the worker's worktree made `land` refuse it as a process still running there; HOME's own entry
-    stands in only when the main checkout holds none."""
+    stands in only when the main checkout holds none. A copy that runs as the plugin (`plugin_data()` is set) keeps
+    its own entry and HOME: the main checkout's entry would read the clone's spool, not the plugin data one."""
+    if plugin_data() is not None:
+        return ENTRY, HOME
     home = clone_home()
     entry = home / ENTRY.relative_to(HOME)
     return (entry if entry.is_file() else ENTRY), home

@@ -26,6 +26,21 @@
   "depends_on": [
     "BG-chw4sg54"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the plugin-data launch_places assertion live: a new test or the existing launch_places test renamed to carry the check's -k name?",
+      "options": [
+        "extend the existing test and append launch_places_keeps_plugin_data_spool to its name",
+        "add a new test function"
+      ],
+      "recommendation": "extend the existing test and append launch_places_keeps_plugin_data_spool to its name",
+      "class": "design",
+      "answer": "extend the existing test and append launch_places_keeps_plugin_data_spool to its name",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-b7wibqok review"
   ],

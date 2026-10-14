@@ -777,7 +777,7 @@ def orphan_in(cwd, log, seconds=60):
 
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows exposes no process's working directory")
-def test_backlog_selfcheck_distill_run_holding_or_waiting_on_the_lock_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling_and_worker_distill_outside_worktree_and_refusal_names_the_distill_lock_wait(
+def test_backlog_selfcheck_distill_run_holding_or_waiting_on_the_lock_is_a_hook_in_flight_and_an_old_stray_process_still_fails_and_selfcheck_host_load_suite_ceiling_and_worker_distill_outside_worktree_and_launch_places_keeps_plugin_data_spool_and_refusal_names_the_distill_lock_wait(
         tmp_path, monkeypatch):
     """A run whose standard output is the clone's distill.log and whose parent has exited, younger than
     ql_distill.USAGE_LOCK_WAIT_S plus bl_procs.HOOK_MARGIN_S (waiting for the distill lock) or the pid the lock
@@ -844,6 +844,17 @@ def test_backlog_selfcheck_distill_run_holding_or_waiting_on_the_lock_is_a_hook_
     entry, home = ql_base.launch_places()
     assert home.resolve() == Path(clone.path).resolve(), home
     assert entry.resolve() == (Path(clone.path) / "_tools" / "querylog.py").resolve(), entry
+    data = tmp_path / "plugin-data"  # the worker's copy runs as the plugin: its own entry and directory, its own spool
+    monkeypatch.setenv("CLAUDE_PLUGIN_DATA", str(data))
+    monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(worker))
+    assert ql_base.plugin_data() == data
+    assert ql_base.launch_places() == (worker / "_tools" / "querylog.py", worker), ql_base.launch_places()
+    assert ql_base.places()[0] == data / "querylog"
+    monkeypatch.setenv("CLAUDE_PLUGIN_ROOT", str(clone.path))  # another copy is the plugin: the clone's own rule holds
+    assert ql_base.plugin_data() is None
+    assert ql_base.launch_places()[1].resolve() == Path(clone.path).resolve()
+    monkeypatch.delenv("CLAUDE_PLUGIN_DATA")
+    monkeypatch.delenv("CLAUDE_PLUGIN_ROOT")
     pid = ql_distill.detach([sys.executable, "-c", "import time; time.sleep(30)"],
                             Path(clone.file("_cache/querylog/distill.log")))
     try:
