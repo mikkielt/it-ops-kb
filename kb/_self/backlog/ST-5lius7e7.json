@@ -21,5 +21,24 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which kb article holds the finding on how an MCP server's instructions reach the client and the model?",
+      "options": [
+        "resources-prompts article plus a limits row",
+        "tool-output-limits article only"
+      ],
+      "recommendation": "resources-prompts article plus a limits row",
+      "do": {
+        "resources-prompts article plus a limits row": "ST-5lius7e7",
+        "tool-output-limits article only": "ST-5lius7e7"
+      },
+      "class": "design",
+      "answer": "resources-prompts article plus a limits row",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-waxgh3kg"
 }
