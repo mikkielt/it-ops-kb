@@ -2,7 +2,7 @@
   "id": "ST-tpexg6zy",
   "kind": "story",
   "title": "Research sprint goal: Shared agent state, governance and multi-agent operations",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5dffnlxn",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: each of the sprint's eleven committed stories is itself a research item whose goal names its questions, checked by backlog.py researched; this goal research story adds no facts of its own.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "e658438ae89c3d14bdfa01c795655867df7647f8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-tpexg6zy"
+        ],
+        "exit": 0,
+        "sha256": "a1aeb3ad07f33d54"
+      }
+    ]
+  }
 }
