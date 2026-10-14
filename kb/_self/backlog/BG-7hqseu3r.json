@@ -1,0 +1,18 @@
+{
+  "id": "BG-7hqseu3r",
+  "kind": "bug",
+  "title": "_gaps.md entry on who may change a suite's declared limit says Bazel's test encyclopedia states a per-run --test_timeout override, which the page words as an override when manually running under slow conditions",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The _gaps.md entry for agents/test-suite-size-and-agent-overengineering on who may change a suite's declared limit words Bazel's --test_timeout as the page does (an override when manually running under conditions known to be slow), without a per-run reading",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;l=[x for x in open('kb/public/_gaps.md',encoding='utf-8') if 'Who may change a suite' in x];ok=bool(l) and not any('per-run' in x for x in l);print(ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "a kb content defect: the gap entry text is the behaviour a lookup returns"
+}
