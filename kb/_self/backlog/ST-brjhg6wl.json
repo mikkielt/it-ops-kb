@@ -111,7 +111,9 @@
         "separate pack_handle(text); pack_lines keeps its list shape": "ST-brjhg6wl",
         "pack_lines returns the handle too, changing the shape its consumers read": "ST-brjhg6wl"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "separate pack_handle(text); pack_lines keeps its list shape",
+      "by": "operator"
     },
     {
       "id": "g2",
