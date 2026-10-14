@@ -1,0 +1,23 @@
+{
+  "id": "ST-dkzvru5w",
+  "kind": "story",
+  "title": "Planning orders two items that rewrite the same paragraph of a kb/_self doc, so the second's landing does not stop at rebase",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 2 says that two items whose changes describe the same command or rule in one paragraph of a kb/_self doc (one long line) are ordered with depends_on, since the shared-touch exemption for kb/_self docs assumes edits by section (SP-ce5iig4g: TK-dxej6ir4 and TK-ebm2hp7a ran in parallel, both edited the precheck line of kb/_self/backlog.md, and TK-dxej6ir4's land stopped at step rebase until the orchestrator merged the line by hand)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read().split('## plan',1)[1].split('\\n## ',1)[0];ok=any('same paragraph' in l and 'depends_on' in l for l in t.splitlines());print('plan orders items that rewrite the same paragraph:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/plugin.md"
+  ]
+}
