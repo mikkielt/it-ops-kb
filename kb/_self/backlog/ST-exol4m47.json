@@ -2,7 +2,7 @@
   "id": "ST-exol4m47",
   "kind": "story",
   "title": "Review sprint: Ledgers, dates and the held-out set hold",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g2qseu5s",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-g2qseu5s"
+  "evidence": {
+    "commit": "5556c45a02cff34d5e933d77697b38df95665cd3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "64a2dca044347fc5"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "0ad831acf0ac6792"
+      }
+    ]
+  }
 }
