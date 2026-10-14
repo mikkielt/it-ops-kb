@@ -2,7 +2,7 @@
   "id": "BG-o3zppi2w",
   "kind": "bug",
   "title": "search_urls reads only Learn's results list, asks hosts whose answer it cannot read, and memoizes by query, so GitHub, arXiv and PyPI answers are no answer and a second provider reuses the first's hits",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vk3wf746",
   "priority": "P2",
   "rank": 0,
@@ -60,5 +60,6 @@
     "merged: BG-ybwm6y3l",
     "merged: BG-mvfm2wgk"
   ],
-  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL: search_urls reads only body['results'], though every providers.csv search_api (learn, github, github-blob, arxiv, pypi) has a shape in provider.SEARCH_SHAPES; _searches[q] (factdiff.py:1241) is keyed by the query while _unanswered is keyed by the request. Conservative effect (offline stamp kept), but moved/not-found verdicts are lost. Merged here: BG-ybwm6y3l (same function; its source-grep repro is replaced by check 0's unknown-host assertion) and BG-mvfm2wgk (its repro used hosts with no known shape, which a correct fix no longer asks; check 0 uses two GitHub shapes). provider.py needs no edit: search_shape already returns (parser, joiner). Test: the revalidate mega-test test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_... (test_live_kb.py, stubbed learn search about :415-418, search-down :521-540, 6.1 s selection); no new id. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise."
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier (stubs, no network): REAL: search_urls reads only body['results'], though every providers.csv search_api (learn, github, github-blob, arxiv, pypi) has a shape in provider.SEARCH_SHAPES; _searches[q] (factdiff.py:1241) is keyed by the query while _unanswered is keyed by the request. Conservative effect (offline stamp kept), but moved/not-found verdicts are lost. Merged here: BG-ybwm6y3l (same function; its source-grep repro is replaced by check 0's unknown-host assertion) and BG-mvfm2wgk (its repro used hosts with no known shape, which a correct fix no longer asks; check 0 uses two GitHub shapes). provider.py needs no edit: search_shape already returns (parser, joiner). Test: the revalidate mega-test test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_... (test_live_kb.py, stubbed learn search about :415-418, search-down :521-540, 6.1 s selection); no new id. Planning 2026-10-14: the test-selection checks pass before the work by design: they pin behaviour that must stay, and the work extends the named test function with the new assertions (no new test id); the other checks fail on the premise.",
+  "claimed_by": "orch-vk3wf746"
 }
