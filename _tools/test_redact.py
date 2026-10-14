@@ -2021,6 +2021,35 @@ def kbid_parallel_add_keeps_every_row_and_leaves_no_torn_one(tmp_path):
     ns = types.SimpleNamespace(path=str(root), name="public", id_prefix="S")
     assert kbid.add_source(ns, "https://docs.example.com/after", "Page", "Example", "MIT", "copy")[1] is True
     assert not stale.exists() and len(list(csv.DictReader(sources.open(encoding="utf-8", newline="")))) == len(want) + 1
+    # a waiter that judged a lock stale never moves aside the fresh one a live writer made since, and a lock a third
+    # writer makes before the claimed one is linked back survives; a lock whose owner line cannot be written is removed
+    live = root / "live.lock"
+    live.write_text("C", encoding="utf-8")
+    kbid._clear_stale(str(live))
+    assert live.read_text(encoding="utf-8") == "C"
+    os.utime(live, (1, 1))
+    real_replace, real_link = os.replace, os.link
+    def live_since(a, b):  # a live writer made a fresh lock after the waiter judged the old one
+        Path(a).write_text("C", encoding="utf-8")
+        return real_replace(a, b)
+    def third(a, b):  # and a third writer made one before the claimed one is linked back
+        Path(b).write_text("D", encoding="utf-8")
+        return real_link(a, b)
+    os.replace, os.link = live_since, third
+    try:
+        kbid._clear_stale(str(live))
+    finally:
+        os.replace, os.link = real_replace, real_link
+    assert live.read_text(encoding="utf-8") == "D" and [f.name for f in root.iterdir() if ".clear." in f.name] == []
+    real_fdopen = os.fdopen
+    os.fdopen = lambda *a, **k: (_ for _ in ()).throw(OSError("planted"))
+    try:
+        with pytest.raises(OSError):
+            with kbid._sources_lock(str(sources), "public/_sources.csv"):
+                pass
+    finally:
+        os.fdopen = real_fdopen
+    assert not (root / "_sources.csv.lock").exists()
 
 
 def test_census_queue_and_census_groups_are_sized_without_network_each_phase_writes_one_ops_row_and_census_run_and_finish_stop_at_a_failing_step_and_census_apply_refuses_a_bad_result_and_census_retry_tries_a_name_resolution_or_connection_error_once_and_census_baseline_decides_a_page_with_no_date_and_census_repin_writes_the_new_row_only_when_every_cited_fact_is_word_for_word_and_census_judge_confirms_a_source_whose_facts_are_all_supported_and_leaves_the_rest_to_groups_and_census_github_page_signals_decide_a_page_without_a_reader_and_factdiff_learn_git_decides_a_mapped_learn_page_by_its_repository_history_and_factdiff_anchor_locates_a_data_row_on_its_values_not_its_column_names_and_census_sample_brief_agrees_a_row_of_word_for_word_facts_by_tool_and_hands_the_checker_the_rest_and_census_sample_brief_agrees_by_tool_only_before_phase2_edits_and_census_sample_draws_judged_confirms_as_a_group_of_their_own_at_the_changed_rate_and_census_dispatch_runs_a_group_as_a_capped_headless_session_and_writes_the_result_apply_takes_and_census_dispatch_refuses_in_a_worktrees_checkout_and_census_brief_carries_phase2_rules_that_hold_throughout_and_kbid_parallel_add_keeps_every_row_and_leaves_no_torn_one(tmp_path, monkeypatch, capsys):
