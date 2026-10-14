@@ -2,7 +2,7 @@
   "id": "BG-m5fiqwh6",
   "kind": "bug",
   "title": "linux-nftables and the Linux pull-agent answer say flush table comes first, without add table or the named-set caveat",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,6 @@
     "parked: SP-6ukmjucf review",
     "merged: BG-hcez7cj3"
   ],
-  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL. _answers.md:2765 (not 2769) says the file starts with flush table, no add table, no named-set caveat: a first run on a missing table fails. linux-nftables.md:36 says first statement is flush table while :36, :41, :48 and the :58 snippet put add table first; S-nvc4ejpk only says prepend flush table. Merged from BG-hcez7cj3 (same defect); repro tightened to flush set/destroy set. Planning 2026-10-14: doc2query/expansions.csv dropped from the touches: the verifier found no expansion row keyed to the facts this item rewords (only settings-and-scopes.md:90, BG-oi3ncidh's, has one)."
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL. _answers.md:2765 (not 2769) says the file starts with flush table, no add table, no named-set caveat: a first run on a missing table fails. linux-nftables.md:36 says first statement is flush table while :36, :41, :48 and the :58 snippet put add table first; S-nvc4ejpk only says prepend flush table. Merged from BG-hcez7cj3 (same defect); repro tightened to flush set/destroy set. Planning 2026-10-14: doc2query/expansions.csv dropped from the touches: the verifier found no expansion row keyed to the facts this item rewords (only settings-and-scopes.md:90, BG-oi3ncidh's, has one).",
+  "claimed_by": "orch-xt4t63xw"
 }
