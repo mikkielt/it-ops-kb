@@ -19,5 +19,5 @@
   "links": [
     "parked: SP-foopqq2x close"
   ],
-  "notes": "SP-foopqq2x retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator. SP-6ukmjucf evidence (2026-10-14): the review parked BG-m5fiqwh6, BG-te2qmu34 and BG-7qzsyq4k, each a sibling line in _answers.md, an article summary or _gaps.md that still states the claim an item corrected, outside that item's touches."
+  "notes": "SP-foopqq2x retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator. SP-6ukmjucf evidence (2026-10-14): the review parked BG-m5fiqwh6, BG-te2qmu34 and BG-7qzsyq4k, each a sibling line in _answers.md, an article summary or _gaps.md that still states the claim an item corrected, outside that item's touches. SP-xt4t63xw evidence (2026-10-14): workers filed BG-7hqseu3r (_gaps.md still stating Bazel's per-run override) and BG-6wdpt56h (pytest.md and uv-projects.md still stating the stress suite and -n auto) as sibling lines outside their items' touches; the orchestrator pulled both into the sprint, and the review still parked BG-fknkjg3d (git-test-repositories.md:24 stress_test.py) and BG-25w54mly (the per-run note at _answers.md:3256)."
 }

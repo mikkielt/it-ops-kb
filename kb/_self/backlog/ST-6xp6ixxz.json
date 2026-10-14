@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-ce5iig4g review"
-  ]
+  ],
+  "notes": "SP-xt4t63xw evidence (2026-10-14): BG-gbz7ngqc reworded a CODE fact in gitlab/git-test-repositories.md without _anchors.csv in its touches, so its worker did not re-anchor and the review parked BG-2zl7kub7 (stale anchor rows); the filing rule should cover any anchored fact, CODE included."
 }

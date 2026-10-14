@@ -1,0 +1,23 @@
+{
+  "id": "ST-z2xkbqc5",
+  "kind": "story",
+  "title": "A planned check of a reworded fact reads the clause's meaning, not only that the new flags appear",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A content item's check for a reworded fact asserts the corrected statement (a phrase the goal names) and the absence of the overclaim, so a fix that adds the right flags but a new wrong condition does not pass, as BG-gbz7ngqc's did with its main-worktree symref clause (BG-ekrp4dw2)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "plan_content_check_reads_clause"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xt4t63xw close"
+  ],
+  "notes": "SP-xt4t63xw retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: BG-gbz7ngqc's check required only '--ignore-other-worktrees' and '--force' in the fact; the SP-xt4t63xw review found the new symref condition wrong (BG-ekrp4dw2, S2) and the fact's anchor rows stale (BG-2zl7kub7), since its touches lacked _anchors.csv."
+}

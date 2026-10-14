@@ -1,0 +1,23 @@
+{
+  "id": "ST-2yyjrg25",
+  "kind": "story",
+  "title": "A content worker whose edit moves an article's lines re-points each path:line citation into it past the edit before it hands back",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A content item whose change adds or removes lines in an article finds each path:line citation into that article from the root's articles and ledgers past the first changed line and re-points it to the same fact (check.py only proves a citation lands on some fact line), so a landing's sync gate does not stop on a shifted citation as BG-tl74zfyr's did on _gaps.md:801",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "content_shift_repoints_citations"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xt4t63xw close"
+  ],
+  "notes": "SP-xt4t63xw retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: ops SP-xt4t63xw land.step BG-tl74zfyr step=kbgit.py-sync-push exit=1 (check.py: _gaps.md:801 cites doc-lookup-sources.md:72, no fact line, after the split facts moved the article down 4 lines); the orchestrator dropped the done commit, widened the touches to _gaps.md and re-pointed the citation to :77."
+}

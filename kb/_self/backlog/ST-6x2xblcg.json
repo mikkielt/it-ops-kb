@@ -1,0 +1,23 @@
+{
+  "id": "ST-6x2xblcg",
+  "kind": "story",
+  "title": "A content worker that adds a source row or changes an article's fact count runs build_index.py before it hands back",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A worker whose change adds a _sources.csv row or changes an article's facts leaves the root's _coverage.csv and _coverage.md current (build_index.py), and the worker rules or done name that step, so land does not stop at lint as ST-q2jzknjn's did",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "content_worker_coverage_current"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xt4t63xw close"
+  ],
+  "notes": "SP-xt4t63xw retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: ops SP-xt4t63xw land.step ST-q2jzknjn step=lint exit=1 (_coverage.csv and _coverage.md rows out of date after the new S-vt5s6nsz row); the orchestrator dropped the done commit, ran build_index.py on the branch and landed again."
+}

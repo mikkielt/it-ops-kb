@@ -1,0 +1,23 @@
+{
+  "id": "ST-wwatdnna",
+  "kind": "story",
+  "title": "A headless content worker can rerun factdiff.py anchor --file on its own article without a permission denial",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A sprint worker's second factdiff.py anchor --file run on the article it changed, and a git checkout of _anchors.csv inside its own worktree, are allowed in the project's settings or the worker rules name the allowed way, so a worker does not hand back stale anchor rows as BG-tl74zfyr's did",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "worker_anchor_rerun_allowed"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xt4t63xw close"
+  ],
+  "notes": "SP-xt4t63xw retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: BG-tl74zfyr's worker reported the rerun denied by the permission classifier ('Irreversible Local Destruction') after splitting facts, leaving 5 stale rows; the orchestrator ran the anchor command in the worker's worktree and committed it."
+}
