@@ -2,7 +2,7 @@
   "id": "BG-4ntjgf2u",
   "kind": "bug",
   "title": "The backlog-tool rules of SP-q5ldd25k read weak on the _self root with no tested row, and the rule to run a flag through referrers gives a command that exits 2",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vk3wf746",
   "priority": "P3",
   "rank": 0,
@@ -84,5 +84,47 @@
     "merged: BG-sq2qycqc"
   ],
   "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier: REAL: all six packs read coverage: weak on --root _self (check 0 exits 1, 6 of 6 not good); the answering lines: backlog.md:209 and :219 (moved-or-deleted touch), :44 and :210 (.claude/ link touch), :294 and tools.md:70 (undelivered warning), :270, :311, :389 (always_in_scope), :316 (--root WORKTREE), querylog.md:216 (manual apply --push). rag.py eval --root _self passes 367 of 367 now (2.6 s). Merged here: BG-sq2qycqc (backlog.py referrers --add-touch exits 2; referrers -- --add-touch works; the docs fix is the smaller one, check 1). lookup_eval.csv under kb/_self is a code-lane path (kblane): this item lands with backlog.py land ID --wait-merge 1800, its done and the push after its code/<id> merge request merges. A doc rewording must keep any expect_text phrase the eval rows read. Planning 2026-10-14: the rag.py eval --root _self check passes before the work by design: they pin behaviour that must stay, and the work adds rows that must pass with the rest; the other checks fail on the premise.",
-  "claimed_by": "orch-vk3wf746"
+  "evidence": {
+    "commit": "063a1f1f9721de8008e1d10958c71f41e474cc28",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;qs=['Which history does the moved-or-deleted touch rule of backlog.py check read?','How is a link touch under .claude/ read in a backlog item?','What does land undelivered warning name?','Which paths are always in scope of a backlog item?','Who commits an item file answered with --root WORKTREE?','Does a manual querylog.py apply --push write distill.log?'];bad=[q for q in qs if not subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self',q],capture_output=True,text=True).stdout.startswith('coverage: good')];print(len(bad),'of',len(qs),'not good');sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "2cc6784cd94467df"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=''.join(open(p,encoding='utf-8').read() for p in ('skills/sprint/SKILL.md','skills/backlog/SKILL.md','kb/_self/backlog.md'));sys.exit(0 if 'referrers -- --' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "_self"
+        ],
+        "exit": 0,
+        "sha256": "3a8e81ffc27d446e"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; t=open('kb/_self/_retrieval/lookup_eval.csv',encoding='utf-8').read(); sys.exit(0 if 'undelivered' in t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
