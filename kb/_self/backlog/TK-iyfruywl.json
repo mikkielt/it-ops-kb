@@ -52,7 +52,9 @@
         "compare with the file at the worktree's HEAD"
       ],
       "recommendation": "dispatch records the digest of the worktree's file in staging-bases.json of the scratch directory when it stages the copy",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "dispatch records the digest of the worktree's file in staging-bases.json of the scratch directory when it stages the copy",
+      "by": "operator"
     },
     {
       "id": "g2",
