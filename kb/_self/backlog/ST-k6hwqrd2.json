@@ -2,7 +2,7 @@
   "id": "ST-k6hwqrd2",
   "kind": "story",
   "title": "The goal research checks a DER inference against the probe it cites and the sprint's own bug evidence before it lands",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ce5iig4g",
   "priority": "P3",
   "rank": 0,
@@ -58,5 +58,6 @@
     "merged: ST-7snky6yx",
     "merged: ST-wlidipt6"
   ],
-  "notes": "Recurred in SP-htl7jkrm (2026-10-13): ST-ksgrpumr concluded [DER] that a worktree under .claude/worktrees needs no protected-path allowance while BG-6ecranz3 in the same sprint records the observed denial. Merged at the 2026-10-13 draft triage: ST-7snky6yx (a research worker checks the repo's own records before writing a fact as not observed; SP-55ddkrrx: ST-a5f7dxbx wrote an UNK fact at ci-and-headless.md:99 that benchmarks.csv's router-pinned rows contradict, BG-wl36adcq; its turn-budget half is covered by dispatch's turn caps; kb-worker.md is a link to agents/worker.md) and ST-wlidipt6 (read the call sites before stating what a CODE fact covers; SP-b7wibqok's review caught one). The brief's bl_dispatch.py code names no research rules: the worker reads kb-research SKILL.md, so the touches are the skill and its docs, and the checks read it (no test asserts skill wording).\nPremise: kb-research SKILL.md holds no line naming 'DER' with 'probe', none naming 'not observed' with 'benchmarks.csv', none naming 'bug' with 'same host', and none naming 'call site' with 'CODE'. Run at planning with precheck: all three checks exit 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads."
+  "notes": "Recurred in SP-htl7jkrm (2026-10-13): ST-ksgrpumr concluded [DER] that a worktree under .claude/worktrees needs no protected-path allowance while BG-6ecranz3 in the same sprint records the observed denial. Merged at the 2026-10-13 draft triage: ST-7snky6yx (a research worker checks the repo's own records before writing a fact as not observed; SP-55ddkrrx: ST-a5f7dxbx wrote an UNK fact at ci-and-headless.md:99 that benchmarks.csv's router-pinned rows contradict, BG-wl36adcq; its turn-budget half is covered by dispatch's turn caps; kb-worker.md is a link to agents/worker.md) and ST-wlidipt6 (read the call sites before stating what a CODE fact covers; SP-b7wibqok's review caught one). The brief's bl_dispatch.py code names no research rules: the worker reads kb-research SKILL.md, so the touches are the skill and its docs, and the checks read it (no test asserts skill wording).\nPremise: kb-research SKILL.md holds no line naming 'DER' with 'probe', none naming 'not observed' with 'benchmarks.csv', none naming 'bug' with 'same host', and none naming 'call site' with 'CODE'. Run at planning with precheck: all three checks exit 1 (False).\nPlanned at the 2026-10-13 draft triage (sprint 10 of 15, \"Research and content workers: sweep contradicted lines, check DER facts, keep anchors and eval rows in scope\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads.",
+  "claimed_by": "orch-ce5iig4g"
 }
