@@ -2,9 +2,9 @@
 topic: agents/langgraph
 priority: P3
 applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-10-12"
-retrieved_utc: 2026-10-12
-sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr]
-status: complete
+retrieved_utc: 2026-10-14
+sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr, S-wrrbygrl]
+status: partial
 ---
 
 # LangGraph
@@ -72,6 +72,25 @@ status: complete
   from an earlier checkpoint). [DOC S-j54mtzby]
 - Checkpointers distinguish short-term, **thread-scoped** memory (checkpoints) from long-term,
   **cross-thread** memory (a separate `store` abstraction, for data shared across threads). [DOC S-thsymqx6]
+- Each subgraph keeps its own checkpoint namespace, so a parent may not see a subgraph's state change
+  at once; the persistence page's fix is a Store for data that crosses graph boundaries, or having the
+  subgraph write to the parent checkpoint. [DOC S-thsymqx6]
+
+### Stores (cross-thread long-term memory)
+- A store holds application-defined key-value data that any thread can read; `InMemoryStore` is for
+  development and tests, and the production stores named are `PostgresStore`, `MongoDBStore`,
+  `RedisStore` and `UpstashStore`, all extending `BaseStore`. [DOC S-wrrbygrl]
+- Items live under a namespace, a tuple of strings such as `(user_id, "memories")`; `search` matches
+  namespace prefixes, and results past `limit` are dropped silently, with no overflow signal, so a full
+  listing needs a higher limit or `offset` paging. [DOC S-wrrbygrl]
+- Result order depends on the backend (`PostgresStore` newest `updated_at` first, `InMemoryStore`
+  insertion order); the page says to sort on `item.updated_at` yourself when order matters. [DOC S-wrrbygrl]
+- `aput` stores or overwrites one item, and values are plain JSON-serializable dicts; a store can also
+  embed chosen fields for semantic search when configured with an embedding model. [DOC S-wrrbygrl]
+- A custom backend subclasses `BaseStore`; there is no conformance suite, so the page tests a custom store
+  side by side against `InMemoryStore` as the reference. [DOC S-wrrbygrl]
+- Neither the stores page nor the persistence page describes locking, compare-and-set or version checks
+  for two writers updating the same item; they document only that `aput` overwrites. [UNK]
 
 ### Interrupts and human-in-the-loop
 - `interrupt(payload)` pauses graph execution at that point in a node and surfaces `payload`

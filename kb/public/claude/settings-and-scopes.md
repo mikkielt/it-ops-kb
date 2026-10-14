@@ -135,6 +135,8 @@ managed-settings delivery.
 `claude/agent-sdk.md` — `ClaudeAgentOptions.setting_sources`/`Options.settingSources` controls which of these
 filesystem settings sources (user/project/local) an embedded Agent SDK session loads; endpoint-managed policy and
 server-managed settings load regardless of that option, same as for the CLI.
+`agents/gitops-for-agents.md` — the OpenGitOps principles applied to these files: what in git can be the declared
+state of an agent's configuration, where local layers drift from it, and why policy belongs in managed settings.
 
 ## Examples
 - SNIPPET: Minimal organization `managed-settings.json` enforcing a deny list and locking permission rules to managed settings; context: Claude Code, file-based managed settings; checked: syntax [DOC S2057: `permissions.deny` glob form in a settings file; DER claude/permissions-mcp.md: `allowManagedPermissionRulesOnly` makes managed settings the only source of permission rules]

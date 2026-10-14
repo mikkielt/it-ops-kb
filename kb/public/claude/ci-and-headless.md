@@ -2,8 +2,8 @@
 topic: claude/ci-and-headless
 priority: P2
 applies_to: "Claude Code v2.1.x (code.claude.com docs, retrieved 2026-09-26)"
-retrieved_utc: 2026-10-13
-sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee]
+retrieved_utc: 2026-10-14
+sources: [S1800, S1801, S1802, S-32ilsmsf, S-l6l42j6e, S-pilcrlei, S1824, S-isqfh6pr, S-fmj24q2u, S-fksbud2r, S-ezqg74ki, S-eu3n3hyf, S2131, S-ehhvgjky, S2130, S1864, S2157, S-e5rrs4ee, S-fzkqxhmg]
 status: complete
 ---
 
@@ -67,6 +67,16 @@ article's `claude -p` exit-code/`--output-format` summary or its runtime-compari
 - Setting only `ANTHROPIC_BASE_URL` (no gateway credential) still routes requests through the gateway but does not replace a saved claude.ai subscription login — that login's usage limits and billing still apply; a full swap needs a gateway credential variable or `apiKeyHelper`, after which subscription usage limits no longer apply and billing is per-token to whoever owns the forwarded credential. [DOC S-pilcrlei]
 - A gateway that forwards Claude API traffic on to Anthropic must forward the OAuth capability in the `anthropic-beta` header for a subscription-backed session to keep working through it. [DOC S-pilcrlei]
 - Anthropic does not endorse, maintain, or audit third-party gateway products and does not support routing Claude Code to non-Claude models through any gateway. [DOC S-pilcrlei]
+
+### Dev containers
+- Claude Code installs into a dev container through the Dev Container Feature `ghcr.io/anthropics/devcontainer-features/claude-code:1.0`; the `:1.0` tag pins only the feature's install script, which installs the latest Claude Code, and Claude Code then auto-updates inside the container by default. [DOC S-fzkqxhmg]
+- For a reproducible image the page says to skip the feature, install `@anthropic-ai/claude-code@X.Y.Z` with npm in the Dockerfile, and set `DISABLE_AUTOUPDATER=1` in `containerEnv`. [DOC S-fzkqxhmg]
+- The container's home directory is discarded on rebuild; to keep sign-in, settings and history, mount a named volume at `~/.claude` and set `CLAUDE_CONFIG_DIR` to that path so `.claude.json` lands in the volume too; `${devcontainerId}` in the volume name keeps one volume per project. [DOC S-fzkqxhmg]
+- A Dockerfile can copy `managed-settings.json` to `/etc/claude-code/`, but anyone with write access to the repository can remove that step, so policy engineers must not bypass belongs in server-managed settings or MDM. [DOC S-fzkqxhmg]
+- The reference container's `init-firewall.sh` limits outbound traffic to the destinations it allows and needs the `NET_ADMIN` and `NET_RAW` capabilities through `runArgs`; neither is required by Claude Code itself. [DOC S-fzkqxhmg]
+- Inside the container `--dangerously-skip-permissions` is refused when Claude Code runs as root, so `remoteUser` must be non-root; Claude can still change any file in the bind-mounted workspace and reach whatever the network policy allows, and managed `permissions.disableBypassPermissionsMode: "disable"` forbids the flag. [DOC S-fzkqxhmg]
+- With prompts skipped, a dev container does not stop a malicious project from exfiltrating anything inside the container, including the Claude Code credentials in `~/.claude`; the page limits it to trusted repositories and advises against mounting `~/.ssh` or cloud credential files. [DOC S-fzkqxhmg]
+- MCP servers for the container are defined at project scope in a checked-in `.mcp.json`, with any stdio server binaries installed in the Dockerfile and remote server domains added to the egress allowlist. [DOC S-fzkqxhmg]
 
 ### Result payload, cost fields, effort and price for scripted runs
 - `claude -p --output-format json` returns structured JSON with the text in `result`, the session id and metadata; the docs name `total_cost_usd` and a per-model cost breakdown among them, and `--json-schema` adds a `structured_output` field. [DOC S1800]

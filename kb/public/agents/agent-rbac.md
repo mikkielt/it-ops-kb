@@ -2,9 +2,9 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-09-28
-sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3]
-status: complete
+retrieved_utc: 2026-10-14
+sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3, S-etygtiqw, S-uva2ob4g]
+status: partial
 ---
 
 # RBAC for agents and MCP tools
@@ -88,6 +88,15 @@ group claims/overage, PIM-for-Groups sync latency).
 - The "What is Agent ID" page still says Agent ID and Agent 365 are available through the Frontier program, which needs a Microsoft 365 Copilot licence with Frontier enabled; the licensing page is the newer statement. [DOC S-4zkj3ag3]
 - Agent identities can't be members of role-assignable groups, can't hold highly privileged directory roles (Global Administrator, Privileged Role Administrator, User Administrator) or custom roles, and only lower-privileged roles such as readers can be assigned to them. [DOC S-fwzaxe7i, S-pmj4jc4f]
 - So an agent identity can't be a PIM-eligible member of a role-assignable group either: the membership itself is blocked, eligible or active. [DER S-fwzaxe7i, S2052: role-assignable membership is blocked for agents; PIM for Groups only manages memberships]
+
+### Attribute-based conditions (Azure ABAC) on data access
+- Azure ABAC adds an optional condition to an Azure role assignment, built from principal, resource, request and environment attributes; a condition only narrows what the role grants and cannot explicitly deny access to a resource. [DOC S-etygtiqw]
+- Conditions can be added only to role assignments whose role has Blob Storage or Queue Storage data actions, at the same scope as the assignment, by a principal with `Microsoft.Authorization/roleAssignments/write`. [DOC S-etygtiqw]
+- Blob attributes usable in a condition include blob index tags, path and prefix, container name, encryption scope, version, private-link access and the current UTC time, so a role can be limited to blobs tagged for one project, to one path, to a time window or to private-link traffic. [DOC S-etygtiqw]
+- Feature status: conditions through the portal, PowerShell, CLI and REST are GA since October 2022, custom security attributes on the principal GA since November 2023, environment attributes GA since April 2024. [DOC S-etygtiqw]
+- A condition can sit on a PIM-eligible Azure role assignment, adding time-bound activation and approval; known issue: with PIM, **Principal** is missing from the attribute sources when adding a condition. The visual editor takes up to five expressions per condition, the code editor more. [DOC S-etygtiqw]
+- For an agent, attribute-based control is two separate mechanisms: Conditional Access decides whether the agent gets a token at all, with custom security attributes among its targeting controls, while an ABAC condition narrows what a granted storage role lets it do with Blob or Queue data. Neither is a general policy engine for other Azure resources. [DER S-etygtiqw, S-uva2ob4g: conditions limited to storage data actions; agent CA policies use custom security attributes]
+- The ABAC page does not say whether an Entra agent identity can hold an Azure role assignment with a condition, or carry the custom security attributes a principal condition reads. [UNK]
 
 ### Role-assignable groups (the PIM-for-Groups prerequisite `entra-intune-rbac.md` assumes)
 - A group must have `isAssignableToRole: true` set **at creation time only** — Microsoft's own UI warns

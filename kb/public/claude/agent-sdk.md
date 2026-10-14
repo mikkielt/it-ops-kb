@@ -2,8 +2,8 @@
 topic: claude/agent-sdk
 priority: P2
 applies_to: "Claude Agent SDK (Python claude-agent-sdk, TypeScript @anthropic-ai/claude-agent-sdk); code.claude.com docs retrieved 2026-10-12"
-retrieved_utc: 2026-10-12
-sources: [S-22nastju, S-fksbud2r, S-fmj24q2u, S-rjw74jiz, S-pbd7pui3, S-isqfh6pr, S-gztpah4d, S-llf2m5cf, S-5be7mkzk, S-av5665nf]
+retrieved_utc: 2026-10-14
+sources: [S-22nastju, S-fksbud2r, S-fmj24q2u, S-rjw74jiz, S-pbd7pui3, S-isqfh6pr, S-gztpah4d, S-llf2m5cf, S-5be7mkzk, S-av5665nf, S-nuzkw2aa, S449]
 status: complete
 files: [claude/agent-sdk-options.csv]
 ---
@@ -77,6 +77,17 @@ directory, and local session transcripts.
 - Four session lifecycle patterns for containerized hosting: ephemeral (one container per task, destroyed on completion; e.g. bug fix, invoice extraction), and others covered in the hosting cookbook (Docker, Modal, Kubernetes manifests). [DOC S-gztpah4d]
 - If a package manager skips the platform-specific optional dependency (bundled native `claude` binary, e.g. `@anthropic-ai/claude-agent-sdk-darwin-arm64`), the SDK throws `Native CLI binary for <platform>-<arch> not found`; set `pathToClaudeCodeExecutable` to a separately installed `claude` binary as a workaround. [DOC S-fmj24q2u]
 - Compiling to a single executable (`bun build --compile`) breaks the bundled-binary lookup (`require.resolve` fails inside `$bunfs`); embed the platform binary as a file asset and extract it at startup with `extractFromBunfs()` (SDK v0.3.144+), passing the extracted path to `pathToClaudeCodeExecutable`. [DOC S-fmj24q2u]
+
+### Isolation and credentials for a deployed agent
+- Anthropic's secure-deployment guide compares four isolation technologies, with the agent always inside the boundary: sandbox runtime (good isolation, very low overhead), Docker containers (strength depends on setup), gVisor and VMs such as Firecracker or QEMU (excellent with correct setup, higher overhead). [DOC S-nuzkw2aa]
+- Its hardened `docker run` example drops all capabilities, sets `no-new-privileges` and a seccomp profile, makes the root filesystem read-only with `noexec` tmpfs mounts, removes the network (`--network none`), caps memory, CPU and process count, runs as a non-root user and mounts the code read-only; it warns against mounting `~/.ssh`, `~/.aws` or `~/.config`. [DOC S-nuzkw2aa]
+- With `--network none` the container's only way out is a mounted Unix socket to a proxy on the host, which can enforce a domain allowlist, inject credentials and log all traffic; the guide calls this the same architecture as `sandbox-runtime`. [DOC S-nuzkw2aa]
+- Containers share the host kernel; gVisor intercepts system calls in user space, and a Firecracker microVM has its own kernel, boots in under 125 ms with under 5 MiB memory overhead, and reaches the host proxy only over `vsock`. [DOC S-nuzkw2aa]
+- The sandbox runtime's proxy allowlists by the client-supplied hostname without terminating TLS, so code inside can try domain fronting; a TLS-terminating proxy outside the boundary, with its CA trusted inside, is the stronger option. [DOC S-nuzkw2aa]
+- The recommended credential pattern is a proxy outside the agent's boundary that injects credentials into outgoing requests: `ANTHROPIC_BASE_URL` hands it plaintext sampling requests, while `HTTP_PROXY`/`HTTPS_PROXY` give it only a CONNECT tunnel it cannot alter without TLS interception. [DOC S-nuzkw2aa]
+- Not every program honours the proxy variables: Node.js `fetch()` ignores them by default (Node 24+ honours them with `NODE_USE_ENV_PROXY=1`); proxychains or an iptables redirect to a transparent proxy covers the rest. [DOC S-nuzkw2aa]
+- For cloud hosting the guide adds a private subnet without an internet gateway, egress firewall rules that allow only the proxy, minimal IAM permissions for the agent's service account, and traffic logging at the proxy. [DOC S-nuzkw2aa]
+- The proxy pattern meets this kb's rule that secrets stay out of a child process's environment: the agent's process never holds the credential, so a prompt-injected command cannot print or send it, only use it through allowlisted endpoints. [DER S-nuzkw2aa, S449: proxy-injected credentials never reach the agent; a CI variable is an inherited environment variable]
 
 ### Sessions, hooks (cross-reference)
 - Hooks fire via `options.hooks` callbacks plus shell-command hooks from settings files (when the matching `setting_sources`/`settingSources` entry is enabled — the default for `query()`); a `matcher` pattern (e.g. `"Write|Edit"`) filters which hooks run per event; hooks unmatched run for every event of that type. [DOC S-av5665nf]

@@ -14,7 +14,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 39 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
-| `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 18 |
+| `agents/agent-rbac` | P1 | partial | `agents/agent-rbac.md` | 20 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 15 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 23 |
 | `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
@@ -49,7 +49,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 75 |
-| `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 11 |
+| `agents/gitops-for-agents` | P3 | partial | `agents/gitops-for-agents.md` | 8 |
+| `agents/langgraph` | P3 | partial | `agents/langgraph.md` | 12 |
 | `agents/mmlw-e5-polish-embeddings` | P3 | partial | `agents/mmlw-e5-polish-embeddings.md` | 31 |
 | `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 44 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
@@ -128,8 +129,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/otel-monitoring` | P1 | complete | `claude/otel-monitoring.md` | 7 |
 | `claude/permissions-mcp` | P1 | complete | `claude/permissions-mcp.md` | 5 |
 | `claude/tool-output-limits` | P1 | complete | `claude/tool-output-limits.md` | 3 |
-| `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 10 |
-| `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 18 |
+| `claude/agent-sdk` | P2 | complete | `claude/agent-sdk.md`, `claude/agent-sdk-options.csv` | 12 |
+| `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 19 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 8 |
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 16 |
 | `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 14 |

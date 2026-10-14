@@ -3529,3 +3529,15 @@ _Agent: kb-research_
 - See agents/codebase-mapping.md.
 
 _Agent: kb-research_
+
+## QK-shared-agent-state-memory-configuration-stored. How should shared agent state, memory and configuration be stored, isolated, governed and access-controlled across agents, containers and git?
+- LangGraph keeps short-term thread state in checkpointers and long-term memory shared across threads in stores. The production stores named are `PostgresStore`, `MongoDBStore`, `RedisStore` and `UpstashStore`; a `search` result past `limit` is dropped silently, and result order differs by backend. [DOC S-wrrbygrl]
+- Anthropic's secure-deployment guide ranks the isolation options as sandbox runtime, Docker, gVisor and microVMs. Its hardened container runs with no network and reaches the outside only through a host proxy that allowlists domains and injects credentials, so the agent never holds them. [DOC S-nuzkw2aa]
+- A Claude Code dev container pins its version only through an npm install in the Dockerfile. With prompts skipped it does not stop exfiltration of anything inside the container, and a Dockerfile step that installs managed settings can be removed by any repository writer. [DOC S-fzkqxhmg]
+- Azure ABAC narrows a storage data role by principal, resource, request and environment attributes (Blob and Queue data only, cannot deny). Conditional Access decides whether an agent gets a token at all. [DOC S-etygtiqw]
+- OpenGitOps asks for declarative, versioned and immutable desired state that agents pull and reconcile continuously, in a state store with access control and auditing; persistent application data is not part of the desired state. [DOC S-43ycwzdw]
+- Conclusion: keep agent configuration in git and change it through reviewed merge requests, but deliver policy that must not drift through managed settings, which outrank the repository. Keep memory and state in a store the agents share and treat it as data, not configuration. Run agents behind a proxy that holds their credentials. [DER S-5pzuphp4, S2057, S-nuzkw2aa]
+- Open: no official page covers sharing agent memory or state between workstations without a server, locking or versioning for several writers to one store, or coordinating agents across repositories. Whether an Entra agent identity can hold an ABAC-conditioned Azure role is also unconfirmed. [UNK]
+- See agents/gitops-for-agents.md, agents/langgraph.md, agents/agent-rbac.md, claude/agent-sdk.md, claude/ci-and-headless.md.
+
+_Agent: kb-research_
