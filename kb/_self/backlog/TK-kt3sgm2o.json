@@ -56,5 +56,6 @@
       "by": "operator"
     }
   ],
+  "notes": "Measured once 2026-10-14 on the tip holding TK-hsbjikhg's rows: rag.py eval --file kb/public/_retrieval/lookup_heldout.csv --root public --min 1 gave questions=99 passed=86. Failing ids (13): HO-settings-catalog-not-configured, HO-mcp-token-passthrough, HO-cm-baseline-update-limit, HO-dc-count-small-domain, HO-wol-bios-setting, HO-gpp-map-network-drive, HO-quick-assist-helpdesk, HO-win32-app-max-package-size, HO-onedrive-known-folder-move, HO-temporary-access-pass, HO-purview-retention-label-teams, HO-lets-encrypt-internal-web, HO-hyperv-checkpoint-merge. Rows left as committed. Floor per gate floor (measured-minus-5): --min 81 = 86 - 5.",
   "claimed_by": "orch-g2qseu5s"
 }
