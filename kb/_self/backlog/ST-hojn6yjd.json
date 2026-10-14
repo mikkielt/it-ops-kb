@@ -40,7 +40,9 @@
         "commit only the new fact's row"
       ],
       "recommendation": "keep every row the anchor tool wrote for the file",
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "keep every row the anchor tool wrote for the file",
+      "by": "operator"
     }
   ],
   "links": [
