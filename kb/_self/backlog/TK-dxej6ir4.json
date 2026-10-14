@@ -51,7 +51,9 @@
         "any path below kb/<root>/"
       ],
       "recommendation": "md or non-csv glob below a domain directory, goal words DOC (upper case) and reword/rewords/reworded/rewording, scope of the item and its descendants",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "md or non-csv glob below a domain directory, goal words DOC (upper case) and reword/rewords/reworded/rewording, scope of the item and its descendants",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-ce5iig4g"
