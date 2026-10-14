@@ -21,6 +21,21 @@
     "kb/_self/content-rules.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which day does factdiff.today() name: the UTC day the checked_utc stamps use, or the local day with the stamps moved to local?",
+      "options": [
+        "UTC day",
+        "Local day"
+      ],
+      "recommendation": "UTC day",
+      "class": "design",
+      "answer": "UTC day",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-kuhlsf2s close"
   ],
