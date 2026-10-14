@@ -19,5 +19,8 @@
   "touches": [
     "_tools/test_land_e2e.py",
     "_tools/bl_land.py"
+  ],
+  "links": [
+    "parked: SP-ce5iig4g close"
   ]
 }
