@@ -1,0 +1,23 @@
+{
+  "id": "ST-a36zlxgd",
+  "kind": "story",
+  "title": "The commit-msg hook's KB-Work refusal names the comma that separates several item ids",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When the commit-msg hook or check-trailers refuses a KB-Work trailer that lists several ids with spaces, its message says the ids are separated by ', ' on one line (as 'BG-a, ST-b'), so a planning commit that confirms several items' gates is fixed in one amend. In SP-6ukmjucf the confirm commit was refused twice: once for naming the review story it did not change, once for space-separated ids, with a message that only said 'expected one line of backlog item ids'.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "commit_msg_kb_work_separator_named"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6ukmjucf close"
+  ],
+  "notes": "SP-6ukmjucf retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "ST-vaokq7uf",
+  "kind": "story",
+  "title": "A sprint item whose goal names article lines is planned after the siblings that reword the same article, and names its facts by text",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning warns of a committed item whose goal names line numbers of an article that another item of the same sprint touches and rewords first (depends_on), and the goal names those facts by their text or source ids, not by line, so a worker does not anchor or edit the wrong line. In SP-6ukmjucf, ST-ko6bkda5's goal named postgres-column-encryption.md line 39 and linux-nftables.md lines 23, 36 and 52, which ST-vx7kahl3 and ST-suo7g2om had moved to lines 45 and 58 before its claim; the orchestrator had to say so in the brief.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_goal_line_numbers_sibling_rewords"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6ukmjucf close"
+  ],
+  "notes": "SP-6ukmjucf retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+}
