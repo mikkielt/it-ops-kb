@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-import census, factdiff, kbcommon, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
+import census, factdiff, kb_mcp, kbcommon, kbfacts, kbid, provider, ql_apply, ql_capture, ql_distill, ql_learn, ql_report, ql_store, redact
 from conftest import KB, TOOLS, git_env
 
 FIXTURE_STORE = Path(TOOLS) / "fixtures" / "querylog" / "store"
@@ -103,7 +103,7 @@ def test_distill_stores_a_captured_prompt_and_answer_redacted_and_the_capture_ro
     assert ql_store.store_problems(qdir / "store") == []
 
 
-def test_an_ops_row_has_a_closed_shape_and_a_free_text_value_is_refused(tmp_path, monkeypatch):
+def test_an_ops_row_has_a_closed_shape_and_a_free_text_value_is_refused_and_kb_feedback_spools_one_closed_row_once_refuses_each_open_field_and_prints_its_call_on_a_weak_or_none_pack_only(tmp_path, monkeypatch):
     ok = {"event": "land.step", "item": "ST-px3y26ti", "step": "gate", "exit": 0, "ms": 1200}
     assert ql_capture.ops_problems(ok) == []
     free = f"failed for {EMAIL} on {COMPUTER}"
@@ -122,8 +122,69 @@ def test_an_ops_row_has_a_closed_shape_and_a_free_text_value_is_refused(tmp_path
         assert ql_capture.record("ops", **ok)["step"] == "gate"  # planted counterpart: the closed shape is written
         text = "".join(f.read_text(encoding="utf-8") for f in (tmp_path / "querylog" / "spool").glob("*.jsonl"))
         assert EMAIL not in text and COMPUTER not in text
+        feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch)
     finally:
         ql_capture.spool_dir.cache_clear()
+
+
+def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
+    """kb_feedback over the tools/call protocol path: one `feedback` row in the tools file for a report made twice, no
+    row for a refused field, the annotations and the instructions, and its footer line on a weak or none pack only."""
+    def call(**args):
+        res = kb_mcp.handle({"jsonrpc": "2.0", "id": 1, "method": "tools/call",
+                             "params": {"name": "kb_feedback", "arguments": args}})
+        if "error" in res:
+            return res["error"]["message"], True
+        return res["result"]["content"][0]["text"], res["result"]["isError"]
+
+    def spooled():
+        return [json.loads(ln) for f in (tmp_path / "querylog" / "spool").glob("tools-*.jsonl")
+                for ln in f.read_text(encoding="utf-8").splitlines() if '"surface":"feedback"' in ln]
+
+    art = sorted(kbfacts.articles())[0]
+    report = {"pack": "P-0a1b2c3d", "outcome": "misled", "lines": [{"line": f"{art}:1", "issue": "wrong"}], "best": art,
+              "source_url": "https://learn.microsoft.com/windows/laps", "claim": "The default length is 14.",
+              "tool_issue": "too-long"}
+    text, is_error = call(**report)
+    assert not is_error and re.fullmatch(r"recorded FB-[0-9a-f]{8}", text), text
+    assert call(**report) == (text, False)  # the same report again: the same id, nothing new
+    rows = spooled()
+    assert len(rows) == 1 and rows[0]["fb"] == text.split()[1] and rows[0]["lines"] == report["lines"], rows
+    assert set(rows[0]) == {"id", "ts", "surface", "v", "fb", *report}  # the closed fields, nothing else
+    assert call(**{**report, "outcome": "partly"})[0] != text and len(spooled()) == 2
+    refused = [{**report, "lines": [{"line": f"{art}:99999", "issue": "wrong"}]},  # a line no kb file has
+               {**report, "lines": [{"line": "public/no/such-article.md:1", "issue": "stale"}]},
+               {**report, "best": "public/_sources.csv"},  # a file that is no article
+               {**report, "source_url": "http://pl-srv-0042.corp/page"},  # outside the research candidate url gate
+               {**report, "claim": f"Ask {EMAIL} for it."},  # the leak scan flags it
+               {**report, "claim": "word " * 41},
+               {"outcome": "missed", "claim": "The default length is 14."},  # neither pack nor question
+               {**report, "outcome": "fine"}, {**report, "tool_issue": "slow"}]
+    for bad in refused:
+        assert call(**bad)[1] is True, bad
+    assert len(spooled()) == 2
+    listed = kb_mcp.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
+    tool = next(t for t in listed if t["name"] == "kb_feedback")
+    assert tool["annotations"] == {"title": tool["title"], "readOnlyHint": False, "destructiveHint": False,
+                                   "idempotentHint": True, "openWorldHint": False}
+    assert all(t["annotations"]["readOnlyHint"] for t in listed if t["name"] != "kb_feedback")
+    assert "kb_feedback" in kb_mcp.instructions()
+    with monkeypatch.context() as limited:  # --roots, and kb_http.py always: no such tool
+        limited.setattr(kb_mcp, "limited", lambda: True)
+        assert "kb_feedback" not in {t["name"] for t in kb_mcp.handle(
+            {"jsonrpc": "2.0", "id": 3, "method": "tools/list"})["result"]["tools"]}
+        assert call(**report)[1] is True and "kb_feedback" not in kb_mcp.instructions() and len(spooled()) == 2
+    # the footer: a ready call on a weak or none pack, above the handle that stays last; a good pack prints none
+    monkeypatch.setattr(kbfacts, "pack_store", lambda: str(tmp_path / "packs"))
+    monkeypatch.setenv("KB_NO_UPSTREAM", "1")
+    with open(os.path.join(kbcommon.PUBLIC, kbcommon.DATA_DIR, "lookup_eval.csv"), encoding="utf-8", newline="") as f:
+        good = next(r for r in csv.DictReader(f) if r["expect_verdict"] == "good" and not r["allow_weak"])["question"]
+    none = kbfacts.pack_many(["zqxv wlkj nmbp qrtz"], revalidate=False)
+    assert none["verdict"] == "none"
+    assert none["text"].splitlines()[-2:] == [f'feedback: kb_feedback(pack="{none["pack"]}", outcome="missed")',
+                                              f"pack: {none['pack']}"]
+    ok = kbfacts.pack_many([good], revalidate=False)
+    assert ok["verdict"] == "good" and "feedback:" not in ok["text"] and ok["text"].splitlines()[-1] == f"pack: {ok['pack']}"
 
 
 def test_store_check_passes_a_clean_store_and_names_the_run_file_with_a_leak(tmp_path, capsys):

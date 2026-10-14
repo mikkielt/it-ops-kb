@@ -53,6 +53,12 @@ KB_LINE = re.compile(r"^\s*(- |\[[\d.]+\] )([\w-]+(?:/[\w.-]+)+:[1-9]\d*)(?![\w:
 LINE_TAG = re.compile(r"\[(DOC|CODE|DER|COMMUNITY|UNK|DECISION)\b[^\]]*\]\s*$")
 COVERAGE = re.compile(r"^coverage: (good|weak|none)\b", re.M)
 PACK_HANDLE = re.compile(r"^pack: (P-[0-9a-f]{8})\s*$", re.M)  # the line kbfacts.handled adds to a pack's text
+FEEDBACK = "feedback"  # the surface of a kb_feedback report's row (kb_mcp.kb_feedback); it has no session, so it lands in the tools file
+FEEDBACK_OUTCOMES = ("answered", "partly", "missed", "misled")
+FEEDBACK_ISSUES = ("wrong", "stale", "irrelevant", "helpful")  # what a report says of one kb line
+FEEDBACK_TOOL_ISSUES = ("bad-args", "unclear-output", "too-long", "error")
+FEEDBACK_LINES_MAX = 10
+FEEDBACK_CLAIM_WORDS = 40
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
@@ -425,6 +431,29 @@ def pack_summary(text):
         if len(verdicts) > 1:
             out["verdicts"] = verdicts
     return out
+
+
+def feedback_id(fields):
+    """`FB-<8 hex>`: the hash of a kb_feedback report's fields (the ones it has, in their closed shapes), so a report
+    made twice has one id."""
+    key = json.dumps({k: v for k, v in fields.items() if v not in (None, "", [])}, ensure_ascii=False, sort_keys=True,
+                     separators=(",", ":"))
+    return "FB-" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:8]
+
+
+def record_feedback(fields):
+    """Append the `feedback` row of one kb_feedback report to the spool's tools file unless a row of the same id is
+    already in a tools file there, and return (`FB-<8 hex>`, state): `recorded`, `repeat` (nothing written) or `off`
+    (capture writes nothing here, or the write failed)."""
+    fb = feedback_id(fields)
+    spool = spool_dir()
+    if spool is None:
+        return fb, "off"
+    for path in sorted(spool.glob("tools-*.jsonl")):
+        if any(r.get("surface") == FEEDBACK and r.get("fb") == fb for r in rows(path, fb)):
+            return fb, "repeat"
+    row = record(FEEDBACK, fb=fb, **{k: v for k, v in fields.items() if v not in (None, "", [])})
+    return fb, "recorded" if row else "off"
 
 
 def intent(prompt):

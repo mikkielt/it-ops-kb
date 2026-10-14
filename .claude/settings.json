@@ -15,6 +15,7 @@
       "mcp__mcp-docs__search_model_context_protocol",
       "mcp__mcp-docs__query_docs_filesystem_model_context_protocol",
       "mcp__kb",
+      "mcp__kb__kb_feedback",
       "Bash(python3 _tools/rag.py *)",
       "Bash(python3 _tools/backlog.py *)",
       "Bash(python3 _tools/check.py)",
