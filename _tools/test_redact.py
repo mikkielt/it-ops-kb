@@ -59,7 +59,7 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     assert redact.main(["--scan", str(f)]) == 0
 
 
-def test_distill_stores_a_captured_prompt_and_answer_redacted(tmp_path, monkeypatch):
+def test_distill_stores_a_captured_prompt_and_answer_redacted_and_the_capture_row_of_a_kb_pack_keeps_its_pack_handle(tmp_path, monkeypatch):
     qdir = tmp_path / "querylog"
     qdir.mkdir()
     (qdir / "config.json").write_text(json.dumps({"mode": "local"}), encoding="utf-8", newline="\n")
@@ -70,7 +70,7 @@ def test_distill_stores_a_captured_prompt_and_answer_redacted(tmp_path, monkeypa
          "prompt": f"kb: what is the Windows LAPS password length on {COMPUTER} at {IP} for {EMAIL} ({GUID}, {TOKEN})?"},
         {"hook_event_name": "PostToolUse", "session_id": SID, "prompt_id": "p1", "tool_name": "mcp__kb__kb_pack",
          "tool_use_id": "toolu_01", "tool_input": {"questions": [f"Windows LAPS password length on {COMPUTER} for {EMAIL}"]},
-         "tool_response": [{"type": "text", "text": PACK}]},
+         "tool_response": [{"type": "text", "text": PACK + "pack: P-0a1b2c3d\n"}]},
         {"hook_event_name": "Stop", "session_id": SID, "prompt_id": "p1", "stop_hook_active": False,
          "last_assistant_message": answer},
     ]
@@ -81,6 +81,9 @@ def test_distill_stores_a_captured_prompt_and_answer_redacted(tmp_path, monkeypa
     spool = qdir / "spool"
     assert (spool / f"{SID}.jsonl").exists()
     assert EMAIL in (spool / f"{SID}.jsonl").read_text(encoding="utf-8")  # capture keeps the spool raw: distill redacts
+    rows = [json.loads(ln) for ln in (spool / f"{SID}.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert [r["pack"] for r in rows if r["surface"] == "mcp"] == ["P-0a1b2c3d"]
+    assert ql_capture.pack_handle(PACK) is None and ql_capture.pack_handle(PACK + "pack: P-0a1b2c3d") == "P-0a1b2c3d"
     (spool / f"{SID}.end").touch()
 
     def judge(prompt):  # the Haiku stub: judges every entry answered; its input is the rule-redacted text only

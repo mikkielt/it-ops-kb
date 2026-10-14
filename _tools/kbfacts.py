@@ -3368,6 +3368,7 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     sources now and marks them with the outcome (revalidate_pack); "stale" (kb_pack's default, kb_ask.py) asks only
     the cited sources past their freshness lifetime and prints the stale stamp of each; False (the kb: hook, which
     never goes to the network) leaves the pack as it was.
+    The text's last line before a revalidation's is `pack: P-<8 hex>`, the handle `pack` holds (handled).
     A single question gives exactly pack()'s text, or its routed answer. With 3 or more questions
     each part gets 2 * budget / n tokens, at least PART_BUDGET_MIN (never more than budget): measured on the eval set,
     800 tokens keep 98% of the expected article's fact lines that 1200 print, and a 6-part pack shrinks by a third.
@@ -3377,6 +3378,7 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     if len(qs) == 1:
         res = pack_routed(qs[0], budget, domain, fmt=fmt, root=root, invalidated=invalidated, item=item)
         one = {"verdict": res["verdict"], "route": res["route"], "results": [res], "text": res["text"]}
+        one = handled(one, qs, budget, domain, fmt, root, invalidated, item)
         return revalidate_pack(one, revalidate == "stale") if revalidate else one
     part = budget if len(qs) < 3 else max(min(budget, PART_BUDGET_MIN), 2 * budget // len(qs))
     results = [pack_routed(q, part, domain, fmt=fmt, footer=False, root=root, invalidated=invalidated, item=item)
@@ -3395,7 +3397,104 @@ def pack_many(questions, budget=1200, domain=None, fmt="detailed", root=None, in
     order = ("none", "weak", "good")
     many = {"verdict": min((r["verdict"] for r in results), key=order.index), "route": route, "results": results,
             "text": "\n".join(out).rstrip()}
+    many = handled(many, qs, budget, domain, fmt, root, invalidated, item)
     return revalidate_pack(many, revalidate == "stale") if revalidate else many
+
+
+PACK_HANDLE = re.compile(r"P-[0-9a-f]{8}")
+PACK_HANDLE_DAYS = 7  # a stored pack is kept this long (keep_pack)
+PACK_HANDLE_KEEP = 500  # and at most this many, the newest
+
+
+def kb_commit():
+    """The kb copy's commit: a clone's HEAD, or an installed plugin copy's version directory when that is a commit id,
+    else "" (the handle then names the questions and arguments alone)."""
+    out = _git("rev-parse", "HEAD")
+    if out:
+        return out.decode("utf-8", "replace").strip()
+    name = os.path.basename(os.path.normpath(kbcommon.HOME))
+    return name if re.fullmatch(r"[0-9a-f]{7,40}", name) else ""
+
+
+def pack_handle(questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None,
+                commit=None):
+    """`P-<8 hex>`: the hash of the questions, the pack arguments and the kb commit, so one pack on one commit has one
+    handle on every server and in the tools, with no session. `revalidate` is no argument of it: stdio and kb_http.py
+    differ in what they revalidate, not in the pack they answer."""
+    qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
+    item = item.get("id") if isinstance(item, dict) else item  # pack_many's brief (item_brief) or its id
+    key = json.dumps([qs, budget, domain or None, fmt, root or None, bool(invalidated), item or None,
+                      kb_commit() if commit is None else commit],
+                     ensure_ascii=False, separators=(",", ":"))
+    return "P-" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:8]
+
+
+def pack_store():
+    """The directory of stored packs (under the index directory, `_cache/` of the clone: never committed), or None."""
+    d = index_dir()
+    return os.path.join(d, "packs") if d else None
+
+
+def keep_pack(handle, questions, text, commit):
+    """Store handle -> {questions, lines (the printed lines), commit, ts} for PACK_HANDLE_DAYS and PACK_HANDLE_KEEP
+    handles, the oldest pruned. Best effort: a lookup never fails for its handle."""
+    d, tmp = pack_store(), None
+    if not d:
+        return
+    try:
+        os.makedirs(d, exist_ok=True)
+        fd, tmp = tempfile.mkstemp(prefix=".pack-", suffix=".tmp", dir=d)
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"handle": handle, "questions": questions, "commit": commit, "ts": time.time(),
+                       "lines": text.splitlines()}, f, ensure_ascii=False)
+        os.replace(tmp, os.path.join(d, handle + ".json"))
+        now, kept = time.time(), []
+        for name in os.listdir(d):
+            full = os.path.join(d, name)
+            if not (name.endswith(".json") and PACK_HANDLE.fullmatch(name[:-5])):
+                continue
+            mtime = os.stat(full).st_mtime
+            if now - mtime > PACK_HANDLE_DAYS * 86400:
+                os.remove(full)
+            else:
+                kept.append((mtime, full))
+        for _mtime, full in sorted(kept)[:max(0, len(kept) - PACK_HANDLE_KEEP)]:
+            os.remove(full)
+    except OSError:
+        pass
+    finally:
+        if tmp and os.path.exists(tmp):
+            _remove(tmp)
+
+
+def stored_pack(handle):
+    """The record keep_pack stored for `handle` ({handle, questions, commit, ts, lines}), or None when it was never
+    stored, has expired or was pruned."""
+    d = pack_store()
+    if not d or not PACK_HANDLE.fullmatch(handle or ""):
+        return None
+    try:
+        with open(os.path.join(d, handle + ".json"), encoding="utf-8") as f:
+            rec = json.load(f)
+    except (OSError, ValueError):
+        return None
+    ok = isinstance(rec, dict) and rec.get("handle") == handle and time.time() - rec.get("ts", 0) <= PACK_HANDLE_DAYS * 86400
+    return rec if ok else None
+
+
+def handled(res, questions, budget=1200, domain=None, fmt="detailed", root=None, invalidated=False, item=None):
+    """`res` (pack_many's or pack_routed's result) with a last line `pack: P-<8 hex>` (pack_handle) added to `text`
+    and the handle in `res["pack"]`, and the offline pack stored (keep_pack). Never raises."""
+    try:
+        commit = kb_commit()
+        handle = pack_handle(questions, budget, domain, fmt, root, invalidated, item, commit)
+        res["text"] = f"{res['text']}\npack: {handle}"
+        res["pack"] = handle
+        qs = [q.strip() for q in questions if q and q.strip()][:MAX_QUESTIONS]
+        keep_pack(handle, qs, res["text"], commit)
+    except Exception:  # noqa: BLE001 - see the docstring
+        pass
+    return res
 
 
 def cited_lines(ids):
