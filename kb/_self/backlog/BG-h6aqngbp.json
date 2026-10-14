@@ -2,7 +2,7 @@
   "id": "BG-h6aqngbp",
   "kind": "bug",
   "title": "kbid.py add's stale-lock clear can take a live holder's lock, so two adds hold the sources lock at once after a crash",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2qseu5s",
   "priority": "P2",
   "rank": 0,

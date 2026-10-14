@@ -2,7 +2,7 @@
   "id": "BG-rxdpo5g5",
   "kind": "bug",
   "title": "census.py repin plans each source from the facts and anchors read once, so a fact citing two pinned sources loses its anchor after the first is re-pointed",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-mkzkd7in",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",

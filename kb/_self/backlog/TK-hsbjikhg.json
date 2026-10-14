@@ -2,7 +2,7 @@
   "id": "TK-hsbjikhg",
   "kind": "task",
   "title": "Write about 80 new held-out rows from real kb-user questions, committed before any eval run of them",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,

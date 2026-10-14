@@ -2,7 +2,7 @@
   "id": "BG-tkgpxdva",
   "kind": "bug",
   "title": "The benchmark pool's answer regexes miss capitalised durations, take 0.1 hour, and reject the mcp__server__* and mcp__server rule forms",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,

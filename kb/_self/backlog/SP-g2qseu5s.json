@@ -2,7 +2,7 @@
   "id": "SP-g2qseu5s",
   "kind": "sprint",
   "title": "Ledgers, dates and the held-out set hold",
-  "status": "planned",
+  "status": "active",
   "goal": "kbid.py add never takes a live holder's sources lock; every tool dates a run by the UTC day; census.py repin keeps the anchor of a fact citing two pinned sources; the sync gate's held-out reword check runs on a landing that changes only articles; the held-out file kb/public/_retrieval/lookup_heldout.csv holds about 100 rows of questions a kb user would ask, over present, partial and absent knowledge, written before any eval run of them; its answer rate is measured once and its floor is set by an operator gate from that rate; and the benchmark pool's answer regexes accept the case and the rule forms the kb states",
   "gates": [
     {

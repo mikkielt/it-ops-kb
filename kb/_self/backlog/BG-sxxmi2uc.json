@@ -2,7 +2,7 @@
   "id": "BG-sxxmi2uc",
   "kind": "bug",
   "title": "census.today, kbdecide, provider and kg_history date a run by the local day while factdiff.today names the UTC day",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2qseu5s",
   "priority": "P2",
   "rank": 0,

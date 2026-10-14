@@ -2,7 +2,7 @@
   "id": "BG-jsvsga6h",
   "kind": "bug",
   "title": "The sync gate's held-out reword check does not run on a landing that changes only articles, though an article edit can match a held-out row to an existing expansion",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g2qseu5s",
   "priority": "P3",
   "rank": 0,

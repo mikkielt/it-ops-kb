@@ -2,7 +2,7 @@
   "id": "TK-kt3sgm2o",
   "kind": "task",
   "title": "Measure the grown held-out file's answer rate once and set the fitness test floor from it",
-  "status": "draft",
+  "status": "todo",
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,
