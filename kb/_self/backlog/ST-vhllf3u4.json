@@ -2,7 +2,7 @@
   "id": "ST-vhllf3u4",
   "kind": "story",
   "title": "issuer-token-rotation names R2's S3 key pair, not R2, as the cut-over, since R2 temporary credentials overlap until they expire",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,27 @@
     "parked: SP-tcis5f23 review"
   ],
   "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: both checks exit 1 on today's base (article line 13 and answer line 2993 name 'GitLab, Cloudflare and R2' as the cut-overs without the key pair); reproduces.",
-  "claimed_by": "orch-6ukmjucf"
+  "evidence": {
+    "commit": "6ea21b1e4e4290124ed0df188f25a81af486fbc5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=pathlib.Path('kb/public/auth/issuer-token-rotation.md').read_text().splitlines()+pathlib.Path('kb/public/_answers.md').read_text().splitlines(); sys.exit(any('GitLab, Cloudflare and R2' in l for l in ls))"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import pathlib,sys; ls=pathlib.Path('kb/public/auth/issuer-token-rotation.md').read_text().splitlines()+pathlib.Path('kb/public/_answers.md').read_text().splitlines(); bad=[l for l in ls if 'cut-over' in l and 'R2' in l and 'key pair' not in l]; sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
