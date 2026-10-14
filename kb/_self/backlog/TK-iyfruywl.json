@@ -78,7 +78,9 @@
         "selfdoc.py check and the item's own checks"
       ],
       "recommendation": "selfdoc.py check, and the list of stale docs without failing on them",
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "selfdoc.py check, and the list of stale docs without failing on them",
+      "by": "operator"
     },
     {
       "id": "g4",
