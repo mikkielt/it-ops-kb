@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-ce5iig4g close"
-  ]
+  ],
+  "notes": "Same defect with a colon lead-in, 2026-10-14: ST-xlr5flob's goal (as planned for every research story of SP-5dffnlxn) reads 'Answer with the kb tools first ... where no article fits: How do Amazon S3 conditional writes ...?'; the lead before ': ' is over QUESTION_LEAD_WORDS (8) words, so goal_questions keeps it and researched packed the first question joined to it: weak (20 of 25 key words; the lead's 'tools', 'official', 'kb-research', 'shared-state-concurrency' lack), while the question alone packs good. All eleven research stories of SP-5dffnlxn share this lead and will fail their first question the same way."
 }
