@@ -2,7 +2,7 @@
   "id": "BG-4ntjgf2u",
   "kind": "bug",
   "title": "The backlog-tool rules of SP-q5ldd25k read weak on the _self root with no tested row, and the rule to run a flag through referrers gives a command that exits 2",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-vk3wf746",
   "priority": "P3",
   "rank": 0,
@@ -64,5 +64,6 @@
   "links": [
     "merged: BG-sq2qycqc"
   ],
-  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier: REAL: all six packs read coverage: weak on --root _self (check 0 exits 1, 6 of 6 not good); the answering lines: backlog.md:209 and :219 (moved-or-deleted touch), :44 and :210 (.claude/ link touch), :294 and tools.md:70 (undelivered warning), :270, :311, :389 (always_in_scope), :316 (--root WORKTREE), querylog.md:216 (manual apply --push). rag.py eval --root _self passes 367 of 367 now (2.6 s). Merged here: BG-sq2qycqc (backlog.py referrers --add-touch exits 2; referrers -- --add-touch works; the docs fix is the smaller one, check 1). lookup_eval.csv under kb/_self is a code-lane path (kblane): this item lands with backlog.py land ID --wait-merge 1800, its done and the push after its code/<id> merge request merges. A doc rewording must keep any expect_text phrase the eval rows read. Planning 2026-10-14: the rag.py eval --root _self check passes before the work by design: they pin behaviour that must stay, and the work adds rows that must pass with the rest; the other checks fail on the premise."
+  "notes": "Verified 2026-10-14 on dee8010364 by a read-only Sonnet verifier: REAL: all six packs read coverage: weak on --root _self (check 0 exits 1, 6 of 6 not good); the answering lines: backlog.md:209 and :219 (moved-or-deleted touch), :44 and :210 (.claude/ link touch), :294 and tools.md:70 (undelivered warning), :270, :311, :389 (always_in_scope), :316 (--root WORKTREE), querylog.md:216 (manual apply --push). rag.py eval --root _self passes 367 of 367 now (2.6 s). Merged here: BG-sq2qycqc (backlog.py referrers --add-touch exits 2; referrers -- --add-touch works; the docs fix is the smaller one, check 1). lookup_eval.csv under kb/_self is a code-lane path (kblane): this item lands with backlog.py land ID --wait-merge 1800, its done and the push after its code/<id> merge request merges. A doc rewording must keep any expect_text phrase the eval rows read. Planning 2026-10-14: the rag.py eval --root _self check passes before the work by design: they pin behaviour that must stay, and the work adds rows that must pass with the rest; the other checks fail on the premise.",
+  "claimed_by": "orch-vk3wf746"
 }
