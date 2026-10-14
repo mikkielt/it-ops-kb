@@ -2,7 +2,7 @@
   "id": "ST-6h5wxkap",
   "kind": "story",
   "title": "Research sprint goal: Lookups print the right notes and revalidation marks only real changes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-vk3wf746",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: every item of SP-vk3wf746 fixes this repo's own tools (kbfacts, kb_hook, factdiff, provider) or its _self rule rows, verified at planning (2026-10-14) with planted inputs, evidence in each item's notes; no external source decides any of them.",
-  "claimed_by": "orch-vk3wf746"
+  "evidence": {
+    "commit": "5a47d4a70765c245a8c93e3e26414c5a0779c590",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-6h5wxkap"
+        ],
+        "exit": 0,
+        "sha256": "d084bf082a28d6d6"
+      }
+    ]
+  }
 }
