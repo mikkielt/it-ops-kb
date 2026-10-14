@@ -30,6 +30,19 @@
   "depends_on": [
     "ST-vhllf3u4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "factdiff anchor writes a row for every cited fact of the article that has none (18 more rows, mostly unlocated:no-match), not only the new fact's: keep them or commit only the new fact's row?",
+      "options": [
+        "keep every row the anchor tool wrote for the file",
+        "commit only the new fact's row"
+      ],
+      "recommendation": "keep every row the anchor tool wrote for the file",
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
   ],
