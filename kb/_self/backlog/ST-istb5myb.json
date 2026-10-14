@@ -2,7 +2,7 @@
   "id": "ST-istb5myb",
   "kind": "story",
   "title": "http-message-signatures and its XEdDSA answer say the age recipient is the verification key only when XEdDSA's scalar is the clamped identity",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6ukmjucf",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   "links": [
     "parked: SP-tcis5f23 review"
   ],
-  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: the item's check exits 1 on today's base (lines naming xeddsa_verify and 'doubles as the verification key' carry no 'clamp'); reproduces."
+  "notes": "Planned at the 2026-10-13 draft triage (sprint 8 of 15, \"Content fixes: auth, encryption and Linux hardening articles and answers\"): a lookup returns a wrong or missing fact until it is fixed, which the held-out answer-rate fitness test of EP-gzr4mmkm reads. Premise run at planning: the item's check exits 1 on today's base (lines naming xeddsa_verify and 'doubles as the verification key' carry no 'clamp'); reproduces.",
+  "claimed_by": "orch-6ukmjucf"
 }
