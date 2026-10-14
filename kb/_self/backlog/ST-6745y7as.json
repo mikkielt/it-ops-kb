@@ -1,0 +1,27 @@
+{
+  "id": "ST-6745y7as",
+  "kind": "story",
+  "title": "The datetime article's DOC fact on today() claims only what its anchor line says",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the DOC fact at kb/public/python/stdlib-datetime-iso-week.md that says the docs prefer datetime.now(tz) over today() and utcnow() is checked against the Python docs page and claims the preference only for what the page states (utcnow() per the review's reading), its anchor locating the line that says it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; ls=[l for l in open('kb/public/python/stdlib-datetime-iso-week.md',encoding='utf-8') if 'prefer `datetime.now(tz)`' in l]; sys.exit(any('`today()`' in l for l in ls))"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/python/stdlib-datetime-iso-week.md",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo review"
+  ],
+  "notes": "Found by the SP-wjp5qllo review (S3): research ST-ikbuvyo6 (0256a94e3) added at lines 75-77 'the docs prefer datetime.now(tz) over today() and utcnow() [DOC S-gaeidf4e]'; its located anchor holds only 'Return the current local date.' The reviewer could not fetch the page and, from memory, reads the recommendation as stated for utcnow() only: unconfirmed, verify against the live page in a /kb-refresh before rewording."
+}

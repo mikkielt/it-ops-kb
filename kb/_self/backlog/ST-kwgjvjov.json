@@ -1,0 +1,26 @@
+{
+  "id": "ST-kwgjvjov",
+  "kind": "story",
+  "title": "A test pins factdiff.today() to the UTC day between local and UTC midnight",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a suite test stubs the clock to an hour where the local day and the UTC day differ (a far-east TZ near UTC midnight) and asserts factdiff.today() names the UTC day, so a revert to date.today() fails the suite at any hour, not only inside that window",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "factdiff_today_is_utc_day"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_live_kb.py"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo review"
+  ],
+  "notes": "Found by the SP-wjp5qllo review (S3): BG-gflil3ya's fix (f2765e8d9) makes factdiff.today() (factdiff.py:102) the UTC day, but no test pins it; only the live lookup-eval test would catch a revert, and only between local and UTC midnight."
+}

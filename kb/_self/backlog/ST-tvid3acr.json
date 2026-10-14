@@ -1,0 +1,27 @@
+{
+  "id": "ST-tvid3acr",
+  "kind": "story",
+  "title": "bl_authority classes the remaining suite-ceiling wordings ceiling, such as 'Which ceiling does darwin take?'",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.gate_class classes ceiling a gate question that names the ceiling with darwin, seconds or the suite's time in any word order, such as 'Is the ceiling in seconds for darwin right?', 'Which ceiling does darwin take?', 'Raise the ceiling seconds?', 'Raise the suite time ceiling?' and 'Does the darwin test time ceiling change?', so an agent session cannot answer one of them",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "ceiling_wordings_any_order"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo review"
+  ],
+  "notes": "Found by the SP-wjp5qllo review (S3): after ST-54gmldzo (2e396a056) the goal's listed wordings class ceiling, but these still class design: 'Is the ceiling in seconds for darwin right?', 'Which ceiling does darwin take?', 'Raise the ceiling seconds?', 'Raise the suite time ceiling?', 'Does the darwin test time ceiling change?', 'What is the ceiling of 40 seconds for?'. Probe: python3 -c \"import sys;sys.path.insert(0,'_tools');import bl_authority as a;print(a.gate_class({'touches':[]},{'question':'Which ceiling does darwin take?','kind':'blocking','options':['a','b']}))\" prints design. Over-classing ('What max_seconds does the bench take?' is ceiling) is the safe direction and stays."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-qwdrymv7",
+  "kind": "story",
+  "title": "test_sync_e2e drives a refused sync followed by a passing one in the same clone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "one sync e2e test runs a refused sync (a stray trailer or a red gate), then the fix (an amend with the trailer) and a passing sync to code/ in the same clone, so a refusal that poisons the next sync fails the suite, which the split of ST-k3e4q43i no longer exercises",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "refusal_then_sync_same_clone"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_sync_e2e.py"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo review"
+  ],
+  "notes": "Found by the SP-wjp5qllo review (S3): ST-k3e4q43i (3c6ffe0d0) split TestStrayTrailer and test_code_commit_goes_to_a_branch so each assertion survives but the chain refusal -> amend -> push to code/ is gone; the red-gate test now makes its first commit with --no-verify and a plain push. The darwin 6 s per-test bound applies (the review measured the slowest of the three files at 5.37 s)."
+}

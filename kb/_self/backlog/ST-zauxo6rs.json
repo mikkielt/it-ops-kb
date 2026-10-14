@@ -1,0 +1,26 @@
+{
+  "id": "ST-zauxo6rs",
+  "kind": "story",
+  "title": "test_leaks' pre-screens are tested against every kbcommon.SECRETS shape",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a suite test plants, for each kbcommon.SECRETS pattern, a string that pattern matches and asserts test_leaks.candidate() returns it, so a future (?i) shape with an uppercase literal or class is not skipped by the casefolded screen while kbpublic.file_hits would flag it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "leak_screens_cover_secrets"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_leaks.py"
+  ],
+  "links": [
+    "parked: SP-wjp5qllo review"
+  ],
+  "notes": "Found by the SP-wjp5qllo review (S3): ST-k3e4q43i (3c6ffe0d0) added screens() in test_leaks.py, compiling the (?i) screen without re.I and running it on t.casefold(); it is correct only because today's one (?i) shape has lowercase literals. A new shape with [A-Z] would make scan() skip a file the real check flags, and the test pass on a leak."
+}
