@@ -230,39 +230,50 @@ def ledger_rows(text, state):
     return rows
 
 
+def ledger_change(state, key, b, a, detection):
+    """(source id, [changed columns], what) of one ledger row from B to A (None when the row is absent there): a
+    _fetch_state.csv row (STATE true) differs in the DETECTION columns, an _anchors.csv row is added, dropped or
+    differs in a column other than verified_utc; no columns when it did not change."""
+    if state:
+        cols = [c for c in detection if ((b or {}).get(c) or "") != ((a or {}).get(c) or "")]
+        return key, cols, ", ".join(cols) if a else "row dropped"
+    cols = (["added"] if b is None else ["dropped"] if a is None
+            else [c for c in a.keys() | b.keys()
+                  if isinstance(c, str) and c != "verified_utc" and (a.get(c) or "") != (b.get(c) or "")])
+    return key[2] or "", cols, ", ".join(sorted(cols))
+
+
 def ledger_moves(root, commits):
-    """{source id: [`<ledger>: <what changed>`]} of the ledger rows the item's COMMITS ({commit: [paths]}) changed and
-    HEAD still has changed (the ledger as of the parent of the first commit that touched it against HEAD, so a later
-    revert clears a row): a _fetch_state.csv row whose detection columns (factdiff.BASELINE_KEYS and the text hashes,
-    not checked_utc) differ, and an _anchors.csv row added, dropped or changed in a column other than verified_utc."""
+    """{source id: [`<ledger>: <what changed>`]} of the ledger rows the item's own COMMITS ({commit: [paths]}, oldest
+    first) changed and HEAD still has changed: a row counts when one of those commits changed it (each commit
+    against its own parent, so a row only another item's commit advanced is not the item's), and it differs at HEAD
+    from the parent of the first of them, so a later revert clears it. A _fetch_state.csv row changes when its
+    detection columns (factdiff.BASELINE_KEYS and the text hashes, not checked_utc) differ, an _anchors.csv row
+    when it is added, dropped or changed in a column other than verified_utc."""
     import factdiff
     detection = tuple(factdiff.BASELINE_KEYS) + STATE_BASELINE
-    first = {}
+    first = {}  # (path, row key): the row at the parent of the first item commit that changed it
     for sha, paths in commits.items():
-        for p in paths:
-            if Path(p).name in (STATE_LEDGER, ANCHOR_LEDGER):
-                first.setdefault(p, sha)
+        for path in paths:
+            if Path(path).name not in (STATE_LEDGER, ANCHOR_LEDGER):
+                continue
+            if blob_id(root, f"{sha}^", path) == blob_id(root, sha, path):
+                continue
+            state = Path(path).name == STATE_LEDGER
+            before = ledger_rows(blob_text(root, f"{sha}^", path), state)
+            after = ledger_rows(blob_text(root, sha, path), state)
+            for key in before.keys() | after.keys():
+                if (path, key) not in first and ledger_change(state, key, before.get(key), after.get(key),
+                                                              detection)[1]:
+                    first[(path, key)] = before.get(key)
+    now = {}
     out = {}
-    for path, sha in first.items():
-        if blob_id(root, f"{sha}^", path) == blob_id(root, "HEAD", path):
-            continue
-        state = Path(path).name == STATE_LEDGER
-        before = ledger_rows(blob_text(root, f"{sha}^", path), state)
-        after = ledger_rows(blob_text(root, "HEAD", path), state)
-        for key in before.keys() | after.keys():
-            b, a = before.get(key), after.get(key)
-            if state:
-                sid = key
-                cols = [c for c in detection if ((b or {}).get(c) or "") != ((a or {}).get(c) or "")]
-                what = ", ".join(cols) if a else "row dropped"
-            else:
-                sid = key[2] or ""
-                cols = (["added"] if b is None else ["dropped"] if a is None
-                        else [c for c in a.keys() | b.keys()
-                              if isinstance(c, str) and c != "verified_utc" and (a.get(c) or "") != (b.get(c) or "")])
-                what = ", ".join(sorted(cols))
-            if cols:
-                out.setdefault(sid, set()).add(f"{path}: {what}")
+    for (path, key), b in first.items():
+        if path not in now:
+            now[path] = ledger_rows(blob_text(root, "HEAD", path), Path(path).name == STATE_LEDGER)
+        sid, cols, what = ledger_change(Path(path).name == STATE_LEDGER, key, b, now[path].get(key), detection)
+        if cols:
+            out.setdefault(sid, set()).add(f"{path}: {what}")
     return {sid: sorted(w) for sid, w in out.items()}
 
 
