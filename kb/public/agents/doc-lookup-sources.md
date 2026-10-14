@@ -14,8 +14,8 @@ Three no-auth remote MCP servers cover most of this kb and are configured for ev
 Microsoft Learn (GA, about 15 domains), Claude Code Docs and the MCP docs site. GitHub's remote MCP server
 (GA, needs a token) reaches the source repositories behind many pinned artifacts and is optional. Plain APIs
 (GitHub REST, Graph `$metadata`, PyPI JSON, `llms.txt`) cover scripted checks. The Microsoft MCP Server for
-Enterprise (preview) is excluded, and GitLab's MCP server (GA since GitLab 19.5, needs a token) is not in the
-table. Full table: `doc-lookup-sources.csv`.
+Enterprise (preview) is excluded, and GitLab's MCP server (GA since GitLab 19.5) is not in the table because it
+serves a GitLab instance's own data, not documentation. Full table: `doc-lookup-sources.csv`.
 Refreshing an existing fact still goes through `_tools/fetch.py --diff`; these servers are for finding and
 reading the current page.
 
@@ -34,7 +34,11 @@ reading the current page.
 - GitHub documents the remote MCP server setup for IDE clients, with OAuth or a personal access token. [DOC S2186]
 - The remote server's documentation lists per-toolset read-only URLs of the form `https://api.githubcopilot.com/mcp/x/<toolset>/readonly`. [DOC S2187]
 - GitHub's REST API allows 60 requests per hour unauthenticated and 5,000 per hour with a personal access token. [DOC S2188]
-- GitLab's MCP server page shows status Generally available (experiment in GitLab 18.3, beta in 18.6, generally available in 19.5) and accepts an OAuth access token with the `mcp` scope or a fine-grained personal access token with the MCP tool permission; it is not one of the no-auth servers and is not in the ranked table, and GitLab docs remain reachable as raw files through the GitLab REST API. [DOC S2189]
+- GitLab's MCP server page shows status Generally available: introduced as an experiment in GitLab 18.3, changed to beta in 18.6 and to generally available in 19.5. [DOC S2189]
+- The GitLab MCP server accepts an OAuth access token with the `mcp` scope or a fine-grained personal access token with the MCP tool resource and the Execute permission. [DOC S2189]
+- The GitLab MCP server's page lists its purposes as access to GitLab project information, retrieval of issue and merge request data, interaction with GitLab APIs and GitLab-specific operations through AI assistants, all for the user's own GitLab instance. [DOC S2189]
+- The GitLab MCP server's url is `https://<gitlab.example.com>/api/v4/mcp` (`gitlab.com` on GitLab.com), and access must first be allowed for the top-level group on GitLab.com or for the instance on GitLab Self-Managed and GitLab Dedicated. [DOC S2189]
+- GitLab's MCP server therefore has no row in the ranked table, and the reason is what it serves, not its token: the table's `applies_to` asks for servers that return current official documentation, and this one returns the caller's own instance data and acts on it, with no documentation lookup among the purposes its page lists. GitHub's remote MCP server (rank 5) also needs a token and is in the table because its read-only repos toolset, at one shared url, reads file contents, commits and tags of the public repositories that hold this kb's documentation sources. GitLab's own documentation stays reachable as raw files through the GitLab REST API. [DER S2189, S2186, S2187: the purposes and url the GitLab page lists against the GitHub toolset's documented read-only url and the rank 5 row; the tool list on the separate tools page was read 2026-10-14 and is not a recorded source]
 - Microsoft MCP Server for Enterprise (Graph/Entra data) is titled "(preview)" on its Learn overview page, so it is excluded. [DOC S2190]
 - `https://graph.microsoft.com/v1.0/$metadata` is downloadable without authentication; `/beta` is out of scope as a preview surface. [DOC S2191]
 - PyPI's JSON API (`https://pypi.org/pypi/<package>/json`) returns a project's latest-version metadata, its releases and project URLs without authentication; the `releases` key is marked deprecated in favour of the Index API, and `/pypi/<package>/<version>/json` gives one release. [DOC S2192]
@@ -107,7 +111,7 @@ reading the current page.
 - `.claude/settings.json`: pre-approves those servers and denies their `submit_feedback` tools.
 - `_tools/fetch.py --diff`: re-fetches the recorded sources of a topic and shows what changed.
 - `agents/doc-change-detection.md`: version signals, redirects, sitemaps and archives for telling whether a cited page changed.
-- Rejected: Microsoft MCP Server for Enterprise (preview), GitHub MCP Insiders mode (early access), undocumented `platform.claude.com/docs/mcp`; not in the table: GitLab MCP server (GA since GitLab 19.5, needs OAuth or a fine-grained personal access token).
+- Rejected: Microsoft MCP Server for Enterprise (preview), GitHub MCP Insiders mode (early access), undocumented `platform.claude.com/docs/mcp`; not in the table: GitLab MCP server (GA since GitLab 19.5; it serves a GitLab instance's project, issue and merge request data, not documentation, so it fails `applies_to`; its token need is not the reason, as GitHub's rank 5 row needs one too).
 - `agents/hybrid-retrieval.md`: its Azure AI Search, Anthropic, pgvector and Elasticsearch facts were found and read through the Microsoft Learn MCP server and WebFetch listed here.
 
 ## Examples
