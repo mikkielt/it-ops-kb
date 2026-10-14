@@ -264,8 +264,12 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   the branch, or a `HEAD` detached in the middle of a rebase of that branch or a bisect started from it,
   counts as holding it. A branch named only in the update-refs of a rebase running with `--update-refs` is not
   held for this check, so these four commands do not refuse it. The error text is "'<branch>' is already used
-  by worktree at '<path>'". [CODE S-tx5lxmr3: worktree.c#is_shared_symref, is_worktree_being_rebased,
-  is_worktree_being_bisected; CODE S-3qf7ndi6: branch.c#die_if_checked_out]
+  by worktree at '<path>'". Not every run of those commands reaches the check: `git checkout` and
+  `git switch` return before it under `--ignore-other-worktrees`, and also when the main worktree's `HEAD`
+  is already a symref to that branch; `git worktree add` runs it only without `--force` (for `-B`, too);
+  `git rebase <upstream> <branch>` runs it with no such option. [CODE S-tx5lxmr3: worktree.c#is_shared_symref,
+  is_worktree_being_rebased, is_worktree_being_bisected; CODE S-3qf7ndi6: branch.c#die_if_checked_out; CODE
+  S-i3btr2xr: builtin/checkout.c#die_if_switching_to_a_branch_in_use; CODE S-ali5r4n7: builtin/worktree.c#add]
 - The wider check is `branch_checked_out` (`prepare_checked_out_branches`): it collects each worktree's `HEAD`
   branch, the branch of a rebase in progress, the branch a bisect started from, and every ref in the
   update-refs state of a rebase in that worktree. In `branch.c` the only caller is `validate_new_branchname`,
