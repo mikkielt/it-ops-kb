@@ -2,7 +2,7 @@
   "id": "BG-6wdpt56h",
   "kind": "bug",
   "title": "pytest.md says tests.py uses -m \"not stress\" to exclude a stress suite that no longer exists, and uv-projects.md shows tests.py-style -n auto",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-xt4t63xw",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,27 @@
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
   "notes": "Premise run 2026-10-14 on origin/main 071390b44: the repro exits 1 (pytest.md:42 still says tests.py uses -m \"not stress\") and the uv-projects check exits 1 (uv-projects.md:208 says a tests.py-style wrapper runs -n auto). Filed by ST-q2jzknjn's worker; moved into SP-xt4t63xw by the orchestrator as a public fact that overclaims its source, inside the sprint goal.",
-  "claimed_by": "orch-xt4t63xw"
+  "evidence": {
+    "commit": "4cba411d82f963db78a4c2e8e50f9360c3376f57",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=' '.join(open('kb/public/python/uv-projects.md',encoding='utf-8').read().split());sys.exit(1 if '-style wrapper calls `uv run --frozen python -m pytest -n auto`' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=' '.join(open('kb/public/python/pytest.md',encoding='utf-8').read().split());sys.exit(1 if 'uses to exclude the stress suite' in t else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
