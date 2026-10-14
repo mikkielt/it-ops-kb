@@ -67,7 +67,9 @@
         "any question that holds how many, whatever its other words, with the noun in options read past too"
       ],
       "recommendation": "the question holds how many/how much (or which/what count/number) and a display word (list, show, print, count, name, report); only the noun its/the push in the question is read past, never an option's",
-      "class": "push"
+      "class": "push",
+      "answer": "the question holds how many/how much (or which/what count/number) and a display word (list, show, print, count, name, report); only the noun its/the push in the question is read past, never an option's",
+      "by": "operator"
     }
   ],
   "links": [
