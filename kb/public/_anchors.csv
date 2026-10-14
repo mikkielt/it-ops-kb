@@ -3548,8 +3548,6 @@ f5c9e8554d22,auth/group-claims.md,S1285,located,Configure group claims and app r
 a4910a3be00a,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
 a6ec296c0e76,auth/http-message-signatures.md,S-vm4x5dhi,located,,target-uri;uri;content-digest;method;authority;digest;target;content,3630e5be5c567b21,"Signature-Input: sig1=(""@method"" ""@target-uri"" ""@authority"" \ ""content-digest"" ""cache-control"");\",2026-10-13
 abbd5a6f1dba,auth/http-message-signatures.md,S-lzpaeug7,located,2. Preliminaries > 2.3. Elliptic curve conversions,allow;scalar;privat;montgomery;key,ab365e1b16d4712e,We allow a Montgomery private key to be any scalar.,2026-10-13
-acbcfe509e28,auth/http-message-signatures.md,S-bi6fdfos,unlocated:no-match,,,,,2026-10-13
-acbcfe509e28,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
 ad697f72f1cd,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
 aed7b8d1db43,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
 b2548a37c89a,auth/http-message-signatures.md,S-s3lqlvdi,unlocated:no-match,,,,,2026-10-13
@@ -3560,6 +3558,8 @@ be728e2614df,auth/http-message-signatures.md,S-n3swpr6x,located,Ed25519 to X2551
 ca7b4b4f00b8,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13
 cf96308cfc24,auth/http-message-signatures.md,S-vm4x5dhi,located,,want;replay;send;nonc;new;accept-signatur;attacker;accept,e6fe9de4292109a0,"If a verifier wants to trigger a new signature from a signer, it can send the Accept-Signature header field with a new nonce parameter. An",2026-10-13
 e11a15cd5dd7,auth/http-message-signatures.md,S-lzpaeug7,located,5. Curve25519,versa;vice;provid;valid;xed25519;ed25519;birational;keys,b78c1083e973017e,"XEd25519 signatures are valid Ed25519 signatures [1] and vice versa, provided the public keys are converted with the birational map.",2026-10-13
+ed791299aa06,auth/http-message-signatures.md,S-bi6fdfos,unlocated:no-match,,,,,2026-10-14
+ed791299aa06,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-14
 fcf00870be19,auth/http-message-signatures.md,S-lzpaeug7,unlocated:no-match,,,,,2026-10-13
 fcf00870be19,auth/http-message-signatures.md,S-n3swpr6x,unlocated:no-match,,,,,2026-10-13
 fcf00870be19,auth/http-message-signatures.md,S-vm4x5dhi,unlocated:no-match,,,,,2026-10-13

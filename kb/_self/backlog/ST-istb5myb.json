@@ -25,6 +25,22 @@
   "depends_on": [
     "ST-vx7kahl3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How far does the clamp condition reach beyond the two lines the goal names: also tie the article's open item (line 51) to it, and leave the trade-off lines (article line 48, the answer's trade-off bullet) unchanged?",
+      "options": [
+        "two lines plus one clause on the open item",
+        "two named lines only",
+        "also reword the trade-off lines"
+      ],
+      "recommendation": "two lines plus one clause on the open item",
+      "class": "design",
+      "answer": "two lines plus one clause on the open item",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-tcis5f23 review"
   ],
