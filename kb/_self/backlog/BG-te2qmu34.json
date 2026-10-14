@@ -2,7 +2,7 @@
   "id": "BG-te2qmu34",
   "kind": "bug",
   "title": "postgres-column-encryption's summary and the QK-postgres-envelope Conclusion state the per-site DEK's departure",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xt4t63xw",
   "priority": "P3",
   "rank": 0,
@@ -27,5 +27,6 @@
   "links": [
     "parked: SP-6ukmjucf review"
   ],
-  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, an omission in the summary and the QK conclusion (:13, _answers.md:3051): the body already says the per-site DEK departs from Google's DEK practices (:33-34). The summary prose and the answers line have no anchor or expansion rows: expansions.csv dropped from the touches."
+  "notes": "Verified 2026-10-14 on ae319c43c5 by a read-only Sonnet verifier against the source read raw: REAL, an omission in the summary and the QK conclusion (:13, _answers.md:3051): the body already says the per-site DEK departs from Google's DEK practices (:33-34). The summary prose and the answers line have no anchor or expansion rows: expansions.csv dropped from the touches.",
+  "claimed_by": "orch-xt4t63xw"
 }
