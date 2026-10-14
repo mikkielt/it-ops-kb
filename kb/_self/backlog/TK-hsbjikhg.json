@@ -2,7 +2,7 @@
   "id": "TK-hsbjikhg",
   "kind": "task",
   "title": "Write about 80 new held-out rows from real kb-user questions, committed before any eval run of them",
-  "status": "todo",
+  "status": "doing",
   "parent": "ST-rgfoek35",
   "priority": "P2",
   "rank": 0,
@@ -60,5 +60,6 @@
   "depends_on": [
     "ST-bwj6gyfj"
   ],
-  "notes": "Process rules (planning 2026-10-14, the operator's held-out conditions): questions come from the query log store's lookup records where one fits (placeholders for private names, never a backlog item's text), else are written as a kb user would ask; expected paths and verdicts come from reading the articles (rag.py show, rag.py facts, git grep), never from rag.py pack or eval output on the new questions; before the commit, test only for rewordings with python3 -c \"import sys;sys.path.insert(0,'_tools');import rag;print(rag.heldout_rewordings('kb/public/_retrieval/lookup_heldout.csv','public'))\" (no pack runs) and replace any question it names; commit the rows, then run the eval: that first run is the one measurement, and no row changes after it (the frozen-rows check reads git history from ae319c43c5). The eval check passes on today's 20 rows by design (it guards REWORD and OFFKB refusals); the frozen-rows check fails until the grown rows are committed."
+  "notes": "Process rules (planning 2026-10-14, the operator's held-out conditions): questions come from the query log store's lookup records where one fits (placeholders for private names, never a backlog item's text), else are written as a kb user would ask; expected paths and verdicts come from reading the articles (rag.py show, rag.py facts, git grep), never from rag.py pack or eval output on the new questions; before the commit, test only for rewordings with python3 -c \"import sys;sys.path.insert(0,'_tools');import rag;print(rag.heldout_rewordings('kb/public/_retrieval/lookup_heldout.csv','public'))\" (no pack runs) and replace any question it names; commit the rows, then run the eval: that first run is the one measurement, and no row changes after it (the frozen-rows check reads git history from ae319c43c5). The eval check passes on today's 20 rows by design (it guards REWORD and OFFKB refusals); the frozen-rows check fails until the grown rows are committed.",
+  "claimed_by": "orch-g2qseu5s"
 }
