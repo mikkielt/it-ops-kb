@@ -11314,14 +11314,12 @@ b2936907fa0a,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > C
 057b80d6d62a,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
 057b80d6d62a,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
 0ed6403f3d09,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
-1b5fe7c0f55d,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
-1b5fe7c0f55d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+158f377a55d5,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
+158f377a55d5,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
+158f377a55d5,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+158f377a55d5,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 1ec7c93c2713,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 22d73764a3b1,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
-3dc321aef61e,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
-3dc321aef61e,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
-3dc321aef61e,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
-3dc321aef61e,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 40cd5dd3c72f,python/pytest-xdist.md,S-tt4fugbi,unlocated:no-match,,,,,2026-10-14
 53322026e36e,python/pytest-xdist.md,S-t7c2nvll,located,,both;none;back;default;environment;fall;return;hook,df5428b9c491d9d3,"asked for ""auto"" or ""logical"", and it can return None to fall back to the default. If both the hook and environment variable are specified,",2026-10-14
 55d74b84b772,python/pytest-xdist.md,S-g7bkixrp,unlocated:no-match,,,,,2026-10-14
@@ -11341,12 +11339,15 @@ b2936907fa0a,python/percentile-nearest-rank.md,S-or2wocyn,located,Percentile > C
 98da808bd17f,python/pytest-xdist.md,S-ng5lgn3p,located,,across;iterabl;produc;other;valu;mark;pytest.mark.parametriz;unorder,38f9620b5f515454,"It is not possible to have tests that differ in order or their amount across workers. This is especially true with pytest.mark.parametrize, when values are",2026-10-14
 995e657da22c,python/pytest-xdist.md,S-d77lvlq4,unlocated:no-match,,,,,2026-10-14
 995e657da22c,python/pytest-xdist.md,S-ew7mucsg,unlocated:no-match,,,,,2026-10-14
+9b88d6cf3c3d,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
+9b88d6cf3c3d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+a356e2e94fde,python/pytest-xdist.md,S-vt5s6nsz,unlocated:no-match,,,,,2026-10-14
 a55594ae66ef,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 ad68d654f78d,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
 ad68d654f78d,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 b2e3492bd293,python/pytest-xdist.md,S-eaoeu53g,unlocated:no-match,,,,,2026-10-14
 b2e3492bd293,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
-c520ad0c8d9b,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
+ce04e1af815c,python/pytest-xdist.md,S-t7c2nvll,unlocated:no-match,,,,,2026-10-14
 dcd897e9d861,python/pytest-xdist.md,S-lthpihsc,located,,count;gw2;name;pytest_xdist_worker_count;total;e.g;session;xdist,21c24d8613328d8c,"The name of the worker, e.g., ""gw2"". .. envvar:: PYTESTXDISTWORKERCOUNT The total number of workers in this session, e.g., ""4"" when -n 4 is given",2026-10-14
 ded7bd2119bc,python/pytest-xdist.md,S-t7c2nvll,located,,pend;default;order;distribution;load;mode;guarant;availabl,dd07cc3b9c789132,".. distribution modes: --dist load (default): Sends pending tests to any worker that is available, without any guaranteed order.",2026-10-14
 fe0630a254fb,python/pytest-xdist.md,S-qejsavhl,unlocated:no-match,,,,,2026-10-14
