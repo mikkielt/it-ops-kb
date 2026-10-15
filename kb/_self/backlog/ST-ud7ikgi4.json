@@ -2,7 +2,7 @@
   "id": "ST-ud7ikgi4",
   "kind": "story",
   "title": "repro compare records the frozen set at the start commit and prints answer-found, false good and churn per area",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-75hdeqld",
   "priority": "P2",
   "rank": 0,

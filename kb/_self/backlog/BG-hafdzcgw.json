@@ -2,7 +2,7 @@
   "id": "BG-hafdzcgw",
   "kind": "bug",
   "title": "kg_sync.heldout_checks selects the held-out file for a .md under an underscore directory, such as _retrieval/notes.md or _snapshots/README.md",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,

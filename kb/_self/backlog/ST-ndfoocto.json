@@ -2,7 +2,7 @@
   "id": "ST-ndfoocto",
   "kind": "story",
   "title": "repro compare counts each instance's unanchored DOC facts, so the landing pick sees research left unanchored",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,

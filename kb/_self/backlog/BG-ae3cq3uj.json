@@ -2,7 +2,7 @@
   "id": "BG-ae3cq3uj",
   "kind": "bug",
   "title": "The sync gate's held-out reword check never runs on a change to repro_bench.csv",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,

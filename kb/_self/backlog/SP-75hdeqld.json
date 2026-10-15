@@ -2,7 +2,7 @@
   "id": "SP-75hdeqld",
   "kind": "sprint",
   "title": "repro compare and pick read research gain, claim parity and structural identity",
-  "status": "planned",
+  "status": "active",
   "goal": "repro compare scores the frozen set by answer found and good with the answer, against the verdicts it measures at the start commit; repro compare prints per area the answer-found gain, false good and churn on rows of areas an instance did not research; repro compare counts each instance's DOC facts left unanchored that the rules do not exempt; repro compare matches an area's claims across all its articles and reports whether paths, ledger rows and source rows of shared urls are identical; repro pick ranks instances only on the areas all of them finished; the sync gate runs the held-out reword checks on a change to repro_bench.csv",
   "gates": [
     {
