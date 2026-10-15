@@ -46,7 +46,9 @@
         "the latest commit that changed store/postgres/base.py, bfcfea55 (2026-10-08)": "ST-xlr5flob",
         "the latest langgraph-checkpoint-postgres release tag": "ST-xlr5flob"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the latest langgraph-checkpoint-postgres release tag",
+      "by": "operator"
     },
     {
       "id": "g2",
