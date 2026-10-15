@@ -2,7 +2,7 @@
   "id": "ST-apmeih5l",
   "kind": "story",
   "title": "The instance the landing gate picks lands its benchmark research in the real kb through the content lane, the other two kept archived",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bhzxxhub",
   "priority": "P2",
   "rank": 0,
@@ -144,5 +144,73 @@
     }
   ],
   "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands. Orchestrator, 2026-10-15, before the claim: check 5 (every kb/public file the picked instance-3 added since 2170d88 exists in the tree) fails on the base (45 of 45 missing) and reads the replay clause. Check 6 compares main's frozen-set passed count with the picked record's eval_passed summed over areas (bench_repro.standings), as repro pick reads it; check 2 compared with a single area's row (max 5) and proved nothing. Check 6 passes on the base (main 24, best instance 24: main already passes as many rows, from research landed since 2170d88): it is a guard that the replay keeps main at or above the best instance, not a proof of the work. check.py, the lint and repro status/pick pass before the work by design (guards).",
-  "claimed_by": "orch-bhzxxhub"
+  "evidence": {
+    "commit": "5f4a2ad4cc71f4083c456e1412d617e5ae126a6b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/check.py"
+        ],
+        "exit": 0,
+        "sha256": "f0af31d430be5cde"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys\np=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py']); sys.exit(p.returncode)"
+        ],
+        "exit": 0,
+        "sha256": "20add957f8ddeb74"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys\nrows=[r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario'].startswith('repro')]\nimport json,subprocess\nbest=max((float(r['value']) for r in rows if r['metric']=='eval_passed'),default=None)\np=subprocess.run([sys.executable,'_tools/rag.py','--json','eval','--file','kb/public/_retrieval/repro_bench.csv','--root','public','--all'],capture_output=True,text=True)\nif p.returncode not in (0,1) or best is None: print(p.returncode,best); sys.exit(1)\nn=json.loads(p.stdout)['passed']; print('main',n,'best instance',best); sys.exit(0 if n>=best else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2a2e4c66f34674eb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "status"
+        ],
+        "exit": 0,
+        "sha256": "f644f2aa773a3a95"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "pick"
+        ],
+        "exit": 0,
+        "sha256": "0687c2bdab970553"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess,sys\nsys.path.insert(0,'_tools')\nimport bench_repro as b\nrec,date,f=b.standings(b.read_rows(b.BENCH_RESULTS))\nn=sorted(f,key=lambda k:(b.pick_key(f[k]),k))[0]\nd=b.default_dir(); m=json.loads((d/b.MANIFEST).read_text(encoding='utf-8'))\ni=next(x for x in m['instances'] if x['n']==n)\nadded=subprocess.run(['git','--git-dir',i['bare'],'diff','--name-only','--diff-filter=A',m['rev'],'main','--','kb/public'],capture_output=True,text=True,check=True).stdout.split()\nmiss=[p for p in added if not os.path.exists(p)]\nprint('instance',n,'added',len(added),'missing here',len(miss),*miss[:5])\nsys.exit(1 if miss or not added else 0)"
+        ],
+        "exit": 0,
+        "sha256": "d28e488caa3a1da6"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,subprocess,sys\nsys.path.insert(0,'_tools')\nimport bench_repro as b\nrec,date,f=b.standings(b.read_rows(b.BENCH_RESULTS))\nbest=max((v['passed'] for v in f.values()),default=None)\np=subprocess.run([sys.executable,'_tools/rag.py','--json','eval','--file','kb/public/_retrieval/repro_bench.csv','--root','public','--all'],capture_output=True,text=True)\nif p.returncode not in (0,1) or best is None: print(p.returncode,best); sys.exit(1)\nn=json.loads(p.stdout)['passed']; print('main',n,'best instance (summed over areas)',best); sys.exit(0 if n>=best else 1)"
+        ],
+        "exit": 0,
+        "sha256": "71d24cbe50339154"
+      }
+    ]
+  }
 }
