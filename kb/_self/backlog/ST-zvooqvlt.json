@@ -61,8 +61,7 @@
     "README.md"
   ],
   "depends_on": [
-    "ST-tcvbp3z3",
-    "ST-ttiz3pcz"
+    "ST-tcvbp3z3"
   ],
   "notes": "Report precedent: kb/_self/reports/2026-10-06-self-rules-retrieval.md. benchmarks.md needs a repro section with bench:table markers once rows exist (report --check fails on a marker with no rows); no measurable sizes in kb/_self docs beyond the benchmark's own numbers. benchmarks.py report --check passes before the work: it is the guard that the new section's markers and rows agree."
 }
