@@ -109,7 +109,9 @@
           "the operator kept all three instances archived and landed none"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "the instance with the best frozen-set eval pass rate, then the fewest lint and check errors, then the lowest cost",
+      "by": "operator"
     }
   ],
   "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands."

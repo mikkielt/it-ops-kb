@@ -122,7 +122,9 @@
           "80"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "$58 per instance, $174 in all (the estimate)",
+      "by": "operator"
     },
     {
       "id": "model",
@@ -184,7 +186,9 @@
           "3"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "claude-sonnet-5-5 at effort high, 200 turns and $8 per area session (the research worker's defaults)",
+      "by": "operator"
     }
   ],
   "trigger": {
