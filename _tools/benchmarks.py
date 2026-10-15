@@ -110,6 +110,20 @@
                                             files; it replaces the rows of that record and a second run of it changes
                                             nothing; --dry-run prints the rows and writes nothing; exit 0 with no lines,
                                             2 on a refusal (no instances.json, no briefs or questions file)
+  benchmarks.py repro compare [--dir DIR] [--record] [--file FILE] [--questions FILE] [--dry-run]
+                                            measure how alike the instances' research is: each instance's bare main
+                                            against the start commit in a detached checkout of its own, area by area
+                                            by the shas `repro run` recorded, its own tools run by subprocess; per
+                                            instance and area the articles, facts and sources added and the tag mix
+                                            of `rag.py audit`; per pair of instances the Jaccard overlap of the added
+                                            source urls and of the added facts (one claim: a difflib ratio of at
+                                            least bench_repro.SAME_CLAIM on one article path), and the conflicts (a
+                                            matched pair whose numbers differ, both lines listed); per instance the
+                                            check.py and kb-verify lint errors and the passed rows and verdicts of the
+                                            frozen questions (`rag.py eval`); per area the agreement; --record merges
+                                            the numbers into the results file as the scenario `repro-compare`;
+                                            --dry-run prints the metrics and the instances it would read; exit 0 also
+                                            with no instances.json, 2 on a refusal
   benchmarks.py repro status [--dir DIR]    print per instance of DIR's instances.json the commits on its bare since the
                                             start commit and whether each is in a fresh fetch of the real origin's
                                             main; exit 1 when any is, 2 on a refusal; exit 0 with no instances.json
@@ -269,6 +283,12 @@ def main(argv=None):
     rc.add_argument("--questions", metavar="FILE",
                     help="the frozen questions whose sha256 goes in the note (default: " + bench_repro.ADDED + ")")
     rc.add_argument("--dry-run", action="store_true", help="print the rows it would merge and write nothing")
+    rm = rp.add_parser("compare")
+    rm.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
+    rm.add_argument("--record", action="store_true", help="merge the numbers into the results file as the scenario repro-compare")
+    rm.add_argument("--file", metavar="FILE", help="with --record: the results file (default: kb/_self/reports/benchmarks.csv)")
+    rm.add_argument("--questions", metavar="FILE", help="the frozen questions (default: " + bench_repro.ADDED + ")")
+    rm.add_argument("--dry-run", action="store_true", help="start nothing: print the metrics and the instances it would read")
     rt = rp.add_parser("status")
     rt.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     a = ap.parse_args(argv)
@@ -299,6 +319,8 @@ def main(argv=None):
                 return bench_repro.status(a.dir)
             if a.repro_cmd == "record":
                 return bench_repro.record_results(a.dir, a.file, a.briefs, a.questions, a.dry_run)
+            if a.repro_cmd == "compare":
+                return bench_repro.compare(a.dir, a.record, a.file, a.questions, a.dry_run)
             if a.repro_cmd == "run":
                 return bench_repro.run(a.instances, a.dir, a.dry_run, model=a.model, effort=a.effort, max_turns=a.max_turns,
                                        area_usd=a.area_usd, instance_usd=a.instance_usd, timeout=a.timeout)

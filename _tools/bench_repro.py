@@ -1,5 +1,5 @@
 """The research-reproducibility benchmark's isolated instances: `benchmarks.py repro setup`, `repro check`, `repro
-questions`, `repro run`, `repro record` and `repro status` (stdlib only).
+questions`, `repro run`, `repro record`, `repro compare` and `repro status` (stdlib only).
 
 Each instance is a full bare copy of one pinned commit's history (DIR/originN.git, its main at REV), a working clone of
 it outside the checkout (under bench_core's scratch directory) whose only remote is that bare path, a query log of mode
@@ -10,11 +10,14 @@ else. `load_briefs` and `brief_problems` read and check the briefs file, `questi
 against it, and `status` names each instance's commits since the start commit and the ones a fresh fetch of the real
 origin's main holds. `run` starts every instance's headless `/kb-research` sessions at once, one per area in the
 briefs' order, and appends each area's result as a json line to DIR/results.jsonl (`session_argv` is the one argv,
-`area_prompt` the one prompt). `record_results` merges those json lines into the results file as the scenario `repro`. This
-module imports bench_core and kbpublic, and kbfacts where it reads the routing and the clone home (kb/_self/code.md,
-Layout); benchmarks.py holds the command line.
+`area_prompt` the one prompt). `record_results` merges those json lines into the results file as the scenario `repro`.
+`compare` puts a detached checkout of each instance's bare at the shas of every area and reads it with that checkout's own
+tools by subprocess (`state_of`, `error_counts`, `eval_rows`); `match_facts` and `overlap_and_conflicts` hold the
+comparison of two instances' added facts and `compare_rows` the rows of the scenario `repro-compare`. This module imports
+bench_core and kbpublic, factdiff and ql_research where `compare` reads text, and kbfacts where it reads the routing and
+the clone home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
-import csv, datetime, hashlib, json, os, shlex, shutil, subprocess, sys, tempfile, threading, time
+import csv, datetime, hashlib, json, os, re, shlex, shutil, subprocess, sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -748,4 +751,325 @@ def record_results(root=None, file=None, briefs_path=None, questions_path=None, 
     out(f"repro record: {len(rows)} row(s) of record {rev[:7]} " + (
         f"already in {target}: nothing changes" if same else
         f"would replace {len(held)} row(s) of {target}" if dry_run else f"merged into {target}, replacing {len(held)}"))
+    return 0
+
+
+COMPARE_SCENARIO = "repro-compare"  # the scenario of the rows `compare` merges into the results file
+SAME_CLAIM = 0.8  # the difflib ratio at or above which two facts of one article path are the same claim
+TAG_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # the tag mix `compare` counts, kbfacts.EVIDENCE_KINDS without DECISION
+COMPARE_METRICS = ("articles_added", "facts_added", *(k.lower() for k in TAG_KINDS), "sources_added", "url_jaccard",
+                   "fact_overlap", "conflicts", "check_errors", "lint_errors", "eval_passed", "eval_total", "agreement")
+LINT = Path(".claude") / "skills" / "kb-verify" / "lint.py"  # the contract lint of a checkout
+
+
+def jaccard(a, b):
+    """Plain set Jaccard of two sets: 1.0 for two empty sets (factdiff.jaccard's reading of two empty texts)."""
+    a, b = set(a), set(b)
+    return len(a & b) / len(a | b) if a | b else 1.0
+
+
+def claim(fact):
+    """A fact line's claim text: its tags and notes removed (factdiff.fact_text)."""
+    import factdiff
+    return factdiff.fact_text(fact["text"])
+
+
+def match_facts(a, b):
+    """[(i, j)] the facts of `a` and `b` that are one claim: a pair on the same article path whose difflib ratio
+    (factdiff.unit_sim of their claims) is at least SAME_CLAIM, taken best first, each fact in one pair at most. A
+    pair whose ratio cannot reach SAME_CLAIM by its lengths or letters (difflib's two upper bounds) is not measured."""
+    import difflib, factdiff
+    by_path = {}
+    for i, f in enumerate(a):
+        by_path.setdefault(f["path"], []).append(i)
+    texts_a = [claim(f) for f in a]
+    keys_a = [factdiff.words_key(t) for t in texts_a]
+    norms_a = [factdiff.norm(t) for t in texts_a]
+    sm = difflib.SequenceMatcher(None, autojunk=False)
+    found = []
+    for j, f in enumerate(b):
+        text, key = claim(f), factdiff.words_key(claim(f))
+        sm.set_seq2(factdiff.norm(text))
+        for i in by_path.get(f["path"], []):
+            if keys_a[i] == key:
+                found.append((-1.0, i, j))
+                continue
+            sm.set_seq1(norms_a[i])
+            if sm.real_quick_ratio() < SAME_CLAIM or sm.quick_ratio() < SAME_CLAIM:
+                continue
+            ratio = factdiff.unit_sim(texts_a[i], text)
+            if ratio >= SAME_CLAIM:
+                found.append((-ratio, i, j))
+    pairs, used_a, used_b = [], set(), set()
+    for _, i, j in sorted(found):
+        if i not in used_a and j not in used_b:
+            pairs.append((i, j))
+            used_a.add(i)
+            used_b.add(j)
+    return sorted(pairs)
+
+
+def overlap_and_conflicts(a, b):
+    """(overlap, conflicts) of two instances' added facts: the matched pairs over the union of the facts (a pair counts
+    once), and the pairs whose claims' factdiff.numbers differ, as (fact of a, fact of b)."""
+    import factdiff
+    pairs = match_facts(a, b)
+    union = len(a) + len(b) - len(pairs)
+    return (len(pairs) / union if union else 1.0,
+            [(a[i], b[j]) for i, j in pairs if factdiff.numbers(claim(a[i])) != factdiff.numbers(claim(b[j]))])
+
+
+def checkout_path(root, n):
+    """The detached checkout `compare` makes of instance N's bare: beside its clone, under the scratch directory."""
+    return clone_path(root, n).parent / f"compare{n}"
+
+
+def make_checkout(bare, dest, env):
+    """A clone of `bare` at `dest` with no work tree, to put detached at each sha of an area."""
+    shutil.rmtree(dest, ignore_errors=True)
+    Path(dest).parent.mkdir(parents=True, exist_ok=True)
+    sh_git(Path(dest).parent, env, "clone", "-q", "--no-checkout", str(bare), str(dest))
+
+
+def put_at(checkout, sha, env):
+    """The work tree of `checkout` detached at `sha`, clean of what a tool left (its _cache and _private)."""
+    sh_git(checkout, env, "checkout", "-q", "-f", "--detach", sha)
+    sh_git(checkout, env, "clean", "-q", "-f", "-f", "-d", "-x")
+
+
+def tool_out(argv, checkout, env):
+    """(exit code, stdout) of one of the checkout's own tools run by subprocess in it."""
+    p = sh([sys.executable, *argv], checkout, env)
+    return p.returncode, p.stdout
+
+
+def json_of(text):
+    """The json value that starts the first line of `text` that begins one, else None."""
+    for pos in [m.start() for m in re.finditer(r"^[\[{]", text, re.M)]:
+        try:
+            return json.loads(text[pos:])
+        except ValueError:
+            continue
+    return None
+
+
+def state_of(checkout, env):
+    """What the checkout at its sha holds, read with its own tools: `facts` (path, line, text, kinds of each fact line
+    of each root, `rag.py --json facts`), `audit` ({article path: {kind: count}}, `rag.py --json audit`) and `sources`
+    ({source id: url} of each root's _sources.csv). Refused when a tool printed no json."""
+    tools = Path(checkout) / "_tools"
+    roots = sorted(d.name for d in (Path(checkout) / "kb").iterdir() if (d / "_sources.csv").is_file()) \
+        if (Path(checkout) / "kb").is_dir() else []
+    facts = []
+    for r in roots:
+        code, out = tool_out([str(tools / "rag.py"), "--json", "facts", r], checkout, env)
+        rows = json_of(out)
+        if not isinstance(rows, list):
+            raise Refused(f"{checkout}: rag.py facts {r} printed no json (exit {code})")
+        facts += [{"path": f["path"], "line": f["line"], "text": f["text"], "kinds": [t["kind"] for t in f.get("tags") or []]}
+                  for f in rows]
+    code, out = tool_out([str(tools / "rag.py"), "--json", "audit"], checkout, env)
+    rows = json_of(out)
+    if not isinstance(rows, list):
+        raise Refused(f"{checkout}: rag.py audit printed no json (exit {code})")
+    sources = {}
+    for r in roots:
+        for row in read_csv(Path(checkout) / "kb" / r / "_sources.csv"):
+            sources.setdefault(row.get("id", ""), row.get("url", ""))
+    return {"facts": facts, "audit": {a["path"]: {k: a.get(k, 0) for k in TAG_KINDS} for a in rows}, "sources": sources}
+
+
+def added_between(before, after):
+    """What `after` holds that `before` did not: `articles` (paths), `facts` (those of `after` whose path and claim
+    `before` lacks), `kinds` (the audit's count of each tag kind, after less before), `sources` ({id: bare url})."""
+    import factdiff, ql_research
+    old = {(f["path"], factdiff.words_key(claim(f))) for f in before["facts"]}
+    seen, facts = set(), []
+    for f in after["facts"]:
+        key = (f["path"], factdiff.words_key(claim(f)))
+        if key not in old and key not in seen:
+            seen.add(key)
+            facts.append(f)
+    total = lambda s, k: sum(c.get(k, 0) for c in s["audit"].values())  # noqa: E731
+    return {"articles": sorted(set(after["audit"]) - set(before["audit"])), "facts": facts,
+            "kinds": {k: total(after, k) - total(before, k) for k in TAG_KINDS},
+            "sources": {i: ql_research.bare_url(u) for i, u in after["sources"].items() if i not in before["sources"]}}
+
+
+def error_counts(checkout, rev, env):
+    """(check.py errors, kb-verify lint errors) of the checkout as it is: each None when its tool printed no count.
+    The lint counts the facts added since `rev`."""
+    _, out = tool_out([str(Path(checkout) / "_tools" / "check.py")], checkout, env)
+    m = re.search(r"\berrors=(\d+)", out)
+    _, out = tool_out([str(Path(checkout) / LINT), "--json", "--base", rev], checkout, env)
+    found = json_of(out)
+    return (int(m.group(1)) if m else None,
+            sum(1 for x in found if isinstance(x, dict) and x.get("level") == "ERROR") if isinstance(found, list) else None)
+
+
+def eval_rows(checkout, questions, env):
+    """{row id: {verdict, regex_ok, ok}} of the checkout's own `rag.py eval` over the frozen questions file; None when
+    it printed no json."""
+    _, out = tool_out([str(Path(checkout) / "_tools" / "rag.py"), "--json", "eval", "--file", str(questions)], checkout, env)
+    res = json_of(out)
+    if not isinstance(res, dict) or "rows" not in res:
+        return None
+    return {r["id"]: {"verdict": r["verdict"], "regex_ok": "regex" not in r.get("failed", []), "ok": bool(r["ok"])}
+            for r in res["rows"]}
+
+
+def agreement(areas, instances, asked, evals):
+    """{area: share of its frozen rows on which every instance has the same verdict and the same expect_re outcome}
+    over `areas`, the ones every instance finished; an area with no frozen row has none. `evals` is {instance: eval_rows}."""
+    out = {}
+    for area in areas:
+        ids = [q["id"] for q in asked if q.get("area", "").strip() == area]
+        if not ids:
+            continue
+        same = 0
+        for qid in ids:
+            seen = {(e[qid]["verdict"], e[qid]["regex_ok"]) if e and qid in e else None for e in (evals.get(i) for i in instances)}
+            same += len(seen) == 1 and None not in seen
+        out[area] = same / len(ids)
+    return out
+
+
+def compare_rows(rev, date, note, data):
+    """The results-file rows of a comparison: `data` is a list of (case, arm, {metric: value}); a metric that is None
+    is left out."""
+    rows = []
+    for case, arm, metrics in data:
+        for metric in COMPARE_METRICS:
+            value = metrics.get(metric)
+            if value is None:
+                continue
+            if isinstance(value, float):
+                value = round(value, 6)
+            rows.append({"scenario": COMPARE_SCENARIO, "record": rev[:7], "date": date, "commit": rev[:7], "claude_code": "",
+                         "kb_topics": "", "case": case, "arm": arm, "model": "", "metric": metric, "value": value, "runs": 1,
+                         "note": note})
+    return rows
+
+
+def compare(root=None, record=False, file=None, questions_path=None, dry_run=False, out=print):
+    """`repro compare`: measure each instance's bare main against the start commit, area by area by the shas of
+    DIR/results.jsonl, in a detached checkout of its own whose tools run by subprocess; print per instance and area
+    the articles, facts, tag mix and sources added, per pair the url Jaccard, the fact overlap and the conflicts, per
+    instance the check.py and lint errors and the frozen questions it passed, per area the agreement. With `record` the
+    rows are merged into `file` (default kb/_self/reports/benchmarks.csv) as the scenario `repro-compare`, replacing the
+    rows of the start commit. With `dry_run` it prints the metrics and the instances it would read and starts nothing.
+    Returns 0, also with no instance or no result line; raises Refused (a bare or a sha that is gone, a tool that
+    prints no json, no questions file)."""
+    root = Path(root) if root else default_dir()
+    manifest = root / MANIFEST
+    if not manifest.exists():
+        out(f"repro compare: {root} holds no {MANIFEST}: no instance was set up there, so no instance is read")
+        if dry_run:
+            out("metrics: " + ", ".join(COMPARE_METRICS))
+        return 0
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    rev, insts = data.get("rev", ""), data.get("instances", [])
+    last = latest(read_results(root / RESULTS))
+    areas = list(dict.fromkeys(a for (_, a) in last if a))
+    if dry_run:
+        out(f"repro compare: start {rev[:12]}, dir {root}, {len(insts)} instance(s), {len(areas)} area(s) with a result")
+        out("metrics: " + ", ".join(COMPARE_METRICS))
+        for i in insts:
+            mine = [a for a in areas if (i["n"], a) in last]
+            out(f"instance {i['n']}: reads bare {i['bare']} in {checkout_path(root, i['n'])}, areas: {', '.join(mine) or '(none)'}")
+        return 0
+    if not last:
+        out(f"repro compare: {root / RESULTS} holds no result line: no area to compare")
+        return 0
+    qpath = Path(questions_path) if questions_path else HOME / ADDED
+    if not qpath.is_file():
+        raise Refused(f"{qpath} is not there: the frozen questions of the agreement")
+    asked = load_questions(qpath)
+    ns = [i["n"] for i in insts]
+    deltas, evals, errors = {}, {}, {}
+    for inst in insts:
+        if not Path(inst["bare"]).is_dir():
+            raise Refused(f"instance {inst['n']}: its bare {inst['bare']} is gone")
+    for inst in insts:
+        n, env, bare = inst["n"], instance_env(root, inst["n"]), Path(inst["bare"])
+        dest = checkout_path(root, n)
+        make_checkout(bare, dest, env)
+        try:
+            states = {}
+
+            def at(sha):
+                if sha not in states:
+                    put_at(dest, sha, env)
+                    states[sha] = state_of(dest, env)
+                return states[sha]
+
+            for area in areas:
+                r = last.get((n, area))
+                if not r:
+                    continue
+                before = r.get("bare_before") or rev
+                deltas[(n, area)] = added_between(at(before), at(r.get("bare_after") or before))
+            main = sh_git(bare, env, "rev-parse", "refs/heads/main")
+            put_at(dest, main, env)
+            errors[n] = error_counts(dest, rev, env)
+            evals[n] = eval_rows(dest, qpath, env)
+        finally:
+            shutil.rmtree(dest, ignore_errors=True)
+    out(f"repro compare: start {rev[:12]}, dir {root}, {len(insts)} instance(s), {len(areas)} area(s)")
+    table = []  # (case, arm, {metric: value})
+    for area in areas:
+        ids = [q["id"] for q in asked if q.get("area", "").strip() == area]
+        for n in ns:
+            d = deltas.get((n, area))
+            if d is None:
+                continue
+            e = evals.get(n)
+            passed = sum(1 for q in ids if e and e.get(q, {}).get("ok"))
+            m = {"articles_added": len(d["articles"]), "facts_added": len(d["facts"]), "sources_added": len(d["sources"]),
+                 **{k.lower(): d["kinds"][k] for k in TAG_KINDS}, "eval_passed": passed, "eval_total": len(ids)}
+            table.append((area, f"instance-{n}", m))
+            out(f"instance {n} area {area}: {m['articles_added']} article(s), {m['facts_added']} fact(s) added ("
+                + ", ".join(f"{k} {d['kinds'][k]}" for k in TAG_KINDS) + f"), {m['sources_added']} source(s) added; "
+                f"{passed} of {len(ids)} frozen row(s) passed"
+                + (": " + " ".join(f"{q}={e[q]['verdict']}" for q in ids if e and q in e) if ids else ""))
+        for k, a in enumerate(ns):
+            for b in ns[k + 1:]:
+                da, db = deltas.get((a, area)), deltas.get((b, area))
+                if da is None or db is None:
+                    continue
+                fact_overlap, conflicts = overlap_and_conflicts(da["facts"], db["facts"])
+                urls = jaccard(set(da["sources"].values()), set(db["sources"].values()))
+                table.append((area, f"instance-{a}+instance-{b}",
+                              {"url_jaccard": urls, "fact_overlap": fact_overlap, "conflicts": len(conflicts)}))
+                out(f"pair {a}+{b} area {area}: url_jaccard {urls:.2f}, fact_overlap {fact_overlap:.2f}, "
+                    f"{len(conflicts)} conflict(s)")
+                for fa, fb in conflicts:
+                    out(f"  conflict: instance {a} {fa['path']}:{fa['line']}: {claim(fa)}")
+                    out(f"            instance {b} {fb['path']}:{fb['line']}: {claim(fb)}")
+    for n in ns:
+        check_errors, lint_errors = errors[n]
+        table.append(("all", f"instance-{n}", {"check_errors": check_errors, "lint_errors": lint_errors}))
+        out(f"instance {n}: check.py errors {check_errors if check_errors is not None else 'not counted'}, lint errors "
+            f"{lint_errors if lint_errors is not None else 'not counted'}"
+            + ("" if evals[n] is not None else "; rag.py eval printed no json"))
+    done = [a for a in areas if all(last.get((n, a)) and not last[(n, a)].get("failure") for n in ns)]
+    shares = agreement(done, ns, asked, evals)
+    for area, share in shares.items():
+        table.append((area, "all", {"agreement": share}))
+        out(f"area {area}: agreement {share:.2f} of {sum(1 for q in asked if q.get('area', '').strip() == area)} frozen row(s)")
+    if not shares:
+        out("agreement: no area every instance finished holds a frozen row")
+    if not record:
+        return 0
+    date = min((r["started"][:10] for r in last.values() if isinstance(r.get("started"), str) and r["started"]), default="")
+    note = f"start {rev}; questions sha256 {file_sha256(qpath)}"
+    rows = compare_rows(rev, date, note, table)
+    target = Path(file) if file else BENCH_RESULTS
+    old = read_rows(target)
+    held = sorted(cells(r) for r in old if r["scenario"] == COMPARE_SCENARIO and r["record"] == rev[:7])
+    same = held == sorted(cells(r) for r in rows)
+    if not same:
+        write_rows(merge_rows(old, rows), target)
+    out(f"repro compare: {len(rows)} row(s) of record {rev[:7]} " + (
+        f"already in {target}: nothing changes" if same else f"merged into {target}, replacing {len(held)}"))
     return 0
