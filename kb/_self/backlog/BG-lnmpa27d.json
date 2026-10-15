@@ -60,8 +60,8 @@
         "no compound part (hyphen, dot, camel) holds the name": "BG-lnmpa27d"
       },
       "class": "design",
-      "answer": "hyphen part alone does not hold the name",
-      "by": "agent"
+      "answer": "a hyphen part alone does not hold the name only when no other part of the same compound is a key word of the question: 'Hyper V', 'Invoke WebRequest' and 'Break Glass' still find hyper-v, Invoke-WebRequest and break-glass, while long-horizon stays refused for 'VMware Horizon' (changed after the sprint review: the first answer made those questions none)",
+      "by": "operator"
     }
   ],
   "notes": "Plan amendment 2026-10-15 (triage fit10): seen in ST-edgkrk37, where adding agents/agent-sandboxes.md moved instruction-and-context-limits.md from 5th to 4th article (8.78 vs 8.79 against git-test-repositories.md) for EV-configure-vmware-horizon-instant-clones, so the off-domain check found 'horizon' among the candidate units and rag.py eval failed that row (want none, got weak) until the new article's two 'clone' words were reworded. Not covered by BG-r2epswpp's baseline re-judge (the cause is article order, not word share); same file kbfacts.py, so it runs after BG-r2epswpp. Premise 2026-10-15 at c907de7b3: the repro exits 1 (pack 'How do I set up VMware Horizon for agents?' gives coverage weak). Checks that pass before the work: the test selection passes before the work and is kept as a guard (the change extends it, about +0.2 s); the repro fails before the work and reads the goal.",

@@ -1,0 +1,46 @@
+{
+  "id": "BG-jfjg65bd",
+  "kind": "bug",
+  "title": "pack calls a question none when it spells a hyphenated name the kb holds with a space (Hyper V, Invoke WebRequest, Break Glass)",
+  "status": "todo",
+  "sprint": "SP-z3jcdsgr",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "pack's off-domain name check no longer makes a question none when the name it asks is a part of a hyphenated compound the kb holds and another part of that compound is in the question, as BG-lnmpa27d's changed gate g1 decides: 'How do I enable Hyper V on a Windows 11 device?', 'What does Invoke WebRequest do in PowerShell?', 'What is a Break Glass account?' and 'How does Pay As You Go billing work for Azure?' print no coverage: none, while 'How do I set up VMware Horizon for agents?' still prints coverage: none; a planted case in the existing test_pack_notes_a_subject_held_in_passing... test proves both (no new test id)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys;q=[\"How do I enable Hyper V on a Windows 11 device?\",\"What does Invoke WebRequest do in PowerShell?\",\"What is a Break Glass account?\",\"How does Pay As You Go billing work for Azure?\"];h=\"How do I set up VMware Horizon for agents?\";v={x:subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",x,\"--budget\",\"150\",\"--format\",\"concise\"],capture_output=True,text=True).stdout.split(chr(10))[0] for x in q+[h]};bad=[x for x in q if v[x].startswith(\"coverage: none\")]+([] if v[h].startswith(\"coverage: none\") else [h]);print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_pack_notes_a_subject_held_in_passing_a_price_asked_with_no_amount_and_a_name_split_over_facts_on_a_planted_root"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "pack's off-domain name check no longer makes a question none when the name it asks is a part of a hyphenated compound the kb holds and another part of that compound is in the question, as BG-lnmpa27d's changed gate g1 decides: 'How do I enable Hyper V on a Windows 11 device?', 'What does Invoke WebRequest do in PowerShell?', 'What is a Break Glass account?' and 'How does Pay As You Go billing work for Azure?' print no coverage: none, while 'How do I set up VMware Horizon for agents?' still prints coverage: none",
+      "check": 1
+    },
+    {
+      "clause": "a planted case in the existing test_pack_notes_a_subject_held_in_passing... test proves both (no new test id)",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Found by the SP-z3jcdsgr review 2026-10-15 in BG-lnmpa27d's work (a53a15cf4, kbfacts.holds_name near line 2628): a hyphen part alone no longer holds a name, so a question that spells a hyphenated name with a space or capital became none with route: web; the reviewer saw Invoke WebRequest, Hyper V, Break Glass, Pay As You Go, Round Robin, Cherry Pick, Tree Sitter and Id JAG go from good to none on main. A one-letter part (the V of Hyper V) may not be a key word of the question: if the rule needs another form (e.g. the question's adjacent words joined with a hyphen match the compound), record it as a provisional gate. Keep long-horizon refused for VMware Horizon. Test budget: extend the existing planted test, no new test id."
+}
