@@ -2,7 +2,7 @@
   "id": "BG-jfjg65bd",
   "kind": "bug",
   "title": "pack calls a question none when it spells a hyphenated name the kb holds with a space (Hyper V, Invoke WebRequest, Break Glass)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z3jcdsgr",
   "priority": "P1",
   "rank": 0,
@@ -42,5 +42,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Found by the SP-z3jcdsgr review 2026-10-15 in BG-lnmpa27d's work (a53a15cf4, kbfacts.holds_name near line 2628): a hyphen part alone no longer holds a name, so a question that spells a hyphenated name with a space or capital became none with route: web; the reviewer saw Invoke WebRequest, Hyper V, Break Glass, Pay As You Go, Round Robin, Cherry Pick, Tree Sitter and Id JAG go from good to none on main. A one-letter part (the V of Hyper V) may not be a key word of the question: if the rule needs another form (e.g. the question's adjacent words joined with a hyphen match the compound), record it as a provisional gate. Keep long-horizon refused for VMware Horizon. Test budget: extend the existing planted test, no new test id."
+  "notes": "Found by the SP-z3jcdsgr review 2026-10-15 in BG-lnmpa27d's work (a53a15cf4, kbfacts.holds_name near line 2628): a hyphen part alone no longer holds a name, so a question that spells a hyphenated name with a space or capital became none with route: web; the reviewer saw Invoke WebRequest, Hyper V, Break Glass, Pay As You Go, Round Robin, Cherry Pick, Tree Sitter and Id JAG go from good to none on main. A one-letter part (the V of Hyper V) may not be a key word of the question: if the rule needs another form (e.g. the question's adjacent words joined with a hyphen match the compound), record it as a provisional gate. Keep long-horizon refused for VMware Horizon. Test budget: extend the existing planted test, no new test id.",
+  "claimed_by": "orch-z3jcdsgr"
 }
