@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the goal is the repro tooling's own pick and replay, which kb/_self documents; the git facts it leans on (rebase --onto, cherry-pick, union merge of ledgers, fetching a bare path) are already good in kb/public (gitlab/git-test-repositories.md, agents/docs-maintenance-agents.md), so no live-docs fetch and no gap entry were needed.",
   "claimed_by": "orch-bhzxxhub"
 }
