@@ -2,7 +2,7 @@
   "id": "ST-hfcsyyin",
   "kind": "story",
   "title": "rag.py eval scores an expect_re regex column and runs the held-out reword and off-kb checks on repro_bench.csv",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -79,5 +79,6 @@
     "AGENTS.md",
     "kb/_self/token-efficiency.md"
   ],
-  "notes": "Premise run 2026-10-15 on 296ff192d: eval ignores an expect_re column (a planted row with regex zzzz[0-9]{9} passed, rc 0), and a planted repro_bench.csv rewording a lookup_eval.csv row passes with no REWORD line while the same row in a file named lookup_heldout.csv prints REWORD (ratio 0.96). expect_text exists already (substring, case-sensitive). Do not add the file to kg_sync.EVAL_SETS. HELDOUT_FILE readers: rag.py:278, bench_pool.py:57, test_live_kb.py:1032 (backlog.py referrers HELDOUT_FILE). Selection cost measured by the planner's verifier: 3.3 s wall. The test selection passes before the work: it pins the planted expect_re row and the second file name once they are added; the planted checks 1 and 2 fail before the work."
+  "notes": "Premise run 2026-10-15 on 296ff192d: eval ignores an expect_re column (a planted row with regex zzzz[0-9]{9} passed, rc 0), and a planted repro_bench.csv rewording a lookup_eval.csv row passes with no REWORD line while the same row in a file named lookup_heldout.csv prints REWORD (ratio 0.96). expect_text exists already (substring, case-sensitive). Do not add the file to kg_sync.EVAL_SETS. HELDOUT_FILE readers: rag.py:278, bench_pool.py:57, test_live_kb.py:1032 (backlog.py referrers HELDOUT_FILE). Selection cost measured by the planner's verifier: 3.3 s wall. The test selection passes before the work: it pins the planted expect_re row and the second file name once they are added; the planted checks 1 and 2 fail before the work.",
+  "claimed_by": "orch-mac"
 }
