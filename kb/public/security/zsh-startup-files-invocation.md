@@ -48,10 +48,10 @@ Zsh reads its startup files in one fixed order: `/etc/zshenv` and `$ZDOTDIR/.zsh
 | login, interactive | `zshenv`, `zprofile`, `zshrc`, `zlogin` files | S-jpnt2s3d |
 | invoked as `sh` or `ksh` | `/etc/profile`, `$HOME/.profile`, then `$ENV` | S-dqge7eik |
 
-Related: `security/zsh-options-emulation-bash-differences.md` (option defaults and emulation), `security/zsh-completion-system.md` (where `compinit` is run from), `claude/settings-and-scopes.md` (lists shell startup files among the files Claude Code protects), `security/kali-apt-sources-metapackages.md` (`zsh` is a dependency of `kali-system-core`). For a Linux distribution on a Windows host see `security/gentoo-in-wsl.md`.
+Related: `security/zsh-options-emulation-bash-differences.md` (option defaults and emulation), `security/zsh-completion-system.md` (where `compinit` is run from), `claude/settings-and-scopes.md` (lists shell startup files among the files Claude Code protects), `security/kali-apt-sources-metapackages.md` (`zsh` is a dependency of `kali-system-core`).
 
 ## Examples
-- SNIPPET: keep `/etc/zshenv` cheap by running the interactive-only part only when startup files are enabled; context: Zsh 5.9.2 on a Linux or Windows (Cygwin) host, the guard form the manual recommends; checked: no [DER S-jpnt2s3d: the `[[ -o rcs ]]` test from the manual's note on `/etc/zshenv`]
+- SNIPPET: keep `/etc/zshenv` cheap by running the interactive-only part only when startup files are enabled; context: Zsh 5.9.2, the guard form the manual recommends; checked: no [DER S-jpnt2s3d: the `[[ -o rcs ]]` test from the manual's note on `/etc/zshenv`]
 ```
 # /etc/zshenv  (read by every zsh, including `zsh -f`)
 if [[ -o rcs ]]; then

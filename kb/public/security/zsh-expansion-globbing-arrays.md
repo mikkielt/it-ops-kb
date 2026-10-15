@@ -43,10 +43,10 @@ Zsh runs history, alias, process substitution, parameter, command substitution, 
 | empty result is not an error | `*(N)` | S-vqwwekes |
 | last element of an array | `$array[-1]` | S-zlyzov2u |
 
-Related: `security/zsh-options-emulation-bash-differences.md`, `security/zsh-startup-files-invocation.md`. For a Linux distribution on a Windows host see `security/gentoo-in-wsl.md`.
+Related: `security/zsh-options-emulation-bash-differences.md`, `security/zsh-startup-files-invocation.md`.
 
 ## Examples
-- SNIPPET: list the plain files under a directory tree without an error when none exist; context: Zsh 5.9.2 on a Linux host or a WSL distribution on a Windows host, `**/` with the `.` and `N` qualifiers; checked: no [DER S-vqwwekes: qualifier list and the `**/` shorthand]
+- SNIPPET: list the plain files under a directory tree without an error when none exist; context: Zsh 5.9.2, `**/` with the `.` and `N` qualifiers; checked: no [DER S-vqwwekes: qualifier list and the `**/` shorthand]
 ```
 print -rl -- /var/log/pl-app/**/*(.N)
 ```

@@ -40,10 +40,10 @@ Completion in zsh is wired by the shell function `compinit`, called from an inte
 | skip or re-run the security check | `compinit -u`, `compinit -i`; `compaudit` | S-wkxevnxu |
 | style context | `:completion:function:completer:command:argument:tag` | S-wkxevnxu |
 
-Related: `security/zsh-startup-files-invocation.md` (`.zshrc` and `ZDOTDIR`), `security/zsh-options-emulation-bash-differences.md`, `dsc/cli-reference.md` (`dsc completer`). For a Linux distribution on a Windows host see `security/gentoo-in-wsl.md`.
+Related: `security/zsh-startup-files-invocation.md` (`.zshrc` and `ZDOTDIR`), `security/zsh-options-emulation-bash-differences.md`, `dsc/cli-reference.md` (`dsc completer`).
 
 ## Examples
-- SNIPPET: enable completion and make the argument after `2>` complete only `*.log` files; context: Zsh 5.9.2, interactive `.zshrc` on a Linux host or in a WSL distribution on a Windows host; checked: no [DER S-wkxevnxu: `autoload -U compinit` and the manual's own `zstyle` example for the `-redirect-` context]
+- SNIPPET: enable completion and make the argument after `2>` complete only `*.log` files; context: Zsh 5.9.2, interactive `.zshrc`; checked: no [DER S-wkxevnxu: `autoload -U compinit` and the manual's own `zstyle` example for the `-redirect-` context]
 ```
 # ~/.zshrc
 autoload -U compinit

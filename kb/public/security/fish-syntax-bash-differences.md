@@ -57,10 +57,10 @@ fish is intentionally not POSIX-compatible: a Bash or `sh` script does not run u
 | `(a; b) \| c` | `begin; a; b; end \| c` | S-2l7kac72 |
 | `until cond; do ...; done` | `while not cond ...; end` | S-2l7kac72 |
 
-Related: `security/fish-variables-scopes-export.md`, `security/fish-functions-abbreviations-events.md`, `security/fish-config-files-completions.md`, `security/fish-feature-flags-release-changes.md`, `security/zsh-options-emulation-bash-differences.md` (the same comparison for zsh), `windows/powershell-7.md` (the shell fish most often sits next to on a Windows host).
+Related: `security/fish-variables-scopes-export.md`, `security/fish-functions-abbreviations-events.md`, `security/fish-config-files-completions.md`, `security/fish-feature-flags-release-changes.md`, `security/zsh-options-emulation-bash-differences.md` (the same comparison for zsh), `windows/powershell-7.md` (the Windows-native shell).
 
 ## Examples
-- SNIPPET: the same loop in Bash and fish, showing that a fish variable needs no quotes to survive a space; context: fish 4.9.3 on a Linux host or a Windows host under WSL, placeholder path `/srv/PL-SRV-0042`; checked: no [DER S-irnsu4to: an unquoted variable expands to one argument per list element, with no word splitting]
+- SNIPPET: the same loop in Bash and fish, showing that a fish variable needs no quotes to survive a space; context: fish 4.9.3, placeholder path `/srv/PL-SRV-0042`; checked: no [DER S-irnsu4to: an unquoted variable expands to one argument per list element, with no word splitting]
 ```
 # Bash:  for f in "$dir"/*; do printf '%s\n' "$f"; done
 set dir "/srv/PL-SRV-0042/my files"

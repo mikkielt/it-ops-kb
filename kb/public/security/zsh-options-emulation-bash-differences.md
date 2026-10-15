@@ -10,7 +10,7 @@ status: complete
 # Zsh options, emulation modes and differences from Bash
 
 ## Summary
-Zsh behaviour is steered by named options: set with `setopt` or `unsetopt`, named case-insensitively with underscores ignored, and listed with a default that depends on the emulation mode (`zsh`, `sh`, `ksh`, `csh`). Most differences from POSIX sh and Bash that surprise a script author come from options that are off or on by default in zsh's own mode: no word splitting of unquoted parameters, an error for a glob with no match, arrays numbered from 1, `#` comments not allowed at an interactive prompt. `emulate` and `LOCAL_OPTIONS` give a function a known configuration. The Zsh FAQ says plainly that zsh is not a bug-for-bug copy of Bash and that Bash scripts should run under Bash. Startup files, also on a Windows host under Cygwin, are in `security/zsh-startup-files-invocation.md`; expansion rules in `security/zsh-expansion-globbing-arrays.md`.
+Zsh behaviour is steered by named options: set with `setopt` or `unsetopt`, named case-insensitively with underscores ignored, and listed with a default that depends on the emulation mode (`zsh`, `sh`, `ksh`, `csh`). Most differences from POSIX sh and Bash that surprise a script author come from options that are off or on by default in zsh's own mode: no word splitting of unquoted parameters, an error for a glob with no match, arrays numbered from 1, `#` comments not allowed at an interactive prompt. `emulate` and `LOCAL_OPTIONS` give a function a known configuration. The Zsh FAQ says plainly that zsh is not a bug-for-bug copy of Bash and that Bash scripts should run under Bash. Startup files are in `security/zsh-startup-files-invocation.md`; expansion rules in `security/zsh-expansion-globbing-arrays.md`.
 
 ## Facts
 - Option names are case insensitive and underscores are ignored (`allexport` is equivalent to `A__lleXP_ort`); a `no` prefix inverts the sense, once only (`setopt No_Beep` is `unsetopt beep`); single-letter names come in a default set and an sh/ksh set (`SH_OPTION_LETTERS`), `+` inverts a letter, and options can also be set within a function scope. [DOC S-e6mo6lhk]
@@ -33,7 +33,7 @@ Zsh behaviour is steered by named options: set with `setopt` or `unsetopt`, name
 - In the FAQ's example, `var="foo bar"; args $var` with `args() { echo $#; }` prints 1 in zsh and 2 after `setopt shwordsplit`; the natural zsh way to get word splitting is an array (`array=(one two three twenty)`), and `${=sentence}` splits one expansion without the option. [DOC S-cbs5knac]
 - The FAQ states that bash and zsh are different programming languages and not interchangeable, that zsh is not a bug-for-bug compatible reimplementation of bash, and that a difference between the two does not make the zsh behaviour a bug, since what counts is what zsh's user manual specifies. [DOC S-3gkyn5mu]
 - The FAQ's advice is not to run bash scripts under zsh, to keep `#!/usr/bin/env bash` scripts even when zsh is the interactive shell, and, to run a bash script or plugin under zsh, to port it properly, reviewing it line by line for differences. [DOC S-3gkyn5mu]
-- For an automation that passes a script or a command string to a shell on a managed Linux or Windows (WSL) host, naming the interpreter explicitly (`bash script.sh`, `#!/usr/bin/env bash`) avoids depending on a user's login shell and its options; this follows from the options being a per-user and per-emulation setting. [DER S-3gkyn5mu, S-e6mo6lhk: FAQ advice to keep bash shebangs, and option defaults depending on emulation]
+- For an automation that passes a script or a command string to a shell on a managed host, naming the interpreter explicitly (`bash script.sh`, `#!/usr/bin/env bash`) avoids depending on a user's login shell and its options; this follows from the options being a per-user and per-emulation setting. [DER S-3gkyn5mu, S-e6mo6lhk: FAQ advice to keep bash shebangs, and option defaults depending on emulation]
 - A zsh script that must behave the same under any user's startup files starts with `emulate -L zsh` (or `emulate -L sh` for POSIX-style code) and sets the few options it relies on. [DER S-ehyugoua, S-e6mo6lhk: `emulate -L` makes the reset local to the function]
 
 ## Reference
@@ -46,10 +46,10 @@ Zsh behaviour is steered by named options: set with `setopt` or `unsetopt`, name
 | `EXTENDED_GLOB` | off | off | `^`, `~`, `#` are pattern characters | S-e6mo6lhk |
 | `INTERACTIVE_COMMENTS` | off | on | `#` comments at an interactive prompt | S-e6mo6lhk |
 
-Related: `security/zsh-startup-files-invocation.md`, `security/zsh-expansion-globbing-arrays.md`, `security/zsh-completion-system.md`. For a Linux distribution on a Windows host see `security/gentoo-in-wsl.md`.
+Related: `security/zsh-startup-files-invocation.md`, `security/zsh-expansion-globbing-arrays.md`, `security/zsh-completion-system.md`.
 
 ## Examples
-- SNIPPET: make a function independent of the caller's options and give it the one option it needs; context: Zsh 5.9.2 on a Linux host or a WSL distribution on a Windows host; checked: no [DER S-ehyugoua, S-e6mo6lhk: `emulate -L zsh` and `setopt` inside the function stay local]
+- SNIPPET: make a function independent of the caller's options and give it the one option it needs; context: Zsh 5.9.2; checked: no [DER S-ehyugoua, S-e6mo6lhk: `emulate -L zsh` and `setopt` inside the function stay local]
 ```
 pl_list_logs() {
   emulate -L zsh

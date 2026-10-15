@@ -1,7 +1,7 @@
 ---
 topic: security/fish-config-files-completions
 priority: P3
-applies_to: "fish 4.9.3 startup configuration (config.fish, conf.d snippets, vendor directories, login shell choice, invocation flags, WSL and Cygwin notes) and the completion system (complete, completions directories, fish_complete_path, wrapping)"
+applies_to: "fish 4.9.3 startup configuration (config.fish, conf.d snippets, vendor directories, login shell choice, invocation flags) and the completion system (complete, completions directories, fish_complete_path, wrapping)"
 retrieved_utc: 2026-10-15
 sources: [S-irnsu4to, S-bdc6dn7m, S-f6olkobv, S-c5jost2j, S-eg4rjgcz, S-kcajyom3, S-pmqazcbs, S116]
 status: complete
@@ -45,7 +45,7 @@ fish has one user file, `~/.config/fish/config.fish`, and it is read by every fi
 | built in | in the fish binary, `status list-files` | S-pmqazcbs |
 | man-page generated | `~/.cache/fish/generated_completions` | S-pmqazcbs |
 
-Related: `security/fish-on-windows-wsl-cygwin-msys2.md`, `security/fish-functions-abbreviations-events.md`, `security/fish-variables-scopes-export.md`, `security/fish-syntax-bash-differences.md`, `dsc/cli-reference.md` (`dsc completer fish`), `security/zsh-completion-system.md`, `security/zsh-startup-files-invocation.md` (the zsh counterpart), `security/gentoo-in-wsl.md` (a Linux distribution on a Windows host), `windows/openssh-server.md` (the default shell of an SSH session on Windows).
+Related: `security/fish-on-windows-wsl-cygwin-msys2.md`, `security/fish-functions-abbreviations-events.md`, `security/fish-variables-scopes-export.md`, `security/fish-syntax-bash-differences.md`, `dsc/cli-reference.md` (`dsc completer fish`), `security/zsh-completion-system.md`, `security/zsh-startup-files-invocation.md` (the zsh counterpart), `windows/openssh-server.md` (the default shell of an SSH session on Windows).
 
 ## Examples
 - SNIPPET: a guarded `config.fish` so that non-interactive sessions stay silent; context: fish 4.9.3, placeholder abbreviation and variable; checked: no [DER S-bdc6dn7m: output in `config.fish` is produced by non-interactive shells too, so it is guarded with `status is-interactive`]
