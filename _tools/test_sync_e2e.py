@@ -123,12 +123,17 @@ def test_heldout_reword_is_refused_at_the_gate(scenario):
     assert "REWORD HO-sync-e2e-heldout ~ EV-sync-e2e-heldout" in r.stdout, r.stdout
     assert scenario.origin.rev("main") == before
     # a range that changes only a root's doc2query expansions, or only one of its articles, runs the same check on
-    # that root's held-out file; a ledger of the root is no article
+    # that root's held-out file and repro bench; a changed held-out file or bench runs its own alone; a ledger of the
+    # root is no article
     import kg_sync
-    held = ["kb/public/_retrieval/lookup_heldout.csv"]
-    paths = ["kb/public/_retrieval/doc2query/expansions.csv", "kb/public/windows/sync-e2e-heldout.md"]
-    assert [p for p, _ in kg_sync.heldout_checks(paths)] == held
-    assert [p for p, _ in kg_sync.heldout_checks(paths[1:])] == held
+    data = "kb/public/_retrieval/"
+    held, bench = [data + "lookup_heldout.csv"], [data + "repro_bench.csv"]
+    paths = [data + "doc2query/expansions.csv", "kb/public/windows/sync-e2e-heldout.md"]
+    assert [p for p, _ in kg_sync.heldout_checks(paths)] == held + bench
+    assert [p for p, _ in kg_sync.heldout_checks(paths[1:])] == held + bench
+    assert [p for p, _ in kg_sync.heldout_checks([data + "lookup_eval.csv"])] == held + bench
+    assert [p for p, _ in kg_sync.heldout_checks([data + "lookup_heldout.csv"])] == held
+    assert [p for p, _ in kg_sync.heldout_checks([data + "repro_bench.csv"])] == bench
     assert kg_sync.heldout_checks(["kb/public/_answers.md", "kb/_self/git.md"]) == []
 
 

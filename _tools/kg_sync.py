@@ -442,29 +442,38 @@ def gate_needs(paths):
 
 EVAL_SETS = ("lookup_eval.csv", "lookup_heldout.csv")  # the tuned eval set and the held-out one beside it
 HELDOUT_SET = EVAL_SETS[1]
+BENCH_SET = "repro_bench.csv"  # the frozen repro set: held to the held-out rule beside the held-out file (rag.FROZEN_FILES)
+FROZEN_SETS = (HELDOUT_SET, BENCH_SET)
 EXPANSIONS = "doc2query/expansions.csv"  # a root's doc2query expansions, under its _retrieval directory
 
 
 def heldout_checks(paths):
-    """[(repository path of a lookup_heldout.csv, why its reword check runs)]: the held-out file beside each changed
-    eval set, and the one of the root whose doc2query expansions or an article changed (PATHS None: the held-out file
-    of every root). `rag.py eval --file` on it prints a REWORD line, and exits 1, for a held-out row that rewords a
-    tuned row or an expansion of its article, which nothing else in a landing reads; an article edit can make a
-    held-out row match an existing expansion row, so an article alone selects it."""
+    """[(repository path of a lookup_heldout.csv or repro_bench.csv, why its reword check runs)]: each frozen set (the
+    held-out file and the repro bench) of the root whose doc2query expansions, lookup_eval.csv or an article changed,
+    the held-out file beside a changed lookup_heldout.csv and the bench beside a changed repro_bench.csv (PATHS None:
+    both files of every root). `rag.py eval --file` on one prints a REWORD line, and exits 1, for a row that rewords a
+    tuned row or an expansion of its article, and an OFFKB line for a good row that is a line of the root's off-kb
+    list; nothing else in a landing reads either. An article edit can make a frozen row match an existing expansion
+    row, so an article alone selects both."""
     if paths is None:
-        found = {kbcommon.repo_rel(os.path.join(kbcommon.DATA_DIR, HELDOUT_SET), r.path): "no base to compare with"
-                 for r in kbcommon.roots()}
+        found = {kbcommon.repo_rel(os.path.join(kbcommon.DATA_DIR, f), r.path): "no base to compare with"
+                 for r in kbcommon.roots() for f in FROZEN_SETS}
     else:
         found = {}
+
+        def add(base, files, why):
+            for f in files:
+                found.setdefault(f"{base}/{f}", why)
         for p in sorted(p.replace("\\", "/") for p in paths):
             data, _, name = p.rpartition("/")
             if p.endswith("/" + EXPANSIONS):
-                found[p[:-len(EXPANSIONS)] + HELDOUT_SET] = f"doc2query expansions changed: {p}"
-            elif name in EVAL_SETS and data:
-                found[data + "/" + HELDOUT_SET] = f"an eval set changed: {p}"
+                add(p[:-len(EXPANSIONS)].rstrip("/"), FROZEN_SETS, f"doc2query expansions changed: {p}")
+            elif name in EVAL_SETS + (BENCH_SET,) and data:
+                # a frozen set is compared with the tuned eval set, never with the other frozen set
+                add(data, FROZEN_SETS if name == EVAL_SETS[0] else (name,), f"an eval set changed: {p}")
             elif p.endswith(".md") and not name.startswith("_") and p.count("/") >= 3 and p.startswith("kb/"):
                 root = "/".join(p.split("/")[:2])  # kb/<root>/<domain>/<slug>.md: an article of that root
-                found.setdefault(f"{root}/{kbcommon.DATA_DIR}/{HELDOUT_SET}", f"an article changed: {p}")
+                add(f"{root}/{kbcommon.DATA_DIR}", FROZEN_SETS, f"an article changed: {p}")
     return [(p, why) for p, why in sorted(found.items()) if Path(KB, p).is_file()]
 
 
