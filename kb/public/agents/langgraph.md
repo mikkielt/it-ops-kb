@@ -3,7 +3,7 @@ topic: agents/langgraph
 priority: P3
 applies_to: "LangGraph (Python `langgraph` package, MIT licence); docs retrieved 2026-10-12"
 retrieved_utc: 2026-10-14
-sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr, S-wrrbygrl, S-vscgh245, S-avxyujaz, S-f3dlrjtw]
+sources: [S-bivxzhtv, S-thsymqx6, S-pxkxmmn5, S-5pmoh6xp, S-j54mtzby, S-dir5xyqr, S-v5hqqcqx, S-43xr27dp, S-woho7bmc, S-ujkfhzif, S-bygurlbr, S-wrrbygrl, S-vscgh245, S-26trg6rj, S-f3dlrjtw]
 status: complete
 ---
 
@@ -97,15 +97,15 @@ status: complete
 - `PostgresStore` writes a put as `INSERT INTO store ... ON CONFLICT (prefix, key) DO UPDATE SET value =
   EXCLUDED.value, updated_at = CURRENT_TIMESTAMP` (with the TTL columns), with no condition on the
   stored row, so two writers on one key both succeed and the value of the statement that runs last
-  stays. [CODE S-avxyujaz: libs/checkpoint-postgres/langgraph/store/postgres/base.py#BasePostgresStore._prepare_batch_PUT_queries]
+  stays. [CODE S-26trg6rj: libs/checkpoint-postgres/langgraph/store/postgres/base.py#BasePostgresStore._prepare_batch_PUT_queries]
 - Within one `batch` call, puts to the same namespace and key are deduplicated and only the last one
-  is written; a put whose value is `None` becomes a `DELETE`. [CODE S-avxyujaz: libs/checkpoint-postgres/langgraph/store/postgres/base.py#BasePostgresStore._prepare_batch_PUT_queries]
+  is written; a put whose value is `None` becomes a `DELETE`. [CODE S-26trg6rj: libs/checkpoint-postgres/langgraph/store/postgres/base.py#BasePostgresStore._prepare_batch_PUT_queries]
 - When the store was built without a pipeline, `batch` runs under the store object's own
   `threading.Lock`, inside a pipeline (or a transaction where pipeline mode is unsupported); that lock
-  is per Python object and does not coordinate other processes or other store objects. [CODE S-avxyujaz: libs/checkpoint-postgres/langgraph/store/postgres/base.py#PostgresStore._cursor]
+  is per Python object and does not coordinate other processes or other store objects. [CODE S-26trg6rj: libs/checkpoint-postgres/langgraph/store/postgres/base.py#PostgresStore._cursor]
 - PostgreSQL guarantees that `INSERT ... ON CONFLICT DO UPDATE` ends in an atomic insert or update even
   under high concurrency, so concurrent puts never fail on the key or leave a partial row; the result
-  is last writer wins. [DER S-f3dlrjtw, S-avxyujaz: the upsert guarantee applied to the put statement
+  is last writer wins. [DER S-f3dlrjtw, S-26trg6rj: the upsert guarantee applied to the put statement
   above]
 
 ### Interrupts and human-in-the-loop

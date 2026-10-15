@@ -3,7 +3,7 @@ topic: agents/shared-state-concurrency
 priority: P3
 applies_to: "Concurrency control for state several agents write: Amazon S3 conditional writes, Azure Blob Storage ETags and leases, Redis distributed locks (Redlock), LangGraph PostgresStore; docs read 2026-10-14"
 retrieved_utc: 2026-10-14
-sources: [S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-avxyujaz]
+sources: [S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj]
 status: complete
 ---
 
@@ -28,7 +28,7 @@ status: complete
   add fencing tokens, and says a wall-clock shift can let two processes hold the lock. [DOC S-5lu6lddr]
 - **LangGraph `PostgresStore`**: `put` is an upsert (`INSERT ... ON CONFLICT (prefix, key) DO
   UPDATE`) with no version check, so of two writers on one key the later statement's value stays
-  (details in `agents/langgraph.md`). [CODE S-avxyujaz: libs/checkpoint-postgres/langgraph/store/postgres/base.py#BasePostgresStore._prepare_batch_PUT_queries]
+  (details in `agents/langgraph.md`). [CODE S-26trg6rj: libs/checkpoint-postgres/langgraph/store/postgres/base.py#BasePostgresStore._prepare_batch_PUT_queries]
 
 ## Facts
 
@@ -146,7 +146,7 @@ status: complete
 - A LangGraph store item written by several agents gets no conflict detection from `PostgresStore`:
   per-agent keys (one writer per key) avoid the overwrite, and a read-modify-write that must not lose
   updates needs its own check outside the store API, such as a PostgreSQL advisory lock
-  (`arch/postgres-advisory-locks.md`). [DER S-avxyujaz, S-f3dlrjtw: put is an unconditional upsert]
+  (`arch/postgres-advisory-locks.md`). [DER S-26trg6rj, S-f3dlrjtw: put is an unconditional upsert]
 
 ## Reference
 - `agents/langgraph.md`: the LangGraph store API, and the `PostgresStore` put path read in its
