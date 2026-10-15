@@ -1413,6 +1413,68 @@ def bench_repro_run_starts_instances_together_stops_at_the_instance_budget_and_a
     assert go(instance_usd=10) == 0 and len(results()) == before and len(calls()) == 5
 
 
+def bench_repro_record_merges_planted_lines_as_rows_and_a_second_record_changes_nothing(tmp_path, capsys):
+    import hashlib
+    import bench_repro as br
+    import benchmarks as bm
+    root, out = tmp_path / "dir", tmp_path / "benchmarks.csv"
+    root.mkdir()
+    rev = "0123456789abcdef0123456789abcdef01234567"
+    (root / br.MANIFEST).write_text(json.dumps({"rev": rev, "instances": []}), encoding="utf-8", newline="\n")
+    briefs, asked = tmp_path / "briefs.csv", tmp_path / "asked.csv"
+    briefs.write_text("area,scope\nalpha,s\n", encoding="utf-8", newline="\n")
+    asked.write_text("id,area\na-1,alpha\n", encoding="utf-8", newline="\n")
+    args = ["repro", "record", "--dir", str(root), "--file", str(out), "--briefs", str(briefs), "--questions", str(asked)]
+    # no lines: exit 0, nothing written, even with no manifest
+    assert bm.main(["repro", "record", "--dir", str(tmp_path / "none"), "--file", str(out), "--dry-run"]) == 0
+    assert "nothing to record" in capsys.readouterr().out and not out.exists()
+    line = {"instance": 1, "area": "alpha", "started": "2026-10-15T08:00:00Z", "model": "claude-sonnet-5-5", "failure": "",
+            "cost": 3.0, "input_tokens": 11, "output_tokens": 44, "cache_write_tokens": 22, "cache_read_tokens": 33,
+            "turns": 7, "tool_calls": 5, "wall_s": 12.5, "model_usage": {"claude-sonnet-5-5": {}, "claude-haiku-5-5": {}},
+            "bare_before": "a" * 40, "bare_after": "b" * 40}
+    planted = [{**line, "failure": "turns", "cost": 8.0}, {**line, "area": "beta", "failure": "budget", "cost": 0},
+               {**line, "instance": 2, "started": "2026-10-15T08:00:01Z"}, line]  # the newest line of (1, alpha) counts
+    (root / br.RESULTS).write_text("not json\n" + "".join(json.dumps(r) + "\n" for r in planted), encoding="utf-8", newline="\n")
+    other = {"scenario": "pool", "record": "2026-10-14", "case": "c", "arm": "a", "metric": "m", "value": "1"}
+    bc.write_rows([other], out)
+    # --dry-run prints the rows it would merge and writes nothing
+    before = out.read_bytes()
+    assert bm.main([*args, "--dry-run"]) == 0 and out.read_bytes() == before
+    shown = capsys.readouterr().out
+    assert "repro 0123456 2026-10-15 alpha instance-1 cost=3.0" in shown
+    assert len([ln for ln in shown.splitlines() if ln.startswith("repro 0123456 ")]) == 36
+    assert bm.main(args) == 0
+    capsys.readouterr()
+    rows = [r for r in bc.read_rows(out) if r["scenario"] == "repro"]
+    assert len(rows) == 36 and bc.read_rows(out)[0] == {k: other.get(k, "") for k in bc.FIELDS}
+    got = {(r["arm"], r["case"], r["metric"]): r["value"] for r in rows}
+    assert {(a, c) for a, c, _ in got} == {("instance-1", "alpha"), ("instance-1", "beta"), ("instance-2", "alpha")}
+    mine = {m: got[("instance-1", "alpha", m)] for m in
+            ("cost", "input", "out", "cache_read", "cache_write", "turns", "tool_calls", "wall_s", "models", "failure",
+             "main_before", "main_after")}
+    assert mine == {"cost": "3.0", "input": "11", "out": "44", "cache_read": "33", "cache_write": "22", "turns": "7",
+                    "tool_calls": "5", "wall_s": "12.5", "models": "claude-haiku-5-5,claude-sonnet-5-5", "failure": "none",
+                    "main_before": "aaaaaaa", "main_after": "bbbbbbb"}
+    assert got[("instance-1", "beta", "failure")] == "budget"
+    sums = [hashlib.sha256(p.read_bytes()).hexdigest() for p in (briefs, asked)]
+    assert {r["record"] for r in rows} == {"0123456"} and {r["date"] for r in rows} == {"2026-10-15"}
+    assert {r["note"] for r in rows} == {f"start {rev}; briefs sha256 {sums[0]}; questions sha256 {sums[1]}"}
+    # a second record of the same lines changes nothing, not the file's bytes either
+    first = out.read_bytes()
+    assert bm.main(args) == 0 and out.read_bytes() == first and "nothing changes" in capsys.readouterr().out
+    # a changed line replaces the record's rows, the other scenario's row stays
+    (root / br.RESULTS).write_text(json.dumps({**line, "cost": 1.5}) + "\n", encoding="utf-8", newline="\n")
+    assert bm.main(args) == 0
+    rows = bc.read_rows(out)
+    assert [r["scenario"] for r in rows] == ["pool"] + ["repro"] * 12 and rows[1]["value"] == "1.5"
+    # a manifest-less directory with lines, and a missing briefs file, are refusals
+    (root / br.MANIFEST).unlink()
+    assert bm.main(args) == 2
+    (root / br.MANIFEST).write_text(json.dumps({"rev": rev}), encoding="utf-8", newline="\n")
+    assert bm.main(["repro", "record", "--dir", str(root), "--file", str(out), "--briefs", str(tmp_path / "none.csv"),
+                    "--questions", str(asked)]) == 2
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read; `fixtures` are further fixtures a body names."""
@@ -1433,6 +1495,7 @@ def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, 
              bench_repro_questions_and_status_name_each_planted_problem,
              bench_stream_run_passes_timeout_and_clean_env_and_an_error_result_keeps_its_cost_usage_and_subtype,
              bench_repro_run_starts_instances_together_stops_at_the_instance_budget_and_a_run_again_resumes,
+             bench_repro_record_merges_planted_lines_as_rows_and_a_second_record_changes_nothing,
              kb_seed=kb_seed)
 
 

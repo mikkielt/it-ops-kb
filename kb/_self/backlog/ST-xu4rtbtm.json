@@ -57,6 +57,42 @@
   "depends_on": [
     "ST-v7d2dc2x"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does repro record fill the cells of a repro row that the goal leaves open (date, commit, claude_code, kb_topics, failure of a finished area, the sha columns, models)?",
+      "options": [
+        "date=earliest started of the lines, commit=start sha 7 chars, claude_code and kb_topics empty, failure none, shas 7 chars, models joined model_usage ids",
+        "full 40-character shas and failure empty"
+      ],
+      "recommendation": "date=earliest started of the lines, commit=start sha 7 chars, claude_code and kb_topics empty, failure none, shas 7 chars, models joined model_usage ids",
+      "do": {
+        "date=earliest started of the lines, commit=start sha 7 chars, claude_code and kb_topics empty, failure none, shas 7 chars, models joined model_usage ids": "ST-xu4rtbtm",
+        "full 40-character shas and failure empty": "ST-xu4rtbtm"
+      },
+      "class": "design",
+      "answer": "date=earliest started of the lines, commit=start sha 7 chars, claude_code and kb_topics empty, failure none, shas 7 chars, models joined model_usage ids",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which options does repro record take, and how does a record that already holds rows of the same start commit merge?",
+      "options": [
+        "--dir, --file (results file), --briefs, --questions, --dry-run; the rows of the same scenario and record are replaced as a whole, and an identical set is not written",
+        "--dir and --dry-run only, always writing the real results file"
+      ],
+      "recommendation": "--dir, --file (results file), --briefs, --questions, --dry-run; the rows of the same scenario and record are replaced as a whole, and an identical set is not written",
+      "do": {
+        "--dir, --file (results file), --briefs, --questions, --dry-run; the rows of the same scenario and record are replaced as a whole, and an identical set is not written": "ST-xu4rtbtm",
+        "--dir and --dry-run only, always writing the real results file": "ST-xu4rtbtm"
+      },
+      "class": "design",
+      "answer": "--dir, --file (results file), --briefs, --questions, --dry-run; the rows of the same scenario and record are replaced as a whole, and an identical set is not written",
+      "by": "agent"
+    }
+  ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
   "claimed_by": "orch-mac"
 }

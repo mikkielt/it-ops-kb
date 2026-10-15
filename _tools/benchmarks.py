@@ -99,6 +99,17 @@
                                             exit 0 (1 for a briefs problem); a real run exits 2 on a refusal (no
                                             instances.json, `repro questions` failing, the start commit holding
                                             repro_bench.csv) and 1 when an area failed
+  benchmarks.py repro record [--dir DIR] [--file FILE] [--briefs FILE] [--questions FILE] [--dry-run]
+                                            merge the json lines of DIR/results.jsonl (the newest of each instance and
+                                            area) into the results file (kb/_self/reports/benchmarks.csv) as the scenario
+                                            `repro`: record the first 7 characters of the start sha of DIR's
+                                            instances.json, arm `instance-N`, case the area, and the metrics cost,
+                                            input, out, cache_read, cache_write, turns, tool_calls, wall_s, models,
+                                            failure (`none` when the area finished), main_before and main_after; the
+                                            note holds the start sha and the sha256 of the briefs and of the questions
+                                            files; it replaces the rows of that record and a second run of it changes
+                                            nothing; --dry-run prints the rows and writes nothing; exit 0 with no lines,
+                                            2 on a refusal (no instances.json, no briefs or questions file)
   benchmarks.py repro status [--dir DIR]    print per instance of DIR's instances.json the commits on its bare since the
                                             start commit and whether each is in a fresh fetch of the real origin's
                                             main; exit 1 when any is, 2 on a refusal; exit 0 with no instances.json
@@ -251,6 +262,13 @@ def main(argv=None):
     rr.add_argument("--timeout", type=int, default=d["timeout"], help=f"seconds of one area's session (default: {d['timeout']})")
     rr.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     rr.add_argument("--dry-run", action="store_true", help="start nothing: print each instance's argv, the estimate and each refusal")
+    rc = rp.add_parser("record")
+    rc.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
+    rc.add_argument("--file", metavar="FILE", help="the results file (default: kb/_self/reports/benchmarks.csv)")
+    rc.add_argument("--briefs", metavar="FILE", help="the briefs file whose sha256 goes in the note (default: " + bench_repro.BRIEFS + ")")
+    rc.add_argument("--questions", metavar="FILE",
+                    help="the frozen questions whose sha256 goes in the note (default: " + bench_repro.ADDED + ")")
+    rc.add_argument("--dry-run", action="store_true", help="print the rows it would merge and write nothing")
     rt = rp.add_parser("status")
     rt.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     a = ap.parse_args(argv)
@@ -279,6 +297,8 @@ def main(argv=None):
                 return bench_repro.questions(a.briefs, a.file)
             if a.repro_cmd == "status":
                 return bench_repro.status(a.dir)
+            if a.repro_cmd == "record":
+                return bench_repro.record_results(a.dir, a.file, a.briefs, a.questions, a.dry_run)
             if a.repro_cmd == "run":
                 return bench_repro.run(a.instances, a.dir, a.dry_run, model=a.model, effort=a.effort, max_turns=a.max_turns,
                                        area_usd=a.area_usd, instance_usd=a.instance_usd, timeout=a.timeout)

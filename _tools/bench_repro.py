@@ -1,5 +1,5 @@
 """The research-reproducibility benchmark's isolated instances: `benchmarks.py repro setup`, `repro check`, `repro
-questions`, `repro run` and `repro status` (stdlib only).
+questions`, `repro run`, `repro record` and `repro status` (stdlib only).
 
 Each instance is a full bare copy of one pinned commit's history (DIR/originN.git, its main at REV), a working clone of
 it outside the checkout (under bench_core's scratch directory) whose only remote is that bare path, a query log of mode
@@ -10,8 +10,9 @@ else. `load_briefs` and `brief_problems` read and check the briefs file, `questi
 against it, and `status` names each instance's commits since the start commit and the ones a fresh fetch of the real
 origin's main holds. `run` starts every instance's headless `/kb-research` sessions at once, one per area in the
 briefs' order, and appends each area's result as a json line to DIR/results.jsonl (`session_argv` is the one argv,
-`area_prompt` the one prompt). This module imports bench_core and kbpublic, and kbfacts where it reads the routing and
-the clone home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
+`area_prompt` the one prompt). `record_results` merges those json lines into the results file as the scenario `repro`. This
+module imports bench_core and kbpublic, and kbfacts where it reads the routing and the clone home (kb/_self/code.md,
+Layout); benchmarks.py holds the command line.
 """
 import csv, datetime, hashlib, json, os, shlex, shutil, subprocess, sys, tempfile, threading, time
 from concurrent.futures import ThreadPoolExecutor
@@ -19,7 +20,8 @@ from pathlib import Path
 
 import agent_bench
 import kbpublic
-from bench_core import HOME, isolate, no_plugin_env, scratch_dir, stream_run
+from bench_core import FIELDS, HOME, RESULTS as BENCH_RESULTS, isolate, merge_rows, no_plugin_env, read_rows, scratch_dir, \
+    stream_run, write_rows
 
 ADDED = "kb/public/_retrieval/repro_bench.csv"  # the file whose first commit's parent is the default REV
 BRIEFS = "kb/public/_retrieval/repro_briefs.csv"  # one research brief per benchmark area
@@ -672,3 +674,78 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     out(f"repro run: {len(insts) * areas - len(failed)} of {len(insts) * areas} area(s) finished, {len(failed)} failed, "
         f"${spent:.2f} recorded in {path}")
     return 1 if failed else 0
+
+
+SCENARIO = "repro"  # the scenario of the rows `record_results` merges into the results file
+RECORD_METRICS = (("cost", "cost"), ("input", "input_tokens"), ("out", "output_tokens"), ("cache_read", "cache_read_tokens"),
+                  ("cache_write", "cache_write_tokens"), ("turns", "turns"), ("tool_calls", "tool_calls"),
+                  ("wall_s", "wall_s"))  # (metric, key of the json line) of the numbers a row holds
+
+
+def file_sha256(path):
+    """The sha256 hex of a file's bytes; Refused when it is not there."""
+    if not Path(path).is_file():
+        raise Refused(f"{path} is not there: its sha256 is part of the record's note")
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def record_rows(results, rev, briefs_sha, questions_sha):
+    """The results-file rows of a run's json lines: scenario `repro`, record the first 7 characters of the start sha `rev`,
+    one case per area, one arm per instance (`instance-N`) and the metrics of RECORD_METRICS, then `models`, `failure`
+    (`none` for a finished area), `main_before` and `main_after` (7 characters each). The date is the earliest start
+    among the lines, so the same lines give the same rows. Only the newest line of an (instance, area) counts."""
+    short = rev[:7]
+    last = latest([r for r in results if r.get("instance") is not None and r.get("area")])
+    date = min((r["started"][:10] for r in results if isinstance(r.get("started"), str) and r["started"]), default="")
+    note = f"start {rev}; briefs sha256 {briefs_sha}; questions sha256 {questions_sha}"
+    rows = []
+    for inst, area in sorted(last, key=lambda k: (str(k[0]).zfill(6), str(k[1]))):
+        r = last[(inst, area)]
+        values = [(m, r.get(key, 0)) for m, key in RECORD_METRICS]
+        values += [("models", ",".join(sorted(r.get("model_usage") or {})) or r.get("model", "")),
+                   ("failure", r.get("failure") or "none"), ("main_before", (r.get("bare_before") or "")[:7]),
+                   ("main_after", (r.get("bare_after") or "")[:7])]
+        for metric, value in values:
+            if isinstance(value, float):
+                value = round(value, 6)
+            rows.append({"scenario": SCENARIO, "record": short, "date": date, "commit": short, "claude_code": "",
+                         "kb_topics": "", "case": area, "arm": f"instance-{inst}", "model": r.get("model", ""),
+                         "metric": metric, "value": value, "runs": 1, "note": note})
+    return rows
+
+
+def cells(row):
+    return tuple(str(row.get(k, "")) for k in FIELDS)
+
+
+def record_results(root=None, file=None, briefs_path=None, questions_path=None, dry_run=False, out=print):
+    """`repro record`: merge the json lines of DIR/results.jsonl into the results file `file` (default
+    kb/_self/reports/benchmarks.csv) as the scenario `repro` (record_rows), in place of the rows of the same start
+    commit; the start commit is DIR's manifest's, the shas in the note are those of the briefs and the questions files
+    as they are now. The same lines again change nothing. With `dry_run` the rows are printed and nothing is written.
+    No lines is no error. Returns 0, or raises Refused (no manifest, no briefs or questions file)."""
+    root = Path(root) if root else default_dir()
+    results = read_results(root / RESULTS)
+    if not results:
+        out(f"repro record: {root / RESULTS} holds no result line: nothing to record")
+        return 0
+    manifest = root / MANIFEST
+    if not manifest.exists():
+        raise Refused(f"{root} holds no {MANIFEST}: the start commit of the result lines is unknown")
+    rev = json.loads(manifest.read_text(encoding="utf-8")).get("rev", "")
+    if not rev:
+        raise Refused(f"{manifest} names no rev: the start commit of the result lines is unknown")
+    rows = record_rows(results, rev, file_sha256(briefs_path or HOME / BRIEFS), file_sha256(questions_path or HOME / ADDED))
+    target = Path(file) if file else BENCH_RESULTS
+    old = read_rows(target)
+    held = sorted(cells(r) for r in old if r["scenario"] == SCENARIO and r["record"] == rev[:7])
+    same = held == sorted(cells(r) for r in rows)
+    if dry_run:
+        for r in rows:
+            out(f"{r['scenario']} {r['record']} {r['date']} {r['case']} {r['arm']} {r['metric']}={r['value']}")
+    elif not same:
+        write_rows(merge_rows(old, rows), target)
+    out(f"repro record: {len(rows)} row(s) of record {rev[:7]} " + (
+        f"already in {target}: nothing changes" if same else
+        f"would replace {len(held)} row(s) of {target}" if dry_run else f"merged into {target}, replacing {len(held)}"))
+    return 0
