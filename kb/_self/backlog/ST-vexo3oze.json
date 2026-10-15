@@ -46,6 +46,25 @@
   "depends_on": [
     "ST-tmd2q4rq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When no area is finished by every instance, what does repro pick compare?",
+      "options": [
+        "own-areas",
+        "tie"
+      ],
+      "recommendation": "own-areas",
+      "do": {
+        "own-areas": "ST-vexo3oze",
+        "tie": "ST-vexo3oze"
+      },
+      "class": "design",
+      "answer": "own-areas",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise (lessons analysis 4.1): instances 1 and 3 tied on 24 passed and 0 errors; pick_key's cost tie-break chose instance 3 ($58.14 against $59.09) because it finished 14 areas, not 19. The first check reads source text for the word common only as a guard; the bundle's planted standings prove the rule. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
   "claimed_by": "orch-75hdeqld"
 }

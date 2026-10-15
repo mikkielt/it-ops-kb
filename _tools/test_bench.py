@@ -1735,9 +1735,9 @@ def bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_comm
         monkeypatch.setenv(k, v)
     git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
     # pick: the sum of eval_passed over the areas, then check_errors + lint_errors, then the summed cost, of the newest record
-    def table(spec, record="abc1234", date="2026-10-16"):
+    def table(spec, record="abc1234", date="2026-10-16", failed=()):
         """repro-compare and repro rows of {n: (eval_passed per area, check_errors, lint_errors, cost per area)}, with the
-        pair and agreement rows `compare` also writes."""
+        pair and agreement rows `compare` also writes; `failed` names the (n, area) pairs whose repro failure row is not `none`."""
         rows = []
         for n, (passed, check, lint, cost) in spec.items():
             rows += [{"scenario": "repro-compare", "case": area, "arm": f"instance-{n}", "metric": "eval_passed", "value": str(passed)}
@@ -1746,6 +1746,8 @@ def bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_comm
                      {"scenario": "repro-compare", "case": "all", "arm": f"instance-{n}", "metric": "lint_errors", "value": str(lint)}]
             rows += [{"scenario": "repro", "case": area, "arm": f"instance-{n}", "metric": "cost", "value": str(cost)}
                      for area in ("alpha", "beta")]
+            rows += [{"scenario": "repro", "case": area, "arm": f"instance-{n}", "metric": "failure",
+                      "value": "budget" if (n, area) in failed else "none"} for area in ("alpha", "beta")]
             rows += [{"scenario": "repro-compare", "case": area, "arm": f"instance-{n}", "metric": "unanchored", "value": str(n)}
                      for area in ("alpha", "beta")]  # instance n left 2n DOC facts unanchored
         rows += [{"scenario": "repro-compare", "case": "alpha", "arm": "instance-1+instance-2", "metric": "fact_overlap", "value": "0.5"},
@@ -1768,6 +1770,14 @@ def bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_comm
     assert "unanchored not recorded" in printed[-1]  # a record from before the metric
     assert picked(table({1: (22, 0, 0, 30), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-2 (lowest cost")
     assert picked(table({1: (22, 0, 0, 25), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-1 (a tie")
+    # the cheaper instance 2 finished one area fewer: only the area both finished is compared, so it is not picked for cost
+    cheap = [{**r, "value": "3"} if r["scenario"] == "repro" and r["metric"] == "cost" and r["arm"] == "instance-2"
+             and r["case"] == "beta" else r for r in table({1: (22, 0, 0, 25), 2: (22, 0, 0, 25)}, failed={(2, "beta")})]
+    assert picked(cheap)[1].startswith("picked: instance-1 (a tie")
+    assert "left out of the comparison: area beta, finished by instance 1 only" in printed[-1]
+    assert "instance-2: eval_passed 22, check_errors+lint_errors 0, unanchored 2, cost 25.00" in printed[-1]
+    assert picked(table({1: (22, 0, 0, 25), 2: (22, 0, 0, 25)}, failed={(1, "alpha"), (2, "beta")}))[0] == 0
+    assert "no area every instance finished" in printed[-1]
     old = table({1: (99, 0, 0, 1), 2: (1, 9, 9, 99)}, record="old0000", date="2026-10-01")
     assert picked(old + table({1: (20, 0, 0, 25), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-2")  # the newest record
     assert picked([r for r in table({1: (20, 0, 0, 25)}) if r["scenario"] == "repro"])[0] == 1  # no repro-compare row

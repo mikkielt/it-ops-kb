@@ -1263,41 +1263,52 @@ def number(value):
 
 
 def standings(rows):
-    """(record, date, {n: {"passed", "errors", "cost"}}) of the newest `repro-compare` record of `rows` (the greatest
-    date, the later row on a tie): per instance the sum of its eval_passed over the areas, check_errors plus lint_errors
-    (None when either is not there), the sum of its unanchored over the areas (None when no area has the row) and the sum
-    of the cost rows of the scenario `repro` of the same record (None when there is none). (None, None, {}) when no row
-    names an instance."""
+    """(record, date, {n: {"passed", "errors", "cost", "unanchored", "areas", "seen"}}, common) of the newest `repro-compare`
+    record of `rows` (the greatest date, the later row on a tie). `seen` is the set of areas the record holds a row of the
+    instance for, `areas` the set it finished: a seen one whose `repro` `failure` row, when it has one, is `none`. `common` is the set of
+    areas every instance finished; per instance the sum of its eval_passed, the sum of its unanchored (None when no common
+    area has the row) and the sum of the cost rows of the scenario `repro` of the same record (None when there is none)
+    are over the common areas only, so an instance that finished fewer areas is not ranked by a lower cost. When no area
+    is common the sums are over each instance's own finished areas. check_errors plus lint_errors (None when either is not
+    there) are the instance's own. (None, None, {}, set()) when no row names an instance."""
     mine = [(k, r) for k, r in enumerate(rows) if r.get("scenario") == COMPARE_SCENARIO and INSTANCE_ARM.fullmatch(r.get("arm", ""))]
     if not mine:
-        return None, None, {}
+        return None, None, {}, set()
     _, newest = max(mine, key=lambda kr: (kr[1].get("date", ""), kr[0]))
     record, date = newest.get("record", ""), newest.get("date", "")
-    found = {}
-    for _, r in mine:
-        if r.get("record") != record:
-            continue
-        n = int(INSTANCE_ARM.fullmatch(r["arm"]).group(1))
-        d = found.setdefault(n, {"passed": 0.0, "check": None, "lint": None, "cost": None, "unanchored": None})
-        v = number(r.get("value"))
-        if v is None:
-            continue
-        if r["metric"] == "eval_passed":
-            d["passed"] += v
-        elif r["metric"] == "unanchored":
-            d["unanchored"] = (d["unanchored"] or 0.0) + v
-        elif r["metric"] in ("check_errors", "lint_errors") and r.get("case") == "all":
-            d[r["metric"][:-7]] = v
+    found, seen, failed = {}, {}, set()  # seen: n -> areas the record holds a row of; failed: (n, area) of a failure row
+    per = {}  # (n, area, metric) -> summed value
     for r in rows:
         m = INSTANCE_ARM.fullmatch(r.get("arm", ""))
-        v = number(r.get("value"))
-        if r.get("scenario") == SCENARIO and r.get("record") == record and r.get("metric") == "cost" and m and v is not None \
-                and int(m.group(1)) in found:
-            d = found[int(m.group(1))]
-            d["cost"] = (d["cost"] or 0.0) + v
+        if not m or r.get("record") != record or r.get("scenario") not in (COMPARE_SCENARIO, SCENARIO):
+            continue
+        n, area, metric, v = int(m.group(1)), r.get("case", ""), r.get("metric", ""), number(r.get("value"))
+        d = found.setdefault(n, {"passed": 0.0, "check": None, "lint": None, "cost": None, "unanchored": None})
+        if r["scenario"] == SCENARIO:
+            if metric == "failure" and r.get("value", "") not in ("", "none"):
+                failed.add((n, area))
+            elif metric == "cost" and v is not None:
+                per[(n, area, "cost")] = per.get((n, area, "cost"), 0.0) + v
+                seen.setdefault(n, set()).add(area)
+            continue
+        if metric in ("check_errors", "lint_errors") and area == "all":
+            if v is not None:
+                d[metric[:-7]] = v
+        elif metric in ("eval_passed", "unanchored") and v is not None:
+            per[(n, area, metric)] = per.get((n, area, metric), 0.0) + v
+            seen.setdefault(n, set()).add(area)
+    finished = {n: {a for a in seen.get(n, set()) if (n, a) not in failed} for n in found}
+    common = set.intersection(*finished.values()) if finished else set()
+    for n, d in found.items():
+        use = common or finished[n]
+        for metric, key in (("eval_passed", "passed"), ("unanchored", "unanchored"), ("cost", "cost")):
+            vals = [per[(n, a, metric)] for a in use if (n, a, metric) in per]
+            if vals:
+                d[key] = sum(vals)
     return record, date, {n: {"passed": d["passed"], "cost": d["cost"], "unanchored": d["unanchored"],
-                              "errors": None if d["check"] is None or d["lint"] is None else d["check"] + d["lint"]}
-                          for n, d in found.items()}
+                              "errors": None if d["check"] is None or d["lint"] is None else d["check"] + d["lint"],
+                              "areas": finished[n], "seen": seen.get(n, set())}
+                          for n, d in found.items()}, common
 
 
 def pick_key(d):
@@ -1309,16 +1320,24 @@ def pick_key(d):
 
 def pick(file=None, out=print):
     """`repro pick`: print, per instance of the newest `repro-compare` record of the results file `file` (default
-    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads and the unanchored DOC facts it does not rank
-    by, then the instance it picks (standings). Returns
-    0, or 1 when the file holds no instance's row. Reads one file and nothing else."""
+    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads over the areas every instance finished and the
+    unanchored DOC facts it does not rank by, the areas left out of that comparison, then the instance it picks
+    (standings). Returns 0, or 1 when the file holds no instance's row. Reads one file and nothing else."""
     target = Path(file) if file else BENCH_RESULTS
-    record, date, found = standings(read_rows(target))
+    record, date, found, common = standings(read_rows(target))
     if not found:
         out(f"repro pick: {target} holds no {COMPARE_SCENARIO} row of an instance: nothing to pick")
         return 1
     fmt = lambda v, f: "not recorded" if v is None else f.format(v)  # noqa: E731
     out(f"repro pick: record {record} ({date or 'no date'}), {len(found)} instance(s) in {target}")
+    left = sorted(set().union(*(d["seen"] for d in found.values())) - common)
+    if common:
+        out(f"compared on {len(common)} area(s) every instance finished: {', '.join(sorted(common))}")
+    else:
+        out("no area every instance finished: each instance is compared on its own finished areas")
+    for a in left:
+        who = [str(n) for n in sorted(found) if a in found[n]["areas"]]
+        out(f"left out of the comparison: area {a}, finished by " + (f"instance {', '.join(who)} only" if who else "no instance"))
     order = sorted(found, key=lambda n: (pick_key(found[n]), n))
     for n in order:
         d = found[n]
