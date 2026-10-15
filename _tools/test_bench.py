@@ -1511,7 +1511,7 @@ else:
     for q in csv.DictReader(open(args[3], encoding="utf-8", newline="")):
         hit = any(re.search(q["expect_re"], f["text"]) for f in facts("public"))
         verdict = "good" if hit else "none"
-        res.append({"id": q["id"], "verdict": verdict, "ok": verdict == q["expect_verdict"], "failed": [] if hit else ["regex"]})
+        res.append({"id": q["id"], "verdict": verdict, "failed": [] if hit else ["regex"]})
     print(json.dumps({"n": len(res), "rows": res}))
 """
 FAKE_CHECK = """import sys
@@ -1597,9 +1597,9 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     asked, out = tmp_path / "asked.csv", tmp_path / "benchmarks.csv"
     rows = [("A-1", "alpha", "retry count is 3"), ("A-2", "alpha", "restarts automatically after"),
             ("A-3", "alpha", "rotated daily"), ("B-1", "beta", "timeout is"), ("B-2", "beta", "only this instance"),
-            ("B-3", "beta", "base fact")]
+            ("B-3", "beta", "base fact"), ("A-4", "alpha", "retry count is 3")]
     asked.write_text("id,question,area,stratum,expect_re,expect_text,expect_paths,expect_verdict,allow_weak\n" + "".join(
-        f"{i},q,{a},absent,{r},,,good,\n" for i, a, r in rows), encoding="utf-8", newline="\n")
+        f"{i},q,{a},absent,{r},,,{'none' if i == 'A-4' else 'good'},\n" for i, a, r in rows), encoding="utf-8", newline="\n")
     args = ["repro", "compare", "--dir", str(root), "--questions", str(asked)]
     # --dry-run lists the metrics and the instances it reads, and starts no tool
     assert bm.main([*args, "--dry-run"]) == 0
@@ -1619,7 +1619,7 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
                  "pair 1+2 area beta: url_jaccard 0.00, fact_overlap 0.50, 1 conflict(s)",
                  "instance 1 public/a.md:", "The request timeout is 30 seconds.", "instance 2 public/a.md:",
                  "The request timeout is 60 seconds.", "instance 1: check.py errors 1, lint errors 0",
-                 "instance 2: check.py errors 0, lint errors 1", "area alpha: agreement 0.67 of 3 frozen row(s)"):
+                 "instance 2: check.py errors 0, lint errors 1", "area alpha: agreement 0.75 of 4 frozen row(s)"):
         assert want in shown, (want, shown)
     assert "area beta: agreement" not in shown  # instance 2's beta did not finish
     calls = [json.loads(ln) for ln in (tmp_path / "calls.jsonl").read_text(encoding="utf-8").splitlines()]
@@ -1637,8 +1637,9 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
             ("instance-1+instance-2", "alpha", "fact_overlap"): "0.666667",
             ("instance-1+instance-2", "beta", "fact_overlap"): "0.5", ("instance-1+instance-2", "beta", "conflicts"): "1",
             ("instance-1", "all", "check_errors"): "1", ("instance-2", "all", "lint_errors"): "1",
-            ("instance-1", "alpha", "eval_passed"): "2", ("instance-1", "alpha", "eval_total"): "3",
-            ("instance-2", "beta", "eval_passed"): "2", ("all", "alpha", "agreement"): "0.666667"}
+            ("instance-1", "alpha", "eval_passed"): "3", ("instance-1", "alpha", "eval_total"): "4",
+            ("instance-2", "alpha", "eval_passed"): "4", ("instance-2", "beta", "eval_passed"): "2",
+            ("all", "alpha", "agreement"): "0.75"}
     for k, v in want.items():
         assert got.get(k) == v, (k, v, got.get(k))
     assert not [k for k in got if k[2] == "agreement" and k[1] == "beta"] and len(got) == 51
