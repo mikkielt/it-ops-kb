@@ -2,7 +2,7 @@
   "id": "ST-q6657u6u",
   "kind": "story",
   "title": "Research sprint goal: repro compare and pick read research gain, claim parity and structural identity",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-75hdeqld",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "No outside facts: every item changes the repro harness's scoring code (bench_repro.py, kg_sync.py) from the run's own recorded data; no question of the goal needs a page the kb lacks."
+  "notes": "No outside facts: every item changes the repro harness's scoring code (bench_repro.py, kg_sync.py) from the run's own recorded data; no question of the goal needs a page the kb lacks.",
+  "claimed_by": "orch-75hdeqld"
 }
