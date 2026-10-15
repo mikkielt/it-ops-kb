@@ -2,7 +2,7 @@
   "id": "ST-dau3e4pz",
   "kind": "story",
   "title": "benchmarks.py repro pick applies the landing rule, and repro replay puts one instance's commits on a work branch",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,6 @@
   "depends_on": [
     "ST-ttiz3pcz"
   ],
-  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
+  "claimed_by": "orch-mac"
 }
