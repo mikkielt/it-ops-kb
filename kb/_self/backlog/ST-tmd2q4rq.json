@@ -2,7 +2,7 @@
   "id": "ST-tmd2q4rq",
   "kind": "story",
   "title": "repro compare matches an area's claims across its articles, not one path",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-75hdeqld",
   "priority": "P2",
   "rank": 0,
@@ -83,5 +83,28 @@
     }
   ],
   "notes": "Premise (lessons analysis 1.4, 2.2, 2.3): 13, 22 and 45 articles on the 14 common areas, the same path in all three for 4 areas; fact_overlap 0.00 in 30 of 42 pairs because match_facts compares one path; 6 of 362 source rows of shared ids byte-identical. Structural identity is the target the next run measures; byte parity of prose is not a goal. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
-  "claimed_by": "orch-75hdeqld"
+  "evidence": {
+    "commit": "1f8eedd77c9cbab0bdfce9bb24acbdb5afcd1658",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;m=[n for n in ['paths_same', 'ledger_rows_same', 'source_rows_same'] if n not in b.COMPARE_METRICS];print('missing',m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1dcd2586c4536f16"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "3560f86f45affda4"
+      }
+    ]
+  }
 }
