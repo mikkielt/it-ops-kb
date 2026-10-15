@@ -2,7 +2,7 @@
   "id": "ST-wtui5diw",
   "kind": "story",
   "title": "The replayed areas' alias rows are in _tools/aliases.csv",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3jcdsgr",
   "priority": "P3",
   "rank": 0,
@@ -93,5 +93,63 @@
     "ST-6tbbdbec"
   ],
   "notes": "Merges the six alias drafts instance 3 filed (ST-j2ctkvl4, ST-r3tvhelr, ST-oeyfaoee, ST-2onmjhme, ST-za3ew224, ST-bamh3apr); their goals list every row in full. A row whose term is already in an alias file, or which turns a lookup eval row, is left out and named in the report, but the check's one row per area stays. Checks that pass before the work: rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15 (triage fit10): folds the four alias stories ST-eszi5rxa (agents/agent-sandboxes), ST-mvvzqk3r (agents/policy-as-code), ST-p2u3ozgk (gitlab/commit-signing-and-provenance) and ST-s75mayaf (agents/agent-memory-services) as clauses 3 to 6 with their own checks 2 to 5, which list every row and back-link in full; each failed on the base at c907de7b3. Their touches add nine Reference sections, none shared with another item of the sprint but the research story's kb/public/**. A back-link is one line of an article's Reference section, no fact: no source, anchor or doc2query row changes.",
-  "claimed_by": "orch-z3jcdsgr"
+  "evidence": {
+    "commit": "272a1e2e70e8e521fe0fdc9ec7e4220dcc6bf527",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=[l.strip() for l in open('_tools/aliases.csv',encoding='utf-8')]\nneed=['tsgo,typescript-go','zshrc,zsh','kalilinux,kali','portage,gentoo','chef infra client,chef-client']\nmiss=[r for r in need if r not in t]+([] if any(l.startswith('leapp,') for l in t) else ['leapp,'])\nprint(miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "d805a65eee6d542c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('sbx','docker sandboxes'),('docker sandboxes','docker sandboxes'),('runsc','gvisor'),('gvisor','gvisor')}; l=all('agents/agent-sandboxes.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/claude/agent-sdk.md','kb/public/windows/windows-sandbox.md')); sys.exit(0 if w<=r and l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('open policy agent','opa'),('opa','opa'),('amazon verified permissions','verified permissions'),('avp','verified permissions'),('verified permissions','verified permissions')}; l=all('agents/policy-as-code.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/agents/agent-rbac.md','kb/public/agents/gitops-for-agents.md')); sys.exit(0 if w<=r and l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('pgp','gpg'),('openpgp','gpg'),('gpg','gpg')}; l=all('gitlab/commit-signing-and-provenance.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/gitlab/protected-branches-tags.md','kb/public/gitlab/mr-approvals.md','kb/public/security/supply-chain.md')); sys.exit(0 if w<=r and l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('durable object','durable objects'),('durable objects','durable objects'),('managed agents','claude managed agents'),('claude managed agents','claude managed agents')}; l=all('agents/agent-memory-services.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/agents/foundry-agent-service.md','kb/public/agents/shared-state-concurrency.md')); sys.exit(0 if w<=r and l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
