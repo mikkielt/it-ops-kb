@@ -1,0 +1,25 @@
+{
+  "id": "ST-mee3qx7d",
+  "kind": "story",
+  "title": "A planned item that replays or rewrites commits carries a check-trailers check, so its done fails before the push does",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The plan step of the sprint skill names that an item whose work replays, rebases or rewrites commits (repro replay, a cherry-pick of another clone's history) carries the check `python3 _tools/kbgit.py check-trailers origin/main..HEAD`, so a trailer the push gate refuses fails the item's done in the worker's worktree, not the landing's push.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;s=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'check-trailers' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-bhzxxhub close"
+  ],
+  "notes": "Retrospective of SP-bhzxxhub: ST-apmeih5l's done passed all seven checks, then land stopped at kbgit.py sync --push (check-trailers bad=7: each replayed backlog-planning commit carried a second KB-Work line); the orchestrator rewrote the 7 commits by hand. The code defect is BG-gg3aohlm."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-lbkiwyu2",
+  "kind": "story",
+  "title": "A vendor name in a gate's option about a kb source row does not class the gate push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.class_reasons leaves a gate design-class when the words that match the push class name a vendor or product in a kb source row or licence note (such as 'the repository licence from the GitLab API'), not a push, a remote or publishing, while a gate about pushing to GitLab stays push-class; a planted pair of gates proves it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a;g={'id':'g1','question':'Which row of the duplicated source id stays in kb/public/_sources.csv?','options':['main row (CC BY-SA 4.0)','instance row (MIT, the repository licence from the GitLab API)']};c,_=a.class_reasons({'touches':['kb/public/**']},g);print(c);sys.exit(0 if c=='design' else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/test_authority.py"
+  ],
+  "links": [
+    "parked: SP-bhzxxhub close"
+  ],
+  "notes": "Retrospective of SP-bhzxxhub: the worker's gate g1 on ST-apmeih5l (which duplicate source row stays) was made blocking as class push on 'matched GitLab' in an option's licence note; the orchestrator, acting as operator, answered it. Changing the push class's words guards a rule: a gate before any code."
+}

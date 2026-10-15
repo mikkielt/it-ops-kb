@@ -1,0 +1,27 @@
+{
+  "id": "ST-ndfoocto",
+  "kind": "story",
+  "title": "repro compare counts each instance's unanchored DOC facts, so the landing pick sees research left unanchored",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "repro compare records per instance and area the DOC facts with no _anchors.csv row (metric unanchored) beside check_errors and lint_errors, and repro pick prints it, so an instance that skipped factdiff.py anchor --file for an article is visible before it lands; a planted instance proves it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import bench_repro as b;sys.exit(0 if 'unanchored' in inspect.getsource(b) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-bhzxxhub close"
+  ],
+  "notes": "Retrospective of SP-bhzxxhub: instance 3, picked with check_errors+lint_errors 0, left all 52 DOC facts of windows/robocopy.md unanchored (review gap, parked as ST-iq73rdnb); neither compare nor pick reads anchors."
+}
