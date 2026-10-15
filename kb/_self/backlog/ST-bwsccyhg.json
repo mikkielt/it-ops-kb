@@ -2,7 +2,7 @@
   "id": "ST-bwsccyhg",
   "kind": "story",
   "title": "Review sprint: Shared agent state, governance and multi-agent operations",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5dffnlxn",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-state"
 }
