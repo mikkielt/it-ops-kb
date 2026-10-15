@@ -1,0 +1,20 @@
+{
+  "id": "SP-bhzxxhub",
+  "kind": "sprint",
+  "title": "One benchmark instance's research lands in the real kb",
+  "status": "planned",
+  "goal": "the instance the landing gate's rule picks lands its research in the real kb through the content lane; and the other two instances stay archived under _cache/bench-repro/ as evidence only, none of their commits on the real origin",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
