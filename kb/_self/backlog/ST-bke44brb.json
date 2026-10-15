@@ -47,7 +47,7 @@
       },
       "class": "design",
       "answer": "follow-up story ST-s75mayaf",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -64,7 +64,7 @@
       },
       "class": "design",
       "answer": "P3",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -81,7 +81,7 @@
       },
       "class": "design",
       "answer": "keep it as DOC with the warning until BG-nr2mv4si is fixed",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -98,7 +98,7 @@
       },
       "class": "design",
       "answer": "keep the Managed Agents section",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-memory-services where no article fits.",

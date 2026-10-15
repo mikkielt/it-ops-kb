@@ -64,7 +64,7 @@
       },
       "class": "design",
       "answer": "P3",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/policy-as-code where no article fits.",

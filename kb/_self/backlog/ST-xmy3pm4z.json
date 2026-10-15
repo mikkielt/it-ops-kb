@@ -47,7 +47,7 @@
       },
       "class": "design",
       "answer": "DER plus gap entry",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research, closing the agent-rbac UNK on agent identities and ABAC.",

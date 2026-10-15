@@ -47,7 +47,7 @@
       },
       "class": "design",
       "answer": "new topic gitlab/commit-signing-and-provenance holds them all",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "backlinks",
@@ -64,7 +64,7 @@
       },
       "class": "design",
       "answer": "follow-up story ST-p2u3ozgk adds them",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "licence",

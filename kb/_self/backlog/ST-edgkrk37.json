@@ -47,7 +47,7 @@
       },
       "class": "design",
       "answer": "follow-up story ST-eszi5rxa",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -64,7 +64,7 @@
       },
       "class": "design",
       "answer": "P3",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -81,7 +81,7 @@
       },
       "class": "design",
       "answer": "describe the layout without the word clone",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -98,7 +98,7 @@
       },
       "class": "design",
       "answer": "keep the GKE Sandbox facts",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-sandboxes where no article fits.",

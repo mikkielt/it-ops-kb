@@ -47,7 +47,7 @@
       },
       "class": "design",
       "answer": "leave the back-links out; the new topic links to the anchors and the answer names them",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic auth/spiffe-workload-identity where no article fits.",

@@ -47,7 +47,7 @@
       },
       "class": "design",
       "answer": "kustomize-controller spec at v1.9.6",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -63,8 +63,8 @@
         "UNK and gap alone": "ST-7muzllvn"
       },
       "class": "design",
-      "answer": "DER nearest pull loops plus UNK and gap",
-      "by": "agent"
+      "answer": "DER naming the official pull loops (Azure Machine Configuration, GPO background refresh, Intune check-ins) without calling one the nearest, plus UNK and gap",
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, extending agents/gitops-for-agents through /kb-research.",

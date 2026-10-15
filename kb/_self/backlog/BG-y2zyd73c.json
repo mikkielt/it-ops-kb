@@ -1,0 +1,39 @@
+{
+  "id": "BG-y2zyd73c",
+  "kind": "bug",
+  "title": "SP-5dffnlxn review: GitLab doc rows carry MIT, peer-sync gap closed early, a superlative DER, a missing GitHub caveat and three smaller fact slips",
+  "status": "todo",
+  "parent": "EP-klpp2paw",
+  "sprint": "SP-5dffnlxn",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "Fix the seven gaps the SP-5dffnlxn review found, as the operator ruled: (1) the GitLab doc source rows S-pt32lcdt, S-s67nwj2e, S-xz7iisq3 and S-5pu4zmds carry the doc/ licence 'CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT)', copy, as the earlier GitLab doc rows. (2) The _gaps.md entry on sharing agent state between workstations is narrowed and stays open, not Resolved, since no agent vendor page exists (operator answer to ST-7v2bhvbw g1), with any answer line that calls it resolved brought in line. (3) agents/gitops-for-agents.md's Windows reconciler DER names Azure Machine Configuration, GPO background refresh and Intune check-ins as official pull loops without calling one the nearest (operator answer to ST-7muzllvn g2). (4) claude/cross-session-messaging.md gains the Projects page's condition that code threads need github.com repositories, as a DOC fact, and the DER on Projects carries it as a caveat. (5) gitlab/commit-signing-and-provenance.md's Summary says the runner's statement has no signature described rather than calling it unsigned. (6) auth/spiffe-workload-identity.md:23 cites S-yp5feoc6 beside S-xc5uusz2. (7) Source row S-avxyujaz, cited nowhere since the re-pin to checkpointpostgres==3.2.0, is superseded by its successor row or removed by the kb's own rules.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import csv,sys;rows={r['id']:r for r in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8'))};bad=[i for i in ('S-pt32lcdt','S-s67nwj2e','S-xz7iisq3','S-5pu4zmds') if 'MIT' in rows[i]['licence'] and 'BY-SA' not in rows[i]['licence']];bad+=['nearest'] if 'nearest official' in open('kb/public/agents/gitops-for-agents.md',encoding='utf-8').read() else [];bad+=['S-avxyujaz'] if 'S-avxyujaz' in rows and not rows['S-avxyujaz']['superseded_by'] else [];print(bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "the defects are kb content (licence cells, a fact's wording, an orphan source row); no tool behaviour produces them, so the repro reads the three that a file can show",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_sources.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/agents/gitops-for-agents.md",
+    "kb/public/claude/cross-session-messaging.md",
+    "kb/public/gitlab/commit-signing-and-provenance.md",
+    "kb/public/auth/spiffe-workload-identity.md"
+  ]
+}

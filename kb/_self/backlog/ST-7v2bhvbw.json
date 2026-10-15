@@ -47,8 +47,8 @@
         "Narrowed, stays open": "ST-7v2bhvbw"
       },
       "class": "design",
-      "answer": "Resolved",
-      "by": "agent"
+      "answer": "Narrowed, stays open",
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/peer-state-sync where no article fits, closing the cross-session-messaging gap on peer sharing of agent state.",

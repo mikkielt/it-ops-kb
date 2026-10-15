@@ -55,7 +55,7 @@
       },
       "class": "design",
       "answer": "eval row accepts either article (expect_paths names both), expansion on the new topic's fact that maps the SRE loop onto a failed agent task",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -72,7 +72,7 @@
       },
       "class": "design",
       "answer": "keep the DOC fact, read from the page's raw HTML, with the lint warning until the bug is fixed",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "rag.py eval passes before the work by design: it pins every lookup_eval.csv row, the new troubleshooting row included, once the row lands; the last goal question is the logged miss itself, which researched packs and which fails until the expansion makes it good. How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-troubleshooting-method where no article fits, plus a kb/public/_retrieval/lookup_eval.csv row and a doc2query expansion for the logged lookup miss below (it should find agents/agent-planning-and-done.md).",
