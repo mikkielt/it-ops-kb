@@ -777,3 +777,15 @@ x-memory-user-id,agents/agent-memory-services
 validateStateChange,agents/agent-memory-services
 mergeAgentState,agents/agent-memory-services
 blockConcurrencyWhile,agents/agent-memory-services
+agents.x-k8s.io,agents/agent-sandboxes
+SandboxClaim,agents/agent-sandboxes
+SandboxWarmPool,agents/agent-sandboxes
+SandboxTemplate,agents/agent-sandboxes
+k8s-agent-sandbox,agents/agent-sandboxes
+runsc,agents/agent-sandboxes
+runtimeClassName,agents/agent-sandboxes
+SECCOMP_RET_TRAP,agents/agent-sandboxes
+DOCKER_SANDBOXES_ENABLE_VIRTIOFS_CACHE,agents/agent-sandboxes
+HypervisorPlatform,agents/agent-sandboxes
+--isolation=hyperv,agents/agent-sandboxes
+wsb exec,agents/agent-sandboxes

@@ -1571,3 +1571,6 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## agents/agent-memory-services
 - **Release status of the Cloudflare Agents SDK, and a conditional write (ETag or version precondition) for Foundry memory items.** Looked 2026-10-15 in the Cloudflare Agents state and Agent class pages (S-4wv4j3r2, S-3bnq55fu) and the Durable Objects concept page (S-x5vpwiqv), which state no GA, beta or preview label for the SDK, and in the Foundry memory concept and how-to pages (S-qwkcddyd, S-akyurl2s), whose item update calls name no precondition. Needs the Agents SDK changelog or a Cloudflare status statement, and the Foundry memory REST reference read for an `If-Match` or version field. [UNK] (topic: agents/agent-memory-services)
+
+## agents/agent-sandboxes
+- **Release stage of Docker Sandboxes (GA, beta or preview).** Looked 2026-10-15 in the Docker Sandboxes overview, install, architecture, security and isolation pages (S-pdqpy37l, S-6rab4vhg, S-4kmihytd, S-qfhwf42v, S-5hrbuirw), which label only single features (UDP egress, upstream proxy) experimental and give the product no stage. Needs Docker's release notes for `sbx` (the `docker/sbx-releases` repository) or a product status statement. [UNK] (topic: agents/agent-sandboxes)

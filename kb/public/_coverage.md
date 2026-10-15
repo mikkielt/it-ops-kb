@@ -46,6 +46,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/windows-agentic-platform` | P2 | complete | `agents/windows-agentic-platform.md`, `agents/windows-ai-policies.csv` | 16 |
 | `agents/agent-memory-services` | P3 | complete | `agents/agent-memory-services.md` | 10 |
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
+| `agents/agent-sandboxes` | P3 | partial | `agents/agent-sandboxes.md` | 18 |
 | `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 9 |
 | `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 111 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
