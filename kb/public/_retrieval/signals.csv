@@ -831,3 +831,19 @@ storage.conf,arch/podman-rootless-config
 rootless_port_forwarder,arch/podman-volumes-networks-pods
 netavark,arch/podman-volumes-networks-pods
 pasta,arch/podman-volumes-networks-pods
+noop_pending,arch/puppet-agent-run-noop-reporting
+corrective_change,arch/puppet-agent-run-noop-reporting
+last_run_report.yaml,arch/puppet-agent-run-noop-reporting
+runinterval,arch/puppet-agent-run-noop-reporting
+detailed-exitcodes,arch/puppet-agent-run-noop-reporting
+metaparameter,arch/puppet-language-resources-types
+autorequire,arch/puppet-language-resources-types
+puppet-agent package,arch/puppet-language-resources-types
+hiera.yaml,arch/puppet-modules-facts-hiera
+lookup_options,arch/puppet-modules-facts-hiera
+facts.d,arch/puppet-modules-facts-hiera
+$trusted,arch/puppet-modules-facts-hiera
+PUPPET_AGENT_STARTUP_MODE,arch/puppet-windows-nodes
+puppetlabs/acl,arch/puppet-windows-nodes
+puppetlabs/registry,arch/puppet-windows-nodes
+puppetlabs/reboot,arch/puppet-windows-nodes

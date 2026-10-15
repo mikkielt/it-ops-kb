@@ -92,6 +92,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/postgres-backup-age-s3-git-bundle` | P3 | partial | `arch/postgres-backup-age-s3-git-bundle.md` | 15 |
 | `arch/postgres-bundled-binaries` | P3 | partial | `arch/postgres-bundled-binaries.md` | 26 |
 | `arch/postgres-dump-canonical-hash` | P3 | partial | `arch/postgres-dump-canonical-hash.md` | 4 |
+| `arch/puppet-agent-run-noop-reporting` | P3 | partial | `arch/puppet-agent-run-noop-reporting.md` | 11 |
+| `arch/puppet-language-resources-types` | P3 | partial | `arch/puppet-language-resources-types.md` | 8 |
+| `arch/puppet-modules-facts-hiera` | P3 | partial | `arch/puppet-modules-facts-hiera.md` | 9 |
+| `arch/puppet-windows-nodes` | P3 | partial | `arch/puppet-windows-nodes.md` | 10 |
 | `arch/rust-clippy-criterion-gates` | P3 | partial | `arch/rust-clippy-criterion-gates.md` | 15 |
 | `arch/sse-last-event-id-cursors` | P3 | partial | `arch/sse-last-event-id-cursors.md` | 5 |
 | `arch/uuidv7-identifiers` | P3 | complete | `arch/uuidv7-identifiers.md` | 3 |
@@ -282,7 +286,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `powerbi/row-level-security` | P2 | complete | `powerbi/row-level-security.md` | 2 |
 | `powerbi/scheduled-refresh` | P2 | complete | `powerbi/scheduled-refresh.md` | 4 |
 | `prior-art/device-identity-correlation` | P2 | complete | `prior-art/device-identity-correlation.md` | 7 |
-| `prior-art/drift-detection` | P2 | partial | `prior-art/drift-detection.md` | 10 |
+| `prior-art/drift-detection` | P2 | partial | `prior-art/drift-detection.md` | 12 |
 | `prior-art/layered-settings-resolution` | P2 | complete | `prior-art/layered-settings-resolution.md` | 4 |
 | `prior-art/log-collection-normalization` | P2 | complete | `prior-art/log-collection-normalization.md` | 8 |
 | `prior-art/mcp-microsoft-endpoint-mgmt` | P2 | complete | `prior-art/mcp-microsoft-endpoint-mgmt.md` | 5 |

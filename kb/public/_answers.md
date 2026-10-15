@@ -3701,3 +3701,15 @@ _Agent: kb-research_
 - See arch/podman-rootless-config.md, arch/podman-images-registries.md, arch/podman-volumes-networks-pods.md, arch/podman-quadlet-systemd.md, arch/podman-api-socket.md.
 
 _Agent: kb-research_
+
+## QK-puppet-s-agent-run-noop-mode. How do Puppet's agent run, noop mode and reporting work, and what is specific to Windows nodes?
+- One agent run is: certificate exchange, node request (environment), plugin sync, catalog request with the node's facts as JSON, apply (with file source requests), then a report `PUT`; the defaults are `runinterval` 30m, `splay` false, `runtimeout` 1h. [DOC S-uqxc7z4f, S-cttzm2qq]
+- `noop` (setting or per-resource metaparameter) checks each resource and reports the changes it would make without making them and without sending refresh events; an explicit per-resource `noop` value is not overridden by the global setting. [DOC S-cttzm2qq, S-w5xtdsyr, S-4dquzyfj]
+- The run report carries `noop` and `noop_pending` (any resource with a `noop` event), plus `corrective_change` and per-resource `out_of_sync`; the report status is computed from failures and the change total only. [CODE S-wwls72e7, S-xsvufwtx]
+- Reports go to the primary server when `report` is true; the default report processor is `store`, with `http` and `log` built in; `puppet agent --detailed-exitcodes` returns 0, 1, 2, 4 or 6. [DOC S-fhswdmzt, S-e7vpuvbk, S-cttzm2qq, S-z6kl5grq]
+- On Windows the installer sets the agent up as a service that runs every 30 minutes; core `exec`, `file`, `package`, `service`, `user` and `group` work with limits (no shell provider, MSI or EXE installers only with a required `source`, local accounts only, `mode` mapped to approximate ACLs), and registry, ACL, reboot, DISM and PowerShell exec support are Forge modules. [DOC S-dk5ixeab, S-hrrqkjbi, S-syu6rsv6, S-6gagioik, S-eutggisu, S-wgecldol]
+- Conclusion: a Puppet drift check is a noop run read through `noop_pending` in the report, per node and through the node's own agent; it is a comparison point for DSC v3 what-if, not a component to adopt. [DER S-cttzm2qq, S-wwls72e7, S-dk5ixeab]
+- Open: the exit code of a `--noop --detailed-exitcodes` run, and the `ordering` setting's status in Puppet 8 are unconfirmed. [UNK]
+- See arch/puppet-agent-run-noop-reporting.md, arch/puppet-language-resources-types.md, arch/puppet-modules-facts-hiera.md, arch/puppet-windows-nodes.md.
+
+_Agent: kb-research_

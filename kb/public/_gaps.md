@@ -1600,3 +1600,13 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## arch/podman-api-socket
 - **How completely the Docker-compatible API layer covers Docker features and docker-compose.** Looked 2026-10-15 in the `podman-system-service(1)` page at v6.1.4 (S-noii6ew2): it names the Docker v1.40 API for the compatibility layer, says the server does not reject unsupported versions, and gives a `docker-compose up` example; it lists no unsupported endpoints. Needs the compatibility API reference on docs.podman.io or a Podman release note naming gaps. [UNK] (topic: arch/podman-api-socket)
+
+## arch/puppet-agent-run-noop-reporting
+- **The exit code of `puppet agent --noop --detailed-exitcodes`.** Looked 2026-10-15 in the `puppet agent` man page of Puppet Core 8 (S-z6kl5grq) and in the pinned configuration reference (S-cttzm2qq): the man page lists exit codes 0, 1, 2, 4 and 6 for `--test` and `--detailed-exitcodes` and says nothing about a noop run; the report code (S-wwls72e7) sets `noop_pending` separately from the status. Needs a Puppet page or a run on a lab node that states the code for a noop run with pending changes. [UNK] (topic: arch/puppet-agent-run-noop-reporting)
+- **Which of `corrective_change` and `noop_pending` a PuppetDB or console consumer should read for noop drift.** Looked 2026-10-15 in `lib/puppet/transaction/report.rb` and `lib/puppet/resource/status.rb` at commit e227c27 (S-wwls72e7, S-xsvufwtx): both fields exist on the report; the code comments say `corrective_change` includes noop corrective changes, and no page read says which one drift reporting is meant to use. Needs the PuppetDB report format page or Puppet Enterprise node-status documentation read in full. [UNK] (topic: arch/puppet-agent-run-noop-reporting)
+
+## arch/puppet-language-resources-types
+- **Whether Puppet 8 still has an `ordering` setting.** Looked 2026-10-15 in the Core 8 resources page (S-3nlx3lke), which says the setting customises the default order, and in the configuration reference (S-cttzm2qq) and `lib/puppet/defaults.rb` (S-se4kjnw2) at commit e227c27, where `ordering` appears only inside the deferred-function setting text. Needs the Puppet 8 release notes or a configuration reference that lists or drops it. [UNK] (topic: arch/puppet-language-resources-types)
+
+## arch/puppet-windows-nodes
+- **The Puppet language page on DSC resources and `dsc_*` types on Windows.** Looked 2026-10-15 for a Puppet-owned page: only the paths page (S-i7ihql2k) mentions PowerShell DSC resources (backslash paths, single-quoted strings); the `puppetlabs/dsc` and `puppetlabs/dsc_lite` modules were not read. Needs the module READMEs on the Forge or in their repositories. [UNK] (topic: arch/puppet-windows-nodes)

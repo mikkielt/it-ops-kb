@@ -811,3 +811,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## arch/podman-rootless-config
 - Storage drivers usable by a rootless user: the project's `rootless.md` (S-rif3pi6x, read 2026-10-15 at v6.1.4) says the only supported storage drivers are overlay (optionally through `fuse-overlayfs`) and VFS, while the `containers-storage.conf(5)` page (S-b2bqmd6c, container-libs commit 7eac5c25c6b6) says the valid rootless drivers are btrfs, overlay and vfs. The kb states both and does not choose; the two pages are in different repositories and the storage page is the more specific one for the option's values. (topic: arch/podman-rootless-config)
+
+## arch/puppet-language-resources-types
+- `ordering` setting: the Puppet Core 8 resources page (S-3nlx3lke, read 2026-10-15) says the default manifest order can be customised "with the ordering setting" and points to the configuration page, but the configuration reference (S-cttzm2qq) and `lib/puppet/defaults.rb` (S-se4kjnw2), both at commit e227c27, define no such setting (the word occurs only in the deferred-function text). The kb states both and does not choose. (topic: arch/puppet-language-resources-types)
+
+## arch/puppet-windows-nodes
+- Running a Windows service as a specific user: the type reference's `windows` service provider text (S-ef4b5npw, read 2026-10-15) says running services as a specific user is not supported, while the same provider's supported features include `manages_logon_credentials` (the provider can specify the logon credentials of a service). The kb states both and does not choose. (topic: arch/puppet-windows-nodes)
