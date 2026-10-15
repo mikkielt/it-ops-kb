@@ -807,3 +807,14 @@ k8s_psat,auth/spiffe-workload-identity
 serviceAccountToken,auth/spiffe-workload-identity
 expirationSeconds,auth/spiffe-workload-identity
 TokenReview,auth/spiffe-workload-identity
+microsoft.flux,agents/gitops-for-agents
+fluxConfigurations,agents/gitops-for-agents
+fluxconfig-agent,agents/gitops-for-agents
+az k8s-configuration flux,agents/gitops-for-agents
+kustomize.toolkit.fluxcd.io,agents/gitops-for-agents
+microsoft.argocd,agents/gitops-for-agents
+Microsoft.ArgoCD,agents/gitops-for-agents
+argocd-application-controller,agents/gitops-for-agents
+syncPolicy,agents/gitops-for-agents
+selfHeal,agents/gitops-for-agents
+timeout.reconciliation,agents/gitops-for-agents

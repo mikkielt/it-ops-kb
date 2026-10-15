@@ -31,6 +31,42 @@
   "depends_on": [
     "ST-u6y5okle"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which source carries the upstream Flux drift facts: the kustomize-controller repository's Kustomization spec at tag v1.9.6, or the fluxcd.io website page?",
+      "options": [
+        "kustomize-controller spec at v1.9.6",
+        "fluxcd.io website page"
+      ],
+      "recommendation": "kustomize-controller spec at v1.9.6",
+      "do": {
+        "kustomize-controller spec at v1.9.6": "ST-7muzllvn",
+        "fluxcd.io website page": "ST-7muzllvn"
+      },
+      "class": "design",
+      "answer": "kustomize-controller spec at v1.9.6",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the article answer the Windows endpoints clause when no official page names a git reconciler for them: DER facts naming the nearest official pull loops (Azure Machine Configuration from Azure Policy, ansible-pull from git on a control node) plus an UNK and a gap, or the UNK and gap alone?",
+      "options": [
+        "DER nearest pull loops plus UNK and gap",
+        "UNK and gap alone"
+      ],
+      "recommendation": "DER nearest pull loops plus UNK and gap",
+      "do": {
+        "DER nearest pull loops plus UNK and gap": "ST-7muzllvn",
+        "UNK and gap alone": "ST-7muzllvn"
+      },
+      "class": "design",
+      "answer": "DER nearest pull loops plus UNK and gap",
+      "by": "agent"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, extending agents/gitops-for-agents through /kb-research.",
   "claimed_by": "orch-state"
 }
