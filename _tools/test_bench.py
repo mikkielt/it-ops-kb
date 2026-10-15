@@ -1475,6 +1475,186 @@ def bench_repro_record_merges_planted_lines_as_rows_and_a_second_record_changes_
                     "--questions", str(asked)]) == 2
 
 
+FAKE_RAG = """import csv, json, os, re, subprocess, sys
+from pathlib import Path
+home, args = Path(__file__).resolve().parent.parent, sys.argv[1:]
+head = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True).stdout.strip()
+with open(os.environ["FAKE_LOG"], "a") as f:
+    f.write(json.dumps({"argv": args, "cwd": os.getcwd(), "head": head}) + "\\n")
+kinds = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
+
+
+def facts(root):
+    out = []
+    for a in sorted((home / "kb" / root).glob("*.md")):
+        for n, ln in enumerate(a.read_text(encoding="utf-8").splitlines(), 1):
+            if ln.startswith("- "):
+                out.append({"path": root + "/" + a.name, "line": n, "section": "Facts", "text": ln[2:],
+                            "tags": [{"kind": k, "ids": [], "note": ""} for k in re.findall(r"\\[([A-Z]+)\\b", ln)]})
+    return out
+
+
+assert args[0] == "--json"
+if args[1] == "facts":
+    print(json.dumps(facts(args[2])))
+elif args[1] == "audit":
+    rows = {}
+    for f in facts("public"):
+        r = rows.setdefault(f["path"], {"path": f["path"], "facts": 0, **{k: 0 for k in kinds}})
+        r["facts"] += 1
+        for t in f["tags"]:
+            r[t["kind"]] += 1
+    print(json.dumps(list(rows.values())))
+else:
+    res = []
+    for q in csv.DictReader(open(args[3], encoding="utf-8", newline="")):
+        hit = any(re.search(q["expect_re"], f["text"]) for f in facts("public"))
+        verdict = "good" if hit else "none"
+        res.append({"id": q["id"], "verdict": verdict, "ok": verdict == q["expect_verdict"], "failed": [] if hit else ["regex"]})
+    print(json.dumps({"n": len(res), "rows": res}))
+"""
+FAKE_CHECK = """import sys
+from pathlib import Path
+home = Path(__file__).resolve().parent.parent
+lines = [ln for f in (home / "kb").rglob("*.md") for ln in f.read_text(encoding="utf-8").splitlines()]
+print("sources=1 citations=1 errors=%d" % sum("BROKEN" in ln for ln in lines))
+"""
+FAKE_LINT = """import json, sys
+from pathlib import Path
+home = Path(__file__).resolve().parents[3]
+assert sys.argv[1:3] == ["--json", "--base"] and len(sys.argv) == 4
+lines = [ln for f in (home / "kb").rglob("*.md") for ln in f.read_text(encoding="utf-8").splitlines()]
+out = [{"level": "ERROR", "path": "x", "message": ln} for ln in lines if "LINT" in ln]
+print(json.dumps(out))
+sys.exit(1 if out else 0)
+"""
+
+
+def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_conflicting_facts(tmp_path, monkeypatch, capsys):
+    import shutil, subprocess
+    import bench_repro as br
+    import benchmarks as bm
+    for k, v in {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+                 "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com",
+                 "BENCH_SCRATCH": str(tmp_path / "scratch"), "FAKE_LOG": str(tmp_path / "calls.jsonl")}.items():
+        monkeypatch.setenv(k, v)
+    git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
+    sources = "id,url,title\n"
+
+    def plant(repo, files, msg):
+        for name, text in files.items():
+            (repo / name).parent.mkdir(parents=True, exist_ok=True)
+            (repo / name).write_text(text, encoding="utf-8", newline="\n")
+        git("add", "-A", cwd=repo)
+        git("commit", "-q", "-m", msg, cwd=repo)
+        return git("rev-parse", "HEAD", cwd=repo)
+
+    src = tmp_path / "src"
+    src.mkdir()
+    git("init", "-q", "--initial-branch=main", cwd=src)
+    start = plant(src, {"_tools/rag.py": FAKE_RAG, "_tools/check.py": FAKE_CHECK, ".claude/skills/kb-verify/lint.py": FAKE_LINT,
+                        "kb/public/_sources.csv": sources + "S-1,https://example.com/base,base\n",
+                        "kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n"}, "start")
+    cites = lambda *rows: sources + "S-1,https://example.com/base,base\n" + "".join(  # noqa: E731
+        f"{i},{u},t\n" for i, u in rows)
+    fact_a = "- The default retry count is 3 attempts. [DOC S-2]\n"
+    plans = {1: [("alpha", {"kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n" + fact_a +
+                           "- The service restarts automatically after a failure. [DOC S-3]\n",
+                           "kb/public/_sources.csv": cites(("S-2", "https://example.com/retry?utm=1"),
+                                                           ("S-3", "https://example.com/restart"))}),
+                 ("beta", {"kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n" + fact_a +
+                           "- The service restarts automatically after a failure. [DOC S-3]\n"
+                           "- The request timeout is 30 seconds. [DOC S-4]\nBROKEN marker\n",
+                           "kb/public/b.md": "# B\n\n- A fact only this instance wrote. [DER S-7]\n",
+                           "kb/public/_sources.csv": cites(("S-2", "https://example.com/retry?utm=1"),
+                                                           ("S-3", "https://example.com/restart"),
+                                                           ("S-4", "https://example.com/timeout"),
+                                                           ("S-7", "https://example.com/unique"))})],
+             2: [("alpha", {"kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n" + fact_a +
+                            "- The service restarts automatically after the failure. [DOC S-3]\n"
+                            "- Logs are rotated daily. [UNK S-8]\n",
+                            "kb/public/_sources.csv": cites(("S-6", "https://example.com/retry"),
+                                                            ("S-8", "https://example.com/rotation"))}),
+                 ("beta", {"kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n" + fact_a +
+                           "- The service restarts automatically after the failure. [DOC S-3]\n"
+                           "- Logs are rotated daily. [UNK S-8]\n- The request timeout is 60 seconds. [DOC S-5]\n"
+                           "LINT marker\n",
+                           "kb/public/_sources.csv": cites(("S-6", "https://example.com/retry"),
+                                                           ("S-8", "https://example.com/rotation"),
+                                                           ("S-5", "https://example.com/timeouts"))})]}
+    root, lines = tmp_path / "dir", []
+    root.mkdir()
+    insts = []
+    for n, steps in plans.items():
+        work = tmp_path / f"work{n}"
+        git("clone", "-q", str(src), str(work), cwd=tmp_path)
+        shas = [plant(work, files, area) for area, files in steps]
+        git("clone", "-q", "--bare", str(work), str(root / f"origin{n}.git"), cwd=tmp_path)
+        insts.append({"n": n, "bare": str(root / f"origin{n}.git")})
+        lines += [{"instance": n, "area": a, "started": "2026-10-15T08:00:00Z",
+                   "failure": "turns" if (n, a) == (2, "beta") else "",
+                   "bare_before": ([start] + shas)[i], "bare_after": shas[i]} for i, (a, _) in enumerate(steps)]
+    (root / br.MANIFEST).write_text(json.dumps({"rev": start, "instances": insts}), encoding="utf-8", newline="\n")
+    (root / br.RESULTS).write_text("".join(json.dumps(r) + "\n" for r in lines), encoding="utf-8", newline="\n")
+    asked, out = tmp_path / "asked.csv", tmp_path / "benchmarks.csv"
+    rows = [("A-1", "alpha", "retry count is 3"), ("A-2", "alpha", "restarts automatically after"),
+            ("A-3", "alpha", "rotated daily"), ("B-1", "beta", "timeout is"), ("B-2", "beta", "only this instance"),
+            ("B-3", "beta", "base fact")]
+    asked.write_text("id,question,area,stratum,expect_re,expect_text,expect_paths,expect_verdict,allow_weak\n" + "".join(
+        f"{i},q,{a},absent,{r},,,good,\n" for i, a, r in rows), encoding="utf-8", newline="\n")
+    args = ["repro", "compare", "--dir", str(root), "--questions", str(asked)]
+    # --dry-run lists the metrics and the instances it reads, and starts no tool
+    assert bm.main([*args, "--dry-run"]) == 0
+    shown = capsys.readouterr().out
+    assert "metrics: articles_added, facts_added, doc, code, der, community, unk, sources_added, url_jaccard" in shown
+    assert "instance 1: reads bare" in shown and "instance 2: reads bare" in shown and not (tmp_path / "calls.jsonl").exists()
+    # the comparison: by the shas of each area, in a detached checkout of each instance's own, with no file written
+    assert bm.main(args) == 0 and not out.exists()
+    shown = capsys.readouterr().out
+    for want in ("instance 1 area alpha: 0 article(s), 2 fact(s) added (DOC 2, CODE 0, DER 0, COMMUNITY 0, UNK 0), 2 source(s)",
+                 "instance 2 area alpha: 0 article(s), 3 fact(s) added (DOC 2, CODE 0, DER 0, COMMUNITY 0, UNK 1), 2 source(s)",
+                 "instance 1 area beta: 1 article(s), 2 fact(s) added (DOC 1, CODE 0, DER 1, COMMUNITY 0, UNK 0)",
+                 "instance 2 area beta: 0 article(s), 1 fact(s) added (DOC 1, CODE 0, DER 0, COMMUNITY 0, UNK 0)",
+                 "pair 1+2 area alpha: url_jaccard 0.33, fact_overlap 0.67, 0 conflict(s)",
+                 "pair 1+2 area beta: url_jaccard 0.00, fact_overlap 0.50, 1 conflict(s)",
+                 "instance 1 public/a.md:", "The request timeout is 30 seconds.", "instance 2 public/a.md:",
+                 "The request timeout is 60 seconds.", "instance 1: check.py errors 1, lint errors 0",
+                 "instance 2: check.py errors 0, lint errors 1", "area alpha: agreement 0.67 of 3 frozen row(s)"):
+        assert want in shown, (want, shown)
+    assert "area beta: agreement" not in shown  # instance 2's beta did not finish
+    calls = [json.loads(ln) for ln in (tmp_path / "calls.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert {c["head"] for c in calls} == {"HEAD"} and {Path(c["cwd"]).name for c in calls} == {"compare1", "compare2"}
+    assert not [p for p in (tmp_path / "scratch").rglob("compare*") if p.is_dir()]
+    # --record merges the numbers as the scenario repro-compare, and a second record changes nothing
+    other = {"scenario": "repro", "record": start[:7], "case": "c", "arm": "instance-1", "metric": "cost", "value": "1"}
+    bc.write_rows([other], out)
+    assert bm.main([*args, "--record", "--file", str(out)]) == 0
+    capsys.readouterr()
+    rows = bc.read_rows(out)
+    got = {(r["arm"], r["case"], r["metric"]): r["value"] for r in rows if r["scenario"] == "repro-compare"}
+    assert rows[0]["scenario"] == "repro" and {r["record"] for r in rows if r["scenario"] == "repro-compare"} == {start[:7]}
+    want = {("instance-1", "alpha", "facts_added"): "2", ("instance-2", "alpha", "facts_added"): "3",
+            ("instance-2", "alpha", "unk"): "1", ("instance-1", "beta", "articles_added"): "1",
+            ("instance-1", "beta", "der"): "1", ("instance-1", "alpha", "sources_added"): "2",
+            ("instance-1+instance-2", "alpha", "url_jaccard"): "0.333333",
+            ("instance-1+instance-2", "alpha", "fact_overlap"): "0.666667",
+            ("instance-1+instance-2", "beta", "fact_overlap"): "0.5", ("instance-1+instance-2", "beta", "conflicts"): "1",
+            ("instance-1", "all", "check_errors"): "1", ("instance-2", "all", "lint_errors"): "1",
+            ("instance-1", "alpha", "eval_passed"): "2", ("instance-1", "alpha", "eval_total"): "3",
+            ("instance-2", "beta", "eval_passed"): "2", ("all", "alpha", "agreement"): "0.666667"}
+    for k, v in want.items():
+        assert got.get(k) == v, (k, v, got.get(k))
+    assert not [k for k in got if k[2] == "agreement" and k[1] == "beta"] and len(got) == 51
+    first = out.read_bytes()
+    assert bm.main([*args, "--record", "--file", str(out)]) == 0 and out.read_bytes() == first
+    assert "nothing changes" in capsys.readouterr().out
+    # a questions file that is not there is a refusal; a bare that is gone too
+    assert bm.main(["repro", "compare", "--dir", str(root), "--questions", str(tmp_path / "none.csv")]) == 2
+    capsys.readouterr()
+    shutil.rmtree(root / "origin2.git")
+    assert bm.main(args) == 2 and "instance 2: its bare" in capsys.readouterr().err
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read; `fixtures` are further fixtures a body names."""
@@ -1496,6 +1676,7 @@ def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, 
              bench_stream_run_passes_timeout_and_clean_env_and_an_error_result_keeps_its_cost_usage_and_subtype,
              bench_repro_run_starts_instances_together_stops_at_the_instance_budget_and_a_run_again_resumes,
              bench_repro_record_merges_planted_lines_as_rows_and_a_second_record_changes_nothing,
+             bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_conflicting_facts,
              kb_seed=kb_seed)
 
 
