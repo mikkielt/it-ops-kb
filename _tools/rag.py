@@ -52,7 +52,7 @@ Add --json (before the command) for machine output. artifacts/ directories are n
 index files (README.md, each root's _answers.md, _gaps.md, _conflicts.md, _coverage.csv) and the kb's own docs
 (kb/_self/) unless --index; pack never sees them.
 """
-import argparse, csv, difflib, json, os, sys
+import argparse, csv, difflib, json, os, re, sys
 from collections import Counter, defaultdict
 import kbcommon, kbid, kbfacts
 
@@ -275,7 +275,8 @@ def eval_cases(path=None, root=None):
     return out
 
 
-HELDOUT_FILE = "lookup_heldout.csv"  # the file name of a held-out eval set: eval --file refuses a reworded tuned row in it
+HELDOUT_FILE = "lookup_heldout.csv"  # the file name of the held-out eval set the gates read
+FROZEN_FILES = (HELDOUT_FILE, "repro_bench.csv")  # the file names eval --file holds to the held-out rule: no row rewords a tuned one
 REWORD_RATIO = 0.75  # a held-out question this similar to a tuned one (difflib, lower-cased) is a rewording of it
 
 
@@ -385,10 +386,20 @@ NOTE_LINES = ("check:", "route:")  # the pack's lines that flag a `good` verdict
 NOTED_BASELINE = 13  # eval rows expected `good` whose pack carries one: the default run fails above it
 
 
+def regex_found(rx, text):
+    """True when the regex `rx` matches in `text` (re.search, no flags); an uncompilable one matches nothing."""
+    try:
+        return re.search(rx, text) is not None
+    except re.error:
+        return False
+
+
 def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
-    expect no path), and when the row has `expect_text` one of its `;`-separated phrases must occur in the pack's text.
+    expect no path), when the row has `expect_text` one of its `;`-separated phrases must occur in the pack's text, and
+    when it has `expect_re` (`failed=regex`) one of its `;`-separated regexes must match it (`re.search`, no flags, as
+    agent_bench.check scores an answer; one that does not compile matches nothing).
     A `_self` row passes on its text alone: its phrase must be in one of its docs (it has an anchor, else
     `failed=anchor`) and in the pack's text (else `failed=text`); a row with no `expect_text` expects the verdict
     `none`. `noted` counts the rows expecting `good` whose pack prints a `check:` or `route:` line (NOTE_LINES). With `free`, `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out
@@ -406,9 +417,11 @@ def run_eval(path=None, root=None, free=False):
         fok = bool(found) if want else True
         phrases = [t.strip() for t in (c.get("expect_text") or "").split(";") if t.strip()]
         tok = any(t in res["text"] for t in phrases) if phrases else True
+        regexes = [t.strip() for t in (c.get("expect_re") or "").split(";") if t.strip()]
+        rok = any(regex_found(t, res["text"]) for t in regexes) if regexes else True
         # every row is a ranking row: a question a kind expert routes (kbfacts.routed) never reaches pack in a lookup
         free_of_routing = own or kbfacts.routed(c["question"]) is None
-        failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok), ("routed", free_of_routing)) if not ok]
+        failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok), ("regex", rok), ("routed", free_of_routing)) if not ok]
         if own:
             passages = passages or kbfacts.self_units()
             if not phrases:
@@ -420,7 +433,7 @@ def run_eval(path=None, root=None, free=False):
                 if free:
                     loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
                     hits += any(t in loo["text"] for t in phrases)
-                failed = [] if tok else ["text"]
+                failed = [w for w, ok in (("text", tok), ("regex", rok)) if not ok]
         noted = c["expect_verdict"] == "good" and any(ln.startswith(NOTE_LINES) for ln in res["text"].splitlines())
         rows.append({"id": c["id"], "verdict": res["verdict"], "want_verdict": c["expect_verdict"], "found": found,
                      "paths": res["paths"], "chars": len(res["text"]), "ok": not failed, "verdict_ok": vok,
@@ -598,7 +611,7 @@ def main():
     elif a.cmd == "eval":
         if a.root and a.root not in {r.name for r in kbcommon.roots()} | {kbfacts.SELF_ROOT}:
             ap.error(f"no root {a.root!r}")
-        pairs = heldout_rewordings(a.file, a.root) if a.file and os.path.basename(a.file) == HELDOUT_FILE else []
+        pairs = heldout_rewordings(a.file, a.root) if a.file and os.path.basename(a.file) in FROZEN_FILES else []
         for hid, label, ratio in pairs:
             print(f"REWORD {hid} ~ {label} (ratio {ratio:.2f}): a held-out row rewords a tuned row; replace it")
         overlaps = offkb_overlaps(a.file, a.root)
@@ -608,8 +621,11 @@ def main():
         if pairs or overlaps:
             sys.exit(1)
         res = run_eval(a.file, a.root, a.free)
+        over = a.file is None and res["noted"] > NOTED_BASELINE
+        failing = res["passed"] < (res["n"] if a.min is None else a.min) or over  # the exit code, --json or not
         if a.json:
-            return print(json.dumps(res, indent=1))
+            print(json.dumps(res, indent=1))
+            sys.exit(1 if failing else 0)
         width = max((len(r["id"]) for r in res["rows"]), default=6)
         for r in (r for r in res["rows"] if a.all or not r["ok"]):
             print(f"{'ok  ' if r['ok'] else 'FAIL'} {r['id']:<{width}} verdict={r['verdict']:<5} (want {r['want_verdict']:<5}) "
@@ -617,13 +633,12 @@ def main():
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
               f"mean_chars={res['mean_chars']} noted={res['noted']}"
               + (f" free={res['free']}/{res['anchored']}" if res["free"] is not None else ""))
-        over = a.file is None and res["noted"] > NOTED_BASELINE
         if over:
             for r in (r for r in res["rows"] if r["noted"]):
                 print(f"NOTED {r['id']:<{width}} carries a check: or route: line though expected good")
             print(f"noted={res['noted']} is above NOTED_BASELINE={NOTED_BASELINE}: a pack note now fires on an answered "
                   "question; fix the note, or raise the constant with the reason")
-        if res["passed"] < (res["n"] if a.min is None else a.min) or over:
+        if failing:
             sys.exit(1)
     else:
         path, _, line = a.target.partition(":")
