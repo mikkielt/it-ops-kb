@@ -2,7 +2,7 @@
 topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, a branch a worktree holds, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`); Git for Windows v2.56.0.windows.2 (core.longpaths)"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-15
 sources: [S-3qf7ndi6, S-ali5r4n7, S-sx4rosvv, S-i3btr2xr, S-3au2dknw, S-hwicl2h6, S-hnrqsiz4, S-xcnkwrn4, S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
 status: complete
 ---
@@ -297,6 +297,11 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   gone (`git worktree remove`, then `prune` for a hand-deleted one), or runs the command inside the worktree
   that holds the branch; `--ignore-other-worktrees` and `-f` leave two worktrees on one branch, which the check
   exists to prevent. [DER S-3au2dknw, S-hwicl2h6, S-sx4rosvv, S-j4qkzgvv: the refusal and its overrides above]
+
+### Bare and mirror clones
+- `--bare` makes the target directory itself the `$GIT_DIR` (no `<directory>/.git`) and implies `--no-checkout`; the source's branch heads are copied straight to local branch heads, with no `refs/remotes/origin/` mapping and no remote-tracking branches. [DOC S-k2jlpd4u]
+- `--mirror` implies `--bare` and maps all of the source's refs, remote-tracking branches and notes included, with a refspec that a `git remote update` in the target uses to overwrite them; a copy meant to stand in for a remote that holds one history's branches is a `--bare` one, since the mirror's extra refs and refspec are what `--bare` leaves out. [DER S-k2jlpd4u: the two options' ref mapping, compared]
+- The docs' example of a repository to publish changes from is `git clone --bare -l <source>/.git <name>.git`, a bare clone made through the local-clone path. [DOC S-k2jlpd4u]
 
 ## Reference
 - Related: `python/pytest.md` (session fixtures, `tmp_path_factory`, `--durations`), `python/pytest-xdist.md` (a session fixture runs once per worker), `python/stdlib-windows-portability.md` (process start on Windows), `gitlab/git-trailers-and-hooks.md` (what `git commit` runs), `windows/dev-drive.md` (where the repositories live on Windows).
