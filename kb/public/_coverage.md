@@ -14,7 +14,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 39 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
-| `agents/agent-rbac` | P1 | partial | `agents/agent-rbac.md` | 20 |
+| `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 23 |
 | `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 15 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 23 |
 | `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
@@ -157,7 +157,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `dsc/secrets` | P0 | complete | `dsc/secrets.md` | 12 |
 | `dsc/settings-and-paths` | P0 | complete | `dsc/settings-and-paths.md` | 8 |
 | `dsc/what-if` | P0 | complete | `dsc/what-if.md` | 12 |
-| `entra/agent-id` | P1 | complete | `entra/agent-id.md` | 22 |
+| `entra/agent-id` | P1 | complete | `entra/agent-id.md` | 25 |
 | `entra/bitlocker-key-deletion` | P1 | complete | `entra/bitlocker-key-deletion.md` | 4 |
 | `entra/conditional-access-devices` | P1 | complete | `entra/conditional-access-devices.md`, `entra/ca-device-filter-properties.csv` | 18 |
 | `entra/connect-and-cloud-sync` | P1 | complete | `entra/connect-and-cloud-sync.md` | 19 |

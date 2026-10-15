@@ -3578,3 +3578,14 @@ _Agent: kb-research_
 - See gitlab/multi-project-pipelines.md, claude/large-codebases.md, claude/cross-session-messaging.md.
 
 _Agent: kb-research_
+
+## QK-microsoft-entra-agent-identity-hold-azure. Can a Microsoft Entra agent identity hold an Azure RBAC role assignment that carries an ABAC condition, can custom security attributes on agent identities select them in Conditional Access policies, and which Microsoft Graph permissions or roles let an administrator assign those attributes to agents?
+- Agent identities can be assigned Azure RBAC roles the same as standard service principals; agent identity blueprints can't. [DOC S-2iq53pkf]
+- Conditions go only on role assignments with Blob or Queue Storage data actions; a condition's `@Principal` source reads custom security attributes of a user or an enterprise application (service principal). [DOC S-etygtiqw, S-wpj4qsjg]
+- In Conditional Access, **Select agent identities** (and **Select agent users**, preview) can pick agents by custom security attributes; Microsoft recommends blocking all agent identities except those whose attribute marks them approved, assigned to each agent or blueprint. [DOC S-6ecweang, S-gea7m5um]
+- Assigning attributes to an agent identity through Graph (`PATCH /servicePrincipals/{id}/microsoft.graph.agentIdentity`, `customSecurityAttributes`): delegated, the **Attribute Assignment Administrator** role plus `CustomSecAttributeAssignment.ReadWrite.All` and `AgentIdentity.ReadWrite.All`; app-only, `CustomSecAttributeAssignment.ReadWrite.All`. Global Administrator can't assign them by default. [DOC S-xt5vc46a, S-vbqsgiw3]
+- Conclusion: yes to the first two: an agent identity can take a storage data role whose condition reads its own custom security attributes, and the same attributes select it in Conditional Access; tag agents with an Attribute Assignment Administrator or an app holding `CustomSecAttributeAssignment.ReadWrite.All`, and keep that right apart from the Conditional Access administrator who writes the policy. [DER S-2iq53pkf, S-wpj4qsjg, S-xt5vc46a, S-gea7m5um]
+- Open: no page read shows an agent identity as the assignee of a conditioned role assignment, and it was not tried in a tenant; one Learn page says agent identities take Entra built-in roles like any service principal while the authorization page limits them (see _conflicts.md). [UNK]
+- See agents/agent-rbac.md, entra/agent-id.md.
+
+_Agent: kb-research_

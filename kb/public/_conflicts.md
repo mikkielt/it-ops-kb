@@ -493,6 +493,9 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
   - Re-checked 2026-09-27 (Learn search): admin-use-entra-agent-identities still says 'Starting May 2026, all new agents have Microsoft Entra Agent IDs'; no release note reconciles the three dates. Still open. (topic: entra/agent-id)
 - Microsoft Learn search index (2026-09-27) still returns the overview page with the PREVIEW banner, while the live page and What's new (S-ifhonpv7) say Entra Agent ID is generally available; the Entra what's-new lists 'General Availability - Microsoft Entra Agent ID platform' in April 2026. (topic: entra/agent-id)
 
+## agents/agent-rbac
+- Which Microsoft Entra directory roles an agent identity can hold: "Agent identities, service principals, and applications" (S-2iq53pkf, read 2026-10-15) says agent identities can be assigned Azure RBAC roles and Microsoft Entra built-in roles "the same as standard service principals", while the authorization page and FAQ (S-fwzaxe7i, S-pmj4jc4f) say they can't hold highly privileged directory roles or custom roles and only lower-privileged roles such as readers. The kb states both; the narrower pages are the specific statement, so plan on the restriction. [DOC S-2iq53pkf vs DOC S-fwzaxe7i, S-pmj4jc4f, unresolved] (topic: agents/agent-rbac)
+
 ## agents/windows-agentic-platform
 
 - Recall availability default: Policy CSP `WindowsAI\AllowRecallEnablement` (rechecked 2026-09-26) still

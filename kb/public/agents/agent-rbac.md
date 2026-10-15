@@ -2,9 +2,9 @@
 topic: agents/agent-rbac
 priority: P1
 applies_to: "MCP specification draft (post 2026-07-28), Claude Code 2.1.x, Microsoft Entra Agent ID (public preview, 2026-03 docs), Microsoft Entra role-assignable groups / PIM for Groups"
-retrieved_utc: 2026-10-14
-sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3, S-etygtiqw, S-uva2ob4g]
-status: partial
+retrieved_utc: 2026-10-15
+sources: [S707, S740, S742, S1282, S1297, S2040, S2041, S2042, S2045, S2050, S2051, S2052, S2053, S2058, S-fwzaxe7i, S-pmj4jc4f, S-ooc6gvno, S-4zkj3ag3, S-etygtiqw, S-uva2ob4g, S-2iq53pkf, S-wpj4qsjg, S-xt5vc46a]
+status: complete
 ---
 
 # RBAC for agents and MCP tools
@@ -96,7 +96,10 @@ group claims/overage, PIM-for-Groups sync latency).
 - Feature status: conditions through the portal, PowerShell, CLI and REST are GA since October 2022, custom security attributes on the principal GA since November 2023, environment attributes GA since April 2024. [DOC S-etygtiqw]
 - A condition can sit on a PIM-eligible Azure role assignment, adding time-bound activation and approval; known issue: with PIM, **Principal** is missing from the attribute sources when adding a condition. The visual editor takes up to five expressions per condition, the code editor more. [DOC S-etygtiqw]
 - For an agent, attribute-based control is two separate mechanisms: Conditional Access decides whether the agent gets a token at all, with custom security attributes among its targeting controls, while an ABAC condition narrows what a granted storage role lets it do with Blob or Queue data. Neither is a general policy engine for other Azure resources. [DER S-etygtiqw, S-uva2ob4g: conditions limited to storage data actions; agent CA policies use custom security attributes]
-- The ABAC page does not say whether an Entra agent identity can hold an Azure role assignment with a condition, or carry the custom security attributes a principal condition reads. [UNK]
+- Agent identities can be assigned Azure RBAC roles and Microsoft Entra built-in roles, the same as standard service principals, while agent identity blueprints can't be assigned Azure RBAC roles. [DOC S-2iq53pkf]
+- A condition's **Principal** attribute source reads a custom security attribute assigned to the principal requesting access, which can be a user or an enterprise application (service principal); using it needs Entra permissions such as **Attribute Assignment Administrator** for the signed-in user and attributes already defined in Entra ID. [DOC S-wpj4qsjg]
+- The Microsoft Graph `agentIdentity` resource has a `customSecurityAttributes` property that an update (`PATCH /servicePrincipals/{id}/microsoft.graph.agentIdentity`) can set. [DOC S-xt5vc46a]
+- So an agent identity can hold a Blob or Queue Storage data role assignment that carries a condition, and a condition that reads its custom security attributes through `@Principal`; the assignment goes on the agent identity, never on its blueprint. No Learn page read on 2026-10-15 shows an agent identity as the assignee of a conditioned assignment, and it was not tried in a tenant. [DER S-2iq53pkf, S-wpj4qsjg, S-xt5vc46a, S-etygtiqw: agent identities take Azure roles as service principals; principal attributes are read from service principals; agent identities carry custom security attributes]
 
 ### Role-assignable groups (the PIM-for-Groups prerequisite `entra-intune-rbac.md` assumes)
 - A group must have `isAssignableToRole: true` set **at creation time only** — Microsoft's own UI warns

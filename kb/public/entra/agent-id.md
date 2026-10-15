@@ -2,8 +2,8 @@
 topic: entra/agent-id
 priority: P1
 applies_to: "Microsoft Entra Agent ID (generally available per its What's new page, docs re-read 2026-09-27), Microsoft Agent 365, Microsoft Graph v1.0 agentIdentityBlueprint/agentIdentity resources, Microsoft Copilot Studio (automatic agent identities since May 2026 per the admin page), Microsoft Foundry"
-retrieved_utc: 2026-09-27
-sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla, S-ifhonpv7, S-6ecweang, S-ch6zrjfg, S-avju6l5n, S-3avzf7db, S-ee22tgci, S-rasraulp, S-sxxqhpa2, S-ketmxnue, S-3tt3ywvk, S-pbkrk3ow]
+retrieved_utc: 2026-10-15
+sources: [S2040, S-fdnhk2tn, S-lekwizgd, S-nzxr4eg2, S-midck7u4, S-735ghpq5, S-5yopk2hr, S-q6lirjr2, S-uva2ob4g, S-l4557zht, S-3puxctla, S-ifhonpv7, S-6ecweang, S-ch6zrjfg, S-avju6l5n, S-3avzf7db, S-ee22tgci, S-rasraulp, S-sxxqhpa2, S-ketmxnue, S-3tt3ywvk, S-pbkrk3ow, S-gea7m5um, S-xt5vc46a, S-vbqsgiw3]
 status: complete
 ---
 
@@ -150,6 +150,11 @@ products create them automatically.
   MFA") for agents, because agents cannot satisfy interactive controls like MFA; dedicated agent policies
   should instead use identity filters, risk signals, custom security attributes, and named locations as
   control points. [DOC S-uva2ob4g]
+- In a policy's assignments, **Select agent identities** picks individual agents or selects agents by custom security attributes, and **Select agent users (Preview)** does the same for agents' user accounts. [DOC S-6ecweang]
+- For autonomous agents, Microsoft's recommended way to allow only approved agents is to assign custom security attributes to each agent or blueprint, then block **All agent identities** while excluding, under **Select agent identities based on attributes**, those whose attribute matches (example: `AgentApprovalStatus` contains `HR_Approved`), first in report-only mode. [DOC S-gea7m5um]
+- Assigning attributes in Graph: updating an agent identity's `customSecurityAttributes` needs, delegated, the **Attribute Assignment Administrator** role plus `CustomSecAttributeAssignment.ReadWrite.All` and `AgentIdentity.ReadWrite.All`; app-only, the `CustomSecAttributeAssignment.ReadWrite.All` application permission. [DOC S-xt5vc46a]
+- By default Global Administrator and other administrator roles can't read, define or assign custom security attributes; assigning them to an enterprise application (service principal) takes the **Attribute Assignment Administrator** role and attributes already defined. [DOC S-vbqsgiw3]
+- So the Conditional Access administrator alone can build an attribute-based agent policy but not tag the agents: the attribute values come from an Attribute Assignment Administrator, or from an app holding `CustomSecAttributeAssignment.ReadWrite.All`. [DER S-gea7m5um, S-xt5vc46a, S-vbqsgiw3: the CA steps name Conditional Access Administrator; assignment needs the attribute role or permission]
 
 ### ID Protection for agents (risky agents)
 - ID Protection for agents requires one of **Security Administrator**, **Security Operator**, or

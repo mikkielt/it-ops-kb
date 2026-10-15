@@ -31,6 +31,25 @@
   "depends_on": [
     "ST-a25p6qsy"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "No Learn page states that an agent identity can hold a conditioned Azure role assignment: record the answer as a DER fact from the DOC facts it rests on (closing the agent-rbac UNK, with a _gaps.md entry for the missing explicit statement) or keep it UNK?",
+      "options": [
+        "DER plus gap entry",
+        "keep UNK"
+      ],
+      "recommendation": "DER plus gap entry",
+      "do": {
+        "DER plus gap entry": "ST-xmy3pm4z",
+        "keep UNK": "ST-xmy3pm4z"
+      },
+      "class": "design",
+      "answer": "DER plus gap entry",
+      "by": "agent"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research, closing the agent-rbac UNK on agent identities and ABAC.",
   "claimed_by": "orch-state"
 }
