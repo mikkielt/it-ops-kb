@@ -1,0 +1,21 @@
+{
+  "id": "ST-za3ew224",
+  "kind": "story",
+  "title": "Add alias rows for the AlmaLinux area (alma, elevate, leapp, vault)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Add these term,canonical rows to _tools/aliases.csv so packs for other names reach security/almalinux-lifecycle-rhel-relation, security/almalinux-repositories-vault-pins and security/almalinux-elevate: alma,almalinux; almalinux os,almalinux; alma linux,almalinux; almalinux vault,almalinux; elevate project,elevate; leapp,elevate; in-place upgrade,elevate; almalinux-deploy,elevate; kitten,almalinux. Reuse an existing canonical where the table has one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if any(l.startswith('leapp,') for l in open('_tools/aliases.csv')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ]
+}
