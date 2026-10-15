@@ -2,7 +2,7 @@
   "id": "ST-5c2h4o7w",
   "kind": "story",
   "title": "repro_briefs.csv holds one research brief per benchmark area: scope, official sources to prefer and depth",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,27 @@
     "ST-levrq3xs"
   ],
   "notes": "Coverage measured 2026-10-15 with rag.py pack and audit on 296ff192d: absent: podman, puppet, chef (only prior-art/drift-detection mentions), kali, gentoo, zsh, bash (shell scripting), fish, robocopy; partial: almalinux (security/linux-cis-ssg-openscap.md, linux-patching-and-pins.md), cmd (python/stdlib-windows-portability.md), ssh-windows-estate (windows/openssh-server.md 13 DOC facts, ansible/windows-ssh.md 12; no key-management or Intune/GPO deployment), typescript (agents/codebase-mapping.md, arch/fluent-rust-typescript.md), rust (codebase-mapping, rust-clippy-criterion-gates, onnx-runtime-rust-ort), python (version-lifecycle present, venv absent), cpython (interpreter-startup partial, free-threaded only a mention), pip (spacy-pipeline-pinning, supply-chain); present: jea (windows/powershell-remoting-jea.md 50 facts, jea-config-fields.csv), age and sops (auth/sops-age-recipients.md 23 facts, prior-art/secret-vault-encryption.md), uv (python/uv-projects.md 39 facts, uv-windows-install.md). False good verdicts today: podman, typescript, rust, python venv.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "335a725e80df7d7b1cb1b68d7150fd45a6067512",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util,subprocess,sys\nsys.path.insert(0,'_tools')\nif importlib.util.find_spec('bench_repro') is None: print('no bench_repro module yet'); sys.exit(1)\nimport bench_repro as b\nwant=sorted(['podman', 'puppet', 'chef', 'almalinux', 'kali', 'gentoo', 'zsh', 'bash', 'fish', 'cmd', 'robocopy', 'ssh-windows-estate', 'jea', 'typescript', 'age', 'sops', 'rust', 'python', 'cpython', 'uv', 'pip'])\nr=b.load_briefs(); p=b.brief_problems(r); got=sorted(x['area'] for x in r)\nprint(p, [a for a in want if a not in got], [a for a in got if a not in want]); sys.exit(0 if not p and got==want else 1)"
+        ],
+        "exit": 0,
+        "sha256": "6184866c4387b3a3"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,os,re,sys\nf='kb/public/_retrieval/repro_briefs.csv'\nif not os.path.exists(f): print('no',f); sys.exit(1)\nrows=list(csv.DictReader(open(f,encoding='utf-8')))\nbad=[(r.get('area'),k) for r in rows for k,v in r.items() if k and v and re.search(r'\\w\\?(\\s|$)',re.sub(r'https?://\\S+','',v))]\ncols=[k for k in (rows[0].keys() if rows else []) if k and 'question' in k.lower()]\nprint(len(rows),bad[:5],cols); sys.exit(0 if rows and not bad and not cols else 1)"
+        ],
+        "exit": 0,
+        "sha256": "b3a62ba30528da0b"
+      }
+    ]
+  }
 }
