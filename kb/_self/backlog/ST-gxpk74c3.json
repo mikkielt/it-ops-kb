@@ -45,7 +45,9 @@
         "follow-up story ST-mvvzqk3r": "ST-gxpk74c3",
         "leave them out": "ST-gxpk74c3"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "follow-up story ST-mvvzqk3r",
+      "by": "operator"
     },
     {
       "id": "g2",
