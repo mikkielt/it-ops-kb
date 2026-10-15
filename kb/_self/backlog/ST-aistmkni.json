@@ -1,0 +1,25 @@
+{
+  "id": "ST-aistmkni",
+  "kind": "story",
+  "title": "The plan names the code-lane landing of an item whose only touch is a benchmark results file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint's plan step names kb/_self/reports/benchmarks.csv as a code-lane path, so an item whose touches name it lands with backlog.py land ID --wait-merge SECONDS and its notes say so. SP-ccvfvoqj: ST-tcvbp3z3's first land stopped at the merge request (benchmarks.csv is code-lane) and had to be run again with --wait-merge; its notes and the brief named only a plain land.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;L=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read().split('## start')[0].splitlines();sys.exit(0 if any('benchmarks.csv' in l and 'wait-merge' in l for l in L) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj close"
+  ]
+}

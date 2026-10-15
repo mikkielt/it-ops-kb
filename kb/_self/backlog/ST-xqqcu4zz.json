@@ -1,0 +1,26 @@
+{
+  "id": "ST-xqqcu4zz",
+  "kind": "story",
+  "title": "repro run says which claude binary its instances start, so a PATH wrapper cannot add settings unseen",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "repro run (and its --dry-run) prints the resolved path of the claude command its instances start and refuses, or says so, when that is not the real claude binary (a wrapper script first on PATH), so the instances' --settings stays exactly the recorded value. SP-ccvfvoqj: the orchestrator's PATH held a claude wrapper that adds its own --settings for headless sessions; the run was started with that directory stripped from PATH by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,subprocess;p=subprocess.run(['python3','_tools/benchmarks.py','repro','run','--instances','1','--dry-run'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and any(l.startswith('claude: /') for l in p.stdout.splitlines()) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj close"
+  ]
+}

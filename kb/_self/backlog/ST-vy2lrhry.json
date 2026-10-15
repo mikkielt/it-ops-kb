@@ -1,0 +1,26 @@
+{
+  "id": "ST-vy2lrhry",
+  "kind": "story",
+  "title": "precheck warns when a sprint's goal research story still holds the generated goal",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck SP prints a warning when the sprint's goal research story still holds the goal new sprint generated (bl_land.RESEARCH_DEFAULT_GOAL), so the planner narrows it to the sprint's questions or records why there are none before the start gate. SP-ccvfvoqj: ST-yom2npf4 kept the default goal, researched read no question, and the story passed on its no-outside-facts note alone.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import bl_land;s=inspect.getsource(bl_land.precheck_rows)+inspect.getsource(bl_land.cmd_precheck)+inspect.getsource(bl_land.precheck_items);sys.exit(0 if 'RESEARCH_DEFAULT_GOAL' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj close"
+  ]
+}

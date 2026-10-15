@@ -1,0 +1,24 @@
+{
+  "id": "ST-mvyhvoqb",
+  "kind": "story",
+  "title": "kb-sprint says how the orchestrator waits on a detached run longer than a background command's limit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint's run section says how the orchestrator waits on a detached run that outlasts the Bash tool's 2-hour background limit (a paid benchmark run of several hours): a pid waiter that reaches the limit is stopped, so the orchestrator schedules a wakeup or starts the waiter again, and never polls in the foreground. SP-ccvfvoqj: the repro run took about 4 hours and its pid waiter was stopped at 2.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();s=t.split('## run')[1].split('## review')[0].lower();sys.exit(0 if ('wakeup' in s or 'background limit' in s) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj close"
+  ]
+}

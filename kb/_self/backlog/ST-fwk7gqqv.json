@@ -1,0 +1,26 @@
+{
+  "id": "ST-fwk7gqqv",
+  "kind": "story",
+  "title": "backlog.py cost of a sprint shows the paid benchmark run its items recorded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py cost SP shows, beside the sessions it attributes, the spend of a paid benchmark run the sprint's items recorded in kb/_self/reports/benchmarks.csv (the repro rows' cost by record), so a sprint whose real spend was a detached run is not read as the workers' few dollars. SP-ccvfvoqj: cost --rework read 77 requests of the workers while the repro run spent $178.02 in sessions outside every window.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import bl_cost;s=inspect.getsource(bl_cost);sys.exit(0 if 'benchmarks.csv' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cost.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj close"
+  ]
+}
