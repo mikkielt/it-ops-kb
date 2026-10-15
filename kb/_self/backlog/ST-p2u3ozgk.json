@@ -1,0 +1,24 @@
+{
+  "id": "ST-p2u3ozgk",
+  "kind": "story",
+  "title": "Aliases and back-links for gitlab/commit-signing-and-provenance (GPG, PGP, OpenPGP)",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/aliases.csv holds the rows 'pgp,gpg', 'openpgp,gpg' and 'gpg,gpg', and the Reference sections of kb/public/gitlab/protected-branches-tags.md, kb/public/gitlab/mr-approvals.md and kb/public/security/supply-chain.md name gitlab/commit-signing-and-provenance.md",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('pgp','gpg'),('openpgp','gpg'),('gpg','gpg')}; l=all('gitlab/commit-signing-and-provenance.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/gitlab/protected-branches-tags.md','kb/public/gitlab/mr-approvals.md','kb/public/security/supply-chain.md')); sys.exit(0 if w<=r and l else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv",
+    "kb/public/gitlab/protected-branches-tags.md",
+    "kb/public/gitlab/mr-approvals.md",
+    "kb/public/security/supply-chain.md"
+  ]
+}
