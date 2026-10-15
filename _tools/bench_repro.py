@@ -760,7 +760,8 @@ COMPARE_SCENARIO = "repro-compare"  # the scenario of the rows `compare` merges 
 SAME_CLAIM = 0.8  # the difflib ratio at or above which two facts of one article path are the same claim
 TAG_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # the tag mix `compare` counts, kbfacts.EVIDENCE_KINDS without DECISION
 COMPARE_METRICS = ("articles_added", "facts_added", *(k.lower() for k in TAG_KINDS), "sources_added", "url_jaccard",
-                   "fact_overlap", "conflicts", "check_errors", "lint_errors", "eval_passed", "eval_total", "agreement")
+                   "fact_overlap", "conflicts", "check_errors", "lint_errors", "eval_passed", "eval_total", "found_start",
+                   "found_end", "false_good_start", "false_good_end", "churn", "agreement")
 LINT = Path(".claude") / "skills" / "kb-verify" / "lint.py"  # the contract lint of a checkout
 
 
@@ -913,11 +914,12 @@ VERDICT_RANK = {"none": 0, "weak": 1, "good": 2}
 FOUND_CHECKS = ("path", "text", "regex")  # the failed checks of a `rag.py eval` row that say its expectation is not in the pack
 
 
-def frozen_pass(expect_verdict, verdict, found):
+def frozen_pass(start_verdict, verdict, found):
     """Whether a frozen row passes: its `expect_re`, `expect_text` or `expect_paths` is `found` in the pack, else the
-    verdict ranks (none, weak, good) at least the expected one. The row's own verdict check is no part of it: research
-    that answers a row expecting `none` raises the figure, and one that lifts a `weak` to `good` keeps it."""
-    return bool(found) or VERDICT_RANK.get(verdict, -1) >= VERDICT_RANK.get(expect_verdict, 0)
+    verdict ranks (none, weak, good) at least the one measured at the start commit, not the row's `expect_verdict`. The
+    row's own verdict check is no part of it: research that answers a row that was `none` at the start raises the
+    figure, and one that lifts a `weak` to `good` keeps it."""
+    return bool(found) or VERDICT_RANK.get(verdict, -1) >= VERDICT_RANK.get(start_verdict, 0)
 
 
 def eval_rows(checkout, questions, env):
@@ -930,6 +932,25 @@ def eval_rows(checkout, questions, env):
     return {r["id"]: {"verdict": r["verdict"], "regex_ok": "regex" not in r.get("failed", []),
                       "found": not set(r.get("failed", [])) & set(FOUND_CHECKS)}
             for r in res["rows"]}
+
+
+def answer_counts(ids, rows):
+    """(answer-found, false-good) counts of the frozen rows `ids` in one `eval_rows` result: found when none of the row's
+    path, text and regex checks failed; false good when its verdict is `good` and its answer is not found. A row the
+    result lacks counts in neither; (None, None) when `rows` is None."""
+    if rows is None:
+        return None, None
+    mine = [rows[q] for q in ids if q in rows]
+    return (sum(1 for r in mine if r["found"]),
+            sum(1 for r in mine if r["verdict"] == "good" and not r["found"]))
+
+
+def churn(ids, start, end):
+    """How many of the frozen rows `ids` have a different verdict in `end` than in `start` (two `eval_rows` results);
+    a row either result lacks is not counted; None when either is None."""
+    if start is None or end is None:
+        return None
+    return sum(1 for q in ids if q in start and q in end and start[q]["verdict"] != end[q]["verdict"])
 
 
 def agreement(areas, instances, asked, evals):
@@ -969,11 +990,14 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
     """`repro compare`: measure each instance's bare main against the start commit, area by area by the shas of
     DIR/results.jsonl, in a detached checkout of its own whose tools run by subprocess; print per instance and area
     the articles, facts, tag mix and sources added, per pair the url Jaccard, the fact overlap and the conflicts, per
-    instance the check.py and lint errors and the frozen questions it passed, per area the agreement. With `record` the
-    rows are merged into `file` (default kb/_self/reports/benchmarks.csv) as the scenario `repro-compare`, replacing the
-    rows of the start commit. With `dry_run` it prints the metrics and the instances it would read and starts nothing.
-    Returns 0, also with no instance or no result line; raises Refused (a bare or a sha that is gone, a tool that
-    prints no json, no questions file)."""
+    instance the check.py and lint errors and the frozen questions it passed, per area the agreement. The frozen
+    questions are also run at the start commit: a row passes against the verdict measured there, not its
+    `expect_verdict`; per instance and area it researched the answer-found and false-good (good without the answer)
+    counts at start and at the instance's end are printed, per area it did not research the rows whose verdict moved
+    (churn). With `record` the rows are merged into `file` (default kb/_self/reports/benchmarks.csv) as the scenario
+    `repro-compare`, replacing the rows of the start commit. With `dry_run` it prints the metrics and the instances it
+    would read and starts nothing. Returns 0, also with no instance or no result line; raises Refused (a bare or a sha
+    that is gone, a tool that prints no json, also the eval at the start commit, no questions file)."""
     root = Path(root) if root else default_dir()
     manifest = root / MANIFEST
     if not manifest.exists():
@@ -1000,7 +1024,7 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
         raise Refused(f"{qpath} is not there: the frozen questions of the agreement")
     asked = load_questions(qpath)
     ns = [i["n"] for i in insts]
-    deltas, evals, errors = {}, {}, {}
+    deltas, evals, errors, start = {}, {}, {}, None
     for inst in insts:
         if not Path(inst["bare"]).is_dir():
             raise Refused(f"instance {inst['n']}: its bare {inst['bare']} is gone")
@@ -1009,6 +1033,11 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
         dest = checkout_path(root, n)
         make_checkout(bare, dest, env)
         try:
+            if start is None:  # the start commit is one sha in every bare: its verdicts are measured once
+                put_at(dest, rev, env)
+                start = eval_rows(dest, qpath, env)
+                if start is None:
+                    raise Refused(f"{dest}: rag.py eval at the start commit {rev[:12]} printed no json")
             states = {}
 
             def at(sha):
@@ -1033,20 +1062,27 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
     table = []  # (case, arm, {metric: value})
     for area in areas:
         ids = [q["id"] for q in asked if q.get("area", "").strip() == area]
-        want = {q["id"]: q.get("expect_verdict", "").strip() for q in asked}
+        found_start, false_good_start = answer_counts(ids, start)
         for n in ns:
             d = deltas.get((n, area))
             if d is None:
                 continue
             e = evals.get(n)
-            passed = sum(1 for q in ids if e and q in e and frozen_pass(want[q], e[q]["verdict"], e[q]["found"]))
+            passed = sum(1 for q in ids if e and q in e and q in start
+                         and frozen_pass(start[q]["verdict"], e[q]["verdict"], e[q]["found"]))
+            found_end, false_good_end = answer_counts(ids, e)
             m = {"articles_added": len(d["articles"]), "facts_added": len(d["facts"]), "sources_added": len(d["sources"]),
-                 **{k.lower(): d["kinds"][k] for k in TAG_KINDS}, "eval_passed": passed, "eval_total": len(ids)}
+                 **{k.lower(): d["kinds"][k] for k in TAG_KINDS}, "eval_passed": passed, "eval_total": len(ids),
+                 "found_start": found_start, "found_end": found_end, "false_good_start": false_good_start,
+                 "false_good_end": false_good_end}
             table.append((area, f"instance-{n}", m))
             out(f"instance {n} area {area}: {m['articles_added']} article(s), {m['facts_added']} fact(s) added ("
                 + ", ".join(f"{k} {d['kinds'][k]}" for k in TAG_KINDS) + f"), {m['sources_added']} source(s) added; "
                 f"{passed} of {len(ids)} frozen row(s) passed"
                 + (": " + " ".join(f"{q}={e[q]['verdict']}" for q in ids if e and q in e) if ids else ""))
+            if e is not None:
+                out(f"instance {n} area {area}: answer found {found_start} at start, {found_end} at end; "
+                    f"false good {false_good_start} at start, {false_good_end} at end")
         for k, a in enumerate(ns):
             for b in ns[k + 1:]:
                 da, db = deltas.get((a, area)), deltas.get((b, area))
@@ -1061,6 +1097,14 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
                 for fa, fb in conflicts:
                     out(f"  conflict: instance {a} {fa['path']}:{fa['line']}: {claim(fa)}")
                     out(f"            instance {b} {fb['path']}:{fb['line']}: {claim(fb)}")
+    for area in dict.fromkeys(q.get("area", "").strip() for q in asked):  # rows of areas an instance did not research
+        ids = [q["id"] for q in asked if q.get("area", "").strip() == area]
+        for n in ns:
+            moved = churn(ids, start, evals.get(n)) if area and ids and not last.get((n, area)) else None
+            if moved is not None:
+                table.append((area, f"instance-{n}", {"churn": moved}))
+                out(f"instance {n} area {area} (not researched): {moved} of {len(ids)} frozen row(s) changed verdict "
+                    "since the start commit")
     for n in ns:
         check_errors, lint_errors = errors[n]
         table.append(("all", f"instance-{n}", {"check_errors": check_errors, "lint_errors": lint_errors}))
