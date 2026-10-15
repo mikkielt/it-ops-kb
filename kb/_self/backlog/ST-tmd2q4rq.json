@@ -60,7 +60,9 @@
         "Same path at difflib ratio 0.8 as before, plus any path when the facts cite one source (bare url its id resolves to, else the id) and share at least 0.5 of their words (TOKEN_OVERLAP)": "ST-tmd2q4rq",
         "Any pair of facts at difflib ratio 0.8 or word share 0.5, regardless of cited source": "ST-tmd2q4rq"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Same path at difflib ratio 0.8 as before, plus any path when the facts cite one source (bare url its id resolves to, else the id) and share at least 0.5 of their words (TOKEN_OVERLAP)",
+      "by": "operator"
     },
     {
       "id": "g2",
