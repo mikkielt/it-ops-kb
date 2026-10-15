@@ -2,7 +2,7 @@
   "id": "ST-6tbbdbec",
   "kind": "story",
   "title": "Research sprint goal: The replay of benchmark instance 3 is reviewed on main, and the lookup eval no longer turns on one word's corpus share",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3jcdsgr",
   "goal_research": true,
   "priority": "P1",

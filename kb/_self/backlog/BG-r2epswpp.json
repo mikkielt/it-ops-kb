@@ -2,7 +2,7 @@
   "id": "BG-r2epswpp",
   "kind": "bug",
   "title": "rag.py eval refuses a content landing when one key word's corpus share crosses COMMON_SHARE (EV-page-file-size-windows)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3jcdsgr",
   "priority": "P1",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "SP-z3jcdsgr",
   "kind": "sprint",
   "title": "The replay of benchmark instance 3 is reviewed on main, and the lookup eval no longer turns on one word's corpus share",
-  "status": "planned",
+  "status": "active",
   "goal": "rag.py eval fails no row whose verdict changed only because a key word's share of the searched units moved across COMMON_SHARE; the article Gentoo in WSL on a Windows host is kept, trimmed or dropped as its operator gate decides from its evidence; the replayed shell and Windows articles say Windows only where their sources do; the replayed ledgers hold no stale anchor row, no uncited source row without a note and no licence that was never checked; the replay's alias rows are in _tools/aliases.csv",
   "gates": [
     {

@@ -2,7 +2,7 @@
   "id": "BG-lnmpa27d",
   "kind": "bug",
   "title": "pack's off-domain name check counts a hyphenated common word (long-horizon) as the product name, so a VMware Horizon question is weak, not none",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3jcdsgr",
   "priority": "P3",
   "rank": 0,

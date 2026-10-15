@@ -2,7 +2,7 @@
   "id": "ST-5wudnqto",
   "kind": "story",
   "title": "The article Gentoo in WSL on a Windows host keeps only what its sources state, as its gate decides",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3jcdsgr",
   "priority": "P2",
   "rank": 0,
@@ -85,7 +85,8 @@
       },
       "class": "design",
       "answer": "keep it and trim what its sources do not state: the derived line on a Windows endpoint tool and Windows-host wording the wiki page lacks",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "The gate is a kb content choice about an article; 'Windows host' names the article's subject, not a setup of this host, so there is nothing to check here."
     }
   ],
   "notes": "Evidence 2026-10-15 at 5834a99e2 (rag.py audit, rag.py show): 32 facts, 29 DOC all citing S-lxqjpj53 (wiki.gentoo.org Gentoo in WSL) and 3 DER; the article was written in benchmark instance 3 (f980ac7c6) to restore EV-page-file-size-windows, but its facts are the wiki's own (wsl --import, .wslconfig, /etc/wsl.conf, OpenRC and systemd under WSL), Windows-host work inside the kb's domain. The DER line 46 (a Windows endpoint tool can create, restart and remove an instance without logging in) states more than the page. Removing the article before BG-r2epswpp lands would drop about 30 Windows units against a margin of 31, so the item depends on it. Plan review 2026-10-15: had the gate removed the article, links to it from the zsh and fish articles would dangle; the fourth check (no kb article names gentoo-in-wsl once the file is gone) guards that and passes while the article stays. Checks that pass before the work: the lint check and rag.py eval (and the fourth check while the article stays) pass before the work and are kept as guards (the change must keep them green); check 1 (the derived Windows endpoint line) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
