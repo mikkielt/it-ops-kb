@@ -2,7 +2,7 @@
   "id": "ST-levrq3xs",
   "kind": "story",
   "title": "Research sprint goal: The research-reproducibility benchmark is defined and its isolated harness is proven",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-mac"
 }
