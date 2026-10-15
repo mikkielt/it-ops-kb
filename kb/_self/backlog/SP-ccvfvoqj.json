@@ -2,7 +2,7 @@
   "id": "SP-ccvfvoqj",
   "kind": "sprint",
   "title": "Three isolated instances research the benchmark, and a report says how alike their results are",
-  "status": "planned",
+  "status": "active",
   "goal": "three isolated instances research the 21 benchmark areas from one start commit at the same time, each pushing only to its own bare copy, with each instance's cost, tokens, turns, wall time, model usage and failures recorded; and kb/_self/reports/research-repro.md says from repro compare's numbers how reproducible the research is and where the instances diverge",
   "gates": [
     {

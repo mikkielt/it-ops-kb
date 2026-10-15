@@ -2,7 +2,7 @@
   "id": "ST-tcvbp3z3",
   "kind": "story",
   "title": "The three instances' repro run, started by the orchestrator, is recorded and none of their commits is on the real origin",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ccvfvoqj",
   "priority": "P2",
   "rank": 0,
