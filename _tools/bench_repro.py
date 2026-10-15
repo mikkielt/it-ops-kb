@@ -988,9 +988,10 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
     ns = [i["n"] for i in insts]
     deltas, evals, errors = {}, {}, {}
     for inst in insts:
+        if not Path(inst["bare"]).is_dir():
+            raise Refused(f"instance {inst['n']}: its bare {inst['bare']} is gone")
+    for inst in insts:
         n, env, bare = inst["n"], instance_env(root, inst["n"]), Path(inst["bare"])
-        if not bare.is_dir():
-            raise Refused(f"instance {n}: its bare {bare} is gone")
         dest = checkout_path(root, n)
         make_checkout(bare, dest, env)
         try:

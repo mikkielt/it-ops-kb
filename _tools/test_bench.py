@@ -1478,9 +1478,10 @@ def bench_repro_record_merges_planted_lines_as_rows_and_a_second_record_changes_
 FAKE_RAG = """import csv, json, os, re, subprocess, sys
 from pathlib import Path
 home, args = Path(__file__).resolve().parent.parent, sys.argv[1:]
-head = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True).stdout.strip()
-with open(os.environ["FAKE_LOG"], "a") as f:
-    f.write(json.dumps({"argv": args, "cwd": os.getcwd(), "head": head}) + "\\n")
+if args[1] == "audit":  # one call of each state: the checkout must be detached
+    head = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"], capture_output=True, text=True).stdout.strip()
+    with open(os.environ["FAKE_LOG"], "a") as f:
+        f.write(json.dumps({"argv": args, "cwd": os.getcwd(), "head": head}) + "\\n")
 kinds = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")
 
 
@@ -1541,20 +1542,20 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
     sources = "id,url,title\n"
 
-    def plant(repo, files, msg):
-        for name, text in files.items():
-            (repo / name).parent.mkdir(parents=True, exist_ok=True)
-            (repo / name).write_text(text, encoding="utf-8", newline="\n")
-        git("add", "-A", cwd=repo)
-        git("commit", "-q", "-m", msg, cwd=repo)
-        return git("rev-parse", "HEAD", cwd=repo)
+    def plant(bare, commits):
+        """A bare repository whose main holds `commits` ([(message, {path: text})]) one after the other, made by one
+        git fast-import with fixed dates so that two bares share their first commit; the shas of the commits."""
+        git("init", "-q", "--bare", "--initial-branch=main", str(bare), cwd=tmp_path)
+        stream = ""
+        for k, (msg, files) in enumerate(commits):
+            stream += f"commit refs/heads/main\ncommitter t <t@example.com> {1760000000 + k} +0000\ndata {len(msg)}\n{msg}\n"
+            stream += "".join(f"M 100644 inline {n}\ndata {len(x.encode())}\n{x}\n" for n, x in files.items()) + "\n"
+        subprocess.run(["git", "fast-import", "--quiet"], cwd=str(bare), input=stream.encode(), check=True)
+        return git("rev-list", "--reverse", "main", cwd=bare).split()
 
-    src = tmp_path / "src"
-    src.mkdir()
-    git("init", "-q", "--initial-branch=main", cwd=src)
-    start = plant(src, {"_tools/rag.py": FAKE_RAG, "_tools/check.py": FAKE_CHECK, ".claude/skills/kb-verify/lint.py": FAKE_LINT,
-                        "kb/public/_sources.csv": sources + "S-1,https://example.com/base,base\n",
-                        "kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n"}, "start")
+    first = {"_tools/rag.py": FAKE_RAG, "_tools/check.py": FAKE_CHECK, ".claude/skills/kb-verify/lint.py": FAKE_LINT,
+             "kb/public/_sources.csv": sources + "S-1,https://example.com/base,base\n",
+             "kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n"}
     cites = lambda *rows: sources + "S-1,https://example.com/base,base\n" + "".join(  # noqa: E731
         f"{i},{u},t\n" for i, u in rows)
     fact_a = "- The default retry count is 3 attempts. [DOC S-2]\n"
@@ -1586,10 +1587,7 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     root.mkdir()
     insts = []
     for n, steps in plans.items():
-        work = tmp_path / f"work{n}"
-        git("clone", "-q", str(src), str(work), cwd=tmp_path)
-        shas = [plant(work, files, area) for area, files in steps]
-        git("clone", "-q", "--bare", str(work), str(root / f"origin{n}.git"), cwd=tmp_path)
+        start, *shas = plant(root / f"origin{n}.git", [("start", first), *[(a, files) for a, files in steps]])
         insts.append({"n": n, "bare": str(root / f"origin{n}.git")})
         lines += [{"instance": n, "area": a, "started": "2026-10-15T08:00:00Z",
                    "failure": "turns" if (n, a) == (2, "beta") else "",
@@ -1608,8 +1606,10 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     shown = capsys.readouterr().out
     assert "metrics: articles_added, facts_added, doc, code, der, community, unk, sources_added, url_jaccard" in shown
     assert "instance 1: reads bare" in shown and "instance 2: reads bare" in shown and not (tmp_path / "calls.jsonl").exists()
-    # the comparison: by the shas of each area, in a detached checkout of each instance's own, with no file written
-    assert bm.main(args) == 0 and not out.exists()
+    # the comparison, with --record: by the shas of each area, in a detached checkout of each instance's own
+    other = {"scenario": "repro", "record": start[:7], "case": "c", "arm": "instance-1", "metric": "cost", "value": "1"}
+    bc.write_rows([other], out)
+    assert bm.main([*args, "--record", "--file", str(out)]) == 0
     shown = capsys.readouterr().out
     for want in ("instance 1 area alpha: 0 article(s), 2 fact(s) added (DOC 2, CODE 0, DER 0, COMMUNITY 0, UNK 0), 2 source(s)",
                  "instance 2 area alpha: 0 article(s), 3 fact(s) added (DOC 2, CODE 0, DER 0, COMMUNITY 0, UNK 1), 2 source(s)",
@@ -1625,11 +1625,8 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     calls = [json.loads(ln) for ln in (tmp_path / "calls.jsonl").read_text(encoding="utf-8").splitlines()]
     assert {c["head"] for c in calls} == {"HEAD"} and {Path(c["cwd"]).name for c in calls} == {"compare1", "compare2"}
     assert not [p for p in (tmp_path / "scratch").rglob("compare*") if p.is_dir()]
-    # --record merges the numbers as the scenario repro-compare, and a second record changes nothing
-    other = {"scenario": "repro", "record": start[:7], "case": "c", "arm": "instance-1", "metric": "cost", "value": "1"}
-    bc.write_rows([other], out)
-    assert bm.main([*args, "--record", "--file", str(out)]) == 0
-    capsys.readouterr()
+    # --record merged the numbers as the scenario repro-compare beside the other scenario's row, and a second record
+    # changes nothing
     rows = bc.read_rows(out)
     got = {(r["arm"], r["case"], r["metric"]): r["value"] for r in rows if r["scenario"] == "repro-compare"}
     assert rows[0]["scenario"] == "repro" and {r["record"] for r in rows if r["scenario"] == "repro-compare"} == {start[:7]}
