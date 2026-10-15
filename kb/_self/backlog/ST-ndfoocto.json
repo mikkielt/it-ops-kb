@@ -46,6 +46,42 @@
   "depends_on": [
     "ST-ud7ikgi4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What makes a DOC fact unanchored in repro compare?",
+      "options": [
+        "no row of the root's _anchors.csv for the fact's key and file, whatever its status, and not every cited source a learn.microsoft.com page",
+        "no located row (an unlocated row counts as unanchored)"
+      ],
+      "recommendation": "no row of the root's _anchors.csv for the fact's key and file, whatever its status, and not every cited source a learn.microsoft.com page",
+      "do": {
+        "no row of the root's _anchors.csv for the fact's key and file, whatever its status, and not every cited source a learn.microsoft.com page": "ST-ndfoocto",
+        "no located row (an unlocated row counts as unanchored)": "ST-ndfoocto"
+      },
+      "class": "design",
+      "answer": "no row of the root's _anchors.csv for the fact's key and file, whatever its status, and not every cited source a learn.microsoft.com page",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does repro pick rank by unanchored, or only print it?",
+      "options": [
+        "print it beside the ranking numbers, the landing rule unchanged",
+        "rank it after check_errors plus lint_errors"
+      ],
+      "recommendation": "print it beside the ranking numbers, the landing rule unchanged",
+      "do": {
+        "print it beside the ranking numbers, the landing rule unchanged": "ST-ndfoocto",
+        "rank it after check_errors plus lint_errors": "ST-ndfoocto"
+      },
+      "class": "design",
+      "answer": "print it beside the ranking numbers, the landing rule unchanged",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-bhzxxhub close"
   ],

@@ -760,8 +760,9 @@ COMPARE_SCENARIO = "repro-compare"  # the scenario of the rows `compare` merges 
 SAME_CLAIM = 0.8  # the difflib ratio at or above which two facts of one article path are the same claim
 TAG_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # the tag mix `compare` counts, kbfacts.EVIDENCE_KINDS without DECISION
 COMPARE_METRICS = ("articles_added", "facts_added", *(k.lower() for k in TAG_KINDS), "sources_added", "url_jaccard",
-                   "fact_overlap", "conflicts", "check_errors", "lint_errors", "eval_passed", "eval_total", "found_start",
-                   "found_end", "false_good_start", "false_good_end", "churn", "agreement")
+                   "fact_overlap", "conflicts", "check_errors", "lint_errors", "unanchored", "eval_passed", "eval_total",
+                   "found_start", "found_end", "false_good_start", "false_good_end", "churn", "agreement")
+LEARN_HOST = "learn.microsoft.com"  # a fact whose sources are all pages of it needs no anchor row (kb-research SKILL.md step 5)
 LINT = Path(".claude") / "skills" / "kb-verify" / "lint.py"  # the contract lint of a checkout
 
 
@@ -856,29 +857,47 @@ def json_of(text):
     return None
 
 
+def unanchored(fact, key, anchored, sources):
+    """Whether a fact line of `state_of` is a DOC fact with no `_anchors.csv` row of its file (`anchored`: {(fact key,
+    root-relative path)}) that cites a source other than a Microsoft Learn page: one whose sources are all Learn pages is
+    exempt from a quote, and so from an anchor row, by kb-research SKILL.md step 5."""
+    import urllib.parse
+    if "DOC" not in fact["kinds"] or (key, fact["rel"]) in anchored:
+        return False
+    hosts = {urllib.parse.urlsplit(sources.get(i, "")).hostname for i in fact["ids"]}
+    return not (fact["ids"] and hosts == {LEARN_HOST})
+
+
 def state_of(checkout, env):
     """What the checkout at its sha holds, read with its own tools: `facts` (path, line, text, kinds of each fact line
-    of each root, `rag.py --json facts`), `audit` ({article path: {kind: count}}, `rag.py --json audit`) and `sources`
-    ({source id: url} of each root's _sources.csv). Refused when a tool printed no json."""
+    of each root, `rag.py --json facts`, and `unanchored`: a DOC fact with no row in its root's `_anchors.csv`, the facts
+    whose sources are all Learn pages left out), `audit` ({article path: {kind: count}}, `rag.py --json audit`) and
+    `sources` ({source id: url} of each root's _sources.csv). Refused when a tool printed no json."""
+    import kbfacts
     tools = Path(checkout) / "_tools"
     roots = sorted(d.name for d in (Path(checkout) / "kb").iterdir() if (d / "_sources.csv").is_file()) \
         if (Path(checkout) / "kb").is_dir() else []
+    sources = {}
+    for r in roots:
+        for row in read_csv(Path(checkout) / "kb" / r / "_sources.csv"):
+            sources.setdefault(row.get("id", ""), row.get("url", ""))
     facts = []
     for r in roots:
         code, out = tool_out([str(tools / "rag.py"), "--json", "facts", r], checkout, env)
         rows = json_of(out)
         if not isinstance(rows, list):
             raise Refused(f"{checkout}: rag.py facts {r} printed no json (exit {code})")
-        facts += [{"path": f["path"], "line": f["line"], "text": f["text"], "kinds": [t["kind"] for t in f.get("tags") or []]}
-                  for f in rows]
+        anchored = {(a.get("fact", ""), a.get("path", "")) for a in read_csv(Path(checkout) / "kb" / r / "_anchors.csv")}
+        for f in rows:
+            tags = f.get("tags") or []
+            one = {"path": f["path"], "line": f["line"], "text": f["text"], "kinds": [t["kind"] for t in tags],
+                   "ids": [i for t in tags for i in t.get("ids") or []], "rel": f["path"].split("/", 1)[-1]}
+            one["unanchored"] = unanchored(one, kbfacts.fact_key(f["text"]), anchored, sources)
+            facts.append(one)
     code, out = tool_out([str(tools / "rag.py"), "--json", "audit"], checkout, env)
     rows = json_of(out)
     if not isinstance(rows, list):
         raise Refused(f"{checkout}: rag.py audit printed no json (exit {code})")
-    sources = {}
-    for r in roots:
-        for row in read_csv(Path(checkout) / "kb" / r / "_sources.csv"):
-            sources.setdefault(row.get("id", ""), row.get("url", ""))
     return {"facts": facts, "audit": {a["path"]: {k: a.get(k, 0) for k in TAG_KINDS} for a in rows}, "sources": sources}
 
 
@@ -993,8 +1012,9 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
     instance the check.py and lint errors and the frozen questions it passed, per area the agreement. The frozen
     questions are also run at the start commit: a row passes against the verdict measured there, not its
     `expect_verdict`; per instance and area it researched the answer-found and false-good (good without the answer)
-    counts at start and at the instance's end are printed, per area it did not research the rows whose verdict moved
-    (churn). With `record` the rows are merged into `file` (default kb/_self/reports/benchmarks.csv) as the scenario
+    counts at start and at the instance's end are printed, and the DOC facts it added that no row of the root's
+    _anchors.csv anchors (unanchored; a fact whose sources are all Learn pages is left out), per area it did not research
+    the rows whose verdict moved (churn). With `record` the rows are merged into `file` (default kb/_self/reports/benchmarks.csv) as the scenario
     `repro-compare`, replacing the rows of the start commit. With `dry_run` it prints the metrics and the instances it
     would read and starts nothing. Returns 0, also with no instance or no result line; raises Refused (a bare or a sha
     that is gone, a tool that prints no json, also the eval at the start commit, no questions file)."""
@@ -1074,12 +1094,13 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
             m = {"articles_added": len(d["articles"]), "facts_added": len(d["facts"]), "sources_added": len(d["sources"]),
                  **{k.lower(): d["kinds"][k] for k in TAG_KINDS}, "eval_passed": passed, "eval_total": len(ids),
                  "found_start": found_start, "found_end": found_end, "false_good_start": false_good_start,
-                 "false_good_end": false_good_end}
+                 "false_good_end": false_good_end, "unanchored": sum(1 for f in d["facts"] if f["unanchored"])}
             table.append((area, f"instance-{n}", m))
             out(f"instance {n} area {area}: {m['articles_added']} article(s), {m['facts_added']} fact(s) added ("
                 + ", ".join(f"{k} {d['kinds'][k]}" for k in TAG_KINDS) + f"), {m['sources_added']} source(s) added; "
                 f"{passed} of {len(ids)} frozen row(s) passed"
                 + (": " + " ".join(f"{q}={e[q]['verdict']}" for q in ids if e and q in e) if ids else ""))
+            out(f"instance {n} area {area}: {m['unanchored']} DOC fact(s) added with no anchor row")
             if e is not None:
                 out(f"instance {n} area {area}: answer found {found_start} at start, {found_end} at end; "
                     f"false good {false_good_start} at start, {false_good_end} at end")
@@ -1151,8 +1172,9 @@ def number(value):
 def standings(rows):
     """(record, date, {n: {"passed", "errors", "cost"}}) of the newest `repro-compare` record of `rows` (the greatest
     date, the later row on a tie): per instance the sum of its eval_passed over the areas, check_errors plus lint_errors
-    (None when either is not there) and the sum of the cost rows of the scenario `repro` of the same record (None when
-    there is none). (None, None, {}) when no row names an instance."""
+    (None when either is not there), the sum of its unanchored over the areas (None when no area has the row) and the sum
+    of the cost rows of the scenario `repro` of the same record (None when there is none). (None, None, {}) when no row
+    names an instance."""
     mine = [(k, r) for k, r in enumerate(rows) if r.get("scenario") == COMPARE_SCENARIO and INSTANCE_ARM.fullmatch(r.get("arm", ""))]
     if not mine:
         return None, None, {}
@@ -1163,12 +1185,14 @@ def standings(rows):
         if r.get("record") != record:
             continue
         n = int(INSTANCE_ARM.fullmatch(r["arm"]).group(1))
-        d = found.setdefault(n, {"passed": 0.0, "check": None, "lint": None, "cost": None})
+        d = found.setdefault(n, {"passed": 0.0, "check": None, "lint": None, "cost": None, "unanchored": None})
         v = number(r.get("value"))
         if v is None:
             continue
         if r["metric"] == "eval_passed":
             d["passed"] += v
+        elif r["metric"] == "unanchored":
+            d["unanchored"] = (d["unanchored"] or 0.0) + v
         elif r["metric"] in ("check_errors", "lint_errors") and r.get("case") == "all":
             d[r["metric"][:-7]] = v
     for r in rows:
@@ -1178,7 +1202,7 @@ def standings(rows):
                 and int(m.group(1)) in found:
             d = found[int(m.group(1))]
             d["cost"] = (d["cost"] or 0.0) + v
-    return record, date, {n: {"passed": d["passed"], "cost": d["cost"],
+    return record, date, {n: {"passed": d["passed"], "cost": d["cost"], "unanchored": d["unanchored"],
                               "errors": None if d["check"] is None or d["lint"] is None else d["check"] + d["lint"]}
                           for n, d in found.items()}
 
@@ -1192,7 +1216,8 @@ def pick_key(d):
 
 def pick(file=None, out=print):
     """`repro pick`: print, per instance of the newest `repro-compare` record of the results file `file` (default
-    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads, then the instance it picks (standings). Returns
+    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads and the unanchored DOC facts it does not rank
+    by, then the instance it picks (standings). Returns
     0, or 1 when the file holds no instance's row. Reads one file and nothing else."""
     target = Path(file) if file else BENCH_RESULTS
     record, date, found = standings(read_rows(target))
@@ -1205,7 +1230,7 @@ def pick(file=None, out=print):
     for n in order:
         d = found[n]
         out(f"instance-{n}: eval_passed {d['passed']:g}, check_errors+lint_errors {fmt(d['errors'], '{:g}')}, "
-            f"cost {fmt(d['cost'], '{:.2f}')}")
+            f"unanchored {fmt(d['unanchored'], '{:g}')}, cost {fmt(d['cost'], '{:.2f}')}")
     best = order[0]
     why = "the only instance"
     if len(order) > 1:

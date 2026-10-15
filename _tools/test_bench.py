@@ -1491,7 +1491,7 @@ def facts(root):
         for n, ln in enumerate(a.read_text(encoding="utf-8").splitlines(), 1):
             if ln.startswith("- "):
                 out.append({"path": root + "/" + a.name, "line": n, "section": "Facts", "text": ln[2:],
-                            "tags": [{"kind": k, "ids": [], "note": ""} for k in re.findall(r"\\[([A-Z]+)\\b", ln)]})
+                            "tags": [{"kind": k, "ids": v.split(), "note": ""} for k, v in re.findall(r"\\[([A-Z]+) ([^\\]]+)\\]", ln)]})
     return out
 
 
@@ -1561,8 +1561,12 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     cites = lambda *rows: sources + "S-1,https://example.com/base,base\n" + "".join(  # noqa: E731
         f"{i},{u},t\n" for i, u in rows)
     fact_a = "- The default retry count is 3 attempts. [DOC S-2]\n"
+    import hashlib  # instance 1 anchors that fact only: its other DOC facts have no row, instance 2 has no _anchors.csv
+    key = hashlib.sha256(" ".join(fact_a[2:].split()).encode()).hexdigest()[:12]
+    anchors = "fact,path,source_id,status,heading,terms,sha,quote,verified_utc\n" + f"{key},a.md,S-2,unlocated:no-match,,,,,2026-10-15\n"
     plans = {1: [("alpha", {"kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n" + fact_a +
                            "- The service restarts automatically after a failure. [DOC S-3]\n",
+                           "kb/public/_anchors.csv": anchors,
                            "kb/public/_sources.csv": cites(("S-2", "https://example.com/retry?utm=1"),
                                                            ("S-3", "https://example.com/restart"))}),
                  ("beta", {"kb/public/a.md": "# A\n\n- The base fact. [DOC S-1]\n" + fact_a +
@@ -1584,7 +1588,7 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
                            "LINT marker\n",
                            "kb/public/_sources.csv": cites(("S-6", "https://example.com/retry"),
                                                            ("S-8", "https://example.com/rotation"),
-                                                           ("S-5", "https://example.com/timeouts"))})]}
+                                                           ("S-5", "https://learn.microsoft.com/timeouts"))})]}
     root, lines = tmp_path / "dir", []
     root.mkdir()
     insts = []
@@ -1630,6 +1634,11 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
                  "instance 2 area alpha: answer found 0 at start, 4 at end; false good 1 at start, 0 at end",
                  "instance 1 area beta: answer found 1 at start, 3 at end; false good 0 at start, 0 at end",
                  "instance 2 area beta: answer found 1 at start, 2 at end; false good 0 at start, 0 at end",
+                 # an anchor row (whatever its status) anchors a fact; a DOC fact of Learn pages only needs none
+                 "instance 1 area alpha: 1 DOC fact(s) added with no anchor row",
+                 "instance 1 area beta: 1 DOC fact(s) added with no anchor row",
+                 "instance 2 area alpha: 2 DOC fact(s) added with no anchor row",
+                 "instance 2 area beta: 0 DOC fact(s) added with no anchor row",
                  "instance 1 area gamma (not researched): 1 of 3 frozen row(s) changed verdict",
                  "instance 2 area gamma (not researched): 2 of 3 frozen row(s) changed verdict"):
         assert want in shown, (want, shown)
@@ -1649,6 +1658,8 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
             ("instance-1+instance-2", "alpha", "fact_overlap"): "0.666667",
             ("instance-1+instance-2", "beta", "fact_overlap"): "0.5", ("instance-1+instance-2", "beta", "conflicts"): "1",
             ("instance-1", "all", "check_errors"): "1", ("instance-2", "all", "lint_errors"): "1",
+            ("instance-1", "alpha", "unanchored"): "1", ("instance-1", "beta", "unanchored"): "1",
+            ("instance-2", "alpha", "unanchored"): "2", ("instance-2", "beta", "unanchored"): "0",
             # a row is compared with its verdict at the start commit: A-3 (instance 1) and B-2 (instance 2) expect `good`
             # in the column and were `none` at the start, so they pass; A-5 was good at the start and is weak now
             ("instance-1", "alpha", "eval_passed"): "4", ("instance-1", "alpha", "eval_total"): "5",
@@ -1662,7 +1673,7 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
             ("all", "alpha", "agreement"): "0.8"}
     for k, v in want.items():
         assert got.get(k) == v, (k, v, got.get(k))
-    assert not [k for k in got if k[2] == "agreement" and k[1] == "beta"] and len(got) == 69
+    assert not [k for k in got if k[2] == "agreement" and k[1] == "beta"] and len(got) == 73
     assert not [k for k in got if k[2] == "churn" and k[1] != "gamma"] and not [k for k in got if k[1] == "gamma" and k[2] != "churn"]
     first = out.read_bytes()
     assert bm.main([*args, "--record", "--file", str(out)]) == 0 and out.read_bytes() == first
@@ -1694,6 +1705,8 @@ def bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_comm
                      {"scenario": "repro-compare", "case": "all", "arm": f"instance-{n}", "metric": "lint_errors", "value": str(lint)}]
             rows += [{"scenario": "repro", "case": area, "arm": f"instance-{n}", "metric": "cost", "value": str(cost)}
                      for area in ("alpha", "beta")]
+            rows += [{"scenario": "repro-compare", "case": area, "arm": f"instance-{n}", "metric": "unanchored", "value": str(n)}
+                     for area in ("alpha", "beta")]  # instance n left 2n DOC facts unanchored
         rows += [{"scenario": "repro-compare", "case": "alpha", "arm": "instance-1+instance-2", "metric": "fact_overlap", "value": "0.5"},
                  {"scenario": "repro-compare", "case": "alpha", "arm": "all", "metric": "agreement", "value": "1"}]
         return [{**r, "record": record, "date": date, "commit": record} for r in rows]
@@ -1702,10 +1715,16 @@ def bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_comm
         f = tmp_path / "picks.csv"
         bc.write_rows(rows, f)
         rc = bm.main(["repro", "pick", "--rows", str(f)])
-        return rc, capsys.readouterr().out.strip().splitlines()[-1]
+        printed.append(capsys.readouterr().out)
+        return rc, printed[-1].strip().splitlines()[-1]
+
+    printed = []
 
     assert picked(table({1: (20, 0, 0, 25), 2: (22, 0, 1, 27.5)})) == (0, "picked: instance-2 (most eval_passed over instance-1)")
+    assert "instance-2: eval_passed 44, check_errors+lint_errors 1, unanchored 4, cost 55.00" in printed[-1]  # summed over the areas
     assert picked(table({1: (22, 0, 1, 25), 2: (22, 1, 1, 25)}))[1].startswith("picked: instance-1 (fewest errors")
+    assert picked([r for r in table({1: (22, 0, 0, 25)}) if r["metric"] != "unanchored"])[0] == 0
+    assert "unanchored not recorded" in printed[-1]  # a record from before the metric
     assert picked(table({1: (22, 0, 0, 30), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-2 (lowest cost")
     assert picked(table({1: (22, 0, 0, 25), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-1 (a tie")
     old = table({1: (99, 0, 0, 1), 2: (1, 9, 9, 99)}, record="old0000", date="2026-10-01")
