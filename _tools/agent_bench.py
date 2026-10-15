@@ -219,12 +219,16 @@ def parse(stdout):
             "kb_tokens": kb_tokens(list(reqs.values()), ((res or {}).get("usage") or {}).get("output_tokens"))}, res
 
 
-def execute(cmd, prompt, cwd=KB, env=None, clean=False):
+def execute(cmd, prompt, cwd=KB, env=None, clean=False, timeout=900):
     """Run one headless claude and parse its stream: the result fields (or {"error": ...}). `env` is added to this
-    process's environment, or with `clean` is the whole environment."""
+    process's environment, or with `clean` is the whole environment. A session that outlives `timeout` seconds is a
+    failure named `timeout` ({"error": "timeout", "timeout_s": N}), not an exception."""
     t = time.time()
-    p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=900,
-                       env=env if clean else {**os.environ, **env} if env else None)
+    try:
+        p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=timeout,
+                           env=env if clean else {**os.environ, **env} if env else None)
+    except subprocess.TimeoutExpired:
+        return {"error": "timeout", "timeout_s": timeout, "wall_s": round(time.time() - t, 1)}
     return result_of(p.stdout, p.stderr, time.time() - t)
 
 
@@ -236,13 +240,13 @@ def result_of(stdout, stderr, wall):
     and the prompt of each request, not the output. `model_usage` keeps what `modelUsage` bills each model ({model:
     {uncached, cache_write, cache_read, out}}): a WebFetch or WebSearch call runs a model of its own inside the tool
     (Haiku 5.5, whatever the session's model), billed there and in no message of the stream; `web_searches` is the
-    searches `modelUsage` bills (`webSearchRequests`), set when the event has a `modelUsage`."""
+    searches `modelUsage` bills (`webSearchRequests`), set when the event has a `modelUsage`. An error result (an
+    `is_error` event: `error_max_turns`, `error_max_budget_usd`, ...) is {"error": text} with what the run spent kept:
+    `subtype`, `cost`, `turns`, the `usage` tokens (`in_uncached`, `cache_write`, `cache_read`, `out`) and `model_usage`."""
     seen, res = parse(stdout)
     if not res:
         return {"error": stderr[-500:]}
-    if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
-        return {"error": (res.get("result") or "is_error")[:200]}  # a refused run is void, not a cheap answer
-    u = res["usage"]
+    u = res.get("usage") or {}
     billed = {m: v for m, v in (res.get("modelUsage") or {}).items() if isinstance(v, dict)}
     counts = [v["outputTokens"] for v in billed.values() if isinstance(v.get("outputTokens"), int)]
     num = lambda v, k: v.get(k) if isinstance(v.get(k), int) else 0  # noqa: E731
@@ -250,6 +254,13 @@ def result_of(stdout, stderr, wall):
                                   "cache_read": num(v, "cacheReadInputTokens"), "out": num(v, "outputTokens")}
                               for m, v in billed.items()},
               "web_searches": sum(num(v, "webSearchRequests") for v in billed.values())} if billed else {})
+    if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
+        # a refused run is void, not a cheap answer; what it spent stays on the row
+        return {"error": (res.get("result") or res.get("subtype") or "is_error")[:200], "subtype": res.get("subtype", ""),
+                "cost": round(res.get("total_cost_usd") or 0, 4), "turns": num(res, "num_turns"),
+                "in_uncached": num(u, "input_tokens"), "cache_write": num(u, "cache_creation_input_tokens"),
+                "cache_read": num(u, "cache_read_input_tokens"), "out": sum(counts) if counts else num(u, "output_tokens"),
+                **({"model_usage": extra["model_usage"]} if billed else {})}
     return {"wall_s": round(wall, 1), "api_s": round(res["duration_api_ms"] / 1000, 1),
             "cost": round(res["total_cost_usd"], 4), "turns": res["num_turns"],
             "in_uncached": u["input_tokens"], "cache_write": u["cache_creation_input_tokens"],

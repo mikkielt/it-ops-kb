@@ -1228,6 +1228,38 @@ def bench_repro_questions_and_status_name_each_planted_problem(tmp_path, monkeyp
     assert "instance 2: its bare" in capsys.readouterr().err
 
 
+def bench_stream_run_passes_timeout_and_clean_env_and_an_error_result_keeps_its_cost_usage_and_subtype(tmp_path, monkeypatch):
+    import sys
+    import agent_bench
+    # a session that outlives its timeout is a failure named timeout, not an exception
+    r = agent_bench.execute([sys.executable, "-c", "import time; time.sleep(30)"], "", cwd=str(tmp_path), timeout=0.5)
+    assert r["error"] == "timeout" and r["timeout_s"] == 0.5 and r["wall_s"] < 10
+    # an error result keeps what the run spent: cost, usage tokens, model usage and subtype
+    line = json.dumps({"type": "result", "subtype": "error_max_budget_usd", "is_error": True, "total_cost_usd": 8.01,
+                       "num_turns": 40, "duration_api_ms": 1000, "usage": {"input_tokens": 5, "output_tokens": 7},
+                       "modelUsage": {"claude-sonnet-5-5": {"costUSD": 8.01, "outputTokens": 9}}, "result": ""})
+    r = agent_bench.execute([sys.executable, "-c", f"print({line!r})"], "", cwd=str(tmp_path), timeout=30)
+    assert r["error"] == "error_max_budget_usd" and r["subtype"] == "error_max_budget_usd" and r["cost"] == 8.01
+    assert r["turns"] == 40 and r["in_uncached"] == 5 and r["out"] == 9
+    assert r["model_usage"]["claude-sonnet-5-5"]["out"] == 9
+    turns = agent_bench.result_of(line.replace("budget_usd", "turns"), "", 3.0)
+    assert turns["subtype"] == "error_max_turns" and turns["cost"] == 8.01
+    # the error run's cost counts in the spend, and a refused run with no cost does not
+    monkeypatch.setattr(bc, "SPEND", {"usd": 0.0, "input": 0, "out": 0, "runs": 0})
+    before = bc.spent_usd()
+    bc.spent_run(r)
+    assert round(bc.spent_usd() - before, 2) == 8.01
+    bc.spent_run({"error": "timeout", "timeout_s": 1})
+    assert round(bc.spent_usd() - before, 2) == 8.01
+    # stream_run hands its timeout and clean env on to execute
+    got = {}
+    monkeypatch.setattr(agent_bench, "execute", lambda cmd, prompt, **kw: got.update(kw) or {"error": "timeout"})
+    bc.stream_run(["claude"], "q", tmp_path, {"HOME": "/h"}, timeout=7, clean=True)
+    assert got["timeout"] == 7 and got["clean"] is True and got["env"] == {"HOME": "/h"}
+    bc.stream_run(["claude"], "q", tmp_path)
+    assert got["timeout"] == 900 and got["clean"] is False and got["env"] is None
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read; `fixtures` are further fixtures a body names."""
@@ -1245,7 +1277,9 @@ def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, 
              bench_price_tier_is_recorded_and_alias_follows_the_run,
              bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows,
              bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env,
-             bench_repro_questions_and_status_name_each_planted_problem, kb_seed=kb_seed)
+             bench_repro_questions_and_status_name_each_planted_problem,
+             bench_stream_run_passes_timeout_and_clean_env_and_an_error_result_keeps_its_cost_usage_and_subtype,
+             kb_seed=kb_seed)
 
 
 def test_bench_pool_build_check_scenario_rows_and_session_shape(tmp_path, monkeypatch, capsys):

@@ -361,9 +361,11 @@ def claude_json(argv, prompt, cwd, env=None, timeout=900):
     return ev
 
 
-def stream_run(argv, prompt, cwd, env=None):
-    """One stream-json run parsed as agent_bench does (cost, tokens, tool calls, route, answer)."""
-    r = agent_bench.execute(argv, prompt, cwd=str(cwd), env=env)
+def stream_run(argv, prompt, cwd, env=None, timeout=900, clean=False):
+    """One stream-json run parsed as agent_bench does (cost, tokens, tool calls, route, answer). `timeout` is the
+    run's seconds (a session that outlives it is {"error": "timeout"}); with `clean` `env` is the run's whole
+    environment, else it is added to this process's."""
+    r = agent_bench.execute(argv, prompt, cwd=str(cwd), env=env, clean=clean, timeout=timeout)
     spent_run(r)
     if RAW.get("path"):  # every run's parsed stream, for checking a row against its source
         with open(RAW["path"], "a", encoding="utf-8", newline="\n") as f:
@@ -372,7 +374,7 @@ def stream_run(argv, prompt, cwd, env=None):
 
 
 def spent_run(r):
-    if "error" not in r:
+    if "error" not in r or r.get("cost"):  # an error result (error_max_budget_usd) still spent its cost
         spent(r["cost"], r["in_uncached"] + r["cache_write"] + r["cache_read"], r["out"])
 
 

@@ -47,6 +47,42 @@
   "depends_on": [
     "ST-m25otwlp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does bench_core.spent_run count the cost of an error result (error_max_budget_usd) in the spend the --max-usd cap reads?",
+      "options": [
+        "count an error result's cost",
+        "leave the spend to successful runs"
+      ],
+      "recommendation": "count an error result's cost",
+      "do": {
+        "count an error result's cost": "ST-j7guxiv6",
+        "leave the spend to successful runs": "ST-j7guxiv6"
+      },
+      "class": "design",
+      "answer": "count an error result's cost",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does agent_bench.execute report a timeout and what are stream_run's new parameters and defaults?",
+      "options": [
+        "error named timeout with timeout_s, timeout=900 and clean=False as keyword defaults",
+        "error text naming the seconds, timeout required of the caller"
+      ],
+      "recommendation": "error named timeout with timeout_s, timeout=900 and clean=False as keyword defaults",
+      "do": {
+        "error named timeout with timeout_s, timeout=900 and clean=False as keyword defaults": "ST-j7guxiv6",
+        "error text naming the seconds, timeout required of the caller": "ST-j7guxiv6"
+      },
+      "class": "design",
+      "answer": "error named timeout with timeout_s, timeout=900 and clean=False as keyword defaults",
+      "by": "agent"
+    }
+  ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
   "claimed_by": "orch-mac"
 }
