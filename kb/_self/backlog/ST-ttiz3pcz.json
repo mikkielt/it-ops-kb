@@ -2,7 +2,7 @@
   "id": "ST-ttiz3pcz",
   "kind": "story",
   "title": "benchmarks.py repro compare measures how alike the instances' research is, per instance and area",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -156,5 +156,30 @@
     }
   ],
   "notes": "Premise 2026-10-15: no tool compares two clones' research; reuse factdiff.norm/words_key/unit_sim/numbers/jaccard, kbfacts.audit (rag.py --json audit), kbfacts.source_rows, ql_research.bare_url, check.py's errors= line and .claude/skills/kb-verify/lint.py --json --base START. HOME is process-global, so each clone's tools run by subprocess. No conflict detector between kbs exists (kbfacts.decision_conflicts covers decisions only). The test bundle passes before the work: it pins the new bodies once they are added; the checks that fail before the work are the repro subcommands.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "48808bb62d4adc2a0966c5b5da087c1c42757dc9",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "563cca7f6070de16"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "compare",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "6122c2cdd602ea63"
+      }
+    ]
+  }
 }
