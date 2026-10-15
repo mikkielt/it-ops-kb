@@ -67,7 +67,7 @@ Scrum's Definition of Done is one shared quality bar that every item must meet b
 | Check | which command proves it | `python3 _tools/tests.py` passes, including the planted-failure test |
 | Constraints | what must not change | `kb_hook.py` latency; no file outside the listed ones |
 
-See also `gitlab/work-items-planning.md` (GitLab's epic, issue and task hierarchy, blocking links, iterations, priority and severity labels), `agents/agent-evaluation.md` (graders, eval sets), `claude/hooks.md` (Stop hooks), `agents/headless-agent-runtimes.md` (unattended runs), `agents/anthropic-materials.md` (the post index).
+See also `gitlab/work-items-planning.md` (GitLab's epic, issue and task hierarchy, blocking links, iterations, priority and severity labels), `agents/agent-evaluation.md` (graders, eval sets), `claude/hooks.md` (Stop hooks), `agents/headless-agent-runtimes.md` (unattended runs), `agents/anthropic-materials.md` (the post index), `agents/agent-troubleshooting-method.md` (troubleshooting a failed agent task: the SRE loop, blameless postmortems, DORA on AI-assisted delivery).
 
 ## Examples
 - SNIPPET: a `/goal` condition with an end state, a check and a constraint; context: Claude Code with `/goal` (hooks not disabled); checked: no [DER S-vp5onm7b: the three parts of an effective condition and the turn clause]

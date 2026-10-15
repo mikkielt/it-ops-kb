@@ -330,3 +330,4 @@ EV-python-rust-service-json-log-lines-stdout,How does a Python and a Rust servic
 EV-cargo-feature-unification-dependency-enable-ort-provider,How does Cargo feature unification let a dependency enable an ort provider feature and what detects it?,agents/onnx-runtime-rust-ort.md,good,
 EV-claude-code-2-1-294-change-key-claude-result-usage,Did Claude Code 2.1.294 change any key of the claude -p result usage field?,claude/ci-and-headless.md,good,
 EV-p95-taken-nearest-rank,How is a p95 taken at the nearest rank?,python/percentile-nearest-rank.md,good,
+EV-troubleshooting-methodology-agentic-coding-debugging-coding,"What is a troubleshooting methodology for agentic coding, debugging a coding agent's failures?",agents/agent-troubleshooting-method.md;agents/agent-planning-and-done.md,good,

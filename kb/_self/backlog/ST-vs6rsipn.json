@@ -39,6 +39,42 @@
   "depends_on": [
     "ST-xmy3pm4z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The logged miss (troubleshooting methodology for agentic coding) was expected to find agents/agent-planning-and-done.md; the new topic agents/agent-troubleshooting-method.md now answers it. Where do the lookup_eval row and the doc2query expansion point?",
+      "options": [
+        "eval row accepts either article (expect_paths names both), expansion on the new topic's fact that maps the SRE loop onto a failed agent task",
+        "eval row and expansion on agents/agent-planning-and-done.md only"
+      ],
+      "recommendation": "eval row accepts either article (expect_paths names both), expansion on the new topic's fact that maps the SRE loop onto a failed agent task",
+      "do": {
+        "eval row accepts either article (expect_paths names both), expansion on the new topic's fact that maps the SRE loop onto a failed agent task": "ST-vs6rsipn",
+        "eval row and expansion on agents/agent-planning-and-done.md only": "ST-vs6rsipn"
+      },
+      "class": "design",
+      "answer": "eval row accepts either article (expect_paths names both), expansion on the new topic's fact that maps the SRE loop onto a failed agent task",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "The SRE chapter's Common Pitfalls list sits in an HTML sidebar that fetch.py drops (bug BG-nr2mv4si), so its DOC fact cannot be anchored by quote and lint warns. Keep the fact?",
+      "options": [
+        "keep the DOC fact, read from the page's raw HTML, with the lint warning until the bug is fixed",
+        "drop the pitfalls fact"
+      ],
+      "recommendation": "keep the DOC fact, read from the page's raw HTML, with the lint warning until the bug is fixed",
+      "do": {
+        "keep the DOC fact, read from the page's raw HTML, with the lint warning until the bug is fixed": "ST-vs6rsipn",
+        "drop the pitfalls fact": "ST-vs6rsipn"
+      },
+      "class": "design",
+      "answer": "keep the DOC fact, read from the page's raw HTML, with the lint warning until the bug is fixed",
+      "by": "agent"
+    }
+  ],
   "notes": "rag.py eval passes before the work by design: it pins every lookup_eval.csv row, the new troubleshooting row included, once the row lands; the last goal question is the logged miss itself, which researched packs and which fails until the expansion makes it good. How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-troubleshooting-method where no article fits, plus a kb/public/_retrieval/lookup_eval.csv row and a doc2query expansion for the logged lookup miss below (it should find agents/agent-planning-and-done.md).",
   "claimed_by": "orch-state"
 }

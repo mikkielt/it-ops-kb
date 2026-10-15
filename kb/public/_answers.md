@@ -3589,3 +3589,14 @@ _Agent: kb-research_
 - See agents/agent-rbac.md, entra/agent-id.md.
 
 _Agent: kb-research_
+
+## QK-troubleshooting-method-agentic-work-sre-dora. What troubleshooting method fits agentic work: which method does Google's SRE book describe, how does a blameless postmortem work, what does DORA report about AI-assisted delivery, and how does a coding agent's failure get debugged?
+- SRE book: troubleshooting is the hypothetico-deductive method, from a problem report (expected, actual, how to reproduce) through triage (stop the bleeding, keep evidence), examine (metrics, logs, exposed state), diagnose (simplify and reduce, bisection, what touched it last), and test and treat (mutually exclusive tests, likeliest first, clear notes) to a cure that ends in a postmortem; negative results count. [DOC S-bykh7vnm]
+- Blameless postmortem: a written record of impact, mitigation, root causes and follow-up actions, triggered by criteria set in advance; it names contributing causes without indicting anyone, assumes good intentions, fixes systems and processes, and is reviewed by senior engineers and shared, since an unreviewed postmortem might as well never have existed. [DOC S-u2rergzb]
+- DORA 2024: as AI adoption rose, delivery throughput fell an estimated 1.5% and stability 7.2%, while individual productivity rose; DORA 2025: AI amplifies what a team already has, throughput and product performance now rise with adoption, stability still falls, and automated testing, version control and small batches are the safety nets. [DOC S-2k5yy4cc, S-xyroxc3f, S-acskf4b2, S-hs7ypnlx]
+- Coding agent: correct early, stop with `Esc`, rewind, `/clear` after two failed corrections and restart with a better prompt; check what loaded with `/context`, isolate configuration with `claude --safe-mode`, read hook and MCP behaviour in the `claude --debug` log, and check the setup with `/doctor`. [DOC S-o3v6ozch, S-aqddt7m6, S-odq4ke5n]
+- Conclusion: debug a failed agent task with the SRE loop, its report being the failing check's command and output and its diagnosis starting from the last change; write the outcome up blamelessly as a fix to the system around the agent (a hook, a check, a clearer prompt), and keep the delivery safety nets DORA names, because agent-generated change volume otherwise costs stability. [DER S-bykh7vnm, S-u2rergzb, S-acskf4b2, S-o3v6ozch]
+- Open: the DORA report PDFs themselves (effect sizes per outcome, the 2025 capability definitions) were not read; the figures come from DORA's announcement posts and site. [UNK]
+- See agents/agent-troubleshooting-method.md, agents/agent-planning-and-done.md.
+
+_Agent: kb-research_

@@ -843,3 +843,4 @@ c84024fb6ad5,Does find with an unquoted glob prompt even though find is in the r
 9e6acb1f510f,cd with git or redirect prompts in Manual mode read-only commands
 9e6acb1f510f,Which combinations of cd with another read-only command still prompt in Manual mode?
 9e6acb1f510f,Does cd packages/api && ls run without a permission prompt?
+ff926d16eac4,"What is a troubleshooting methodology for agentic coding, debugging a coding agent's failures?"
