@@ -798,3 +798,12 @@ RUNNER_GENERATE_ARTIFACTS_METADATA,gitlab/commit-signing-and-provenance
 ATTEST_BUILD_ARTIFACTS,gitlab/commit-signing-and-provenance
 glab attestation verify,gitlab/commit-signing-and-provenance
 https://slsa.dev/provenance/v1,gitlab/commit-signing-and-provenance
+spiffe://,auth/spiffe-workload-identity
+FetchX509SVID,auth/spiffe-workload-identity
+FetchJWTSVID,auth/spiffe-workload-identity
+spire-server,auth/spiffe-workload-identity
+spire-agent,auth/spiffe-workload-identity
+k8s_psat,auth/spiffe-workload-identity
+serviceAccountToken,auth/spiffe-workload-identity
+expirationSeconds,auth/spiffe-workload-identity
+TokenReview,auth/spiffe-workload-identity

@@ -31,6 +31,25 @@
   "depends_on": [
     "ST-52lihy7z"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The new topic auth/spiffe-workload-identity links to arch/workload-identity-onprem-k8s.md, auth/workload-identity.md and auth/enrolment-tokens.md, but those anchor articles are outside the item's touches: leave their back-links to the new topic out of this item, or widen the touches to add them?",
+      "options": [
+        "leave the back-links out; the new topic links to the anchors and the answer names them",
+        "widen the touches to the three anchor articles and add a back-link line in each Reference section"
+      ],
+      "recommendation": "leave the back-links out; the new topic links to the anchors and the answer names them",
+      "do": {
+        "leave the back-links out; the new topic links to the anchors and the answer names them": "ST-u6y5okle",
+        "widen the touches to the three anchor articles and add a back-link line in each Reference section": "ST-u6y5okle"
+      },
+      "class": "design",
+      "answer": "leave the back-links out; the new topic links to the anchors and the answer names them",
+      "by": "agent"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic auth/spiffe-workload-identity where no article fits.",
   "claimed_by": "orch-state"
 }

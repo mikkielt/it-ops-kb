@@ -124,6 +124,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `auth/postgres-column-encryption` | P3 | partial | `auth/postgres-column-encryption.md` | 7 |
 | `auth/shamir-secret-sharing` | P3 | partial | `auth/shamir-secret-sharing.md` | 9 |
 | `auth/sops-age-recipients` | P3 | complete | `auth/sops-age-recipients.md` | 3 |
+| `auth/spiffe-workload-identity` | P3 | complete | `auth/spiffe-workload-identity.md` | 14 |
 | `autopilot/device-identity` | P1 | complete | `autopilot/device-identity.md` | 12 |
 | `autopilot/device-preparation` | P1 | complete | `autopilot/device-preparation.md`, `autopilot/v1-vs-v2.csv` | 21 |
 | `autopilot/lifecycle` | P1 | complete | `autopilot/lifecycle.md` | 5 |
