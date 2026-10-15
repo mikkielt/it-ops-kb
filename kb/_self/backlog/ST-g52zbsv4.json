@@ -79,6 +79,59 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The goal says the test body runs setup and check: no command named check is defined for repro. What does the body check?",
+      "options": [
+        "the body asserts the products of setup (bares, clones, remotes, log mode, mcp-config, env) with no new command",
+        "add a repro check command that verifies a set of instances and run it in the body"
+      ],
+      "recommendation": "the body asserts the products of setup (bares, clones, remotes, log mode, mcp-config, env) with no new command",
+      "do": {
+        "the body asserts the products of setup (bares, clones, remotes, log mode, mcp-config, env) with no new command": "ST-g52zbsv4",
+        "add a repro check command that verifies a set of instances and run it in the body": "ST-g52zbsv4"
+      },
+      "class": "design",
+      "answer": "the body asserts the products of setup (bares, clones, remotes, log mode, mcp-config, env) with no new command",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does setup put what the goal leaves unnamed: the working clones, the mcp-config files, the lock directories and the record of the paths?",
+      "options": [
+        "clones under scratch/repro-<hash of DIR>/instanceN, mcp-config at the clone's _private/mcp-config.json, DIR/lockN per instance, paths recorded in DIR/instances.json",
+        "clones under scratch/instanceN, mcp-config beside the bares in DIR, one DIR/locks for all, no record file"
+      ],
+      "recommendation": "clones under scratch/repro-<hash of DIR>/instanceN, mcp-config at the clone's _private/mcp-config.json, DIR/lockN per instance, paths recorded in DIR/instances.json",
+      "do": {
+        "clones under scratch/repro-<hash of DIR>/instanceN, mcp-config at the clone's _private/mcp-config.json, DIR/lockN per instance, paths recorded in DIR/instances.json": "ST-g52zbsv4",
+        "clones under scratch/instanceN, mcp-config beside the bares in DIR, one DIR/locks for all, no record file": "ST-g52zbsv4"
+      },
+      "class": "design",
+      "answer": "clones under scratch/repro-<hash of DIR>/instanceN, mcp-config at the clone's _private/mcp-config.json, DIR/lockN per instance, paths recorded in DIR/instances.json",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the instance env know the variables conftest.LEAKY lists, and where do the docs servers come from?",
+      "options": [
+        "bench_repro.LEAKY_ENV repeats the names (a tool never imports conftest, which clears os.environ on import), the test asserts it equals conftest.LEAKY, and the docs servers are read from the running checkout's .mcp.json",
+        "import conftest in the tool, and read the docs servers from the clone's own .mcp.json at REV"
+      ],
+      "recommendation": "bench_repro.LEAKY_ENV repeats the names (a tool never imports conftest, which clears os.environ on import), the test asserts it equals conftest.LEAKY, and the docs servers are read from the running checkout's .mcp.json",
+      "do": {
+        "bench_repro.LEAKY_ENV repeats the names (a tool never imports conftest, which clears os.environ on import), the test asserts it equals conftest.LEAKY, and the docs servers are read from the running checkout's .mcp.json": "ST-g52zbsv4",
+        "import conftest in the tool, and read the docs servers from the clone's own .mcp.json at REV": "ST-g52zbsv4"
+      },
+      "class": "design",
+      "answer": "bench_repro.LEAKY_ENV repeats the names (a tool never imports conftest, which clears os.environ on import), the test asserts it equals conftest.LEAKY, and the docs servers are read from the running checkout's .mcp.json",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise run 2026-10-15 by the planner's verifier on 89895f542: kbgit.py sync --push in a standalone clone whose origin is a local bare path works today (exit 0, about 20 s, bare main moved, real origin untouched; three clones rebased on each other), so sync needs no change. Not per clone today: the kb MCP server (local scope in ~/.claude.json for the main checkout only; a standalone clone gets none, and ST-gkrivybp's worktree redirect needs a shared git common dir); the query log defaults to mode auto without _private/querylog.json (paid Haiku distill and apply --push at SessionEnd); bench_core.throwaway_clone clones the blob:none partial checkout (221 history objects missing) and copies every ref of HOME. Per clone today: _cache (kbcommon.HOME), the pack index (kbfacts.index_dir), the claims ledger (bl_base.CLAIMS_LEDGER), Claude Code project memory. Host-wide by design: /tmp/kb-main.lock and /tmp/kb-tests.lock (KB_HOST_LOCK_DIR redirects both). Leaky env: CLAUDE_CODE_BRIDGE_SESSION_ID / CLAUDE_CODE_REMOTE_SESSION_ID make sync refuse other sessions' trailers; no_plugin_env leaves KB_DOCS_CACHE. Plan review: kb servers go to each session by --mcp-config FILE --strict-mcp-config (bench_install.py, agent_bench.py precedent), never kb_mcp.py --register-local, which rewrites the shared ~/.claude.json; setup deletes the seed bare, which holds the commits after the start commit. The test bundle passes before the work; the setup --dry-run check fails before it. Selection cost about 1.5 s wall.",
   "claimed_by": "orch-mac"
 }

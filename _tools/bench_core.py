@@ -6,7 +6,7 @@ bench_retrieval.py, bench_querylog.py and bench_install.py the scenarios. This m
 and benchmarks.py, the facade, holds the command line (kb/_self/code.md, Layout and Imports; the commands and the
 scenarios are described in kb/_self/reports/benchmarks.md).
 """
-import csv, datetime, io, json, math, os, re, shutil, statistics, subprocess, sys, threading, time, uuid
+import csv, datetime, io, json, math, os, re, shutil, statistics, subprocess, sys, tempfile, threading, time, uuid
 from pathlib import Path
 
 import agent_bench
@@ -102,6 +102,11 @@ def merge_rows(old, new):
 def git(*args, cwd, check=True):
     return subprocess.run(["git", *args], cwd=str(cwd), capture_output=True, text=True, encoding="utf-8",
                           check=check).stdout.strip()
+
+
+def scratch_dir():
+    """The scratch directory of the benchmarks' clones: BENCH_SCRATCH, else <temp>/it-ops-kb-bench."""
+    return Path(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench")
 
 
 def isolate(clone, mode, bare):

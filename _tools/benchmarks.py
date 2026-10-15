@@ -62,6 +62,15 @@
                                             file F that name an arm label a later spend row of the record also names (a
                                             same-day rerun replaced that label's runs), totalling each from the record's
                                             own rows; no paid run (bench_pool.py, settle_spend); a run does this itself
+  benchmarks.py repro setup --instances N [--start REV] [--dir DIR] [--dry-run]
+                                            build N isolated instances of one pinned commit (bench_repro.py): a
+                                            bare copy DIR/originN.git of REV's history (default REV: the parent of
+                                            the first commit that added kb/public/_retrieval/repro_bench.csv, else
+                                            the integration main's tip; DIR: _cache/bench-repro of the clone's main
+                                            worktree), a working clone of it under the scratch directory whose only
+                                            remote is that bare, its query log `off` and an mcp-config file of its
+                                            own (use it with --strict-mcp-config); prints each path; --dry-run
+                                            prints the plan and starts nothing; exit 2 on a refusal
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -84,14 +93,15 @@ files-headless, host-lookups, new-model, always-on, kb-lookup-agent, retrieval a
 ingest, host-roots, navigation (three prompts per arm), querylog-pipeline (one real Haiku batch). The rest run no
 model.
 """
-import argparse, os, sys, tempfile, time
+import argparse, sys, time
 from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
 import bench_pool  # noqa: E402
+import bench_repro  # noqa: E402
 from bench_core import (ARMED, HOME, RAW, RESULTS, SLOTTED, SPEND, Bench, Skip, merge_rows, read_rows,  # noqa: E402
-                        write_rows)
+                        scratch_dir, write_rows)
 from bench_report import empty_markers, readme_misses, render  # noqa: E402
 from bench_install import s_host_roots, s_ingest, s_kbpy, s_new_model  # noqa: E402
 from bench_lookup import (s_always_on, s_files_headless, s_files_subagents, s_headless, s_host_lookups, s_howto,
@@ -187,6 +197,13 @@ def main(argv=None):
     ps.add_argument("--record", help="the pool record to repair (default: the newest of the file)")
     rep = sub.add_parser("report")
     rep.add_argument("--check", action="store_true")
+    rp = sub.add_parser("repro").add_subparsers(dest="repro_cmd", required=True)
+    rs = rp.add_parser("setup")
+    rs.add_argument("--instances", type=int, required=True, help="the number of instances (1 or more)")
+    rs.add_argument("--start", metavar="REV", help="the commit every instance starts at (default: the parent of the first "
+                    "commit that added " + bench_repro.ADDED + ", else the integration main's tip)")
+    rs.add_argument("--dir", help="where the bare origins go (default: _cache/bench-repro of the clone's main worktree)")
+    rs.add_argument("--dry-run", action="store_true", help="print the plan and start nothing")
     a = ap.parse_args(argv)
     if a.cmd == "list":
         for name, (section, _) in SCENARIOS.items():
@@ -194,6 +211,15 @@ def main(argv=None):
         return 0
     if a.cmd == "pool":
         return bench_pool.cli(a)
+    if a.cmd == "repro":
+        if a.instances < 1:
+            print("--instances needs 1 or more", file=sys.stderr)
+            return 2
+        try:
+            return bench_repro.setup(a.instances, a.start, a.dir, a.dry_run)
+        except bench_repro.Refused as e:
+            print(f"repro setup: {e}", file=sys.stderr)
+            return 2
     if a.cmd == "report":
         rows = read_rows(RESULTS)
         text = REPORT.read_text(encoding="utf-8")
@@ -249,7 +275,7 @@ def main(argv=None):
     if problems:
         print("\n".join(problems), file=sys.stderr)
         return 2
-    b = Bench(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench", a.reps)
+    b = Bench(scratch_dir(), a.reps)
     b.arm = a.arm
     b.arms, b.efforts, b.dry, b.shape, b.seed = arms, efforts, a.dry_run, a.shape, a.seed
     b.jobs, b.max_usd, b.sample = a.jobs, a.max_usd, a.sample
