@@ -1,0 +1,24 @@
+{
+  "id": "ST-7ojyhhw2",
+  "kind": "story",
+  "title": "The lookup eval holds rows that spell a hyphenated name with a space, so a name-check change that breaks them fails eval",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/_retrieval/lookup_eval.csv holds rows asking a hyphenated name the kb holds spelled with a space or a capital (Hyper V, Invoke WebRequest, Break Glass, Pay As You Go), each expecting the verdict pack gives today. SP-z3jcdsgr retrospective: BG-lnmpa27d's checks (the VMware Horizon repro and a planted test) and eval 705/705 passed while its rule turned eight such questions from good to none; only the sprint review found it, and BG-jfjg65bd fixed it after a changed gate answer.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8').read();sys.exit(0 if 'Hyper V' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-z3jcdsgr close"
+  ]
+}

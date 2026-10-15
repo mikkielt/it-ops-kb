@@ -1,0 +1,24 @@
+{
+  "id": "ST-utsvlrto",
+  "kind": "story",
+  "title": "A rule item's data-file choices are gates asked before the start, not added blocking by its worker",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md tells a planner that an item of class agents-rule which adds a committed data file asks, before the start gate, which rows the file holds, which command rewrites it and how its rows count in the tool's figures. SP-z3jcdsgr retrospective: BG-r2epswpp's worker added blocking gates g2 (word_shares.csv contents, writer, --file lookup) and g3 (drift against NOTED_BASELINE) mid-work and went on with its recommendations; both were answered only at landing, and g3's answer reached rag.py but not the live-kb test.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'which command rewrites it' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3jcdsgr close"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-lw6fajm2",
+  "kind": "story",
+  "title": "An item that changes what a printed counter counts carries every reader of that counter in its touches and checks",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md tells a planner (and a worker recording a gate on it) that an item which changes what a printed counter of a tool counts (eval's noted=, passed=) runs `backlog.py referrers` on the counter's name and puts each test or tool that reads it in its touches, with a check that runs the reader on a planted case. SP-z3jcdsgr retrospective: BG-r2epswpp's gate g3 left drift rows out of NOTED_BASELINE in rag.py but not in test_live_kb.py's live eval assertion, so the first content landing with a real drift (ST-litcqrmw) failed its sync gate (land.step kbgit.py-sync-push exit=1, 2026-10-15T19:57:16Z) and BG-zjfitywd was filed mid-sprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'printed counter' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3jcdsgr close"
+  ]
+}

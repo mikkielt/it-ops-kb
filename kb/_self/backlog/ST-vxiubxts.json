@@ -1,0 +1,24 @@
+{
+  "id": "ST-vxiubxts",
+  "kind": "story",
+  "title": "A goal that clears stale anchor rows names each row's source id, so done accepts the re-keyed rows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md tells a planner that a goal clearing stale anchor rows names each stale row's source id beside its file (factdiff.py --root R anchors --stale prints both), since done's ledger check reads source ids, not files. SP-z3jcdsgr retrospective: land of ST-ez6r5em7 stopped at done (ops done.refused reasons=outside-touches, 2026-10-15T20:13:08Z) on the re-keyed row of security/almalinux-elevate.md (S-zdchbjj6), which its goal named by file only; the orchestrator rewrote the goal on the work branch.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if \"names each stale row's source id\" in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3jcdsgr close"
+  ]
+}

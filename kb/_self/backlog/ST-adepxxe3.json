@@ -1,0 +1,25 @@
+{
+  "id": "ST-adepxxe3",
+  "kind": "story",
+  "title": "factdiff.py anchor --file keeps the anchor row of a fact whose text did not change",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "factdiff.py anchor --file leaves the row of an unchanged fact as it was (quote, sha and terms), and kb/_self/tools.md says so. SP-z3jcdsgr retrospective: land of ST-litcqrmw stopped at done (ops done.refused reasons=outside-touches, 2026-10-15T19:53:59Z) because re-anchoring windows/cmd-exe-variables-expansion-errorlevel.md rewrote the S-dabwnzz5 row of a fact whose text the item never changed; the worker was resumed to restore the row by hand.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/tools.md',encoding='utf-8').read();sys.exit(0 if 'keeps the row of an unchanged fact' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-z3jcdsgr close"
+  ]
+}
