@@ -1,0 +1,17 @@
+{
+  "id": "BG-73wc55ew",
+  "kind": "bug",
+  "title": "Gate classifier reads a kb article named *-agents.md as AGENTS.md and makes the gate blocking agents-rule",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "QUESTION_WORDS['agents-rule'] in _tools/bl_authority.py matches AGENTS.md and CLAUDE.md only as a whole file name, so a gate naming kb/public/agents/gitops-for-agents.md on a kb-content item is no agents-rule gate (seen on ST-gxpk74c3 gate g1, 'matched agents.md')",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.derived_class({'touches':['kb/public/agents/x.md']},{'id':'g1','question':'Link it from kb/public/agents/gitops-for-agents.md?','options':['yes','no']});sys.exit(1 if c=='agents-rule' else 0)"
+    ]
+  }
+}
