@@ -1,0 +1,38 @@
+{
+  "id": "ST-unrlktke",
+  "kind": "story",
+  "title": "The kb says what a token-efficient message between agents holds and how parallel agents avoid duplicate research",
+  "status": "draft",
+  "parent": "EP-ylklxolb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) What should a message one agent sends another hold to keep the receiver's context small, per Anthropic's context-engineering and multi-agent research guidance? (2) How do MCP outputSchema and structuredContent, and A2A message parts, give agents typed results rather than free text? (3) How do parallel agents avoid duplicating each other's research, per official sources? (4) What token cost does coordination add: agent teams, subagent briefs and the summaries they return?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-unrlktke"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/coordination-messages.md",
+    "kb/public/agents/subagents-vs-deterministic-tools.md",
+    "kb/public/agents/instruction-and-context-limits.md",
+    "kb/public/agents/a2a-protocol.md",
+    "kb/public/mcp/tools.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "kb: agents/subagents-vs-deterministic-tools.md:42,45 (duplicated work, brief contents)",
+    "kb: agents/instruction-and-context-limits.md:114 (attention budget)",
+    "kb: claude/cross-session-messaging.md:147 (plain text, size and rate limits)",
+    "kb: agents/agent-cost-governance.md:52 (agent teams about 7x tokens)"
+  ]
+}

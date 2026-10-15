@@ -1,0 +1,42 @@
+{
+  "id": "ST-5ntg6krr",
+  "kind": "story",
+  "title": "The kb says how a team or organization distributes coordination hooks, shares prompt caches and collects token telemetry",
+  "status": "draft",
+  "parent": "EP-ylklxolb",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does an organization distribute coordination hooks to every developer: server-managed settings, an organization plugin marketplace, allowManagedHooksOnly? (2) Is Anthropic prompt caching shared between different sessions or users of one organization or workspace? (3) What does Claude Tag give a team in a Slack channel that Projects, which are one person's, do not? (4) How does a team collect every member's Claude Code token and cost telemetry centrally, per user and per session?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-5ntg6krr"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/claude/settings-and-scopes.md",
+    "kb/public/claude/settings-keys.csv",
+    "kb/public/claude/plugins.md",
+    "kb/public/claude/plugins.csv",
+    "kb/public/claude/otel-monitoring.md",
+    "kb/public/claude/enterprise-admin.md",
+    "kb/public/agents/agent-caching.md",
+    "kb/public/agents/agent-cost-governance.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_gaps.md",
+    "kb/public/_answers.md",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "live: https://code.claude.com/docs/en/server-managed-settings",
+    "live: https://code.claude.com/docs/en/plugins/org",
+    "live: https://code.claude.com/docs/en/settings-example",
+    "live: https://code.claude.com/docs/en/claude-projects",
+    "kb: agents/agent-cost-governance.md:32 (purchase paths, OTel per user)"
+  ]
+}

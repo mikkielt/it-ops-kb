@@ -1,0 +1,33 @@
+{
+  "id": "ST-e3nmjd2s",
+  "kind": "story",
+  "title": "coord.py announces a session's intent and progress, and a digest gives a reader only the live work that overlaps its keys",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py post accepts two more closed kinds, intent (a session's item ids, topic keys and touch globs) and progress (an item id and one of working, blocked, done), each with id-only fields under the field limit; coord.py digest --key K (repeatable) --lines N prints at most N lines of the live intents, claims and research topics that overlap the given keys, newest first, and never one whose claim was released, whose lease expired or whose item is done; kb/_self/tools.md says which kind each step posts and that a reader injects only digest output, never raw events.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord_digest"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/test_coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-qguxlob4",
+    "ST-unrlktke"
+  ],
+  "relates_to": [
+    "EP-ylklxolb"
+  ],
+  "notes": "From the operator interview of 2026-10-15: a session announces intent at start, claims and touches, research topics, and progress, in a structured, token-capped form with usage rules so records do not pollute context. Extends the closed kinds of ST-qguxlob4. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic."
+}

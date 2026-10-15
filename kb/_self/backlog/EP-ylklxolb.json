@@ -1,0 +1,14 @@
+{
+  "id": "EP-ylklxolb",
+  "kind": "epic",
+  "title": "Parallel agent work, from one operator's sessions to an organization, is covered by cited facts on coordination, shared state and token cost",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The public kb answers, from official sources, which Claude Code option fits which parallel-work need (subagents, agent view background sessions, worktrees, agent teams, dynamic workflows, cross-session messaging) and what each shares or isolates; how a team or organization distributes coordination hooks and settings and what prompt caching shares across sessions and users; what a token-efficient coordination message holds; how an MCP server holds state several agents share and who may use its handles; and what the status line and notification hooks show the operator in the terminal. Each question its stories name has rag.py pack coverage good or an open _gaps.md entry naming where official sources were searched.",
+  "relates_to": [
+    "EP-klpp2paw",
+    "EP-fxrzbuza"
+  ],
+  "notes": "Operator interview 2026-10-15: scales in priority order solo one machine, solo several machines, team, organization; git is the durable truth and an MCP or coord.py service the hot cache, local or central; overlaps inform and the operator decides in the terminal; token levers: dedupe research, cheap deterministic coordination, cache-aware layout, measured budgets; announce records are structured and token-capped so they do not pollute context. Research here feeds the Claude Code adapters filed under EP-fxrzbuza (vendor-neutral coord.py protocol, hooks only one client). Live docs found 2026-10-15 with no kb source row: code.claude.com/docs/en/agents, en/statusline, en/channels, en/channels-reference, en/remote-control, en/workflows; MCP 2026-07-28 basic/index Statelessness, SEP-2567 sessionless MCP, security best practices State Handle Hijacking."
+}

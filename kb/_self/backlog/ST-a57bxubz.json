@@ -1,0 +1,55 @@
+{
+  "id": "ST-a57bxubz",
+  "kind": "story",
+  "title": "A coord.py claim carries the budget the operator approved and the digest shows its spend so far",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord.py claim takes an optional budget the operator approved for the claimed item, and coord.py digest and list show beside each live claim its spend so far, read from the query log's usage rows of the sessions holding it; a claim past its budget is listed as over budget and nothing is stopped automatically.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord_budget"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/test_coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-5iwikc3n",
+    "ST-e3nmjd2s",
+    "ST-5ntg6krr"
+  ],
+  "relates_to": [
+    "EP-ylklxolb",
+    "ST-dfmj76rf",
+    "EP-4nl2jr4q"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "In which unit does the operator approve a claim's budget?",
+      "options": [
+        "USD",
+        "model token counts",
+        "both"
+      ],
+      "recommendation": "USD",
+      "do": {
+        "USD": "ST-a57bxubz",
+        "model token counts": "ST-a57bxubz",
+        "both": "ST-a57bxubz"
+      },
+      "class": "design"
+    }
+  ],
+  "notes": "From the operator interview of 2026-10-15: measured budgets, shown with outputs and approved by the operator. Reads the query log's usage rows, reusing the reader backlog.py cost uses, never a parallel parser; run backlog.py referrers on that reader before the claim and add what it lists to touches. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic."
+}

@@ -1,0 +1,56 @@
+{
+  "id": "ST-xwop6rv5",
+  "kind": "story",
+  "title": "The kb MCP server exposes coord.py's claims, events and digest as tools, local or against coord.py serve",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb MCP server lists tools for coord.py claim, renew, release, post, digest and wait, run against the local store or against a coord.py serve address when one is configured; each tool takes and returns the same id-only fields as the CLI; a call that does not present a claim's holder token cannot renew or release it; the tools are listed in a fixed order so a client's prompt cache holds across sessions.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord_mcp"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "_tools/coord.py",
+    "_tools/test_coord.py",
+    "kb/_self/tools.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md",
+    "kb/_self/embedding.md"
+  ],
+  "depends_on": [
+    "ST-qguxlob4",
+    "ST-rk5ks4pf",
+    "ST-e3nmjd2s",
+    "ST-5h35ouv5"
+  ],
+  "relates_to": [
+    "EP-ylklxolb"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which MCP server carries the coord tools?",
+      "options": [
+        "the kb MCP server, as deferred tools",
+        "a separate coord MCP server"
+      ],
+      "recommendation": "the kb MCP server, as deferred tools",
+      "do": {
+        "the kb MCP server, as deferred tools": "ST-xwop6rv5",
+        "a separate coord MCP server": "ST-xwop6rv5"
+      },
+      "class": "design"
+    }
+  ],
+  "notes": "Refines EP-fxrzbuza's 'later, unrefined' note on exposing the coord commands as MCP tools. From the operator interview of 2026-10-15: git is the durable truth and an MCP server the hot cache, local per machine or central for a team. Holder-token checks follow the state-handle-hijacking research of ST-5h35ouv5. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic."
+}

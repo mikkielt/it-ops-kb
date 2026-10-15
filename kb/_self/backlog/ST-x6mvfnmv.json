@@ -1,0 +1,71 @@
+{
+  "id": "ST-x6mvfnmv",
+  "kind": "story",
+  "title": "Claude Code hooks announce a session's work through coord.py and show overlapping sessions, leaving the choice to the operator",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "A SessionStart hook posts the session's intent through coord.py (session id, worktree branch, claimed items) and adds coord.py digest output for keys overlapping this session's claims, within a fixed line budget, naming each other session and its claim and telling Claude to ask the operator whether to wait, join or proceed; a SessionEnd hook releases the session's leases; the hooks call only coord.py commands, so the protocol stays vendor-neutral and hooks are one client of it; no hook exits 2 on an overlap, and a hook prints nothing when no other session overlaps.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord_hook"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    ".claude/settings.json",
+    "_tools/test_coord.py",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-e3nmjd2s",
+    "ST-5iwikc3n",
+    "ST-cx7qhu3f"
+  ],
+  "relates_to": [
+    "EP-ylklxolb",
+    "ST-3qxh5vxo"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the SessionStart overlap notice go?",
+      "options": [
+        "Claude's context and the operator's terminal",
+        "Claude's context only",
+        "the operator's terminal only"
+      ],
+      "recommendation": "Claude's context and the operator's terminal",
+      "do": {
+        "Claude's context and the operator's terminal": "ST-x6mvfnmv",
+        "Claude's context only": "ST-x6mvfnmv",
+        "the operator's terminal only": "ST-x6mvfnmv"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Besides SessionStart, when do the hooks check for overlaps?",
+      "options": [
+        "also at each backlog.py claim and /kb-research start",
+        "SessionStart only"
+      ],
+      "recommendation": "also at each backlog.py claim and /kb-research start",
+      "do": {
+        "also at each backlog.py claim and /kb-research start": "ST-x6mvfnmv",
+        "SessionStart only": "ST-x6mvfnmv"
+      },
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "From the operator interview of 2026-10-15: overlaps inform and the operator decides in the terminal, never a silent block; scales solo one machine first, then several machines, team, organization. Research dedup itself is ST-3qxh5vxo; this hook only shows it. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Planning before a claim: run backlog.py referrers on the hook registration and on the docs that list SessionStart hooks (maintaining.md, token-efficiency.md, the plugin's hooks file if it mirrors .claude/settings.json)."
+}
