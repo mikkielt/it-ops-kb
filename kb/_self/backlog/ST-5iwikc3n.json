@@ -1,0 +1,26 @@
+{
+  "id": "ST-5iwikc3n",
+  "kind": "story",
+  "title": "coord.py claims, leases and compare-and-swap on a local SQLite store, usable by any agent",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/coord.py, standard library only, keeps a SQLite store (one file, path from --store or KB_COORD_STORE) with subcommands that print JSON: claim KEY --ttl SECONDS (create-if-absent, so a second claim of a live key fails with exit 1 and names the holder), renew KEY --token T (extends only the holder's lease), release KEY --token T, get KEY, put KEY --value V --revision N (writes only when the key is still at revision N, else exit 1) and list --prefix P; an expired lease counts as absent, and every write runs in one SQLite transaction so two processes racing on one key cannot both win.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/test_coord.py",
+    "kb/_self/map.csv",
+    "kb/_self/tools.md"
+  ]
+}

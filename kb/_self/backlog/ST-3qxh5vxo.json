@@ -1,0 +1,62 @@
+{
+  "id": "ST-3qxh5vxo",
+  "kind": "story",
+  "title": "Research dedup: a pack's lack-set fingerprint is checked and claimed through coord.py before /kb-research starts",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py dedup \"<question>\" runs the question's pack, takes its anchor topic and its kb-lacks terms after alias canonicalisation as a fingerprint, compares it with the live claims, and claims and returns only the lack terms no overlapping live claim covers, naming each overlapping claim's holder and topic; /kb-research runs it as its first step and researches only the returned uncovered terms, so a question whose terms another claim already covers starts no research and waits on that claim's fact_added events.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord_dedup"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/test_coord.py",
+    "kb/_self/tools.md",
+    ".claude/skills/kb-research/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-qguxlob4"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What does /kb-research do when coord.py dedup finds a live claim whose fingerprint overlaps the question?",
+      "options": [
+        "stop, name the holder and the topic, and offer to wait for its fact_added events",
+        "warn and go on researching",
+        "go on only for the lack terms the live claim does not cover"
+      ],
+      "recommendation": "stop, name the holder and the topic, and offer to wait for its fact_added events",
+      "class": "agents-rule",
+      "answer": "go on only for the lack terms the live claim does not cover",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How much must two lack-sets overlap on one anchor topic to count as the same research?",
+      "options": [
+        "the same anchor topic and at least half of the smaller lack-set's terms",
+        "the same anchor topic and identical lack-sets",
+        "measure on the query log's real questions first, then pick"
+      ],
+      "recommendation": "measure on the query log's real questions first, then pick",
+      "do": {
+        "the same anchor topic and at least half of the smaller lack-set's terms": "ST-3qxh5vxo",
+        "the same anchor topic and identical lack-sets": "ST-3qxh5vxo",
+        "measure on the query log's real questions first, then pick": "ST-3qxh5vxo"
+      },
+      "class": "querylog"
+    }
+  ]
+}
