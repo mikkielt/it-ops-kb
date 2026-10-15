@@ -733,6 +733,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 ## agents/codebase-mapping
 
 - **`tsc` with files named on the command line and a `tsconfig.json` present.** The TypeScript handbook page on tsconfig (S-3e3kl7vi) says `tsconfig.json` is ignored when input files are named on the command line; the TypeScript 7.0.2 native compiler source (S-gfjnysog, tag typescript/v7.0.2) reports an error in that case and offers `--ignoreConfig` to skip it. Both read 2026-09-29; the handbook is not versioned by release, so this may be a 7.0 behaviour change rather than a doc error; a run of `tsc 5.x` and `tsc 7.x` in a lab settles it. (topic: agents/codebase-mapping)
+  - Resolved 2026-10-15: the TypeScript 6.0 announcement (S-sp2a6svk) documents it as a 6.0 behaviour change, error TS5112 with `--ignoreConfig` to skip, and the 7.0 announcement (S-eq3gt72a) says 7.0 keeps it; the handbook text describes 5.x and earlier. (topic: agents/codebase-mapping)
 
 ## claude/cross-session-messaging
 
@@ -830,3 +831,11 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## windows/cmd-exe-syntax-quoting-redirection
 - Size of an individual environment variable under cmd: the command-line string limitation article (S-e4zz24dq, read 2026-10-15) gives 8191 characters for the string `cmd` processes and for each inherited variable, while the `cmd` page (S-yna7gijv, read 2026-10-15) says the maximum individual variable is 8,192 bytes and all variables of a process 65,536 characters. The kb states both and does not choose; the first is an old KB article that names Windows 7 and Server 2008 R2 / 2012 R2, the second is the current reference page, and whether the two figures are the same limit is open. (topic: windows/cmd-exe-syntax-quoting-redirection)
+
+## agents/typescript-tsconfig-and-compiler-options
+
+- **Defaults of `strict`, `module`, `target`, `moduleResolution`, `types` and `rootDir`.** The live TSConfig reference (S-lq5mn2bc, read 2026-10-15) and the pinned website data (S-34pqpd75, commit 6556b08) print the 5.x defaults: `module` is CommonJS if `target` is ES5 and ES6/ES2015 otherwise, `target` is ES5, `moduleResolution` is `Classic` unless `module` selects another, and the page gives no default for `strict` itself (it is listed as "Recommended"), with the strict-family options "true if strict; false otherwise". The TypeScript 6.0 announcement (S-sp2a6svk) says `strict` is true, `module` esnext, `target` the current-year ES version, `rootDir` the config directory and `types` `[]`; the 7.0 announcement (S-eq3gt72a) adopts them, and the 7.0.2 source (S-sipjyeoi) declares `strict` true and `moduleResolution` bundler by default. The kb states the 6.0 and 7.0 defaults as the current ones and records the reference page as stale; the website's reference pages describe 5.x. (topic: agents/typescript-tsconfig-and-compiler-options)
+
+## agents/typescript-native-compiler
+
+- **Watch mode of the native compiler.** The typescript-go README at tag `typescript/v7.0.2` (S-mtnr5emw) marks watch mode "prototype" ("no incremental rechecking. Not optimized"), while the 7.0 announcement (S-eq3gt72a, 2026-07-08) says 7.0 ships a "completely rebuilt" `--watch` on a Parcel-watcher foundation. Both read 2026-10-15; the README text appears not to have been updated for the release, and no measurement of 7.0.2's watch mode was made. (topic: agents/typescript-native-compiler)

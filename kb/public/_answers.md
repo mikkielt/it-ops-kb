@@ -3848,3 +3848,16 @@ _Agent: kb-research_
 - See windows/powershell-remoting-jea.md, windows/openssh-server.md.
 
 _Agent: kb-research_
+
+## QK-typescript-s-own-docs-say-about. What do TypeScript's own docs say about tsconfig and compiler options, project references and incremental builds, module resolution, declaration output, the strict family, the tsc command line and the native compiler?
+- `include` defaults to `**/*` (or `[]` with `files`); `exclude` only filters `include`, and `extends` lets the inheriting file override the base while `files`, `include` and `exclude` overwrite and `references` is never inherited. [DOC S-eumnm3tn, S-4bj5u3yk, S-ff6may7t, S-lq5mn2bc]
+- `strict` is an umbrella for eight checks in the 7.0.2 compiler (nine with `alwaysStrict` in the website's list); `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` are outside it. [CODE S-sipjyeoi, S-34pqpd75]
+- TypeScript 6.0 made `strict` true, `module` esnext, `target` a floating current ES version, `rootDir` the config directory and `types` `[]`, and deprecated `target es5`, `moduleResolution node10` and `classic`, `baseUrl`, `outFile`, `amd`/`umd`/`system` and `esModuleInterop: false`; 7.0 adopts the defaults and makes the deprecations errors. [DOC S-sp2a6svk, S-eq3gt72a]
+- `module` and `moduleResolution` are chosen as a pair: `nodenext` for Node.js (format detected per file from extension and package.json `type`), `preserve` with `bundler` for bundled code; `node10` and `classic` are deprecated. [DOC S-e5r3w2iq, S-ipmh5e4a, S-eofsccvy]
+- Referenced projects must be `composite`; `tsc --build` builds out-of-date references in order and acts as if `noEmitOnError` were on; `.tsbuildinfo` files are a deletable cache; `declaration`, `declarationDir`, `declarationMap`, `emitDeclarationOnly` and `isolatedDeclarations` control `.d.ts` output. [DOC S-rklpxnqt, S-fzozdweh, S-7sglzzpd, S-xgfiu5jf, S-fe6375ln]
+- The native compiler (7.0, command `tsc`) keeps 6.0's checking and command-line behaviour, adds `--checkers`, `--builders` and `--singleThreaded`, reworks JavaScript/JSDoc support, and has no stable programmatic API yet. [DOC S-eq3gt72a, S-mtnr5emw, S-e6jwgvmc]
+- Conclusion: the version decides what an unwritten option means, so a mapper reads `tsc --version` and `tsc --showConfig` instead of a defaults table; the website's tsconfig reference still shows 5.x defaults. [DER S-sp2a6svk, S-eq3gt72a, S-lq5mn2bc]
+- Open: whether `--showConfig` prints `references`, whether `stopBuildOnErrors` is documented, and whether the 7.0.2 watch mode matches the announcement's description were not confirmed. [UNK]
+- See typescript-tsconfig-and-compiler-options.md, typescript-module-resolution.md, typescript-projects-declarations-incremental.md, typescript-native-compiler.md, codebase-mapping.md.
+
+_Agent: kb-research_

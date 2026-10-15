@@ -48,7 +48,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-planning-and-done` | P3 | complete | `agents/agent-planning-and-done.md` | 7 |
 | `agents/agent-sandboxes` | P3 | partial | `agents/agent-sandboxes.md` | 18 |
 | `agents/agent-troubleshooting-method` | P3 | complete | `agents/agent-troubleshooting-method.md` | 9 |
-| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 111 |
+| `agents/codebase-mapping` | P3 | complete | `agents/codebase-mapping.md`, `agents/codebase-mapping.csv` | 112 |
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 75 |
@@ -61,6 +61,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
 | `agents/shared-state-concurrency` | P3 | partial | `agents/shared-state-concurrency.md` | 27 |
 | `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 17 |
+| `agents/typescript-module-resolution` | P3 | complete | `agents/typescript-module-resolution.md` | 9 |
+| `agents/typescript-native-compiler` | P3 | partial | `agents/typescript-native-compiler.md` | 6 |
+| `agents/typescript-projects-declarations-incremental` | P3 | complete | `agents/typescript-projects-declarations-incremental.md` | 16 |
+| `agents/typescript-tsconfig-and-compiler-options` | P3 | complete | `agents/typescript-tsconfig-and-compiler-options.md` | 28 |
 | `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 6 |
 | `ansible/windows-ssh` | P3 | complete | `ansible/windows-ssh.md` | 1 |
 | `arch/docs-home-options` | P1 | complete | `arch/docs-home-options.md` | 4 |

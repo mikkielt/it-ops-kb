@@ -916,3 +916,13 @@ OpenSSHUtils,windows/openssh-key-management
 Repair-AuthorizedKeyPermission,windows/openssh-key-management
 DefaultShellCommandOption,windows/openssh-server
 OpenSSH.Server~~~~0.0.1.0,windows/openssh-estate-deployment
+tsconfig.json,agents/typescript-tsconfig-and-compiler-options
+compilerOptions,agents/typescript-tsconfig-and-compiler-options
+ignoreDeprecations,agents/typescript-tsconfig-and-compiler-options
+moduleResolution,agents/typescript-module-resolution
+verbatimModuleSyntax,agents/typescript-module-resolution
+isolatedModules,agents/typescript-module-resolution
+tsBuildInfoFile,agents/typescript-projects-declarations-incremental
+emitDeclarationOnly,agents/typescript-projects-declarations-incremental
+typescript-go,agents/typescript-native-compiler
+@typescript/native-preview,agents/typescript-native-compiler
