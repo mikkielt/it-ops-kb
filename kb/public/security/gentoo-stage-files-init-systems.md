@@ -60,7 +60,7 @@ A Gentoo install starts from a stage 3 tarball: an almost complete system built 
 | OpenRC config | `/etc/rc.conf`, `/etc/conf.d/`, `rc-update` | S-kdxg3wyq |
 | systemd after switch | `systemd-machine-id-setup`, `systemctl preset-all` | S-6er43wub |
 
-Related: `security/gentoo-use-flags-profiles-keywords.md`, `security/gentoo-binary-packages-binhost.md`, `security/gentoo-emerge-make-conf-etc-portage.md`.
+Related: `security/gentoo-use-flags-profiles-keywords.md`, `security/gentoo-binary-packages-binhost.md`, `security/gentoo-emerge-make-conf-etc-portage.md`, `security/gentoo-in-wsl.md` (a stage file imported into WSL on a Windows host).
 
 ## Examples
 - SNIPPET: unpack a verified stage file into a new root; context: Gentoo live environment, target mounted at `/mnt/gentoo`, stage name placeholders as in the Handbook; checked: no [DER S-rq7fzez5: command and options from the Handbook page]

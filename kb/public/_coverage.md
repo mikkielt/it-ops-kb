@@ -362,6 +362,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/gentoo-binary-packages-binhost` | P3 | partial | `security/gentoo-binary-packages-binhost.md` | 7 |
 | `security/gentoo-ebuild-repositories-overlays` | P3 | complete | `security/gentoo-ebuild-repositories-overlays.md` | 6 |
 | `security/gentoo-emerge-make-conf-etc-portage` | P3 | complete | `security/gentoo-emerge-make-conf-etc-portage.md` | 11 |
+| `security/gentoo-in-wsl` | P3 | complete | `security/gentoo-in-wsl.md` | 2 |
 | `security/gentoo-stage-files-init-systems` | P3 | partial | `security/gentoo-stage-files-init-systems.md` | 8 |
 | `security/gentoo-use-flags-profiles-keywords` | P3 | complete | `security/gentoo-use-flags-profiles-keywords.md` | 11 |
 | `security/kali-apt-sources-metapackages` | P3 | partial | `security/kali-apt-sources-metapackages.md` | 4 |

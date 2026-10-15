@@ -906,3 +906,6 @@ getbinpkg,security/gentoo-binary-packages-binhost
 stage3,security/gentoo-stage-files-init-systems
 rc-update,security/gentoo-stage-files-init-systems
 openrc-init,security/gentoo-stage-files-init-systems
+.wslconfig,security/gentoo-in-wsl
+wsl.conf,security/gentoo-in-wsl
+gentoo-wsl-config,security/gentoo-in-wsl

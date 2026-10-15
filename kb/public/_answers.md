@@ -3765,6 +3765,6 @@ _Agent: kb-research_
 - The wiki's `USE_ORDER` page omits the `features` layer that `make.conf(5)` and `cnf/make.globals` have at the pinned Portage commit; the kb records both. [DOC S-w323r75a, S-5lblcwaf] [CODE S-uhuj7vad]
 - Conclusion: a host managed by an agent should keep flags, keywords, repositories and binhosts in named drop-in files under `/etc/portage`, plan changes with `emerge --pretend` before applying them, set overlay priority and signature verification explicitly, and treat the init system as a stage and profile decision made once before first boot. [DER S-jcuv5ggt, S-cl6ijk7g, S-3v7thb2n, S-5dnrfnng, S-qfnocjvf, S-6egnea5f: directory forms, option semantics and the stage-profile coupling]
 - Open: the Portage release in which remote binpkg signature verification became the default, the package list of a current stage 3 and the build cadence of stage autobuilds were not found, and the OpenRC and systemd wiki pages carry stale notices. [UNK]
-- See security/gentoo-use-flags-profiles-keywords.md, security/gentoo-emerge-make-conf-etc-portage.md, security/gentoo-ebuild-repositories-overlays.md, security/gentoo-binary-packages-binhost.md, security/gentoo-stage-files-init-systems.md.
+- See security/gentoo-use-flags-profiles-keywords.md, security/gentoo-emerge-make-conf-etc-portage.md, security/gentoo-ebuild-repositories-overlays.md, security/gentoo-binary-packages-binhost.md, security/gentoo-stage-files-init-systems.md, security/gentoo-in-wsl.md.
 
 _Agent: kb-research_
