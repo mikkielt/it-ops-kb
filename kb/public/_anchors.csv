@@ -2677,9 +2677,6 @@ f90172d9d6d6,agents/own-chatbot-architecture.md,S1965,located,Create a new Model
 064f6a9cada6,agents/peer-state-sync.md,S-trssy6ht,located,DFS Replication - FAQ | Microsoft Learn > Replication details,last;resolv;saved;move;under;conflictand;dfsrprivat;two,0c01054e9b78683c,"What happens when two users simultaneously update the same file on different servers? When DFS Replication detects a conflict, it uses the version of the",2026-10-15
 08697ecada7f,agents/peer-state-sync.md,S-5fvc6but,located,Map merge rules > Counter merge rules,counter;node,4d4cadfaa8de695e,"Counters are very simple, we just sum all the individual operations from each node.",2026-10-15
 13c4a3aa75fa,agents/peer-state-sync.md,S-bskvvicf,located,,ignor;other;devic;send;chang,48fb33d96bf87522,"In send only mode, all changes from other devices in the cluster are ignored.",2026-10-15
-15adce5675c9,agents/peer-state-sync.md,S-3ztu6fdi,unlocated:no-match,,,,,2026-10-15
-15adce5675c9,agents/peer-state-sync.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-15
-15adce5675c9,agents/peer-state-sync.md,S-syegds5m,unlocated:no-match,,,,,2026-10-15
 1be95e97aa4f,agents/peer-state-sync.md,S-5fvc6but,located,Map merge rules > List merge rules,updat;delet;element,59f3ef295b7ab52f,then set the value of $i$ to the updated value from B,2026-10-15
 21432b775d98,agents/peer-state-sync.md,S-qinq7hxq,located,Core concepts > Documents,alway;conflict;rule;merg;two;mean;history;automerg,cb45ccf046141336,The combination of this history and some rules about how to handle conflicts means that any two Automerge documents can always be merged.,2026-10-15
 21ee4923a850,agents/peer-state-sync.md,S-zmmh2aoz,located,Under the hood > The storage model,concurrency;control;automerge-repo;compaction;automerg;repo;stor;storag,de9222d53aae4fbe,support compaction without requiring any concurrency control on the part of the implementor.,2026-10-15
@@ -2739,6 +2736,9 @@ d5fdd438962f,agents/peer-state-sync.md,S-zdnk4m6k,located,,older;renam;modificat
 dc155ffa2b99,agents/peer-state-sync.md,S-fmrgts5l,unlocated:no-match,,,,,2026-10-15
 dc155ffa2b99,agents/peer-state-sync.md,S-zdnk4m6k,located,,older;modifiedby;date;modifi;renam;sync-conflict;modification;ext,38c322cf12c310fe,"devices simultaneously and the content actually differs, one of the files will be renamed to <filename>.sync-conflict-<date>-<time>-<modifiedBy>.<ext>. The file with the older modification time will be",2026-10-15
 dfffa492bbaf,agents/peer-state-sync.md,S-fmrgts5l,located,the deleted/recycled file in the Syncthing's DEBUG output.,cleanup;second;interval;folder;version,06f63cfa8ce3632a,"The interval, in seconds, for running cleanup in the versions folder.",2026-10-15
+e531f94a4cf4,agents/peer-state-sync.md,S-3ztu6fdi,unlocated:no-match,,,,,2026-10-15
+e531f94a4cf4,agents/peer-state-sync.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-15
+e531f94a4cf4,agents/peer-state-sync.md,S-syegds5m,unlocated:no-match,,,,,2026-10-15
 eb994dee736e,agents/peer-state-sync.md,S-5fvc6but,unlocated:no-match,,,,,2026-10-15
 eb994dee736e,agents/peer-state-sync.md,S-5nz523b7,unlocated:no-match,,,,,2026-10-15
 eb994dee736e,agents/peer-state-sync.md,S-trssy6ht,unlocated:no-match,,,,,2026-10-15

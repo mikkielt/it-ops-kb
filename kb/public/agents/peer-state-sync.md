@@ -30,7 +30,7 @@ status: complete
   concurrent edits of different keys or list positions are all kept, and two writes of the same
   property pick the same winner on every peer while the loser stays readable through `getConflicts`.
   [DER S-qinq7hxq, S-5fvc6but, S-5nz523b7: the concept, merge-rule and conflict pages, below]
-- **git**: the documentation tells users to move work between machines with `git push` and `git
+- **git**: git's own documentation tells users to move work between several machines with `git push` and `git
   fetch`, never by syncing a repository with a cloud sync service, and to push to a shared bare
   repository, which refuses a push that is not a fast-forward until the pusher fetches and merges.
   [DER S-syegds5m, S-3ztu6fdi, S-l6s4hfqp: the gitfaq and gitcvs-migration pages, below]
