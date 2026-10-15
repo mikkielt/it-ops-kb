@@ -106,7 +106,9 @@
         "the key words of the root's eval questions held by a tenth of the searched units or more, rewritten by eval --write-shares only, a --file run reading the file beside it else the root's": "BG-r2epswpp",
         "every key word of the eval questions, rewritten by a new rag.py subcommand": "BG-r2epswpp"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the key words of the root's eval questions held by a tenth of the searched units or more, rewritten by eval --write-shares only, a --file run reading the file beside it else the root's",
+      "by": "operator"
     },
     {
       "id": "g3",
