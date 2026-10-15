@@ -84,7 +84,9 @@
         "a sentence inside the existing DER": "BG-y2zyd73c",
         "a separate DER line after it": "BG-y2zyd73c"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "a sentence inside the existing DER",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-state"
