@@ -135,6 +135,7 @@ def test_heldout_reword_is_refused_at_the_gate(scenario):
     assert [p for p, _ in kg_sync.heldout_checks([data + "lookup_heldout.csv"])] == held
     assert [p for p, _ in kg_sync.heldout_checks([data + "repro_bench.csv"])] == bench
     assert kg_sync.heldout_checks(["kb/public/_answers.md", "kb/_self/git.md"]) == []
+    assert kg_sync.heldout_checks([data + "notes.md", "kb/public/_snapshots/README.md"]) == []
 
 
 def test_code_commit_goes_to_a_branch(scenario):
