@@ -2,7 +2,7 @@
   "id": "BG-hafdzcgw",
   "kind": "bug",
   "title": "kg_sync.heldout_checks selects the held-out file for a .md under an underscore directory, such as _retrieval/notes.md or _snapshots/README.md",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-g2qseu5s review"
   ],
-  "notes": "Plan amendment 2026-10-15 (triage fit10): same function as BG-ae3cq3uj (heldout_checks gains the repro_bench.csv case) and the same test, so it runs right after it. Found by the SP-g2qseu5s review (S4, kg_sync.py:465): an extra reword check runs, no wrong refusal. Premise 2026-10-15 at c907de7b3: the repro prints both paths selected, exit 1. Checks that pass before the work: the test selection passes before the work and is kept as a guard (the change extends it, about +0.02 s); the repro fails before the work and reads the goal."
+  "notes": "Plan amendment 2026-10-15 (triage fit10): same function as BG-ae3cq3uj (heldout_checks gains the repro_bench.csv case) and the same test, so it runs right after it. Found by the SP-g2qseu5s review (S4, kg_sync.py:465): an extra reword check runs, no wrong refusal. Premise 2026-10-15 at c907de7b3: the repro prints both paths selected, exit 1. Checks that pass before the work: the test selection passes before the work and is kept as a guard (the change extends it, about +0.02 s); the repro fails before the work and reads the goal.",
+  "claimed_by": "orch-75hdeqld"
 }
