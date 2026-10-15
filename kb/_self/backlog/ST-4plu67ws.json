@@ -2,7 +2,7 @@
   "id": "ST-4plu67ws",
   "kind": "story",
   "title": "Review sprint: The research-reproducibility benchmark is defined and its isolated harness is proven",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "63e3825e4cde8c8617c62cf5802ad12fdf8965bd",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "114c544dda3fc61d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "12b95a8c22602961"
+      }
+    ]
+  }
 }
