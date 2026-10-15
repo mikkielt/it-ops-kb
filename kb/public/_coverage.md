@@ -59,7 +59,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/peer-state-sync` | P3 | complete | `agents/peer-state-sync.md` | 17 |
 | `agents/policy-as-code` | P3 | partial | `agents/policy-as-code.md` | 22 |
 | `agents/repository-ingestion` | P3 | complete | `agents/repository-ingestion.md` | 4 |
-| `agents/shared-state-concurrency` | P3 | complete | `agents/shared-state-concurrency.md` | 8 |
+| `agents/shared-state-concurrency` | P3 | partial | `agents/shared-state-concurrency.md` | 27 |
 | `agents/test-suite-size-and-agent-overengineering` | P3 | partial | `agents/test-suite-size-and-agent-overengineering.md` | 17 |
 | `ansible/dsc3-module` | P3 | complete | `ansible/dsc3-module.md` | 6 |
 | `ansible/windows-ssh` | P3 | complete | `ansible/windows-ssh.md` | 1 |

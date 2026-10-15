@@ -3680,3 +3680,16 @@ _Agent: kb-research_
 - See claude/settings-and-scopes.md, gitlab/git-test-repositories.md, agents/gitops-for-agents.md.
 
 _Agent: kb-research_
+
+## QK-self-hosted-volatile-stores-coordinate-agents. Which self-hosted, volatile stores can coordinate agents with compare-and-swap, leases and push: MinIO, Garage, SeaweedFS, NATS JetStream key-value, Valkey, etcd?
+- Garage cannot do conditional writes at all: it has no consensus algorithm, so `If-None-Match` cannot give mutual exclusion. [DOC S-oa3slfgh]
+- MinIO AIStor lists `If-Match` and `If-None-Match` on PutObject and the copy, head and multipart calls; SeaweedFS's wiki lists the same headers without the operations they cover. [DOC S-ukfteilx, S-a3umo362]
+- NATS key-value: `create` writes only an absent key and `update` only the revision named, watches push the snapshot then every change, and a per-key TTL is set on `create` only (nats-server 2.11+); streams, and so buckets, can be memory-backed. [DOC S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-zv2dqsow]
+- Valkey can run with persistence off (`save ""`, no AOF); its locks then carry the Redis page's restart caveat in full. [DER S-eoyz3p4t, S-5lu6lddr]
+- etcd: guarded If/Then/Else transactions compare a key's value, revision or version, and leases with keep-alive delete their keys when the holder stops. [DOC S-6hgplow2]
+- Conclusion: for volatile claims plus push, NATS key-value in memory storage fits best, with one design limit: a claim cannot be extended by `update`, which drops the TTL. Renewal is delete-then-create or a bucket-wide maximum age. etcd fits renewable leases. Valkey without persistence is the simplest store, with the weakest lock. A self-hosted S3 serves claims only after a test of its conditional writes, never on Garage. [DER S-ulnpjwb7, S-x3firlbx, S-6hgplow2, S-eoyz3p4t, S-oa3slfgh]
+- Follow-up the same day: the open-source MinIO and SeaweedFS code both reject `If-None-Match: *` on an existing object, but the open-source MinIO repository is no longer maintained. NATS accounts and subject grants scope who may write claims. Valkey Pub/Sub is at-most-once, so it carries wake-ups, not state. [DER S-75jmw3lf, S-jnn4ww4t, S-vseohdra, S-v7s32e7q, S-bayxg4xz]
+- Open: whether MinIO's and SeaweedFS's check-then-write is atomic under a race, AIStor's own statement on `*`, NATS replica limits, and an object-store conditional put. [UNK]
+- See agents/shared-state-concurrency.md.
+
+_Agent: kb-research_
