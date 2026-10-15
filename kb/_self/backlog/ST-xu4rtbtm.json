@@ -2,7 +2,7 @@
   "id": "ST-xu4rtbtm",
   "kind": "story",
   "title": "benchmarks.py repro record merges the run's per-area results into benchmarks.csv as the repro scenario",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -94,5 +94,30 @@
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "ee86bebb5785ce6c9c91351c8de4d29fc69eca1e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "e4f385cb1c50c9b8"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "record",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "f001a3bb488d0714"
+      }
+    ]
+  }
 }
