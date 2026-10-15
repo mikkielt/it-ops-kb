@@ -359,6 +359,12 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/almalinux-elevate` | P3 | partial | `security/almalinux-elevate.md` | 5 |
 | `security/almalinux-lifecycle-rhel-relation` | P3 | partial | `security/almalinux-lifecycle-rhel-relation.md` | 7 |
 | `security/almalinux-repositories-vault-pins` | P3 | partial | `security/almalinux-repositories-vault-pins.md` | 12 |
+| `security/fish-config-files-completions` | P3 | complete | `security/fish-config-files-completions.md` | 8 |
+| `security/fish-feature-flags-release-changes` | P3 | complete | `security/fish-feature-flags-release-changes.md` | 4 |
+| `security/fish-functions-abbreviations-events` | P3 | complete | `security/fish-functions-abbreviations-events.md` | 5 |
+| `security/fish-on-windows-wsl-cygwin-msys2` | P3 | complete | `security/fish-on-windows-wsl-cygwin-msys2.md` | 2 |
+| `security/fish-syntax-bash-differences` | P3 | complete | `security/fish-syntax-bash-differences.md` | 6 |
+| `security/fish-variables-scopes-export` | P3 | complete | `security/fish-variables-scopes-export.md` | 4 |
 | `security/gentoo-binary-packages-binhost` | P3 | partial | `security/gentoo-binary-packages-binhost.md` | 7 |
 | `security/gentoo-ebuild-repositories-overlays` | P3 | complete | `security/gentoo-ebuild-repositories-overlays.md` | 6 |
 | `security/gentoo-emerge-make-conf-etc-portage` | P3 | complete | `security/gentoo-emerge-make-conf-etc-portage.md` | 11 |

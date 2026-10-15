@@ -823,3 +823,7 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## security/gentoo-use-flags-profiles-keywords
 - Default `USE_ORDER`: the Gentoo wiki page for the variable (S-w323r75a, read 2026-10-15) gives `env:pkg:conf:defaults:pkginternal:repo:env.d`, while the `make.conf(5)` manual page (S-5lblcwaf) and `cnf/make.globals` (S-uhuj7vad), both at Portage commit `27abd048bffa`, give `env:pkg:conf:defaults:pkginternal:features:repo:env.d`, with `features` for flags implied by `FEATURES` (currently `test`). The kb states both and prefers the implementation, since the wiki page lists the same table without a `features` row; the wiki page is likely older. (topic: security/gentoo-use-flags-profiles-keywords)
+
+## security/fish-syntax-bash-differences
+- Which commands expand a failed glob to nothing: the language chapter at tag 4.9.3 (S-irnsu4to, read 2026-10-15) names `set`, `path`, `count`, `for` and variable overrides, while the "fish for Bash users" page of the same tag (S-2l7kac72) names `for`, `set`, `count` and variable overrides, without `path`. The kb states both and prefers the language chapter, the fuller list of the two. (topic: security/fish-syntax-bash-differences)
+- Braces as grouping: the "fish for Bash users" page (S-2l7kac72) shows `{ ... }` becoming `begin ... end` and lists no brace form, while the 4.1.0 release notes (S-eg4rjgcz) say compound commands can be written with braces. The kb states both and prefers the release notes, which are the later statement. (topic: security/fish-syntax-bash-differences)

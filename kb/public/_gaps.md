@@ -1660,3 +1660,15 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## security/zsh-options-emulation-bash-differences
 - **A point-by-point comparison with Bash's own startup files and option defaults.** Looked 2026-10-15 in the Zsh manual and FAQ chapters 2 and 3 (S-3gkyn5mu, S-cbs5knac), which compare zsh with sh and ksh and say Bash is a different language, not with Bash's own manual. Needs the GNU Bash reference manual's Bash Startup Files and Shell Options sections, read for a separate topic. [UNK] (topic: security/zsh-options-emulation-bash-differences)
+
+## security/fish-feature-flags-release-changes
+- **Whether a fish release newer than 4.9.3 exists.** Looked 2026-10-15 in `fishshell.com/docs/current/language.html` and `relnotes.html` (title "fish-shell 4.9.3 documentation", with the line "This documents an old version of fish. See the latest release."), the release history on `fishshell.com` (top entry 4.9.3, September 8, 2026) and the tag's `CHANGELOG.rst` (S-eg4rjgcz, S-mepkq6ry); the banner points to a latest release the pages do not name, and the GitHub releases API answered 403 to an unauthenticated call. Needs the repository's release list or tags read with an authenticated or mirrored route. [UNK] (topic: security/fish-feature-flags-release-changes)
+
+## security/fish-config-files-completions
+- **Where the Cygwin and MSYS2 packages of fish and the Linux distribution packages put the system `config.fish`, `conf.d` and vendor directories.** Looked 2026-10-15 in the configuration chapter and the completions chapter at tag 4.9.3 (S-irnsu4to, S-pmqazcbs), which give the defaults (`/etc/fish`, `/usr/share/fish/vendor_*.d`) and say they vary by build, install and run time; no package was read. Needs the package file lists of the Cygwin, MSYS2, Debian and Fedora fish packages, or `pkg-config --variable confdir fish` output on each. [UNK] (topic: security/fish-config-files-completions)
+
+## security/fish-syntax-bash-differences
+- **The per-builtin behaviour of `string`, `math`, `argparse`, `path`, `read` and `status`.** Looked 2026-10-15 in the language chapter and the "fish for Bash users" page (S-irnsu4to, S-2l7kac72), which name these builtins and show a few calls; the builtins' own pages (`cmds/string.rst` and the others) were not read. Needs those pages at tag 4.9.3, read for a separate topic. [UNK] (topic: security/fish-syntax-bash-differences)
+
+## security/fish-functions-abbreviations-events
+- **Interactive line editing, key bindings (`bind`), vi mode, history and autosuggestions, `fish_config` themes and prompt helpers.** Not read 2026-10-15: the research brief covers syntax, variables, functions, configuration files, completions and scripting limits, and these pages (`interactive.rst`, `cmds/bind.rst`, `cmds/history.rst`, `cmds/fish_config.rst`) are outside it. Needs a separate topic from those pages at tag 4.9.3. [UNK] (topic: security/fish-functions-abbreviations-events)
