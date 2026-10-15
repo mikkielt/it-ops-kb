@@ -1652,6 +1652,100 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
     assert bm.main(args) == 2 and "instance 2: its bare" in capsys.readouterr().err
 
 
+def bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_commits_on_a_work_branch(tmp_path, monkeypatch,
+                                                                                                  capsys):
+    import subprocess
+    import benchmarks as bm
+    for k, v in {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+                 "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}.items():
+        monkeypatch.setenv(k, v)
+    git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
+    # pick: the sum of eval_passed over the areas, then check_errors + lint_errors, then the summed cost, of the newest record
+    def table(spec, record="abc1234", date="2026-10-16"):
+        """repro-compare and repro rows of {n: (eval_passed per area, check_errors, lint_errors, cost per area)}, with the
+        pair and agreement rows `compare` also writes."""
+        rows = []
+        for n, (passed, check, lint, cost) in spec.items():
+            rows += [{"scenario": "repro-compare", "case": area, "arm": f"instance-{n}", "metric": "eval_passed", "value": str(passed)}
+                     for area in ("alpha", "beta")]
+            rows += [{"scenario": "repro-compare", "case": "all", "arm": f"instance-{n}", "metric": "check_errors", "value": str(check)},
+                     {"scenario": "repro-compare", "case": "all", "arm": f"instance-{n}", "metric": "lint_errors", "value": str(lint)}]
+            rows += [{"scenario": "repro", "case": area, "arm": f"instance-{n}", "metric": "cost", "value": str(cost)}
+                     for area in ("alpha", "beta")]
+        rows += [{"scenario": "repro-compare", "case": "alpha", "arm": "instance-1+instance-2", "metric": "fact_overlap", "value": "0.5"},
+                 {"scenario": "repro-compare", "case": "alpha", "arm": "all", "metric": "agreement", "value": "1"}]
+        return [{**r, "record": record, "date": date, "commit": record} for r in rows]
+
+    def picked(rows):
+        f = tmp_path / "picks.csv"
+        bc.write_rows(rows, f)
+        rc = bm.main(["repro", "pick", "--rows", str(f)])
+        return rc, capsys.readouterr().out.strip().splitlines()[-1]
+
+    assert picked(table({1: (20, 0, 0, 25), 2: (22, 0, 1, 27.5)})) == (0, "picked: instance-2 (most eval_passed over instance-1)")
+    assert picked(table({1: (22, 0, 1, 25), 2: (22, 1, 1, 25)}))[1].startswith("picked: instance-1 (fewest errors")
+    assert picked(table({1: (22, 0, 0, 30), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-2 (lowest cost")
+    assert picked(table({1: (22, 0, 0, 25), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-1 (a tie")
+    old = table({1: (99, 0, 0, 1), 2: (1, 9, 9, 99)}, record="old0000", date="2026-10-01")
+    assert picked(old + table({1: (20, 0, 0, 25), 2: (22, 0, 0, 25)}))[1].startswith("picked: instance-2")  # the newest record
+    assert picked([r for r in table({1: (20, 0, 0, 25)}) if r["scenario"] == "repro"])[0] == 1  # no repro-compare row
+    assert bm.main(["repro", "pick", "--rows", str(tmp_path / "none.csv")]) == 1 and "nothing to pick" in capsys.readouterr().out
+    # replay: planted bares of two instances (one start commit, the same sha in each), a work tree on a branch of its own
+    # whose origin is a planted bare standing in for the real one
+    def plant(bare, commits):
+        git("init", "-q", "--bare", "--initial-branch=main", str(bare), cwd=tmp_path)
+        stream = ""
+        for k, (msg, files) in enumerate(commits):
+            stream += f"commit refs/heads/main\ncommitter t <t@example.com> {1760000000 + k} +0000\ndata {len(msg)}\n{msg}\n"
+            stream += "".join(f"M 100644 inline {n}\ndata {len(x.encode())}\n{x}\n" for n, x in files.items()) + "\n"
+        subprocess.run(["git", "fast-import", "--quiet"], cwd=str(bare), input=stream.encode(), check=True)
+        return git("rev-list", "--reverse", "main", cwd=bare).split()
+
+    first = ("start", {"a.txt": "base\n", "b.txt": "base\n"})
+    root = tmp_path / "dir"
+    root.mkdir()
+    start, *_ = plant(root / "origin1.git", [first, ("add d", {"d.txt": "one\n"}), ("add e", {"e.txt": "one\n"})])
+    plant(root / "origin2.git", [first, ("edit a", {"a.txt": "instance two\n"})])
+    plant(tmp_path / "real.git", [first])
+    (root / "instances.json").write_text(json.dumps({"rev": start, "instances": [
+        {"n": n, "bare": str(root / f"origin{n}.git")} for n in (1, 2)]}), encoding="utf-8", newline="\n")
+    work = tmp_path / "work"
+    git("clone", "-q", str(tmp_path / "real.git"), str(work), cwd=tmp_path)
+    git("checkout", "-q", "-b", "work/ST-test", cwd=work)
+    (work / "a.txt").write_text("work\n", encoding="utf-8", newline="\n")
+    git("commit", "-q", "-am", "work edits a", cwd=work)
+    real_refs = git("for-each-ref", cwd=tmp_path / "real.git"), git("for-each-ref", "refs/remotes", cwd=work)
+    monkeypatch.chdir(work)
+    args = ["repro", "replay", "--item", "ST-test", "--dir", str(root)]
+    # the commits of instance 1 land on the current branch, each with the trailer, and the helper branch is gone
+    assert bm.main([*args, "--instance", "1"]) == 0
+    assert "2 commit(s) of instance 1" in capsys.readouterr().out
+    subjects = git("log", "--format=%s%n%(trailers:key=KB-Work,valueonly)", "-n", "2", cwd=work).split("\n")
+    assert [s for s in subjects if s] == ["add e", "ST-test", "add d", "ST-test"]
+    assert git("rev-list", "--count", f"{start}..HEAD", cwd=work) == "3" and git("branch", "--list", "repro-replay-*", cwd=work) == ""
+    assert git("rev-parse", "--abbrev-ref", "HEAD", cwd=work) == "work/ST-test" and (work / "e.txt").exists()
+    # neither the real origin nor the work tree's remote refs moved: the instance's bare was fetched by path
+    assert (git("for-each-ref", cwd=tmp_path / "real.git"), git("for-each-ref", "refs/remotes", cwd=work)) == real_refs
+    # instance 2 edits the file the work branch edited: the rebase stops, names it and stays in progress
+    tip = git("rev-parse", "HEAD", cwd=work)
+    assert bm.main([*args, "--instance", "2"]) == 1
+    shown = capsys.readouterr().out
+    assert "files in conflict:" in shown and "  a.txt" in shown
+    assert (work / git("rev-parse", "--git-path", "rebase-merge", cwd=work)).is_dir()
+    assert bm.main([*args, "--instance", "2"]) == 2 and "a rebase is in progress" in capsys.readouterr().err
+    git("rebase", "--abort", cwd=work)
+    git("checkout", "-q", "work/ST-test", cwd=work)
+    git("branch", "-q", "-D", "repro-replay-instance2", cwd=work)
+    assert git("rev-parse", "HEAD", cwd=work) == tip
+    # a work tree with a change, a detached HEAD and an instance that is not there are refusals
+    (work / "a.txt").write_text("changed\n", encoding="utf-8", newline="\n")
+    assert bm.main([*args, "--instance", "2"]) == 2 and "uncommitted changes" in capsys.readouterr().err
+    git("checkout", "-q", "--", "a.txt", cwd=work)
+    assert bm.main([*args, "--instance", "3"]) == 2 and "holds instance(s) 1, 2" in capsys.readouterr().err
+    git("checkout", "-q", "--detach", cwd=work)
+    assert bm.main([*args, "--instance", "1"]) == 2 and "detached HEAD" in capsys.readouterr().err
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read; `fixtures` are further fixtures a body names."""
@@ -1674,6 +1768,7 @@ def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, 
              bench_repro_run_starts_instances_together_stops_at_the_instance_budget_and_a_run_again_resumes,
              bench_repro_record_merges_planted_lines_as_rows_and_a_second_record_changes_nothing,
              bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_conflicting_facts,
+             bench_repro_pick_applies_the_landing_rule_and_replay_puts_one_instances_commits_on_a_work_branch,
              kb_seed=kb_seed)
 
 

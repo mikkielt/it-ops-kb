@@ -127,6 +127,21 @@
   benchmarks.py repro status [--dir DIR]    print per instance of DIR's instances.json the commits on its bare since the
                                             start commit and whether each is in a fresh fetch of the real origin's
                                             main; exit 1 when any is, 2 on a refusal; exit 0 with no instances.json
+  benchmarks.py repro pick [--rows FILE]    print per instance of the newest `repro-compare` record of FILE (default
+                                            kb/_self/reports/benchmarks.csv) its eval_passed summed over the areas, its
+                                            check_errors plus lint_errors and the summed cost of the `repro` rows of that
+                                            record, then the instance the landing rule picks: most eval_passed, then the
+                                            fewest errors, then the lowest cost (a number not recorded ranks last, a tie
+                                            goes to the lowest number); exit 1 with no instance's row
+  benchmarks.py repro replay --instance N --item ID [--dir DIR]
+                                            fetch main of instance N's bare (DIR/originN.git by its path; no remote is
+                                            named, so the real origin is neither fetched from nor pushed to) and rebase
+                                            its commits since the start commit of DIR's instances.json onto the current
+                                            branch of the work tree it runs in (`git rebase --onto`), amending each with
+                                            the trailer `KB-Work: ID`; on a conflict the rebase stays in progress on the
+                                            branch repro-replay-instanceN, the files in conflict are named and it exits
+                                            1; exit 2 on a refusal (no instances.json or instance, a detached HEAD, a
+                                            work tree with changes)
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -289,6 +304,12 @@ def main(argv=None):
     rm.add_argument("--file", metavar="FILE", help="with --record: the results file (default: kb/_self/reports/benchmarks.csv)")
     rm.add_argument("--questions", metavar="FILE", help="the frozen questions (default: " + bench_repro.ADDED + ")")
     rm.add_argument("--dry-run", action="store_true", help="start nothing: print the metrics and the instances it would read")
+    rk = rp.add_parser("pick")
+    rk.add_argument("--rows", metavar="FILE", help="the results file (default: kb/_self/reports/benchmarks.csv)")
+    ry = rp.add_parser("replay")
+    ry.add_argument("--instance", type=int, required=True, help="the instance whose commits are replayed (its number)")
+    ry.add_argument("--item", required=True, help="the backlog item id of the KB-Work trailer each commit gets")
+    ry.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     rt = rp.add_parser("status")
     rt.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     a = ap.parse_args(argv)
@@ -315,6 +336,10 @@ def main(argv=None):
                 return bench_repro.check()
             if a.repro_cmd == "questions":
                 return bench_repro.questions(a.briefs, a.file)
+            if a.repro_cmd == "pick":
+                return bench_repro.pick(a.rows)
+            if a.repro_cmd == "replay":
+                return bench_repro.replay(a.instance, a.item, a.dir)
             if a.repro_cmd == "status":
                 return bench_repro.status(a.dir)
             if a.repro_cmd == "record":
