@@ -2,7 +2,7 @@
   "id": "ST-hfcsyyin",
   "kind": "story",
   "title": "rag.py eval scores an expect_re regex column and runs the held-out reword and off-kb checks on repro_bench.csv",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-dgfbcmzf",
   "kind": "story",
   "title": "repro_bench.csv freezes 3 to 5 user-style questions per benchmark area, written before any instance runs",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

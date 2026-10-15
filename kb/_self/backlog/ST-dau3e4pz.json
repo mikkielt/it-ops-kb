@@ -2,7 +2,7 @@
   "id": "ST-dau3e4pz",
   "kind": "story",
   "title": "benchmarks.py repro pick applies the landing rule, and repro replay puts one instance's commits on a work branch",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

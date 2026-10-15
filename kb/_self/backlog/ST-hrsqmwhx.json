@@ -2,7 +2,7 @@
   "id": "ST-hrsqmwhx",
   "kind": "story",
   "title": "benchmarks.py repro check proves on a probe instance that kbgit.py sync --push lands on its own bare copy and never on the real origin",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

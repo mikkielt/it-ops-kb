@@ -2,7 +2,7 @@
   "id": "ST-g52zbsv4",
   "kind": "story",
   "title": "benchmarks.py repro setup makes per-instance clones of one pinned commit, each with its own bare origin, mcp-config, query log mode and env",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

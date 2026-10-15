@@ -2,7 +2,7 @@
   "id": "ST-m25otwlp",
   "kind": "story",
   "title": "bench_repro reads and checks the benchmark briefs and frozen questions, and repro status shows no instance commit reached the real origin",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

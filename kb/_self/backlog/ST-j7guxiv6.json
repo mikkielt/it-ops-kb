@@ -2,7 +2,7 @@
   "id": "ST-j7guxiv6",
   "kind": "story",
   "title": "bench_core.stream_run takes a timeout and a clean env, and agent_bench keeps an error result's cost, usage and subtype",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,

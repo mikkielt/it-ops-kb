@@ -2,7 +2,7 @@
   "id": "ST-v7d2dc2x",
   "kind": "story",
   "title": "benchmarks.py repro run starts every instance's /kb-research sessions at once with one argv and prompt, and appends each area's cost, tokens, turns, time, models and failure",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -81,5 +81,5 @@
   "depends_on": [
     "ST-j7guxiv6"
   ],
-  "notes": "Premise 2026-10-15: no repro command exists (benchmarks.py has list, run, pool and report). agent_bench.execute hard-codes timeout=900 (agent_bench.py:226), too short for one /kb-research area session (the seven Opus research items of 2026-10-14/15 ran 6-12 min, Sonnet research stories up to 21 min). Precedents to copy: bench_install.s_ingest (headless skill session in a throwaway clone with --max-budget-usd), bench_pool.run_pool (ThreadPoolExecutor, --jobs, --max-usd), Bench.bench_rows. Prompt per area: the /kb-research skill with the area's brief row, the same text for every instance, telling it to push with kbgit.py sync --push and to add no rows to lookup_eval.csv, lookup_heldout.csv or doc2query. The test bundle passes before the work: it pins the new bodies once they are added; the checks that fail before the work are the repro subcommands."
+  "notes": "Premise 2026-10-15: no repro command exists (benchmarks.py has list, run, pool and report). agent_bench.execute hard-codes timeout=900 (agent_bench.py:226), too short for one /kb-research area session (the seven Opus research items of 2026-10-14/15 ran 6-12 min, Sonnet research stories up to 21 min). Precedents to copy: bench_install.s_ingest (headless skill session in a throwaway clone with --max-budget-usd), bench_pool.run_pool (ThreadPoolExecutor, --jobs, --max-usd), Bench.bench_rows. Prompt per area: the /kb-research skill with the area's brief row, the same text for every instance, telling it to push with kbgit.py sync --push and to add no rows to lookup_eval.csv, lookup_heldout.csv or doc2query. The test bundle passes before the work: it pins the new bodies once they are added; the checks that fail before the work are the repro subcommands. Operator decision 2026-10-15 (supersedes the plan's 'caveman user plugin stays on' note): every instance's headless command takes exactly --settings '{\"enabledPlugins\":{\"gitkraken@synced\":false,\"caveman@caveman\":false}}' (verified 2026-10-15: a session with it has neither caveman context nor gitkraken tools). Build this exact value into the instance argv and record it with the run's settings (the run's recorded settings name both plugins off). Sprint and worker sessions are unchanged."
 }
