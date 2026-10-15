@@ -2,7 +2,7 @@
   "id": "ST-dau3e4pz",
   "kind": "story",
   "title": "benchmarks.py repro pick applies the landing rule, and repro replay puts one instance's commits on a work branch",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -111,5 +111,28 @@
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "104c1605e7b746086d3e15bb86adb862c3acff80",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "f0eb4f26200cd3f0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util,subprocess,sys\nsys.path.insert(0,'_tools')\nif importlib.util.find_spec('bench_repro') is None: print('no bench_repro module yet'); sys.exit(1)\nimport csv,os,tempfile\nf=os.path.join(tempfile.mkdtemp(),'b.csv')\nF=['scenario','record','date','commit','claude_code','kb_topics','case','arm','model','metric','value','runs','note']\nrows=[('repro-compare','instance-1','eval_passed','40'),('repro-compare','instance-2','eval_passed','44'),('repro-compare','instance-1','check_errors','0'),('repro-compare','instance-2','check_errors','0'),('repro-compare','instance-1','lint_errors','0'),('repro-compare','instance-2','lint_errors','1'),('repro','instance-1','cost','50'),('repro','instance-2','cost','55')]\nwith open(f,'w',newline='',encoding='utf-8') as h:\n    w=csv.DictWriter(h,F); w.writeheader()\n    for s,a,m,v in rows: w.writerow({'scenario':s,'record':'abc1234','date':'2026-10-16','commit':'abc1234','case':'all','arm':a,'metric':m,'value':v})\np=subprocess.run([sys.executable,'_tools/benchmarks.py','repro','pick','--rows',f],capture_output=True,text=True)\nprint(p.returncode,p.stdout.strip()[-200:]); sys.exit(0 if p.returncode==0 and 'instance-2' in p.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ac4c4fcdc6a4f7b3"
+      }
+    ]
+  }
 }
