@@ -79,7 +79,9 @@
         "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT), copy, as the earlier GitLab doc rows": "ST-52lihy7z",
         "MIT as kbid.py read it": "ST-52lihy7z"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT), copy, as the earlier GitLab doc rows",
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/commit-signing-and-provenance where no article fits.",
