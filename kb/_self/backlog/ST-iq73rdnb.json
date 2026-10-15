@@ -1,0 +1,26 @@
+{
+  "id": "ST-iq73rdnb",
+  "kind": "story",
+  "title": "The replayed robocopy article's DOC facts are anchored",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Every DOC fact of kb/public/windows/robocopy.md (52, replayed from benchmark instance 3 without factdiff.py anchor --file) has a row in kb/public/_anchors.csv, so packs print no [unanchored] for it and a refresh sees source drift. Found by the SP-bhzxxhub review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','robocopy /MIR mirror exit codes retries'],capture_output=True,text=True,check=True);n=sum('unanchored' in l and 'robocopy.md' in l for l in p.stdout.splitlines());print('robocopy unanchored lines',n);sys.exit(1 if n else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/windows/robocopy.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv"
+  ],
+  "links": [
+    "parked: SP-bhzxxhub review"
+  ]
+}

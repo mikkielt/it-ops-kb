@@ -1,0 +1,26 @@
+{
+  "id": "ST-nlwfazbu",
+  "kind": "story",
+  "title": "The two TypeScript source rows that no fact cites are cited or explained",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "S-cblfylm6 (tsconfig types.md) and S-gssvmwmg (tsconfig target.md), replayed from benchmark instance 3 with empty citers, are cited by a fact of the typescript articles or kept with a note why (removing a source row is the operator's call): rag.py src ID --cited prints no 'cited nowhere' for either. Found by the SP-bhzxxhub review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;bad=[i for i in ('S-cblfylm6','S-gssvmwmg') if 'cited nowhere' in subprocess.run([sys.executable,'_tools/rag.py','src',i,'--cited'],capture_output=True,text=True,check=True).stdout];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/agents/typescript-*.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv"
+  ],
+  "links": [
+    "parked: SP-bhzxxhub review"
+  ]
+}
