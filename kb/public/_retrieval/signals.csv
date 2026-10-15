@@ -859,3 +859,14 @@ ChefSchTaskFeature,arch/chef-windows-nodes
 dsc_resource,arch/chef-windows-nodes
 notifies,arch/chef-cookbooks-recipes-resources
 only_if,arch/chef-cookbooks-recipes-resources
+leapp,security/almalinux-elevate
+leapp-upgrade,security/almalinux-elevate
+leapp-data-almalinux,security/almalinux-elevate
+elevate-release,security/almalinux-elevate
+ELevate-Upgrade-Initramfs,security/almalinux-elevate
+almalinux-release,security/almalinux-repositories-vault-pins
+almalinux-baseos.repo,security/almalinux-repositories-vault-pins
+vault.almalinux.org,security/almalinux-repositories-vault-pins
+dnf versionlock,security/almalinux-repositories-vault-pins
+almalinux-deploy,security/almalinux-elevate
+/etc/almalinux-release,security/almalinux-lifecycle-rhel-relation

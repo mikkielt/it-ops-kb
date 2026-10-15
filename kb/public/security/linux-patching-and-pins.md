@@ -42,6 +42,8 @@ Hosts that a pull agent keeps at a known package state need the distribution's o
 | AlmaLinux | vault minor release | `dnf-automatic*.timer` | S-l6wf2hvq, S-ha4j7gxc |
 | Alpine | `vX.Y` repository path, `pkg=ver` | none stated (no periodic job in the pages read) | S-mt66jy4n, S-6w34pn5d |
 
+AlmaLinux's release lifecycle, repository layout, vault paths and ELevate upgrades are in `security/almalinux-lifecycle-rhel-relation.md`, `security/almalinux-repositories-vault-pins.md` and `security/almalinux-elevate.md`.
+
 ## Examples
 - SNIPPET: switch the periodic apt jobs off with one fragment; context: Debian or Ubuntu with apt; checked: no [DER S-4npfgqu6: `APT::Periodic::Enable` 0 disables the script]
 ```

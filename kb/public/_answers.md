@@ -3728,3 +3728,16 @@ _Agent: kb-research_
 - See arch/chef-infra-client-run.md, arch/chef-cookbooks-recipes-resources.md, arch/chef-attributes-policyfiles.md, arch/chef-windows-nodes.md.
 
 _Agent: kb-research_
+
+## QK-almalinux-release-lifecycle-old-minor-releases. What is the AlmaLinux release lifecycle, where do old minor releases come from, how is a minor pinned, and how does ELevate upgrade between majors?
+- Each major has an active-support and a security-support end (10: 31 May 2030 and 2035; 9: 2027 and 2032; 8: 2024 and 2029), and each minor ends when the next minor is released. [DOC S-w2hsvwk5, S-23s23lr2]
+- Old minors are fetched from `https://vault.almalinux.org/<minor>/<Repo>/<arch>/os/`; the `repo.almalinux.org/almalinux/9.4/` directory holds only a README that sends users to the vault and says 9.4 gets no updates or security fixes. [DOC S-ecy4u4kc, S-7dwilv5i, S-5z37fswu]
+- BaseOS, AppStream and Extras are enabled by default; CRB (`powertools` on 8), `highavailability`, `plus`, `rt`, `nfv`, `sap` and others are enabled with `dnf config-manager --set-enabled`. [DOC S-46pbwuai]
+- dnf substitutes `$releasever` from its `releasever` option, `--releasever` or a file under `/etc/dnf/vars`, and the `versionlock` plugin holds named packages. [DOC S-b3frgffj, S-mhtf6uy4, S-il5vgghs]
+- AlmaLinux aims at ABI compatibility with RHEL (since July 2023), builds from RHEL and CentOS Stream sources, and keeps non-RHEL content in separate repositories (extras, plus, synergy). [DOC S-23s23lr2, S-frwlmyiy, S-46pbwuai]
+- ELevate runs Leapp with AlmaLinux data packages for one major step at a time (7 to 8, 8 to 9, 9 to 10): `leapp preupgrade` installs nothing, `leapp upgrade` reboots into an upgrade initramfs. [DOC S-fvvvkcwq, S-zdchbjj6]
+- Conclusion: a minor pin is a vault `baseurl` plus `releasever` set to the minor, valid only until the next minor ships, so an agent that pins needs an end date for it; a major upgrade is a separate, approval-gated runbook with a snapshot and, on an isolated host, a local mirror. [DER S-ecy4u4kc, S-b3frgffj, S-radwxzmz, S-zdchbjj6, S-4jok2hag]
+- Open: an AlmaLinux page that documents the minor pin, mirrorlist behaviour for a minor, and the current ELevate `--target` values were not found. [UNK]
+- See security/almalinux-lifecycle-rhel-relation.md, security/almalinux-repositories-vault-pins.md, security/almalinux-elevate.md, security/linux-patching-and-pins.md.
+
+_Agent: kb-research_

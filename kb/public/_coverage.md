@@ -356,6 +356,9 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/privacy-compliance` | P2 | complete | `security/privacy-compliance.md` | 20 |
 | `security/threat-model-inputs` | P2 | complete | `security/threat-model-inputs.md`, `security/artifacts/mitre/attack-subset.csv`, `security/artifacts/mitre/attack-subset.md` | 12 |
 | `security/vulnerability-prioritization` | P2 | complete | `security/vulnerability-prioritization.md`, `security/vuln-data-apis.csv` | 18 |
+| `security/almalinux-elevate` | P3 | partial | `security/almalinux-elevate.md` | 5 |
+| `security/almalinux-lifecycle-rhel-relation` | P3 | partial | `security/almalinux-lifecycle-rhel-relation.md` | 7 |
+| `security/almalinux-repositories-vault-pins` | P3 | partial | `security/almalinux-repositories-vault-pins.md` | 12 |
 | `security/linux-auditd` | P3 | complete | `security/linux-auditd.md` | 4 |
 | `security/linux-cis-ssg-openscap` | P3 | partial | `security/linux-cis-ssg-openscap.md` | 32 |
 | `security/linux-nftables` | P3 | partial | `security/linux-nftables.md` | 5 |
