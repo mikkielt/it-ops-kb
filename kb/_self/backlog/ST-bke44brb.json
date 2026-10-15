@@ -2,7 +2,7 @@
   "id": "ST-bke44brb",
   "kind": "story",
   "title": "Research: managed memory services for agents (Claude memory tool, Foundry agent memory, Cloudflare Agents state)",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -31,5 +31,6 @@
   "depends_on": [
     "ST-gxpk74c3"
   ],
-  "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-memory-services where no article fits."
+  "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-memory-services where no article fits.",
+  "claimed_by": "orch-state"
 }
