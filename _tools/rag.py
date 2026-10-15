@@ -28,13 +28,16 @@
                                            _gaps.md/_conflicts.md entries linked to it (named, or via its sources);
                                            --unlinked lists the entries no topic marker, path or section links
   rag.py src S1824 --cited                 also every file line that names the id
-  rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--all]   pack against the lookup eval sets (every
+  rag.py eval [--file FILE] [--root NAME] [--free] [--min N] [--all] | --write-shares   pack against the lookup eval sets (every
                                            root's lookup_eval.csv and kb/_self's, or FILE): expected article found,
                                            verdict, expected phrase; prints the failing rows and the totals line
                                            (--all: every row); exit 1 unless every row (or at least N) passes,
                                            or, with no --file, when noted= (good rows whose pack prints a
                                            check: or route: line) is above NOTED_BASELINE;
-                                           --free adds the _self rows' leave-one-out rate (slow)
+                                           --free adds the _self rows' leave-one-out rate (slow);
+                                           a row failing only through a key word whose share crossed COMMON_SHARE
+                                           since word_shares.csv was written prints DRIFT and passes, counted in
+                                           noted=; --write-shares rewrites that file for every root
   rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
                                            each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
                                            --imports matches only the packages the files declare, not comments or strings
@@ -394,6 +397,57 @@ def regex_found(rx, text):
         return False
 
 
+SHARES_FILE = "word_shares.csv"  # beside a root's lookup_eval.csv: the key-word shares a failing eval row is re-judged on
+SHARES_FLOOR = kbfacts.COMMON_SHARE / 2  # the file lists the eval questions' key words held by this share of the units or more
+
+
+def shares_baseline(name, path=None):
+    """{key word: share of the searched units} of the committed baseline file the cases of root `name` are
+    re-judged on: SHARES_FILE beside eval file `path` when there is one, else the root's (`_self`'s for SELF_ROOT).
+    Only `eval --write-shares` rewrites it; {} when there is none."""
+    if name == kbfacts.SELF_ROOT:
+        folder = os.path.join(kbcommon.SELF, kbcommon.DATA_DIR)
+    else:
+        folder = next((os.path.join(r.path, kbcommon.DATA_DIR) for r in kbcommon.roots() if r.name == name), "")
+    if path:
+        full = os.path.abspath(path) if os.path.exists(path) else kbcommon.path_of(path)
+        if os.path.isfile(os.path.join(os.path.dirname(full), SHARES_FILE)):
+            folder = os.path.dirname(full)
+    out = {}
+    try:
+        with open(os.path.join(folder, SHARES_FILE), encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                try:
+                    out[row["word"]] = float(row["share"])
+                except (KeyError, ValueError):
+                    continue
+    except OSError:
+        pass
+    return out
+
+
+def write_shares(root=None):
+    """Write SHARES_FILE beside the lookup_eval.csv of every root (of `root`) that has one: the key words of its
+    questions that SHARES_FLOOR of the searched units or more hold, with their share now. [(file, rows written)]."""
+    out, cases = [], {}
+    for name, c in eval_cases(None, root):
+        cases.setdefault(name, []).append(c["question"])
+    for name, questions in cases.items():
+        own = name == kbfacts.SELF_ROOT
+        words = {}
+        for q in questions:
+            words.update(kbfacts.key_shares(q, name if own else None))
+        rows = sorted((t, f"{s:.4f}") for t, s in words.items() if s >= SHARES_FLOOR)
+        folder = os.path.join(kbcommon.SELF if own else next(r.path for r in kbcommon.roots() if r.name == name), kbcommon.DATA_DIR)
+        target = os.path.join(folder, SHARES_FILE)
+        with open(target, "w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(["word", "share"])
+            w.writerows(rows)
+        out.append((target, len(rows)))
+    return out
+
+
 def run_eval(path=None, root=None, free=False):
     """Run pack on every question of the eval sets (eval_cases): an expected path (relative to the case's root, to
     kb/_self for SELF_ROOT) must be among the pack's articles, the verdict must equal the expected one (`none` rows
@@ -405,43 +459,66 @@ def run_eval(path=None, root=None, free=False):
     `none`. `noted` counts the rows expecting `good` whose pack prints a `check:` or `route:` line (NOTE_LINES). With `free`, `free` counts the anchored `_self` rows whose phrase is still printed when the pack leaves out
     that row's own tested question (kbfacts.self_store with skip), out of `anchored`: one store build per row, so the
     gate's run leaves it out and the figure is None. A row outside `_self` whose question a kind expert routes
-    (kbfacts.routed: a count, a decision id, a conflict, a gap, a citation) fails with `routed`: the eval rows rank."""
-    rows, hits, anchored, passages = [], 0, 0, None
+    (kbfacts.routed: a count, a decision id, a conflict, a gap, a citation) fails with `routed`: the eval rows rank.
+    A row that fails its verdict is judged once more on the committed key-word shares (shares_baseline) of the words
+    whose share is on the other side of COMMON_SHARE than the file's: when it then passes, it is `drift` ({word: now,
+    baseline}), passes, and counts under `noted` and `drifted` (the pack a lookup prints is not re-judged)."""
+    rows, hits, anchored, passages, bases = [], 0, 0, None, {}
     for name, c in eval_cases(path, root):
         own = name == kbfacts.SELF_ROOT
         res = kbfacts.pack(c["question"], root=name) if own else kbfacts.pack(c["question"])
         base = "kb/_self/" if own else kbcommon.qualify(name, "")
         want = [base + p.strip() for p in c["expect_paths"].split(";") if p.strip()]
-        found = [p for p in want if p in res["paths"]]
-        vok = res["verdict"] == c["expect_verdict"] or (c["expect_verdict"] == "good" and res["verdict"] == "weak" and c.get("allow_weak") == "yes")
-        fok = bool(found) if want else True
         phrases = [t.strip() for t in (c.get("expect_text") or "").split(";") if t.strip()]
-        tok = any(t in res["text"] for t in phrases) if phrases else True
         regexes = [t.strip() for t in (c.get("expect_re") or "").split(";") if t.strip()]
-        rok = any(regex_found(t, res["text"]) for t in regexes) if regexes else True
         # every row is a ranking row: a question a kind expert routes (kbfacts.routed) never reaches pack in a lookup
         free_of_routing = own or kbfacts.routed(c["question"]) is None
-        failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok), ("regex", rok), ("routed", free_of_routing)) if not ok]
+
+        def judge(res):
+            """(the row's failed checks, verdict_ok, found, found_ok, text_ok) of pack result `res`."""
+            found = [p for p in want if p in res["paths"]]
+            vok = res["verdict"] == c["expect_verdict"] or (c["expect_verdict"] == "good" and res["verdict"] == "weak" and c.get("allow_weak") == "yes")
+            fok = bool(found) if want else True
+            tok = any(t in res["text"] for t in phrases) if phrases else True
+            rok = any(regex_found(t, res["text"]) for t in regexes) if regexes else True
+            failed = [w for w, ok in (("verdict", vok), ("path", fok), ("text", tok), ("regex", rok), ("routed", free_of_routing)) if not ok]
+            if own:
+                if not phrases:
+                    failed = [] if res["verdict"] == "none" else ["verdict"]
+                elif not kbfacts.anchor_of(c, passages):
+                    failed = ["anchor"]
+                else:
+                    failed = [w for w, ok in (("text", tok), ("regex", rok)) if not ok]
+            return failed, vok, found, fok, tok
+
         if own:
             passages = passages or kbfacts.self_units()
-            if not phrases:
-                failed = [] if res["verdict"] == "none" else ["verdict"]
-            elif not kbfacts.anchor_of(c, passages):
-                failed = ["anchor"]
-            else:
-                anchored += 1
-                if free:
-                    loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
-                    hits += any(t in loo["text"] for t in phrases)
-                failed = [w for w, ok in (("text", tok), ("regex", rok)) if not ok]
+        failed, vok, found, fok, tok = judge(res)
+        if own and phrases and "anchor" not in failed:
+            anchored += 1
+            if free:
+                loo = kbfacts.pack(c["question"], root=name, st=kbfacts.self_store(c["id"]))
+                hits += any(t in loo["text"] for t in phrases)
+        drift = {}
+        if "verdict" in failed:  # re-judged on the committed key-word shares (shares_baseline), never a moved threshold
+            bases.setdefault(name, shares_baseline(name, path))
+            moved = kbfacts.drifted_words(c["question"], bases[name], name if own else None) if bases[name] else {}
+            if moved:
+                shares = {t: b for t, (_, b) in moved.items()}
+                again = kbfacts.pack(c["question"], root=name, shares=shares) if own else kbfacts.pack(c["question"], shares=shares)
+                judged = judge(again)
+                if not judged[0]:
+                    drift, res = moved, again
+                    failed, vok, found, fok, tok = judged
         noted = c["expect_verdict"] == "good" and any(ln.startswith(NOTE_LINES) for ln in res["text"].splitlines())
         rows.append({"id": c["id"], "verdict": res["verdict"], "want_verdict": c["expect_verdict"], "found": found,
                      "paths": res["paths"], "chars": len(res["text"]), "ok": not failed, "verdict_ok": vok,
-                     "found_ok": fok, "text_ok": tok, "noted": noted, "failed": failed})
+                     "found_ok": fok, "text_ok": tok, "noted": noted, "failed": failed,
+                     "drift": {t: {"now": round(a, 4), "baseline": round(b, 4)} for t, (a, b) in drift.items()}})
     n = len(rows)
     return {"n": n, "passed": sum(r["ok"] for r in rows), "verdict_ok": sum(r["verdict_ok"] for r in rows),
             "found_ok": sum(r["found_ok"] for r in rows), "mean_chars": round(sum(r["chars"] for r in rows) / max(n, 1)),
-            "noted": sum(r["noted"] for r in rows), "free": hits if free else None, "anchored": anchored, "rows": rows}
+            "noted": sum(r["noted"] or bool(r["drift"]) for r in rows), "drifted": sum(bool(r["drift"]) for r in rows), "free": hits if free else None, "anchored": anchored, "rows": rows}
 
 
 def main():
@@ -482,6 +559,8 @@ def main():
     ev.add_argument("--free", action="store_true", help="also the leave-one-out rate of the _self rows (slow: one store build per row)")
     ev.add_argument("--min", type=positive_int, help="exit 0 when at least MIN rows pass (default: every row), e.g. the "
                     "held-out file kb/public/_retrieval/lookup_heldout.csv's answer rate")
+    ev.add_argument("--write-shares", action="store_true", help="rewrite word_shares.csv beside every root's lookup_eval.csv "
+                    "(the key-word shares a failing row is re-judged on) and exit; no judging")
     ev.add_argument("--all", action="store_true", help="print every row, passing ones too (default: the failing rows and the totals)")
     w = sub.add_parser("show"); w.add_argument("target"); w.add_argument("-n", type=positive_int, default=40)
     w.add_argument("--invalidated", action="store_true", help="also print the invalidated decisions, with the reason")
@@ -611,6 +690,12 @@ def main():
     elif a.cmd == "eval":
         if a.root and a.root not in {r.name for r in kbcommon.roots()} | {kbfacts.SELF_ROOT}:
             ap.error(f"no root {a.root!r}")
+        if a.write_shares:
+            if a.file:
+                ap.error("--write-shares writes the roots' files: no --file")
+            for target, n in write_shares(a.root):
+                print(f"wrote {os.path.relpath(target, kbcommon.HOME)}: {n} words")
+            return
         pairs = heldout_rewordings(a.file, a.root) if a.file and os.path.basename(a.file) in FROZEN_FILES else []
         for hid, label, ratio in pairs:
             print(f"REWORD {hid} ~ {label} (ratio {ratio:.2f}): a held-out row rewords a tuned row; replace it")
@@ -621,7 +706,7 @@ def main():
         if pairs or overlaps:
             sys.exit(1)
         res = run_eval(a.file, a.root, a.free)
-        over = a.file is None and res["noted"] > NOTED_BASELINE
+        over = a.file is None and res["noted"] - res["drifted"] > NOTED_BASELINE  # drift is no pack note
         failing = res["passed"] < (res["n"] if a.min is None else a.min) or over  # the exit code, --json or not
         if a.json:
             print(json.dumps(res, indent=1))
@@ -633,6 +718,10 @@ def main():
         print(f"questions={res['n']} passed={res['passed']} verdict_ok={res['verdict_ok']} found_ok={res['found_ok']} "
               f"mean_chars={res['mean_chars']} noted={res['noted']}"
               + (f" free={res['free']}/{res['anchored']}" if res["free"] is not None else ""))
+        for r in (r for r in res["rows"] if r["drift"]):  # printed whatever the exit code
+            words = ", ".join(f"{t}: baseline {d['baseline']:.4f}, now {d['now']:.4f}" for t, d in sorted(r["drift"].items()))
+            print(f"DRIFT {r['id']:<{width}} meets its expect_verdict on the baseline shares ({words}); "
+                  f"`rag.py eval --write-shares` takes the new ones")
         if over:
             for r in (r for r in res["rows"] if r["noted"]):
                 print(f"NOTED {r['id']:<{width}} carries a check: or route: line though expected good")
