@@ -58,7 +58,9 @@
         "run the probe's tests unless the caller has KB_SYNC_NO_TESTS set": "ST-hrsqmwhx",
         "always set KB_SYNC_NO_TESTS=1 for the probe": "ST-hrsqmwhx"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "run the probe's tests unless the caller has KB_SYNC_NO_TESTS set",
+      "by": "operator"
     },
     {
       "id": "g2",
