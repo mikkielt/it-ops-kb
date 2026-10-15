@@ -2,7 +2,7 @@
   "id": "ST-ymjjoo54",
   "kind": "story",
   "title": "Research sprint goal: One benchmark instance's research lands in the real kb",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bhzxxhub",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-bhzxxhub"
 }
