@@ -2,7 +2,8 @@
 cache reads by that model's own read ratio, and a tiered price records the tier the run's tokens fall in; the question pool
 (bench_pool.py) builds on a fixture kb and store, with its counts per kind, a seed that decides, held-out rows without text
 and the query log kept out of the public file."""
-import inspect, json
+import inspect, json, os
+from pathlib import Path
 
 import pytest
 
@@ -1063,6 +1064,66 @@ def bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend_repa
     assert verify() == 0 and bm.main(["pool", "respend", "--file", str(out)]) == 0 and "overlaps another" in capsys.readouterr().out
 
 
+def bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env(tmp_path, monkeypatch, capsys):
+    import subprocess
+    import bench_repro as br
+    import benchmarks as bm
+    import conftest
+    sh = bc.shim_dir(tmp_path / "shim")  # a `claude` that fails at once: nothing started here may reach a model
+    for k, v in {"PATH": f"{sh}{os.pathsep}{os.environ['PATH']}", "KB_SYNC_NO_TESTS": "1", "KB_SESSION": "other-session",
+                 "KB_DOCS_CACHE": str(tmp_path / "docs"), "BENCH_SCRATCH": str(tmp_path / "scratch"),
+                 "GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+                 "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}.items():
+        monkeypatch.setenv(k, v)
+    git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
+    src, remote = tmp_path / "src", tmp_path / "remote.git"  # the bare stands in for the integration remote
+    src.mkdir()
+    git("init", "-q", "--initial-branch=main", cwd=src)
+    shas = {}
+    for name, files in (("first", ["a.txt"]), ("second", ["b.txt"]), ("added", [br.ADDED]), ("last", ["c.txt"])):
+        for f in files:
+            (src / f).parent.mkdir(parents=True, exist_ok=True)
+            (src / f).write_text(name + "\n", encoding="utf-8", newline="\n")
+        git("add", "-A", cwd=src)
+        git("commit", "-q", "-m", name, cwd=src)
+        shas[name] = git("rev-parse", "HEAD", cwd=src)
+    git("clone", "-q", "--bare", str(src), str(remote), cwd=tmp_path)
+    monkeypatch.setattr(br, "remote_url", lambda: ("origin", str(remote)))
+    root = tmp_path / "dir"
+    # --dry-run prints the plan and starts nothing
+    assert bm.main(["repro", "setup", "--instances", "2", "--dir", str(root), "--dry-run"]) == 0
+    plan = capsys.readouterr().out
+    assert str(root / "origin2.git") in plan and not root.exists() and not (tmp_path / "scratch").exists()
+    # the default REV is the parent of the first commit that added the file; the seed bare is gone afterwards
+    assert bm.main(["repro", "setup", "--instances", "2", "--dir", str(root)]) == 0
+    out = capsys.readouterr().out
+    assert f"rev: {shas['second']}" in out and not (root / "seed.git").exists()
+    clones = []
+    for n in (1, 2):
+        bare, clone = root / f"origin{n}.git", br.clone_path(root, n)
+        clones.append(clone)
+        assert str(bare) in out and str(clone) in out and str(br.mcp_path(root, n)) in out
+        assert git("rev-parse", "main", cwd=bare) == shas["second"]  # only the pinned history: no later commit is there
+        assert subprocess.run(["git", "cat-file", "-e", shas["last"]], cwd=str(bare), capture_output=True).returncode != 0
+        assert git("remote", cwd=clone) == "origin" and git("remote", "get-url", "origin", cwd=clone) == str(bare)
+        assert git("rev-parse", "HEAD", cwd=clone) == shas["second"] and not str(clone).startswith(str(conftest.KB))
+        assert json.loads((clone / "_private" / "querylog.json").read_text(encoding="utf-8"))["mode"] == "off"
+        cfg = json.loads(br.mcp_path(root, n).read_text(encoding="utf-8"))["mcpServers"]
+        docs = json.loads((bc.HOME / br.DOCS_MCP).read_text(encoding="utf-8"))["mcpServers"]
+        assert cfg["kb"]["args"] == [str(clone / "_tools" / "kb_mcp.py")] and {k: cfg[k] for k in docs} == docs and len(docs) == 3
+        env = br.instance_env(root, n)
+        assert not set(conftest.LEAKY) & {k for k, v in env.items() if v} and env["KB_SESSION"] == ""
+        assert "KB_DOCS_CACHE" not in env and env["ENABLE_CLAUDEAI_MCP_SERVERS"] == "false"
+        assert Path(env["KB_HOST_LOCK_DIR"]).parent == root and "KB_INDEX" not in env
+    assert set(br.LEAKY_ENV) == set(conftest.LEAKY) and clones[0] != clones[1]
+    # a second run converges, a --start inside the history moves every main, and one outside it is refused with exit 2
+    assert bm.main(["repro", "setup", "--instances", "1", "--dir", str(root), "--start", shas["first"]]) == 0
+    assert git("rev-parse", "main", cwd=root / "origin1.git") == shas["first"]
+    assert bm.main(["repro", "setup", "--instances", "1", "--dir", str(root), "--start", "no-such-rev"]) == 2
+    assert "no such commit" in capsys.readouterr().err
+    assert bm.main(["repro", "setup", "--instances", "0", "--dir", str(root)]) == 2
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read."""
@@ -1078,7 +1139,8 @@ def together(tmp_path, monkeypatch, capsys, *bodies):
 def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, capsys):
     together(tmp_path, monkeypatch, capsys, bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio,
              bench_price_tier_is_recorded_and_alias_follows_the_run,
-             bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows)
+             bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows,
+             bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env)
 
 
 def test_bench_pool_build_check_scenario_rows_and_session_shape(tmp_path, monkeypatch, capsys):
