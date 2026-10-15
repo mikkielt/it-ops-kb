@@ -789,3 +789,12 @@ DOCKER_SANDBOXES_ENABLE_VIRTIOFS_CACHE,agents/agent-sandboxes
 HypervisorPlatform,agents/agent-sandboxes
 --isolation=hyperv,agents/agent-sandboxes
 wsb exec,agents/agent-sandboxes
+commit.gpgsign,gitlab/commit-signing-and-provenance
+gpg.format,gitlab/commit-signing-and-provenance
+gpg.ssh.allowedSignersFile,gitlab/commit-signing-and-provenance
+reject_unsigned_commits,gitlab/commit-signing-and-provenance
+repository/commits/:sha/signature,gitlab/commit-signing-and-provenance
+RUNNER_GENERATE_ARTIFACTS_METADATA,gitlab/commit-signing-and-provenance
+ATTEST_BUILD_ARTIFACTS,gitlab/commit-signing-and-provenance
+glab attestation verify,gitlab/commit-signing-and-provenance
+https://slsa.dev/provenance/v1,gitlab/commit-signing-and-provenance

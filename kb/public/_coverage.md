@@ -176,6 +176,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/protected-branches-tags` | P0 | complete | `gitlab/protected-branches-tags.md` | 9 |
 | `gitlab/variables` | P0 | complete | `gitlab/variables.md` | 2 |
 | `gitlab/automated-merge-requests` | P3 | complete | `gitlab/automated-merge-requests.md` | 52 |
+| `gitlab/commit-signing-and-provenance` | P3 | partial | `gitlab/commit-signing-and-provenance.md` | 19 |
 | `gitlab/deploy-keys-and-tokens` | P3 | partial | `gitlab/deploy-keys-and-tokens.md` | 10 |
 | `gitlab/detecting-mr-merges-in-ci` | P3 | complete | `gitlab/detecting-mr-merges-in-ci.md` | 16 |
 | `gitlab/git-commit-paths-and-symlinks` | P3 | complete | `gitlab/git-commit-paths-and-symlinks.md` | 7 |

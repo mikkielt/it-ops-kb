@@ -31,6 +31,57 @@
   "depends_on": [
     "ST-edgkrk37"
   ],
+  "gates": [
+    {
+      "id": "placement",
+      "kind": "provisional",
+      "question": "Where do the facts on signed commits, bot accounts under protected branches and approvals, SLSA requirements and runner provenance go: one new topic gitlab/commit-signing-and-provenance, or spread into the anchor articles protected-branches-tags, mr-approvals and security/supply-chain?",
+      "options": [
+        "new topic gitlab/commit-signing-and-provenance holds them all",
+        "extend the anchor articles and keep only signing in the new topic"
+      ],
+      "recommendation": "new topic gitlab/commit-signing-and-provenance holds them all",
+      "do": {
+        "new topic gitlab/commit-signing-and-provenance holds them all": "ST-52lihy7z",
+        "extend the anchor articles and keep only signing in the new topic": "ST-52lihy7z"
+      },
+      "class": "design",
+      "answer": "new topic gitlab/commit-signing-and-provenance holds them all",
+      "by": "agent"
+    },
+    {
+      "id": "backlinks",
+      "kind": "provisional",
+      "question": "The new topic's back-links from protected-branches-tags.md, mr-approvals.md and security/supply-chain.md and its alias rows (pgp, openpgp, gpg) lie outside this item's touches: leave them to a follow-up story, or widen this item's touches?",
+      "options": [
+        "follow-up story ST-p2u3ozgk adds them",
+        "widen this item's touches and add them here"
+      ],
+      "recommendation": "follow-up story ST-p2u3ozgk adds them",
+      "do": {
+        "follow-up story ST-p2u3ozgk adds them": "ST-p2u3ozgk",
+        "widen this item's touches and add them here": "ST-52lihy7z"
+      },
+      "class": "design",
+      "answer": "follow-up story ST-p2u3ozgk adds them",
+      "by": "agent"
+    },
+    {
+      "id": "licence",
+      "kind": "blocking",
+      "question": "kbid.py add read MIT for the GitLab doc page S-jut4uqct, while the gitlab-org/gitlab LICENSE puts doc/ under CC BY-SA 4.0: which licence do the twelve new GitLab doc rows carry?",
+      "options": [
+        "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT), copy, as the earlier GitLab doc rows",
+        "MIT as kbid.py read it"
+      ],
+      "recommendation": "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT), copy, as the earlier GitLab doc rows",
+      "do": {
+        "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT), copy, as the earlier GitLab doc rows": "ST-52lihy7z",
+        "MIT as kbid.py read it": "ST-52lihy7z"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/commit-signing-and-provenance where no article fits.",
   "claimed_by": "orch-state"
 }
