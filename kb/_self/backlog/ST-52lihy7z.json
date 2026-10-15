@@ -2,7 +2,7 @@
   "id": "ST-52lihy7z",
   "kind": "story",
   "title": "Research: provenance of agent commits (GitLab signed commits, push rules, protected branches, SLSA)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -85,5 +85,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/commit-signing-and-provenance where no article fits.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "116c8b20b2d31931331777a0878ae09fa567fc50",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-52lihy7z"
+        ],
+        "exit": 0,
+        "sha256": "edc897f8bcd77275"
+      }
+    ]
+  }
 }
