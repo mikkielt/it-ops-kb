@@ -362,7 +362,8 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
         m = re.search(r"^questions=(\d+) passed=(\d+) verdict_ok=\d+ found_ok=\d+ mean_chars=\d+ noted=(\d+)", out, re.M)
         assert m, out[-1500:]
         assert code == 0 and m.group(1) == m.group(2), out[-3000:]
-        counted.append(tuple(int(x) for x in m.group(1, 3)))
+        # noted= counts a DRIFT row, which is no pack note (rag.py's own exit leaves it out): one DRIFT line for each
+        counted.append((int(m.group(1)), int(m.group(3)) - len(re.findall(r"^DRIFT ", out, re.M))))
     # the default run's noted ceiling is over all its questions, the runs' own is over each root's
     assert sum(q for q, _ in counted) > 0 and sum(n for _, n in counted) <= rag.NOTED_BASELINE, counted
     # pack --revalidate asks the cited sources of the printed fact lines, resolves only those lines' anchors and marks
