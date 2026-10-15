@@ -1,0 +1,17 @@
+{
+  "id": "BG-auhn3xff",
+  "kind": "bug",
+  "title": "A gate question about the word overlap of two texts is classed secrets by the word token",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "class_reasons gives design for a gate whose question asks what token overlap of two facts words makes one claim, as it does for a model's token counts",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as b;r=b.class_reasons({'touches':['_tools/bench_repro.py']},{'id':'g1','question':'what token overlap of two facts words makes one claim','options':['0.5','0.8']});sys.exit(0 if r[0]=='design' else 1)"
+    ]
+  }
+}
