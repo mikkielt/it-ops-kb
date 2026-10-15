@@ -1,0 +1,20 @@
+{
+  "id": "BG-vtbn4orn",
+  "kind": "bug",
+  "title": "factdiff.py anchor --quotes with a repo-relative --file reports every line as no tagged fact instead of naming the path",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "factdiff.py anchor with --quotes and a repo-relative --file (the article path with its kb root directory prefix) either accepts that path or stops with the 'no file' message it gives without --quotes, instead of reporting each quote line as 'is no tagged fact of the file' (seen in ST-bke44brb: the kb-worker role file writes '--file PATH' and a worker passed the repository path)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,tempfile,os; f=tempfile.NamedTemporaryFile('w',suffix='.csv',delete=False); f.write('line,quote\\n18,OPA separates policy decisions\\n'); f.close(); r=subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--file','kb/public/agents/policy-as-code.md','--quotes',f.name,'--dry-run'],capture_output=True,text=True); os.unlink(f.name); sys.exit(1 if 'is no tagged fact' in r.stderr else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py"
+  ]
+}
