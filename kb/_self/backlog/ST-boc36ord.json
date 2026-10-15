@@ -2,7 +2,7 @@
   "id": "ST-boc36ord",
   "kind": "story",
   "title": "Review sprint: Three isolated instances research the benchmark, and a report says how alike their results are",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ccvfvoqj",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-ccvfvoqj"
 }
