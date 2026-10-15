@@ -753,3 +753,15 @@ inboundJobTokenScopeEnabled,gitlab/multi-project-pipelines
 ciJobTokenScopeAddGroupOrProject,gitlab/multi-project-pipelines
 CI_JOB_TOKEN,gitlab/multi-project-pipelines
 strategy: mirror,gitlab/multi-project-pipelines
+github.com/open-policy-agent/opa,agents/policy-as-code
+.rego,agents/policy-as-code
+opa build,agents/policy-as-code
+/v1/data/,agents/policy-as-code
+cedarpolicy,agents/policy-as-code
+cedar-policy,agents/policy-as-code
+IsAuthorizedWithToken,agents/policy-as-code
+BatchIsAuthorized,agents/policy-as-code
+verifiedpermissions,agents/policy-as-code
+Microsoft.Authorization/policyAssignments,agents/policy-as-code
+Start-AzPolicyRemediation,agents/policy-as-code
+az policy remediation,agents/policy-as-code

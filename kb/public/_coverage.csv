@@ -49,6 +49,7 @@ agents/langgraph,P3,complete,agents/langgraph.md,15
 agents/mmlw-e5-polish-embeddings,P3,partial,agents/mmlw-e5-polish-embeddings.md,31
 agents/onnx-runtime-rust-ort,P3,partial,agents/onnx-runtime-rust-ort.md,44
 agents/peer-state-sync,P3,complete,agents/peer-state-sync.md,17
+agents/policy-as-code,P3,partial,agents/policy-as-code.md,22
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
 agents/shared-state-concurrency,P3,complete,agents/shared-state-concurrency.md,8
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17

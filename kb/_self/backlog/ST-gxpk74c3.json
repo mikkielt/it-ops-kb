@@ -31,6 +31,40 @@
   "depends_on": [
     "ST-vs6rsipn"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The new topic agents/policy-as-code should be linked back from the Reference sections of agents/agent-rbac.md and agents/gitops-for-agents.md, and OPA and Verified Permissions need alias rows in _tools/aliases.csv; all three files are outside this item's touches. Where do they go?",
+      "options": [
+        "follow-up story ST-mvvzqk3r",
+        "leave them out"
+      ],
+      "recommendation": "follow-up story ST-mvvzqk3r",
+      "do": {
+        "follow-up story ST-mvvzqk3r": "ST-gxpk74c3",
+        "leave them out": "ST-gxpk74c3"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which priority does the new kb topic policy-as-code take in its front matter?",
+      "options": [
+        "P3",
+        "P2"
+      ],
+      "recommendation": "P3",
+      "do": {
+        "P3": "ST-gxpk74c3",
+        "P2": "ST-gxpk74c3"
+      },
+      "class": "design",
+      "answer": "P3",
+      "by": "agent"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/policy-as-code where no article fits.",
   "claimed_by": "orch-state"
 }
