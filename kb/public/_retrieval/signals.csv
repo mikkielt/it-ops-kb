@@ -818,3 +818,16 @@ argocd-application-controller,agents/gitops-for-agents
 syncPolicy,agents/gitops-for-agents
 selfHeal,agents/gitops-for-agents
 timeout.reconciliation,agents/gitops-for-agents
+quadlet,arch/podman-quadlet-systemd
+podman-system-generator,arch/podman-quadlet-systemd
+QUADLET_UNIT_DIRS,arch/podman-quadlet-systemd
+podman.socket,arch/podman-api-socket
+podman system service,arch/podman-api-socket
+libpod,arch/podman-api-socket
+registries.conf,arch/podman-images-registries
+short-name-mode,arch/podman-images-registries
+containers.conf,arch/podman-rootless-config
+storage.conf,arch/podman-rootless-config
+rootless_port_forwarder,arch/podman-volumes-networks-pods
+netavark,arch/podman-volumes-networks-pods
+pasta,arch/podman-volumes-networks-pods

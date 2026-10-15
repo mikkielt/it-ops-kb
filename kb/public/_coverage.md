@@ -83,6 +83,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/http-rate-limit-429-retry-after` | P3 | partial | `arch/http-rate-limit-429-retry-after.md` | 9 |
 | `arch/incus-test-bed` | P3 | partial | `arch/incus-test-bed.md` | 4 |
 | `arch/oxigraph-embedded-rdf` | P3 | partial | `arch/oxigraph-embedded-rdf.md` | 24 |
+| `arch/podman-api-socket` | P3 | partial | `arch/podman-api-socket.md` | 3 |
+| `arch/podman-images-registries` | P3 | partial | `arch/podman-images-registries.md` | 3 |
+| `arch/podman-quadlet-systemd` | P3 | partial | `arch/podman-quadlet-systemd.md` | 4 |
+| `arch/podman-rootless-config` | P3 | complete | `arch/podman-rootless-config.md` | 4 |
+| `arch/podman-volumes-networks-pods` | P3 | complete | `arch/podman-volumes-networks-pods.md` | 6 |
 | `arch/postgres-advisory-locks` | P3 | complete | `arch/postgres-advisory-locks.md` | 5 |
 | `arch/postgres-backup-age-s3-git-bundle` | P3 | partial | `arch/postgres-backup-age-s3-git-bundle.md` | 15 |
 | `arch/postgres-bundled-binaries` | P3 | partial | `arch/postgres-bundled-binaries.md` | 26 |

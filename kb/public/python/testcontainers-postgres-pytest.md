@@ -120,6 +120,8 @@ GitLab CI setup for testcontainers-python; the fixture below is our derivation.
 Values read from src/testcontainers/core/config.py at 4.15.0 and the configuration page; the
 property names for `~/.testcontainers.properties` are on that page.
 
+`arch/podman-api-socket.md` covers Podman's Docker-compatible socket (`podman.socket`, its rootless and rootful paths, and its security model) for a `DOCKER_HOST` that points at Podman.
+
 ## Examples
 - SNIPPET: session-scoped pytest fixture that starts one Postgres 16 container for the whole test
   session and yields a sync SQLAlchemy URL; context: testcontainers 4.15.0, pytest, SQLAlchemy 2,

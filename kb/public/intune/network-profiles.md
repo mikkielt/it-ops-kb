@@ -78,6 +78,7 @@ platforms, using per-app or "Quick Access" broad-segment tunneling instead of a 
 ## Reference
 - `intune/certificates-pki.md` — SCEP and PKCS certificate profiles referenced by name from every Enterprise Wi-Fi, 802.1X wired, and certificate-authenticated VPN profile above (subject/SAN variables, connector, Cloud PKI). Back-link added there.
 - `intune/configuration-policies.md` — Wi-Fi/VPN/802.1X profiles are device-configuration profiles delivered on the same policy check-in/refresh cadence as other configuration policies.
+- `arch/podman-rootless-config.md` — the Podman engine the Tunnel server runs in on RHEL: rootless user namespaces, `/etc/subuid` ranges, the privileged-port rule and the configuration files (`arch/podman-quadlet-systemd.md` for running a container as a systemd unit).
 - Not covered in this pass (`UNK`): macOS/iOS/Android Wi-Fi, wired, and VPN profile field references (separate per-platform Learn articles); Microsoft Tunnel install/upgrade/troubleshooting procedure detail beyond the prerequisites summarized here; full Global Secure Access/Entra Private Access configuration (connectors, Quick Access, per-app segmentation, Conditional Access integration).
 
 ## Examples
