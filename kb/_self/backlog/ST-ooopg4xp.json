@@ -1,0 +1,22 @@
+{
+  "id": "ST-ooopg4xp",
+  "kind": "story",
+  "title": "A new-topic research worker's brief and turn cap fit its scope, so it does not run out at 200 turns",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "dispatch gives a research item that creates a new topic a turn cap and brief guidance sized to its question count (a figure measured from SP-5dffnlxn's workers, whose new-topic items used 141 to 200 turns, one reaching the 200 cap), so a worker finishes its report and checks before the cap.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "dispatch_research_turns"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-5dffnlxn close"
+  ]
+}

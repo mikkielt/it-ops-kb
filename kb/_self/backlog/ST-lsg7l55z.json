@@ -1,0 +1,22 @@
+{
+  "id": "ST-lsg7l55z",
+  "kind": "story",
+  "title": "Union-merged ledgers do not order research items, so a sprint's research runs in parallel",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "held --overlaps and check's unordered-overlap warning treat a root's union-merged ledgers (_sources.csv, _answers.md, _gaps.md, _conflicts.md, _anchors.csv, _fetch_state.csv) as shared, the way they treat a kb/_self doc, so research items that share only those files are not forced to run one after another; SP-5dffnlxn's eleven research items ran serially for about four hours because of them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "held_overlaps_union_ledger"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-5dffnlxn close"
+  ]
+}

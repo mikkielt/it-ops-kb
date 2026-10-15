@@ -1,0 +1,22 @@
+{
+  "id": "ST-7kl5dnwr",
+  "kind": "story",
+  "title": "precheck warns when researched would read a research goal's lead-in together with its first question",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck prints a warning for a research item whose goal_questions output joins a lead-in sentence of more than QUESTION_LEAD_WORDS words to its first question, naming the item, so a planner moves the lead-in to notes before the start gate; in SP-5dffnlxn the first worker found it after its claim and ten goals were re-planned mid-sprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "precheck_goal_leadin"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-5dffnlxn close"
+  ]
+}
