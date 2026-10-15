@@ -400,7 +400,7 @@ windows/event-forwarding-sysmon,P2,complete,windows/event-forwarding-sysmon.md;w
 windows/kiosk-assigned-access,P2,complete,windows/kiosk-assigned-access.md,11
 windows/laps,P2,complete,windows/laps.md;windows/laps.csv,15
 windows/powershell-7,P2,complete,windows/powershell-7.md;windows/powershell-lifecycle.csv,17
-windows/powershell-remoting-jea,P2,complete,windows/powershell-remoting-jea.md;windows/jea-config-fields.csv,14
+windows/powershell-remoting-jea,P2,complete,windows/powershell-remoting-jea.md;windows/jea-config-fields.csv,17
 windows/windows-365,P2,complete,windows/windows-365.md,19
 windows/windows-update-management,P2,complete,windows/windows-update-management.md;windows/windows-update-management.csv,19
 windows/winget,P2,complete,windows/winget.md;windows/winget-policies.csv,14

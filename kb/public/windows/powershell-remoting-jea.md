@@ -2,8 +2,8 @@
 topic: windows/powershell-remoting-jea
 priority: P2
 applies_to: "WinRM-based PowerShell Remoting (WMF 5.1+/PowerShell 7); Just Enough Administration (JEA); PowerShell remoting over SSH (Windows/Linux/macOS)"
-retrieved_utc: 2026-09-26
-sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S-j2g6dv6n, S-sgyc73tt, S-utydlnf7]
+retrieved_utc: 2026-10-15
+sources: [S-twfugriu, S-p5lwby5b, S-xe3uwlpq, S-jwo36v2t, S-azyqynh4, S-tabagcvn, S-c7yxdr7e, S-fmtt7m5j, S-o3cdlg27, S-zopt2et4, S-hcszfxta, S-j2g6dv6n, S-sgyc73tt, S-utydlnf7, S-s4yqv6lz, S-iuhtzvem, S-r3cngad7]
 status: complete
 files: [windows/jea-config-fields.csv]
 ---
@@ -181,6 +181,121 @@ fits alongside those mechanisms.
   `Get-Command`, `Get-FormatData`, `Get-Help`, `Measure-Object`, `Out-Default`, `Select-Object`) yourself.
   [DOC S-tabagcvn]
 
+### JEA: role merging in full, session-file defaults, registration at scale, auditing and use
+- Role merge, the rest of Microsoft's seven rules: a user gets every role their groups map to, and JEA aims
+  for the most permissive command set. Identical constraints on one cmdlet in two roles are kept; roles
+  that allow different parameters of the same cmdlet give the union of the parameters, and if any role
+  leaves the parameters unconstrained all of them are allowed. [DOC S-p5lwby5b]
+- Role merge for values: `ValidatePattern` regexes from several roles are alternatives (a value matching
+  any one is allowed); when one role sets a `ValidateSet` and another a `ValidatePattern` on the same
+  parameter, the set is ignored and only the patterns apply. [DOC S-p5lwby5b]
+- `VisibleExternalCommands`, `VisibleAliases`, `VisibleProviders` and `ScriptsToProcess` are not merged by
+  constraint but added into one cumulative set across a user's roles: Microsoft's example is `Remove-Item`
+  in one role plus the `FileSystem` provider in another, which lets the user delete arbitrary files. [DOC
+  S-p5lwby5b]
+- The common PowerShell parameters are always allowed even when `Parameters` is restricted; a
+  `VisibleCmdlets` name can be module-qualified (`MyModule\My-Func`) or wildcarded (`My-*`, `*-Func`), but
+  Microsoft advises against wildcards, since they authorise every command sharing the pattern. [DOC
+  S-p5lwby5b]
+- Cmdlets, functions and external programs exposed in a session are not bound by JEA's own provider
+  restriction: they reach any provider by default. Microsoft therefore suggests a custom function for
+  simple file, registry or certificate tasks, or the user drive for file transfer. [DOC S-p5lwby5b]
+- Inside a `FunctionDefinitions` body `Select-Object` is still JEA's constrained proxy: the unconstrained
+  one needs the module-qualified name `Microsoft.PowerShell.Utility\Select-Object`. Tab completion in a
+  JEA session needs `TabExpansion2` in `VisibleFunctions`. [DOC S-p5lwby5b]
+- Where a `.psrc` lives: before PowerShell 6 it had to be in a `RoleCapabilities` folder of a module on
+  `$Env:PSModulePath` (not under `System32` or any folder untrusted users can write); the page says
+  PowerShell 6 added a `RoleDefinitions` property that can name a role file's location. An edited `.psrc`
+  applies to sessions started afterwards, and Local System should have read-only access to it. [DOC
+  S-p5lwby5b]
+- Microsoft's examples of commands that let a connecting user break out when exposed unconstrained:
+  group-membership commands (`Add-LocalGroupMember`, `Add-ADGroupMember`, `net.exe`, `dsadd.exe`) and
+  code launchers (`Start-Process`, `New-Service`, `Invoke-Item`, `Invoke-WmiMethod`, `Invoke-CimMethod`,
+  `Invoke-Expression`, `Invoke-Command`, `New-ScheduledTask`, `Register-ScheduledJob`); the page calls the
+  list a starting point, not exhaustive. It prefers a cmdlet such as `Get-SmbShare` over `net.exe` for
+  share management. [DOC S-p5lwby5b]
+- Defaults of the role-capability `Visible*` fields as the cmdlet reference states them: modules named in
+  `ModulesToImport` expose all their commands unless `VisibleCmdlets`/`VisibleFunctions` narrow them,
+  `VisibleExternalCommands` shows none, and `CompanyName` is `Unknown`. [DOC S-r3cngad7]
+- The same cmdlet page says all providers a module exports are visible by default, while the JEA
+  role-capability page says a JEA session has none unless `VisibleProviders` adds them; the two read as
+  the generic parameter default against the `RestrictedRemoteServer` session type's, so a role author
+  should list providers explicitly and treat the JEA page as the rule for an endpoint. [DER S-r3cngad7,
+  S-p5lwby5b: the first describes the parameter, the second a JEA endpoint]
+- `New-PSSessionConfigurationFile` `SessionType` values: `Default` (the default; adds
+  `Microsoft.PowerShell.Core`, so `Import-Module` is available), `Empty` (nothing added) and
+  `RestrictedRemoteServer` (only the proxy functions `Exit-PSSession`, `Get-Command`, `Get-FormatData`,
+  `Get-Help`, `Measure-Object`, `Out-Default`, `Select-Object`). [DOC S-s4yqv6lz]
+- `LanguageMode` accepts `FullLanguage`, `ConstrainedLanguage`, `RestrictedLanguage` and `NoLanguage`; when
+  omitted it follows the session type: `Empty` and `RestrictedRemoteServer` give `NoLanguage`, `Default`
+  gives `FullLanguage`. `RestrictedLanguage` allows only `$PSCulture`, `$PSUICulture`, `$true`, `$false`
+  and `$null` as variables and the `-eq`, `-gt`, `-lt` comparisons. [DOC S-s4yqv6lz]
+- Including any `Visible*` parameter in a session configuration removes `Import-Module` (and its `ipmo`
+  alias) from the session; with no `VisibleAliases` every engine and module alias is visible. [DOC
+  S-s4yqv6lz]
+- Other `.pssc` defaults: an omitted `ExecutionPolicy` writes `Restricted`; `PowerShellVersion` accepts
+  only 2.0 and 3.0 and is commented out when omitted (the newest engine runs; the `PSVersion` of
+  `Register-PSSessionConfiguration` wins over it); `SchemaVersion` is `1.0.0.0`; `CompanyName` is
+  `Unknown`; `Author` is the current user; a `Guid` is generated. [DOC S-s4yqv6lz]
+- The template `New-PSSessionConfigurationFile` writes holds only the most common options; `-Full` writes
+  every applicable one. [DOC S-xe3uwlpq]
+- Session-wide setup fields of the `.pssc` beyond commands: `VariableDefinitions` (`Name`/`Value`),
+  `EnvironmentVariables` (hashtable), `AliasDefinitions` and `FunctionDefinitions` (each with an optional
+  `Options` of `None`, `ReadOnly`, `Constant`, `Private` or `AllScope`, default `None`), `ModulesToImport`,
+  `AssembliesToLoad`, and `ScriptsToProcess`, `TypesToProcess`, `FormatsToProcess`, which need full paths. [DOC
+  S-s4yqv6lz]
+- `GroupManagedServiceAccount` cannot be combined with `RunAsVirtualAccount`, and the machine registering
+  the endpoint must be allowed to retrieve the gMSA password for sessions to be created. [DOC S-s4yqv6lz]
+- gMSA sessions need a domain-joined machine running PowerShell 5.1 or newer, and the account has no admin
+  rights anywhere unless a machine or service administrator grants them. [DOC S-xe3uwlpq]
+- A virtual account is temporarily granted the "Logon as a service" right; if a group named in
+  `RunAsVirtualAccountGroups` already holds that right, the per-session grant and removal is skipped (useful
+  on domain controllers with audited policy; needs Windows Server 2016 with the November 2018 rollup or
+  Windows Server 2019 with the January 2019 rollup). [DOC S-xe3uwlpq]
+- `MountUserDrive` exposes a `User:` PSDrive with a folder per connecting user, created under
+  `$Env:LOCALAPPDATA\Microsoft\PowerShell\DriveRoots\`; the cap is 50 MB unless `UserDriveMaximumSize` is
+  set. [DOC S-s4yqv6lz]
+- The user drive's contents persist across sessions, it needs PowerShell 5.1 or newer, and Microsoft
+  suggests a nightly scheduled task to clear it if persistence is unwanted. [DOC S-xe3uwlpq]
+- `RoleDefinitions` keys: each user or group may appear once (with several roles); local principals must be
+  written with the computer name, never `localhost` or wildcards. When a shipped and a custom role
+  capability share a name JEA prefers the one shipped with Windows; other clashes go by directory
+  enumeration order. [DOC S-xe3uwlpq]
+- `RequiredGroups` accepts nested `And`/`Or` hashtables, e.g. `And = 'elevated-jea', @{ Or = '2FA-logon',
+  'smartcard-logon' }`; a `.pssc` that fails `Test-PSSessionConfigurationFile` cannot be registered. [DOC
+  S-xe3uwlpq]
+- Multi-machine deployment uses the `JustEnoughAdministration` DSC resource: the role-capability module
+  sits on a read-only share and a `File` resource copies it; the resource sets role definitions, virtual
+  account groups, gMSA name, transcript directory, user drive, conditional access and startup scripts, so
+  no `.pssc` is needed. Replacing the default `Microsoft.PowerShell` endpoint also registers a backup
+  `Microsoft.PowerShell.Restricted` endpoint with the default WinRM ACL (Remote Management Users and local
+  Administrators). [DOC S-jwo36v2t]
+- Unregistering a JEA endpoint restarts WinRM as registering does, interrupting other remoting sessions,
+  WMI calls and some management tools; do it in a maintenance window. [DOC S-jwo36v2t]
+- Audit, who may connect against who gets what: the endpoint's `Permission` property lists principals
+  allowed to connect, while its `RoleDefinitions` property (enumerate it from `Get-PSSessionConfiguration`)
+  holds the role mapping. `Get-PSSessionCapability -ConfigurationName <n> -Username <u>` returns what that
+  user would see from `Get-Command -CommandType All` in the session, but reflects only current group
+  membership, so it misses just-in-time group elevation. [DOC S-azyqynh4]
+- Audit, event logs: with module or script block logging on, event ID 4104 in
+  `Microsoft-Windows-PowerShell/Operational` records each command with its `ConnectedUser` and
+  `RunAsUser`. Other applications' logs show only the virtual run-as user; WinRM's event ID 193 in
+  `Microsoft-Windows-Windows Remote Management/Operational` records the SID and account name of both for
+  each new JEA session, which is how a run-as user is tied back to a person. [DOC S-azyqynh4]
+- Audit, transcripts: each transcript header names start time, connecting user, `RunAs User` and machine;
+  the body logs `CommandInvocation` and `ParameterBinding` lines per command (the user's exact typed
+  syntax is not kept) plus an `Out-Default` invocation for output. Transcript folders are found with
+  `Get-PSSessionConfiguration | Where-Object TranscriptDirectory -ne $null`. [DOC S-azyqynh4]
+- Using an endpoint: `New-PSSession`, `Enter-PSSession` or `Invoke-Command` with `-ConfigurationName`
+  (the credential may be omitted when the current account has access); the session is `NoLanguage`, so
+  no variables or property inspection inside it. Implicit remoting (`Import-PSSession -Prefix`) lets the
+  caller use full language locally; if the whole session cannot be imported because of the default JEA
+  proxy constraints, import only the needed commands with `-CommandName`. [DOC S-iuhtzvem]
+- JEA works over PowerShell Direct with `-VMName` or `-VMId` and no extra configuration if the guest is
+  Windows 10 / Windows Server 2016 or later; to confine a Hyper-V administrator to JEA, deny their account
+  local logon on the guest, since an unprivileged user can otherwise sign in and browse the machine. [DOC
+  S-iuhtzvem]
+
 ### PowerShell Remoting over SSH
 - SSH remoting hosts a plain PowerShell process as an SSH subsystem, entirely separate from the WinRM
   endpoint model, and as of this retrieval doesn't support custom endpoint configuration or JEA at all;
@@ -192,6 +307,14 @@ fits alongside those mechanisms.
   `sshd` service/config facts this reuses. Authentication (password, public key, or SSH-native MFA) is
   entirely SSH's own — PowerShell implements no authentication scheme of its own for SSH remoting. [DOC
   S-hcszfxta]
+- The same page states that a WinRM-like general hosting model, to support endpoint configuration and JEA
+  over SSH, is intended "eventually"; it gives no version or date, so SSH remoting is not a JEA path today
+  and nothing in the kb should plan around it. [DOC S-hcszfxta]
+- How it fits: a user who may log on over SSH to a host with the `powershell` subsystem enabled gets
+  `pwsh` with their own OS rights, outside any JEA endpoint on that host, and a JEA boundary only helps
+  for people who have no such route, so an estate that relies on JEA has to keep that subsystem line out
+  of `sshd_config` (or limit who may use SSH) for those users. [DER S-hcszfxta, S-tabagcvn: SSH remoting has
+  no endpoint configuration; JEA does not protect against routes that bypass the endpoint]
 
 ## Reference
 | Item | Value | Source |

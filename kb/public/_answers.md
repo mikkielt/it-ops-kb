@@ -3834,3 +3834,17 @@ _Agent: kb-research_
 - See windows/openssh-server.md, windows/openssh-key-management.md, windows/openssh-estate-deployment.md, intune/platform-scripts.md.
 
 _Agent: kb-research_
+
+## QK-jea-cover-not-cover-role-capability. What does JEA cover and not cover: role capability and session configuration files and their defaults, virtual accounts and gMSAs, language mode and visible commands, registration, auditing, and PowerShell over SSH?
+- A `.psrc` lists what a role may run (`VisibleCmdlets`, `VisibleFunctions`, `VisibleExternalCommands` by full path, `VisibleProviders`, none by default); a `.pssc` maps users and groups to roles and sets the run-as identity, transcripts, user drive and conditional access. [DOC S-p5lwby5b, S-xe3uwlpq]
+- A user in several roles gets the most permissive merge: parameter sets are unioned, an unconstrained role drops another's constraint, `ValidateSet`s and `ValidatePattern`s are unioned, and external commands, aliases, providers and startup scripts simply accumulate. [DOC S-p5lwby5b]
+- `LanguageMode` defaults to `NoLanguage` for `RestrictedRemoteServer` and `Empty` sessions and to `FullLanguage` for `Default`; any `Visible*` setting removes `Import-Module`; an omitted `ExecutionPolicy` is `Restricted`. [DOC S-s4yqv6lz]
+- The virtual account is per user and session, local `Administrators` (or `Domain Admins` on a DC) unless `RunAsVirtualAccountGroups` narrows it, and reaches the network only as the computer account; a gMSA gives a domain identity but one shared identity in logs and cannot be combined with a virtual account. [DOC S-xe3uwlpq, S-s4yqv6lz, S-tabagcvn]
+- Registration restarts WinRM, as does unregistering; a change needs unregister and re-register; at scale the `JustEnoughAdministration` DSC resource deploys it. [DOC S-jwo36v2t]
+- Auditing: `Permission` (who may connect), `RoleDefinitions` (who gets which role), `Get-PSSessionCapability` (current group membership only), event 4104 with `ConnectedUser` and `RunAsUser` (needs script block or module logging), WinRM event 193, and transcripts. [DOC S-azyqynh4]
+- Not covered: standing administrators, who bypass JEA, and anything exposed unconstrained (`FileSystem`, `Invoke-Expression`, custom function bodies, which run in the system's language mode); PowerShell over SSH does not support endpoint configuration or JEA, and Microsoft names no date for it. [DOC S-tabagcvn, S-p5lwby5b, S-hcszfxta]
+- Conclusion: JEA constrains only sessions that enter through a registered WinRM endpoint, so its boundary is as strong as the roles' command lists and as wide as the routes to the host that are left open; the SSH `powershell` subsystem is one such route and must stay closed to JEA-only users. [DER S-hcszfxta, S-tabagcvn, S-p5lwby5b]
+- Open: no Microsoft page read states a PowerShell 7 JEA behaviour that differs from 5.1, and no page read says how a JEA endpoint behaves when a user also holds a route through the SSH subsystem beyond the user's own OS rights. [UNK]
+- See windows/powershell-remoting-jea.md, windows/openssh-server.md.
+
+_Agent: kb-research_

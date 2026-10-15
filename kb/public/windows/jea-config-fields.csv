@@ -16,3 +16,17 @@ file,field,purpose,example,source
 .pssc,UserDriveMaximumSize,byte cap for MountUserDrive (default 50MB = 52428800 if unset),"UserDriveMaximumSize = 524288000",S-xe3uwlpq
 .pssc,RequiredGroups,conditional-access rule (And/Or hashtable) requiring connecting users to also belong to named groups (e.g. a JIT-elevation or MFA/smartcard-logon group) beyond RoleDefinitions membership,"RequiredGroups = @{ Or = '2FA-logon','smartcard-logon' }",S-xe3uwlpq
 .pssc,VisibleCmdlets/VisibleFunctions/VisibleProviders,"session configuration files accept the same fields as a .psrc, applying to every connecting user regardless of role","VisibleCmdlets = 'Get-Date'",S-xe3uwlpq
+.pssc,LanguageMode,"FullLanguage, ConstrainedLanguage, RestrictedLanguage or NoLanguage; when omitted: NoLanguage for Empty and RestrictedRemoteServer sessions, FullLanguage for Default","LanguageMode = 'ConstrainedLanguage'",S-s4yqv6lz
+.pssc,SessionType (values),"Default (the default value; adds Microsoft.PowerShell.Core), Empty (adds nothing) or RestrictedRemoteServer (eight default commands and NoLanguage mode)","SessionType = 'Empty'",S-s4yqv6lz
+.pssc,ExecutionPolicy,execution policy of the sessions; the key is written as Restricted when the parameter is omitted,"ExecutionPolicy = 'RemoteSigned'",S-s4yqv6lz
+.pssc,ModulesToImport,modules and snap-ins imported automatically into every session of the endpoint,"ModulesToImport = 'PSDiagnostics'",S-s4yqv6lz
+.pssc,AliasDefinitions,"aliases added to the session; keys Name and Value required, Description and Options (None, ReadOnly, Constant, Private, AllScope; default None) optional","AliasDefinitions = @{ Name='hlp'; Value='Get-Help' }",S-s4yqv6lz
+.pssc,FunctionDefinitions,"functions added to the session; keys Name and ScriptBlock required, Options optional (same values as AliasDefinitions)","FunctionDefinitions = @{ Name='Get-Fn'; ScriptBlock={ Get-Command -CommandType Function } }",S-s4yqv6lz
+.pssc,VariableDefinitions,variables added to the session; keys Name and Value are both required,"VariableDefinitions = @{ Name='WarningPreference'; Value='SilentlyContinue' }",S-s4yqv6lz
+.pssc,EnvironmentVariables,environment variables added to the session as a hashtable of names and values,"EnvironmentVariables = @{ TESTSHARE='\\Test2\Test' }",S-s4yqv6lz
+.pssc,ScriptsToProcess,"startup scripts run in the session; full or absolute path required","ScriptsToProcess = 'C:\ProgramData\JEAConfiguration\Startup.ps1'",S-s4yqv6lz
+.pssc,TypesToProcess / FormatsToProcess,".ps1xml type and formatting files loaded into the session; full or absolute paths required","FormatsToProcess = 'C:\ProgramData\JEAConfiguration\CustomFormats.ps1xml'",S-s4yqv6lz
+.pssc,AssembliesToLoad,assemblies loaded into the session,"AssembliesToLoad = 'System.Web.Services'",S-s4yqv6lz
+.pssc,PowerShellVersion,"engine version of the session: only 2.0 or 3.0; commented out when omitted so the newest engine runs; the PSVersion of Register-PSSessionConfiguration takes precedence","PowerShellVersion = '3.0'",S-s4yqv6lz
+.pssc,"SchemaVersion, Guid, Author, CompanyName, Copyright, Description","file metadata, not properties of the registered configuration: SchemaVersion 1.0.0.0, Guid generated when omitted, Author the current user, CompanyName Unknown","Author = 'jan.kowalski'",S-s4yqv6lz
+.psrc,ScriptsToProcess,startup scripts of a role; across a user's roles they are added together rather than constrained,"ScriptsToProcess = 'C:\ProgramData\JEAConfiguration\Startup.ps1'",S-p5lwby5b
