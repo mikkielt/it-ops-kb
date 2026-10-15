@@ -2,7 +2,7 @@
   "id": "ST-dgfbcmzf",
   "kind": "story",
   "title": "repro_bench.csv freezes 3 to 5 user-style questions per benchmark area, written before any instance runs",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,6 @@
     "ST-5c2h4o7w",
     "ST-levrq3xs"
   ],
-  "notes": "The questions are written by a worker that sees the briefs and the kb but no research of the instances (none exists yet); held-out style (kb/_self/tools.md answer-rate fitness test; kb/_self/maintaining.md: a failing held-out row stays and is never tuned). False good verdicts today (podman, typescript, rust, python venv) mean an absent-area row needs an expect_re or expect_text, not only a verdict. The start commit for the instances is this file's adding commit's parent (ST-g52zbsv4 setup default)."
+  "notes": "The questions are written by a worker that sees the briefs and the kb but no research of the instances (none exists yet); held-out style (kb/_self/tools.md answer-rate fitness test; kb/_self/maintaining.md: a failing held-out row stays and is never tuned). False good verdicts today (podman, typescript, rust, python venv) mean an absent-area row needs an expect_re or expect_text, not only a verdict. The start commit for the instances is this file's adding commit's parent (ST-g52zbsv4 setup default). From ST-hfcsyyin's worker (2026-10-15): rag.py eval compares each row's expect_verdict with the pack's verdict, so a repro_bench.csv row with an empty expect_verdict fails the verdict check; set expect_verdict on every row.",
+  "claimed_by": "orch-mac"
 }
