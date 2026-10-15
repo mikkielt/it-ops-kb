@@ -2,7 +2,7 @@
   "id": "ST-ud7ikgi4",
   "kind": "story",
   "title": "repro compare records the frozen set at the start commit and prints answer-found, false good and churn per area",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-75hdeqld",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,6 @@
   "depends_on": [
     "BG-qztas5u4"
   ],
-  "notes": "Merges the proposed draft ST-27slouvg (repro_bench.csv expect_verdict is the verdict measured at the start commit): the start commit's own verdicts replace the column as the baseline, and the file is not edited. Figures it would have shown (lessons analysis 3.2): answer found on the 14 common areas 15 at START against 58, 64 and 57; good with the answer 9 against 48, 51 and 47; rows of unresearched areas moved (pip 2 to 4 in instance 2). The compare functions it changes: eval_rows, agreement, compare_rows, compare (bench_repro.py), docs kb/_self/tools.md:24. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Merges the proposed draft ST-27slouvg (repro_bench.csv expect_verdict is the verdict measured at the start commit): the start commit's own verdicts replace the column as the baseline, and the file is not edited. Figures it would have shown (lessons analysis 3.2): answer found on the 14 common areas 15 at START against 58, 64 and 57; good with the answer 9 against 48, 51 and 47; rows of unresearched areas moved (pip 2 to 4 in instance 2). The compare functions it changes: eval_rows, agreement, compare_rows, compare (bench_repro.py), docs kb/_self/tools.md:24. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-75hdeqld"
 }
