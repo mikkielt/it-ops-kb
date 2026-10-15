@@ -2,7 +2,7 @@
   "id": "ST-j7guxiv6",
   "kind": "story",
   "title": "bench_core.stream_run takes a timeout and a clean env, and agent_bench keeps an error result's cost, usage and subtype",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -84,5 +84,28 @@
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "e24a20c3b4e33d362a8e9ff83d56cb0196a950a1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "175f56750b77cbf7"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,sys\nsys.path.insert(0,'_tools')\nimport agent_bench as a\nline=json.dumps({'type':'result','subtype':'error_max_budget_usd','is_error':True,'total_cost_usd':8.01,'num_turns':40,'usage':{'input_tokens':5,'output_tokens':7},'modelUsage':{'claude-sonnet-5-5':{'costUSD':8.01}},'result':''})\nr=a.result_of(line,'',12.0)\nprint(r); sys.exit(0 if r.get('cost')==8.01 and 'error_max_budget_usd' in json.dumps(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "acdd52ab8c14c62c"
+      }
+    ]
+  }
 }
