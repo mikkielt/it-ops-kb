@@ -1,5 +1,5 @@
 """The research-reproducibility benchmark's isolated instances: `benchmarks.py repro setup`, `repro check`, `repro
-questions`, `repro run`, `repro record`, `repro compare` and `repro status` (stdlib only).
+questions`, `repro run`, `repro record`, `repro compare`, `repro status`, `repro pick` and `repro replay` (stdlib only).
 
 Each instance is a full bare copy of one pinned commit's history (DIR/originN.git, its main at REV), a working clone of
 it outside the checkout (under bench_core's scratch directory) whose only remote is that bare path, a query log of mode
@@ -13,8 +13,10 @@ briefs' order, and appends each area's result as a json line to DIR/results.json
 `area_prompt` the one prompt). `record_results` merges those json lines into the results file as the scenario `repro`.
 `compare` puts a detached checkout of each instance's bare at the shas of every area and reads it with that checkout's own
 tools by subprocess (`state_of`, `error_counts`, `eval_rows`); `match_facts` and `overlap_and_conflicts` hold the
-comparison of two instances' added facts and `compare_rows` the rows of the scenario `repro-compare`. This module imports
-bench_core and kbpublic, factdiff and ql_research where `compare` reads text, and kbfacts where it reads the routing and
+comparison of two instances' added facts and `compare_rows` the rows of the scenario `repro-compare`. `pick` applies the
+landing rule to those rows and the `repro` cost rows (`standings`, `pick_key`); `replay` rebases one instance's commits
+since the start commit onto the current branch from its bare by path, a `KB-Work` trailer on each, and neither touches
+the real origin. This module imports bench_core and kbpublic, factdiff and ql_research where `compare` reads text, and kbfacts where it reads the routing and
 the clone home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
 import csv, datetime, hashlib, json, os, re, shlex, shutil, subprocess, sys, tempfile, threading, time
@@ -1072,4 +1074,152 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
         write_rows(merge_rows(old, rows), target)
     out(f"repro compare: {len(rows)} row(s) of record {rev[:7]} " + (
         f"already in {target}: nothing changes" if same else f"merged into {target}, replacing {len(held)}"))
+    return 0
+
+
+INSTANCE_ARM = re.compile(r"instance-(\d+)")
+ITEM_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*")
+REPLAY_BRANCH = "repro-replay-instance{n}"  # the branch a replay rebases the instance's commits on, then folds into the current one
+TRAILER = "KB-Work"
+
+
+def number(value):
+    """A results-file cell as a float, or None when it is empty or no number."""
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def standings(rows):
+    """(record, date, {n: {"passed", "errors", "cost"}}) of the newest `repro-compare` record of `rows` (the greatest
+    date, the later row on a tie): per instance the sum of its eval_passed over the areas, check_errors plus lint_errors
+    (None when either is not there) and the sum of the cost rows of the scenario `repro` of the same record (None when
+    there is none). (None, None, {}) when no row names an instance."""
+    mine = [(k, r) for k, r in enumerate(rows) if r.get("scenario") == COMPARE_SCENARIO and INSTANCE_ARM.fullmatch(r.get("arm", ""))]
+    if not mine:
+        return None, None, {}
+    _, newest = max(mine, key=lambda kr: (kr[1].get("date", ""), kr[0]))
+    record, date = newest.get("record", ""), newest.get("date", "")
+    found = {}
+    for _, r in mine:
+        if r.get("record") != record:
+            continue
+        n = int(INSTANCE_ARM.fullmatch(r["arm"]).group(1))
+        d = found.setdefault(n, {"passed": 0.0, "check": None, "lint": None, "cost": None})
+        v = number(r.get("value"))
+        if v is None:
+            continue
+        if r["metric"] == "eval_passed":
+            d["passed"] += v
+        elif r["metric"] in ("check_errors", "lint_errors") and r.get("case") == "all":
+            d[r["metric"][:-7]] = v
+    for r in rows:
+        m = INSTANCE_ARM.fullmatch(r.get("arm", ""))
+        v = number(r.get("value"))
+        if r.get("scenario") == SCENARIO and r.get("record") == record and r.get("metric") == "cost" and m and v is not None \
+                and int(m.group(1)) in found:
+            d = found[int(m.group(1))]
+            d["cost"] = (d["cost"] or 0.0) + v
+    return record, date, {n: {"passed": d["passed"], "cost": d["cost"],
+                              "errors": None if d["check"] is None or d["lint"] is None else d["check"] + d["lint"]}
+                          for n, d in found.items()}
+
+
+def pick_key(d):
+    """The landing rule as a sort key, smallest first: most eval_passed, then fewest errors, then lowest cost; a number
+    that was not recorded ranks after every recorded one."""
+    inf = float("inf")
+    return (-d["passed"], inf if d["errors"] is None else d["errors"], inf if d["cost"] is None else d["cost"])
+
+
+def pick(file=None, out=print):
+    """`repro pick`: print, per instance of the newest `repro-compare` record of the results file `file` (default
+    kb/_self/reports/benchmarks.csv), the numbers the landing rule reads, then the instance it picks (standings). Returns
+    0, or 1 when the file holds no instance's row. Reads one file and nothing else."""
+    target = Path(file) if file else BENCH_RESULTS
+    record, date, found = standings(read_rows(target))
+    if not found:
+        out(f"repro pick: {target} holds no {COMPARE_SCENARIO} row of an instance: nothing to pick")
+        return 1
+    fmt = lambda v, f: "not recorded" if v is None else f.format(v)  # noqa: E731
+    out(f"repro pick: record {record} ({date or 'no date'}), {len(found)} instance(s) in {target}")
+    order = sorted(found, key=lambda n: (pick_key(found[n]), n))
+    for n in order:
+        d = found[n]
+        out(f"instance-{n}: eval_passed {d['passed']:g}, check_errors+lint_errors {fmt(d['errors'], '{:g}')}, "
+            f"cost {fmt(d['cost'], '{:.2f}')}")
+    best = order[0]
+    why = "the only instance"
+    if len(order) > 1:
+        a, b = pick_key(found[best]), pick_key(found[order[1]])
+        why = next((f"{('most eval_passed', 'fewest errors', 'lowest cost')[i]} over instance-{order[1]}"
+                    for i in range(3) if a[i] != b[i]), f"a tie with instance-{order[1]}, the lowest number wins")
+    out(f"picked: instance-{best} ({why})")
+    return 0
+
+
+def replay(instance, item, root=None, out=print):
+    """`repro replay`: fetch main of instance `instance`'s bare (from DIR's manifest, by its path: no other remote is
+    named) and rebase its commits since the start commit onto the current branch of the git work tree in the working
+    directory (`git rebase --onto`), amending each with the trailer `KB-Work: ITEM`. The commits are rebased on the
+    branch REPLAY_BRANCH, which is folded into the current branch with `--ff-only` and removed; on a conflict the
+    rebase stays in progress there and the files in conflict are named. Returns 0 (also with no commit to replay), 1 on
+    a conflict; raises Refused (no manifest, no such instance, a work tree with changes, a detached HEAD)."""
+    if not ITEM_ID.fullmatch(item):
+        raise Refused(f"--item {item!r}: an item id is letters, digits and hyphens")
+    root = Path(root) if root else default_dir()
+    manifest = root / MANIFEST
+    if not manifest.exists():
+        raise Refused(f"{root} holds no {MANIFEST}: no instance was set up there")
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    inst = next((i for i in data.get("instances", []) if i["n"] == instance), None)
+    if inst is None:
+        raise Refused(f"--instance {instance}: {manifest} holds instance(s) " + ", ".join(str(i["n"]) for i in data.get("instances", [])))
+    bare, rev, here = Path(inst["bare"]), data.get("rev", ""), Path.cwd()
+    if not bare.is_dir():
+        raise Refused(f"instance {instance}: its bare {bare} is gone")
+    if not rev:
+        raise Refused(f"{manifest} names no rev: the start commit is unknown")
+    for name in ("rebase-merge", "rebase-apply"):
+        if (here / run_git("rev-parse", "--git-path", name, cwd=here)).is_dir():
+            raise Refused(f"a rebase is in progress in {here} (a replay's conflict, maybe): finish or abort it first")
+    head = sh(["git", "symbolic-ref", "--short", "-q", "HEAD"], here, None)
+    if head.returncode:
+        raise Refused(f"{here} is no git work tree on a branch (a detached HEAD or none): the commits go on the current branch")
+    branch = head.stdout.strip()
+    if run_git("status", "--porcelain", "--untracked-files=no", cwd=here):
+        raise Refused(f"{here} has uncommitted changes: commit or set them aside first")
+    work = REPLAY_BRANCH.format(n=instance)
+    if sh(["git", "rev-parse", "--verify", "-q", f"refs/heads/{work}"], here, None).returncode == 0:
+        raise Refused(f"the branch {work} exists: a replay left it; finish it or remove it with git branch -D {work}")
+    run_git("fetch", "-q", "--no-tags", str(bare), "refs/heads/main", cwd=here)
+    tip = run_git("rev-parse", "--verify", "FETCH_HEAD^{commit}", cwd=here)
+    if sh(["git", "merge-base", "--is-ancestor", rev, tip], here, None).returncode:
+        raise Refused(f"the start commit {rev[:12]} is not in the history of instance {instance}'s main {tip[:12]}")
+    commits = run_git("log", "--reverse", "--format=%h %s", f"{rev}..{tip}", cwd=here).splitlines()
+    if not commits:
+        out(f"repro replay: instance {instance}'s main {tip[:12]} holds no commit since {rev[:12]}: nothing to replay")
+        return 0
+    run_git("branch", work, tip, cwd=here)
+    amend = f"git commit --amend --no-edit --no-verify -q --trailer '{TRAILER}: {item}'"
+    p = sh(["git", "rebase", "--exec", amend, "--onto", branch, rev, work], here, None)
+    if p.returncode:
+        files = sh(["git", "diff", "--name-only", "--diff-filter=U"], here, None).stdout.split()
+        if not files:
+            raise Refused(f"git rebase failed on {work} in {here}: {(p.stderr or p.stdout).strip()[-300:]}; git rebase --abort "
+                          f"then git checkout {branch} and git branch -D {work} undo it")
+        out(f"repro replay: conflict replaying instance {instance}'s commits onto {branch}; files in conflict:")
+        for f in files:
+            out(f"  {f}")
+        out(f"the rebase is in progress on {work}: resolve, git add, git rebase --continue, then git checkout {branch} and "
+            f"git merge --ff-only {work}; or git rebase --abort, git checkout {branch} and git branch -D {work}")
+        return 1
+    run_git("checkout", "-q", branch, cwd=here)
+    run_git("merge", "-q", "--ff-only", work, cwd=here)
+    run_git("branch", "-q", "-D", work, cwd=here)
+    out(f"repro replay: {len(commits)} commit(s) of instance {instance} since {rev[:12]} replayed onto {branch}, each with "
+        f"{TRAILER}: {item}")
+    for ln in commits:
+        out(f"  {ln}")
     return 0
