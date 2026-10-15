@@ -44,7 +44,9 @@
         "bench follows lookup_eval.csv, expansions and articles like lookup_heldout.csv, and its own file alone": "BG-ae3cq3uj",
         "any change that selects either frozen file selects both": "BG-ae3cq3uj"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "bench follows lookup_eval.csv, expansions and articles like lookup_heldout.csv, and its own file alone",
+      "by": "operator"
     }
   ],
   "links": [
