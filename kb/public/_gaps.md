@@ -1651,3 +1651,12 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## security/gentoo-stage-files-init-systems
 - **The package list inside a current stage 3 and how often the dated autobuilds are produced.** Looked 2026-10-15 in the Stage file page and the Handbook stage page (S-qfnocjvf, S-rq7fzez5): they name the `.CONTENTS.gz` file and the `autobuilds` directory but give no list or schedule, and the directory index and a `.CONTENTS.gz` were not fetched. Needs a mirror directory listing and one `.CONTENTS.gz` for an architecture and init variant. [UNK] (topic: security/gentoo-stage-files-init-systems)
+
+## security/zsh-completion-system
+- **Whether the script printed by `dsc completer zsh` starts with a `#compdef dsc` line or is meant to be evaluated.** Looked 2026-10-15 in the Zsh manual's completion chapter (S-wkxevnxu: the `#compdef` and `compdef` conventions) and in the kb's DSC article (`dsc/cli-reference.md:34`, S116: the command and its shells only); the generated script itself was not read. Needs the output of `dsc completer zsh` from the pinned DSC 3.3.0 release or the `completer` source at that tag. [UNK] (topic: security/zsh-completion-system)
+
+## security/zsh-startup-files-invocation
+- **Where a given Linux distribution's zsh package puts the global startup files and whether it adds its own.** Looked 2026-10-15 in the Zsh manual's Files page (S-jpnt2s3d: "Files listed above as being in /etc may be in another directory, depending on the installation") and the Options page (S-e6mo6lhk); no distribution's package was read. Needs the zsh package pages or the `--sysconfdir` build setting of the Debian, Fedora and Kali packages. [UNK] (topic: security/zsh-startup-files-invocation)
+
+## security/zsh-options-emulation-bash-differences
+- **A point-by-point comparison with Bash's own startup files and option defaults.** Looked 2026-10-15 in the Zsh manual and FAQ chapters 2 and 3 (S-3gkyn5mu, S-cbs5knac), which compare zsh with sh and ksh and say Bash is a different language, not with Bash's own manual. Needs the GNU Bash reference manual's Bash Startup Files and Shell Options sections, read for a separate topic. [UNK] (topic: security/zsh-options-emulation-bash-differences)

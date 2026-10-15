@@ -3768,3 +3768,17 @@ _Agent: kb-research_
 - See security/gentoo-use-flags-profiles-keywords.md, security/gentoo-emerge-make-conf-etc-portage.md, security/gentoo-ebuild-repositories-overlays.md, security/gentoo-binary-packages-binhost.md, security/gentoo-stage-files-init-systems.md, security/gentoo-in-wsl.md.
 
 _Agent: kb-research_
+
+## QK-zsh-read-startup-files-set-options. How does zsh read its startup files, set and default its options, handle expansion, globbing and arrays, wire completion, and where does it differ from Bash?
+- Startup order is `/etc/zshenv`, `$ZDOTDIR/.zshenv`, then for a login shell `zprofile`, then for an interactive shell `zshrc`, then for a login shell `zlogin`; a login shell reads `.zlogout` then `/etc/zlogout` on exit; `RCS` and `GLOBAL_RCS` are on by default and `zsh -f` leaves only `/etc/zshenv`. [DOC S-jpnt2s3d, S-e6mo6lhk]
+- Invoked as `sh` or `ksh`, zsh reads `/etc/profile`, `$HOME/.profile` and `$ENV` instead and sets a list of compatibility options; `--emulate` and the `emulate` builtin do the same inside a script. [DOC S-dqge7eik, S-ehyugoua]
+- An option name ignores case and underscores, is inverted with `no`, and is marked `<D>`, `<C>`, `<K>`, `<S>` or `<Z>` for the emulation modes in which it is on by default. [DOC S-e6mo6lhk]
+- Unquoted parameters are not word-split (`SH_WORD_SPLIT`), an unmatched glob is an error (`NOMATCH`), and arrays start at 1 (`KSH_ARRAYS`). [DOC S-vqwwekes, S-e6mo6lhk, S-zlyzov2u]
+- Globbing adds `^`, `~`, `#` and `##` (with `EXTENDED_GLOB`), `**/` recursion and trailing qualifiers such as `(.N)`; `${=var}` splits one expansion. [DOC S-vqwwekes]
+- Completion is wired by `compinit` (from `.zshrc`), which autoloads underscore-named functions from `fpath` whose first line is `#compdef`, caches in `.zcompdump` and runs a security check on directory ownership; `zstyle` configures it by a six-field context. [DOC S-wkxevnxu]
+- The FAQ states zsh is not a bug-for-bug copy of Bash and advises running Bash scripts with Bash. [DOC S-3gkyn5mu]
+- Conclusion: an automation that sets environment for non-interactive zsh puts it in `.zshenv`, names its interpreter in the shebang instead of relying on a user's shell, and starts zsh functions with `emulate -L zsh`. [DER S-jpnt2s3d, S-3gkyn5mu, S-ehyugoua: which files each shell kind reads, the FAQ advice and `emulate -L`]
+- Open: the Bash side of the comparison (Bash's own startup files and option defaults) was not read in this change, and whether the script printed by `dsc completer zsh` carries a `#compdef` line is not confirmed. [UNK]
+- See security/zsh-startup-files-invocation.md, security/zsh-options-emulation-bash-differences.md, security/zsh-expansion-globbing-arrays.md, security/zsh-completion-system.md.
+
+_Agent: kb-research_

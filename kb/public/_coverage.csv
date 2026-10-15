@@ -369,6 +369,10 @@ security/linux-nftables,P3,partial,security/linux-nftables.md,5
 security/linux-patching-and-pins,P3,partial,security/linux-patching-and-pins.md,10
 security/linux-sshd-hardening,P3,complete,security/linux-sshd-hardening.md,3
 security/linux-time-sync,P3,complete,security/linux-time-sync.md,4
+security/zsh-completion-system,P3,partial,security/zsh-completion-system.md,4
+security/zsh-expansion-globbing-arrays,P3,complete,security/zsh-expansion-globbing-arrays.md,5
+security/zsh-options-emulation-bash-differences,P3,complete,security/zsh-options-emulation-bash-differences.md,4
+security/zsh-startup-files-invocation,P3,complete,security/zsh-startup-files-invocation.md,4
 sqlserver/insert-only-audit,P0,complete,sqlserver/insert-only-audit.md,7
 sqlserver/linux-container,P0,complete,sqlserver/linux-container.md;sqlserver/mssql-server-tags.json,8
 sqlserver/sp-getapplock,P0,complete,sqlserver/sp-getapplock.md,1
