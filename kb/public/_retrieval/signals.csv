@@ -909,3 +909,5 @@ openrc-init,security/gentoo-stage-files-init-systems
 .wslconfig,security/gentoo-in-wsl
 wsl.conf,security/gentoo-in-wsl
 gentoo-wsl-config,security/gentoo-in-wsl
+robocopy.exe,windows/robocopy
+SECFIX,windows/robocopy

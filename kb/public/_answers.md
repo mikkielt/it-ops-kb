@@ -3809,3 +3809,16 @@ _Agent: kb-research_
 - See windows/cmd-exe-syntax-quoting-redirection.md, windows/cmd-exe-variables-expansion-errorlevel.md, python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-robocopy-s-copy-mirror-options-retry. What are Robocopy's copy and mirror options, retry and logging switches, handling of ACLs, timestamps and attributes, exit codes and multithreaded copy?
+- `robocopy <source> <destination> [<file>] [<options>]` copies `*.*` by default; `/S` leaves empty directories out, `/E` includes them, and the default `/COPY` is `DAT` (data, attributes, timestamps) with `/DCOPY:DA` for directories. [DOC S-3lm4tsvh]
+- `/PURGE` deletes destination files and directories that are not in the source; `/MIR` is `/E` plus `/PURGE`; `/XX` excludes extras without deleting, `/L` lists only. [DOC S-3lm4tsvh]
+- ACLs, owner and audit data need `/COPY:S`, `O` and `U` (`/SEC` is `DATS`, `/COPYALL` is `DATSOU`); `/B` backup mode overrides permissions that block access and `/ZB` falls back to it; `/SECFIX` and `/TIMFIX` repair skipped files. [DOC S-3lm4tsvh]
+- `/R` defaults to 1,000,000 retries and `/W` to 30 seconds; `/LOG` overwrites and `/LOG+` appends a log file, `/TEE` also prints to the console; `/MT:<n>` takes 1 to 128 threads, default 8, and excludes `/IPG` and `/EFSRAW`. [DOC S-3lm4tsvh]
+- The exit codes listed are 0, 1, 2, 3, 5, 6, 7 and 8, and a value of 8 or more means at least one failure. [DOC S-3lm4tsvh]
+- `xcopy` has no mirror, retry, log or thread options, skips hidden and system files and strips read-only unless told otherwise, and its exit code 1 means no files were found, where robocopy's 1 means files were copied. [DOC S-w4neuhkd, S-3lm4tsvh]
+- Conclusion: a caller must read robocopy's exit code as flags (1 copied, 2 extras, 4 mismatches, 8 failures) and fail only from 8 up, must name `/SEC` or `/COPYALL` to keep ACLs, and must treat `/MIR` as a deleting operation to run first with `/L`. [DER S-3lm4tsvh, S-7varc2ty: the exit-code table, the `/COPY` defaults, the `/PURGE` row and the `if errorlevel` rule]
+- Open: the long-path limit, exit values 4 and above 8, how `/MIR` treats files that `/XF` or `/XD` exclude, and the ACL a file gets without `S` were not stated on Microsoft Learn. [UNK]
+- See windows/robocopy.md, windows/cmd-exe-variables-expansion-errorlevel.md.
+
+_Agent: kb-research_

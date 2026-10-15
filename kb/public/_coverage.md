@@ -415,5 +415,6 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/dev-drive` | P3 | partial | `windows/dev-drive.md` | 6 |
 | `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 21 |
 | `windows/process-parent-and-command-line` | P3 | partial | `windows/process-parent-and-command-line.md` | 8 |
+| `windows/robocopy` | P3 | partial | `windows/robocopy.md` | 3 |
 | `windows/windows-sandbox` | P3 | complete | `windows/windows-sandbox.md` | 4 |
 <!-- coverage:end -->
