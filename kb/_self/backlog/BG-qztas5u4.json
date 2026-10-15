@@ -52,6 +52,25 @@
     "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does compare derive frozen_pass's found for a row, and what does a row that expects none score?",
+      "options": [
+        "found = none of the row's rag.py eval path, text and regex checks failed; frozen_pass is found or verdict rank >= expected rank (a none-expecting row always passes)",
+        "found as above but a none-expecting row also needs its expectation found"
+      ],
+      "recommendation": "found = none of the row's rag.py eval path, text and regex checks failed; frozen_pass is found or verdict rank >= expected rank (a none-expecting row always passes)",
+      "do": {
+        "found = none of the row's rag.py eval path, text and regex checks failed; frozen_pass is found or verdict rank >= expected rank (a none-expecting row always passes)": "BG-qztas5u4",
+        "found as above but a none-expecting row also needs its expectation found": "BG-qztas5u4"
+      },
+      "class": "design",
+      "answer": "found = none of the row's rag.py eval path, text and regex checks failed; frozen_pass is found or verdict rank >= expected rank (a none-expecting row always passes)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ygsnog4n review"
   ],

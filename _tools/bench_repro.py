@@ -909,14 +909,26 @@ def error_counts(checkout, rev, env):
             sum(1 for x in found if isinstance(x, dict) and x.get("level") == "ERROR") if isinstance(found, list) else None)
 
 
+VERDICT_RANK = {"none": 0, "weak": 1, "good": 2}
+FOUND_CHECKS = ("path", "text", "regex")  # the failed checks of a `rag.py eval` row that say its expectation is not in the pack
+
+
+def frozen_pass(expect_verdict, verdict, found):
+    """Whether a frozen row passes: its `expect_re`, `expect_text` or `expect_paths` is `found` in the pack, else the
+    verdict ranks (none, weak, good) at least the expected one. The row's own verdict check is no part of it: research
+    that answers a row expecting `none` raises the figure, and one that lifts a `weak` to `good` keeps it."""
+    return bool(found) or VERDICT_RANK.get(verdict, -1) >= VERDICT_RANK.get(expect_verdict, 0)
+
+
 def eval_rows(checkout, questions, env):
-    """{row id: {verdict, regex_ok, ok}} of the checkout's own `rag.py eval` over the frozen questions file; None when
-    it printed no json."""
+    """{row id: {verdict, regex_ok, found}} of the checkout's own `rag.py eval` over the frozen questions file, `found`
+    true when none of the row's path, text and regex checks failed; None when it printed no json."""
     _, out = tool_out([str(Path(checkout) / "_tools" / "rag.py"), "--json", "eval", "--file", str(questions)], checkout, env)
     res = json_of(out)
     if not isinstance(res, dict) or "rows" not in res:
         return None
-    return {r["id"]: {"verdict": r["verdict"], "regex_ok": "regex" not in r.get("failed", []), "ok": bool(r["ok"])}
+    return {r["id"]: {"verdict": r["verdict"], "regex_ok": "regex" not in r.get("failed", []),
+                      "found": not set(r.get("failed", [])) & set(FOUND_CHECKS)}
             for r in res["rows"]}
 
 
@@ -1021,12 +1033,13 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
     table = []  # (case, arm, {metric: value})
     for area in areas:
         ids = [q["id"] for q in asked if q.get("area", "").strip() == area]
+        want = {q["id"]: q.get("expect_verdict", "").strip() for q in asked}
         for n in ns:
             d = deltas.get((n, area))
             if d is None:
                 continue
             e = evals.get(n)
-            passed = sum(1 for q in ids if e and e.get(q, {}).get("ok"))
+            passed = sum(1 for q in ids if e and q in e and frozen_pass(want[q], e[q]["verdict"], e[q]["found"]))
             m = {"articles_added": len(d["articles"]), "facts_added": len(d["facts"]), "sources_added": len(d["sources"]),
                  **{k.lower(): d["kinds"][k] for k in TAG_KINDS}, "eval_passed": passed, "eval_total": len(ids)}
             table.append((area, f"instance-{n}", m))
