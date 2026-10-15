@@ -7,7 +7,7 @@
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-sandboxes where no article fits: What are Docker Sandboxes for coding agents and what do they isolate? What does the Kubernetes agent-sandbox project provide for running agents? How does gVisor intercept system calls, with which workloads or features unsupported? What do Windows Sandbox and Hyper-V isolated containers isolate when they host an AI coding agent?",
+  "goal": "What are Docker Sandboxes for coding agents and what do they isolate? What does the Kubernetes agent-sandbox project provide for running agents? How does gVisor intercept system calls, with which workloads or features unsupported? What do Windows Sandbox and Hyper-V isolated containers isolate when they host an AI coding agent?",
   "checks": [
     {
       "run": [
@@ -30,5 +30,6 @@
   ],
   "depends_on": [
     "ST-bke44brb"
-  ]
+  ],
+  "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-sandboxes where no article fits."
 }

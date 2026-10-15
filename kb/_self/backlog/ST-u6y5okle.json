@@ -7,7 +7,7 @@
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic auth/spiffe-workload-identity where no article fits: What are a SPIFFE ID and an SVID? How does SPIRE attest a workload before issuing an SVID? How are X.509 and JWT SVIDs rotated and verified between services? How do projected Kubernetes service account tokens give a pod a short-lived, audience-bound identity?",
+  "goal": "What are a SPIFFE ID and an SVID? How does SPIRE attest a workload before issuing an SVID? How are X.509 and JWT SVIDs rotated and verified between services? How do projected Kubernetes service account tokens give a pod a short-lived, audience-bound identity?",
   "checks": [
     {
       "run": [
@@ -30,5 +30,6 @@
   ],
   "depends_on": [
     "ST-52lihy7z"
-  ]
+  ],
+  "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic auth/spiffe-workload-identity where no article fits."
 }

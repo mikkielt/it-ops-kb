@@ -7,7 +7,7 @@
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-memory-services where no article fits: How does the Claude API memory tool store and read memory files, with the storage held by whom? What does Microsoft Foundry Agent Service offer for agent memory, at what release status? How do Cloudflare Agents and Durable Objects keep one agent's state consistent across requests and clients?",
+  "goal": "How does the Claude API memory tool store and read memory files, with the storage held by whom? What does Microsoft Foundry Agent Service offer for agent memory, at what release status? How do Cloudflare Agents and Durable Objects keep one agent's state consistent across requests and clients?",
   "checks": [
     {
       "run": [
@@ -30,5 +30,6 @@
   ],
   "depends_on": [
     "ST-gxpk74c3"
-  ]
+  ],
+  "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-memory-services where no article fits."
 }

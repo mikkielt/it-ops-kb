@@ -7,7 +7,7 @@
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/commit-signing-and-provenance where no article fits: How does GitLab verify GPG, SSH and X.509 signed commits, with a push rule rejecting unsigned ones? How do protected branches and merge request approval rules limit what a bot or agent account can push or merge? What does SLSA build provenance require? How does GitLab CI generate artifact provenance?",
+  "goal": "How does GitLab verify GPG, SSH and X.509 signed commits, with a push rule rejecting unsigned ones? How do protected branches and merge request approval rules limit what a bot or agent account can push or merge? What does SLSA build provenance require? How does GitLab CI generate artifact provenance?",
   "checks": [
     {
       "run": [
@@ -30,5 +30,6 @@
   ],
   "depends_on": [
     "ST-edgkrk37"
-  ]
+  ],
+  "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/commit-signing-and-provenance where no article fits."
 }

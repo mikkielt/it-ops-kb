@@ -7,7 +7,7 @@
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
   "rank": 0,
-  "goal": "Answer with the kb tools first and official sources for the rest, extending agents/gitops-for-agents through /kb-research: How does GitOps with Flux v2 work on AKS and Azure Arc-enabled Kubernetes, with what the microsoft.flux extension reconciles? How does Argo CD detect drift and sync an application from git under its sync policies? Which reconcilers pull desired state for Windows endpoints or Claude Code settings, if any official source names one?",
+  "goal": "How does GitOps with Flux v2 work on AKS and Azure Arc-enabled Kubernetes, with what the microsoft.flux extension reconciles? How does Argo CD detect drift and sync an application from git under its sync policies? Which reconcilers pull desired state for Windows endpoints or Claude Code settings, if any official source names one?",
   "checks": [
     {
       "run": [
@@ -30,5 +30,6 @@
   ],
   "depends_on": [
     "ST-u6y5okle"
-  ]
+  ],
+  "notes": "How: Answer with the kb tools first and official sources for the rest, extending agents/gitops-for-agents through /kb-research."
 }
