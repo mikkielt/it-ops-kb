@@ -2,7 +2,7 @@
   "id": "ST-m25otwlp",
   "kind": "story",
   "title": "bench_repro reads and checks the benchmark briefs and frozen questions, and repro status shows no instance commit reached the real origin",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -104,5 +104,38 @@
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "4dc2817119836826a959bae4c0713361f521362f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "a227895bb89e9fee"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util,subprocess,sys\nsys.path.insert(0,'_tools')\nif importlib.util.find_spec('bench_repro') is None: print('no bench_repro module yet'); sys.exit(1)\nimport bench_repro as b\nbad=[{'area':'x','scope':'','sources':'s','depth':'d','coverage':'present','leave_out':''},{'area':'x','scope':'s','sources':'s','depth':'d','coverage':'maybe','leave_out':''}]\np=b.brief_problems(bad); print(p); sys.exit(0 if len(p)>=3 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5e57704f1b2c2c54"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "status"
+        ],
+        "exit": 0,
+        "sha256": "20a72eac7ddb807d"
+      }
+    ]
+  }
 }
