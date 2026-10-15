@@ -3741,3 +3741,16 @@ _Agent: kb-research_
 - See security/almalinux-lifecycle-rhel-relation.md, security/almalinux-repositories-vault-pins.md, security/almalinux-elevate.md, security/linux-patching-and-pins.md.
 
 _Agent: kb-research_
+
+## QK-kali-linux-rolling-sources-images-containers. How does Kali Linux's rolling release work, what do its package sources and metapackages install, how is an image verified and built, what are its default account and services, and how is it used in VMs and containers?
+- `kali-rolling` is the default, continuously updated branch fed from `kali-dev` (Debian testing plus Kali packages) after an installability check with no functional testing; `kali-last-snapshot` is frozen at each release, and numbered releases (2026.2 on 29 June 2026) come about four times a year. [DOC S-5455keob, S-2p6jllwx, S-nc74uv2o]
+- The host's source is `/etc/apt/sources.list.d/kali.sources` (deb822, since 2026.2; before that one line in `sources.list`) with `Suites: kali-rolling`, `Components: main contrib non-free non-free-firmware` and the `kali-archive-keyring.gpg` key; the branch is the `Suites:` value. [DOC S-o6curntz, S-a3rz5fyq]
+- Metapackages nest: `kali-linux-core` ⊂ `kali-linux-headless` ⊂ `kali-linux-default` ⊂ `kali-linux-large` ⊂ `kali-linux-everything`, with `kali-tools-*` sets beside them; the default image tool set is `kali-linux-default` plus `kali-tools-top10`. [DOC S-2wfzjaxj] [CODE S-b6k54ngi]
+- Images are verified with the signed `SHA256SUMS.gpg` against the archive signing key `827C 8569 F251 8CC6 77FE CA1A ED65 462E C8D5 E4C5`, and built with `build.sh` from the `kali-live` (live-build) and `kali-installer` (simple-cdd) scripts. [DOC S-dxg7xu5h, S-o5qyuho5]
+- Pre-created images log in as `kali`/`kali` (Vagrant `vagrant`/`vagrant`, EC2 `kali` with a key) and root has no password since 2020.1; network services are not started at boot by policy, and Docker images are bare `kali-rolling` rootfs updated weekly. [DOC S-mvp5ewqd, S-phypzuod, S-yehas5kt]
+- 2026.2 removed graphics firmware from VM images and VM installs, cutting the initrd to about 60 MB. [DOC S-a3rz5fyq]
+- Conclusion: an agent should treat Kali as a moving target, pin by `kali-last-snapshot` or image version, install named metapackages instead of relying on image defaults, verify image checksums by signature, and change the documented default password of a VM image before use. [DER S-5455keob, S-2wfzjaxj, S-dxg7xu5h, S-mvp5ewqd]
+- Open: whether a 2026.3 image release is published (the `kali-meta` source at commit `e86f126b` is already at 2026.3.9), the full package list of each metapackage, and the Podman, Vagrant, Proxmox and cloud image pages were not read. [UNK]
+- See security/kali-releases-rolling-model.md, security/kali-apt-sources-metapackages.md, security/kali-images-verification-builds.md, security/kali-default-account-vm-containers.md.
+
+_Agent: kb-research_

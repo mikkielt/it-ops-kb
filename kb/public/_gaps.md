@@ -1632,3 +1632,16 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## security/almalinux-elevate
 - **The minor release an unqualified `leapp upgrade` lands on, the current `--target` values and the release status of ELevate NG.** Looked 2026-10-15 in the ELevate README, quickstart and changelog (S-fvvvkcwq, S-zdchbjj6, S-leb3x6jn): the changelog's `--target` entry dates from 2024-10-18 and the NG guide was not read. Needs the NG guide and the current Leapp data package notes. [UNK] (topic: security/almalinux-elevate)
+
+## security/kali-releases-rolling-model
+- **Whether a Kali 2026.3 image release is published, and which kernel `kali-rolling` installs by default.** Looked 2026-10-15 in the release history and blog index (S-2p6jllwx, the blog page lists 2026.2 on 29 June 2026 as newest; a request for `blog/kali-linux-2026-3-release/` answered 404) and the `kali-meta` changelog (S-esfl6hqk: version 2026.3.9 uploaded to `kali-dev` on 14 September 2026). The 2026.2 post says kernel 7.0 is in `kali-experimental` and also in `kali-rolling` (S-a3rz5fyq) without naming what the kernel metapackage selects. Needs the 2026.3 post or the `linux-image-*` metapackage in `kali-rolling`. [UNK] (topic: security/kali-releases-rolling-model)
+
+## security/kali-apt-sources-metapackages
+- **Every member of each Kali tool set, and the version of each tool in the current release.** Looked 2026-10-15 in the docs page on tool sets (S-2wfzjaxj) and `debian/control` of `kali-meta` at commit `e86f126b` (S-b6k54ngi): the control file lists several hundred dependency names per set, and only the composition between sets and a few members were read. Needs `kali-meta`'s control file read set by set, or `apt-cache depends` on a Kali host. [UNK] (topic: security/kali-apt-sources-metapackages)
+
+## security/kali-images-verification-builds
+- **The contents of the `kali-live` and `kali-installer` repositories beyond the build page, and the signing key used for weekly builds.** Looked 2026-10-15 in the custom-ISO build page (S-o5qyuho5) and the download-verification pages (S-dxg7xu5h, S-2sdbla22): they document `build.sh`, its flags and the 2025 archive key, not the repositories' trees or whether weekly builds are signed with the same key. Needs the two GitLab repositories at a pinned commit and the weekly build directory listing. [UNK] (topic: security/kali-images-verification-builds)
+
+## security/kali-default-account-vm-containers
+- **The Podman, Vagrant, Proxmox and cloud (AWS, Azure) image pages, and the first-boot behaviour of the NetHunter images.** Looked 2026-10-15: the credentials page (S-mvp5ewqd) names the Vagrant and EC2 accounts, and the VM and container pages read were the VirtualBox import, the Docker and LXC pages (S-xvu7hlvs, S-yehas5kt, S-lovosk2r, S-drkvieff); the others were listed on the section indexes but not read. Needs those pages in full. [UNK] (topic: security/kali-default-account-vm-containers)
+- **Whether a fresh Kali host listens on port 22.** Looked 2026-10-15 in the network service policy (S-phypzuod: `ssh disabled` in the `update-rc.d` blocklist) and `kali-meta` (S-b6k54ngi: `kali-system-core` depends on `openssh-server`); no run on a Kali host was made, so the line in the topic is a derivation. Needs `ss -ltn` and `systemctl is-enabled ssh` output from a fresh install. [UNK] (topic: security/kali-default-account-vm-containers)

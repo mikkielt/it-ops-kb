@@ -359,6 +359,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/almalinux-elevate` | P3 | partial | `security/almalinux-elevate.md` | 5 |
 | `security/almalinux-lifecycle-rhel-relation` | P3 | partial | `security/almalinux-lifecycle-rhel-relation.md` | 7 |
 | `security/almalinux-repositories-vault-pins` | P3 | partial | `security/almalinux-repositories-vault-pins.md` | 12 |
+| `security/kali-apt-sources-metapackages` | P3 | partial | `security/kali-apt-sources-metapackages.md` | 4 |
+| `security/kali-default-account-vm-containers` | P3 | partial | `security/kali-default-account-vm-containers.md` | 11 |
+| `security/kali-images-verification-builds` | P3 | partial | `security/kali-images-verification-builds.md` | 6 |
+| `security/kali-releases-rolling-model` | P3 | partial | `security/kali-releases-rolling-model.md` | 8 |
 | `security/linux-auditd` | P3 | complete | `security/linux-auditd.md` | 4 |
 | `security/linux-cis-ssg-openscap` | P3 | partial | `security/linux-cis-ssg-openscap.md` | 32 |
 | `security/linux-nftables` | P3 | partial | `security/linux-nftables.md` | 5 |

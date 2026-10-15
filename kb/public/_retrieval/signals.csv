@@ -870,3 +870,18 @@ vault.almalinux.org,security/almalinux-repositories-vault-pins
 dnf versionlock,security/almalinux-repositories-vault-pins
 almalinux-deploy,security/almalinux-elevate
 /etc/almalinux-release,security/almalinux-lifecycle-rhel-relation
+kali-rolling,security/kali-releases-rolling-model
+kali-last-snapshot,security/kali-releases-rolling-model
+kali-bleeding-edge,security/kali-releases-rolling-model
+kali-dev,security/kali-releases-rolling-model
+kali.sources,security/kali-apt-sources-metapackages
+kali-linux-default,security/kali-apt-sources-metapackages
+kali-linux-headless,security/kali-apt-sources-metapackages
+kali-linux-everything,security/kali-apt-sources-metapackages
+kali-meta,security/kali-apt-sources-metapackages
+kali-tweaks,security/kali-apt-sources-metapackages
+kali-archive-keyring,security/kali-images-verification-builds
+kali-live,security/kali-images-verification-builds
+kali-installer,security/kali-images-verification-builds
+kali-grant-root,security/kali-default-account-vm-containers
+kalilinux/kali-rolling,security/kali-default-account-vm-containers

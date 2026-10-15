@@ -44,6 +44,8 @@ Hosts that a pull agent keeps at a known package state need the distribution's o
 
 AlmaLinux's release lifecycle, repository layout, vault paths and ELevate upgrades are in `security/almalinux-lifecycle-rhel-relation.md`, `security/almalinux-repositories-vault-pins.md` and `security/almalinux-elevate.md`.
 
+Kali Linux is a rolling Debian-testing derivative whose branches (`kali-rolling`, `kali-last-snapshot`) take the place of a release pin: see `security/kali-releases-rolling-model.md` and `security/kali-apt-sources-metapackages.md`.
+
 ## Examples
 - SNIPPET: switch the periodic apt jobs off with one fragment; context: Debian or Ubuntu with apt; checked: no [DER S-4npfgqu6: `APT::Periodic::Enable` 0 disables the script]
 ```
