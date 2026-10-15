@@ -32,6 +32,25 @@
   "depends_on": [
     "ST-xlr5flob"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Close the cross-session-messaging gap on sharing agent state between workstations without a server as Resolved (answered from the sync tools' own docs, no agent vendor page found), or only narrow it and leave it open until an agent vendor documents multi-machine agent state?",
+      "options": [
+        "Resolved",
+        "Narrowed, stays open"
+      ],
+      "recommendation": "Resolved",
+      "do": {
+        "Resolved": "ST-7v2bhvbw",
+        "Narrowed, stays open": "ST-7v2bhvbw"
+      },
+      "class": "design",
+      "answer": "Resolved",
+      "by": "agent"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/peer-state-sync where no article fits, closing the cross-session-messaging gap on peer sharing of agent state.",
   "claimed_by": "orch-state"
 }

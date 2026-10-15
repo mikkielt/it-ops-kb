@@ -169,6 +169,8 @@ and listing.
   - `claude/settings-and-scopes.md` — permission modes; cross-session messaging safeguards are never auto-approved.
   - `claude/data-retention.md` — Remote Control is disabled under ZDR, which removes cross-machine and cloud targets.
   - `agents/headless-agent-runtimes.md` — cloud sessions and background runtimes that can be message targets.
+  - `agents/peer-state-sync.md` — sharing agent state (not messages) between machines without a server: Syncthing,
+    DFS Replication, Automerge and git, and what each does with concurrent changes.
 
 ## Examples
 - SNIPPET: managed settings that turn cross-session messaging off for an organization; context: Claude Code v2.1.224+, managed settings file; checked: syntax [DOC S-sdxhnx3i: "Turn off cross-session messaging" example]

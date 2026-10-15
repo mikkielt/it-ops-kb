@@ -737,3 +737,12 @@ BlobRequestConditions,agents/shared-state-concurrency
 s3:if-none-match,agents/shared-state-concurrency
 Redlock,agents/shared-state-concurrency
 PostgresStore,agents/langgraph
+@automerge/automerge,agents/peer-state-sync
+@automerge/automerge-repo,agents/peer-state-sync
+NodeFSStorageAdapter,agents/peer-state-sync
+Automerge.getConflicts,agents/peer-state-sync
+.stversions,agents/peer-state-sync
+sync-conflict,agents/peer-state-sync
+Get-DfsrPreservedFiles,agents/peer-state-sync
+Restore-DfsrPreservedFiles,agents/peer-state-sync
+ConflictAndDeletedManifest.xml,agents/peer-state-sync
