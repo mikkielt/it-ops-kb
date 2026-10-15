@@ -1,0 +1,24 @@
+{
+  "id": "ST-zojfiros",
+  "kind": "story",
+  "title": "A planned check that guards a module not yet written also guards each function it calls",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md tells a planner that a check importing a module a sibling item creates guards the functions it calls (hasattr) as well as the module (find_spec), so precheck reads a failing premise and not a traceback once the module lands without them. SP-ygsnog4n retrospective: after ST-g52zbsv4 added bench_repro.py, precheck called check 0 of ST-5c2h4o7w and of ST-m25otwlp broken (AttributeError on load_briefs and brief_problems), since their guard printed 'no bench_repro module yet' only while the module was absent.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'hasattr' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n close"
+  ]
+}

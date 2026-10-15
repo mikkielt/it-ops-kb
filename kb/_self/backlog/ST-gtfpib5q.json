@@ -1,0 +1,26 @@
+{
+  "id": "ST-gtfpib5q",
+  "kind": "story",
+  "title": "bench_core.scratch_dir returns a resolved path, so a clone under the macOS temp symlink agrees with its own tools",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_core.scratch_dir returns its directory resolved (Path.resolve()), and bench_pool reads it instead of its own copy of the default, so every benchmark clone sits at a canonical path. SP-ygsnog4n retrospective: land of ST-hrsqmwhx stopped at step checks (ops land.step checks exit=1, 2026-10-15T09:01:16Z) because repro check's probe clone sat under /var/folders, a symlink to /private/var/folders, and a portable backlog test inside the probe's sync gate compared the two forms; the worker's own runs set BENCH_SCRATCH to a non-symlinked path, which hid it, and the fix went into bench_repro alone.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys;os.environ.pop('BENCH_SCRATCH',None);sys.path.insert(0,'_tools');import bench_core as c;p=c.scratch_dir();sys.exit(0 if p==p.resolve() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_core.py",
+    "_tools/bench_pool.py",
+    "_tools/test_bench.py"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n close"
+  ]
+}

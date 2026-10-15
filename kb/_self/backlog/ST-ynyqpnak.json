@@ -1,0 +1,27 @@
+{
+  "id": "ST-ynyqpnak",
+  "kind": "story",
+  "title": "A goal research story's kb touches meet another session's in-flight research only on shared ledgers, and held says so",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py held --overlaps names an overlap that is only on a root's shared ledgers (_sources.csv, _anchors.csv, _gaps.md, _answers.md, _coverage, doc2query expansions) apart from article overlaps, and kb/_self/backlog.md says a research item may run beside one that shares only ledgers, since land rebases them. SP-ygsnog4n retrospective: ST-levrq3xs (touches kb/public/**) met ST-7muzllvn of another sprint on ledgers only; its worker held half its facts as a patch under a provisional gate and was resumed after ST-7muzllvn landed, a second session for work the rebase would have merged.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'shared ledgers' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "_tools/test_backlog_portable.py"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n close"
+  ]
+}
