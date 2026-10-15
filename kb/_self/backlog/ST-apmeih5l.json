@@ -2,7 +2,7 @@
   "id": "ST-apmeih5l",
   "kind": "story",
   "title": "The instance the landing gate picks lands its benchmark research in the real kb through the content lane, the other two kept archived",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-bhzxxhub",
   "priority": "P2",
   "rank": 0,
@@ -126,5 +126,6 @@
       "by": "operator"
     }
   ],
-  "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands. Orchestrator, 2026-10-15, before the claim: check 5 (every kb/public file the picked instance-3 added since 2170d88 exists in the tree) fails on the base (45 of 45 missing) and reads the replay clause. Check 6 compares main's frozen-set passed count with the picked record's eval_passed summed over areas (bench_repro.standings), as repro pick reads it; check 2 compared with a single area's row (max 5) and proved nothing. Check 6 passes on the base (main 24, best instance 24: main already passes as many rows, from research landed since 2170d88): it is a guard that the replay keeps main at or above the best instance, not a proof of the work. check.py, the lint and repro status/pick pass before the work by design (guards)."
+  "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands. Orchestrator, 2026-10-15, before the claim: check 5 (every kb/public file the picked instance-3 added since 2170d88 exists in the tree) fails on the base (45 of 45 missing) and reads the replay clause. Check 6 compares main's frozen-set passed count with the picked record's eval_passed summed over areas (bench_repro.standings), as repro pick reads it; check 2 compared with a single area's row (max 5) and proved nothing. Check 6 passes on the base (main 24, best instance 24: main already passes as many rows, from research landed since 2170d88): it is a guard that the replay keeps main at or above the best instance, not a proof of the work. check.py, the lint and repro status/pick pass before the work by design (guards).",
+  "claimed_by": "orch-bhzxxhub"
 }
