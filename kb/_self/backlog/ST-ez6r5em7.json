@@ -6,7 +6,7 @@
   "sprint": "SP-z3jcdsgr",
   "priority": "P3",
   "rank": 0,
-  "goal": "factdiff.py --root public anchors --stale lists no row (stale=0): the rows of security/almalinux-elevate.md, python/stdlib-windows-portability.md, agents/codebase-mapping.csv, arch/fluent-rust-typescript.md (S-dftqctth) and arch/texts-catalogue-formats.md (S1710) are re-anchored or pruned; S-cblfylm6 and S-gssvmwmg are each cited by a typescript fact their page supports, as gate g1 decides; no source row the replay added has a licence that says its record was not checked",
+  "goal": "factdiff.py --root public anchors --stale lists no row (stale=0): the rows of security/almalinux-elevate.md (S-zdchbjj6), python/stdlib-windows-portability.md, agents/codebase-mapping.csv, arch/fluent-rust-typescript.md (S-dftqctth) and arch/texts-catalogue-formats.md (S1710) are re-anchored or pruned; S-cblfylm6 and S-gssvmwmg are each cited by a typescript fact their page supports, as gate g1 decides; no source row the replay added has a licence that says its record was not checked",
   "checks": [
     {
       "run": [
@@ -32,7 +32,7 @@
   ],
   "clauses": [
     {
-      "clause": "factdiff.py --root public anchors --stale lists no row (stale=0): the rows of security/almalinux-elevate.md, python/stdlib-windows-portability.md, agents/codebase-mapping.csv, arch/fluent-rust-typescript.md (S-dftqctth) and arch/texts-catalogue-formats.md (S1710) are re-anchored or pruned",
+      "clause": "factdiff.py --root public anchors --stale lists no row (stale=0): the rows of security/almalinux-elevate.md (S-zdchbjj6), python/stdlib-windows-portability.md, agents/codebase-mapping.csv, arch/fluent-rust-typescript.md (S-dftqctth) and arch/texts-catalogue-formats.md (S1710) are re-anchored or pruned",
       "check": 0
     },
     {
