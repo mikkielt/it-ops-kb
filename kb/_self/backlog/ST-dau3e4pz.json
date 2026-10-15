@@ -71,7 +71,7 @@
       },
       "class": "design",
       "answer": "newest repro-compare record, a number not recorded ranks last, a tie goes to the lowest instance number",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -90,7 +90,7 @@
       },
       "class": "design",
       "answer": "rebase on a helper branch repro-replay-instanceN, fold it into the current branch with --ff-only; a conflict leaves the rebase in progress there, naming the files, exit 1",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -107,7 +107,7 @@
       },
       "class": "design",
       "answer": "amend each commit with git commit --amend --no-verify --trailer through rebase --exec; --dir is the instances' directory as in the other repro commands; the current branch is that of the work tree in the working directory",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",

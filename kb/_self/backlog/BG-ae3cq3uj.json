@@ -1,0 +1,25 @@
+{
+  "id": "BG-ae3cq3uj",
+  "kind": "bug",
+  "title": "The sync gate's held-out reword check never runs on a change to repro_bench.csv",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_sync.heldout_checks runs rag.py eval's reword and off-kb checks for repro_bench.csv when that file or the eval sets it is compared with change, as it does for lookup_heldout.csv. Found by the SP-ygsnog4n review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kg_sync;sys.exit(0 if kg_sync.heldout_checks(['kb/public/_retrieval/repro_bench.csv']) else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n review"
+  ]
+}

@@ -101,7 +101,7 @@
       },
       "class": "design",
       "answer": "audit kinds as metric names, pair arm instance-A+instance-B, area arm all, case all for the error counts",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -118,7 +118,7 @@
       },
       "class": "design",
       "answer": "added figures between the area's recorded bare_before and bare_after; check.py, lint and eval once at the bare's main",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -135,7 +135,7 @@
       },
       "class": "design",
       "answer": "pairs taken best ratio first, each fact in one pair at most; overlap and url Jaccard 1.0 for two empty sets",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -152,7 +152,7 @@
       },
       "class": "design",
       "answer": "also --file (results file of --record), --questions (frozen questions) and --dry-run; sources read from each root's _sources.csv in the checkout",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise 2026-10-15: no tool compares two clones' research; reuse factdiff.norm/words_key/unit_sim/numbers/jaccard, kbfacts.audit (rag.py --json audit), kbfacts.source_rows, ql_research.bare_url, check.py's errors= line and .claude/skills/kb-verify/lint.py --json --base START. HOME is process-global, so each clone's tools run by subprocess. No conflict detector between kbs exists (kbfacts.decision_conflicts covers decisions only). The test bundle passes before the work: it pins the new bodies once they are added; the checks that fail before the work are the repro subcommands.",

@@ -1,0 +1,26 @@
+{
+  "id": "BG-5qgk6hgb",
+  "kind": "bug",
+  "title": "repro setup keeps an earlier run's results.jsonl and run.json, so run skips areas and record and compare read old shas",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "repro setup over a DIR that holds results.jsonl or run.json from an earlier setup refuses, or moves them aside and says so, so a run after a re-setup starts every area and record and compare read only the new instances' shas. Found by the SP-ygsnog4n review (S2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;s=inspect.getsource(b.setup);sys.exit(0 if ('RESULTS' in s or 'results.jsonl' in s) else 1)"
+    ]
+  },
+  "repro_reason": "setup makes real clones and bare copies of the checkout; the defect is that setup never names the results files",
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n review"
+  ]
+}

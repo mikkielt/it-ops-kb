@@ -1,0 +1,27 @@
+{
+  "id": "BG-ijyjl7ii",
+  "kind": "bug",
+  "title": "A timed-out repro session is recorded with cost 0, so the instance budget and the repro cost rows undercount",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a repro run area that times out or ends with no result event records the cost and tokens the stream reported before it ended (or marks the cost unknown and counts the area budget toward --instance-usd), never 0. Found by the SP-ygsnog4n review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import inspect,agent_bench as a;s=inspect.getsource(a.execute);i=s.find('timeout');sys.exit(1 if 'cost' not in s[i:i+600] else 0)"
+    ]
+  },
+  "repro_reason": "a real timeout needs a session that outlives its limit; the timeout branch returns no cost field",
+  "touches": [
+    "_tools/agent_bench.py",
+    "_tools/bench_core.py",
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n review"
+  ]
+}

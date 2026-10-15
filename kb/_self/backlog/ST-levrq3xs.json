@@ -39,7 +39,7 @@
       },
       "class": "design",
       "answer": "Hold them as a patch and apply after ST-7muzllvn lands",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Research written: connector switches (disableClaudeAiConnectors, ENABLE_CLAUDEAI_MCP_SERVERS) in claude/settings-and-scopes.md and bare versus mirror clones in gitlab/git-test-repositories.md, existing sources only. Held as a patch for after ST-7muzllvn (needs three _sources.csv rows, S-7kl4eeso git-rebase, S-f5whqkwk url.adoc, S-hfho3uwe SDK claude-code-features): git rebase --onto and --trailer, url.<base>.pushInsteadOf, the SDK settingSources inputs. Anchors for the added DOC facts (_anchors.csv) are likewise left for after ST-7muzllvn.",

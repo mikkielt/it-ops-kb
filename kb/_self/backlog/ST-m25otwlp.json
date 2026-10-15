@@ -83,7 +83,7 @@
       },
       "class": "design",
       "answer": "questions --briefs FILE and --file FILE, status --dir DIR (defaults: the committed files, _cache/bench-repro)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -100,7 +100,7 @@
       },
       "class": "design",
       "answer": "load_briefs returns [], repro questions exits 1 naming no brief rows, repro status exits 0 saying no instances.json exists",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",

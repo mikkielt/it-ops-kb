@@ -73,7 +73,7 @@
       },
       "class": "design",
       "answer": "date=earliest started of the lines, commit=start sha 7 chars, claude_code and kb_topics empty, failure none, shas 7 chars, models joined model_usage ids",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -90,7 +90,7 @@
       },
       "class": "design",
       "answer": "--dir, --file (results file), --briefs, --questions, --dry-run; the rows of the same scenario and record are replaced as a whole, and an identical set is not written",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",

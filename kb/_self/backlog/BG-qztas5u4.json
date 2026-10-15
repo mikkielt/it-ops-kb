@@ -1,0 +1,26 @@
+{
+  "id": "BG-qztas5u4",
+  "kind": "bug",
+  "title": "repro compare's eval_passed counts the pre-research verdict, so research cannot raise it and pick ranks on it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "repro compare scores the frozen set so that research which answers a question raises the instance's figure: eval_passed (which repro pick ranks first) no longer requires the pack's verdict to equal repro_bench.csv's expect_verdict, which records the kb before research (63 absent rows want none, 10 partial rows want weak); the regex and found checks, or a verdict at least as good as expected, decide a pass. Found by the SP-ygsnog4n review (S2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;s=inspect.getsource(b);sys.exit(1 if \"['ok']\" in s or '[\"ok\"]' in s else 0)"
+    ]
+  },
+  "repro_reason": "the figure only moves on a real research run's instances; the code reads the eval row's ok, which includes the verdict",
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ygsnog4n review"
+  ]
+}
