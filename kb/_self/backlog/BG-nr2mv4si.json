@@ -1,0 +1,23 @@
+{
+  "id": "BG-nr2mv4si",
+  "kind": "bug",
+  "title": "fetch.py drops <aside> sidebars that hold page content, so facts from them are never anchored",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "The HTML-to-text reduction in _tools/fetch.py keeps the text of a content sidebar (an <aside> inside the article body, such as the sre.google book's data-type=sidebar boxes) while still skipping navigation asides, so provider.py read and factdiff.py anchor find a quote that sits in such a sidebar.",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/provider.py",
+      "read",
+      "https://sre.google/sre-book/effective-troubleshooting/",
+      "--grep",
+      "Wild goose chases"
+    ]
+  },
+  "touches": [
+    "_tools/fetch.py"
+  ]
+}
