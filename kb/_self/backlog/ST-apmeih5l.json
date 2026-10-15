@@ -43,6 +43,20 @@
         "repro",
         "pick"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess,sys\nsys.path.insert(0,'_tools')\nimport bench_repro as b\nrec,date,f=b.standings(b.read_rows(b.BENCH_RESULTS))\nn=sorted(f,key=lambda k:(b.pick_key(f[k]),k))[0]\nd=b.default_dir(); m=json.loads((d/b.MANIFEST).read_text(encoding='utf-8'))\ni=next(x for x in m['instances'] if x['n']==n)\nadded=subprocess.run(['git','--git-dir',i['bare'],'diff','--name-only','--diff-filter=A',m['rev'],'main','--','kb/public'],capture_output=True,text=True,check=True).stdout.split()\nmiss=[p for p in added if not os.path.exists(p)]\nprint('instance',n,'added',len(added),'missing here',len(miss),*miss[:5])\nsys.exit(1 if miss or not added else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys\nsys.path.insert(0,'_tools')\nimport bench_repro as b\nrec,date,f=b.standings(b.read_rows(b.BENCH_RESULTS))\nbest=max((v['passed'] for v in f.values()),default=None)\np=subprocess.run([sys.executable,'_tools/rag.py','--json','eval','--file','kb/public/_retrieval/repro_bench.csv','--root','public','--all'],capture_output=True,text=True)\nif p.returncode not in (0,1) or best is None: print(p.returncode,best); sys.exit(1)\nn=json.loads(p.stdout)['passed']; print('main',n,'best instance (summed over areas)',best); sys.exit(0 if n>=best else 1)"
+      ]
     }
   ],
   "clauses": [
@@ -52,11 +66,11 @@
     },
     {
       "clause": "repro replay --instance N --item ST-apmeih5l puts its commits since the start commit on the item's work branch of current origin/main, the shared ledgers (_sources.csv, _anchors.csv, topic indexes, _gaps.md and doc2query expansions) merged keeping both sides",
-      "check": 0
+      "check": 5
     },
     {
       "clause": "they land through backlog.py land on the content lane",
-      "check": 0
+      "check": 5
     },
     {
       "clause": "check.py and kb-verify lint pass on the result",
@@ -64,7 +78,7 @@
     },
     {
       "clause": "the frozen set's rag.py eval passes on main at least as many rows as on the best instance's checkout",
-      "check": 2
+      "check": 6
     },
     {
       "clause": "the other two instances' bare copies under _cache/bench-repro/ are left as they are, none of their commits reaches the real origin",
@@ -112,5 +126,5 @@
       "by": "operator"
     }
   ],
-  "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands."
+  "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands. Orchestrator, 2026-10-15, before the claim: check 5 (every kb/public file the picked instance-3 added since 2170d88 exists in the tree) fails on the base (45 of 45 missing) and reads the replay clause. Check 6 compares main's frozen-set passed count with the picked record's eval_passed summed over areas (bench_repro.standings), as repro pick reads it; check 2 compared with a single area's row (max 5) and proved nothing. Check 6 passes on the base (main 24, best instance 24: main already passes as many rows, from research landed since 2170d88): it is a guard that the replay keeps main at or above the best instance, not a proof of the work. check.py, the lint and repro status/pick pass before the work by design (guards)."
 }
