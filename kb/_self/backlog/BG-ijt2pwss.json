@@ -15,6 +15,7 @@
     ]
   },
   "touches": [
-    "_tools/provider.py"
+    "_tools/provider.py",
+    "kb/public/_sources.csv"
   ]
 }
