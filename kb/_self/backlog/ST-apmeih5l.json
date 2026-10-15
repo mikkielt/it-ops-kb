@@ -79,7 +79,6 @@
     "kb/public/**"
   ],
   "depends_on": [
-    "ST-zvooqvlt",
     "ST-ymjjoo54"
   ],
   "gates": [
