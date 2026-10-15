@@ -985,13 +985,20 @@ def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
         w = csv.DictWriter(f, fieldnames=[*row, "expect_re"], lineterminator="\n")
         w.writeheader()  # expect_re: `;`-separated regexes, one of which must match the pack's text
         w.writerows([wrong, row, dict(row, id="EV-planted-regex", expect_re="zzzz[0-9]{9};zzzz[a-f]{9}"),
-                     dict(row, id="EV-planted-regex-ok", expect_re="zzzz[0-9]{9};.")])
+                     dict(row, id="EV-planted-regex-ok", expect_re="zzzz[0-9]{9};."),
+                     dict(row, id="EV-planted-drift", expect_paths="", expect_verdict="none")])
+    # word_shares.csv beside the file holds every key word of the question at 0.9, so its pack is `none` on those
+    # shares: the last row fails its verdict now, passes on the baseline, and is printed as drift, counted noted
+    (tmp_path / "word_shares.csv").write_text(
+        "word,share\n" + "".join(f"{t},0.9\n" for t in sorted(set(kbfacts.key_terms(row["question"])))), encoding="utf-8")
     code, out = tool("rag.py", "eval", "--file", str(bad))
-    assert code == 1 and f"FAIL {wrong['id']}" in out and "questions=4 passed=2" in out, out[-1500:]
+    assert code == 1 and f"FAIL {wrong['id']}" in out and "questions=5 passed=3 " in out and "noted=1" in out, out[-1500:]
+    assert re.search(r"^DRIFT EV-planted-drift .*: baseline 0\.9000, now 0\.\d{4}", out, re.M), out[-1500:]
+    assert "FAIL EV-planted-drift" not in out, out[-1500:]
     assert re.search(r"FAIL EV-planted-regex +verdict=\S+ +\(want \S+ *\) found=\S+ chars=\d+ failed=regex$", out, re.M), out[-1500:]
     assert f" {row['id']} " not in out and "EV-planted-regex-ok" not in out, out[-1500:]  # a passing row is printed only with --all
     code, out = tool("rag.py", "eval", "--file", str(bad), "--min", "2", "--all")  # the held-out rate's form: at least N pass
-    assert code == 0 and "questions=4 passed=2" in out and f"ok   {row['id']} " in out, out[-1500:]
+    assert code == 0 and "questions=5 passed=3" in out and f"ok   {row['id']} " in out, out[-1500:]
 
 
 def test_eval_offkb_overlap_and_heldout_reword_are_refused_naming_the_row(tmp_path):

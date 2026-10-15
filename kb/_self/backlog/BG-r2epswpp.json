@@ -92,6 +92,40 @@
       "class": "agents-rule",
       "answer": "re-judge a failing row against the key-word shares of a committed baseline file that only a command rewrites: a row that then meets its expect_verdict is printed drift and counted noted, not failed; pack verdicts unchanged",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which key words does word_shares.csv hold, which command rewrites it, and which file does an eval --file run read?",
+      "options": [
+        "the key words of the root's eval questions held by a tenth of the searched units or more, rewritten by eval --write-shares only, a --file run reading the file beside it else the root's",
+        "every key word of the eval questions, rewritten by a new rag.py subcommand"
+      ],
+      "recommendation": "the key words of the root's eval questions held by a tenth of the searched units or more, rewritten by eval --write-shares only, a --file run reading the file beside it else the root's",
+      "do": {
+        "the key words of the root's eval questions held by a tenth of the searched units or more, rewritten by eval --write-shares only, a --file run reading the file beside it else the root's": "BG-r2epswpp",
+        "every key word of the eval questions, rewritten by a new rag.py subcommand": "BG-r2epswpp"
+      },
+      "class": "agents-rule",
+      "answer": "the key words of the root's eval questions held by a tenth of the searched units or more, rewritten by eval --write-shares only, a --file run reading the file beside it else the root's",
+      "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does a drift row count against NOTED_BASELINE in rag.py eval?",
+      "options": [
+        "counted in the printed noted= figure and left out of the NOTED_BASELINE comparison, which keeps counting check: and route: lines only",
+        "counted in noted= and in the NOTED_BASELINE comparison"
+      ],
+      "recommendation": "counted in the printed noted= figure and left out of the NOTED_BASELINE comparison, which keeps counting check: and route: lines only",
+      "do": {
+        "counted in the printed noted= figure and left out of the NOTED_BASELINE comparison, which keeps counting check: and route: lines only": "BG-r2epswpp",
+        "counted in noted= and in the NOTED_BASELINE comparison": "BG-r2epswpp"
+      },
+      "class": "agents-rule",
+      "answer": "counted in the printed noted= figure and left out of the NOTED_BASELINE comparison, which keeps counting check: and route: lines only",
+      "by": "operator"
     }
   ],
   "notes": "Premise run 2026-10-15 at 5834a99e2: rag.py eval passes (705 of 705), but the word window is in 3989 of 19792 units (0.2015), 31 units above COMMON_SHARE 0.2; with COMMON_SHARE patched to 0.205 the row turns good and eval exits 1 (the repro). In the first repro run 11 sessions in all three instances met the row: instance 1 deleted it (e811f36e8), instance 2 retitled bash for Windows, instance 3 wrote security/gentoo-in-wsl.md to lift the share; two finished areas were lost to the refused sync (lessons analysis 2026-10-15 section 0). ST-wsfmec7k proposed dropping this bug; its premise is refuted and its other option, a repro that fails on the state described, is this repro. Test budget: extend an existing test_live_kb.py eval test, no new test id, at most about 0.3 s more. Plan review 2026-10-15: a band of 0.01 around COMMON_SHARE would not hold over one repro run: each researched area adds about 200 mostly non-Windows units, so 21 areas take window from 0.2015 to about 0.17. The repro and check 0 now add 2000 units to the store (about ten areas of research): eval exits 1 today. Checks that pass before the work: rag.py eval, the pack check and the test selection pass before the work and are kept as guards (the change must keep them green); check 0 (the drift repro) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",

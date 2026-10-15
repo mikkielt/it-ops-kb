@@ -2293,11 +2293,31 @@ RARE_NAME = 0.01  # a name held by under this share of all lines is mentioned in
 COMMON_SHARE = 0.2  # a key word held by this share of the searched units or more is common, not informative
 
 
-def informative_words(keys, kdf, n):
+def informative_words(keys, kdf, n, shares=None):
     """The key words that tell units apart: those held by under COMMON_SHARE of the n searched units, and always
     those held by at most one, since a word one unit holds is never common. Without that floor a small index (a
-    root of one article: 3 units, cut below 0.6) keeps no word at all and every question is `none`."""
-    return [t for t in keys if kdf[t] < max(COMMON_SHARE * n, 2)]
+    root of one article: 3 units, cut below 0.6) keeps no word at all and every question is `none`. `shares`
+    ({key word: share of the units}, rag.py eval's re-judge against its baseline file) stands in for the count of the
+    words it names."""
+    shares = shares or {}
+    return [t for t in keys if (shares[t] * n if t in shares else kdf[t]) < max(COMMON_SHARE * n, 2)]
+
+
+def key_shares(question, root=None):
+    """{key word: share of the searched units that hold it} of a question, over the units a pack for `root` searches
+    (the root's own for `_self`, else every root's)."""
+    st = store(scope(None, root))
+    _, keys, _, kdf = rank(st, question)
+    n = max(st.n, 1)
+    return {t: kdf[t] / n for t in keys}
+
+
+def drifted_words(question, baseline, root=None):
+    """{key word: (share now, share in `baseline`)} of the question's key words that the baseline ({word: share}) holds
+    and whose share is on the other side of COMMON_SHARE than the baseline's: the words that tip a verdict."""
+    now = key_shares(question, root)
+    return {t: (s, baseline[t]) for t, s in now.items()
+            if t in baseline and (s >= COMMON_SHARE) != (baseline[t] >= COMMON_SHARE)}
 IDENT = re.compile(r"\w[_./]\w|^--?\w")  # python_files, list/get, ansible.windows.win_dsc, --frozen
 
 
@@ -2469,7 +2489,7 @@ def name_apart(question, known, held):
 
 
 def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None, invalidated=False,
-         item=None, st=None):
+         item=None, st=None, shares=None):
     """Rank fact units for a question and return {verdict, route, has, lacks, missing, matched, sources, text, ...}.
 
     The corpus is every fact unit plus the untagged bullets, table rows and data rows (Summary, Reference, Examples,
@@ -2516,7 +2536,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     first compares the question with the anchored tested questions (tested_matches): the passage of each that matches
     is printed first, marked `[tested <id>]`, and the verdict is `good` only then (`coverage: good (tested question
     <id>: <question>)`); with none it is at most `weak`, `none` by the key words alone. `st` is the store view to use
-    (self_store), else the index's.
+    (self_store), else the index's. `shares` ({key word: share}) judges the words it names informative by that share
+    instead of their count: the one argument `rag.py eval` re-judges a failing row with, against its baseline file;
+    no lookup passes it.
     Observed signals: a kb that keeps `_logs.csv` rows adds, after the decisions, `observed signal (LOG, not a fact):`
     and the active rows whose context is a printed article or fact (logs_for: at most MAX_LOGS lines, newest first, each
     with the dates it covers), paid from what budget the facts leave, so a small budget drops them first. They are
@@ -2530,7 +2552,7 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if item:
         ranked = [x for x in ranked if st.paths[x[1]] in item["docs"]]
     n = max(st.n, 1)
-    informative = informative_words(keys, kdf, n)
+    informative = informative_words(keys, kdf, n, shares)
     missing = [t for t in informative if not kdf[t]]
     scored = [(s, st.unit(i)) for s, i in ranked[:40]]
     tested = tested_matches(st, informative) if rules else []
