@@ -2,7 +2,7 @@
   "id": "ST-ez6r5em7",
   "kind": "story",
   "title": "The replayed ledgers hold no stale anchor row, no uncited source row and no licence never checked",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3jcdsgr",
   "priority": "P3",
   "rank": 0,
@@ -98,5 +98,36 @@
     }
   ],
   "notes": "Merges ST-rdlojl4h (orphan anchor row of almalinux-elevate.md; its check failed on a CalledProcessError since anchors --stale exits non-zero with rows) and ST-nlwfazbu (two uncited TypeScript rows). Premise 2026-10-15 at 5834a99e2: anchors --stale prints 10 rows, 6 of them on the three replayed files named; rag.py src prints cited nowhere for S-cblfylm6 and S-gssvmwmg; of 249 source rows the replay added, S-6bobcclf and S-e4zz24dq say 'public mirror not checked'. The licence clause covers rows the replay added only: older rows with the same wording are not this item's. Plan amendment 2026-10-15 (triage fit10): widened to anchors --stale = 0 for the whole public root; the two rows outside the replayed files (arch/fluent-rust-typescript.md S-dftqctth, arch/texts-catalogue-formats.md S1710) have no other open owner and need the same factdiff.py anchor --file run (page reads, no paid run). At c907de7b3 anchors --stale prints the same 10 rows (3 codebase-mapping.csv, 4 stdlib-windows-portability.md, 1 almalinux-elevate.md, 2 arch). The S1710 row is ST-6wbfxkmy's anchor clause. Risk: the check reads the whole root, so a stale row another landing leaves before this item runs fails it too; a row outside the touches is then a gate, not a widening by the worker.",
-  "claimed_by": "orch-z3jcdsgr"
+  "evidence": {
+    "commit": "ec8be40546cee2493e0846d8793c739b6833f1e1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','--root','public','anchors','--stale'],capture_output=True,text=True)\nif 'stale=' not in p.stdout: print(p.stdout[-500:],p.stderr[-500:]);sys.exit(2)\nbad=[l for l in p.stdout.splitlines() if l.startswith('STALE')]\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,subprocess,sys;ids={r['id'] for r in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8'))}\nbad=[i for i in ('S-cblfylm6','S-gssvmwmg') if i in ids and 'cited nowhere' in subprocess.run([sys.executable,'_tools/rag.py','src',i,'--cited'],capture_output=True,text=True,check=True).stdout]\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,re,subprocess,sys\nd=subprocess.run(['git','diff','8a937f0d7','bbe89ddcd','--','kb/public/_sources.csv'],capture_output=True,text=True,check=True).stdout\nids={l[1:].split(',',1)[0] for l in d.splitlines() if l.startswith('+S')}\nbad=[r['id'] for r in csv.DictReader(open('kb/public/_sources.csv',encoding='utf-8')) if r['id'] in ids and re.search(r'not checked',r['licence'])]\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
