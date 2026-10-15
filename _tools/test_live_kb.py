@@ -1117,7 +1117,11 @@ class TestPackNotesOnAPlantedRoot:
                                      "Archived queues keep a retention window of 30 days for the Spooler.",
                                      "The relay agent writes its logs to the local disk."]),
                  "misc": ("Miscellany", [f"Item {w} behaves in its own way {n}." for n, w in enumerate(
-                     "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau".split())])}
+                     "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau".split())]),
+                 # a name the kb holds only inside a hyphenated common word, and one it holds as a word of its own
+                 "tasks": ("Tasks", ["Long-zephyr tasks are queued by the Spooler service.",
+                                     "The Quasar planner queues tasks for the Spooler service."]),
+                 "ledger": ("Ledger", [f"Entry {n} is noted in ledger {n + 1}." for n in range(0, 120)])}
         for slug, (title, lines) in facts.items():
             write(fx / "print" / f"{slug}.md",
                   f"---\ntopic: print/{slug}\npriority: P1\napplies_to: \"PL-SRV-0042 print servers\"\nretrieved_utc: 2026-09-26\n"
@@ -1143,6 +1147,11 @@ class TestPackNotesOnAPlantedRoot:
                          "What port does the Relay Gateway service listen on for print jobs?"):
             out = fixture_pack(question)
             assert re.search(r"^coverage: good\b", out, re.M) and not re.search(r"^(check|route):", out, re.M), out[:1200]
+        # off-domain: a name held only as the part of a hyphenated word (Zephyr in long-zephyr) is another product
+        out = fixture_pack("How do I queue Zephyr tasks for the Spooler service?")
+        assert re.search(r"^coverage: none\b", out, re.M), out[:1200]
+        out = fixture_pack("How do I queue Quasar tasks for the Spooler service?")
+        assert not re.search(r"^coverage: none\b", out, re.M), out[:1200]
         assert not kbfacts.PRICE_ASK.search("What does it cost in resource units?")
         assert kbfacts.PRICE_ASK.search("How much is a licence per user per month?") and not kbfacts.PRICE_ASK.search("How much memory does it use?")
         assert kbfacts.PRICE_ASK.search("What does it cost per user?") and kbfacts.PRICE_ASK.search("What is the price in units of 5?")

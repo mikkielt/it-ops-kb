@@ -2615,10 +2615,20 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         lead = max(order, key=lambda a: held[a])
         order = ([lead] + [a for a in order if a != lead])[:max_articles]
     # an off-domain question (VMware Horizon, SAP GUI): its product is a rare name the kb mentions in passing, and no
-    # line the pack could print holds it, whatever the other words match
+    # line the pack could print holds it, whatever the other words match; a line holds it as a word of its own, not
+    # as the part of a hyphenated common word (Horizon in "long-horizon tasks")
     if verdict != "none":
         cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
-        if any(len(t) > 2 and kdf[t] < RARE_NAME * n and not any(has(u, t) for u in cand) for t in named & set(known)):
+
+        def holds_name(u, t):
+            if not has(u, t):
+                return False
+            words = WORD.findall(u["text"].lower())
+            if t in key_terms(u["text"]) or t not in {stem(p) for w in words if "-" in w for p in w.split("-")}:
+                return True  # a word of its own, or held through the title, section, an alias or a dotted or camel part
+            meta = st.arts.get(u["path"], {})
+            return t in key_terms(f"{meta.get('title', '')} {u['section']}")
+        if any(len(t) > 2 and kdf[t] < RARE_NAME * n and not any(holds_name(u, t) for u in cand) for t in named & set(known)):
             verdict = "none"
     # operator decisions beside the facts (decisions_for): an active one that answers the question lifts the coverage
     # to `good` and its words count as held; their lines count inside the budget, so the facts get what is left
