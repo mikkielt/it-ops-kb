@@ -1,0 +1,24 @@
+{
+  "id": "ST-q6n7eenp",
+  "kind": "story",
+  "title": "research-repro.md names the Haiku model usage its Sonnet sessions recorded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/research-repro.md says that the rows of puppet (instances 1 and 3), chef (instance 2) and almalinux (instance 3) record claude-haiku-5-5 model usage beside claude-sonnet-5-5, and what share of the cost it is, so 'one headless Sonnet session' is not read as Sonnet only. Found by the SP-ccvfvoqj review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/research-repro.md',encoding='utf-8').read();L=t.splitlines();sys.exit(0 if 'haiku' in t.lower() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/research-repro.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj review"
+  ]
+}

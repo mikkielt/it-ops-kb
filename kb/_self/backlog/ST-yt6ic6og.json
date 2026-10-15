@@ -1,0 +1,24 @@
+{
+  "id": "ST-yt6ic6og",
+  "kind": "story",
+  "title": "research-repro.md's source-overlap claim about brief-named pages carries a figure or goes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The Sources line of section 5 of kb/_self/reports/research-repro.md either gives the measured overlap on the pages the research brief names against other sources (with the command that measures it) or drops the claim, which no row of benchmarks.csv carries. Found by the SP-ccvfvoqj review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/research-repro.md',encoding='utf-8').read();L=t.splitlines();s=[l for l in L if l.startswith('- **Sources:**')];sys.exit(1 if any('high on pages the brief names and low on open areas' in l for l in s) else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/research-repro.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj review"
+  ]
+}

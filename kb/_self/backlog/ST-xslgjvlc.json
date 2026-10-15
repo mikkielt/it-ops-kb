@@ -1,0 +1,24 @@
+{
+  "id": "ST-xslgjvlc",
+  "kind": "story",
+  "title": "The repro run's settings and limits are stated where the repo keeps its results",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/research-repro.md (or the repro rows of benchmarks.csv) states the run's --settings value with the gitkraken and caveman plugins off, effort high, --max-turns 200, --area-usd 8 and --instance-usd 58, so a reader of the repository can check the run against its gates without the untracked _cache/bench-repro/run.json. Found by the SP-ccvfvoqj review (S3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/reports/research-repro.md',encoding='utf-8').read();L=t.splitlines();need=['enabledPlugins','caveman@caveman','--max-turns 200','--area-usd 8','--instance-usd 58'];m=[w for w in need if w not in t];print(m);sys.exit(1 if m else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/research-repro.md"
+  ],
+  "links": [
+    "parked: SP-ccvfvoqj review"
+  ]
+}
