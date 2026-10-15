@@ -1,0 +1,195 @@
+{
+  "id": "ST-tcvbp3z3",
+  "kind": "story",
+  "title": "The three instances' repro run, started by the orchestrator, is recorded and none of their commits is on the real origin",
+  "status": "draft",
+  "sprint": "SP-ccvfvoqj",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "repro check passed before the run; the orchestrator ran benchmarks.py repro setup --instances 3 from the start commit, the parent of the commit that added repro_bench.csv, then repro run detached from the main checkout with the flags the gates settle, all three instances starting at the same time, and fired this item's trigger when the run ended; every area of every instance has a recorded result or a recorded failure in the run's json lines; repro record merged them into kb/_self/reports/benchmarks.csv, whose repro rows give per instance and area the cost in USD, tokens, turns, wall time, model usage and failures; repro status exits 0, so no commit of an instance is on the real origin's main, and nothing of the instances is published.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "status"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,re,sys\nrows=[r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario'].startswith('repro')]\nsys.path.insert(0,'_tools')\nimport importlib.util\nif importlib.util.find_spec('bench_repro') is None: print('no bench_repro module yet'); sys.exit(1)\nimport bench_repro as b\nareas={x['area'] for x in b.load_briefs()}\narms={}\nfor r in rows:\n    if r['scenario']=='repro' and re.fullmatch(r'instance-\\d+',r['arm']) and r['metric']=='cost': arms.setdefault(r['arm'],set()).add(r['case'])\nmiss={a:sorted(areas-c) for a,c in arms.items() if areas-c}\nprint(sorted(arms),miss); sys.exit(0 if len(arms)==3 and not miss else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "report",
+        "--check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro check passed before the run",
+      "check": 3
+    },
+    {
+      "clause": "the orchestrator ran benchmarks.py repro setup --instances 3 from the start commit, the parent of the commit that added repro_bench.csv, then repro run detached from the main checkout with the flags the gates settle, all three instances starting at the same time",
+      "check": 1
+    },
+    {
+      "clause": "fired this item's trigger when the run ended",
+      "check": 1
+    },
+    {
+      "clause": "every area of every instance has a recorded result or a recorded failure in the run's json lines",
+      "check": 1
+    },
+    {
+      "clause": "repro record merged them into kb/_self/reports/benchmarks.csv, whose repro rows give per instance and area the cost in USD, tokens, turns, wall time, model usage and failures",
+      "check": 1
+    },
+    {
+      "clause": "repro status exits 0, so no commit of an instance is on the real origin's main",
+      "check": 0
+    },
+    {
+      "clause": "nothing of the instances is published",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/benchmarks.csv",
+    "README.md"
+  ],
+  "depends_on": [
+    "ST-dgfbcmzf",
+    "ST-xu4rtbtm",
+    "ST-hrsqmwhx"
+  ],
+  "gates": [
+    {
+      "id": "cap",
+      "kind": "blocking",
+      "question": "Spend cap per instance for the paid repro run? Estimate: about $58 per instance, $174 for the three, from 9 absent areas at about $3.50, 8 partial at $2.50 and 4 present at $1.50 on Sonnet 5.5 (recorded Sonnet research stories cost $0.2-8.7, new-topic ones $3-5; the seven Opus research items of 2026-10-14/15 cost $4.0-8.6, mean $6.3, about $3.2 at Sonnet prices). An instance that reaches its cap starts no further area and records the rest as failures named budget.",
+      "options": [
+        "$58 per instance, $174 in all (the estimate)",
+        "$40 per instance, $120 in all",
+        "$80 per instance, $240 in all"
+      ],
+      "recommendation": "$58 per instance, $174 in all (the estimate)",
+      "do": {
+        "$58 per instance, $174 in all (the estimate)": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "run",
+          "--instances",
+          "3",
+          "--instance-usd",
+          "58"
+        ],
+        "$40 per instance, $120 in all": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "run",
+          "--instances",
+          "3",
+          "--instance-usd",
+          "40"
+        ],
+        "$80 per instance, $240 in all": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "run",
+          "--instances",
+          "3",
+          "--instance-usd",
+          "80"
+        ]
+      },
+      "class": "design"
+    },
+    {
+      "id": "model",
+      "kind": "blocking",
+      "question": "Model, effort and per-area session limits of the three instances (all three use the same)?",
+      "options": [
+        "claude-sonnet-5-5 at effort high, 200 turns and $8 per area session (the research worker's defaults)",
+        "claude-opus-5-5 at effort high, 200 turns and $15 per area session",
+        "claude-haiku-5-5 at effort high, 200 turns and $3 per area session"
+      ],
+      "recommendation": "claude-sonnet-5-5 at effort high, 200 turns and $8 per area session (the research worker's defaults)",
+      "do": {
+        "claude-sonnet-5-5 at effort high, 200 turns and $8 per area session (the research worker's defaults)": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "run",
+          "--instances",
+          "3",
+          "--model",
+          "claude-sonnet-5-5",
+          "--effort",
+          "high",
+          "--max-turns",
+          "200",
+          "--area-usd",
+          "8"
+        ],
+        "claude-opus-5-5 at effort high, 200 turns and $15 per area session": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "run",
+          "--instances",
+          "3",
+          "--model",
+          "claude-opus-5-5",
+          "--effort",
+          "high",
+          "--max-turns",
+          "200",
+          "--area-usd",
+          "15"
+        ],
+        "claude-haiku-5-5 at effort high, 200 turns and $3 per area session": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "run",
+          "--instances",
+          "3",
+          "--model",
+          "claude-haiku-5-5",
+          "--effort",
+          "high",
+          "--max-turns",
+          "200",
+          "--area-usd",
+          "3"
+        ]
+      },
+      "class": "design"
+    }
+  ],
+  "trigger": {
+    "when": "the orchestrator's benchmarks.py repro run of the three instances has ended (every area of every instance has a result or a failure line)",
+    "fired": false
+  },
+  "notes": "Estimate (planner, 2026-10-15; the repro run --dry-run estimate replaces it once ST-v7d2dc2x lands): about $58 per instance, $174 for three, on Sonnet 5.5: 9 absent areas x $3.50 + 8 partial x $2.50 + 4 present x $1.50. Basis: 62 Sonnet goal research stories cost $0.19-8.71 (mean $2.4 with two outliers at $14 and $39; new-topic ones $3-5); the seven Opus research items of EP-klpp2paw (2026-10-14/15) cost $3.99-8.55, mean $6.3, 93-192 turns, 6-12 min, which is about $3.2 at Sonnet's prices (half Opus's for input, output and cache). Wall time: about 10-20 min per area, so 4-6 h per instance, the three in parallel; slower on a loaded machine. The run's worker starts repro run detached and waits on it; a run started again skips recorded areas. Same model, prompt, start commit and budget for all three; the gitkraken plugin is off by --settings as the orchestrator's headless sessions run; the user-level caveman plugin stays on for all three alike. benchmarks.py report --check passes before the work: it is the guard that the new rows keep the report's numbers in step (README.md). Run procedure (the orchestrator, once ST-dgfbcmzf and ST-xu4rtbtm have landed and both gates are answered): from the main checkout, python3 _tools/benchmarks.py repro check; then repro setup --instances 3; then repro run with the flags of the answered gates (--instance-usd from cap, --model/--effort/--max-turns/--area-usd from model), started detached (subprocess.Popen with start_new_session=True under caffeinate -i, output to a log outside _cache) and waited on by its pid; a run cut short is started again and skips the recorded areas. Then fire this item's trigger (backlog.py fire ST-tcvbp3z3) and dispatch its worker, which runs repro record and the checks. A per-area cap of $8 x 21 areas is above the $58 instance cap, so budget failures fall on the last areas in the briefs' order; compare's agreement covers the areas every instance finished."
+}

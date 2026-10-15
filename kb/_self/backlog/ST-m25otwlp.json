@@ -1,0 +1,71 @@
+{
+  "id": "ST-m25otwlp",
+  "kind": "story",
+  "title": "bench_repro reads and checks the benchmark briefs and frozen questions, and repro status shows no instance commit reached the real origin",
+  "status": "draft",
+  "sprint": "SP-ygsnog4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_repro.load_briefs(path=None) returns the rows of kb/public/_retrieval/repro_briefs.csv as dicts with the columns area, scope, sources, depth, coverage and leave_out; bench_repro.brief_problems names each row with an empty area, scope, sources, depth or coverage cell, a coverage other than present, partial or absent, or a duplicate area; repro questions exits 1 naming each brief area without 3 to 5 rows, a duplicate id, a row with no expect_re, expect_text or expect_paths, or a row whose question kbfacts.routed routes; repro status prints per instance the commits on its bare since the start commit and exits 1 when any of them is reachable from a fresh fetch of the real origin's main, and its output carries none of bl_check.NOOP_MARKERS; no new test id: the test_bench.py bundle gains a body that plants briefs, questions and an instance bare and runs brief_problems, repro questions and repro status on them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import importlib.util,subprocess,sys\nsys.path.insert(0,'_tools')\nif importlib.util.find_spec('bench_repro') is None: print('no bench_repro module yet'); sys.exit(1)\nimport bench_repro as b\nbad=[{'area':'x','scope':'','sources':'s','depth':'d','coverage':'present','leave_out':''},{'area':'x','scope':'s','sources':'s','depth':'d','coverage':'maybe','leave_out':''}]\np=b.brief_problems(bad); print(p); sys.exit(0 if len(p)>=3 else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "status"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_repro.load_briefs(path=None) returns the rows of kb/public/_retrieval/repro_briefs.csv as dicts with the columns area, scope, sources, depth, coverage and leave_out",
+      "check": 0
+    },
+    {
+      "clause": "bench_repro.brief_problems names each row with an empty area, scope, sources, depth or coverage cell, a coverage other than present, partial or absent, or a duplicate area",
+      "check": 1
+    },
+    {
+      "clause": "repro questions exits 1 naming each brief area without 3 to 5 rows, a duplicate id, a row with no expect_re, expect_text or expect_paths, or a row whose question kbfacts.routed routes",
+      "check": 0
+    },
+    {
+      "clause": "repro status prints per instance the commits on its bare since the start commit and exits 1 when any of them is reachable from a fresh fetch of the real origin's main",
+      "check": 2
+    },
+    {
+      "clause": "its output carries none of bl_check.NOOP_MARKERS",
+      "check": 0
+    },
+    {
+      "clause": "no new test id: the test_bench.py bundle gains a body that plants briefs, questions and an instance bare and runs brief_problems, repro questions and repro status on them",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-hrsqmwhx"
+  ],
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+}

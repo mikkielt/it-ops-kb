@@ -1,0 +1,83 @@
+{
+  "id": "ST-hfcsyyin",
+  "kind": "story",
+  "title": "rag.py eval scores an expect_re regex column and runs the held-out reword and off-kb checks on repro_bench.csv",
+  "status": "draft",
+  "sprint": "SP-ygsnog4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "rag.py eval reads an optional expect_re column of regexes separated by `;`, matched with re.search and no flags over the pack text as agent_bench scores answers; it fails a row none of whose regexes matches with the failure token regex; eval --file on a file whose name is in a new rag.FROZEN_FILES tuple of lookup_heldout.csv and repro_bench.csv runs the held-out reword check against the lookup_eval.csv beside it, with rag.HELDOUT_FILE kept for its other readers and the sync gate's eval sets unchanged; kb/_self/tools.md's eval row names expect_re and repro_bench.csv; kb/_self/maintaining.md's held-out exception covers repro_bench.csv; no new test id: test_live_kb.py's test_lookup_eval_fails_on_a_wrong_expected_article gains a planted expect_re row and the reword test gains the second file name.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lookup_eval_fails_on_a_wrong_expected_article or test_eval_offkb_overlap_and_heldout_reword_are_refused_naming_the_row"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,json,os,subprocess,sys,tempfile\nd=tempfile.mkdtemp(); f=os.path.join(d,'t.csv')\nwith open(f,'w',newline='',encoding='utf-8') as h:\n    w=csv.writer(h); w.writerow(['id','question','expect_paths','expect_verdict','allow_weak','expect_text','expect_re'])\n    q='JEA role capability file and session configuration to restart a service'\n    w.writerow(['RE-1',q,'','good','yes','','Just Enough|JEA']); w.writerow(['RE-2',q,'','good','yes','','zzzz[0-9]{9}'])\np=subprocess.run([sys.executable,'_tools/rag.py','--json','eval','--file',f,'--root','public','--all'],capture_output=True,text=True)\nrows={r['id']:r for r in json.loads(p.stdout)['rows']}\nok=p.returncode==1 and rows['RE-1']['ok'] and not rows['RE-2']['ok'] and 'regex' in rows['RE-2']['failed']\nprint(p.returncode,{k:v['failed'] for k,v in rows.items()}); sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,os,shutil,subprocess,sys,tempfile\nd=tempfile.mkdtemp(); shutil.copy('kb/public/_retrieval/lookup_eval.csv',d)\nr=next(csv.DictReader(open('kb/public/_retrieval/lookup_eval.csv',encoding='utf-8')))\nf=os.path.join(d,'repro_bench.csv')\nwith open(f,'w',newline='',encoding='utf-8') as h:\n    w=csv.writer(h); w.writerow(['id','question','expect_paths','expect_verdict','allow_weak']); w.writerow(['RB-1',r['question']+' please',r['expect_paths'],r['expect_verdict'],r['allow_weak']])\np=subprocess.run([sys.executable,'_tools/rag.py','eval','--file',f,'--root','public','--all'],capture_output=True,text=True)\nout=p.stdout+p.stderr; print(p.returncode,out[:300]); sys.exit(0 if p.returncode==1 and 'REWORD RB-1' in out else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nrow=[l for l in open('kb/_self/tools.md',encoding='utf-8') if l.startswith('| `python3 _tools/rag.py src')]\nok=len(row)==1 and 'expect_re' in row[0] and 'repro_bench.csv' in row[0]\nprint(len(row),ok); sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nrow=[l for l in open('kb/_self/maintaining.md',encoding='utf-8') if l.startswith('  - the exception: a failing row of the held-out file')]\nok=len(row)==1 and 'repro_bench.csv' in row[0]\nprint(len(row),ok); sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py eval reads an optional expect_re column of regexes separated by `;`, matched with re.search and no flags over the pack text as agent_bench scores answers",
+      "check": 1
+    },
+    {
+      "clause": "it fails a row none of whose regexes matches with the failure token regex",
+      "check": 1
+    },
+    {
+      "clause": "eval --file on a file whose name is in a new rag.FROZEN_FILES tuple of lookup_heldout.csv and repro_bench.csv runs the held-out reword check against the lookup_eval.csv beside it, with rag.HELDOUT_FILE kept for its other readers and the sync gate's eval sets unchanged",
+      "check": 2
+    },
+    {
+      "clause": "kb/_self/tools.md's eval row names expect_re and repro_bench.csv",
+      "check": 3
+    },
+    {
+      "clause": "kb/_self/maintaining.md's held-out exception covers repro_bench.csv",
+      "check": 4
+    },
+    {
+      "clause": "no new test id: test_live_kb.py's test_lookup_eval_fails_on_a_wrong_expected_article gains a planted expect_re row and the reword test gains the second file name",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/rag.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "AGENTS.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "notes": "Premise run 2026-10-15 on 296ff192d: eval ignores an expect_re column (a planted row with regex zzzz[0-9]{9} passed, rc 0), and a planted repro_bench.csv rewording a lookup_eval.csv row passes with no REWORD line while the same row in a file named lookup_heldout.csv prints REWORD (ratio 0.96). expect_text exists already (substring, case-sensitive). Do not add the file to kg_sync.EVAL_SETS. HELDOUT_FILE readers: rag.py:278, bench_pool.py:57, test_live_kb.py:1032 (backlog.py referrers HELDOUT_FILE). Selection cost measured by the planner's verifier: 3.3 s wall. The test selection passes before the work: it pins the planted expect_re row and the second file name once they are added; the planted checks 1 and 2 fail before the work."
+}

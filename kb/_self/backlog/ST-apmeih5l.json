@@ -1,0 +1,116 @@
+{
+  "id": "ST-apmeih5l",
+  "kind": "story",
+  "title": "The instance the landing gate picks lands its benchmark research in the real kb through the content lane, the other two kept archived",
+  "status": "draft",
+  "sprint": "SP-bhzxxhub",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "repro pick names the instance the landing gate's rule picks; repro replay --instance N --item ST-apmeih5l puts its commits since the start commit on the item's work branch of current origin/main, the shared ledgers (_sources.csv, _anchors.csv, topic indexes, _gaps.md and doc2query expansions) merged keeping both sides; they land through backlog.py land on the content lane; check.py and kb-verify lint pass on the result; the frozen set's rag.py eval passes on main at least as many rows as on the best instance's checkout; the other two instances' bare copies under _cache/bench-repro/ are left as they are, none of their commits reaches the real origin, and nothing is published.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/check.py"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py']); sys.exit(p.returncode)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys\nrows=[r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario'].startswith('repro')]\nimport json,subprocess\nbest=max((float(r['value']) for r in rows if r['metric']=='eval_passed'),default=None)\np=subprocess.run([sys.executable,'_tools/rag.py','--json','eval','--file','kb/public/_retrieval/repro_bench.csv','--root','public','--all'],capture_output=True,text=True)\nif p.returncode not in (0,1) or best is None: print(p.returncode,best); sys.exit(1)\nn=json.loads(p.stdout)['passed']; print('main',n,'best instance',best); sys.exit(0 if n>=best else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "status"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "pick"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro pick names the instance the landing gate's rule picks",
+      "check": 4
+    },
+    {
+      "clause": "repro replay --instance N --item ST-apmeih5l puts its commits since the start commit on the item's work branch of current origin/main, the shared ledgers (_sources.csv, _anchors.csv, topic indexes, _gaps.md and doc2query expansions) merged keeping both sides",
+      "check": 0
+    },
+    {
+      "clause": "they land through backlog.py land on the content lane",
+      "check": 0
+    },
+    {
+      "clause": "check.py and kb-verify lint pass on the result",
+      "check": 1
+    },
+    {
+      "clause": "the frozen set's rag.py eval passes on main at least as many rows as on the best instance's checkout",
+      "check": 2
+    },
+    {
+      "clause": "the other two instances' bare copies under _cache/bench-repro/ are left as they are, none of their commits reaches the real origin",
+      "check": 3
+    },
+    {
+      "clause": "nothing is published",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "depends_on": [
+    "ST-zvooqvlt",
+    "ST-dau3e4pz",
+    "ST-ymjjoo54"
+  ],
+  "gates": [
+    {
+      "id": "pick",
+      "kind": "blocking",
+      "question": "Which instance's research lands in the real kb? Only one lands; the others stay archived under _cache/bench-repro/ as evidence and are never merged.",
+      "options": [
+        "the instance with the best frozen-set eval pass rate, then the fewest lint and check errors, then the lowest cost",
+        "none: keep all three archived and land nothing"
+      ],
+      "recommendation": "the instance with the best frozen-set eval pass rate, then the fewest lint and check errors, then the lowest cost",
+      "do": {
+        "the instance with the best frozen-set eval pass rate, then the fewest lint and check errors, then the lowest cost": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "pick"
+        ],
+        "none: keep all three archived and land nothing": [
+          "python3",
+          "_tools/backlog.py",
+          "drop",
+          "ST-apmeih5l",
+          "--why",
+          "the operator kept all three instances archived and landed none"
+        ]
+      },
+      "class": "design"
+    }
+  ],
+  "notes": "The chosen instance's commits are read from _cache/bench-repro/originN.git (S..main); replay them with cherry-pick or rebase --onto on the item's work branch, resolving the shared ledgers keeping both sides (another session's research may have moved them). Source ids are random (S-xxxxxxxx), so collisions are unlikely; anchors are re-made with factdiff.py anchor --file for reworded DOC facts. The other two bares stay as they are (they are gitignored evidence and never pushed). check.py and the lint pass before the work: they guard the replayed research against contract errors; the eval check fails until the chosen research lands."
+}

@@ -1,0 +1,70 @@
+{
+  "id": "ST-dgfbcmzf",
+  "kind": "story",
+  "title": "repro_bench.csv freezes 3 to 5 user-style questions per benchmark area, written before any instance runs",
+  "status": "draft",
+  "sprint": "SP-ygsnog4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/public/_retrieval/repro_bench.csv holds 3 to 5 questions per area of repro_briefs.csv, worded as a kb user would ask them, written from the official sources the brief names and not from the kb's own lines, spread over what the kb holds today (present), holds in part (partial) and lacks (absent), each with an expect_re or expect_text that a complete cited answer meets, an area and a stratum column; repro questions passes on it; rag.py eval --file on it prints no REWORD or OFFKB line; no eval run tunes it, and no doc2query expansion, lookup_eval.csv row or lookup_heldout.csv row is made from it; the commit that adds it changes no other file outside kb/_self/backlog/, so the start commit, that commit's parent, holds the briefs and the harness and not the questions.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "questions"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys\nf='kb/public/_retrieval/repro_bench.csv'\nif not os.path.exists(f): print('no',f); sys.exit(1)\np=subprocess.run([sys.executable,'_tools/rag.py','eval','--file',f,'--root','public','--all'],capture_output=True,text=True)\nout=p.stdout+p.stderr; bad=[l for l in out.splitlines() if l.startswith(('REWORD','OFFKB'))]\nprint(p.returncode,len(out.splitlines()),bad[:5]); sys.exit(0 if p.returncode in (0,1) and not bad and 'questions=' in out else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\nf='kb/public/_retrieval/repro_bench.csv'\nc=subprocess.run(['git','log','--format=%H','--',f],capture_output=True,text=True,check=True).stdout.split()\nif not c: print('not committed'); sys.exit(1)\nn=subprocess.run(['git','show','--name-only','--format=','-m',c[-1]],capture_output=True,text=True,check=True).stdout.split()\nextra=[x for x in n if x!=f and not x.startswith('kb/_self/backlog/')]\nprint(len(c),'commit(s)',c[-1],extra); sys.exit(0 if len(c)==1 and not extra else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/_retrieval/repro_bench.csv holds 3 to 5 questions per area of repro_briefs.csv, worded as a kb user would ask them, written from the official sources the brief names and not from the kb's own lines, spread over what the kb holds today (present), holds in part (partial) and lacks (absent), each with an expect_re or expect_text that a complete cited answer meets, an area and a stratum column",
+      "check": 0
+    },
+    {
+      "clause": "repro questions passes on it",
+      "check": 0
+    },
+    {
+      "clause": "rag.py eval --file on it prints no REWORD or OFFKB line",
+      "check": 1
+    },
+    {
+      "clause": "no eval run tunes it",
+      "check": 2
+    },
+    {
+      "clause": "no doc2query expansion, lookup_eval.csv row or lookup_heldout.csv row is made from it",
+      "check": 2
+    },
+    {
+      "clause": "the commit that adds it changes no other file outside kb/_self/backlog/, so the start commit, that commit's parent, holds the briefs and the harness and not the questions",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/repro_bench.csv"
+  ],
+  "depends_on": [
+    "ST-hfcsyyin",
+    "ST-m25otwlp",
+    "ST-5c2h4o7w",
+    "ST-levrq3xs"
+  ],
+  "notes": "The questions are written by a worker that sees the briefs and the kb but no research of the instances (none exists yet); held-out style (kb/_self/tools.md answer-rate fitness test; kb/_self/maintaining.md: a failing held-out row stays and is never tuned). False good verdicts today (podman, typescript, rust, python venv) mean an absent-area row needs an expect_re or expect_text, not only a verdict. The start commit for the instances is this file's adding commit's parent (ST-g52zbsv4 setup default)."
+}

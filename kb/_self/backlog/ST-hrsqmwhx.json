@@ -1,0 +1,48 @@
+{
+  "id": "ST-hrsqmwhx",
+  "kind": "story",
+  "title": "benchmarks.py repro check proves on a probe instance that kbgit.py sync --push lands on its own bare copy and never on the real origin",
+  "status": "draft",
+  "sprint": "SP-ygsnog4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "repro check builds a probe instance the same way, commits one _gaps.md entry there, runs kbgit.py sync --push in it and exits 0 only when the probe's bare main moved to that commit, the commit is not reachable from a fresh fetch of the real origin's main, the probe's mcp-config names the probe's kb_mcp.py and that script's --status prints the probe's kb_dir, the probe's query log mode is off and its claims ledger and _cache are its own, then removes the probe; no new test id: the test_bench.py bundle body of repro setup also runs repro check, with KB_SYNC_NO_TESTS=1 and a local bare standing in for the real origin.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "check"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro check builds a probe instance the same way, commits one _gaps.md entry there, runs kbgit.py sync --push in it and exits 0 only when the probe's bare main moved to that commit, the commit is not reachable from a fresh fetch of the real origin's main, the probe's mcp-config names the probe's kb_mcp.py and that script's --status prints the probe's kb_dir, the probe's query log mode is off and its claims ledger and _cache are its own, then removes the probe",
+      "check": 1
+    },
+    {
+      "clause": "no new test id: the test_bench.py bundle body of repro setup also runs repro check, with KB_SYNC_NO_TESTS=1 and a local bare standing in for the real origin",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-g52zbsv4"
+  ],
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+}

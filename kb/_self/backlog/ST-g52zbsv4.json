@@ -1,0 +1,83 @@
+{
+  "id": "ST-g52zbsv4",
+  "kind": "story",
+  "title": "benchmarks.py repro setup makes per-instance clones of one pinned commit, each with its own bare origin, mcp-config, query log mode and env",
+  "status": "draft",
+  "sprint": "SP-ygsnog4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "benchmarks.py repro setup --instances N [--start REV] [--dir DIR] builds one full bare copy per instance at DIR/originN.git, DIR defaulting to _cache/bench-repro of the clone's main worktree (kbfacts.clone_home), so a run from a linked worktree leaves it where later items find it; each bare holds only REV's history as its main, fetched from the integration remote's url into a seed bare that setup deletes once it has pushed REV:main into each, never cloned from the partial checkout; REV defaults to the parent of the first commit that added kb/public/_retrieval/repro_bench.csv, or to the fetched main tip while no commit adds it, which setup prints; each instance gets a working clone outside the checkout, under bench_core's scratch directory, whose only remote is its bare path, and setup prints every path; each clone gets _private/querylog.json with mode off and an mcp-config file of its own that names the clone's own _tools/kb_mcp.py and the three docs servers of .claude-plugin/it-ops-kb-docs/.mcp.json, used with --strict-mcp-config, so nothing is written to ~/.claude.json; each instance's session env is bench_core.no_plugin_env's without the variables conftest.LEAKY lists, with KB_SESSION empty, KB_DOCS_CACHE unset, ENABLE_CLAUDEAI_MCP_SERVERS=false and KB_HOST_LOCK_DIR under DIR; repro setup --dry-run prints the plan and starts nothing; no new test id: test_bench.py's test_bench_price_weights_and_tier_and_freshness_rows bundle gains a body that runs setup and check with a local bare standing in for the remote, a claude shimmed on PATH (bench_core.shim_dir) and KB_SYNC_NO_TESTS=1, and the worker reports the tests.py --ceiling seconds before and after.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "setup",
+        "--instances",
+        "3",
+        "--dry-run"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "benchmarks.py repro setup --instances N [--start REV] [--dir DIR] builds one full bare copy per instance at DIR/originN.git, DIR defaulting to _cache/bench-repro of the clone's main worktree (kbfacts.clone_home), so a run from a linked worktree leaves it where later items find it",
+      "check": 1
+    },
+    {
+      "clause": "each bare holds only REV's history as its main, fetched from the integration remote's url into a seed bare that setup deletes once it has pushed REV:main into each, never cloned from the partial checkout",
+      "check": 1
+    },
+    {
+      "clause": "REV defaults to the parent of the first commit that added kb/public/_retrieval/repro_bench.csv, or to the fetched main tip while no commit adds it, which setup prints",
+      "check": 1
+    },
+    {
+      "clause": "each instance gets a working clone outside the checkout, under bench_core's scratch directory, whose only remote is its bare path",
+      "check": 1
+    },
+    {
+      "clause": "setup prints every path",
+      "check": 1
+    },
+    {
+      "clause": "each clone gets _private/querylog.json with mode off and an mcp-config file of its own that names the clone's own _tools/kb_mcp.py and the three docs servers of .claude-plugin/it-ops-kb-docs/.mcp.json, used with --strict-mcp-config, so nothing is written to ~/.claude.json",
+      "check": 0
+    },
+    {
+      "clause": "each instance's session env is bench_core.no_plugin_env's without the variables conftest.LEAKY lists, with KB_SESSION empty, KB_DOCS_CACHE unset, ENABLE_CLAUDEAI_MCP_SERVERS=false and KB_HOST_LOCK_DIR under DIR",
+      "check": 0
+    },
+    {
+      "clause": "repro setup --dry-run prints the plan and starts nothing",
+      "check": 1
+    },
+    {
+      "clause": "no new test id: test_bench.py's test_bench_price_weights_and_tier_and_freshness_rows bundle gains a body that runs setup and check with a local bare standing in for the remote, a claude shimmed on PATH (bench_core.shim_dir) and KB_SYNC_NO_TESTS=1",
+      "check": 0
+    },
+    {
+      "clause": "the worker reports the tests.py --ceiling seconds before and after",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/bench_core.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/map.csv",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "notes": "Premise run 2026-10-15 by the planner's verifier on 89895f542: kbgit.py sync --push in a standalone clone whose origin is a local bare path works today (exit 0, about 20 s, bare main moved, real origin untouched; three clones rebased on each other), so sync needs no change. Not per clone today: the kb MCP server (local scope in ~/.claude.json for the main checkout only; a standalone clone gets none, and ST-gkrivybp's worktree redirect needs a shared git common dir); the query log defaults to mode auto without _private/querylog.json (paid Haiku distill and apply --push at SessionEnd); bench_core.throwaway_clone clones the blob:none partial checkout (221 history objects missing) and copies every ref of HOME. Per clone today: _cache (kbcommon.HOME), the pack index (kbfacts.index_dir), the claims ledger (bl_base.CLAIMS_LEDGER), Claude Code project memory. Host-wide by design: /tmp/kb-main.lock and /tmp/kb-tests.lock (KB_HOST_LOCK_DIR redirects both). Leaky env: CLAUDE_CODE_BRIDGE_SESSION_ID / CLAUDE_CODE_REMOTE_SESSION_ID make sync refuse other sessions' trailers; no_plugin_env leaves KB_DOCS_CACHE. Plan review: kb servers go to each session by --mcp-config FILE --strict-mcp-config (bench_install.py, agent_bench.py precedent), never kb_mcp.py --register-local, which rewrites the shared ~/.claude.json; setup deletes the seed bare, which holds the commits after the start commit. The test bundle passes before the work; the setup --dry-run check fails before it. Selection cost about 1.5 s wall."
+}

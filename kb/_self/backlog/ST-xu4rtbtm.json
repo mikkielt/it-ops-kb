@@ -1,0 +1,61 @@
+{
+  "id": "ST-xu4rtbtm",
+  "kind": "story",
+  "title": "benchmarks.py repro record merges the run's per-area results into benchmarks.csv as the repro scenario",
+  "status": "draft",
+  "sprint": "SP-ygsnog4n",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "repro record merges the json lines repro run appends under DIR into kb/_self/reports/benchmarks.csv as the scenario repro, with record the start sha's first 7 characters, arm instance-N, case the area and the metrics cost, input, out, cache_read, cache_write, turns, tool_calls, wall_s, models, failure, main_before and main_after, and the start sha and the sha256 of the briefs and of the questions in the note; a second repro record of the same lines changes nothing; repro record --dry-run prints the rows it would merge and writes nothing, exiting 0 with no lines; no new test id: the test_bench.py bundle gains a body that records planted json lines twice.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/benchmarks.py",
+        "repro",
+        "record",
+        "--dry-run"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro record merges the json lines repro run appends under DIR into kb/_self/reports/benchmarks.csv as the scenario repro, with record the start sha's first 7 characters, arm instance-N, case the area and the metrics cost, input, out, cache_read, cache_write, turns, tool_calls, wall_s, models, failure, main_before and main_after",
+      "check": 0
+    },
+    {
+      "clause": "the start sha and the sha256 of the briefs and of the questions in the note",
+      "check": 0
+    },
+    {
+      "clause": "a second repro record of the same lines changes nothing",
+      "check": 0
+    },
+    {
+      "clause": "repro record --dry-run prints the rows it would merge and writes nothing, exiting 0 with no lines",
+      "check": 1
+    },
+    {
+      "clause": "no new test id: the test_bench.py bundle gains a body that records planted json lines twice",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/benchmarks.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-v7d2dc2x"
+  ],
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+}
