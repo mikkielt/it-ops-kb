@@ -52,7 +52,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/coding-agent-codebase-context` | P3 | complete | `agents/coding-agent-codebase-context.md` | 20 |
 | `agents/decision-records` | P3 | partial | `agents/decision-records.md`, `agents/decision-records.csv` | 10 |
 | `agents/doc-change-detection` | P3 | complete | `agents/doc-change-detection.md` | 75 |
-| `agents/gitops-for-agents` | P3 | partial | `agents/gitops-for-agents.md` | 20 |
+| `agents/gitops-for-agents` | P3 | partial | `agents/gitops-for-agents.md` | 22 |
 | `agents/langgraph` | P3 | complete | `agents/langgraph.md` | 15 |
 | `agents/mmlw-e5-polish-embeddings` | P3 | partial | `agents/mmlw-e5-polish-embeddings.md` | 31 |
 | `agents/onnx-runtime-rust-ort` | P3 | partial | `agents/onnx-runtime-rust-ort.md` | 44 |

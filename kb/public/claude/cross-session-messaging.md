@@ -162,11 +162,16 @@ and listing.
 - A thread can add a repository the project lacks to itself partway through a task (that thread only, its
   `CLAUDE.md` and skills missing at start); it needs the Claude GitHub App and push access, and Claude adds
   repositories only from a GitHub owner the project already uses. [DOC S-fk46gdey]
+- A project that works on code needs that code on github.com, not on GitHub Enterprise Server, GitLab or Bitbucket,
+  with push access from the connected GitHub account and the Claude GitHub App installed on it; a `/web-setup` token
+  is not enough for a project's cloud threads. [DOC S-fk46gdey]
 - Coordinating agents across repositories therefore takes one of three documented forms: one session reaching other
   checkouts (`--add-dir`, a multi-repository cloud session), separate sessions per repository that message each
   other (this page) or that a Project starts and tracks, or a CI pipeline in one repository that triggers and waits on
-  pipelines in others (`gitlab/multi-project-pipelines.md`). [DER S-fk46gdey, S-sdxhnx3i: the Projects page and this
-  page's targets; S-4jj4dtg4 in `claude/large-codebases.md`; S-s67nwj2e in `gitlab/multi-project-pipelines.md`]
+  pipelines in others (`gitlab/multi-project-pipelines.md`). A Project's code threads need the repositories on
+  github.com, so repositories on GitLab or GitHub Enterprise Server are left with the other forms. [DER S-fk46gdey,
+  S-sdxhnx3i: the Projects page and this page's targets; S-4jj4dtg4 in `claude/large-codebases.md`; S-s67nwj2e in
+  `gitlab/multi-project-pipelines.md`]
 
 ### How it fits
 - For unattended agents in this kb's frame, a bypass-mode session (e.g. a background job with

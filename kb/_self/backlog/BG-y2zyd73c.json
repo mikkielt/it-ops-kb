@@ -36,5 +36,56 @@
     "kb/public/gitlab/commit-signing-and-provenance.md",
     "kb/public/auth/spiffe-workload-identity.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Orphan source row S-avxyujaz: supersede it by its successor S-26trg6rj or remove the row?",
+      "options": [
+        "set superseded_by S-26trg6rj",
+        "remove the row"
+      ],
+      "recommendation": "set superseded_by S-26trg6rj",
+      "do": {
+        "set superseded_by S-26trg6rj": "BG-y2zyd73c",
+        "remove the row": "BG-y2zyd73c"
+      },
+      "class": "design",
+      "answer": "set superseded_by S-26trg6rj",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "auth/spiffe-workload-identity.md:23 now cites two sources but factdiff.py anchor takes one quote per fact line: which source's anchor row is located by quote?",
+      "options": [
+        "S-yp5feoc6, the added citation",
+        "S-xc5uusz2, the earlier anchor"
+      ],
+      "recommendation": "S-yp5feoc6, the added citation",
+      "do": {
+        "S-yp5feoc6, the added citation": "BG-y2zyd73c",
+        "S-xc5uusz2, the earlier anchor": "BG-y2zyd73c"
+      },
+      "class": "design",
+      "answer": "S-yp5feoc6, the added citation",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Where does the Projects github.com caveat go in claude/cross-session-messaging.md's DER on coordinating across repositories?",
+      "options": [
+        "a sentence inside the existing DER",
+        "a separate DER line after it"
+      ],
+      "recommendation": "a sentence inside the existing DER",
+      "do": {
+        "a sentence inside the existing DER": "BG-y2zyd73c",
+        "a separate DER line after it": "BG-y2zyd73c"
+      },
+      "class": "push"
+    }
+  ],
   "claimed_by": "orch-state"
 }

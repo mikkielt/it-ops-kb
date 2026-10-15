@@ -20,7 +20,7 @@ A SPIFFE ID is a `spiffe://<trust domain>/<path>` URI that names a workload; an 
 - The path's meaning is left to the administrator; it may mirror a platform identity such as a Kubernetes service account or stay opaque, with metadata held in a separate registry. [DOC S-xc5uusz2]
 - Implementations must accept SPIFFE IDs up to 2048 bytes and should not generate longer ones; scheme and trust domain are case-insensitive, the path case-sensitive. [DOC S-xc5uusz2]
 - An SVID is how a workload presents its SPIFFE ID to a resource or caller; it is valid when signed by an authority within the SPIFFE ID's trust domain, and it carries at least a SPIFFE ID and a valid signature. [DOC S-xc5uusz2]
-- An SVID is not a document type of its own: the standards define X.509-SVID, JWT-SVID and WIT-SVID encodings; the Workload API makes X.509-SVID and JWT-SVID mandatory and WIT-SVID optional. [DOC S-xc5uusz2]
+- An SVID is not a document type of its own: the standards define X.509-SVID, JWT-SVID and WIT-SVID encodings; the Workload API makes X.509-SVID and JWT-SVID mandatory and WIT-SVID optional. [DOC S-xc5uusz2, S-yp5feoc6]
 - The Workload API does not authenticate its clients directly; the Workload Endpoint implementation identifies the caller out of band and serves the identities that caller is entitled to. [DOC S-yp5feoc6]
 
 ### SPIRE attestation
