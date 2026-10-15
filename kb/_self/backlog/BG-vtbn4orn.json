@@ -17,5 +17,5 @@
   "touches": [
     "_tools/factdiff.py"
   ],
-  "notes": "ST-edgkrk37 (2026-10-15): the same message for --file kb/public/agents/agent-sandboxes.md and for the kb-root-prefixed --file public/agents/agent-sandboxes.md (45 lines each reported 'is no tagged fact of the file'); only the root-relative agents/agent-sandboxes.md worked, and staging the new file did not change it."
+  "notes": "ST-edgkrk37 (2026-10-15): the same message for --file kb/public/agents/agent-sandboxes.md and for the kb-root-prefixed --file public/agents/agent-sandboxes.md (45 lines each reported 'is no tagged fact of the file'); only the root-relative agents/agent-sandboxes.md worked, and staging the new file did not change it. ST-52lihy7z (2026-10-15): again for --file kb/public/gitlab/commit-signing-and-provenance.md (45 quote lines each reported 'is no tagged fact of the file', exit 2); the root-relative gitlab/commit-signing-and-provenance.md anchored 45 quotes."
 }
