@@ -2620,11 +2620,18 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     if verdict != "none":
         cand = [u for a in order for _, u in sorted((x for x in by_art[a] if x[0] >= 0.4 * best), key=lambda x: -x[0])[:6]]
 
+        # the words the question spells (a one-letter part, the V of Hyper V, included; a stop word excluded)
+        spelled = {stem(p) for p in re.findall(r"\w+", question.lower()) if p not in STOP}
+
         def holds_name(u, t):
             if not has(u, t):
                 return False
             words = WORD.findall(u["text"].lower())
-            if t in key_terms(u["text"]) or t not in {stem(p) for w in words if "-" in w for p in w.split("-")}:
+            compounds = [[stem(p) for p in w.split("-")] for w in words if "-" in w]
+            # a hyphen part holds the name when another part of its compound is a word of the question too
+            # (Hyper V finds hyper-v, Invoke WebRequest finds Invoke-WebRequest; "long-horizon" stays no VMware Horizon)
+            if (t in key_terms(u["text"]) or not any(t in c for c in compounds)
+                    or any(t in c and any(o in spelled for o in c if o != t) for c in compounds)):
                 return True  # a word of its own, or held through the title, section, an alias or a dotted or camel part
             meta = st.arts.get(u["path"], {})
             return t in key_terms(f"{meta.get('title', '')} {u['section']}")

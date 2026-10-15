@@ -1121,7 +1121,8 @@ class TestPackNotesOnAPlantedRoot:
                      "alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau".split())]),
                  # a name the kb holds only inside a hyphenated common word, and one it holds as a word of its own
                  "tasks": ("Tasks", ["Long-zephyr tasks are queued by the Spooler service.",
-                                     "The Quasar planner queues tasks for the Spooler service."]),
+                                     "The Quasar planner queues tasks for the Spooler service.",
+                                     "The Quark-X pool and the Amber-glass tasks are drained by the Spooler service."]),
                  "ledger": ("Ledger", [f"Entry {n} is noted in ledger {n + 1}." for n in range(0, 120)])}
         for slug, (title, lines) in facts.items():
             write(fx / "print" / f"{slug}.md",
@@ -1153,6 +1154,13 @@ class TestPackNotesOnAPlantedRoot:
         assert re.search(r"^coverage: none\b", out, re.M), out[:1200]
         out = fixture_pack("How do I queue Quasar tasks for the Spooler service?")
         assert not re.search(r"^coverage: none\b", out, re.M), out[:1200]
+        # ... unless the question spells the compound with a space: another part of it (a one-letter part too) is asked
+        for question in ("How do I drain the Quark X pool for the Spooler service?",
+                         "How do I drain Amber Glass tasks for the Spooler service?"):
+            out = fixture_pack(question)
+            assert not re.search(r"^coverage: none\b", out, re.M), out[:1200]
+        out = fixture_pack("How long do Zephyr tasks take for the Spooler service?")  # a stop word is no part asked
+        assert re.search(r"^coverage: none\b", out, re.M), out[:1200]
         assert not kbfacts.PRICE_ASK.search("What does it cost in resource units?")
         assert kbfacts.PRICE_ASK.search("How much is a licence per user per month?") and not kbfacts.PRICE_ASK.search("How much memory does it use?")
         assert kbfacts.PRICE_ASK.search("What does it cost per user?") and kbfacts.PRICE_ASK.search("What is the price in units of 5?")
