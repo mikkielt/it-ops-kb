@@ -3796,3 +3796,16 @@ _Agent: kb-research_
 - See security/fish-config-files-completions.md, security/fish-variables-scopes-export.md, security/fish-functions-abbreviations-events.md, security/fish-syntax-bash-differences.md, security/fish-feature-flags-release-changes.md, security/fish-on-windows-wsl-cygwin-msys2.md.
 
 _Agent: kb-research_
+
+## QK-cmd-exe-quoting-expansion-redirection-errorlevel. How does cmd.exe parse and quote a command line, expand variables (including delayed expansion) in a batch file against the prompt, redirect streams, pass exit codes and ERRORLEVEL, which commands are built in, and what are the command-line length limits?
+- `cmd /c` or `/k` keeps the quotes around its string only when there is exactly one pair, no `& < > ( ) @ ^ |` inside, white space inside, no `/s`, and the quoted text names an executable; otherwise the first quote and its closing quote are stripped, which `/s` forces. [DOC S-yna7gijv]
+- `& | ( )` and the other characters of the `cmd` page's list (`< > [ ] { } ^ = ; ! + ,` among them) need `^` or quotes when passed as arguments; in `set` the quotes stay in the value, and in `echo` `^|`, `^&`, `^<`, `^>`, `^(`, `^)` and `^^!` print the character. [DOC S-yna7gijv, S-jbeh3qg6, S-gydqaolr]
+- `&&` and `||` run the next command on success or failure of the previous; redirection uses handles 0 to 2 (3 to 9 per application) with `>`, `>>`, `<`, `>&`, `<&` and `2>&1`; `call` takes no pipes or redirection. [DOC S-yna7gijv, S-gp367igh, S-5h7fuwx3]
+- `%var%` is substituted once and not recursively; `!var!` is a run-time substitution that needs `cmd /v:on` or `setlocal enabledelayedexpansion`; `%~1` and `%~dp1` style modifiers apply to batch parameters and `for` variables, and a `for` variable is `%f` at the prompt, `%%f` in a batch file. [DOC S-yna7gijv, S-33ugnqz2, S-5h7fuwx3, S-5b57ykp4]
+- `if errorlevel N` is true for exit codes of N or more; `%errorlevel%` holds the number; `exit /b N` ends a script with it, and `setlocal` itself sets ERRORLEVEL to 0 or 1. [DOC S-7varc2ty, S-z3njred5, S-33ugnqz2]
+- The 8191-character limit covers the command line, inherited environment variables and every expansion, in a batch file too; Win32 itself allows 32,767. [DOC S-e4zz24dq, S-6bobcclf]
+- Conclusion: a script run through `cmd` meets the 8191-character limit after expansion, so long argument lists go in a parameter file; paths are quoted and `%~1` drops the caller's quotes before the script adds its own; results go back as small non-negative codes through `exit /b`. [DER S-e4zz24dq, S-5h7fuwx3, S-z3njred5, S-hrrqkjbi: the limit, `%~1`, `exit /b` and the signed display of large codes]
+- Open: the order effect of `2>&1` against `> file`, the parse stage at which `%` expands, the 8191 limit on current Windows releases, the list of commands internal to `cmd.exe`, and what `cmd /c` returns as exit code were not stated on Microsoft Learn. [UNK]
+- See windows/cmd-exe-syntax-quoting-redirection.md, windows/cmd-exe-variables-expansion-errorlevel.md, python/stdlib-windows-portability.md.
+
+_Agent: kb-research_

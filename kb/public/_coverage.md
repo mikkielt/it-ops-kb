@@ -410,6 +410,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/windows-365` | P2 | complete | `windows/windows-365.md` | 19 |
 | `windows/windows-update-management` | P2 | complete | `windows/windows-update-management.md`, `windows/windows-update-management.csv` | 19 |
 | `windows/winget` | P2 | complete | `windows/winget.md`, `windows/winget-policies.csv` | 14 |
+| `windows/cmd-exe-syntax-quoting-redirection` | P3 | partial | `windows/cmd-exe-syntax-quoting-redirection.md` | 12 |
+| `windows/cmd-exe-variables-expansion-errorlevel` | P3 | partial | `windows/cmd-exe-variables-expansion-errorlevel.md` | 11 |
 | `windows/dev-drive` | P3 | partial | `windows/dev-drive.md` | 6 |
 | `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 21 |
 | `windows/process-parent-and-command-line` | P3 | partial | `windows/process-parent-and-command-line.md` | 8 |
