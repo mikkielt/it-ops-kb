@@ -64,7 +64,9 @@
         "reuse S447": "ST-a25p6qsy",
         "add a row at 9f1632e2": "ST-a25p6qsy"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "add a row at 9f1632e2",
+      "by": "operator"
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/multi-project-pipelines where no article fits, closing the cross-session-messaging gap on cross-repository coordination.",
