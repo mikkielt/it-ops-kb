@@ -2,7 +2,7 @@
   "id": "ST-yom2npf4",
   "kind": "story",
   "title": "Research sprint goal: Three isolated instances research the benchmark, and a report says how alike their results are",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ccvfvoqj",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the sprint goal's questions concern this project's own benchmarks.py repro run and compare, which kb/_self/tools.md (Commands, benchmarks.py rows) documents; the public kb already holds the Claude Code result fields (cost, usage, modelUsage, num_turns) the run records at kb/public/claude/ci-and-headless.md:84-87, so nothing outside the repository is left to fetch.",
-  "claimed_by": "orch-ccvfvoqj"
+  "evidence": {
+    "commit": "f8b11c29f8dbcb3b54582907a0c3ff4ccd4be0ca",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-yom2npf4"
+        ],
+        "exit": 0,
+        "sha256": "6526d09a05baf8e7"
+      }
+    ]
+  }
 }
