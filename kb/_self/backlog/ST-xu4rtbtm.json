@@ -2,7 +2,7 @@
   "id": "ST-xu4rtbtm",
   "kind": "story",
   "title": "benchmarks.py repro record merges the run's per-area results into benchmarks.csv as the repro scenario",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -57,5 +57,6 @@
   "depends_on": [
     "ST-v7d2dc2x"
   ],
-  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
+  "claimed_by": "orch-mac"
 }
