@@ -2,7 +2,7 @@
   "id": "ST-levrq3xs",
   "kind": "story",
   "title": "Research sprint goal: The research-reproducibility benchmark is defined and its isolated harness is proven",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "goal_research": true,
   "priority": "P1",
@@ -43,5 +43,19 @@
     }
   ],
   "notes": "Research written: connector switches (disableClaudeAiConnectors, ENABLE_CLAUDEAI_MCP_SERVERS) in claude/settings-and-scopes.md and bare versus mirror clones in gitlab/git-test-repositories.md, existing sources only. Held as a patch for after ST-7muzllvn (needs three _sources.csv rows, S-7kl4eeso git-rebase, S-f5whqkwk url.adoc, S-hfho3uwe SDK claude-code-features): git rebase --onto and --trailer, url.<base>.pushInsteadOf, the SDK settingSources inputs. Anchors for the added DOC facts (_anchors.csv) are likewise left for after ST-7muzllvn.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "7ad9ab794553304df25705ae0712d6a42e1b491e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-levrq3xs"
+        ],
+        "exit": 0,
+        "sha256": "94ba7fed66e58bf9"
+      }
+    ]
+  }
 }
