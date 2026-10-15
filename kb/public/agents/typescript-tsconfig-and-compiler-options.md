@@ -3,7 +3,7 @@ topic: agents/typescript-tsconfig-and-compiler-options
 priority: P3
 applies_to: "TypeScript 5.x, 6.0 (2026-03-23) and 7.0 (2026-07-08, native compiler): tsconfig.json structure (files, include, exclude, extends), compilerOptions defaults and how 6.0 changed them, the strict family, deprecations, the tsc command line; website reference pages pinned at TypeScript-Website commit 6556b08"
 retrieved_utc: 2026-10-15
-sources: [S-jdmnhjds, S-eumnm3tn, S-4bj5u3yk, S-ff6may7t, S-3e3kl7vi, S-34pqpd75, S-7nvzlf7l, S-iudxgieq, S-f2d7bode, S-huriuyvo, S-4gncoeuv, S-pgt5grct, S-el5lfrsb, S-2yfpg4cd, S-iyxaeenu, S-2oseqdau, S-fdzam7lv, S-5egapxtq, S-sp2a6svk, S-eq3gt72a, S-lq5mn2bc, S-sipjyeoi, S-j645b5a2, S-4xfmso3u, S-jfnkownz, S-yuhdbie6, S-ybwhbhxi, S-vdfo2blu]
+sources: [S-jdmnhjds, S-eumnm3tn, S-4bj5u3yk, S-ff6may7t, S-3e3kl7vi, S-34pqpd75, S-7nvzlf7l, S-iudxgieq, S-f2d7bode, S-huriuyvo, S-4gncoeuv, S-pgt5grct, S-el5lfrsb, S-2yfpg4cd, S-iyxaeenu, S-2oseqdau, S-fdzam7lv, S-5egapxtq, S-sp2a6svk, S-eq3gt72a, S-lq5mn2bc, S-sipjyeoi, S-j645b5a2, S-4xfmso3u, S-jfnkownz, S-yuhdbie6, S-ybwhbhxi, S-vdfo2blu, S-cblfylm6, S-gssvmwmg]
 status: complete
 ---
 
@@ -43,9 +43,11 @@ A `tsconfig.json` has three file-selection properties (`files`, `include`, `excl
 ### Defaults that TypeScript 6.0 changed (and 7.0 keeps)
 - `strict` is true by default in 6.0; a project that relied on the old default of false must write `"strict": false`. [DOC S-sp2a6svk]
 - `module` defaults to `esnext`, and `target` defaults to the most recent supported ECMAScript version, a floating target that was `es2025` at the 6.0 release. [DOC S-sp2a6svk]
+- `target` decides which JavaScript features are downleveled and which are left intact (an arrow function `() => this` becomes an equivalent `function` expression at ES5 or lower) and changes the default of `lib`. The special `ESNext` value is the highest version the installed TypeScript supports, so it does not mean the same thing between TypeScript versions and makes upgrades less predictable. [DOC S-gssvmwmg]
 - `noUncheckedSideEffectImports` is true by default and `libReplacement` is false by default. [DOC S-sp2a6svk]
 - `rootDir` defaults to the directory that holds the `tsconfig.json`; it is only inferred when `tsc` runs from the command line with no `tsconfig.json`. A project whose sources sit in `src/` and that relied on the inferred common root must now set `"rootDir": "./src"`, or its output moves to `dist/src/`. [DOC S-sp2a6svk]
 - `types` defaults to `[]`: `node_modules/@types` packages are no longer all pulled into the global scope, and a project that needs `process`, `describe` and the like must list `"types": ["node"]` or similar. `["*"]` restores the 5.9 behaviour. [DOC S-sp2a6svk]
+- When `types` is specified, only the listed packages from `node_modules/@types` (that folder of any enclosing directory) enter the global scope: the others add no globals such as `process` or `expect` and no auto-import suggestions, but a module an `import` reaches stays fully typed. `typeRoots` is the option that selects folders rather than exact packages. [DOC S-cblfylm6]
 - 7.0 states that it adopts the 6.0 defaults and gives hard errors for the flags and constructs 6.0 deprecated; `target` defaults to the current stable ECMAScript version just before `esnext`, and `stableTypeOrdering` is true and cannot be turned off. [DOC S-eq3gt72a]
 - The website's live tsconfig reference still prints pre-6.0 defaults: `module` is "CommonJS if target is ES5; ES6/ES2015 otherwise" and `target` is "ES5 otherwise". The 6.0 and 7.0 announcements and the 7.0.2 source disagree with it. [DOC S-lq5mn2bc]
 - In the 7.0.2 source `strict`, `alwaysStrict` and `allowSyntheticDefaultImports` are declared with default `true`, `composite` with `false`, and `moduleResolution` with "nodenext if module is nodenext, node16 if module is node16 or node18, otherwise bundler". [CODE S-sipjyeoi: internal/tsoptions/declscompiler.go#OptionsDeclarations]

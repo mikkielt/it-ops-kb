@@ -869,6 +869,9 @@ fcbc59a4a249,agents/azure-openai-deployments.md,S-uk5qyhwi,located,Indirect atta
 3d7239a659a8,agents/codebase-mapping.csv,S-gcxnhiij,unlocated:no-match,,,,,2026-10-10
 3d7239a659a8,agents/codebase-mapping.csv,S-j7sjakc5,unlocated:no-match,,,,,2026-10-10
 3d7239a659a8,agents/codebase-mapping.csv,S-sqwzg5ex,unlocated:no-match,,,,,2026-10-10
+53879f697fb1,agents/codebase-mapping.csv,S-3e3kl7vi,unlocated:no-match,,,,,2026-10-15
+53879f697fb1,agents/codebase-mapping.csv,S-ff6may7t,unlocated:no-match,,,,,2026-10-15
+53879f697fb1,agents/codebase-mapping.csv,S-j645b5a2,unlocated:no-match,,,,,2026-10-15
 6329af99d782,agents/codebase-mapping.csv,S-3dlonliy,unlocated:no-match,,,,,2026-10-10
 6329af99d782,agents/codebase-mapping.csv,S-xdf63oro,located,,extra;1.0;output-format;ptag;version;_typ;format;ctag,33890e010ea42391,"$ ctags --extras=+p --output-format=json --fields=-s input.py {""type"": ""ptag"", ""name"": ""JSONOUTPUTVERSION"", ""path"": ""1.0"", ""pattern"": ""in development""}",2026-10-10
 68b166a4bf41,agents/codebase-mapping.csv,S-7e63teyx,unlocated:no-match,,,,,2026-10-10
@@ -877,9 +880,6 @@ fcbc59a4a249,agents/azure-openai-deployments.md,S-uk5qyhwi,located,Indirect atta
 70123602d15d,agents/codebase-mapping.csv,S-ecfbexjo,unlocated:no-match,,,,,2026-10-10
 70123602d15d,agents/codebase-mapping.csv,S-me5pwvu4,unlocated:no-match,,,,,2026-10-10
 70123602d15d,agents/codebase-mapping.csv,S-st5dilla,unlocated:no-match,,,,,2026-10-10
-827d6c40a998,agents/codebase-mapping.csv,S-3e3kl7vi,unlocated:no-match,,,,,2026-10-10
-827d6c40a998,agents/codebase-mapping.csv,S-ff6may7t,unlocated:no-match,,,,,2026-10-10
-827d6c40a998,agents/codebase-mapping.csv,S-j645b5a2,unlocated:no-match,,,,,2026-10-10
 93b67f18d14f,agents/codebase-mapping.csv,S-223vfyli,unlocated:no-match,,,,,2026-10-10
 93b67f18d14f,agents/codebase-mapping.csv,S-3a7yfcq7,unlocated:no-match,,,,,2026-10-10
 93b67f18d14f,agents/codebase-mapping.csv,S-4xsjlwlt,unlocated:no-match,,,,,2026-10-10
@@ -3588,6 +3588,7 @@ f26e2dd4c4dc,agents/typescript-projects-declarations-incremental.md,S-sp2a6svk,l
 68ff7c668d57,agents/typescript-tsconfig-and-compiler-options.md,S-sipjyeoi,unlocated:no-match,,,,,2026-10-15
 6a047fe3c186,agents/typescript-tsconfig-and-compiler-options.md,S-j645b5a2,located,Using the CLI > Compiler Options,build;project,d12f0ac5c6cfc332,"Build one or more projects and their dependencies, if out of date",2026-10-15
 706dc7eec2c2,agents/typescript-tsconfig-and-compiler-options.md,S-iyxaeenu,located,,each;emit;file;pars;sourc;ecmascript;mode;strict,1de2aa7ac10204f3,"Ensures that your files are parsed in the ECMAScript strict mode, and emit ""use strict"" for each source file.",2026-10-15
+71a2c1fb091f,agents/typescript-tsconfig-and-compiler-options.md,S-gssvmwmg,located,,default;chang;lib;valu;target,f8f855435fe20f75,Changing target also changes the default value of lib.,2026-10-15
 72440600c852,agents/typescript-tsconfig-and-compiler-options.md,S-j645b5a2,unlocated:no-match,,,,,2026-10-15
 72440600c852,agents/typescript-tsconfig-and-compiler-options.md,S-lq5mn2bc,unlocated:no-match,,,,,2026-10-15
 72440600c852,agents/typescript-tsconfig-and-compiler-options.md,S-sp2a6svk,unlocated:no-match,,,,,2026-10-15
@@ -3604,6 +3605,7 @@ f26e2dd4c4dc,agents/typescript-projects-declarations-incremental.md,S-sp2a6svk,l
 a4146fd2f235,agents/typescript-tsconfig-and-compiler-options.md,S-sp2a6svk,located,Announcing TypeScript 6.0 > Breaking Changes and Deprecations in TypeScript 6.0 > types now defaults to [],default;type,2b35487c2b9c5f94,"In TypeScript 6.0, the default types value will be [] (an empty array).",2026-10-15
 af9f91005063,agents/typescript-tsconfig-and-compiler-options.md,S-34pqpd75,located,,allowsyntheticdefaultimport;synthetic;esmoduleinterop;fals;interop;moduleresolution;resolution;allow,86e85e6c30ac306c,"allowSyntheticDefaultImports: [ ""true if [esModuleInterop](#esModuleInterop) is enabled, [module](#module) is system, or [moduleResolution](#module-resolution) is bundler;"", ""false otherwise."",",2026-10-15
 af9f91005063,agents/typescript-tsconfig-and-compiler-options.md,S-sp2a6svk,unlocated:no-match,,,,,2026-10-15
+b0097ee90d75,agents/typescript-tsconfig-and-compiler-options.md,S-cblfylm6,located,,list;scop;specifi;global;packag;type,de802a6f7a724ef0,"If types is specified, only packages listed will be included in the global scope.",2026-10-15
 bad00527f7c7,agents/typescript-tsconfig-and-compiler-options.md,S-iudxgieq,located,,implicit;infer;noimplicitany;error,8cb7b6d57f8d3e22,TypeScript will issue an error whenever it would have inferred any,2026-10-15
 bb6276ee67a5,agents/typescript-tsconfig-and-compiler-options.md,S-sp2a6svk,located,Announcing TypeScript 6.0 > Breaking Changes and Deprecations in TypeScript 6.0 > Simple Default Changes,nouncheckedsideeffectimport;side;uncheck;effect;true;default;import,163351e9cbe18389,noUncheckedSideEffectImports is now true by default:,2026-10-15
 cf17a964d4a7,agents/typescript-tsconfig-and-compiler-options.md,S-ybwhbhxi,located,,declaration;file;skip;check;type,9e5207e1868afdfb,Skip type checking of declaration files.,2026-10-15
@@ -3877,6 +3879,7 @@ d4e43dc46cbe,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
 091929c9e8b1,arch/fluent-rust-typescript.md,S-adkxxbxo,located,Struct IntlLangMemoizer > Auto Trait Implementations§,send;sync;memoizer,ba8546e0d637af45,impl !Send for IntlLangMemoizer § impl !Sync for IntlLangMemoizer,2026-10-14
 091929c9e8b1,arch/fluent-rust-typescript.md,S-sui7jilt,unlocated:no-match,,,,,2026-10-14
 091929c9e8b1,arch/fluent-rust-typescript.md,S-xxelwvq6,unlocated:no-match,,,,,2026-10-14
+0d6950be749f,arch/fluent-rust-typescript.md,S-dftqctth,unlocated:no-match,,,,,2026-10-15
 18035162e78e,arch/fluent-rust-typescript.md,S-qucwxqjo,unlocated:no-match,,,,,2026-10-14
 18035162e78e,arch/fluent-rust-typescript.md,S-v5hog4zh,unlocated:no-match,,,,,2026-10-14
 198b0d91d6b9,arch/fluent-rust-typescript.md,S-ejm4457f,unlocated:no-match,,,,,2026-10-14
@@ -3890,7 +3893,7 @@ d4e43dc46cbe,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
 1bda3c57ac88,arch/fluent-rust-typescript.md,S-ihysyyjh,unlocated:no-match,,,,,2026-10-14
 1bda3c57ac88,arch/fluent-rust-typescript.md,S-j6vzyt5y,located,,0.9.6;2.0;apach;apache-2.0;mit;unic-langid;crat;langid,1b6ada5901d9bd9b,"""license"": ""MIT OR Apache-2.0"", ""links"": { ""dependencies"": ""/api/v1/crates/unic-langid/0.9.6/dependencies"",",2026-10-14
 1bda3c57ac88,arch/fluent-rust-typescript.md,S-pkdj2ggv,unlocated:no-match,,,,,2026-10-14
-1bda3c57ac88,arch/fluent-rust-typescript.md,S-ueumbn4x,unlocated:gone,,,,,2026-10-14
+1bda3c57ac88,arch/fluent-rust-typescript.md,S-ueumbn4x,unlocated:gone,,,,,2026-10-15
 1c5501f42659,arch/fluent-rust-typescript.md,S-lj3rgbhb,unlocated:no-match,,,,,2026-10-14
 1e82cde2ad90,arch/fluent-rust-typescript.md,S-qetvxk3e,unlocated:no-match,,,,,2026-10-14
 2383432bf66c,arch/fluent-rust-typescript.md,S-2viytftj,unlocated:no-match,,,,,2026-10-14
@@ -3911,7 +3914,7 @@ d4e43dc46cbe,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
 4e04acd64993,arch/fluent-rust-typescript.md,S-43gqmseb,unlocated:no-match,,,,,2026-10-14
 4e04acd64993,arch/fluent-rust-typescript.md,S-dftqctth,unlocated:no-match,,,,,2026-10-14
 4e04acd64993,arch/fluent-rust-typescript.md,S-edmvqoen,unlocated:no-match,,,,,2026-10-14
-500a43168e20,arch/fluent-rust-typescript.md,S-ueumbn4x,unlocated:gone,,,,,2026-10-14
+500a43168e20,arch/fluent-rust-typescript.md,S-ueumbn4x,unlocated:gone,,,,,2026-10-15
 500a43168e20,arch/fluent-rust-typescript.md,S-v5arxcqi,located,,bundl;fluentresourc;fluent;resourc,d011d51836129b24,/// use fluentbundle::FluentResource;,2026-10-14
 5af26ed81ee4,arch/fluent-rust-typescript.md,S-5bmxcoy4,located,i18n-embed-fl,i18n-emb;provid;check;compil;time;macro;fluent;i18n,01f7ce43ea9b454c,This crate provides a macro to perform compile time checks when using the i18n-embed crate and the fluent localization system.,2026-10-14
 5af26ed81ee4,arch/fluent-rust-typescript.md,S-mobvrkio,unlocated:no-match,,,,,2026-10-14
@@ -3948,7 +3951,6 @@ d53c9673ff33,arch/fluent-rust-typescript.md,S-nqeg3xk3,unlocated:no-match,,,,,20
 d53c9673ff33,arch/fluent-rust-typescript.md,S-wxarrmdh,unlocated:no-match,,,,,2026-10-14
 d8fa2fca114c,arch/fluent-rust-typescript.md,S-yxzyna3l,located,@fluent/bundle > Compatibility,date;datetimeformat;intl.datetimeformat;intl.numberformat;intl.pluralrul;number;numberformat;plural,f043c492e66527ec,"Intl.DateTimeFormat (standard, well-supported) Intl.NumberFormat (standard, well-supported) Intl.PluralRules (standard, well-supported)",2026-10-14
 e04fc46d9b2f,arch/fluent-rust-typescript.md,S-fi73q2gh,unlocated:no-match,,,,,2026-10-14
-e5caacd41f2e,arch/fluent-rust-typescript.md,S-dftqctth,located,,creation;fallback;handl;languag;localization;string;bundl,304c35ee0da54cb1,"This handles language fallback, bundle creation and string localization.",2026-10-14
 ef8a812033d3,arch/fluent-rust-typescript.md,S-wo2rtyeb,unlocated:no-match,,,,,2026-10-14
 f0fc0ccf798a,arch/fluent-rust-typescript.md,S1709,unlocated:no-match,,,,,2026-10-14
 f0fc0ccf798a,arch/fluent-rust-typescript.md,S-c7rozbcf,located,Open Source,1.0;fluent;python;rust;syntax,a62da25da9c98067,"Fluent Syntax 1.0 was released in April 2019. Client- and server-side implementations in JS, Python, and Rust.",2026-10-14
@@ -4319,7 +4321,6 @@ f7a6a8d0ca2d,arch/sql-auth-containers.md,S1610,unlocated:no-match,,,,,2026-10-10
 3a6fa2b0c9f0,arch/texts-catalogue-formats.md,S1716,unlocated:no-match,,,,,2026-10-10
 3a6fa2b0c9f0,arch/texts-catalogue-formats.md,S1717,unlocated:no-match,,,,,2026-10-10
 41218bc87ba4,arch/texts-catalogue-formats.md,S-u6o4ef53,located,Plan Translation for Multiple-Language Reports in Power BI - Power BI | Microsoft Learn > Report label translation,button;titl;localiz;text;model;semantic;report,f73fc9e722d070ec,Report label translation provides localized values for text elements on a report that aren't directly associated with a semantic model object. Examples of report labels,2026-10-10
-469c990cd33f,arch/texts-catalogue-formats.md,S1710,located,Using fluent.runtime¶ > Using FluentLocalization¶,entrypoint;application;main;fluentlocalization;localization;fluent,7d40e985dba78103,The main entrypoint for your application is a FluentLocalization.,2026-10-14
 4917a3557294,arch/texts-catalogue-formats.md,S-7sn3nxho,unlocated:no-match,,,,,2026-10-10
 530a0bab9841,arch/texts-catalogue-formats.md,S1715,located,Use Tabular Model Definition Language (TMDL) view in Power BI - Power BI | Microsoft Learn > Common use cases for TMDL view,translation;graphical;creat;interfac;metadata;edit;desktop;power,6bd513079a2311be,"However, I can't create or edit it using the graphical interface of Power BI Desktop. Solution: Open the TMDL view, create a new empty tab",2026-10-10
 85ba94d1e5c0,arch/texts-catalogue-formats.md,S1716,unlocated:no-match,,,,,2026-10-10
@@ -4328,6 +4329,7 @@ f7a6a8d0ca2d,arch/sql-auth-containers.md,S1610,unlocated:no-match,,,,,2026-10-10
 8d5a2c1a22f5,arch/texts-catalogue-formats.md,S1713,located,Import-LocalizedData > Examples > Example 5: Replace default text strings in a script,stor;convert;convertfrom;convertfrom-stringdata;stringdata;section;psuicultur;hashtabl,9cbf65f13176bbf6,"In this example, the DATA section of the TestScript.ps1 script contains a ConvertFrom-StringData command that converts the contents of the DATA section to a hashtable",2026-10-10
 9f773dc55b56,arch/texts-catalogue-formats.md,S1714,located,Translations in Analysis Services tabular models | Microsoft Learn,power;premium;support;column;servic;tool;analysis;client,82c2d954326f83ac,"Applies to: SQL Server 2017 and later Analysis Services Azure Analysis Services Fabric/Power BI Premium In tabular models, an object can have multiple translations of",2026-10-10
 b419ed4b1c19,arch/texts-catalogue-formats.md,S1712,located,about_Script_Internationalization - PowerShell | Microsoft Learn > Examples,hash;key;tabl;valu;convert;convertfrom;convertfrom-stringdata;stringdata,635158ca2a7e83b0,The ConvertFrom-StringData cmdlet converts the key/value pairs in the here-string into a hash table and then saves it in the value of the $Day variable.,2026-10-10
+bb535fe87b0e,arch/texts-catalogue-formats.md,S1710,located,Using fluent.runtime¶ > Using FluentLocalization¶,entrypoint;application;fluentresourceloader;loader;local;main;resourc;fluentlocalization,a5c23ad5eb27ced2,"loader = FluentResourceLoader(""l10n/{locale}"") The main entrypoint for your application is a FluentLocalization.",2026-10-15
 be4df8b6bf28,arch/texts-catalogue-formats.md,S1710,unlocated:no-match,,,,,2026-10-10
 be4df8b6bf28,arch/texts-catalogue-formats.md,S1712,unlocated:no-match,,,,,2026-10-10
 be4df8b6bf28,arch/texts-catalogue-formats.md,S1714,unlocated:no-match,,,,,2026-10-10
@@ -13258,11 +13260,11 @@ fa97af874dcb,security/ai-agent-guidelines.md,S-uvrn2v43,unlocated:not-text,,,,,2
 60e58e2352b3,security/almalinux-elevate.md,S-zdchbjj6,located,ELevate Quickstart Guide > Upgrade steps,fully;updat;system,730df361b91d94b5,A fully updated system is required to accomplish the upgrade.,2026-10-15
 61303a847b55,security/almalinux-elevate.md,S-zdchbjj6,located,ELevate Quickstart Guide > Requirements,offlin;swap;vault;repository;cento;cent,18aec43e1862da37,"you will need to swap to the CentOS vault, or you can use our CentOS 7 mirror",2026-10-15
 61c1543270c5,security/almalinux-elevate.md,S-fvvvkcwq,located,About the project > Available migration paths,kitten;x86_64_v2;version;alma;almalinux;linux;support;elevat,045a9b5a6eb9e853,are supported only by the ELevate NG version,2026-10-15
-6b0b67ed5a27,security/almalinux-elevate.md,S-zdchbjj6,unlocated:no-match,,,,,2026-10-15
 6b2d6c7c8bc6,security/almalinux-elevate.md,S-zdchbjj6,located,ELevate Quickstart Guide,imag;raspberry;support;elevat,dc320eaa186d5ae6,ELevate currently does not support the,2026-10-15
 7cc1e1c5b332,security/almalinux-elevate.md,S-zdchbjj6,located,ELevate Quickstart Guide > Upgrade steps,elevate-upgrade-initramf;entry;grub;initramf;elevat;upgrad,3cdca95a854d2577,A new entry in GRUB called ELevate-Upgrade-Initramfs will appear.,2026-10-15
 89e69eb95285,security/almalinux-elevate.md,S-fvvvkcwq,located,About the project,derivativ;major;rhel;between;version;project;support;upgrad,061312912c5a2117,The ELevate project is an initiative to support upgrades between major versions of RHEL-derivatives.,2026-10-15
 8b5508fb1180,security/almalinux-elevate.md,S-zdchbjj6,located,ELevate Quickstart Guide > Upgrade steps,rpm;packag;install,0ea7aae7465ff126,No rpm packages will be installed at this phase.,2026-10-15
+9d76fb455d1c,security/almalinux-elevate.md,S-zdchbjj6,unlocated:no-match,,,,,2026-10-15
 c4f9a4700e70,security/almalinux-elevate.md,S-fvvvkcwq,located,About the project > Available migration paths,epel;packag;alma;almalinux;linux;support;upgrad,830472d750abec94,EPEL support is currently available for upgrades to AlmaLinux OS only.,2026-10-15
 c9a6b36a4d0e,security/almalinux-elevate.md,S-zdchbjj6,located,ELevate Quickstart Guide > Upgrade steps,proc;question;leap;upgrad,7de38dbc357861d3,Leapp utility requires answers to all these questions in order to proceed with the upgrade.,2026-10-15
 d8a960b4907b,security/almalinux-elevate.md,S-23s23lr2,located,Frequently asked questions > What is AlmaLinux? > How do I migrate a single host from CentOS to AlmaLinux?,tool;migrat;other;stream;distribution;cent;cento;almalinux,cb629b69d533b700,to make it simple to migrate to AlmaLinux from other Linux distributions including CentOS and CentOS Stream,2026-10-15

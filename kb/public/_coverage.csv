@@ -58,7 +58,7 @@ agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-si
 agents/typescript-module-resolution,P3,complete,agents/typescript-module-resolution.md,9
 agents/typescript-native-compiler,P3,partial,agents/typescript-native-compiler.md,6
 agents/typescript-projects-declarations-incremental,P3,complete,agents/typescript-projects-declarations-incremental.md,16
-agents/typescript-tsconfig-and-compiler-options,P3,complete,agents/typescript-tsconfig-and-compiler-options.md,28
+agents/typescript-tsconfig-and-compiler-options,P3,complete,agents/typescript-tsconfig-and-compiler-options.md,30
 ansible/dsc3-module,P3,complete,ansible/dsc3-module.md,6
 ansible/windows-ssh,P3,complete,ansible/windows-ssh.md,1
 arch/docs-home-options,P1,complete,arch/docs-home-options.md,4
