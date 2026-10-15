@@ -1,0 +1,20 @@
+{
+  "id": "SP-a3w7xdij",
+  "kind": "sprint",
+  "title": "repro setup, replay, status, briefs and report hold none of the snags the first run met",
+  "status": "planned",
+  "goal": "repro setup installs the hooks in each instance clone and refuses a directory that holds an earlier run's results; repro briefs name each area's article paths; repro replay leaves a backlog-only commit's KB-Work trailer as it is; the sprint skill gives a replaying item a check-trailers check; repro status finds an instance commit on the real main by patch-id; bench scratch paths are resolved; research-repro.md carries the review fixes of SP-ccvfvoqj with the reading of the two sessions that landed nothing",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
