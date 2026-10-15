@@ -2,7 +2,7 @@
   "id": "ST-j7guxiv6",
   "kind": "story",
   "title": "bench_core.stream_run takes a timeout and a clean env, and agent_bench keeps an error result's cost, usage and subtype",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,6 @@
   "depends_on": [
     "ST-m25otwlp"
   ],
-  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
+  "claimed_by": "orch-mac"
 }
