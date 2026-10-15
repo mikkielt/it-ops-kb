@@ -2,7 +2,7 @@
   "id": "ST-5wudnqto",
   "kind": "story",
   "title": "The article Gentoo in WSL on a Windows host keeps only what its sources state, as its gate decides",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3jcdsgr",
   "priority": "P2",
   "rank": 0,
@@ -107,5 +107,45 @@
     }
   ],
   "notes": "Evidence 2026-10-15 at 5834a99e2 (rag.py audit, rag.py show): 32 facts, 29 DOC all citing S-lxqjpj53 (wiki.gentoo.org Gentoo in WSL) and 3 DER; the article was written in benchmark instance 3 (f980ac7c6) to restore EV-page-file-size-windows, but its facts are the wiki's own (wsl --import, .wslconfig, /etc/wsl.conf, OpenRC and systemd under WSL), Windows-host work inside the kb's domain. The DER line 46 (a Windows endpoint tool can create, restart and remove an instance without logging in) states more than the page. Removing the article before BG-r2epswpp lands would drop about 30 Windows units against a margin of 31, so the item depends on it. Plan review 2026-10-15: had the gate removed the article, links to it from the zsh and fish articles would dangle; the fourth check (no kb article names gentoo-in-wsl once the file is gone) guards that and passes while the article stays. Checks that pass before the work: the lint check and rag.py eval (and the fourth check while the article stays) pass before the work and are kept as guards (the change must keep them green); check 1 (the derived Windows endpoint line) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
-  "claimed_by": "orch-z3jcdsgr"
+  "evidence": {
+    "commit": "230f821aa7b02a74d69097748c5fa003dfe678f7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys;f='kb/public/security/gentoo-in-wsl.md'\nsys.exit(0 if not os.path.exists(f) else subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py',f]).returncode)"
+        ],
+        "exit": 0,
+        "sha256": "96a8ddb7ee11ae89"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys;f='kb/public/security/gentoo-in-wsl.md'\nif not os.path.exists(f): sys.exit(0)\nt=open(f,encoding='utf-8').read().split('## Facts')[-1].split('\\n## ')[0]\nbad=[l for l in t.splitlines() if 'Windows endpoint tool can create' in l];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval"
+        ],
+        "exit": 0,
+        "sha256": "d805a65eee6d542c"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import glob,os,sys\nif os.path.exists('kb/public/security/gentoo-in-wsl.md'): sys.exit(0)\nbad=[f for f in glob.glob('kb/public/**/*.md',recursive=True) if 'gentoo-in-wsl' in open(f,encoding='utf-8').read()];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
