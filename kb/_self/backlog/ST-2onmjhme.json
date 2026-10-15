@@ -1,0 +1,21 @@
+{
+  "id": "ST-2onmjhme",
+  "kind": "story",
+  "title": "Add alias rows for the Kali area (kali, kalilinux)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Add the rows 'kali,kali' and 'kalilinux,kali' (term,canonical, term lowercase) to _tools/aliases.csv so packs that spell the product as one word reach security/kali-releases-rolling-model, security/kali-apt-sources-metapackages, security/kali-images-verification-builds and security/kali-default-account-vm-containers; no term of the rows may already be in an alias file.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'kalilinux,kali' in open('_tools/aliases.csv').read().split() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ]
+}
