@@ -2,7 +2,7 @@
   "id": "ST-7muzllvn",
   "kind": "story",
   "title": "Research: GitOps reconcilers for agent workloads (Flux on AKS and Azure Arc, Argo CD)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -68,5 +68,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, extending agents/gitops-for-agents through /kb-research.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "1bbb2b101de971ef8ac472cdef3c5dc50e704cd5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-7muzllvn"
+        ],
+        "exit": 0,
+        "sha256": "6897e46d903c8fae"
+      }
+    ]
+  }
 }
