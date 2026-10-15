@@ -1,0 +1,21 @@
+{
+  "id": "ST-oeyfaoee",
+  "kind": "story",
+  "title": "Add alias rows for the Gentoo area (gentoo linux, portage, emerge, ebuild, stage3, binhost, eselect)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Add these rows to _tools/aliases.csv (term,canonical): gentoo linux,gentoo; portage,gentoo; emerge,gentoo; ebuild,gentoo; stage3,gentoo; binhost,gentoo; eselect,gentoo. The Gentoo topics are security/gentoo-use-flags-profiles-keywords, security/gentoo-emerge-make-conf-etc-portage, security/gentoo-ebuild-repositories-overlays, security/gentoo-binary-packages-binhost and security/gentoo-stage-files-init-systems.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'portage,gentoo' in open('_tools/aliases.csv').read().split() or any(l.strip()=='portage,gentoo' for l in open('_tools/aliases.csv')) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ]
+}
