@@ -92,7 +92,9 @@
         "the conftest kb_seed bare (this working tree's files; the clone's own history lacks blobs), with reaches patched to True for the planted failure": "ST-hrsqmwhx",
         "a bare clone of the checkout's HEAD": "ST-hrsqmwhx"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the conftest kb_seed bare (this working tree's files; the clone's own history lacks blobs), with reaches patched to True for the planted failure",
+      "by": "operator"
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
