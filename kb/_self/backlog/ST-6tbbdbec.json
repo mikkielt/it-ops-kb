@@ -2,7 +2,7 @@
   "id": "ST-6tbbdbec",
   "kind": "story",
   "title": "Research sprint goal: The replay of benchmark instance 3 is reviewed on main, and the lookup eval no longer turns on one word's corpus share",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3jcdsgr",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the review items read the replayed articles against their own cited sources, which the kb already holds (S-lxqjpj53, the replay's source rows), and the eval item is code; no question of the goal needs a page the kb lacks.",
-  "claimed_by": "orch-z3jcdsgr"
+  "evidence": {
+    "commit": "1e526471cc4fb07239b1cdb6757a1ce373710357",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-6tbbdbec"
+        ],
+        "exit": 0,
+        "sha256": "622089576620e192"
+      }
+    ]
+  }
 }
