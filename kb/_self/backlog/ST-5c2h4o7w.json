@@ -2,7 +2,7 @@
   "id": "ST-5c2h4o7w",
   "kind": "story",
   "title": "repro_briefs.csv holds one research brief per benchmark area: scope, official sources to prefer and depth",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,6 @@
     "ST-m25otwlp",
     "ST-levrq3xs"
   ],
-  "notes": "Coverage measured 2026-10-15 with rag.py pack and audit on 296ff192d: absent: podman, puppet, chef (only prior-art/drift-detection mentions), kali, gentoo, zsh, bash (shell scripting), fish, robocopy; partial: almalinux (security/linux-cis-ssg-openscap.md, linux-patching-and-pins.md), cmd (python/stdlib-windows-portability.md), ssh-windows-estate (windows/openssh-server.md 13 DOC facts, ansible/windows-ssh.md 12; no key-management or Intune/GPO deployment), typescript (agents/codebase-mapping.md, arch/fluent-rust-typescript.md), rust (codebase-mapping, rust-clippy-criterion-gates, onnx-runtime-rust-ort), python (version-lifecycle present, venv absent), cpython (interpreter-startup partial, free-threaded only a mention), pip (spacy-pipeline-pinning, supply-chain); present: jea (windows/powershell-remoting-jea.md 50 facts, jea-config-fields.csv), age and sops (auth/sops-age-recipients.md 23 facts, prior-art/secret-vault-encryption.md), uv (python/uv-projects.md 39 facts, uv-windows-install.md). False good verdicts today: podman, typescript, rust, python venv."
+  "notes": "Coverage measured 2026-10-15 with rag.py pack and audit on 296ff192d: absent: podman, puppet, chef (only prior-art/drift-detection mentions), kali, gentoo, zsh, bash (shell scripting), fish, robocopy; partial: almalinux (security/linux-cis-ssg-openscap.md, linux-patching-and-pins.md), cmd (python/stdlib-windows-portability.md), ssh-windows-estate (windows/openssh-server.md 13 DOC facts, ansible/windows-ssh.md 12; no key-management or Intune/GPO deployment), typescript (agents/codebase-mapping.md, arch/fluent-rust-typescript.md), rust (codebase-mapping, rust-clippy-criterion-gates, onnx-runtime-rust-ort), python (version-lifecycle present, venv absent), cpython (interpreter-startup partial, free-threaded only a mention), pip (spacy-pipeline-pinning, supply-chain); present: jea (windows/powershell-remoting-jea.md 50 facts, jea-config-fields.csv), age and sops (auth/sops-age-recipients.md 23 facts, prior-art/secret-vault-encryption.md), uv (python/uv-projects.md 39 facts, uv-windows-install.md). False good verdicts today: podman, typescript, rust, python venv.",
+  "claimed_by": "orch-mac"
 }
