@@ -1,0 +1,29 @@
+{
+  "id": "BG-r2epswpp",
+  "kind": "bug",
+  "title": "Eval row EV-page-file-size-windows turns good once the corpus holds fewer Windows units (window share 0.2007 at f980ac7c6)",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The tuned lookup eval passes again: the key word window stays informative in the Windows page-file question, so the pack for it is weak and not good. At f980ac7c6 window was in 3804 of 18955 units, 0.2007 against COMMON_SHARE 0.2 in kbfacts.py; adding the four zsh articles (about 215 units, a few mentioning Windows) took it under 0.2, so the question gained an informative key word and the pack turned good with a check: line (best facts from ldap-paging-filters and the agent error catalogue).",
+  "repro": {
+    "run": [
+      "python3",
+      "_tools/rag.py",
+      "eval"
+    ]
+  },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv"
+  ]
+}
