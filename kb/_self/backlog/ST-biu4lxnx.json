@@ -1,0 +1,26 @@
+{
+  "id": "ST-biu4lxnx",
+  "kind": "story",
+  "title": "Review sprint: repro compare and pick read research gain, claim parity and structural identity",
+  "status": "draft",
+  "sprint": "SP-75hdeqld",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
