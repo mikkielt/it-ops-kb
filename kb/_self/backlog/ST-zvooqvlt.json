@@ -2,7 +2,7 @@
   "id": "ST-zvooqvlt",
   "kind": "story",
   "title": "kb/_self/reports/research-repro.md says from repro compare's numbers how reproducible the instances' research is and where it diverges",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ccvfvoqj",
   "priority": "P2",
   "rank": 0,
@@ -83,5 +83,38 @@
     }
   ],
   "notes": "Report precedent: kb/_self/reports/2026-10-06-self-rules-retrieval.md. benchmarks.md needs a repro section with bench:table markers once rows exist (report --check fails on a marker with no rows); no measurable sizes in kb/_self docs beyond the benchmark's own numbers. benchmarks.py report --check passes before the work: it is the guard that the new section's markers and rows agree.",
-  "claimed_by": "orch-ccvfvoqj"
+  "evidence": {
+    "commit": "bec2f9758ff45a3bce5794822e2068122ec0923c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "compare"
+        ],
+        "exit": 0,
+        "sha256": "db9f1dd3f61b6f76"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "report",
+          "--check"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,re,sys\nrows=[r for r in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if r['scenario'].startswith('repro')]\nimport os\nf='kb/_self/reports/research-repro.md'\nt=open(f,encoding='utf-8').read() if os.path.exists(f) else ''\nneed=['Jaccard','agreement','conflict','pass rate']\nmiss=[w for w in need if w.lower() not in t.lower()]\nmetrics={r['metric'] for r in rows if r['scenario']=='repro-compare'}\nprint(miss,sorted(metrics)[:20]); sys.exit(0 if t and not miss and {'eval_passed','agreement','fact_overlap','url_jaccard','conflicts'}<=metrics else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2f8f8331b18ca102"
+      }
+    ]
+  }
 }
