@@ -110,7 +110,9 @@
         "matches nothing, so the row fails with failed=regex": "ST-hfcsyyin",
         "raise re.error and stop the eval": "ST-hfcsyyin"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "matches nothing, so the row fails with failed=regex",
+      "by": "operator"
     }
   ],
   "notes": "Premise run 2026-10-15 on 296ff192d: eval ignores an expect_re column (a planted row with regex zzzz[0-9]{9} passed, rc 0), and a planted repro_bench.csv rewording a lookup_eval.csv row passes with no REWORD line while the same row in a file named lookup_heldout.csv prints REWORD (ratio 0.96). expect_text exists already (substring, case-sensitive). Do not add the file to kg_sync.EVAL_SETS. HELDOUT_FILE readers: rag.py:278, bench_pool.py:57, test_live_kb.py:1032 (backlog.py referrers HELDOUT_FILE). Selection cost measured by the planner's verifier: 3.3 s wall. The test selection passes before the work: it pins the planted expect_re row and the second file name once they are added; the planted checks 1 and 2 fail before the work.",
