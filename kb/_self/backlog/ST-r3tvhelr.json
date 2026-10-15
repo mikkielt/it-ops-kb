@@ -1,0 +1,21 @@
+{
+  "id": "ST-r3tvhelr",
+  "kind": "story",
+  "title": "Add alias rows for the zsh area (z shell, zshrc, zshenv, zprofile, zlogin, setopt, compinit, compdef, zstyle)",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/aliases.csv holds these rows (term,canonical): z shell,zsh; zshrc,zsh; zshenv,zsh; zprofile,zsh; zlogin,zsh; setopt,zsh; compinit,zsh; compdef,zsh; zstyle,zsh; so a question that uses a startup file or option command name reaches the four security/zsh-* articles. The zsh research landed them without the rows because a research session does not write _tools/.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'zshrc,zsh\\n' in open('_tools/aliases.csv').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ]
+}
