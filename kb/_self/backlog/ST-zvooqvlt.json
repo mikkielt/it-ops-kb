@@ -2,7 +2,7 @@
   "id": "ST-zvooqvlt",
   "kind": "story",
   "title": "kb/_self/reports/research-repro.md says from repro compare's numbers how reproducible the instances' research is and where it diverges",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ccvfvoqj",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,6 @@
   "depends_on": [
     "ST-tcvbp3z3"
   ],
-  "notes": "Report precedent: kb/_self/reports/2026-10-06-self-rules-retrieval.md. benchmarks.md needs a repro section with bench:table markers once rows exist (report --check fails on a marker with no rows); no measurable sizes in kb/_self docs beyond the benchmark's own numbers. benchmarks.py report --check passes before the work: it is the guard that the new section's markers and rows agree."
+  "notes": "Report precedent: kb/_self/reports/2026-10-06-self-rules-retrieval.md. benchmarks.md needs a repro section with bench:table markers once rows exist (report --check fails on a marker with no rows); no measurable sizes in kb/_self docs beyond the benchmark's own numbers. benchmarks.py report --check passes before the work: it is the guard that the new section's markers and rows agree.",
+  "claimed_by": "orch-ccvfvoqj"
 }
