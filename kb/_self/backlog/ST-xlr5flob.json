@@ -2,7 +2,7 @@
   "id": "ST-xlr5flob",
   "kind": "story",
   "title": "Research: concurrency control for state several agents write (conditional writes, leases, locks, LangGraph store)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -68,5 +68,19 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "c52b136b10067c41f5469ec7584069e5546abcf4",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-xlr5flob"
+        ],
+        "exit": 0,
+        "sha256": "05f24ef5e5f46603"
+      }
+    ]
+  }
 }
