@@ -2,7 +2,7 @@
   "id": "ST-u6y5okle",
   "kind": "story",
   "title": "Research: workload identity for agents outside Entra (SPIFFE and SPIRE, Kubernetes service account tokens)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -51,5 +51,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic auth/spiffe-workload-identity where no article fits.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "aeda06697b4bc09d0809da7d5c86a46b5e6acdd1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-u6y5okle"
+        ],
+        "exit": 0,
+        "sha256": "0a3d67c7c9c7bd48"
+      }
+    ]
+  }
 }
