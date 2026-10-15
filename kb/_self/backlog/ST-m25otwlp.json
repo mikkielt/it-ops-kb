@@ -2,7 +2,7 @@
   "id": "ST-m25otwlp",
   "kind": "story",
   "title": "bench_repro reads and checks the benchmark briefs and frozen questions, and repro status shows no instance commit reached the real origin",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -67,5 +67,6 @@
   "depends_on": [
     "ST-hrsqmwhx"
   ],
-  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work."
+  "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
+  "claimed_by": "orch-mac"
 }
