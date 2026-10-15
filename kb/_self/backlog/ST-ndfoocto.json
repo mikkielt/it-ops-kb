@@ -2,7 +2,7 @@
   "id": "ST-ndfoocto",
   "kind": "story",
   "title": "repro compare counts each instance's unanchored DOC facts, so the landing pick sees research left unanchored",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,
@@ -86,5 +86,28 @@
     "parked: SP-bhzxxhub close"
   ],
   "notes": "Retrospective of SP-bhzxxhub: instance 3, picked with check_errors+lint_errors 0, left all 52 DOC facts of windows/robocopy.md unanchored (review gap, parked as ST-iq73rdnb); neither compare nor pick reads anchors. Plan 2026-10-15: the Learn exemption was added because robocopy, cmd and jea had no anchor rows by rule, not by choice (lessons analysis 4.7); ST-iq73rdnb was dropped for the same reason. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
-  "claimed_by": "orch-75hdeqld"
+  "evidence": {
+    "commit": "c1c0991499ac88402b1dbfec8c7713dfb2d2673e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;m=[n for n in ['unanchored'] if n not in b.COMPARE_METRICS];print('missing',m);sys.exit(1 if m else 0)"
+        ],
+        "exit": 0,
+        "sha256": "1dcd2586c4536f16"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "00e6a05154310412"
+      }
+    ]
+  }
 }
