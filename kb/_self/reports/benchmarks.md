@@ -1456,3 +1456,242 @@ What it shows:
 - **Files read:** the files read per run were 2 in every N1 and N3 run after (before: 1-3 and 1-2) and 2-3 in N2 (before 2-3), about a third of a file more per case on average but with less spread between runs. The count is a floor, since a search over a directory counts no file, and one file more per question is within what a single run's route changes.
 
 Verdict: stop splitting. The split did not make the code cheaper to find in these nine runs (16.7 turns, 13.7 tool calls, 6.7 files and 357k input tokens after, against 15, 12, 5.7 and 341k before, all within the run-to-run spread), and with every answer right in both arms there is no navigation cost left for a further split to remove, so splitting `kbfacts.py`, `factdiff.py` and `backlog.py` has no measured payoff to claim; split them only for a reason other than navigation.
+
+### Three isolated instances research the same areas
+
+**Setup:** `python3 _tools/benchmarks.py repro setup --instances 3`, then `repro run`: three instances of one pinned commit, each with a bare `origin` of its own and a throwaway clone, each running one headless Sonnet `/kb-research` session per area of `kb/public/_retrieval/repro_briefs.csv` (21 areas) under the instance cap (`--instance-usd`); `repro record` writes one `repro` row set per instance and area (cost, tokens, turns, tool calls, wall time, `failure`, the bare's main before and after). `python3 _tools/benchmarks.py repro compare --record` then reads each instance's bare against the start commit, area by area, with the instance's own tools and the frozen questions `kb/public/_retrieval/repro_bench.csv`, and writes the `repro-compare` row set: per instance and area the articles, facts and sources added and the tag mix; per pair of instances the Jaccard overlap of the added source urls (`url_jaccard`), the overlap of the added facts (`fact_overlap`: one claim is a difflib ratio of at least 0.8 on one article path) and the `conflicts` (a matched pair whose numbers differ); per instance the `check.py` and lint errors and the frozen rows passed (`eval_passed` of `eval_total`); per area the `agreement` (the share of its frozen rows on which every instance has the same verdict and the same `expect_re` outcome), over the areas every instance finished. A pair's figures for an area an instance did not finish compare an empty set with a full one, and two empty sets give 1.00. No model runs in `repro compare`. The comparison and what it shows are in `kb/_self/reports/research-repro.md`.
+
+<!-- bench:records repro -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+| 2170d88 | 2026-10-15 | 2170d88 | - | - | 1 | $178.02 |
+<!-- /bench -->
+
+<!-- bench:table repro metrics=cost,turns,wall_s,failure -->
+| case | arm | cost | turns | wall_s | failure |
+|---|---|---|---|---|---|
+| age | instance-1 | $1.806 | 94 | 343 s | none |
+| almalinux | instance-1 | $3.062 | 186 | 660 s | none |
+| bash | instance-1 | $3.881 | 165 | 689 s | none |
+| chef | instance-1 | $3.967 | 216 | 630 s | none |
+| cmd | instance-1 | $1.348 | 78 | 368 s | none |
+| cpython | instance-1 | $4.803 | 211 | 941 s | none |
+| fish | instance-1 | $3.338 | 132 | 575 s | none |
+| gentoo | instance-1 | $4.404 | 203 | 850 s | none |
+| jea | instance-1 | $1.535 | 78 | 348 s | none |
+| kali | instance-1 | $2.968 | 177 | 686 s | none |
+| pip | instance-1 | $0.000 | 0 | 0 s | budget |
+| podman | instance-1 | $3.138 | 168 | 625 s | none |
+| puppet | instance-1 | $3.755 | 178 | 839 s | none |
+| python | instance-1 | $3.443 | 155 | 726 s | none |
+| robocopy | instance-1 | $1.023 | 57 | 215 s | none |
+| rust | instance-1 | $3.084 | 159 | 623 s | none |
+| sops | instance-1 | $2.924 | 139 | 624 s | none |
+| ssh-windows-estate | instance-1 | $2.585 | 128 | 579 s | none |
+| typescript | instance-1 | $4.310 | 198 | 940 s | none |
+| uv | instance-1 | $0.000 | 0 | 0 s | budget |
+| zsh | instance-1 | $3.722 | 188 | 857 s | none |
+| age | instance-2 | $2.137 | 101 | 473 s | none |
+| almalinux | instance-2 | $3.609 | 205 | 722 s | none |
+| bash | instance-2 | $4.147 | 181 | 742 s | none |
+| chef | instance-2 | $3.572 | 181 | 703 s | none |
+| cmd | instance-2 | $1.314 | 84 | 324 s | none |
+| cpython | instance-2 | $3.092 | 164 | 647 s | none |
+| fish | instance-2 | $5.018 | 167 | 947 s | none |
+| gentoo | instance-2 | $3.841 | 186 | 774 s | none |
+| jea | instance-2 | $1.174 | 64 | 245 s | none |
+| kali | instance-2 | $1.893 | 136 | 454 s | none |
+| pip | instance-2 | $0.000 | 0 | 0 s | budget |
+| podman | instance-2 | $4.030 | 204 | 814 s | none |
+| puppet | instance-2 | $4.134 | 233 | 781 s | none |
+| python | instance-2 | $3.649 | 144 | 727 s | none |
+| robocopy | instance-2 | $1.055 | 66 | 280 s | none |
+| rust | instance-2 | $3.093 | 167 | 704 s | none |
+| sops | instance-2 | $1.680 | 94 | 410 s | none |
+| ssh-windows-estate | instance-2 | $2.420 | 116 | 440 s | none |
+| typescript | instance-2 | $3.818 | 153 | 794 s | none |
+| uv | instance-2 | $3.040 | 147 | 621 s | none |
+| zsh | instance-2 | $4.074 | 181 | 943 s | none |
+| age | instance-3 | $0.000 | 0 | 0 s | budget |
+| almalinux | instance-3 | $3.008 | 186 | 648 s | none |
+| bash | instance-3 | $4.632 | 184 | 889 s | none |
+| chef | instance-3 | $4.683 | 254 | 866 s | none |
+| cmd | instance-3 | $3.687 | 202 | 827 s | none |
+| cpython | instance-3 | $0.000 | 0 | 0 s | budget |
+| fish | instance-3 | $6.137 | 239 | 1122 s | none |
+| gentoo | instance-3 | $7.193 | 268 | 1241 s | none |
+| jea | instance-3 | $2.135 | 107 | 497 s | none |
+| kali | instance-3 | $4.035 | 237 | 816 s | none |
+| pip | instance-3 | $0.000 | 0 | 0 s | budget |
+| podman | instance-3 | $4.005 | 204 | 771 s | none |
+| puppet | instance-3 | $4.278 | 249 | 802 s | none |
+| python | instance-3 | $0.000 | 0 | 0 s | budget |
+| robocopy | instance-3 | $1.080 | 63 | 322 s | none |
+| rust | instance-3 | $0.000 | 0 | 0 s | budget |
+| sops | instance-3 | $0.000 | 0 | 0 s | budget |
+| ssh-windows-estate | instance-3 | $3.001 | 158 | 545 s | none |
+| typescript | instance-3 | $4.817 | 188 | 942 s | none |
+| uv | instance-3 | $0.000 | 0 | 0 s | budget |
+| zsh | instance-3 | $5.450 | 239 | 1130 s | none |
+<!-- /bench -->
+
+<!-- bench:records repro-compare -->
+| record | date | commit | Claude Code | kb topics | runs per cell | spend of the runs |
+|---|---|---|---|---|---|---|
+| 2170d88 | 2026-10-15 | 2170d88 | - | - | 1 | - |
+<!-- /bench -->
+
+<!-- bench:table repro-compare metrics=articles_added,facts_added,doc,code,der,community,unk,sources_added,eval_passed,eval_total arms=instance-1,instance-2,instance-3 -->
+| case | arm | articles_added | facts_added | doc | code | der | community | unk | sources_added | eval_passed | eval_total |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| podman | instance-1 | 1 | 74 | 66 | 1 | 5 | 0 | 2 | 16 | 1 | 5 |
+| podman | instance-2 | 2 | 120 | 106 | 3 | 8 | 0 | 3 | 20 | 0 | 5 |
+| podman | instance-3 | 5 | 119 | 103 | 0 | 13 | 0 | 3 | 15 | 0 | 5 |
+| puppet | instance-1 | 1 | 87 | 80 | 2 | 3 | 0 | 2 | 26 | 0 | 5 |
+| puppet | instance-2 | 2 | 113 | 82 | 28 | 3 | 0 | 0 | 35 | 0 | 5 |
+| puppet | instance-3 | 4 | 128 | 114 | 5 | 7 | 0 | 1 | 30 | 0 | 5 |
+| chef | instance-1 | 1 | 91 | 84 | 0 | 4 | 0 | 3 | 29 | 0 | 5 |
+| chef | instance-2 | 2 | 88 | 77 | 7 | 4 | 0 | 0 | 17 | 0 | 5 |
+| chef | instance-3 | 4 | 136 | 118 | 8 | 8 | 0 | 2 | 31 | 0 | 5 |
+| almalinux | instance-1 | 1 | 59 | 46 | 4 | 8 | 0 | 1 | 21 | 0 | 5 |
+| almalinux | instance-2 | 1 | 58 | 44 | 3 | 8 | 0 | 3 | 18 | 0 | 5 |
+| almalinux | instance-3 | 3 | 66 | 49 | 3 | 11 | 0 | 3 | 20 | 0 | 5 |
+| kali | instance-1 | 1 | 100 | 81 | 11 | 7 | 0 | 1 | 23 | 0 | 4 |
+| kali | instance-2 | 1 | 68 | 54 | 5 | 7 | 0 | 2 | 18 | 0 | 4 |
+| kali | instance-3 | 4 | 92 | 70 | 9 | 9 | 0 | 4 | 23 | 0 | 4 |
+| gentoo | instance-1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 |
+| gentoo | instance-2 | 2 | 140 | 125 | 0 | 11 | 0 | 4 | 18 | 0 | 5 |
+| gentoo | instance-3 | 6 | 218 | 196 | 4 | 16 | 0 | 2 | 26 | 0 | 5 |
+| zsh | instance-1 | 1 | 73 | 59 | 1 | 9 | 0 | 4 | 10 | 0 | 5 |
+| zsh | instance-2 | 2 | 94 | 72 | 4 | 16 | 0 | 2 | 10 | 0 | 5 |
+| zsh | instance-3 | 4 | 88 | 72 | 0 | 15 | 0 | 1 | 10 | 0 | 5 |
+| bash | instance-1 | 1 | 119 | 97 | 0 | 17 | 0 | 5 | 1 | 0 | 5 |
+| bash | instance-2 | 3 | 131 | 112 | 0 | 16 | 0 | 3 | 1 | 0 | 5 |
+| bash | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 5 |
+| fish | instance-1 | 1 | 148 | 131 | 0 | 12 | 0 | 5 | 10 | 0 | 5 |
+| fish | instance-2 | 3 | 203 | 181 | 0 | 19 | 0 | 3 | 14 | 0 | 5 |
+| fish | instance-3 | 6 | 122 | 104 | 0 | 18 | 0 | 0 | 12 | 0 | 5 |
+| cmd | instance-1 | 1 | 57 | 45 | 0 | 8 | 0 | 4 | 11 | 0 | 5 |
+| cmd | instance-2 | 1 | 58 | 53 | 0 | 4 | 0 | 1 | 11 | 1 | 5 |
+| cmd | instance-3 | 2 | 84 | 70 | 0 | 7 | 0 | 7 | 11 | 0 | 5 |
+| robocopy | instance-1 | 1 | 59 | 50 | 0 | 9 | 0 | 0 | 4 | 0 | 5 |
+| robocopy | instance-2 | 1 | 74 | 62 | 0 | 8 | 0 | 4 | 5 | 0 | 5 |
+| robocopy | instance-3 | 1 | 62 | 52 | 0 | 6 | 0 | 4 | 2 | 0 | 5 |
+| ssh-windows-estate | instance-1 | 2 | 59 | 51 | 0 | 7 | 0 | 1 | 8 | 4 | 5 |
+| ssh-windows-estate | instance-2 | 1 | 53 | 47 | 0 | 4 | 0 | 2 | 8 | 3 | 5 |
+| ssh-windows-estate | instance-3 | 2 | 63 | 55 | 0 | 5 | 0 | 3 | 12 | 4 | 5 |
+| jea | instance-1 | 0 | 58 | 54 | 0 | 3 | 0 | 0 | 4 | 5 | 5 |
+| jea | instance-2 | 0 | 48 | 47 | 0 | 1 | 0 | 0 | 1 | 5 | 5 |
+| jea | instance-3 | 0 | 46 | 44 | 0 | 2 | 0 | 0 | 2 | 5 | 5 |
+| typescript | instance-1 | 1 | 67 | 52 | 9 | 4 | 0 | 0 | 26 | 1 | 5 |
+| typescript | instance-2 | 1 | 77 | 46 | 23 | 4 | 0 | 1 | 20 | 1 | 5 |
+| typescript | instance-3 | 4 | 147 | 124 | 7 | 14 | 0 | 1 | 42 | 1 | 5 |
+| age | instance-1 | 1 | 58 | 48 | 2 | 7 | 0 | 1 | 6 | 2 | 5 |
+| age | instance-2 | 1 | 70 | 53 | 11 | 5 | 0 | 1 | 6 | 2 | 5 |
+| age | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 5 |
+| sops | instance-1 | 1 | 55 | 33 | 16 | 5 | 0 | 1 | 8 | 2 | 5 |
+| sops | instance-2 | 1 | 44 | 34 | 7 | 2 | 0 | 1 | 6 | 2 | 5 |
+| sops | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 2 | 5 |
+| rust | instance-1 | 1 | 82 | 76 | 0 | 6 | 0 | 0 | 24 | 2 | 5 |
+| rust | instance-2 | 1 | 90 | 77 | 0 | 11 | 0 | 2 | 33 | 2 | 5 |
+| rust | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4 | 5 |
+| python | instance-1 | 3 | 138 | 121 | 4 | 12 | 0 | 1 | 9 | 1 | 4 |
+| python | instance-2 | 5 | 163 | 140 | 0 | 19 | 0 | 4 | 8 | 1 | 4 |
+| python | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 4 |
+| cpython | instance-1 | 2 | 87 | 83 | 0 | 3 | 0 | 0 | 13 | 1 | 5 |
+| cpython | instance-2 | 2 | 70 | 65 | 0 | 3 | 0 | 0 | 9 | 1 | 5 |
+| cpython | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 5 |
+| uv | instance-1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 4 | 5 |
+| uv | instance-2 | 4 | 133 | 112 | 8 | 13 | 0 | 0 | 8 | 3 | 5 |
+| uv | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 3 | 5 |
+| pip | instance-1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 5 |
+| pip | instance-2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 5 |
+| pip | instance-3 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 5 |
+<!-- /bench -->
+
+<!-- bench:table repro-compare metrics=url_jaccard,fact_overlap,conflicts arms=instance-1+instance-2,instance-1+instance-3,instance-2+instance-3 -->
+| case | arm | url_jaccard | fact_overlap | conflicts |
+|---|---|---|---|---|
+| podman | instance-1+instance-2 | 0.384615 | 0 | 0 |
+| podman | instance-1+instance-3 | 0.47619 | 0 | 0 |
+| podman | instance-2+instance-3 | 0.4 | 0 | 0 |
+| puppet | instance-1+instance-2 | 0.196078 | 0 | 0 |
+| puppet | instance-1+instance-3 | 0.142857 | 0 | 0 |
+| puppet | instance-2+instance-3 | 0.25 | 0 | 0 |
+| chef | instance-1+instance-2 | 0.243243 | 0 | 0 |
+| chef | instance-1+instance-3 | 0.428571 | 0 | 0 |
+| chef | instance-2+instance-3 | 0.333333 | 0 | 0 |
+| almalinux | instance-1+instance-2 | 0.147059 | 0 | 0 |
+| almalinux | instance-1+instance-3 | 0.322581 | 0 | 0 |
+| almalinux | instance-2+instance-3 | 0.461538 | 0 | 0 |
+| kali | instance-1+instance-2 | 0.413793 | 0 | 0 |
+| kali | instance-1+instance-3 | 0.483871 | 0 | 0 |
+| kali | instance-2+instance-3 | 0.576923 | 0 | 0 |
+| gentoo | instance-1+instance-2 | 0 | 0 | 0 |
+| gentoo | instance-1+instance-3 | 0 | 0 | 0 |
+| gentoo | instance-2+instance-3 | 0.333333 | 0 | 0 |
+| zsh | instance-1+instance-2 | 0.818182 | 0 | 0 |
+| zsh | instance-1+instance-3 | 0.818182 | 0 | 0 |
+| zsh | instance-2+instance-3 | 0.818182 | 0 | 0 |
+| bash | instance-1+instance-2 | 1 | 0 | 0 |
+| bash | instance-1+instance-3 | 0 | 0 | 0 |
+| bash | instance-2+instance-3 | 0 | 0 | 0 |
+| fish | instance-1+instance-2 | 0.6 | 0 | 0 |
+| fish | instance-1+instance-3 | 0.692308 | 0 | 0 |
+| fish | instance-2+instance-3 | 0.529412 | 0 | 0 |
+| cmd | instance-1+instance-2 | 0.692308 | 0 | 0 |
+| cmd | instance-1+instance-3 | 0.692308 | 0 | 0 |
+| cmd | instance-2+instance-3 | 0.692308 | 0 | 0 |
+| robocopy | instance-1+instance-2 | 0.5 | 0.127119 | 0 |
+| robocopy | instance-1+instance-3 | 0.5 | 0.1 | 0 |
+| robocopy | instance-2+instance-3 | 0.4 | 0.142857 | 0 |
+| ssh-windows-estate | instance-1+instance-2 | 0.230769 | 0.009009 | 0 |
+| ssh-windows-estate | instance-1+instance-3 | 0.052632 | 0.070175 | 0 |
+| ssh-windows-estate | instance-2+instance-3 | 0.176471 | 0.035714 | 0 |
+| jea | instance-1+instance-2 | 0.25 | 0.06 | 0 |
+| jea | instance-1+instance-3 | 0.5 | 0.072165 | 1 |
+| jea | instance-2+instance-3 | 0.5 | 0.105882 | 1 |
+| typescript | instance-1+instance-2 | 0.586207 | 0.014085 | 2 |
+| typescript | instance-1+instance-3 | 0.478261 | 0.004695 | 1 |
+| typescript | instance-2+instance-3 | 0.319149 | 0.004484 | 0 |
+| age | instance-1+instance-2 | 0.714286 | 0.04918 | 0 |
+| age | instance-1+instance-3 | 0 | 0 | 0 |
+| age | instance-2+instance-3 | 0 | 0 | 0 |
+| sops | instance-1+instance-2 | 0 | 0 | 0 |
+| sops | instance-1+instance-3 | 0 | 0 | 0 |
+| sops | instance-2+instance-3 | 0 | 0 | 0 |
+| rust | instance-1+instance-2 | 0.540541 | 0 | 0 |
+| rust | instance-1+instance-3 | 0 | 0 | 0 |
+| rust | instance-2+instance-3 | 0 | 0 | 0 |
+| python | instance-1+instance-2 | 0.214286 | 0.034364 | 0 |
+| python | instance-1+instance-3 | 0 | 0 | 0 |
+| python | instance-2+instance-3 | 0 | 0 | 0 |
+| cpython | instance-1+instance-2 | 0.466667 | 0.060811 | 1 |
+| cpython | instance-1+instance-3 | 0 | 0 | 0 |
+| cpython | instance-2+instance-3 | 0 | 0 | 0 |
+| uv | instance-1+instance-2 | 0 | 0 | 0 |
+| uv | instance-1+instance-3 | 1 | 1 | 0 |
+| uv | instance-2+instance-3 | 0 | 0 | 0 |
+| pip | instance-1+instance-2 | 1 | 1 | 0 |
+| pip | instance-1+instance-3 | 1 | 1 | 0 |
+| pip | instance-2+instance-3 | 1 | 1 | 0 |
+<!-- /bench -->
+
+<!-- bench:table repro-compare metrics=agreement,check_errors,lint_errors arms=all -->
+| case | arm | agreement | check_errors | lint_errors |
+|---|---|---|---|---|
+| podman | all | 0.6 | - | - |
+| puppet | all | 0.4 | - | - |
+| chef | all | 1 | - | - |
+| almalinux | all | 1 | - | - |
+| kali | all | 0.75 | - | - |
+| gentoo | all | 0 | - | - |
+| zsh | all | 0.4 | - | - |
+| bash | all | 0 | - | - |
+| fish | all | 0.4 | - | - |
+| cmd | all | 0.8 | - | - |
+| robocopy | all | 1 | - | - |
+| ssh-windows-estate | all | 0.8 | - | - |
+| jea | all | 1 | - | - |
+| typescript | all | 1 | - | - |
+<!-- /bench -->

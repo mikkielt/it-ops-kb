@@ -63,6 +63,25 @@
   "depends_on": [
     "ST-tcvbp3z3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which area-pair rows does research-repro.md list for the pair figures (Jaccard, facts' overlap, conflicts)?",
+      "options": [
+        "finished areas only",
+        "all 21 areas"
+      ],
+      "recommendation": "finished areas only",
+      "do": {
+        "finished areas only": "ST-zvooqvlt",
+        "all 21 areas": "ST-zvooqvlt"
+      },
+      "class": "design",
+      "answer": "finished areas only",
+      "by": "agent"
+    }
+  ],
   "notes": "Report precedent: kb/_self/reports/2026-10-06-self-rules-retrieval.md. benchmarks.md needs a repro section with bench:table markers once rows exist (report --check fails on a marker with no rows); no measurable sizes in kb/_self docs beyond the benchmark's own numbers. benchmarks.py report --check passes before the work: it is the guard that the new section's markers and rows agree.",
   "claimed_by": "orch-ccvfvoqj"
 }
