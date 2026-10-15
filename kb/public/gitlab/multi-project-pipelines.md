@@ -1,9 +1,9 @@
 ---
 topic: gitlab/multi-project-pipelines
 priority: P3
-applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2 and @56c82a97, retrieved 2026-10-15): downstream pipelines, the `trigger` keyword, pipeline trigger API, CI/CD job token allowlist and fine-grained permissions; Free, Premium and Ultimate on GitLab.com, Self-Managed and Dedicated"
+applies_to: "GitLab 19.x docs (gitlab-org/gitlab master @9f1632e2, retrieved 2026-10-15): downstream pipelines, the `trigger` keyword, pipeline trigger API, CI/CD job token allowlist and fine-grained permissions; Free, Premium and Ultimate on GitLab.com, Self-Managed and Dedicated"
 retrieved_utc: 2026-10-15
-sources: [S-pt32lcdt, S447, S-xz7iisq3, S-7zthwzzb, S-5pu4zmds]
+sources: [S-pt32lcdt, S-s67nwj2e, S-xz7iisq3, S-7zthwzzb, S-5pu4zmds]
 status: complete
 ---
 
@@ -42,15 +42,15 @@ settings for job-token Git pushes. The token never carries more than the rights 
   status, so a public project triggering a private one can expose both. [DOC S-pt32lcdt]
 - `trigger: <path>` or `trigger:project` names the downstream project by full path (CI/CD variables allowed, job-only
   variables not); without `trigger:branch` the pipeline runs for the default branch, and `branch` takes a branch or tag
-  name. [DOC S447]
+  name. [DOC S-s67nwj2e]
 - A trigger job starts `pending` while GitLab creates the downstream pipeline and then shows `passed`, or `failed` if
   creation failed; trigger jobs use no runner, so a long `pending` usually means the pipeline could not be created.
   [DOC S-pt32lcdt]
 - Trigger jobs take only `allow_failure`, `extends`, `needs` (not `needs:project`), `only`/`except`, `parallel`,
   `rules`, `stage`, `trigger`, `variables`, `when` (`on_success`, `on_failure`, `always` or `manual`),
-  `resource_group` and `environment`. [DOC S447]
+  `resource_group` and `environment`. [DOC S-s67nwj2e]
 - A `when: manual` trigger job cannot be started through the API, and no variables can be entered before running a
-  manual trigger job. [DOC S447]
+  manual trigger job. [DOC S-s67nwj2e]
 - In every job of a downstream pipeline started with `trigger`, `CI_PIPELINE_SOURCE` is `pipeline` for a
   multi-project pipeline and `parent_pipeline` for a child pipeline, so downstream `rules` can select on it.
   [DOC S-pt32lcdt]
@@ -59,19 +59,19 @@ settings for job-token Git pushes. The token never carries more than the rights 
 
 ### Mirroring the downstream status
 - `trigger:strategy` makes the trigger job wait for the downstream pipeline to finish before it is marked success
-  (the default marks it success once the pipeline is created), so execution becomes linear. [DOC S447]
+  (the default marks it success once the pipeline is created), so execution becomes linear. [DOC S-s67nwj2e]
 - `strategy: mirror` (introduced in GitLab 18.2) mirrors the downstream pipeline's status exactly; `strategy: depend`
   is no longer recommended, because the trigger job's status does not always match the downstream pipeline's.
-  [DOC S447]
+  [DOC S-s67nwj2e]
 - Under `depend` the trigger job shows running while the downstream pipeline waits for a manual action, and a
-  downstream failure in an `allow_failure: true` job still counts as success. [DOC S447]
+  downstream failure in an `allow_failure: true` job still counts as success. [DOC S-s67nwj2e]
 - Under either strategy, optional manual jobs downstream do not affect the status, blocking manual jobs must run
-  before the trigger job passes or fails, and later upstream stages wait for the trigger job by default. [DOC S447]
+  before the trigger job passes or fails, and later upstream stages wait for the trigger job by default. [DOC S-s67nwj2e]
 - A parent pipeline auto-cancels when a child job fails only if both pipelines set
   `workflow:auto_cancel:on_job_failure` and the trigger job uses `strategy: mirror`. [DOC S-pt32lcdt]
 - The reverse direction: `needs:pipeline: <project path>` copies the latest default-branch pipeline status of an
   upstream project into a job; adding `job` turns it into an artifact fetch (`needs:pipeline:job`) that no longer
-  mirrors the status. [DOC S447]
+  mirrors the status. [DOC S-s67nwj2e]
 - Retrying a trigger job (**Run again**) creates a new downstream pipeline that replaces the old one in the graph.
   [DOC S-pt32lcdt]
 
@@ -80,12 +80,12 @@ settings for job-token Git pushes. The token never carries more than the rights 
   where they count as pipeline variables for precedence; `inherit:variables: false` stops default variables from
   being passed. [DOC S-pt32lcdt]
 - `trigger:inputs` (GitLab 17.11+) passes inputs to a multi-project pipeline whose configuration declares
-  `spec:inputs`. [DOC S447]
+  `spec:inputs`. [DOC S-s67nwj2e]
 - The downstream pipelines page recommends inputs over variables for pipeline configuration, citing type checking,
   validation through options, descriptions and default values. [DOC S-pt32lcdt]
 - A predefined variable reaches the downstream pipeline only copied into a trigger-job variable (for example
   `UPSTREAM_BRANCH: $CI_COMMIT_REF_NAME`); job-only variables are not available in trigger jobs, and variables from
-  the runner's `config.toml` are never passed. [DOC S447]
+  the runner's `config.toml` are never passed. [DOC S-s67nwj2e]
 - A masked variable passed this way to a multi-project pipeline loses its masking, so it can appear unmasked in the
   downstream project's job logs; the docs say not to do it. [DOC S-pt32lcdt]
 - When upstream and downstream define a variable with the same name, the upstream value takes precedence.
@@ -93,7 +93,7 @@ settings for job-token Git pushes. The token never carries more than the rights 
 - `trigger:forward`: `yaml_variables` (default `true`) passes the trigger job's and default variables;
   `pipeline_variables` (default `false`) also passes pipeline variables, from manual runs, schedules and dotenv of
   `needs` jobs. Forwarded variables are not forwarded again by a nested trigger unless it also uses `forward`.
-  [DOC S447]
+  [DOC S-s67nwj2e]
 - Variables forwarded with `trigger:forward` are trigger variables, which have the highest precedence.
   [DOC S-pt32lcdt]
 - A downstream job fetches an upstream job's artifacts with `needs:project` (Premium and Ultimate); it needs the
@@ -145,7 +145,7 @@ settings for job-token Git pushes. The token never carries more than the rights 
 ### How it fits
 - An agent pipeline in project A that must start and wait on work in project B uses a trigger job with
   `trigger:project` and `strategy: mirror`, so A's later stages run only if B's pipeline succeeds and B's failure
-  fails A; without a strategy A only learns that B's pipeline was created. [DER S447, S-pt32lcdt: default trigger
+  fails A; without a strategy A only learns that B's pipeline was created. [DER S-s67nwj2e, S-pt32lcdt: default trigger
   status, the `mirror` strategy and multi-project status rules]
 - Coordination across repositories is set on the target side: a trigger job needs the triggering user's pipeline
   rights in B, an API call with A's job token needs A on B's allowlist, and an artifact fetch needs B on A's
@@ -158,9 +158,9 @@ settings for job-token Git pushes. The token never carries more than the rights 
 ## Reference
 | Mechanism | Starts downstream | Status back upstream | Rights needed | Source |
 |---|---|---|---|---|
-| `trigger:project` job | yes, default branch or `branch` | only with `strategy: mirror` (or `depend`) | triggering user can run pipelines in B | S447, S-pt32lcdt |
+| `trigger:project` job | yes, default branch or `branch` | only with `strategy: mirror` (or `depend`) | triggering user can run pipelines in B | S-s67nwj2e, S-pt32lcdt |
 | `POST /projects/:id/trigger/pipeline` with `CI_JOB_TOKEN` | yes, given `ref` | job is linked as upstream; no status mirroring documented | A on B's job token allowlist; user's rights in B | S-xz7iisq3, S-7zthwzzb |
-| `needs:pipeline` | no | copies B's latest default-branch status into a job | not stated on the page | S447 |
+| `needs:pipeline` | no | copies B's latest default-branch status into a job | not stated on the page | S-s67nwj2e |
 | `needs:project` artifacts | no | no | B on A's allowlist; Reporter in A (Premium, Ultimate) | S-pt32lcdt |
 
 Related: `gitlab/automated-merge-requests.md` (job-token pushes to the own project and a commit's pipeline status);
@@ -170,7 +170,7 @@ Related: `gitlab/automated-merge-requests.md` (job-token pushes to the own proje
 `claude/large-codebases.md` (coordinating Claude Code sessions across repositories).
 
 ## Examples
-- SNIPPET: start a pipeline in another project, pass variables and wait for its result; context: GitLab 18.2 or later, any tier, the triggering user can run pipelines in the downstream project; checked: syntax [DOC S447: `trigger:project`, `trigger:branch`, `trigger:strategy` examples; DOC S-pt32lcdt: passing a predefined variable]
+- SNIPPET: start a pipeline in another project, pass variables and wait for its result; context: GitLab 18.2 or later, any tier, the triggering user can run pipelines in the downstream project; checked: syntax [DOC S-s67nwj2e: `trigger:project`, `trigger:branch`, `trigger:strategy` examples; DOC S-pt32lcdt: passing a predefined variable]
 ```yaml
 deploy-downstream:
   stage: deploy

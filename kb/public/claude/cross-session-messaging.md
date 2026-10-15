@@ -3,7 +3,7 @@ topic: claude/cross-session-messaging
 priority: P3
 applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current)"
 retrieved_utc: 2026-10-15
-sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S447]
+sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e]
 status: complete
 ---
 
@@ -166,7 +166,7 @@ and listing.
   checkouts (`--add-dir`, a multi-repository cloud session), separate sessions per repository that message each
   other (this page) or that a Project starts and tracks, or a CI pipeline in one repository that triggers and waits on
   pipelines in others (`gitlab/multi-project-pipelines.md`). [DER S-fk46gdey, S-sdxhnx3i: the Projects page and this
-  page's targets; S-4jj4dtg4 in `claude/large-codebases.md`; S447 in `gitlab/multi-project-pipelines.md`]
+  page's targets; S-4jj4dtg4 in `claude/large-codebases.md`; S-s67nwj2e in `gitlab/multi-project-pipelines.md`]
 
 ### How it fits
 - For unattended agents in this kb's frame, a bypass-mode session (e.g. a background job with
