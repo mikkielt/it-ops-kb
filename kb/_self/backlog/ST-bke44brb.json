@@ -31,6 +31,76 @@
   "depends_on": [
     "ST-gxpk74c3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "The new topic agents/agent-memory-services should be linked back from the Reference sections of agents/foundry-agent-service.md and agents/shared-state-concurrency.md, and Durable Objects and Claude Managed Agents need alias rows in _tools/aliases.csv; all three files are outside this item's touches. Where do they go?",
+      "options": [
+        "follow-up story ST-s75mayaf",
+        "leave them out"
+      ],
+      "recommendation": "follow-up story ST-s75mayaf",
+      "do": {
+        "follow-up story ST-s75mayaf": "ST-bke44brb",
+        "leave them out": "ST-bke44brb"
+      },
+      "class": "design",
+      "answer": "follow-up story ST-s75mayaf",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which priority does the new kb topic agent-memory-services take in its front matter?",
+      "options": [
+        "P3",
+        "P2"
+      ],
+      "recommendation": "P3",
+      "do": {
+        "P3": "ST-bke44brb",
+        "P2": "ST-bke44brb"
+      },
+      "class": "design",
+      "answer": "P3",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "The Managed Agents memory page states its Beta header and the rule against combining it with managed-agents-2026-04-01 only in an aside and a callout that the text extractors drop (BG-nr2mv4si), so that DOC fact keeps a lint warning 'no passage holds it'. Keep the fact as DOC, or drop it?",
+      "options": [
+        "keep it as DOC with the warning until BG-nr2mv4si is fixed",
+        "drop the fact"
+      ],
+      "recommendation": "keep it as DOC with the warning until BG-nr2mv4si is fixed",
+      "do": {
+        "keep it as DOC with the warning until BG-nr2mv4si is fixed": "ST-bke44brb",
+        "drop the fact": "ST-bke44brb"
+      },
+      "class": "design",
+      "answer": "keep it as DOC with the warning until BG-nr2mv4si is fixed",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "The goal names the Claude API memory tool; the article also covers Claude Managed Agents memory stores (Beta), Anthropic's server-held counterpart, as the contrast for who holds the storage. Keep that section?",
+      "options": [
+        "keep the Managed Agents section",
+        "cover the memory tool only"
+      ],
+      "recommendation": "keep the Managed Agents section",
+      "do": {
+        "keep the Managed Agents section": "ST-bke44brb",
+        "cover the memory tool only": "ST-bke44brb"
+      },
+      "class": "design",
+      "answer": "keep the Managed Agents section",
+      "by": "agent"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/agent-memory-services where no article fits.",
   "claimed_by": "orch-state"
 }

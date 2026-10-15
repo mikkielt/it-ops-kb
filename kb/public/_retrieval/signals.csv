@@ -765,3 +765,15 @@ verifiedpermissions,agents/policy-as-code
 Microsoft.Authorization/policyAssignments,agents/policy-as-code
 Start-AzPolicyRemediation,agents/policy-as-code
 az policy remediation,agents/policy-as-code
+memory_20250818,agents/agent-memory-services
+BetaLocalFilesystemMemoryTool,agents/agent-memory-services
+BetaAbstractMemoryTool,agents/agent-memory-services
+betaMemoryTool,agents/agent-memory-services
+agent-memory-2026-07-22,agents/agent-memory-services
+memory_stores,agents/agent-memory-services
+/mnt/memory/,agents/agent-memory-services
+memory_search_preview,agents/agent-memory-services
+x-memory-user-id,agents/agent-memory-services
+validateStateChange,agents/agent-memory-services
+mergeAgentState,agents/agent-memory-services
+blockConcurrencyWhile,agents/agent-memory-services

@@ -1568,3 +1568,6 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## agents/policy-as-code
 - **OPA or Cedar placed in front of a self-hosted MCP server's tools, outside Amazon Bedrock AgentCore Gateway.** Looked 2026-10-15 in the OPA docs at v1.21.2 (introduction, REST API, bundles; S-tcvnt2sk, S-hvug6eux, S-iq6vp7q2), the Cedar docs (S-ksyczslf) and the AgentCore Policy page (S-sfwmzlty): OPA and Cedar describe a generic decision call and AgentCore Policy enforces Cedar only at its own gateway; no page describes an MCP server or MCP gateway that calls OPA or Cedar per tool call. Needs an official MCP, OPA or Cedar page or a vendor integration guide that names it. [UNK] (topic: agents/policy-as-code)
+
+## agents/agent-memory-services
+- **Release status of the Cloudflare Agents SDK, and a conditional write (ETag or version precondition) for Foundry memory items.** Looked 2026-10-15 in the Cloudflare Agents state and Agent class pages (S-4wv4j3r2, S-3bnq55fu) and the Durable Objects concept page (S-x5vpwiqv), which state no GA, beta or preview label for the SDK, and in the Foundry memory concept and how-to pages (S-qwkcddyd, S-akyurl2s), whose item update calls name no precondition. Needs the Agents SDK changelog or a Cloudflare status statement, and the Foundry memory REST reference read for an `If-Match` or version field. [UNK] (topic: agents/agent-memory-services)
