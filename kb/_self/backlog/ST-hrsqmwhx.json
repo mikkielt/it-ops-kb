@@ -2,7 +2,7 @@
   "id": "ST-hrsqmwhx",
   "kind": "story",
   "title": "benchmarks.py repro check proves on a probe instance that kbgit.py sync --push lands on its own bare copy and never on the real origin",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -98,5 +98,29 @@
     }
   ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "8862cb6e9ef6cd5b9da2ba7f09e8293ae17d26bf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "2422d3d98a960098"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b27d4863fd8e47d8"
+      }
+    ]
+  }
 }
