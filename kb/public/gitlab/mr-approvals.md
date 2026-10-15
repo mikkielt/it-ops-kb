@@ -49,5 +49,7 @@ GitLab's repository LICENSE puts all content under `doc/` under CC BY-SA 4.0, so
 | CODEOWNERS / Require Code Owner approval | Premium, Ultimate | all | S450,S444 |
 | Security Approvals (policies) | Ultimate | all | S442 |
 
+See also `gitlab/commit-signing-and-provenance.md` (signed commits with GPG keys, push rules and bot accounts for agent commits).
+
 ## Examples
 Project (Premium): Settings > Merge requests > Approvals. Add rule "reviewers", 1 approval. Tick *Prevent approval by merge request creator*, *Prevent approvals by users who add commits* and *Prevent editing approval rules in merge requests*.

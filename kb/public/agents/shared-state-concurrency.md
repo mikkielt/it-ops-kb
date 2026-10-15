@@ -306,6 +306,8 @@ status: partial
 - `claude/skills-and-subagents.md`: agent team task lists, which use file locking on one machine.
 - Kleppmann's analysis of Redlock and antirez's answer, linked from the Redis page's "Analysis of
   Redlock" section, were not read for this topic.
+- `agents/agent-memory-services.md`: managed memory services for agents (Foundry agent memory, Claude
+  Managed Agents memory stores, Cloudflare Durable Objects state).
 
 ## Examples
 - SNIPPET: compare-and-swap of a shared JSON state object in S3 with the AWS CLI: read the ETag,

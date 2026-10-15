@@ -180,3 +180,51 @@ sgjp,morfeusz
 polimorf,morfeusz
 lemmatization,lemmatisation
 lematyzacja,lemmatisation
+tsgo,typescript-go
+tsconfig,tsconfig.json
+z shell,zsh
+zshrc,zsh
+zshenv,zsh
+zprofile,zsh
+zlogin,zsh
+setopt,zsh
+compinit,zsh
+compdef,zsh
+zstyle,zsh
+gentoo linux,gentoo
+portage,gentoo
+emerge,gentoo
+ebuild,gentoo
+stage3,gentoo
+binhost,gentoo
+eselect,gentoo
+kali,kali
+kalilinux,kali
+alma,almalinux
+almalinux os,almalinux
+alma linux,almalinux
+almalinux vault,almalinux
+elevate project,elevate
+leapp,elevate
+in-place upgrade,elevate
+almalinux-deploy,elevate
+kitten,almalinux
+chef infra client,chef-client
+chef client,chef-client
+policy file,policyfile
+sbx,docker sandboxes
+docker sandboxes,docker sandboxes
+runsc,gvisor
+gvisor,gvisor
+open policy agent,opa
+opa,opa
+amazon verified permissions,verified permissions
+avp,verified permissions
+verified permissions,verified permissions
+pgp,gpg
+openpgp,gpg
+gpg,gpg
+durable object,durable objects
+durable objects,durable objects
+managed agents,claude managed agents
+claude managed agents,claude managed agents

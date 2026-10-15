@@ -255,7 +255,9 @@ quotas/limits, and a runnable MCP-tool example.
   (`FoundryChatClient`/`FoundryToolbox` for hosted agents), `entra/agent-id.md` (the Entra Agent ID
   platform that provisions Foundry's per-project and per-published-agent identities and blueprints),
   `agents/azure-openai-deployments.md` (the underlying model-deployment layer: deployment types, quota/
-  rate limits, provisioned throughput, API versions, auth/networking -- not repeated here).
+  rate limits, provisioned throughput, API versions, auth/networking -- not repeated here),
+  `agents/agent-memory-services.md` (managed memory services for agents: Foundry agent memory, Claude
+  Managed Agents memory stores, Cloudflare Durable Objects state).
 
 ## Examples
 - Create a prompt agent with an MCP tool (`require_approval: "always"`) using the Azure AI Projects

@@ -66,7 +66,7 @@ policy: only the `.wsb` file's `<MemoryInMB>` sets it.
 
 Registry key for every policy value: `HKLM\SOFTWARE\Policies\Microsoft\Windows\Sandbox` (`WindowsSandbox.admx`).
 
-Related: `windows/app-control.md` (App Control for Business, another application-security layer on the same devices).
+Related: `windows/app-control.md` (App Control for Business, another application-security layer on the same devices), `agents/agent-sandboxes.md` (sandboxes for coding agents beyond Windows Sandbox: Docker Sandboxes, Kubernetes agent-sandbox, gVisor).
 
 ## Examples
 

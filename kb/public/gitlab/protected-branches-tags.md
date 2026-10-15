@@ -59,7 +59,7 @@ status: complete
 | Push rules (commit message, branch name, file name, size) | Premium | S-lu25cylz |
 | Server hooks (`pre-receive`, `update`) | Free, Self-Managed only | S-mi3mmhpi |
 
-See also `gitlab/github-branch-rules-and-auto-merge.md` (the GitHub counterpart), `gitlab/detecting-mr-merges-in-ci.md` (telling a merge request merge from a direct push after the fact), `gitlab/repository-mirroring.md` (mirrors of protected branches), `gitlab/deploy-keys-and-tokens.md` (deploy keys in push and create rules), `gitlab/project-settings-api.md` (merge method, squash and pipeline settings of the project).
+See also `gitlab/github-branch-rules-and-auto-merge.md` (the GitHub counterpart), `gitlab/detecting-mr-merges-in-ci.md` (telling a merge request merge from a direct push after the fact), `gitlab/repository-mirroring.md` (mirrors of protected branches), `gitlab/deploy-keys-and-tokens.md` (deploy keys in push and create rules), `gitlab/project-settings-api.md` (merge method, squash and pipeline settings of the project), `gitlab/commit-signing-and-provenance.md` (signed commits with GPG keys and the push rules that require them).
 
 ## Examples
 Protected tag wildcard `release-*`, Allowed to create: Maintainers. Protected tag `v*`, Allowed to create: Maintainers.

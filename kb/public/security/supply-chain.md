@@ -47,5 +47,7 @@ NIST SSDF (SP 800-218 v1.1, plus the 800-218A generative-AI companion profile) a
 | uv/pip hash pinning | available today, no GitLab-tier dependency | S1522,S-dlc2x6gf,S1507 |
 | GitLab image digest pinning | available today (CI/CD YAML syntax), no GitLab-tier dependency | S-sxp3exzp, S1512 |
 
+See also `gitlab/commit-signing-and-provenance.md` (signed commits with GPG keys, push rules, bot accounts and SLSA for agent commits).
+
 ## Examples
 No fixture-specific configuration; these are packaging/CI-pipeline facts independent of device or tenant fixtures.

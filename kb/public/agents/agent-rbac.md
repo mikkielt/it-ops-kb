@@ -202,6 +202,8 @@ group claims/overage, PIM-for-Groups sync latency).
   app-role-on-service-principal pattern above applies when an agent/automation identity calls the Intune
   RBAC or assignment-filter Graph endpoints (MAA enforces app-auth Graph calls too, not just interactive
   admins).
+- See also `agents/policy-as-code.md`: policy engines that decide an agent's request outside the
+  application (Open Policy Agent and Rego, Cedar and Amazon Verified Permissions, Azure Policy).
 
 ## Examples
 - Engineer `jan.kowalski` on `PL-LT-00123` runs a stdio MCP server: no MCP OAuth scope challenge
