@@ -30,6 +30,23 @@
     "_tools/test_sync_e2e.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which changes select repro_bench.csv's reword and off-kb check in kg_sync.heldout_checks?",
+      "options": [
+        "bench follows lookup_eval.csv, expansions and articles like lookup_heldout.csv, and its own file alone",
+        "any change that selects either frozen file selects both"
+      ],
+      "recommendation": "bench follows lookup_eval.csv, expansions and articles like lookup_heldout.csv, and its own file alone",
+      "do": {
+        "bench follows lookup_eval.csv, expansions and articles like lookup_heldout.csv, and its own file alone": "BG-ae3cq3uj",
+        "any change that selects either frozen file selects both": "BG-ae3cq3uj"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-ygsnog4n review"
   ],
