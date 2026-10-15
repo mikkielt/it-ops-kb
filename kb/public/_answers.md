@@ -3713,3 +3713,18 @@ _Agent: kb-research_
 - See arch/puppet-agent-run-noop-reporting.md, arch/puppet-language-resources-types.md, arch/puppet-modules-facts-hiera.md, arch/puppet-windows-nodes.md.
 
 _Agent: kb-research_
+
+## QK-chef-infra-client-s-run-run. How do Chef Infra Client's run, run list, attributes and Policyfiles work, and what is specific to Windows nodes?
+- A run reads `client.rb` and Ohai data, authenticates, rebuilds the node object, expands the run list, syncs cookbooks, resets attributes, compiles all recipes into a resource collection (libraries, attributes, custom resources, recipes) and then converges each resource in run-list then recipe order. [DOC S-zskepmir]
+- In the source the node is saved by `converge_and_save` only after the converge returns, so a failed converge skips the save. [CODE S-z5kgh6p7]
+- Every resource action has a default that differs by type (`package` `:install`, `file` `:create`, `execute` `:run`; `service`, `windows_service` and `reboot` `:nothing`); guards (`only_if`, `not_if`) give idempotence and notifications default to the delayed timer. [DOC S-ttgsowye, S-gwzouzk5, S-fhqrcrzk, S-yz335vyz, S-oh6erfbm]
+- Attributes come in six types from up to five sources; the last applied wins (`default` lowest, `automatic` highest, role and environment reversed between default and override), hashes deep-merge, arrays merge only at one precedence level, and only normal attributes persist between runs. [DOC S-hacsn2hl, S-kfuw3ueg, S-ajlt32j5, S-ohmkm4e7]
+- A Policyfile solves the run list and cookbook versions on the workstation into `Policyfile.lock.json` (versions, content hash, sources, attributes), pushed to a policy group; it replaces roles and environments but not every Berkshelf use. [DOC S-fypqy7jh]
+- On Windows the client is installed by `knife bootstrap` over WinRM, the MSI or an existing deployment tool; the MSI can register a scheduled task because the documentation names no daemon option for Windows; the Windows resources have their own limits (`windows_package` matches DisplayName, `windows_service` has no `:reload`, `dsc_resource` has no composite resources). [DOC S-3x3s2jec, S-yddwaulv, S-mqmjglrs, S-yz335vyz, S-xw5o3wsc]
+- In the source a run without administrator rights only warns unless `fatal_windows_admin_check` is on, and a set interval on Windows is fatal. [CODE S-z5kgh6p7, S-ddprubpp, S-og5svrch]
+- Chef Infra Client 19 needs a licence key unless it comes from an official distribution (customer portal, Habitat package, native installer or migration tool). [DOC S-ljusqk46]
+- Conclusion: Chef is a pull-model enforcer like Puppet: the useful drift artefact is the Policyfile lock (a fixed cookbook set) plus `--why-run`, which stops before provider mapping; on Windows it needs a local administrator-level scheduled task per node, and its read-only compliance side is Chef InSpec, which the kb's prior-art article covers separately. [DER S-fypqy7jh, S-yddwaulv, S-3x3s2jec, S-zskepmir]
+- Open: chef-client exit codes, the client support lifecycle, where Policyfile attributes sit in the precedence table, and which distribution installs under `C:\opscode` or `C:\hab` are unconfirmed. [UNK]
+- See arch/chef-infra-client-run.md, arch/chef-cookbooks-recipes-resources.md, arch/chef-attributes-policyfiles.md, arch/chef-windows-nodes.md.
+
+_Agent: kb-research_

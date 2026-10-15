@@ -73,6 +73,10 @@ Every topic of this root with its priority (the research order, not importance),
 | `arch/twelve-factor-readiness` | P1 | complete | `arch/twelve-factor-readiness.md` | 12 |
 | `arch/workload-identity-onprem-k8s` | P1 | complete | `arch/workload-identity-onprem-k8s.md` | 6 |
 | `arch/buildkit-build-secrets` | P3 | complete | `arch/buildkit-build-secrets.md` | 4 |
+| `arch/chef-attributes-policyfiles` | P3 | partial | `arch/chef-attributes-policyfiles.md` | 7 |
+| `arch/chef-cookbooks-recipes-resources` | P3 | complete | `arch/chef-cookbooks-recipes-resources.md` | 11 |
+| `arch/chef-infra-client-run` | P3 | partial | `arch/chef-infra-client-run.md` | 9 |
+| `arch/chef-windows-nodes` | P3 | partial | `arch/chef-windows-nodes.md` | 15 |
 | `arch/cloudflare-tunnel-replicas-ssh-access` | P3 | partial | `arch/cloudflare-tunnel-replicas-ssh-access.md` | 2 |
 | `arch/content-addressed-ids-jsonl` | P3 | partial | `arch/content-addressed-ids-jsonl.md` | 30 |
 | `arch/datalog-engines-rust` | P3 | partial | `arch/datalog-engines-rust.md` | 15 |

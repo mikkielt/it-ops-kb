@@ -847,3 +847,15 @@ PUPPET_AGENT_STARTUP_MODE,arch/puppet-windows-nodes
 puppetlabs/acl,arch/puppet-windows-nodes
 puppetlabs/registry,arch/puppet-windows-nodes
 puppetlabs/reboot,arch/puppet-windows-nodes
+chef-client,arch/chef-infra-client-run
+Policyfile.lock.json,arch/chef-attributes-policyfiles
+Policyfile.rb,arch/chef-attributes-policyfiles
+include_policy,arch/chef-attributes-policyfiles
+force_override,arch/chef-attributes-policyfiles
+run_list,arch/chef-infra-client-run
+fatal_windows_admin_check,arch/chef-windows-nodes
+windows_package,arch/chef-windows-nodes
+ChefSchTaskFeature,arch/chef-windows-nodes
+dsc_resource,arch/chef-windows-nodes
+notifies,arch/chef-cookbooks-recipes-resources
+only_if,arch/chef-cookbooks-recipes-resources

@@ -1610,3 +1610,14 @@ Still open: (topic: auth/configmgr-rbac-auth)
 
 ## arch/puppet-windows-nodes
 - **The Puppet language page on DSC resources and `dsc_*` types on Windows.** Looked 2026-10-15 for a Puppet-owned page: only the paths page (S-i7ihql2k) mentions PowerShell DSC resources (backslash paths, single-quoted strings); the `puppetlabs/dsc` and `puppetlabs/dsc_lite` modules were not read. Needs the module READMEs on the Forge or in their repositories. [UNK] (topic: arch/puppet-windows-nodes)
+
+## arch/chef-infra-client-run
+- **The exit codes of a `chef-client` run.** Looked 2026-10-15 in the `chef-client` reference page (S-yddwaulv, lines holding "exit"), the run-list page (S-zskepmir) and `lib/chef/client.rb` at commit 9322fa4 (S-z5kgh6p7): the page lists no exit-code table, and the run method only re-raises its exception. Needs the exit-code page or RFC 062 text read in full, or the application's exit handling in `lib/chef/application.rb`. [UNK] (topic: arch/chef-infra-client-run)
+- **The support lifecycle (end-of-life dates) of Chef Infra Client 18 and 19.** Looked 2026-10-15 in the documentation home (S-d6oc2jt7) and the Chef Infra Client release notes (S-qdnvehti, first entries): the home page gives an end-of-life date only for Chef Infra Server (2026-11-30); no client lifecycle table was read. Needs the supported-versions page named on the home page. [UNK] (topic: arch/chef-infra-client-run)
+
+## arch/chef-attributes-policyfiles
+- **Where Policyfile attributes sit in the 15-level precedence order.** Looked 2026-10-15 in the Attribute Precedence page (S-kfuw3ueg: no occurrence of "policyfile"), the Attribute Sources page (S-6rblahwp: Policyfiles named as a source only) and the Policyfile page (S-fypqy7jh: `default` and `override` only). Needs the Policyfile RFC or the node attribute code (`lib/chef/node/attribute.rb`) read at a pinned commit. [UNK] (topic: arch/chef-attributes-policyfiles)
+
+## arch/chef-windows-nodes
+- **Which Chef Infra Client 19 distribution installs under `C:\opscode` and which under `C:\hab`.** Looked 2026-10-15 in the Chef for Windows page (S-3x3s2jec), which names both, and in the 19.3.15 release notes (S-qdnvehti), which say Habitat paths follow `SYSTEMDRIVE` and Omnibus paths stay at `C:\opscode`; no page read maps an installer to a root. Needs the installer or migration-tool page. [UNK] (topic: arch/chef-windows-nodes)
+- **The properties and defaults of `chef_client_scheduled_task` and `windows_task`.** Looked 2026-10-15: both names are in the Windows resource list (S-3x3s2jec) and the `windows_task` page was read only for its default action (`:create`); the `chef_client_scheduled_task` page was not read. Needs both resource pages in full. [UNK] (topic: arch/chef-windows-nodes)

@@ -817,3 +817,6 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## arch/puppet-windows-nodes
 - Running a Windows service as a specific user: the type reference's `windows` service provider text (S-ef4b5npw, read 2026-10-15) says running services as a specific user is not supported, while the same provider's supported features include `manages_logon_credentials` (the provider can specify the logon credentials of a service). The kb states both and does not choose. (topic: arch/puppet-windows-nodes)
+
+## arch/chef-windows-nodes
+- Chef Infra Client install location on Windows: the Chef for Windows page (S-3x3s2jec, read 2026-10-15) says in one place that after installation the client is located at `C:\opscode` and in the next line at `C:\hab`, and its PATH section names `C:\opscode\chef\bin`; the 19.3.15 release notes (S-qdnvehti) say Habitat-related paths follow `SYSTEMDRIVE` and Omnibus-related paths stay at `C:\opscode`. The kb states both and does not choose; which distribution uses which root is open. (topic: arch/chef-windows-nodes)
