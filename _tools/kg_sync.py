@@ -471,8 +471,11 @@ def heldout_checks(paths):
             elif name in EVAL_SETS + (BENCH_SET,) and data:
                 # a frozen set is compared with the tuned eval set, never with the other frozen set
                 add(data, FROZEN_SETS if name == EVAL_SETS[0] else (name,), f"an eval set changed: {p}")
-            elif p.endswith(".md") and not name.startswith("_") and p.count("/") >= 3 and p.startswith("kb/"):
-                root = "/".join(p.split("/")[:2])  # kb/<root>/<domain>/<slug>.md: an article of that root
+            elif (p.endswith(".md") and p.startswith("kb/") and p.count("/") >= 3
+                  and not any(part.startswith("_") for part in p.split("/")[2:])):
+                # kb/<root>/<domain>/<slug>.md: an article of that root; a path part below the root with a leading
+                # underscore (_retrieval, _snapshots, a ledger) is no article
+                root = "/".join(p.split("/")[:2])
                 add(f"{root}/{kbcommon.DATA_DIR}", FROZEN_SETS, f"an article changed: {p}")
     return [(p, why) for p, why in sorted(found.items()) if Path(KB, p).is_file()]
 
