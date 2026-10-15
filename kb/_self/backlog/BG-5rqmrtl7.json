@@ -1,0 +1,21 @@
+{
+  "id": "BG-5rqmrtl7",
+  "kind": "bug",
+  "title": "factdiff.py anchor --quotes takes one quote per fact line, so a DOC fact citing two non-Microsoft sources can anchor only one of them by quote",
+  "status": "draft",
+  "parent": "EP-lk5qdhah",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A DOC fact citing two copy- or quote-reuse sources can be anchored by quote against each: --quotes accepts a quote per fact line and source (or several quotes per line, each matched to the source that holds it), so both anchor rows end located and lint stops warning that the added source's page holds no passage.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys,tempfile,pathlib;d=tempfile.mkdtemp();p=pathlib.Path(d,'q.csv');p.write_text('line,quote\\n23,An SVID is not itself a document type.\\n23,The X.509-SVID and JWT-SVID profiles are mandatory and MUST be supported by SPIFFE implementations.\\n',encoding='utf-8');sys.exit(subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--file','auth/spiffe-workload-identity.md','--quotes',str(p),'--dry-run']).returncode)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py"
+  ]
+}
