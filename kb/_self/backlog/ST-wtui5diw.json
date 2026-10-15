@@ -1,0 +1,40 @@
+{
+  "id": "ST-wtui5diw",
+  "kind": "story",
+  "title": "The replayed areas' alias rows are in _tools/aliases.csv",
+  "status": "draft",
+  "sprint": "SP-z3jcdsgr",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/aliases.csv holds the alias rows the instance-3 research filed for typescript (ST-j2ctkvl4), zsh (ST-r3tvhelr), Gentoo (ST-oeyfaoee), Kali (ST-2onmjhme), AlmaLinux (ST-za3ew224) and Chef (ST-bamh3apr), each term once over every alias file with an existing canonical reused; rag.py eval passes after the change",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=[l.strip() for l in open('_tools/aliases.csv',encoding='utf-8')]\nneed=['tsgo,typescript-go','zshrc,zsh','kalilinux,kali','portage,gentoo','chef infra client,chef-client']\nmiss=[r for r in need if r not in t]+([] if any(l.startswith('leapp,') for l in t) else ['leapp,'])\nprint(miss);sys.exit(1 if miss else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "_tools/aliases.csv holds the alias rows the instance-3 research filed for typescript (ST-j2ctkvl4), zsh (ST-r3tvhelr), Gentoo (ST-oeyfaoee), Kali (ST-2onmjhme), AlmaLinux (ST-za3ew224) and Chef (ST-bamh3apr), each term once over every alias file with an existing canonical reused",
+      "check": 0
+    },
+    {
+      "clause": "rag.py eval passes after the change",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ],
+  "notes": "Merges the six alias drafts instance 3 filed (ST-j2ctkvl4, ST-r3tvhelr, ST-oeyfaoee, ST-2onmjhme, ST-za3ew224, ST-bamh3apr); their goals list every row in full. A row whose term is already in an alias file, or which turns a lookup eval row, is left out and named in the report, but the check's one row per area stays. Checks that pass before the work: rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

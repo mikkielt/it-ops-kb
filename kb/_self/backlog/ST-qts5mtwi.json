@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: the items change the repro harness and the sprint skill from the first run's recorded data; the report's readings come from the run's own records and the lessons analysis, quoted in the report story's notes."
 }

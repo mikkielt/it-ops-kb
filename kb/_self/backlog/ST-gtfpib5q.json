@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "bench_core.scratch_dir returns a resolved path, so a clone under the macOS temp symlink agrees with its own tools",
   "status": "draft",
+  "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
-  "goal": "bench_core.scratch_dir returns its directory resolved (Path.resolve()), and bench_pool reads it instead of its own copy of the default, so every benchmark clone sits at a canonical path. SP-ygsnog4n retrospective: land of ST-hrsqmwhx stopped at step checks (ops land.step checks exit=1, 2026-10-15T09:01:16Z) because repro check's probe clone sat under /var/folders, a symlink to /private/var/folders, and a portable backlog test inside the probe's sync gate compared the two forms; the worker's own runs set BENCH_SCRATCH to a non-symlinked path, which hid it, and the fix went into bench_repro alone.",
+  "goal": "bench_core.scratch_dir returns its directory resolved (Path.resolve()); bench_pool reads it instead of its own copy of the default, so every benchmark clone sits at a canonical path",
   "checks": [
     {
       "run": [
@@ -13,14 +14,44 @@
         "-c",
         "import os,sys;os.environ.pop('BENCH_SCRATCH',None);sys.path.insert(0,'_tools');import bench_core as c;p=c.scratch_dir();sys.exit(0 if p==p.resolve() else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('_tools/bench_pool.py',encoding='utf-8').read();sys.exit(1 if 'it-ops-kb-bench' in t else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_pool_build_check_scenario_rows_and_session_shape"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_core.scratch_dir returns its directory resolved (Path.resolve())",
+      "check": 0
+    },
+    {
+      "clause": "bench_pool reads it instead of its own copy of the default, so every benchmark clone sits at a canonical path",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/bench_core.py",
     "_tools/bench_pool.py",
-    "_tools/test_bench.py"
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-ei4ci5xm"
   ],
   "links": [
     "parked: SP-ygsnog4n close"
-  ]
+  ],
+  "notes": "Plan 2026-10-15: kept with the harness snags; touches bench_core.py and bench_pool.py, not bench_repro.py, so it runs beside the bench_repro chain. Plan 2026-10-15: goal shortened to its two clauses; the retrospective's account (land of ST-hrsqmwhx stopped at step checks, ops land.step checks exit 1 at 2026-10-15T09:01:16Z, because repro check's probe clone sat under /var/folders, a symlink to /private/var/folders) moved here from the goal. Checks that pass before the work: the pool test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }

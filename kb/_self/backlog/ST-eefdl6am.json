@@ -1,0 +1,65 @@
+{
+  "id": "ST-eefdl6am",
+  "kind": "story",
+  "title": "repro run rotates the area order per instance and starts no area the cap cannot cover",
+  "status": "draft",
+  "sprint": "SP-ysuvdxsn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "repro run gives instance n the briefs' areas in the order bench_repro.area_order(areas, n, count) returns, the list rotated by (n-1) times len(areas)//count, and records each instance's order in run.json; it starts an area only when bench_repro.may_start(spent, area_usd, instance_usd) holds, the recorded spend plus --area-usd within --instance-usd, so no instance passes its cap; repro run --dry-run prints each instance's order and the areas its cap leaves out; the run part of test_bench.py proves each on a planted run (no new test id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'area_order'): print('no area_order yet');sys.exit(1);a=list('abcdef')\nok=b.area_order(a,1,3)==a and b.area_order(a,2,3)==list('cdefab') and b.area_order(a,3,3)==list('efabcd')\nsys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'may_start'): print('no may_start yet');sys.exit(1);sys.exit(0 if b.may_start(50,8,58) and not b.may_start(50.01,8,58) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro run gives instance n the briefs' areas in the order bench_repro.area_order(areas, n, count) returns, the list rotated by (n-1) times len(areas)//count",
+      "check": 0
+    },
+    {
+      "clause": "records each instance's order in run.json",
+      "check": 0
+    },
+    {
+      "clause": "it starts an area only when bench_repro.may_start(spent, area_usd, instance_usd) holds, the recorded spend plus --area-usd within --instance-usd, so no instance passes its cap",
+      "check": 1
+    },
+    {
+      "clause": "repro run --dry-run prints each instance's order and the areas its cap leaves out",
+      "check": 2
+    },
+    {
+      "clause": "the run part of test_bench.py proves each on a planted run (no new test id)",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-zezjnwe6"
+  ],
+  "notes": "Premise (lessons analysis 1.6, 4.2): all 10 budget failures of the first run were tail areas of the one fixed order (age to pip; pip run by none, instance 3 lost 7), and the cap was checked before an area so spend passed it (59.09, 60.79 against 58). The rotation and the reserve rule are the analysis's recommendation 6; the function names are fixed here so the checks can call them. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

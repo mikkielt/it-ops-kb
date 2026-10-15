@@ -3,16 +3,39 @@
   "kind": "story",
   "title": "repro compare counts each instance's unanchored DOC facts, so the landing pick sees research left unanchored",
   "status": "draft",
+  "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,
-  "goal": "repro compare records per instance and area the DOC facts with no _anchors.csv row (metric unanchored) beside check_errors and lint_errors, and repro pick prints it, so an instance that skipped factdiff.py anchor --file for an article is visible before it lands; a planted instance proves it.",
+  "goal": "repro compare records per instance and area the DOC facts with no _anchors.csv row (metric unanchored) beside check_errors and lint_errors, leaving out facts whose only sources are Microsoft Learn pages, which kb-research SKILL.md step 5 exempts from a quote, and repro pick prints it; a planted instance proves it",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import inspect,sys;sys.path.insert(0,'_tools');import bench_repro as b;sys.exit(0 if 'unanchored' in inspect.getsource(b) else 1)"
+        "import sys;sys.path.insert(0,'_tools');import bench_repro as b;m=[n for n in ['unanchored'] if n not in b.COMPARE_METRICS];print('missing',m);sys.exit(1 if m else 0)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro compare records per instance and area the DOC facts with no _anchors.csv row (metric unanchored) beside check_errors and lint_errors, leaving out facts whose only sources are Microsoft Learn pages, which kb-research SKILL.md step 5 exempts from a quote",
+      "check": 0
+    },
+    {
+      "clause": "repro pick prints it",
+      "check": 1
+    },
+    {
+      "clause": "a planted instance proves it",
+      "check": 1
     }
   ],
   "touches": [
@@ -20,8 +43,11 @@
     "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-ud7ikgi4"
+  ],
   "links": [
     "parked: SP-bhzxxhub close"
   ],
-  "notes": "Retrospective of SP-bhzxxhub: instance 3, picked with check_errors+lint_errors 0, left all 52 DOC facts of windows/robocopy.md unanchored (review gap, parked as ST-iq73rdnb); neither compare nor pick reads anchors."
+  "notes": "Retrospective of SP-bhzxxhub: instance 3, picked with check_errors+lint_errors 0, left all 52 DOC facts of windows/robocopy.md unanchored (review gap, parked as ST-iq73rdnb); neither compare nor pick reads anchors. Plan 2026-10-15: the Learn exemption was added because robocopy, cmd and jea had no anchor rows by rule, not by choice (lessons analysis 4.7); ST-iq73rdnb was dropped for the same reason. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }

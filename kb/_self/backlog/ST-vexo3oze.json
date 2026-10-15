@@ -1,0 +1,50 @@
+{
+  "id": "ST-vexo3oze",
+  "kind": "story",
+  "title": "repro pick compares instances only on areas all finished",
+  "status": "draft",
+  "sprint": "SP-75hdeqld",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "repro pick ranks instances on the figures of the areas every instance finished, so an instance that finished fewer areas is never preferred for a lower cost, and it prints the areas it left out of the comparison; a planted standings table whose cheaper instance finished fewer areas proves it (no new test id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;s=inspect.getsource(b.pick)+inspect.getsource(b.standings);sys.exit(0 if 'common' in s else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro pick ranks instances on the figures of the areas every instance finished, so an instance that finished fewer areas is never preferred for a lower cost",
+      "check": 0
+    },
+    {
+      "clause": "it prints the areas it left out of the comparison",
+      "check": 0
+    },
+    {
+      "clause": "a planted standings table whose cheaper instance finished fewer areas proves it (no new test id)",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-tmd2q4rq"
+  ],
+  "notes": "Premise (lessons analysis 4.1): instances 1 and 3 tied on 24 passed and 0 errors; pick_key's cost tie-break chose instance 3 ($58.14 against $59.09) because it finished 14 areas, not 19. The first check reads source text for the word common only as a guard; the bundle's planted standings prove the rule. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

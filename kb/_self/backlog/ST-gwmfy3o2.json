@@ -1,0 +1,22 @@
+{
+  "id": "ST-gwmfy3o2",
+  "kind": "story",
+  "title": "A second repro run measures claim parity and structural identity under one gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A second research-reproducibility run, started by the operator, measures claim parity and structural identity (article paths, ledgers and source rows of shared urls) with every instance under the same gate, after SP-z3jcdsgr, SP-75hdeqld, SP-b36246xo, SP-ysuvdxsn and SP-a3w7xdij have landed; its start commit holds those tool fixes but not the benchmark areas' research (new areas, or a start commit without the replayed content), which is the operator's choice with the spend cap",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r={x['record'] for x in csv.DictReader(open('kb/_self/reports/benchmarks.csv',encoding='utf-8')) if x['scenario']=='repro-compare'};print(sorted(r));sys.exit(0 if len(r)>=2 else 1)"
+      ]
+    }
+  ],
+  "relates_to": [
+    "ST-mvyhvoqb"
+  ],
+  "notes": "Filed by the plan of 2026-10-15 as a draft in no sprint: a paid, networked run is the operator's later call (lessons analysis 2026-10-15). Relates ST-mvyhvoqb (waiting on a detached run past the background limit)."
+}

@@ -1,29 +1,98 @@
 {
   "id": "BG-r2epswpp",
   "kind": "bug",
-  "title": "Eval row EV-page-file-size-windows turns good once the corpus holds fewer Windows units (window share 0.2007 at f980ac7c6)",
+  "title": "rag.py eval refuses a content landing when one key word's corpus share crosses COMMON_SHARE (EV-page-file-size-windows)",
   "status": "draft",
-  "priority": "P3",
+  "sprint": "SP-z3jcdsgr",
+  "priority": "P1",
   "rank": 0,
-  "severity": "S3",
-  "goal": "The tuned lookup eval passes again: the key word window stays informative in the Windows page-file question, so the pack for it is weak and not good. At f980ac7c6 window was in 3804 of 18955 units, 0.2007 against COMMON_SHARE 0.2 in kbfacts.py; adding the four zsh articles (about 215 units, a few mentioning Windows) took it under 0.2, so the question gained an informative key word and the pack turned good with a check: line (best facts from ldap-paging-filters and the agent error catalogue).",
+  "severity": "S2",
+  "goal": "rag.py eval no longer fails a row whose verdict differs from its expect_verdict only because a key word's share of the searched units drifted across COMMON_SHARE in kbfacts.py: it re-judges a failing row against the key-word shares of a committed baseline file, kb/<root>/_retrieval/word_shares.csv, which only a command rewrites, as gate g1 decides, prints a row that then meets its expect_verdict as drift with the word and both shares and counts it under noted, so a content landing that moves an unrelated word's share is never refused for it; the verdict a lookup's pack prints is unchanged; a planted eval row whose key word drifts under COMMON_SHARE proves it in an existing test of test_live_kb.py (no new test id)",
   "repro": {
     "run": [
       "python3",
-      "_tools/rag.py",
-      "eval"
+      "-c",
+      "import os,sys,tempfile;sys.path.insert(0,'_tools');import kbfacts\n_s=kbfacts.store\ndef s(*a,**k):\n st=_s(*a,**k);st.n=st.n+2000;return st\nkbfacts.store=s;import rag\nf=os.path.join(tempfile.mkdtemp(),'e.csv');open(f,'w').write('id,question,expect_paths,expect_verdict,allow_weak\\nEV-page-file-size-windows,How big should the page file size be on Windows?,,weak,\\n')\nsys.argv=['rag.py','eval','--file',f,'--root','public'];rag.main()"
     ]
   },
   "checks": [
     {
       "run": [
         "python3",
+        "-c",
+        "import os,sys,tempfile;sys.path.insert(0,'_tools');import kbfacts\n_s=kbfacts.store\ndef s(*a,**k):\n st=_s(*a,**k);st.n=st.n+2000;return st\nkbfacts.store=s;import rag\nf=os.path.join(tempfile.mkdtemp(),'e.csv');open(f,'w').write('id,question,expect_paths,expect_verdict,allow_weak\\nEV-page-file-size-windows,How big should the page file size be on Windows?,,weak,\\n')\nsys.argv=['rag.py','eval','--file',f,'--root','public'];rag.main()"
+      ]
+    },
+    {
+      "run": [
+        "python3",
         "_tools/rag.py",
         "eval"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','How big should the page file size be on Windows?'],capture_output=True,text=True);print(p.stdout.splitlines()[:1]);sys.exit(0 if p.returncode==0 and p.stdout.startswith('coverage: weak') else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lookup_eval_fails_on_a_wrong_expected_article"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py eval no longer fails a row whose verdict differs from its expect_verdict only because a key word's share of the searched units drifted across COMMON_SHARE in kbfacts.py: it re-judges a failing row against the key-word shares of a committed baseline file, kb/<root>/_retrieval/word_shares.csv, which only a command rewrites, as gate g1 decides, prints a row that then meets its expect_verdict as drift with the word and both shares and counts it under noted, so a content landing that moves an unrelated word's share is never refused for it",
+      "check": 0
+    },
+    {
+      "clause": "the verdict a lookup's pack prints is unchanged",
+      "check": 2
+    },
+    {
+      "clause": "a planted eval row whose key word drifts under COMMON_SHARE proves it in an existing test of test_live_kb.py (no new test id)",
+      "check": 3
     }
   ],
   "touches": [
-    "kb/public/_retrieval/lookup_eval.csv"
-  ]
+    "_tools/kbfacts.py",
+    "_tools/rag.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/token-efficiency.md",
+    "kb/public/_retrieval/word_shares.csv",
+    "kb/_self/_retrieval/word_shares.csv"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does rag.py eval judge a row whose verdict turns only on a key word's share of the searched units drifting across COMMON_SHARE?",
+      "options": [
+        "re-judge a failing row against the key-word shares of a committed baseline file that only a command rewrites: a row that then meets its expect_verdict is printed drift and counted noted, not failed; pack verdicts unchanged",
+        "re-judge the row with COMMON_SHARE moved by 0.01 either way, pack verdicts unchanged",
+        "judge informativeness against the frozen baseline shares for packs and eval alike",
+        "keep failing the row, and retune or remove the row each time it flips"
+      ],
+      "recommendation": "re-judge a failing row against the key-word shares of a committed baseline file that only a command rewrites: a row that then meets its expect_verdict is printed drift and counted noted, not failed; pack verdicts unchanged",
+      "do": {
+        "re-judge a failing row against the key-word shares of a committed baseline file that only a command rewrites: a row that then meets its expect_verdict is printed drift and counted noted, not failed; pack verdicts unchanged": "BG-r2epswpp",
+        "re-judge the row with COMMON_SHARE moved by 0.01 either way, pack verdicts unchanged": "BG-r2epswpp",
+        "judge informativeness against the frozen baseline shares for packs and eval alike": "BG-r2epswpp",
+        "keep failing the row, and retune or remove the row each time it flips": "BG-r2epswpp"
+      },
+      "class": "agents-rule",
+      "answer": "re-judge a failing row against the key-word shares of a committed baseline file that only a command rewrites: a row that then meets its expect_verdict is printed drift and counted noted, not failed; pack verdicts unchanged",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise run 2026-10-15 at 5834a99e2: rag.py eval passes (705 of 705), but the word window is in 3989 of 19792 units (0.2015), 31 units above COMMON_SHARE 0.2; with COMMON_SHARE patched to 0.205 the row turns good and eval exits 1 (the repro). In the first repro run 11 sessions in all three instances met the row: instance 1 deleted it (e811f36e8), instance 2 retitled bash for Windows, instance 3 wrote security/gentoo-in-wsl.md to lift the share; two finished areas were lost to the refused sync (lessons analysis 2026-10-15 section 0). ST-wsfmec7k proposed dropping this bug; its premise is refuted and its other option, a repro that fails on the state described, is this repro. Test budget: extend an existing test_live_kb.py eval test, no new test id, at most about 0.3 s more. Plan review 2026-10-15: a band of 0.01 around COMMON_SHARE would not hold over one repro run: each researched area adds about 200 mostly non-Windows units, so 21 areas take window from 0.2015 to about 0.17. The repro and check 0 now add 2000 units to the store (about ten areas of research): eval exits 1 today. Checks that pass before the work: rag.py eval, the pack check and the test selection pass before the work and are kept as guards (the change must keep them green); check 0 (the drift repro) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }

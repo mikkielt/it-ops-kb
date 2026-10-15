@@ -1,0 +1,95 @@
+{
+  "id": "ST-duwzvvq7",
+  "kind": "story",
+  "title": "factdiff anchor --file takes either path form and proposes each fact's quote",
+  "status": "draft",
+  "sprint": "SP-b36246xo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "factdiff.py anchor --file accepts a path under kb/<root>/ as well as a root-relative one; a --quotes CSV may give a quote per cited source of a fact, as gate g1 decides; anchor --file F --propose prints, for each fact of F with no anchor row, the passage of each cited page that best holds it as a quote CSV line, writing nothing; anchoring one file rewrites no _anchors.csv or _fetch_state.csv row of another topic; the anchor part of test_live_kb.py proves each on a planted article (no new test id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--file','kb/public/security/zsh-completion-system.md','--dry-run'],capture_output=True,text=True);print((p.stdout+p.stderr)[-300:]);sys.exit(0 if p.returncode==0 and 'No file' not in p.stdout+p.stderr else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--help'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and '--propose' in p.stdout else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lint_names_a_facts_line_with_a_second_bullet"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "factdiff.py anchor --file accepts a path under kb/<root>/ as well as a root-relative one",
+      "check": 0
+    },
+    {
+      "clause": "a --quotes CSV may give a quote per cited source of a fact, as gate g1 decides",
+      "check": 2
+    },
+    {
+      "clause": "anchor --file F --propose prints, for each fact of F with no anchor row, the passage of each cited page that best holds it as a quote CSV line, writing nothing",
+      "check": 1
+    },
+    {
+      "clause": "anchoring one file rewrites no _anchors.csv or _fetch_state.csv row of another topic",
+      "check": 2
+    },
+    {
+      "clause": "the anchor part of test_live_kb.py proves each on a planted article (no new test id)",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md",
+    ".claude/skills/kb-research/SKILL.md",
+    ".claude/skills/kb-add-topic/SKILL.md",
+    ".claude/skills/kb-refresh/SKILL.md",
+    ".claude/skills/kb-verify/lint.py",
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-2t73jxfk"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a --quotes CSV give one quote for each source a multi-source fact cites?",
+      "options": [
+        "an optional source column (line,source,quote), two-column files read as before",
+        "several quotes in one cell joined by ' | ', matched to the cited sources in order",
+        "none: a multi-source fact is split into one bullet per source before anchoring"
+      ],
+      "recommendation": "an optional source column (line,source,quote), two-column files read as before",
+      "do": {
+        "an optional source column (line,source,quote), two-column files read as before": "ST-duwzvvq7",
+        "several quotes in one cell joined by ' | ', matched to the cited sources in order": "ST-duwzvvq7",
+        "none: a multi-source fact is split into one bullet per source before anchoring": "ST-duwzvvq7"
+      },
+      "class": "agents-rule",
+      "answer": "an optional source column (line,source,quote), two-column files read as before",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (lessons analysis 4.5): 175 calls in 44 sessions got 'is no tagged fact of the file' for a kb/public/... path, 276 'quote not held' (multi-source bullets need one quote per source), 57 inline scripts built quote CSVs. At 5834a99e2 anchor --file kb/public/security/gentoo-in-wsl.md --dry-run prints No file; the root-relative form works. Merges ST-xahz4kok (factdiff.py anchor --file --quotes anchors CODE-tagged facts): its CODE clause no longer reproduces (2026-10-15: a planted --quotes row for the CODE fact python/pytest-xdist.md:68 is read as a tagged fact; cited_facts skips only UNK); its second clause, no other topic's rows rewritten, is this story's fourth clause. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The sync gate's held-out reword check never runs on a change to repro_bench.csv",
   "status": "draft",
+  "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,6 +15,16 @@
       "import sys;sys.path.insert(0,'_tools');import kg_sync;sys.exit(0 if kg_sync.heldout_checks(['kb/public/_retrieval/repro_bench.csv']) else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_heldout_reword_is_refused_at_the_gate"
+      ]
+    }
+  ],
   "touches": [
     "_tools/kg_sync.py",
     "_tools/test_sync_e2e.py",
@@ -21,5 +32,6 @@
   ],
   "links": [
     "parked: SP-ygsnog4n review"
-  ]
+  ],
+  "notes": "Plan 2026-10-15: kept in the gate-and-eval sprint because every instance of a repro run must meet the same gate; its repro (kg_sync.heldout_checks of repro_bench.csv is empty) still fails on main 5834a99e2. Extend test_heldout_reword_is_refused_at_the_gate, no new test id. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); the repro fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }

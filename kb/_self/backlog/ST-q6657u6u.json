@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: every item changes the repro harness's scoring code (bench_repro.py, kg_sync.py) from the run's own recorded data; no question of the goal needs a page the kb lacks."
 }

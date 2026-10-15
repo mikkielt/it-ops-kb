@@ -1,0 +1,58 @@
+{
+  "id": "ST-bsro7uxf",
+  "kind": "story",
+  "title": "repro records whether --max-turns bound",
+  "status": "draft",
+  "sprint": "SP-ysuvdxsn",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "each repro area record holds the session's num_turns beside the run's max_turns and a turns_over_cap flag when num_turns passed it, carried by repro record and compare; agent_bench.result_of treats a result whose subtype starts with error_ as an error whatever is_error says, so bench_repro.failure_of names it turns or budget; the run part of test_bench.py proves both on planted stream results (no new test id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect;sys.path.insert(0,'_tools');import bench_repro as b;sys.exit(0 if 'turns_over_cap' in inspect.getsource(b) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import json,agent_bench,bench_repro as b;r=agent_bench.result_of(json.dumps({'type':'result','subtype':'error_max_turns','is_error':False,'num_turns':150,'duration_api_ms':1,'total_cost_usd':3.2,'usage':{'input_tokens':1,'cache_creation_input_tokens':2,'cache_read_input_tokens':3,'output_tokens':4}}),'',5.0);sys.exit(0 if b.failure_of(r) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "each repro area record holds the session's num_turns beside the run's max_turns and a turns_over_cap flag when num_turns passed it, carried by repro record and compare",
+      "check": 0
+    },
+    {
+      "clause": "agent_bench.result_of treats a result whose subtype starts with error_ as an error whatever is_error says, so bench_repro.failure_of names it turns or budget",
+      "check": 1
+    },
+    {
+      "clause": "the run part of test_bench.py proves both on planted stream results (no new test id)",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md",
+    "_tools/agent_bench.py"
+  ],
+  "depends_on": [
+    "BG-ijyjl7ii"
+  ],
+  "notes": "Premise (lessons analysis 1.6): 14 sessions of the first run recorded 201 to 268 turns with subtype success under --max-turns 200, while the CLI reference says the run exits with an error at the limit (live docs, code.claude.com/docs/en/cli-reference, 2026-10-15). The goal research story records what the CLI counts as a turn; this story records the fact per area and does not guess the cause. Merges BG-bzem6xtn (error_max_turns with is_error false read as finished), whose repro is the second check. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

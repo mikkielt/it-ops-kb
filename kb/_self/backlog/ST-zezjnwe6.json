@@ -1,0 +1,62 @@
+{
+  "id": "ST-zezjnwe6",
+  "kind": "story",
+  "title": "repro instances start each area without auto-memory or a previous area's scratch",
+  "status": "draft",
+  "sprint": "SP-ysuvdxsn",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bench_repro.instance_env sets CLAUDE_CODE_DISABLE_AUTO_MEMORY to 1 (public/claude/settings-and-scopes.md:39) and leaves the instances' --settings value exactly the operator's; it drops KB_ROOTS and every other variable kbcommon reads to find roots outside the clone; reset_clone removes the ignored files a previous area left (git clean -x) except the clone's pack index cache, and removes the git worktrees registered under the clone's _cache; the setup and run parts of test_bench.py prove each (no new test id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys;os.environ['KB_ROOTS']='/tmp/x';sys.path.insert(0,'_tools');import json,bench_repro as b;e=b.instance_env('/tmp/d',1)\ns=json.loads(b.SETTINGS);ok=e.get('CLAUDE_CODE_DISABLE_AUTO_MEMORY')=='1' and 'KB_ROOTS' not in e and s=={'enabledPlugins':{'gitkraken@synced':False,'caveman@caveman':False}}\nprint({k:e.get(k) for k in ('CLAUDE_CODE_DISABLE_AUTO_MEMORY','KB_ROOTS')});sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nt=tempfile.mkdtemp();g=lambda c,*a:subprocess.run(['git','-C',c,'-c','user.name=t','-c','user.email=t@t','-c','core.hooksPath=/dev/null',*a],check=True,capture_output=True,text=True)\nw=os.path.join(t,'w');os.makedirs(w);g(w,'init','-q','-b','main');open(os.path.join(w,'.gitignore'),'w').write('_cache/\\n');g(w,'add','-A');g(w,'commit','-qm','s')\no=os.path.join(t,'o.git');g(t,'clone','-q','--bare',w,o);c=os.path.join(t,'c');g(t,'clone','-q',o,c)\nos.makedirs(os.path.join(c,'_cache','ts-scripts'));open(os.path.join(c,'_cache','kbindex-x.sqlite'),'w').write('i');open(os.path.join(c,'_cache','ts-scripts','a.py'),'w').write('x')\nb.reset_clone(c,dict(os.environ))\nkeep=os.path.exists(os.path.join(c,'_cache','kbindex-x.sqlite'));gone=not os.path.exists(os.path.join(c,'_cache','ts-scripts','a.py'))\nprint('index kept',keep,'scratch gone',gone);sys.exit(0 if keep and gone else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_repro.instance_env sets CLAUDE_CODE_DISABLE_AUTO_MEMORY to 1 (public/claude/settings-and-scopes.md:39) and leaves the instances' --settings value exactly the operator's",
+      "check": 0
+    },
+    {
+      "clause": "it drops KB_ROOTS and every other variable kbcommon reads to find roots outside the clone",
+      "check": 0
+    },
+    {
+      "clause": "reset_clone removes the ignored files a previous area left (git clean -x) except the clone's pack index cache",
+      "check": 1
+    },
+    {
+      "clause": "removes the git worktrees registered under the clone's _cache",
+      "check": 1
+    },
+    {
+      "clause": "the setup and run parts of test_bench.py prove each (no new test id)",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Premise (lessons analysis 1.1): instance 2 wrote two auto-memories (13:15Z, 14:39Z) that its later sessions read; reset_clone runs clean -f -d without -x, so ignored _cache files (quote CSVs, instance 3's _cache/ts-scripts/html2txt.py, worktrees _cache/wt-head whose removal was denied 5 times) persisted between areas. The operator decision of 2026-10-15 fixes the instances' --settings to exactly {\"enabledPlugins\":{\"gitkraken@synced\":false,\"caveman@caveman\":false}} (bench_repro.SETTINGS already holds it), so auto-memory goes off through the environment, not --settings. Merges BG-yxh7bv6y (instance_env keeps KB_ROOTS), whose repro is this story's first check. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 (a planted clone: the kbindex-*.sqlite cache stays, an ignored scratch script goes) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

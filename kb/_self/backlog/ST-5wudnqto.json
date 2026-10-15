@@ -1,0 +1,92 @@
+{
+  "id": "ST-5wudnqto",
+  "kind": "story",
+  "title": "The article Gentoo in WSL on a Windows host keeps only what its sources state, as its gate decides",
+  "status": "draft",
+  "sprint": "SP-z3jcdsgr",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "security/gentoo-in-wsl.md is kept, trimmed or dropped as gate g1 decides, its kept facts each stating only what wiki.gentoo.org's Gentoo in WSL page (S-lxqjpj53) or the stage file page (S-qfnocjvf) says; the derived fact that a Windows endpoint tool can create, restart and remove a Gentoo instance is gone; rag.py eval passes after the change",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys;f='kb/public/security/gentoo-in-wsl.md'\nsys.exit(0 if not os.path.exists(f) else subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py',f]).returncode)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys;f='kb/public/security/gentoo-in-wsl.md'\nif not os.path.exists(f): sys.exit(0)\nt=open(f,encoding='utf-8').read().split('## Facts')[-1].split('\\n## ')[0]\nbad=[l for l in t.splitlines() if 'Windows endpoint tool can create' in l];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,os,sys\nif os.path.exists('kb/public/security/gentoo-in-wsl.md'): sys.exit(0)\nbad=[f for f in glob.glob('kb/public/**/*.md',recursive=True) if 'gentoo-in-wsl' in open(f,encoding='utf-8').read()];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "security/gentoo-in-wsl.md is kept, trimmed or dropped as gate g1 decides, its kept facts each stating only what wiki.gentoo.org's Gentoo in WSL page (S-lxqjpj53) or the stage file page (S-qfnocjvf) says",
+      "check": 0
+    },
+    {
+      "clause": "the derived fact that a Windows endpoint tool can create, restart and remove a Gentoo instance is gone",
+      "check": 1
+    },
+    {
+      "clause": "rag.py eval passes after the change",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "kb/public/security/gentoo-in-wsl.md",
+    "kb/public/security/gentoo-stage-files-init-systems.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/_retrieval/signals.csv",
+    "kb/public/_answers.md",
+    "kb/public/security/zsh-*.md",
+    "kb/public/security/fish-config-files-completions.md",
+    "kb/public/security/fish-on-windows-wsl-cygwin-msys2.md"
+  ],
+  "depends_on": [
+    "BG-r2epswpp",
+    "ST-6tbbdbec"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What happens to security/gentoo-in-wsl.md, written in benchmark instance 3 to lift the share of the word windows?",
+      "options": [
+        "keep it whole",
+        "keep it and trim what its sources do not state: the derived line on a Windows endpoint tool and Windows-host wording the wiki page lacks",
+        "remove the article with its source and anchor rows"
+      ],
+      "recommendation": "keep it and trim what its sources do not state: the derived line on a Windows endpoint tool and Windows-host wording the wiki page lacks",
+      "do": {
+        "keep it whole": "ST-5wudnqto",
+        "keep it and trim what its sources do not state: the derived line on a Windows endpoint tool and Windows-host wording the wiki page lacks": "ST-5wudnqto",
+        "remove the article with its source and anchor rows": "ST-5wudnqto"
+      },
+      "class": "design",
+      "answer": "keep it and trim what its sources do not state: the derived line on a Windows endpoint tool and Windows-host wording the wiki page lacks",
+      "by": "operator"
+    }
+  ],
+  "notes": "Evidence 2026-10-15 at 5834a99e2 (rag.py audit, rag.py show): 32 facts, 29 DOC all citing S-lxqjpj53 (wiki.gentoo.org Gentoo in WSL) and 3 DER; the article was written in benchmark instance 3 (f980ac7c6) to restore EV-page-file-size-windows, but its facts are the wiki's own (wsl --import, .wslconfig, /etc/wsl.conf, OpenRC and systemd under WSL), Windows-host work inside the kb's domain. The DER line 46 (a Windows endpoint tool can create, restart and remove an instance without logging in) states more than the page. Removing the article before BG-r2epswpp lands would drop about 30 Windows units against a margin of 31, so the item depends on it. Plan review 2026-10-15: had the gate removed the article, links to it from the zsh and fish articles would dangle; the fourth check (no kb article names gentoo-in-wsl once the file is gone) guards that and passes while the article stays. Checks that pass before the work: the lint check and rag.py eval (and the fourth check while the article stays) pass before the work and are kept as guards (the change must keep them green); check 1 (the derived Windows endpoint line) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

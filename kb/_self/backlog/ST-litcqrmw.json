@@ -1,0 +1,69 @@
+{
+  "id": "ST-litcqrmw",
+  "kind": "story",
+  "title": "The replayed shell and Windows articles say Windows only where their sources do, with no duplicate or overclaimed fact",
+  "status": "draft",
+  "sprint": "SP-z3jcdsgr",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the zsh articles and security/fish-config-files-completions.md point to security/gentoo-in-wsl.md or name a Windows host only where their own subject or cited source does; each zsh, fish and cmd fact that names Windows is read against its cited source, the ones the source does not support reworded, with the list in the item's report; each duplicate fact of an area is merged and each fact that states more than its cited source is narrowed; rag.py eval passes after the change",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,sys;fs=glob.glob('kb/public/security/zsh-*.md')+['kb/public/security/fish-config-files-completions.md']\nbad=[(f,n) for f in fs for n,l in enumerate(open(f,encoding='utf-8'),1) if 'gentoo-in-wsl' in l];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,subprocess,sys;fs=sorted(f for p in ['kb/public/security/zsh-*.md', 'kb/public/security/fish-*.md', 'kb/public/windows/cmd-exe-*.md', 'kb/public/windows/robocopy.md', 'kb/public/windows/powershell-remoting-jea.md', 'kb/public/windows/openssh-*.md', 'kb/public/python/stdlib-windows-portability.md'] for f in glob.glob(p))\nsys.exit(subprocess.run([sys.executable,'.claude/skills/kb-verify/lint.py',*fs]).returncode)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the zsh articles and security/fish-config-files-completions.md point to security/gentoo-in-wsl.md or name a Windows host only where their own subject or cited source does",
+      "check": 0
+    },
+    {
+      "clause": "each zsh, fish and cmd fact that names Windows is read against its cited source, the ones the source does not support reworded, with the list in the item's report",
+      "check": 1
+    },
+    {
+      "clause": "each duplicate fact of an area is merged and each fact that states more than its cited source is narrowed",
+      "check": 1
+    },
+    {
+      "clause": "rag.py eval passes after the change",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "kb/public/security/zsh-*.md",
+    "kb/public/security/fish-*.md",
+    "kb/public/windows/cmd-exe-*.md",
+    "kb/public/windows/robocopy.md",
+    "kb/public/windows/powershell-remoting-jea.md",
+    "kb/public/windows/openssh-*.md",
+    "kb/public/python/stdlib-windows-portability.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "BG-r2epswpp",
+    "ST-5wudnqto",
+    "ST-6tbbdbec"
+  ],
+  "notes": "Premise 2026-10-15 at 5834a99e2: each of the four security/zsh-*.md articles ends its Related line with 'For a Linux distribution on a Windows host see security/gentoo-in-wsl.md' and three zsh snippets add 'or a WSL distribution on a Windows host' to their context; instance 3's cmd session reworded facts to say Windows to keep EV-page-file-size-windows weak (lessons analysis section 0). A near-duplicate scan of the 54 replayed articles (difflib ratio 0.85 within an area) found 4 pairs, all distinct facts (different Chef resources, AlmaLinux 9 against 10), so the duplicate clause is a reading, not a known list. The lint check passes on the base (errors=0, 7 warnings): it guards the edits; the zsh check fails on the base. Plan review 2026-10-15: the second and third clauses are a review reading, not a mechanical test: the lint check guards them and the report lists each fact changed or kept with the reason. Checks that pass before the work: the lint check and rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 (the gentoo-in-wsl links) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

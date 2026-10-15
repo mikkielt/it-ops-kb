@@ -1,0 +1,47 @@
+{
+  "id": "ST-dgg4jvxr",
+  "kind": "story",
+  "title": "the research write set names the placeholder rule the leak scan enforces",
+  "status": "draft",
+  "sprint": "SP-b36246xo",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "content-rules.md says which shapes the tracked-file leak scan (kbcommon.leak_hits) refuses in kb text, such as private addresses and user@host forms, with the way a documented default value is written instead; a tested _self question puts that rule in the kb-research:write, kb-add-topic:write and kb-refresh:update sets; rag.py eval --root _self passes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\nfor s in ('kb-research:write','kb-add-topic:write','kb-refresh:update'):\n p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','--set',s],capture_output=True,text=True)\n if p.returncode or 'leak scan' not in p.stdout.lower(): print('missing in',s);sys.exit(1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/rag.py",
+        "eval",
+        "--root",
+        "_self"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "content-rules.md says which shapes the tracked-file leak scan (kbcommon.leak_hits) refuses in kb text, such as private addresses and user@host forms, with the way a documented default value is written instead",
+      "check": 0
+    },
+    {
+      "clause": "a tested _self question puts that rule in the kb-research:write, kb-add-topic:write and kb-refresh:update sets",
+      "check": 0
+    },
+    {
+      "clause": "rag.py eval --root _self passes",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "kb/_self/content-rules.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "notes": "Premise 2026-10-15 at 5834a99e2: the placeholder rule itself is already in the set (SE-026, content-rules.md:89), but no line of the kb-research:write set names the leak scan or the shapes it refuses; podman in instances 1 and 3 was refused for Podman's documented default subnet address and a container name in a user-at-host form (lessons analysis 1.6). Lands with land --wait-merge: kb/_self/_retrieval/lookup_eval.csv is a code-lane path. Checks that pass before the work: rag.py eval --root _self pass before the work and are kept as guards (the change must keep them green); check 0 (all three sets) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

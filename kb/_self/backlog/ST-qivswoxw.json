@@ -1,0 +1,85 @@
+{
+  "id": "ST-qivswoxw",
+  "kind": "story",
+  "title": "a /kb-research session's alias rows land without a KB-Work item",
+  "status": "draft",
+  "sprint": "SP-b36246xo",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbgit.py check-trailers and the intake drift scan read a change to _tools/aliases.csv alone as kb content, as kblane.py already does, as gate g1 decides, so a /kb-research commit that adds alias rows needs no KB-Work item; kb-research SKILL.md says a research session writes its alias rows in its research commit, a goal research worker still filing them as a story; a planted content commit with an alias row passes the sync gate in test_sync_e2e.py (no new test id)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kg_trailers as t,bl_intake as i;r=[f(p) for f in (t.code_path,i.code_path) for p in ('_tools/aliases.csv',)]+[not t.code_path('_tools/kbfacts.py')];print(r);sys.exit(1 if r[0] or r[1] or r[2] else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read().split('## 5. Check')[0];sys.exit(0 if 'research commit' in t and 'aliases.csv' in t else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_content_commit_reaches_main_and_a_red_gate_stops_the_next"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbgit.py check-trailers and the intake drift scan read a change to _tools/aliases.csv alone as kb content, as kblane.py already does, as gate g1 decides, so a /kb-research commit that adds alias rows needs no KB-Work item",
+      "check": 0
+    },
+    {
+      "clause": "kb-research SKILL.md says a research session writes its alias rows in its research commit, a goal research worker still filing them as a story",
+      "check": 1
+    },
+    {
+      "clause": "a planted content commit with an alias row passes the sync gate in test_sync_e2e.py (no new test id)",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/kg_trailers.py",
+    "_tools/bl_intake.py",
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-research/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-duwzvvq7"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a /kb-research session's alias rows reach main without a KB-Work item?",
+      "options": [
+        "check-trailers and the intake drift scan read a change to _tools/aliases.csv alone as kb content, as kblane already does",
+        "the public root's alias rows move to kb/public/_retrieval/aliases.csv, a root ledger the research writes",
+        "every research session files its alias rows as a backlog story, as goal research workers do"
+      ],
+      "recommendation": "check-trailers and the intake drift scan read a change to _tools/aliases.csv alone as kb content, as kblane already does",
+      "do": {
+        "check-trailers and the intake drift scan read a change to _tools/aliases.csv alone as kb content, as kblane already does": "ST-qivswoxw",
+        "the public root's alias rows move to kb/public/_retrieval/aliases.csv, a root ledger the research writes": "ST-qivswoxw",
+        "every research session files its alias rows as a backlog story, as goal research workers do": "ST-qivswoxw"
+      },
+      "class": "push",
+      "answer": "check-trailers and the intake drift scan read a change to _tools/aliases.csv alone as kb content, as kblane already does",
+      "by": "operator"
+    }
+  ],
+  "notes": "Premise (lessons analysis 1.6, 4.4): 14 first syncs of research sessions were refused 'check-trailers ... bad=1' because the research commit carried alias rows and no KB-Work item; 0 alias rows landed in any bare; instances 1 and 3 filed alias stories (merged into ST-wtui5diw), instance 2 dropped them. kg_trailers.WORK_PATHS and bl_intake.WORK_PATHS count every _tools/ path as work; kblane._FILES already lanes _tools/aliases.csv as content. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+}

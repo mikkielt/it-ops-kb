@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "repro compare's eval_passed counts the pre-research verdict, so research cannot raise it and pick ranks on it",
   "status": "draft",
+  "sprint": "SP-75hdeqld",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "repro compare scores the frozen set so that research which answers a question raises the instance's figure: eval_passed (which repro pick ranks first) no longer requires the pack's verdict to equal repro_bench.csv's expect_verdict, which records the kb before research (63 absent rows want none, 10 partial rows want weak); the regex and found checks, or a verdict at least as good as expected, decide a pass. Found by the SP-ygsnog4n review (S2).",
+  "goal": "repro compare scores each frozen row with bench_repro.frozen_pass(expect_verdict, verdict, found), true when the row's expect_re, expect_text or expect_paths is found in the pack and also when no expectation is set and the verdict ranks at least the expected one, and eval_passed, which repro pick ranks first, counts those passes instead of a verdict equal to repro_bench.csv's expect_verdict; a planted instance whose research answers a row that expected none raises its figure in the compare part of test_bench.py (no new test id)",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +16,37 @@
     ]
   },
   "repro_reason": "the figure only moves on a real research run's instances; the code reads the eval row's ok, which includes the verdict",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'frozen_pass'): print('no frozen_pass yet');sys.exit(1)\nok=b.frozen_pass('none','good',True) and not b.frozen_pass('weak','none',False) and b.frozen_pass('weak','good',False);sys.exit(0 if ok else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "repro compare scores each frozen row with bench_repro.frozen_pass(expect_verdict, verdict, found), true when the row's expect_re, expect_text or expect_paths is found in the pack and also when no expectation is set and the verdict ranks at least the expected one",
+      "check": 0
+    },
+    {
+      "clause": "eval_passed, which repro pick ranks first, counts those passes instead of a verdict equal to repro_bench.csv's expect_verdict",
+      "check": 2
+    },
+    {
+      "clause": "a planted instance whose research answers a row that expected none raises its figure in the compare part of test_bench.py (no new test id)",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/bench_repro.py",
     "_tools/test_bench.py",
@@ -23,5 +55,5 @@
   "links": [
     "parked: SP-ygsnog4n review"
   ],
-  "notes": "ST-zvooqvlt, repro compare --record of record 2170d88 (2026-10-15): eval_passed is 24, 22 and 24 of 103 for instances 1, 2, 3 while good verdicts are 80, 79, 79 of 103. 63 of the 103 frozen rows expect none, so research that answers them cannot raise the figure; podman RB-podman-5 (expect weak) passes in instance 1 (weak) and fails in instances 2 and 3 (good). kb/_self/reports/research-repro.md section 6 names this."
+  "notes": "ST-zvooqvlt, repro compare --record of record 2170d88 (2026-10-15): eval_passed is 24, 22 and 24 of 103 for instances 1, 2, 3 while good verdicts are 80, 79, 79 of 103. 63 of the 103 frozen rows expect none, so research that answers them cannot raise the figure; podman RB-podman-5 (expect weak) passes in instance 1 (weak) and fails in instances 2 and 3 (good). kb/_self/reports/research-repro.md section 6 names this. Premise 2026-10-15 (lessons analysis section 3.2, L/eval_*.txt): eval_passed was 24, 22 and 24 of 103 while answer found rose from 36 at START to 84, 95 and 77; at START only 44 of 103 rows matched their own expect_verdict. Its repro (a source read for the ['ok'] key) still fails on main 5834a99e2. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 (frozen_pass on planted rows) and the repro fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }

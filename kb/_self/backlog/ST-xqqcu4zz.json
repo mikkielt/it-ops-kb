@@ -3,16 +3,61 @@
   "kind": "story",
   "title": "repro run says which claude binary its instances start, so a PATH wrapper cannot add settings unseen",
   "status": "draft",
+  "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
-  "goal": "repro run (and its --dry-run) prints the resolved path of the claude command its instances start and refuses, or says so, when that is not the real claude binary (a wrapper script first on PATH), so the instances' --settings stays exactly the recorded value. SP-ccvfvoqj: the orchestrator's PATH held a claude wrapper that adds its own --settings for headless sessions; the run was started with that directory stripped from PATH by hand.",
+  "goal": "bench_repro.claude_path() returns the resolved path of the claude command the instances start and a problem text when it is a script and not the claude binary (a wrapper first on PATH), empty otherwise; repro run and run --dry-run print claude: <path> and refuse on a problem, so the instances' --settings stays exactly the recorded value; repro run refuses while repro_bench.csv or repro_briefs.csv differs from HEAD, and run.json records their sha256 (BG-vry4snnm); the run part of test_bench.py proves each (no new test id)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys,subprocess;p=subprocess.run(['python3','_tools/benchmarks.py','repro','run','--instances','1','--dry-run'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and any(l.startswith('claude: /') for l in p.stdout.splitlines()) else 1)"
+        "import os,stat,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'claude_path'): print('no claude_path yet');sys.exit(1);d=tempfile.mkdtemp();f=os.path.join(d,'claude')\nopen(f,'w').write('#!/bin/sh\\nexec true\\n');os.chmod(f,0o755);os.environ['PATH']=d+os.pathsep+os.environ['PATH']\np,why=b.claude_path();print(p,why);sys.exit(0 if os.path.realpath(p)==os.path.realpath(f) and why else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;s=inspect.getsource(b.run_problems);sys.exit(0 if ('status' in s or 'ls-files' in s or 'diff' in s) else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import bench_repro as b;s=inspect.getsource(b.run);sys.exit(0 if 'file_sha256' in s or 'sha256' in s else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bench_repro.claude_path() returns the resolved path of the claude command the instances start and a problem text when it is a script and not the claude binary (a wrapper first on PATH), empty otherwise",
+      "check": 0
+    },
+    {
+      "clause": "repro run and run --dry-run print claude: <path> and refuse on a problem, so the instances' --settings stays exactly the recorded value",
+      "check": 0
+    },
+    {
+      "clause": "repro run refuses while repro_bench.csv or repro_briefs.csv differs from HEAD",
+      "check": 1
+    },
+    {
+      "clause": "run.json records their sha256 (BG-vry4snnm)",
+      "check": 1
+    },
+    {
+      "clause": "the run part of test_bench.py proves each (no new test id)",
+      "check": 2
     }
   ],
   "touches": [
@@ -20,7 +65,11 @@
     "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
+  "depends_on": [
+    "ST-bsro7uxf"
+  ],
   "links": [
     "parked: SP-ccvfvoqj close"
-  ]
+  ],
+  "notes": "Plan 2026-10-15: the old check ran repro run --dry-run against the main checkout's _cache/bench-repro, host state that refuses today (an earlier run.json); the planted wrapper check runs the code path instead. Merges BG-vry4snnm (repro run does not require repro_bench.csv committed and unmodified), whose repro is the second check. Plan review 2026-10-15: the fourth check reads run's source for the sha256 record, a guard paired with the run part of the bundle that reads run.json. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0, 1 and 3 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }

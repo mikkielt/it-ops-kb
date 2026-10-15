@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: the review items read the replayed articles against their own cited sources, which the kb already holds (S-lxqjpj53, the replay's source rows), and the eval item is code; no question of the goal needs a page the kb lacks."
 }

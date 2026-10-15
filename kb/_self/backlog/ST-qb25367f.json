@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: each item reads what the kb's own tools already fetch (provider.py read, kbid.py licence, providers.csv) or changes a gate and rule docs; no question of the goal needs a page the kb lacks."
 }

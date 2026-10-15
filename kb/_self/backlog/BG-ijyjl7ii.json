@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A timed-out repro session is recorded with cost 0, so the instance budget and the repro cost rows undercount",
   "status": "draft",
+  "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -15,13 +16,28 @@
     ]
   },
   "repro_reason": "a real timeout needs a session that outlives its limit; the timeout branch returns no cost field",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_bench_price_weights_and_tier_and_freshness_rows"
+      ]
+    }
+  ],
   "touches": [
     "_tools/agent_bench.py",
     "_tools/bench_core.py",
     "_tools/bench_repro.py",
-    "_tools/test_bench.py"
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-eefdl6am"
   ],
   "links": [
     "parked: SP-ygsnog4n review"
-  ]
+  ],
+  "notes": "Plan 2026-10-15: kept beside the cap reserve rule, since an area recorded at cost 0 lets the next area start past the cap; extend the stream_run part of test_bench.py, no new test id. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); the repro fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
 }
