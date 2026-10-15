@@ -7058,8 +7058,8 @@ a9f145af1dcd,gitlab/codeowners.md,S444,located,Protect a branch > Configure prot
 2d3cdb93e1dd,gitlab/commit-signing-and-provenance.md,S-ijtwicvp,located,Responses > Retrieve commit signature,unsign;commit,45c80af69d9a1f74,"if it is signed. For unsigned commits, it results in a 404 response.",2026-10-15
 3393e4049887,gitlab/commit-signing-and-provenance.md,S-oroizj3k,located,Prerequisites > Troubleshooting > Web commits become unsigned after rebase,rebas;push;gitlab;lab;git,1ed4e02250e174ef,"rebase the branch locally, and push the changes back up to GitLab.",2026-10-15
 3a2afdb98d61,gitlab/commit-signing-and-provenance.md,S-gfhrhfsb,located,,background;daily;revocation;worker;list;lab;check;gitlab,910a660d529a84e3,GitLab checks certificate revocation lists on a daily basis with a background worker.,2026-10-15
-3ee67aa44e16,gitlab/commit-signing-and-provenance.md,S440,unlocated:no-match,,,,,2026-10-15
-3ee67aa44e16,gitlab/commit-signing-and-provenance.md,S444,unlocated:no-match,,,,,2026-10-15
+42d7e547e2df,gitlab/commit-signing-and-provenance.md,S440,unlocated:no-match,,,,,2026-10-15
+42d7e547e2df,gitlab/commit-signing-and-provenance.md,S444,unlocated:no-match,,,,,2026-10-15
 43f89bb7d11e,gitlab/commit-signing-and-provenance.md,S-gqe643np,located,,key;sign;commit;ssh;git,8eea9880c2c62174,You must add the SSH key used to sign the commit to your GitLab account,2026-10-15
 5028324ab88a,gitlab/commit-signing-and-provenance.md,S-ijtwicvp,located,Responses > Retrieve commit signature,verification;signatur;type;status,9477632aaab1b5ea,"signaturetype | string | Type of signature (PGP, SSH, or X509). verificationstatus | string | Verification status of the signature.",2026-10-15
 5a101e84d1cc,gitlab/commit-signing-and-provenance.md,S-mgxxzq3i,located,Build: Requirements for producing artifacts > Build Platform > Isolation strength,secret;sign;key;such;must;platform;provenanc;build,b514efa3a46e36bb,"It MUST NOT be possible for a build to access any secrets of the build platform, such as the provenance signing key",2026-10-15
