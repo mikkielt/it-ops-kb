@@ -2,7 +2,7 @@
   "id": "ST-7v2bhvbw",
   "kind": "story",
   "title": "Research: syncing agent state between workstations without a server (Syncthing, DFS Replication, git, CRDTs)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -52,5 +52,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/peer-state-sync where no article fits, closing the cross-session-messaging gap on peer sharing of agent state.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "2cad25dfb1241d99ab4f91bbc5b959c9794e68a6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-7v2bhvbw"
+        ],
+        "exit": 0,
+        "sha256": "c0d0397319cfeda9"
+      }
+    ]
+  }
 }
