@@ -1,0 +1,21 @@
+{
+  "id": "ST-bamh3apr",
+  "kind": "story",
+  "title": "Add alias rows for the Chef area (chef-client, policyfile)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Add these rows to _tools/aliases.csv (term,canonical) so packs normalise the other names of the Chef topics (arch/chef-infra-client-run, arch/chef-attributes-policyfiles): 'chef infra client,chef-client'; 'chef client,chef-client'; 'policy file,policyfile'. Then run python3 _tools/rag.py eval and check every question still passes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.exit(0 if 'chef infra client,chef-client' in open('_tools/aliases.csv').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ]
+}
