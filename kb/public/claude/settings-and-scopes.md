@@ -3,7 +3,7 @@ topic: claude/settings-and-scopes
 priority: P2
 applies_to: "Claude Code docs (retrieved 2026-10-13)"
 retrieved_utc: 2026-10-15
-sources: [S2057, S-wzatkg4o, S2042, S-22qwtmf7, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
+sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
 status: partial
 files: [claude/settings-keys.csv, claude/env-vars.csv]
 ---
@@ -36,6 +36,8 @@ precedence against settings-file `env` values.
 - Environment variables (full list in `env-vars.csv`): an `env` value in settings follows settings precedence, so a managed entry overrides the same variable in user or project settings, and project or local settings can't set some variables such as `CLAUDE_CONFIG_DIR`; `ANTHROPIC_API_KEY`, when set, is used instead of a Pro, Max, Team or Enterprise subscription even if the user is logged in. [DOC S-vilbjgtf]
 - `disableClaudeAiConnectors` stops Claude Code from fetching and connecting the claude.ai connectors it fetches itself (not those a cloud host or the desktop app delivers): a `true` in any settings file applies, a project-level `false` cannot override a user- or managed-level `true`, and servers passed explicitly with `--mcp-config` are unaffected. [DOC S-wzatkg4o]
 - `ENABLE_CLAUDEAI_MCP_SERVERS=false` is the per-session override of that setting (it turns the connectors off for one session); whichever of the two turns them off, the other cannot turn them back on. [DOC S-wzatkg4o]
+- Agent SDK sessions read some inputs whatever `settingSources` says: managed policy settings, the `~/.claude.json` global config (relocated with `CLAUDE_CONFIG_DIR` in `env`), auto memory under `~/.claude/projects/<project>/memory/` (off with `autoMemoryEnabled: false` or `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`) and the claude.ai connectors of a claude.ai login, which `mcpServers: {}` does not suppress; `strictMcpConfig: true`, `disableClaudeAiConnectors` or `ENABLE_CLAUDEAI_MCP_SERVERS=false` in `env` does. [DOC S-hfho3uwe]
+- A token from `claude setup-token` in `CLAUDE_CODE_OAUTH_TOKEN` loads no claude.ai connectors, since that token can only make model requests. [DOC S-hfho3uwe]
 - Provider switches are environment variables: `CLAUDE_CODE_USE_BEDROCK=1` routes requests through Amazon Bedrock (and unhides `/setup-bedrock`). [DOC S-inpjf36q]
 - Network variables: Claude Code uses the first of `https_proxy`, `HTTPS_PROXY`, `http_proxy`, `HTTP_PROXY` that is set, `NO_PROXY` lists bypassed hosts (loopback WebSockets never use the proxy), and it trusts its bundled CA set plus the OS store by default, with `NODE_EXTRA_CA_CERTS` for more. [DOC S-lreom5ko]
 - Telemetry variables: `DISABLE_TELEMETRY=1` stops usage metrics, `DISABLE_ERROR_REPORTING=1` stops error reports, and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` stops all non-essential traffic including surveys; `DISABLE_TELEMETRY` and the non-essential switch also stop the feature-flag evaluation Remote Control needs; on Bedrock, Agent Platform, Foundry and Claude Platform on AWS, metrics and error reports are off by default. [DOC S-a2zimsvk]

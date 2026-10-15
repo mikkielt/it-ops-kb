@@ -3669,3 +3669,14 @@ _Agent: kb-research_
 - See agents/gitops-for-agents.md, windows/azure-arc-servers.md, prior-art/drift-detection.md, claude/settings-and-scopes.md.
 
 _Agent: kb-research_
+
+## QK-repro-harness-isolation-connectors-bare-origin. What keeps parallel Claude Code research instances from sharing connectors, configuration or a push target: the claude.ai connector switches, the config directory, bare versus mirror origins, and how a rebase replays one instance's commits?
+- `disableClaudeAiConnectors` turns off only the claude.ai connectors Claude Code fetches itself; a `true` in any settings file wins and a project-level `false` cannot override it, and servers passed with `--mcp-config` are unaffected. `ENABLE_CLAUDEAI_MCP_SERVERS=false` is its per-session override, and whichever of the two turns connectors off, the other cannot turn them back on. [DOC S-wzatkg4o]
+- An Agent SDK session reads managed policy settings, `~/.claude.json` and auto memory whatever `settingSources` says; `CLAUDE_CONFIG_DIR` relocates the global config, `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` turns auto memory off, and `mcpServers: {}` does not suppress claude.ai connectors where `strictMcpConfig: true` or the environment variable does. [DOC S-hfho3uwe]
+- `git clone --bare` makes the directory itself the git directory and copies branch heads to branch heads with no remote-tracking refs; `--mirror` adds every ref and a refspec that `git remote update` overwrites, so a stand-in origin that holds one history's branches is a bare clone. [DOC S-k2jlpd4u]
+- `git rebase --onto <newbase> <upstream> <branch>` replays the commits of `<branch>` not in `<upstream>`, any commit-ish allowed, stops at the first conflict, and `--trailer` appends a trailer to every rebased message. `url.<base>.pushInsteadOf` rewrites push urls only and is ignored for a remote with an explicit `pushurl`. [DOC S-7kl4eeso, S-f5whqkwk]
+- Conclusion: an instance that sets its own `CLAUDE_CONFIG_DIR`, a strict `--mcp-config`, `ENABLE_CLAUDEAI_MCP_SERVERS=false` and a clone whose only remote is its own bare copy shares no connector, config file or push target with another instance; a replay of its commits onto a work branch is `git rebase --onto` from the start commit. [DER S-wzatkg4o, S-hfho3uwe, S-k2jlpd4u, S-7kl4eeso, S-f5whqkwk]
+- Open: whether `--mcp-config` runs write to `~/.claude.json`, and any published agreement measure for two runs' research output, are unconfirmed. [UNK]
+- See claude/settings-and-scopes.md, gitlab/git-test-repositories.md, agents/gitops-for-agents.md.
+
+_Agent: kb-research_

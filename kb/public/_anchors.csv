@@ -5881,6 +5881,7 @@ f9fd5b27c190,claude/powershell-tool.md,S742,located,Configure permissions > Tool
 1a569fdb3cff,claude/settings-and-scopes.md,S-zcuxapgb,unlocated:no-match,,,,,2026-10-13
 1bf978eb4f2e,claude/settings-and-scopes.md,S742,located,Configure permissions > Tool-specific permission rules > Read and Edit,allowedtool;docs;plac;startup;pass;except;glob;warn,ad1bfccd66333711,"If you write a path rule for Write, NotebookEdit, Glob, or the legacy MultiEdit tool instead, Claude Code accepts the rule but never consults it,",2026-10-14
 1e2b8cfc0aa6,claude/settings-and-scopes.md,S-pmhgjvef,located,Configure permissions > Tool-specific permission rules > Read and Edit,worktre;own;shar;root;src;repository;edit;session,284b7b444575a9b6,"in a worktree session, a shared rule such as Edit(/src/) matches that worktree's own src/ directory.",2026-10-13
+1e6851f678eb,claude/settings-and-scopes.md,S-hfho3uwe,located,Use Claude Code features in the SDK > Control filesystem settings with settingSources > What settingSources does not control,claude.ai;claude_code_oauth_token;connector;make;model;request;setup;setup-token,bd00e9b71468f2c3,which can only make model requests,2026-10-15
 268b10d96924,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Available modes,alia;cli;manual;accept;default;mode,04636680d0d91860,The CLI accepts manual as an alias wherever you type the value,2026-10-12
 2718f198c524,claude/settings-and-scopes.md,S-22qwtmf7,located,Configure server-managed settings > Security considerations,subcommand;auth;forceremotesettingsrefresh;true;forc;exit;refresh;enforc,79bb8baf338c6a00,"API is unavailable | Cached settings apply if available, except for the values Claude Code withholds until a fetch succeeds. Without a cache, Claude Code",2026-10-12
 2718f198c524,claude/settings-and-scopes.md,S-wzatkg4o,located,All settings > Enterprise and managed settings > `forceRemoteSettingsRefresh`,exit;cach;fail;fetch;set;code;claud,c369cf51269dfe33,"If the fetch fails, Claude Code exits instead of continuing with cached or no settings.",2026-10-12
@@ -5899,6 +5900,7 @@ f9fd5b27c190,claude/powershell-tool.md,S742,located,Configure permissions > Tool
 48706ffaf461,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > How Claude Code combines managed sources,authenticat;eligibl;directly;api;credential;login;anthropic;gateway,8d2067dbdbfe2c0c,Claude Code fetches this source only when the session authenticates to Anthropic's API directly with an eligible credential,2026-10-12
 488b01a1e95e,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > How Claude Code combines managed sources > Keys read from every admin source,every;admin;read;sourc;set;manag;claud,93de366b314572d7,"Claude Code reads them from every admin source, so a lower-ranked MDM policy or managed settings file can still set them",2026-10-12
 49270ecfcb4b,claude/settings-and-scopes.md,S-22qwtmf7,located,Configure server-managed settings > Settings delivery > Security approval dialogs > Approval memory,kept;delet;logout;claude_code_oauth_token;sign-in;directory;oauth;token,64cd5e3ec945d8da,"Claude Code saves no approval for a loopback development gateway reached over plain HTTP, so the dialog appears again after each sign-in. Any other credential,",2026-10-12
+49e4fea1de04,claude/settings-and-scopes.md,S-wzatkg4o,located,All settings > Hooks and automation > `disableWorkflows`,whichever;back;two;per-session;overrid;other;them;off,94a65c9714ff4185,"whichever of the two turns them off, the other can't turn them back on",2026-10-15
 4e65f4c2122a,claude/settings-and-scopes.md,S1863,located,How Claude remembers your project > CLAUDE.md files > Choose where to put CLAUDE.md files,broadest;most;order;scop;specific;user;load;project,4d9d5be5ab217e10,"The table below lists them in load order, from broadest scope to most specific",2026-10-12
 4f2e700a1316,claude/settings-and-scopes.md,S2057,located,Settings files and precedence > Settings files and who they affect > Find or create your settings files,claude_config_dir;dir;userprofil;mean;window;config;claud,19fa4ea700f1aa27,"On Windows, ~/.claude means %USERPROFILE%\.claude. To keep the home-directory files somewhere else, set CLAUDECONFIGDIR; Claude Code then stores your settings, session history, and plugins there",2026-10-12
 51a67f73bec4,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > How Claude Code combines managed sources,union;strictest;first-win;wins;uses;take;first;highest-rank,bac8efef60dcecec,"""first-wins"", the default: Claude Code uses the highest-ranked source that delivers at least one policy key and ignores the rest rather than merging them, apart",2026-10-12
@@ -5913,6 +5915,7 @@ f9fd5b27c190,claude/powershell-tool.md,S742,located,Configure permissions > Tool
 655410264d67,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Common setups,settings.local.json;dangerously-skip-permission;take;dangerously;effect;permissions.defaultmod;local;valu,4746fedd111096b5,"The --permission-mode flag, or --dangerously-skip-permissions permissions.defaultMode in a settings file If you set ""auto"" in .claude/settings.json or .claude/settings.local.json, the value doesn't take effect, and Claude",2026-10-12
 6a20a8656e36,claude/settings-and-scopes.md,S2057,located,Settings files and precedence > Settings files and who they affect,gitignor;personal;overrid;settings.local.json;one;local;project;json,3a87fecbff9db1bb,"Project local | .claude/settings.local.json | You, in this one project only. Claude Code keeps it out of git when it creates the file; if you",2026-10-12
 6c8bad72c55f,claude/settings-and-scopes.md,S2057,located,Settings files and precedence > Change a setting > Confirm what loaded,activ;status;current;show;line;sourc;machin;manag,98b102a6ed5b8b53,Run /status inside Claude Code to see which settings sources are active. The Status tab includes a Setting sources line that lists each settings file,2026-10-12
+70d34160fd88,claude/settings-and-scopes.md,S-hfho3uwe,located,Use Claude Code features in the SDK > Control filesystem settings with settingSources > What settingSources does not control,claude.ai;claudeai;connector;disableclaudeaiconnector;enable_claudeai_mcp_server;strict;strictmcpconfig;suppress,bd00e9b71468f2c3,Passing mcpServers: {} does not suppress the connectors,2026-10-15
 72b49de4c672,claude/settings-and-scopes.md,S2042,located,Deploy managed settings > Choose a delivery mechanism > Where each mechanism stores the policy,expand;reg;reg_expand_sz;reg_sz;softwar;named;claudecod;hklm,6b435f1be6f4a61c,Windows HKLM registry: the JSON as a REGSZ or REGEXPANDSZ value named Settings under HKLM\SOFTWARE\Policies\ClaudeCode.,2026-10-12
 74a02d72e567,claude/settings-and-scopes.md,S1863,located,How Claude remembers your project > AGENTS.md,v2.1.27;requir;directly;import;agents.md;read;agent;code,aa0da02b0977015e,"Reading AGENTS.md directly requires Claude Code v2.1.277 or later. In some sessions Claude can't read AGENTS.md, so import it from a CLAUDE.md there instead.",2026-10-12
 7c33d3099635,claude/settings-and-scopes.md,S-22qwtmf7,located,Configure server-managed settings > Requirements,plan;role;primary;api.anthropic.com;owner;com;edit;enterpris,1cf72fcb6460d38c,"Claude for Teams or Claude for Enterprise plan The Owner or Primary Owner role in your Claude organization, to view and edit the configuration Network",2026-10-12
@@ -5923,6 +5926,7 @@ f9fd5b27c190,claude/powershell-tool.md,S742,located,Configure permissions > Tool
 9819eaf1ac39,claude/settings-and-scopes.md,S2057,located,Settings files and precedence > Settings files and who they affect > Find or create your settings files,fifth;per-project;sign-in;itself;sign;mcp;claude.json;stat,bbc63c6d48b61577,"Claude Code also keeps a fifth file, ~/.claude.json, that it writes for itself; you don't need to edit it. It holds your sign-in session, MCP",2026-10-12
 9819eaf1ac39,claude/settings-and-scopes.md,S-rfpmkpck,located,API Design Rules > Recurring issues,per-project;trust;server;stat;mcp;json;session;project,8f630861d9c62c5d,"Holds state that does not belong in settings.json: OAuth session, per-project trust decisions, your personal MCP servers, and UI toggles.",2026-10-12
 9d3b4aecbb32,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Auto-approve file edits with acceptEdits mode,additionaldirectory;additional;symlink;read-only;insid;scop;auto-approv;rmdir,d26ef2216a8321f2,"Like file edits, auto-approval applies only to paths inside your working directory or additionalDirectories. Each path also goes through the symlink check, so a write",2026-10-12
+9e549eec9f61,claude/settings-and-scopes.md,S-wzatkg4o,located,All settings > MCP > `disableClaudeAiConnectors`,managed-level;project-level;connector;level;overrid;project;apply;user,bfb130a2878f3ea4,a project-level false can't override a user- or managed-level true,2026-10-15
 a18721beae63,claude/settings-and-scopes.md,S-rfpmkpck,located,API Design Rules > File reference,oauth;app;claude.json;config;toggl;personal;server;stat,5cefbeabbf942dab,"App state, OAuth, UI toggles, personal MCP servers",2026-10-12
 a19156894096,claude/settings-and-scopes.md,S2057,located,Settings files and precedence > Settings precedence,noth;overrid;manag;file;set,68d6f37e46f1116b,Nothing in your own settings files or --settings overrides a managed key,2026-10-12
 a39ab6362e26,claude/settings-and-scopes.md,S-zcuxapgb,located,Choose a permission mode > Available modes,plan-mod;except;never;auto-approv;protect;writ;availabl;bypasspermission,413eb8e25f24903d,"Writes to protected paths are never auto-approved except in bypassPermissions mode and in plan-mode sessions where bypass permissions are available, meaning interactive terminal sessions started",2026-10-12
@@ -7308,9 +7312,9 @@ ec7a93f4a3d1,gitlab/git-refs.md,S-cacomkjs,unlocated:no-match,,,,,2026-10-10
 ec7a93f4a3d1,gitlab/git-refs.md,S-sgbkwka4,unlocated:no-match,,,,,2026-10-10
 ec7a93f4a3d1,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
+006e83bdd2fd,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,bare;git;clon,a07103fb2ee80d89,,2026-10-15
+01e0ab8b9b9c,gitlab/git-test-repositories.md,S-f5whqkwk,located,,explicit;ignor;pushurl;git;remot,a68cd15d9f79f109,"If a remote has an explicit pushurl, Git will ignore this setting for that remote.",2026-10-15
 02213c124346,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
-023fa140c657,gitlab/git-test-repositories.md,S-3qf7ndi6,located,,cannot;updat;forc;branch,d5d325608cfe7e5a,cannot force update the branch '%s',2026-10-13
-023fa140c657,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-13
 02a75c353b39,gitlab/git-test-repositories.md,S-b6uvvu45,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-kzv2kznr,located,,writ;repository;file;git;config,42f9519b9ba6635b,For writing options: write to the repository .git/config file.,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-miw74ti3,unlocated:no-match,,,,,2026-10-10
@@ -7324,13 +7328,13 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-q2ovao5z,unlocated:no-match,,,,,2026-10-10
 1fcfe69afcc1,gitlab/git-test-repositories.md,S-vif3vb3s,unlocated:no-match,,,,,2026-10-10
+27e5ecf2e9b0,gitlab/git-test-repositories.md,S-7kl4eeso,located,,every;append;trailer;messag;reba;commit,6b0e926f01f1122f,Append the given trailer to every rebased commit message,2026-10-15
+280243d6eced,gitlab/git-test-repositories.md,S-f5whqkwk,unlocated:no-match,,,,,2026-10-15
 2ac25f977957,gitlab/git-test-repositories.md,S-vupwsv3m,unlocated:no-match,,,,,2026-10-10
 2e41099c9984,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-13
 2e41099c9984,gitlab/git-test-repositories.md,S-sx4rosvv,located,,die_if_checked_out;out;check;die,f935f0e3507500c0,"dieifcheckedout(buf.buf, 1);",2026-10-13
 2fd9bf69a867,gitlab/git-test-repositories.md,S-6foknrbi,located,,plain;real;gitdir;root;text;contain;point;path,d1ed3eb170c6c5f6,"Note: Also you can have a plain text file .git at the root of your working tree, containing gitdir: <path> to point at the real",2026-10-10
 30a2e502775a,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
-37781047cb95,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-13
-37781047cb95,gitlab/git-test-repositories.md,S-tx5lxmr3,located,,bisect;worktre,6780c356319dc685,"if (isworktreebeingbisected(wt, target))",2026-10-13
 38548518567f,gitlab/git-test-repositories.md,S-3au2dknw,located,,refus;already;another;worktre;otherwis;check;out;checkout,68033a0ec65cc800,refuses when the wanted branch is already checked out or otherwise in use by another worktree,2026-10-13
 38548518567f,gitlab/git-test-repositories.md,S-hwicl2h6,located,,ignor;ignore-other-worktr;worktr;already;another;refus;check;worktre,d6d29a537a0f091a,--ignore-other-worktrees:: git switch refuses when the wanted ref is already checked out by another worktree.,2026-10-13
 3b71ae74f4da,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
@@ -7340,6 +7344,10 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 41cdc1fa00e2,gitlab/git-test-repositories.md,S-wyfuoqs5,located,Setup and Config > OPTIONS,unclean;unless;refus;forc;remov;worktre,f494ef72d7dd81f3,remove refuses to remove an unclean worktree unless --force is used.,2026-10-13
 41e151f551ac,gitlab/git-test-repositories.md,S-4aovy2cm,located,,eof;read;writ;stream;packfil;repository;one;data,3c5d5fc1622b864d,fast-import reads a mixed command/data stream from standard input and writes one or more packfiles directly into the current repository. When EOF is received on,2026-10-10
 432d5c80d2c7,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
+462200b1c2ae,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
+462200b1c2ae,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-15
+462200b1c2ae,gitlab/git-test-repositories.md,S-i3btr2xr,unlocated:no-match,,,,,2026-10-15
+462200b1c2ae,gitlab/git-test-repositories.md,S-tx5lxmr3,unlocated:no-match,,,,,2026-10-15
 46dfcb3bea5e,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
 482718f43a28,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,hardlink;under;file;instead;object;git,f59fd272259de911,filesystem to copy the files under the .git/objects directory instead of using hardlinks.,2026-10-10
 482d4a20b5ef,gitlab/git-test-repositories.md,S-6foknrbi,unlocated:no-match,,,,,2026-10-10
@@ -7354,9 +7362,11 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 4efa53a277c2,gitlab/git-test-repositories.md,S-zwbgb73y,unlocated:no-match,,,,,2026-10-10
 51835da63aa7,gitlab/git-test-repositories.md,S-4aovy2cm,unlocated:no-match,,,,,2026-10-10
 52632ef0a13a,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
+52db0d0ae3ac,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,map;copi;head;local;remot;branch,39e7b4637f7c9a6e,Also the branch heads at the remote are copied directly to corresponding local branch heads,2026-10-15
 569f410eef4e,gitlab/git-test-repositories.md,S-4h6wi6hb,unlocated:no-match,,,,,2026-10-10
 569f410eef4e,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 57c4a2a3e1e5,gitlab/git-test-repositories.md,S-rzi7mtmw,located,,one;symref;upload-pack;pack;upload;ls-remot;show;head,360af30974b745bf,"upload-pack only shows the symref HEAD, so it will be the only one shown by ls-remote.",2026-10-10
+598605c8556d,gitlab/git-test-repositories.md,S-7kl4eeso,located,,problematic;leav;marker;first;stop;conflict;git;rebas,3aa87ffd57b08bba,git rebase will stop at the first problematic commit and leave conflict markers,2026-10-15
 5d2e20e586d9,gitlab/git-test-repositories.md,S-nxowyi4h,unlocated:no-match,,,,,2026-10-10
 5e2ca77956fc,gitlab/git-test-repositories.md,S-6foknrbi,located,,explicitly;relativ;git_dir;path;dir;git,887140b4f9f752a5,"explicitly set. If the specified path is relative, it is relative to $GITDIR.",2026-10-10
 62466ffc48c2,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,omit;already;refus;new-branch;check;out;commit-ish;creat,adafe4b0c415f8af,"<commit-ish>, and check out <new-branch> into the new worktree. If <commit-ish> is omitted, it defaults to HEAD. By default, -b refuses to create a new",2026-10-10
@@ -7390,7 +7400,9 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 8c3087d27585,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10
 90c59b9ff312,gitlab/git-test-repositories.md,S-lnlroicz,located,Setup and Config > OPTIONS,leav;side;favour;resolv;union;both;instead;line,9d203aa431a55d3f,"--union Instead of leaving conflicts in the file, resolve conflicts favouring our (or their or both) side of the lines.",2026-10-10
 93fa1d0590f5,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
+97235b87aa93,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
 9836dbdfe3a7,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
+9ad52a888f26,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,maps;refspec;target;note;includ;mirror;remote-track;bare,e8328dd5177335e3,"Compared to --bare, --mirror not only maps local branches of the source to local branches of the target, it maps all refs (including remote-tracking branches,",2026-10-15
 9d4eb3b07c9f,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,anywher;else;otherwis;check;out;exist;new;branch,14d9ccc8fe8c2ee0,"If <branch> does exist, it will be checked out in the new worktree, if it's not checked out anywhere else",2026-10-13
 a0bcf6b9ddfd,gitlab/git-test-repositories.md,S-lr3jwdq2,located,,found;sparse-checkout;clear;spars;checkout;skip-worktre;tree;skip,7800c979c96cf121,"sparse checkouts (setup by git sparse-checkout or by configuring core.sparseCheckout to true), if a file is marked as skip-worktree in the index but is found",2026-10-10
 a0dfb349d506,gitlab/git-test-repositories.md,S-i3btr2xr,unlocated:no-match,,,,,2026-10-13
@@ -7399,6 +7411,9 @@ a59712db4475,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,fail;fetch;warn
 adaf163036ab,gitlab/git-test-repositories.md,S-j3galfta,unlocated:no-match,,,,,2026-10-10
 ae91c429766a,gitlab/git-test-repositories.md,S-lr3jwdq2,located,,may;sinc;still;track;ignor;tree;work;chang,55547e71ae67d68a,"to tell Git to ignore changes to files that are tracked. This does not work as expected, since Git may still check working tree files",2026-10-10
 af03805fb452,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
+af927acfe9f9,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
+af927acfe9f9,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-15
+af927acfe9f9,gitlab/git-test-repositories.md,S-i3btr2xr,unlocated:no-match,,,,,2026-10-15
 b39d57c23595,gitlab/git-test-repositories.md,S-nftrmgem,located,,blob;messag;log;tree;commit;dif;show,98801a790e231b41,"Shows one or more objects (blobs, trees, tags and commits). For commits it shows the log message and textual diff.",2026-10-10
 b4d1a9f2cc4f,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
 b5b69941c434,gitlab/git-test-repositories.md,S-2u6tfn4r,unlocated:no-match,,,,,2026-10-10
@@ -7411,6 +7426,7 @@ ba05e9be2cc1,gitlab/git-test-repositories.md,S-tx5lxmr3,unlocated:no-match,,,,,2
 bd9453f05518,gitlab/git-test-repositories.md,S-wyfuoqs5,unlocated:no-match,,,,,2026-10-10
 c21f8eef1d53,gitlab/git-test-repositories.md,S-miw74ti3,unlocated:no-match,,,,,2026-10-10
 c57e464294f0,gitlab/git-test-repositories.md,S-vif3vb3s,located,,fully;merg;must;output;print;standard;stat;current,26773651ce9e46c0,"tree object is printed to standard output. The index must be in a fully merged state. Conceptually, git write-tree sync()s the current index contents",2026-10-10
+c79fa73d1b84,gitlab/git-test-repositories.md,S-7kl4eeso,located,,name;may;branch;commit,24e97a5b6f0f9cb4,"May be any valid commit, and not just an existing branch name.",2026-10-15
 c90d95c00387,gitlab/git-test-repositories.md,S-4aovy2cm,unlocated:no-match,,,,,2026-10-10
 c90d95c00387,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
 cb8c94688c1c,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10

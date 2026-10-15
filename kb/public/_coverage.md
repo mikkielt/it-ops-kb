@@ -140,7 +140,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/ci-and-headless` | P2 | complete | `claude/ci-and-headless.md` | 19 |
 | `claude/enterprise-admin` | P2 | complete | `claude/enterprise-admin.md` | 8 |
 | `claude/plugins` | P2 | complete | `claude/plugins.md`, `claude/plugins.csv` | 16 |
-| `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 14 |
+| `claude/settings-and-scopes` | P2 | partial | `claude/settings-and-scopes.md`, `claude/settings-keys.csv`, `claude/env-vars.csv` | 15 |
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 9 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 11 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 7 |
@@ -183,7 +183,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-commit-paths-and-symlinks` | P3 | complete | `gitlab/git-commit-paths-and-symlinks.md` | 7 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 43 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 45 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 13 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
