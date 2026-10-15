@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-ygsnog4n review"
-  ]
+  ],
+  "notes": "ST-zvooqvlt, repro compare --record of record 2170d88 (2026-10-15): eval_passed is 24, 22 and 24 of 103 for instances 1, 2, 3 while good verdicts are 80, 79, 79 of 103. 63 of the 103 frozen rows expect none, so research that answers them cannot raise the figure; podman RB-podman-5 (expect weak) passes in instance 1 (weak) and fails in instances 2 and 3 (good). kb/_self/reports/research-repro.md section 6 names this."
 }
