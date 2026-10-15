@@ -77,6 +77,14 @@
                                             origin's main, its mcp-config names its own kb_mcp.py whose --status prints
                                             its kb_dir, its query log mode is off and its claims ledger and _cache are
                                             its own; then removes the probe; exit 1 naming each failure, 2 on a refusal
+  benchmarks.py repro questions [--briefs FILE] [--file FILE]
+                                            check the frozen questions (kb/public/_retrieval/repro_bench.csv) against
+                                            the briefs (repro_briefs.csv): exit 1 naming each area without 3 to 5 rows,
+                                            a duplicate id, a row with no expect_re, expect_text or expect_paths and a
+                                            question that kbfacts.routed routes to a tool, or no brief rows at all
+  benchmarks.py repro status [--dir DIR]    print per instance of DIR's instances.json the commits on its bare since the
+                                            start commit and whether each is in a fresh fetch of the real origin's
+                                            main; exit 1 when any is, 2 on a refusal; exit 0 with no instances.json
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -211,6 +219,11 @@ def main(argv=None):
     rs.add_argument("--dir", help="where the bare origins go (default: _cache/bench-repro of the clone's main worktree)")
     rs.add_argument("--dry-run", action="store_true", help="print the plan and start nothing")
     rp.add_parser("check")
+    rq = rp.add_parser("questions")
+    rq.add_argument("--briefs", metavar="FILE", help="the briefs file (default: " + bench_repro.BRIEFS + ")")
+    rq.add_argument("--file", metavar="FILE", help="the frozen questions (default: " + bench_repro.ADDED + ")")
+    rt = rp.add_parser("status")
+    rt.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     a = ap.parse_args(argv)
     if a.cmd == "list":
         for name, (section, _) in SCENARIOS.items():
@@ -225,6 +238,10 @@ def main(argv=None):
         try:
             if a.repro_cmd == "check":
                 return bench_repro.check()
+            if a.repro_cmd == "questions":
+                return bench_repro.questions(a.briefs, a.file)
+            if a.repro_cmd == "status":
+                return bench_repro.status(a.dir)
             return bench_repro.setup(a.instances, a.start, a.dir, a.dry_run)
         except bench_repro.Refused as e:
             print(f"repro {a.repro_cmd}: {e}", file=sys.stderr)

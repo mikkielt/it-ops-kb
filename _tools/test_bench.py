@@ -1146,6 +1146,88 @@ def bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_
     assert sorted((tmp_path / "scratch").iterdir()) == left
 
 
+def bench_repro_questions_and_status_name_each_planted_problem(tmp_path, monkeypatch, capsys):
+    import shutil, subprocess
+    import bench_repro as br
+    import benchmarks as bm
+    import bl_check
+    for k, v in {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+                 "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com"}.items():
+        monkeypatch.setenv(k, v)
+    write = lambda path, header, rows: path.write_text(  # noqa: E731
+        "\n".join(",".join(f'"{c}"' for c in r) for r in [header, *rows]) + "\n", encoding="utf-8", newline="\n")
+    brief = lambda area, **cells: [area, *[cells.get(c, "present" if c == "coverage" else f"{c} of {area}") for c in br.BRIEF_COLUMNS[1:]]]  # noqa: E731
+    # the briefs: load_briefs returns the six columns of each row; brief_problems names each planted defect
+    bad, good = tmp_path / "bad_briefs.csv", tmp_path / "briefs.csv"
+    write(bad, br.BRIEF_COLUMNS, [brief("alpha", scope=""), brief("beta", coverage="maybe"), brief("alpha"),
+                                  brief("gamma", leave_out="")])
+    rows = br.load_briefs(bad)
+    assert [r["area"] for r in rows] == ["alpha", "beta", "alpha", "gamma"] and set(rows[0]) == set(br.BRIEF_COLUMNS)
+    found = br.brief_problems(rows)
+    assert len(found) == 3 and "row 1 (alpha): empty scope" in found[0] and "coverage 'maybe'" in found[1], found
+    assert "row 3 (alpha): duplicate area, as row 1" in found[2] and br.load_briefs(tmp_path / "none.csv") == []
+    write(good, br.BRIEF_COLUMNS, [brief("alpha", coverage="present"), brief("beta", coverage="partial"),
+                                   brief("gamma", coverage="absent", leave_out="")])
+    assert br.brief_problems(br.load_briefs(good)) == []
+    # the frozen questions: an area short of rows, a duplicate id, a row with no expectation, a question a tool answers
+    head = ["id", "area", "stratum", "question", "expect_paths", "expect_verdict", "allow_weak", "expect_text", "expect_re"]
+    q = lambda qid, area, question="How do I restore a podman container from a checkpoint?", re_="podman": [  # noqa: E731
+        qid, area, "present", question, "", "good", "", "", re_]
+    asked = tmp_path / "asked.csv"
+    write(asked, head, [q("A-1", "alpha"), q("A-2", "alpha"), q("A-3", "alpha"), q("B-1", "beta"), q("B-2", "beta"),
+                        q("A-1", "gamma"), q("G-2", "gamma", re_=""), q("G-3", "gamma", "How many articles does the kb hold per domain?"),
+                        q("Z-1", "zeta")])
+    capsys.readouterr()
+    assert bm.main(["repro", "questions", "--briefs", str(good), "--file", str(asked)]) == 1
+    out = capsys.readouterr().out
+    for want in ("area beta: 2 question rows, 3 to 5 wanted", "question A-1: duplicate id, as row 1",
+                 "question G-2: none of expect_re, expect_text, expect_paths is filled", "question G-3: routed by kind to a tool (count)",
+                 "area zeta: 1 question row(s) of no brief's area"):
+        assert want in out, (want, out)
+    assert "area alpha" not in out and "area gamma" not in out  # alpha and gamma hold 3 rows each
+    write(asked, head, [q(f"{a}-{i}", a) for a in ("alpha", "beta", "gamma") for i in (1, 2, 3)])
+    assert bm.main(["repro", "questions", "--briefs", str(good), "--file", str(asked)]) == 0
+    assert "every one of 3 areas holds 3 to 5 questions" in capsys.readouterr().out
+    assert bm.main(["repro", "questions", "--briefs", str(tmp_path / "none.csv"), "--file", str(asked)]) == 1
+    assert "no brief rows" in capsys.readouterr().out
+    # status: two instances of one start commit, one with two commits on its bare, one with none
+    git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
+    src = tmp_path / "src"
+    src.mkdir()
+    git("init", "-q", "--initial-branch=main", cwd=src)
+    shas = []
+    for name in ("start", "one", "two"):
+        (src / f"{name}.txt").write_text(name + "\n", encoding="utf-8", newline="\n")
+        git("add", "-A", cwd=src)
+        git("commit", "-q", "-m", f"commit {name}", cwd=src)
+        shas.append(git("rev-parse", "HEAD", cwd=src))
+    root, real = tmp_path / "dir", tmp_path / "real.git"
+    root.mkdir()
+    for name in ("origin1.git", "origin2.git", "real.git"):
+        git("init", "-q", "--bare", "--initial-branch=main", str(tmp_path / name if name == "real.git" else root / name), cwd=tmp_path)
+    git("push", "-q", str(root / "origin1.git"), "main:refs/heads/main", cwd=src)
+    git("push", "-q", str(root / "origin2.git"), f"{shas[0]}:refs/heads/main", cwd=src)
+    git("push", "-q", str(real), f"{shas[0]}:refs/heads/main", cwd=src)
+    monkeypatch.setattr(br, "remote_url", lambda: ("origin", str(real)))
+    assert bm.main(["repro", "status", "--dir", str(root / "no-manifest")]) == 0 and "holds no instances.json" in capsys.readouterr().out
+    (root / br.MANIFEST).write_text(json.dumps({"rev": shas[0], "source": str(real), "instances": [
+        {"n": n, "bare": str(root / f"origin{n}.git")} for n in (1, 2)]}), encoding="utf-8", newline="\n")
+    assert bm.main(["repro", "status", "--dir", str(root)]) == 0  # the origin holds the start commit only
+    out = capsys.readouterr().out
+    assert "instance 1: 2 commit(s)" in out and "instance 2: 0 commit(s)" in out and f"{shas[2][:12]} commit two (not in" in out
+    assert "no instance commit is in a fresh fetch" in out
+    assert not [rx.pattern for rx in bl_check.NOOP_MARKERS if rx.search(out)] and bl_check.noop_output(out) is None, out
+    # a planted failure: the first instance commit is in the origin's main, the second is not: exit 1 naming it
+    git("push", "-q", str(real), f"{shas[1]}:refs/heads/main", cwd=src)
+    assert bm.main(["repro", "status", "--dir", str(root)]) == 1
+    out = capsys.readouterr().out
+    assert f"{shas[1][:12]} commit one (IN the real origin main)" in out and f"{shas[2][:12]} commit two (not in" in out
+    assert "1 instance commit(s) are in a fresh fetch" in out and not list(root.glob("tmp*"))
+    shutil.rmtree(root / "origin2.git")
+    assert bm.main(["repro", "status", "--dir", str(root)]) == 2
+    assert "instance 2: its bare" in capsys.readouterr().err
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read; `fixtures` are further fixtures a body names."""
@@ -1163,7 +1245,7 @@ def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, 
              bench_price_tier_is_recorded_and_alias_follows_the_run,
              bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows,
              bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env,
-             kb_seed=kb_seed)
+             bench_repro_questions_and_status_name_each_planted_problem, kb_seed=kb_seed)
 
 
 def test_bench_pool_build_check_scenario_rows_and_session_shape(tmp_path, monkeypatch, capsys):

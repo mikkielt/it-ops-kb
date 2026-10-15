@@ -1,19 +1,29 @@
-"""The research-reproducibility benchmark's isolated instances: `benchmarks.py repro setup` and `repro check` (stdlib only).
+"""The research-reproducibility benchmark's isolated instances: `benchmarks.py repro setup`, `repro check`, `repro
+questions` and `repro status` (stdlib only).
 
 Each instance is a full bare copy of one pinned commit's history (DIR/originN.git, its main at REV), a working clone of
 it outside the checkout (under bench_core's scratch directory) whose only remote is that bare path, a query log of mode
 `off` in the clone, and an mcp-config file of its own for `claude -p --mcp-config FILE --strict-mcp-config`, so no
 instance writes ~/.claude.json. `instance_env` is the session environment of an instance. `check` builds one such
 instance as a probe, runs `kbgit.py sync --push` in it and proves the push landed on the probe's own bare and nowhere
-else. This module imports bench_core and kbpublic only (kb/_self/code.md, Layout); benchmarks.py holds the command line.
+else. `load_briefs` and `brief_problems` read and check the briefs file, `question_problems` the frozen questions
+against it, and `status` names each instance's commits since the start commit and the ones a fresh fetch of the real
+origin's main holds. This module imports bench_core and kbpublic, and kbfacts where it reads the routing and the clone
+home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
-import hashlib, json, os, shutil, subprocess, sys, tempfile
+import csv, hashlib, json, os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 import kbpublic
 from bench_core import HOME, isolate, no_plugin_env, scratch_dir
 
 ADDED = "kb/public/_retrieval/repro_bench.csv"  # the file whose first commit's parent is the default REV
+BRIEFS = "kb/public/_retrieval/repro_briefs.csv"  # one research brief per benchmark area
+BRIEF_COLUMNS = ("area", "scope", "sources", "depth", "coverage", "leave_out")
+BRIEF_FILLED = BRIEF_COLUMNS[:5]  # the cells a brief must fill: leave_out may be empty
+COVERAGES = ("present", "partial", "absent")
+QUESTIONS_PER_AREA = (3, 5)  # the frozen questions of one area, fewest and most
+EXPECT_COLUMNS = ("expect_re", "expect_text", "expect_paths")  # a question row holds at least one
 DOCS_MCP = Path(".claude-plugin") / "it-ops-kb-docs" / ".mcp.json"
 MANIFEST = "instances.json"
 CLAIMS_LEDGER = "kb-backlog-claims.json"  # bl_base.CLAIMS_LEDGER: the file in a clone's git dir that holds its claims
@@ -171,15 +181,25 @@ def inside(path, parent):
     return Path(path).resolve().is_relative_to(Path(parent).resolve())
 
 
-def reaches(sha, url, work):
-    """True when commit `sha` is in a fresh fetch of main from `url` (into a new bare under `work`)."""
+def fetch_real(url, work):
+    """A fresh bare under `work` holding main of `url`: the path of that bare."""
     real = Path(work) / "real.git"
     run_git("init", "-q", "--bare", "--initial-branch=main", str(real), cwd=work)
     run_git("fetch", "-q", "--no-tags", url, "+refs/heads/main:refs/heads/main", cwd=real)
+    return real
+
+
+def in_main(sha, real):
+    """True when commit `sha` is in the main of the bare `real`."""
     if subprocess.run(["git", "cat-file", "-e", f"{sha}^{{commit}}"], cwd=str(real), capture_output=True).returncode:
         return False  # the object is not even there
     return subprocess.run(["git", "merge-base", "--is-ancestor", sha, "refs/heads/main"], cwd=str(real),
                           capture_output=True).returncode == 0
+
+
+def reaches(sha, url, work):
+    """True when commit `sha` is in a fresh fetch of main from `url` (into a new bare under `work`)."""
+    return in_main(sha, fetch_real(url, work))
 
 
 def probe_checks(root, url, out):
@@ -252,3 +272,131 @@ def check(out=print):
         shutil.rmtree(root, ignore_errors=True)
     out("repro check: " + ("the probe's push stayed on its own bare" if not failed else f"{len(failed)} failed: " + "; ".join(failed)))
     return 1 if failed else 0
+
+
+def read_csv(path):
+    """The rows of a csv file as dicts of strings (a missing cell is ""), or [] when the file does not exist."""
+    if not Path(path).exists():
+        return []
+    with open(path, encoding="utf-8", newline="") as f:
+        return [{k: v or "" for k, v in r.items() if k is not None} for r in csv.DictReader(f)]
+
+
+def load_briefs(path=None):
+    """The rows of kb/public/_retrieval/repro_briefs.csv (or of the csv at `path`) as dicts of the BRIEF_COLUMNS, in file
+    order; [] when the file does not exist."""
+    rows = read_csv(path or HOME / BRIEFS)
+    return [{c: r.get(c, "") for c in BRIEF_COLUMNS} for r in rows]
+
+
+def brief_problems(rows):
+    """One line per defect of the brief rows: an empty area, scope, sources, depth or coverage cell, a coverage that is
+    none of COVERAGES, a duplicate area."""
+    out, seen = [], {}
+    for n, r in enumerate(rows, 1):
+        area = (r.get("area") or "").strip()
+        label = f"row {n} ({area})" if area else f"row {n}"
+        for c in BRIEF_FILLED:
+            if not (r.get(c) or "").strip():
+                out.append(f"{label}: empty {c}")
+        cov = (r.get("coverage") or "").strip()
+        if cov and cov not in COVERAGES:
+            out.append(f"{label}: coverage {cov!r} is none of {', '.join(COVERAGES)}")
+        if area and area in seen:
+            out.append(f"{label}: duplicate area, as row {seen[area]}")
+        seen.setdefault(area, n)
+    return out
+
+
+def load_questions(path=None):
+    """The rows of kb/public/_retrieval/repro_bench.csv (or of the csv at `path`), as dicts of its columns; [] when the
+    file does not exist."""
+    return read_csv(path or HOME / ADDED)
+
+
+def routing_of(question):
+    """The kinds of the experts that answer `question` as a tool decides it (kbfacts.routed), or [] when none does."""
+    import kbfacts
+    res = kbfacts.routed(question)
+    return list(res["routed"]["kinds"]) if res else []
+
+
+def question_problems(briefs, questions, routing=routing_of):
+    """One line per defect of the frozen questions against the briefs: an area without 3 to 5 rows, a row of an area no
+    brief names, a duplicate id, a row with none of EXPECT_COLUMNS filled, a question that `routing` returns kinds for
+    (a tool answers it, so it measures no research)."""
+    lo, hi = QUESTIONS_PER_AREA
+    out, count, ids = [], {}, {}
+    for n, q in enumerate(questions, 1):
+        qid = (q.get("id") or "").strip()
+        label = f"question {qid}" if qid else f"question row {n}"
+        area = (q.get("area") or "").strip()
+        count[area] = count.get(area, 0) + 1
+        if qid and qid in ids:
+            out.append(f"{label}: duplicate id, as row {ids[qid]}")
+        ids.setdefault(qid, n)
+        if not any((q.get(c) or "").strip() for c in EXPECT_COLUMNS):
+            out.append(f"{label}: none of {', '.join(EXPECT_COLUMNS)} is filled")
+        text = (q.get("question") or "").strip()
+        kinds = routing(text) if text else []
+        if kinds:
+            out.append(f"{label}: routed by kind to a tool ({', '.join(kinds)}): {text[:80]}")
+    areas = [b["area"].strip() for b in briefs if (b.get("area") or "").strip()]
+    for area in dict.fromkeys(areas):
+        if not lo <= count.get(area, 0) <= hi:
+            out.append(f"area {area}: {count.get(area, 0)} question rows, {lo} to {hi} wanted")
+    for area in count:
+        if area not in areas:
+            out.append(f"area {area or '(empty)'}: {count[area]} question row(s) of no brief's area")
+    return out
+
+
+def questions(briefs_path=None, questions_path=None, out=print):
+    """Check the frozen questions against the briefs; print each problem. Returns 0 when there is none, else 1."""
+    briefs = load_briefs(briefs_path)
+    problems = question_problems(briefs, load_questions(questions_path)) if briefs else \
+        [f"no brief rows: {briefs_path or HOME / BRIEFS} is missing or empty"]
+    for ln in problems:
+        out(f"FAIL: {ln}")
+    out("repro questions: " + (f"{len(problems)} problem(s)" if problems else
+                                f"every one of {len(briefs)} areas holds {QUESTIONS_PER_AREA[0]} to "
+                                f"{QUESTIONS_PER_AREA[1]} questions, each with an expectation and none routed to a tool"))
+    return 1 if problems else 0
+
+
+def commits_since(bare, rev):
+    """[(sha, subject)] of the commits on `bare`'s main since `rev`, newest first."""
+    log = run_git("log", "--format=%H %s", f"{rev}..refs/heads/main", cwd=bare)
+    return [tuple(ln.split(" ", 1)) for ln in log.splitlines()]
+
+
+def status(root=None, out=print):
+    """Print, per instance of DIR's manifest, the commits on its bare since the start commit and whether each is in a
+    fresh fetch of the real origin's main. Returns 1 when any is, else 0; raises Refused on a bare that is gone."""
+    root = Path(root) if root else default_dir()
+    manifest = root / MANIFEST
+    if not manifest.exists():
+        out(f"repro status: {root} holds no {MANIFEST}: no instance was set up there, so no instance commit exists")
+        return 0
+    data = json.loads(manifest.read_text(encoding="utf-8"))
+    rev = data["rev"]
+    found = []
+    for inst in data["instances"]:
+        bare = Path(inst["bare"])
+        if not bare.is_dir():
+            raise Refused(f"instance {inst['n']}: its bare {bare} is gone")
+        found.append((inst["n"], bare, commits_since(bare, rev)))
+    real, reached = None, 0
+    with tempfile.TemporaryDirectory(dir=str(root)) as work:
+        if any(c for _, _, c in found):
+            real = fetch_real(remote_url()[1], work)
+        out(f"repro status: start {rev[:12]}, dir {root}")
+        for n, bare, commits in found:
+            out(f"instance {n}: {len(commits)} commit(s) on {bare} since {rev[:12]}")
+            for sha, subject in commits:
+                hit = in_main(sha, real)
+                reached += hit
+                out(f"  {sha[:12]} {subject} ({'IN the real origin main' if hit else 'not in the real origin main'})")
+    out("repro status: " + (f"{reached} instance commit(s) are in a fresh fetch of the real origin's main" if reached else
+                            "no instance commit is in a fresh fetch of the real origin's main"))
+    return 1 if reached else 0
