@@ -2,7 +2,7 @@
   "id": "ST-ymjjoo54",
   "kind": "story",
   "title": "Research sprint goal: One benchmark instance's research lands in the real kb",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-bhzxxhub",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the goal is the repro tooling's own pick and replay, which kb/_self documents; the git facts it leans on (rebase --onto, cherry-pick, union merge of ledgers, fetching a bare path) are already good in kb/public (gitlab/git-test-repositories.md, agents/docs-maintenance-agents.md), so no live-docs fetch and no gap entry were needed.",
-  "claimed_by": "orch-bhzxxhub"
+  "evidence": {
+    "commit": "abbe99e6d30fcb8790e07279d95e6f0ca49f5f38",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ymjjoo54"
+        ],
+        "exit": 0,
+        "sha256": "e5733627e372c285"
+      }
+    ]
+  }
 }
