@@ -93,7 +93,9 @@
         "exit 1 with --json too": "ST-hfcsyyin",
         "keep exit 0 with --json": "ST-hfcsyyin"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "exit 1 with --json too",
+      "by": "operator"
     },
     {
       "id": "g2",
