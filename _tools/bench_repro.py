@@ -1,5 +1,5 @@
 """The research-reproducibility benchmark's isolated instances: `benchmarks.py repro setup`, `repro check`, `repro
-questions` and `repro status` (stdlib only).
+questions`, `repro run` and `repro status` (stdlib only).
 
 Each instance is a full bare copy of one pinned commit's history (DIR/originN.git, its main at REV), a working clone of
 it outside the checkout (under bench_core's scratch directory) whose only remote is that bare path, a query log of mode
@@ -8,14 +8,18 @@ instance writes ~/.claude.json. `instance_env` is the session environment of an 
 instance as a probe, runs `kbgit.py sync --push` in it and proves the push landed on the probe's own bare and nowhere
 else. `load_briefs` and `brief_problems` read and check the briefs file, `question_problems` the frozen questions
 against it, and `status` names each instance's commits since the start commit and the ones a fresh fetch of the real
-origin's main holds. This module imports bench_core and kbpublic, and kbfacts where it reads the routing and the clone
-home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
+origin's main holds. `run` starts every instance's headless `/kb-research` sessions at once, one per area in the
+briefs' order, and appends each area's result as a json line to DIR/results.jsonl (`session_argv` is the one argv,
+`area_prompt` the one prompt). This module imports bench_core and kbpublic, and kbfacts where it reads the routing and
+the clone home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
-import csv, hashlib, json, os, shutil, subprocess, sys, tempfile
+import csv, datetime, hashlib, json, os, shlex, shutil, subprocess, sys, tempfile, threading, time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+import agent_bench
 import kbpublic
-from bench_core import HOME, isolate, no_plugin_env, scratch_dir
+from bench_core import HOME, isolate, no_plugin_env, scratch_dir, stream_run
 
 ADDED = "kb/public/_retrieval/repro_bench.csv"  # the file whose first commit's parent is the default REV
 BRIEFS = "kb/public/_retrieval/repro_briefs.csv"  # one research brief per benchmark area
@@ -26,6 +30,17 @@ QUESTIONS_PER_AREA = (3, 5)  # the frozen questions of one area, fewest and most
 EXPECT_COLUMNS = ("expect_re", "expect_text", "expect_paths")  # a question row holds at least one
 DOCS_MCP = Path(".claude-plugin") / "it-ops-kb-docs" / ".mcp.json"
 MANIFEST = "instances.json"
+RESULTS = "results.jsonl"  # DIR/results.jsonl: one json line per area result of a run
+RUN_RECORD = "run.json"  # DIR/run.json: the argv, settings and limits the results of DIR were taken with
+CLAUDE = ["claude"]  # the command a session starts with (a list: a test plants its own)
+# What every session's --settings holds: the gitkraken plugin and the user's caveman plugin off.
+SETTINGS = json.dumps({"enabledPlugins": {"gitkraken@synced": False, "caveman@caveman": False}}, separators=(",", ":"))
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
+DEFAULTS = {"model": "sonnet-5-5", "effort": "high", "max_turns": 150, "area_usd": 8.0, "instance_usd": 40.0,
+            "timeout": 3600}  # the limits of `run`: the seconds are one area's session
+NO_ROWS = ("kb/public/_retrieval/lookup_eval.csv", "kb/public/_retrieval/lookup_heldout.csv",
+           "kb/public/_retrieval/doc2query/")  # what a research session adds no row to
+NO_READ = ("kb/_self/backlog/", "kb/_self/reports/")  # what it reads nothing under
 CLAIMS_LEDGER = "kb-backlog-claims.json"  # bl_base.CLAIMS_LEDGER: the file in a clone's git dir that holds its claims
 # The variables an instance's session must not inherit: the same names as conftest.LEAKY (test_bench.py compares them;
 # a tool module never imports conftest, which clears them from os.environ when it is imported).
@@ -400,3 +415,260 @@ def status(root=None, out=print):
     out("repro status: " + (f"{reached} instance commit(s) are in a fresh fetch of the real origin's main" if reached else
                             "no instance commit is in a fresh fetch of the real origin's main"))
     return 1 if reached else 0
+
+
+def sh_git(clone, env, *args):
+    """git `args` in `clone` under the session environment `env`: stdout, or Refused with what git said."""
+    p = sh(["git", *args], clone, env)
+    if p.returncode:
+        raise Refused(f"git {' '.join(args[:2])} failed in {clone}: {(p.stderr or p.stdout).strip()[-300:]}")
+    return p.stdout.strip()
+
+
+def reset_clone(clone, env):
+    """Put `clone` on its bare's main as a fresh start: a rebase a session left is aborted (none in progress is no
+    error), origin's main fetched, the work tree reset to it and what a session left untracked removed (ignored files,
+    _private and _cache among them, stay)."""
+    sh(["git", "rebase", "--abort"], clone, env)
+    sh_git(clone, env, "fetch", "-q", "origin", "+refs/heads/main:refs/remotes/origin/main")
+    sh_git(clone, env, "checkout", "-q", "-f", "main")
+    sh_git(clone, env, "reset", "-q", "--hard", "refs/remotes/origin/main")
+    sh_git(clone, env, "clean", "-q", "-f", "-d")
+
+
+def area_prompt(brief):
+    """The prompt of one area's session, built from its brief row alone: the same text for every instance."""
+    area = brief["area"].strip()
+    lines = [f"/kb-research {area}: {brief['scope'].strip()}", "", f"The research brief of the area `{area}`:",
+             f"- Scope: {brief['scope'].strip()}", f"- Sources: {brief['sources'].strip()}",
+             f"- Depth: {brief['depth'].strip()}", f"- Coverage of the kb today: {brief['coverage'].strip()}"]
+    if brief.get("leave_out", "").strip():
+        lines.append(f"- Leave out: {brief['leave_out'].strip()}")
+    lines += ["", "Run /kb-research on this brief and finish it: nobody answers questions in this session.", "",
+              "Rules of this session:",
+              "- Push what you wrote with `python3 _tools/kbgit.py sync --push` when the research is done.",
+              f"- Add no row to {', '.join(f'`{p}`' for p in NO_ROWS[:2])}, and no doc2query row under `{NO_ROWS[2]}`.",
+              f"- Read nothing under {' or '.join(f'`{p}`' for p in NO_READ)}, and nothing outside this clone."]
+    return "\n".join(lines) + "\n"
+
+
+def model_id(model):
+    """`model` as the full model id a session is started with: an agent_bench alias, else the name itself."""
+    return agent_bench.MODEL.get(model, model)
+
+
+def session_argv(model, effort, max_turns, area_usd, mcp_config):
+    """The argv of one area's session, the same for every instance but its own --mcp-config file; the prompt is its stdin."""
+    return [*CLAUDE, "-p", "--output-format", "stream-json", "--verbose", "--permission-mode", "bypassPermissions",
+            "--settings", SETTINGS, "--mcp-config", str(mcp_config), "--strict-mcp-config", "--model", model_id(model),
+            "--effort", effort, "--max-turns", str(max_turns), "--max-budget-usd", f"{area_usd:g}"]
+
+
+def failure_of(r):
+    """The failure a session's result names: timeout, turns, budget or error; "" for a finished session."""
+    if "error" not in r:
+        return ""
+    sub = r.get("subtype", "")
+    return {"timeout": "timeout"}.get(r["error"]) or {"error_max_turns": "turns", "error_max_budget_usd": "budget"}.get(sub, "error")
+
+
+def read_results(path):
+    """The json lines of the results file, in order ([] when there is none); a line that is not json is skipped."""
+    out = []
+    if Path(path).exists():
+        for ln in Path(path).read_text(encoding="utf-8").splitlines():
+            try:
+                rec = json.loads(ln)
+            except ValueError:
+                continue
+            if isinstance(rec, dict):
+                out.append(rec)
+    return out
+
+
+def latest(results):
+    """{(instance, area): the newest result line of that area}."""
+    return {(r.get("instance"), r.get("area")): r for r in results}
+
+
+def instances_of(root, count):
+    """(instances, rev): the manifest's first `count` instances (all when `count` is None) and its start commit, or, with
+    no manifest, the paths `setup` would give `count or 1` instances and rev ""."""
+    manifest = Path(root) / MANIFEST
+    if manifest.exists():
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        return data["instances"][:count] if count else data["instances"], data.get("rev", "")
+    return [{"n": n, "bare": str(origin_path(root, n)), "clone": str(clone_path(root, n)),
+             "mcp_config": str(mcp_path(root, n)), "lock_dir": str(lock_dir(root, n))}
+            for n in range(1, (count or 1) + 1)], ""
+
+
+def run_problems(root, insts, rev, count, briefs, questions_path):
+    """(refusals, brief problems) a real run would meet: each is a line."""
+    refusals, manifest = [], Path(root) / MANIFEST
+    if not manifest.exists():
+        refusals.append(f"{root} holds no {MANIFEST}: no instance was set up there (repro setup)")
+    elif count and count > len(json.loads(manifest.read_text(encoding="utf-8"))["instances"]):
+        refusals.append(f"--instances {count}: {manifest} holds fewer instances")
+    for i in insts if manifest.exists() else []:
+        for what, path in (("bare", i["bare"]), ("clone", i["clone"]), ("mcp-config", i["mcp_config"])):
+            if not Path(path).exists():
+                refusals.append(f"instance {i['n']}: its {what} {path} is not there")
+        log = Path(i["clone"]) / "_private" / "querylog.json"
+        mode = json.loads(log.read_text(encoding="utf-8")).get("mode") if log.exists() else None
+        if Path(i["clone"]).exists() and mode != "off":
+            refusals.append(f"instance {i['n']}: its query log mode is {mode}, not off ({log})")
+    if rev:
+        bare = next((Path(i["bare"]) for i in insts if Path(i["bare"]).is_dir()), None)
+        if bare and subprocess.run(["git", "cat-file", "-e", f"{rev}:{ADDED}"], cwd=str(bare),
+                                   capture_output=True).returncode == 0:
+            refusals.append(f"the start commit {rev[:12]} holds {ADDED}: the frozen questions must come after it")
+    if briefs:
+        found = question_problems(briefs, load_questions(questions_path))
+        if found:
+            refusals.append(f"repro questions fails ({len(found)} problem(s); first: {found[0]})")
+    else:
+        refusals.append(f"no brief rows: {HOME / BRIEFS} is missing or empty")
+    if not shutil.which(CLAUDE[0]):
+        refusals.append(f"{CLAUDE[0]} is not on PATH")
+    return refusals, brief_problems(briefs)
+
+
+def todo_of(briefs, results, n):
+    """The briefs of instance `n` with no finished result, in the briefs' order."""
+    last = latest(results)
+    return [b for b in briefs if last.get((n, b["area"].strip()), {}).get("failure", "x")]
+
+
+def estimate(todo, area_usd, instance_usd):
+    """The most one instance can spend: every area at the area cap, but no area starts once the cap of the instance is
+    reached, so at most the instance cap plus one area."""
+    return min(todo * area_usd, instance_usd + area_usd)
+
+
+def utc_now():
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def area_record(inst, brief, opts, env, argv, prompt, timeout):
+    """Run one area's session in the instance's clone and return its result line (a dict). A harness error is a line
+    with failure `error`: it ends no other instance."""
+    n, area = inst["n"], brief["area"].strip()
+    bare, clone = Path(inst["bare"]), Path(inst["clone"])
+    rec = {"instance": n, "area": area, "started": utc_now(), "model": model_id(opts["model"]), "effort": opts["effort"],
+           "settings": SETTINGS, "bare_before": "", "bare_after": ""}
+    t = time.time()
+    try:
+        rec["bare_before"] = sh_git(bare, env, "rev-parse", "refs/heads/main")
+        reset_clone(clone, env)
+        r = stream_run(argv, prompt, clone, env, timeout=timeout, clean=True)
+    except (Refused, OSError) as e:
+        r = {"error": f"harness: {e}"[:300]}
+    wall = round(time.time() - t, 1)
+    try:
+        rec["bare_after"] = sh_git(bare, env, "rev-parse", "refs/heads/main")
+    except Refused:
+        pass
+    fail = failure_of(r)
+    rec.update(failure=fail, subtype=r.get("subtype") or ("success" if not fail else fail), wall_s=wall,
+               cost=r.get("cost") or 0, input_tokens=r.get("in_uncached", 0), output_tokens=r.get("out", 0),
+               cache_write_tokens=r.get("cache_write", 0), cache_read_tokens=r.get("cache_read", 0),
+               turns=r.get("turns", 0), tool_calls=sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
+               model_usage=r.get("model_usage", {}))
+    if fail:
+        rec["error"] = str(r.get("error", ""))[:300]
+    return rec
+
+
+def run_instance(inst, briefs, results, opts, root, path, lock, out):
+    """Every area of one instance, in order, until its recorded spend reaches the instance cap: the areas left are
+    recorded as failures named budget. Each result is appended as soon as it exists."""
+    n = inst["n"]
+    env = instance_env(root, n)
+    argv = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], inst["mcp_config"])
+    spent = sum(r.get("cost") or 0 for r in results if r.get("instance") == n)
+    todo = todo_of(briefs, results, n)
+
+    def append(rec):
+        with lock, open(path, "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(rec, sort_keys=True) + "\n")
+            f.flush()
+        out(f"instance {n}: {rec['area']}: {rec['failure'] or 'ok'}, ${rec['cost']:.2f}, {rec['turns']} turns, "
+            f"{rec['wall_s']:.0f} s")
+
+    for i, brief in enumerate(todo):
+        if spent >= opts["instance_usd"]:
+            for left in todo[i:]:
+                append({"instance": n, "area": left["area"].strip(), "started": utc_now(), "model": model_id(opts["model"]),
+                        "effort": opts["effort"], "settings": SETTINGS, "bare_before": "", "bare_after": "",
+                        "failure": "budget", "subtype": "budget", "wall_s": 0, "cost": 0, "input_tokens": 0,
+                        "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "turns": 0,
+                        "tool_calls": 0, "model_usage": {},
+                        "error": f"instance spend ${spent:.2f} reached --instance-usd {opts['instance_usd']:g}"})
+            break
+        rec = area_record(inst, brief, opts, env, argv, area_prompt(brief), opts["timeout"])
+        spent += rec["cost"]
+        append(rec)
+
+
+def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=None, out=print, **limits):
+    """`repro run`: start every instance's area sessions at once (one thread each, the areas of an instance in the
+    briefs' order) and append each result to DIR/results.jsonl; a run again skips the areas with a result and retries
+    the failed ones. `limits` are DEFAULTS' keys. With `dry_run` nothing starts: the argv, the estimate and every
+    refusal are printed; returns 0, or 1 for a briefs problem. A real run raises Refused on a refusal or a briefs
+    problem and returns 0 when every area has a result, else 1."""
+    opts = {**DEFAULTS, **{k: v for k, v in limits.items() if v is not None}}
+    if opts["effort"] not in EFFORTS:
+        raise Refused(f"--effort {opts['effort']}: one of {', '.join(EFFORTS)}")
+    root = Path(root) if root else default_dir()
+    briefs = load_briefs(briefs_path)
+    insts, rev = instances_of(root, count)
+    refusals, bad = run_problems(root, insts, rev, count, briefs, questions_path)
+    path = root / RESULTS
+    results = read_results(path)
+    areas = len(briefs)
+    plan = [(i, todo_of(briefs, results, i["n"])) for i in insts]
+    note = {k: opts[k] for k in ("model", "effort", "max_turns", "area_usd", "timeout")}
+    note["argv"] = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], "MCP-CONFIG")
+    record = Path(root) / RUN_RECORD
+    if record.exists() and not refusals:
+        old = json.loads(record.read_text(encoding="utf-8"))
+        if old.get("argv") != note["argv"] or old.get("timeout") != note["timeout"] or old.get("settings") != SETTINGS:
+            refusals.append(f"{record} holds other settings or limits than this run's: remove it with {path} to start over")
+    if dry_run:
+        out(f"repro run: {len(insts)} instance(s), {areas} area(s), dir {root}")
+        out(f"settings: {SETTINGS}")
+        total = 0.0
+        for i, todo in plan:
+            argv = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], i["mcp_config"])
+            up = estimate(len(todo), opts["area_usd"], opts["instance_usd"])
+            total += up
+            out(f"instance {i['n']}: clone {i['clone']}")
+            out(f"  argv: {shlex.join(argv)}")
+            out(f"  areas to run: {len(todo)} of {areas}, estimate up to ${up:.2f} (--area-usd {opts['area_usd']:g} each, "
+                f"no area starts once ${opts['instance_usd']:g} is recorded)")
+        if plan and areas:
+            out(f"estimate: up to ${total:.2f} for the run")
+            out("prompt of the first area (stdin; the others differ in the brief only):")
+            for ln in area_prompt(briefs[0]).splitlines():
+                out(f"  | {ln}")
+        for ln in refusals:
+            out(f"refusal: {ln}")
+        for ln in bad:
+            out(f"briefs problem: {ln}")
+        return 1 if bad else 0
+    if refusals or bad:
+        raise Refused("; ".join([*refusals, *(f"briefs problem: {b}" for b in bad)]))
+    root.mkdir(parents=True, exist_ok=True)
+    record.write_text(json.dumps({**note, "settings": SETTINGS}, indent=2) + "\n", encoding="utf-8", newline="\n")
+    lock = threading.Lock()
+    with ThreadPoolExecutor(max_workers=len(insts)) as pool:
+        futures = [pool.submit(run_instance, i, briefs, results, opts, root, path, lock, out) for i in insts]
+        for f in futures:
+            f.result()
+    last = latest(read_results(path))
+    failed = [k for i in insts for b in briefs if (k := (i["n"], b["area"].strip())) in last and last[k].get("failure")]
+    spent = sum(r.get("cost") or 0 for r in read_results(path))
+    out(f"repro run: {len(insts) * areas - len(failed)} of {len(insts) * areas} area(s) finished, {len(failed)} failed, "
+        f"${spent:.2f} recorded in {path}")
+    return 1 if failed else 0

@@ -82,6 +82,23 @@
                                             the briefs (repro_briefs.csv): exit 1 naming each area without 3 to 5 rows,
                                             a duplicate id, a row with no expect_re, expect_text or expect_paths and a
                                             question that kbfacts.routed routes to a tool, or no brief rows at all
+  benchmarks.py repro run [--instances N] [--model M] [--effort E] [--max-turns T] [--area-usd A] [--instance-usd C]
+                          [--timeout S] [--dir DIR] [--dry-run]
+                                            start every instance of DIR's instances.json at the same time, each running one
+                                            headless `claude -p` /kb-research session per area of repro_briefs.csv in the
+                                            briefs' order, in the instance's clone with its env and mcp-config, the
+                                            project's hooks on, the gitkraken and caveman plugins off by --settings, the
+                                            same argv and prompt for every instance; each area's clone is reset to its
+                                            bare's main first and the bare's main sha is recorded before and after;
+                                            appends one json line per area to DIR/results.jsonl (cost, tokens, turns, tool
+                                            calls, wall time, model usage, failure: budget, turns, timeout or error, and
+                                            the shas); an instance starts no further area once its recorded spend
+                                            reaches --instance-usd and records the areas left as failures named budget;
+                                            a run again skips the areas with a result and retries the failed ones;
+                                            --dry-run starts nothing and prints each argv, the estimate and each refusal,
+                                            exit 0 (1 for a briefs problem); a real run exits 2 on a refusal (no
+                                            instances.json, `repro questions` failing, the start commit holding
+                                            repro_bench.csv) and 1 when an area failed
   benchmarks.py repro status [--dir DIR]    print per instance of DIR's instances.json the commits on its bare since the
                                             start commit and whether each is in a fresh fetch of the real origin's
                                             main; exit 1 when any is, 2 on a refusal; exit 0 with no instances.json
@@ -222,6 +239,18 @@ def main(argv=None):
     rq = rp.add_parser("questions")
     rq.add_argument("--briefs", metavar="FILE", help="the briefs file (default: " + bench_repro.BRIEFS + ")")
     rq.add_argument("--file", metavar="FILE", help="the frozen questions (default: " + bench_repro.ADDED + ")")
+    rr = rp.add_parser("run")
+    d = bench_repro.DEFAULTS
+    rr.add_argument("--instances", type=int, help="the instances to run, the first N of instances.json (default: all)")
+    rr.add_argument("--model", default=d["model"], help=f"the model of every session (default: {d['model']})")
+    rr.add_argument("--effort", default=d["effort"], help=f"the effort of every session (default: {d['effort']})")
+    rr.add_argument("--max-turns", type=int, default=d["max_turns"], help=f"turns of one area's session (default: {d['max_turns']})")
+    rr.add_argument("--area-usd", type=float, default=d["area_usd"], help=f"US dollars of one area's session (default: {d['area_usd']:g})")
+    rr.add_argument("--instance-usd", type=float, default=d["instance_usd"],
+                    help=f"start no further area of an instance once its recorded spend reaches this (default: {d['instance_usd']:g})")
+    rr.add_argument("--timeout", type=int, default=d["timeout"], help=f"seconds of one area's session (default: {d['timeout']})")
+    rr.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
+    rr.add_argument("--dry-run", action="store_true", help="start nothing: print each instance's argv, the estimate and each refusal")
     rt = rp.add_parser("status")
     rt.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     a = ap.parse_args(argv)
@@ -235,6 +264,14 @@ def main(argv=None):
         if a.repro_cmd == "setup" and a.instances < 1:
             print("--instances needs 1 or more", file=sys.stderr)
             return 2
+        if a.repro_cmd == "run":
+            bad = [f"{flag} needs {what}" for flag, v, what in (
+                ("--instances", a.instances, "1 or more"), ("--max-turns", a.max_turns, "1 or more"),
+                ("--timeout", a.timeout, "1 or more"), ("--area-usd", a.area_usd, "more than 0"),
+                ("--instance-usd", a.instance_usd, "more than 0")) if v is not None and v < (1 if what == "1 or more" else 1e-9)]
+            if bad:
+                print("; ".join(bad), file=sys.stderr)
+                return 2
         try:
             if a.repro_cmd == "check":
                 return bench_repro.check()
@@ -242,6 +279,9 @@ def main(argv=None):
                 return bench_repro.questions(a.briefs, a.file)
             if a.repro_cmd == "status":
                 return bench_repro.status(a.dir)
+            if a.repro_cmd == "run":
+                return bench_repro.run(a.instances, a.dir, a.dry_run, model=a.model, effort=a.effort, max_turns=a.max_turns,
+                                       area_usd=a.area_usd, instance_usd=a.instance_usd, timeout=a.timeout)
             return bench_repro.setup(a.instances, a.start, a.dir, a.dry_run)
         except bench_repro.Refused as e:
             print(f"repro {a.repro_cmd}: {e}", file=sys.stderr)

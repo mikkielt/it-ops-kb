@@ -1260,6 +1260,159 @@ def bench_stream_run_passes_timeout_and_clean_env_and_an_error_result_keeps_its_
     assert got["timeout"] == 900 and got["clean"] is False and got["env"] is None
 
 
+FAKE_CLAUDE = """import json, os, subprocess, sys, time
+args, prompt, cwd = sys.argv[1:], sys.stdin.read(), os.getcwd()
+area, n, work = prompt.split()[1].rstrip(":"), ("1" if "clone1" in cwd else "2"), os.environ["FAKE_DIR"]
+other = work + "/started-" + ("2" if n == "1" else "1")
+open(work + "/started-" + n, "w").close()
+saw = False
+for _ in range(100):  # the other instance's session must be running too: they start at the same time
+    saw = saw or os.path.exists(other)
+    if saw:
+        break
+    time.sleep(0.1)
+stale = os.path.exists("left-by-session.txt")
+open("left-by-session.txt", "w").write("x")
+open(area + ".md", "w").write(area + n + str(time.time_ns()))
+git = lambda *a: subprocess.run(["git", *a], check=True, capture_output=True)
+git("add", area + ".md")
+git("commit", "-q", "-m", "docs: " + area)
+git("push", "-q", "origin", "main")
+turns = n == "2" and area == "alpha" and not os.path.exists(work + "/turns-done")
+if turns:
+    open(work + "/turns-done", "w").close()
+with open(work + "/calls.jsonl", "a") as f:
+    f.write(json.dumps({"n": n, "area": area, "args": args, "prompt": prompt, "cwd": cwd, "saw_other": saw, "stale": stale,
+                        "session": os.environ.get("KB_SESSION")}) + "\\n")
+print(json.dumps({"type": "assistant", "message": {"id": "m1", "model": "claude-sonnet-5-5", "usage": {"input_tokens": 1},
+                  "content": [{"type": "tool_use", "id": "t1", "name": "Bash", "input": {}}]}}))
+print(json.dumps({"type": "result", "subtype": "error_max_turns" if turns else "success", "is_error": turns,
+                  "total_cost_usd": 3.0, "num_turns": 7, "duration_api_ms": 1000, "result": "done",
+                  "usage": {"input_tokens": 11, "cache_creation_input_tokens": 22, "cache_read_input_tokens": 33,
+                            "output_tokens": 44},
+                  "modelUsage": {"claude-sonnet-5-5": {"costUSD": 3.0, "inputTokens": 11, "outputTokens": 44}}}))
+"""
+
+
+def bench_repro_run_starts_instances_together_stops_at_the_instance_budget_and_a_run_again_resumes(tmp_path, monkeypatch):
+    import subprocess, sys
+    import bench_repro as br
+    import benchmarks as bm
+    for k, v in {"GIT_CONFIG_GLOBAL": os.devnull, "GIT_CONFIG_NOSYSTEM": "1", "GIT_AUTHOR_NAME": "t",
+                 "GIT_AUTHOR_EMAIL": "t@example.com", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@example.com",
+                 "KB_SESSION": "other-session", "FAKE_DIR": str(tmp_path)}.items():
+        monkeypatch.setenv(k, v)
+    import kbfacts
+    monkeypatch.setattr(kbfacts, "routed", lambda question: None)  # the routing check has its own body
+    monkeypatch.setattr(bc, "SPEND", {"usd": 0.0, "input": 0, "out": 0, "runs": 0})  # the planted runs are no spend of this process
+    fake = tmp_path / "fake_claude.py"
+    fake.write_text(FAKE_CLAUDE, encoding="utf-8", newline="\n")
+    monkeypatch.setattr(br, "CLAUDE", [sys.executable, str(fake)])
+    git = lambda *a, cwd: subprocess.run(["git", *a], cwd=str(cwd), capture_output=True, text=True, check=True).stdout.strip()  # noqa: E731
+    write = lambda path, header, rows: path.write_text(  # noqa: E731
+        "\n".join(",".join(f'"{c}"' for c in r) for r in [header, *rows]) + "\n", encoding="utf-8", newline="\n")
+    src, root = tmp_path / "src", tmp_path / "dir"
+    src.mkdir()
+    root.mkdir()
+    git("init", "-q", "--initial-branch=main", cwd=src)
+    (src / ".gitignore").write_text("_private/\n", encoding="utf-8", newline="\n")  # as the repository's: git clean keeps it
+    shas = []
+    for name, path in (("start", "start.txt"), ("added", br.ADDED)):
+        (src / path).parent.mkdir(parents=True, exist_ok=True)
+        (src / path).write_text(name + "\n", encoding="utf-8", newline="\n")
+        git("add", "-A", cwd=src)
+        git("commit", "-q", "-m", name, cwd=src)
+        shas.append(git("rev-parse", "HEAD", cwd=src))
+    insts = []
+    for n in (1, 2, 3):  # origin3 holds the commit that adds repro_bench.csv
+        bare, clone = root / f"origin{n}.git", tmp_path / f"clone{n}"
+        git("init", "-q", "--bare", "--initial-branch=main", str(bare), cwd=tmp_path)
+        git("push", "-q", str(bare), f"{shas[1] if n == 3 else shas[0]}:refs/heads/main", cwd=src)
+        git("clone", "-q", str(bare), str(clone), cwd=tmp_path)
+        bc.isolate(clone, "off", bare)
+        mcp = clone / "_private" / "mcp-config.json"
+        mcp.write_text("{}\n", encoding="utf-8", newline="\n")
+        insts.append({"n": n, "bare": str(bare), "clone": str(clone), "mcp_config": str(mcp), "lock_dir": str(root / f"lock{n}")})
+    manifest = lambda rev, rows: (root / br.MANIFEST).write_text(  # noqa: E731
+        json.dumps({"rev": rev, "source": "x", "instances": rows}), encoding="utf-8", newline="\n")
+    manifest(shas[0], insts[:2])
+    brief = lambda area, scope="scope": [area, scope, "sources", "depth", "absent", ""]  # noqa: E731
+    briefs, asked = tmp_path / "briefs.csv", tmp_path / "asked.csv"
+    write(briefs, br.BRIEF_COLUMNS, [brief("alpha"), brief("beta")])
+    head = ["id", "area", "stratum", "question", "expect_paths", "expect_verdict", "allow_weak", "expect_text", "expect_re"]
+    ask = lambda areas: write(asked, head, [[f"{a}-{i}", a, "absent", "How do I restore a podman container from a checkpoint?",  # noqa: E731
+                                             "", "good", "", "", "podman"] for a in areas for i in (1, 2, 3)])
+    ask(["alpha", "beta"])
+    lines = []
+    go = lambda **kw: br.run(None, root, briefs_path=briefs, questions_path=asked, out=lines.append, **kw)  # noqa: E731
+    results = lambda: br.read_results(root / br.RESULTS)  # noqa: E731
+    calls = lambda: [json.loads(ln) for ln in (tmp_path / "calls.jsonl").read_text(encoding="utf-8").splitlines()]  # noqa: E731
+    # the refusals: questions that fail, a start commit that holds repro_bench.csv, other limits than the run's recorded ones
+    ask(["alpha"])
+    with pytest.raises(br.Refused, match="repro questions fails"):
+        go()
+    ask(["alpha", "beta"])
+    manifest(shas[1], [{**insts[2], "n": 1}])
+    with pytest.raises(br.Refused, match="holds kb/public/_retrieval/repro_bench.csv"):
+        go()
+    assert go(dry_run=True) == 0 and any("the start commit" in ln for ln in lines) and not results()
+    manifest(shas[0], insts[:2])
+    # a dry run starts nothing, prints each instance's argv and the estimate, and exits 1 only for a briefs problem
+    lines.clear()
+    assert go(dry_run=True, instance_usd=2.5) == 0 and not (tmp_path / "calls.jsonl").exists() and not (root / br.RUN_RECORD).exists()
+    shown = "\n".join(lines)
+    assert shown.count("  argv: ") == 2 and "--strict-mcp-config" in shown and "estimate up to $10.50" in shown, shown
+    assert "gitkraken@synced" in shown and "caveman@caveman" in shown
+    assert br.run(None, root, dry_run=True, briefs_path=tmp_path / "none.csv", questions_path=asked, out=lines.append) == 0
+    assert any("no brief rows" in ln for ln in lines)
+    write(briefs, br.BRIEF_COLUMNS, [brief("alpha", scope=""), brief("beta")])
+    assert go(dry_run=True) == 1 and any("briefs problem: row 1 (alpha): empty scope" in ln for ln in lines)
+    write(briefs, br.BRIEF_COLUMNS, [brief("alpha"), brief("beta")])
+    assert bm.main(["repro", "run", "--dry-run", "--instances", "0", "--dir", str(root)]) == 2
+    # the first run: two instances at once; instance 1's alpha spends $3.0, past --instance-usd 2.5, so its beta is a
+    # failure named budget; instance 2's alpha ends at its turn limit
+    assert go(instance_usd=2.5) == 1
+    got = {(r["instance"], r["area"]): r for r in results()}
+    assert sorted(got) == [(1, "alpha"), (1, "beta"), (2, "alpha"), (2, "beta")]
+    assert [got[k]["failure"] for k in sorted(got)] == ["", "budget", "turns", "budget"]
+    ok = got[(1, "alpha")]
+    assert ok["cost"] == 3.0 and ok["turns"] == 7 and ok["tool_calls"] == 1 and ok["subtype"] == "success"
+    assert (ok["input_tokens"], ok["cache_write_tokens"], ok["cache_read_tokens"], ok["output_tokens"]) == (11, 22, 33, 44)
+    assert ok["model_usage"]["claude-sonnet-5-5"]["out"] == 44 and ok["wall_s"] >= 0 and ok["effort"] == "high"
+    assert ok["bare_before"] == shas[0] and ok["bare_after"] == git("rev-parse", "main", cwd=root / "origin1.git") != shas[0]
+    assert got[(2, "alpha")]["subtype"] == "error_max_turns" and got[(2, "alpha")]["cost"] == 3.0
+    assert got[(1, "beta")]["cost"] == 0 and "instance-usd" in got[(1, "beta")]["error"]
+    first = calls()
+    assert [c["area"] for c in first] == ["alpha", "alpha"] and all(c["saw_other"] and c["session"] == "" for c in first)
+    assert first[0]["prompt"] == first[1]["prompt"] and first[0]["prompt"] == br.area_prompt(br.load_briefs(briefs)[0])
+    assert sorted(Path(c["cwd"]).resolve() for c in first) == [Path(i["clone"]).resolve() for i in insts[:2]]
+    same = [[a for a in c["args"] if "mcp-config.json" not in a] for c in first]
+    assert same[0] == same[1] and "--mcp-config" in first[0]["args"] and "--strict-mcp-config" in first[0]["args"]
+    a = first[0]["args"]
+    assert a[a.index("--settings") + 1] == '{"enabledPlugins":{"gitkraken@synced":false,"caveman@caveman":false}}'
+    assert a[a.index("--permission-mode") + 1] == "bypassPermissions" and a[a.index("--max-budget-usd") + 1] == "8"
+    assert a[a.index("--output-format") + 1] == "stream-json" and a[a.index("--max-turns") + 1] == "150"
+    prompt = first[0]["prompt"]
+    for want in ("/kb-research", "kbgit.py sync --push", "lookup_eval.csv", "lookup_heldout.csv", "doc2query",
+                 "kb/_self/backlog/", "kb/_self/reports/", "outside this clone"):
+        assert want in prompt, want
+    record = json.loads((root / br.RUN_RECORD).read_text(encoding="utf-8"))
+    assert "gitkraken@synced" in record["settings"] and "caveman@caveman" in record["settings"] and record["timeout"] == 3600
+    # limits other than the recorded ones would mix two runs in one results file
+    with pytest.raises(br.Refused, match="other settings or limits"):
+        go(max_turns=99)
+    # the run again: finished areas are skipped, the failed ones retried from the bare's main with what a session left removed
+    assert go(instance_usd=10) == 0
+    final = {(r["instance"], r["area"]): r for r in results()[4:]}
+    assert sorted(final) == [(1, "beta"), (2, "alpha"), (2, "beta")] and all(r["failure"] == "" for r in final.values())
+    assert final[(1, "beta")]["bare_before"] == ok["bare_after"] and len(calls()) == 5
+    assert not any(c["stale"] for c in calls()), "a file a session left was still there"
+    assert {k: v["failure"] for k, v in br.latest(results()).items()} == {(i, a): "" for i in (1, 2) for a in ("alpha", "beta")}
+    # a third run has nothing left to start
+    before = len(results())
+    assert go(instance_usd=10) == 0 and len(results()) == before and len(calls()) == 5
+
+
 def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
     output of theirs left to read; `fixtures` are further fixtures a body names."""
@@ -1279,6 +1432,7 @@ def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, 
              bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env,
              bench_repro_questions_and_status_name_each_planted_problem,
              bench_stream_run_passes_timeout_and_clean_env_and_an_error_result_keeps_its_cost_usage_and_subtype,
+             bench_repro_run_starts_instances_together_stops_at_the_instance_budget_and_a_run_again_resumes,
              kb_seed=kb_seed)
 
 
