@@ -131,8 +131,8 @@ claude/enterprise-admin,P2,complete,claude/enterprise-admin.md,8
 claude/plugins,P2,complete,claude/plugins.md;claude/plugins.csv,16
 claude/settings-and-scopes,P2,partial,claude/settings-and-scopes.md;claude/settings-keys.csv;claude/env-vars.csv,14
 claude/skills-and-subagents,P2,complete,claude/skills-and-subagents.md;claude/skills-and-subagents.csv,9
-claude/cross-session-messaging,P3,complete,claude/cross-session-messaging.md,8
-claude/large-codebases,P3,complete,claude/large-codebases.md,3
+claude/cross-session-messaging,P3,complete,claude/cross-session-messaging.md,11
+claude/large-codebases,P3,complete,claude/large-codebases.md,7
 claude/powershell-tool,P3,partial,claude/powershell-tool.md,6
 defender/machine-resource,P1,complete,defender/machine-resource.md;defender/machine-properties.csv,9
 defender/mde-onboarding,P1,complete,defender/mde-onboarding.md,23
@@ -178,6 +178,7 @@ gitlab/hosted-runners-windows,P3,complete,gitlab/hosted-runners-windows.md,5
 gitlab/issue-closing-patterns,P3,complete,gitlab/issue-closing-patterns.md,5
 gitlab/jira-issue-keys-in-commits,P3,partial,gitlab/jira-issue-keys-in-commits.md,3
 gitlab/job-log-timestamps,P3,complete,gitlab/job-log-timestamps.md,6
+gitlab/multi-project-pipelines,P3,complete,gitlab/multi-project-pipelines.md,5
 gitlab/package-registries,P3,partial,gitlab/package-registries.md,11
 gitlab/project-settings-api,P3,complete,gitlab/project-settings-api.md,7
 gitlab/repository-mirroring,P3,complete,gitlab/repository-mirroring.md,9

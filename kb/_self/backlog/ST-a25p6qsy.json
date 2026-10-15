@@ -33,6 +33,40 @@
   "depends_on": [
     "ST-7v2bhvbw"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the Claude Code multi-repository facts go: local and cloud multi-repository session facts in claude/large-codebases.md and the Projects coordination facts in claude/cross-session-messaging.md, or a new claude/projects topic?",
+      "options": [
+        "large-codebases for sessions, cross-session-messaging for Projects",
+        "a new claude/projects topic for Projects"
+      ],
+      "recommendation": "large-codebases for sessions, cross-session-messaging for Projects",
+      "do": {
+        "large-codebases for sessions, cross-session-messaging for Projects": "ST-a25p6qsy",
+        "a new claude/projects topic for Projects": "ST-a25p6qsy"
+      },
+      "class": "design",
+      "answer": "large-codebases for sessions, cross-session-messaging for Projects",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which source row backs the trigger keyword facts: the existing CI/CD YAML reference row S447 (gitlab master@56c82a97, its trigger sections checked to hold each quoted sentence) or a new row for the same file at master@9f1632e2?",
+      "options": [
+        "reuse S447",
+        "add a row at 9f1632e2"
+      ],
+      "recommendation": "reuse S447",
+      "do": {
+        "reuse S447": "ST-a25p6qsy",
+        "add a row at 9f1632e2": "ST-a25p6qsy"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/multi-project-pipelines where no article fits, closing the cross-session-messaging gap on cross-repository coordination.",
   "claimed_by": "orch-state"
 }

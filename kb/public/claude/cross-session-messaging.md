@@ -2,8 +2,8 @@
 topic: claude/cross-session-messaging
 priority: P3
 applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current)"
-retrieved_utc: 2026-09-30
-sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042]
+retrieved_utc: 2026-10-15
+sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S447]
 status: complete
 ---
 
@@ -149,6 +149,25 @@ and listing.
   rate-limits per sender, drops identical repeats in a short window and queues at most 50 accepted messages, so a loop
   between two sessions stops on its own. [DOC S-sdxhnx3i]
 
+### Coordinating sessions across repositories (Projects)
+- Projects are in public beta on Pro and Max plans, rolling out gradually, and not yet available on Team or
+  Enterprise plans. [DOC S-fk46gdey]
+- A project is one ongoing conversation in which Claude starts a thread per task, usually a cloud session (or a local
+  one through Remote Control); every thread starts with the project's instructions. [DOC S-fk46gdey]
+- For one goal across many repositories the page names a thread per repository, each with its own pull request,
+  and an **Overview** pane that shows which are ready for review. [DOC S-fk46gdey]
+- Each cloud thread clones every repository in the project and loads `CLAUDE.md` and skills from all of them; with
+  several repositories in an Anthropic-hosted environment, no repository's permission rules, hooks or `env` apply,
+  so standing rules go in project instructions and variables in the cloud environment. [DOC S-fk46gdey]
+- A thread can add a repository the project lacks to itself partway through a task (that thread only, its
+  `CLAUDE.md` and skills missing at start); it needs the Claude GitHub App and push access, and Claude adds
+  repositories only from a GitHub owner the project already uses. [DOC S-fk46gdey]
+- Coordinating agents across repositories therefore takes one of three documented forms: one session reaching other
+  checkouts (`--add-dir`, a multi-repository cloud session), separate sessions per repository that message each
+  other (this page) or that a Project starts and tracks, or a CI pipeline in one repository that triggers and waits on
+  pipelines in others (`gitlab/multi-project-pipelines.md`). [DER S-fk46gdey, S-sdxhnx3i: the Projects page and this
+  page's targets; S-4jj4dtg4 in `claude/large-codebases.md`; S447 in `gitlab/multi-project-pipelines.md`]
+
 ### How it fits
 - For unattended agents in this kb's frame, a bypass-mode session (e.g. a background job with
   `bypassPermissions`) holds every message from a prompting session for approval by default, so an orchestrator that
@@ -171,6 +190,11 @@ and listing.
   - `agents/headless-agent-runtimes.md` — cloud sessions and background runtimes that can be message targets.
   - `agents/peer-state-sync.md` — sharing agent state (not messages) between machines without a server: Syncthing,
     DFS Replication, Automerge and git, and what each does with concurrent changes.
+  - `claude/large-codebases.md` — one session across several repositories: `--add-dir`, agent view `@<repo>`
+    dispatch, multi-repository cloud sessions and the settings they drop.
+  - `gitlab/multi-project-pipelines.md` — coordinating work across GitLab projects in CI: trigger jobs, mirrored
+    status, job token allowlists.
+- Projects: `https://code.claude.com/docs/en/claude-projects` (S-fk46gdey).
 
 ## Examples
 - SNIPPET: managed settings that turn cross-session messaging off for an organization; context: Claude Code v2.1.224+, managed settings file; checked: syntax [DOC S-sdxhnx3i: "Turn off cross-session messaging" example]

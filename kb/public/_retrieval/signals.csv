@@ -746,3 +746,10 @@ sync-conflict,agents/peer-state-sync
 Get-DfsrPreservedFiles,agents/peer-state-sync
 Restore-DfsrPreservedFiles,agents/peer-state-sync
 ConflictAndDeletedManifest.xml,agents/peer-state-sync
+trigger/pipeline,gitlab/multi-project-pipelines
+inherit:variables,gitlab/multi-project-pipelines
+pipeline_variables,gitlab/multi-project-pipelines
+inboundJobTokenScopeEnabled,gitlab/multi-project-pipelines
+ciJobTokenScopeAddGroupOrProject,gitlab/multi-project-pipelines
+CI_JOB_TOKEN,gitlab/multi-project-pipelines
+strategy: mirror,gitlab/multi-project-pipelines

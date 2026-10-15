@@ -1,9 +1,9 @@
 ---
 topic: claude/large-codebases
 priority: P3
-applies_to: "Claude Code docs: large codebases, how Claude Code works, best practices (retrieved 2026-09-28)"
-retrieved_utc: 2026-09-28
-sources: [S-4jj4dtg4, S-eubvc22d, S-o3v6ozch]
+applies_to: "Claude Code docs: large codebases, how Claude Code works, best practices (retrieved 2026-09-28); several repositories: agent view, Desktop, settings, cloud environments (retrieved 2026-10-15)"
+retrieved_utc: 2026-10-15
+sources: [S-4jj4dtg4, S-eubvc22d, S-o3v6ozch, S-aishnkok, S-3qhgxjky, S2057, S-gu5aqnrl]
 status: complete
 ---
 
@@ -36,10 +36,21 @@ hold for any coding agent (`agents/codebase-mapping.md`).
 - A `SessionStart` hook's stdout is added to Claude's context before the first prompt; the guide uses one to map the launch directory to the plugin its owners maintain. [DOC S-4jj4dtg4]
 - Anthropic's best practices treat context as the fundamental constraint and delegate codebase research to subagents, which read files in their own context windows and report summaries. [DOC S-o3v6ozch]
 
+### Several repositories in one session
+- The same mechanism that grants a sibling package grants a separately checked-out repository: `permissions.additionalDirectories` (relative paths resolve against the directory Claude starts from) or `--add-dir` at launch; either lets Claude read and edit files there. [DOC S-4jj4dtg4]
+- The guide commits `additionalDirectories` to `.claude/settings.json` for sibling directories everyone needs, and uses `.claude/settings.local.json` or `--add-dir` for a personal or one-off selection. [DOC S-4jj4dtg4]
+- Agent view (`claude agents`) opened in a parent directory dispatches a new session into a child repository named with `@<repo>` in the prompt; the `@` list holds git repositories one level below the launch directory, the repository's own worktrees inside its tree, and directories that already have a session. [DOC S-aishnkok]
+- Agent view passes every configuration flag, `--add-dir` included, through to the sessions it dispatches; `--add-dir` is repeated once per directory and placed after `agents`, since before it `claude agents --json` fails with `unknown option`. [DOC S-aishnkok]
+- Cloud sessions support several repositories: in the Desktop app, after choosing a cloud environment, the **+** button beside the repository adds more, each with its own branch selector, for tasks such as updating a shared library and its consumers. [DOC S-3qhgxjky]
+- In an Anthropic-hosted environment a cloud session with several repositories starts above the clones and reads only `enabledPlugins` and `extraKnownMarketplaces` from each repository's `.claude/settings.json`: no permission rules, hooks or `env`. [DOC S2057]
+- So a `SessionStart` hook in a repository's settings does not run in such a session; the cloud environments page installs dependencies there with the environment's setup script instead. [DOC S-gu5aqnrl]
+- Plan a multi-repository cloud session around what it drops: permission rules and hooks that guard one repository locally do not reach it, so the guard has to live in the cloud environment (setup script, network policy) or the session should take one repository. [DER S2057, S-gu5aqnrl: settings read in multi-repository sessions; hooks not run there]
+
 ## Reference
 - Large codebases: https://code.claude.com/docs/en/large-codebases
 - How Claude Code works (context window): https://code.claude.com/docs/en/how-claude-code-works
 - Best practices: https://code.claude.com/docs/en/best-practices
+- Several repositories: agent view https://code.claude.com/docs/en/agent-view, Desktop cloud sessions https://code.claude.com/docs/en/desktop, settings in cloud sessions https://code.claude.com/docs/en/settings, cloud environments https://code.claude.com/docs/en/cloud-environments; coordinating sessions across repositories: `claude/cross-session-messaging.md`; GitLab pipelines across projects: `gitlab/multi-project-pipelines.md`.
 - Related: `claude/settings-and-scopes.md` (CLAUDE.md scopes, imports, `claudeMdExcludes`, rules); `claude/skills-and-subagents.md`; `claude/plugins.md` (code intelligence plugins); `agents/codebase-mapping.md` (tool-native mapping); `agents/coding-agent-codebase-context.md` (how other coding agents do the same: repo maps, indexes, AGENTS.md discovery); `agents/docs-maintenance-agents.md` (AGENTS.md and Copilot instruction files).
 
 ## Examples
