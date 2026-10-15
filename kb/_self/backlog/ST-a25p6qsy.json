@@ -2,7 +2,7 @@
   "id": "ST-a25p6qsy",
   "kind": "story",
   "title": "Research: coordinating agents across repositories (GitLab multi-project pipelines, Claude Code multi-repository sessions)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -70,5 +70,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic gitlab/multi-project-pipelines where no article fits, closing the cross-session-messaging gap on cross-repository coordination.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "5e992c5e6e36429d4c13bce4cb3c7ef7d1e68472",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-a25p6qsy"
+        ],
+        "exit": 0,
+        "sha256": "e5c469538a67b760"
+      }
+    ]
+  }
 }
