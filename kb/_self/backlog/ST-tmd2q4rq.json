@@ -46,6 +46,42 @@
   "depends_on": [
     "ST-ndfoocto"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does match_facts match facts across an area's articles: which pairs are candidates and what token overlap makes one claim?",
+      "options": [
+        "Same path at difflib ratio 0.8 as before, plus any path when the facts cite one source (bare url its id resolves to, else the id) and share at least 0.5 of their words (TOKEN_OVERLAP)",
+        "Any pair of facts at difflib ratio 0.8 or word share 0.5, regardless of cited source"
+      ],
+      "recommendation": "Same path at difflib ratio 0.8 as before, plus any path when the facts cite one source (bare url its id resolves to, else the id) and share at least 0.5 of their words (TOKEN_OVERLAP)",
+      "do": {
+        "Same path at difflib ratio 0.8 as before, plus any path when the facts cite one source (bare url its id resolves to, else the id) and share at least 0.5 of their words (TOKEN_OVERLAP)": "ST-tmd2q4rq",
+        "Any pair of facts at difflib ratio 0.8 or word share 0.5, regardless of cited source": "ST-tmd2q4rq"
+      },
+      "class": "secrets",
+      "answer": "Same path at difflib ratio 0.8 as before, plus any path when the facts cite one source (bare url its id resolves to, else the id) and share at least 0.5 of their words (TOKEN_OVERLAP)",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which ledger rows does ledger_rows_same count, and are rows already at the start commit counted?",
+      "options": [
+        "Rows the area added since its start sha to _anchors.csv, _coverage.csv and the (topic: ...) entries of _gaps.md, _conflicts.md and _answers.md, under the articles either instance wrote",
+        "All rows of those ledgers for the articles at the instance's end, base rows included"
+      ],
+      "recommendation": "Rows the area added since its start sha to _anchors.csv, _coverage.csv and the (topic: ...) entries of _gaps.md, _conflicts.md and _answers.md, under the articles either instance wrote",
+      "do": {
+        "Rows the area added since its start sha to _anchors.csv, _coverage.csv and the (topic: ...) entries of _gaps.md, _conflicts.md and _answers.md, under the articles either instance wrote": "ST-tmd2q4rq",
+        "All rows of those ledgers for the articles at the instance's end, base rows included": "ST-tmd2q4rq"
+      },
+      "class": "design",
+      "answer": "Rows the area added since its start sha to _anchors.csv, _coverage.csv and the (topic: ...) entries of _gaps.md, _conflicts.md and _answers.md, under the articles either instance wrote",
+      "by": "agent"
+    }
+  ],
   "notes": "Premise (lessons analysis 1.4, 2.2, 2.3): 13, 22 and 45 articles on the 14 common areas, the same path in all three for 4 areas; fact_overlap 0.00 in 30 of 42 pairs because match_facts compares one path; 6 of 362 source rows of shared ids byte-identical. Structural identity is the target the next run measures; byte parity of prose is not a goal. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
   "claimed_by": "orch-75hdeqld"
 }

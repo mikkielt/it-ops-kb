@@ -1589,6 +1589,33 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
                            "kb/public/_sources.csv": cites(("S-6", "https://example.com/retry"),
                                                            ("S-8", "https://example.com/rotation"),
                                                            ("S-5", "https://learn.microsoft.com/timeouts"))})]}
+    # delta: the instances split one area over different articles: d.md and e.md say one claim (the same url under two
+    # ids, the words mostly shared), shared.md holds one fact both wrote, and e.md's other fact cites a url of its own
+    thread = "- The client library is thread safe. [DOC S-10]\n"
+    row = lambda fact, path, sid: (  # noqa: E731
+        f"{hashlib.sha256(' '.join(fact[2:].split()).encode()).hexdigest()[:12]},{path},{sid},unlocated:no-match,,,,,2026-10-15\n")
+    backoff_1 = "- Failed requests are retried with exponential backoff. [DOC S-9]\n"
+    backoff_2 = "- Failed requests are retried using exponential backoff and jitter. [DOC S-11]\n"
+    cap = "- The jitter is capped at one second. [DOC S-12]\n"
+    head = anchors.splitlines(keepends=True)[0]
+    plans[1].append(("delta", {"kb/public/d.md": "# D\n\n" + backoff_1, "kb/public/shared.md": "# S\n\n" + thread,
+                               "kb/public/_anchors.csv": anchors + row(backoff_1, "d.md", "S-9") +
+                               row(thread, "shared.md", "S-10"),
+                               "kb/public/_sources.csv": cites(("S-2", "https://example.com/retry?utm=1"),
+                                                               ("S-3", "https://example.com/restart"),
+                                                               ("S-4", "https://example.com/timeout"),
+                                                               ("S-7", "https://example.com/unique"),
+                                                               ("S-9", "https://example.com/backoff"),
+                                                               ("S-10", "https://example.com/thread"))}))
+    plans[2].append(("delta", {"kb/public/e.md": "# E\n\n" + backoff_2 + cap, "kb/public/shared.md": "# S\n\n" + thread,
+                               "kb/public/_anchors.csv": head + row(backoff_2, "e.md", "S-11") +
+                               row(thread, "shared.md", "S-10"),
+                               "kb/public/_sources.csv": cites(("S-6", "https://example.com/retry"),
+                                                               ("S-8", "https://example.com/rotation"),
+                                                               ("S-5", "https://learn.microsoft.com/timeouts"),
+                                                               ("S-10", "https://example.com/thread"),
+                                                               ("S-11", "https://example.com/backoff?utm=2"),
+                                                               ("S-12", "https://example.com/cap"))}))
     root, lines = tmp_path / "dir", []
     root.mkdir()
     insts = []
@@ -1627,6 +1654,12 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
                  "instance 2 area beta: 0 article(s), 1 fact(s) added (DOC 1, CODE 0, DER 0, COMMUNITY 0, UNK 0)",
                  "pair 1+2 area alpha: url_jaccard 0.33, fact_overlap 0.67, 0 conflict(s)",
                  "pair 1+2 area beta: url_jaccard 0.00, fact_overlap 0.50, 1 conflict(s)",
+                 # delta: d.md and e.md say one claim under two ids of one url, so the facts match across paths (by path
+                 # alone 1 of 4 would: 0.25); 1 of the 3 articles' ledger rows and 1 of the 2 shared urls' rows are the same
+                 "pair 1+2 area delta: url_jaccard 0.67, fact_overlap 0.67, 0 conflict(s)",
+                 "pair 1+2 area delta: paths_same no, ledger_rows_same 0.33, source_rows_same 0.50",
+                 "pair 1+2 area alpha: paths_same yes, ledger_rows_same 0.00, source_rows_same n/a",
+                 "pair 1+2 area beta: paths_same no, ledger_rows_same n/a, source_rows_same n/a",
                  "instance 1 public/a.md:", "The request timeout is 30 seconds.", "instance 2 public/a.md:",
                  "The request timeout is 60 seconds.", "instance 1: check.py errors 1, lint errors 0",
                  "instance 2: check.py errors 0, lint errors 1", "area alpha: agreement 0.80 of 5 frozen row(s)",
@@ -1670,10 +1703,18 @@ def bench_repro_compare_measures_two_planted_instances_shared_paraphrased_and_co
             ("instance-1", "alpha", "false_good_start"): "1", ("instance-1", "alpha", "false_good_end"): "0",
             ("instance-2", "beta", "false_good_start"): "0", ("instance-2", "beta", "false_good_end"): "0",
             ("instance-1", "gamma", "churn"): "1", ("instance-2", "gamma", "churn"): "2",
-            ("all", "alpha", "agreement"): "0.8"}
+            ("all", "alpha", "agreement"): "0.8",
+            ("instance-1+instance-2", "delta", "fact_overlap"): "0.666667",
+            ("instance-1+instance-2", "delta", "paths_same"): "0",
+            ("instance-1+instance-2", "delta", "ledger_rows_same"): "0.333333",
+            ("instance-1+instance-2", "delta", "source_rows_same"): "0.5",
+            ("instance-1+instance-2", "alpha", "paths_same"): "1",
+            ("instance-1+instance-2", "alpha", "ledger_rows_same"): "0.0",
+            ("instance-1+instance-2", "beta", "paths_same"): "0"}
     for k, v in want.items():
         assert got.get(k) == v, (k, v, got.get(k))
-    assert not [k for k in got if k[2] == "agreement" and k[1] == "beta"] and len(got) == 73
+    assert not [k for k in got if k[2] == "agreement" and k[1] == "beta"] and len(got) == 112
+    assert not [k for k in got if k[2] in ("ledger_rows_same", "source_rows_same") and k[1] == "beta"]  # none to share
     assert not [k for k in got if k[2] == "churn" and k[1] != "gamma"] and not [k for k in got if k[1] == "gamma" and k[2] != "churn"]
     first = out.read_bytes()
     assert bm.main([*args, "--record", "--file", str(out)]) == 0 and out.read_bytes() == first

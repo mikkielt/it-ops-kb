@@ -758,9 +758,12 @@ def record_results(root=None, file=None, briefs_path=None, questions_path=None, 
 
 COMPARE_SCENARIO = "repro-compare"  # the scenario of the rows `compare` merges into the results file
 SAME_CLAIM = 0.8  # the difflib ratio at or above which two facts of one article path are the same claim
+TOKEN_OVERLAP = 0.5  # the share of the words of two facts, on different article paths, that citing one source makes one claim
+LEDGER_FILES = ("_gaps.md", "_conflicts.md", "_answers.md")  # the markdown ledgers whose entries end `(topic: domain/slug)`
+TOPIC_MARK = re.compile(r"\(topic:\s*([^)\s]+)\)")
 TAG_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # the tag mix `compare` counts, kbfacts.EVIDENCE_KINDS without DECISION
 COMPARE_METRICS = ("articles_added", "facts_added", *(k.lower() for k in TAG_KINDS), "sources_added", "url_jaccard",
-                   "fact_overlap", "conflicts", "check_errors", "lint_errors", "unanchored", "eval_passed", "eval_total",
+                   "fact_overlap", "conflicts", "paths_same", "ledger_rows_same", "source_rows_same", "check_errors", "lint_errors", "unanchored", "eval_passed", "eval_total",
                    "found_start", "found_end", "false_good_start", "false_good_end", "churn", "agreement")
 LEARN_HOST = "learn.microsoft.com"  # a fact whose sources are all pages of it needs no anchor row (kb-research SKILL.md step 5)
 LINT = Path(".claude") / "skills" / "kb-verify" / "lint.py"  # the contract lint of a checkout
@@ -778,14 +781,24 @@ def claim(fact):
     return factdiff.fact_text(fact["text"])
 
 
+def source_keys(fact):
+    """The sources a fact line cites, as a set: the bare url of each id its checkout's _sources.csv resolves
+    (`added_between` sets `urls`), else the id itself."""
+    return set(fact.get("urls") or fact.get("ids") or ())
+
+
 def match_facts(a, b):
-    """[(i, j)] the facts of `a` and `b` that are one claim: a pair on the same article path whose difflib ratio
-    (factdiff.unit_sim of their claims) is at least SAME_CLAIM, taken best first, each fact in one pair at most. A
-    pair whose ratio cannot reach SAME_CLAIM by its lengths or letters (difflib's two upper bounds) is not measured."""
+    """[(i, j)] the facts of `a` and `b` that are one claim, whatever article each is written in: a pair on the same
+    article path whose difflib ratio (factdiff.unit_sim of their claims) is at least SAME_CLAIM, or a pair, on any path,
+    that cites one source (`source_keys`) and whose claims share at least TOKEN_OVERLAP of their words, taken best
+    first, each fact in one pair at most. A pair whose ratio cannot reach SAME_CLAIM by its lengths or letters
+    (difflib's two upper bounds) is judged by its words only."""
     import difflib, factdiff
-    by_path = {}
+    by_path, by_source = {}, {}
     for i, f in enumerate(a):
         by_path.setdefault(f["path"], []).append(i)
+        for k in source_keys(f):
+            by_source.setdefault(k, []).append(i)
     texts_a = [claim(f) for f in a]
     keys_a = [factdiff.words_key(t) for t in texts_a]
     norms_a = [factdiff.norm(t) for t in texts_a]
@@ -793,17 +806,25 @@ def match_facts(a, b):
     found = []
     for j, f in enumerate(b):
         text, key = claim(f), factdiff.words_key(claim(f))
+        words = set(key.split())
         sm.set_seq2(factdiff.norm(text))
-        for i in by_path.get(f["path"], []):
+        near = set(by_path.get(f["path"], []))
+        shared = {i for k in source_keys(f) for i in by_source.get(k, [])}
+        for i in sorted(near | shared):
             if keys_a[i] == key:
                 found.append((-1.0, i, j))
                 continue
             sm.set_seq1(norms_a[i])
-            if sm.real_quick_ratio() < SAME_CLAIM or sm.quick_ratio() < SAME_CLAIM:
-                continue
-            ratio = factdiff.unit_sim(texts_a[i], text)
+            ratio = 0.0
+            if sm.real_quick_ratio() >= SAME_CLAIM and sm.quick_ratio() >= SAME_CLAIM:
+                ratio = factdiff.unit_sim(texts_a[i], text)
             if ratio >= SAME_CLAIM:
                 found.append((-ratio, i, j))
+            elif i in shared:
+                theirs = set(keys_a[i].split())
+                share = len(words & theirs) / len(words | theirs) if words | theirs else 0.0
+                if share >= TOKEN_OVERLAP:
+                    found.append((-share, i, j))
     pairs, used_a, used_b = [], set(), set()
     for _, i, j in sorted(found):
         if i not in used_a and j not in used_b:
@@ -868,19 +889,58 @@ def unanchored(fact, key, anchored, sources):
     return not (fact["ids"] and hosts == {LEARN_HOST})
 
 
+def cells_text(cells):
+    """The cells of one csv row joined as one text: two rows are the same when every cell is."""
+    return "\x1f".join(cells)
+
+
+def topic_key(root, path):
+    """`root/path` without its .md or .csv extension: what the files, the rows and the entries of one article share."""
+    return f"{root}/" + re.sub(r"\.(?:md|csv)$", "", path.strip().lstrip("/"))
+
+
+def ledger_rows(base, root, into):
+    """Add to `into` ({article: {row text}}) the ledger rows of the root directory `base`: each `_anchors.csv` row under
+    its `path`, each `_coverage.csv` row under each of its `files`, and each entry of `_gaps.md`, `_conflicts.md` and
+    `_answers.md` that names an article by `(topic: domain/slug)` under it; a row text starts with its ledger's name."""
+    for name, column in (("_anchors.csv", "path"), ("_coverage.csv", "files")):
+        for row in read_csv(base / name):
+            paths = [p for p in re.split(r"[;\s]+", row.get(column, "")) if p]
+            for p in paths:
+                into.setdefault(topic_key(root, p), set()).add(name + "\x1e" + cells_text(row.values()))
+    for name in LEDGER_FILES:
+        path = base / name
+        if not path.is_file():
+            continue
+        entry = []
+        for ln in path.read_text(encoding="utf-8").splitlines() + ["- "]:
+            if entry and (ln.startswith(("- ", "#")) or not ln.strip() or not ln.startswith(" ")):
+                text = " ".join(x.strip() for x in entry)
+                for m in TOPIC_MARK.finditer(text):
+                    into.setdefault(topic_key(root, m.group(1)), set()).add(name + "\x1e" + text)
+                entry = []
+            if ln.startswith("- ") or (entry and ln.startswith(" ") and ln.strip()):
+                entry.append(ln)
+
+
 def state_of(checkout, env):
     """What the checkout at its sha holds, read with its own tools: `facts` (path, line, text, kinds of each fact line
     of each root, `rag.py --json facts`, and `unanchored`: a DOC fact with no row in its root's `_anchors.csv`, the facts
-    whose sources are all Learn pages left out), `audit` ({article path: {kind: count}}, `rag.py --json audit`) and
-    `sources` ({source id: url} of each root's _sources.csv). Refused when a tool printed no json."""
+    whose sources are all Learn pages left out), `audit` ({article path: {kind: count}}, `rag.py --json audit`),
+    `sources` ({source id: url} of each root's _sources.csv), `source_rows` ({source id: the row's cells joined}) and
+    `ledgers` ({article: {ledger row}}: the rows of each root's _anchors.csv and _coverage.csv, and the entries of its
+    `_gaps.md`, `_conflicts.md` and `_answers.md` that end `(topic: ...)`, each under its article, a path without its
+    extension, `public/ad/x`). Refused when a tool printed no json."""
     import kbfacts
     tools = Path(checkout) / "_tools"
     roots = sorted(d.name for d in (Path(checkout) / "kb").iterdir() if (d / "_sources.csv").is_file()) \
         if (Path(checkout) / "kb").is_dir() else []
-    sources = {}
+    sources, source_rows, ledgers = {}, {}, {}
     for r in roots:
         for row in read_csv(Path(checkout) / "kb" / r / "_sources.csv"):
             sources.setdefault(row.get("id", ""), row.get("url", ""))
+            source_rows.setdefault(row.get("id", ""), cells_text(row.values()))
+        ledger_rows(Path(checkout) / "kb" / r, r, ledgers)
     facts = []
     for r in roots:
         code, out = tool_out([str(tools / "rag.py"), "--json", "facts", r], checkout, env)
@@ -898,24 +958,50 @@ def state_of(checkout, env):
     rows = json_of(out)
     if not isinstance(rows, list):
         raise Refused(f"{checkout}: rag.py audit printed no json (exit {code})")
-    return {"facts": facts, "audit": {a["path"]: {k: a.get(k, 0) for k in TAG_KINDS} for a in rows}, "sources": sources}
+    return {"facts": facts, "audit": {a["path"]: {k: a.get(k, 0) for k in TAG_KINDS} for a in rows}, "sources": sources,
+            "source_rows": source_rows, "ledgers": ledgers}
 
 
 def added_between(before, after):
     """What `after` holds that `before` did not: `articles` (paths), `facts` (those of `after` whose path and claim
-    `before` lacks), `kinds` (the audit's count of each tag kind, after less before), `sources` ({id: bare url})."""
+    `before` lacks, each with `urls`, the bare urls its cited ids resolve to in `after`'s _sources.csv), `kinds` (the
+    audit's count of each tag kind, after less before), `sources` ({id: bare url}), `ledger` ({article: {ledger row}}
+    the rows of `after`'s ledgers that `before` lacks, under the articles of `state_of`) and `cited` ({bare url: the
+    row of its source in `after`, the first of the ids that resolve to it} of the urls the added facts cite)."""
     import factdiff, ql_research
+    bare = lambda i: ql_research.bare_url(after["sources"][i]) if i in after["sources"] else ""  # noqa: E731
     old = {(f["path"], factdiff.words_key(claim(f))) for f in before["facts"]}
-    seen, facts = set(), []
+    seen, facts, cited = set(), [], {}
     for f in after["facts"]:
         key = (f["path"], factdiff.words_key(claim(f)))
         if key not in old and key not in seen:
             seen.add(key)
-            facts.append(f)
+            urls = sorted({bare(i) for i in f["ids"] if bare(i)})
+            facts.append({**f, "urls": urls})
+            for i in f["ids"]:
+                if bare(i) and i in after["source_rows"]:
+                    cited.setdefault(bare(i), after["source_rows"][i])
     total = lambda s, k: sum(c.get(k, 0) for c in s["audit"].values())  # noqa: E731
+    ledger = {a: sorted(rows - before["ledgers"].get(a, set())) for a, rows in after["ledgers"].items()}
     return {"articles": sorted(set(after["audit"]) - set(before["audit"])), "facts": facts,
             "kinds": {k: total(after, k) - total(before, k) for k in TAG_KINDS},
-            "sources": {i: ql_research.bare_url(u) for i, u in after["sources"].items() if i not in before["sources"]}}
+            "sources": {i: ql_research.bare_url(u) for i, u in after["sources"].items() if i not in before["sources"]},
+            "ledger": {a: rows for a, rows in ledger.items() if rows}, "cited": cited}
+
+
+def pair_identity(da, db):
+    """(paths_same, ledger_rows_same, source_rows_same) of two instances' `added_between` results for one area:
+    whether the article paths of their facts and added articles are the same (1 or 0); of the ledger rows added for the
+    articles either wrote, the share both hold byte for byte (None when neither added one); and of the source rows of the
+    urls both cited, the share that is the same row (None when they cite no url in common)."""
+    pa = {f["path"] for f in da["facts"]} | set(da["articles"])
+    pb = {f["path"] for f in db["facts"]} | set(db["articles"])
+    topics = {topic_key(*p.split("/", 1)) for p in pa | pb}
+    ra = {(t, r) for t in topics for r in da["ledger"].get(t, ())}
+    rb = {(t, r) for t in topics for r in db["ledger"].get(t, ())}
+    both = sorted(set(da["cited"]) & set(db["cited"]))
+    return (int(pa == pb), len(ra & rb) / len(ra | rb) if ra | rb else None,
+            sum(1 for u in both if da["cited"][u] == db["cited"][u]) / len(both) if both else None)
 
 
 def error_counts(checkout, rev, env):
@@ -1008,7 +1094,9 @@ def compare_rows(rev, date, note, data):
 def compare(root=None, record=False, file=None, questions_path=None, dry_run=False, out=print):
     """`repro compare`: measure each instance's bare main against the start commit, area by area by the shas of
     DIR/results.jsonl, in a detached checkout of its own whose tools run by subprocess; print per instance and area
-    the articles, facts, tag mix and sources added, per pair the url Jaccard, the fact overlap and the conflicts, per
+    the articles, facts, tag mix and sources added, per pair the url Jaccard, the fact overlap (facts matched across
+    the articles each instance wrote, `match_facts`) and the conflicts, and the identity of what they wrote
+    (`pair_identity`: paths_same, ledger_rows_same, source_rows_same), per
     instance the check.py and lint errors and the frozen questions it passed, per area the agreement. The frozen
     questions are also run at the start commit: a row passes against the verdict measured there, not its
     `expect_verdict`; per instance and area it researched the answer-found and false-good (good without the answer)
@@ -1111,10 +1199,15 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
                     continue
                 fact_overlap, conflicts = overlap_and_conflicts(da["facts"], db["facts"])
                 urls = jaccard(set(da["sources"].values()), set(db["sources"].values()))
+                paths, ledger, cited = pair_identity(da, db)
                 table.append((area, f"instance-{a}+instance-{b}",
-                              {"url_jaccard": urls, "fact_overlap": fact_overlap, "conflicts": len(conflicts)}))
+                              {"url_jaccard": urls, "fact_overlap": fact_overlap, "conflicts": len(conflicts),
+                               "paths_same": paths, "ledger_rows_same": ledger, "source_rows_same": cited}))
                 out(f"pair {a}+{b} area {area}: url_jaccard {urls:.2f}, fact_overlap {fact_overlap:.2f}, "
                     f"{len(conflicts)} conflict(s)")
+                out(f"pair {a}+{b} area {area}: paths_same {'yes' if paths else 'no'}, ledger_rows_same "
+                    f"{'n/a' if ledger is None else f'{ledger:.2f}'}, source_rows_same "
+                    f"{'n/a' if cited is None else f'{cited:.2f}'}")
                 for fa, fb in conflicts:
                     out(f"  conflict: instance {a} {fa['path']}:{fa['line']}: {claim(fa)}")
                     out(f"            instance {b} {fb['path']}:{fb['line']}: {claim(fb)}")
