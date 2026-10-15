@@ -6,7 +6,7 @@
   "parent": "EP-fxrzbuza",
   "priority": "P2",
   "rank": 0,
-  "goal": "coord.py serve --bind HOST:PORT runs an http.server front end over the SQLite store that answers each coord.py command as a JSON request, and coord.py --url URL sends any command to it instead of a local store, so agents on other hosts share one service; wait is a long-poll, the server refuses a request without the configured shared token with 401, binds to 127.0.0.1 unless --bind says otherwise, and keeps no secret in argv or the environment of a child process.",
+  "goal": "coord.py serve --bind HOST:PORT runs an http.server front end over the SQLite store that answers each coord.py command as a JSON request, and coord.py --url URL sends any command to it instead of a local store, so agents on other hosts share one service; wait is a long-poll; each operator has a token of its own, read from its own file, and the server refuses a request whose token is unknown or revoked with 401 and names the operator on each event it records; the token check is one authentication function, so an OAuth2 bearer-token check can replace or join it later; the server binds to 127.0.0.1 unless --bind says otherwise and keeps no secret in argv or the environment of a child process.",
   "checks": [
     {
       "run": [

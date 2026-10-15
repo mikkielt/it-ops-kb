@@ -1,0 +1,18 @@
+{
+  "id": "EP-fxrzbuza",
+  "kind": "epic",
+  "title": "Agents of any vendor coordinate live through a standard-library claim, lease and event service",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Any agent on any host (Claude Code, another vendor's agent or a script) claims work, holds a renewable lease, publishes reference-only events and waits for them through python3 _tools/coord.py: on one host against a local SQLite file, and across operators against coord.py serve, an http.server and sqlite3 service of the same commands. No Claude Code built-in tool is used and no dependency is added; research dedup asks the service before /kb-research starts; git stays the record and the service holds only claims, leases and events.",
+  "relates_to": [
+    "ST-tp3j43zr"
+  ],
+  "links": [
+    "kb: agents/shared-state-concurrency.md (claims, leases, CAS; NATS KV Apache-2.0, Valkey BSD-3-Clause, etcd Apache-2.0)",
+    "kb: agents/peer-state-sync.md",
+    "kb: agents/a2a-protocol.md (task states reused as event vocabulary)"
+  ],
+  "notes": "Constraints: standard library only, no new dependency (kb/_self/code.md Runtime, backlog.md Definition of done); agent-agnostic, so no Claude Code built-in tool (SendMessage, agent teams, hooks) is part of the protocol; only permissively licensed external servers are ever considered (MinIO and Garage are AGPL-3.0 and excluded). Later, unrefined: expose the coord commands as MCP tools on the kb server so MCP clients of any vendor use them; optional adapters for NATS JetStream KV or Valkey behind the same commands (stdlib protocol clients only); a reconciler that batches coord events into fewer git landings; ST-tp3j43zr lets research items run in parallel. Test ceiling: new tests fit the suite's hard ceiling (_tools/tests_ceiling.json), making room rather than raising it."
+}

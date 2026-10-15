@@ -6,7 +6,7 @@
   "parent": "EP-fxrzbuza",
   "priority": "P2",
   "rank": 0,
-  "goal": "coord.py dedup \"<question>\" runs the question's pack, takes its anchor topic and its kb-lacks terms after alias canonicalisation as a fingerprint, and returns either a new claim on that fingerprint or the open claim whose fingerprint overlaps it (with its holder and topic) so the caller waits on its fact_added events instead of researching again; /kb-research runs it as its first step and stops with the holder named when another claim is live.",
+  "goal": "coord.py dedup \"<question>\" runs the question's pack, takes its anchor topic and its kb-lacks terms after alias canonicalisation as a fingerprint, compares it with the live claims, and claims and returns only the lack terms no overlapping live claim covers, naming each overlapping claim's holder and topic; /kb-research runs it as its first step and researches only the returned uncovered terms, so a question whose terms another claim already covers starts no research and waits on that claim's fact_added events.",
   "checks": [
     {
       "run": [

@@ -1,0 +1,28 @@
+{
+  "id": "ST-qguxlob4",
+  "kind": "story",
+  "title": "coord.py events: closed-field, reference-only messages and a wait that wakes any agent",
+  "status": "draft",
+  "parent": "EP-fxrzbuza",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "coord.py post --kind K adds an event to the store and coord.py wait --since N --timeout S returns the events after sequence N, blocking until one arrives or the timeout ends; the kinds are a closed list (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat) and each event carries only fields of ids (source ids, path:line fact keys, QK answer ids, backlog item ids, pack handles), so post refuses free text over a short field limit and any unknown kind with exit 2; a waiting process of any agent wakes on a post from another process on the same store.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "coord_event"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "_tools/test_coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-5iwikc3n"
+  ]
+}
