@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
+  "notes": "No outside facts: the sprint goal's questions concern this project's own benchmarks.py repro run and compare, which kb/_self/tools.md (Commands, benchmarks.py rows) documents; the public kb already holds the Claude Code result fields (cost, usage, modelUsage, num_turns) the run records at kb/public/claude/ci-and-headless.md:84-87, so nothing outside the repository is left to fetch.",
   "claimed_by": "orch-ccvfvoqj"
 }
