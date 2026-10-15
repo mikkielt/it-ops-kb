@@ -2,7 +2,7 @@
   "id": "BG-y2zyd73c",
   "kind": "bug",
   "title": "SP-5dffnlxn review: GitLab doc rows carry MIT, peer-sync gap closed early, a superlative DER, a missing GitHub caveat and three smaller fact slips",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -35,5 +35,6 @@
     "kb/public/claude/cross-session-messaging.md",
     "kb/public/gitlab/commit-signing-and-provenance.md",
     "kb/public/auth/spiffe-workload-identity.md"
-  ]
+  ],
+  "claimed_by": "orch-state"
 }
