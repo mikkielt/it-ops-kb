@@ -6,13 +6,13 @@
   "sprint": "SP-z3jcdsgr",
   "priority": "P3",
   "rank": 0,
-  "goal": "factdiff.py anchors --stale lists no row of security/almalinux-elevate.md, python/stdlib-windows-portability.md or agents/codebase-mapping.csv; S-cblfylm6 and S-gssvmwmg are each cited by a typescript fact their page supports, as gate g1 decides; no source row the replay added has a licence that says its record was not checked",
+  "goal": "factdiff.py --root public anchors --stale lists no row (stale=0): the rows of security/almalinux-elevate.md, python/stdlib-windows-portability.md, agents/codebase-mapping.csv, arch/fluent-rust-typescript.md (S-dftqctth) and arch/texts-catalogue-formats.md (S1710) are re-anchored or pruned; S-cblfylm6 and S-gssvmwmg are each cited by a typescript fact their page supports, as gate g1 decides; no source row the replay added has a licence that says its record was not checked",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','--root','public','anchors','--stale'],capture_output=True,text=True)\nif 'stale=' not in p.stdout: print(p.stdout[-500:],p.stderr[-500:]);sys.exit(2)\nbad=[l for l in p.stdout.splitlines() if l.startswith('STALE') and any(x in l for x in ('almalinux-elevate.md','stdlib-windows-portability.md','codebase-mapping.csv'))]\nprint(bad);sys.exit(1 if bad else 0)"
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','--root','public','anchors','--stale'],capture_output=True,text=True)\nif 'stale=' not in p.stdout: print(p.stdout[-500:],p.stderr[-500:]);sys.exit(2)\nbad=[l for l in p.stdout.splitlines() if l.startswith('STALE')]\nprint(bad);sys.exit(1 if bad else 0)"
       ]
     },
     {
@@ -32,7 +32,7 @@
   ],
   "clauses": [
     {
-      "clause": "factdiff.py anchors --stale lists no row of security/almalinux-elevate.md, python/stdlib-windows-portability.md or agents/codebase-mapping.csv",
+      "clause": "factdiff.py --root public anchors --stale lists no row (stale=0): the rows of security/almalinux-elevate.md, python/stdlib-windows-portability.md, agents/codebase-mapping.csv, arch/fluent-rust-typescript.md (S-dftqctth) and arch/texts-catalogue-formats.md (S1710) are re-anchored or pruned",
       "check": 0
     },
     {
@@ -51,7 +51,9 @@
     "kb/public/security/almalinux-elevate.md",
     "kb/public/python/stdlib-windows-portability.md",
     "kb/public/agents/codebase-mapping.csv",
-    "kb/public/_retrieval/doc2query/expansions.csv"
+    "kb/public/_retrieval/doc2query/expansions.csv",
+    "kb/public/arch/fluent-rust-typescript.md",
+    "kb/public/arch/texts-catalogue-formats.md"
   ],
   "depends_on": [
     "ST-litcqrmw",
@@ -78,5 +80,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Merges ST-rdlojl4h (orphan anchor row of almalinux-elevate.md; its check failed on a CalledProcessError since anchors --stale exits non-zero with rows) and ST-nlwfazbu (two uncited TypeScript rows). Premise 2026-10-15 at 5834a99e2: anchors --stale prints 10 rows, 6 of them on the three replayed files named; rag.py src prints cited nowhere for S-cblfylm6 and S-gssvmwmg; of 249 source rows the replay added, S-6bobcclf and S-e4zz24dq say 'public mirror not checked'. The licence clause covers rows the replay added only: older rows with the same wording are not this item's."
+  "notes": "Merges ST-rdlojl4h (orphan anchor row of almalinux-elevate.md; its check failed on a CalledProcessError since anchors --stale exits non-zero with rows) and ST-nlwfazbu (two uncited TypeScript rows). Premise 2026-10-15 at 5834a99e2: anchors --stale prints 10 rows, 6 of them on the three replayed files named; rag.py src prints cited nowhere for S-cblfylm6 and S-gssvmwmg; of 249 source rows the replay added, S-6bobcclf and S-e4zz24dq say 'public mirror not checked'. The licence clause covers rows the replay added only: older rows with the same wording are not this item's. Plan amendment 2026-10-15 (triage fit10): widened to anchors --stale = 0 for the whole public root; the two rows outside the replayed files (arch/fluent-rust-typescript.md S-dftqctth, arch/texts-catalogue-formats.md S1710) have no other open owner and need the same factdiff.py anchor --file run (page reads, no paid run). At c907de7b3 anchors --stale prints the same 10 rows (3 codebase-mapping.csv, 4 stdlib-windows-portability.md, 1 almalinux-elevate.md, 2 arch). The S1710 row is ST-6wbfxkmy's anchor clause. Risk: the check reads the whole root, so a stale row another landing leaves before this item runs fails it too; a row outside the touches is then a gate, not a widening by the worker."
 }

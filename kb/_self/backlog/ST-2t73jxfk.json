@@ -48,7 +48,7 @@
     "kb/_self/maintaining.md"
   ],
   "depends_on": [
-    "ST-wiv62ohc"
+    "ST-u2qvfapz"
   ],
-  "notes": "Premise (lessons analysis 4.6): 43 inline scripts fetched or parsed pages by hand, instance 3 wrote _cache/ts-scripts/html2txt.py, and kali instance 3 reported that provider.py read truncates long lines; provider.excerpt cuts a line at READ_WIDTH (400) characters. The planted check fails at 5834a99e2: the line is cut before END. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise (lessons analysis 4.6): 43 inline scripts fetched or parsed pages by hand, instance 3 wrote _cache/ts-scripts/html2txt.py, and kali instance 3 reported that provider.py read truncates long lines; provider.excerpt cuts a line at READ_WIDTH (400) characters. The planted check fails at 5834a99e2: the line is cut before END. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: now runs after ST-u2qvfapz (was ST-wiv62ohc), since BG-ijt2pwss and ST-u2qvfapz joined the sprint between them on provider.py and test_live_kb.py."
 }

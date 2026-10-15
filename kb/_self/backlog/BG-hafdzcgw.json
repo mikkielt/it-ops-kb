@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "kg_sync.heldout_checks selects the held-out file for a .md under an underscore directory, such as _retrieval/notes.md or _snapshots/README.md",
   "status": "draft",
+  "sprint": "SP-75hdeqld",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "kg_sync.heldout_checks in _tools/kg_sync.py counts as an article only kb/<root>/<domain>/<slug>.md whose every path part below the root has no leading underscore, so kb/public/_retrieval/notes.md and kb/public/_snapshots/README.md select nothing, and a changed article still selects its root's lookup_heldout.csv. Found by the SP-g2qseu5s review (S4, kg_sync.py:465): an extra reword check runs, no wrong refusal.",
+  "goal": "kg_sync.heldout_checks in _tools/kg_sync.py counts as an article only a root's <domain>/<slug>.md whose every path part below the root has no leading underscore, so a root's _retrieval/notes.md or _snapshots/README.md selects nothing while a changed article still selects its root's lookup_heldout.csv; pure-function asserts in the existing test_heldout_reword_is_refused_at_the_gate of test_sync_e2e.py prove it (no new test id)",
   "repro": {
     "run": [
       "python3",
@@ -14,11 +15,36 @@
       "import sys;sys.path.insert(0,'_tools');import kg_sync;r=[p for p in ('kb/public/_retrieval/notes.md','kb/public/_snapshots/README.md') if kg_sync.heldout_checks([p])];print(r);sys.exit(1 if r else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_heldout_reword_is_refused_at_the_gate"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kg_sync.heldout_checks in _tools/kg_sync.py counts as an article only a root's <domain>/<slug>.md whose every path part below the root has no leading underscore, so a root's _retrieval/notes.md or _snapshots/README.md selects nothing while a changed article still selects its root's lookup_heldout.csv",
+      "check": 1
+    },
+    {
+      "clause": "pure-function asserts in the existing test_heldout_reword_is_refused_at_the_gate of test_sync_e2e.py prove it (no new test id)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/kg_sync.py",
-    "_tools/test_sync_e2e.py"
+    "_tools/test_sync_e2e.py",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "BG-ae3cq3uj"
   ],
   "links": [
     "parked: SP-g2qseu5s review"
-  ]
+  ],
+  "notes": "Plan amendment 2026-10-15 (triage fit10): same function as BG-ae3cq3uj (heldout_checks gains the repro_bench.csv case) and the same test, so it runs right after it. Found by the SP-g2qseu5s review (S4, kg_sync.py:465): an extra reword check runs, no wrong refusal. Premise 2026-10-15 at c907de7b3: the repro prints both paths selected, exit 1. Checks that pass before the work: the test selection passes before the work and is kept as a guard (the change extends it, about +0.02 s); the repro fails before the work and reads the goal."
 }

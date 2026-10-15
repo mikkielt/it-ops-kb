@@ -23,6 +23,9 @@
     "_tools/kg_trailers.py"
   ],
   "links": [
-    "parked: SP-vk3wf746 close"
-  ]
+    "parked: SP-vk3wf746 close",
+    "merged: ST-ix5wl2lt",
+    "parked: SP-7nv2ffr2 close"
+  ],
+  "notes": "Merged from ST-ix5wl2lt (same check commit_msg_refuses_planning_kb_work) at the 2026-10-15 plan amendment. Its goal: kbgit.py commit-msg exits non-zero, and the commit is not made, for a backlog-planning commit whose KB-Work names an item whose file it does not change, since check-trailers refuses that commit at the push anyway (SP-7nv2ffr2 close). Its recurrences: SP-djl7za6x close, SP-htl7jkrm (2026-10-13), SP-j65ihctq retrospective. Not in the 2026-10-15 batch: turning the hook from warning to refusing reverses the documented rule that commit-msg never blocks a commit (kbgit.py, kg_hooks.hook_commit_msg), and kg_trailers.py is changed by ST-qivswoxw in SP-b36246xo; plan it after the batch with a design gate, its test check retargeted to an existing test (no new id)."
 }

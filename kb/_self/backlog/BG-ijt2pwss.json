@@ -3,19 +3,46 @@
   "kind": "bug",
   "title": "kbid.py add writes the repository's MIT licence for a gitlab-org/gitlab doc/ page, whose LICENSE puts doc/ under CC BY-SA 4.0",
   "status": "draft",
+  "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "provider.read_licence for a gitlab.com raw or blob url under gitlab-org/gitlab doc/ gives CC BY-SA 4.0 (the repository LICENSE puts all content under doc/ under CC BY-SA 4.0) or reads nothing and leaves the pair to the flags, instead of the repository-wide MIT the GitLab API reports (seen in ST-52lihy7z: kbid.py add of signed_commits/_index.md at 9f1632e2 wrote MIT; 5 earlier doc/ rows of kb/public/_sources.csv carry the same MIT value)",
+  "goal": "provider.read_licence for a gitlab.com raw or blob url under gitlab-org/gitlab doc/ gives CC BY-SA 4.0 (the repository LICENSE puts all content under doc/ under CC BY-SA 4.0) or reads nothing and leaves the pair to the flags, instead of the repository-wide MIT the GitLab API reports, while a url outside doc/ keeps the API's licence; a stubbed GitLab answer in the kbid licence part of test_live_kb.py's test_lookup_eval_passes_on_the_live_kb proves it (no new test id)",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys; sys.path.insert(0, '_tools'); import provider; r = provider.read_licence('https://gitlab.com/gitlab-org/gitlab/-/raw/9f1632e2d74cf3c87fce2513c999c6cf84a97ab4/doc/user/project/repository/signed_commits/_index.md'); sys.exit(1 if r['licence'].startswith('MIT') else 0)"
+      "import sys;sys.path.insert(0,'_tools');import provider as p\np.request=lambda *a,**k:{'status':0,'body':b'','headers':{},'final':a[0],'hops':0,'error':'offline'}\np._repository_licence=lambda f,a:(200,'MIT',False,'')\nr=p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/raw/9f1632e2d74cf3c87fce2513c999c6cf84a97ab4/doc/user/project/repository/signed_commits/_index.md')\nq=p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/blob/master/app/models/user.rb')\nprint(r['licence'],'|',q['licence']);sys.exit(1 if r['licence'].startswith('MIT') or not q['licence'].startswith('MIT') else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lookup_eval_passes_on_the_live_kb"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "provider.read_licence for a gitlab.com raw or blob url under gitlab-org/gitlab doc/ gives CC BY-SA 4.0 (the repository LICENSE puts all content under doc/ under CC BY-SA 4.0) or reads nothing and leaves the pair to the flags, instead of the repository-wide MIT the GitLab API reports, while a url outside doc/ keeps the API's licence",
+      "check": 1
+    },
+    {
+      "clause": "a stubbed GitLab answer in the kbid licence part of test_live_kb.py's test_lookup_eval_passes_on_the_live_kb proves it (no new test id)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/provider.py",
-    "kb/public/_sources.csv"
-  ]
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-wiv62ohc"
+  ],
+  "notes": "Plan amendment 2026-10-15 (triage fit10): reworded to the code half only. The ledger half is already fixed on main (111 gitlab doc/ rows of kb/public/_sources.csv, none MIT), so kb/public/_sources.csv left the touches. Seen in ST-52lihy7z: kbid.py add of signed_commits/_index.md at 9f1632e2 wrote MIT. Cause: read_licence goes to _repo_licence, which has no doc/ subtree case. The repro is now offline (provider.request and _repository_licence stubbed: the API answers MIT, any other read fails); the earlier networked repro called read_licence on the live url. Runs after ST-wiv62ohc, which makes kbid add write the licence from this record, so a wrong record would land unreviewed. Checks that pass before the work: the test selection is a guard the change extends (about +0.05 s); the repro fails at c907de7b3 and reads the goal. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); the repro fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it."
 }

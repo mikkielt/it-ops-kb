@@ -6,7 +6,7 @@
   "sprint": "SP-z3jcdsgr",
   "priority": "P2",
   "rank": 0,
-  "goal": "the zsh articles and security/fish-config-files-completions.md point to security/gentoo-in-wsl.md or name a Windows host only where their own subject or cited source does; each zsh, fish and cmd fact that names Windows is read against its cited source, the ones the source does not support reworded, with the list in the item's report; each duplicate fact of an area is merged and each fact that states more than its cited source is narrowed; rag.py eval passes after the change",
+  "goal": "the zsh articles and security/fish-config-files-completions.md point to security/gentoo-in-wsl.md or name a Windows host only where their own subject or cited source does; each zsh, fish and cmd fact that names Windows is read against its cited source, the ones the source does not support reworded, with the list in the item's report; each duplicate fact of an area is merged and each fact that states more than its cited source is narrowed; python/stdlib-windows-portability.md's 'So on Linux and macOS' DER fact cites S-2cf7ptty, the source its removed-working-directory wording rests on (BG-ehow5zny); rag.py eval passes after the change",
   "checks": [
     {
       "run": [
@@ -28,6 +28,13 @@
         "_tools/rag.py",
         "eval"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys;t=open('kb/public/python/stdlib-windows-portability.md',encoding='utf-8').read();p=[x for x in re.split(r'\\n(?=- )',t) if x.startswith('- So on Linux and macOS')];sys.exit(0 if p and 'S-2cf7ptty' in p[0] else 1)"
+      ]
     }
   ],
   "clauses": [
@@ -46,6 +53,10 @@
     {
       "clause": "rag.py eval passes after the change",
       "check": 2
+    },
+    {
+      "clause": "python/stdlib-windows-portability.md's 'So on Linux and macOS' DER fact cites S-2cf7ptty, the source its removed-working-directory wording rests on (BG-ehow5zny)",
+      "check": 3
     }
   ],
   "touches": [
@@ -65,5 +76,5 @@
     "ST-5wudnqto",
     "ST-6tbbdbec"
   ],
-  "notes": "Premise 2026-10-15 at 5834a99e2: each of the four security/zsh-*.md articles ends its Related line with 'For a Linux distribution on a Windows host see security/gentoo-in-wsl.md' and three zsh snippets add 'or a WSL distribution on a Windows host' to their context; instance 3's cmd session reworded facts to say Windows to keep EV-page-file-size-windows weak (lessons analysis section 0). A near-duplicate scan of the 54 replayed articles (difflib ratio 0.85 within an area) found 4 pairs, all distinct facts (different Chef resources, AlmaLinux 9 against 10), so the duplicate clause is a reading, not a known list. The lint check passes on the base (errors=0, 7 warnings): it guards the edits; the zsh check fails on the base. Plan review 2026-10-15: the second and third clauses are a review reading, not a mechanical test: the lint check guards them and the report lists each fact changed or kept with the reason. Checks that pass before the work: the lint check and rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 (the gentoo-in-wsl links) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise 2026-10-15 at 5834a99e2: each of the four security/zsh-*.md articles ends its Related line with 'For a Linux distribution on a Windows host see security/gentoo-in-wsl.md' and three zsh snippets add 'or a WSL distribution on a Windows host' to their context; instance 3's cmd session reworded facts to say Windows to keep EV-page-file-size-windows weak (lessons analysis section 0). A near-duplicate scan of the 54 replayed articles (difflib ratio 0.85 within an area) found 4 pairs, all distinct facts (different Chef resources, AlmaLinux 9 against 10), so the duplicate clause is a reading, not a known list. The lint check passes on the base (errors=0, 7 warnings): it guards the edits; the zsh check fails on the base. Plan review 2026-10-15: the second and third clauses are a review reading, not a mechanical test: the lint check guards them and the report lists each fact changed or kept with the reason. Checks that pass before the work: the lint check and rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 (the gentoo-in-wsl links) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: folds BG-ehow5zny (the 'So on Linux and macOS' DER fact of python/stdlib-windows-portability.md omits S-2cf7ptty, Apple rmdir(2), which its getcwd and relative-open ENOENT wording rests on beside the fact before it); folded here rather than queued after ST-ez6r5em7 because this story already edits that article and runs before ST-ez6r5em7 re-anchors it, so a retagged fact's anchor rows are swept in the same sprint. Check 3 (BG-ehow5zny's repro) fails on the base at c907de7b3."
 }

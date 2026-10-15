@@ -7,7 +7,7 @@
   "sprint": "SP-b36246xo",
   "priority": "P2",
   "rank": 0,
-  "goal": "kbid.py add needs only the url: it takes the row's title from the fetched page, its organisation column from the host's row of _tools/providers.csv as gate g3 decides and its version_or_date from the page's own date; it writes the licence in the one form gate g2 decides with reuse from content-rules.md's classes; --title, --publisher and --version stay as overrides; a stubbed page in the kbid part of test_live_kb.py proves each field (no new test id)",
+  "goal": "kbid.py add needs only the url: it takes the row's title from the fetched page, its organisation column from the host's row of _tools/providers.csv as gate g3 decides and its version_or_date from the page's own date; it writes the licence in the one form gate g2 decides with reuse from content-rules.md's classes; --title, --publisher and --version stay as overrides; a stubbed page in the kbid part of test_live_kb.py proves each field (no new test id); kbid.usual_pair suggests the first pair in the root's text order on a tie, as its docstring says, so the check: guess kbid.py add prints is the pair the file lists first (BG-sgsukxgk); kb/_self/tools.md's kbid.py add row names the exit 2 'the lock on <root>/_sources.csv was lost before the row was written: run add again' and that a waiter's stale clear never moves aside a lock a live writer made (BG-et5yl7mk)",
   "checks": [
     {
       "run": [
@@ -22,6 +22,20 @@
         "_tools/tests.py",
         "-k",
         "test_lookup_eval_passes_on_the_live_kb"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys; sys.path.insert(0,'_tools'); import kbid; p=kbid.usual_pair([{'url':'https://h.example.com/a','licence':'Z','reuse':'quote'},{'url':'https://h.example.com/b','licence':'A','reuse':'copy'}],'https://h.example.com/c'); sys.exit(0 if p[0]==('Z','quote') else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=' '.join(open('kb/_self/tools.md',encoding='utf-8').read().split());ok='was lost before the row was written' in t;print(ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
@@ -41,6 +55,14 @@
     {
       "clause": "a stubbed page in the kbid part of test_live_kb.py proves each field (no new test id)",
       "check": 1
+    },
+    {
+      "clause": "kbid.usual_pair suggests the first pair in the root's text order on a tie, as its docstring says, so the check: guess kbid.py add prints is the pair the file lists first (BG-sgsukxgk)",
+      "check": 2
+    },
+    {
+      "clause": "kb/_self/tools.md's kbid.py add row names the exit 2 'the lock on <root>/_sources.csv was lost before the row was written: run add again' and that a waiter's stale clear never moves aside a lock a live writer made (BG-et5yl7mk)",
+      "check": 3
     }
   ],
   "touches": [
@@ -103,5 +125,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (lessons analysis 1.4, 2.3): in the first repro run kbid.py add took model-written title, publisher, licence, reuse and version in 843 calls (124 with a check: line for a licence guess); of 362 rows of the same source id across instance pairs 6 were byte-identical (licence 221, title 199, version 125, publisher 107, reuse 76 differ). EP-jqjlwiar's clause 'a new source's licence and reuse come from the source's own licence record' is met in part by kbid.py licence (content-rules.md:86); this story makes the rest of the row deterministic. kbid.py add --help at 5834a99e2 requires --title and --publisher. Docs that name kbid.py add without its flags (kb/_self/code.md, maintaining.md, plugin.md, census.py) stay right while the flags remain accepted. Plan review 2026-10-15: the kbid scenarios sit in test_lookup_eval_passes_on_the_live_kb (test_live_kb.py near line 976), not the build_index test. The licence reader is provider.read_licence, which kbid.py add calls when --licence and --reuse are omitted (there is no kbid.py licence subcommand). Gate g2 keeps the 'where read' part of the cell because content-rules.md:80 asks for where the terms are stated; written by the tool from the licence record it is the same for one url in every instance, which is what the 221 differing cells lacked. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 (the help shows --title and --publisher optional) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise (lessons analysis 1.4, 2.3): in the first repro run kbid.py add took model-written title, publisher, licence, reuse and version in 843 calls (124 with a check: line for a licence guess); of 362 rows of the same source id across instance pairs 6 were byte-identical (licence 221, title 199, version 125, publisher 107, reuse 76 differ). EP-jqjlwiar's clause 'a new source's licence and reuse come from the source's own licence record' is met in part by kbid.py licence (content-rules.md:86); this story makes the rest of the row deterministic. kbid.py add --help at 5834a99e2 requires --title and --publisher. Docs that name kbid.py add without its flags (kb/_self/code.md, maintaining.md, plugin.md, census.py) stay right while the flags remain accepted. Plan review 2026-10-15: the kbid scenarios sit in test_lookup_eval_passes_on_the_live_kb (test_live_kb.py near line 976), not the build_index test. The licence reader is provider.read_licence, which kbid.py add calls when --licence and --reuse are omitted (there is no kbid.py licence subcommand). Gate g2 keeps the 'where read' part of the cell because content-rules.md:80 asks for where the terms are stated; written by the tool from the licence record it is the same for one url in every instance, which is what the 221 differing cells lacked. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 (the help shows --title and --publisher optional) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: folds BG-sgsukxgk (usual_pair tie order) and BG-et5yl7mk (tools.md lock-lost exit 2) as clauses; their repros are checks 2 and 3, failing at c907de7b3."
 }

@@ -6,7 +6,7 @@
   "sprint": "SP-z3jcdsgr",
   "priority": "P3",
   "rank": 0,
-  "goal": "_tools/aliases.csv holds the alias rows the instance-3 research filed for typescript (ST-j2ctkvl4), zsh (ST-r3tvhelr), Gentoo (ST-oeyfaoee), Kali (ST-2onmjhme), AlmaLinux (ST-za3ew224) and Chef (ST-bamh3apr), each term once over every alias file with an existing canonical reused; rag.py eval passes after the change",
+  "goal": "_tools/aliases.csv holds the alias rows the instance-3 research filed for typescript (ST-j2ctkvl4), zsh (ST-r3tvhelr), Gentoo (ST-oeyfaoee), Kali (ST-2onmjhme), AlmaLinux (ST-za3ew224) and Chef (ST-bamh3apr), each term once over every alias file with an existing canonical reused; it holds the Docker Sandboxes and gVisor rows of ST-eszi5rxa (sbx, runsc) with claude/agent-sdk.md and windows/windows-sandbox.md naming agents/agent-sandboxes.md in their Reference sections; it holds the OPA and Verified Permissions rows of ST-mvvzqk3r (open policy agent, avp) with agents/agent-rbac.md and agents/gitops-for-agents.md naming agents/policy-as-code.md in their Reference sections; it holds the GPG rows of ST-p2u3ozgk (pgp, openpgp) with gitlab/protected-branches-tags.md, gitlab/mr-approvals.md or security/supply-chain.md each naming gitlab/commit-signing-and-provenance.md in its Reference section; it holds the Durable Objects and Claude Managed Agents rows of ST-s75mayaf (durable object, managed agents) with agents/foundry-agent-service.md and agents/shared-state-concurrency.md naming agents/agent-memory-services.md in their Reference sections; rag.py eval passes after the change",
   "checks": [
     {
       "run": [
@@ -21,6 +21,34 @@
         "_tools/rag.py",
         "eval"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('sbx','docker sandboxes'),('docker sandboxes','docker sandboxes'),('runsc','gvisor'),('gvisor','gvisor')}; l=all('agents/agent-sandboxes.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/claude/agent-sdk.md','kb/public/windows/windows-sandbox.md')); sys.exit(0 if w<=r and l else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('open policy agent','opa'),('opa','opa'),('amazon verified permissions','verified permissions'),('avp','verified permissions'),('verified permissions','verified permissions')}; l=all('agents/policy-as-code.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/agents/agent-rbac.md','kb/public/agents/gitops-for-agents.md')); sys.exit(0 if w<=r and l else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('pgp','gpg'),('openpgp','gpg'),('gpg','gpg')}; l=all('gitlab/commit-signing-and-provenance.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/gitlab/protected-branches-tags.md','kb/public/gitlab/mr-approvals.md','kb/public/security/supply-chain.md')); sys.exit(0 if w<=r and l else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,pathlib,sys; r={tuple(x) for x in csv.reader(open('_tools/aliases.csv',encoding='utf-8'))}; w={('durable object','durable objects'),('durable objects','durable objects'),('managed agents','claude managed agents'),('claude managed agents','claude managed agents')}; l=all('agents/agent-memory-services.md' in pathlib.Path(p).read_text(encoding='utf-8') for p in ('kb/public/agents/foundry-agent-service.md','kb/public/agents/shared-state-concurrency.md')); sys.exit(0 if w<=r and l else 1)"
+      ]
     }
   ],
   "clauses": [
@@ -31,10 +59,38 @@
     {
       "clause": "rag.py eval passes after the change",
       "check": 1
+    },
+    {
+      "clause": "it holds the Docker Sandboxes and gVisor rows of ST-eszi5rxa (sbx, runsc) with claude/agent-sdk.md and windows/windows-sandbox.md naming agents/agent-sandboxes.md in their Reference sections",
+      "check": 2
+    },
+    {
+      "clause": "it holds the OPA and Verified Permissions rows of ST-mvvzqk3r (open policy agent, avp) with agents/agent-rbac.md and agents/gitops-for-agents.md naming agents/policy-as-code.md in their Reference sections",
+      "check": 3
+    },
+    {
+      "clause": "it holds the GPG rows of ST-p2u3ozgk (pgp, openpgp) with gitlab/protected-branches-tags.md, gitlab/mr-approvals.md or security/supply-chain.md each naming gitlab/commit-signing-and-provenance.md in its Reference section",
+      "check": 4
+    },
+    {
+      "clause": "it holds the Durable Objects and Claude Managed Agents rows of ST-s75mayaf (durable object, managed agents) with agents/foundry-agent-service.md and agents/shared-state-concurrency.md naming agents/agent-memory-services.md in their Reference sections",
+      "check": 5
     }
   ],
   "touches": [
-    "_tools/aliases.csv"
+    "_tools/aliases.csv",
+    "kb/public/claude/agent-sdk.md",
+    "kb/public/windows/windows-sandbox.md",
+    "kb/public/agents/agent-rbac.md",
+    "kb/public/agents/gitops-for-agents.md",
+    "kb/public/gitlab/protected-branches-tags.md",
+    "kb/public/gitlab/mr-approvals.md",
+    "kb/public/security/supply-chain.md",
+    "kb/public/agents/foundry-agent-service.md",
+    "kb/public/agents/shared-state-concurrency.md"
   ],
-  "notes": "Merges the six alias drafts instance 3 filed (ST-j2ctkvl4, ST-r3tvhelr, ST-oeyfaoee, ST-2onmjhme, ST-za3ew224, ST-bamh3apr); their goals list every row in full. A row whose term is already in an alias file, or which turns a lookup eval row, is left out and named in the report, but the check's one row per area stays. Checks that pass before the work: rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "depends_on": [
+    "ST-6tbbdbec"
+  ],
+  "notes": "Merges the six alias drafts instance 3 filed (ST-j2ctkvl4, ST-r3tvhelr, ST-oeyfaoee, ST-2onmjhme, ST-za3ew224, ST-bamh3apr); their goals list every row in full. A row whose term is already in an alias file, or which turns a lookup eval row, is left out and named in the report, but the check's one row per area stays. Checks that pass before the work: rag.py eval pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15 (triage fit10): folds the four alias stories ST-eszi5rxa (agents/agent-sandboxes), ST-mvvzqk3r (agents/policy-as-code), ST-p2u3ozgk (gitlab/commit-signing-and-provenance) and ST-s75mayaf (agents/agent-memory-services) as clauses 3 to 6 with their own checks 2 to 5, which list every row and back-link in full; each failed on the base at c907de7b3. Their touches add nine Reference sections, none shared with another item of the sprint but the research story's kb/public/**. A back-link is one line of an article's Reference section, no fact: no source, anchor or doc2query row changes."
 }

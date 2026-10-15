@@ -12,10 +12,17 @@
     "run": [
       "python3",
       "-c",
-      "import subprocess,sys,tempfile,pathlib;d=tempfile.mkdtemp();p=pathlib.Path(d,'q.csv');p.write_text('line,quote\\n23,An SVID is not itself a document type.\\n23,The X.509-SVID and JWT-SVID profiles are mandatory and MUST be supported by SPIFFE implementations.\\n',encoding='utf-8');sys.exit(subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--file','auth/spiffe-workload-identity.md','--quotes',str(p),'--dry-run']).returncode)"
+      "import subprocess,sys,tempfile,pathlib;d=tempfile.mkdtemp();p=pathlib.Path(d,'q.csv');p.write_text('line,source,quote\\n23,S-xc5uusz2,An SVID is not itself a document type.\\n23,S-yp5feoc6,The X.509-SVID and JWT-SVID profiles are mandatory and MUST be supported by SPIFFE implementations.\\n',encoding='utf-8');sys.exit(subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--file','auth/spiffe-workload-identity.md','--quotes',str(p),'--dry-run']).returncode)"
     ]
   },
   "touches": [
     "_tools/factdiff.py"
-  ]
+  ],
+  "relates_to": [
+    "ST-duwzvvq7"
+  ],
+  "links": [
+    "closed by: ST-duwzvvq7"
+  ],
+  "notes": "Plan amendment 2026-10-15: repro reworded to the line,source,quote form that ST-duwzvvq7's gate g1 decided (an optional source column; two-column files read as before), one row per cited source of auth/spiffe-workload-identity.md:23 (S-xc5uusz2, S-yp5feoc6); the earlier two-column repro quoted line 23 twice and could never pass under g1. The repro runs anchor --dry-run, which fetches the two pages."
 }

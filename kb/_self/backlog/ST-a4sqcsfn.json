@@ -15,9 +15,13 @@
       ]
     }
   ],
+  "relates_to": [
+    "ST-qb25367f"
+  ],
   "links": [
     "parked: SP-sbdy4hsx close",
-    "merged: ST-matmgqai"
+    "merged: ST-matmgqai",
+    "closed by: ST-qb25367f, if its tested _self rows cover provider.py and kbid.py"
   ],
   "notes": "Merged from ST-matmgqai “rag.py pack --item gives rules for land, procs and selfcheck items instead of coverage none” at the 2026-10-12 draft triage: Reproduces: item pack of a land-touching item gives coverage none with the right passages printed, and its check pack is weak. Same defect as ST-a4sqcsfn (item pack by touches via map.csv gets coverage none); ST-a4sqcsfn is the broader mechanism. Its goal: Retrospective of SP-lyfnpu37: the ST-iltxwoty worker got coverage none from rag.py pack --root _self --item for an item touching bl_land.py, bl_procs.py and bl_selfcheck.py and read the Landing, Processes left running and Self-check sections by hand; the BG-dnojxemz worker's item pack printed 'not in kb: st-ocfkanth'. An item pack for such touches names the tested rule questions of those sections. Its checks: {\"run\": [\"python3\", \"-c\", \"import subprocess,sys;p=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','how long does land wait for a finished session-end hook before it refuses a worktree'],capture_output=True,text=True);sys.exit(0 if 'coverage: good' in p.stdout else 1)\"]} Its touches: _tools/rag.py, kb/_self/backlog.md"
 }

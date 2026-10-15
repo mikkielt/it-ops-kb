@@ -58,7 +58,7 @@
     "kb/_self/web-sources.md"
   ],
   "depends_on": [
-    "ST-duwzvvq7"
+    "ST-yb5x4x3d"
   ],
   "gates": [
     {
@@ -81,5 +81,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Premise (lessons analysis 1.6, 4.4): 14 first syncs of research sessions were refused 'check-trailers ... bad=1' because the research commit carried alias rows and no KB-Work item; 0 alias rows landed in any bare; instances 1 and 3 filed alias stories (merged into ST-wtui5diw), instance 2 dropped them. kg_trailers.WORK_PATHS and bl_intake.WORK_PATHS count every _tools/ path as work; kblane._FILES already lanes _tools/aliases.csv as content. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise (lessons analysis 1.6, 4.4): 14 first syncs of research sessions were refused 'check-trailers ... bad=1' because the research commit carried alias rows and no KB-Work item; 0 alias rows landed in any bare; instances 1 and 3 filed alias stories (merged into ST-wtui5diw), instance 2 dropped them. kg_trailers.WORK_PATHS and bl_intake.WORK_PATHS count every _tools/ path as work; kblane._FILES already lanes _tools/aliases.csv as content. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: now runs after ST-yb5x4x3d (was ST-duwzvvq7), which joined the sprint after ST-duwzvvq7 and shares kb/_self/tools.md with this story."
 }

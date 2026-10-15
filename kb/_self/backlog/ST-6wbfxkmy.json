@@ -16,8 +16,11 @@
       ]
     }
   ],
+  "relates_to": [
+    "ST-ez6r5em7"
+  ],
   "links": [
     "parked: SP-lsamtvsz close"
   ],
-  "notes": "SP-lsamtvsz retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator."
+  "notes": "SP-lsamtvsz retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Plan amendment 2026-10-15: its anchor clause (texts-catalogue-formats.md's FluentLocalization fact, S1710) is covered by ST-ez6r5em7 in SP-z3jcdsgr, widened to factdiff.py --root public anchors --stale = 0; once that lands the clause is met and only the lint-at-landing clause stays open (it names a new test id: retarget it to an existing test before it is planned)."
 }

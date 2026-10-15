@@ -3,25 +3,48 @@
   "kind": "story",
   "title": "kbid.py add names a failed read of a Learn mirror's licence file as a network failure, not as an unrecognised licence",
   "status": "draft",
+  "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
-  "goal": "Since BG-c3mckvqz provider._licence_file_spdx returns an empty id both when the raw.githubusercontent.com read fails (status 0 or not 200) and when the file's first line is no Creative Commons title, so kbid.py add says GitHub recognises no licence of the mirror and asks to read its licence file even when the read never happened. A failed read is reported as a failed read with its status, and the exit stays 2. Found by the SP-srqmriw6 review of BG-c3mckvqz.",
+  "goal": "kbid.py add reports a failed read of a Learn mirror's licence file (raw.githubusercontent.com status 0 or not 200) as a failed read naming its status, not as 'GitHub recognises no licence of the mirror', with the licence still unread (kbid.py add exits 2); a stubbed failed read in the kbid licence part of test_live_kb.py's test_lookup_eval_passes_on_the_live_kb proves it (no new test id)",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import provider as p\ndef req(url,headers=None,limit=0,method='GET'):\n if 'learn.microsoft.com' in url: return {'status':200,'body':b'<meta name=\"github_feedback_content_git_url\" content=\"https://github.com/MicrosoftDocs/x/blob/main/a.md\" />','headers':{},'final':url,'hops':0,'error':''}\n return {'status':0,'body':b'','headers':{},'final':url,'hops':0,'error':'timed out'}\np.request=req;p._repository_licence=lambda f,a:(200,'',False,'');p._licence_files=lambda s:['LICENSE']\nr=p.read_licence('https://learn.microsoft.com/en-us/windows/a');print(r)\nsys.exit(0 if r['licence']=='' and 'recognises no licence' not in r['note'] else 1)"
+      ]
+    },
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "licence_file_read_failure_named"
+        "test_lookup_eval_passes_on_the_live_kb"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbid.py add reports a failed read of a Learn mirror's licence file (raw.githubusercontent.com status 0 or not 200) as a failed read naming its status, not as 'GitHub recognises no licence of the mirror', with the licence still unread (kbid.py add exits 2)",
+      "check": 0
+    },
+    {
+      "clause": "a stubbed failed read in the kbid licence part of test_live_kb.py's test_lookup_eval_passes_on_the_live_kb proves it (no new test id)",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/provider.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "BG-ijt2pwss"
   ],
   "links": [
     "parked: SP-srqmriw6 review"
-  ]
+  ],
+  "notes": "Plan amendment 2026-10-15 (triage fit10): since BG-c3mckvqz provider._licence_file_spdx returns an empty id both when the raw.githubusercontent.com read fails and when the file's first line is no Creative Commons title, so _learn_licence says GitHub recognises no licence even when the read never happened (provider.py _licence_file_spdx, _learn_licence). Found by the SP-srqmriw6 review of BG-c3mckvqz. Check retargeted from a new test id (licence_file_read_failure_named) to the existing kbid licence part of test_lookup_eval_passes_on_the_live_kb (0 new ids, about +0.05 s); check 0 is an offline planted run (provider.request stubbed: the Learn page names a mirror, every other read fails with status 0) that fails at c907de7b3. Runs after BG-ijt2pwss (same function family, provider.py, test_live_kb.py). Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); check 0 fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it."
 }

@@ -3,25 +3,52 @@
   "kind": "story",
   "title": "factdiff.py anchor --file leaves a still-failing unlocated row unchanged instead of rewriting it on every run",
   "status": "draft",
+  "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
-  "goal": "Since ST-t3mrfi57 anchor --file refetches every fact whose only anchor row is unlocated:fetch-error, not-text or gone, and a retry that fails again rewrites the row with a new verified_utc, so _anchors.csv changes on every run for a still-failing source and gone rows are refetched with no backoff. A retry whose status is unchanged keeps the row as it was, and a gone row is retried only after a backoff the docs state. Found by the SP-srqmriw6 review of ST-t3mrfi57 (its gate g2 chose replace the row).",
+  "goal": "factdiff.py anchor --file keeps a still-failing unlocated row (unlocated:fetch-error, not-text or gone) as it was when its retry gives the same status, so _anchors.csv is not rewritten for it; a gone row is retried only after a backoff kb/_self/tools.md states; the anchor_file_retries_unlocated part of test_live_kb.py's test_lint_names_a_facts_line_with_a_second_bullet proves both (no new test id)",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,argparse;sys.path.insert(0,'_tools');import factdiff as f\nfa=('k1','a/b.md',3,'- A planted fact. [DOC S1]')\nf.sources=lambda:{'S1':{'reuse':'quote','url':'https://h.example.com/p'}};f.cited_facts=lambda:{'S1':[fa]};f.select_ids=lambda a,s:['S1']\nold={'fact':'k1','path':'a/b.md','source_id':'S1','status':'unlocated:fetch-error','heading':'','terms':'','sha':'','quote':'','verified_utc':'2026-01-01'}\nf.read_anchors=lambda:{('k1','a/b.md','S1'):dict(old)}\nf.fetch_all=lambda ids,srcs,age,refetch:{i:{'error':'timed out','status':0} for i in ids}\nw=[];f.write_anchors=lambda an:w.append(an)\na=argparse.Namespace(quotes=None,file=['a/b.md'],topic=None,dir=None,source=None,max_age=None,refetch=False,dry_run=False,selected=True)\nf.cmd_anchor(a);print(w);sys.exit(1 if w else 0)"
+      ]
+    },
     {
       "run": [
         "python3",
         "_tools/tests.py",
         "-k",
-        "anchor_file_retry_keeps_unchanged_row"
+        "test_lint_names_a_facts_line_with_a_second_bullet"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "factdiff.py anchor --file keeps a still-failing unlocated row (unlocated:fetch-error, not-text or gone) as it was when its retry gives the same status, so _anchors.csv is not rewritten for it",
+      "check": 0
+    },
+    {
+      "clause": "a gone row is retried only after a backoff kb/_self/tools.md states",
+      "check": 1
+    },
+    {
+      "clause": "the anchor_file_retries_unlocated part of test_live_kb.py's test_lint_names_a_facts_line_with_a_second_bullet proves both (no new test id)",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/test_live_kb.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "ST-duwzvvq7"
   ],
   "links": [
     "parked: SP-srqmriw6 review"
-  ]
+  ],
+  "notes": "Plan amendment 2026-10-15 (triage fit10): since ST-t3mrfi57 anchor --file refetches every fact whose only anchor row is unlocated:fetch-error, not-text or gone, and a retry that fails again rewrites the row with a new verified_utc (factdiff.py cmd_anchor, anchors[k] = row for any RETRY_STATUS row), so _anchors.csv changes on every run for a still-failing source. Found by the SP-srqmriw6 review of ST-t3mrfi57 (its gate g2 chose replace the row). Same function as ST-duwzvvq7 (cmd_anchor's --file branch), so it runs after it. Check retargeted from a new test id (anchor_file_retry_keeps_unchanged_row) to the existing test_lint_names_a_facts_line_with_a_second_bullet, which already drives this branch (0 new ids, about +0.3 s); check 0 is an offline planted run (sources, facts, anchors and fetch stubbed, a fetch-error row retried and failing again) that fails at c907de7b3 because the row is written again. The backoff length is a choice the goal leaves open: the worker records it as a provisional gate. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); check 0 fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it."
 }

@@ -3,23 +3,33 @@
   "kind": "story",
   "title": "The kb-sprint skill says a planning or park commit of the orchestrator carries no KB-Work line",
   "status": "draft",
+  "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
-  "goal": "skills/sprint/SKILL.md says, where the orchestrator commits gate confirmations, parked drafts or a host finding itself, that such a planning commit carries no KB-Work trailer (the hook names exactly the changed items, one id per line); found in SP-7ff7c5ui: the orchestrator's commit-msg hook refused two such commits (a review id on a planning commit, three ids on one KB-Work line) before amends",
+  "goal": "skills/sprint/SKILL.md says, in its review step where the orchestrator commits gate confirmations or parked drafts itself, that such a planning commit carries no KB-Work trailer (the hook names exactly the changed items, one id per line)",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import pathlib,sys;t=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8');sys.exit(0 if 'planning commit' in t and 'no KB-Work' in t else 1)"
+        "import pathlib,sys;t=pathlib.Path('skills/sprint/SKILL.md').read_text(encoding='utf-8');s=t.split('## review SP')[1].split('## close SP')[0];sys.exit(0 if 'planning commit' in s and 'no KB-Work' in s else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "skills/sprint/SKILL.md says, in its review step where the orchestrator commits gate confirmations or parked drafts itself, that such a planning commit carries no KB-Work trailer (the hook names exactly the changed items, one id per line)",
+      "check": 0
     }
   ],
   "touches": [
     "skills/sprint/SKILL.md"
   ],
+  "depends_on": [
+    "ST-mee3qx7d"
+  ],
   "links": [
     "parked: SP-7ff7c5ui close"
   ],
-  "notes": "SP-j65ihctq retrospective, recurrence: the orchestrator wrote a KB-Work line on its review park commit, which the hook appends itself (see ST-ix5wl2lt)."
+  "notes": "SP-j65ihctq retrospective, recurrence: the orchestrator wrote a KB-Work line on its review park commit, which the hook appends itself (see ST-ix5wl2lt). Plan amendment 2026-10-15 (triage fit10): found in SP-7ff7c5ui: the orchestrator's commit-msg hook refused two such commits (a review id on a planning commit, three ids on one KB-Work line) before amends. Same file (skills/sprint/SKILL.md) and the same trailer theme as ST-mee3qx7d and BG-gg3aohlm, so it runs after ST-mee3qx7d. Code-lane path (skills/): lands with land --wait-merge. The check now reads the review section only (it read the whole file); it fails at c907de7b3."
 }
