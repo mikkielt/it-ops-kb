@@ -2,7 +2,7 @@
   "id": "ST-g52zbsv4",
   "kind": "story",
   "title": "benchmarks.py repro setup makes per-instance clones of one pinned commit, each with its own bare origin, mcp-config, query log mode and env",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -133,5 +133,32 @@
     }
   ],
   "notes": "Premise run 2026-10-15 by the planner's verifier on 89895f542: kbgit.py sync --push in a standalone clone whose origin is a local bare path works today (exit 0, about 20 s, bare main moved, real origin untouched; three clones rebased on each other), so sync needs no change. Not per clone today: the kb MCP server (local scope in ~/.claude.json for the main checkout only; a standalone clone gets none, and ST-gkrivybp's worktree redirect needs a shared git common dir); the query log defaults to mode auto without _private/querylog.json (paid Haiku distill and apply --push at SessionEnd); bench_core.throwaway_clone clones the blob:none partial checkout (221 history objects missing) and copies every ref of HOME. Per clone today: _cache (kbcommon.HOME), the pack index (kbfacts.index_dir), the claims ledger (bl_base.CLAIMS_LEDGER), Claude Code project memory. Host-wide by design: /tmp/kb-main.lock and /tmp/kb-tests.lock (KB_HOST_LOCK_DIR redirects both). Leaky env: CLAUDE_CODE_BRIDGE_SESSION_ID / CLAUDE_CODE_REMOTE_SESSION_ID make sync refuse other sessions' trailers; no_plugin_env leaves KB_DOCS_CACHE. Plan review: kb servers go to each session by --mcp-config FILE --strict-mcp-config (bench_install.py, agent_bench.py precedent), never kb_mcp.py --register-local, which rewrites the shared ~/.claude.json; setup deletes the seed bare, which holds the commits after the start commit. The test bundle passes before the work; the setup --dry-run check fails before it. Selection cost about 1.5 s wall.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "46977734bf622d6d3d15cb5afb0276c48b408728",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "ace3e99ed4f60810"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "setup",
+          "--instances",
+          "3",
+          "--dry-run"
+        ],
+        "exit": 0,
+        "sha256": "14ea14b95b639fed"
+      }
+    ]
+  }
 }
