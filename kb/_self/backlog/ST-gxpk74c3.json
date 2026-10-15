@@ -2,7 +2,7 @@
   "id": "ST-gxpk74c3",
   "kind": "story",
   "title": "Research: policy-as-code and policy-based access control for agents (OPA/Rego, Cedar, Azure Policy)",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -68,5 +68,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research with a new topic agents/policy-as-code where no article fits.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "174fcc1fb899ef131337a3b78c8853e3be64c6a8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-gxpk74c3"
+        ],
+        "exit": 0,
+        "sha256": "a01aaee862a3220e"
+      }
+    ]
+  }
 }
