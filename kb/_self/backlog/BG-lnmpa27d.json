@@ -1,0 +1,20 @@
+{
+  "id": "BG-lnmpa27d",
+  "kind": "bug",
+  "title": "pack's off-domain name check counts a hyphenated common word (long-horizon) as the product name, so a VMware Horizon question is weak, not none",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A question about an off-domain product whose name the kb holds only inside an unrelated common word (VMware Horizon, held only by 'long-horizon tasks' at public/agents/instruction-and-context-limits.md:114) gets coverage none, not weak, whatever the near-tie order of the top articles: seen in ST-edgkrk37, where adding agents/agent-sandboxes.md moved instruction-and-context-limits.md from 5th to 4th article (8.78 vs 8.79 against git-test-repositories.md) for EV-configure-vmware-horizon-instant-clones, so the off-domain check in kbfacts.pack found 'horizon' among the candidate units and rag.py eval failed that row (want none, got weak) until the new article's two 'clone' words were reworded",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import subprocess,sys; r=subprocess.run([sys.executable,'_tools/rag.py','pack','How do I set up VMware Horizon for agents?','--budget','150','--format','concise'],capture_output=True,text=True); sys.exit(0 if 'coverage: none' in r.stdout else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kbfacts.py"
+  ]
+}
