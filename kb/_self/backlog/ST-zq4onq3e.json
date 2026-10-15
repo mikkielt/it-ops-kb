@@ -19,5 +19,5 @@
   "links": [
     "parked: SP-xt4t63xw close"
   ],
-  "notes": "SP-xt4t63xw retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: ST-q2jzknjn's worker added provisional g1 (public projection hash on github.com or private hash on gitlab.com for S-vt5s6nsz) and gate add printed 'class push (matched github): made blocking'; BG-tl74zfyr g2, a choice of where an article states a reason, was made blocking the same way."
+  "notes": "SP-xt4t63xw retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: ST-q2jzknjn's worker added provisional g1 (public projection hash on github.com or private hash on gitlab.com for S-vt5s6nsz) and gate add printed 'class push (matched github): made blocking'; BG-tl74zfyr g2, a choice of where an article states a reason, was made blocking the same way. Again on 2026-10-15 in BG-y2zyd73c: gate g3 (where a Projects github.com caveat goes in a DER of claude/cross-session-messaging.md, options 'a sentence inside the existing DER' / 'a separate DER line after it') was made blocking as class push (matched 'github') only because the question names github.com; it is a wording choice in a kb article, not a push."
 }
