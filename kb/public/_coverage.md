@@ -394,7 +394,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/execution-policy-signing` | P0 | complete | `windows/execution-policy-signing.md` | 9 |
 | `windows/gitlab-runner-windows` | P0 | complete | `windows/gitlab-runner-windows.md` | 19 |
 | `windows/gmsa` | P0 | complete | `windows/gmsa.md` | 7 |
-| `windows/openssh-server` | P0 | complete | `windows/openssh-server.md` | 3 |
+| `windows/openssh-server` | P0 | complete | `windows/openssh-server.md` | 7 |
 | `windows/smart-app-control` | P1 | complete | `windows/smart-app-control.md` | 11 |
 | `windows/app-control` | P2 | complete | `windows/app-control.md`, `windows/app-control.csv` | 14 |
 | `windows/azure-arc-servers` | P2 | complete | `windows/azure-arc-servers.md`, `windows/azcmagent-config.csv` | 38 |
@@ -413,6 +413,8 @@ Every topic of this root with its priority (the research order, not importance),
 | `windows/cmd-exe-syntax-quoting-redirection` | P3 | partial | `windows/cmd-exe-syntax-quoting-redirection.md` | 12 |
 | `windows/cmd-exe-variables-expansion-errorlevel` | P3 | partial | `windows/cmd-exe-variables-expansion-errorlevel.md` | 11 |
 | `windows/dev-drive` | P3 | partial | `windows/dev-drive.md` | 6 |
+| `windows/openssh-estate-deployment` | P3 | partial | `windows/openssh-estate-deployment.md` | 10 |
+| `windows/openssh-key-management` | P3 | partial | `windows/openssh-key-management.md` | 5 |
 | `windows/powershell-static-analysis` | P3 | complete | `windows/powershell-static-analysis.md` | 21 |
 | `windows/process-parent-and-command-line` | P3 | partial | `windows/process-parent-and-command-line.md` | 8 |
 | `windows/robocopy` | P3 | partial | `windows/robocopy.md` | 3 |

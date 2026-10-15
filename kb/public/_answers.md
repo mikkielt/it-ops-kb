@@ -3822,3 +3822,15 @@ _Agent: kb-research_
 - See windows/robocopy.md, windows/cmd-exe-variables-expansion-errorlevel.md.
 
 _Agent: kb-research_
+
+## QK-openssh-installed-configured-keyed-windows-deployed. How is OpenSSH installed, configured and keyed on Windows, and deployed across an estate with Group Policy and Intune?
+- The in-box capabilities are `OpenSSH.Client~~~~0.0.1.0` and `OpenSSH.Server~~~~0.0.1.0` on Windows 10 1809+ and Server 2019+; Server 2019, 2022 and Windows 10 ship them not installed, Server 2025 installed but not enabled, and `sshd` must be started in every case. [DOC S-tvueruxa, S-45qw32rr]
+- `sshd` reads `%programdata%\ssh\sshd_config` at service start only, generates it and the host keys under `C:\ProgramData\ssh` when missing, and the default shell is the `DefaultShell` string value under `HKLM:\SOFTWARE\OpenSSH`. [DOC S-ju4lek45, S-rsn4nacm, S-3sejzzve]
+- A standard user's keys go in `C:\Users\<user>\.ssh\authorized_keys`; an administrator's go in `C:\ProgramData\ssh\administrators_authorized_keys`, whose ACL may hold only SYSTEM and Administrators; `ssh-agent` is disabled until set to start; Entra ID accounts cannot use keys and `AuthorizedKeysCommand` is unsupported. [DOC S-rsn4nacm, S-ju4lek45]
+- Group Policy documents one OpenSSH setting, the `OpenSSH SSH Server` service startup mode under System Services; installing the capability behind WSUS or without internet needs the optional component source policy (Policy CSP `ADMX_Servicing`) and a Features on Demand share on Server 2019/2022 and Windows 10/11 21H2. [DOC S-yk5jqwiu, S-45qw32rr, S-worv22b3]
+- Intune has no OpenSSH payload on the pages read; its scripting route is a platform script or remediation. [DER S-p4fis3e4, S-45qw32rr]
+- Conclusion: a fleet gets the capability from Windows Update or an FoD share, the service mode from a GPO, and `sshd_config`, `DefaultShell`, key files and their ACLs from a script run by Intune, Group Policy or both, because no Microsoft page read exposes those as policy settings. [DER S-yk5jqwiu, S-45qw32rr, S-rsn4nacm, S-ju4lek45, S-p4fis3e4]
+- Open: an Intune settings catalog or CSP item for `sshd_config`, the 32-bit script host with `Add-WindowsCapability`, and whether the in-box build ships `OpenSSHUtils` were not confirmed. [UNK]
+- See windows/openssh-server.md, windows/openssh-key-management.md, windows/openssh-estate-deployment.md, intune/platform-scripts.md.
+
+_Agent: kb-research_

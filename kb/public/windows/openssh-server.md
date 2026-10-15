@@ -2,8 +2,8 @@
 topic: windows/openssh-server
 priority: P0
 applies_to: "Windows 10 1809+/Windows 11, Windows Server 2019/2022/2025 (in-box OpenSSH)"
-retrieved_utc: 2026-09-26
-sources: [S430, S431, S432]
+retrieved_utc: 2026-10-15
+sources: [S430, S431, S432, S-ju4lek45, S-tvueruxa, S-3sejzzve, S-gceir6ge]
 status: complete
 ---
 
@@ -28,6 +28,18 @@ status: complete
 - Host keys are stored in `C:\ProgramData\ssh`. [DOC S432]
 - Keys for administrator accounts go in `C:\ProgramData\ssh\administrators_authorized_keys`, with an ACL that gives access only to Administrators and SYSTEM. [DOC S432]
 - The `ssh-agent` service is disabled by default. [DOC S432]
+- If `sshd_config` is missing, the service generates one with the default configuration when it starts; `sshd` reads the file only at service start, so a change needs a service restart. [DOC S-ju4lek45]
+- The Windows `ssh` client reads configuration in this order: `ssh.exe -F <file>`, the user's `%userprofile%\.ssh\config`, then `%programdata%\ssh\ssh_config`. [DOC S-ju4lek45]
+- Before setting `DefaultShell`, the OpenSSH folder (`%systemdrive%\Windows\System32\openssh` for the in-box build) must be on the system path; the setting applies to OpenSSH Server only, not the client. [DOC S-ju4lek45]
+- Win32-OpenSSH also reads two optional values beside `DefaultShell`: `DefaultShellCommandOption` (switch that makes the shell run one command and exit, default `-c`) and `DefaultShellEscapeArguments` (default `0`; only meaningful for shells other than PowerShell, bash, Cygwin, cmd and `ssh-shellhost.exe`). [DOC S-3sejzzve]
+- Account names in `AllowUsers`, `AllowGroups`, `DenyUsers` and `DenyGroups` are written in lower case; domain principals use `user?domain*` (not `@`, which is the `user@host` form) and are resolved to `domain_short_name\user_name`, while workgroup and internet-connected accounts resolve to the local name. [DOC S-ju4lek45]
+- `PermitRootLogin` is not applicable on Windows: to stop administrators signing in, put `Administrators` in `DenyGroups`. [DOC S-ju4lek45]
+- `SyslogFacility LOCAL0` writes file logs under `%programdata%\ssh\logs`; any other value, the default `AUTH` included, sends logging to ETW. [DOC S-ju4lek45]
+- `ChrootDirectory` (added in v7.7.0.0) is honoured only for SFTP sessions, not for a `cmd.exe` session; an SFTP-only server sets `ForceCommand internal-sftp`. [DOC S-ju4lek45]
+- `GSSAPIAuthentication` (default `no`) exists from Windows Server 2022, Windows 11 and Windows 10 May 2021 Update. [DOC S-ju4lek45]
+- Directives not available in the in-box build include `AcceptEnv`, `AuthorizedKeysCommand`, `AuthorizedKeysCommandUser`, `AuthorizedPrincipalsCommand`, `KbdInteractiveAuthentication`, `PermitUserEnvironment`, `PidFile`, `StrictModes`, `X11Forwarding` and `Kerberos*`/`HostbasedAuthentication` options. [DOC S-ju4lek45]
+- The overview lists Windows Server 2025 as "installed but not enabled", and Server 2019, Server 2022 and Windows 10 1809+ as not installed. [DOC S-tvueruxa]
+- On Server 2025 the **Remote SSH Access** property in Server Manager (Local Server) enables the service, and a PowerShell check confirms that setup created firewall rule `OpenSSH-Server-In-TCP`. [DOC S-gceir6ge]
 
 ## Reference
 | Item | Value | Source |
@@ -37,6 +49,7 @@ status: complete
 | Firewall rule | `OpenSSH-Server-In-TCP` (TCP 22) | S430 |
 | Config | `%programdata%\ssh\sshd_config` | S431 |
 | Default shell key | `HKLM\SOFTWARE\OpenSSH` `DefaultShell` (REG_SZ) | S431 |
+| Related topics | `windows/openssh-key-management.md` (keys, ACLs, agent), `windows/openssh-estate-deployment.md` (Group Policy, WSUS, Intune), `ansible/windows-ssh.md`, `windows/powershell-remoting-jea.md` | |
 
 ## Examples
 - SNIPPET: install and start the OpenSSH Server capability, then set the default shell to PowerShell 7; context: Windows Server 2019+/Windows 10 1809+, elevated prompt; checked: no [DOC S430, S431: `Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0`, `Start-Service sshd`, `Set-Service -Name sshd -StartupType Automatic` (S430); `DefaultShell` string value under `HKLM:\SOFTWARE\OpenSSH` (S431)]

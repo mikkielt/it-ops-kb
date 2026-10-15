@@ -911,3 +911,8 @@ wsl.conf,security/gentoo-in-wsl
 gentoo-wsl-config,security/gentoo-in-wsl
 robocopy.exe,windows/robocopy
 SECFIX,windows/robocopy
+administrators_authorized_keys,windows/openssh-key-management
+OpenSSHUtils,windows/openssh-key-management
+Repair-AuthorizedKeyPermission,windows/openssh-key-management
+DefaultShellCommandOption,windows/openssh-server
+OpenSSH.Server~~~~0.0.1.0,windows/openssh-estate-deployment
