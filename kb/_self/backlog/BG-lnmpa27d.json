@@ -45,6 +45,25 @@
   "depends_on": [
     "BG-r2epswpp"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the off-domain name check treat a name found in a candidate line only inside a hyphenated word?",
+      "options": [
+        "hyphen part alone does not hold the name",
+        "no compound part (hyphen, dot, camel) holds the name"
+      ],
+      "recommendation": "hyphen part alone does not hold the name",
+      "do": {
+        "hyphen part alone does not hold the name": "BG-lnmpa27d",
+        "no compound part (hyphen, dot, camel) holds the name": "BG-lnmpa27d"
+      },
+      "class": "design",
+      "answer": "hyphen part alone does not hold the name",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan amendment 2026-10-15 (triage fit10): seen in ST-edgkrk37, where adding agents/agent-sandboxes.md moved instruction-and-context-limits.md from 5th to 4th article (8.78 vs 8.79 against git-test-repositories.md) for EV-configure-vmware-horizon-instant-clones, so the off-domain check found 'horizon' among the candidate units and rag.py eval failed that row (want none, got weak) until the new article's two 'clone' words were reworded. Not covered by BG-r2epswpp's baseline re-judge (the cause is article order, not word share); same file kbfacts.py, so it runs after BG-r2epswpp. Premise 2026-10-15 at c907de7b3: the repro exits 1 (pack 'How do I set up VMware Horizon for agents?' gives coverage weak). Checks that pass before the work: the test selection passes before the work and is kept as a guard (the change extends it, about +0.2 s); the repro fails before the work and reads the goal.",
   "claimed_by": "orch-z3jcdsgr"
 }
