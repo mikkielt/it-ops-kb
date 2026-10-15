@@ -1,0 +1,26 @@
+{
+  "id": "ST-3yj5rkdu",
+  "kind": "story",
+  "title": "EV-page-file-size-windows is re-decided now that the word window is under COMMON_SHARE",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "rag.py eval prints no DRIFT line for EV-page-file-size-windows: the row's expect_verdict is reread against what the kb holds on page file size (the live pack prints good with a check: line since window fell to 0.1987 of the units) and either kept weak with a reason or set to the verdict the kb now earns, and word_shares.csv is rewritten with rag.py eval --write-shares once the row passes on live shares; found at the SP-z3jcdsgr review's done rerun",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,\"_tools/rag.py\",\"eval\"],capture_output=True,text=True);bad=[l for l in p.stdout.splitlines() if l.startswith(\"DRIFT EV-page-file-size-windows\")];print(bad);sys.exit(1 if bad or p.returncode else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/lookup_eval.csv",
+    "kb/public/_retrieval/word_shares.csv",
+    "kb/_self/_retrieval/word_shares.csv"
+  ],
+  "links": [
+    "parked: SP-z3jcdsgr review"
+  ]
+}
