@@ -1,0 +1,20 @@
+{
+  "id": "SP-b36246xo",
+  "kind": "sprint",
+  "title": "Research tools decide what a model now writes or works around by hand",
+  "status": "planned",
+  "goal": "kbid.py add takes a source row's title, publisher and version from the fetched page and the host registry and writes its licence and reuse from the licence record in one controlled form; factdiff.py anchor --file takes either path form, a quote per cited source and proposes each fact's quote; provider.py read prints a page's lines whole on request; a /kb-research session's _tools/aliases.csv rows land in its research commit without a KB-Work item; the research write set names the shapes the leak scan refuses",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
