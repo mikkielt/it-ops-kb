@@ -1064,10 +1064,12 @@ def bench_pool_rerun_of_one_label_narrows_the_earlier_spend_row_and_respend_repa
     assert verify() == 0 and bm.main(["pool", "respend", "--file", str(out)]) == 0 and "overlaps another" in capsys.readouterr().out
 
 
-def bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env(tmp_path, monkeypatch, capsys):
+def bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env(tmp_path, monkeypatch, capsys,
+                                                                                               kb_seed):
     import subprocess
     import bench_repro as br
     import benchmarks as bm
+    import bl_base
     import conftest
     sh = bc.shim_dir(tmp_path / "shim")  # a `claude` that fails at once: nothing started here may reach a model
     for k, v in {"PATH": f"{sh}{os.pathsep}{os.environ['PATH']}", "KB_SYNC_NO_TESTS": "1", "KB_SESSION": "other-session",
@@ -1122,25 +1124,46 @@ def bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_
     assert bm.main(["repro", "setup", "--instances", "1", "--dir", str(root), "--start", "no-such-rev"]) == 2
     assert "no such commit" in capsys.readouterr().err
     assert bm.main(["repro", "setup", "--instances", "0", "--dir", str(root)]) == 2
+    # repro check: a probe's sync --push lands on its own bare and never on the stand-in for the real origin (a bare copy
+    # of this working tree's files, which has the tools the probe runs; the clone's own history lacks blobs); the probe is
+    # gone afterwards
+    real = tmp_path / "real.git"
+    git("clone", "-q", "--bare", str(kb_seed[0]), str(real), cwd=tmp_path)
+    tip = git("rev-parse", "main", cwd=real)
+    monkeypatch.setattr(br, "remote_url", lambda: ("origin", str(real)))
+    left = sorted((tmp_path / "scratch").iterdir())  # the clones of the setups above stay
+    capsys.readouterr()
+    assert bm.main(["repro", "check"]) == 0
+    out = capsys.readouterr().out
+    assert "the probe's push stayed on its own bare" in out and "FAIL" not in out, out
+    assert git("rev-parse", "main", cwd=real) == tip and sorted((tmp_path / "scratch").iterdir()) == left
+    assert br.CLAIMS_LEDGER == bl_base.CLAIMS_LEDGER
+    # a planted failure: a commit that a fresh fetch of the real origin does have is named, the exit is 1, the probe still goes
+    monkeypatch.setattr(br, "reaches", lambda sha, url, work: True)
+    assert bm.main(["repro", "check"]) == 1
+    out = capsys.readouterr().out
+    assert "FAIL: the commit is not in a fresh fetch of the real origin's main" in out and "1 failed" in out, out
+    assert sorted((tmp_path / "scratch").iterdir()) == left
 
 
-def together(tmp_path, monkeypatch, capsys, *bodies):
+def together(tmp_path, monkeypatch, capsys, *bodies, **fixtures):
     """Run each body as its own test would: a directory of its own, the patches of the ones before undone, no printed
-    output of theirs left to read."""
+    output of theirs left to read; `fixtures` are further fixtures a body names."""
     for n, body in enumerate(bodies):
         root = tmp_path / f"part{n}"
         root.mkdir()
         capsys.readouterr()
         with pytest.MonkeyPatch.context() as mp:
-            have = {"tmp_path": root, "monkeypatch": mp, "capsys": capsys}
+            have = {"tmp_path": root, "monkeypatch": mp, "capsys": capsys, **fixtures}
             body(**{k: v for k, v in have.items() if k in inspect.signature(body).parameters})
 
 
-def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, capsys):
+def test_bench_price_weights_and_tier_and_freshness_rows(tmp_path, monkeypatch, capsys, kb_seed):
     together(tmp_path, monkeypatch, capsys, bench_price_sonnet_55_run_weights_cache_reads_by_its_own_ratio,
              bench_price_tier_is_recorded_and_alias_follows_the_run,
              bench_freshness_rows_dry_run_and_report_check_exits_1_on_a_marker_with_no_rows,
-             bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env)
+             bench_repro_setup_pins_one_commit_per_instance_with_its_own_bare_mcp_config_log_mode_and_env,
+             kb_seed=kb_seed)
 
 
 def test_bench_pool_build_check_scenario_rows_and_session_shape(tmp_path, monkeypatch, capsys):

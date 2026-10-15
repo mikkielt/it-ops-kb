@@ -71,6 +71,12 @@
                                             remote is that bare, its query log `off` and an mcp-config file of its
                                             own (use it with --strict-mcp-config); prints each path; --dry-run
                                             prints the plan and starts nothing; exit 2 on a refusal
+  benchmarks.py repro check                 build one probe instance as `repro setup` does, commit one _gaps.md entry in
+                                            it, run `kbgit.py sync --push` there and exit 0 only when the probe's bare
+                                            main moved to that commit, the commit is not in a fresh fetch of the real
+                                            origin's main, its mcp-config names its own kb_mcp.py whose --status prints
+                                            its kb_dir, its query log mode is off and its claims ledger and _cache are
+                                            its own; then removes the probe; exit 1 naming each failure, 2 on a refusal
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -204,6 +210,7 @@ def main(argv=None):
                     "commit that added " + bench_repro.ADDED + ", else the integration main's tip)")
     rs.add_argument("--dir", help="where the bare origins go (default: _cache/bench-repro of the clone's main worktree)")
     rs.add_argument("--dry-run", action="store_true", help="print the plan and start nothing")
+    rp.add_parser("check")
     a = ap.parse_args(argv)
     if a.cmd == "list":
         for name, (section, _) in SCENARIOS.items():
@@ -212,13 +219,15 @@ def main(argv=None):
     if a.cmd == "pool":
         return bench_pool.cli(a)
     if a.cmd == "repro":
-        if a.instances < 1:
+        if a.repro_cmd == "setup" and a.instances < 1:
             print("--instances needs 1 or more", file=sys.stderr)
             return 2
         try:
+            if a.repro_cmd == "check":
+                return bench_repro.check()
             return bench_repro.setup(a.instances, a.start, a.dir, a.dry_run)
         except bench_repro.Refused as e:
-            print(f"repro setup: {e}", file=sys.stderr)
+            print(f"repro {a.repro_cmd}: {e}", file=sys.stderr)
             return 2
     if a.cmd == "report":
         rows = read_rows(RESULTS)

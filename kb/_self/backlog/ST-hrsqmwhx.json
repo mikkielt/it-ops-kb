@@ -44,6 +44,59 @@
   "depends_on": [
     "ST-g52zbsv4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the probe's kbgit.py sync --push run its test step, or does repro check always skip it?",
+      "options": [
+        "run the probe's tests unless the caller has KB_SYNC_NO_TESTS set",
+        "always set KB_SYNC_NO_TESTS=1 for the probe"
+      ],
+      "recommendation": "run the probe's tests unless the caller has KB_SYNC_NO_TESTS set",
+      "do": {
+        "run the probe's tests unless the caller has KB_SYNC_NO_TESTS set": "ST-hrsqmwhx",
+        "always set KB_SYNC_NO_TESTS=1 for the probe": "ST-hrsqmwhx"
+      },
+      "class": "push",
+      "answer": "run the probe's tests unless the caller has KB_SYNC_NO_TESTS set",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which topic does the probe's committed _gaps.md entry name, and where is the probe built?",
+      "options": [
+        "the first article of the probe's clone, in a directory repro-check-PID of the scratch directory",
+        "a fixed topic name, in the default _cache/bench-repro directory"
+      ],
+      "recommendation": "the first article of the probe's clone, in a directory repro-check-PID of the scratch directory",
+      "do": {
+        "the first article of the probe's clone, in a directory repro-check-PID of the scratch directory": "ST-hrsqmwhx",
+        "a fixed topic name, in the default _cache/bench-repro directory": "ST-hrsqmwhx"
+      },
+      "class": "design",
+      "answer": "the first article of the probe's clone, in a directory repro-check-PID of the scratch directory",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "What stands in for the real origin in the test bundle's repro check run, and how is its planted failure made?",
+      "options": [
+        "the conftest kb_seed bare (this working tree's files; the clone's own history lacks blobs), with reaches patched to True for the planted failure",
+        "a bare clone of the checkout's HEAD"
+      ],
+      "recommendation": "the conftest kb_seed bare (this working tree's files; the clone's own history lacks blobs), with reaches patched to True for the planted failure",
+      "do": {
+        "the conftest kb_seed bare (this working tree's files; the clone's own history lacks blobs), with reaches patched to True for the planted failure": "ST-hrsqmwhx",
+        "a bare clone of the checkout's HEAD": "ST-hrsqmwhx"
+      },
+      "class": "push",
+      "answer": "the conftest kb_seed bare (this working tree's files; the clone's own history lacks blobs), with reaches patched to True for the planted failure",
+      "by": "operator"
+    }
+  ],
   "notes": "The test bundle passes before the work: it pins the new bodies once they are added; the repro subcommand checks fail before the work.",
   "claimed_by": "orch-mac"
 }
