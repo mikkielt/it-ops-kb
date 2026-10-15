@@ -982,14 +982,16 @@ def test_lookup_eval_fails_on_a_wrong_expected_article(tmp_path):
                  expect_paths="dsc/what-if.md" if row["expect_paths"] != "dsc/what-if.md" else "auth/kerberos.md")
     bad = tmp_path / "lookup_eval.csv"
     with open(bad, "w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(row), lineterminator="\n")
-        w.writeheader()
-        w.writerows([wrong, row])
+        w = csv.DictWriter(f, fieldnames=[*row, "expect_re"], lineterminator="\n")
+        w.writeheader()  # expect_re: `;`-separated regexes, one of which must match the pack's text
+        w.writerows([wrong, row, dict(row, id="EV-planted-regex", expect_re="zzzz[0-9]{9};zzzz[a-f]{9}"),
+                     dict(row, id="EV-planted-regex-ok", expect_re="zzzz[0-9]{9};.")])
     code, out = tool("rag.py", "eval", "--file", str(bad))
-    assert code == 1 and f"FAIL {wrong['id']}" in out and "questions=2 passed=1" in out, out[-1500:]
-    assert f" {row['id']} " not in out, out[-1500:]  # a passing row is printed only with --all
-    code, out = tool("rag.py", "eval", "--file", str(bad), "--min", "1", "--all")  # the held-out rate's form: at least N pass
-    assert code == 0 and "questions=2 passed=1" in out and f"ok   {row['id']} " in out, out[-1500:]
+    assert code == 1 and f"FAIL {wrong['id']}" in out and "questions=4 passed=2" in out, out[-1500:]
+    assert re.search(r"FAIL EV-planted-regex +verdict=\S+ +\(want \S+ *\) found=\S+ chars=\d+ failed=regex$", out, re.M), out[-1500:]
+    assert f" {row['id']} " not in out and "EV-planted-regex-ok" not in out, out[-1500:]  # a passing row is printed only with --all
+    code, out = tool("rag.py", "eval", "--file", str(bad), "--min", "2", "--all")  # the held-out rate's form: at least N pass
+    assert code == 0 and "questions=4 passed=2" in out and f"ok   {row['id']} " in out, out[-1500:]
 
 
 def test_eval_offkb_overlap_and_heldout_reword_are_refused_naming_the_row(tmp_path):
@@ -998,17 +1000,19 @@ def test_eval_offkb_overlap_and_heldout_reword_are_refused_naming_the_row(tmp_pa
     write(tmp_path / "lookup_eval.csv", head + "EV-planted,How do I expose the session id to a Bash command?,x/a.md,good,\n"
           + "EV-planted-offkb,Which port does the relay listen on?,x/a.md,good,\n"
           + "EV-planted-guard,how do I clear the cache,,weak,\n")  # a weak row on the off-kb list is a guard, not an overlap
-    write(tmp_path / "lookup_heldout.csv", head
-          + "HO-reworded,How do I expose the session id in a Bash command?,x/a.md,good,\n"
-          + "HO-other-question,What does the retention setting delete first?,x/a.md,good,\n"
-          + "HO-other-article,How do I expose the session id to a Bash command?,x/b.md,good,\n"
-          + "HO-offkb,How do I rotate the signing key?,x/a.md,good,\n")
+    for name in rag.FROZEN_FILES:  # the held-out file and the repro benchmark's frozen questions are held to one rule
+        write(tmp_path / name, head
+              + "HO-reworded,How do I expose the session id in a Bash command?,x/a.md,good,\n"
+              + "HO-other-question,What does the retention setting delete first?,x/a.md,good,\n"
+              + "HO-other-article,How do I expose the session id to a Bash command?,x/b.md,good,\n"
+              + "HO-offkb,How do I rotate the signing key?,x/a.md,good,\n")
     write(tmp_path / "doc2query" / "offkb_questions.txt",
           "how do I rotate the signing  key\nWhich port does the relay listen on?\nHow do I clear the cache?\n")
-    code, out = tool("rag.py", "eval", "--file", str(tmp_path / "lookup_heldout.csv"), "--min", "1")
-    assert code == 1 and "REWORD HO-reworded ~ EV-planted (ratio 0.9" in out, out[-1500:]  # --min does not excuse it
-    assert "OFFKB HO-offkb (lookup_heldout.csv): its question is line 1 of " in out, out[-1500:]
-    assert "HO-other" not in out and "questions=" not in out, out[-1500:]  # refused before any pack runs
+    for name in rag.FROZEN_FILES:
+        code, out = tool("rag.py", "eval", "--file", str(tmp_path / name), "--min", "1")
+        assert code == 1 and "REWORD HO-reworded ~ EV-planted (ratio 0.9" in out, out[-1500:]  # --min does not excuse it
+        assert f"OFFKB HO-offkb ({name}): its question is line 1 of " in out, out[-1500:]
+        assert "HO-other" not in out and "questions=" not in out, out[-1500:]  # refused before any pack runs
     code, out = tool("rag.py", "eval", "--file", str(tmp_path / "lookup_eval.csv"))
     assert code == 1 and "OFFKB EV-planted-offkb (lookup_eval.csv): its question is line 2 of " in out, out[-1500:]
     assert "EV-planted-guard" not in out and "EV-planted " not in out and "questions=" not in out, out[-1500:]
