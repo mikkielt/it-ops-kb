@@ -2,7 +2,7 @@
   "id": "ST-xmy3pm4z",
   "kind": "story",
   "title": "Research: Entra agent identities with Azure RBAC, ABAC conditions and custom security attributes",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-klpp2paw",
   "sprint": "SP-5dffnlxn",
   "priority": "P2",
@@ -51,5 +51,19 @@
     }
   ],
   "notes": "How: Answer with the kb tools first and official sources for the rest, writing facts through /kb-research, closing the agent-rbac UNK on agent identities and ABAC.",
-  "claimed_by": "orch-state"
+  "evidence": {
+    "commit": "3d5ad92f1e5d560c7fdc658791c84316b1bb0d1e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-xmy3pm4z"
+        ],
+        "exit": 0,
+        "sha256": "042db5e4ab28a39b"
+      }
+    ]
+  }
 }
