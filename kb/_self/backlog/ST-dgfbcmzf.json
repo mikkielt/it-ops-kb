@@ -2,7 +2,7 @@
   "id": "ST-dgfbcmzf",
   "kind": "story",
   "title": "repro_bench.csv freezes 3 to 5 user-style questions per benchmark area, written before any instance runs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ygsnog4n",
   "priority": "P2",
   "rank": 0,
@@ -103,5 +103,37 @@
     }
   ],
   "notes": "The questions are written by a worker that sees the briefs and the kb but no research of the instances (none exists yet); held-out style (kb/_self/tools.md answer-rate fitness test; kb/_self/maintaining.md: a failing held-out row stays and is never tuned). False good verdicts today (podman, typescript, rust, python venv) mean an absent-area row needs an expect_re or expect_text, not only a verdict. The start commit for the instances is this file's adding commit's parent (ST-g52zbsv4 setup default). From ST-hfcsyyin's worker (2026-10-15): rag.py eval compares each row's expect_verdict with the pack's verdict, so a repro_bench.csv row with an empty expect_verdict fails the verdict check; set expect_verdict on every row.",
-  "claimed_by": "orch-mac"
+  "evidence": {
+    "commit": "e1ea6f05fa1aab127d816c4ea89ff413e138b8f6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "repro",
+          "questions"
+        ],
+        "exit": 0,
+        "sha256": "6f8c6b4e3562d3aa"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess,sys\nf='kb/public/_retrieval/repro_bench.csv'\nif not os.path.exists(f): print('no',f); sys.exit(1)\np=subprocess.run([sys.executable,'_tools/rag.py','eval','--file',f,'--root','public','--all'],capture_output=True,text=True)\nout=p.stdout+p.stderr; bad=[l for l in out.splitlines() if l.startswith(('REWORD','OFFKB'))]\nprint(p.returncode,len(out.splitlines()),bad[:5]); sys.exit(0 if p.returncode in (0,1) and not bad and 'questions=' in out else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f11676662cbdb3e0"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys\nf='kb/public/_retrieval/repro_bench.csv'\nc=subprocess.run(['git','log','--format=%H','--',f],capture_output=True,text=True,check=True).stdout.split()\nif not c: print('not committed'); sys.exit(1)\nn=subprocess.run(['git','show','--name-only','--format=','-m',c[-1]],capture_output=True,text=True,check=True).stdout.split()\nextra=[x for x in n if x!=f and not x.startswith('kb/_self/backlog/')]\nprint(len(c),'commit(s)',c[-1],extra); sys.exit(0 if len(c)==1 and not extra else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e094c1ee3a155cc1"
+      }
+    ]
+  }
 }
