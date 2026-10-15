@@ -359,6 +359,11 @@ Every topic of this root with its priority (the research order, not importance),
 | `security/almalinux-elevate` | P3 | partial | `security/almalinux-elevate.md` | 5 |
 | `security/almalinux-lifecycle-rhel-relation` | P3 | partial | `security/almalinux-lifecycle-rhel-relation.md` | 7 |
 | `security/almalinux-repositories-vault-pins` | P3 | partial | `security/almalinux-repositories-vault-pins.md` | 12 |
+| `security/gentoo-binary-packages-binhost` | P3 | partial | `security/gentoo-binary-packages-binhost.md` | 7 |
+| `security/gentoo-ebuild-repositories-overlays` | P3 | complete | `security/gentoo-ebuild-repositories-overlays.md` | 6 |
+| `security/gentoo-emerge-make-conf-etc-portage` | P3 | complete | `security/gentoo-emerge-make-conf-etc-portage.md` | 11 |
+| `security/gentoo-stage-files-init-systems` | P3 | partial | `security/gentoo-stage-files-init-systems.md` | 8 |
+| `security/gentoo-use-flags-profiles-keywords` | P3 | complete | `security/gentoo-use-flags-profiles-keywords.md` | 11 |
 | `security/kali-apt-sources-metapackages` | P3 | partial | `security/kali-apt-sources-metapackages.md` | 4 |
 | `security/kali-default-account-vm-containers` | P3 | partial | `security/kali-default-account-vm-containers.md` | 11 |
 | `security/kali-images-verification-builds` | P3 | partial | `security/kali-images-verification-builds.md` | 6 |

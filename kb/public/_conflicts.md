@@ -820,3 +820,6 @@ several items are simply undocumented (see gaps.md) rather than disagreeing.
 
 ## arch/chef-windows-nodes
 - Chef Infra Client install location on Windows: the Chef for Windows page (S-3x3s2jec, read 2026-10-15) says in one place that after installation the client is located at `C:\opscode` and in the next line at `C:\hab`, and its PATH section names `C:\opscode\chef\bin`; the 19.3.15 release notes (S-qdnvehti) say Habitat-related paths follow `SYSTEMDRIVE` and Omnibus-related paths stay at `C:\opscode`. The kb states both and does not choose; which distribution uses which root is open. (topic: arch/chef-windows-nodes)
+
+## security/gentoo-use-flags-profiles-keywords
+- Default `USE_ORDER`: the Gentoo wiki page for the variable (S-w323r75a, read 2026-10-15) gives `env:pkg:conf:defaults:pkginternal:repo:env.d`, while the `make.conf(5)` manual page (S-5lblcwaf) and `cnf/make.globals` (S-uhuj7vad), both at Portage commit `27abd048bffa`, give `env:pkg:conf:defaults:pkginternal:features:repo:env.d`, with `features` for flags implied by `FEATURES` (currently `test`). The kb states both and prefers the implementation, since the wiki page lists the same table without a `features` row; the wiki page is likely older. (topic: security/gentoo-use-flags-profiles-keywords)

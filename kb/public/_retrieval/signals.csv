@@ -885,3 +885,24 @@ kali-live,security/kali-images-verification-builds
 kali-installer,security/kali-images-verification-builds
 kali-grant-root,security/kali-default-account-vm-containers
 kalilinux/kali-rolling,security/kali-default-account-vm-containers
+USE_ORDER,security/gentoo-use-flags-profiles-keywords
+ACCEPT_KEYWORDS,security/gentoo-use-flags-profiles-keywords
+package.accept_keywords,security/gentoo-use-flags-profiles-keywords
+package.use,security/gentoo-use-flags-profiles-keywords
+eselect profile,security/gentoo-use-flags-profiles-keywords
+make.globals,security/gentoo-emerge-make-conf-etc-portage
+emerge --depclean,security/gentoo-emerge-make-conf-etc-portage
+/etc/portage/make.conf,security/gentoo-emerge-make-conf-etc-portage
+emaint sync,security/gentoo-ebuild-repositories-overlays
+eselect repository,security/gentoo-ebuild-repositories-overlays
+repos.conf,security/gentoo-ebuild-repositories-overlays
+emerge-webrsync,security/gentoo-ebuild-repositories-overlays
+portageq,security/gentoo-ebuild-repositories-overlays
+binrepos.conf,security/gentoo-binary-packages-binhost
+getuto,security/gentoo-binary-packages-binhost
+quickpkg,security/gentoo-binary-packages-binhost
+BINPKG_FORMAT,security/gentoo-binary-packages-binhost
+getbinpkg,security/gentoo-binary-packages-binhost
+stage3,security/gentoo-stage-files-init-systems
+rc-update,security/gentoo-stage-files-init-systems
+openrc-init,security/gentoo-stage-files-init-systems

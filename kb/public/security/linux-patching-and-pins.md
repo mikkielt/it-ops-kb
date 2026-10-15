@@ -46,6 +46,8 @@ AlmaLinux's release lifecycle, repository layout, vault paths and ELevate upgrad
 
 Kali Linux is a rolling Debian-testing derivative whose branches (`kali-rolling`, `kali-last-snapshot`) take the place of a release pin: see `security/kali-releases-rolling-model.md` and `security/kali-apt-sources-metapackages.md`.
 
+For Gentoo, where Portage builds from a synced ebuild repository, the profile, the keywords and the binary package host decide what is installed; see `security/gentoo-use-flags-profiles-keywords.md`, `security/gentoo-ebuild-repositories-overlays.md` and `security/gentoo-binary-packages-binhost.md`.
+
 ## Examples
 - SNIPPET: switch the periodic apt jobs off with one fragment; context: Debian or Ubuntu with apt; checked: no [DER S-4npfgqu6: `APT::Periodic::Enable` 0 disables the script]
 ```

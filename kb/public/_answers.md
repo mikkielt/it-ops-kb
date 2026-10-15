@@ -3754,3 +3754,17 @@ _Agent: kb-research_
 - See security/kali-releases-rolling-model.md, security/kali-apt-sources-metapackages.md, security/kali-images-verification-builds.md, security/kali-default-account-vm-containers.md.
 
 _Agent: kb-research_
+
+## QK-gentoo-portage-use-flags-profiles-binary-packages-init. How do Gentoo's Portage and emerge, USE flags, profiles and keywords, make.conf and /etc/portage, overlays, binary packages and the OpenRC and systemd choice work?
+- A USE flag is set, unset or default; it is layered from the environment, `package.use`, `make.conf`, the profile defaults and the ebuild (`USE_ORDER`), and the wiki prefers per-package `package.use` files to the global `USE` variable. [DOC S-dkzzajvo, S-w323r75a, S-jcuv5ggt]
+- A profile is the install-time baseline (default flags, `make.conf` defaults, system set, init system variant); a keyword (`ACCEPT_KEYWORDS`) selects stable or `~arch` testing, set by the profile and refined in `make.conf` or per package. [DOC S-6egnea5f, S-rnjsi3xg, S-cl6ijk7g]
+- `emerge` acts at once without `--ask` or `--pretend`; the update is a sync then `emerge --update --deep --newuse @world`; settings live in `/etc/portage` (many entries can be directories) over defaults in the profile and `make.globals`. [DOC S-5hbh6sac, S-cvsv6e4z, S-hfgxhfhm, S-5dnrfnng]
+- Overlays are ebuild repositories declared in `/etc/portage/repos.conf` with a sync type, URI and priority (`::gentoo` defaults to -1000, others 0), synced with `emaint sync` and edited with `eselect repository`. [DOC S-aguccvdb, S-3v7thb2n, S-46ys6oow]
+- Binary packages are GPKG or XPAK, used with `--getbinpkg`/`--usepkg`, fetched from hosts named in `/etc/portage/binrepos.conf`, and verified against OpenPGP signatures by default as the 2026-05-03 news item says; the official binhost serves amd64 and arm64 daily. [DOC S-vr4evhob, S-rzs2uo4g, S-ch2quvvc, S-5dnrfnng]
+- A stage 3 tarball is the seed of an install, built for one architecture and profile without a kernel or bootloader; OpenRC is Gentoo's native init and systemd is fully supported, chosen with the stage and profile. [DOC S-qfnocjvf, S-rq7fzez5, S-kdxg3wyq, S-6er43wub]
+- The wiki's `USE_ORDER` page omits the `features` layer that `make.conf(5)` and `cnf/make.globals` have at the pinned Portage commit; the kb records both. [DOC S-w323r75a, S-5lblcwaf] [CODE S-uhuj7vad]
+- Conclusion: a host managed by an agent should keep flags, keywords, repositories and binhosts in named drop-in files under `/etc/portage`, plan changes with `emerge --pretend` before applying them, set overlay priority and signature verification explicitly, and treat the init system as a stage and profile decision made once before first boot. [DER S-jcuv5ggt, S-cl6ijk7g, S-3v7thb2n, S-5dnrfnng, S-qfnocjvf, S-6egnea5f: directory forms, option semantics and the stage-profile coupling]
+- Open: the Portage release in which remote binpkg signature verification became the default, the package list of a current stage 3 and the build cadence of stage autobuilds were not found, and the OpenRC and systemd wiki pages carry stale notices. [UNK]
+- See security/gentoo-use-flags-profiles-keywords.md, security/gentoo-emerge-make-conf-etc-portage.md, security/gentoo-ebuild-repositories-overlays.md, security/gentoo-binary-packages-binhost.md, security/gentoo-stage-files-init-systems.md.
+
+_Agent: kb-research_
