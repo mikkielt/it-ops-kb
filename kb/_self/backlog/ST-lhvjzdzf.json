@@ -21,6 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-16: the sprint's items are internal tooling (claims ledger, dispatch, land, intake, forge target, distill, sync, gate classes); no outside fact is expected, so the worker may record a `No outside facts:` note after a kb check of the goal's terms.",
+  "notes": "Plan 2026-10-16: the sprint's items are internal tooling (claims ledger, dispatch, land, intake, forge target, distill, sync, gate classes); no outside fact is expected, so the worker may record a `No outside facts:` note after a kb check of the goal's terms. No outside facts: kb check 2026-10-16 of the goal's terms (shared-state concurrency, stale lock file and O_EXCL locks, process left running in a worktree, git remote url per repository, 5xx push retry) finds them covered by public/agents/shared-state-concurrency.md, public/python/stdlib-windows-portability.md (lines 45-67), public/gitlab/git-test-repositories.md (lines 64, 218, 310) and public/agents/agent-error-catalogue.md:28; the sprint's items change the project's own tooling (claims ledger, dispatch, land, intake, forge target, distill, sync), whose behaviour no outside page states, so no live-docs search and no new fact or gap entry.",
   "claimed_by": "orch-r01"
 }
