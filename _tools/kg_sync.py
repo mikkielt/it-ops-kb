@@ -586,30 +586,31 @@ def item_done(iid):
 SELECTOR_TESTS = re.compile(r"^\s*\S+\s+NONE\s+(?P<sel>.+?)\s(?:EP|ST|TK|SB|BG)-[a-z2-7]{8}\s[“(]")
 
 
-def dropped_test_names():
-    """The test names (the part after `::`) of the ids `_tools/test_ids_dropped.txt` records, read with perfcheck's reader."""
+def dropped_test_ids():
+    """The test ids (lower case) that `_tools/test_ids_dropped.txt` records, read with perfcheck's reader."""
     try:
         text = Path(KB, perfcheck.DROPPED_FILE).read_text(encoding="utf-8")
     except OSError:
         return set()
-    return {i.split("::")[-1] for _, ids in perfcheck.dropped_groups(text) for i in ids}
+    return {i.lower() for _, ids in perfcheck.dropped_groups(text) for i in ids}
 
 
 def selects_only_dropped(ln):
-    """True when the `-k` selector of the NONE row LN names test ids and every one is recorded as dropped."""
+    """True when the `-k` selector of the NONE row LN names terms and every one is a substring (as pytest's `-k` matches,
+    a full name and a name prefix alike) of a test id recorded as dropped."""
     m = SELECTOR_TESTS.match(ln)
     if not m or "-k " not in m["sel"]:
         return False
-    names = [n.strip() for n in m["sel"].split("-k ", 1)[1].split(" or ")]
-    dropped = dropped_test_names()
-    return all(n in dropped for n in names)
+    terms = [n.strip().lower() for n in m["sel"].split("-k ", 1)[1].split(" or ")]
+    dropped = dropped_test_ids()
+    return all(t and any(t in i for i in dropped) for t in terms)
 
 
 def selector_gate(out):
     """(exit code, output) of the gate's `backlog.py selectors` run, whose own exit is always 0. A NONE row (the
     selector selects no test) of a done item refuses: `selectors` lists a done item only when its sprint is active, and
-    the sprint review reruns its check. It warns instead when the `-k` selector names only test ids that
-    `_tools/test_ids_dropped.txt` records: a done item's check cannot be repointed and the review counts it gone. A NONE
+    the sprint review reruns its check. It warns instead when each term of the `-k` selector is a substring of a test id
+    that `_tools/test_ids_dropped.txt` records: a done item's check cannot be repointed and the review counts it gone. A NONE
     row of any other item prints a warning (an open item's test may be yet to write), and so does an `error` row (a failed
     collection: the suite run beside it fails on a test file that does not collect)."""
     refused, warned = [], []
