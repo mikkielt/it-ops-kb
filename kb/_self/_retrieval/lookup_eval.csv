@@ -19,9 +19,9 @@ SE-017,what is allowed to be pushed to GitHub,git.md,good,yes,`main` only throug
 SE-018,how large may AGENTS.md be,maintaining.md,good,yes,`AGENTS.md` has a 4 KB cap,kb-self:update
 SE-019,should I run the whole test suite before every push,maintaining.md,good,yes,Do not run the suite,kb-self:commit;kb-verify
 SE-020,what happens when two whole-suite tests.py runs overlap on one host,maintaining.md,good,yes,waits for another such run,
-SE-021,when may a new test be added to the suite,code.md,good,yes,needs room under `max_ids`;A test is written only for,kb-item:work
+SE-021,when may a new test be added to the suite,code.md,good,yes,needs room under `max_ids`;A test exists only for a critical component,kb-item:work
 SE-022,may a tool in _tools import a third-party package,tools.md,good,yes,stdlib-only Python in `_tools/`,
-SE-023,what does a bug get instead of a regression test,code.md,good,yes,A bug gets a retrospective,kb-backlog:bug;kb-item:work
+SE-023,what does a bug get instead of a regression test,code.md,good,yes,A bug is fixed and proven by its `repro` and by user feedback,kb-backlog:bug;kb-item:work
 SE-024,who may change the numbers in the tests ceiling file,code.md,good,yes,only with the operator's recorded answer,kb-item:work;kb-worker
 SE-025,which fact tags are leads and never the answer alone,content-rules.md,good,yes,`UNK` and `COMMUNITY` facts are leads,kb-add-topic:research;kb-research:research
 SE-026,which placeholders must examples use instead of real hostnames and tenant ids,content-rules.md,good,yes,hosts `PL-LT-00123` and `PL-SRV-0042`,kb-add-topic:write;kb-research:write;kb-refresh:update
@@ -286,7 +286,7 @@ SQ-learn-derive-rules-finding-entry-fields,how does learn derive a rules finding
 SQ-apply-anchor-gate-tested-row-rules,how does apply anchor and gate a tested row for a rules finding,querylog.md,good,yes,the mean pack does not grow,
 SQ-columns-lookup-eval-csv-row-have,which columns does a lookup_eval.csv row have,content-rules.md,good,yes,one row per tested question,
 SQ-sprint,what is a sprint,backlog.md,good,yes,A sprint is a goal and the stories and bugs committed to it,
-SQ-four-kinds-test-may-item-add,which four kinds of test may an item add,code.md,good,yes,A test is written only for,
+SQ-critical-test-item-add,which components may an item add a test for,code.md,good,yes,A test exists only for a critical component,
 SQ-operator-decision-recorded-decisions-csv-gate,how is an operator decision recorded in _decisions.csv from a gate answer,backlog.md;content-rules.md,good,yes,also keeps the operator's answer as an active decision,
 SQ-must-self-reviewed-trailer-go-commit,where must the Self-Reviewed trailer go in a commit message for selfdoc stale to read it,git.md,good,yes,in the last paragraph with the other trailers,
 SQ-who-runs-kbgit-py-publish-public,who runs kbgit.py publish to the public GitHub home and how is its state checked,git.md,good,yes,The project's settings deny `kbgit.py publish` to every agent's shell,
@@ -379,3 +379,4 @@ EV-kbid-add-lock-sources-file,How does kbid.py add keep the rows of parallel add
 EV-provider-read-prints-lines-with-numbers,How does provider.py read print the lines of a page that hold the grep words?,tools.md,good,no,"the lines that hold every `--grep` word",
 EV-provider-read-cache-seven-days,How long does provider.py read keep a fetched page and where?,tools.md,good,no,"keeps a 200 for 7 days under `_cache/provider-read/`",
 EV-provider-read-exit-not-text,When does provider.py read exit with 1?,tools.md,good,no,"is not text (a PDF or other binary: left to the Read tool)",
+SQ-worker-test-not-critical,may a worker add a test for a component that is not critical,code.md,good,yes,A test exists only for a critical component,kb-item:work
