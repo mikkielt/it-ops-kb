@@ -2,7 +2,7 @@
   "id": "ST-cx7qhu3f",
   "kind": "story",
   "title": "The kb says which Claude Code parallel-work option fits which coordination need and what each shares or isolates",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ylklxolb",
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
@@ -82,5 +82,19 @@
     "kb: claude/cross-session-messaging.md:168 (three documented cross-repository forms)"
   ],
   "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed. Packs: question 1 weak (lacks coordination, teams), 2 none (worktree.bgIsolation), 3 good for cross-session messaging only, 4 weak. 2026-10-16: the goal's lead-in now ends in '; ' (was ': ') so goal_questions leaves it unread and packs question (1) alone, the SP-ce5iig4g remedy for the ST-cho3qjfo defect; clauses re-mapped to check 0. Gate g1's first-question part is moot after this; its answer (name-line-references, for question 3) still applies.",
-  "claimed_by": "orch-r03"
+  "evidence": {
+    "commit": "8beac1d79cdc44ac375e5a8a57d3e6b298881574",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-cx7qhu3f"
+        ],
+        "exit": 0,
+        "sha256": "8625347678019dab"
+      }
+    ]
+  }
 }
