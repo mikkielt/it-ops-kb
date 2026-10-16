@@ -2,7 +2,7 @@
   "id": "ST-jrs7supe",
   "kind": "story",
   "title": "The claims ledger lock clears a stale lock file once, so two waiters never both hold it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3hyk4eh",
   "priority": "P3",
   "rank": 2,

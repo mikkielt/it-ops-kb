@@ -2,7 +2,7 @@
   "id": "ST-6tz7yhem",
   "kind": "story",
   "title": "dispatch ends the processes a worker session leaves running in its worktree, so land does not stop at step branch",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 3,

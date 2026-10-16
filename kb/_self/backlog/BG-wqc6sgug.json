@@ -2,7 +2,7 @@
   "id": "BG-wqc6sgug",
   "kind": "bug",
   "title": "The intake hook re-files a draft that land set aside in a linked worktree outside .claude/worktrees/, since land writes under its own root and the hook reads only the main worktree's set-aside directory",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 4,

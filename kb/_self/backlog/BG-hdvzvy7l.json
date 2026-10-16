@@ -2,7 +2,7 @@
   "id": "BG-hdvzvy7l",
   "kind": "bug",
   "title": "bl_forge.target applies forge_project to every repository of a multi-repository workspace, so land can read the workspace's request as each repository's",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-4fawjprq",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",

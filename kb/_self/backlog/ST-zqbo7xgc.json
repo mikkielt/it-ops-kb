@@ -2,7 +2,7 @@
   "id": "ST-zqbo7xgc",
   "kind": "story",
   "title": "backlog.py claim writes the claims ledger under the lock record_worker takes, so a dispatch running beside a claim keeps its record",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3hyk4eh",
   "priority": "P3",
   "rank": 1,

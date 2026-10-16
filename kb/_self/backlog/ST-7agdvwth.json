@@ -2,7 +2,7 @@
   "id": "ST-7agdvwth",
   "kind": "story",
   "title": "A plugin-data worker distill keeps the worktree's entry script but runs with the main checkout as its working directory",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 6,
