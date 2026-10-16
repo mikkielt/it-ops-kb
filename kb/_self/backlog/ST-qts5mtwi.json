@@ -2,7 +2,7 @@
   "id": "ST-qts5mtwi",
   "kind": "story",
   "title": "Research sprint goal: repro setup, replay, status, briefs and report hold none of the snags the first run met",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-a3w7xdij",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "No outside facts: the items change the repro harness and the sprint skill from the first run's recorded data; the report's readings come from the run's own records and the lessons analysis, quoted in the report story's notes.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "777dba455c70096e15a892bb9773136eda38930d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-qts5mtwi"
+        ],
+        "exit": 0,
+        "sha256": "4efc603ad6797dac"
+      }
+    ]
+  }
 }
