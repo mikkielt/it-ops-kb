@@ -2,7 +2,7 @@
   "id": "ST-7jj24txw",
   "kind": "story",
   "title": "Research sprint goal: Only critical components keep a test suite",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-noqsd4hj",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "No outside facts: the sprint changes the kb's own test rules and deletes test code on the operator's recorded policy D-2tq4fhgs; its inventory (perfcheck.py ids, a profiled run) is this repository's own state, and no kb article changes."
+  "notes": "No outside facts: the sprint changes the kb's own test rules and deletes test code on the operator's recorded policy D-2tq4fhgs; its inventory (perfcheck.py ids, a profiled run) is this repository's own state, and no kb article changes.",
+  "claimed_by": "orch-noqsd4hj"
 }
