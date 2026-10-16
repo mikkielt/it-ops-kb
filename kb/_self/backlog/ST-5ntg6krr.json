@@ -2,7 +2,7 @@
   "id": "ST-5ntg6krr",
   "kind": "story",
   "title": "The kb says how a team or organization distributes coordination hooks, shares prompt caches and collects token telemetry",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ylklxolb",
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
@@ -70,5 +70,19 @@
     "kb: agents/agent-cost-governance.md:32 (purchase paths, OTel per user)"
   ],
   "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kept whole. Packs: question 1 good only for the plugin managed settings (claude/plugins.csv:75-80), not server-managed hook distribution; 2 a false good (its lines are about messaging, not caching); 3 weak (Slack); 4 good on cost baselines, not on per-user, per-session collection. Run 2026-10-16 (orchestrator): the goal's lead-in now ends in '; ' instead of ': ' so goal_questions packs question (1) alone (defect in draft ST-cho3qjfo; ST-cx7qhu3f hit it); the questions are unchanged. Land 2026-10-16 (orchestrator): done refused the S1864 anchor row a re-anchor of agent-caching.md added and a later commit removed (ledger moves are read per commit); the lead-in names S1864 so the net-zero move is accounted for.",
-  "claimed_by": "orch-r03"
+  "evidence": {
+    "commit": "2ca58a6dca469cc1a113d9a1a1c8a904caa54b7a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5ntg6krr"
+        ],
+        "exit": 0,
+        "sha256": "8efafaf8facb026c"
+      }
+    ]
+  }
 }
