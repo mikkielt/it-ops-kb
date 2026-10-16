@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import sys;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'area_order'): print('no area_order yet');sys.exit(1);a=list('abcdef')\nok=b.area_order(a,1,3)==a and b.area_order(a,2,3)==list('cdefab') and b.area_order(a,3,3)==list('efabcd')\nsys.exit(0 if ok else 1)"
+        "import sys;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'area_order'): print('no area_order yet');sys.exit(1)\na=list('abcdef')\nok=b.area_order(a,1,3)==a and b.area_order(a,2,3)==list('cdefab') and b.area_order(a,3,3)==list('efabcd')\nsys.exit(0 if ok else 1)"
       ]
     },
     {
