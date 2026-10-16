@@ -2,7 +2,7 @@
   "id": "ST-rm3je55x",
   "kind": "story",
   "title": "Review sprint: Research tools decide what a model now writes or works around by hand",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b36246xo",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-b36246xo"
 }
