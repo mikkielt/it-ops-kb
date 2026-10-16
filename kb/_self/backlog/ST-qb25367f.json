@@ -2,7 +2,7 @@
   "id": "ST-qb25367f",
   "kind": "story",
   "title": "Research sprint goal: Research tools decide what a model now writes or works around by hand",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b36246xo",
   "goal_research": true,
   "priority": "P1",
@@ -24,5 +24,6 @@
   "relates_to": [
     "ST-a4sqcsfn"
   ],
-  "notes": "No outside facts: each item reads what the kb's own tools already fetch (provider.py read, kbid.py licence, providers.csv) or changes a gate and rule docs; no question of the goal needs a page the kb lacks. Plan amendment 2026-10-15 (triage fit10): ST-a4sqcsfn (an item touching provider.py gets the tested rules of the docs its touches map to) is real: rag.py pack --root _self --item ST-wiv62ohc prints coverage none at c907de7b3, so this sprint's provider.py and kbid.py workers get no tested rule. Tested _self rows (kb/_self/_retrieval/lookup_eval.csv) this story adds for provider.py and kbid.py close ST-a4sqcsfn; name it in the report so the close drops it as delivered."
+  "notes": "No outside facts: each item reads what the kb's own tools already fetch (provider.py read, kbid.py licence, providers.csv) or changes a gate and rule docs; no question of the goal needs a page the kb lacks. Plan amendment 2026-10-15 (triage fit10): ST-a4sqcsfn (an item touching provider.py gets the tested rules of the docs its touches map to) is real: rag.py pack --root _self --item ST-wiv62ohc prints coverage none at c907de7b3, so this sprint's provider.py and kbid.py workers get no tested rule. Tested _self rows (kb/_self/_retrieval/lookup_eval.csv) this story adds for provider.py and kbid.py close ST-a4sqcsfn; name it in the report so the close drops it as delivered.",
+  "claimed_by": "orch-b36246xo"
 }
