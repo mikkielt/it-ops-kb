@@ -258,7 +258,8 @@ def result_of(stdout, stderr, wall):
     {uncached, cache_write, cache_read, out}}): a WebFetch or WebSearch call runs a model of its own inside the tool
     (Haiku 5.5, whatever the session's model), billed there and in no message of the stream; `web_searches` is the
     searches `modelUsage` bills (`webSearchRequests`), set when the event has a `modelUsage`. An error result (an
-    `is_error` event: `error_max_turns`, `error_max_budget_usd`, ...) is {"error": text} with what the run spent kept:
+    `is_error` event, or one whose `subtype` starts with `error_` whatever `is_error` says: `error_max_turns`,
+    `error_max_budget_usd`, ...) is {"error": text} with what the run spent kept:
     `subtype`, `cost`, `turns`, the `usage` tokens (`in_uncached`, `cache_write`, `cache_read`, `out`) and `model_usage`."""
     seen, res = parse(stdout)
     if not res:
@@ -271,7 +272,7 @@ def result_of(stdout, stderr, wall):
                                   "cache_read": num(v, "cacheReadInputTokens"), "out": num(v, "outputTokens")}
                               for m, v in billed.items()},
               "web_searches": sum(num(v, "webSearchRequests") for v in billed.values())} if billed else {})
-    if res.get("is_error") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
+    if res.get("is_error") or str(res.get("subtype") or "").startswith("error_") or (not res.get("total_cost_usd") and re.search(r"(?i)hit your (session|usage) limit", res.get("result") or "")):
         # a refused run is void, not a cheap answer; what it spent stays on the row
         return {"error": (res.get("result") or res.get("subtype") or "is_error")[:200], "subtype": res.get("subtype", ""),
                 "cost": round(res.get("total_cost_usd") or 0, 4), "turns": num(res, "num_turns"),

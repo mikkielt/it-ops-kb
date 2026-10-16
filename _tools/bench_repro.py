@@ -619,7 +619,8 @@ def area_record(inst, brief, opts, env, argv, prompt, timeout):
     rec.update(failure=fail, subtype=r.get("subtype") or ("success" if not fail else fail), wall_s=wall,
                cost=opts["area_usd"] if r.get("cost_unknown") else r.get("cost") or 0, input_tokens=r.get("in_uncached", 0), output_tokens=r.get("out", 0),
                cache_write_tokens=r.get("cache_write", 0), cache_read_tokens=r.get("cache_read", 0),
-               turns=r.get("turns", 0), tool_calls=sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
+               turns=r.get("turns", 0), max_turns=opts["max_turns"], turns_over_cap=r.get("turns", 0) > opts["max_turns"],
+               tool_calls=sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
                model_usage=r.get("model_usage", {}))
     if r.get("cost_unknown"):
         rec["cost_unknown"] = True
@@ -651,7 +652,7 @@ def run_instance(inst, briefs, results, opts, root, path, lock, out):
                         "effort": opts["effort"], "settings": SETTINGS, "bare_before": "", "bare_after": "",
                         "failure": "budget", "subtype": "budget", "wall_s": 0, "cost": 0, "input_tokens": 0,
                         "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "turns": 0,
-                        "tool_calls": 0, "model_usage": {},
+                        "max_turns": opts["max_turns"], "turns_over_cap": False, "tool_calls": 0, "model_usage": {},
                         "error": f"instance spend ${spent:.2f} plus --area-usd {opts['area_usd']:g} passes --instance-usd "
                                  f"{opts['instance_usd']:g}"})
             break
@@ -729,10 +730,12 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     return 1 if failed else 0
 
 
+TURN_CAP_KEYS = ("max_turns", "turns_over_cap")  # keys a results line of an older run lacks
 SCENARIO = "repro"  # the scenario of the rows `record_results` merges into the results file
 RECORD_METRICS = (("cost", "cost"), ("input", "input_tokens"), ("out", "output_tokens"), ("cache_read", "cache_read_tokens"),
                   ("cache_write", "cache_write_tokens"), ("turns", "turns"), ("tool_calls", "tool_calls"),
-                  ("wall_s", "wall_s"))  # (metric, key of the json line) of the numbers a row holds
+                  ("wall_s", "wall_s"), ("max_turns", "max_turns"),
+                  ("turns_over_cap", "turns_over_cap"))  # (metric, key of the json line) of the numbers a row holds; a line without a key has no row for it
 
 
 def file_sha256(path):
@@ -754,7 +757,8 @@ def record_rows(results, rev, briefs_sha, questions_sha):
     rows = []
     for inst, area in sorted(last, key=lambda k: (str(k[0]).zfill(6), str(k[1]))):
         r = last[(inst, area)]
-        values = [(m, r.get(key, 0)) for m, key in RECORD_METRICS]
+        values = [(m, int(v) if isinstance(v, bool) else v) for m, key in RECORD_METRICS
+                  if (v := r.get(key, None if key in TURN_CAP_KEYS else 0)) is not None]
         values += [("models", ",".join(sorted(r.get("model_usage") or {})) or r.get("model", "")),
                    ("failure", r.get("failure") or "none"), ("main_before", (r.get("bare_before") or "")[:7]),
                    ("main_after", (r.get("bare_after") or "")[:7])]
@@ -812,7 +816,8 @@ TOPIC_MARK = re.compile(r"\(topic:\s*([^)\s]+)\)")
 TAG_KINDS = ("DOC", "CODE", "DER", "COMMUNITY", "UNK")  # the tag mix `compare` counts, kbfacts.EVIDENCE_KINDS without DECISION
 COMPARE_METRICS = ("articles_added", "facts_added", *(k.lower() for k in TAG_KINDS), "sources_added", "url_jaccard",
                    "fact_overlap", "conflicts", "paths_same", "ledger_rows_same", "source_rows_same", "check_errors", "lint_errors", "unanchored", "eval_passed", "eval_total",
-                   "found_start", "found_end", "false_good_start", "false_good_end", "churn", "agreement")
+                   "found_start", "found_end", "false_good_start", "false_good_end", "churn", "agreement",
+                   "turns", "max_turns", "turns_over_cap")
 LEARN_HOST = "learn.microsoft.com"  # a fact whose sources are all pages of it needs no anchor row (kb-research SKILL.md step 5)
 LINT = Path(".claude") / "skills" / "kb-verify" / "lint.py"  # the contract lint of a checkout
 
@@ -1122,6 +1127,15 @@ def agreement(areas, instances, asked, evals):
     return out
 
 
+def turn_cap_metrics(rec):
+    """{turns, max_turns, turns_over_cap (1 or 0)} of an area's json line `rec`; {} for a line of an older run, which
+    holds no cap. `turns_over_cap` says num_turns passed --max-turns, not that the cap failed: a run the cap ends counts
+    one turn past it."""
+    if not rec or rec.get("max_turns") is None:
+        return {}
+    return {"turns": rec.get("turns", 0), "max_turns": rec["max_turns"], "turns_over_cap": int(bool(rec.get("turns_over_cap")))}
+
+
 def compare_rows(rev, date, note, data):
     """The results-file rows of a comparison: `data` is a list of (case, arm, {metric: value}); a metric that is None
     is left out."""
@@ -1230,7 +1244,8 @@ def compare(root=None, record=False, file=None, questions_path=None, dry_run=Fal
             m = {"articles_added": len(d["articles"]), "facts_added": len(d["facts"]), "sources_added": len(d["sources"]),
                  **{k.lower(): d["kinds"][k] for k in TAG_KINDS}, "eval_passed": passed, "eval_total": len(ids),
                  "found_start": found_start, "found_end": found_end, "false_good_start": false_good_start,
-                 "false_good_end": false_good_end, "unanchored": sum(1 for f in d["facts"] if f["unanchored"])}
+                 "false_good_end": false_good_end, "unanchored": sum(1 for f in d["facts"] if f["unanchored"]),
+                 **turn_cap_metrics(last.get((n, area)))}
             table.append((area, f"instance-{n}", m))
             out(f"instance {n} area {area}: {m['articles_added']} article(s), {m['facts_added']} fact(s) added ("
                 + ", ".join(f"{k} {d['kinds'][k]}" for k in TAG_KINDS) + f"), {m['sources_added']} source(s) added; "
