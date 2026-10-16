@@ -86,7 +86,7 @@ def test_check_py_names_a_ledger_citation_of_a_line_that_is_no_fact(tmp_path):
 
 
 @requires_git
-def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words_and_anchor_file_writes_only_changed_facts_and_no_fetch_state_and_anchor_quotes_keeps_other_files_rows_and_anchor_file_retries_unlocated_fetch_error_not_text_and_gone_rows_but_not_no_match_ones(tmp_path, monkeypatch):
+def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of_a_doc_fact_the_change_added_whose_anchor_quote_the_page_does_not_hold_and_not_of_an_old_one_and_factdiff_anchor_quote_locates_a_fact_by_its_quote_and_refuses_one_over_25_words_and_anchor_file_writes_only_changed_facts_and_no_fetch_state_and_anchor_quotes_keeps_other_files_rows_and_anchor_file_retries_unlocated_fetch_error_not_text_and_gone_rows_but_not_no_match_ones(tmp_path, monkeypatch, capsys):
     root = tmp_path / "root"
     fixture_root(root, SID)
     art = root / "print" / "queues.md"
@@ -141,7 +141,7 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
                  for u in kbfacts.md_units("print/queues.md", text) if u["text"].startswith((old_fact, quoted, missing))]
         rows = factdiff.anchor_rows(SID, facts, {"status": 200, "text": page}, "copy", "2026-10-12")
         found, lost = factdiff.quote_rows(rows, facts, {"status": 200, "text": page}, "copy",
-                                          {f[2]: quotes[f[3].split(" [DOC")[0]] for f in facts if f[3].split(" [DOC")[0] in quotes})
+                                          {(f[2], ""): quotes[f[3].split(" [DOC")[0]] for f in facts if f[3].split(" [DOC")[0] in quotes})
         kbcommon.write_csv(str(root / "_anchors.csv"), kbcommon.ANCHOR_COLS, rows)
         return [r["status"] for r in rows], found, lost
 
@@ -181,6 +181,7 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
                    (new_key, "print/queues.md", 9, new_text),
                    (kept_b["fact"], "print/other.md", 4, f"Held jobs stay until released. [DOC {SID}]")]}
     ledger, written, fetched = {(r["fact"], r["path"], SID): r for r in (kept_a, kept_b)}, [], []
+    monkeypatch.setattr(factdiff, "ROOT", kbcommon.load_root(str(root)))
     monkeypatch.setattr(factdiff, "sources", lambda: {SID: {"id": SID, "url": "https://example.com/print", "reuse": "copy"}})
     monkeypatch.setattr(factdiff, "cited_facts", lambda: cited)
     monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: [SID])
@@ -191,8 +192,8 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     served, again = [{"status": 200, "text": page}], []
     monkeypatch.setattr(factdiff, "fetch_all", lambda ids, *args, **kw: fetched.append(ids) or again.append(args[2]) or {SID: served[0]})
 
-    def anchor_file(quote_csv=None):
-        return factdiff.cmd_anchor(argparse.Namespace(topic=[], dir=[], file=["print/queues.md"], source=[], quotes=quote_csv,
+    def anchor_file(quote_csv=None, path="print/queues.md", propose=False):
+        return factdiff.cmd_anchor(argparse.Namespace(topic=[], dir=[], file=[path], source=[], quotes=quote_csv, propose=propose,
                                                       max_age=7, refetch=False, dry_run=False, selected=True))
 
     assert anchor_file() == 0 and fetched == [[SID]] and len(written) == 1
@@ -219,6 +220,62 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     ledger[key] = {**ledger[key], "status": "unlocated:no-match", "heading": "", "terms": "", "sha": "", "quote": ""}
     n_fetched, n_written = len(fetched), len(written)
     assert anchor_file() == 0 and fetched[n_fetched:] == [[]] and len(written) == n_written
+    # --file names the article as the root-relative path, `<root>/<path>`, `kb/<root>/<path>` from the repository or its
+    # absolute path does; a path that names no file of the root is kept as given for the caller to refuse
+    forms = ("print/queues.md", "fixture/print/queues.md", "kb/fixture/print/queues.md", str(art), "print/../print/queues.md")
+    assert {factdiff.root_rel(f) for f in forms} == {"print/queues.md"}
+    assert factdiff.root_rel("kb/fixture/print/none.md") == "kb/fixture/print/none.md"
+    ledger[key] = {**ledger[key], "status": "unlocated:fetch-error"}
+    n_fetched, n_written = len(fetched), len(written)
+    assert anchor_file(path="kb/fixture/print/queues.md") == 0 and len(written) == n_written + 1 and written[-1][key]["status"] == "located"
+    # a fact that cites two pages: a `line,source,quote` CSV gives the quote of each, a two-column one serves every source
+    # (and is held by the page that has it only); no row of the other file or fact is rewritten and no state is written
+    sid2 = "FXT-" + "b" * 8
+    pages = {SID: {"status": 200, "text": "Held jobs wait until an operator releases them. Spooler retention is fourteen days by default."},
+             sid2: {"status": 200, "text": "Queues pause without losing their jobs. The spooler keeps finished jobs for 14 days before purging them."}}
+    cited[sid2] = [(new_key, "print/queues.md", 9, new_text)]
+    monkeypatch.setattr(factdiff, "sources", lambda: {i: {"id": i, "url": f"https://example.com/{i}", "reuse": "copy"} for i in pages})
+    monkeypatch.setattr(factdiff, "select_ids", lambda a, srcs: list(pages))
+    monkeypatch.setattr(factdiff, "fetch_all", lambda ids, *args, **kw: {i: pages[i] for i in ids})
+    q1, q2 = "retention is fourteen days by default", "keeps finished jobs for 14 days"
+    keep = {k: v for k, v in ledger.items() if k[0] != new_key}
+    ledger.clear()
+    ledger.update(keep)
+    two = tmp_path / "two.csv"
+    two.write_text(f"line,quote\n9,{q1}\n", encoding="utf-8")
+    n_written = len(written)
+    assert anchor_file(str(two), "kb/fixture/print/queues.md") == 0 and len(written) == n_written + 1
+    rows = written[-1]
+    assert rows[(new_key, "print/queues.md", SID)]["quote"] == q1 and rows[(new_key, "print/queues.md", sid2)]["quote"] != q1
+    assert f"quote not held: print/queues.md:9 {sid2}" in capsys.readouterr().err
+    ledger.clear()
+    ledger.update(keep)
+    three = tmp_path / "three.csv"
+    three.write_text(f'line,source,quote\n9,{SID},"{q1}"\n9,{sid2.lower()},"{q2}"\n', encoding="utf-8")
+    assert anchor_file(str(three), "kb/fixture/print/queues.md") == 0 and len(written) == n_written + 2
+    rows = written[-1]
+    assert [(rows[(new_key, "print/queues.md", i)]["status"], rows[(new_key, "print/queues.md", i)]["quote"]) for i in (SID, sid2)] \
+        == [("located", q1), ("located", q2)]
+    assert rows[(kept_a["fact"], "print/queues.md", SID)] == kept_a and rows[(kept_b["fact"], "print/other.md", SID)] == kept_b
+    assert set(rows) - set(keep) == {(new_key, "print/queues.md", SID), (new_key, "print/queues.md", sid2)}
+    bad_csv = tmp_path / "bad.csv"
+    bad_csv.write_text(f"line,source,quote\n9,{SID}x,{q1}\n", encoding="utf-8")
+    assert anchor_file(str(bad_csv)) == 2 and len(written) == n_written + 2
+    assert "cites no source" in capsys.readouterr().err
+    # --propose prints a `line,source,quote` line of the best passage of each cited page for each fact without a located
+    # anchor (the page's words, which the quote CSV above reads back), and writes nothing
+    ledger.clear()
+    ledger.update(keep)
+    capsys.readouterr()
+    assert anchor_file(path="kb/fixture/print/queues.md", propose=True) == 0 and len(written) == n_written + 2
+    printed = list(csv.reader(capsys.readouterr().out.splitlines()))
+    assert printed[0] == ["line", "source", "quote"] and sorted(r[:2] for r in printed[1:]) == [["9", SID], ["9", sid2]], printed
+    for _line, i, quote in printed[1:]:
+        assert 3 <= len(quote.split()) <= 25 and factdiff.Doc(pages[i]["text"]).locate_quote(quote) is not None, (i, quote)
+    again = tmp_path / "again.csv"
+    again.write_text("line,source,quote\n" + "".join(f'{r[0]},{r[1]},"{r[2]}"\n' for r in printed[1:]), encoding="utf-8")
+    assert factdiff.read_quotes(str(again), "print/queues.md", cited)[1] == []
+    assert anchor_file(str(again), propose=True) == 2 and len(written) == n_written + 2
 
 
 def test_build_index_check_passes_on_the_live_kb():

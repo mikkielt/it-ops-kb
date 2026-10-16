@@ -89,6 +89,51 @@
       "class": "agents-rule",
       "answer": "an optional source column (line,source,quote), two-column files read as before",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which facts of F does anchor --file F --propose print a quote line for?",
+      "options": [
+        "each fact whose cited source holds no located anchor row for it: no row, or an unlocated one (no-match, fetch-error, not-text, gone)",
+        "only a fact with no anchor row at all"
+      ],
+      "recommendation": "each fact whose cited source holds no located anchor row for it: no row, or an unlocated one (no-match, fetch-error, not-text, gone)",
+      "do": {
+        "each fact whose cited source holds no located anchor row for it: no row, or an unlocated one (no-match, fetch-error, not-text, gone)": "ST-duwzvvq7",
+        "only a fact with no anchor row at all": "ST-duwzvvq7"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Does --propose offer a passage below the anchoring cut for a fact the plain rule leaves unlocated?",
+      "options": [
+        "yes: the page's best window when it shares at least 2 of the fact's terms, so a fact the cut leaves unlocated still gets a candidate quote to check",
+        "no: only a passage the plain anchoring rule would locate"
+      ],
+      "recommendation": "yes: the page's best window when it shares at least 2 of the fact's terms, so a fact the cut leaves unlocated still gets a candidate quote to check",
+      "do": {
+        "yes: the page's best window when it shares at least 2 of the fact's terms, so a fact the cut leaves unlocated still gets a candidate quote to check": "ST-duwzvvq7",
+        "no: only a passage the plain anchoring rule would locate": "ST-duwzvvq7"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "What shape does anchor --file F --propose print?",
+      "options": [
+        "stdout: a header line,source,quote then one CSV line per fact and cited page, sorted by line; stderr: a counts line and one line per fact or page with no passage; exit 0; exit 2 for a missing or multiple --file or a combined selector or --quotes",
+        "stdout: two-column line,quote lines with no source"
+      ],
+      "recommendation": "stdout: a header line,source,quote then one CSV line per fact and cited page, sorted by line; stderr: a counts line and one line per fact or page with no passage; exit 0; exit 2 for a missing or multiple --file or a combined selector or --quotes",
+      "do": {
+        "stdout: a header line,source,quote then one CSV line per fact and cited page, sorted by line; stderr: a counts line and one line per fact or page with no passage; exit 0; exit 2 for a missing or multiple --file or a combined selector or --quotes": "ST-duwzvvq7",
+        "stdout: two-column line,quote lines with no source": "ST-duwzvvq7"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Premise (lessons analysis 4.5): 175 calls in 44 sessions got 'is no tagged fact of the file' for a kb/public/... path, 276 'quote not held' (multi-source bullets need one quote per source), 57 inline scripts built quote CSVs. At 5834a99e2 anchor --file kb/public/security/gentoo-in-wsl.md --dry-run prints No file; the root-relative form works. Merges ST-xahz4kok (factdiff.py anchor --file --quotes anchors CODE-tagged facts): its CODE clause no longer reproduces (2026-10-15: a planted --quotes row for the CODE fact python/pytest-xdist.md:68 is read as a tagged fact; cited_facts skips only UNK); its second clause, no other topic's rows rewritten, is this story's fourth clause. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: this story closes BG-vtbn4orn (repo-relative --file with --quotes) and BG-5rqmrtl7 (a quote per cited source, repro reworded to the line,source,quote form of g1); both stay out of the sprint, linked 'closed by: ST-duwzvvq7', and are dropped as delivered when their repros pass after this story lands.",
