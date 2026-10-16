@@ -208,7 +208,7 @@ def held_by(con, key, token, now):
     row = live_row(con, key, now)
     if row is None:
         raise Refused({"ok": False, "key": key, "error": f"{key} is not claimed (absent or its lease expired)"})
-    if row["token"] is None or not secrets.compare_digest(row["token"], token):
+    if row["token"] is None or not secrets.compare_digest(row["token"].encode("utf-8"), token.encode("utf-8")):
         raise Refused({"ok": False, "key": key, "holder": row["holder"],
                        "error": f"the token does not hold {key}: it is held by {row['holder'] or 'no lease'}"})
     return row

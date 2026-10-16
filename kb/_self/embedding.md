@@ -2,7 +2,7 @@
 
 A host MCP server is another team's server that answers its own clients (a Copilot Studio agent, a chat front end) and adds the kb's lookups to its tools: it runs `_tools/kb_mcp.py` as a stdio child from a clone of this repository and re-exposes some of its tools. This file is the contract such a host relies on: how it starts the child, which roots it serves, which tools it re-exposes and under what names, what it copies into its own descriptions, when it restarts, and the test that pins all of this. What the server does for a Claude Code session is in `kb/_self/plugin.md`; its flags are in `kb/_self/tools.md`.
 
-The other path needs no host: `_tools/kb_http.py` serves the same tools and instructions, without `kb_feedback` and its instruction clause, over Streamable HTTP to a client that connects to the kb directly, and serves only `kb/public` unless its `--roots` names more (its docstring); `kb/_self/hosting.md` deploys it.
+The other path needs no host: `_tools/kb_http.py` serves the same tools and instructions, without `kb_feedback` and its instruction clause and without the `coord_*` tools, over Streamable HTTP to a client that connects to the kb directly, and serves only `kb/public` unless its `--roots` names more (its docstring); `kb/_self/hosting.md` deploys it.
 
 ## 1. Start the child
 
@@ -38,4 +38,4 @@ The kb's lookup rules travel in the server's `instructions` (the `initialize` re
 
 ## 6. The contract test
 
-What a host relies on is the server's `VERSION`, its `instructions`, and the names and input schemas of `kb_pack`, `kb_search` and `kb_show`. Rewording the none rule in `instructions` moves `VERSION`, which hosts read to copy the new text (section 5). A child started with `--roots` never lists the live-docs tools (`docs_search`, `docs_fetch`), which reach the network, nor `kb_feedback`, which writes the clone's local spool. `--roots` is held to section 2.
+What a host relies on is the server's `VERSION`, its `instructions`, and the names and input schemas of `kb_pack`, `kb_search` and `kb_show`. Rewording the none rule in `instructions` moves `VERSION`, which hosts read to copy the new text (section 5). A child started with `--roots` never lists the live-docs tools (`docs_search`, `docs_fetch`), which reach the network, nor `kb_feedback`, which writes the clone's local spool, nor the six `coord_*` tools, which write the coord store and may reach a `coord.py serve` address. `--roots` is held to section 2.

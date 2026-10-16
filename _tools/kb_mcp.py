@@ -908,6 +908,160 @@ LIVE_TOOL_LIST = [
 LIVE_HANDLERS = {"docs_search": docs_search, "docs_fetch": docs_fetch}
 
 
+# ---------------------------------------------------------------- coord tools
+
+COORD = Path(TOOLS, "coord.py")
+COORD_WAIT_MAX_S = 60  # this server answers one request at a time: a wait holds every other tool call for as long
+COORD_RUN_S = 120
+COORD_DOCS = ("Claims, leases and events other agents share (coord.py; not kb facts, not live device data). "
+              "Runs against KB_COORD_STORE, or against the coord.py serve address KB_COORD_URL names with the token in "
+              "KB_COORD_KEY_FILE. ")
+COORD_KEY = {"type": "string", "description": "the key: a backlog item id, or a topic or path key"}
+COORD_TOKEN = {"type": "string", "minLength": 1, "description": "the holder token coord_claim returned; without it nothing is renewed or released"}
+COORD_WRITE = {"readOnlyHint": False, "destructiveHint": False, "idempotentHint": False, "openWorldHint": False}
+COORD_TOOL_LIST = [
+    {"name": "coord_claim", "title": "Claim a key",
+     "description": COORD_DOCS + "Hold KEY for ttl seconds. Returns key, holder, ttl, revision, expires and the holder's "
+                    "token, shown once: keep it for coord_renew and coord_release. A key a live lease holds is refused, "
+                    "naming the holder.",
+     "inputSchema": {"type": "object", "properties": {
+         "key": COORD_KEY,
+         "ttl": {"type": "number", "exclusiveMinimum": 0, "description": "lease length in seconds"},
+         "holder": {"type": "string", "description": "name shown to a second claimer (default anonymous)"},
+         "budget": {"type": "number", "exclusiveMinimum": 0, "description": "USD the operator approved for the claimed item (key is its id)"}},
+         "required": ["key", "ttl"], "additionalProperties": False},
+     "annotations": {"title": "Claim a key", **COORD_WRITE}},
+    {"name": "coord_renew", "title": "Renew a claim",
+     "description": COORD_DOCS + "Extend the lease of the holder of token (ttl seconds, else the claim's own). "
+                    "A token that does not hold KEY is refused.",
+     "inputSchema": {"type": "object", "properties": {
+         "key": COORD_KEY, "token": COORD_TOKEN,
+         "ttl": {"type": "number", "exclusiveMinimum": 0, "description": "new lease length in seconds (default: the claim's own)"}},
+         "required": ["key", "token"], "additionalProperties": False},
+     "annotations": {"title": "Renew a claim", **COORD_WRITE, "idempotentHint": True}},
+    {"name": "coord_release", "title": "Release a claim",
+     "description": COORD_DOCS + "Drop the lease of the holder of token. A token that does not hold KEY is refused.",
+     "inputSchema": {"type": "object", "properties": {"key": COORD_KEY, "token": COORD_TOKEN},
+                     "required": ["key", "token"], "additionalProperties": False},
+     "annotations": {"title": "Release a claim", **COORD_WRITE, "destructiveHint": True}},
+    {"name": "coord_post", "title": "Post an event",
+     "description": COORD_DOCS + "Add an event: kind (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat, "
+                    "intent, progress) and up to 8 id fields. A value is an id of at most 120 characters of letters, "
+                    "digits and _ . : / # @ -; free text is refused. intent takes session, item, topic, touch; progress "
+                    "takes item and state (working, blocked, done). Returns seq.",
+     "inputSchema": {"type": "object", "properties": {
+         "kind": {"type": "string"},
+         "fields": {"type": "object", "maxProperties": 8, "additionalProperties": {"type": "string"},
+                    "description": "NAME to VALUE, each an id"}},
+         "required": ["kind"], "additionalProperties": False},
+     "annotations": {"title": "Post an event", **COORD_WRITE}},
+    {"name": "coord_digest", "title": "Digest of live intents and claims",
+     "description": COORD_DOCS + "At most `lines` lines of plain text, newest first, of the live intents and claims that "
+                    "overlap a key (an item id, topic or path); nothing when none does.",
+     "inputSchema": {"type": "object", "properties": {
+         "key": {"type": "array", "items": {"type": "string"}, "minItems": 1, "description": "item ids, topic keys or paths"},
+         "lines": {"type": "integer", "minimum": 0, "description": "at most this many lines"}},
+         "required": ["key", "lines"], "additionalProperties": False},
+     "annotations": {"title": "Digest of live intents and claims", **READ_ONLY}},
+    {"name": "coord_wait", "title": "Wait for events",
+     "description": COORD_DOCS + f"Events after sequence `since`, blocking up to `timeout` seconds (at most "
+                    f"{COORD_WAIT_MAX_S}) until one arrives. Returns events, last (pass it as the next since) and timed_out.",
+     "inputSchema": {"type": "object", "properties": {
+         "since": {"type": "integer", "minimum": 0, "description": "the highest sequence already seen (0: all)"},
+         "timeout": {"type": "number", "minimum": 0, "maximum": COORD_WAIT_MAX_S, "description": "seconds to block"}},
+         "required": ["since", "timeout"], "additionalProperties": False},
+     "annotations": {"title": "Wait for events", **READ_ONLY}},
+]
+
+
+def coord_argv(command, args, allowed, flags):
+    """coord.py's argv for one tool call: the command, the key argument if any, then each given flag; a name the schema
+    does not list is a ToolError. `flags` maps an argument to its coord.py option (list values repeat it)."""
+    extra = sorted(set(args) - set(allowed))
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    argv = [command]
+    if "key" in allowed and command != "digest":
+        argv.append(str(args.get("key") or ""))
+    for name, option in flags.items():
+        value = args.get(name)
+        if value is None:
+            continue
+        for one in value if isinstance(value, list) else [value]:
+            argv += [option, str(one)]
+    return argv
+
+
+def coord_run(argv, wait_s=0):
+    """Run coord.py with argv on the local store (KB_COORD_STORE) or, when KB_COORD_URL and KB_COORD_KEY_FILE name a
+    server, against it; its stdout, or a ToolError holding its refusal when it exits non-zero."""
+    url, key_file = os.environ.get("KB_COORD_URL"), os.environ.get("KB_COORD_KEY_FILE")
+    if bool(url) != bool(key_file):
+        raise ToolError("KB_COORD_URL and KB_COORD_KEY_FILE go together: set both, or neither for the local store")
+    remote = ["--url", url, "--key-file", key_file] if url else []
+    try:
+        p = subprocess.run([sys.executable, str(COORD), *remote, *argv], capture_output=True, text=True, encoding="utf-8",
+                           timeout=COORD_RUN_S + wait_s, stdin=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise ToolError(f"coord.py did not run: {e.__class__.__name__}")
+    out = p.stdout.strip()
+    if p.returncode != 0:
+        raise ToolError(out or p.stderr.strip() or f"coord.py exited {p.returncode}")
+    return out
+
+
+def coord_token(args):
+    """The holder token of a renew or release: a call without one is refused here, one with a wrong one by coord.py."""
+    token = args.get("token")
+    if not isinstance(token, str) or not token.strip():
+        raise ToolError("token is required: only the holder's token renews or releases a claim")
+    return token
+
+
+def coord_claim(args):
+    return coord_run(coord_argv("claim", args, ("key", "ttl", "holder", "budget"),
+                                {"ttl": "--ttl", "holder": "--holder", "budget": "--budget"}))
+
+
+def coord_renew(args):
+    coord_token(args)
+    return coord_run(coord_argv("renew", args, ("key", "token", "ttl"), {"token": "--token", "ttl": "--ttl"}))
+
+
+def coord_release(args):
+    coord_token(args)
+    return coord_run(coord_argv("release", args, ("key", "token"), {"token": "--token"}))
+
+
+def coord_post(args):
+    extra = sorted(set(args) - {"kind", "fields"})
+    if extra:
+        raise ToolError(f"unknown argument(s): {', '.join(extra)}")
+    fields = args.get("fields") or {}
+    if not isinstance(fields, dict) or not all(isinstance(v, str) for v in fields.values()):
+        raise ToolError("fields is an object of NAME to VALUE strings")
+    argv = ["post", "--kind", str(args.get("kind") or "")]
+    for name, value in fields.items():
+        argv += ["--field", f"{name}={value}"]
+    return coord_run(argv)
+
+
+def coord_digest(args):
+    return coord_run(coord_argv("digest", args, ("key", "lines"), {"key": "--key", "lines": "--lines"}))
+
+
+def coord_wait(args):
+    timeout = args.get("timeout")
+    if isinstance(timeout, (int, float)) and timeout > COORD_WAIT_MAX_S:
+        raise ToolError(f"timeout is at most {COORD_WAIT_MAX_S} seconds: wait again with the returned last")
+    return coord_run(coord_argv("wait", args, ("since", "timeout"), {"since": "--since", "timeout": "--timeout"}),
+                     wait_s=int(timeout or 0) if isinstance(timeout, (int, float)) else 0)
+
+
+COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord_release": coord_release,
+                  "coord_post": coord_post, "coord_digest": coord_digest, "coord_wait": coord_wait}
+
+
 # ---------------------------------------------------------------- protocol
 
 def result(msg_id, res):
@@ -957,13 +1111,14 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL])
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL, *COORD_TOOL_LIST])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
         handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else dict(HANDLERS)
         if not limited():
             handlers["kb_feedback"] = kb_feedback
+            handlers.update(COORD_HANDLERS)
         if name not in handlers:
             return error(msg_id, -32602, f"Unknown tool: {name}")
         if not isinstance(args, dict):
