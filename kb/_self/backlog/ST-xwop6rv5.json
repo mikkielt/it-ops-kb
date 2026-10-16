@@ -42,7 +42,8 @@
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
-    "kb/_self/code.md"
+    "kb/_self/code.md",
+    "_tools/test_redact.py"
   ],
   "depends_on": [
     "ST-a57bxubz",
@@ -121,6 +122,6 @@
       "by": "agent"
     }
   ],
-  "notes": "Refines EP-fxrzbuza's 'later, unrefined' note on exposing the coord commands as MCP tools. From the operator interview of 2026-10-15: git is the durable truth and an MCP server the hot cache, local per machine or central for a team. Holder-token checks follow the state-handle-hijacking research of ST-5h35ouv5. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kb_mcp.py lists no coord tool (TOOL_LIST, kb_mcp.py:119). Holder checks follow mcp/security-best-practices.md:18 (possession of a handle is no authentication) [DOC S716]. The check drives kb_mcp.py over stdio: tools/list twice (order fixed), coord_claim, a release with another holder's value refused, the holder's renew and release accepted. The serve address case is read by the review. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE).",
+  "notes": "Refines EP-fxrzbuza's 'later, unrefined' note on exposing the coord commands as MCP tools. From the operator interview of 2026-10-15: git is the durable truth and an MCP server the hot cache, local per machine or central for a team. Holder-token checks follow the state-handle-hijacking research of ST-5h35ouv5. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kb_mcp.py lists no coord tool (TOOL_LIST, kb_mcp.py:119). Holder checks follow mcp/security-best-practices.md:18 (possession of a handle is no authentication) [DOC S716]. The check drives kb_mcp.py over stdio: tools/list twice (order fixed), coord_claim, a release with another holder's value refused, the holder's renew and release accepted. The serve address case is read by the review. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE). Run 2026-10-16 (orchestrator, as operator): touches widened to _tools/test_redact.py, whose tools/list assertion (every tool but kb_feedback read-only) the coord write tools break; the change is limited to exempting the coord_ tools there.",
   "claimed_by": "orch-r03"
 }
