@@ -2,7 +2,7 @@
   "id": "BG-yq2ojoiy",
   "kind": "bug",
   "title": "coord.py dedup exits 2 on a UNIQUE error when a lack term is already claimed by a holder below the overlap threshold",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xo45jvbj",
   "priority": "P1",
   "rank": 0,
@@ -22,5 +22,6 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/web-sources.md"
-  ]
+  ],
+  "claimed_by": "orch-r03"
 }
