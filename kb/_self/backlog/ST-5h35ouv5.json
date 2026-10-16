@@ -2,7 +2,7 @@
   "id": "ST-5h35ouv5",
   "kind": "story",
   "title": "The kb says how a stateless MCP server holds state several agents share and how SEP-2567 scopes it per subagent",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ylklxolb",
   "sprint": "SP-xo45jvbj",
   "priority": "P3",
@@ -46,5 +46,6 @@
     "live: https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices#state-handle-hijacking",
     "kb: mcp/resources-prompts.md:83 (subscriptions/listen)"
   ],
-  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed: dropped the state handle hijacking question, which the kb answers at mcp/security-best-practices.md:18 (servers MUST NOT treat possession of a handle as authentication; bind handles to the verified user) [DOC S716]. Packs: question 1 weak, SEP-2567 none. Run 2026-10-16 (orchestrator): the goal's lead-in now ends in '; ' instead of ': ' so goal_questions packs question (1) alone (defect in draft ST-cho3qjfo; ST-cx7qhu3f hit it); the questions are unchanged."
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed: dropped the state handle hijacking question, which the kb answers at mcp/security-best-practices.md:18 (servers MUST NOT treat possession of a handle as authentication; bind handles to the verified user) [DOC S716]. Packs: question 1 weak, SEP-2567 none. Run 2026-10-16 (orchestrator): the goal's lead-in now ends in '; ' instead of ': ' so goal_questions packs question (1) alone (defect in draft ST-cho3qjfo; ST-cx7qhu3f hit it); the questions are unchanged.",
+  "claimed_by": "orch-r03"
 }
