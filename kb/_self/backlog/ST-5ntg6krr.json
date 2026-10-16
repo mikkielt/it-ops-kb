@@ -43,6 +43,25 @@
     "kb/public/_answers.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the four answers' facts live: in the five anchor articles of the touches, or in a new article?",
+      "options": [
+        "extend the anchor articles",
+        "write a new article"
+      ],
+      "recommendation": "extend the anchor articles",
+      "do": {
+        "extend the anchor articles": "ST-5ntg6krr",
+        "write a new article": "ST-5ntg6krr"
+      },
+      "class": "design",
+      "answer": "extend the anchor articles",
+      "by": "agent"
+    }
+  ],
   "links": [
     "live: https://code.claude.com/docs/en/server-managed-settings",
     "live: https://code.claude.com/docs/en/plugins/org",
