@@ -2,7 +2,7 @@
   "id": "BG-ijyjl7ii",
   "kind": "bug",
   "title": "A timed-out repro session is recorded with cost 0, so the instance budget and the repro cost rows undercount",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   "links": [
     "parked: SP-ygsnog4n review"
   ],
-  "notes": "Plan 2026-10-15: kept beside the cap reserve rule, since an area recorded at cost 0 lets the next area start past the cap. 2026-10-16: the suite part of the plan is dropped under the operator's test policy D-2tq4fhgs; the repro is the proof."
+  "notes": "Plan 2026-10-15: kept beside the cap reserve rule, since an area recorded at cost 0 lets the next area start past the cap. 2026-10-16: the suite part of the plan is dropped under the operator's test policy D-2tq4fhgs; the repro is the proof.",
+  "claimed_by": "orch-r13"
 }
