@@ -31,6 +31,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/azure-openai-deployments` | P2 | complete | `agents/azure-openai-deployments.md`, `agents/azure-openai-deployment-types.csv` | 16 |
 | `agents/coding-agents-mcp` | P2 | complete | `agents/coding-agents-mcp.md` | 9 |
 | `agents/content-safety-prompt-shields` | P2 | complete | `agents/content-safety-prompt-shields.md`, `agents/content-safety-limits.csv` | 13 |
+| `agents/coordination-messages` | P2 | complete | `agents/coordination-messages.md` | 7 |
 | `agents/copilot-studio-mcp-client` | P2 | partial | `agents/copilot-studio-mcp-client.md` | 14 |
 | `agents/dataverse-mcp-server` | P2 | complete | `agents/dataverse-mcp-server.md` | 7 |
 | `agents/doc-lookup-sources` | P2 | complete | `agents/doc-lookup-sources.md`, `agents/doc-lookup-sources.csv` | 63 |

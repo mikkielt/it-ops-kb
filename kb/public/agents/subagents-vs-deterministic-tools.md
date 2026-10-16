@@ -183,6 +183,8 @@ because no observed failure yet justifies scripting them.
 | Multi-agent + runaway/oversized result | ~15x × "another 10x or more" (secondary estimate) | S1934 (COMMUNITY) |
 | Code execution over MCP (one measured task) | 150,000 → 2,000 tokens (98.7% reduction) | S1922 |
 
+For what a brief or a returned summary should hold, how parallel agents avoid duplicate research and what the coordination costs in tokens, see `agents/coordination-messages.md`; for typed results between agents over A2A, see `agents/a2a-protocol.md`.
+
 ## Examples
 
 - Example: a device-watch subagent that always runs the same three ConfigMgr AdminService calls

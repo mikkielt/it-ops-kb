@@ -1709,3 +1709,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/agent-cost-governance
 
 - **agent teams token cost each teammate separate context window** The kb was asked this in a logged lookup of 2026-10-16, and no article answered it (query log finding F-2f4d3eb31c9e). Looked in the kb 2026-10-16: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/agent-cost-governance)
+## agents/coordination-messages
+
+- **A shared record of searches already made, as a way to stop parallel agents repeating research.** Looked 2026-10-16 in the Anthropic multi-agent research, context-engineering and tool-writing posts (S1921, S1855, S1935) and the Claude Code subagents, agent-teams and costs pages (S2157, S-qdxfqzln, S2132): they give the lead's division of labour in each brief, a shared task list with claim locking, and ownership by lens or by file, and name no ledger of searches done. Needs an official statement of such a pattern. [UNK] (topic: agents/coordination-messages)
+- **A measured token cost of the messages in an agent team.** Looked 2026-10-16 in the agent-teams token-usage section and the costs page (S-qdxfqzln, S2132): they say usage scales with active teammates and run time and give no per-message or per-brief figure; the only multiplier recorded is the 7x in `agents/agent-cost-governance.md`. Needs a measured run or a vendor figure. [UNK] (topic: agents/coordination-messages)

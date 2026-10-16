@@ -3882,3 +3882,14 @@ _Agent: kb-research_
 - See python/stdlib-sqlite3-csv.md, python/stdlib-argparse-json.md, mcp/authorization.md, agents/shared-state-concurrency.md.
 
 _Agent: kb-research_
+
+## QK-token-efficient-message-between-agents-hold. What does a token-efficient message between agents hold, how do A2A message parts give typed results, how do parallel agents avoid duplicate research, and what token cost does coordination add?
+- Message contents: a Claude Code subagent sees none of the parent's turns and an agent-team teammate none of the lead's history, so the delegation prompt carries the task; Anthropic's Research system needs an objective, output format, tool and source guidance and task boundaries in each brief, and the guidance names a condensed return of often 1,000-2,000 tokens after tens of thousands explored. [DOC S-wf2dmtu6, S-qdxfqzln, S1921, S1855]
+- Typed results over A2A: a message holds `parts`, each exactly one of `text`, `raw`, `url` or `data` (any JSON value) with a `media_type`; task outputs are artifacts of parts; clients list accepted media types and Agent Cards declare input and output modes. [DOC S2120]
+- Duplicate research: Anthropic's subagents cannot coordinate, so the lead's division of labour in each brief is the control; Claude Code adds a shared task list with claim locking, work split by lens or by file, and a start of 3-5 teammates. [DOC S1921, S-qdxfqzln, S2157]
+- Cost: each teammate has its own window and token use scales with the number of active teammates and their run time; spawn prompts add to each teammate's context, a finished teammate keeps consuming until it exits, an in-process teammate's cache holds five minutes by default, and subagent results and own requests both spend tokens. [DOC S2132, S-qdxfqzln, S2157]
+- Conclusion: a message between agents should hold the goal, the boundary, the output format, pointers instead of pasted content and a short summary on return; A2A's `data` part carries the typed result but, unlike MCP's `outputSchema`, no schema field is declared for it, and coordination cost is a fixed startup context plus brief plus returned summary per recipient. [DER S1855, S1921, S2120, S2132, S-wf2dmtu6]
+- Open: no official source read describes a shared ledger of searches already made as a deduplication mechanism; the token cost of a full agent-teams message exchange is stated only as "significantly more", with 7x recorded for plan-mode teammates elsewhere in the kb. [UNK]
+- See agents/coordination-messages.md, agents/a2a-protocol.md, agents/subagents-vs-deterministic-tools.md, agents/agent-cost-governance.md, claude/cross-session-messaging.md.
+
+_Agent: kb-research_
