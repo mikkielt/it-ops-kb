@@ -2,7 +2,7 @@
   "id": "BG-hdvzvy7l",
   "kind": "bug",
   "title": "bl_forge.target applies forge_project to every repository of a multi-repository workspace, so land can read the workspace's request as each repository's",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-4fawjprq",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
@@ -56,5 +56,18 @@
     "parked: SP-dqkf3i42 review"
   ],
   "notes": "Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_forge.target still returns setting('forge_project') or the remote's project (bl_forge.py:275). The old repro read source text; the new one plants a workspace (forge_project team/workspace, repositories api) and reads target() of the api checkout: it names team/workspace now; it passes on team/api or on settings/check refusing forge_project beside repositories. Shares bl_land.py with BG-wqc6sgug, so it runs after it. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run. Found by the SP-dqkf3i42 review at _tools/bl_forge.py:259 (target, called from _tools/bl_land.py:998): with forge_project team/workspace and repos [api, web], land reads each repository's <id>: request in the workspace project, can take the workspace's merged request for theirs and remove their clean worktrees (moved from the goal at planning, 2026-10-16).",
-  "claimed_by": "orch-r01"
+  "evidence": {
+    "commit": "31d2e25cc968153a2882b1663e814e9a9d759035",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,pathlib as P\nos.environ.pop(\"KB_BACKLOG_CONFIG\",None);sys.path.insert(0,\"_tools\");import bl_base,bl_forge,kbpublic\nw=P.Path(tempfile.mkdtemp());(w/\"backlog.json\").write_text(json.dumps({\"forge_project\":\"team/workspace\",\"repositories\":{\"api\":\"api\"}}))\na=w/\"api\";a.mkdir();g=lambda *x:s.run([\"git\",\"-C\",str(a),*x],check=True,capture_output=True)\ng(\"init\",\"-q\");g(\"remote\",\"add\",kbpublic.integration_remote(str(a)),\"https://gitlab.com/team/api.git\")\nv=bl_base.load_settings(str(w))\ntry:p=bl_forge.target(str(a)).project\nexcept bl_base.Refused as e:p=\"refused: %s\"%e\nc=s.run([sys.executable,\"_tools/backlog.py\",\"--root\",str(w),\"check\"],capture_output=True,text=True);refused=any(\"forge_project\" in x for x in v[3]) or (c.returncode!=0 and \"forge_project\" in c.stdout+c.stderr)\nprint(\"repository api reads project:\",p,\"| settings refuse forge_project beside repositories:\",refused)\nsys.exit(0 if p==\"team/api\" or refused else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4ffc0484d7f5a070"
+      }
+    ]
+  }
 }
