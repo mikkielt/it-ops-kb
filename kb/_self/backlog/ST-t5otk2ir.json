@@ -2,7 +2,7 @@
   "id": "ST-t5otk2ir",
   "kind": "story",
   "title": "Research sprint goal: repro run gives every instance the same areas, budget, gate and starting state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ysuvdxsn",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Plan 2026-10-15: rag.py pack 'what does claude -p --max-turns count and what happens when the limit is reached' finds public/agents/headless-agent-runtimes.md:23 ('caps iterations') but nothing on what is counted or returned; CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 is already in the kb (public/claude/settings-and-scopes.md:39).",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "9a99b22afd2eedb3ba09a19a50977b2cf9e675d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-t5otk2ir"
+        ],
+        "exit": 0,
+        "sha256": "e7d3e9e95960bc53"
+      }
+    ]
+  }
 }
