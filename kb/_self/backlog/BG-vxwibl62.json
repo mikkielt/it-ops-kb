@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "coord.py put needs no holder token, so any agent can overwrite the value of a key another agent has claimed",
   "status": "draft",
+  "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "SP-rsmmwzr2 review G9 (ST-5iwikc3n): put takes no token, so anyone who reads the revision with get can put a new value on a key whose lease another agent holds; gate g2 allowed put to raise the revision on a leased key but not without the holder. Asked as a gate first: a put on a leased key needs the holder's --token, or kb/_self/tools.md says the lease does not guard the value (then this repro is rewritten).",
+  "goal": "(SP-rsmmwzr2 review G9) A put on a key under a live lease is refused (exit 1) unless it names the holder's --token, as gate writer answers; the holder's put with its --token and a put on a key with no live lease succeed at their revision",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,53 @@
       "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('claim','K5','--ttl','60','--holder','a')\nr=c('put','K5','--value','hijack','--revision','1')[0]\nprint('put on a leased key without its token exit',r);sys.exit(0 if r!=0 else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,\"c.db\"))\ndef c(*a):\n    p=s.run([sys.executable,\"_tools/coord.py\",*a],capture_output=True,text=True,env=E,timeout=60);return p.returncode,p.stdout\ntok=json.loads(c(\"claim\",\"K6\",\"--ttl\",\"60\",\"--holder\",\"a\")[1])[\"token\"]\nother=c(\"put\",\"K6\",\"--value\",\"x\",\"--revision\",\"1\")[0]\nown=c(\"put\",\"K6\",\"--value\",\"y\",\"--revision\",\"1\",\"--token\",tok)[0]\nfree=c(\"put\",\"K7\",\"--value\",\"z\",\"--revision\",\"0\")[0]\nprint(dict(without_holder=other,holder=own,no_lease=free));sys.exit(0 if other==1 and own==0 and free==0 else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "(SP-rsmmwzr2 review G9) A put on a key under a live lease is refused (exit 1) unless it names the holder's --token, as gate writer answers",
+      "check": 1
+    },
+    {
+      "clause": "the holder's put with its --token and a put on a key with no live lease succeed at their revision",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-p2jcpxhl"
+  ],
+  "gates": [
+    {
+      "id": "writer",
+      "kind": "blocking",
+      "question": "Who may put a value on a coord.py key while another agent's live lease holds it?",
+      "options": [
+        "holder only: put on a key under a live lease is refused (exit 1) unless it names the holder's handle that claim printed; a key with no live lease takes a put from anyone at its revision",
+        "anyone: the lease guards the holder and not the value, and kb/_self/tools.md says so; the repro is rewritten"
+      ],
+      "recommendation": "holder only: put on a key under a live lease is refused (exit 1) unless it names the holder's handle that claim printed; a key with no live lease takes a put from anyone at its revision",
+      "do": {
+        "holder only: put on a key under a live lease is refused (exit 1) unless it names the holder's handle that claim printed; a key with no live lease takes a put from anyone at its revision": "BG-vxwibl62",
+        "anyone: the lease guards the holder and not the value, and kb/_self/tools.md says so; the repro is rewritten": "BG-vxwibl62"
+      },
+      "class": "design",
+      "answer": "holder only: put on a key under a live lease is refused (exit 1) unless it names the holder's handle that claim printed; a key with no live lease takes a put from anyone at its revision",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (put on a leased key without its token exit 0). Ordered after BG-p2jcpxhl: both change coord.py put and claim."
 }

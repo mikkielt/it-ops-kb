@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "ledger_lock's stale-lock put-back can lose a live lock when a third waiter creates the lock while it is renamed away",
   "status": "draft",
+  "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -17,10 +18,11 @@
   "touches": [
     "_tools/bl_base.py",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md"
   ],
   "links": [
     "parked: SP-z3hyk4eh review"
   ],
-  "notes": "SP-z3hyk4eh review gap 3 (S3), on ST-jrs7supe (g1 answered 'rename and compare'): _tools/bl_base.py:590 _clear_stale_lock; needs a crashed writer's stale lock plus three waiters; the put-back os.link fails silently onto an existing file, and a holder exiting while its lock is renamed away leaves an unheld lock for 60 s. The repro plants the third waiter in os.link in one process; it fails on origin/main f105ef2e4. The fix may rename _clear_stale_lock: then rewrite the repro to the new function before the start gate."
+  "notes": "SP-z3hyk4eh review gap 3 (S3), on ST-jrs7supe (g1 answered 'rename and compare'): _tools/bl_base.py:590 _clear_stale_lock; needs a crashed writer's stale lock plus three waiters; the put-back os.link fails silently onto an existing file, and a holder exiting while its lock is renamed away leaves an unheld lock for 60 s. The repro plants the third waiter in os.link in one process; it fails on origin/main f105ef2e4. The fix may rename _clear_stale_lock: then rewrite the repro to the new function before the start gate. Premise rerun 2026-10-16 on origin/main ed55f4d56: repro exits 1 (live holder lock kept after a third waiter took the name during the put-back: False)."
 }

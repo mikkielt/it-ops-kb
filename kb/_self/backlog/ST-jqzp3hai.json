@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts, gap entries or retrieval fixes through /kb-research: (1) Are the keys attached to an etcd lease deleted when the lease expires or is revoked, and may a client other than the lease holder write a leased key? (2) How does a Claude Code user remove one MCP server tool from Claude's context with a permission deny rule? (3) How do several processes write one SQLite database: BEGIN IMMEDIATE, busy timeout, WAL mode?",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-16: (2) and (3) pack good on origin/main ed55f4d56; (1) packs weak although kb/public/agents/shared-state-concurrency.md:250-252 hold the etcd lease facts, so (1) is a retrieval fix (lookup_eval row, doc2query) or a missing fact on who may write a leased key. Feeds the BG-p2jcpxhl and BG-vxwibl62 gates and the coord MCP opt-in story."
 }

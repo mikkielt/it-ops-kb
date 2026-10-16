@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "A coord.py value put on a leased key is lost when the holder releases it or the lease expires",
   "status": "draft",
+  "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "SP-rsmmwzr2 review G2 (ST-5iwikc3n, gate g2): put on a leased key keeps the lease, and release and live_row delete the whole row, value included, once the lease ends; so claim, put the result, release leaves get exiting 1 ('absent') at revision 0. Release or expiry clears holder, token and expiry and keeps the value and revision, or the docs say a value lives only as long as its lease (a changed answer to ST-5iwikc3n gate g2, asked as a gate first).",
+  "goal": "(SP-rsmmwzr2 review G2) The end of a lease, a release or an expiry, clears holder, token and expiry and keeps the value and revision, as gate lifetime answers; a claim of a key that holds no live lease succeeds, a value left by a put on an absent key included (BG-v3fjhmro)",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,50 @@
       "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\ntok=json.loads(c('claim','K2','--ttl','60','--holder','a')[1])['token']\nc('put','K2','--value','V','--revision','1');c('release','K2','--token',tok)\nr1,o1,_=c('get','K2')\nc('claim','K3','--ttl','1','--holder','a');c('put','K3','--value','W','--revision','1');time.sleep(1.6)\nr2,o2,_=c('get','K3')\nprint(dict(after_release=r1,after_expiry=r2));sys.exit(0 if r1==0 and 'V' in o1 and r2==0 and 'W' in o2 else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('put','K1','--value','x','--revision','0')\nr=c('claim','K1','--ttl','5','--holder','a')[0]\nprint('claim after a put exit',r);sys.exit(0 if r==0 else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "(SP-rsmmwzr2 review G2) The end of a lease, a release or an expiry, clears holder, token and expiry and keeps the value and revision, as gate lifetime answers",
+      "check": 1
+    },
+    {
+      "clause": "a claim of a key that holds no live lease succeeds, a value left by a put on an absent key included (BG-v3fjhmro)",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "lifetime",
+      "kind": "blocking",
+      "question": "When a lease on a coord.py key ends (its holder lets it go or it runs out), what happens to a value put on that key? This changes the answer of ST-5iwikc3n gate g2, which let the value go with its lease.",
+      "options": [
+        "keep: the end of a lease clears holder and expiry and keeps the value and revision; a key with no live lease can be claimed again (carries BG-v3fjhmro)",
+        "lease-bound: the value lives only as long as its lease (as etcd keys attached to a lease go with it), and the coord.py docstring and kb/_self/tools.md say so; the repro is rewritten"
+      ],
+      "recommendation": "keep: the end of a lease clears holder and expiry and keeps the value and revision; a key with no live lease can be claimed again (carries BG-v3fjhmro)",
+      "do": {
+        "keep: the end of a lease clears holder and expiry and keeps the value and revision; a key with no live lease can be claimed again (carries BG-v3fjhmro)": "BG-p2jcpxhl",
+        "lease-bound: the value lives only as long as its lease (as etcd keys attached to a lease go with it), and the coord.py docstring and kb/_self/tools.md say so; the repro is rewritten": "BG-p2jcpxhl"
+      },
+      "class": "design",
+      "answer": "keep: the end of a lease clears holder and expiry and keeps the value and revision; a key with no live lease can be claimed again (carries BG-v3fjhmro)",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'after_release': 1, 'after_expiry': 1}). Planned with BG-v3fjhmro's repro as a check: keeping a value past its lease leaves a row with no live lease, which claim must take again, the same code path BG-v3fjhmro asks for (a put on an absent key leaves such a row). BG-v3fjhmro stays a draft outside the sprint; once this lands its repro passes and it is dropped naming this item."
 }

@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "No outside facts: the sprint's two items are themselves /kb-research stories that carry its open questions (ST-5mcrotet, ST-o76aink7); planning packed every question of EP-ylklxolb's and EP-klpp2paw's goals on origin/main ed55f4d56 and found only those gaps (parallel-work choice, coordination distribution, prompt-cache scope, coordination messages, MCP shared state, state sync, cross-repository coordination, identity, authorization, sandboxes, signed commits, GitOps, managed memory and troubleshooting all pack good or name their article)."
 }

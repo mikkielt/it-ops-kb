@@ -16,5 +16,6 @@
   },
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "2026-10-16 plan of SP-6jfnx5i3: carried by BG-p2jcpxhl, whose gate lifetime (answer keep) makes a key with no live lease claimable and which runs this repro as a check; drop this bug naming BG-p2jcpxhl's commit once it lands."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "kg_sync.forge_outage takes any parenthesised 5xx number in the push output for a forge outage, so a push-rule refusal that prints '(500)' is retried six times",
   "status": "draft",
+  "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -21,5 +22,5 @@
   "links": [
     "parked: SP-z3hyk4eh review"
   ],
-  "notes": "SP-z3hyk4eh review gap 2 (S3), on ST-6qusz4km: _tools/kg_sync.py:92 FORGE_OUTAGE's \\(5\\d\\d\\) matches any parenthesised 5xx number; bounded (6 tries, about 60 s of pauses), nothing lost. Repro fails on origin/main f105ef2e4."
+  "notes": "SP-z3hyk4eh review gap 2 (S3), on ST-6qusz4km: _tools/kg_sync.py:92 FORGE_OUTAGE's \\(5\\d\\d\\) matches any parenthesised 5xx number; bounded (6 tries, about 60 s of pauses), nothing lost. Repro fails on origin/main f105ef2e4. Premise rerun 2026-10-16 on origin/main ed55f4d56: repro exits 1 (forge_outage (push-rule 500, real 503): [True, True])."
 }

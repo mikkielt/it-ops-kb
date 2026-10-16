@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "An ended session's coord intent keeps showing to later sessions for a day, also after a clean SessionEnd",
   "status": "draft",
+  "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "SP-xo45jvbj review G4 (ST-x6mvfnmv): SessionEnd releases only the presence lease, and coord.py digest shows an intent for 24 h unless a later progress done covers its items, so a worker resumed or re-dispatched on the same item is shown its own earlier session as an overlap and told to ask the operator. After a clean SessionEnd, the session's intents no longer show (a progress or release it posts), and a crashed session's drop out with its lease.",
+  "goal": "(SP-xo45jvbj review G4) After a clean SessionEnd, the session's intents no longer show in a later session's coord hook lines; a crashed session's intents drop out once its presence lease has ended",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,37 @@
       "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.sqlite'))\nE.pop('KB_COORD_URL',None)\nH=os.path.abspath('.claude/hooks/coord_hook.py');T=os.path.abspath('_tools/coord.py')\ndef repo(n,b):\n    r=os.path.join(D,n);s.run(['git','init','-q','-b',b,r],check=True);s.run(['git','-C',r,'-c','user.name=x','-c','user.email=x@x','commit','-q','--allow-empty','-m','i'],check=True);return r\ndef hook(cwd,**p):\n    p.setdefault('cwd',cwd);return s.run([sys.executable,H],input=json.dumps(p),capture_output=True,text=True,env=E,cwd=cwd,timeout=60).stdout\ndef c(*a):return s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=300)\nr=repo('r','work/ST-abcd1234')\nhook(r,hook_event_name='SessionStart',session_id='repro-sessA',source='startup');hook(r,hook_event_name='SessionEnd',session_id='repro-sessA',reason='exit')\nout=hook(r,hook_event_name='SessionStart',session_id='repro-sessB',source='startup');hook(r,hook_event_name='SessionEnd',session_id='repro-sessB',reason='exit')\nprint(repr(out[:300]));sys.exit(0 if 'repro-sessA' not in out else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,sqlite3,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();st=os.path.join(D,\"c.sqlite\");E=dict(os.environ,KB_COORD_STORE=st);E.pop(\"KB_COORD_URL\",None)\nH=os.path.abspath(\".claude/hooks/coord_hook.py\")\nr=os.path.join(D,\"r\");s.run([\"git\",\"init\",\"-q\",\"-b\",\"work/ST-abcd1234\",r],check=True)\ns.run([\"git\",\"-C\",r,\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"i\"],check=True)\ndef hook(**p):\n    p.setdefault(\"cwd\",r);return s.run([sys.executable,H],input=json.dumps(p),capture_output=True,text=True,env=E,cwd=r,timeout=60).stdout\nhook(hook_event_name=\"SessionStart\",session_id=\"repro-crashA\",source=\"startup\")\ncon=sqlite3.connect(st);n=con.execute(\"UPDATE entries SET expires=1 WHERE key='session/repro-crashA'\").rowcount;con.commit();con.close()\nout=hook(hook_event_name=\"SessionStart\",session_id=\"repro-crashB\",source=\"startup\");hook(hook_event_name=\"SessionEnd\",session_id=\"repro-crashB\",reason=\"exit\")\nprint(\"planted lease rows\",n,repr(out[:200]));sys.exit(0 if n==1 and \"repro-crashA\" not in out else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "(SP-xo45jvbj review G4) After a clean SessionEnd, the session's intents no longer show in a later session's coord hook lines",
+      "check": 1
+    },
+    {
+      "clause": "a crashed session's intents drop out once its presence lease has ended",
+      "check": 0
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "_tools/coord.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-as7rt42o"
+  ],
   "links": [
     "parked: SP-xo45jvbj review"
-  ]
+  ],
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (session B's SessionStart shows 'intent session=repro-sessA item=ST-abcd1234' after A's clean SessionEnd). Ordered after BG-as7rt42o (coord.py)."
 }

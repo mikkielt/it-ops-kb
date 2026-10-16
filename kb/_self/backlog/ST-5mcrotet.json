@@ -4,6 +4,7 @@
   "title": "The kb says what the status line and notification hooks show the operator, and what channels and Remote Control relay",
   "status": "draft",
   "parent": "EP-ylklxolb",
+  "sprint": "SP-4dab3cy5",
   "priority": "P3",
   "rank": 0,
   "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) What does the Claude Code status line command receive as input, such as cost, context window use and session id? (2) What does a Notification hook receive, and when does it fire? (3) How do channels relay permission prompts, and what does Remote Control let an operator approve from another device?",
@@ -17,6 +18,20 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) What does the Claude Code status line command receive as input, such as cost, context window use and session id? (2) What does a Notification hook receive",
+      "check": 0
+    },
+    {
+      "clause": "when does it fire? (3) How do channels relay permission prompts",
+      "check": 0
+    },
+    {
+      "clause": "what does Remote Control let an operator approve from another device?",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/claude/statusline.md",
     "kb/public/claude/hooks.md",
@@ -27,10 +42,14 @@
     "kb/public/_answers.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-4xswahsz"
+  ],
   "links": [
     "live: https://code.claude.com/docs/en/statusline",
     "live: https://code.claude.com/docs/en/channels-reference#relay-permission-prompts",
     "live: https://code.claude.com/docs/en/remote-control",
     "kb: claude/hooks.md:144 (Notification exists, input not recorded)"
-  ]
+  ],
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: researched exits 1; packs: (1) status line input lacks context window (no claude/statusline.md article), (2) Notification hook input packs good only on a false check line (hooks.md:144 names the event, not its input), (3) channels relay of permission prompts: kb lacks channels and relay; Remote Control approval partly in claude/cross-session-messaging.md."
 }

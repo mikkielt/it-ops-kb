@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "coord.py accepts --ttl nan or inf and --timeout nan, so a lease never expires and a wait never ends",
   "status": "draft",
+  "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "SP-rsmmwzr2 review G3 (ST-5iwikc3n, ST-qguxlob4): positive() and seconds() accept nan and inf (nan <= 0 is false); claim --ttl nan stores a NULL expiry and holds the key for ever (also over serve, by any operator), renew of it raises TypeError, the reply is invalid JSON (NaN), and wait --timeout nan never returns. Non-finite --ttl and --timeout exit 2.",
+  "goal": "(SP-rsmmwzr2 review G3) claim --ttl nan, claim --ttl inf and wait --timeout nan exit 2 instead of storing a lease that never ends or waiting for ever",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,15 @@
       "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\na=c('claim','K3','--ttl','nan','--holder','a')[0];b=c('claim','K4','--ttl','inf','--holder','a')[0]\ntry:\n    w=c('wait','--since','0','--timeout','nan',t=5)[0]\nexcept s.TimeoutExpired:\n    w='hung'\nprint(dict(ttl_nan=a,ttl_inf=b,wait_nan=w));sys.exit(0 if a==2 and b==2 and w==2 else 1)"
     ]
   },
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-vxwibl62"
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'ttl_nan': 0, 'ttl_inf': 0, 'wait_nan': 'hung'}). Ordered after BG-vxwibl62 (coord.py)."
 }
