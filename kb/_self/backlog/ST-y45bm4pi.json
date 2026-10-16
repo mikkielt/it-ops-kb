@@ -28,6 +28,23 @@
   "depends_on": [
     "ST-mee3qx7d"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The goal's parenthetical says the hook names the changed items, one id per line; the code (kg_trailers.py) never writes KB-Work and wants one comma-separated line naming exactly the changed items. How does the skill text word it?",
+      "options": [
+        "State what check-trailers does",
+        "Word it as the goal does"
+      ],
+      "recommendation": "State what check-trailers does",
+      "do": {
+        "State what check-trailers does": "ST-y45bm4pi",
+        "Word it as the goal does": "ST-y45bm4pi"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-7ff7c5ui close"
   ],
