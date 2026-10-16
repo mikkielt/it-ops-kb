@@ -21,6 +21,40 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the RFC 6750 bearer-token facts live: in mcp/authorization.md (which already names RFC 6750 as the spec's basis), or in a new auth/ article?",
+      "options": [
+        "mcp/authorization.md, as facts under the spec's RFC 6750 line",
+        "a new auth/ article on HTTP bearer tokens"
+      ],
+      "recommendation": "mcp/authorization.md, as facts under the spec's RFC 6750 line",
+      "do": {
+        "mcp/authorization.md, as facts under the spec's RFC 6750 line": "ST-ksmmg2fi",
+        "a new auth/ article on HTTP bearer tokens": "ST-ksmmg2fi"
+      },
+      "class": "secrets"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where do the SQLite cross-process write facts and the ThreadingHTTPServer facts live: extending python/stdlib-sqlite3-csv.md and python/stdlib-argparse-json.md (which already hold the sqlite3 module and the socketserver facts), or new python/ articles?",
+      "options": [
+        "extend the two existing articles",
+        "new python/ articles for SQLite concurrency and http.server"
+      ],
+      "recommendation": "extend the two existing articles",
+      "do": {
+        "extend the two existing articles": "ST-ksmmg2fi",
+        "new python/ articles for SQLite concurrency and http.server": "ST-ksmmg2fi"
+      },
+      "class": "design",
+      "answer": "extend the two existing articles",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-16: ST-unrlktke carries the research this goal needs (agent messages, typed parts, research dedup, coordination cost); this story researches only what the goal needs beyond it, or records `No outside facts:` naming ST-unrlktke.",
   "claimed_by": "orch-r02"
 }
