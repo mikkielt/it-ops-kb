@@ -1,0 +1,20 @@
+{
+  "id": "SP-rsmmwzr2",
+  "kind": "sprint",
+  "title": "Any agent coordinates through coord.py",
+  "status": "planned",
+  "goal": "any agent can claim work, exchange events and read a digest of overlapping work through a standard-library coord.py",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
