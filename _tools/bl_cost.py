@@ -597,6 +597,42 @@ def cost_tokens(models):
     return sum(c.get(k, 0) for c in models.values() for k in TOKEN_KEYS)
 
 
+def price_usd(models):
+    """(USD, [model with no price]) of {model: counts}, at `bench_core.PRICE` list prices per MTok. The counts are a
+    model's sums, so the price tier is the one the mean prompt of its requests (`in` + `cw` + `cr`, over `requests`)
+    falls in; `cw1h` of the `cw` tokens are written at the 1-hour rate, the rest at the 5-minute one, and a cache read
+    is the table's price. A model the table has no row for adds nothing and is named."""
+    import bench_core
+    usd, unpriced = 0.0, []
+    for name, c in sorted(models.items()):
+        mid = bench_core.pinned(name)
+        if mid not in bench_core.PRICE:
+            unpriced.append(name)
+            continue
+        mean = (c.get("in", 0) + c.get("cw", 0) + c.get("cr", 0)) // max(c.get("requests", 0), 1)
+        p = bench_core.PRICE[mid][bench_core.tier_of(mid, mean)]
+        usd += (c.get("in", 0) * p[1] + c.get("out", 0) * p[2] + (c.get("cw", 0) - c.get("cw1h", 0)) * p[3]
+                + c.get("cr", 0) * p[4] + c.get("cw1h", 0) * p[5]) / 1e6
+    return usd, unpriced
+
+
+def spend_usd(bl, iid):
+    """(USD, [model with no price]) the query log's work sidecars hold for item `iid` and its descendants, read as
+    `cost ID` reads them (`cost_view` and `cost_scope` for the ids, `cost_lines` for the sidecars) but for this scope
+    only, so git history is asked for `iid` alone, not for every id a sidecar names (`cost_report` does, seconds
+    longer): the direct and attributed figures of its item lines, priced by `price_usd`; a shared line, a session's own,
+    is no item's. (0.0, []) for an id with no item file, no git history and no line."""
+    view = cost_view(bl, {iid})[0]
+    if iid not in view.items:
+        return 0.0, []
+    models = {}
+    for w in cost_lines(bl.root, cost_scope(view, iid))[0]:
+        if "item" in w:
+            for key, _, _ in COST_GROUPS:
+                cost_add(models, w[key])
+    return price_usd(models)
+
+
 def gap_links(it, kinds):
     """The gap findings (id in `kinds` with kind `gap`) an item's `links` name, sorted."""
     ids = {m for x in it.get("links", []) if isinstance(x, str) for m in GAP_ID_RE.findall(x)}

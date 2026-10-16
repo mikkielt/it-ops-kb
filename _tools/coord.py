@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """Claims, leases, compare-and-swap and events on a local SQLite store (stdlib only), usable by any agent. Docs: kb/_self/tools.md.
 
-  coord.py claim KEY --ttl SECONDS [--holder NAME]   create KEY if it is absent, held for SECONDS; prints the key, its
+  coord.py claim KEY --ttl SECONDS [--holder NAME] [--budget USD]
+                                                     create KEY if it is absent, held for SECONDS; prints the key, its
                                                      holder and the holder's token (exit 1, naming the holder, when a
-                                                     live lease already holds KEY)
+                                                     live lease already holds KEY); --budget is the USD the operator
+                                                     approved for the claimed item, so KEY is then an item id
   coord.py renew KEY --token T [--ttl SECONDS]       extend the lease of the holder of T (SECONDS: the claim's own)
   coord.py release KEY --token T                     drop the lease of the holder of T
   coord.py get KEY                                   print KEY's holder, value and revision (exit 1 when absent)
   coord.py put KEY --value V --revision N            write V only while KEY is at revision N (an absent key is at
                                                      revision 0); prints the new revision (exit 1 when KEY moved on)
-  coord.py list [--prefix P]                         print every live key that starts with P
+  coord.py list [--prefix P]                         print, as a JSON array, every live key that starts with P
   coord.py post --kind K --field NAME=VALUE ...      add an event; prints its sequence number as seq (exit 2 for a kind
                                                      off the closed list or a value that is not a short id)
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
@@ -27,6 +29,12 @@ next write on that key removes the row, value included, and `get` and `list` ski
 and stays until a claim-and-release or a later `put` replaces it. The token is shown once, to the claimer; `get`,
 `list` and a refused claim never print it. Every write runs in one `BEGIN IMMEDIATE` transaction, so two processes
 racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock.
+
+A claim made with `--budget USD` carries the budget the operator approved for the item its key names. `list` prints,
+beside each live claim, `budget_usd` (null without one), `spend_usd` (what the query log's work sidecars hold for the
+item and its descendants, read through `bl_cost.spend_usd`, the reader `backlog.py cost` uses, and priced with
+`bench_core.PRICE`; null without a budget) and `over_budget` (true when the spend is above the budget), and `digest`
+adds `over budget` to the line of such a claim. Nothing is stopped: the claim, its renewals and its holder go on.
 
 An event is a kind from a closed list (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat) and up to
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
@@ -93,7 +101,7 @@ RESEARCH = "research:"  # a research claim's key: research:<anchor topic>:<lack 
 DEDUP_SECONDS = 3600
 SCHEMA = (
     "CREATE TABLE IF NOT EXISTS entries ("
-    "key TEXT PRIMARY KEY, value TEXT, revision INTEGER NOT NULL, holder TEXT, token TEXT, ttl REAL, expires REAL)"
+    "key TEXT PRIMARY KEY, value TEXT, revision INTEGER NOT NULL, holder TEXT, token TEXT, ttl REAL, expires REAL, budget REAL)"
 )
 EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
@@ -143,14 +151,21 @@ class Tx:
 
     def __enter__(self):
         self.con.execute("BEGIN IMMEDIATE")
-        self.con.execute(SCHEMA)
-        self.con.execute(EVENTS_SCHEMA)
+        ensure_schema(self.con)
         return self.con
 
     def __exit__(self, kind, _value, _trace):
         self.con.execute("ROLLBACK" if kind else "COMMIT")
         self.con.close()
         return False
+
+
+def ensure_schema(con):
+    """Both tables, and the `budget` column on a store made before a claim carried one."""
+    con.execute(SCHEMA)
+    con.execute(EVENTS_SCHEMA)
+    if "budget" not in {r[1] for r in con.execute("PRAGMA table_info(entries)")}:
+        con.execute("ALTER TABLE entries ADD COLUMN budget REAL")
 
 
 def row_json(row):
@@ -168,6 +183,11 @@ def live_row(con, key, now):
 
 def claim(args, now):
     holder = args.holder or "anonymous"
+    budget = getattr(args, "budget", None)
+    if budget is not None:
+        import bl_base
+        if not bl_base.id_re().fullmatch(args.key):
+            raise Refused({"ok": False, "key": args.key, "error": f"--budget is for a claim of a backlog item id, not {args.key[:40]!r}"}, 2)
     token = secrets.token_hex(16)
     with Tx(args.store) as con:
         row = live_row(con, args.key, now)
@@ -175,10 +195,13 @@ def claim(args, now):
             raise Refused({"ok": False, "key": args.key, "holder": row["holder"], "revision": row["revision"],
                            "expires": row_json(row)["expires"],
                            "error": f"{args.key} is held by {row['holder'] or 'no lease (a put value)'}"})
-        con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires) VALUES (?, NULL, 1, ?, ?, ?, ?)",
-                    (args.key, holder, token, args.ttl, now + args.ttl))
-    return {"ok": True, "key": args.key, "holder": holder, "token": token, "ttl": args.ttl, "revision": 1,
+        con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires, budget) VALUES (?, NULL, 1, ?, ?, ?, ?, ?)",
+                    (args.key, holder, token, args.ttl, now + args.ttl, budget))
+    body = {"ok": True, "key": args.key, "holder": holder, "token": token, "ttl": args.ttl, "revision": 1,
             "expires": round(now + args.ttl, 3)}
+    if budget is not None:
+        body["budget_usd"] = budget
+    return body
 
 
 def held_by(con, key, token, now):
@@ -232,14 +255,34 @@ def put(args, now):
     return {"ok": True, "key": args.key, "value": args.value, "revision": have + 1}
 
 
+def spend_of(key):
+    """The USD the query log holds for the backlog item KEY (`bl_cost.spend_usd`), on the clone this tool is in."""
+    import bl_base
+    import bl_cost
+    bl_base.load_settings(HERE.parent)
+    return round(bl_cost.spend_usd(bl_base.Backlog(HERE.parent), key)[0], 6)
+
+
+def budget_view(key, budget):
+    """{budget_usd, spend_usd, over_budget} of a live claim: null and false for a claim with no budget."""
+    if budget is None:
+        return {"budget_usd": None, "spend_usd": None, "over_budget": False}
+    spend = spend_of(key)
+    return {"budget_usd": budget, "spend_usd": spend, "over_budget": spend > budget}
+
+
 def listing(args, now):
     con = connect(args.store)
     try:
-        con.execute(SCHEMA)
-        rows = con.execute(f"SELECT {PUBLIC} FROM entries WHERE {LIVE} ORDER BY key", (now,)).fetchall()
+        ensure_schema(con)
+        rows = con.execute(f"SELECT {PUBLIC}, budget FROM entries WHERE {LIVE} ORDER BY key", (now,)).fetchall()
     finally:
         con.close()
-    return {"ok": True, "prefix": args.prefix, "entries": [row_json(r) for r in rows if r["key"].startswith(args.prefix)]}
+    out = []
+    for r in rows:
+        if r["key"].startswith(args.prefix):
+            out.append({**row_json({k: r[k] for k in r.keys() if k != "budget"}), **budget_view(r["key"], r["budget"])})
+    return out
 
 
 def parse_fields(pairs, kind=""):
@@ -325,9 +368,8 @@ def digest(args, now):
     """The live intents and claims that overlap the keys, newest first, as at most N lines of text (no JSON)."""
     con = connect(args.store)
     try:
-        con.execute(SCHEMA)
-        con.execute(EVENTS_SCHEMA)
-        claims = con.execute("SELECT key, holder, ttl, expires FROM entries WHERE holder IS NOT NULL AND expires > ?", (now,)).fetchall()
+        ensure_schema(con)
+        claims = con.execute("SELECT key, holder, ttl, expires, budget FROM entries WHERE holder IS NOT NULL AND expires > ?", (now,)).fetchall()
         events = con.execute("SELECT seq, fields, kind, at FROM events WHERE kind IN ('intent', 'progress') ORDER BY seq").fetchall()
     finally:
         con.close()
@@ -354,8 +396,11 @@ def digest(args, now):
         lines.append((at, text + (f" state={'/'.join(now_states)}" if now_states else "")))
     for row in claims:
         if any(overlaps(row["key"], k) for k in args.key):
+            cost = budget_view(row["key"], row["budget"])
+            spent = (f" budget_usd={cost['budget_usd']} spend_usd={cost['spend_usd']}"
+                     + (" over budget" if cost["over_budget"] else "")) if row["budget"] is not None else ""
             lines.append((row["expires"] - row["ttl"],
-                          f"claim {one_line(row['key'])} holder={one_line(row['holder'])} left={int(row['expires'] - now)}s"))
+                          f"claim {one_line(row['key'])} holder={one_line(row['holder'])} left={int(row['expires'] - now)}s{spent}"))
     lines.sort(key=lambda pair: pair[0], reverse=True)
     return "\n".join(text for _at, text in lines[:args.lines])
 
@@ -489,6 +534,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("key")
     p.add_argument("--ttl", type=positive, required=True, help="lease length in seconds")
     p.add_argument("--holder", help="name shown to a second claimer (default anonymous)")
+    p.add_argument("--budget", type=positive, help="USD the operator approved for the claimed item (KEY is its id)")
     p = sub.add_parser("renew", parents=parents)
     p.add_argument("key")
     p.add_argument("--token", required=True)
