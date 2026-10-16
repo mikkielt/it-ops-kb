@@ -2,7 +2,7 @@
   "id": "ST-vexo3oze",
   "kind": "story",
   "title": "repro pick compares instances only on areas all finished",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-75hdeqld",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,28 @@
     }
   ],
   "notes": "Premise (lessons analysis 4.1): instances 1 and 3 tied on 24 passed and 0 errors; pick_key's cost tie-break chose instance 3 ($58.14 against $59.09) because it finished 14 areas, not 19. The first check reads source text for the word common only as a guard; the bundle's planted standings prove the rule. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
-  "claimed_by": "orch-75hdeqld"
+  "evidence": {
+    "commit": "f6e74c4d99889f81d0124b68e18ccbabfe9eddd5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;s=inspect.getsource(b.pick)+inspect.getsource(b.standings);sys.exit(0 if 'common' in s else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_bench_price_weights_and_tier_and_freshness_rows"
+        ],
+        "exit": 0,
+        "sha256": "9055a62a899df9d2"
+      }
+    ]
+  }
 }
