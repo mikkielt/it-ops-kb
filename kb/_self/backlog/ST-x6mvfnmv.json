@@ -2,7 +2,7 @@
   "id": "ST-x6mvfnmv",
   "kind": "story",
   "title": "Claude Code hooks announce a session's work through coord.py and show overlapping sessions, leaving the choice to the operator",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
@@ -149,5 +149,18 @@
     }
   ],
   "notes": "From the operator interview of 2026-10-15: overlaps inform and the operator decides in the terminal, never a silent block; scales solo one machine first, then several machines, team, organization. Research dedup itself is ST-3qxh5vxo; this hook only shows it. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Planning before a claim: run backlog.py referrers on the hook registration and on the docs that list SessionStart hooks (maintaining.md, token-efficiency.md, the plugin's hooks file if it mirrors .claude/settings.json). Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: no coord hook exists; .claude/settings.json registers SessionStart, SessionEnd and PreToolUse hooks. The goal now carries gate g1's answer (context and terminal) and g2's (claim and /kb-research start), the 10-line budget and the presence lease the SessionEnd release needs. referrers session_start.py/SessionEnd: settings.json, maintaining.md:9, token-efficiency.md:48 (in touches); the plugin's hooks in .claude-plugin/plugin.json stay as they are (the coord hook is the project's, not the read-only plugin's). The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE).",
-  "claimed_by": "orch-r03"
+  "evidence": {
+    "commit": "41871200a02d6ada684a08b16f74d7744bee382a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nT,H=os.path.abspath(\"_tools/coord.py\"),os.path.abspath(\".claude/hooks/coord_hook.py\")\nif not (os.path.isfile(T) and os.path.isfile(H)):print(\"coord.py or coord_hook.py missing: the work adds the hook\");sys.exit(1)\nd=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"coord.sqlite\"))\ndef c(*a):return s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=60)\ndef repo(n,b):\n    r=os.path.join(d,n);s.run([\"git\",\"init\",\"-q\",\"-b\",b,r],check=True);s.run([\"git\",\"-C\",r,\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-q\",\"--allow-empty\",\"-m\",\"i\"],check=True);return r\ndef hook(ev,sid,cwd,**x):\n    p=s.run([sys.executable,H],input=json.dumps(dict(hook_event_name=ev,session_id=sid,cwd=cwd,**x)),capture_output=True,text=True,env=E,cwd=cwd,timeout=60);return p.returncode,p.stdout\nfor i in range(15):c(\"post\",\"--kind\",\"intent\",\"--field\",\"session=other-%d\"%i,\"--field\",\"item=ST-aaaaaaaa\")\na,b=repo(\"a\",\"work/ST-aaaaaaaa\"),repo(\"b\",\"work/ST-zzzzzzzz\")\nst=hook(\"SessionStart\",\"me\",a,source=\"startup\");quiet=hook(\"SessionStart\",\"me2\",b,source=\"startup\")\npresent=\"session/me\\\"\" in c(\"list\",\"--prefix\",\"session/\").stdout\nend=hook(\"SessionEnd\",\"me\",a,reason=\"exit\");gone=\"session/me\\\"\" not in c(\"list\",\"--prefix\",\"session/\").stdout\ncl=hook(\"PreToolUse\",\"me3\",b,tool_name=\"Bash\",tool_input={\"command\":\"python3 _tools/backlog.py claim ST-aaaaaaaa --by w\"})\nrs=hook(\"PreToolUse\",\"me4\",a,tool_name=\"Skill\",tool_input={\"skill\":\"kb-research\",\"args\":\"a question\"})\nlines=[l for l in st[1].splitlines() if l.strip()]\nreg=json.dumps(json.load(open(\".claude/settings.json\")).get(\"hooks\",{}))\nregd=all(e in reg for e in(\"SessionStart\",\"SessionEnd\",\"PreToolUse\")) and reg.count(\"coord_hook.py\")>=3\nres=dict(start_names_overlap=st[0]==0 and \"other-\" in st[1] and \"ST-aaaaaaaa\" in st[1] and \"operator\" in st[1].lower(),line_budget=len(lines)<=10,\n quiet_without_overlap=quiet[0]==0 and not quiet[1].strip(),presence_lease=present,end_releases=end[0]==0 and gone,\n claim_shows=cl[0]==0 and \"other-\" in cl[1] and \"deny\" not in cl[1],research_start_shows=rs[0]==0 and \"other-\" in rs[1] and \"deny\" not in rs[1],registered=regd)\nprint(res);sys.exit(0 if all(res.values()) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "024c2d541c5553ec"
+      }
+    ]
+  }
 }
