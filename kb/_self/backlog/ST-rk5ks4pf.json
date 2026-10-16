@@ -2,7 +2,7 @@
   "id": "ST-rk5ks4pf",
   "kind": "story",
   "title": "coord.py serve: the same commands over HTTP for several operators, standard library only",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",
@@ -110,5 +110,18 @@
     }
   ],
   "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. The flag names (--keys, --key-file) were fixed at planning so the check can run them; gate g1's answer (one token per operator, each from its own file) is unchanged. The clause on one authentication function is read by the review, not by a run. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",
-  "claimed_by": "orch-r02"
+  "evidence": {
+    "commit": "3c710ddd76461aea0d48edc7d748eb0429483370",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess as s,sys,tempfile,time\nT=\"_tools/coord.py\"\nif not os.path.isfile(T):print(\"coord.py missing: the work adds it\");sys.exit(1)\nd=tempfile.mkdtemp();keys=os.path.join(d,\"operators\");os.mkdir(keys);sec=\"k\"*40\nopen(os.path.join(keys,\"alice\"),\"w\").write(sec);open(os.path.join(d,\"alice.key\"),\"w\").write(sec);open(os.path.join(d,\"mallory.key\"),\"w\").write(\"m\"*40)\nE=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"coord.sqlite\"))\nsrv=s.Popen([sys.executable,T,\"serve\",\"--bind\",\"0\",\"--keys\",keys],stdout=s.PIPE,stderr=s.STDOUT,text=True,env=E)\ntry:\n    url=srv.stdout.readline().split()[-1].strip()\n    def c(key,*a):\n        p=s.run([sys.executable,T,\"--url\",url,\"--key-file\",os.path.join(d,key),*a],capture_output=True,text=True,timeout=60,env=dict(os.environ));return p.returncode,p.stdout+p.stderr\n    r=c(\"alice.key\",\"claim\",\"k1\",\"--ttl\",\"60\");u=c(\"mallory.key\",\"claim\",\"k2\",\"--ttl\",\"60\")\n    c(\"alice.key\",\"post\",\"--kind\",\"heartbeat\",\"--field\",\"item=ST-aaaaaaaa\");w=c(\"alice.key\",\"wait\",\"--since\",\"0\",\"--timeout\",\"2\")\n    argv=s.run([\"ps\",\"-o\",\"args=\",\"-p\",str(srv.pid)],capture_output=True,text=True).stdout\n    os.remove(os.path.join(keys,\"alice\"));rv=c(\"alice.key\",\"claim\",\"k3\",\"--ttl\",\"60\")\n    res=dict(loopback=url.startswith(\"http://127.0.0.1:\"),claim=r[0]==0,unknown_401=u[0]!=0 and \"401\" in u[1],event_names_operator=\"alice\" in w[1],\n     no_secret_in_argv=sec not in argv,revoked_401=rv[0]!=0 and \"401\" in rv[1])\nfinally:\n    srv.terminate();srv.wait(10)\nprint(res);sys.exit(0 if all(res.values()) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ff71ac9b52b6a42a"
+      }
+    ]
+  }
 }
