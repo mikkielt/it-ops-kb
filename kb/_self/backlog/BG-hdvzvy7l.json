@@ -33,6 +33,25 @@
   "depends_on": [
     "BG-wqc6sgug"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a workspace with a repositories map keep forge_project from naming every repository's project? (bl_forge ignoring it is in this item's touches; a check refusal belongs in bl_base.py, outside them)",
+      "options": [
+        "bl_forge ignores forge_project when repositories is set",
+        "check refuses forge_project beside repositories"
+      ],
+      "recommendation": "bl_forge ignores forge_project when repositories is set",
+      "do": {
+        "bl_forge ignores forge_project when repositories is set": "BG-hdvzvy7l",
+        "check refuses forge_project beside repositories": "BG-hdvzvy7l"
+      },
+      "class": "agents-rule",
+      "answer": "bl_forge ignores forge_project when repositories is set",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-dqkf3i42 review"
   ],
