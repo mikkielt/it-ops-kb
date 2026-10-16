@@ -2,7 +2,7 @@
   "id": "ST-e3nmjd2s",
   "kind": "story",
   "title": "coord.py announces a session's intent and progress, and a digest gives a reader only the live work that overlaps its keys",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",
@@ -108,5 +108,27 @@
     }
   ],
   "notes": "From the operator interview of 2026-10-15: a session announces intent at start, claims and touches, research topics, and progress, in a structured, token-capped form with usage rules so records do not pollute context. Extends the closed kinds of ST-qguxlob4. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. The digest's claim cases use claim --holder from ST-5iwikc3n. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",
-  "claimed_by": "orch-r02"
+  "evidence": {
+    "commit": "b7b0d34f0df89f796bdf0d0c3e94d24867939484",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess as s,sys,tempfile,time\nT=\"_tools/coord.py\"\nif not os.path.isfile(T):print(\"coord.py missing: the work adds it\");sys.exit(1)\nE=dict(os.environ,KB_COORD_STORE=os.path.join(tempfile.mkdtemp(),\"coord.sqlite\"))\ndef c(*a):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=60);return p.returncode,p.stdout,p.stderr\ndef post(k,**f):\n    a=[]\n    for n,v in f.items():a+=[\"--field\",n+\"=\"+v]\n    return c(\"post\",\"--kind\",k,*a)[0]\nok=[post(\"intent\",item=\"ST-aaaaaaaa\",topic=\"agents/x\",touch=\"_tools/coord.py\"),post(\"intent\",item=\"ST-bbbbbbbb\",topic=\"mcp/y\"),\n post(\"intent\",item=\"ST-cccccccc\",topic=\"agents/x\"),post(\"progress\",item=\"ST-cccccccc\",state=\"done\"),post(\"progress\",item=\"ST-aaaaaaaa\",state=\"working\"),post(\"intent\",item=\"ST-ffffffff\",topic=\"agents/x\")]\nimport json\ntok=json.loads(c(\"claim\",\"agents/x\",\"--ttl\",\"60\",\"--holder\",\"released-one\")[1])[\"token\"];c(\"release\",\"agents/x\",\"--token\",tok)\nc(\"claim\",\"agents/x\",\"--ttl\",\"1\",\"--holder\",\"expired-one\");time.sleep(1.6);c(\"claim\",\"agents/x\",\"--ttl\",\"60\",\"--holder\",\"live-one\")\nbad=c(\"post\",\"--kind\",\"progress\",\"--field\",\"item=ST-aaaaaaaa\",\"--field\",\"state=sleeping\")[0]\nd=c(\"digest\",\"--key\",\"agents/x\",\"--lines\",\"5\")[1];d1=c(\"digest\",\"--key\",\"agents/x\",\"--lines\",\"1\")[1]\nlines=[l for l in d.splitlines() if l.strip()]\nres=dict(kinds_posted=ok==[0]*6,bad_state_exit2=bad==2,overlap_shown=\"ST-aaaaaaaa\" in d and \"live-one\" in d,newest_first=\"ST-ffffffff\" in d and \"ST-aaaaaaaa\" in d and d.index(\"ST-ffffffff\")<d.index(\"ST-aaaaaaaa\"),no_overlap_hidden=\"ST-bbbbbbbb\" not in d,\n done_hidden=\"ST-cccccccc\" not in d,released_hidden=\"released-one\" not in d,expired_hidden=\"expired-one\" not in d,\n line_budget=len(lines)<=5 and len([l for l in d1.splitlines() if l.strip()])<=1)\nprint(res,\"\\n\"+d);sys.exit(0 if all(res.values()) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ac413d5355a7b7da"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import re,sys\nt=open(\"kb/_self/tools.md\",encoding=\"utf-8\").read()\npart=[p for p in re.split(r\"\\n(?=#)\",t) if \"coord.py digest\" in p]\nneed=[\"intent\",\"progress\",\"claim\",\"digest\"]\nok=bool(part) and all(w in part[0] for w in need) and re.search(r\"only (the )?digest output|never raw events\",part[0])\nprint(\"tools.md section naming coord.py digest:\",bool(part),\"| names kinds and the digest-only rule:\",bool(ok));sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "129803cbd54f70dd"
+      }
+    ]
+  }
 }
