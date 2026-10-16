@@ -2,7 +2,7 @@
   "id": "ST-xqqcu4zz",
   "kind": "story",
   "title": "repro run says which claude binary its instances start, so a PATH wrapper cannot add settings unseen",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,

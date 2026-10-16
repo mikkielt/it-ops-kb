@@ -2,7 +2,7 @@
   "id": "BG-ijyjl7ii",
   "kind": "bug",
   "title": "A timed-out repro session is recorded with cost 0, so the instance budget and the repro cost rows undercount",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
