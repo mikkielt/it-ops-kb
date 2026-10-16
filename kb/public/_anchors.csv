@@ -10441,12 +10441,17 @@ fae2ea5f155a,logs/sources.md,S-6lmczs32,located,Troubleshoot Microsoft Entra dev
 1dbf6f0d496a,mcp/authorization.md,S707,located,Introduction > Access Token Usage > Token Handling,them;audienc;issu;validat;access;must;token;server,02983eec98094411,"MCP servers MUST validate that access tokens were issued specifically for them as the intended audience,",2026-10-10
 26302f74f29b,mcp/authorization.md,S702,located,Deprecated,client;document;dynamic;metadata;registration;2026-07-28;2027-07-28;first,48a715a8573c2ce5,Dynamic Client Registration | PR #2858 | 2026-07-28 | Client ID Metadata Documents | First revision released on or after 2027-07-28,2026-10-10
 31156c428a30,mcp/authorization.md,S707,unlocated:no-match,,,,,2026-10-10
+449d40a3f70e,mcp/authorization.md,S-neu52zjd,located,,header;client;authorization;bearer;token,0253fede99bf74cb,"Clients SHOULD make authenticated requests with a bearer token using the ""Authorization"" request header field",2026-10-16
 56c598957ae7,mcp/authorization.md,S707,located,Introduction > Purpose and Scope > Protocol Requirements,environment;instead;retriev;stdio;conform;credential;transport;follow,1830623789935273,"Implementations using an HTTP-based transport SHOULD conform to this specification. Implementations using an STDIO transport SHOULD NOT follow this specification, and instead retrieve credentials from",2026-10-10
 6e4d56b99210,mcp/authorization.md,S701,located,Major changes > Minor changes,key;persist;re-register;register;credential;issuer;authorization;must,df67e2b4eaefeaa0,"clients MUST key persisted credentials by the issuer identifier, MUST NOT reuse them with a different authorization server, and MUST re-register when the authorization server",2026-10-10
+7044be8b19a8,mcp/authorization.md,S-neu52zjd,located,,www-authenticat;authenticat;respons;header;www;must;server;resourc,cbbb695c4bcb4345,"the resource server MUST include the HTTP ""WWW-Authenticate"" response header field",2026-10-16
 9e14915eb957,mcp/authorization.md,S707,located,Introduction > Access Token Usage > Token Requirements,query;string;uri;access;must;token,905940e9098f3244,Access tokens MUST NOT be included in the URI query string,2026-10-10
 b002ed2371f2,mcp/authorization.md,S707,unlocated:no-match,,,,,2026-10-10
+d67d0d162b83,mcp/authorization.md,S-neu52zjd,located,,hour;less;leak;lived;short-liv;short;one;token,16f13d38cf9fcc58,using short-lived (one hour or less) tokens reduces the impact of them being leaked,2026-10-16
 e0cbbfccbf90,mcp/authorization.md,S701,located,Major changes > Minor changes,against;present;record;redeem;validat;befor;iss;issuer,835b8b5b589def9e,"Authorization servers SHOULD include the iss parameter in authorization responses per RFC 9207, and MCP clients MUST validate a present iss against the recorded issuer",2026-10-10
+edeaf3d690a3,mcp/authorization.md,S-neu52zjd,located,,sourc;general;method;authorization;oauth;http;bearer;token,70d77892790fe159,a general HTTP authorization method that can be used with bearer tokens from any source,2026-10-16
 f3e1e51bc93d,mcp/authorization.md,S707,located,Introduction > Resource Parameter Implementation,canonical;uri;rfc;request;must;token;server;client,666bf44d1e5fa6ba,MUST be included in both authorization requests and token requests. MUST identify the MCP server that the client intends to use the token with. MUST,2026-10-10
+fef19e75a063,mcp/authorization.md,S-neu52zjd,unlocated:no-match,,,,,2026-10-16
 19a0e784ced1,mcp/deprecations.md,S702,located,Deprecated,follow;log;stder;stdio;server,9763b45ae67499ea,Logging | SEP-2577 | 2026-07-28 | Log to stderr for stdio transports; use OpenTelemetry for observability | First revision released on or after 2027-07-28 Dynamic,2026-10-10
 34358f1e647c,mcp/deprecations.md,S701,unlocated:no-match,,,,,2026-10-10
 60c218e42a89,mcp/deprecations.md,S701,located,Major changes > Governance and process updates,month;twelv;twelve-month;window;sep-2596;deprecation;deprecat;sep,ec95e6d9113c276d,"twelve-month deprecation window, and a registry of deprecated features (SEP-2596).",2026-10-10
@@ -12720,9 +12725,12 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 1bf7f1b06d5b,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 21c43f554ef8,python/stdlib-argparse-json.md,S-zzvrhdyd,unlocated:no-match,,,,,2026-10-10
 234ee60b2afd,python/stdlib-argparse-json.md,S-zzvrhdyd,located,,sort_key;ensure_ascii;encoder;ensur;separator;sort;ascii;keys,c3f7da7ef7d639bb,".. class:: JSONEncoder(, skipkeys=False, ensureascii=True, checkcircular=True, allownan=True, sortkeys=False, indent=None, separators=None, default=None) Extensible JSON encoder for Python data structures.",2026-10-10
+25a618d65a28,python/stdlib-argparse-json.md,S-rs27i36t,located,,obtain;server_address;port;address;server;http,3fdea34dc71a7b17,The HTTP server's port number obtained from serveraddress.,2026-10-16
+25a618d65a28,python/stdlib-argparse-json.md,S-uj2rumru,located,,arbitrary;select;unus;mean;port,0e79f0e6b6ae81a3,Port 0 means to select an arbitrary unused port,2026-10-16
 29052f6aaef1,python/stdlib-argparse-json.md,S-6gpxsapp,located,NAME > SYNOPSIS > DESCRIPTION,modifi;named;argument;environment;env;utility,8af41212579d91a8,"The env utility shall obtain the current environment, modify it according to its arguments, then invoke the utility named by the utility operand with the",2026-10-10
 2b607f001558,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-10
 2cc84cceb82a,python/stdlib-argparse-json.md,S-36yy3wcx,unlocated:no-match,,,,,2026-10-10
+3097ad37d97d,python/stdlib-argparse-json.md,S-rs27i36t,located,,production;recommend;http.server;server;http,d25d9e09d94a95d5,is not recommended for production.,2026-10-16
 3352cc2a7d10,python/stdlib-argparse-json.md,S-w47ijsvq,located,,least;add_mutually_exclusive_group;mutually;exclusiv;allow;one;requir;group,59ba3c107ba55740,"PROG: error: argument --bar: not allowed with argument --foo The :meth:addmutuallyexclusivegroup method also accepts a required argument, to indicate that at least one of the",2026-10-10
 38437a87624a,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-10
 3fa219aef9d7,python/stdlib-argparse-json.md,S-36yy3wcx,unlocated:no-match,,,,,2026-10-10
@@ -12740,6 +12748,7 @@ db3d6a81dd43,python/ruff.md,S-yfbe6ete,unlocated:no-match,,,,,2026-10-10
 6a3e42c70a61,python/stdlib-argparse-json.md,S-glgntdsx,located,repeat a command 100 times > 2.6.5 Field Splitting > 2.9 Shell Commands > 2.9.1 Simple Commands > 2.9.1.4 Command Search and Execution,search;fail;messag;writ;one;error;status;utility,d58819dcc5c59090,"If the search is unsuccessful, the command shall fail with an exit status of 127 and the shell shall write an error message. If the",2026-10-10
 77c0b52e4abb,python/stdlib-argparse-json.md,S-6gpxsapp,unlocated:no-match,,,,,2026-10-10
 77c0b52e4abb,python/stdlib-argparse-json.md,S-glgntdsx,unlocated:no-match,,,,,2026-10-10
+7ab6f69e20b0,python/stdlib-argparse-json.md,S-uj2rumru,located,socketserver — A framework for network servers¶,exit;fals;default;until;threadingmixin;mix;thread,8725b9e55cb8b755,the default is False meaning that Python will not exit until all threads created by ThreadingMixIn have exited,2026-10-16
 8323bf7cbb3c,python/stdlib-argparse-json.md,S-glgntdsx,located,2 lists > 2.9.3.1 Asynchronous AND-OR Lists > 2.10 Shell Grammar > 2.10.2 Shell Grammar Rules,elif;esac;else;done;until;whil;case,454c44c13cb8fd7e,/ 'if' 'then' 'else' 'elif' 'fi' 'do' 'done' / %token Case Esac While Until For,2026-10-10
 842294bcde96,python/stdlib-argparse-json.md,S-glgntdsx,located,repeat a command 100 times > 2.6.5 Field Splitting > 2.9 Shell Commands > 2.9.2 Pipelines > Exit Status,logical;reserv;pipelin;status;exit;word,8fa1fbe9f6520db6,The pipefail option determines which command in the pipeline the exit status is derived from; the ! reserved word causes the exit status to be,2026-10-10
 8812368e37dc,python/stdlib-argparse-json.md,S-36yy3wcx,located,end first line with \ to avoid the empty line!,themselv;broken;may;some;longer;fals;word;width,d9a1583db2f60b84,"it is false, long words will not be broken, and some lines may be longer than width. (Long words will be put on a line",2026-10-10
@@ -12755,6 +12764,8 @@ dc53cdee4d75,python/stdlib-argparse-json.md,S-glgntdsx,unlocated:no-match,,,,,20
 e372b01b06ee,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 e8ea9daaaa45,python/stdlib-argparse-json.md,S-36yy3wcx,located,textwrap — Text wrapping and filling¶,effect;collap;befor;chang;drop_whitespac;tabsiz;expand_tab;replace_whitespac,ba89bd8b0ac0bf6b,"collapsed before the text is passed to the TextWrapper fill() function, so changing the value of tabsize, expandtabs, dropwhitespace, and replacewhitespace will have no effect.",2026-10-10
 ea430eb664dc,python/stdlib-argparse-json.md,S-reb2jhbs,located,3.7.5 Exit Status ¶,child;creat;fatal;process;found;signal;bash;command,6c866190ffb6384b,"When a command terminates on a fatal signal whose number is N, Bash uses the value 128+N as the exit status. If a command is",2026-10-10
+f0204437b781,python/stdlib-argparse-json.md,S-rs27i36t,unlocated:no-match,,,,,2026-10-16
+f0204437b781,python/stdlib-argparse-json.md,S-uj2rumru,unlocated:no-match,,,,,2026-10-16
 f77d52c2e37f,python/stdlib-argparse-json.md,S-w47ijsvq,unlocated:no-match,,,,,2026-10-10
 017367010a43,python/stdlib-cprofile-pstats.md,S-5y7wwygh,unlocated:no-match,,,,,2026-10-10
 1b6e99be1bac,python/stdlib-cprofile-pstats.md,S-4ydukkiy,unlocated:no-match,,,,,2026-10-10
@@ -12813,14 +12824,20 @@ cd9221fcfe72,python/stdlib-datetime-iso-week.md,S-gaeidf4e,unlocated:no-match,,,
 81743e041561,python/stdlib-os-loadavg.md,S-7bno7nz5,located,,fscal;doubl;loadavg,635b25a960e23a0c,loadavg[i] = (double) loadinfo.ldavg[i] / loadinfo.fscale;,2026-10-13
 d5c467cae540,python/stdlib-os-loadavg.md,S-itsqgyii,located,,total;calculation;sampl;run;averag;thread;load,15b6c50ba82fe681,Sample total running threads for the load average calculation.,2026-10-13
 dc5551876f2c,python/stdlib-os-loadavg.md,S-pfq6vvwq,located,,last;minut;over;sampl;system;averag,638e2b3909c456b6,"The system imposes a maximum of 3 samples, representing averages over the last 1, 5, and 15 minutes, respectively.",2026-10-13
+09e1bead9ecd,python/stdlib-sqlite3-csv.md,S-232dvyc5,located,1. Overview,filesystem;network;over;work;wal,3250e306d1a90083,WAL does not work over a network filesystem.,2026-10-16
 10a3a57b1e6c,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026-10-10
 10a3a57b1e6c,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 16095d12e43a,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026-10-10
+172ac7b8ff49,python/stdlib-sqlite3-csv.md,S-232dvyc5,unlocated:no-match,,,,,2026-10-16
+172ac7b8ff49,python/stdlib-sqlite3-csv.md,S-5vbo75zy,unlocated:no-match,,,,,2026-10-16
+172ac7b8ff49,python/stdlib-sqlite3-csv.md,S-b4zlktyl,unlocated:no-match,,,,,2026-10-16
+172ac7b8ff49,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-16
 1847a2e66d14,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 1847a2e66d14,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026-10-10
 1fe1f7c6967b,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 21c6c6917b7d,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 2a6244381c96,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
+3f8e7fa631e3,python/stdlib-sqlite3-csv.md,S-rle6nqpc,located,,keyword-only;3.15;becom;keyword;python,60b61453742bbbdd,They will become keyword-only parameters in Python 3.15.,2026-10-16
 49f1bb4968de,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 5a97277c1c8f,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 62be7250f2f9,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
@@ -12830,6 +12847,7 @@ dc5551876f2c,python/stdlib-os-loadavg.md,S-pfq6vvwq,located,,last;minut;over;sam
 7b74af851429,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026-10-10
 807ab0647287,python/stdlib-sqlite3-csv.md,S-syrr7enn,unlocated:no-match,,,,,2026-10-10
 807ab0647287,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
+85e9416456b2,python/stdlib-sqlite3-csv.md,S-b4zlktyl,located,2. Transactions > 2.3. Implicit versus explicit transactions,reader;retri;later;activ;commit;transaction,a5e99f4f19fb5944,the COMMIT can be retried later after the reader has had a chance to clear.,2026-10-16
 92eeeed3cb4e,python/stdlib-sqlite3-csv.md,S-nnljaqtm,located,PRAGMA Statements > List Of PRAGMAs,sqlite_default_autovacuum;autovacuum;unless;none;auto;compil;vacuum;default,98ea366faaa68e3e,"The default setting for auto-vacuum is 0 or ""none"", unless the SQLITEDEFAULTAUTOVACUUM compile-time option is used.",2026-10-10
 96d8ca1c1597,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 ac7473e43b2a,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
@@ -12837,9 +12855,13 @@ ac7473e43b2a,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026
 b05add04d471,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026-10-10
 b36f123050ec,python/stdlib-sqlite3-csv.md,S-vc2lihhb,located,3. How VACUUM works,another;read;unfinaliz;hold;transaction;connection;fail;open,323db1ab7690c262,"statements typically hold a read transaction open, so the VACUUM might fail if there are unfinalized SQL statements on the same connection. VACUUM (but not",2026-10-10
 b38fb85d5c17,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
+b41b6b112b71,python/stdlib-sqlite3-csv.md,S-b4zlktyl,located,"2. Transactions > 2.2. DEFERRED, IMMEDIATE, and EXCLUSIVE transactions",another;activ;busy;immediat;sqlite_busy;fail;might;begin,e1cc4ec165b74456,BEGIN IMMEDIATE might fail with SQLITEBUSY if another write transaction is already active on another database connection.,2026-10-16
+c25191fa2b51,python/stdlib-sqlite3-csv.md,S-232dvyc5,located,2. How WAL Works > 2.2. Concurrency,time;writer;one;file;wal,f9784555bd8fc597,there can only be one writer at a time.,2026-10-16
 cd580551c29d,python/stdlib-sqlite3-csv.md,S-nnljaqtm,unlocated:no-match,,,,,2026-10-10
 cd580551c29d,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026-10-10
 cf1df463e917,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
+d45836739086,python/stdlib-sqlite3-csv.md,S-b4zlktyl,located,2. Transactions > 2.1. Read transactions versus write transactions,busy;sqlite_busy;fail;databas;writ;statement;sqlit;transaction,e03f749a721b468c,upgrading to a write transaction is not possible and the write statement will fail with SQLITEBUSY.,2026-10-16
+d6c86cbfcc38,python/stdlib-sqlite3-csv.md,S-5vbo75zy,located,SQLite C Interface > Set A Busy Timeout,time;sleep;handler;busy,b36e520bb2118ea5,This routine sets a busy handler that sleeps for a specified amount of time when a table is locked.,2026-10-16
 d8823c0713f2,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 e389e569c485,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 e925faea0bad,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10

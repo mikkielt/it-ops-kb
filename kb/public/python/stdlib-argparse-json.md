@@ -2,8 +2,8 @@
 topic: python/stdlib-argparse-json
 priority: P3
 applies_to: [python, argparse, json]
-retrieved_utc: 2026-10-06
-sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp, S-uj2rumru, S-36yy3wcx, S-lyf4dv2j, S-lcvgoknn]
+retrieved_utc: 2026-10-16
+sources: [S-w47ijsvq, S-zzvrhdyd, S-glgntdsx, S-reb2jhbs, S-6gpxsapp, S-uj2rumru, S-36yy3wcx, S-lyf4dv2j, S-lcvgoknn, S-rs27i36t]
 status: complete
 ---
 
@@ -79,6 +79,10 @@ picks its separators from `indent`. Pages read at CPython 3.14.7.
 - So a reader of a shell string's command words takes the word after `if`, `then`, `elif`, `else`, `do`, `!`, `&&`, `||`, `;`, `|` and a newline, skips leading `name=value` assignments and an `env` prefix with its options and assignments, and reads a nested `sh -c` or `bash -c` string the same way. [DER S-glgntdsx, S-6gpxsapp]
 - A `socketserver` (and so `http.server`) server's `handle_request()` processes one request, and when none arrives within the server's `timeout` seconds it calls `handle_timeout()` and returns; `shutdown()` stops a `serve_forever()` loop and must be called from another thread, or it deadlocks. [DOC S-uj2rumru]
 - So a local receiver that must exit after an idle period loops on `handle_request()` with `timeout` set and checks the time since its last request after each return, and a test of that exit plants an idle bound of a second or less. [DER S-uj2rumru]
+- `http.server.ThreadingHTTPServer(server_address, RequestHandlerClass)` is `HTTPServer` that handles each request in its own thread through `ThreadingMixIn`; the docs give browsers pre-opening sockets, on which `HTTPServer` "would wait indefinitely", as the reason. The module's page warns that `http.server` "is not recommended for production" and implements only basic security checks. [DOC S-rs27i36t]
+- A `ThreadingMixIn` server's `daemon_threads` defaults to `False`, so the interpreter does not exit until every request thread has finished; setting it to `True` makes the threads daemonic and the server stops waiting for them. [DOC S-uj2rumru]
+- The `socketserver` threaded-server example binds `("localhost", 0)` under the comment "Port 0 means to select an arbitrary unused port" and reads the chosen address back from `server.server_address` (an `(address, port)` tuple); `http.server`'s `server_port` is "obtained from" it. [DOC S-uj2rumru, S-rs27i36t]
+- So a long-lived request on a `ThreadingHTTPServer` (a wait that holds its connection open) occupies one thread for as long as it lasts, and a server that must stop at once sets `daemon_threads = True` and calls `shutdown()` from a thread other than the one in `serve_forever()`. The pages read give no long-poll recipe and no worker limit for `ThreadingHTTPServer`; the module's own limits are for the forking mixin only. [DER S-rs27i36t, S-uj2rumru: thread-per-request class, the `daemon_threads` text and the shutdown rule read together]
 - `textwrap.shorten(text, width, *, fix_sentence_endings=False, break_long_words=True, break_on_hyphens=True, placeholder=' [...]')` (added in 3.4) first collapses whitespace, replacing all of it with single spaces; if the result fits in `width` it is returned, else enough words are dropped from the end so the remaining words plus the placeholder fit. The docs' examples: `shorten("Hello  world!", width=12)` gives `'Hello world!'`, `width=11` gives `'Hello [...]'`, and `shorten("Hello world", width=10, placeholder="...")` gives `'Hello...'`. [DOC S-36yy3wcx]
 - Because `shorten` collapses whitespace before it calls `TextWrapper`, the docs say changing `tabsize`, `expand_tabs`, `drop_whitespace` and `replace_whitespace` has no effect on it; its other keyword arguments are the `TextWrapper` attributes of the same names. The page does not say what `shorten` does when the placeholder alone is wider than `width`. [DOC S-36yy3wcx]
 - `shorten` cuts at word boundaries: it drops whole words from the end, so a result is never a window cut inside a word, and text with no whitespace to drop at is left to `break_long_words`. [DER S-36yy3wcx: the dropped-words rule and the `break_long_words` text]

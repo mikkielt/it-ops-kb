@@ -261,7 +261,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `logs/otel-collector-receivers` | P3 | complete | `logs/otel-collector-receivers.md`, `logs/otel-filelogreceiver.config.csv`, `logs/otel-windowseventlogreceiver.config.csv`, `logs/otel-filelogreceiver.metadata.yaml`, `logs/otel-windowseventlogreceiver.metadata.yaml` | 5 |
 | `logs/prometheus-retention-exposition` | P3 | partial | `logs/prometheus-retention-exposition.md` | 29 |
 | `logs/python-rust-json-stdout-logs` | P3 | partial | `logs/python-rust-json-stdout-logs.md` | 8 |
-| `mcp/authorization` | P1 | complete | `mcp/authorization.md` | 3 |
+| `mcp/authorization` | P1 | complete | `mcp/authorization.md` | 4 |
 | `mcp/deprecations` | P1 | complete | `mcp/deprecations.md` | 3 |
 | `mcp/elicitation` | P1 | complete | `mcp/elicitation.md` | 6 |
 | `mcp/python-sdk` | P1 | complete | `mcp/python-sdk.md` | 19 |
@@ -317,7 +317,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/pytest` | P2 | complete | `python/pytest.md` | 15 |
 | `python/pytest-xdist` | P2 | complete | `python/pytest-xdist.md` | 11 |
 | `python/ruff` | P2 | complete | `python/ruff.md` | 13 |
-| `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 6 |
+| `python/stdlib-sqlite3-csv` | P2 | complete | `python/stdlib-sqlite3-csv.md` | 9 |
 | `python/uv-projects` | P2 | complete | `python/uv-projects.md` | 15 |
 | `python/version-lifecycle` | P2 | complete | `python/version-lifecycle.md`, `python/version-lifecycle.csv` | 8 |
 | `python/alembic-migrations` | P3 | partial | `python/alembic-migrations.md` | 13 |
@@ -328,7 +328,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/mypy-strict` | P3 | partial | `python/mypy-strict.md` | 8 |
 | `python/percentile-nearest-rank` | P3 | partial | `python/percentile-nearest-rank.md` | 4 |
 | `python/sqlalchemy-asyncio-asyncpg` | P3 | complete | `python/sqlalchemy-asyncio-asyncpg.md` | 8 |
-| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 9 |
+| `python/stdlib-argparse-json` | P3 | complete | `python/stdlib-argparse-json.md` | 10 |
 | `python/stdlib-cprofile-pstats` | P3 | partial | `python/stdlib-cprofile-pstats.md` | 4 |
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
 | `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |

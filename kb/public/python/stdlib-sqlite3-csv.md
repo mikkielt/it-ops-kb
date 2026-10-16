@@ -2,8 +2,8 @@
 topic: python/stdlib-sqlite3-csv
 priority: P2
 applies_to: [python, csv, sqlite3]
-retrieved_utc: 2026-10-09
-sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf, S-vc2lihhb, S-nnljaqtm]
+retrieved_utc: 2026-10-16
+sources: [S-utoe3wfw, S-rle6nqpc, S-syrr7enn, S-xq53ipsf, S-vc2lihhb, S-nnljaqtm, S-b4zlktyl, S-232dvyc5, S-5vbo75zy]
 status: complete
 ---
 
@@ -134,6 +134,35 @@ module's implicit `BEGIN` before a `DELETE` opens.
   left the file almost unchanged; `.fetchall()` on it, or `executescript("PRAGMA incremental_vacuum;")`, cleared the whole
   freelist, and `incremental_vacuum(10)` with `.fetchall()` freed 10. Fetch the result of the pragma, or run it with
   `executescript`, when the whole freelist should go. Python 3.13.2, SQLite 3.45.3; other versions not run. [DER S-nnljaqtm, S-rle6nqpc: probe read against the documented pragma, whose pages say nothing of how a driver must step it]
+- Several processes writing one SQLite file: `BEGIN` is `DEFERRED` by default and starts no transaction until the file is first
+  touched; after a read, a later write statement upgrades the transaction "if possible, or" returns `SQLITE_BUSY`, and a first
+  statement that is a write starts a write transaction at once. `BEGIN IMMEDIATE` starts the write transaction at the `BEGIN` and
+  "might fail with SQLITE_BUSY" when another connection's write transaction is active. [DOC S-b4zlktyl]
+- `EXCLUSIVE` and `IMMEDIATE` behave the same in WAL mode; in the other journal modes `EXCLUSIVE` also keeps readers out. A
+  `COMMIT` can itself return `SQLITE_BUSY` while another thread or process holds a read connection open, the transaction then
+  stays active, and the `COMMIT` can be retried later. [DOC S-b4zlktyl]
+- A connection holding a read transaction keeps seeing the database as it was when that read began, whatever other connections
+  commit meanwhile; a write statement after such a read fails with `SQLITE_BUSY` when another connection has modified the
+  database in the meantime. [DOC S-b4zlktyl]
+- `sqlite3_busy_timeout(db, ms)` installs a busy handler that sleeps until at least `ms` milliseconds have accumulated and then lets
+  the call return `SQLITE_BUSY`; zero or less turns every busy handler off, and a connection has one busy handler at a time,
+  so setting the timeout replaces one set with `sqlite3_busy_handler`. `PRAGMA busy_timeout` is its SQL form. [DOC S-5vbo75zy]
+- Python's `sqlite3.connect(timeout=5.0)` is that wait in seconds: how long the connection waits before raising
+  `OperationalError` when a table is locked by another connection's open modifying transaction. Positional use of `timeout` is
+  deprecated since 3.13 and becomes keyword-only in 3.15. [DOC S-rle6nqpc]
+- WAL mode (`PRAGMA journal_mode=WAL`) lets readers and a writer run at the same time, but "there can only be one writer at a time";
+  a query can still return `SQLITE_BUSY` in WAL mode when another connection holds the database in exclusive locking mode, while
+  the last connection cleans up the WAL files, or during crash recovery. [DOC S-232dvyc5]
+- WAL needs every process on the same host (the wal-index is shared memory) and does not work over a network filesystem. It adds
+  `-wal` and `-shm` files beside the database, and the WAL is part of the database's state: a database file copied or moved
+  without its WAL can lose committed transactions. Unlike the other journal modes, WAL mode persists once set. [DOC S-232dvyc5]
+- So a claim that two processes may race for, a row created only when absent or changed only at an expected revision, is one
+  statement sequence inside `BEGIN IMMEDIATE ... COMMIT`: the second process's `BEGIN IMMEDIATE` either waits out the busy timeout
+  and then sees the first process's committed row, or fails with `SQLITE_BUSY` (`OperationalError` in Python), so no two
+  processes both read "absent" and both write. A `DEFERRED` transaction that reads first can fail at its write instead, after
+  its read is stale. Python's legacy transaction control opens its implicit `BEGIN` only before `INSERT`, `UPDATE`, `DELETE`
+  or `REPLACE`, so code that reads before it writes sets `isolation_level=None` and issues `BEGIN IMMEDIATE` itself. A shared
+  file on a network drive is outside WAL's reach. [DER S-b4zlktyl, S-232dvyc5, S-5vbo75zy, S-rle6nqpc: the transaction, busy and WAL rules and the module's implicit-`BEGIN` rule read together]
 
 ## Reference
 - SNIPPET: write a CSV with `newline=''` (correct on every platform) and open a shared sqlite3 cache from multiple threads; context: Python 3.11+ stdlib `csv`/`sqlite3`; checked: syntax [DOC S-utoe3wfw: `newline=''` and `QUOTE_MINIMAL` default; DOC S-rle6nqpc: `check_same_thread=False` and `sqlite3.sqlite_version`]

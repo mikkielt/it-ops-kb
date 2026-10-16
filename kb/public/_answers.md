@@ -3871,3 +3871,14 @@ _Agent: kb-research_
 - See claude/ci-and-headless.md, claude/cli-flags.csv, claude/agent-sdk.md.
 
 _Agent: kb-research_
+
+## QK-coord-py-s-sqlite-store-http. What do a standard-library claim and event service on a SQLite file, with an http.server front end and bearer tokens, need from the official docs: cross-process SQLite writes, ThreadingHTTPServer, and the bearer-token header and challenge?
+- SQLite: `BEGIN` is `DEFERRED` by default; a write after a read can fail with `SQLITE_BUSY`; `BEGIN IMMEDIATE` takes the write transaction at the start and may fail with `SQLITE_BUSY` when another connection's write is active; WAL allows one writer at a time with readers alongside, needs one host and no network filesystem. [DOC S-b4zlktyl, S-232dvyc5]
+- Waiting: `sqlite3_busy_timeout` sleeps up to the given milliseconds before `SQLITE_BUSY` comes back, and Python's `connect(timeout=5.0)` is that wait in seconds. [DOC S-5vbo75zy, S-rle6nqpc]
+- HTTP server: `ThreadingHTTPServer` handles each request in a thread, its page says `http.server` is not recommended for production, `daemon_threads` defaults to `False`, and port 0 picks an unused port that `server_address` reports. [DOC S-rs27i36t, S-uj2rumru]
+- Bearer tokens: `Authorization: Bearer <token>` is the method servers MUST support; a missing or unaccepted token gets a `WWW-Authenticate: Bearer` challenge, shown with status 401; the RFC requires TLS and favours short-lived tokens. [DOC S-neu52zjd]
+- Conclusion: a claim another process may race for is one `BEGIN IMMEDIATE` transaction on a store all processes reach on one host, with a busy timeout set; the HTTP front end is one thread per request over a connection per thread or a lock-guarded one, bound to loopback unless a TLS terminator sits in front. [DER S-b4zlktyl, S-232dvyc5, S-5vbo75zy, S-rle6nqpc, S-rs27i36t, S-neu52zjd]
+- Open: whether a `DEFERRED` upgrade honours the busy timeout and how a long-poll is held on `ThreadingHTTPServer` are not stated on the pages read. [UNK]
+- See python/stdlib-sqlite3-csv.md, python/stdlib-argparse-json.md, mcp/authorization.md, agents/shared-state-concurrency.md.
+
+_Agent: kb-research_
