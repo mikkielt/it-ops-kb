@@ -2,7 +2,7 @@
   "id": "ST-5h35ouv5",
   "kind": "story",
   "title": "The kb says how a stateless MCP server holds state several agents share and how SEP-2567 scopes it per subagent",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-ylklxolb",
   "sprint": "SP-xo45jvbj",
   "priority": "P3",

@@ -2,7 +2,7 @@
   "id": "ST-x6mvfnmv",
   "kind": "story",
   "title": "Claude Code hooks announce a session's work through coord.py and show overlapping sessions, leaving the choice to the operator",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-xo45jvbj",
   "priority": "P2",

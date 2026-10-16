@@ -2,7 +2,7 @@
   "id": "ST-xwop6rv5",
   "kind": "story",
   "title": "The kb MCP server exposes coord.py's claims, events and digest as tools, local or against coord.py serve",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-xo45jvbj",
   "priority": "P3",
