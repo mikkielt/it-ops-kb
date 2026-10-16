@@ -58,7 +58,9 @@
         "Both pushes": "ST-6qusz4km",
         "Push to main only": "ST-6qusz4km"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Push to main only",
+      "by": "operator"
     }
   ],
   "links": [
