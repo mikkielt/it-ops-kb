@@ -35,7 +35,9 @@
         "mcp/authorization.md, as facts under the spec's RFC 6750 line": "ST-ksmmg2fi",
         "a new auth/ article on HTTP bearer tokens": "ST-ksmmg2fi"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "mcp/authorization.md, as facts under the spec's RFC 6750 line",
+      "by": "operator"
     },
     {
       "id": "g2",
