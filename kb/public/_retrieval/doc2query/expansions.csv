@@ -844,3 +844,79 @@ c84024fb6ad5,Does find with an unquoted glob prompt even though find is in the r
 9e6acb1f510f,Which combinations of cd with another read-only command still prompt in Manual mode?
 9e6acb1f510f,Does cd packages/api && ls run without a permission prompt?
 ff926d16eac4,"What is a troubleshooting methodology for agentic coding, debugging a coding agent's failures?"
+4578a36b8009,Which Claude Code parallel-work options exist?
+4578a36b8009,What are the five ways Claude Code runs several tasks at once?
+4578a36b8009,Do Claude Code's parallel-work options run on my machine or in the cloud?
+853b34b32b0d,Who coordinates the work in each Claude Code parallel-work option?
+853b34b32b0d,Which parallel-work option fits which coordination need?
+853b34b32b0d,"Who decides what runs next: Claude, me, a lead agent or a script?"
+d3d58d1f4582,Which parallel-work options let workers talk to each other?
+d3d58d1f4582,"Do subagents, agent view sessions and teammates share findings?"
+d3d58d1f4582,How do agent view sessions and subagents report results?
+0a972fd20241,Which parallel-work options share files and which isolate them in worktrees?
+0a972fd20241,Do agent teams isolate teammates in worktrees?
+0a972fd20241,What does each parallel-work option share or isolate?
+6c0fa7b9b8a3,"How do subagents, skills, agent teams and workflows differ in scale and interruption?"
+6c0fa7b9b8a3,"How many agents can a subagent, team or workflow run?"
+6c0fa7b9b8a3,What happens to each parallel-work option when interrupted?
+d1c637d35940,"Where do intermediate results live in subagents, skills, agent teams and dynamic workflows?"
+d1c637d35940,"Who decides what runs next in subagents, skills, teams and workflows?"
+d1c637d35940,Which Claude Code option holds the plan in a script?
+fabdaef8497f,How does agent view isolate background sessions' file edits in worktrees?
+fabdaef8497f,Does agent view move a background session into a git worktree before editing?
+fabdaef8497f,Where do background sessions dispatched from agent view write their files?
+82a3e73e7932,When does agent view skip the worktree for a background session?
+82a3e73e7932,Which background sessions edit files in place without a worktree?
+82a3e73e7932,When is a background session not moved into a worktree?
+cc222ef10f61,What does worktree.bgIsolation change?
+cc222ef10f61,What are the values of worktree.bgIsolation and its default?
+cc222ef10f61,How do I let background sessions edit the working copy directly?
+1a5855da5e90,Do agent view background sessions run on my machine or in the cloud?
+1a5855da5e90,Which parallel-work options stay on one machine?
+1a5855da5e90,Do agent view sessions survive a machine shutdown?
+86e89db722d5,Can agent teams run teammates on several machines?
+86e89db722d5,Do agent teams stay on one machine?
+86e89db722d5,Where are agent team and task data stored?
+2959ccb0bae7,Do git worktrees work across machines or only on one machine?
+2959ccb0bae7,Which parallel-work options stay on one machine?
+2959ccb0bae7,What do Claude Code worktrees share with the main checkout?
+555977572122,Which parallel-work options reach cloud sessions or sessions on several machines?
+555977572122,Do Projects run parallel sessions in the cloud or through Remote Control?
+555977572122,How do sessions on another machine or in the cloud pass findings?
+f01b88955271,Which options reach sessions on several machines or cloud sessions beyond cross-session messaging?
+f01b88955271,What does cross-session messaging reach over Remote Control?
+f01b88955271,Which sessions can cross-session messaging reach on other machines and in the cloud?
+1b6e0ad26615,Can dynamic workflows run in a cloud session?
+1b6e0ad26615,Which plans and providers support dynamic workflows?
+1b6e0ad26615,What happens to a workflow run when a cloud session's VM is reclaimed?
+30671e9765c0,What is a Claude Code dynamic workflow?
+30671e9765c0,Who writes a dynamic workflow script and where does it run?
+30671e9765c0,Do dynamic workflows run in the background?
+7628a97941dd,What do dynamic workflows hold that a subagent or skill does not?
+7628a97941dd,Where do a workflow's intermediate results and branching live compared with subagents?
+7628a97941dd,Why does a workflow keep Claude's context small?
+37ef3f0eefd1,What quality pattern can a workflow apply that a subagent cannot?
+37ef3f0eefd1,Can workflow agents adversarially review each other's findings?
+37ef3f0eefd1,Why is a workflow result more trustworthy than a single pass?
+b90c7b7c5c33,What can a dynamic workflow not do?
+b90c7b7c5c33,Can a workflow ask the user for input mid-run?
+b90c7b7c5c33,Why can a workflow script not touch the filesystem?
+ec8121c41e24,What are the agent and item limits of a dynamic workflow?
+ec8121c41e24,How many agents can a workflow run at once?
+ec8121c41e24,What is the maximum number of agents per workflow run?
+a4bd37de9123,Which parallel-work option should I pick for my coordination need?
+a4bd37de9123,"How do I choose between subagents, agent view, agent teams, workflows and projects?"
+a4bd37de9123,Which parallel-work option fits a task that must run with the machine off?
+dfeac6505c18,Where does a person sign off between workflow stages?
+dfeac6505c18,Can a dynamic workflow pause for human approval?
+dfeac6505c18,Where does a tiered-approval step belong relative to a workflow?
+11dfe5e4985d,How do I let agent view background sessions edit the working copy directly?
+11dfe5e4985d,What is the settings snippet for worktree.bgIsolation none?
+11dfe5e4985d,Which setting turns off worktree isolation for background sessions?
+7628a97941dd,"What do dynamic workflows hold that a subagent or skill does not, and when do the docs say to use one?"
+c0ff298e07cb,When do the docs say to use a dynamic workflow instead of a subagent or skill?
+c0ff298e07cb,What does a workflow hold that a subagent or skill does not?
+c0ff298e07cb,When does a task need a workflow rather than one conversation?
+4de08b6434d9,"Beyond cross-session messaging, which parallel-work options reach sessions on several machines or cloud sessions?"
+4de08b6434d9,Which options stay on one machine?
+4de08b6434d9,"Do agent view, agent teams, worktrees or workflows reach other machines?"
