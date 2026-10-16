@@ -104,7 +104,7 @@ candidate page, a made-up sibling and a pinned url's repository) reads and recor
 lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
 revalidation at question time and fetch.py --status read it.
 """
-import argparse, calendar, collections, contextlib, csv, datetime, email.utils, hashlib, io, json, math, os, random, re, ssl, string, subprocess, sys, threading, time
+import argparse, calendar, collections, contextlib, csv, datetime, email.utils, hashlib, html.parser, io, json, math, os, random, re, ssl, string, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request, zlib
 import xml.etree.ElementTree as ET
 
@@ -113,7 +113,7 @@ import kbcommon  # noqa: E402
 
 SHARED = os.path.join(kbcommon.TOOLS, "providers.csv")
 ROOT_FILE = "_providers.csv"
-COLS = ["provider", "match", "signals", "etag", "lastmod", "version_meta", "stable_id", "raw_form", "sitemap",
+COLS = ["provider", "match", "organisation", "signals", "etag", "lastmod", "version_meta", "stable_id", "raw_form", "sitemap",
         "sitemap_lastmod", "redirects", "history", "search_api", "mcp_freshness", "not_found", "rate_limit", "reuse",
         "lifetime_days", "probed_utc", "notes"]
 MEASURED = ("signals", "etag", "lastmod", "version_meta", "raw_form", "sitemap", "not_found", "probed_utc")
@@ -1219,7 +1219,7 @@ def _arxiv_licence(u):
         return _unread("arxiv", f"{page} has no licence link")
     href, words = link.group(1), "licence link on the arXiv abstract page"
     if "arxiv.org/licenses/nonexclusive-distrib" in href:
-        return _found("arxiv", "arXiv non-exclusive distribution licence (no reuse grant)", "quote", page)
+        return _found("arxiv", f"arXiv non-exclusive distribution licence ({words})", "quote", page)
     cc = CC_LINK.search(href)
     if cc and re.fullmatch(r"by(?:-(?:nc|sa|nd))*|zero", cc.group(2).lower()):
         kind = cc.group(2).lower()
@@ -1373,6 +1373,116 @@ def read_licence(url):
     if _repository_of(u) is not None:
         return _repo_licence(u)
     return _unread("", f"no licence record is read for the host {host or url!r}")
+
+
+# ---------------------------------------------------------------- the title, organisation and date of a source
+
+PAGE_DATE_KEYS = ("updated_at", "dateModified", "article:modified_time", "last-modified", "ms.date", "datePublished",
+                  "article:published_time", "citation_date")  # a page's own date keys, a modification before a publication
+TITLE_SEP = re.compile(r"\s+[|\u2013\u2014\u00b7-]\s+")  # the separator of a page title and its site name
+DATE_FORMS = (re.compile(r"(\d{4})[-/](\d\d?)[-/](\d\d?)"), re.compile(r"(\d\d?)/(\d\d?)/(\d{4})"))  # ISO and slash, then M/D/Y
+
+
+class _Head(html.parser.HTMLParser):
+    """The <title> and <meta> tags of a page (a meta's name, property or itemprop, in lowercase, to its first content)."""
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.meta, self.title, self._in_title = {}, "", False
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if tag == "title" and not self.title:
+            self._in_title = True
+        elif tag == "meta" and a.get("content") is not None:
+            for k in ("name", "property", "itemprop"):
+                if a.get(k):
+                    self.meta.setdefault(a[k].strip().lower(), " ".join(a["content"].split()))
+
+    def handle_endtag(self, tag):
+        if tag == "title":
+            self._in_title = False
+
+    def handle_data(self, data):
+        if self._in_title:
+            self.title += data
+
+
+def iso_date(value):
+    """`YYYY-MM-DD` of a page's date text (an ISO date or timestamp, `2023/10/11`, or a `10/25/2024` of Learn's
+    `ms.date`: month first), "" when it is not one."""
+    v = (value or "").strip()
+    m = DATE_FORMS[0].match(v)
+    parts = (m.group(1), m.group(2), m.group(3)) if m else None
+    m = None if parts else DATE_FORMS[1].match(v)
+    if m:
+        parts = (m.group(3), m.group(1), m.group(2))
+    try:
+        return datetime.date(*map(int, parts)).isoformat() if parts else ""
+    except ValueError:
+        return ""
+
+
+def _page_head(text, ctype):
+    """(title, site, meta) of a page text: an HTML page's og:title (or <title>) and og:site_name; a Markdown file's
+    front matter title, else its first `# ` heading."""
+    if "html" in (ctype or "") or text.lstrip()[:15].lower().startswith(("<!doctype html", "<html")):
+        head = _Head()
+        try:
+            head.feed(text)
+        except Exception:  # noqa: BLE001 - a malformed page gives what was parsed so far
+            pass
+        meta = head.meta
+        for k in PAGE_DATE_KEYS:  # a date in JSON-LD, not in a meta tag
+            m = re.search(rf'"{re.escape(k)}"\s*:\s*"([^"]+)"', text)
+            if m:
+                meta.setdefault(k.lower(), m.group(1))
+        return (meta.get("og:title") or meta.get("citation_title") or " ".join(head.title.split())), meta.get("og:site_name", ""), meta
+    fm = front_matter(text)
+    heading = re.search(r"^# +(.+?)\s*$", FRONT.sub("", text, count=1), re.M)
+    return fm.get("title") or (heading.group(1) if heading else ""), "", {k.lower(): v for k, v in fm.items()}
+
+
+def read_page(url, rows=None):
+    """What a `kbid.py add` row takes from the fetched page and the host's registry row:
+    {title, organisation, organisation_from, version, evidence, note}. `title`: the page's og:title, else its
+    citation_title (an arXiv abstract page), else its <title> (a Markdown file's front matter title or first heading), with a ` | SITE` suffix cut when SITE is the page's
+    og:site_name or the registry's organisation. `organisation`: the organisation cell of the row serving the url
+    (`organisation_from` `registry`), else the page's og:site_name, else the suffix of its <title> (`page`); "" when
+    neither names one. `version`: `<key> <YYYY-MM-DD>` of the first of PAGE_DATE_KEYS the page carries, "" when it has none.
+    A field not found is "" and `note` says why the page was not read (no answer)."""
+    row = for_url(url, rows) or {}
+    out = {"title": "", "organisation": (row.get("organisation") or "").strip(), "organisation_from": "", "version": "",
+           "evidence": "", "note": ""}
+    if out["organisation"]:
+        out["organisation_from"] = "registry"
+    page = url.strip().split("#")[0]
+    if (row.get("raw_form") or "").startswith("blob-to-raw"):
+        page = raw_url(page, row)[0]
+    r = request(page, limit=5_000_000)
+    if r["status"] != 200:
+        out["note"] = f"{page} did not answer 200 ({r['status'] or r['error']})"
+        return out
+    out["evidence"] = page
+    text = r["body"].decode("utf-8", "replace")
+    title, site, meta = _page_head(text, r["headers"].get("content-type", ""))
+    if not out["organisation"] and not site:
+        parts = TITLE_SEP.split(title)
+        if len(parts) > 1 and parts[-1].strip():
+            site = parts[-1].strip()
+    known = [x.lower() for x in (out["organisation"], site) if x]
+    parts = TITLE_SEP.split(title)
+    if len(parts) > 1 and parts[-1].strip().lower() in known:
+        title = title[:len(title) - len(parts[-1])].rstrip().rstrip("|\u2013\u2014\u00b7-").rstrip()
+    out["title"] = title
+    if not out["organisation"] and site:
+        out["organisation"], out["organisation_from"] = site, "page"
+    for k in PAGE_DATE_KEYS:
+        day = iso_date(meta.get(k.lower(), ""))
+        if day:
+            out["version"] = f"{k} {day}"
+            break
+    return out
 
 
 # ---------------------------------------------------------------- probe

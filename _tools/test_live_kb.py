@@ -278,6 +278,20 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
         learn + "page-i": (200, page("Org/Own")), gh + "Org/Own": (200, repo(None, archived=False)),
         gh + "Org/Own" + files: (200, names("LICENSE")),
         raw + "Org/Own/HEAD/LICENSE": (200, "Our own terms\n"),
+        # the pages whose title, site name and date a row takes when --title, --publisher and --version are omitted
+        learn + "page-j": (200, '<html><head><title>Configure widgets | Microsoft Learn</title>'
+                                '<meta name="github_feedback_content_git_url" content="https://github.com/Org/Docs/blob/main/docs/a.md" />'
+                                '<meta name="ms.date" content="10/25/2024"><meta name="updated_at" content="2026-01-22T10:00:00Z"></head>'),
+        "https://arxiv.org/abs/2501.00001": (200, abs_page(cc + "by/4.0/").replace("<html>", '<html><head><title>[2501.00001] A &amp; B</title>'
+                                             '<meta name="citation_title" content="A &amp; B: a study"><meta name="citation_date" content="2025/01/02">'
+                                             '</head>')),
+        wiki + "runbook": (200, '<html><head><title>Runbook - Corp Wiki</title><meta property="og:title" content="Runbook">'
+                                '<meta property="og:site_name" content="Corp Wiki"><meta property="article:modified_time" content="2026-02-03T04:05:06Z">'
+                                '<meta name="ms.date" content="01/02/2025"></head>'),
+        "https://docs.corp.example.com/setup": (200, "<html><head><title>Setup &mdash; Corp Docs</title></head><body>no date</body>"),
+        "https://docs.corp.example.com/plain": (200, "---\ntitle: 'Plain page'\nms.date: 03/04/2025\n---\n# Heading\n"),
+        "https://nameless.corp.example.com/x": (200, "<html><body>no title</body></html>"),
+        "https://gone.corp.example.com/x": (404, ""),
     }
     asked = []
 
@@ -303,7 +317,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert add(arx + "2411.04403")[3] == ("CC BY-SA 4.0" + via, "copy")
     assert add(arx + "2107.05720")[3] == ("CC BY-NC-SA 4.0" + via, "quote")
     assert add(arx + "2302.09947")[3] == ("CC BY-NC-ND 4.0" + via, "quote")
-    assert add(arx + "2406.99999")[3] == ("arXiv non-exclusive distribution licence (no reuse grant)", "quote")
+    assert add(arx + "2406.99999")[3] == ("arXiv non-exclusive distribution licence" + via, "quote")
     assert add("https://arxiv.org/pdf/2402.13350v2")[3] == ("CC0 1.0" + via, "copy")  # a PDF url is read at its abstract page
     assert asked[-1][0] == arx + "2402.13350v2"
     code, out, err, got = add(arx + "2403.14403")  # no licence link: nothing is written and the reason is named
@@ -354,6 +368,42 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     code, out, err, got = add(arx + "2310.11511")
     assert code == 0 and out.startswith("S-") and "unchanged" in err and len(asked) == n, (code, err)
     assert all("Authorization" not in h for _, h in asked), asked
+    # title, publisher and version: an omitted flag is read from the fetched page (og:title, citation_title or <title>; the
+    # site name; the page's own date) and the host's registry row; a given flag wins; nothing readable is refused by name
+    def full(url):
+        return next(r for r in kbid.read_rows(root) if r["url"] == url)
+    omit = dict(title=None, publisher=None, version=None)
+    code, out, err, got = add(learn + "page-j", **omit)  # the registry's organisation, the title cut of its suffix, updated_at before ms.date
+    r = full(learn + "page-j")
+    assert code == 0 and (r["title"], r["publisher"], r["version_or_date"]) == ("Configure widgets", "Microsoft Learn", "updated_at 2026-01-22"), r
+    assert got == ("MIT (public mirror Org/Docs)", "copy") and "publisher read (_tools/providers.csv): Microsoft Learn" in err, (got, err)
+    add(arx + "2501.00001", **omit)  # arXiv: citation_title over <title>, the registry's organisation, a slash date
+    r = full(arx + "2501.00001")
+    assert (r["title"], r["publisher"], r["version_or_date"]) == ("A & B: a study", "arXiv", "citation_date 2025-01-02"), r
+    code, out, err, got = add(wiki + "runbook", licence="Corp wiki terms", reuse="quote", **omit)  # no registry row: og:site_name
+    r = full(wiki + "runbook")
+    assert code == 0 and (r["title"], r["publisher"], r["version_or_date"]) == ("Runbook", "Corp Wiki", "article:modified_time 2026-02-03"), r
+    add("https://docs.corp.example.com/setup", licence="Corp wiki terms", reuse="quote", **omit)  # the title's suffix is the site
+    r = full("https://docs.corp.example.com/setup")
+    assert (r["title"], r["publisher"], r["version_or_date"]) == ("Setup", "Corp Docs", ""), r
+    code, out, err, got = add("https://docs.corp.example.com/plain", licence="Corp wiki terms", reuse="quote", title=None, publisher="Corp", version=None)
+    r = full("https://docs.corp.example.com/plain")  # a Markdown file: front matter title and ms.date (month first)
+    assert code == 0 and (r["title"], r["publisher"], r["version_or_date"]) == ("Plain page", "Corp", "ms.date 2025-03-04"), r
+    n = len(asked)
+    code, out, err, got = add(wiki + "given", licence="Corp wiki terms", reuse="quote", title="Mine", publisher="Mine Org", version="v1")
+    assert code == 0 and len(asked) == n and full(wiki + "given")["version_or_date"] == "v1", (code, err)  # all three given: no page asked
+    code, out, err, got = add(wiki + "runbook", licence="Corp wiki terms", reuse="quote", **omit)
+    assert code == 0 and "unchanged" in err and len(asked) == n, (code, err)  # the row is there: no read
+    for u, why in (("https://nameless.corp.example.com/x", "give --title"), ("https://gone.corp.example.com/x", "did not answer 200")):
+        code, out, err, got = add(u, licence="Corp wiki terms", reuse="quote", **omit)
+        assert code == 2 and out == "" and why in err and not [x for x in kbid.read_rows(root) if x["url"] == u], (u, err)
+    code, out, err, got = add("https://nameless.corp.example.com/x", licence="Corp wiki terms", reuse="quote", title="T", publisher=None, version="")
+    assert code == 2 and "no publisher read" in err and "give --publisher" in err, err
+    assert provider.iso_date("2026-01-22T10:00:00Z") == "2026-01-22" and provider.iso_date("10/25/2024") == "2024-10-25"
+    assert provider.iso_date("13/45/2024") == "" and provider.iso_date("later") == ""
+    # the host's usual pair on a tie is the first in the file's text order, not the alphabetically first
+    tie = [{"url": wiki + "t1", "licence": "Z terms", "reuse": "quote"}, {"url": wiki + "t2", "licence": "A terms", "reuse": "copy"}]
+    assert kbid.usual_pair(tie, wiki + "t3") == (("Z terms", "quote"), 1, 2)
 
 
 def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_printed_lines_from_stubbed_pages_and_freshness_lifetime_is_the_poisson_rate_of_a_sources_recorded_changes_else_a_fraction_of_its_page_age_and_kb_pack_and_kb_ask_revalidate_only_a_source_past_it_and_pack_handle_is_the_last_line_of_the_pack_kb_pack_and_the_kb_hook_print_and_provider_read_maps_a_url_to_its_raw_form_and_prints_the_lines_holding_every_grep_word_and_provider_search_parses_each_providers_search_api_answer_to_date_title_and_url_and_kbid_licence_reads_each_source_family_from_stubbed_answers_and_detect_and_census_check_spare_a_source_a_lookup_revalidated_within_its_providers_pacing_census_lookup_hints_and_pack_revalidate_baseline_after_confirmation_resolves_the_passage_of_a_fact_kept_by_its_section_or_of_an_unchanged_source_and_lookup_store_merges_lines_within_reuse_window_and_revalidate_empty_page_located_anchor_is_source_dated_only_and_revalidate_search_http_error_keeps_the_offline_stamp_and_revalidate_host_down_fast_and_revalidate_content_date_baseline_and_revalidate_down_window_every_request_and_revalidate_down_window_redirect_target(monkeypatch, tmp_path, capsys):
