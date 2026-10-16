@@ -1,0 +1,27 @@
+{
+  "id": "ST-4gbz5wr7",
+  "kind": "story",
+  "title": "bl_procs reads a plugin-data distill as a hook run, so selfcheck orphans and procs do not list it while it waits for the distill lock in the main checkout",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_procs.hook_logs includes the plugin data query log's distill.log (ql_base.places()[0] / distill.log) when CLAUDE_PLUGIN_DATA is the plugin's, so a plugin-mode distill that ST-7agdvwth starts in the main checkout is read as a session-end hook run, not an orphan, by selfcheck orphans and backlog.py procs",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,tempfile;os.environ[\"CLAUDE_PLUGIN_DATA\"]=tempfile.mkdtemp();os.environ[\"CLAUDE_PLUGIN_ROOT\"]=os.getcwd();sys.path.insert(0,\"_tools\");import ql_base as q,bl_procs as p\nlog=os.path.realpath(str(q.places()[0]/\"distill.log\"));ok=log in p.hook_logs(p.checkouts(\".\"))\nprint(\"plugin-data distill.log read as a hook log:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_procs.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh review"
+  ],
+  "notes": "SP-z3hyk4eh review gap 6 (S3, the reviewer not certain), after ST-7agdvwth: in plugin mode the distill's stdout is CLAUDE_PLUGIN_DATA/querylog/distill.log, which bl_procs.hook_logs does not know, while its cwd is now the main checkout, one of checkouts(); premise run 2026-10-16 on origin/main f105ef2e4: hook_logs lacks that path (check fails). Not seen as a selfcheck failure yet."
+}

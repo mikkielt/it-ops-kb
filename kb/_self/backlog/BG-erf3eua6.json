@@ -1,0 +1,27 @@
+{
+  "id": "BG-erf3eua6",
+  "kind": "bug",
+  "title": "backlog.py claim is refused in a checkout whose git dir cannot be written, since ledger_lock refuses any OSError, where it claimed without a ledger record before",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "claim in a checkout whose git dir is not writable claims the item as before the ledger lock, with a warning that the claims ledger was not recorded, so ledger_lock's OSError on creating the lock file no longer refuses the claim itself",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,stat,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\n(r/\"items\"/\"ST-aaaaaaaa.json\").write_text(json.dumps({\"id\":\"ST-aaaaaaaa\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"todo\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"-c\",\"pass\"]}]},indent=2)+\"\\n\")\ng(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\ngd=P.Path(g(\"rev-parse\",\"--absolute-git-dir\"));m=gd.stat().st_mode;os.chmod(gd,0o555)\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"chk\");env.pop(\"KB_BACKLOG_CONFIG\",None)\ntry:p=s.run([sys.executable,T,\"--root\",str(r),\"claim\",\"ST-aaaaaaaa\",\"--by\",\"w\"],capture_output=True,text=True,env=env)\nfinally:os.chmod(gd,m)\nprint(\"claim with an unwritable git dir: exit\",p.returncode,(p.stdout+p.stderr)[-200:]);sys.exit(0 if p.returncode==0 else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/bl_base.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh review"
+  ],
+  "notes": "SP-z3hyk4eh review gap 5 (S4), on ST-zqbo7xgc: _tools/bl_items.py:222 takes ledger_lock, which raises Refused for a non-FileExistsError OSError; the old write's 'except OSError: pass' let the claim through. Repro (planted repo, git dir mode 0555) fails on origin/main f105ef2e4 with Errno 13 on the .lock file."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-h5brxejv",
+  "kind": "bug",
+  "title": "kg_sync.forge_outage takes any parenthesised 5xx number in the push output for a forge outage, so a push-rule refusal that prints '(500)' is retried six times",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_sync.FORGE_OUTAGE matches only an HTTP 5xx status of the forge (GitLab's 'Internal API error (5xx)', 'returned error: 5xx', an HTTP/x 5xx status line or a 5xx status text), never a bare parenthesised number, so a gate or push-rule refusal that prints '(500)' is not retried and the 503 outage still is",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import kg_sync as k\nr=[k.forge_outage(\"remote: gate: commit message longer than the limit (500)\\n ! [remote rejected] main -> main (pre-receive hook declined)\"),k.forge_outage(\"remote: GitLab: Internal API error (503)\\n ! [remote rejected] HEAD -> main (pre-receive hook declined)\")]\nprint(\"forge_outage (push-rule 500, real 503):\",r);sys.exit(0 if r==[False,True] else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh review"
+  ],
+  "notes": "SP-z3hyk4eh review gap 2 (S3), on ST-6qusz4km: _tools/kg_sync.py:92 FORGE_OUTAGE's \\(5\\d\\d\\) matches any parenthesised 5xx number; bounded (6 tries, about 60 s of pauses), nothing lost. Repro fails on origin/main f105ef2e4."
+}

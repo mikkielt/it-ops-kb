@@ -1,0 +1,26 @@
+{
+  "id": "BG-m7rrbdnm",
+  "kind": "bug",
+  "title": "backlog.py claim judges busy and keeps ledger records from the item files it read before the ledger lock, so a claim another session made while it waited is dropped",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "cmd_claim reads the item files of the ledger's ids again once it holds the ledger lock, so a claim another session made in the same checkout while this claim waited is either refused as busy or keeps that session's ledger record",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,time,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\nit=lambda i,**k:dict({\"id\":i,\"kind\":\"story\",\"title\":\"t \"+i,\"status\":\"todo\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"-c\",\"pass\"]}]},**k)\nfor i in (\"ST-aaaaaaaa\",\"ST-bbbbbbbb\"):(r/\"items\"/(i+\".json\")).write_text(json.dumps(it(i),indent=2)+\"\\n\")\ng(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nled=P.Path(g(\"rev-parse\",\"--absolute-git-dir\"))/\"kb-backlog-claims.json\";lock=led.with_name(led.name+\".lock\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"S1\");env.pop(\"KB_BACKLOG_CONFIG\",None)\nlock.write_text(\"\");p=s.Popen([sys.executable,T,\"--root\",str(r),\"claim\",\"ST-aaaaaaaa\",\"--by\",\"w1\"],stdout=s.PIPE,stderr=s.STDOUT,text=True,env=env);time.sleep(3)\n(r/\"items\"/\"ST-bbbbbbbb.json\").write_text(json.dumps(it(\"ST-bbbbbbbb\",status=\"doing\",claimed_by=\"w2\"),indent=2)+\"\\n\")\nled.write_text(json.dumps({\"ST-bbbbbbbb\":{\"by\":\"w2\",\"session\":\"S2\"}}));lock.unlink()\nout=p.communicate(timeout=60)[0];d=json.loads(led.read_text())\nok=p.returncode!=0 or \"ST-bbbbbbbb\" in d\nprint(\"claim beside a claim of another session made while it waited: exit\",p.returncode,\"| record of the other session kept:\",\"ST-bbbbbbbb\" in d,out[-160:]);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh review"
+  ],
+  "notes": "SP-z3hyk4eh review gap 4 (S3), on ST-zqbo7xgc (g1 'lock from first read to write'): _tools/bl_items.py:222-239, bl.items loaded before ledger_lock; the busy check and the here filter use them. Repro plants the other session's claim while this claim waits on a held lock; it fails on origin/main f105ef2e4 (exit 0, record of the other session dropped)."
+}
