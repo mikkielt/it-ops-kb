@@ -16,7 +16,7 @@ while the briefs or questions file differs from HEAD and records their sha256 in
 tools by subprocess (`state_of`, `error_counts`, `eval_rows`); `match_facts` and `overlap_and_conflicts` hold the
 comparison of two instances' added facts and `compare_rows` the rows of the scenario `repro-compare`. `pick` applies the
 landing rule to those rows and the `repro` cost rows (`standings`, `pick_key`); `replay` rebases one instance's commits
-since the start commit onto the current branch from its bare by path, a `KB-Work` trailer on each, and neither touches
+since the start commit onto the current branch from its bare by path, a `KB-Work` trailer on each but a backlog-planning commit, and neither touches
 the real origin. This module imports bench_core and kbpublic, factdiff and ql_research where `compare` reads text, and kbfacts where it reads the routing and
 the clone home (kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
@@ -1356,6 +1356,7 @@ INSTANCE_ARM = re.compile(r"instance-(\d+)")
 ITEM_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*")
 REPLAY_BRANCH = "repro-replay-instance{n}"  # the branch a replay rebases the instance's commits on, then folds into the current one
 TRAILER = "KB-Work"
+BACKLOG_ITEMS = r"kb/_self/backlog/[^/]*\.json"  # grep pattern of a backlog item file
 
 
 def number(value):
@@ -1460,7 +1461,8 @@ def pick(file=None, out=print):
 def replay(instance, item, root=None, out=print):
     """`repro replay`: fetch main of instance `instance`'s bare (from DIR's manifest, by its path: no other remote is
     named) and rebase its commits since the start commit onto the current branch of the git work tree in the working
-    directory (`git rebase --onto`), amending each with the trailer `KB-Work: ITEM`. The commits are rebased on the
+    directory (`git rebase --onto`), amending each with the trailer `KB-Work: ITEM` except one that changes only backlog
+    item files (kb/_self/backlog/*.json), which keeps the KB-Work trailer it carries. The commits are rebased on the
     branch REPLAY_BRANCH, which is folded into the current branch with `--ff-only` and removed; on a conflict the
     rebase stays in progress there and the files in conflict are named. Returns 0 (also with no commit to replay), 1 on
     a conflict; raises Refused (no manifest, no such instance, a work tree with changes, a detached HEAD)."""
@@ -1500,7 +1502,9 @@ def replay(instance, item, root=None, out=print):
         out(f"repro replay: instance {instance}'s main {tip[:12]} holds no commit since {rev[:12]}: nothing to replay")
         return 0
     run_git("branch", work, tip, cwd=here)
-    amend = f"git commit --amend --no-edit --no-verify -q --trailer '{TRAILER}: {item}'"
+    # a commit that changes only backlog item files keeps the KB-Work trailer it carries (the items it files)
+    amend = (f"if git diff-tree --no-commit-id --name-only -r HEAD | grep -qv '^{BACKLOG_ITEMS}$'; then "
+             f"git commit --amend --no-edit --no-verify -q --trailer '{TRAILER}: {item}'; fi")
     p = sh(["git", "rebase", "--exec", amend, "--onto", branch, rev, work], here, None)
     if p.returncode:
         files = sh(["git", "diff", "--name-only", "--diff-filter=U"], here, None).stdout.split()
