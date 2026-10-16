@@ -21,5 +21,22 @@
     "kb/_self/maintaining.md",
     "kb/_self/token-efficiency.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the worker's SessionStart tell the dispatching session's claim intent from another session's intent for the item?",
+      "options": [
+        "topic-marker",
+        "new-intent-field"
+      ],
+      "recommendation": "topic-marker",
+      "do": {
+        "topic-marker": "BG-wh3wardm",
+        "new-intent-field": "BG-wh3wardm"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-r03"
 }
