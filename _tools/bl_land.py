@@ -23,7 +23,7 @@ import bl_plan
 from bl_base import (  # run_check lives below bl_land, so bl_ci reaches it without bl_land (ST-ufpxla7r)
     ANSI_RE, Backlog, CLAUSE_SPLIT, REF_HEADER, WORKSPACE, colourless_env, run_check, Refused, commit_written,
     claims_ledger, external_description, clause_commands, git, goal_clauses, id_re, in_scope, item_file, item_repos,
-    line, main_worktree_spool, need, rel_dir, repositories, research_story, research_touches, run, say, scope, setting,
+    line, main_worktree, main_worktree_spool, need, rel_dir, repositories, research_story, research_touches, run, say, scope, setting,
     split_touch, waits, worker_dir,
 )
 from bl_check import HOST_BOUND_GATE, host_bound_accepted, is_test_run, noop_output, other_clone, trivial_command
@@ -1285,12 +1285,14 @@ def own_checkout_drafts(root, status_lines):
 
 def set_aside_drafts(root, path, drafts):
     """Move the DRAFTS (relative paths) of the worktree PATH, a worker's or the checkout land runs in, to
-    `bl_intake.INTAKE_ASIDE` of ROOT, under the worktree's name, never over a file there. Returns [(source,
-    destination)] of those moved."""
+    `bl_intake.INTAKE_ASIDE` of the clone's main worktree (ROOT itself when it is the main one, else the worktree
+    `main_worktree` finds: where `bl_intake.set_aside_fingerprints` reads), under the worktree's name, never over a
+    file there. Returns [(source, destination)] of those moved."""
     moved = []
+    aside = Path(main_worktree(root))
     for rel in drafts:
         src = Path(path) / rel
-        dest = Path(root).joinpath(*bl_intake.INTAKE_ASIDE, Path(path).name, src.name)
+        dest = aside.joinpath(*bl_intake.INTAKE_ASIDE, Path(path).name, src.name)
         dest.parent.mkdir(parents=True, exist_ok=True)
         if dest.exists():
             dest = dest.with_name(f"{dest.stem}-{int(time.time())}{dest.suffix}")
@@ -1307,7 +1309,7 @@ def release_worker_worktree(root, path, lock, branch=None, repo=None, check_only
     clone, its workers sit under its own directory; with BRANCH given, also that of the main checkout it is a linked
     worktree of, `main_worker_dir`: the Agent tool made the worker there) that is not the one land runs in, has no
     uncommitted changes
-    (except untracked intake drafts that no commit of BRANCH names: moved to INTAKE_ASIDE of ROOT, and said) and no
+    (except untracked intake drafts that no commit of BRANCH names: moved to INTAKE_ASIDE of ROOT's main worktree, and said) and no
     live process (one whose parent has exited, a session-end hook's, is waited for, at most
     `bl_procs.HOOK_GRACE_S`: wait_for_hooks; where live_processes cannot list them, Windows, one the worktree cannot be
     renamed and back past:
