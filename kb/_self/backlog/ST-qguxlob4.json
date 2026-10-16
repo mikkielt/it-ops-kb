@@ -43,6 +43,59 @@
   "depends_on": [
     "ST-5iwikc3n"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does coord.py wait exit with when its timeout ends with no event (an idle poll is no failed condition)?",
+      "options": [
+        "exit 0 with timed_out true",
+        "exit 1"
+      ],
+      "recommendation": "exit 0 with timed_out true",
+      "do": {
+        "exit 0 with timed_out true": "ST-qguxlob4",
+        "exit 1": "ST-qguxlob4"
+      },
+      "class": "design",
+      "answer": "exit 0 with timed_out true",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What is the short field limit and charset of an event value, so that free text is refused?",
+      "options": [
+        "an id of 1 to 120 characters of letters, digits and _ . : / # @ - (no spaces)",
+        "an id of 1 to 64 characters of letters, digits and _ . : - (no slash, so no path:line key)"
+      ],
+      "recommendation": "an id of 1 to 120 characters of letters, digits and _ . : / # @ - (no spaces)",
+      "do": {
+        "an id of 1 to 120 characters of letters, digits and _ . : / # @ - (no spaces)": "ST-qguxlob4",
+        "an id of 1 to 64 characters of letters, digits and _ . : - (no slash, so no path:line key)": "ST-qguxlob4"
+      },
+      "class": "design",
+      "answer": "an id of 1 to 120 characters of letters, digits and _ . : / # @ - (no spaces)",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does coord.py wait wake on a post from another process, and how are field names and counts bounded?",
+      "options": [
+        "poll the events table every 50 ms with a short read; field names of lowercase letters, digits and _ (up to 32), up to 8 fields per event",
+        "poll with a 1 s interval; any field name"
+      ],
+      "recommendation": "poll the events table every 50 ms with a short read; field names of lowercase letters, digits and _ (up to 32), up to 8 fields per event",
+      "do": {
+        "poll the events table every 50 ms with a short read; field names of lowercase letters, digits and _ (up to 32), up to 8 fields per event": "ST-qguxlob4",
+        "poll with a 1 s interval; any field name": "ST-qguxlob4"
+      },
+      "class": "design",
+      "answer": "poll the events table every 50 ms with a short read; field names of lowercase letters, digits and _ (up to 32), up to 8 fields per event",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",
   "claimed_by": "orch-r02"
 }

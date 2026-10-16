@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Claims, leases and compare-and-swap on a local SQLite store (stdlib only), usable by any agent. Docs: kb/_self/tools.md.
+"""Claims, leases, compare-and-swap and events on a local SQLite store (stdlib only), usable by any agent. Docs: kb/_self/tools.md.
 
   coord.py claim KEY --ttl SECONDS [--holder NAME]   create KEY if it is absent, held for SECONDS; prints the key, its
                                                      holder and the holder's token (exit 1, naming the holder, when a
@@ -10,6 +10,10 @@
   coord.py put KEY --value V --revision N            write V only while KEY is at revision N (an absent key is at
                                                      revision 0); prints the new revision (exit 1 when KEY moved on)
   coord.py list [--prefix P]                         print every live key that starts with P
+  coord.py post --kind K --field NAME=VALUE ...      add an event; prints its sequence number as seq (exit 2 for a kind
+                                                     off the closed list or a value that is not a short id)
+  coord.py wait --since N --timeout S                print the events after sequence N, blocking until one arrives or
+                                                     S seconds pass
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
 KB_COORD_STORE; with neither the command is refused (exit 2). Every command prints one JSON object on stdout with
@@ -20,12 +24,20 @@ and stays until a claim-and-release or a later `put` replaces it. The token is s
 `list` and a refused claim never print it. Every write runs in one `BEGIN IMMEDIATE` transaction, so two processes
 racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock.
 
+An event is a kind from a closed list (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat) and up to
+eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
+letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
+handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store twice a second
+for events past N and prints `events`, `last` (the highest sequence it returned, else N) and `timed_out`; a wait whose
+S passes with no event exits 0 with `timed_out` true, and a post from any other process on the same store wakes it.
+
 Exit codes: 0 done; 1 the command's condition failed (key held, wrong or expired token, revision moved, key
 absent); 2 a bad argument or no store.
 """
 import argparse
 import json
 import os
+import re
 import secrets
 import sqlite3
 import sys
@@ -37,6 +49,15 @@ SCHEMA = (
     "CREATE TABLE IF NOT EXISTS entries ("
     "key TEXT PRIMARY KEY, value TEXT, revision INTEGER NOT NULL, holder TEXT, token TEXT, ttl REAL, expires REAL)"
 )
+EVENTS_SCHEMA = (
+    "CREATE TABLE IF NOT EXISTS events ("
+    "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
+)
+KINDS = ("claim", "release", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat")
+FIELD_NAME = re.compile(r"[a-z][a-z0-9_]{0,31}")
+FIELD_VALUE = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")
+MAX_FIELDS = 8
+POLL_SECONDS = 0.05
 LIVE = "(expires IS NULL OR expires > ?)"
 PUBLIC = "key, value, revision, holder, expires"
 
@@ -67,6 +88,7 @@ class Tx:
     def __enter__(self):
         self.con.execute("BEGIN IMMEDIATE")
         self.con.execute(SCHEMA)
+        self.con.execute(EVENTS_SCHEMA)
         return self.con
 
     def __exit__(self, kind, _value, _trace):
@@ -164,6 +186,54 @@ def listing(args, now):
     return {"ok": True, "prefix": args.prefix, "entries": [row_json(r) for r in rows if r["key"].startswith(args.prefix)]}
 
 
+def parse_fields(pairs):
+    """NAME=VALUE pairs to a dict; a bad name, a value that is no short id or a repeated name is refused (exit 2)."""
+    fields = {}
+    if len(pairs) > MAX_FIELDS:
+        raise Refused({"ok": False, "error": f"at most {MAX_FIELDS} fields, got {len(pairs)}"}, 2)
+    for pair in pairs:
+        name, equals, value = pair.partition("=")
+        if not equals or not FIELD_NAME.fullmatch(name):
+            raise Refused({"ok": False, "error": f"a field is NAME=VALUE with NAME of lowercase letters, digits, _: {pair[:40]!r}"}, 2)
+        if name in fields:
+            raise Refused({"ok": False, "error": f"field {name} is given twice"}, 2)
+        if not FIELD_VALUE.fullmatch(value):
+            raise Refused({"ok": False, "error": f"field {name}: a value is an id of 1 to 120 characters of letters, digits and "
+                                                 "_ . : / # @ - (no spaces); events carry references, not free text"}, 2)
+        fields[name] = value
+    return fields
+
+
+def event_json(row):
+    return {"seq": row["seq"], "kind": row["kind"], "fields": json.loads(row["fields"]), "at": round(row["at"], 3)}
+
+
+def post(args, now):
+    if args.kind not in KINDS:
+        raise Refused({"ok": False, "error": f"unknown kind {args.kind[:40]!r}: one of {', '.join(KINDS)}"}, 2)
+    fields = parse_fields(args.field)
+    with Tx(args.store) as con:
+        seq = con.execute("INSERT INTO events (kind, fields, at) VALUES (?, ?, ?)",
+                          (args.kind, json.dumps(fields, sort_keys=True, ensure_ascii=False), now)).lastrowid
+    return {"ok": True, "seq": seq, "kind": args.kind, "fields": fields}
+
+
+def wait(args, now):
+    deadline = time.monotonic() + args.timeout
+    con = connect(args.store)
+    try:
+        con.execute(EVENTS_SCHEMA)
+        while True:
+            rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (args.since,)).fetchall()
+            if rows or time.monotonic() >= deadline:
+                break
+            time.sleep(min(POLL_SECONDS, max(deadline - time.monotonic(), 0)))
+    finally:
+        con.close()
+    return {"ok": True, "since": args.since, "last": rows[-1]["seq"] if rows else args.since,
+            "events": [event_json(r) for r in rows], "timed_out": not rows}
+
+
 def positive(text):
     value = float(text)
     if value <= 0:
@@ -173,6 +243,13 @@ def positive(text):
 
 def not_negative(text):
     value = int(text)
+    if value < 0:
+        raise argparse.ArgumentTypeError("must be 0 or more")
+    return value
+
+
+def seconds(text):
+    value = float(text)
     if value < 0:
         raise argparse.ArgumentTypeError("must be 0 or more")
     return value
@@ -202,10 +279,17 @@ def build_parser():
     p.add_argument("--revision", type=not_negative, required=True, help="the revision the key must still be at (absent: 0)")
     p = sub.add_parser("list", parents=[store])
     p.add_argument("--prefix", default="")
+    p = sub.add_parser("post", parents=[store])
+    p.add_argument("--kind", required=True, help="one of " + ", ".join(KINDS))
+    p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="an id field, repeatable")
+    p = sub.add_parser("wait", parents=[store])
+    p.add_argument("--since", type=not_negative, required=True, help="the highest sequence the caller has seen (0: all)")
+    p.add_argument("--timeout", type=seconds, required=True, help="seconds to block when no event is past SINCE")
     return parser
 
 
-COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put": put, "list": listing}
+COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put": put, "list": listing,
+            "post": post, "wait": wait}
 
 
 def main(argv=None):
