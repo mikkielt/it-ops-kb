@@ -79,7 +79,7 @@
       },
       "class": "design",
       "answer": "Rows the area added since its start sha to _anchors.csv, _coverage.csv and the (topic: ...) entries of _gaps.md, _conflicts.md and _answers.md, under the articles either instance wrote",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise (lessons analysis 1.4, 2.2, 2.3): 13, 22 and 45 articles on the 14 common areas, the same path in all three for 4 areas; fact_overlap 0.00 in 30 of 42 pairs because match_facts compares one path; 6 of 362 source rows of shared ids byte-identical. Structural identity is the target the next run measures; byte parity of prose is not a goal. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",

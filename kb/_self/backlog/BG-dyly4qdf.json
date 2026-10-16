@@ -1,0 +1,25 @@
+{
+  "id": "BG-dyly4qdf",
+  "kind": "bug",
+  "title": "repro pick falls back to each instance's own areas when one instance finished no area",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bench_repro.standings takes the common areas over the instances that finished at least one area and ranks an instance that finished none last, so one instance whose every area failed no longer makes pick compare the others on unequal area sets; a planted standings table in test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S2); it carries the change of ST-vexo3oze's gate g1.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=lambda n,a,m,v:{'scenario':'repro-compare','record':'r','date':'d','arm':f'instance-{n}','case':a,'metric':m,'value':str(v)};rows=[r(1,a,'eval_passed',10) for a in 'abc']+[r(2,a,'eval_passed',10) for a in 'ab']+[r(3,'all','check_errors',0)];c=b.standings(rows)[3];print(c);sys.exit(0 if c=={'a','b'} else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-75hdeqld review"
+  ]
+}

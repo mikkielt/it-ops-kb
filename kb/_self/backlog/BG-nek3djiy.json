@@ -1,0 +1,25 @@
+{
+  "id": "BG-nek3djiy",
+  "kind": "bug",
+  "title": "repro compare pairs two facts about different options of one page as one claim and prints a false conflict",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_repro.overlap_and_conflicts matches two facts in different articles that cite one url only when their code spans (backticked terms) and numbers agree as well as their word share reaching TOKEN_OVERLAP, so two sentences about different options of one page (`--timeout` and `--retries`) are no pair and no conflict; the compare part of test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bench_repro as b;m=lambda p,t:{'path':p,'line':1,'text':t+' [DOC S1]','kinds':['DOC'],'ids':['S1'],'urls':['https://e.com/p']};a=[m('public/x/a.md','The `--timeout` option sets the maximum wait time in seconds, default 30.')];c=[m('public/x/b.md','The `--retries` option sets the maximum wait time in seconds, default 3.')];o=b.overlap_and_conflicts(a,c);print(o[0],len(o[1]));sys.exit(1 if o[1] else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-75hdeqld review"
+  ]
+}

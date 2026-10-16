@@ -1,0 +1,25 @@
+{
+  "id": "BG-iy5qjr4r",
+  "kind": "bug",
+  "title": "repro compare's frozen_pass passes a row that is good without the answer, so eval_passed rewards no answer",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "bench_repro.frozen_pass passes a frozen row only when its answer is found, or when its end verdict ranks at least its start-commit verdict and is not good without the answer, so a false good row (good at start and end, answer not found) and a row none at start that turns good without the answer no longer pass and eval_passed, pick's first key, reads the answer gained; the compare part of test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S2); it carries the change of BG-qztas5u4's gate g1.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=(b.frozen_pass('good','good',False),b.frozen_pass('none','good',False));print(r);sys.exit(1 if any(r) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-75hdeqld review"
+  ]
+}

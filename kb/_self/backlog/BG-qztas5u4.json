@@ -67,8 +67,8 @@
         "found as above but a none-expecting row also needs its expectation found": "BG-qztas5u4"
       },
       "class": "design",
-      "answer": "found = none of the row's rag.py eval path, text and regex checks failed; frozen_pass is found or verdict rank >= expected rank (a none-expecting row always passes)",
-      "by": "agent"
+      "answer": "found = none of the row's rag.py eval path, text and regex checks failed; frozen_pass passes a row when found, or when its end verdict ranks at least its start-commit verdict and is not good without the answer (changed after the sprint review: the first answer passed false good rows and none-at-start rows at any verdict; BG-iy5qjr4r carries the change)",
+      "by": "operator"
     }
   ],
   "links": [

@@ -1,0 +1,26 @@
+{
+  "id": "BG-qphes2ks",
+  "kind": "bug",
+  "title": "repro compare records eval_passed 0 for an instance whose end eval printed no json instead of refusing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "bench_repro.compare refuses (Refused, exit 2) when rag.py eval at an instance's end prints no json, as it does for the eval at the start commit, so pick never ranks an instance last on an eval that did not run; a planted fake rag in test_bench.py proves it (no new test id). Found by the SP-75hdeqld review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;l=inspect.getsource(b.compare).splitlines();i=[k for k,x in enumerate(l) if 'evals[n] = eval_rows(' in x];ok=bool(i) and any('raise Refused' in x for x in l[i[0]:i[0]+4]);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "Running compare needs instance bares and a start commit's checkout; the repro reads whether a refusal follows the end eval call in compare's source, the fix's own test drives the behaviour.",
+  "touches": [
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-75hdeqld review"
+  ]
+}

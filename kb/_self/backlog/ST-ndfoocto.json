@@ -62,7 +62,7 @@
       },
       "class": "design",
       "answer": "no row of the root's _anchors.csv for the fact's key and file, whatever its status, and not every cited source a learn.microsoft.com page",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -79,7 +79,7 @@
       },
       "class": "design",
       "answer": "print it beside the ranking numbers, the landing rule unchanged",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
