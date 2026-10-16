@@ -2,7 +2,7 @@
   "id": "BG-gg3aohlm",
   "kind": "bug",
   "title": "repro replay adds a second KB-Work trailer to a replayed backlog-planning commit, which the push gate refuses",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,6 @@
   "links": [
     "parked: SP-bhzxxhub review"
   ],
-  "notes": "Plan 2026-10-15: its planted repro still fails on main 5834a99e2 (the replayed backlog-planning commit gets a second KB-Work line). 2026-10-16: the suite part of the plan is dropped under the operator's test policy D-2tq4fhgs; the planted repro is the proof."
+  "notes": "Plan 2026-10-15: its planted repro still fails on main 5834a99e2 (the replayed backlog-planning commit gets a second KB-Work line). 2026-10-16: the suite part of the plan is dropped under the operator's test policy D-2tq4fhgs; the planted repro is the proof.",
+  "claimed_by": "orch-r14"
 }
