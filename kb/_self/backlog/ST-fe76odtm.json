@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-g2ssvhi2 close"
   ],
-  "notes": "Retrospective of SP-g2ssvhi2: ST-5z4e6z4i's clause 6 ('the worker's brief names it') needed _tools/bl_dispatch.py, which its planned touches lacked; the orchestrator widened them before the claim (with _tools/test_land_e2e.py and kb/_self/code.md)."
+  "notes": "Retrospective of SP-g2ssvhi2: ST-5z4e6z4i's clause 6 ('the worker's brief names it') needed _tools/bl_dispatch.py, which its planned touches lacked; the orchestrator widened them before the claim (with the land e2e test file, deleted since under D-2tq4fhgs, and kb/_self/code.md)."
 }

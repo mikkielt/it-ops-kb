@@ -17,8 +17,7 @@
     }
   ],
   "touches": [
-    ".claude/skills/kb-verify/lint.py",
-    "_tools/test_lint.py"
+    ".claude/skills/kb-verify/lint.py"
   ],
   "links": [
     "parked: SP-23m5etrf close"

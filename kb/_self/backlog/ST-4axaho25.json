@@ -17,7 +17,7 @@
   ],
   "touches": [
     ".claude/agents/kb-worker.md",
-    "_tools/bl_brief.py",
+    "_tools/bl_dispatch.py",
     "kb/_self/backlog.md"
   ],
   "links": [
