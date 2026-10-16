@@ -1,0 +1,21 @@
+{
+  "id": "ST-wrrcdp2h",
+  "kind": "story",
+  "title": "The sprint review step says which KB-Work the commit that files its gaps carries",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-rsmmwzr2 close: the review's gap-filing commit (new bug files, set links, confirmed provisional answers on done items) was refused at commit-msg as a planning commit naming the review story it does not change, and was amended to carry no KB-Work, as SP-z3hyk4eh's had been. The review step of the sprint skill says which trailer that commit carries.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\np=t[t.find('## review'):t.find('## close')]\ni=p.find('commit that files')\nok=i>=0 and 'KB-Work' in p[i:i+300]\nprint('review step names the filing commit trailer:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-rsmmwzr2 close"
+  ]
+}

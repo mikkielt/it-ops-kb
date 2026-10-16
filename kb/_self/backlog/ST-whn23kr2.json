@@ -1,0 +1,21 @@
+{
+  "id": "ST-whn23kr2",
+  "kind": "story",
+  "title": "A content worker runs the landing's lint on every article its branch changes, not only the new one",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-rsmmwzr2 close: ST-unrlktke's landing stopped at step lint (ops land.step lint exit=1): the worker added an untagged pointer bullet ('(no tag)') to the facts list of kb/public/agents/instruction-and-context-limits.md and linted only coordination-messages.md and a2a-protocol.md, and land had already run done --commit before lint refused, so the orchestrator re-added the worktree and fixed it by hand. The worker rule and brief name the lint command over the articles of git diff --name-only origin/main, the same list land passes.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('agents/worker.md',encoding='utf-8').read()\nok='git diff --name-only origin/main' in t and 'lint' in t[t.find('git diff --name-only origin/main')-400:t.find('git diff --name-only origin/main')+400]\nprint('worker rule lints the branch\\'s changed articles:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-rsmmwzr2 close"
+  ]
+}

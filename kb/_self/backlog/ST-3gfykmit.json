@@ -1,0 +1,21 @@
+{
+  "id": "ST-3gfykmit",
+  "kind": "story",
+  "title": "backlog.py set takes --commit, so the orchestrator rewords an item on a worker's branch without resuming its session",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-rsmmwzr2 close: ST-unrlktke's researched check failed only on its goal's wording; set has no --commit, so the orchestrator resumed the Sonnet worker to run set and commit the item file, which cost about 2.6 USD for a two-line change (result.json of the resume). backlog.py --root <worktree> set ID ... --commit commits the item file alone with KB-Work, as answer --commit does.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','set','--help'],capture_output=True,text=True)\nok=p.returncode==0 and '--commit' in p.stdout\nprint('set --help exits 0 and names --commit:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-rsmmwzr2 close"
+  ]
+}

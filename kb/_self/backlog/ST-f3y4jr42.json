@@ -1,0 +1,21 @@
+{
+  "id": "ST-f3y4jr42",
+  "kind": "story",
+  "title": "A worker's gate options say what each option drops or loses, so an answer is not taken blind to a data loss",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-rsmmwzr2 close: ST-5iwikc3n g2's recommended option said 'a lease that expired drops the whole row' without saying the row holds the put value, and the operator delegate took it; the review found that claim, put, release loses the value (BG-p2jcpxhl). The worker rule for recording a gate says each option names the data or state it drops, and a recommendation that drops data says so.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('agents/worker.md',encoding='utf-8').read().lower()\nok='each option names' in t and ('drops' in t or 'loses' in t)\nprint('worker gate rule asks each option to name what it drops:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-rsmmwzr2 close"
+  ]
+}

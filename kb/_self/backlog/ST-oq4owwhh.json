@@ -1,0 +1,21 @@
+{
+  "id": "ST-oq4owwhh",
+  "kind": "story",
+  "title": "A gate about lease tokens or about where bearer-token facts are filed is classed design, while a credential question stays secrets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-rsmmwzr2 close: two gates were classed secrets and held their landings for the operator though neither touched a credential: ST-5iwikc3n g2 ('what do get and a wrong-token renew do?', a coord.py lease token) and ST-ksmmg2fi g1 ('Where do the RFC 6750 bearer-token facts live: mcp/authorization.md or a new auth/ article?', an article placement). The classifier keeps 'Where is the deploy token read from?' secrets. Asked as a blocking gate first, since it narrows an operator-only class (see ST-4gvfhws2 and BG-owfgwtyl for the planted credential cases each new exempt phrase needs).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,'_tools');import bl_authority as a\nit={'id':'ST-x','touches':['_tools/coord.py']}\ndef k(q):return a.gate_class(it,{'id':'g','question':q,'options':['one','two']})\nr=dict(lease=k('How do claim leases and put values share a key, and what do get and a wrong-token renew do?'),\n placement=k('Where do the RFC 6750 bearer-token facts live: in the MCP authorization article, or in a new auth article?'),\n credential=k('Where is the deploy token read from?'))\nprint(r);sys.exit(0 if r['lease']=='design' and r['placement']=='design' and r['credential']=='secrets' else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-rsmmwzr2 close"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "ST-2anyvjum",
+  "kind": "story",
+  "title": "Planning a new command-line tool or server gives its checks planted edge inputs, not only the happy path",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-rsmmwzr2 close: the four coord.py items passed every check, and the fresh-context review then found 12 gaps, three S2 (BG-v3fjhmro, BG-p2jcpxhl, BG-as7rt42o): non-finite --ttl and --timeout, a put on an absent key, a value lost at release, a body read before the token check, a wait outliving revocation. The plan step asks, for an item that adds a command or a server, a planted case per numeric or time argument (0, negative, nan, inf, huge), per key state (absent, plain value, leased, expired) and, for a server, per auth path (unknown, revoked mid-request, body before auth).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\np=t[t.find('## plan'):t.find('## start')]\nok='nan' in p and 'revoked' in p\nprint('plan step asks planted edge inputs for a new command:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-rsmmwzr2 close"
+  ]
+}
