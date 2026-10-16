@@ -2,7 +2,7 @@
   "id": "BG-auhn3xff",
   "kind": "bug",
   "title": "A gate question about the word overlap of two texts is classed secrets by the word token",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 8,
@@ -41,5 +41,18 @@
     }
   ],
   "notes": "2026-10-16 BG-ijyjl7ii gate g1: a question and options about the token counts a stream reported (a repro area's cost record) matched 'token' and was made blocking, class secrets. Recurred in SP-a3w7xdij: ST-y4naelcs's worker gate g1 about article paths was classed secrets because its question names the area ssh-windows-estate (word ssh), which made a provisional gate blocking. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: class_reasons still gives secrets for 'token overlap of two facts words'. The repro now has four planted questions: word overlap and 'words or tokens' must be design, a model's output tokens stays design, a credential token file stays secrets. The critical authority-class test file is not in touches: the change narrows one word's sense and the planted cases prove it; the 'ssh' in an area name recurrence named above stays out of this bug's scope.",
-  "claimed_by": "orch-r01"
+  "evidence": {
+    "commit": "5e6190d5531fcb4af9eba9aa2501740d0f484a98",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as b\nc=lambda q,o:b.class_reasons({\"touches\":[\"_tools/bench_repro.py\"]},{\"id\":\"g1\",\"question\":q,\"options\":o})[0]\nr=[c(\"what token overlap of two facts words makes one claim\",[\"0.5\",\"0.8\"]),c(\"how many words or tokens may two texts share before they count as one\",[\"half\",\"all\"]),c(\"how many output tokens may one run spend\",[\"4000\",\"8000\"]),c(\"where is the API token file read from\",[\"a file of mode 0600\",\"the environment\"])]\nprint(\"classes (word overlap, word or tokens, model usage, credential):\",r)\nsys.exit(0 if r[:3]==[\"design\"]*3 and r[3]==\"secrets\" else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8a8d2cb4f7cfffdf"
+      }
+    ]
+  }
 }
