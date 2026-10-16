@@ -374,8 +374,9 @@ def stream_run(argv, prompt, cwd, env=None, timeout=900, clean=False):
 
 
 def spent_run(r):
-    if "error" not in r or r.get("cost"):  # an error result (error_max_budget_usd) still spent its cost
-        spent(r["cost"], r["in_uncached"] + r["cache_write"] + r["cache_read"], r["out"])
+    if "error" not in r or r.get("cost") or r.get("cost_unknown"):  # an error result (error_max_budget_usd) still spent
+        # its cost; a timed-out or result-less stream (cost_unknown) spent its tokens, at a cost no event states
+        spent(r.get("cost"), r["in_uncached"] + r["cache_write"] + r["cache_read"], r["out"])
 
 
 def transcript(session_id):

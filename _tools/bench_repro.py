@@ -615,11 +615,14 @@ def area_record(inst, brief, opts, env, argv, prompt, timeout):
     except Refused:
         pass
     fail = failure_of(r)
+    # a timed-out or result-less session states no cost: it is recorded at the area cap, the most it can have spent
     rec.update(failure=fail, subtype=r.get("subtype") or ("success" if not fail else fail), wall_s=wall,
-               cost=r.get("cost") or 0, input_tokens=r.get("in_uncached", 0), output_tokens=r.get("out", 0),
+               cost=opts["area_usd"] if r.get("cost_unknown") else r.get("cost") or 0, input_tokens=r.get("in_uncached", 0), output_tokens=r.get("out", 0),
                cache_write_tokens=r.get("cache_write", 0), cache_read_tokens=r.get("cache_read", 0),
                turns=r.get("turns", 0), tool_calls=sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()),
                model_usage=r.get("model_usage", {}))
+    if r.get("cost_unknown"):
+        rec["cost_unknown"] = True
     if fail:
         rec["error"] = str(r.get("error", ""))[:300]
     return rec

@@ -222,14 +222,31 @@ def parse(stdout):
 def execute(cmd, prompt, cwd=KB, env=None, clean=False, timeout=900):
     """Run one headless claude and parse its stream: the result fields (or {"error": ...}). `env` is added to this
     process's environment, or with `clean` is the whole environment. A session that outlives `timeout` seconds is a
-    failure named `timeout` ({"error": "timeout", "timeout_s": N}), not an exception."""
+    failure named `timeout` ({"error": "timeout", "timeout_s": N}), not an exception; like a stream that ends with no
+    result event it carries the tokens its stream had reported (`unfinished`) and `cost_unknown`, since only the
+    result event states a cost."""
     t = time.time()
     try:
         p = subprocess.run(cmd, cwd=cwd, input=prompt, capture_output=True, text=True, encoding="utf-8", timeout=timeout,
                            env=env if clean else {**os.environ, **env} if env else None)
-    except subprocess.TimeoutExpired:
-        return {"error": "timeout", "timeout_s": timeout, "wall_s": round(time.time() - t, 1)}
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes) else e.stdout
+        return {**unfinished(out, "timeout", time.time() - t, always=True), "timeout_s": timeout}
     return result_of(p.stdout, p.stderr, time.time() - t)
+
+
+def unfinished(stdout, error, wall, always=False):
+    """The failure of a run whose stream (`stdout`, maybe partial or None) has no result event: {"error": `error`,
+    "wall_s", the tokens its requests reported (`in_uncached`, `cache_write`, `cache_read`, `out`; the messages' output
+    counts are partial) and `cost_unknown`}. A stream states no cost before its result event, so none is given; the
+    caller counts the run's budget cap, never 0. `cost_unknown` is set when the stream shows a request, or with `always`."""
+    seen, _ = parse(stdout or "")
+    use = [r["usage"] for r in seen["requests"]]
+    tokens = lambda k: sum(u.get(k) or 0 for u in use)  # noqa: E731
+    return {"error": error, "wall_s": round(wall, 1), "turns": len(use), "in_uncached": tokens("input_tokens"),
+            "cache_write": tokens("cache_creation_input_tokens"), "cache_read": tokens("cache_read_input_tokens"),
+            "out": tokens("output_tokens"), "tools": seen["tools"], "sub_tools": seen["sub_tools"],
+            **({"cost_unknown": True} if use or always else {})}
 
 
 def result_of(stdout, stderr, wall):
@@ -245,7 +262,7 @@ def result_of(stdout, stderr, wall):
     `subtype`, `cost`, `turns`, the `usage` tokens (`in_uncached`, `cache_write`, `cache_read`, `out`) and `model_usage`."""
     seen, res = parse(stdout)
     if not res:
-        return {"error": stderr[-500:]}
+        return unfinished(stdout, stderr[-500:], wall)
     u = res.get("usage") or {}
     billed = {m: v for m, v in (res.get("modelUsage") or {}).items() if isinstance(v, dict)}
     counts = [v["outputTokens"] for v in billed.values() if isinstance(v.get("outputTokens"), int)]

@@ -25,6 +25,25 @@
   "depends_on": [
     "ST-eefdl6am"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What cost does a repro area that timed out or ended with no result event record?",
+      "options": [
+        "the --area-usd cap with cost_unknown true, tokens from the stream",
+        "cost 0 with cost_unknown true, and run_instance adds the cap to the spend"
+      ],
+      "recommendation": "the --area-usd cap with cost_unknown true, tokens from the stream",
+      "do": {
+        "the --area-usd cap with cost_unknown true, tokens from the stream": "BG-ijyjl7ii",
+        "cost 0 with cost_unknown true, and run_instance adds the cap to the spend": "BG-ijyjl7ii"
+      },
+      "class": "secrets",
+      "answer": "the --area-usd cap with cost_unknown true, tokens from the stream",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-ygsnog4n review"
   ],
