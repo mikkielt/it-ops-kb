@@ -2,7 +2,7 @@
   "id": "ST-qguxlob4",
   "kind": "story",
   "title": "coord.py events: closed-field, reference-only messages and a wait that wakes any agent",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",
@@ -97,5 +97,18 @@
     }
   ],
   "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",
-  "claimed_by": "orch-r02"
+  "evidence": {
+    "commit": "eabbfbf1abaa76ec916e8498710030f762c837af",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\nT=\"_tools/coord.py\"\nif not os.path.isfile(T):print(\"coord.py missing: the work adds it\");sys.exit(1)\nE=dict(os.environ,KB_COORD_STORE=os.path.join(tempfile.mkdtemp(),\"coord.sqlite\"))\ndef c(*a):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=60);return p.returncode,p.stdout,p.stderr\nunknown=c(\"post\",\"--kind\",\"chat\",\"--field\",\"item=ST-aaaaaaaa\")[0]\nfree=c(\"post\",\"--kind\",\"lesson\",\"--field\",\"note=\"+\"free text that tells a story \"*20)[0]\nr,o,_=c(\"post\",\"--kind\",\"fact_added\",\"--field\",\"fact=kb/public/agents/a2a-protocol.md:12\");seq=json.loads(o).get(\"seq\")\nw=s.Popen([sys.executable,T,\"wait\",\"--since\",str(seq),\"--timeout\",\"20\"],stdout=s.PIPE,stderr=s.PIPE,text=True,env=E)\ntime.sleep(1);t0=time.monotonic();c(\"post\",\"--kind\",\"gap_opened\",\"--field\",\"item=ST-bbbbbbbb\");out=w.communicate(timeout=30)[0];took=time.monotonic()-t0\nt1=time.monotonic();c(\"wait\",\"--since\",\"999999\",\"--timeout\",\"1\");idle=time.monotonic()-t1\nres=dict(unknown_kind_exit2=unknown==2,free_text_exit2=free==2,post=r==0 and isinstance(seq,int),\n woke_on_other_process=\"ST-bbbbbbbb\" in out and \"kb/public/agents/a2a-protocol.md:12\" not in out and took<10,timeout_ends=idle<5)\nprint(res);sys.exit(0 if all(res.values()) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "5be826bdd9719035"
+      }
+    ]
+  }
 }
