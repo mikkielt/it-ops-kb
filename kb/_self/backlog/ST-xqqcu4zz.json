@@ -55,6 +55,42 @@
   "depends_on": [
     "ST-bsro7uxf"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which command files count as 'a script and not the claude binary' for claude_path? An npm install's claude is a node .js script that is claude itself.",
+      "options": [
+        "script except .js/.mjs/.cjs entry point",
+        "any #! script"
+      ],
+      "recommendation": "script except .js/.mjs/.cjs entry point",
+      "do": {
+        "script except .js/.mjs/.cjs entry point": "ST-xqqcu4zz",
+        "any #! script": "ST-xqqcu4zz"
+      },
+      "class": "design",
+      "answer": "script except .js/.mjs/.cjs entry point",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does run.json name the recorded hashes, and how does run compare the two files with HEAD?",
+      "options": [
+        "keys briefs_sha256 and questions_sha256; git status --porcelain of each file in its own directory",
+        "one combined sha256 key; git diff HEAD"
+      ],
+      "recommendation": "keys briefs_sha256 and questions_sha256; git status --porcelain of each file in its own directory",
+      "do": {
+        "keys briefs_sha256 and questions_sha256; git status --porcelain of each file in its own directory": "ST-xqqcu4zz",
+        "one combined sha256 key; git diff HEAD": "ST-xqqcu4zz"
+      },
+      "class": "design",
+      "answer": "keys briefs_sha256 and questions_sha256; git status --porcelain of each file in its own directory",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ccvfvoqj close"
   ],
