@@ -1,0 +1,25 @@
+{
+  "id": "BG-qrpq6cdo",
+  "kind": "bug",
+  "title": "providers.csv names GitLab as the organisation of gitlab.com, a repository host, so every gitlab.com project's row gets publisher GitLab",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the gitlab row of _tools/providers.csv (match gitlab.com/) has an empty organisation cell, as ST-wiv62ohc gate g4 decides for hosts that hold many owners' repositories, so kbid.py add takes a gitlab.com project's publisher from its page's site name or refuses for --publisher; docs.gitlab.com keeps GitLab. Found by the SP-b36246xo review (S3).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import provider as p;r=[x for x in p.providers(None) if x['match']=='gitlab.com/'][0];print(r['organisation']);sys.exit(1 if r['organisation'] else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/providers.csv",
+    "_tools/test_live_kb.py",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-b36246xo review"
+  ]
+}

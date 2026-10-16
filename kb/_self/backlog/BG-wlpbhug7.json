@@ -1,0 +1,26 @@
+{
+  "id": "BG-wlpbhug7",
+  "kind": "bug",
+  "title": "provider.read_page takes a title's or heading's suffix as the publisher, so kbid.py add writes 'Windows' for '# Install - Windows'",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "provider.read_page takes the organisation only from the host's providers.csv organisation cell or the page's own site name (og:site_name, application-name or the like), never from the part of a <title> or Markdown heading after a dash or bar, and keeps the whole title, so a raw file '# Install - Windows' gives title 'Install - Windows' and no organisation (kbid.py add then exits 2 naming --publisher); the kbid part of test_live_kb.py proves it (no new test id). Found by the SP-b36246xo review (S2): ST-wiv62ohc gate g3 allows the registry or the page's site name only.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda u,**k:{'status':200,'error':'','body':b'# Install - Windows\\n','headers':{'content-type':'text/plain'}};r=p.read_page('https://example.com/a.md',p.providers(None));print(r);sys.exit(1 if r['organisation']=='Windows' or r['title']!='Install - Windows' else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-b36246xo review"
+  ]
+}

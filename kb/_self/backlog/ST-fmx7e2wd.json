@@ -1,0 +1,24 @@
+{
+  "id": "ST-fmx7e2wd",
+  "kind": "story",
+  "title": "kb-probe's list of curated provider columns names organisation, which kbid.py add reads for a new row's publisher",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-probe SKILL.md step that lists the curated columns of a new providers.csv row names organisation (the publisher kbid.py add writes for the host, blank for a host of many owners' repositories), as web-sources.md does, so a probe-added row does not leave it blank unasked. Found by the SP-b36246xo review (S4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-probe/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'organisation' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-probe/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-b36246xo review"
+  ]
+}

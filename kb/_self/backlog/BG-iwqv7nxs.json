@@ -1,0 +1,26 @@
+{
+  "id": "BG-iwqv7nxs",
+  "kind": "bug",
+  "title": "provider.GITLAB_DOC_FILE gives CC BY-SA to a doc/../ code path and misses the legacy blob and the -/tree doc forms",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "provider.read_licence gives the gitlab-org/gitlab doc/ licence only to a url whose path below the ref starts with doc/ and holds no '..' segment, and to the legacy /gitlab-org/gitlab/blob/<ref>/doc/ form and a -/tree/<ref>/doc directory as well as -/blob and -/raw, so a code file reached through doc/../ keeps the API's MIT; the kbid licence part of test_live_kb.py proves each form (no new test id). Found by the SP-b36246xo review (S4).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda *a,**k:{'status':404,'error':'x','body':b'','headers':{}};l=p.read_licence('https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/../lib/a.rb')['licence'];print(l);sys.exit(1 if l.startswith('CC BY-SA') else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/provider.py",
+    "_tools/test_live_kb.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-b36246xo review"
+  ]
+}
