@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """Fact diff: turn "a source changed" into "these facts still hold, these changed, these are gone" (stdlib only).
 
-  factdiff.py [--root NAME] anchor [SELECTION] [--refetch] [--max-age DAYS] [--dry-run] [--quotes CSV]
+  factdiff.py [--root NAME] anchor [SELECTION] [--refetch] [--max-age DAYS] [--dry-run] [--quotes CSV | --propose]
       locate each fact's backing sentence in the current text of its sources and write its anchor; --quotes CSV
-      (header `line,quote`; needs one --file F) gives the quote each new fact of F rests on, at most QUOTE_WORDS
-      words, by the fact's line: the anchor is the passage that holds the quote word for word (case, markup, quotes
-      and punctuation apart), and a fact whose quote the page lacks is anchored by its own words as any other;
+      (header `line,quote` or `line,source,quote`; needs one --file F) gives the quote each new fact of F rests on, at
+      most QUOTE_WORDS words, by the fact's line, and in the three-column form by the one cited source the quote is
+      from (a fact that cites several pages needs a quote of each; a row with no source serves every source it
+      cites): the anchor is the passage that holds the quote word for word (case, markup, quotes and punctuation
+      apart), and a fact whose quote the page lacks is anchored by its own words as any other; --propose (needs one
+      --file F, no --quotes) prints a `line,source,quote` line for each fact of F that holds no located anchor and
+      each page it cites: the words of that page that best hold the fact, a header first, and writes nothing;
+      --file takes a path in the root, `<root>/<path>` or `kb/<root>/<path>`;
       with --file and no other selector only the facts of those files that hold no anchor row (a new or reworded
       fact), whose row is unlocated:fetch-error, not-text or gone (its source fetched again, past the cache) and the
       lines the quote CSV names are anchored, the rows of other facts and files are kept and _fetch_state.csv is not
@@ -73,6 +78,7 @@ import kbcommon, kbfacts, kbid, kbusage, provider, ql_capture  # noqa: E402
 ANCHORS, COLS, REASONS, QUOTE_WORDS = kbcommon.ANCHORS, kbcommon.ANCHOR_COLS, kbcommon.ANCHOR_REASONS, kbcommon.QUOTE_WORDS
 CACHE = os.path.join(kbcommon.HOME, "_cache", "factdiff")
 TERMS = 8
+PROPOSE_SHARED = 2  # anchor --propose offers a window below the anchoring cut only when it shares this many of the fact's terms
 QUOTE_MIN_WORDS = 3  # a given quote shorter than this holds too little to locate a passage by
 CONFIG =os.path.join(kbcommon.TOOLS, "factdiff.toml")  # the calibrated cut-offs (kb/_self/reports/fact-diff.md)
 
@@ -572,67 +578,173 @@ def anchor_rows(sid, facts, doc, reuse, when, cites=None):
     return out
 
 
+def root_rel(path):
+    """`path` (an argument of --file) as a path in the root: one already in the root, `<root>/<path>`, `kb/<root>/<path>`
+    from the repository, or an absolute one under the root. A path that names no file of the root is returned
+    normalized as given, so that its caller reports it."""
+    p = os.path.normpath(path).replace(os.sep, "/")
+    if ROOT is None or (not os.path.isabs(p) and os.path.isfile(root_path(p))):
+        return p
+    cands = [p[len(pre):] for pre in (f"kb/{ROOT.name}/", f"{ROOT.name}/") if p.startswith(pre)]
+    try:
+        under = os.path.relpath(p, ROOT.path).replace(os.sep, "/")
+        cands += [] if under == ".." or under.startswith("../") else [under]
+    except ValueError:  # another drive
+        pass
+    return next((c for c in cands if os.path.isfile(root_path(c))), p)
+
+
+def quote_for(quotes, line, sid):
+    """The quote given for the fact at `line` as cited from the source `sid`: its own row, else the one that names no
+    source (`quotes` is read_quotes' {(line, source id or ""): quote})."""
+    return quotes.get((line, sid)) or quotes.get((line, ""))
+
+
 def read_quotes(path, rel, facts):
-    """({fact line: quote}, problems) of a --quotes CSV (header `line,quote`) for the file `rel` (root-relative): each
-    line must be a tagged fact of the file and each quote at most QUOTE_WORDS words; `facts` is cited_facts()."""
+    """({(fact line, source id): quote}, problems) of a --quotes CSV (header `line,quote` or `line,source,quote`) for the
+    file `rel` (root-relative): each line must be a tagged fact of the file, each source one that fact cites (the
+    two-column form's source is "", every source the fact cites) and each quote at most QUOTE_WORDS words; `facts` is
+    cited_facts()."""
     out, bad = {}, []
-    lines = {line for fs in facts.values() for _k, r, line, _t in fs if r == rel}
+    cited = collections.defaultdict(set)  # {fact line: the source ids it cites}
+    for sid, fs in facts.items():
+        for _k, r, line, _t in fs:
+            if r == rel:
+                cited[line].add(sid)
     try:
         with open(path, encoding="utf-8-sig", newline="") as f:
             rows = list(csv.reader(f))
     except OSError as e:
         return {}, [f"--quotes {path}: {e.strerror or e}"]
-    if not rows or [c.strip().lower() for c in rows[0]] != ["line", "quote"]:
-        return {}, [f"--quotes {path}: the header must be `line,quote`"]
+    head = [c.strip().lower() for c in rows[0]] if rows else []
+    if head not in (["line", "quote"], ["line", "source", "quote"]):
+        return {}, [f"--quotes {path}: the header must be `line,quote` or `line,source,quote`"]
+    width = len(head)
     for n, r in enumerate(rows[1:], start=2):
         if not any(c.strip() for c in r):
             continue
-        if len(r) != 2 or not r[0].strip().isdigit():
-            bad.append(f"--quotes {path}:{n}: want `line,quote` (the fact's line number, then its quote)")
-        elif int(r[0]) not in lines:
-            bad.append(f"--quotes {path}:{n}: {rel}:{int(r[0])} is no tagged fact of the file")
-        elif len(r[1].split()) > QUOTE_WORDS:
-            bad.append(f"--quotes {path}:{n}: the quote of {rel}:{int(r[0])} is over {QUOTE_WORDS} words")
-        elif int(r[0]) in out:
-            bad.append(f"--quotes {path}:{n}: {rel}:{int(r[0])} is quoted twice")
+        if len(r) != width or not r[0].strip().isdigit():
+            bad.append(f"--quotes {path}:{n}: want `{','.join(head)}` (the fact's line number{', its source' if width == 3 else ''}, "
+                       "then its quote)")
+            continue
+        line, sid, quote = int(r[0]), (kbid.canonical_id(r[1].strip()) if width == 3 else ""), r[-1].strip()
+        if line not in cited:
+            bad.append(f"--quotes {path}:{n}: {rel}:{line} is no tagged fact of the file")
+        elif sid and sid not in cited[line]:
+            bad.append(f"--quotes {path}:{n}: {rel}:{line} cites no source {r[1].strip()}")
+        elif len(quote.split()) > QUOTE_WORDS:
+            bad.append(f"--quotes {path}:{n}: the quote of {rel}:{line} is over {QUOTE_WORDS} words")
+        elif (line, sid) in out:
+            bad.append(f"--quotes {path}:{n}: {rel}:{line}{' ' + sid if sid else ''} is quoted twice")
         else:
-            out[int(r[0])] = r[1].strip()
+            out[(line, sid)] = quote
     return out, bad
 
 
 def quote_rows(rows, facts, doc, reuse, quotes):
     """Anchors each fact the researcher quoted by its quote, in `rows` (anchor_rows' rows of `facts`, one source; changed
     in place), when the page holds it: the passage that holds the quote word for word, its terms those the fact shares with it (else
-    the quote's), and the quote kept as the anchor's `quote` where the source's reuse allows. A row whose quote the page
-    lacks, or whose terms come out empty, stays as it was. Returns ([fact lines anchored by their quote], [fact lines
-    whose quote the page lacks]); a page that is no text holds neither."""
+    the quote's), and the quote kept as the anchor's `quote` where the source's reuse allows. `quotes` is read_quotes':
+    a fact's quote of this row's source (quote_for). A row whose quote the page lacks, or whose terms come out empty,
+    stays as it was. Returns ([fact lines anchored by their quote], [fact lines whose quote the page lacks]); a page
+    that is no text holds neither."""
     if not quotes or doc is None or doc.get("error") or doc.get("status") != 200 or doc.get("text") is None:
         return [], []
     d, found, lost = Doc(doc["text"]), [], []
     for row, (key, _rel, line, text) in zip(rows, facts):
-        if line not in quotes:
+        quote = quote_for(quotes, line, row["source_id"])
+        if quote is None:
             continue
-        win = d.locate_quote(quotes[line])
+        win = d.locate_quote(quote)
         if win is not None:
             held = set().union(*d.terms[win[0]:win[0] + win[1]])
             order = lambda t: (-d.idf.get(t, 0.0), t)  # noqa: E731
-            terms = sorted(term_set(fact_text(text)) & held, key=order) or sorted(term_set(quotes[line]) & held, key=order)
+            terms = sorted(term_set(fact_text(text)) & held, key=order) or sorted(term_set(quote) & held, key=order)
             terms = [t for t in terms if not LEAKY.search(t)][:TERMS]
         if win is None or not terms:
             lost.append(line)
             continue
         row.update(status="located", heading=d.units[win[0]][0][:200], terms=";".join(terms), sha=sha(d.window(*win)),
-                   quote=quote_of(quotes[line], reuse))
+                   quote=quote_of(quote, reuse))
         found.append(line)
     return found, lost
+
+
+def propose_quote(d, fact, win):
+    """The quote of at most QUOTE_WORDS words that best holds `fact` in the window `win` of the Doc `d`: the run of words,
+    in the one unit of the window that shares most of the fact's term weight, that shares most of it; "" when the page
+    lacks a run that locate_quote finds again or the run looks like private data (LEAKY)."""
+    want = term_set(fact)
+    best = (0.0, "")
+    for _head, unit in d.units[win[0]:win[0] + win[1]]:
+        words = re.sub(r"[*_`]+", "", unit.translate(QUOTES)).split()
+        weight = [sum(d.idf.get(t, 0.0) for t in term_set(w) & want) for w in words]
+        for i in range(max(1, len(words) - QUOTE_WORDS + 1)):
+            span = words[i:i + QUOTE_WORDS]
+            score = sum(weight[i:i + QUOTE_WORDS]) - 1e-6 * i  # the first run among equals
+            if len(span) >= QUOTE_MIN_WORDS and score > best[0] + 1e-9:
+                best = (score, " ".join(span))
+    q = best[1]
+    return q if q and not LEAKY.search(q) and d.locate_quote(q) is not None else ""
+
+
+def cmd_propose(a, srcs, facts, anchors, rel):
+    """`anchor --file F --propose`: a `line,source,quote` CSV on stdout of the passage each cited page holds of each fact
+    of F that has no located anchor; what finds none is named on stderr. Writes no ledger and no state."""
+    cites = cite_counts(facts)
+    todo = {sid: [f for f in fs if f[1] == rel and (anchors.get((f[0], f[1], sid)) or {}).get("status") != "located"]
+            for sid, fs in facts.items() if sid in srcs}
+    ids = [i for i, fs in todo.items() if fs]
+    docs = fetch_all(ids, srcs, a.max_age, a.refetch)
+    got, n, none = [], 0, 0
+    for sid in sorted(ids, key=lambda s: kbid.sort_key(s) if kbid.is_source_id(s) else (9, 0, s)):
+        doc = docs.get(sid)
+        if doc is None or doc.get("error") or doc.get("status") != 200 or doc.get("text") is None:
+            for _k, _r, line, _t in todo[sid]:
+                print(f"no page text: {rel}:{line} {sid}", file=sys.stderr)
+                none += 1
+            continue
+        d = Doc(doc["text"])
+        for key, _r, line, text in sorted(todo[sid], key=lambda f: f[2]):
+            fact = fact_text(text)
+            win = d.locate(fact, cites.get((key, rel), 1))[0]
+            if win is None:  # below the anchoring cut: still the page's best window when it shares terms with the fact
+                best, _cover, _own, shared = d.score(fact)
+                win = best if best is not None and len(shared) >= PROPOSE_SHARED else None
+            quote = propose_quote(d, fact, win) if win is not None else ""
+            if quote:
+                got.append((line, sid, quote))
+                n += 1
+            else:
+                print(f"no passage: {rel}:{line} {sid}", file=sys.stderr)
+                none += 1
+    out = csv.writer(sys.stdout, lineterminator="\n")
+    out.writerow(["line", "source", "quote"])
+    out.writerows(sorted(got))
+    print(f"propose: sources={len(ids)} proposed={n} no_passage={none}; nothing written", file=sys.stderr)
+    return 0
 
 
 def cmd_anchor(a):
     srcs = sources()
     facts = cited_facts()
     quotes, rel = {}, None
+    a.file = [root_rel(f) for f in a.file]
+    propose = getattr(a, "propose", False)
+    if (getattr(a, "quotes", None) or propose) and len(a.file) != 1:
+        print(f"anchor: {'--propose' if propose else '--quotes'} needs exactly one --file", file=sys.stderr)
+        return 2
+    if propose and (getattr(a, "quotes", None) or a.topic or a.dir or a.source):
+        print("anchor: --propose takes one --file and no other selector or --quotes", file=sys.stderr)
+        return 2
+    if a.file:
+        rel = a.file[0]
+    if propose:
+        if not any(f[1] == rel for fs in facts.values() for f in fs):
+            print(f"anchor: {rel} holds no tagged fact", file=sys.stderr)
+            return 2
+        return cmd_propose(a, srcs, facts, read_anchors(), rel)
     if getattr(a, "quotes", None):
-        rel = os.path.normpath(a.file[0]).replace(os.sep, "/")
         quotes, bad = read_quotes(a.quotes, rel, facts)
         if bad:
             print("\n".join(bad), file=sys.stderr)
@@ -651,7 +763,7 @@ def cmd_anchor(a):
             row = anchors.get((f[0], f[1], sid))
             if row is not None and row["status"] in RETRY_STATUS:
                 retry.add(sid)
-            return row is None or row["status"] in RETRY_STATUS or (f[1] == rel and f[2] in quotes)
+            return row is None or row["status"] in RETRY_STATUS or (f[1] == rel and quote_for(quotes, f[2], sid) is not None)
         todo = {sid: [f for f in fs if f[1] in only and wanted(f, sid)] for sid, fs in facts.items()}
         ids = [i for i in ids if todo.get(i)]
     docs = fetch_all([i for i in ids if i not in retry], srcs, a.max_age, a.refetch)
@@ -664,7 +776,7 @@ def cmd_anchor(a):
         reuse = (srcs[sid].get("reuse") or "").strip()
         rows = anchor_rows(sid, todo[sid], docs.get(sid), reuse, when, cites)
         if quotes:
-            mine = [(i, f) for i, f in enumerate(todo[sid]) if f[1] == rel and f[2] in quotes]
+            mine = [(i, f) for i, f in enumerate(todo[sid]) if f[1] == rel and quote_for(quotes, f[2], sid) is not None]
             if mine:
                 found, lost = quote_rows([rows[i] for i, _ in mine], [f for _, f in mine], docs.get(sid), reuse, quotes)
                 counts["quote found"] += len(found)
@@ -2329,6 +2441,7 @@ def select_ids(a, srcs):
     """Source ids of fetch.py's selection flags (every source when none is given)."""
     import fetch
     fetch.KB = ROOT.path
+    a.file = [root_rel(f) for f in a.file]
     a.selected = bool(a.topic or a.dir or a.file or a.source)
     ns = argparse.Namespace(topic=a.topic, dir=a.dir, file=a.file, source=a.source, older_than=None)
     return fetch.select(ns, srcs, {})
@@ -2406,7 +2519,10 @@ def main():
     an.add_argument("--max-age", type=float, default=7, help="reuse cached documents up to DAYS old (default 7)")
     an.add_argument("--dry-run", action="store_true")
     an.add_argument("--quotes", metavar="CSV", help=f"the quote each new fact of the one --file rests on, at most {QUOTE_WORDS} "
-                                                     "words, as a CSV of `line,quote`")
+                                                     "words, as a CSV of `line,quote` or, for a fact that cites several sources, `line,source,quote`")
+    an.add_argument("--propose", action="store_true", help="print, for each fact of the one --file that holds no located anchor, the "
+                                                           "passage of each cited page that best holds it as a `line,source,quote` "
+                                                           "CSV line; writes nothing")
     sn =sub.add_parser("snapshot", help="write the normalized text of the root's live copy sources to _snapshots/")
     for p in (sn,):
         p.add_argument("--topic", action="append", default=[])
@@ -2465,8 +2581,10 @@ def main():
     except (KeyError, kbcommon.RootError):
         ap.error(f"--root {a.root}: no such root")
     kbcommon.KB = ROOT.path
-    if a.cmd == "anchor" and a.quotes and len(a.file) != 1:
-        ap.error("--quotes needs exactly one --file: its lines are that file's")
+    if a.cmd == "anchor" and (a.quotes or a.propose) and len(a.file) != 1:
+        ap.error(f"{'--quotes' if a.quotes else '--propose'} needs exactly one --file: its lines are that file's")
+    if a.cmd == "anchor" and a.propose and (a.quotes or a.topic or a.dir or a.source):
+        ap.error("--propose takes one --file and no other selector and no --quotes")
     if a.cmd == "calibrate" and a.what == "history" and not a.repo:
         ap.error("calibrate history needs --repo")
     if a.cmd == "review" and not a.judge and (a.dry_run or a.batch_size or a.max_budget_usd):
