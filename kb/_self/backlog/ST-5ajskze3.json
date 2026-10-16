@@ -2,7 +2,7 @@
   "id": "ST-5ajskze3",
   "kind": "story",
   "title": "Review sprint: Only critical components keep a test suite",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-noqsd4hj",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-noqsd4hj"
+  "evidence": {
+    "commit": "ecd8315c734b4377143d6df550b37319154dd844",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "230976ed1f9206cb"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "a42d0b6f3a6b51ee"
+      }
+    ]
+  }
 }
