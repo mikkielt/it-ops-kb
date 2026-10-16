@@ -2,7 +2,7 @@
   "id": "ST-xqqcu4zz",
   "kind": "story",
   "title": "repro run says which claude binary its instances start, so a PATH wrapper cannot add settings unseen",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
@@ -58,5 +58,6 @@
   "links": [
     "parked: SP-ccvfvoqj close"
   ],
-  "notes": "Plan 2026-10-15: the old check ran repro run --dry-run against the main checkout's _cache/bench-repro, host state that refuses today (an earlier run.json); the planted wrapper check runs the code path instead. Merges BG-vry4snnm (repro run does not require repro_bench.csv committed and unmodified), whose repro is the second check. Plan review 2026-10-15: the fourth check reads run's source for the sha256 record, a guard paired with the run part of the bundle that reads run.json. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0, 1 and 3 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Plan 2026-10-15: the old check ran repro run --dry-run against the main checkout's _cache/bench-repro, host state that refuses today (an earlier run.json); the planted wrapper check runs the code path instead. Merges BG-vry4snnm (repro run does not require repro_bench.csv committed and unmodified), whose repro is the second check. Plan review 2026-10-15: the fourth check reads run's source for the sha256 record, a guard paired with the run part of the bundle that reads run.json. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0, 1 and 3 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-r13"
 }
