@@ -77,6 +77,9 @@ TOKEN_COUNT = re.compile(
 # the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word (`API_TOKENS`) or a secret word
 # (`SECRET_TOKENS`, `PRIVATE_TOKENS`, `KEY_TOKENS`) among its parts is no count, so it stays in the text searched.
 TOKEN_IDENT = re.compile(r"\b(?:[A-Z0-9]+_)+TOKENS(?:_[A-Z0-9]+)*\b(?!\.\w)")
+# A credential word inside a matched phrase (`overlap of the API tokens`, `overlap of the deploy tokens`) keeps the
+# class, as one right before it does.
+CRED_INSIDE = re.compile(rf"\b(?:{CRED_WORDS}|deploy)\b", re.I)
 CRED_PART = re.compile(rf"^(?:{CRED_WORDS}|(?:secret|password|passphrase|private|key|credential|pat|ssh)s?)$", re.I)
 # `tokens` as one of the unit nouns of a list (`units, points, tokens, requests, calls`): a run of three or more list
 # elements that holds `tokens` and at least two other unit nouns, with no credential word right before `tokens`. A bare
@@ -109,7 +112,7 @@ def without_token_counts(text):
     text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
-    return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") else " ", text)
+    return TOKEN_COUNT.sub(lambda m: m.group(0) if m.group("cred") or CRED_INSIDE.search(m.group(0)) else " ", text)
 
 
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
