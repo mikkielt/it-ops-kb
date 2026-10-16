@@ -19,6 +19,23 @@
     "_tools/kg_sync.py",
     "kb/_self/git.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does selector_gate decide that a -k selector names only dropped test ids?",
+      "options": [
+        "exact names",
+        "substring match"
+      ],
+      "recommendation": "exact names",
+      "do": {
+        "exact names": "BG-ab2cnv6p",
+        "substring match": "BG-ab2cnv6p"
+      },
+      "class": "push"
+    }
+  ],
   "notes": "Premise 2026-10-16: land ST-wfrfy3mp stopped at kbgit.py sync --push, gate backlog.py selectors refused=7: done items of the active sprint SP-b36246xo (ST-qivswoxw, ST-duwzvvq7, ST-yb5x4x3d, BG-ijt2pwss, ST-2t73jxfk, ST-u2qvfapz, ST-wiv62ohc) select test_content_commit_reaches_main_and_a_red_gate_stops_the_next, test_lint_names_a_facts_line_with_a_second_bullet and test_lookup_eval_passes_on_the_live_kb, which ST-wfrfy3mp deletes under D-2tq4fhgs and records in _tools/test_ids_dropped.txt; set refuses repointing a done item's checks, and bl_land.rerun_done_checks already counts them gone. No test: the bug is proven by its repro (kb/_self/code.md, Checks and their tests).",
   "claimed_by": "orch-noqsd4hj"
 }
