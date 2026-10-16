@@ -126,7 +126,9 @@
         "the hook saves the token in _cache/coord_hook/<session id>.json, a 6-hour lease renewed at each claim and research start": "ST-x6mvfnmv",
         "the hook puts the token in the coord store under a second key": "ST-x6mvfnmv"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "the hook saves the token in _cache/coord_hook/<session id>.json, a 6-hour lease renewed at each claim and research start",
+      "by": "operator"
     },
     {
       "id": "g5",
