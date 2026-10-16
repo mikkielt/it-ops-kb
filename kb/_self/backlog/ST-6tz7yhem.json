@@ -40,7 +40,9 @@
         "end_orphans in bl_procs: SIGTERM, SIGKILL after 3 seconds; leaves foreign and hook-class processes": "ST-6tz7yhem",
         "end_orphans in bl_dispatch: SIGKILL at once": "ST-6tz7yhem"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "end_orphans in bl_procs: SIGTERM, SIGKILL after 3 seconds; leaves foreign and hook-class processes",
+      "by": "operator"
     }
   ],
   "links": [
