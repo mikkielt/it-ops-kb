@@ -1,0 +1,20 @@
+{
+  "id": "BG-6jwv6ag3",
+  "kind": "bug",
+  "title": "The coord hook writes the presence lease token to a world-readable file",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "SP-xo45jvbj review G8 (ST-x6mvfnmv, gate g4): _cache/coord_hook/<session id>.json holds the presence lease token with mode 0644 (coord_hook.py save), readable by any local user; it is gitignored and covers only the presence lease. Also noted, not in the repro: a copy of the hook outside a git repository makes <clone>/kb-coord/coord.sqlite, and settings.json allows all of mcp__kb, so coord_claim, coord_release and coord_post run without a prompt. The token file is written owner-only (0600).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.sqlite'))\nE.pop('KB_COORD_URL',None)\nH=os.path.abspath('.claude/hooks/coord_hook.py');T=os.path.abspath('_tools/coord.py')\ndef repo(n,b):\n    r=os.path.join(D,n);s.run(['git','init','-q','-b',b,r],check=True);s.run(['git','-C',r,'-c','user.name=x','-c','user.email=x@x','commit','-q','--allow-empty','-m','i'],check=True);return r\ndef hook(cwd,**p):\n    p.setdefault('cwd',cwd);return s.run([sys.executable,H],input=json.dumps(p),capture_output=True,text=True,env=E,cwd=cwd,timeout=60).stdout\ndef c(*a):return s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=300)\nr=repo('r','work/ST-abcd1234')\nhook(r,hook_event_name='SessionStart',session_id='repro-mode',source='startup')\nf=os.path.join('_cache','coord_hook','repro-mode.json');m=os.stat(f).st_mode&0o777 if os.path.exists(f) else None\nhook(r,hook_event_name='SessionEnd',session_id='repro-mode',reason='exit')\nprint('mode',oct(m) if m is not None else None);sys.exit(0 if m is not None and m&0o077==0 else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-xo45jvbj review"
+  ]
+}

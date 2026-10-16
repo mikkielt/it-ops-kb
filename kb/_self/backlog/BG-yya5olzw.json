@@ -1,0 +1,20 @@
+{
+  "id": "BG-yya5olzw",
+  "kind": "bug",
+  "title": "The kb MCP coord tools and the coord hook use different stores by default, so a session's coord_digest never sees the hook's intents",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "SP-xo45jvbj review G5 (ST-xwop6rv5, sprint goal): kb_mcp's coord tools use KB_COORD_STORE or the server and fail with 'no store' when neither is set, while coord_hook.py defaults to <git common dir>/kb-coord/coord.sqlite and the kb-research dedup step names that path only in prose; nothing sets KB_COORD_STORE for the MCP server. With no KB_COORD_STORE and no KB_COORD_URL, the kb MCP coord tools (and coord.py dedup as the skill runs it) use the same default store as the hook.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,sys\nfor k in ('KB_COORD_STORE','KB_COORD_URL','KB_COORD_KEY_FILE'):os.environ.pop(k,None)\nsys.path.insert(0,'_tools');import kb_mcp\nr=kb_mcp.handle({'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':'coord_digest','arguments':{'key':['ST-xo45jvbj'],'lines':3}}})\nres=r.get('result') or {};print(json.dumps(res)[:300]);sys.exit(0 if res.get('isError') is False else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-xo45jvbj review"
+  ]
+}

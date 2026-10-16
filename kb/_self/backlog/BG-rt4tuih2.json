@@ -1,0 +1,28 @@
+{
+  "id": "BG-rt4tuih2",
+  "kind": "bug",
+  "title": "A typed /kb-research never reaches the coord hook, since only PreToolUse on Skill is registered",
+  "status": "todo",
+  "sprint": "SP-xo45jvbj",
+  "priority": "P1",
+  "rank": 0,
+  "severity": "S1",
+  "goal": "SP-xo45jvbj review G2 (ST-x6mvfnmv goal clause 'at a /kb-research start'): a typed /skillname bypasses PreToolUse and fires UserPromptExpansion (kb/public/claude/hooks.md:155, :159), but .claude/settings.json registers coord_hook.py on PreToolUse Skill only and the hook handles no UserPromptExpansion payload, so the overlap is shown only when Claude calls the Skill tool. The hook is registered on UserPromptExpansion for kb-research and a UserPromptExpansion payload with command_name kb-research shows the overlapping sessions as the Skill path does.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.sqlite'))\nE.pop('KB_COORD_URL',None)\nH=os.path.abspath('.claude/hooks/coord_hook.py');T=os.path.abspath('_tools/coord.py')\ndef repo(n,b):\n    r=os.path.join(D,n);s.run(['git','init','-q','-b',b,r],check=True);s.run(['git','-C',r,'-c','user.name=x','-c','user.email=x@x','commit','-q','--allow-empty','-m','i'],check=True);return r\ndef hook(cwd,**p):\n    p.setdefault('cwd',cwd);return s.run([sys.executable,H],input=json.dumps(p),capture_output=True,text=True,env=E,cwd=cwd,timeout=60).stdout\ndef c(*a):return s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=300)\nr=repo('r','work/ST-abcd1234')\nc('post','--kind','intent','--field','session=repro-other','--field','item=ST-abcd1234')\nout=hook(r,hook_event_name='UserPromptExpansion',session_id='repro-typed',expansion_type='slash_command',command_name='kb-research',command_args='a question',command_source='project',prompt='/kb-research a question')\nhook(r,hook_event_name='SessionEnd',session_id='repro-typed',reason='exit')\nreg=json.load(open('.claude/settings.json')).get('hooks',{}).get('UserPromptExpansion',[])\nres=dict(typed_shows='repro-other' in out,registered='coord_hook.py' in json.dumps(reg))\nprint(res);sys.exit(0 if all(res.values()) else 1)"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    ".claude/settings.json",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-wh3wardm"
+  ]
+}

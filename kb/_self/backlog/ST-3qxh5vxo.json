@@ -101,7 +101,7 @@
       },
       "class": "querylog",
       "answer": "the same anchor topic and at least half of the smaller lack-set's terms",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
