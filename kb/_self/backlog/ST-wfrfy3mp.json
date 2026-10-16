@@ -2,7 +2,7 @@
   "id": "ST-wfrfy3mp",
   "kind": "story",
   "title": "The suite keeps only the 25 critical test ids and records every dropped one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-noqsd4hj",
   "priority": "P1",
   "rank": 2,
@@ -118,7 +118,8 @@
       },
       "class": "querylog",
       "answer": "Keep 25 ids in 9 files, drop 62: all of test_authority.py (4: gate classes and operator-only answers), the 2 ids of the file that tests the operator-only suite limits of tests.py, test_kbingest_guards.py (3: untrusted repository), test_leaks.py (3: the leak scan), the 3 ids of the end-to-end file of kbgit's projection command (what leaves for the public home, refused on a leak or a CI verdict that is not ok); in test_check_programs.py the program allowlist and drift's read-only forms (2), in test_redact.py the redactor, distill, the closed ops-row shape and the store check (4), in test_prepush_e2e.py the query-log history refusal and the lane refusal (2), in test_sync_e2e.py the red gate and the code-lane branch (2); test_backlog_portable.py, test_bench.py, test_forge.py, test_land_e2e.py and test_live_kb.py go whole (the lookup eval, check.py and build_index stay as landing and gate steps, not tests). Measured: the 25 pass in 24 s wall, 64 s summed, in a selection run on the same loaded host.",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "the keep answer names a timing measured on this host, not a host setup; a time figure varies with host load and no command proves it"
     }
   ],
   "notes": "Premise, run 2026-10-16 on 168a3a7591: perfcheck.py ids collects 87 ids in 14 files; a profiled whole run (tests.py --durations=0, load 5 to 7 on 14 cores) took 50.3 s wall, 298 s summed per test; the 25 kept ids alone (tests.py -k on their names) passed in 23.9 s wall, 64.5 s summed, on the same host; the last plain whole runs took 29.2 to 31.1 s. The keep list is check 1's set. Fitness (EP-gzr4mmkm) is measured by tool runs, not pytest ids: rag.py eval runs at every landing (land_eval) and check.py and build_index at the sync gate, so test_live_kb.py goes whole. Left as is: _tools/fixtures files, conftest.py's SLOW_FIRST names (conftest.py is a guarded runner file) and the dated run in kb/public/python/pytest.md:73 (a kb fact). Serial: one story, since every deletion writes _tools/test_ids_dropped.txt. Checks 2 (perfcheck.py ids --base 168a3a7591 --allow-removed) and 4 (the nine kept files' selection) pass before the work and are kept as guards: every id lost must be recorded as dropped, and the kept tests must still pass once their files lose the others. Referrers left as they are on purpose (comments, no reader that stops the work): _tools/bench_repro.py:52 (test_bench.py named in a comment), _tools/bl_check.py:1188 (a past sprint's example), _tools/conftest.py:46; kb/_self/backlog.md:220 is ST-jkcn4qs4's to reword. Guards that pass before the work: python3 _tools/perfcheck.py ids --base 168a3a7591ea3145a5f8800e9e052a0368231ea1 --allow-removed _tools/test_ids_dropped.txt passes before the work, and so does check 4, the selection run of the nine kept files."

@@ -2,7 +2,7 @@
   "id": "ST-jkcn4qs4",
   "kind": "story",
   "title": "The test rules say a change gets no test by default and only a critical component keeps one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-noqsd4hj",
   "priority": "P1",
   "rank": 1,
