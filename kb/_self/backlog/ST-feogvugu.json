@@ -1,0 +1,24 @@
+{
+  "id": "ST-feogvugu",
+  "kind": "story",
+  "title": "Planning plants the negated case of each scoring condition a goal words as a predicate (good with the answer, finished by all)",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 6 says that a goal clause naming a scoring predicate in words (good with the answer, an area every instance finished) gets a planted case for each negation before the start gate: a good verdict without the answer, a row none at the start, an instance that finished no area. SP-75hdeqld close: BG-qztas5u4's frozen_pass check planted no false good row and ST-vexo3oze's check read the word common in the source, and the review found both S2 (BG-iy5qjr4r, BG-dyly4qdf).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.index('6. Read the goal clauses'):];s=s[:s.index('## start')];sys.exit(0 if 'without the answer' in s and 'finished no area' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-75hdeqld close"
+  ]
+}

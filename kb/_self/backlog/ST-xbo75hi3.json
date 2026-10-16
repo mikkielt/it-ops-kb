@@ -1,0 +1,29 @@
+{
+  "id": "ST-xbo75hi3",
+  "kind": "story",
+  "title": "backlog.py dispatch starts its worker detached and prints the pid and log, so an orchestrator keeps no launcher script of its own",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py dispatch ID --detach starts the worker in a new session with stdin closed and its output in a log under the scratch directory, prints the pid and the log path and returns at once, so an orchestrator waits on the pid and needs no launcher of its own in a shared scratch directory. SP-75hdeqld close: the shared launcher an earlier orchestrator left was removed mid-run, and the next dispatch failed until a new one was written.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/backlog.py','dispatch','--help'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and '--detach' in p.stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "_tools/backlog.py",
+    "_tools/test_backlog_portable.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-75hdeqld close"
+  ]
+}
