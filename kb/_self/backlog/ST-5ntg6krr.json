@@ -7,7 +7,7 @@
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
   "rank": 2,
-  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research; (1) How does an organization distribute coordination hooks to every developer: server-managed settings, an organization plugin marketplace, allowManagedHooksOnly? (2) Is Anthropic prompt caching shared between different sessions or users of one organization or workspace? (3) What does Claude Tag give a team in a Slack channel that Projects, which are one person's, do not? (4) How does a team collect every member's Claude Code token and cost telemetry centrally, per user and per session?",
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research, leaving the anchor rows of source S1864 as on main; (1) How does an organization distribute coordination hooks to every developer: server-managed settings, an organization plugin marketplace, allowManagedHooksOnly? (2) Is Anthropic prompt caching shared between different sessions or users of one organization or workspace? (3) What does Claude Tag give a team in a Slack channel that Projects, which are one person's, do not? (4) How does a team collect every member's Claude Code token and cost telemetry centrally, per user and per session?",
   "checks": [
     {
       "run": [
@@ -20,7 +20,7 @@
   ],
   "clauses": [
     {
-      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research",
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research, leaving the anchor rows of source S1864 as on main",
       "check": 0
     },
     {
@@ -69,6 +69,6 @@
     "live: https://code.claude.com/docs/en/claude-projects",
     "kb: agents/agent-cost-governance.md:32 (purchase paths, OTel per user)"
   ],
-  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kept whole. Packs: question 1 good only for the plugin managed settings (claude/plugins.csv:75-80), not server-managed hook distribution; 2 a false good (its lines are about messaging, not caching); 3 weak (Slack); 4 good on cost baselines, not on per-user, per-session collection. Run 2026-10-16 (orchestrator): the goal's lead-in now ends in '; ' instead of ': ' so goal_questions packs question (1) alone (defect in draft ST-cho3qjfo; ST-cx7qhu3f hit it); the questions are unchanged.",
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kept whole. Packs: question 1 good only for the plugin managed settings (claude/plugins.csv:75-80), not server-managed hook distribution; 2 a false good (its lines are about messaging, not caching); 3 weak (Slack); 4 good on cost baselines, not on per-user, per-session collection. Run 2026-10-16 (orchestrator): the goal's lead-in now ends in '; ' instead of ': ' so goal_questions packs question (1) alone (defect in draft ST-cho3qjfo; ST-cx7qhu3f hit it); the questions are unchanged. Land 2026-10-16 (orchestrator): done refused the S1864 anchor row a re-anchor of agent-caching.md added and a later commit removed (ledger moves are read per commit); the lead-in names S1864 so the net-zero move is accounted for.",
   "claimed_by": "orch-r03"
 }
