@@ -31,8 +31,8 @@ from bench_core import FIELDS, HOME, RESULTS as BENCH_RESULTS, isolate, merge_ro
 
 ADDED = "kb/public/_retrieval/repro_bench.csv"  # the file whose first commit's parent is the default REV
 BRIEFS = "kb/public/_retrieval/repro_briefs.csv"  # one research brief per benchmark area
-BRIEF_COLUMNS = ("area", "scope", "sources", "depth", "coverage", "leave_out")
-BRIEF_FILLED = BRIEF_COLUMNS[:5]  # the cells a brief must fill: leave_out may be empty
+BRIEF_COLUMNS = ("area", "scope", "sources", "depth", "coverage", "leave_out", "paths")
+BRIEF_FILLED = BRIEF_COLUMNS[:5] + ("paths",)  # the cells a brief must fill: leave_out may be empty
 COVERAGES = ("present", "partial", "absent")
 QUESTIONS_PER_AREA = (3, 5)  # the frozen questions of one area, fewest and most
 EXPECT_COLUMNS = ("expect_re", "expect_text", "expect_paths")  # a question row holds at least one
@@ -325,8 +325,8 @@ def load_briefs(path=None):
 
 
 def brief_problems(rows):
-    """One line per defect of the brief rows: an empty area, scope, sources, depth or coverage cell, a coverage that is
-    none of COVERAGES, a duplicate area."""
+    """One line per defect of the brief rows: an empty area, scope, sources, depth, coverage or paths cell, a coverage that
+    is none of COVERAGES, a duplicate area."""
     out, seen = [], {}
     for n, r in enumerate(rows, 1):
         area = (r.get("area") or "").strip()
@@ -471,8 +471,11 @@ def area_prompt(brief):
              f"- Depth: {brief['depth'].strip()}", f"- Coverage of the kb today: {brief['coverage'].strip()}"]
     if brief.get("leave_out", "").strip():
         lines.append(f"- Leave out: {brief['leave_out'].strip()}")
+    paths = [p.strip() for p in brief.get("paths", "").split(";") if p.strip()]
     lines += ["", "Run /kb-research on this brief and finish it: nobody answers questions in this session.", "",
               "Rules of this session:",
+              f"- Write these articles, under `kb/public/`, and no other article: {', '.join(f'`{p}`' for p in paths)}. "
+              "Put a fact in the one of them whose subject it belongs to; add no article of another path.",
               "- Push what you wrote with `python3 _tools/kbgit.py sync --push` when the research is done.",
               f"- Add no row to {', '.join(f'`{p}`' for p in NO_ROWS[:2])}, and no doc2query row under `{NO_ROWS[2]}`.",
               f"- Read nothing under {' or '.join(f'`{p}`' for p in NO_READ)}, and nothing outside this clone."]

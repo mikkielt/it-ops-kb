@@ -46,6 +46,25 @@
     "BG-5qgk6hgb",
     "ST-qts5mtwi"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Paths column: 13 areas take the files instance 3's replay commits added or changed on main (own articles only; gentoo with gentoo-in-wsl, ssh-windows-estate with openssh-server.md, typescript without codebase-mapping.md); bash, age, sops, rust, python, cpython, uv and pip were not replayed, so what do they name?",
+      "options": [
+        "New paths split by the brief's scope (2 each, 4 for bash like zsh, uv extends uv-projects.md)",
+        "One article per unreplayed area",
+        "Leave the unreplayed areas' layout to the session"
+      ],
+      "recommendation": "New paths split by the brief's scope (2 each, 4 for bash like zsh, uv extends uv-projects.md)",
+      "do": {
+        "New paths split by the brief's scope (2 each, 4 for bash like zsh, uv extends uv-projects.md)": "ST-y4naelcs",
+        "One article per unreplayed area": "ST-y4naelcs",
+        "Leave the unreplayed areas' layout to the session": "ST-y4naelcs"
+      },
+      "class": "secrets"
+    }
+  ],
   "notes": "Premise (lessons analysis 1.4, 2.4): 13, 22 and 45 articles on the 14 common areas, the same path in all three for 4 areas only; kb-research SKILL.md:53-55 leaves the split open, so layout differed by instance and made claims unmatched. The paths column is semicolon-separated (domain/slug.md;...). The next run's start commit is the operator's call (the repeat-run draft): briefs name the target layout either way. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
   "claimed_by": "orch-r14"
 }
