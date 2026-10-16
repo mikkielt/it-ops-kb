@@ -256,9 +256,17 @@ class Gh:
         raise Refused(self.merge_refusal)
 
 
+def pinned_project(project):
+    """The project a read names: `forge_project` when set, else PROJECT (the one the remote's URL names). A workspace
+    with a `repositories` map has one project for each repository, so `forge_project` names none of them and the
+    URL's project is always the one read."""
+    return project if bl_base.repositories() else setting("forge_project") or project
+
+
 def target(root, run=None):
-    """The Target of the `forge` setting and the project: `forge_project`, else the integration remote's URL. Refused
-    when that remote names no forge project (a local path, no url) or names github.com while `forge` is gitlab."""
+    """The Target of the `forge` setting and the project: `forge_project`, else the integration remote's URL (always
+    the URL's, under a `repositories` map: each repository's checkout names its own project). Refused when that
+    remote names no forge project (a local path, no url) or names github.com while `forge` is gitlab."""
     import kbpublic
     from ql_deliver import origin_forge
     run = run or bl_base.run
@@ -272,7 +280,7 @@ def target(root, run=None):
     if named == "github" and forge != "github":
         raise Refused(f"the integration remote {remote} is on {host}, and the forge setting is {forge}: "
                       f"set \"forge\": \"github\" in backlog.json")
-    return Target(forge, host, setting("forge_project") or project)
+    return Target(forge, host, pinned_project(project))
 
 
 def arm(root, run=None):
@@ -283,13 +291,14 @@ def arm(root, run=None):
 
 
 def url_target(url):
-    """The Target of a remote's URL for a read: `forge_project`, else the project the url names; the forge is the
-    `forge` setting, except that a github.com url is GitHub while the setting is its default, so a project with no
-    setting reads the url's forge as the tools did before the settings."""
+    """The Target of a remote's URL for a read: `forge_project`, else the project the url names (always the url's under
+    a `repositories` map, as in `target`); the forge is
+    the `forge` setting, except that a github.com url is GitHub while the setting is its default, so a project with
+    no setting reads the url's forge as the tools did before the settings."""
     from ql_deliver import origin_forge
     named, host, project = origin_forge(url)
     return Target("github" if "github" in (named, setting("forge")) else "gitlab", host,
-                  setting("forge_project") or project)
+                  pinned_project(project))
 
 
 def url_arm(url, run):

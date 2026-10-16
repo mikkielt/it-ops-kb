@@ -3199,8 +3199,8 @@ def args_land(p):
 
 def merge_target(bl, iid):
     """(branch, project url) `backlog.py merge ID` merges: the item's own code/ID on the integration remote's forge
-    project (`bl_forge.target`: `forge_project`, else the remote's URL); Refused for an unknown item or a remote that
-    names no forge project."""
+    project (`bl_forge.target`: `forge_project`, else the remote's URL, which a `repositories` map always uses);
+    Refused for an unknown item or a remote that names no forge project."""
     import bl_forge
     need(bl, iid)
     t = bl_forge.target(bl.root, run)
