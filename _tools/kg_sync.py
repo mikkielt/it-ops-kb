@@ -14,6 +14,7 @@ import kbpublic
 import kg_lane
 import kg_lock
 import kg_merge
+import perfcheck
 from kg_base import BASELINE, KB, repo_roots
 from kg_merge import has_markers
 
@@ -582,12 +583,35 @@ def item_done(iid):
         return False
 
 
+SELECTOR_TESTS = re.compile(r"^\s*\S+\s+NONE\s+(?P<sel>.+?)\s(?:EP|ST|TK|SB|BG)-[a-z2-7]{8}\s[“(]")
+
+
+def dropped_test_names():
+    """The test names (the part after `::`) of the ids `_tools/test_ids_dropped.txt` records, read with perfcheck's reader."""
+    try:
+        text = Path(KB, perfcheck.DROPPED_FILE).read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    return {i.split("::")[-1] for _, ids in perfcheck.dropped_groups(text) for i in ids}
+
+
+def selects_only_dropped(ln):
+    """True when the `-k` selector of the NONE row LN names test ids and every one is recorded as dropped."""
+    m = SELECTOR_TESTS.match(ln)
+    if not m or "-k " not in m["sel"]:
+        return False
+    names = [n.strip() for n in m["sel"].split("-k ", 1)[1].split(" or ")]
+    dropped = dropped_test_names()
+    return all(n in dropped for n in names)
+
+
 def selector_gate(out):
     """(exit code, output) of the gate's `backlog.py selectors` run, whose own exit is always 0. A NONE row (the
     selector selects no test) of a done item refuses: `selectors` lists a done item only when its sprint is active, and
-    the sprint review reruns its check. A NONE row of any other item prints a warning (an open item's test may be yet to
-    write), and so does an `error` row (a failed collection: the suite run beside it fails on a test file that does not
-    collect)."""
+    the sprint review reruns its check. It warns instead when the `-k` selector names only test ids that
+    `_tools/test_ids_dropped.txt` records: a done item's check cannot be repointed and the review counts it gone. A NONE
+    row of any other item prints a warning (an open item's test may be yet to write), and so does an `error` row (a failed
+    collection: the suite run beside it fails on a test file that does not collect)."""
     refused, warned = [], []
     for ln in out.splitlines():
         m = SELECTOR_ROW.match(ln)
@@ -595,6 +619,9 @@ def selector_gate(out):
             continue
         if m["flag"] == "error":
             warned.append("warning: a selector failed to collect, not refused: " + ln.strip())
+        elif item_done(m["id"]) and selects_only_dropped(ln):
+            warned.append("warning: the check of a done item selects only test ids recorded in test_ids_dropped.txt, "
+                          "not refused: " + ln.strip())
         elif item_done(m["id"]):
             refused.append("refused: the check of a done item selects no test (restore the test or point the check at "
                            "one that exists): " + ln.strip())
