@@ -2,7 +2,7 @@
   "id": "ST-n2jnmvqx",
   "kind": "story",
   "title": "Review sprint: repro run gives every instance the same areas, budget, gate and starting state",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ysuvdxsn",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r13"
 }
