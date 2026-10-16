@@ -2,7 +2,7 @@
   "id": "ST-ei4ci5xm",
   "kind": "story",
   "title": "repro status finds an instance's commit on the real main by patch-id, not only by sha",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-bhzxxhub review"
   ],
-  "notes": "Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-r14"
 }
