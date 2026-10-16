@@ -10,10 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "_tools/test_backlog_portable.py",
-        "-k",
-        "start_warns_unnarrowed_research_goal"
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import bl_plan\nsys.exit(0 if 'research' in inspect.getsource(bl_plan.cmd_start) else 1)"
       ]
     }
   ],

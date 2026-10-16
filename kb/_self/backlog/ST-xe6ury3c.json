@@ -11,15 +11,13 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census_queue"
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import census\nsys.exit(1 if '*dirty' in inspect.getsource(census.run_commit) else 0)"
       ]
     }
   ],
   "touches": [
     "_tools/census.py",
-    "_tools/test_redact.py",
     "kb/_self/tools.md"
   ],
   "links": [

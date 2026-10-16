@@ -11,15 +11,13 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census_queue"
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import census\ns=inspect.getsource(census.cmd_finish)\nsys.exit(1 if 'if code == 0 and not a.dry_run:\\n        print(\"for the report' in s else 0)"
       ]
     }
   ],
   "touches": [
-    "_tools/census.py",
-    "_tools/test_redact.py"
+    "_tools/census.py"
   ],
   "links": [
     "parked: SP-uwkr7iyl review"

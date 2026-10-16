@@ -11,17 +11,15 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census_queue"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import census\nprint(sorted(census.PHASES));sys.exit(0 if 'apply' in census.PHASES else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/census.py",
     "_tools/ql_capture.py",
-    "kb/_self/querylog.md",
-    "_tools/test_redact.py"
+    "kb/_self/querylog.md"
   ],
   "links": [
     "parked: SP-uwkr7iyl review"

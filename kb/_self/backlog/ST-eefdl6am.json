@@ -6,7 +6,7 @@
   "sprint": "SP-ysuvdxsn",
   "priority": "P2",
   "rank": 0,
-  "goal": "repro run gives instance n the briefs' areas in the order bench_repro.area_order(areas, n, count) returns, the list rotated by (n-1) times len(areas)//count, and records each instance's order in run.json; it starts an area only when bench_repro.may_start(spent, area_usd, instance_usd) holds, the recorded spend plus --area-usd within --instance-usd, so no instance passes its cap; repro run --dry-run prints each instance's order and the areas its cap leaves out; the run part of test_bench.py proves each on a planted run (no new test id)",
+  "goal": "repro run gives instance n the briefs' areas in the order bench_repro.area_order(areas, n, count) returns, the list rotated by (n-1) times len(areas)//count, and records each instance's order in run.json; it starts an area only when bench_repro.may_start(spent, area_usd, instance_usd) holds, the recorded spend plus --area-usd within --instance-usd, so no instance passes its cap; repro run --dry-run prints each instance's order and the areas its cap leaves out",
   "checks": [
     {
       "run": [
@@ -25,9 +25,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "test_bench_price_weights_and_tier_and_freshness_rows"
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import bench_repro as b\ns=inspect.getsource(b)\nsys.exit(0 if 'area_order(' in s and 'may_start(' in s and 'leaves out' in s else 1)"
       ]
     }
   ],
@@ -47,15 +46,10 @@
     {
       "clause": "repro run --dry-run prints each instance's order and the areas its cap leaves out",
       "check": 2
-    },
-    {
-      "clause": "the run part of test_bench.py proves each on a planted run (no new test id)",
-      "check": 2
     }
   ],
   "touches": [
     "_tools/bench_repro.py",
-    "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
   "depends_on": [

@@ -6,7 +6,7 @@
   "sprint": "SP-a3w7xdij",
   "priority": "P2",
   "rank": 0,
-  "goal": "repro_briefs.csv gains a paths column naming each area's target article paths (domain/slug, the split included), filled for every area from the layout main holds after the replay of instance 3, else from the brief's scope; bench_repro.brief_problems refuses a brief with no paths; area_prompt tells the session to write those articles and no others; the questions and briefs part of test_bench.py proves the refusal and the prompt (no new test id)",
+  "goal": "repro_briefs.csv gains a paths column naming each area's target article paths (domain/slug, the split included), filled for every area from the layout main holds after the replay of instance 3, else from the brief's scope; bench_repro.brief_problems refuses a brief with no paths; area_prompt tells the session to write those articles and no others",
   "checks": [
     {
       "run": [
@@ -20,14 +20,6 @@
         "python3",
         "-c",
         "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=b.load_briefs()[0];p=b.area_prompt(r);sys.exit(0 if r.get('paths') and r['paths'].split(';')[0].strip() in p else 1)"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "test_bench_price_weights_and_tier_and_freshness_rows"
       ]
     }
   ],
@@ -43,15 +35,10 @@
     {
       "clause": "area_prompt tells the session to write those articles and no others",
       "check": 1
-    },
-    {
-      "clause": "the questions and briefs part of test_bench.py proves the refusal and the prompt (no new test id)",
-      "check": 2
     }
   ],
   "touches": [
     "_tools/bench_repro.py",
-    "_tools/test_bench.py",
     "kb/_self/tools.md",
     "kb/public/_retrieval/repro_briefs.csv"
   ],

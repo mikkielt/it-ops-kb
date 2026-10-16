@@ -11,15 +11,13 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import factdiff as f\nn=f.JUDGE_SCHEMA['properties']['verdicts'].get('minItems',0);print(n);sys.exit(0 if n>=1 else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/factdiff.py",
-    "_tools/test_redact.py",
     "kb/_self/tools.md"
   ],
   "links": [

@@ -1,0 +1,22 @@
+{
+  "id": "SP-noqsd4hj",
+  "kind": "sprint",
+  "title": "Only critical components keep a test suite",
+  "status": "planned",
+  "goal": "the test rules say a change gets no test by default and a test exists only for a critical component; the suite keeps only the 25 critical test ids in 9 files and records every dropped id",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
+    }
+  ]
+}

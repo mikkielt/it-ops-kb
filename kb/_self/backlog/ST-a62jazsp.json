@@ -11,15 +11,13 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "factdiff_anchor"
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/factdiff.py','anchors','--help'],capture_output=True,text=True)\nsys.exit(0 if p.returncode==0 and '--min' in p.stdout else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/factdiff.py",
-    "_tools/test_redact.py",
     "kb/_self/tools.md"
   ],
   "links": [
