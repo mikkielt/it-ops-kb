@@ -2,7 +2,7 @@
   "id": "ST-jkcn4qs4",
   "kind": "story",
   "title": "The test rules say a change gets no test by default and only a critical component keeps one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-noqsd4hj",
   "priority": "P1",
   "rank": 1,
@@ -105,5 +105,47 @@
     }
   ],
   "notes": "Policy recorded 2026-10-16: gate policy answered by the operator, decision D-2tq4fhgs. Today's rules (premise): kb/_self/code.md 'Checks and their tests' allows four kinds ('A test is written only for ...'); skills/sprint plan step 2 asks for 'the test file it extends' in touches and step 6 for 'a test selection it extends'; skills/item step 6 repeats the four kinds; skills/sprint review step 4 and kb/_self/backlog.md give the land e2e test as a reason, which goes with ST-wfrfy3mp's deletion. The ceiling rules stay word for word in force: no raise, a ceiling-class gate is the operator's own terminal. Rows of kb/_self/_retrieval/lookup_eval.csv that expect the old phrase (SE-021 'A test is written only for', SQ-four-kinds-test-may-item-add) are reworded to the new rule, not deleted. Check 4 (rag.py eval --root _self) passes before the work and is kept as a guard: the reworded rows must still pass after the rules change. The same policy was recorded earlier on 2026-10-16 as D-6kei5o2z by the orchestrating session (context article:_self/code#Checks and their tests); D-2tq4fhgs is this gate's record of it. The rewritten section may cite either.",
-  "claimed_by": "orch-noqsd4hj"
+  "evidence": {
+    "commit": "cb0e2d0952c6276504e23f68e76567f609c2f939",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt=open('kb/_self/code.md',encoding='utf-8').read()\ns=' '.join(t.split('## Checks and their tests')[1].split('\\n## ')[0].split())\nneed=['A change gets no test by default','A test exists only for a critical component','user feedback','deleting or merging tests','an agent never raises it']\nmiss=[n for n in need if n not in s]+(['old wording: A test is written only for'] if 'A test is written only for' in s else [])\nprint('missing:',miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "390dc10031409c71"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nr=lambda p:open(p,encoding='utf-8').read()\nsec=lambda t,a,b:t.split(a,1)[1].split(b,1)[0]\nsk=r('skills/sprint/SKILL.md');bm=r('kb/_self/backlog.md')\nbad=[]\nif 'the test file it extends' in sec(sk,'## plan','## start'):bad.append('sprint plan: the test file it extends')\nif 'land e2e test' in sec(sk,'## review','## close'):bad.append('sprint review: land e2e test')\nif 'the test file it extends' in sec(bm,'## Sprints','\\n## ') or 'land e2e test' in sec(bm,'## Sprints','\\n## '):bad.append('backlog.md Sprints: old test rule')\nfor p in ('skills/item/SKILL.md','agents/worker.md','kb/_self/backlog.md'):\n  if 'critical component' not in r(p):bad.append(p+': no critical component')\nif 'critical component' not in sec(r('kb/_self/maintaining.md'),'## Conduct for changes','\\n## '):bad.append('maintaining.md Conduct: no critical component')\nif 'user feedback' not in r('skills/backlog/SKILL.md'):bad.append('skills/backlog: no user feedback')\nif 'A test is written only for' in r('skills/item/SKILL.md'):bad.append('skills/item: old wording')\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/rag.py','pack','--root','_self','may a worker add a test for a component that is not critical'],capture_output=True,text=True,encoding='utf-8')\no=p.stdout;ok=p.returncode==0 and o.startswith('coverage: good') and 'critical component' in o\nprint(o[:600]);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "62d1a521092c519d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/rag.py",
+          "eval",
+          "--root",
+          "_self"
+        ],
+        "exit": 0,
+        "sha256": "eb22b70340adbbd7"
+      }
+    ]
+  }
 }
