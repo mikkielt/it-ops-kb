@@ -37,7 +37,9 @@
         "held-field": "BG-yq2ojoiy",
         "covered": "BG-yq2ojoiy"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "held-field",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-r03"
