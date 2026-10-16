@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "gate_class_source_pin_not_push"
+        "-c",
+        "\nimport sys\nsys.path.insert(0,'_tools')\nimport bl_authority as a\nitem=dict(touches=['kb/public/claude/cross-session-messaging.md'])\ng=dict(id='g3',question='Where does the Projects github.com caveat go in the DER of the article?',options=['a sentence inside the existing DER','a separate DER line after it'])\npin=dict(id='g1',question='Which form pins the source row S-vt5s6nsz?',options=['public projection hash on github.com','private hash on gitlab.com'])\nreal=dict(id='g2',question='Push the branch to github.com now?',options=['git push origin main to github.com','hold'])\nc=[a.derived_class(item,x) for x in (g,pin,real)]\nprint('caveat placement, source pin, real push:',c)\nsys.exit(0 if c[0]!='push' and c[1]!='push' and c[2]=='push' else 1)\n"
       ]
     }
   ],

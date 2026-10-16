@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "check_warns_brief_clause_without_dispatch_touch"
+        "-c",
+        "import sys, os, json, tempfile, types, io, contextlib, subprocess\nsys.path.insert(0, '_tools')\nimport bl_base, bl_check, bl_land\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, '_tools'))\nos.makedirs(os.path.join(d, 'kb', '_self', 'backlog'))\nfor n in ('bl_plan.py', 'bl_dispatch.py'):\n    open(os.path.join(d, '_tools', n), 'w').write('x = 1' + chr(10))\nsubprocess.run(['git', '-C', d, 'add', '.'], check=True)\ndef put(it):\n    open(os.path.join(d, 'kb', '_self', 'backlog', it['id'] + '.json'), 'w').write(json.dumps(it))\nbad = [dict(run=['python3', '-c', 'import sys; sys.exit(1)'])]\nput(dict(id='SP-aaaaaaaa', kind='sprint', title='planted sprint', status='planned', goal='planted'))\ndef story(i, goal, touches):\n    put(dict(id=i, kind='story', title='planted ' + i, status='draft', priority='P3', sprint='SP-aaaaaaaa', goal=goal, touches=touches, checks=bad))\nstory('ST-bbbbbbbb', 'The worker brief names the open items that its sibling holds', ['_tools/bl_plan.py'])\nstory('ST-cccccccc', 'The worker brief names the open items that its sibling holds', ['_tools/bl_plan.py', '_tools/bl_dispatch.py'])\nstory('ST-dddddddd', 'The planner prints one more line of text', ['_tools/bl_plan.py'])\nbl = bl_base.Backlog(d)\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_check.cmd_check(bl, types.SimpleNamespace())\n    bl_land.cmd_precheck(bl, types.SimpleNamespace(sprint='SP-aaaaaaaa'))\nlines = [l for l in buf.getvalue().splitlines() if 'bl_dispatch' in l]\nprint(lines)\nsys.exit(0 if any('ST-bbbbbbbb' in l for l in lines) and not any(x in l for l in lines for x in ('ST-cccccccc', 'ST-dddddddd')) else 1)\n"
       ]
     }
   ],

@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-enudabdr close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Planning rule: detect a story adding a _self rule that names a tool step and require a check that finds it; no named function, trigger wording or output, a planted input would encode a guess"
 }

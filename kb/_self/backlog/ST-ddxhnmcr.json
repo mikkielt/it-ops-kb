@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "land_names_rebase_for_a_dirty_diverged_checkout"
+        "-c",
+        "import sys, subprocess, tempfile, os\nsys.path.insert(0, '_tools')\nimport bl_land\nd = tempfile.mkdtemp()\ndef sh(cwd, *a):\n    subprocess.run(['git', '-c', 'user.name=t', '-c', 'user.email=t@example.com'] + list(a), cwd=cwd, check=True, capture_output=True)\norigin = os.path.join(d, 'origin.git')\nsh(d, 'init', '-q', '--bare', '-b', 'main', origin)\na = os.path.join(d, 'a')\nsh(d, 'clone', '-q', origin, a)\nopen(os.path.join(a, 'f.txt'), 'w').write('1')\nsh(a, 'add', '.'); sh(a, 'commit', '-qm', 'one'); sh(a, 'push', '-q', 'origin', 'HEAD:main')\nb = os.path.join(d, 'b')\nsh(d, 'clone', '-q', origin, b)\nos.makedirs(os.path.join(b, 'kb', '_self', 'backlog'))\nopen(os.path.join(b, 'kb', '_self', 'backlog', 'ST-aaaaaaaa.json'), 'w').write('x')\nsh(b, 'add', '.'); sh(b, 'commit', '-qm', 'local item')\nopen(os.path.join(a, 'g.txt'), 'w').write('2')\nsh(a, 'add', '.'); sh(a, 'commit', '-qm', 'two'); sh(a, 'push', '-q', 'origin', 'HEAD:main')\nsh(b, 'fetch', '-q', 'origin')\nopen(os.path.join(b, 'dirty.txt'), 'w').write('d')\nout = []\nbl_land.say = lambda s='': out.append(s)\nbl_land.fast_forward_start(b, 'origin', 'refs/heads/main', 'origin/main')\ntext = ' '.join(out)\nprint(text)\nsys.exit(0 if 'git rebase origin/main' in text and 'merge --ff-only' not in text else 1)\n"
       ]
     }
   ],

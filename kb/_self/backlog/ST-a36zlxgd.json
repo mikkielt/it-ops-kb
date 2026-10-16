@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "commit_msg_kb_work_separator_named"
+        "-c",
+        "import sys, tempfile, subprocess, pathlib\nm = pathlib.Path(tempfile.mkdtemp())/'MSG'\nm.write_text('chore(backlog): confirm gates\\n\\nKB-Work: ST-72mywrpg ST-72vmvh2g\\n')\nr = subprocess.run([sys.executable,'_tools/kbgit.py','hook','commit-msg',str(m)],capture_output=True,text=True)\nerr = r.stderr\nsep = chr(39) + ', ' + chr(39)\nsys.exit(0 if r.returncode == 0 and 'KB-Work' in err and 'separated' in err and sep in err else 1)\n"
       ]
     }
   ],

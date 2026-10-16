@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "dispatch_record_failure_still_waits_for_worker"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib, argparse\nsys.path.insert(0, '_tools')\nimport bl_dispatch as bd, bl_base\nfrom bl_base import Backlog, Refused\nt = pathlib.Path(tempfile.mkdtemp()); d = t/bl_base.rel_dir(); d.mkdir(parents=True)\n(d/'ST-aaaaaaa2.json').write_text(json.dumps({'id':'ST-aaaaaaa2','kind':'story','title':'t','status':'doing','claimed_by':'x','priority':'P3','rank':0,'goal':'g'}))\nbl = Backlog(t)\nprocs = []\nreal_popen = subprocess.Popen\nclass Spy(real_popen):\n    def __init__(self, *a, **k):\n        super().__init__(*a, **k); procs.append(self)\nbd.subprocess.Popen = Spy\nbd.claude_argv = lambda bl, iid, model, turns: [sys.executable, '-c', 'import time; time.sleep(4)']\nbd.compose_brief = lambda *a, **k: 'brief'\nbd.repo_defaults = lambda *a, **k: {}\nbd.repo_checkouts = lambda *a, **k: []\nbd.make_worktree = lambda root, iid, wt: pathlib.Path(wt).mkdir(parents=True, exist_ok=True)\nbd.stage_copies = lambda *a, **k: None\nbd.worktree_path = lambda root, iid: t/'wt'\nbd.scratch_path = lambda root, iid: t/'scratch'\nbd.bl_procs.end_orphans = lambda where: []\nbd.rows_line = lambda *a, **k: ''\ndef boom(*a, **k): raise Refused('ledger lock refused')\nbd.record_worker = boom\na = argparse.Namespace(id='ST-aaaaaaa2', max_turns=1, model=None, dry_run=False, known=[], probe=False, known_suite=None)\ntry: bd.cmd_dispatch(bl, a)\nexcept Exception: pass\nalive = bool(procs) and procs[0].poll() is None\nfor p in procs:\n    if p.poll() is None: p.kill(); p.wait()\nsys.exit(1 if alive or not procs else 0)\n"
       ]
     }
   ],

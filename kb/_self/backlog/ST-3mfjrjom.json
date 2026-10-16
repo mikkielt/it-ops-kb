@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "commit_msg_refuses_planning_kb_work"
+        "-c",
+        "\nimport subprocess, sys, tempfile, os\ntool = os.path.abspath(\"_tools/kbgit.py\")\nd = tempfile.mkdtemp()\ndef g(*a):\n    return subprocess.run([\"git\", *a], cwd=d, capture_output=True, text=True)\ng(\"init\", \"-q\"); g(\"config\", \"user.email\", \"a@example.com\"); g(\"config\", \"user.name\", \"n\")\nopen(os.path.join(d, \"f.txt\"), \"w\").write(\"x\\n\"); g(\"add\", \"f.txt\"); g(\"commit\", \"-q\", \"-m\", \"init\", \"--no-verify\")\nopen(os.path.join(d, \"f.txt\"), \"w\").write(\"y\\n\"); g(\"add\", \"f.txt\")\ndef hook(msg):\n    mf = os.path.join(d, \"MSG\")\n    open(mf, \"w\").write(msg)\n    p = subprocess.run([sys.executable, tool, \"hook\", \"commit-msg\", mf], cwd=d, capture_output=True, text=True)\n    assert \"Traceback\" not in p.stderr, p.stderr\n    return p\nbad = hook(\"chore(backlog): plan\\n\\nKB-Work: ST-zzzzzzzz\\n\")\nok = hook(\"chore: edit\\n\\nbody\\n\")\nrefused = bad.returncode != 0 and \"refuses this commit\" in bad.stderr\nsys.exit(0 if refused and ok.returncode == 0 else 1)\n"
       ]
     }
   ],

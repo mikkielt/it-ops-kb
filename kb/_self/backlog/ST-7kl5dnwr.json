@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_goal_leadin"
+        "-c",
+        "import sys, os, json, tempfile, subprocess, pathlib\nENV = dict(os.environ, GIT_AUTHOR_NAME='a', GIT_AUTHOR_EMAIL='a@example.com', GIT_COMMITTER_NAME='a', GIT_COMMITTER_EMAIL='a@example.com')\ndef run(goal):\n    t = pathlib.Path(tempfile.mkdtemp()); d = t/'_backlog'; d.mkdir(parents=True)\n    sp = {'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'planned','goal':'g'}\n    it = {'id':'ST-cccccccc','kind':'story','title':'research','status':'draft','sprint':'SP-aaaaaaaa','priority':'P1','rank':0,\n          'goal_research':True,'goal':goal,'checks':[{'run':['python3','-c','import sys; sys.exit(1)']}]}\n    (d/'SP-aaaaaaaa.json').write_text(json.dumps(sp)); (d/'ST-cccccccc.json').write_text(json.dumps(it))\n    for a in (['init','-q','-b','main'],['add','-A'],['commit','-q','-m','plan']):\n        subprocess.run(['git',*a],cwd=t,env=ENV,check=True,capture_output=True)\n    r = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'precheck','SP-aaaaaaaa'],capture_output=True,text=True)\n    return [l for l in r.stdout.splitlines() if l.startswith('warning:') and 'ST-cccccccc' in l]\nlong = 'Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) Which Claude Code parallel-work option isolates a session?'\nshort = 'Research with the kb tools first through /kb-research: (1) Which Claude Code option isolates a session?'\na = run(long); b = run(short)\nsys.exit(0 if a and not b else 1)\n"
       ]
     }
   ],

@@ -18,5 +18,6 @@
   ],
   "links": [
     "parked: SP-7nv2ffr2 close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Restore command unnamed: git restore/checkout are not allowed or denied in .claude/settings.json (operator-only), backlog.py has no restore. Design choice, nothing to drive."
 }

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "gate_class_touch_path_article"
+        "-c",
+        "\nimport sys\nsys.path.insert(0,'_tools')\nimport bl_authority as a\nitem=dict(touches=['kb/public/auth/shamir-secret-sharing.md'])\ng=dict(id='g1',question='Which anchor rows of the article does the fix keep: the old rows or the reworded ones?',options=['keep the old rows','replace them with the reworded rows'])\nbad=dict(id='g2',question='Should the worker read the credential file .env to fetch the value?',options=['read it','leave it'])\nc1,c2=a.derived_class(item,g),a.derived_class(item,bad)\nprint('wording choice on a secrets-named article:',c1,'| credential file gate:',c2)\nsys.exit(0 if c1=='design' and c2=='secrets' else 1)\n"
       ]
     }
   ],

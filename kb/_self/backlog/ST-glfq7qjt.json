@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "cost_host_project"
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_base, ql_distill\nbl_base._LOADED[:] = [(dict(item_dir='_backlog'), dict(), None, [])]\nprint(ql_distill.BACKLOG_REL, bl_base.rel_dir())\nsys.exit(0 if ql_distill.BACKLOG_REL == bl_base.rel_dir() else 1)\n"
       ]
     }
   ],

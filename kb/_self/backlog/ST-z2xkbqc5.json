@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_content_check_reads_clause"
+        "-c",
+        "\nimport re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read()\nok=False\nfor m in re.finditer(r'reword\\w*\\s+fact.*?overclaim|overclaim.*?reword\\w*\\s+fact',t,re.S|re.I):\n    ok = ok or m.end()-m.start()<600\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

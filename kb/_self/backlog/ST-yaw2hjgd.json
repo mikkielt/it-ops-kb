@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "stage_back_skips_copy_equal_to_base"
+        "-c",
+        "\nimport sys,tempfile,json,hashlib\nfrom pathlib import Path\nsys.path.insert(0,'_tools')\nimport bl_dispatch as d\nT=Path(tempfile.mkdtemp()); wt=T/'wt'; scratch=T/'scratch'\np1,p2='.claude/skills/a/SKILL.md','.claude/skills/b/SKILL.md'\nold=dict()\nold[p1]=b'old a\\n'; old[p2]=b'old b\\n'\nbases=dict()\nfor p,b in old.items():\n    (wt/p).parent.mkdir(parents=True,exist_ok=True); (wt/p).write_bytes(b)\n    bases[p]=hashlib.sha256(b).hexdigest()\n    c=scratch/d.STAGING/p; c.parent.mkdir(parents=True,exist_ok=True)\n    c.write_bytes(b if p==p1 else b'edited b\\n')\n(scratch/d.BASES_NAME).write_text(json.dumps(bases))\n(wt/p1).write_bytes(b'moved on a\\n')\nd.staged_files=lambda bl,iid:[p1,p2]\nd.staged_places=lambda bl,iid,w,p:(w,w/p,None)\ntry:\n    got=d.stage_back_copies(None,'ST-x',wt,scratch)\nexcept d.Refused as e:\n    print('refused:',str(e)[:200]); sys.exit(1)\nprint([g[0] for g in got])\nsys.exit(0 if [g[0] for g in got]==[p2] else 1)\n"
       ]
     }
   ],

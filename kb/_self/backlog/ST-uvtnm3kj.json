@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "held_ref_without_item_dir"
+        "-c",
+        "\nimport os, subprocess, sys, tempfile\nt = tempfile.mkdtemp()\ndef g(*a):\n    return subprocess.run(['git', *a], cwd=t, capture_output=True, text=True, check=True).stdout\ng('init', '-q', '-b', 'main'); g('config', 'user.email', 'a@b.c'); g('config', 'user.name', 'n')\nopen(os.path.join(t, 'README.md'), 'w').write('x\\n'); g('add', '-A'); g('commit', '-q', '-m', 'first')\ntool = os.path.abspath('_tools/backlog.py')\ndef held(ref):\n    return subprocess.run([sys.executable, tool, '--root', t, 'held', '--ref', ref], capture_output=True, text=True, cwd=t, timeout=25)\nassert held('no-such-ref').returncode == 2, 'a ref git cannot read still exits 2'\nr = held('HEAD')\ntext = (r.stdout + r.stderr).lower()\nassert r.returncode == 0, ('exit', r.returncode, text[-200:])\nassert 'no item' in text and 'fatal' not in text, text[-200:]\n"
       ]
     }
   ],

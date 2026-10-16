@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_maps_gate_answer_constraints"
+        "-c",
+        "import sys, tempfile, json, subprocess, os\nsys.path.insert(0, \"_tools\")\nimport bl_base, bl_dispatch\nd = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", d], check=True)\nbl_base.load_settings(d)\nos.makedirs(os.path.join(d, bl_base.rel_dir()), exist_ok=True)\ngate = {\"id\": \"g1\", \"question\": \"which list does the rule read\", \"options\": [\"whole text\", \"one option\"], \"kind\": \"blocking\", \"class\": \"design\", \"answer\": \"one option only: the unit-noun list is read in a single option\", \"by\": \"operator\"}\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"a rule\", \"status\": \"doing\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"the rule is applied\", \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"_tools/bl_authority.py\"], \"gates\": [gate]}\nopen(os.path.join(d, bl_base.rel_dir(), \"ST-aaaaaaaa.json\"), \"w\").write(json.dumps(item))\nbl = bl_base.Backlog(d)\nbl_dispatch.rules_section = lambda bl, iid: [\"x\"]\nt = bl_dispatch.compose_brief(bl, \"ST-aaaaaaaa\")\nrules = t.split(\"## Fixed rules\")[1].split(\"## Rules of the docs\")[0].lower()\nok = \"single option\" in t and \"answered gate\" in rules and \"constraint\" in rules\nprint(\"answer in brief and rules map its constraints:\", ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

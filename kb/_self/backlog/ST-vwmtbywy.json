@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_failure_memory_paths"
+        "-c",
+        "\nimport re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read()\nw=r'(failure memory|remembers? a host|down window|breaker)'\nok=False\nfor m in re.finditer(w+r'.*?request path|request path.*?'+w,t,re.S|re.I):\n    if m.end()-m.start()<900 and re.search(r'timeout|connect refused',t[m.start():m.end()+400],re.I):\n        ok=True\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

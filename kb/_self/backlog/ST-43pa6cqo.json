@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_warns_check_stubs_changed_function"
+        "-c",
+        "\nimport subprocess, sys, tempfile, os, re\ntool = os.path.abspath(\"_tools/backlog.py\")\nroot = tempfile.mkdtemp()\ndef run(*a, prog=None):\n    return subprocess.run(prog or [sys.executable, tool, \"--root\", root, *a], cwd=root, capture_output=True, text=True)\nrun(prog=[\"git\", \"init\", \"-q\"])\nrun(prog=[\"git\", \"config\", \"user.email\", \"a@example.com\"])\nrun(prog=[\"git\", \"config\", \"user.name\", \"n\"])\nos.makedirs(os.path.join(root, \"_tools\"))\nopen(os.path.join(root, \"_tools\", \"test_a.py\"), \"w\").write(\n    \"import mod\\n\\ndef test_stubbed_pack(monkeypatch):\\n    monkeypatch.setattr(mod, 'scenario_pack', lambda *a: 1)\\n    assert mod.scenario_pack() == 1\\n\")\nopen(os.path.join(root, \"_tools\", \"mod.py\"), \"w\").write(\"def scenario_pack():\\n    return 0\\n\")\nrun(prog=[\"git\", \"add\", \"-A\"])\nrun(prog=[\"git\", \"commit\", \"-q\", \"-m\", \"init\", \"--no-verify\"])\nsp = run(\"new\", \"sprint\", \"--title\", \"S\", \"--goal\", \"g\").stdout.split()[2]\nsid = run(\"new\", \"story\", \"--title\", \"T\", \"--goal\", \"scenario_pack gets a check route\", \"--touch\", \"_tools/mod.py\",\n          \"--sprint\", sp, \"--check\", \"python3 _tools/tests.py -k stubbed_pack\").stdout.split()[2]\np = run(\"precheck\", sp)\nout = p.stdout + p.stderr\nhit = [l for l in out.splitlines() if l.startswith(\"warning:\") and sid in l and \"scenario_pack\" in l\n       and re.search(r\"stub|replace|monkeypatch\", l, re.I)]\nsys.exit(0 if hit else 1)\n"
       ]
     }
   ],

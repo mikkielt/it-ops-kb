@@ -10,10 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "_tools/test_sync_e2e.py",
-        "-k",
-        "seconds_ceiling"
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport tests\ntests.compile_report = lambda: 0\ntests.changed = lambda rev: ['_tools/kb_mcp.py']\ntests.run_key = lambda args: ('planted-key', None)\ntests.run_pytest = lambda args: dict(exit=0, ms=999000, files=dict(a=[0, 5, 0, 0]))\ntests.record_run = lambda *a, **k: None\ntests.remember = lambda *a, **k: None\ncode = tests.run_main(['--changed'])\nprint('run_main returned', code)\nsys.exit(0 if code else 1)\n"
       ]
     }
   ],

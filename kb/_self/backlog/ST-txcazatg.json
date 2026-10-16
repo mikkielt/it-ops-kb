@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "sync_push_timeout_reads_remote"
+        "-c",
+        "\nimport sys, os, subprocess, tempfile, types, io, contextlib\nsys.path.insert(0, '_tools')\nimport kg_sync as S\ndef g(*a, cwd=None):\n    return subprocess.run(['git', *a], cwd=cwd, capture_output=True, text=True, check=True).stdout.strip()\ndef scenario(lands):\n    t = tempfile.mkdtemp()\n    bare = os.path.join(t, 'o.git'); g('init', '-q', '--bare', '-b', 'main', bare)\n    c = os.path.join(t, 'c'); g('clone', '-q', bare, c)\n    g('config', 'user.email', 'a@b.c', cwd=c); g('config', 'user.name', 'n', cwd=c)\n    os.makedirs(os.path.join(c, 'kb/public'))\n    f = os.path.join(c, 'kb/public/a.md')\n    open(f, 'w').write('1\\n'); g('add', '-A', cwd=c); g('commit', '-q', '-m', 'first', cwd=c); g('push', '-q', 'origin', 'HEAD:main', cwd=c)\n    open(f, 'w').write('2\\n'); g('add', '-A', cwd=c); g('commit', '-q', '-m', 'second', cwd=c)\n    S.KB = c\n    real = S.gitx_net\n    def slow(*args, env=None):\n        if args[0] == 'push':\n            if lands:\n                subprocess.run(['git', *args], cwd=c, capture_output=True, text=True)\n            return 124, 'kbgit.py sync: git push did not finish within 1 s (KB_GIT_NETWORK_TIMEOUT)'\n        return real(*args, env=env)\n    S.gitx_net = slow\n    S.tool = lambda *a, **k: (0, '')\n    S.gate = lambda *a, **k: True\n    S.refresh_trailers = lambda *a, **k: True\n    a = types.SimpleNamespace(remote='origin', branch='main', push=True, dry_run=False, session=None)\n    r = S.new_report(True)\n    with contextlib.redirect_stdout(io.StringIO()):\n        code = S.sync_once(a, r, None)\n    return code, r['pushed']\ncode, pushed = scenario(False)\nassert code == 1 and pushed.startswith('no'), (code, pushed)\ncode, pushed = scenario(True)\nassert code == 0 and pushed.startswith('yes'), (code, pushed)\n"
       ]
     }
   ],

@@ -19,5 +19,5 @@
   "links": [
     "parked: SP-ciqk6gt6 close"
   ],
-  "notes": "SP-ciqk6gt6 close: done ST-wrsuz64a was refused once (README.md commit not on origin/main, alternatives.md stale) and done TK-ew6dsm2l once (the report commit not on origin/main; design.md and token-efficiency.md stale through the kb/_self/reports/*.md map rows)."
+  "notes": "SP-ciqk6gt6 close: done ST-wrsuz64a was refused once (README.md commit not on origin/main, alternatives.md stale) and done TK-ew6dsm2l once (the report commit not on origin/main; design.md and token-efficiency.md stale through the kb/_self/reports/*.md map rows). Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Goal names no surface (check, precheck, brief, done) for the code-lane and stale-doc notice, so no tool run can be planted without guessing it."
 }

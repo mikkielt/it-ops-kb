@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "dispatch_research_turns"
+        "-c",
+        "import sys, tempfile, json, subprocess, os\nsys.path.insert(0, \"_tools\")\nimport bl_base, bl_dispatch\nd = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", d], check=True)\nbl_base.load_settings(d)\nos.makedirs(os.path.join(d, bl_base.rel_dir()), exist_ok=True)\n\ndef put(iid, n):\n    qs = \" \".join(f\"Question {i}: what does feature {i} of the product do?\" for i in range(1, n + 1))\n    item = {\"id\": iid, \"kind\": \"story\", \"title\": \"research a new topic\", \"status\": \"doing\", \"priority\": \"P3\", \"rank\": 0, \"goal\": qs, \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"kb/public/zz/new-topic.md\"]}\n    open(os.path.join(d, bl_base.rel_dir(), iid + \".json\"), \"w\").write(json.dumps(item))\nput(\"ST-aaaaaaaa\", 2)\nput(\"ST-bbbbbbbb\", 8)\nbl = bl_base.Backlog(d)\nsmall, big = bl_dispatch.max_turns(bl, \"ST-aaaaaaaa\"), bl_dispatch.max_turns(bl, \"ST-bbbbbbbb\")\nprint(\"turn cap for 2 questions:\", small, \"for 8 questions:\", big)\nsys.exit(0 if big > small else 1)"
       ]
     }
   ],

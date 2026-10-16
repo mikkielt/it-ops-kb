@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "revalidate_budget_cut_no_down_window"
+        "-c",
+        "\nimport sys, time, socket, tempfile, urllib.request, urllib.error\nsys.path.insert(0, '_tools')\nimport provider as P\nP.DOWN_DIR = tempfile.mkdtemp()\nP._down.clear()\ndef fake_open(self, req, data=None, timeout=None):\n    if timeout is not None and timeout < P.TIMEOUT:\n        time.sleep(timeout)\n    raise urllib.error.URLError(socket.timeout('timed out'))\nurllib.request.OpenerDirector.open = fake_open\nslow, down = 'https://slow.example.com/x', 'https://down.example.com/x'\nwith P.down_window():\n    P.gated_request(down)\n    assert P.host_down(down), 'an unbudgeted connect timeout must still start a window'\n    with P.budget(0.6):\n        P.gated_request(slow)\n    assert P.host_down(slow) is None, 'a connect cut short by the time budget started a down window'\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "content_worker_coverage_current"
+        "-c",
+        "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport bl_dispatch\ndef strings(v):\n    if isinstance(v, str):\n        yield v\n    elif isinstance(v, (list, tuple)):\n        for x in v:\n            yield from strings(x)\n    elif isinstance(v, dict):\n        for x in v.values():\n            yield from strings(x)\nrules = \"\\n\".join(s for name, v in vars(bl_dispatch).items() if not name.startswith(\"__\") for s in strings(v))\nworker = open(\"agents/worker.md\", encoding=\"utf-8\").read()\nnamed = \"build_index.py\" in rules or \"build_index.py\" in worker\nprint(\"worker rules name build_index.py:\", named, file=sys.stderr)\nsys.exit(0 if named else 1)\n"
       ]
     }
   ],

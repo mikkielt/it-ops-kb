@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "goal_questions_lead_sentence"
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_land\nlead = 'Research the open questions with the kb tools first and the live docs for the gaps, written as kb facts. '\ngot = bl_land.goal_questions(lead + 'Which Claude Code option isolates a session? How does it clean up?')\nsys.exit(0 if got == ['Which Claude Code option isolates a session?', 'How does it clean up?'] else 1)\n"
       ]
     }
   ],

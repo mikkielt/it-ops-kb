@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_no_ceiling_option"
+        "-c",
+        "\nimport re, subprocess, sys\nfrom pathlib import Path\nids = [p.stem for p in sorted(Path(\"kb/_self/backlog\").glob(\"ST-*.json\")) if p.stem != \"ST-jhttaycc\"]\nfor iid in ids[:5]:\n    p = subprocess.run([sys.executable, \"_tools/backlog.py\", \"brief\", iid], capture_output=True, text=True, timeout=25)\n    if p.returncode == 0 and \"## Fixed rules\" in p.stdout:\n        break\nelse:\n    raise SystemExit(\"no brief could be composed\")\nrules = p.stdout.split(\"## Fixed rules\", 1)[1].split(\"\\n## \", 1)[0]\nsentences = re.split(r\"(?<=[.;:])\\s+\", \" \".join(rules.split()))\nassert any(\"ceiling\" in s.lower() and re.search(r\"\\boption|\\boffer\", s, re.I) for s in sentences), \"fixed rules say nothing of a gate option that raises the test ceiling\"\n"
       ]
     }
   ],

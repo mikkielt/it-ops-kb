@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "research_brief_names_sibling_goals"
+        "-c",
+        "\nimport subprocess, tempfile, os, shutil, re, sys\nR = os.getcwd()\nT = tempfile.mkdtemp()\ndef sh(*a):\n    return subprocess.run(a, cwd=T, capture_output=True, text=True)\nsh('git', 'init', '-q', '.')\nsh('git', '-c', 'user.email=a@b', '-c', 'user.name=n', 'commit', '-q', '--allow-empty', '-m', 'init')\nshutil.copy(R + '/backlog.json', T)\nos.makedirs(T + '/kb/_self/backlog')\nbl = lambda *a: sh('python3', R + '/_tools/backlog.py', '--root', T, *a)\nr = bl('new', 'sprint', '--title', 'S', '--goal', 'a goal')\nsid = re.search(r'SP-\\w+', r.stdout).group(0)\nrs = re.search(r'research story (ST-\\w+)', r.stdout).group(1)\nr = bl('new', 'story', '--title', 'Sibling story', '--sprint', sid, '--goal', 'SIBGOALTEXT renames nothing', '--touch', 'kb/public/sibtouch.md')\nif r.returncode:\n    print(r.stderr); sys.exit(2)\nout = bl('brief', rs).stdout\nhas = 'SIBGOALTEXT' in out and 'kb/public/sibtouch.md' in out\nrule = any(re.search('sibling', ln, re.I) and re.search('finding', ln, re.I) for ln in out.splitlines())\nprint('sibling goal+touches in the research brief:', has, '| sibling-defect-is-a-finding rule line:', rule)\nsys.exit(0 if has and rule else 1)\n"
       ]
     }
   ],

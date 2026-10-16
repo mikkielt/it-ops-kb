@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "new_bug_repro_writes_no_item"
+        "-c",
+        "import os, sys, subprocess, tempfile, json\nsys.path.insert(0, \"_tools\")\nimport bl_base\nd = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", d], check=True)\nbl_base.load_settings(d)\nrel = bl_base.rel_dir()\nos.makedirs(os.path.join(d, rel))\niid = \"ST-aaaaaaaa\"\nitem = {\"id\": iid, \"kind\": \"story\", \"title\": \"claimed\", \"status\": \"doing\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"g\", \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"_tools/x.py\"]}\npath = os.path.join(d, rel, iid + \".json\")\ntext = json.dumps(item, indent=2) + \"\\n\"\nopen(path, \"w\").write(text)\ncode = \"import pathlib,sys; p=pathlib.Path(sys.argv[1]); p.write_text(p.read_text()+chr(32)); sys.exit(1)\"\ncmd = \"python3 -c \\\"\" + code + \"\\\" \" + os.path.join(rel, iid + \".json\")\nr = subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, \"new\", \"bug\", \"--title\", \"planted repro writes an item file\", \"--goal\", \"x is fixed\", \"--severity\", \"S3\", \"--repro\", cmd, \"--repro-reason\", \"planted\"], capture_output=True, text=True)\nprint(r.returncode, r.stdout[-200:], r.stderr[-200:])\nok = open(path).read() == text\nprint(\"filer item file unchanged by the repro run:\", ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

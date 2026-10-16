@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_provider_column_rows"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib\nt = pathlib.Path(tempfile.mkdtemp()); d = t/'_backlog'; d.mkdir(); (t/'_tools').mkdir()\n(t/'_tools'/'providers.csv').write_text('provider,match,search_api,not_found\\nlearn,learn.microsoft.com/,https://learn.microsoft.com/api/search?search={q},hard-404\\ngithub,github.com/,https://api.github.com/search/repositories?q={q},hard-404\\narxiv,arxiv.org/,https://export.arxiv.org/api/query?search_query={q},soft-404\\n')\ndef w(o): (d/(o['id']+'.json')).write_text(json.dumps(o))\nw({'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'planned','goal':'g'})\ngoal = 'A search_api answer without a results list is no answer'\ndef item(iid, mention):\n    w({'id':iid,'kind':'story','title':'t','status':'draft','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':goal,\n       'checks':[{'run':['python3','-c','import sys; hosts = %r; sys.exit(1)' % mention]}]})\nitem('ST-aaaaaaa2', ['learn', 'learn.microsoft.com/'])\nitem('ST-bbbbbbb2', ['learn', 'learn.microsoft.com/', 'github', 'github.com/', 'arxiv', 'arxiv.org/'])\nr = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'precheck','SP-aaaaaaaa'],capture_output=True,text=True)\nwarn = lambda i: [l for l in r.stdout.splitlines() if l.startswith('warning:') and i in l]\na, b = warn('ST-aaaaaaa2'), warn('ST-bbbbbbb2')\nsys.exit(0 if r.returncode == 0 and a and 'arxiv' in a[0] and 'github' in a[0] and not b else 1)\n"
       ]
     }
   ],

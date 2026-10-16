@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "check_warns_import_list_doc"
+        "-c",
+        "import sys, os, json, tempfile, types, io, contextlib, subprocess\nsys.path.insert(0, '_tools')\nimport bl_base, bl_check\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, '_tools'))\nos.makedirs(os.path.join(d, 'kb', '_self', 'backlog'))\nfor n in ('_tools/bl_plan.py', '_tools/bl_dispatch.py', '_tools/bl_cost.py', 'kb/_self/code.md'):\n    open(os.path.join(d, n), 'w').write('x = 1' + chr(10))\nsubprocess.run(['git', '-C', d, 'add', '.'], check=True)\ndef put(it):\n    open(os.path.join(d, 'kb', '_self', 'backlog', it['id'] + '.json'), 'w').write(json.dumps(it))\nbad = [dict(run=['python3', '-c', 'import sys; sys.exit(1)'])]\nput(dict(id='SP-aaaaaaaa', kind='sprint', title='planted sprint', status='planned', goal='planted'))\ndef story(i, goal, touches):\n    put(dict(id=i, kind='story', title='planted ' + i, status='draft', priority='P3', sprint='SP-aaaaaaaa', goal=goal, touches=touches, checks=bad))\nstory('ST-bbbbbbbb', 'The dispatcher imports bl_cost, a new import between _tools modules', ['_tools/bl_dispatch.py'])\nstory('ST-cccccccc', 'The dispatcher imports bl_cost, a new import between _tools modules', ['_tools/bl_dispatch.py', 'kb/_self/code.md'])\nstory('ST-dddddddd', 'The dispatcher prints one more line of text', ['_tools/bl_dispatch.py'])\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_check.cmd_check(bl_base.Backlog(d), types.SimpleNamespace())\nlines = [l for l in buf.getvalue().splitlines() if 'code.md' in l]\nprint(lines)\nsys.exit(0 if any('ST-bbbbbbbb' in l for l in lines) and not any(x in l for l in lines for x in ('ST-cccccccc', 'ST-dddddddd')) else 1)\n"
       ]
     }
   ],

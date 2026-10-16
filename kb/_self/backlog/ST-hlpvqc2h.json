@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_names_session_id"
+        "-c",
+        "\nimport re, subprocess, sys\nfrom pathlib import Path\nids = [p.stem for p in sorted(Path(\"kb/_self/backlog\").glob(\"ST-*.json\")) if p.stem != \"ST-hlpvqc2h\"]\nfor iid in ids[:5]:\n    p = subprocess.run([sys.executable, \"_tools/backlog.py\", \"brief\", iid], capture_output=True, text=True, timeout=25)\n    if p.returncode == 0 and \"## Fixed rules\" in p.stdout:\n        break\nelse:\n    raise SystemExit(\"no brief could be composed\")\nrules = p.stdout.split(\"## Fixed rules\", 1)[1].split(\"\\n## \", 1)[0]\nassert re.search(r\"session[ _-]?id|Session:\", rules, re.I), \"fixed rules of the brief name no session id\"\n"
       ]
     }
   ],

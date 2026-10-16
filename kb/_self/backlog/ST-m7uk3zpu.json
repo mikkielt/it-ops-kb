@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "done_docs_map_empty"
+        "-c",
+        "import sys, tempfile, os, io, contextlib, subprocess, argparse, json\nsys.path.insert(0, '_tools')\nimport bl_base, bl_land\nd = tempfile.mkdtemp()\ndef g(*a):\n    return subprocess.run(['git', '-C', d, *a], check=True, capture_output=True, text=True).stdout\ng('init', '-q')\ng('config', 'user.email', 'a@b.c')\ng('config', 'user.name', 'n')\nopen(os.path.join(d, 'backlog.json'), 'w').write(json.dumps(dict(docs_map='')))\nos.makedirs(os.path.join(d, 'src'))\nopen(os.path.join(d, 'src', 'a.py'), 'w').write('x = 1\\n')\ng('add', '-A')\ng('commit', '-q', '-m', 'base')\nopen(os.path.join(d, 'src', 'a.py'), 'w').write('x = 2\\n')\ng('add', '-A')\ng('commit', '-q', '-m', 'work\\n\\nKB-Work: BG-bbbbbbbb')\nbl_base.load_settings(d)\nbl = bl_base.Backlog(d)\nbl.items['BG-bbbbbbbb'] = dict(id='BG-bbbbbbbb', kind='bug', title='t', status='todo', goal='g', touches=['src/**'], checks=[dict(run=['true'])])\nout = io.StringIO()\nmsg = ''\ntry:\n    with contextlib.redirect_stdout(out):\n        bl_land.cmd_done(bl, argparse.Namespace(id='BG-bbbbbbbb', dry_run=True, commit=False, trailer=[]))\nexcept Exception as e:\n    msg = str(e)\ntext = msg + out.getvalue()\nsys.exit(0 if 'is not done' in text and 'map.csv' not in text else 1)\n"
       ]
     }
   ],

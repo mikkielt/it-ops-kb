@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "feedback_bench"
+        "-c",
+        "\nimport os, subprocess, sys, tempfile\nshim = tempfile.mkdtemp()\nmark = os.path.join(shim, 'claude-was-started')\np = os.path.join(shim, 'claude')\nopen(p, 'w').write('#!/bin/sh\\necho started > ' + mark + '\\nexit 1\\n')\nos.chmod(p, 0o755)\nenv = dict(os.environ, PATH=shim + os.pathsep + os.environ['PATH'])\nr = subprocess.run([sys.executable, '_tools/benchmarks.py', 'run', 'feedback', '--dry-run'], capture_output=True, text=True, env=env, timeout=25)\nassert not os.path.exists(mark), 'dry run started a model'\nassert r.returncode == 0, ('exit', r.returncode, r.stderr[-200:])\nassert 'feedback' in r.stdout.lower(), r.stdout[-300:]\n"
       ]
     }
   ],

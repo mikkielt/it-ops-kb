@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_open_choice_each_named_file"
+        "-c",
+        "import sys, os, json, tempfile, types, io, contextlib, subprocess\nsys.path.insert(0, '_tools')\nimport bl_base, bl_land\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, 'kb', '_self', 'backlog'))\ndef put(it):\n    open(os.path.join(d, 'kb', '_self', 'backlog', it['id'] + '.json'), 'w').write(json.dumps(it))\nbad = [dict(run=['python3', '-c', 'import sys; sys.exit(1)'])]\ndef gate(q):\n    opt = ['a new column at the end', 'a new column after the key']\n    return [dict(id='g1', kind='blocking', question=q, options=opt, recommendation=opt[0], answer=opt[0], by='operator', do=dict(zip(opt, ['ST-bbbbbbbb', 'ST-bbbbbbbb'])))]\ngoal = 'The census adds a column to _fetch_state.csv and to _anchors.csv, where each placement is left open'\nput(dict(id='SP-aaaaaaaa', kind='sprint', title='planted sprint', status='planned', goal='planted'))\nput(dict(id='ST-bbbbbbbb', kind='story', title='planted one-file gate', status='draft', priority='P3', sprint='SP-aaaaaaaa', goal=goal, checks=bad, gates=gate('Where does the new column go in _fetch_state.csv?')))\nput(dict(id='ST-cccccccc', kind='story', title='planted both-file gate', status='draft', priority='P3', sprint='SP-aaaaaaaa', goal=goal, checks=bad, gates=gate('Where does the new column go in _fetch_state.csv and in _anchors.csv?')))\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_land.cmd_precheck(bl_base.Backlog(d), types.SimpleNamespace(sprint='SP-aaaaaaaa'))\nout = buf.getvalue()\nprint(out)\nwarn = [l for l in out.splitlines() if l.startswith('warning')]\nsys.exit(0 if any('ST-bbbbbbbb' in w for w in warn) and not any('ST-cccccccc' in w for w in warn) else 1)\n"
       ]
     }
   ],

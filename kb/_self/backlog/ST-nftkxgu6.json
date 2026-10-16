@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "check_warns_landing_clause_without_land_check"
+        "-c",
+        "import sys,tempfile,subprocess,io,contextlib,argparse,os\nsys.path.insert(0,'_tools')\nimport bl_base,bl_land\ndef one(**v):\n    return {'BG-bbbbbbbb': v}\ndef run(sg,items,files=()):\n    d=tempfile.mkdtemp()\n    subprocess.run(['git','init','-q',d],check=True)\n    for p,t in files:\n        os.makedirs(os.path.dirname(os.path.join(d,p)),exist_ok=True)\n        open(os.path.join(d,p),'w').write(t)\n    subprocess.run(['git','-C',d,'add','-A'],check=True)\n    bl=bl_base.Backlog(d)\n    bl.items['SP-aaaaaaaa']=dict(id='SP-aaaaaaaa',kind='sprint',title='s',status='planned',goal=sg)\n    for k,v in items.items():\n        it=dict(id=k,sprint='SP-aaaaaaaa',status='draft',title='t',checks=[dict(run=['python3','-c','import sys; sys.exit(1)'])])\n        it.update(v)\n        bl.items[k]=it\n    o=io.StringIO()\n    with contextlib.redirect_stdout(o):\n        bl_land.cmd_precheck(bl,argparse.Namespace(sprint='SP-aaaaaaaa'))\n    return [l for l in o.getvalue().splitlines() if l.startswith('warning')]\ngoal='The landing that closes an entry fails a check.'\ndef mk(argv):\n    return dict(kind='story',goal=goal,touches=['_tools/bl_land.py'],clauses=[dict(clause=goal,check=0)],checks=[dict(run=argv)])\nbad=run('g',{'BG-bbbbbbbb':mk(['python3','-c','import sys; print(\"check_problems\"); sys.exit(1)'])})\ngood=run('g',{'BG-bbbbbbbb':mk(['python3','_tools/backlog.py','land','BG-bbbbbbbb'])})\nsys.exit(0 if any('BG-bbbbbbbb' in l for l in bad) and not any('BG-bbbbbbbb' in l for l in good) else 1)\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_goal_code_claim"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib\ndef run(notes):\n    t = pathlib.Path(tempfile.mkdtemp()); d = t/'_backlog'; d.mkdir(parents=True)\n    sp = {'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'planned','goal':'g'}\n    it = {'id':'ST-bbbbbbbb','kind':'story','title':'t','status':'draft','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,\n          'goal':'dispatch uses the form census.py dispatch uses for a rule',\n          'checks':[{'run':['python3','-c','import sys; sys.exit(1)']}]}\n    if notes: it['notes'] = notes\n    (d/'SP-aaaaaaaa.json').write_text(json.dumps(sp)); (d/'ST-bbbbbbbb.json').write_text(json.dumps(it))\n    r = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'precheck','SP-aaaaaaaa'],capture_output=True,text=True)\n    return [l for l in r.stdout.splitlines() if l.startswith('warning:') and 'ST-bbbbbbbb' in l]\na = run(''); b = run('Read _tools/census.py dispatch_rules: the form is argv[0] dispatch.')\nsys.exit(0 if a and not b else 1)\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "done_ledger_anchor_named_article"
+        "-c",
+        "\nimport subprocess, sys, tempfile\nfrom pathlib import Path\nfrom types import SimpleNamespace\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_land\ntmp = Path(tempfile.mkdtemp())\ndef git(*a):\n    return subprocess.run([\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", *a], cwd=tmp, capture_output=True, text=True, check=True).stdout.strip()\nroot = tmp / \"kb\" / \"public\"\n(root / \"x\").mkdir(parents=True)\n(root / \"y\").mkdir()\nfor n in (\"x/a.md\", \"y/b.md\"):\n    (root / n).write_text(\"# t\\n\")\nhead = \"fact,path,source_id,status,heading,terms,sha,quote,verified_utc\\n\"\nrow = lambda f, p, s, st: f\"{f},{p},{s},{st},,,,,2026-10-10\\n\"\nled = root / \"_anchors.csv\"\nled.write_text(head + row(\"aaaaaaaaaaaa\", \"x/a.md\", \"S100\", \"located\") + row(\"bbbbbbbbbbbb\", \"y/b.md\", \"S101\", \"located\"))\ngit(\"init\", \"-q\")\ngit(\"add\", \"-A\")\ngit(\"commit\", \"-q\", \"-m\", \"base\")\nled.write_text(head + row(\"aaaaaaaaaaaa\", \"x/a.md\", \"S100\", \"unlocated:no-match\") + row(\"bbbbbbbbbbbb\", \"y/b.md\", \"S101\", \"located\")\n               + row(\"cccccccccccc\", \"x/a.md\", \"S300\", \"located\") + row(\"dddddddddddd\", \"y/b.md\", \"S400\", \"located\"))\ngit(\"add\", \"-A\")\ngit(\"commit\", \"-q\", \"-m\", \"anchors\\n\\nKB-Work: ST-aaaaaaaa\")\nsha = git(\"rev-parse\", \"HEAD\")\nfake = SimpleNamespace(items={\"ST-aaaaaaaa\": {\"goal\": \"anchor the facts of kb/public/x/a.md with anchor --file\", \"title\": \"anchor run\"}}, descendants=lambda i: [])\nleft = dict(bl_land.unrelated_baselines(fake, \"ST-aaaaaaaa\", str(tmp), {sha: [\"kb/public/_anchors.csv\"]}))\nassert \"S300\" not in left and \"S100\" not in left, left\nassert \"S400\" in left, left\n"
       ]
     }
   ],

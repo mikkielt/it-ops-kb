@@ -23,5 +23,5 @@
   "links": [
     "parked: SP-ofvvong6 close"
   ],
-  "notes": "SP-ofvvong6 retrospective: ST-e6bueg2y wait-merge exit=1 after 1881 s (ops 2026-10-14T16:36Z); merge requests 1055 and 1056 sat in detailed_merge_status preparing with no diff refs and no pipeline; backlog.py merge got 405 then 422, the rebase API 500; closing and reopening each request made it mergeable within a minute."
+  "notes": "SP-ofvvong6 retrospective: ST-e6bueg2y wait-merge exit=1 after 1881 s (ops 2026-10-14T16:36Z); merge requests 1055 and 1056 sat in detailed_merge_status preparing with no diff refs and no pipeline; backlog.py merge got 405 then 422, the rebase API 500; closing and reopening each request made it mergeable within a minute. Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: wait_merge (bl_land.py:2371) reads git only; the forge read and its branch param are new and unnamed; planting needs a fake glab and a full land flow."
 }

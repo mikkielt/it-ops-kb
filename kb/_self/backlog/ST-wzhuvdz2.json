@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "fitness_premise_host_dry_run"
+        "-c",
+        "\nimport re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read()\nm=re.search(r'(scratch|throwaway) host project',t,re.I)\nsys.exit(0 if m and re.search(r'dry-run',t[m.start():m.end()+500]) and re.search(r'claim',t[m.start():m.end()+500]) else 1)\n"
       ]
     }
   ],

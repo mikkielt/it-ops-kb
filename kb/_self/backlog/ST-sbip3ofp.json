@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_candidates_answer_line"
+        "-c",
+        "import re, sys\nhit = []\nfor p in (\"skills/sprint/SKILL.md\", \"skills/backlog/SKILL.md\", \"kb/_self/backlog.md\"):\n    text = open(p, encoding=\"utf-8\").read()\n    for s in re.split(r\"(?<=[.;:])\\s+|\\n\", text):\n        low = s.lower()\n        if \"benchmark\" in low and \"candidate\" in low and re.search(r\"kb line|answering line|line that answers|line answering\", low):\n            hit.append((p, s[:120]))\nprint(hit)\nsys.exit(0 if hit else 1)"
       ]
     }
   ],

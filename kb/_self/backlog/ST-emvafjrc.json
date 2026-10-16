@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_recorded_figure_read"
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read().splitlines()\nok = any('benchmarks.csv' in ln and 'goal' in ln and ('sample size' in ln or 'rank' in ln) and 'recorded' in ln for ln in t)\nprint('clause found:', ok)\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

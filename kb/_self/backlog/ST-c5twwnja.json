@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_warns_lowering_exception_without_fail_closed_probe"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib\nt = pathlib.Path(tempfile.mkdtemp()); d = t/'_backlog'; d.mkdir()\ndef w(o): (d/(o['id']+'.json')).write_text(json.dumps(o))\nw({'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'planned','goal':'g'})\nchk = [{'run':['python3','-c','import sys; import bl_authority; sys.exit(1)']}]\nw({'id':'BG-aaaaaaa2','kind':'bug','title':'authority exception','status':'draft','sprint':'SP-aaaaaaaa','priority':'P3','severity':'S3','rank':0,\n   'goal':'bl_authority reads past the word docs in a push command, a class-lowering exception, so a push of a doc name is not operator-only',\n   'touches':['_tools/bl_authority.py'],'repro':{'run':['python3','-c','import sys; sys.exit(1)']},'checks':chk})\nw({'id':'BG-bbbbbbb2','kind':'bug','title':'plain','status':'draft','sprint':'SP-aaaaaaaa','priority':'P3','severity':'S3','rank':0,\n   'goal':'A plain fix of a message wording','touches':['_tools/bl_view.py'],'repro':{'run':['python3','-c','import sys; sys.exit(1)']},\n   'checks':[{'run':['python3','-c','import sys; sys.exit(1)']}]})\nr = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'precheck','SP-aaaaaaaa'],capture_output=True,text=True)\nwarn = lambda i: [l for l in r.stdout.splitlines() if l.startswith('warning:') and i in l and 'already exits' not in l]\na, b = warn('BG-aaaaaaa2'), warn('BG-bbbbbbb2')\nsys.exit(0 if r.returncode == 0 and a and not b else 1)\n"
       ]
     }
   ],

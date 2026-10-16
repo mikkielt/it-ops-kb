@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "pool_check_matches_as_scored"
+        "-c",
+        "\nimport sys, tempfile, os, json\nsys.path.insert(0, \"_tools\")\nimport bench_pool as bp\nhome = tempfile.mkdtemp()\nos.makedirs(os.path.join(home, os.path.dirname(bp.EVAL_FILE)))\nwith open(os.path.join(home, bp.EVAL_FILE), \"w\", encoding=\"utf-8\") as f:\n    f.write(\"id,question,expect_paths,expect_answer,x\\nq1,what,a.md,good,\\n\")\nbp.fact_for = lambda home, case: (\"kb/public/a.md\", 5, \"The timeout is Ten minutes long.\")\ndef warned(rx):\n    rows = [dict(id=\"P1\", kind=\"fact\", source=\"lookup_eval.csv:q1\", checks=json.dumps([rx]))]\n    return any(\"no check matches\" in w for w in bp.stale_picks(rows, home=home))\nmiss, hit = warned(\"ten minutes\"), warned(\"(?i)ten minutes\")\nprint(\"case-sensitive miss warned:\", miss, \"(?i) warned:\", hit, file=sys.stderr)\nsys.exit(0 if miss and not hit else 1)\n"
       ]
     }
   ],

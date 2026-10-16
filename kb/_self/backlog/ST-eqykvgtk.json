@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "lint_fact_read_date_matches_source_row"
+        "-c",
+        "import sys, os, csv, subprocess, tempfile\nsys.path.insert(0, '_tools')\nimport kbroot, kbcommon, build_index\nd = os.path.join(tempfile.mkdtemp(), 'mt')\nos.makedirs(os.path.join(d, kbcommon.DATA_DIR))\nfiles = {kbcommon.ROOT_FILE: kbroot.root_md('mt', 'MT', 'internal', 'planted'), kbcommon.COVERAGE_MD: '# Coverage' + chr(10) + build_index.START + chr(10) + build_index.END + chr(10)}\nfiles.update((k, v.format(name='mt')) for k, v in kbroot.FILES.items())\nfor rel, text in files.items():\n    open(os.path.join(d, rel), 'w', encoding='utf-8', newline='').write(text)\nwith open(os.path.join(d, kbcommon.SOURCES), 'a', encoding='utf-8', newline='') as f:\n    csv.writer(f, lineterminator=chr(10)).writerow(['MT-aaaaaaaa', 'https://example.com/changelog', 'Changelog', 'Example', 'MIT', 'link', '2026-10-12', '', '', 'mt/dom/art;mt/dom/ctl', ''])\ndef article(name, day):\n    os.makedirs(os.path.join(d, 'dom'), exist_ok=True)\n    nl = chr(10)\n    body = '---' + nl + 'topic: dom/' + name + nl + 'priority: P3' + nl + 'sources: [MT-aaaaaaaa]' + nl + 'status: complete' + nl + '---' + nl * 2\n    body += '# T' + nl * 2 + '## Summary' + nl + 'x' + nl * 2 + '## Facts' + nl + '- The changelog was read on ' + day + ' and lists the new flag in its entries. [DOC MT-aaaaaaaa]' + nl * 2 + '## Reference' + nl + 'x' + nl * 2 + '## Examples' + nl + 'x' + nl\n    open(os.path.join(d, 'dom', name + '.md'), 'w', encoding='utf-8').write(body)\narticle('art', '2026-10-13')\narticle('ctl', '2026-10-12')\nenv = dict(os.environ, KB_ROOTS=d)\np = subprocess.run([sys.executable, '.claude/skills/kb-verify/lint.py', 'mt/dom/art.md', 'mt/dom/ctl.md'], capture_output=True, text=True, env=env, timeout=25)\nprint(p.stdout[-800:], p.stderr[-300:])\nhit = [l for l in p.stdout.splitlines() if 'art.md' in l and ('retrieved' in l or '2026-10-12' in l)]\nmiss = [l for l in p.stdout.splitlines() if 'ctl.md' in l and ('retrieved' in l or '2026-10-12' in l)]\nsys.exit(0 if hit and not miss else 1)\n"
       ]
     }
   ],

@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plugin_sprint_push_command"
+        "-c",
+        "\nimport argparse, sys\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_cli\nap = bl_cli.build_parser(\"x\", \".\")\nsub = next(a for a in ap._actions if isinstance(a, argparse._SubParsersAction))\nhits = [n for n, p in sub.choices.items() if \"land_push\" in \" \".join(p.format_help().split())]\nassert hits, \"no backlog.py command or option is documented as running the project land_push\"\n"
       ]
     }
   ],

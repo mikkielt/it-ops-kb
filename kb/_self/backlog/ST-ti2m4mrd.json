@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "referrers_ledger_note_readers"
+        "-c",
+        "import re, sys\nhit = []\nfor p in (\"skills/sprint/SKILL.md\", \"skills/backlog/SKILL.md\", \"kb/_self/backlog.md\"):\n    text = open(p, encoding=\"utf-8\").read()\n    for m in re.finditer(r\"referrers\", text):\n        win = text[max(0, m.start() - 300):m.end() + 300].lower()\n        if \"ledger\" in win and re.search(r\"resolved|note word|notes\\x27 words|note\\x27s words\", win):\n            hit.append((p, m.start()))\nprint(hit)\nsys.exit(0 if hit else 1)"
       ]
     }
   ],

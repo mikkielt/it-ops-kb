@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "session_distill_behind_a_pusher_keeps_usage_rows"
+        "-c",
+        "\nimport sys, tempfile, threading, time\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport ql_distill, ql_base\ntmp = Path(tempfile.mkdtemp())\nqdir = tmp / \"q\"\n(qdir / \"spool\").mkdir(parents=True)\ncalls = []\nql_distill.add_usage = lambda spool, sid, tp, skip=None: calls.append(sid) or 1\nql_distill.close_ended = lambda *a: None\nql_distill._distill = lambda *a, **k: 0\nql_distill.USAGE_LOCK_WAIT_S = 0.3\nql_distill.USAGE_LOCK_POLL_S = 0.1\nheld = ql_base.acquire(qdir)\nassert held is not None\ndef free():\n    time.sleep(1.2)\n    ql_base.release(held)\nthreading.Thread(target=free, daemon=True).start()\nql_distill.distill(qdir=qdir, cfg=tmp / \"cfg.json\", usage_from=(\"sess1\", str(tmp / \"t.jsonl\")), out=lambda *a: None, deliver=None)\nend = time.time() + 4\nwhile not calls and time.time() < end:\n    time.sleep(0.1)\nassert calls == [\"sess1\"], calls\n"
       ]
     }
   ],

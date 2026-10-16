@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "close_removes_orchestrator_worktree"
+        "-c",
+        "import sys, os, json, tempfile, subprocess, pathlib\nENV = dict(os.environ, GIT_AUTHOR_NAME='a', GIT_AUTHOR_EMAIL='a@example.com', GIT_COMMITTER_NAME='a', GIT_COMMITTER_EMAIL='a@example.com')\ndef g(t, *a): return subprocess.run(['git',*a],cwd=t,env=ENV,check=True,capture_output=True,text=True).stdout\ndef run(unmerged):\n    t = pathlib.Path(tempfile.mkdtemp()).resolve(); d = t/'_backlog'; d.mkdir()\n    (d/'SP-aaaaaaaa.json').write_text(json.dumps({'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'active','goal':'g'}))\n    g(t,'init','-q','-b','main'); g(t,'add','-A'); g(t,'commit','-q','-m','plan')\n    w = t/'.claude'/'worktrees'/'orch-aaaaaaaa'\n    g(t,'worktree','add','-q',str(w),'-b','orch/s-aaaaaaaa')\n    if unmerged:\n        (w/'x.txt').write_text('x'); g(w,'add','-A'); g(w,'commit','-q','-m','unmerged work')\n    r = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'close','SP-aaaaaaaa'],capture_output=True,text=True)\n    return r.returncode, w.exists(), r.stdout\nrc1, left1, _ = run(False); rc2, left2, out2 = run(True)\nsys.exit(0 if rc1 == 0 and rc2 == 0 and not left1 and left2 and 'kept' in out2 else 1)\n"
       ]
     }
   ],

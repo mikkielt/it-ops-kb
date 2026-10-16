@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-kwi4ilty review"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Either-or goal: apply the eval row alone (needs a real measure/gate run) or delete ql_apply.py:347 and its querylog.md:170 sentence; one check cannot hold both outcomes."
 }

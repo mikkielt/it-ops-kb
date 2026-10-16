@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "close_removes_landed_scratch"
+        "-c",
+        "import sys, os, json, tempfile, subprocess, pathlib\nsys.path.insert(0, '_tools')\nimport bl_base\nENV = dict(os.environ, GIT_AUTHOR_NAME='a', GIT_AUTHOR_EMAIL='a@example.com', GIT_COMMITTER_NAME='a', GIT_COMMITTER_EMAIL='a@example.com')\ng = lambda t, *a: subprocess.run(['git', *a], cwd=t, env=ENV, check=True, capture_output=True, text=True).stdout\nt = pathlib.Path(tempfile.mkdtemp()).resolve(); d = t/'_backlog'; d.mkdir()\nw = lambda o: (d/(o['id']+'.json')).write_text(bl_base.canonical(o))\nw({'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'active','goal':'g'})\nw({'id':'ST-aaaaaaa2','kind':'story','title':'t','status':'done','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':'g'})\ng(t,'init','-q','-b','main'); g(t,'add','-A'); g(t,'commit','-q','-m','plan')\nmine, other = t/'_cache'/'scratch'/'ST-aaaaaaa2', t/'_cache'/'scratch'/'ST-zzzzzzz2'\nfor p in (mine/'base', other):\n    p.mkdir(parents=True); (p/'f.txt').write_text('x')\ng(mine/'base','init','-q','-b','main'); g(mine/'base','add','-A'); g(mine/'base','commit','-q','-m','base clone')\nr = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'close','SP-aaaaaaaa'],capture_output=True,text=True)\nsys.exit(0 if r.returncode == 0 and not mine.exists() and other.exists() else 1)\n"
       ]
     }
   ],

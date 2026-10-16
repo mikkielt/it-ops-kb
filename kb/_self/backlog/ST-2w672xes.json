@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "check_warns_title_figure_differs_premise"
+        "-c",
+        "\nimport subprocess, sys, tempfile, os\ntool = os.path.abspath(\"_tools/backlog.py\")\ndef bl(root, *a):\n    p = subprocess.run([sys.executable, tool, \"--root\", root, *a], cwd=root, capture_output=True, text=True)\n    return p.returncode, p.stdout + p.stderr\ndef story(root, title, premise_figure):\n    code, out = bl(root, \"new\", \"story\", \"--title\", title, \"--goal\", \"g\", \"--touch\", \"src/a.py\", \"--check\", \"python3 -c pass\")\n    iid = out.split()[2]\n    bl(root, \"set\", iid, \"--add-notes\", \"Premise: the all-rows check printed %s on the base.\" % premise_figure)\n    return iid\nroot = tempfile.mkdtemp()\nstory(root, \"Fix 13 of the aliases.csv rows\", \"21\")\ncode, out = bl(root, \"check\")\nwarn = [l for l in out.splitlines() if \"13\" in l and \"21\" in l]\nroot2 = tempfile.mkdtemp()\nstory(root2, \"Fix 21 of the aliases.csv rows\", \"21\")\ncode2, out2 = bl(root2, \"check\")\nclean = not [l for l in out2.splitlines() if \"21\" in l and \"title\" in l.lower() and \"differ\" in l.lower()]\nsys.exit(0 if warn and clean else 1)\n"
       ]
     }
   ],

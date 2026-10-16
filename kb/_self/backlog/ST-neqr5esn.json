@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_reword_names_anchors_root_glob"
+        "-c",
+        "import sys, tempfile, os\nsys.path.insert(0, '_tools')\nimport bl_base, bl_plan\nd = tempfile.mkdtemp()\nos.makedirs(os.path.join(d, 'kb', 'public'))\nopen(os.path.join(d, 'kb', 'public', '_root.md'), 'w').write('x')\nbl = bl_base.Backlog(d)\ndef warn(t):\n    bl.items['BG-aaaaaaaa'] = dict(id='BG-aaaaaaaa', kind='bug', title='t', status='todo', goal='Reword a DOC fact in the refresh', touches=t)\n    return bl_plan.anchors_warnings(bl, ['BG-aaaaaaaa'])\nctl = warn(['kb/public/arch/x.md'])\nassert ctl and '_anchors.csv' in ctl[0], ctl\nfor t in (['kb/public/**'], ['kb/public/*.md']):\n    w = warn(t)\n    if not (w and '_anchors.csv' in w[0]):\n        print('no warning for', t)\n        sys.exit(1)\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_dead_source_licence_gate"
+        "-c",
+        "import sys, re\nok = False\nfor f in ('.claude/skills/kb-sprint/SKILL.md', 'kb/_self/backlog.md'):\n    for ln in open(f, encoding='utf-8').read().splitlines():\n        if '_sources.csv' in ln and 'gate' in ln and re.search('dead.{0,300}licen[cs]e|licen[cs]e.{0,300}dead', ln):\n            ok = True\nprint('clause found:', ok)\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

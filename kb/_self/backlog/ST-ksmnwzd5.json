@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_delivery_premise_all_gates"
+        "-c",
+        "\nimport re\ndef lines_of(path):\n    return open(path, encoding=\"utf-8\").read().splitlines()\ndef clause(line):\n    return \"distill.log\" in line and \"apply --push\" in line and \"premise\" in line and re.search(r\"\\b(every|each|all)\\b\", line)\nskill = [l for l in lines_of(\".claude/skills/kb-sprint/SKILL.md\") if clause(l)]\nrule = [l for l in lines_of(\"kb/_self/backlog.md\") if clause(l)]\nassert skill, \"kb-sprint plan step does not tell to list every failed gate of a failed apply --push run in a bug premise\"\nassert rule, \"backlog.md Sprints text does not tell it\"\n"
       ]
     }
   ],

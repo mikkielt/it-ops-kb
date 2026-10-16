@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-sc5yk65l close"
   ],
-  "notes": "SP-sc5yk65l retrospective: ST-qtbpuyff changed the worker suite rule in bl_dispatch.WORKER_RULES, kb/_self/backlog.md and tools.md, but .claude/skills/kb-verify/SKILL.md step 5 still paraphrased the old rule (filed as BG-crckmrxc by the review); no planning step listed the files that restate the rule."
+  "notes": "SP-sc5yk65l retrospective: ST-qtbpuyff changed the worker suite rule in bl_dispatch.WORKER_RULES, kb/_self/backlog.md and tools.md, but .claude/skills/kb-verify/SKILL.md step 5 still paraphrased the old rule (filed as BG-crckmrxc by the review); no planning step listed the files that restate the rule. Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Goal does not say how precheck knows a goal changes a rule or what counts as old wording; no function to drive, no open sprint to plant. Needs a design call first."
 }

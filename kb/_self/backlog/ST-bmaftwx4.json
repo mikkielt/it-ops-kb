@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "lookup_clause_check_through_pack"
+        "-c",
+        "import sys, pathlib\ndocs = ['kb/_self/backlog.md', '.claude/skills/kb-sprint/SKILL.md']\nmissing = [p for p in docs if 'revalidate_pack' not in pathlib.Path(p).read_text(encoding='utf-8')]\nsys.exit(1 if missing else 0)\n"
       ]
     }
   ],

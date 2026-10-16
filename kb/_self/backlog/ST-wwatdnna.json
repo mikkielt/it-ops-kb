@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "worker_anchor_rerun_allowed"
+        "-c",
+        "\nimport sys,json,fnmatch\nsys.path.insert(0,'_tools')\nimport bl_dispatch\ns=json.load(open('.claude/settings.json'))\nallow=s['permissions']['allow']; deny=s['permissions']['deny']\ndef allowed(cmd):\n    c='Bash(%s)'%cmd\n    return any(fnmatch.fnmatchcase(c,a) for a in allow) and not any(fnmatch.fnmatchcase(c,d) for d in deny)\nrules=' '.join(bl_dispatch.worker_rules('.','ST-x','work/ST-x',100))\nanchor=allowed('python3 _tools/factdiff.py anchor --file kb/public/x/y.md') or 'factdiff.py anchor' in rules\nrestore=allowed('git checkout -- kb/public/x/_anchors.csv') or '_anchors.csv' in rules\nprint('anchor rerun allowed or named:',anchor,'| _anchors.csv restore allowed or named:',restore)\nsys.exit(0 if anchor and restore else 1)\n"
       ]
     }
   ],

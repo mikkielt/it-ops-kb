@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_refused_run_names_test_run"
+        "-c",
+        "\nimport sys,re\nsys.path.insert(0,'_tools')\nimport bl_dispatch\nrules=bl_dispatch.worker_rules('.','ST-x','work/ST-x',100)\nsys.exit(0 if any('test.run' in r and re.search(r'host[- ]finding',r) and 'refused' in r for r in rules) else 1)\n"
       ]
     }
   ],

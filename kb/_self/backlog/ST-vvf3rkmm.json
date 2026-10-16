@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "worker_records_goal_alternative_gate"
+        "-c",
+        "\nimport re\nfiles = ['agents/worker.md', 'skills/item/SKILL.md']\nhits = [(f, n) for f in files for n, line in enumerate(open(f, encoding='utf-8'), 1)\n        if re.search(r'alternative', line, re.I) and 'UNK' in line and 'DER' in line and 'provisional' in line.lower()]\nassert hits, 'no worker rule line names the alternatives of a goal (DER, UNK, drop) as provisional-gate choices'\n"
       ]
     }
   ],

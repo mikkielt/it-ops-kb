@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-7ff7c5ui close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Planning rule with no named function or command: the moved-picks comparison has no interface to plant against; a doc grep would only guess at wording."
 }

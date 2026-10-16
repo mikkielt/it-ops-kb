@@ -20,5 +20,5 @@
   "links": [
     "parked: SP-ciqk6gt6 review"
   ],
-  "notes": "Review gap 4: the SP-ciqk6gt6 run's orchestrator was headless under a written delegation, so the interactive steps (AskUserQuestion approval, relayed answers --by operator, review confirmation) were never exercised; docs_map and kb_root were empty, so a docs map was not exercised either."
+  "notes": "Review gap 4: the SP-ciqk6gt6 run's orchestrator was headless under a written delegation, so the interactive steps (AskUserQuestion approval, relayed answers --by operator, review confirmation) were never exercised; docs_map and kb_root were empty, so a docs map was not exercised either. Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: The goal is a live interactive run of another project through the plugin sprint with a person answering AskUserQuestion; no tool run or planted input can prove it."
 }

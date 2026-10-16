@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_agent_tool_names_no_cap"
+        "-c",
+        "\nimport subprocess, sys, tempfile, os\ntool = os.path.abspath(\"_tools/backlog.py\")\ntools = os.path.dirname(tool)\nroot = tempfile.mkdtemp()\ndef run(*a, prog=None):\n    return subprocess.run(prog or [sys.executable, tool, \"--root\", root, *a], cwd=root, capture_output=True, text=True)\nrun(prog=[\"git\", \"init\", \"-q\"])\niid = run(\"new\", \"story\", \"--title\", \"T\", \"--goal\", \"g\", \"--touch\", \"src/a.py\").stdout.split()[2]\nbrief = run(\"brief\", iid).stdout\nsys.path.insert(0, tools)\nos.chdir(root)\nimport bl_dispatch, bl_base\nbl_base.load_settings(root)\ntext = bl_dispatch.compose_brief(bl_base.Backlog(root), iid, turns=77)\nnamed_by_brief = \"Your turn cap is\" in brief\nnamed_by_dispatch = \"Your turn cap is 77 turns\" in text\nprint(\"brief names a cap:\", named_by_brief, \"dispatch brief names 77:\", named_by_dispatch, file=sys.stderr)\nsys.exit(0 if (not named_by_brief and named_by_dispatch) else 1)\n"
       ]
     }
   ],

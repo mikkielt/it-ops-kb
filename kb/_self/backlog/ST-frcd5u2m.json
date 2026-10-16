@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-b7wibqok review"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: item_finder/sprint_finder take only a directory; distill has no record of the session's own checkout, so a planted check would guess how the checkout is found (worktree list vs spool cwd)"
 }

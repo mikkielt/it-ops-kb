@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "next_names_story_met_by_its_tasks"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib\nt = pathlib.Path(tempfile.mkdtemp()); d = t/'_backlog'; d.mkdir(parents=True)\ndef w(o): (d/(o['id']+'.json')).write_text(json.dumps(o))\nw({'id':'SP-aaaaaaaa','kind':'sprint','title':'s','status':'active','goal':'g'})\ndef story(sid, code):\n    w({'id':sid,'kind':'story','title':'story '+sid,'status':'todo','sprint':'SP-aaaaaaaa','priority':'P3','rank':0,'goal':'g',\n       'checks':[{'run':['python3','-c','import sys; sys.exit(%d)' % code]}]})\n    for n in 'ab':\n        w({'id':'TK-'+sid[3:9]+'a'+n,'kind':'task','title':'task','status':'done','parent':sid,'priority':'P3','rank':0,'goal':'g'})\nstory('ST-ggggggg2', 0); story('ST-hhhhhhh2', 1)\nr = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'next','--all'],capture_output=True,text=True)\nmine = lambda sid: '\\n'.join(l for l in r.stdout.splitlines() if sid in l).lower()\nsys.exit(0 if r.returncode == 0 and 'land' in mine('ST-ggggggg2') and 'land' not in mine('ST-hhhhhhh2') else 1)\n"
       ]
     }
   ],

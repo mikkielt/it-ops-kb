@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "feedback_handle_latest_lookup"
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport ql_distill\nql_distill.feedback_report = lambda r, k, pages: {\"outcome\": \"ok\"}\ndef kb(i, ts):\n    return {\"id\": i, \"surface\": \"kb_hook\", \"pack\": \"P-aabbccdd\", \"ts\": ts}\nr1, r2 = kb(\"r1\", \"2026-10-16T08:00:00Z\"), kb(\"r2\", \"2026-10-16T09:00:00Z\")\nsessions = {\"s1\": {\"closed\": True, \"groups\": [[\"p1\", [r1], r1[\"ts\"], None]]}, \"s2\": {\"closed\": True, \"groups\": [[\"p2\", [r2], r2[\"ts\"], None]]}}\nt1 = {\"entry\": {\"id\": \"E1\"}, \"sid\": \"s1\", \"key\": \"p1\", \"reports\": [], \"tools\": []}\nt2 = {\"entry\": {\"id\": \"E2\"}, \"sid\": \"s2\", \"key\": \"p2\", \"reports\": [], \"tools\": []}\ntodo = [t1, t2]\nfb = {\"id\": \"f1\", \"surface\": \"feedback\", \"pack\": \"P-aabbccdd\", \"ts\": \"2026-10-16T09:05:00Z\"}\nql_distill.join_feedback(sessions, [(fb, \"tools-2026-10-16.jsonl\", None)], {}, todo, {}, \"2026-10-17\", None)\nprint(\"reports s1:\", len(t1[\"reports\"]), \"s2:\", len(t2[\"reports\"]))\nsys.exit(0 if len(t2[\"reports\"]) == 1 and not t1[\"reports\"] else 1)"
       ]
     }
   ],

@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-b36246xo close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check runs tests.py -k research_story_self_eval_touch, which the pruned suite (D-6kei5o2z) lacks; re-point it to a backlog.py check run on a planted goal research story when planned."
 }

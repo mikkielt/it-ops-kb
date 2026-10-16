@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_content_fix_siblings"
+        "-c",
+        "import sys\nt = open('.claude/skills/kb-sprint/SKILL.md', encoding='utf-8').read().splitlines()\nok = any(all(s in ln for s in ('rag.py search', '_answers.md', '_gaps.md', 'touches')) for ln in t)\nprint('clause found:', ok)\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

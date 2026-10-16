@@ -18,5 +18,6 @@
   ],
   "links": [
     "parked: SP-gcerxjsg close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Goal leaves the mechanism open (check warning, or done accepting ids from an item field) and names no field or function; unrelated_baselines needs ledger commits to plant."
 }

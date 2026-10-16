@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plugin_sprint_fallback_worktree"
+        "-c",
+        "import re, sys\nsys.path.insert(0, \"_tools\")\nimport bl_base\ndefault = bl_base.SETTINGS[\"worktree_dir\"][1]\noutside = not re.sub(r\"^\\./\", \"\", default).startswith(\".claude\")\ntext = open(\"skills/sprint/SKILL.md\", encoding=\"utf-8\").read()\nsaid = any(\"Agent tool\" in ln and \"fallback\" in ln and re.search(r\"worktree_dir|worktree\\.baseDir|baseDir\", ln) for ln in text.splitlines())\nprint(\"default worktree_dir:\", default, \"outside .claude:\", outside, \"skill names the setting:\", said)\nsys.exit(0 if outside or said else 1)"
       ]
     }
   ],

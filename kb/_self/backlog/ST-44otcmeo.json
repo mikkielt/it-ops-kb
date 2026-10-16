@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "gate_add_do_prose"
+        "-c",
+        "\nimport subprocess, sys, tempfile, os, json, glob\ntool = os.path.abspath(\"_tools/backlog.py\")\ndef run(root, *a):\n    p = subprocess.run([sys.executable, tool, \"--root\", root, *a], cwd=root, capture_output=True, text=True)\n    return p.returncode, p.stdout + p.stderr\ndef trial(prose):\n    root = tempfile.mkdtemp()\n    iid = run(root, \"new\", \"story\", \"--title\", \"T\", \"--goal\", \"g\", \"--touch\", \"src/a.py\")[1].split()[2]\n    code, out = run(root, \"gate\", \"add\", iid, \"--id\", \"g1\", \"--question\", \"How to word the note\", \"--option\", \"a\",\n                    \"--option\", \"b\", \"--recommendation\", \"a\", \"--do\", \"a=\" + prose, \"--do\", \"b=ST-00000000\")\n    stored = None\n    for f in glob.glob(os.path.join(root, \"_backlog\", iid + \".json\")):\n        gates = json.load(open(f)).get(\"gates\") or []\n        stored = gates[0].get(\"do\", dict()).get(\"a\") if gates else None\n    if code == 0:\n        return stored == prose, out\n    return \"No closing quotation\" not in out and (\"command\" in out or \"item id\" in out or \"prose\" in out) \\\n        and \"--do\" in out and \"not a command line\" not in out, out\ngood = True\nfor prose in (\"Reword the line in the doc\", \"Reword the doc's line\"):\n    ok, out = trial(prose)\n    good = good and ok\nsys.exit(0 if good else 1)\n"
       ]
     }
   ],

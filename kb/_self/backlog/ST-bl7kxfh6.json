@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plugin_sprint_research_no_kb"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib\nt = pathlib.Path(tempfile.mkdtemp())\n(t/'backlog.json').write_text(json.dumps({'item_dir':'_backlog','research_checks':[],'review_checks':[{'run':['python3','_tools/backlog.py','check']}]}))\nrun = lambda *a: subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),*a],capture_output=True,text=True)\nn = run('new','sprint','--title','plant','--goal','a goal')\nc = run('check')\ntouches = [x for f in (t/'_backlog').glob('ST-*.json') for x in (json.loads(f.read_text()).get('touches') or [])]\nsys.exit(0 if n.returncode == 0 and c.returncode == 0 and not any(x.startswith('kb/public') for x in touches) else 1)\n"
       ]
     }
   ],

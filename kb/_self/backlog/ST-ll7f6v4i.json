@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "research_no_outside_facts_no_touches"
+        "-c",
+        "import sys, tempfile, os, io, contextlib, subprocess\nsys.path.insert(0, '_tools')\nimport bl_base, bl_check\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, 'kb', 'public'))\nbl = bl_base.Backlog(d)\nbl.items['SP-aaaaaaaa'] = dict(id='SP-aaaaaaaa', kind='sprint', title='s', status='planned', goal='g')\nbl.items['ST-bbbbbbbb'] = dict(id='ST-bbbbbbbb', kind='story', title='Research sprint goal: s', status='draft', sprint='SP-aaaaaaaa', goal_research=True, priority='P1', goal='research', notes='No outside facts: the goal needs none.', touches=['kb/public/**'], checks=[dict(run=['python3', '-c', 'pass'])])\nout = io.StringIO()\nwith contextlib.redirect_stdout(out):\n    bl_check.cmd_check(bl, None)\nhit = [l for l in out.getvalue().splitlines() if 'ST-bbbbbbbb' in l and 'outside facts' in l.lower()]\nsys.exit(0 if hit else 1)\n"
       ]
     }
   ],

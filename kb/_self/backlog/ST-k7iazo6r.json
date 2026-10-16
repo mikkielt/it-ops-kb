@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "worker_worktree_add_refused"
+        "-c",
+        "\nimport sys\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_cli, bl_dispatch\nfrom bl_base import load_settings\nroot = bl_cli.default_root(backlog.ROOT)\nload_settings(root)\nbl = backlog.Backlog(root)\niid = next(i for i in sorted(bl.items) if bl.items[i].get(\"kind\") == \"story\")\nargv = bl_dispatch.claude_argv(bl, iid)\njoined = \" \".join(argv)\nassert \"worktree add\" in joined and (\"--disallowedTools\" in argv or \"--settings\" in argv), \"the worker session argv carries no refusal of git worktree add: \" + joined[:200]\n"
       ]
     }
   ],

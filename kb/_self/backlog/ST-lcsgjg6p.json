@@ -35,5 +35,6 @@
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: New 'flagged' line across pack/kb_show/kb_audit/kb_mcp needs a confirmed-open-feedback finding shape; no 'confirmed feedback' kind in ql_store.FINDING_KINDS yet, so no planted input to drive."
 }

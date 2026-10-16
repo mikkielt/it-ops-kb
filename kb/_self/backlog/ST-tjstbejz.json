@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "start_host_warning_skips_web_host_gate"
+        "-c",
+        "import sys, tempfile, json, subprocess, os\nsys.path.insert(0, \"_tools\")\nimport bl_base, bl_plan\nd = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", d], check=True)\nbl_base.load_settings(d)\nos.makedirs(os.path.join(d, bl_base.rel_dir()), exist_ok=True)\ndef put(iid, question, options):\n    item = {\"id\": iid, \"kind\": \"story\", \"title\": \"t\", \"status\": \"todo\", \"sprint\": \"SP-aaaaaaaa\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"g\", \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"_tools/bench_pool.py\"], \"gates\": [{\"id\": \"g1\", \"question\": question, \"options\": options, \"kind\": \"provisional\"}]}\n    open(os.path.join(d, bl_base.rel_dir(), iid + \".json\"), \"w\").write(json.dumps(item))\nput(\"ST-aaaaaaaa\", \"How is a provider-down record clamped when the documentation host answers 503?\", [\"clamp to the last good record\", \"drop the record\"])\nput(\"ST-bbbbbbbb\", \"Which service must be enabled on this host before the work starts?\", [\"the daemon\", \"none\"])\nbl = bl_base.Backlog(d)\ngot = {i: w for i, g, w in bl_plan.free_text_host_gates(bl, \"SP-aaaaaaaa\")}\nprint(got)\nok = \"ST-aaaaaaaa\" not in got and \"ST-bbbbbbbb\" in got\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

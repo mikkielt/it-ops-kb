@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_self_doc_item_runs_self_eval"
+        "-c",
+        "import sys, tempfile, json, subprocess, os\nsys.path.insert(0, \"_tools\")\nimport bl_base, bl_dispatch\nd = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", d], check=True)\nbl_base.load_settings(d)\nos.makedirs(os.path.join(d, bl_base.rel_dir()), exist_ok=True)\nitem = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"reword a doc\", \"status\": \"doing\", \"priority\": \"P3\", \"rank\": 0, \"goal\": \"the section is reworded\", \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"kb/_self/backlog.md\"]}\nopen(os.path.join(d, bl_base.rel_dir(), \"ST-aaaaaaaa.json\"), \"w\").write(json.dumps(item))\nbl = bl_base.Backlog(d)\nbl_dispatch.rules_section = lambda bl, iid: [\"x\"]\nt = bl_dispatch.compose_brief(bl, \"ST-aaaaaaaa\")\nok = \"rag.py eval --root _self\" in t and \"NOTED_BASELINE\" in t\nprint(\"brief of a _self doc item runs the _self eval:\", ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

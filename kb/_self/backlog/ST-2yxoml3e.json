@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plugin_sprint_plan_commits"
+        "-c",
+        "\nimport re, sys\nt = open(\"skills/sprint/SKILL.md\", encoding=\"utf-8\").read()\nsec = re.search(r\"^## plan.*?(?=^## run)\", t, re.S | re.M).group(0)\nbad = []\nfor line in sec.splitlines():\n    if not re.match(r\"\\d+\\. \", line):\n        continue\n    for span in re.findall(r\"`([^`]*)`\", line):\n        if re.match(r\"python3 \\S*backlog\\.py (set|start|new)\\b\", span) and \"--commit\" not in span and \"git commit\" not in line:\n            bad.append(span[-60:])\nprint(bad, file=sys.stderr)\nsys.exit(1 if bad else 0)\n"
       ]
     }
   ],

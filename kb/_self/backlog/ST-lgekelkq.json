@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-etslk6yu close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Item is an operator decision (pacing vs freshness lifetime) in factdiff.lookup_hints; the asserted behaviour is not decided, so no check can be written yet."
 }

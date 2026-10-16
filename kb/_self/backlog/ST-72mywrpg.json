@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "check_warns_item_id_in_durable_doc"
+        "-c",
+        "import sys, tempfile, subprocess, pathlib\nt = pathlib.Path(tempfile.mkdtemp())\n(t/'agents').mkdir(); (t/'skills'/'x').mkdir(parents=True); (t/'kb'/'_self').mkdir(parents=True)\n(t/'agents'/'worker.md').write_text('Rule 5: an open item such as BG-w6z2zc6r is not touched.\\n')\n(t/'skills'/'x'/'SKILL.md').write_text('Say an id such as ST-xxxxxxxx.\\n')\nr = subprocess.run([sys.executable, '_tools/backlog.py', '--root', str(t), 'check'], capture_output=True, text=True)\nout = r.stdout + r.stderr\nsys.exit(0 if r.returncode == 0 and 'BG-w6z2zc6r' in out and 'ST-xxxxxxxx' not in out else 1)\n"
       ]
     }
   ],

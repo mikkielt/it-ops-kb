@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_flags_clause_proved_by_passing_check"
+        "-c",
+        "\nimport sys, io, tempfile, contextlib, types, json, os\nsys.path.insert(0, '_tools')\nimport bl_base as B, bl_land as L\nCL = 'a failed link is not swallowed'\nPASS = dict(run=['python3', '-c', 'pass'])\nFAIL = dict(run=['python3', '-c', 'import sys; sys.exit(1)'])\ndef run(checks, mapping):\n    root = tempfile.mkdtemp()\n    d = os.path.join(root, B.rel_dir())\n    os.makedirs(d)\n    it = dict(id='ST-aaaaaaaa', kind='story', status='draft', title='t', sprint='SP-bbbbbbbb', goal=CL, checks=checks,\n              notes='the check passes before the work, it pins behaviour', clauses=[dict(clause=CL, check=n) for n in mapping])\n    sp = dict(id='SP-bbbbbbbb', kind='sprint', status='planned', title='s')\n    for x in (it, sp):\n        open(os.path.join(d, x['id'] + '.json'), 'w').write(json.dumps(x))\n    buf = io.StringIO()\n    with contextlib.redirect_stdout(buf):\n        L.cmd_precheck(B.Backlog(root), types.SimpleNamespace(sprint='SP-bbbbbbbb'))\n    return [l for l in buf.getvalue().splitlines() if l.startswith('warning') and CL[:20] in l]\nassert run([PASS], [0]), 'only mapped check passes before the work: no clause warning'\nassert not run([PASS, FAIL], [0, 1]), 'clause also read by a failing check: no warning'\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "lint_added_doc_fact_unanchored_fails"
+        "-c",
+        "\nimport sys, importlib.util\nsys.path.insert(0, \"_tools\")\nspec = importlib.util.spec_from_file_location(\"kblint\", \".claude/skills/kb-verify/lint.py\")\nlint = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(lint)\nimport kbcommon, kbfacts\nroot = next(r for r in kbcommon.roots() if r.name == \"public\")\nsrc = kbcommon.source_rows()\nquotable = set(s for s, r in src.items() if (r.get(\"reuse\") or \"\").strip() in (\"copy\", \"quote\") and not lint.microsoft_host(r.get(\"url\")))\npick = None\nfor path in sorted(kbfacts.articles()):\n    for u in kbfacts.units(path):\n        if any(part[\"kind\"] == \"DOC\" and set(part[\"ids\"]) & quotable for part in u[\"tags\"]):\n            pick = (kbfacts.bare(path), u)\n            break\n    if pick:\n        break\nbare, unit = pick\nplanted = dict(unit, text=unit[\"text\"] + \" planted words no anchor knows\")\nlint.changed_articles = lambda r, base: set([bare])\nlint.new_facts = lambda r, base, p, text: [planted] if p == bare else []\nfound = []\nlint.lint_root(root, [lint.qualified(\"kb/public/\" + bare)], lambda level, path, msg: found.append((level, msg)) if \"DOC fact added\" in msg else None, \"HEAD\")\nprint(found[:1], file=sys.stderr)\nsys.exit(0 if found and all(level == \"ERROR\" for level, _ in found) else 1)\n"
       ]
     }
   ],

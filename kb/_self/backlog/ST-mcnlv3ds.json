@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-23m5etrf close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: lint.py has no symbol read yet; a planted run needs a whole kb root (KB_ROOTS) plus a pinned cached source file and an unnamed new function; too heavy to drive here."
 }

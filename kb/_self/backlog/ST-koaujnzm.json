@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plan_bug_pattern_siblings"
+        "-c",
+        "\nimport json, subprocess, sys, tempfile\nfrom pathlib import Path\ntmp = Path(tempfile.mkdtemp())\nlive = json.load(open(\"backlog.json\"))\n(tmp / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\", \"id_prefixes\": live[\"id_prefixes\"]}))\nBL = str(Path(\"_tools/backlog.py\").resolve())\ndef run(*a):\n    return subprocess.run(a, cwd=tmp, capture_output=True, text=True, timeout=30)\ndef bl(*a):\n    return run(sys.executable, BL, \"--root\", str(tmp), *a)\n(tmp / \"_tools\").mkdir()\n(tmp / \"_tools\" / \"a.py\").write_text(\"def p95(n):\\n    return round(0.95 * n)\\n\")\n(tmp / \"_tools\" / \"b.py\").write_text(\"def verdict(n):\\n    return round(0.95 * n)\\n\")\nrun(\"git\", \"init\", \"-q\")\nrun(\"git\", \"add\", \"-A\")\nrun(\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", \"commit\", \"-q\", \"-m\", \"base\")\nbl(\"new\", \"sprint\", \"--title\", \"s\", \"--goal\", \"g\")\nsp = next((tmp / \"items\").glob(\"SP-*.json\")).stem\nrepro = \"python3 -c \\\"import sys;sys.exit(1)\\\"\"\np = bl(\"new\", \"bug\", \"--title\", \"p95\", \"--goal\", \"the p95 rank round(0.95 * n) in _tools/a.py is off by one\", \"--touch\", \"_tools/a.py\", \"--sprint\", sp, \"--severity\", \"S3\", \"--repro\", repro)\nassert p.returncode == 0, p.stderr\nout = bl(\"precheck\", sp)\ntext = out.stdout + out.stderr\nassert \"_tools/b.py\" in text, \"precheck does not list the other site of round(0.95 * n) in the tree: \" + text[-300:]\n"
       ]
     }
   ],

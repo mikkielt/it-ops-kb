@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "depends_without_shared_touch"
+        "-c",
+        "import sys, os, json, tempfile, types, io, contextlib, subprocess\nsys.path.insert(0, '_tools')\nimport bl_base, bl_check\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, 'kb', '_self', 'backlog'))\nfor n in ('kb/public/a.md', 'kb/public/b.md', 'kb/public/c.md', 'kb/public/d.md', 'kb/public/e.md', 'kb/_self/x.md'):\n    os.makedirs(os.path.dirname(os.path.join(d, n)), exist_ok=True)\n    open(os.path.join(d, n), 'w').write('x')\nsubprocess.run(['git', '-C', d, 'add', '.'], check=True)\ndef put(it):\n    open(os.path.join(d, 'kb', '_self', 'backlog', it['id'] + '.json'), 'w').write(json.dumps(it))\nbad = [dict(run=['python3', '-c', 'import sys; sys.exit(1)'])]\nput(dict(id='SP-aaaaaaaa', kind='sprint', title='planted sprint', status='planned', goal='planted'))\ndef story(i, touches, dep=None):\n    it = dict(id=i, kind='story', title='planted ' + i, status='draft', priority='P3', sprint='SP-aaaaaaaa', goal='planted goal ' + i, touches=touches, checks=bad)\n    if dep:\n        it['depends_on'] = [dep]\n    put(it)\nstory('ST-bbbbbbbb', ['kb/public/a.md'])\nstory('ST-cccccccc', ['kb/public/b.md'], 'ST-bbbbbbbb')\nstory('ST-dddddddd', ['kb/public/c.md'])\nstory('ST-eeeeeeee', ['kb/public/c.md'], 'ST-dddddddd')\nstory('ST-ffffffff', ['kb/_self/x.md', 'kb/public/d.md'])\nstory('ST-gggggggg', ['kb/_self/x.md', 'kb/public/e.md'], 'ST-ffffffff')\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_check.cmd_check(bl_base.Backlog(d), types.SimpleNamespace())\nlines = buf.getvalue().splitlines()\ndef both(a, b):\n    return [l for l in lines if a in l and b in l]\nprint(both('ST-bbbbbbbb', 'ST-cccccccc'), both('ST-ffffffff', 'ST-gggggggg'), both('ST-dddddddd', 'ST-eeeeeeee'))\nsys.exit(0 if both('ST-bbbbbbbb', 'ST-cccccccc') and both('ST-ffffffff', 'ST-gggggggg') and not both('ST-dddddddd', 'ST-eeeeeeee') else 1)\n"
       ]
     }
   ],

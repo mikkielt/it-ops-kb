@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_clause_class_members"
+        "-c",
+        "import os, sys, subprocess, tempfile, re\nd = tempfile.mkdtemp()\nsubprocess.run([\"git\", \"init\", \"-q\", d], check=True)\nos.makedirs(os.path.join(d, \"_tools\"))\nfor n in (\"a\", \"b\", \"c\"):\n    open(os.path.join(d, \"_tools\", n + \".py\"), \"w\").write(\"# see kb/public/x.md:12\\n\" if n != \"c\" else \"x = 1\\n\")\nos.makedirs(os.path.join(d, \"kb\", \"public\"))\nopen(os.path.join(d, \"kb\", \"public\", \"x.md\"), \"w\").write(\"x\\n\")\ndef bl(*a):\n    r = subprocess.run([sys.executable, \"_tools/backlog.py\", \"--root\", d, *a], capture_output=True, text=True)\n    return r.returncode, (r.stdout + r.stderr).strip()\nsid = re.findall(r\"SP-[a-z2-7]{8}\", bl(\"new\", \"sprint\", \"--title\", \"planted sprint\", \"--goal\", \"planted\")[1])[0]\ngoal = \"a content item removes a line that _tools code cites by number without check.py failing\"\nchk = \"python3 -c \\\"import os; assert os.path.isfile(chr(97))\\\"\"\nbl(\"new\", \"story\", \"--title\", \"citing lines\", \"--goal\", goal, \"--check\", chk, \"--touch\", \"_tools/a.py\", \"--sprint\", sid)\ng = [\"git\", \"-C\", d, \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\"]\nsubprocess.run(g + [\"add\", \"-A\"], check=True)\nsubprocess.run(g + [\"commit\", \"-q\", \"-m\", \"init\"], check=True)\nrc, out = bl(\"precheck\", sid)\nok = \"_tools/b.py\" in out\nprint(\"precheck lists the citing file the touches leave out:\", ok)\nsys.exit(0 if ok else 1)"
       ]
     }
   ],

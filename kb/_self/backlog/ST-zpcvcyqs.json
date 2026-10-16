@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "resume_reads_session_id"
+        "-c",
+        "\nimport subprocess,tempfile,os,shutil,re,sys,json\nfrom pathlib import Path\nR=os.getcwd(); T=tempfile.mkdtemp()\ndef sh(*a,env=None): return subprocess.run(a,cwd=T,capture_output=True,text=True,env=env)\nsh('git','init','-q','.'); sh('git','-c','user.email=a@b','-c','user.name=n','commit','-q','--allow-empty','-m','init')\nshutil.copy(R+'/backlog.json',T); os.makedirs(T+'/kb/_self/backlog')\nbl=lambda *a,env=None: sh('python3',R+'/_tools/backlog.py','--root',T,*a,env=env)\niid=re.search(r'ST-\\w+',bl('new','story','--title','Resume me','--goal','g').stdout).group(0)\nd=bl('dispatch',iid,'--dry-run').stdout\nwt=re.search(r'^worktree: (\\S+)',d,re.M).group(1); scratch=re.search(r'^scratch: (\\S+)',d,re.M).group(1)\ntop=os.path.realpath(T)\nif not (os.path.realpath(wt).startswith(top) and os.path.realpath(scratch).startswith(top)): sys.exit(2)\nos.makedirs(wt); os.makedirs(scratch)\nPath(scratch,'result.json').write_text(json.dumps(dict(session_id='sess-planted-42')))\nbd=Path(T,'bin'); bd.mkdir(); log=Path(T,'argv.json'); fake=bd/'claude'\nfake.write_text('#!'+sys.executable+'\\nimport sys,json,os\\njson.dump(dict(argv=sys.argv[1:],stdin=sys.stdin.read(),cwd=os.getcwd()),open('+repr(str(log))+',\"w\"))\\nprint(json.dumps(dict(session_id=\"sess-planted-42\",result=\"ok\")))\\n')\nfake.chmod(0o755)\nmsg=Path(T,'followup.md'); msg.write_text('REWORK PLEASE')\nenv=dict(os.environ,PATH=str(bd)+os.pathsep+os.environ['PATH'])\nr=bl('resume',iid,str(msg),env=env)\nrec=json.loads(log.read_text()) if log.exists() else dict()\na=rec.get('argv',[])\nok=(r.returncode==0 and '--resume' in a and a[a.index('--resume')+1:][:1]==['sess-planted-42'] and rec.get('stdin')=='REWORK PLEASE'\n    and os.path.realpath(rec.get('cwd',''))==os.path.realpath(wt) and len(list(Path(scratch).glob('result*.json')))>=2)\nprint('resume exit',r.returncode,'argv',a,(r.stderr or '')[-150:])\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_warns_self_echo"
+        "-c",
+        "\nimport json, re, shlex, subprocess, sys, tempfile\nfrom pathlib import Path\ntmp = Path(tempfile.mkdtemp())\nlive = json.load(open(\"backlog.json\"))\n(tmp / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\", \"id_prefixes\": live[\"id_prefixes\"]}))\nBL = str(Path(\"_tools/backlog.py\").resolve())\ndef run(*a):\n    return subprocess.run(a, cwd=tmp, capture_output=True, text=True, timeout=30)\ndef bl(*a):\n    return run(sys.executable, BL, \"--root\", str(tmp), *a)\nrun(\"git\", \"init\", \"-q\")\nrun(\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", \"commit\", \"-q\", \"--allow-empty\", \"-m\", \"base\")\nbl(\"new\", \"sprint\", \"--title\", \"s\", \"--goal\", \"g\")\nsp = next((tmp / \"items\").glob(\"SP-*.json\")).stem\nbl(\"new\", \"story\", \"--title\", \"t\", \"--goal\", \"g\", \"--touch\", \"f.txt\", \"--sprint\", sp, \"--check\", \"python3 -c pass\")\niid = [x.stem for x in (tmp / \"items\").glob(\"ST-*.json\") if json.loads(x.read_text()).get(\"title\") == \"t\"][0]\ncode = \"import subprocess,sys;t=subprocess.run([sys.executable,\\\"_tools/backlog.py\\\",\\\"brief\\\",\\\"%s\\\"],capture_output=True,text=True).stdout;sys.exit(0 if \\\"x\\\" in t.split(\\\"## Fixed rules\\\")[1] else 1)\" % iid\np = bl(\"set\", iid, \"--check\", shlex.join([\"python3\", \"-c\", code]))\nassert p.returncode == 0, p.stderr\nout = bl(\"precheck\", sp)\ntext = (out.stdout + out.stderr).replace(code, \"\")\nassert iid in text, text[-500:]\nassert re.search(r\"\\bechoe?s?\\b|its own (item|brief|goal|source)|own (brief|goal) text\", text, re.I), \"precheck says nothing of a check that reads its own item brief\"\n"
       ]
     }
   ],

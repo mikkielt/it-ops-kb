@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "labelled_set_counts_cited_like_anchor"
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport census, factdiff\nold = '- Windows Update keeps the cached package for seven days before cleanup runs [DOC S101; UNK: S102]'\nnew = '- Windows Update keeps the cached package for fourteen days before cleanup runs [DOC S101]'\nseen = []\ncensus.rewritten_pairs = lambda base, end: [('a/x.md', old, new)]\nfactdiff.cache_path = lambda sid, shared=False: 'none.json'\nfactdiff.load_json = lambda p: dict(status=200, text='Windows Update keeps the cached package for seven days')\nfactdiff.cited_facts = lambda: dict()\nfactdiff.read_anchors = lambda: dict()\ndef fake(doc, anchor, claim, cites=1, placed_before=True):\n    seen.append(cites)\n    return 'passage', census.WORD\ncensus.current_passage = fake\ncensus.labelled_set([dict(id='S101', outcome='updated')], 'base', 'end')\nprint('cites passed:', seen)\nsys.exit(0 if seen and seen[0] == 1 else 1)\n"
       ]
     }
   ],

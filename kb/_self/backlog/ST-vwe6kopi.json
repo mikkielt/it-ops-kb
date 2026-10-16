@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-honlhzdc close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: cause: second fetch bl_land.py:2245 runs under the open rebase step; fix site (call-site ops_mark vs land_git_network) is open and driving land_once needs a code-lane worktree+remote fixture"
 }

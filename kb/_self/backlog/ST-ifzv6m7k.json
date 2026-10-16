@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "done_names_load_for_timed_check"
+        "-c",
+        "\nimport sys\nsys.path.insert(0, \"_tools\")\nimport backlog, bl_land\ncode = \"import re,subprocess,sys;p=subprocess.run([sys.executable,\\\"_tools/tests.py\\\",\\\"-k\\\",\\\"x\\\",\\\"--durations=5\\\"],capture_output=True,text=True);t=[float(x) for x in re.findall(r\\\"^(\\\\d+\\\\.\\\\d+)s call\\\",p.stdout,re.M)];sys.exit(1 if p.returncode or not t or max(t)>=8 else 0)\"\nchecks = [{\"run\": [\"python3\", \"-c\", code]}]\nloaded = bl_land.loaded_host_for_suite(checks, 99.0, 2)\nassert loaded and \"load\" in loaded, loaded\nassert bl_land.loaded_host_for_suite(checks, 0.1, 64) is None\n"
       ]
     }
   ],

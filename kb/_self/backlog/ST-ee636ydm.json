@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "remote_feedback"
+        "-c",
+        "import subprocess, sys, json\ndef names(extra):\n    req = json.dumps(dict(jsonrpc='2.0', id=1, method='tools/list', params=dict()))\n    p = subprocess.run([sys.executable, '_tools/kb_mcp.py', '--roots', 'public'] + extra, input=req + chr(10), capture_output=True, text=True, timeout=25)\n    got = [json.loads(l) for l in p.stdout.splitlines() if l.startswith('{')]\n    return [t['name'] for g in got for t in g.get('result', dict()).get('tools', [])]\noff, on = names([]), names(['--feedback'])\nusage = subprocess.run([sys.executable, '_tools/querylog.py', '--help'], capture_output=True, text=True, timeout=25)\nprint('off', 'kb_feedback' in off, 'on', 'kb_feedback' in on)\nok = len(off) > 0 and 'kb_feedback' not in off and 'kb_feedback' in on and 'approve' in (usage.stdout + usage.stderr)\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

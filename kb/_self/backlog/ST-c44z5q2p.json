@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "repro_reads_pool_rows"
+        "-c",
+        "import sys, json, tempfile, subprocess, pathlib\nsys.path.insert(0, '_tools')\nimport bl_base\nt = pathlib.Path(tempfile.mkdtemp()); d = t/'_backlog'; d.mkdir(); p = t/'kb'/'public'/'_retrieval'; p.mkdir(parents=True)\n(p/'bench_pool.csv').write_text('id,kind,domain,phrasing,source,question,checks,expected_route\\nBP-aaaaaaaa,sc_absent,exchange,original,bench_scenarios.csv#1,What are the retention policies in Exchange Online?,[],web\\n')\ndef w(o): (d/(o['id']+'.json')).write_text(bl_base.canonical(o))\ndef bug(iid, q):\n    w({'id':iid,'kind':'bug','title':'t','status':'draft','priority':'P3','severity':'S3','rank':0,\n       'goal':'The pool rows of kind sc_absent stay routed to the web',\n       'repro':{'run':['python3','-c','import sys; q = %r; sys.exit(1)' % q]},\n       'checks':[{'run':['python3','-c','import sys; q = %r; sys.exit(1)' % q]}]})\nbug('BG-aaaaaaa2', 'mailbox retention policies'); bug('BG-bbbbbbb2', 'retention policies')\nr = subprocess.run([sys.executable,'_tools/backlog.py','--root',str(t),'check'],capture_output=True,text=True)\nwarn = lambda i: [l for l in r.stdout.splitlines() if i in l]\na, b = warn('BG-aaaaaaa2'), warn('BG-bbbbbbb2')\nsys.exit(0 if r.returncode == 0 and a and not b else 1)\n"
       ]
     }
   ],

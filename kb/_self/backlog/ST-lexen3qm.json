@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-g2qseu5s close"
   ],
-  "notes": "SP-g2qseu5s retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: kb/_self/tools.md was in the touches of BG-h6aqngbp, BG-sxxmi2uc, BG-rxdpo5g5 and TK-kt3sgm2o; only TK-kt3sgm2o edited it (the three bug workers named it in Self-Reviewed), yet TK-kt3sgm2o was held back twice behind the code-lane chain."
+  "notes": "SP-g2qseu5s retrospective finding (2026-10-14), parked as a draft by the orchestrating session acting for the operator. Evidence: kb/_self/tools.md was in the touches of BG-h6aqngbp, BG-sxxmi2uc, BG-rxdpo5g5 and TK-kt3sgm2o; only TK-kt3sgm2o edited it (the three bug workers named it in Self-Reviewed), yet TK-kt3sgm2o was held back twice behind the code-lane chain. Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: held --overlaps already ignores kb/_self docs: bl_plan.touches_meet returns False when either touch is a shared_doc, so items sharing only a reviewed doc run in parallel; code files still meet."
 }

@@ -20,9 +20,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plugin_sprint_clone_commands"
+        "-c",
+        "\nimport glob, json, os, re, sys, tempfile\nsys.path.insert(0, \"_tools\")\nimport bl_selfcheck as sc\ntexts = glob.glob(\"skills/*/SKILL.md\") + [\"agents/worker.md\"]\nunrelative = []\nfor path in texts:\n    for line in open(path, encoding=\"utf-8\").read().splitlines():\n        if \"is the directory that holds the tool scripts\" in line and \"python3 _tools/\" not in line:\n            unrelative.append(path)\nroot = tempfile.mkdtemp()\nrules = [\"Bash(%s)\" % c for c in sc.SKILL_COMMANDS] + list(sc.SKILL_TOOLS)\nos.makedirs(os.path.join(root, \".claude\"))\nwith open(os.path.join(root, \".claude\", \"settings.json\"), \"w\", encoding=\"utf-8\") as f:\n    json.dump(dict(permissions=dict(allow=rules)), f)\nbody = \"---\\ndescription: x\\n---\\nRun `python3 ${CLAUDE_PLUGIN_ROOT}/_tools/unlisted_tool.py go` first.\\n\"\nfor d in (\"skills\", os.path.join(\".claude\", \"skills\")):\n    os.makedirs(os.path.join(root, d, \"s\"))\n    with open(os.path.join(root, d, \"s\", \"SKILL.md\"), \"w\", encoding=\"utf-8\") as f:\n        f.write(body)\nres = sc.check_allow(root)\nreads_text = res[\"state\"] == \"fail\" and \"unlisted_tool\" in res[\"detail\"]\nprint(\"variable lines without the relative form:\", unrelative, \"| selfcheck reads skill text:\", reads_text, file=sys.stderr)\nsys.exit(0 if not unrelative and reads_text else 1)\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "land_rebase_counts_commits_kept"
+        "-c",
+        "import sys, tempfile, subprocess, pathlib, io, contextlib, os\nsys.path.insert(0, '_tools')\nimport bl_land\nt = pathlib.Path(tempfile.mkdtemp())\nENV = dict(os.environ, GIT_AUTHOR_NAME='a', GIT_AUTHOR_EMAIL='a@example.com', GIT_COMMITTER_NAME='a', GIT_COMMITTER_EMAIL='a@example.com')\ndef g(*a, **kw):\n    return subprocess.run(['git', *a], cwd=t, env=dict(ENV, **kw), capture_output=True, text=True, check=True).stdout\ng('init', '-q', '-b', 'main')\nd = t / 'kb' / '_self' / 'backlog'; d.mkdir(parents=True)\ndef commit(name, text, msg, **kw):\n    (d / name).write_text(text); g('add', '-A'); g('commit', '-q', '-m', msg, **kw)\ncommit('BG-aaaaaaaa.json', '0\\n', 'base')\nbase = g('rev-parse', 'HEAD').strip()\ncommit('BG-aaaaaaaa.json', '1\\n', 'item a')\ncommit('BG-bbbbbbbb.json', '1\\n', 'item b')\ng('checkout', '-q', '-b', 'up', base)\ncommit('BG-aaaaaaaa.json', '1\\n', 'item a upstream copy', GIT_COMMITTER_DATE='2030-01-01T00:00:00')\ncommit('BG-cccccccc.json', '1\\n', 'item c')\ng('update-ref', 'refs/remotes/origin/main', g('rev-parse', 'HEAD').strip())\ng('checkout', '-q', 'main')\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_land.rebase_local(str(t), 'origin', 'main', 2, 'origin/main')\nout = buf.getvalue()\nn = g('rev-list', '--count', 'origin/main..HEAD').strip()\nsys.exit(0 if n == '1' and f'{n} local commit(s)' in out and 'rebased' in out else 1)\n"
       ]
     }
   ],

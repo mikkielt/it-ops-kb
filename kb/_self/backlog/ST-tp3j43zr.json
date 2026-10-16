@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "overlap_union_ledger"
+        "-c",
+        "\nimport sys\nsys.path.insert(0, '_tools')\nimport bl_plan as p\nled = 'kb/public/_anchors.csv'\nassert p.shared_doc(led), 'union ledger is no shared doc'\nassert p.shared_doc('kb/public/_gaps.md')\nassert not p.touches_meet(led, led, [led]), 'union ledger meets itself'\nassert not p.touches_meet('kb/public/*.csv', led, [led]), 'glob meets ledger'\nassert not p.shared_doc('kb/public/articles/x.md') and not p.shared_doc('_tools/bl_plan.py')\nassert p.touches_meet('_tools/bl_plan.py', '_tools/bl_plan.py', ['_tools/bl_plan.py'])\nclass BL:\n    def __init__(s):\n        s.items = dict(('ST-' + n, dict(touches=[led, 'kb/public/a' + n + '.md'], status='draft')) for n in 'abcd')\nbl = BL()\nfound, n = p.shared_files(bl, list(bl.items))\nassert not any(x[0] == led for x in found), found\n"
       ]
     }
   ],

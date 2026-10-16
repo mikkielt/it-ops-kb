@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "cost_rework_content_item_refused_done"
+        "-c",
+        "\nimport json, subprocess, sys, tempfile\nfrom pathlib import Path\ntmp = Path(tempfile.mkdtemp())\nlive = json.load(open(\"backlog.json\"))\n(tmp / \"backlog.json\").write_text(json.dumps({\"item_dir\": \"items\", \"id_prefixes\": live[\"id_prefixes\"]}))\nBL = str(Path(\"_tools/backlog.py\").resolve())\ndef run(*a):\n    return subprocess.run(a, cwd=tmp, capture_output=True, text=True, timeout=30)\ndef bl(*a):\n    return run(sys.executable, BL, \"--root\", str(tmp), *a)\nrun(\"git\", \"init\", \"-q\")\nbl(\"new\", \"sprint\", \"--title\", \"s\", \"--goal\", \"g\")\nsp = next((tmp / \"items\").glob(\"SP-*.json\")).stem\nrs = [x.stem for x in (tmp / \"items\").glob(\"ST-*.json\") if json.loads(x.read_text()).get(\"goal_research\")][0]\nrun_id = \"20261014T000000Z-aaaaaaaa\"\nd = tmp / \"kb\" / \"_querylog\" / \"work\" / \"2026-10\"\nd.mkdir(parents=True)\nm = {\"claude-opus-5-5\": {\"requests\": 4, \"in\": 8, \"cw\": 100, \"cw1h\": 100, \"cr\": 1000, \"out\": 50}}\npart = {\"claude-opus-5-5\": {\"requests\": 2, \"in\": 4, \"cw\": 50, \"cw1h\": 50, \"cr\": 500, \"out\": 25}}\nlines = [{\"run\": run_id, \"reader\": 1, \"counts\": {\"items\": 1, \"shared\": 0, \"missing\": 0}},\n         {\"item\": rs, \"prompts\": 2, \"main\": m, \"rework\": {\"prompts\": 1, \"main\": part}}]\n(d / (run_id + \".jsonl\")).write_text(\"\".join(json.dumps(x) + \"\\n\" for x in lines))\np = bl(\"cost\", sp, \"--rework\")\nassert p.returncode == 0, p.stderr\nassert \"no item has rework\" not in p.stdout, \"a content item with a rework block is reported as no rework\"\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "research_price_change_blocks_paid_record"
+        "-c",
+        "import sys\nok = False\nfor f in ('.claude/skills/kb-sprint/SKILL.md', 'kb/_self/backlog.md'):\n    for ln in open(f, encoding='utf-8').read().splitlines():\n        if 'bench_core.PRICE' in ln and 'research' in ln and 'gate' in ln:\n            ok = True\nprint('clause found:', ok)\nsys.exit(0 if ok else 1)\n"
       ]
     }
   ],

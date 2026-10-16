@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "pool_session_overrun_in_flight"
+        "-c",
+        "import sys, threading\nsys.path.insert(0, \"_tools\")\nimport bench_core, bench_pool\nbench_pool.record_of = lambda row, arm, label, r, cc=\"\": {\"id\": row[\"id\"], \"label\": label}\nbench_pool.session_fields = lambda r, before: ({}, before)\ndef row(i):\n    return {\"id\": f\"q{i}\", \"kind\": \"good\", \"source\": f\"s{i}\"}\ng1, g2, g3 = [row(1), row(2), row(3)], [row(4)], [row(5)]\nfirst_paid, s1_done, s3_started = threading.Event(), threading.Event(), threading.Event()\nstate = {}\ndef pay(x):\n    with bench_core.SPEND_LOCK:\n        bench_core.SPEND[\"usd\"] += x\ndef runner(arm, effort, r, sid, position):\n    n = r[\"id\"]\n    if n == \"q1\":\n        pay(2.5)\n        first_paid.set()\n        return {\"cost\": 2.5}\n    if n in (\"q2\", \"q3\"):\n        threading.Event().wait(0.5 if n == \"q2\" else 0.0)\n        s3_started.wait(3)\n        if n == \"q3\":\n            s1_done.set()\n        return {\"cost\": 0.0}\n    if n == \"q4\":\n        first_paid.wait(5)\n        threading.Event().wait(0.3)\n        return {\"cost\": 0.0}\n    state[\"s3_started_while_s1_in_flight\"] = not s1_done.is_set()\n    s3_started.set()\n    return {\"cost\": 0.0}\nbench_pool.run_sessions([g1, g2, g3], [(\"arm\", \"high\", \"lab\")], 1, runner, jobs=2, cap=5.0, usd=lambda label, kind: 1.0)\nflag = state.get(\"s3_started_while_s1_in_flight\")\nprint(\"third session started while the overrun session was in flight:\", flag)\nsys.exit(0 if flag is not True else 1)"
       ]
     }
   ],

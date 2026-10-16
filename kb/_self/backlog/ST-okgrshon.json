@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "done_sources_used_in_regenerated"
+        "-c",
+        "import sys, tempfile, os, io, contextlib, subprocess, argparse, json\nsys.path.insert(0, '_tools')\nimport bl_base, bl_land\nhdr = 'id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n'\ndef go(header):\n    d = tempfile.mkdtemp()\n    def g(*a):\n        return subprocess.run(['git', '-C', d, *a], check=True, capture_output=True, text=True).stdout\n    def w(p, t):\n        os.makedirs(os.path.dirname(os.path.join(d, p)), exist_ok=True)\n        open(os.path.join(d, p), 'w').write(t)\n    g('init', '-q')\n    g('config', 'user.email', 'a@b.c')\n    g('config', 'user.name', 'n')\n    w('backlog.json', json.dumps(dict(docs_map='')))\n    w('kb/public/_root.md', 'root\\n')\n    w('kb/public/_sources.csv', hdr + 'S1,https://example.com/a,A,P,MIT,copy,2026-01-01,v1,,arch/a.md,\\nS2,https://example.com/b,B,P,MIT,copy,2026-01-01,v1,,,\\n')\n    w('kb/public/arch/a.md', '---\\ntopic: arch/a\\nsources: [S1]\\n---\\n# A\\n')\n    g('add', '-A')\n    g('commit', '-q', '-m', 'base')\n    w('kb/public/_sources.csv', hdr + 'S1,https://example.com/a,A,P,MIT,copy,2026-01-01,v1,,arch/a.md,\\nS2,https://example.com/b,B,P,MIT,copy,2026-01-01,v1,,arch/a.md,\\n')\n    w('kb/public/arch/a.md', '---\\ntopic: arch/a\\nsources: ' + header + '\\n---\\n# A\\nA fact. [DOC S2]\\n')\n    g('add', '-A')\n    g('commit', '-q', '-m', 'work\\n\\nKB-Work: BG-bbbbbbbb')\n    bl_base.load_settings(d)\n    bl = bl_base.Backlog(d)\n    bl.items['BG-bbbbbbbb'] = dict(id='BG-bbbbbbbb', kind='bug', title='t', status='todo', goal='g', touches=['kb/public/arch/a.md'], checks=[dict(run=['true'])])\n    out = io.StringIO()\n    msg = ''\n    try:\n        with contextlib.redirect_stdout(out):\n            bl_land.cmd_done(bl, argparse.Namespace(id='BG-bbbbbbbb', dry_run=True, commit=False, trailer=[]))\n    except Exception as e:\n        msg = str(e)\n    return 'is not done' in msg and any('outside touches' in l and '_sources.csv' in l for l in msg.splitlines())\naccepted = not go('[S1, S2]')\nkept = go('[S1]')\nsys.exit(0 if accepted and kept else 1)\n"
       ]
     }
   ],

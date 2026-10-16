@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "factdiff_review_progress"
+        "-c",
+        "\nimport sys, io, re, types, subprocess, contextlib, collections\nsys.path.insert(0, \"_tools\")\nimport factdiff as fd\nfd.ROOT = types.SimpleNamespace(name=\"public\")\nlog = [dict(outcome=\"modified\", source_id=s, path=\"a.md\", fact=\"k%d\" % i, line=str(i), url=\"https://example.com/\" + s,\n            verdict=\"changed\", note=\"\", target=\"\") for i, s in enumerate((\"S901\", \"S902\"), 1)]\nfd.read_log = lambda p: log\nfd.sources = lambda: {s: {\"url\": \"https://example.com/\" + s} for s in (\"S901\", \"S902\")}\nfd.cited_facts = lambda prefix=None: {}\nfd.cite_counts = lambda f: {}\nfd.read_anchors = lambda: {}\nfd.provider.providers = lambda root: []\nfd.old_passage = lambda *a, **k: (None, \"\")\nfd.page_doc = lambda url, rows: (None, None)\nfd.load_json = lambda *a, **k: None\na = types.SimpleNamespace(log=\"x\", source=[], json=False, judge=False, dry_run=False, batch_size=None, model=None, max_budget_usd=None)\nerr, out = io.StringIO(), io.StringIO()\nwith contextlib.redirect_stderr(err), contextlib.redirect_stdout(out):\n    fd.cmd_review(a, collections.Counter())\nprogress = all(s in err.getvalue() for s in (\"S901\", \"S902\"))\nh = subprocess.run([sys.executable, \"_tools/factdiff.py\", \"review\", \"-h\"], capture_output=True, text=True).stdout\nbound = re.search(r\"\\b\\d+\\s*(s|sec|secs|seconds|min|minutes)\\b\", h) is not None\nsys.exit(0 if progress and bound else 1)\n"
       ]
     }
   ],

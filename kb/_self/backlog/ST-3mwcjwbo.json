@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "done_research_carried_shared_ledger"
+        "-c",
+        "\nimport sys, types\nsys.path.insert(0, \"_tools\")\nimport bl_land as L\nL.research_story = lambda bl, sid: \"ST-resrch0\"\nfiles = dict()\nL.item_commits = lambda root, ids: files\nbl = types.SimpleNamespace(items=dict(), root=\".\", sprint_of=lambda i: \"SP-sprint00\", ancestors=lambda i: [], descendants=lambda i: [])\nbl.items[\"ST-sibling0\"] = dict()\nledgers = [\"_answers.md\", \"_sources.csv\", \"_anchors.csv\", \"_gaps.md\", \"_conflicts.md\", \"_retrieval/x/rows.csv\"]\nleaked = []\nfor name in ledgers:\n    path = \"kb/public/\" + name\n    files.clear()\n    files[\"sha1\"] = [path]\n    if L.research_carried(bl, \"ST-sibling0\", [path]) is not None:\n        leaked.append(name)\nfiles.clear()\nfiles[\"sha2\"] = [\"kb/public/topic.md\"]\ncontrol = L.research_carried(bl, \"ST-sibling0\", [\"kb/public/topic.md\"]) is not None\nprint(\"credited by a shared ledger:\", leaked, \"control\", control, file=sys.stderr)\nsys.exit(0 if not leaked and control else 1)\n"
       ]
     }
   ],

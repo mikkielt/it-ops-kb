@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_splits_bare_and_assertions"
+        "-c",
+        "import sys, os, json, tempfile, types, io, contextlib, subprocess, re\nsys.path.insert(0, '_tools')\nimport bl_base, bl_land\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, 'kb', '_self', 'backlog'))\ndef put(it):\n    open(os.path.join(d, 'kb', '_self', 'backlog', it['id'] + '.json'), 'w').write(json.dumps(it))\nbad = [dict(run=['python3', '-c', 'import sys; sys.exit(1)'])]\nput(dict(id='SP-aaaaaaaa', kind='sprint', title='planted sprint', status='planned', goal='planted'))\nput(dict(id='ST-bbbbbbbb', kind='story', title='planted story', status='draft', priority='P3', sprint='SP-aaaaaaaa', goal='terms(26100) returns the build and terms(S-1-5-32-544) returns the group', checks=bad))\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_land.cmd_precheck(bl_base.Backlog(d), types.SimpleNamespace(sprint='SP-aaaaaaaa'))\nout = buf.getvalue()\nprint(out)\nsplit = re.search('^ +2[.] ', out, re.M) is not None\nwarned = any(l.startswith('warning') and 'ST-bbbbbbbb' in l for l in out.splitlines())\nsys.exit(0 if split or warned else 1)\n"
       ]
     }
   ],

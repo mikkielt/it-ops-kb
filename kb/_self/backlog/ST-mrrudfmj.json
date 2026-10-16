@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "redirect_hop_into_down_host_not_requested"
+        "-c",
+        "import sys,os,tempfile,threading,http.server\nsys.path.insert(0,'_tools')\nos.environ['no_proxy']='*'\nos.environ['NO_PROXY']='*'\nimport provider\nprovider.DOWN_DIR=tempfile.mkdtemp()\nprovider.DELAY=0\nhits=dict(a=0,b=0)\ndef mk(name,target):\n    class H(http.server.BaseHTTPRequestHandler):\n        def do_GET(self):\n            hits[name]+=1\n            if target:\n                self.send_response(302)\n                self.send_header('Location',target())\n                self.end_headers()\n            else:\n                self.send_response(200)\n                self.end_headers()\n                self.wfile.write(b'ok')\n        def log_message(self,*a):\n            pass\n    s=http.server.HTTPServer(('127.0.0.1',0),H)\n    threading.Thread(target=s.serve_forever,daemon=True).start()\n    return s\nsb=mk('b',None)\nub='http://127.0.0.1:%d/p'%sb.server_port\nsa=mk('a',lambda:ub)\nua='http://127.0.0.1:%d/p'%sa.server_port\nprovider.host_seen(ub,'URLError: refused')\nbefore=provider.host_down(ub)['count']\nwith provider.down_window():\n    r=provider.gated_request(ua)\nrec=provider.host_down(ub)\nsys.exit(0 if hits['b']==0 and rec is not None and rec['count']==before else 1)\n"
       ]
     }
   ],

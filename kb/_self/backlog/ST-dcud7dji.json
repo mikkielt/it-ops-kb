@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census_phase1_commit_one_domain"
+        "-c",
+        "import sys, os, tempfile, subprocess, pathlib\nsys.path.insert(0, '_tools')\nimport census, kbcommon\nENV = dict(os.environ, GIT_AUTHOR_NAME='a', GIT_AUTHOR_EMAIL='a@example.com', GIT_COMMITTER_NAME='a', GIT_COMMITTER_EMAIL='a@example.com')\nt = pathlib.Path(tempfile.mkdtemp()).resolve()\ng = lambda *a: subprocess.run(['git', *a], cwd=t, env=ENV, check=True, capture_output=True, text=True).stdout.strip()\ng('init', '-q', '-b', 'main')\n(t/'f').write_text('1'); g('add', '-A'); g('commit', '-q', '-m', 'docs(kb): census 2026-10-11 logs phase 1 verdicts')\nsha = g('rev-parse', 'HEAD')\n(t/'f').write_text('2'); g('add', '-A'); g('commit', '-q', '-m', 'docs(kb): census 2026-10-12 phase 1 verdicts')\nkbcommon.HOME = t\nsys.exit(0 if census.phase1_commit('2026-10-11') == sha else 1)\n"
       ]
     }
   ],

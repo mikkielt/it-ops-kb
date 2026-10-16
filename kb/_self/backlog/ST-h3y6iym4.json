@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "kb_bang_feedback"
+        "-c",
+        "\nimport json, os, subprocess, sys, tempfile\nfrom pathlib import Path\ntmp = Path(tempfile.mkdtemp())\nenv = dict(os.environ, CLAUDE_PLUGIN_DATA=str(tmp), CLAUDE_PLUGIN_ROOT=str(Path(\".\").resolve()))\nspool = tmp / \"querylog\" / \"spool\"\nspool.mkdir(parents=True)\n(spool / \"sess1.jsonl\").write_text(json.dumps({\"id\": \"00000000-0000-0000-0000-000000000000\", \"ts\": \"2026-10-16T10:00:00Z\", \"surface\": \"kb_hook\", \"v\": 1, \"session_id\": \"sess1\", \"prompt_id\": \"p1\", \"question\": \"how does x work\", \"verdict\": \"good\", \"lines\": [], \"pack\": \"P-0123abcd\"}) + \"\\n\")\nev = {\"hook_event_name\": \"UserPromptSubmit\", \"session_id\": \"sess1\", \"prompt_id\": \"p2\", \"prompt\": \"kb!: that answer is wrong, see kb/public/x/y.md:12\"}\np = subprocess.run([sys.executable, \"_tools/kb_hook.py\"], input=json.dumps(ev), capture_output=True, text=True, env=env, timeout=25)\nout = json.loads(p.stdout) if p.stdout.strip() else {}\nassert out.get(\"decision\") == \"block\", p.stdout\nrows = [json.loads(l) for f in spool.rglob(\"*.jsonl\") for l in f.read_text().splitlines() if l.strip()]\nfb = [r for r in rows if r.get(\"surface\") == \"feedback\"]\nassert fb and fb[0].get(\"session_id\") == \"sess1\", rows\n"
       ]
     }
   ],

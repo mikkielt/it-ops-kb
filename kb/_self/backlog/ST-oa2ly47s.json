@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "brief_closed_field_gate_parts"
+        "-c",
+        "import sys,tempfile,subprocess\nsys.path.insert(0,'_tools')\nimport bl_base,bl_dispatch\nd=tempfile.mkdtemp()\nsubprocess.run(['git','init','-q',d],check=True)\nbl=bl_base.Backlog(d)\ndef brief(goal):\n    bl.items['ST-bbbbbbbb']=dict(id='ST-bbbbbbbb',kind='story',title='Stored url gate',status='todo',goal=goal,touches=['_tools/x.py'],checks=[dict(run=['true'])])\n    return bl_dispatch.compose_brief(bl,'ST-bbbbbbbb')\ndef rule(t):\n    return [l for l in t.splitlines() if 'fragment' in l.lower() and 'query' in l.lower()]\ngate=rule(brief('Adds a gate that keeps free text out of the stored url field of a source row.'))\nother=rule(brief('Renames a flag of the read subcommand.'))\nsys.exit(0 if gate and not other else 1)\n"
       ]
     }
   ],

@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "self_source_pin_public"
+        "-c",
+        "\nimport re, shutil, subprocess, sys, tempfile\nfrom pathlib import Path\nsrc = Path(\".\").resolve()\ntmp = Path(tempfile.mkdtemp())\nshutil.copytree(src / \"_tools\", tmp / \"_tools\", ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\"))\nroot = tmp / \"kb\" / \"public\"\nroot.mkdir(parents=True)\n(root / \"_root.md\").write_text(\"---\\nroot: public\\nid_prefix: S\\nvisibility: public\\ndescription: t\\n---\\n\\n# public\\n\")\nhead = \"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\nurl = \"https://github.com/example/it-ops-kb/blob/eb079a248457aaaaaaaaaaaaaaaaaaaaaaaaaaaa/kb/_self/reports/benchmarks.csv\"\n(root / \"_sources.csv\").write_text(head + \"S100,\" + url + \",bench,Example,MIT,copy,2026-10-10,eb079a248457,,,\\n\")\n(root / \"_artifacts.csv\").write_text(\"source_id,path,sha256,bytes,retrieved_utc\\n\")\ndef run(*a):\n    return subprocess.run(a, cwd=tmp, capture_output=True, text=True, timeout=40)\nrun(\"git\", \"init\", \"-q\")\nrun(\"git\", \"remote\", \"add\", \"pub\", \"git@github.com:example/it-ops-kb.git\")\nrun(\"git\", \"config\", \"kb.publishRemote\", \"pub\")\np = run(sys.executable, \"_tools/check.py\")\nmine = [l for l in (p.stdout + p.stderr).splitlines() if \"S100\" in l or \"eb079a248457\" in l]\nassert any(re.search(r\"public|remote|origin/main\", l, re.I) for l in mine), \"check.py says nothing of a source row pinning this repository blob on its public home: \" + str(mine)\n"
       ]
     }
   ],

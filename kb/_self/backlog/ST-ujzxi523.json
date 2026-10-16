@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_widening_keeps_unrelated"
+        "-c",
+        "\nimport sys, io, tempfile, contextlib, types, json, os\nsys.path.insert(0, '_tools')\nimport bl_base as B, bl_land as L\nFAIL = dict(run=['python3', '-c', 'import sys; sys.exit(1)'])\ndef run(goal):\n    root = tempfile.mkdtemp()\n    d = os.path.join(root, B.rel_dir())\n    os.makedirs(d)\n    it = dict(id='ST-aaaaaaaa', kind='story', status='draft', title='t', sprint='SP-bbbbbbbb', goal=goal, checks=[FAIL], touches=['_tools/factdiff.py'])\n    sp = dict(id='SP-bbbbbbbb', kind='sprint', status='planned', title='s')\n    for x in (it, sp):\n        open(os.path.join(d, x['id'] + '.json'), 'w').write(json.dumps(x))\n    buf = io.StringIO()\n    with contextlib.redirect_stdout(buf):\n        L.cmd_precheck(B.Backlog(root), types.SimpleNamespace(sprint='SP-bbbbbbbb'))\n    return [l for l in buf.getvalue().splitlines() if l.startswith('warning') and 'widen' in l.lower()]\nassert run('factdiff widens the sections it compares so the verdict also reads the parent section'), 'no widening warning'\nassert not run('factdiff names the section in its report'), 'warning without a widening'\n"
       ]
     }
   ],

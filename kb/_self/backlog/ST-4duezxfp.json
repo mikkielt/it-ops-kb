@@ -19,5 +19,5 @@
   "links": [
     "parked: SP-foopqq2x close"
   ],
-  "notes": "SP-foopqq2x retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator."
+  "notes": "SP-foopqq2x retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator. Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Needs backlog.py done on a claimed content item in a planted git repo with a kb root, _anchors.csv and removed fact keys; too heavy to plant here."
 }

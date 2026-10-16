@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-vk3wf746 close"
-  ]
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Needs planted spool rows, claims ledger and result.json to drive bl_cost.open_lines; how a worker exit is read is unspecified. Too costly to plant faithfully."
 }

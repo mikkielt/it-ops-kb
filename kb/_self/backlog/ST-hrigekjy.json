@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "lint_header_sources_changed_article"
+        "-c",
+        "\nimport json, shutil, subprocess, sys, tempfile\nfrom pathlib import Path\nsrc = Path(\".\").resolve()\ntmp = Path(tempfile.mkdtemp())\nshutil.copytree(src / \"_tools\", tmp / \"_tools\", ignore=shutil.ignore_patterns(\"__pycache__\", \"*.pyc\"))\nlint = tmp / \".claude\" / \"skills\" / \"kb-verify\" / \"lint.py\"\nlint.parent.mkdir(parents=True)\nshutil.copy(src / \".claude\" / \"skills\" / \"kb-verify\" / \"lint.py\", lint)\nroot = tmp / \"kb\" / \"public\"\n(root / \"t\").mkdir(parents=True)\n(root / \"_root.md\").write_text(\"---\\nroot: public\\nid_prefix: S\\nvisibility: public\\ndescription: t\\n---\\n\\n# public\\n\")\nhead = \"id,url,title,publisher,licence,reuse,retrieved_utc,version_or_date,artifact_sha256,used_in,superseded_by\\n\"\nrows = \"S100,https://example.com/a,A,X,MIT,copy,2026-01-01,v1,,,\\nS101,https://example.com/b,B,X,MIT,copy,2026-01-01,v1,,,\\n\"\n(root / \"_sources.csv\").write_text(head + rows)\ndef art(extra):\n    return \"---\\ntopic: t/a\\npriority: P2\\napplies_to: x\\nretrieved_utc: 2026-01-01\\nsources: [S100]\\nstatus: partial\\nfiles: []\\n---\\n\\n# A\\n\\n## Summary\\nx\\n\\n## Facts\\n- Fact one. [DOC S100]\\n\" + extra + \"\\n## Reference\\nx\\n\\n## Examples\\nx\\n\"\na = root / \"t\" / \"a.md\"\na.write_text(art(\"\"))\ndef run(*argv):\n    return subprocess.run(argv, cwd=tmp, capture_output=True, text=True, timeout=25)\nb = run(sys.executable, \"_tools/build_index.py\")\ndef git(*args):\n    return run(\"git\", \"-c\", \"user.name=t\", \"-c\", \"user.email=t@example.com\", *args)\ngit(\"init\", \"-q\")\ngit(\"add\", \"-A\")\ngit(\"commit\", \"-q\", \"-m\", \"base\")\na.write_text(art(\"- Fact two. [DOC S101]\\n\"))\np = run(sys.executable, str(lint), \"--json\", \"public/t/a.md\")\nfound = json.loads(p.stdout)\nhit = [f for f in found if \"cited sources missing from the header\" in f[\"message\"]]\nassert hit, (b.stderr[-300:], found)\nassert hit[0][\"level\"] == \"ERROR\", hit\n"
       ]
     }
   ],

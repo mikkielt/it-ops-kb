@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "stale_lock_holder_is_an_orphan"
+        "-c",
+        "\nimport sys, os, json, time, tempfile\nsys.path.insert(0, '_tools')\nimport bl_procs as P, ql_base as Q\ndef holders(age):\n    base = tempfile.mkdtemp()\n    d = os.path.join(base, *P.HOOK_LOG)\n    os.makedirs(d)\n    p = os.path.join(d, Q.LOCK_NAME)\n    t = time.time() - age\n    json.dump(dict(pid=4242, started='x', started_epoch=t), open(p, 'w'))\n    os.utime(p, (t, t))\n    return P.lock_holders([base])\nassert holders(10) == {4242}, 'a fresh lock holder is counted'\nassert holders(Q.LOCK_STALE_S + 600) == set(), 'a stale lock holder is counted'\n"
       ]
     }
   ],

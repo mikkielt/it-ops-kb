@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "precheck_cache_input_variation"
+        "-c",
+        "import sys, os, json, tempfile, types, io, contextlib, subprocess\nsys.path.insert(0, '_tools')\nimport bl_base, bl_land\nd = tempfile.mkdtemp()\nsubprocess.run(['git', 'init', '-q', d], check=True)\nos.makedirs(os.path.join(d, 'kb', '_self', 'backlog'))\ndef put(it):\n    open(os.path.join(d, 'kb', '_self', 'backlog', it['id'] + '.json'), 'w').write(json.dumps(it))\nbad = [dict(run=['python3', '-c', 'import sys; sys.exit(1)'])]\nput(dict(id='SP-aaaaaaaa', kind='sprint', title='planted sprint', status='planned', goal='planted'))\ndef story(i, goal):\n    put(dict(id=i, kind='story', title='planted ' + i, status='draft', priority='P3', sprint='SP-aaaaaaaa', goal=goal, checks=bad))\nstory('ST-bbbbbbbb', 'The lookup cache reuses its stored result for the freshness lifetime of a source, not for one hour')\nstory('ST-cccccccc', 'The report prints the item title in its first column')\nbuf = io.StringIO()\nwith contextlib.redirect_stdout(buf):\n    bl_land.cmd_precheck(bl_base.Backlog(d), types.SimpleNamespace(sprint='SP-aaaaaaaa'))\nout = buf.getvalue()\nprint(out)\nwarn = [l for l in out.splitlines() if l.startswith('warning')]\nsys.exit(0 if any('ST-bbbbbbbb' in w for w in warn) and not any('ST-cccccccc' in w for w in warn) else 1)\n"
       ]
     }
   ],

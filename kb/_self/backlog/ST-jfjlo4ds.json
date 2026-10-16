@@ -10,9 +10,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "apply_push_names_merge_request"
+        "-c",
+        "\nimport sys\nfrom pathlib import Path\nsys.path.insert(0, \"_tools\")\nimport ql_deliver\nlines = []\np = ql_deliver.Pusher(Path(\".\").resolve(), Path(\".\"), None, None, lines.append, cloud=False)\np.git = lambda *a, **k: (0, \"deadbeefcafe0123\\n\", \"\")\np.tool = lambda name, *a: (0, \"pushed: yes: branch code/ST-abcdefgh on origin (deadbeefc); main did not move\\n\", \"\")\nassert p.deliver(\"run1\") == 0\nsaid = [ln for ln in lines if ln.startswith(\"apply --push:\")]\nassert said, lines\nassert not any(\"origin/main\" in ln for ln in said), said\nassert any(\"merge request\" in ln and \"code/ST-abcdefgh\" in ln for ln in said), said\n"
       ]
     }
   ],
