@@ -21,6 +21,25 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which credential words keep a token-phrase question in the secrets text of the gate classifier?",
+      "options": [
+        "every-phrase",
+        "overlap-phrase-only"
+      ],
+      "recommendation": "every-phrase",
+      "do": {
+        "every-phrase": "BG-2dwhxw5p",
+        "overlap-phrase-only": "BG-2dwhxw5p"
+      },
+      "class": "secrets",
+      "answer": "every-phrase",
+      "by": "operator"
+    }
+  ],
   "links": [
     "found: SP-z3hyk4eh review"
   ],
