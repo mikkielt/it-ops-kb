@@ -2,7 +2,7 @@
   "id": "ST-w2if4brd",
   "kind": "story",
   "title": "research-repro.md carries the review fixes of SP-ccvfvoqj and the lessons of the first run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
@@ -102,5 +102,6 @@
   "touches": [
     "kb/_self/reports/research-repro.md"
   ],
-  "notes": "Merges the seven report drafts of the SP-ccvfvoqj review: ST-2odu67jf, ST-fwcymdbd, ST-yt6ic6og, ST-7oditvku, ST-q6n7eenp, ST-lv5y2b2d, ST-xslgjvlc; each one's check is kept in order, their goals give the figures (pair 1+2 url_jaccard 0.71, 0.00, 0.54, 0.21, 0.47 on age, sops, rust, python, cpython in record 2170d88). Readings from the lessons analysis of 2026-10-15 (outside the repo; quoted here): gentoo in instance 1 and bash in instance 3 finished but kbgit.py sync --push refused them, test_live_kb.py:364 failing on EV-page-file-size-windows (verdict good, want weak, the word window on the COMMON_SHARE 0.2 edge of kbfacts.py); both sessions declined to edit the row and ended; reset_clone then discarded the unpushed commits (6a978377f in instance 1). The Haiku rows (puppet 1 and 3, chef 2, almalinux 3, at most 13k output tokens) are CLI-internal: no Agent tool call appears in any transcript. Byte parity: about 1% of added bytes are identical across instances (headings), at most 5 to 8% with every tool fix; prose, answers and anchors, about 90%, cannot be byte-identical between sampled runs. Code-lane path (kb/_self/reports/research-repro.md, kblane.path_lane code): lands with land --wait-merge."
+  "notes": "Merges the seven report drafts of the SP-ccvfvoqj review: ST-2odu67jf, ST-fwcymdbd, ST-yt6ic6og, ST-7oditvku, ST-q6n7eenp, ST-lv5y2b2d, ST-xslgjvlc; each one's check is kept in order, their goals give the figures (pair 1+2 url_jaccard 0.71, 0.00, 0.54, 0.21, 0.47 on age, sops, rust, python, cpython in record 2170d88). Readings from the lessons analysis of 2026-10-15 (outside the repo; quoted here): gentoo in instance 1 and bash in instance 3 finished but kbgit.py sync --push refused them, test_live_kb.py:364 failing on EV-page-file-size-windows (verdict good, want weak, the word window on the COMMON_SHARE 0.2 edge of kbfacts.py); both sessions declined to edit the row and ended; reset_clone then discarded the unpushed commits (6a978377f in instance 1). The Haiku rows (puppet 1 and 3, chef 2, almalinux 3, at most 13k output tokens) are CLI-internal: no Agent tool call appears in any transcript. Byte parity: about 1% of added bytes are identical across instances (headings), at most 5 to 8% with every tool fix; prose, answers and anchors, about 90%, cannot be byte-identical between sampled runs. Code-lane path (kb/_self/reports/research-repro.md, kblane.path_lane code): lands with land --wait-merge.",
+  "claimed_by": "orch-r14"
 }
