@@ -2,7 +2,7 @@
   "id": "ST-eefdl6am",
   "kind": "story",
   "title": "repro run rotates the area order per instance and starts no area the cap cannot cover",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ysuvdxsn",
   "priority": "P2",
   "rank": 0,
@@ -55,5 +55,6 @@
   "depends_on": [
     "ST-zezjnwe6"
   ],
-  "notes": "Premise (lessons analysis 1.6, 4.2): all 10 budget failures of the first run were tail areas of the one fixed order (age to pip; pip run by none, instance 3 lost 7), and the cap was checked before an area so spend passed it (59.09, 60.79 against 58). The rotation and the reserve rule are the analysis's recommendation 6; the function names are fixed here so the checks can call them. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise (lessons analysis 1.6, 4.2): all 10 budget failures of the first run were tail areas of the one fixed order (age to pip; pip run by none, instance 3 lost 7), and the cap was checked before an area so spend passed it (59.09, 60.79 against 58). The rotation and the reserve rule are the analysis's recommendation 6; the function names are fixed here so the checks can call them. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-r13"
 }
