@@ -2,7 +2,7 @@
   "id": "ST-kczymrwg",
   "kind": "story",
   "title": "Review sprint: Any agent coordinates through coord.py",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rsmmwzr2",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r02"
+  "evidence": {
+    "commit": "0f54e2ce6a9d7efc7c007926d178dae5c0da8a9e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "4ec1a5b644197f46"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "3033414014dc0fef"
+      }
+    ]
+  }
 }
