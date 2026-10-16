@@ -2,7 +2,7 @@
   "id": "ST-duwzvvq7",
   "kind": "story",
   "title": "factdiff anchor --file takes either path form and proposes each fact's quote",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-b36246xo",
   "priority": "P2",
   "rank": 0,
@@ -143,5 +143,37 @@
     }
   ],
   "notes": "Premise (lessons analysis 4.5): 175 calls in 44 sessions got 'is no tagged fact of the file' for a kb/public/... path, 276 'quote not held' (multi-source bullets need one quote per source), 57 inline scripts built quote CSVs. At 5834a99e2 anchor --file kb/public/security/gentoo-in-wsl.md --dry-run prints No file; the root-relative form works. Merges ST-xahz4kok (factdiff.py anchor --file --quotes anchors CODE-tagged facts): its CODE clause no longer reproduces (2026-10-15: a planted --quotes row for the CODE fact python/pytest-xdist.md:68 is read as a tagged fact; cited_facts skips only UNK); its second clause, no other topic's rows rewritten, is this story's fourth clause. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: this story closes BG-vtbn4orn (repo-relative --file with --quotes) and BG-5rqmrtl7 (a quote per cited source, repro reworded to the line,source,quote form of g1); both stay out of the sprint, linked 'closed by: ST-duwzvvq7', and are dropped as delivered when their repros pass after this story lands.",
-  "claimed_by": "orch-b36246xo"
+  "evidence": {
+    "commit": "a54398946fff9a0be71d3270b008a8506fe54894",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--file','kb/public/security/zsh-completion-system.md','--dry-run'],capture_output=True,text=True);print((p.stdout+p.stderr)[-300:]);sys.exit(0 if p.returncode==0 and 'No file' not in p.stdout+p.stderr else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e336b2a057797a86"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys;p=subprocess.run([sys.executable,'_tools/factdiff.py','anchor','--help'],capture_output=True,text=True);sys.exit(0 if p.returncode==0 and '--propose' in p.stdout else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "test_lint_names_a_facts_line_with_a_second_bullet"
+        ],
+        "exit": 0,
+        "sha256": "9ab7a86853c05272"
+      }
+    ]
+  }
 }
