@@ -42,7 +42,9 @@
         "State what check-trailers does": "ST-y45bm4pi",
         "Word it as the goal does": "ST-y45bm4pi"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "State what check-trailers does",
+      "by": "operator"
     }
   ],
   "links": [
