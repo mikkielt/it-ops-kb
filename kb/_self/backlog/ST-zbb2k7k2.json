@@ -1,0 +1,26 @@
+{
+  "id": "ST-zbb2k7k2",
+  "kind": "story",
+  "title": "check warns of an item whose every check is an inspect.getsource text match",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check counts a python3 -c check that only greps inspect.getsource(...) of a module as a read of source text, so its warning that every check only reads files fires for it (SP-a3w7xdij: BG-5qgk6hgb's two checks and ST-ei4ci5xm's one read 'install-hooks', 'RESULTS' and 'patch-id' in the source; the workers proved the behaviour by hand runs that no check repeats)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('_tools/bl_check.py',encoding='utf-8').read()\nsys.exit(0 if 'getsource' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij close"
+  ],
+  "notes": "Retrospective finding of SP-a3w7xdij."
+}

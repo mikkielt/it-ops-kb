@@ -1,0 +1,26 @@
+{
+  "id": "ST-3vbwxn7c",
+  "kind": "story",
+  "title": "A worker's manual repro setup goes under its scratch directory, which dispatch cleans",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the worker brief tells a worker that runs repro setup or another bench command by hand to set BENCH_SCRATCH to its item's scratch directory, so its throwaway clones are removed with the scratch and none is left under the system temp directory (SP-a3w7xdij: BG-5qgk6hgb's worker left a repro instance clone under $TMPDIR/it-ops-kb-bench, rm denied)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('_tools/bl_dispatch.py',encoding='utf-8').read()+open('.claude/agents/kb-worker.md',encoding='utf-8').read()\nsys.exit(0 if 'BENCH_SCRATCH' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    ".claude/agents/kb-worker.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij close"
+  ],
+  "notes": "Retrospective finding of SP-a3w7xdij."
+}

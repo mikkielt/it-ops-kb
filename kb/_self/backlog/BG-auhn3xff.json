@@ -14,5 +14,5 @@
       "import sys;sys.path.insert(0,'_tools');import bl_authority as b;r=b.class_reasons({'touches':['_tools/bench_repro.py']},{'id':'g1','question':'what token overlap of two facts words makes one claim','options':['0.5','0.8']});sys.exit(0 if r[0]=='design' else 1)"
     ]
   },
-  "notes": "2026-10-16 BG-ijyjl7ii gate g1: a question and options about the token counts a stream reported (a repro area's cost record) matched 'token' and was made blocking, class secrets."
+  "notes": "2026-10-16 BG-ijyjl7ii gate g1: a question and options about the token counts a stream reported (a repro area's cost record) matched 'token' and was made blocking, class secrets. Recurred in SP-a3w7xdij: ST-y4naelcs's worker gate g1 about article paths was classed secrets because its question names the area ssh-windows-estate (word ssh), which made a provisional gate blocking."
 }

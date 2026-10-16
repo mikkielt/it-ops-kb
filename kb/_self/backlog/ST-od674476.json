@@ -1,0 +1,25 @@
+{
+  "id": "ST-od674476",
+  "kind": "story",
+  "title": "plan step 6 reads a goal clause that describes a tool's behaviour against the code before the start gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step 6 says a goal clause or parenthetical that states what an existing tool does (a hook, check-trailers, a refusal) is read against that code (referrers of the function) before the start gate, so a worker does not find the goal contradicts the code and stop on a blocking gate (SP-a3w7xdij: ST-y45bm4pi's goal said the hook names the changed items one id per line; kg_trailers never writes KB-Work, and the worker added blocking gate g1)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read().split('## plan')[1].split('## start')[0]\nsys.exit(0 if 'states what an existing tool does' in t or 'describes a tool' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij close"
+  ],
+  "notes": "Retrospective finding of SP-a3w7xdij."
+}

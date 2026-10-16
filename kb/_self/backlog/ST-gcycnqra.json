@@ -1,0 +1,26 @@
+{
+  "id": "ST-gcycnqra",
+  "kind": "story",
+  "title": "repro run records --instance-usd in run.json with its other settings",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_repro.run writes the instance cap (instance_usd) into run.json beside area_usd and max_turns, so a report that states a run's settings as the run recorded them can read every one of them (SP-a3w7xdij: research-repro.md took 58 from the brief, and the review found the sentence beside it wrong)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import bench_repro as b\nL=[l for l in inspect.getsource(b.run).splitlines() if 'note = {k: opts[k]' in l];print(L);sys.exit(0 if L and 'instance_usd' in L[0] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij close"
+  ],
+  "notes": "Retrospective finding of SP-a3w7xdij."
+}
