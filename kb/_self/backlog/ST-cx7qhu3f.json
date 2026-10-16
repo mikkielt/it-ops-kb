@@ -2,7 +2,7 @@
   "id": "ST-cx7qhu3f",
   "kind": "story",
   "title": "The kb says which Claude Code parallel-work option fits which coordination need and what each shares or isolates",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ylklxolb",
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
@@ -58,5 +58,6 @@
     "live: https://code.claude.com/docs/en/workflows",
     "kb: claude/cross-session-messaging.md:168 (three documented cross-repository forms)"
   ],
-  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed. Packs: question 1 weak (lacks coordination, teams), 2 none (worktree.bgIsolation), 3 good for cross-session messaging only, 4 weak."
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed. Packs: question 1 weak (lacks coordination, teams), 2 none (worktree.bgIsolation), 3 good for cross-session messaging only, 4 weak.",
+  "claimed_by": "orch-r03"
 }
