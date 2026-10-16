@@ -2,7 +2,7 @@
   "id": "ST-dgg4jvxr",
   "kind": "story",
   "title": "the research write set names the placeholder rule the leak scan enforces",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,6 @@
     "kb/_self/content-rules.md",
     "kb/_self/_retrieval/lookup_eval.csv"
   ],
-  "notes": "Premise 2026-10-15 at 5834a99e2: the placeholder rule itself is already in the set (SE-026, content-rules.md:89), but no line of the kb-research:write set names the leak scan or the shapes it refuses; podman in instances 1 and 3 was refused for Podman's documented default subnet address and a container name in a user-at-host form (lessons analysis 1.6). Lands with land --wait-merge: kb/_self/_retrieval/lookup_eval.csv is a code-lane path. Checks that pass before the work: rag.py eval --root _self pass before the work and are kept as guards (the change must keep them green); check 0 (all three sets) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise 2026-10-15 at 5834a99e2: the placeholder rule itself is already in the set (SE-026, content-rules.md:89), but no line of the kb-research:write set names the leak scan or the shapes it refuses; podman in instances 1 and 3 was refused for Podman's documented default subnet address and a container name in a user-at-host form (lessons analysis 1.6). Lands with land --wait-merge: kb/_self/_retrieval/lookup_eval.csv is a code-lane path. Checks that pass before the work: rag.py eval --root _self pass before the work and are kept as guards (the change must keep them green); check 0 (all three sets) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-b36246xo"
 }
