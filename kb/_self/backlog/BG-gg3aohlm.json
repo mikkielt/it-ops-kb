@@ -2,7 +2,7 @@
   "id": "BG-gg3aohlm",
   "kind": "bug",
   "title": "repro replay adds a second KB-Work trailer to a replayed backlog-planning commit, which the push gate refuses",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,18 @@
     "parked: SP-bhzxxhub review"
   ],
   "notes": "Plan 2026-10-15: its planted repro still fails on main 5834a99e2 (the replayed backlog-planning commit gets a second KB-Work line). 2026-10-16: the suite part of the plan is dropped under the operator's test policy D-2tq4fhgs; the planted repro is the proof.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "77acf9b024a1764b9640fe81f4b0d39e22539dbc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nsys.path.insert(0,os.path.abspath('_tools'))\nimport bench_repro as b\nt=tempfile.mkdtemp();g=lambda c,*a:s.run(['git','-C',c,'-c','user.name=t','-c','user.email=t@t','-c','core.hooksPath=/dev/null',*a],check=True,capture_output=True,text=True).stdout\nw=t+'/w';os.makedirs(w+'/kb/_self/backlog');g(w,'init','-q','-b','main');open(w+'/a','w').write('a');g(w,'add','-A');g(w,'commit','-qm','start')\nrev=g(w,'rev-parse','HEAD').strip();g(t,'clone','-q','--bare',w,t+'/o.git');c=t+'/c';g(t,'clone','-q',t+'/o.git',c)\nos.makedirs(c+'/kb/_self/backlog',exist_ok=True);open(c+'/kb/_self/backlog/ST-x.json','w').write('{}')\ng(c,'add','-A');g(c,'commit','-qm','chore(backlog): file ST-x\\n\\nKB-Work: ST-x');g(c,'push','-q','origin','main')\njson.dump({'rev':rev,'instances':[{'n':1,'bare':t+'/o.git'}]},open(t+'/'+b.MANIFEST,'w'))\nos.chdir(w);b.replay(1,'ST-y',root=t,out=lambda *a:None)\nmsg=g(w,'log','-1','--format=%B');n=msg.count('KB-Work:');print(repr(msg));sys.exit(0 if n==1 and 'ST-y' not in msg else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "10913a1b83d169b1"
+      }
+    ]
+  }
 }
