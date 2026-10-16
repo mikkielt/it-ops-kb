@@ -103,7 +103,9 @@
         "each fact whose cited source holds no located anchor row for it: no row, or an unlocated one (no-match, fetch-error, not-text, gone)": "ST-duwzvvq7",
         "only a fact with no anchor row at all": "ST-duwzvvq7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "each fact whose cited source holds no located anchor row for it: no row, or an unlocated one (no-match, fetch-error, not-text, gone)",
+      "by": "operator"
     },
     {
       "id": "g3",
