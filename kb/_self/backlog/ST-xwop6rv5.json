@@ -46,8 +46,7 @@
   ],
   "depends_on": [
     "ST-a57bxubz",
-    "ST-5h35ouv5",
-    "ST-rk5ks4pf"
+    "ST-5h35ouv5"
   ],
   "relates_to": [
     "EP-ylklxolb"

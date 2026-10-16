@@ -48,8 +48,7 @@
     "kb/_self/web-sources.md"
   ],
   "depends_on": [
-    "ST-x6mvfnmv",
-    "ST-qguxlob4"
+    "ST-x6mvfnmv"
   ],
   "gates": [
     {
