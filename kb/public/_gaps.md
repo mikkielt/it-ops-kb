@@ -1705,3 +1705,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## agents/typescript-projects-declarations-incremental
 
 - **Whether `tsc --showConfig` prints `references`.** `references` is not inherited through `extends` (S-ff6may7t), and the handbook says `--showConfig` prints the final configuration (S-j645b5a2); neither page says if a `references` array appears in that output, and the 7.0.2 `showConfig` code was not read for it (2026-10-15). A run of `tsc --showConfig` in a project with references settles it. (topic: agents/typescript-projects-declarations-incremental)
+
+## agents/agent-cost-governance
+
+- **agent teams token cost each teammate separate context window** The kb was asked this in a logged lookup of 2026-10-16, and no article answered it (query log finding F-2f4d3eb31c9e). Looked in the kb 2026-10-16: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: agents/agent-cost-governance)
