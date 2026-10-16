@@ -109,7 +109,9 @@
         "no store: the hooks stay silent until KB_COORD_STORE is set": "ST-x6mvfnmv",
         "_cache/coord.sqlite in each checkout": "ST-x6mvfnmv"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "kb-coord/coord.sqlite in the clone's common git directory, shared by its worktrees",
+      "by": "operator"
     },
     {
       "id": "g4",
