@@ -35,7 +35,9 @@
         "topic-marker": "BG-wh3wardm",
         "new-intent-field": "BG-wh3wardm"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "topic-marker",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-r03"
