@@ -220,6 +220,22 @@ def test_lint_names_a_facts_line_with_a_second_bullet_after_its_tag_and_warns_of
     ledger[key] = {**ledger[key], "status": "unlocated:no-match", "heading": "", "terms": "", "sha": "", "quote": ""}
     n_fetched, n_written = len(fetched), len(written)
     assert anchor_file() == 0 and fetched[n_fetched:] == [[]] and len(written) == n_written
+    # a retry that fails the way the row says it did leaves the row as it was, so nothing is written; a gone row verified
+    # within the backoff (GONE_BACKOFF_DAYS) is not fetched at all, one verified before it is, then kept the same way
+    failing = {"unlocated:fetch-error": {"status": 0, "error": "timed out"}, "unlocated:not-text": {"status": 200, "text": None},
+               "unlocated:gone": {"status": 404}}
+    for status, answer in failing.items():
+        ledger[key] = {**kept_a, "fact": new_key, "status": status, "heading": "", "terms": "", "sha": "", "quote": "", "verified_utc": "2026-01-01"}
+        served[0] = answer
+        n_fetched, n_written = len(fetched), len(written)
+        assert anchor_file() == 0 and [i for i in fetched[n_fetched:] if i] == [[SID]] and len(written) == n_written, status
+        assert "kept (still " in capsys.readouterr().out, status
+    ledger[key] = {**ledger[key], "verified_utc": factdiff.today()}
+    n_fetched = len(fetched)
+    assert anchor_file() == 0 and fetched[n_fetched:] == [[]] and len(written) == n_written
+    served[0] = {"status": 200, "text": f"{missing} Finished jobs wait for an operator."}
+    ledger[key] = {**ledger[key], "status": "unlocated:fetch-error"}
+    assert anchor_file() == 0 and len(written) == n_written + 1 and written[-1][key]["status"] == "located"
     # --file names the article as the root-relative path, `<root>/<path>`, `kb/<root>/<path>` from the repository or its
     # absolute path does; a path that names no file of the root is kept as given for the caller to refuse
     forms = ("print/queues.md", "fixture/print/queues.md", "kb/fixture/print/queues.md", str(art), "print/../print/queues.md")

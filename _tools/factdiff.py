@@ -536,6 +536,18 @@ def fetch_all(ids, srcs, max_age=7, refetch=False, log=True):
 
 # rows a fetch that failed or returned no text left: `anchor --file` tries their facts again (no-match rows stay as they are)
 RETRY_STATUS = ("unlocated:fetch-error", "unlocated:not-text", "unlocated:gone")
+GONE_BACKOFF_DAYS = 7  # a gone row (404/410) is fetched again by `anchor --file` only once its `verified_utc` is this old
+
+
+def backing_off(row, when):
+    """Whether `row` is a gone row verified fewer than GONE_BACKOFF_DAYS days before the date `when`."""
+    if row is None or row["status"] != "unlocated:gone":
+        return False
+    try:
+        age = (datetime.date.fromisoformat(when[:10]) - datetime.date.fromisoformat((row.get("verified_utc") or "")[:10])).days
+    except ValueError:
+        return False
+    return age < GONE_BACKOFF_DAYS
 
 def read_anchors():
     p = root_path(ANCHORS)
@@ -754,22 +766,24 @@ def cmd_anchor(a):
     anchors = read_anchors()
     before = dict(anchors)
     # --file alone: only the facts of those files that hold no anchor row (a new or reworded fact: its key is new), whose
-    # row a failed or non-text fetch left (RETRY_STATUS: fetched again past the cache) or that the quote CSV names; no other
-    # row of the ledger and no `_fetch_state.csv` row is written
+    # row a failed or non-text fetch left (RETRY_STATUS: fetched again past the cache, a gone row once GONE_BACKOFF_DAYS
+    # old) or that the quote CSV names; no other row of the ledger and no `_fetch_state.csv` row is written, and a retry
+    # that fails the same way leaves its row as it was
+    when = today()
     only = {os.path.normpath(f).replace(os.sep, "/") for f in a.file} if a.file and not (a.topic or a.dir or a.source) else None
     todo, retry = facts, set()
     if only is not None:
         def wanted(f, sid):
             row = anchors.get((f[0], f[1], sid))
-            if row is not None and row["status"] in RETRY_STATUS:
+            again = row is not None and row["status"] in RETRY_STATUS and not backing_off(row, when)
+            if again:
                 retry.add(sid)
-            return row is None or row["status"] in RETRY_STATUS or (f[1] == rel and quote_for(quotes, f[2], sid) is not None)
+            return row is None or again or (f[1] == rel and quote_for(quotes, f[2], sid) is not None)
         todo = {sid: [f for f in fs if f[1] in only and wanted(f, sid)] for sid, fs in facts.items()}
         ids = [i for i in ids if todo.get(i)]
     docs = fetch_all([i for i in ids if i not in retry], srcs, a.max_age, a.refetch)
     if retry & set(ids):
         docs.update(fetch_all([i for i in ids if i in retry], srcs, a.max_age, True))
-    when = today()
     counts = collections.Counter()
     cites = cite_counts(facts)
     for sid in ids:
@@ -789,6 +803,9 @@ def cmd_anchor(a):
             if old and old["status"] == "located" and row["status"].startswith("unlocated:fetch"):
                 counts["kept (fetch failed)"] += 1
                 continue  # a failed fetch never erases a located anchor
+            if only is not None and old and old["status"] in RETRY_STATUS and row["status"] == old["status"]:
+                counts["kept (still " + old["status"].split(":")[1] + ")"] += 1
+                continue  # the retry failed the same way: the row stays as it was, so the ledger is not rewritten
             anchors[k] = row
             counts[row["status"]] += 1
     live = {(k, rel_, sid) for sid, fs in facts.items() for k, rel_, _, _ in fs}

@@ -48,6 +48,44 @@
   "depends_on": [
     "ST-duwzvvq7"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How many days must a gone anchor row be old before anchor --file fetches its source again?",
+      "options": [
+        "7 days",
+        "1 day",
+        "30 days"
+      ],
+      "recommendation": "7 days",
+      "do": {
+        "7 days": "ST-yb5x4x3d",
+        "1 day": "ST-yb5x4x3d",
+        "30 days": "ST-yb5x4x3d"
+      },
+      "class": "design",
+      "answer": "7 days",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does the gone backoff count from, given a retry that fails again leaves the row unchanged?",
+      "options": [
+        "row verified_utc",
+        "new last-retry column"
+      ],
+      "recommendation": "row verified_utc",
+      "do": {
+        "row verified_utc": "ST-yb5x4x3d",
+        "new last-retry column": "ST-yb5x4x3d"
+      },
+      "class": "design",
+      "answer": "row verified_utc",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-srqmriw6 review"
   ],
