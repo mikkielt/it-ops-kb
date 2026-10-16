@@ -2,7 +2,7 @@
   "id": "ST-ksmmg2fi",
   "kind": "story",
   "title": "Research sprint goal: Any agent coordinates through coord.py",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-rsmmwzr2",
   "goal_research": true,
   "priority": "P1",
@@ -58,5 +58,19 @@
     }
   ],
   "notes": "Plan 2026-10-16: ST-unrlktke carries the research this goal needs (agent messages, typed parts, research dedup, coordination cost); this story researches only what the goal needs beyond it, or records `No outside facts:` naming ST-unrlktke.",
-  "claimed_by": "orch-r02"
+  "evidence": {
+    "commit": "0fdf3b3fd64acada2e809049961bb1bb6820fff8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-ksmmg2fi"
+        ],
+        "exit": 0,
+        "sha256": "e5a5898e0e1d223b"
+      }
+    ]
+  }
 }
