@@ -115,8 +115,6 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
   resource with an "attention budget": every added token depletes it, and recommends finding the smallest set of
   high-signal tokens for the task. For long-horizon tasks it names compaction, structured note-taking, and multi-agent
   (sub-agent) architectures. [DOC S1855]
-- What that guidance implies for a message between agents (a sub-agent's condensed return, the brief's contents) is in
-  `agents/coordination-messages.md`. (no tag)
 - A separate, real regression (not a documented limit) illustrates the practical stakes of instruction/system-prompt
   volume in Claude Code: the fixed system-prompt token overhead grew by roughly 70K tokens between two neighboring
   Claude Code versions (2.1.89 -> 2.1.96), reported by users as making sessions "effectively unusable" without manual
@@ -171,7 +169,9 @@ a generic 400 on the underlying model call, worded around "exceeds the maximum" 
 ## Reference
 See `agents/instruction-and-context-limits.csv` for the normalized product/limit/value/error-text table (40 rows
 after this deepening pass). For the Claude Code data point in this survey (SKILL.md `description`+`when_to_use`
-truncated at 1,536 characters), see `claude/skills-and-subagents.md`.
+truncated at 1,536 characters), see `claude/skills-and-subagents.md`. For what the context-engineering guidance
+implies for a message between agents (a sub-agent's condensed return, the brief's contents), see
+`agents/coordination-messages.md`.
 
 ## Examples
 None of the products above expose a fixture-estate-relevant example; this topic concerns a project's own instruction
