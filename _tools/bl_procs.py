@@ -8,8 +8,10 @@ Classes: `orphan` (its parent is gone: a background run a session left behind), 
 is the query log's distill.log and that is still at work: the run a session's end hook started, which waits for the
 distill lock up to the query log's USAGE_LOCK_WAIT_S, delivers with its parent gone, and ends on its own; it is at work
 while the distill lock records its pid, or while it is younger than USAGE_LOCK_WAIT_S plus HOOK_MARGIN_S) and `foreign`
-(anything else: a live session's own work). Nothing is ever signaled: an orphan is named for the operator, who ends it
-when it is theirs, and `backlog.py selfcheck` fails while one runs; a hook in flight is named with its age and fails
+(anything else: a live session's own work). `procs` signals nothing: an orphan is named for the operator, who ends it
+when it is theirs, and `backlog.py selfcheck` fails while one runs. `end_orphans(worktree)` is the one place that
+signals: `dispatch` calls it once the worker has exited, to end the orphans in the worker's worktree (the MCP servers
+its session started), and prints each pid and command name it ended; a hook in flight is named with its age and fails
 nothing, and a distill run past both is a stuck one, an orphan. HOOK_GRACE_S is the shorter wait `land` makes. A
 process's command line and environment are never read: only its command name is printed, and a hook is told by the file
 its standard output is. Where a host cannot list working directories (Windows) it says so. Exit codes: 0 listed (also on
@@ -18,8 +20,10 @@ a host that cannot check), 2 a bad request.
 Standard library only; imports `bl_base` and `bl_cli`, never `backlog` (a layer rule). It registers its own subcommand
 when imported, so `backlog.py` carries only the import.
 """
+import contextlib
 import os
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -33,6 +37,7 @@ REAPERS = ("init", "systemd", "launchd")  # a parent with one of these names has
 ORPHAN, HOOK, FOREIGN = "orphan", "hook", "foreign"
 HOOK_GRACE_S = 60  # how long `land` waits for a session-end hook's run to end
 HOOK_MARGIN_S = 120  # past the query log's USAGE_LOCK_WAIT_S, how long a distill run that holds no lock is still at work
+END_WAIT_S = 3  # how long `end_orphans` waits for a process to end on SIGTERM before it sends SIGKILL
 HOOK_LOG =("_cache", "querylog")  # under a checkout: the directory ql_base.places() gives a clone, whose distill.log is
 #                                    the standard output of every run `ql_distill.detach` starts
 
@@ -294,6 +299,45 @@ def snapshot(root):
 
 
 # ---------------------------------------------------------------- the command
+
+def end_orphans(worktree):
+    """End the orphans (class `orphan`) whose working directory lies in WORKTREE: the processes a headless worker
+    session started there (its MCP servers) and left running when it exited. A process whose parent lives (foreign)
+    and a hook's distill run at work are left alone. Each gets SIGTERM, and SIGKILL if it still runs END_WAIT_S later.
+    Returns [(pid, command name)] of those ended, [] when none or when this host cannot list working directories."""
+    base = os.path.realpath(worktree)
+    cwds, _ = cwd_map()
+    tab = process_table() if cwds is not None else None
+    if cwds is None or tab is None:
+        return []
+    procs = inventory(base, tab, cwds, [base])
+    hooks = hook_pids(base, [p["pid"] for p in procs if orphaned(tab, p["pid"])], [base])
+    ended = []
+    for p in classify(procs, tab, hooks, holders=lock_holders([base])):
+        if p["kind"] != ORPHAN:
+            continue
+        try:
+            os.kill(p["pid"], signal.SIGTERM)
+        except OSError:  # gone since the scan, or not ours
+            continue
+        ended.append((p["pid"], p["comm"]))
+    deadline = time.time() + END_WAIT_S
+    for pid, _ in ended:
+        while time.time() < deadline and running(pid):
+            time.sleep(0.1)
+        if running(pid):
+            with contextlib.suppress(OSError):
+                os.kill(pid, signal.SIGKILL)
+    return ended
+
+
+def running(pid):
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
 
 def args_procs(p):
     pass  # a list, read only: no options

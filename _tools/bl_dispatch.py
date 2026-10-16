@@ -35,6 +35,7 @@ from pathlib import Path
 
 import bl_cli
 import bl_items
+import bl_procs
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
                      external_lines, git, id_re, item_repos, link_target, need, repositories, research_touches, resolved_touch,
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
@@ -808,6 +809,9 @@ def cmd_dispatch(bl, a):
         say(f"dispatched {bl.label(iid)}: pid {proc.pid}, brief {brief}, output {result}")
         sys.stdout.flush()
         code = proc.wait()
+    for where in [wt] + [repo_worktree_path(bl.root, iid, n) for n, _ in repo_checkouts(bl, iid)]:
+        for pid, comm in bl_procs.end_orphans(where):
+            say(f"ended pid {pid} ({comm}), left running in {where.name} by the worker's session")
     session, failed = None, code != 0
     try:
         data = json.loads(result.read_text(encoding="utf-8"))

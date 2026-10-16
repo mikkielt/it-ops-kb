@@ -26,6 +26,25 @@
   "depends_on": [
     "ST-jrs7supe"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does end_orphans end an orphan, and where does it live?",
+      "options": [
+        "end_orphans in bl_procs: SIGTERM, SIGKILL after 3 seconds; leaves foreign and hook-class processes",
+        "end_orphans in bl_dispatch: SIGKILL at once"
+      ],
+      "recommendation": "end_orphans in bl_procs: SIGTERM, SIGKILL after 3 seconds; leaves foreign and hook-class processes",
+      "do": {
+        "end_orphans in bl_procs: SIGTERM, SIGKILL after 3 seconds; leaves foreign and hook-class processes": "ST-6tz7yhem",
+        "end_orphans in bl_dispatch: SIGKILL at once": "ST-6tz7yhem"
+      },
+      "class": "agents-rule",
+      "answer": "end_orphans in bl_procs: SIGTERM, SIGKILL after 3 seconds; leaves foreign and hook-class processes",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-ofvvong6 close"
   ],
