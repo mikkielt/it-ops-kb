@@ -1187,6 +1187,7 @@ REPO_PAGES = ("blob", "tree", "raw", "blame")  # the path words after OWNER/REPO
 GITLAB_SPDX = {k.lower(): k for k in (  # GitLab names a licence by its lowercase SPDX id; the ids not here are upper-cased
     "Apache-2.0", "Artistic-2.0", "BSD-2-Clause", "BSD-3-Clause", "BSL-1.0", "MIT", "MPL-2.0", "Unlicense", "Zlib")}
 META_FEEDBACK = re.compile(r"<meta\b[^>]*\bname=\"github_feedback_content_git_url\"[^>]*>", re.I)
+GITLAB_DOC_FILE = re.compile(r"^/gitlab-org/gitlab/-/(?:raw|blob|tree)/(?P<ref>[^/]+)/doc/")  # a file of doc/, its LICENSE's CC BY-SA 4.0 subtree
 
 
 def _found(family, licence, reuse, evidence):
@@ -1279,6 +1280,10 @@ def _repo_licence(u):
     if got is None:
         return _unread("repository", "not a file or the front page of a GitHub or GitLab repository")
     forge, slug, api = got
+    doc = GITLAB_DOC_FILE.match(urllib.parse.unquote(u.path)) if forge == "GitLab" and slug == "gitlab-org/gitlab" else None
+    if doc:  # the repository's LICENSE puts everything under doc/ under CC BY-SA 4.0, not the MIT the API reports for the project
+        return _found("repository", "CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT)", "copy",
+                      f"https://gitlab.com/gitlab-org/gitlab/-/raw/{doc.group('ref')}/LICENSE")
     status, spdx, _, note = _repository_licence(forge, api)
     if status != 200:
         return _unread("repository", note)
@@ -1356,8 +1361,8 @@ def _learn_licence(u):
 
 def read_licence(url):
     """What the source's own licence record gives a `kbid.py add` row: {family, licence, reuse, evidence, note}. `family`
-    names how it was read (`arxiv`: the licence link of the abstract page; `repository`: the GitHub or GitLab API;
-    `learn`: the public mirror the page's github_feedback_content_git_url names, by kb/_self/content-rules.md,
+    names how it was read (`arxiv`: the licence link of the abstract page; `repository`: the GitHub or GitLab API, a file
+    of `doc/` in gitlab-org/gitlab aside, whose LICENSE gives CC BY-SA 4.0; `learn`: the public mirror the page's github_feedback_content_git_url names, by kb/_self/content-rules.md,
     Licensing and privacy, its one licence file's Creative Commons title where the API gives no id; `anthropic`: the fixed pair of code.claude.com and anthropic.com; "" for any other host).
     `licence` and `reuse` are "" when nothing was read, and `note` says why. A reuse of `copy` is only an open licence
     (SPDX id, CC BY or CC BY-SA); NC, ND, source-available, non-exclusive and a recognised-nowhere licence are `quote` or
