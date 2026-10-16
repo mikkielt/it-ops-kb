@@ -49,7 +49,9 @@
         "Claude's context only": "ST-x6mvfnmv",
         "the operator's terminal only": "ST-x6mvfnmv"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Claude's context and the operator's terminal",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -64,7 +66,9 @@
         "also at each backlog.py claim and /kb-research start": "ST-x6mvfnmv",
         "SessionStart only": "ST-x6mvfnmv"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "also at each backlog.py claim and /kb-research start",
+      "by": "operator"
     }
   ],
   "notes": "From the operator interview of 2026-10-15: overlaps inform and the operator decides in the terminal, never a silent block; scales solo one machine first, then several machines, team, organization. Research dedup itself is ST-3qxh5vxo; this hook only shows it. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Planning before a claim: run backlog.py referrers on the hook registration and on the docs that list SessionStart hooks (maintaining.md, token-efficiency.md, the plugin's hooks file if it mirrors .claude/settings.json)."
