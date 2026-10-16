@@ -44,6 +44,25 @@
   "depends_on": [
     "ST-zqbo7xgc"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does ledger_lock keep two waiters that both judged a lock stale from both entering: rename the lock away and compare its inode and mtime with the stat judged stale (put it back when it differs), or an owner token in every lock file?",
+      "options": [
+        "rename and compare",
+        "owner token"
+      ],
+      "recommendation": "rename and compare",
+      "do": {
+        "rename and compare": "ST-jrs7supe",
+        "owner token": "ST-jrs7supe"
+      },
+      "class": "secrets",
+      "answer": "rename and compare",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-g2ssvhi2 review"
   ],

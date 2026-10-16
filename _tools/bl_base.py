@@ -9,7 +9,7 @@ command wrote, and what an item waits on (`waits`, `open_gates`) with the one-li
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
-import base64, contextlib, copy, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile, time
+import base64, contextlib, copy, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile, threading, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -587,6 +587,27 @@ LEDGER_LOCK_STALE_S = 60  # a ledger lock older than this is a crashed writer's,
 LEDGER_LOCK_POLL_S = 0.02
 
 
+def _clear_stale_lock(lock, seen):
+    """Remove the ledger lock file LOCK that a waiter judged stale from its stat SEEN, only if it is still that file.
+    The file is renamed to a name of this waiter's own (atomic: of two waiters one rename wins, the other finds no lock
+    file), and its stat is compared with SEEN: the same file is removed; another one, a fresh lock a live writer made
+    after the waiter looked, is put back by a hard link (which never replaces a lock made meanwhile) and stays."""
+    taken = lock.with_name(f"{lock.name}.{os.getpid()}.{threading.get_ident()}.stale")
+    try:
+        os.rename(lock, taken)
+    except OSError:  # cleared or released by another waiter since
+        return
+    try:
+        now = taken.stat()
+        if (now.st_ino, now.st_mtime_ns) != (seen.st_ino, seen.st_mtime_ns):
+            with contextlib.suppress(OSError):
+                os.link(taken, lock)
+    except OSError:
+        pass
+    with contextlib.suppress(OSError):
+        taken.unlink()
+
+
 @contextlib.contextmanager
 def ledger_lock(path):
     """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
@@ -603,12 +624,11 @@ def ledger_lock(path):
         except OSError as e:
             raise Refused(f"cannot lock the claims ledger {path}: {e}")
         try:
-            age = time.time() - lock.stat().st_mtime
+            seen = lock.stat()
         except OSError:  # released since: look again
             continue
-        if age > LEDGER_LOCK_STALE_S:
-            with contextlib.suppress(OSError):
-                lock.unlink()
+        if time.time() - seen.st_mtime > LEDGER_LOCK_STALE_S:
+            _clear_stale_lock(lock, seen)
             continue
         if time.monotonic() > deadline:
             raise Refused(f"the claims ledger is locked ({lock}); remove the file if no dispatch or claim runs")
