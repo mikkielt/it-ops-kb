@@ -9,8 +9,9 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
   SessionStart    takes the presence lease `session/<session id>` (renewed when this session still holds it), posts an
                   `intent` with fields session and item (the item of a `work/<id>` branch and the items this session
                   claimed earlier; not again after /compact), then prints the `coord.py digest` lines for those items
-  PreToolUse Bash a `backlog.py claim ID` command: the digest lines for ID, then an intent for ID, so the session's
-                  claimed items are announced too; any other command returns at once, touching nothing
+  PreToolUse Bash a `backlog.py claim ID` command: the digest lines for ID, then an intent for ID (topic backlog-claim,
+                  which the worker dispatched on `work/ID` skips at its SessionStart), so the session's claimed items
+                  are announced too; any other command returns at once, touching nothing
   PreToolUse Skill a `/kb-research` start: the digest lines for this session's items
   SessionEnd      releases the presence lease and forgets the token
 
@@ -33,6 +34,7 @@ SHOWN = 8  # digest lines shown: with the first and last line, ten in all
 ITEM = r"[A-Za-z]{2}-[a-z0-9]{8}"
 CLAIM = re.compile(r"\bbacklog\.py\s+claim\s+(" + ITEM + r")\b")
 WORK_BRANCH = re.compile(r"work/(" + ITEM + r")")
+CLAIM_TOPIC = "backlog-claim"  # the topic of the intent posted at a `backlog.py claim`, which a dispatched worker skips
 UNSAFE = re.compile(r"[^A-Za-z0-9_.:/#@-]")  # what a coord.py field value may not hold
 FOOTER = ("Claude: ask the operator whether to wait, join or proceed before starting this work; the operator decides, "
           "do not choose alone.")
@@ -103,19 +105,24 @@ def lease(sid, state):
         state["token"] = json.loads(out)["token"]
 
 
-def announce(sid, items):
+def announce(sid, items, topic=None):
     if items:
-        coord("post", "--kind", "intent", "--field", "session=" + sid, "--field", "item=" + ",".join(items)[:120])
+        extra = ["--field", "topic=" + topic] if topic else []
+        coord("post", "--kind", "intent", "--field", "session=" + sid, "--field", "item=" + ",".join(items)[:120], *extra)
 
 
-def overlaps(sid, keys):
-    """The digest lines of other sessions for keys (this session's own intent and lease left out), without repeats."""
+def overlaps(sid, keys, dispatched=None):
+    """The digest lines of other sessions for keys (this session's own intent and lease left out), without repeats.
+    A worker's SessionStart passes the item of its `work/<id>` branch as dispatched: the claim intent the dispatching
+    session posted for that item is no overlap, so that line is left out too."""
     if not keys:
         return []
     args = ["digest", "--lines", "10"] + [a for k in keys for a in ("--key", k)]
     lines = []
     for line in coord(*args)[1].splitlines():
         words = line.split()
+        if dispatched and "topic=" + CLAIM_TOPIC in words and "item=" + dispatched in words:
+            continue
         if line.strip() and "session=" + sid not in words and "holder=" + sid not in words and line not in lines:
             lines.append(line)
     return lines
@@ -140,7 +147,7 @@ def session_start(payload, sid):
     if payload.get("source") != "compact":
         announce(sid, items)
     save(sid, state)
-    show("SessionStart", items, overlaps(sid, items))
+    show("SessionStart", items, overlaps(sid, items, branch))
 
 
 def session_end(sid):
@@ -164,7 +171,7 @@ def pre_tool_use(payload, sid):
         lines = overlaps(sid, [claimed])
         if claimed not in state.get("items", []):
             state["items"] = [*state.get("items", []), claimed]
-            announce(sid, [claimed])
+            announce(sid, [claimed], CLAIM_TOPIC)
         lease(sid, state)
         save(sid, state)
         show("PreToolUse", [claimed], lines)
