@@ -137,7 +137,9 @@
         "<key> <YYYY-MM-DD> of the first page date key found (updated_at, dateModified, article:modified_time, last-modified, ms.date, datePublished, article:published_time, citation_date), read whenever --version is omitted for a new row; empty when the page has none": "ST-wiv62ohc",
         "the bare YYYY-MM-DD of the first date found, read only when --title or --publisher also needs the page": "ST-wiv62ohc"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "<key> <YYYY-MM-DD> of the first page date key found (updated_at, dateModified, article:modified_time, last-modified, ms.date, datePublished, article:published_time, citation_date), read whenever --version is omitted for a new row; empty when the page has none",
+      "by": "operator"
     },
     {
       "id": "g4",
