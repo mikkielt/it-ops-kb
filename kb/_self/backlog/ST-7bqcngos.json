@@ -1,0 +1,27 @@
+{
+  "id": "ST-7bqcngos",
+  "kind": "story",
+  "title": "check-trailers and WORK_RULE agree on a planning commit that leaves a changed item unnamed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kg_trailers.work_state refuses a backlog-planning commit whose KB-Work names one item while it changes two item files, as WORK_RULE ('names exactly the items whose files it changes') and the sprint skill's review step 4 say, or WORK_RULE and the skill text say only that each named id's file must change",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kg_trailers as k\nB='kb/_self/backlog/'\np=k.work_state(['ST-a'],[B+'ST-a.json',B+'ST-b.json'],lambda r:'{}')\nprint(p);sys.exit(0 if p or 'exactly' not in k.WORK_RULE else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_trailers.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij review"
+  ],
+  "notes": "Review gap of SP-a3w7xdij, rated S3 by the sprint's reviewer."
+}

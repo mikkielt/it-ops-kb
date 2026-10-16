@@ -45,7 +45,7 @@
       },
       "class": "design",
       "answer": "git patch-id --stable over non-merge commits since the start commit on both sides; a match counts as reached (exit 1) and the line names the matching commit",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

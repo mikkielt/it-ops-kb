@@ -1,0 +1,26 @@
+{
+  "id": "ST-6onptvgz",
+  "kind": "story",
+  "title": "repro replay's closing line is true of an empty replayed commit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_repro.replay gives an empty replayed commit (git commit --allow-empty in an instance) the KB-Work: ITEM trailer, or its closing line no longer says every replayed commit carries one; a planted instance with one empty commit proves it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nsys.path.insert(0,os.path.abspath('_tools'))\nimport bench_repro as b\nt=tempfile.mkdtemp();g=lambda c,*a:s.run(['git','-C',c,'-c','user.name=t','-c','user.email=t@t','-c','core.hooksPath=/dev/null',*a],check=True,capture_output=True,text=True).stdout\nw=t+'/w';os.makedirs(w);g(w,'init','-q','-b','main');open(w+'/a','w').write('a');g(w,'add','-A');g(w,'commit','-qm','start')\nrev=g(w,'rev-parse','HEAD').strip();g(t,'clone','-q','--bare',w,t+'/o.git');c=t+'/c';g(t,'clone','-q',t+'/o.git',c)\ng(c,'commit','--allow-empty','-qm','empty');g(c,'push','-q','origin','main')\njson.dump({'rev':rev,'instances':[{'n':1,'bare':t+'/o.git'}]},open(t+'/'+b.MANIFEST,'w'))\no=[];os.chdir(w);b.replay(1,'ST-y',root=t,out=o.append)\nmsg=g(w,'log','-1','--format=%B');claim=any('each with' in l for l in o);print(repr(msg),claim)\nsys.exit(0 if ('KB-Work: ST-y' in msg or not claim) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij review"
+  ],
+  "notes": "Review gap of SP-a3w7xdij, rated S3 by the sprint's reviewer."
+}

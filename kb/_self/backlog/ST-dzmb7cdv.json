@@ -1,0 +1,25 @@
+{
+  "id": "ST-dzmb7cdv",
+  "kind": "story",
+  "title": "research-repro.md states the --instance-usd rule the first run used, not today's may_start rule",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/reports/research-repro.md's run-settings sentence says the run stopped an instance once its spend reached --instance-usd (the rule before f7b762b00, so instance 2 started uv at $57.75), not that no area starts unless spend plus --area-usd stays within it, and does not say run.json recorded --instance-usd, which it does not hold",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nL=[l for l in open('kb/_self/reports/research-repro.md',encoding='utf-8').read().splitlines() if '--instance-usd 58' in l]\nbad=[l for l in L if 'stays within' in l or 'as `repro run` recorded' in l];print(len(L),len(bad));sys.exit(1 if bad or not L else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/reports/research-repro.md"
+  ],
+  "links": [
+    "parked: SP-a3w7xdij review"
+  ],
+  "notes": "Review gap of SP-a3w7xdij, rated S2 by the sprint's reviewer."
+}
