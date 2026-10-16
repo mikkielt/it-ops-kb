@@ -35,7 +35,9 @@
         "every-phrase": "BG-2dwhxw5p",
         "overlap-phrase-only": "BG-2dwhxw5p"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "every-phrase",
+      "by": "operator"
     }
   ],
   "links": [
