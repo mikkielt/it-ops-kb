@@ -2,7 +2,7 @@
   "id": "ST-gtfpib5q",
   "kind": "story",
   "title": "bench_core.scratch_dir returns a resolved path, so a clone under the macOS temp symlink agrees with its own tools",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
@@ -44,5 +44,6 @@
   "links": [
     "parked: SP-ygsnog4n close"
   ],
-  "notes": "Plan 2026-10-15: kept with the harness snags; touches bench_core.py and bench_pool.py, not bench_repro.py, so it runs beside the bench_repro chain. Plan 2026-10-15: goal shortened to its two clauses; the retrospective's account (land of ST-hrsqmwhx stopped at step checks, ops land.step checks exit 1 at 2026-10-15T09:01:16Z, because repro check's probe clone sat under /var/folders, a symlink to /private/var/folders) moved here from the goal. Checks that pass before the work: the pool test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Plan 2026-10-15: kept with the harness snags; touches bench_core.py and bench_pool.py, not bench_repro.py, so it runs beside the bench_repro chain. Plan 2026-10-15: goal shortened to its two clauses; the retrospective's account (land of ST-hrsqmwhx stopped at step checks, ops land.step checks exit 1 at 2026-10-15T09:01:16Z, because repro check's probe clone sat under /var/folders, a symlink to /private/var/folders) moved here from the goal. Checks that pass before the work: the pool test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-r14"
 }
