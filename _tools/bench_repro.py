@@ -55,7 +55,10 @@ LEAKY_ENV = ("KB_VERIFIED", "KB_TESTS_FAST", "KB_SYNC_NO_TESTS", "KB_GATE_DONE",
              "CI_COMMIT_SHA", "CI_COMMIT_BEFORE_SHA", "CLAUDE_CODE_REMOTE_SESSION_ID", "CLAUDE_CODE_BRIDGE_SESSION_ID",
              kbpublic.NO_HOOK_ENV, "GIT_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_INDEX_FILE",
              "GIT_COMMON_DIR", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_GRAFT_FILE",
-             "GIT_SHALLOW_FILE", "GIT_REPLACE_REF_BASE", "GIT_NO_REPLACE_OBJECTS", "GIT_PREFIX", "GIT_NAMESPACE")
+             "GIT_SHALLOW_FILE", "GIT_REPLACE_REF_BASE", "GIT_NO_REPLACE_OBJECTS", "GIT_PREFIX", "GIT_NAMESPACE",
+             "KB_ROOTS")
+KEEP_IGNORED = ("_cache/kbindex-*", "_cache/kbunits*", "_private/querylog.json", "_private/mcp-config.json")  # what
+# reset_clone leaves of a clone's ignored files: its pack index cache and the two files setup wrote in _private
 
 
 class Refused(Exception):
@@ -102,12 +105,15 @@ def remote_url():
 
 def instance_env(root, n):
     """The session environment of instance N: bench_core.no_plugin_env's without the variables of LEAKY_ENV, with
-    KB_SESSION empty, KB_DOCS_CACHE unset, ENABLE_CLAUDEAI_MCP_SERVERS=false and KB_HOST_LOCK_DIR under DIR."""
+    KB_SESSION empty, KB_DOCS_CACHE unset, ENABLE_CLAUDEAI_MCP_SERVERS=false, CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 (a
+    session reads no memory an earlier area wrote; the --settings value stays SETTINGS) and KB_HOST_LOCK_DIR under
+    DIR. KB_ROOTS, the one variable kbcommon reads to find roots outside the clone, is in LEAKY_ENV."""
     env = no_plugin_env()
     for k in LEAKY_ENV:
         env.pop(k, None)
     env.pop("KB_DOCS_CACHE", None)
-    env.update({"KB_SESSION": "", "ENABLE_CLAUDEAI_MCP_SERVERS": "false", "KB_HOST_LOCK_DIR": str(lock_dir(root, n))})
+    env.update({"KB_SESSION": "", "ENABLE_CLAUDEAI_MCP_SERVERS": "false", "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
+                "KB_HOST_LOCK_DIR": str(lock_dir(root, n))})
     return env
 
 
@@ -434,13 +440,20 @@ def sh_git(clone, env, *args):
 
 def reset_clone(clone, env):
     """Put `clone` on its bare's main as a fresh start: a rebase a session left is aborted (none in progress is no
-    error), origin's main fetched, the work tree reset to it and what a session left untracked removed (ignored files,
-    _private and _cache among them, stay)."""
+    error), origin's main fetched, the work tree reset to it, the git worktrees registered under _cache removed and
+    what a session left untracked or ignored removed (_cache and _private among them), except KEEP_IGNORED: the
+    clone's pack index cache and the query log mode and mcp-config files setup wrote."""
     sh(["git", "rebase", "--abort"], clone, env)
     sh_git(clone, env, "fetch", "-q", "origin", "+refs/heads/main:refs/remotes/origin/main")
     sh_git(clone, env, "checkout", "-q", "-f", "main")
     sh_git(clone, env, "reset", "-q", "--hard", "refs/remotes/origin/main")
-    sh_git(clone, env, "clean", "-q", "-f", "-d")
+    cache = (Path(clone) / "_cache").resolve()
+    for line in sh_git(clone, env, "worktree", "list", "--porcelain").splitlines():
+        wt = Path(line[len("worktree "):]) if line.startswith("worktree ") else None
+        if wt and cache in wt.resolve().parents:
+            sh_git(clone, env, "worktree", "remove", "--force", "--force", str(wt))
+    sh_git(clone, env, "worktree", "prune")
+    sh_git(clone, env, "clean", "-q", "-f", "-f", "-d", "-x", *(f"--exclude={p}" for p in KEEP_IGNORED))
 
 
 def area_prompt(brief):
