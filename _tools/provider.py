@@ -1308,21 +1308,22 @@ def _licence_files(slug):
 
 
 def _licence_file_spdx(slug, name):
-    """(spdx, url) of a licence file at a GitHub repository's root whose first line is a Creative Commons legal-code
-    title (`# Attribution 4.0 International`, `CC0 1.0 Universal`); spdx is "" when the file could not be read or is
-    another text. For a mirror whose licence files GitHub's API reads as NOASSERTION."""
+    """(spdx, url, failure) of a licence file at a GitHub repository's root whose first line is a Creative Commons
+    legal-code title (`# Attribution 4.0 International`, `CC0 1.0 Universal`); spdx is "" when the file is another text
+    or could not be read, and `failure` then names the failed read ("" when the file was read). For a mirror whose
+    licence files GitHub's API reads as NOASSERTION."""
     url = f"https://raw.githubusercontent.com/{slug}/HEAD/{urllib.parse.quote(name)}"
     r = request(url, limit=4096)
     if r["status"] != 200:
-        return "", url
+        return "", url, f"{url} answered {r['status']}" + (f" ({r['error']})" if r["error"] else "")
     head = next((x.strip() for x in r["body"].decode("utf-8-sig", "replace").splitlines() if x.strip()), "")
     m = CC_TITLE.match(head)
     if not m:
-        return "", url
+        return "", url, ""
     if m.group("zero"):
-        return f"CC0-{m.group('zero')}", url
+        return f"CC0-{m.group('zero')}", url, ""
     kinds = [CC_TITLE_WORDS[k.lower()] for k in m.group("terms").split("-") if k]
-    return "-".join(["CC-BY", *kinds, m.group("ver")]), url
+    return "-".join(["CC-BY", *kinds, m.group("ver")]), url, ""
 
 
 def _learn_licence(u):
@@ -1350,7 +1351,9 @@ def _learn_licence(u):
     if len(files) > 1:
         return _found("learn", f"{terms} (public mirror {slug}: licence files {', '.join(files)} conflict)", "quote", api)
     if not spdx or spdx.startswith("LicenseRef-"):  # none or NOASSERTION (a LICENSE.md beside a LICENSE-CODE.md): read the one file
-        file_spdx, evidence = _licence_file_spdx(slug, files[0]) if files else ("", api)
+        file_spdx, evidence, failure = _licence_file_spdx(slug, files[0]) if files else ("", api, "")
+        if failure:  # the file was never read: not a licence GitHub fails to recognise
+            return _unread("learn", f"the licence file of the mirror {slug} could not be read: {failure}")
         if not file_spdx:
             return _unread("learn", f"GitHub recognises no licence of the mirror {slug}: read its licence file")
         spdx, api = file_spdx, evidence

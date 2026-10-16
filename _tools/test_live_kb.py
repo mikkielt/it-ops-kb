@@ -279,6 +279,12 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
         learn + "page-i": (200, page("Org/Own")), gh + "Org/Own": (200, repo(None, archived=False)),
         gh + "Org/Own" + files: (200, names("LICENSE")),
         raw + "Org/Own/HEAD/LICENSE": (200, "Our own terms\n"),
+        learn + "page-k": (200, page("Org/Dead")), gh + "Org/Dead": (200, repo(None, archived=False)),
+        gh + "Org/Dead" + files: (200, names("LICENSE")),
+        raw + "Org/Dead/HEAD/LICENSE": (0, ""),
+        learn + "page-l": (200, page("Org/Down")), gh + "Org/Down": (200, repo(None, archived=False)),
+        gh + "Org/Down" + files: (200, names("LICENSE")),
+        raw + "Org/Down/HEAD/LICENSE": (503, ""),
         # the pages whose title, site name and date a row takes when --title, --publisher and --version are omitted
         learn + "page-j": (200, '<html><head><title>Configure widgets | Microsoft Learn</title>'
                                 '<meta name="github_feedback_content_git_url" content="https://github.com/Org/Docs/blob/main/docs/a.md" />'
@@ -354,6 +360,10 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
     assert add(learn + "page-h")[3] == (terms + "public mirror Org/Ncl, CC BY-NC-SA 4.0: no reuse grant)", "quote")
     code, out, err, got = add(learn + "page-i")  # a file that is no Creative Commons title: unread, nothing written
     assert code == 2 and got is None and "recognises no licence of the mirror Org/Own" in err, err
+    for u, status in ((learn + "page-k", "answered 0"), (learn + "page-l", "answered 503")):  # a failed read of the file is no unrecognised licence
+        code, out, err, got = add(u)
+        assert code == 2 and got is None and "licence file of the mirror" in err and "could not be read" in err and status in err, (u, err)
+        assert "recognises no licence" not in err, (u, err)
     for u, why in ((learn + "page-e", "names no GitHub mirror"), (learn + "page-f", "could not be listed")):
         code, out, err, got = add(u)  # no mirror named, or the listing is rate limited: no pair is guessed
         assert code == 2 and got is None and why in err, (u, err)
