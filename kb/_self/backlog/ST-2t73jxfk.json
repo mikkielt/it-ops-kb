@@ -45,7 +45,8 @@
     "kb/_self/web-sources.md",
     ".claude/skills/kb-research/SKILL.md",
     "AGENTS.md",
-    "kb/_self/maintaining.md"
+    "kb/_self/maintaining.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "depends_on": [
     "ST-u2qvfapz"

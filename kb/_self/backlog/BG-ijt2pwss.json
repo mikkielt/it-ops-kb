@@ -39,7 +39,8 @@
     "_tools/provider.py",
     "_tools/test_live_kb.py",
     "kb/_self/tools.md",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "depends_on": [
     "ST-wiv62ohc"

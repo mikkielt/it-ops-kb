@@ -55,7 +55,8 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/tools.md",
-    "kb/_self/web-sources.md"
+    "kb/_self/web-sources.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "depends_on": [
     "ST-yb5x4x3d"
