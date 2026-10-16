@@ -54,7 +54,7 @@ agents/onnx-runtime-rust-ort,P3,partial,agents/onnx-runtime-rust-ort.md,44
 agents/peer-state-sync,P3,complete,agents/peer-state-sync.md,17
 agents/policy-as-code,P3,partial,agents/policy-as-code.md,22
 agents/repository-ingestion,P3,complete,agents/repository-ingestion.md,4
-agents/shared-state-concurrency,P3,partial,agents/shared-state-concurrency.md,27
+agents/shared-state-concurrency,P3,partial,agents/shared-state-concurrency.md,33
 agents/test-suite-size-and-agent-overengineering,P3,partial,agents/test-suite-size-and-agent-overengineering.md,17
 agents/typescript-module-resolution,P3,complete,agents/typescript-module-resolution.md,9
 agents/typescript-native-compiler,P3,partial,agents/typescript-native-compiler.md,6
@@ -261,13 +261,13 @@ mcp/authorization,P1,complete,mcp/authorization.md,4
 mcp/deprecations,P1,complete,mcp/deprecations.md,3
 mcp/elicitation,P1,complete,mcp/elicitation.md,6
 mcp/python-sdk,P1,complete,mcp/python-sdk.md,19
-mcp/security-best-practices,P1,complete,mcp/security-best-practices.md,2
-mcp/spec-overview,P1,complete,mcp/spec-overview.md;mcp/schema/2026-07-28/README.md;mcp/schema/2026-07-28/schema.ts;mcp/schema/2026-07-28/schema.json,9
-mcp/tasks-extension,P1,complete,mcp/tasks-extension.md,7
+mcp/security-best-practices,P1,complete,mcp/security-best-practices.md,3
+mcp/spec-overview,P1,complete,mcp/spec-overview.md;mcp/schema/2026-07-28/README.md;mcp/schema/2026-07-28/schema.ts;mcp/schema/2026-07-28/schema.json,10
+mcp/tasks-extension,P1,partial,mcp/tasks-extension.md,7
 mcp/tools,P1,complete,mcp/tools.md,7
 mcp/transports-stdio,P1,complete,mcp/transports-stdio.md,6
 mcp/registry-and-extensions,P2,complete,mcp/registry-and-extensions.md,17
-mcp/resources-prompts,P2,complete,mcp/resources-prompts.md,9
+mcp/resources-prompts,P2,complete,mcp/resources-prompts.md,11
 mcp/transports-streamable-http,P2,complete,mcp/transports-streamable-http.md,11
 mecm/adminservice,P0,complete,mecm/adminservice.md;mecm/adminservice-routes.csv,21
 mecm/application-model,P0,complete,mecm/application-model.md,4

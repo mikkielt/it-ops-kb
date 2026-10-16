@@ -2,8 +2,8 @@
 topic: agents/shared-state-concurrency
 priority: P3
 applies_to: "Concurrency control for state several agents write: Amazon S3 conditional writes, Azure Blob Storage ETags and leases, Redis distributed locks (Redlock), LangGraph PostgresStore; self-hosted MinIO, Garage and SeaweedFS conditional writes, NATS JetStream key-value, Valkey without persistence, etcd leases and transactions; docs read 2026-10-14 and 2026-10-15"
-retrieved_utc: 2026-10-15
-sources: [S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q]
+retrieved_utc: 2026-10-16
+sources: [S-qdltospe, S-4qurlvvy, S-4oanvdmr, S-2fthx3xp, S-srqpsf7c, S-5lu6lddr, S-f3dlrjtw, S-26trg6rj, S-ukfteilx, S-opdaj4dk, S-oa3slfgh, S-a3umo362, S-ntlmfsuw, S-zv2dqsow, S-ulnpjwb7, S-pheyvvix, S-x3firlbx, S-eoyz3p4t, S-6hgplow2, S-vseohdra, S-75jmw3lf, S-s7uvhjek, S-3l6vhq2q, S-jnn4ww4t, S-bayxg4xz, S-523ddbfr, S-v7s32e7q, S-gxbtrq7d, S704, S718, S-onc3gpse, S2157, S-bisz7fay]
 status: partial
 ---
 
@@ -298,7 +298,16 @@ status: partial
   durable store can rebuild: claims, leases and progress, not facts or results. [DER S-eoyz3p4t,
   S-zv2dqsow: no-persistence and memory-storage modes keep data in memory only]
 
+### MCP servers without sessions
+- A 2026-07-28 MCP server holds no protocol session, so state several agents share lives in the server's own store, keyed by an id that travels in tool arguments: a server-minted handle from a `create_*` tool, or a task id from the Tasks extension. Any replica can serve a request when the store is shared, which is what the SEP means by state "from shared storage". The concurrency checks above (ETag, compare-and-swap, leases) then apply inside that store; the protocol defines none of them. [DER S704, S-gxbtrq7d, S718: ids carry cross-request state; the protocol has no handle, lock or version field]
+- An orchestrator picks the scope of each piece of state by what it passes on: one handle given to every subagent is shared state (SEP-2567's cart), and a handle each subagent creates for itself is isolated state (its browser). Two subagents that write the same shared handle fall under the write-conflict rules above, because the SEP defines no conflict detection for it. [DER S-gxbtrq7d: its cart-and-browser case; no concurrency rule in the SEP]
+- In Claude Code a subagent has the same MCP servers as its parent, so it reaches the same server, and a handle given to a non-fork subagent reaches it only through the brief the orchestrator writes, since it does not see the parent's history (`claude/skills-and-subagents.md`); the SEP notes handles appear in subagent prompts, so a server that checks `(handle, auth_context)` on every call limits what a leaked handle exposes (`mcp/security-best-practices.md`). [DER S-gxbtrq7d, S2157, S-bisz7fay: handles in prompts, isolated subagent context, inherited MCP servers]
+- To learn that shared state changed, an agent can poll a tool or resource, or open its own `subscriptions/listen` stream for list changes, subscribed resource URIs and, with the Tasks extension, named task ids; the stream's state is scoped to its request, not the connection, so each agent opens its own. A server that wants pushed updates on a shared handle has to expose it as a resource URI; the specification text read names no such pattern. [DER S704, S718, S-onc3gpse: the filter fields and request scoping; the inference about a resource URI is ours]
+- Long-running work shared by agents fits a task: its id is the explicit identifier, the server must authorize every task request, and the spec text read does not say whether a second principal may read a task another created, so shared task access needs the server's own rule or its own handle. [DER S718: auth binding stated, task sharing not stated]
+
 ## Reference
+- `mcp/spec-overview.md`, `mcp/tasks-extension.md`, `mcp/resources-prompts.md`: the stateless MCP
+  server, SEP-2567 handles, task ids and `subscriptions/listen`.
 - `agents/langgraph.md`: the LangGraph store API, and the `PostgresStore` put path read in its
   source.
 - `arch/postgres-advisory-locks.md`: PostgreSQL advisory locks as a single-writer lock inside the

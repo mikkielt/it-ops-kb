@@ -3954,3 +3954,27 @@ _Agent: kb-research_
 - See claude/otel-monitoring.md, agents/agent-cost-governance.md.
 
 _Agent: kb-research_
+
+## QK-stateless-mcp-server-keep-state-several. How does a stateless MCP server keep state several agents share: explicit handles, subscriptions/listen and the tasks extension?
+- The 2026-07-28 spec makes MCP stateless: state that spans requests MUST be referenced by an explicit identifier the client passes on each request, and a connection or stdio process is not a conversation. (`mcp/spec-overview.md`) [DOC S704]
+- Explicit handles: a creation tool returns an id and later tools take it as an argument; SEP-2567 says this is a tool-design pattern with no schema, wire format or `handles/*` method, and that the id can be passed to another chat, agent or colleague. (`mcp/spec-overview.md`) [DOC S-gxbtrq7d]
+- Handles are bearer-like: possession is not authentication, so a server binds them to the verified user and checks `(handle, auth_context)` on every call; an unauthenticated server uses 128 bits of entropy and a bounded lifetime. (`mcp/security-best-practices.md`) [DOC S716, S-gxbtrq7d]
+- `subscriptions/listen` is the change signal, not the store: one request opens a stream for list changes, subscribed resource URIs and, with the Tasks extension, named task ids, and its state is scoped to that request, not the connection. (`mcp/resources-prompts.md`) [DOC S-onc3gpse, S704, S718]
+- Tasks extension: a task id is the explicit identifier for long-running work; polled with `tasks/get`, routed over HTTP by the `Mcp-Name` header, authorized on every request; ids SHOULD be persisted by the client. The extension is optional and off by default. (`mcp/tasks-extension.md`) [DOC S718, S714]
+- Conclusion: the protocol carries only the identifier; the shared state sits in the server's own store, where the write-conflict rules of `agents/shared-state-concurrency.md` apply, and agents learn of changes by polling or by their own `subscriptions/listen` stream. [DER S704, S-gxbtrq7d, S718, S-onc3gpse]
+- Open: whether the Tasks extension lets a second principal read or update a task another created, and any MCP pattern for pushing updates of a shared handle, are not stated in the pages read. [UNK]
+- See mcp/spec-overview.md, mcp/tasks-extension.md, mcp/resources-prompts.md, agents/shared-state-concurrency.md.
+
+_Agent: kb-research_
+
+## QK-sep-2567-orchestrator-decide-state-subagents-share. How does SEP-2567 let an orchestrator decide which state its subagents share and which each keeps alone?
+- SEP-2567 removes sessions: before it, "A subagent might share its parent's session or get its own — there is no convention", so one scope was imposed on all of a server's state. (`mcp/spec-overview.md`) [DOC S-gxbtrq7d]
+- With explicit ids the orchestrator decides per piece of state: it calls `create_basket()` once and passes the `basket_id` to every subagent (shared), while each subagent calls `create_browser()` for its own `browser_id` (isolated). (`mcp/spec-overview.md`) [DOC S-gxbtrq7d]
+- A session gives one scope per connection; explicit ids give as many scopes as the model creates, each shared or isolated on its own. [DOC S-gxbtrq7d]
+- List endpoints no longer vary per session, so a subagent can reuse the tool list its parent fetched. (`mcp/spec-overview.md`) [DOC S-gxbtrq7d, S701]
+- Handles in subagent prompts are exposed, so the server validates `(handle, auth_context)`; the client keeps a handle through context compaction. (`mcp/security-best-practices.md`) [DOC S-gxbtrq7d]
+- Conclusion: the orchestrator's brief is the sharing mechanism: a handle written into a subagent's brief is shared, a handle the subagent creates is its own; the protocol marks neither and enforces no write-conflict rule. [DER S-gxbtrq7d, S2157]
+- Open: SEP-2567 names a future marker for result fields that are handles; none is in the spec read. How Claude Code subagents use a server's handles is not documented in the pages read. [UNK]
+- See mcp/spec-overview.md, mcp/security-best-practices.md, agents/shared-state-concurrency.md, claude/skills-and-subagents.md.
+
+_Agent: kb-research_

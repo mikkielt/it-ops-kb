@@ -2,8 +2,8 @@
 topic: mcp/security-best-practices
 priority: P1
 applies_to: "MCP Security Best Practices, docs 2026-07-28"
-retrieved_utc: 2026-09-26
-sources: [S716, S710]
+retrieved_utc: 2026-10-16
+sources: [S716, S710, S-gxbtrq7d]
 status: complete
 ---
 # MCP security best practices (2026-07-28)
@@ -16,6 +16,7 @@ localhost redirect URI impersonation, CIMD trust policies, scope minimization. L
 ## Facts
 - Token passthrough is forbidden: servers MUST NOT accept tokens not explicitly issued for them. [DOC S716]
 - State handles: servers MUST NOT treat possession of a handle as authentication; SHOULD use secure random handles and bind them server-side to the verified user (`<user_id>:<handle>`). [DOC S716]
+- SEP-2567 adds that handles end up in chat logs, copy-paste buffers and subagent prompts; for an authenticated server it advises validating `(handle, auth_context)` on every call, and for an unauthenticated one, where the handle is a bearer token, at least 128 bits of cryptographically secure entropy and a bounded lifetime. It calls this guidance, not a protocol requirement. [DOC S-gxbtrq7d]
 - Local MCP servers: clients offering one-click local server configuration MUST show the exact full command and require explicit approval. [DOC S716]
 - Servers intended to run locally SHOULD use the stdio transport to limit access to the MCP client, or restrict HTTP (token, unix sockets/IPC). [DOC S716]
 - The stdio transport itself is not inherently vulnerable; the risk is proxy architectures that spawn stdio servers on request. [DOC S716]

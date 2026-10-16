@@ -2,8 +2,8 @@
 topic: mcp/resources-prompts
 priority: P2
 applies_to: "MCP specification 2026-07-28"
-retrieved_utc: 2026-09-26
-sources: [S-uq2hafxi, S-mjxgvchf, S-dwlcyci7, S-twgov237, S-3s4qysez, S-7uw4d77y, S-onc3gpse, S-iw3x3th7, S1862]
+retrieved_utc: 2026-10-16
+sources: [S-uq2hafxi, S-mjxgvchf, S-dwlcyci7, S-twgov237, S-3s4qysez, S-7uw4d77y, S-onc3gpse, S-iw3x3th7, S1862, S704, S718]
 status: complete
 ---
 # Resources, prompts, completion, discovery and their utilities (2026-07-28)
@@ -87,6 +87,8 @@ OpenTelemetry.
 - A subscription ends when the client cancels it (close the SSE stream over HTTP, or send `notifications/cancelled` referencing the request id over stdio), the server tears it down (e.g. shutdown), or the transport itself closes (HTTP timeout, TCP disconnect, stdio process exit). [DOC S-onc3gpse]
 - Graceful server-initiated closure: the server SHOULD respond to the original `subscriptions/listen` request with a completion result (`resultType: "complete"`, carrying the subscription id in `_meta`) before closing the stream; an abrupt transport drop carries no such response, and a client MAY treat its absence as a trigger to reconnect. [DOC S-onc3gpse]
 - On stdio, the server holds no subscription state across reconnections: after a re-established connection, the client MUST re-send `subscriptions/listen` to re-establish its subscriptions. [DOC S-onc3gpse]
+- A `subscriptions/listen` stream is an open request whose state "is scoped to the request itself, not to the connection underneath", so each subagent or client that wants change notifications opens its own stream; the server keeps no per-connection subscription list for others to share. [DOC S704]
+- `resourceSubscriptions` takes resource URIs and the Tasks extension adds a `taskIds` filter to the same request (mcp/tasks-extension.md), so what a stream can announce about shared state is limited to list changes, updates of subscribed resource URIs and status of named tasks. [DER S-onc3gpse, S718: the filter fields of the request]
 
 ## Reference
 | RPC | Purpose | Paginated | Cacheable |
