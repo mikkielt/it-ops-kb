@@ -7,7 +7,7 @@
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
   "rank": 1,
-  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) Which Claude Code parallel-work option (subagents, agent view background sessions, worktrees, agent teams, dynamic workflows, cross-session messaging) fits which coordination need, and what does each share or isolate? (2) How does agent view isolate background sessions' file edits in worktrees, and what does worktree.bgIsolation change? (3) Beyond cross-session messaging, which the kb answers (claude/cross-session-messaging.md:38, :51), which of these options reach sessions on several machines or cloud sessions, and which stay on one machine? (4) What do dynamic workflows hold that a subagent or skill does not, and when do the docs say to use one?",
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research; (1) Which Claude Code parallel-work option (subagents, agent view background sessions, worktrees, agent teams, dynamic workflows, cross-session messaging) fits which coordination need, and what does each share or isolate? (2) How does agent view isolate background sessions' file edits in worktrees, and what does worktree.bgIsolation change? (3) Beyond cross-session messaging, which the kb answers (claude/cross-session-messaging.md:38, :51), which of these options reach sessions on several machines or cloud sessions, and which stay on one machine? (4) What do dynamic workflows hold that a subagent or skill does not, and when do the docs say to use one?",
   "checks": [
     {
       "run": [
@@ -20,7 +20,11 @@
   ],
   "clauses": [
     {
-      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) Which Claude Code parallel-work option (subagents, agent view background sessions, worktrees, agent teams, dynamic workflows, cross-session messaging) fits which coordination need",
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research",
+      "check": 0
+    },
+    {
+      "clause": "(1) Which Claude Code parallel-work option (subagents, agent view background sessions, worktrees, agent teams, dynamic workflows, cross-session messaging) fits which coordination need",
       "check": 0
     },
     {
@@ -77,6 +81,6 @@
     "live: https://code.claude.com/docs/en/workflows",
     "kb: claude/cross-session-messaging.md:168 (three documented cross-repository forms)"
   ],
-  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed. Packs: question 1 weak (lacks coordination, teams), 2 none (worktree.bgIsolation), 3 good for cross-session messaging only, 4 weak.",
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed. Packs: question 1 weak (lacks coordination, teams), 2 none (worktree.bgIsolation), 3 good for cross-session messaging only, 4 weak. 2026-10-16: the goal's lead-in now ends in '; ' (was ': ') so goal_questions leaves it unread and packs question (1) alone, the SP-ce5iig4g remedy for the ST-cho3qjfo defect; clauses re-mapped to check 0. Gate g1's first-question part is moot after this; its answer (name-line-references, for question 3) still applies.",
   "claimed_by": "orch-r03"
 }
