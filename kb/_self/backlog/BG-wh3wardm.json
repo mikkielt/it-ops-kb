@@ -2,7 +2,7 @@
   "id": "BG-wh3wardm",
   "kind": "bug",
   "title": "A worker the manager dispatched is shown the manager's own claim of its item as an overlap and told to ask the operator",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xo45jvbj",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/tools.md",
     "kb/_self/maintaining.md",
     "kb/_self/token-efficiency.md"
-  ]
+  ],
+  "claimed_by": "orch-r03"
 }
