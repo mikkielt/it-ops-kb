@@ -79,12 +79,14 @@ def gate_tests_reuse(c, monkeypatch, capsys):
 
 def test_content_commit_reaches_main_and_a_red_gate_stops_the_next(scenario):
     c = clone(scenario)
+    c.append("_tools/aliases.csv", "syncprobe,configmgr\n")  # a research commit's alias row: content, no KB-Work item
     article(c, "content", "S100")
     r = sync(c)
     assert r.returncode == 0, r.stdout + r.stderr
     pushed = c.rev("HEAD")
     assert scenario.origin.rev("main") == pushed
     assert "KB-Topics:" in c.git("log", "-1", "--format=%B")
+    assert "_tools/aliases.csv" in c.git("show", "--name-only", "--format=", "HEAD")
 
 
 class TestRedGate:

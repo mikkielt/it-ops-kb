@@ -858,10 +858,13 @@ TRAILER_WINDOW_DAYS = 7  # the commits of main this much newer than its tip are 
 AUTO_KEY = "KB-Auto"  # querylog.py's automatic commits carry no KB-Work
 WORK_LINE = re.compile(r"KB-Work\s*:\s*(.*\S)\s*$", re.I)  # kbgit.py's WORK_LINE
 WORK_PATHS = ("_tools/", ".claude/", ".githooks/", ".gitlab-ci.yml")  # a change to these is work: it needs a KB-Work
+CONTENT_PATHS = ("_tools/aliases.csv",)  # inside WORK_PATHS, kb content as kblane.py lanes it: a research commit writes it
 SHORT_SHA = 10
 
 
 def code_path(path):
+    if path in CONTENT_PATHS:
+        return False
     return any(path == p or (p.endswith("/") and path.startswith(p)) for p in WORK_PATHS)
 
 
