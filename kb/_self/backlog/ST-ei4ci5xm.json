@@ -29,6 +29,25 @@
   "depends_on": [
     "BG-gg3aohlm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does repro status match an instance commit to the real main by patch-id, and does it count as reached?",
+      "options": [
+        "git patch-id --stable over non-merge commits since the start commit on both sides; a match counts as reached (exit 1) and the line names the matching commit",
+        "patch-id match is shown but does not change the exit code"
+      ],
+      "recommendation": "git patch-id --stable over non-merge commits since the start commit on both sides; a match counts as reached (exit 1) and the line names the matching commit",
+      "do": {
+        "git patch-id --stable over non-merge commits since the start commit on both sides; a match counts as reached (exit 1) and the line names the matching commit": "ST-ei4ci5xm",
+        "patch-id match is shown but does not change the exit code": "ST-ei4ci5xm"
+      },
+      "class": "design",
+      "answer": "git patch-id --stable over non-merge commits since the start commit on both sides; a match counts as reached (exit 1) and the line names the matching commit",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-bhzxxhub review"
   ],

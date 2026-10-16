@@ -232,6 +232,25 @@ def in_main(sha, real):
                           capture_output=True).returncode == 0
 
 
+def patch_ids(bare, rev):
+    """{sha: patch-id} of the non-merge commits on `bare`'s main since `rev` (all of main when `rev` is not there): a
+    cherry-pick or rebase of a commit keeps its patch-id under another sha."""
+    rng = f"{rev}..refs/heads/main"
+    if subprocess.run(["git", "cat-file", "-e", f"{rev}^{{commit}}"], cwd=str(bare), capture_output=True).returncode:
+        rng = "refs/heads/main"
+    log = subprocess.run(["git", "log", "-p", "--no-merges", "--format=commit %H", rng], cwd=str(bare),
+                         capture_output=True)
+    if log.returncode or not log.stdout:
+        return {}
+    ids = subprocess.run(["git", "patch-id", "--stable"], cwd=str(bare), input=log.stdout, capture_output=True)
+    out = {}
+    for ln in ids.stdout.decode("utf-8", "replace").splitlines():
+        pid, _, sha = ln.partition(" ")
+        if pid and sha:
+            out[sha] = pid
+    return out
+
+
 def reaches(sha, url, work):
     """True when commit `sha` is in a fresh fetch of main from `url` (into a new bare under `work`)."""
     return in_main(sha, fetch_real(url, work))
@@ -407,7 +426,8 @@ def commits_since(bare, rev):
 
 def status(root=None, out=print):
     """Print, per instance of DIR's manifest, the commits on its bare since the start commit and whether each is in a
-    fresh fetch of the real origin's main. Returns 1 when any is, else 0; raises Refused on a bare that is gone."""
+    fresh fetch of the real origin's main, by sha or, for a cherry-pick or rebase, by patch-id. Returns 1 when any is,
+    else 0; raises Refused on a bare that is gone."""
     root = Path(root) if root else default_dir()
     manifest = root / MANIFEST
     if not manifest.exists():
@@ -421,17 +441,22 @@ def status(root=None, out=print):
         if not bare.is_dir():
             raise Refused(f"instance {inst['n']}: its bare {bare} is gone")
         found.append((inst["n"], bare, commits_since(bare, rev)))
-    real, reached = None, 0
+    real, real_ids, reached = None, {}, 0
     with tempfile.TemporaryDirectory(dir=str(root)) as work:
         if any(c for _, _, c in found):
             real = fetch_real(remote_url()[1], work)
+            real_ids = {pid: sha for sha, pid in patch_ids(real, rev).items()}
         out(f"repro status: start {rev[:12]}, dir {root}")
         for n, bare, commits in found:
             out(f"instance {n}: {len(commits)} commit(s) on {bare} since {rev[:12]}")
+            mine = patch_ids(bare, rev) if commits and real_ids else {}
             for sha, subject in commits:
+                twin = real_ids.get(mine.get(sha), "")
                 hit = in_main(sha, real)
-                reached += hit
-                out(f"  {sha[:12]} {subject} ({'IN the real origin main' if hit else 'not in the real origin main'})")
+                reached += hit or bool(twin)
+                state = "IN the real origin main" if hit else (
+                    f"IN the real origin main as {twin[:12]}, same patch-id" if twin else "not in the real origin main")
+                out(f"  {sha[:12]} {subject} ({state})")
     out("repro status: " + (f"{reached} instance commit(s) are in a fresh fetch of the real origin's main" if reached else
                             "no instance commit is in a fresh fetch of the real origin's main"))
     return 1 if reached else 0
