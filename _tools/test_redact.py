@@ -166,7 +166,8 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
     tool = next(t for t in listed if t["name"] == "kb_feedback")
     assert tool["annotations"] == {"title": tool["title"], "readOnlyHint": False, "destructiveHint": False,
                                    "idempotentHint": True, "openWorldHint": False}
-    assert all(t["annotations"]["readOnlyHint"] for t in listed if t["name"] != "kb_feedback")
+    assert all(t["annotations"]["readOnlyHint"] for t in listed if t["name"] != "kb_feedback" and not t["name"].startswith("coord_"))
+    assert next(t for t in listed if t["name"] == "coord_digest")["annotations"]["readOnlyHint"]
     assert "kb_feedback" in kb_mcp.instructions()
     with monkeypatch.context() as limited:  # --roots, and kb_http.py always: no such tool
         limited.setattr(kb_mcp, "limited", lambda: True)
