@@ -1,0 +1,45 @@
+{
+  "id": "ST-jkcn4qs4",
+  "kind": "story",
+  "title": "The test rules say a change gets no test by default and only a critical component keeps one",
+  "status": "draft",
+  "sprint": "SP-noqsd4hj",
+  "priority": "P1",
+  "rank": 1,
+  "goal": "kb/_self/code.md \"Checks and their tests\" says \"A change gets no test by default\" and \"A test exists only for a critical component\", naming the critical kinds (secret, leak and untrusted-code guards; the push and publish gates, the query log never reaching the public home included; operator-only authority: the gate classes, the ceiling class and the agent-session guard; formats another tool parses); it says a bug is proven by its repro and user feedback, not a test, and that a planner prefers deleting or merging tests to speeding them up, while its ceiling rules stay (an agent never raises it, a ceiling gate is the operator's own); the matching lines of kb/_self/backlog.md, kb/_self/maintaining.md, skills/sprint/SKILL.md plan steps 2 and 6 and review step 4, skills/item/SKILL.md step 6, skills/backlog/SKILL.md bug step 1 and agents/worker.md say the same and drop the land e2e test reason; the _self eval rows that pinned the old wording follow, so rag.py eval --root _self passes. Code-lane paths (skills/, agents/, the eval file): done and the push to main come after its merge request merges (backlog.py land ID --wait-merge 1800).",
+  "touches": [
+    "kb/_self/code.md",
+    "kb/_self/backlog.md",
+    "kb/_self/maintaining.md",
+    "skills/sprint/SKILL.md",
+    "skills/item/SKILL.md",
+    "skills/backlog/SKILL.md",
+    "agents/worker.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "gates": [
+    {
+      "id": "policy",
+      "kind": "blocking",
+      "question": "What does the project test, now that the operator has stated its test policy (2026-10-16)?",
+      "options": [
+        "ai agents add too much unnecessary tests. only absolutely critical components have to have test suite. the rest can and may go. we prefer faster development and relying on user feedback instead of tests that can run for hours (this was the case for this project until recently)",
+        "Keep the current test rules"
+      ],
+      "recommendation": "ai agents add too much unnecessary tests. only absolutely critical components have to have test suite. the rest can and may go. we prefer faster development and relying on user feedback instead of tests that can run for hours (this was the case for this project until recently)",
+      "do": {
+        "ai agents add too much unnecessary tests. only absolutely critical components have to have test suite. the rest can and may go. we prefer faster development and relying on user feedback instead of tests that can run for hours (this was the case for this project until recently)": "ST-jkcn4qs4",
+        "Keep the current test rules": [
+          "python3",
+          "_tools/selfdoc.py",
+          "section",
+          "code",
+          "Checks and their tests"
+        ]
+      },
+      "class": "agents-rule",
+      "answer": "ai agents add too much unnecessary tests. only absolutely critical components have to have test suite. the rest can and may go. we prefer faster development and relying on user feedback instead of tests that can run for hours (this was the case for this project until recently)",
+      "by": "operator"
+    }
+  ]
+}
