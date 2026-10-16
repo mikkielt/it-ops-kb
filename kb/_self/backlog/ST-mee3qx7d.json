@@ -2,7 +2,7 @@
   "id": "ST-mee3qx7d",
   "kind": "story",
   "title": "A planned item that replays or rewrites commits carries a check-trailers check, so its done fails before the push does",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,

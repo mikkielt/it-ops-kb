@@ -2,7 +2,7 @@
   "id": "BG-gg3aohlm",
   "kind": "bug",
   "title": "repro replay adds a second KB-Work trailer to a replayed backlog-planning commit, which the push gate refuses",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,

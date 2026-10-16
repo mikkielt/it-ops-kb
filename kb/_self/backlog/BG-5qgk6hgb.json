@@ -2,7 +2,7 @@
   "id": "BG-5qgk6hgb",
   "kind": "bug",
   "title": "repro setup keeps an earlier run's results.jsonl and run.json, so run skips areas and record and compare read old shas",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-a3w7xdij",
   "priority": "P2",
   "rank": 0,

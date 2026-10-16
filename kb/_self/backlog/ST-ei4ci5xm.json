@@ -2,7 +2,7 @@
   "id": "ST-ei4ci5xm",
   "kind": "story",
   "title": "repro status finds an instance's commit on the real main by patch-id, not only by sha",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,

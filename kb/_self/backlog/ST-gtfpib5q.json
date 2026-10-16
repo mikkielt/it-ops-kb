@@ -2,7 +2,7 @@
   "id": "ST-gtfpib5q",
   "kind": "story",
   "title": "bench_core.scratch_dir returns a resolved path, so a clone under the macOS temp symlink agrees with its own tools",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
