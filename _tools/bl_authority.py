@@ -57,8 +57,9 @@ def names_secret(touch):
 
 
 # In a gate's text `token` is a secret word, but not in the sense of a model's token counts (`output tokens`, `token
-# counts`, `usage.output_tokens`) nor in the file name of a Markdown doc (`kb/_self/token-efficiency.md`, as for a
-# touch). The ops-row value shapes `phase token` and `closed token` are no secret either, nor an upper-case identifier of
+# counts`, `usage.output_tokens`) nor in the sense of the words of a text (`token overlap`, `overlap of the
+# tokens`, `words or tokens`, `word tokens`) nor in the file name of a Markdown doc (`kb/_self/token-efficiency.md`, as
+# for a touch). The ops-row value shapes `phase token` and `closed token` are no secret either, nor an upper-case identifier of
 # token counts that holds `TOKENS` in the plural (`DISPATCH_BASE_TOKENS`, `MAX_TOKENS`). A bare `token`, one qualified
 # as a credential (`API token counts` is a count of API tokens), a singular identifier (`GITLAB_TOKEN`) and a token file
 # keep the class: the classifier fails closed.
@@ -69,6 +70,8 @@ TOKEN_COUNT = re.compile(
     r"(?:\b(?:output|input|prompt|completion|cached?|total|max|context|reasoning)[-_ ]tokens?\b|"
     r"\b(?:phase|closed)[-_ ]tokens?\b|"
     r"\btokens?[-_ ](?:counts?|usage|budgets?|limits?|costs?|efficiency|estimates?)\b|"
+    r"\btokens?[-_ ]overlaps?\b|\boverlaps? of (?:\w+[ ]){0,3}tokens\b|\bwords?[ ]+(?:or|and)[ ]+tokens\b|"
+    r"\btokens[ ]+(?:or|and)[ ]+words\b|\bword[-_ ]tokens?\b|"
     r"\b(?:counts?|number|numbers) of tokens\b|\btokens per (?:second|minute|request|run)\b)", re.I)
 # An upper-case constant name with `TOKENS` in the plural as one of its parts, at least one other part before it, not
 # the stem of a file name (`LIMIT_TOKENS.json`); one with a credential word (`API_TOKENS`) or a secret word
