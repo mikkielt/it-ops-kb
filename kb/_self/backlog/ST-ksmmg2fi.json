@@ -2,7 +2,7 @@
   "id": "ST-ksmmg2fi",
   "kind": "story",
   "title": "Research sprint goal: Any agent coordinates through coord.py",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rsmmwzr2",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-16: ST-unrlktke carries the research this goal needs (agent messages, typed parts, research dedup, coordination cost); this story researches only what the goal needs beyond it, or records `No outside facts:` naming ST-unrlktke."
+  "notes": "Plan 2026-10-16: ST-unrlktke carries the research this goal needs (agent messages, typed parts, research dedup, coordination cost); this story researches only what the goal needs beyond it, or records `No outside facts:` naming ST-unrlktke.",
+  "claimed_by": "orch-r02"
 }
