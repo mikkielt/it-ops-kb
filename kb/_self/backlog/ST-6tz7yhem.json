@@ -2,7 +2,7 @@
   "id": "ST-6tz7yhem",
   "kind": "story",
   "title": "dispatch ends the processes a worker session leaves running in its worktree, so land does not stop at step branch",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 3,
@@ -29,5 +29,6 @@
   "links": [
     "parked: SP-ofvvong6 close"
   ],
-  "notes": "SP-ofvvong6 retrospective: land BG-fdo6bgax stopped at step branch (ops land.end exit=1 2026-10-14T15:57:45Z) because two gk mcp processes (GitKraken plugin MCP, ppid 1) kept their cwd in the worker worktree after the session exited; each of the three workers left such a pair; the orchestrator ended them by hand. SP-j65ihctq retrospective, recurrence: land ST-ceuiynmz stopped at step branch (ops land.end exit=1 2026-10-14T17:14:00Z) on a gk mcp pair (ppid 1) left in the worker worktree; ST-2jsyxkpf's worker left one too, which the orchestrator ended before its land; ST-4o2drppl's worker left none. SP-sc5yk65l retrospective, recurrence: land ST-o4drfrv5 stopped at step branch (ops land.end exit=1 2026-10-14T17:54:47Z) on a gk mcp pair (ppid 1) in the worker worktree; all three workers of the sprint left one, and the orchestrator ended each by hand before landing. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_dispatch.py ends no process after the session; bl_procs only lists orphans (procs) and land refuses them (bl_land.py:1363-1370). The planted check starts an orphaned sleep and a live child in a temp dir: the orphan must be ended and named, the child kept. On this host a PATH wrapper turns the GitKraken plugin off for headless runs, which hides the recurrence but not the gap. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run."
+  "notes": "SP-ofvvong6 retrospective: land BG-fdo6bgax stopped at step branch (ops land.end exit=1 2026-10-14T15:57:45Z) because two gk mcp processes (GitKraken plugin MCP, ppid 1) kept their cwd in the worker worktree after the session exited; each of the three workers left such a pair; the orchestrator ended them by hand. SP-j65ihctq retrospective, recurrence: land ST-ceuiynmz stopped at step branch (ops land.end exit=1 2026-10-14T17:14:00Z) on a gk mcp pair (ppid 1) left in the worker worktree; ST-2jsyxkpf's worker left one too, which the orchestrator ended before its land; ST-4o2drppl's worker left none. SP-sc5yk65l retrospective, recurrence: land ST-o4drfrv5 stopped at step branch (ops land.end exit=1 2026-10-14T17:54:47Z) on a gk mcp pair (ppid 1) in the worker worktree; all three workers of the sprint left one, and the orchestrator ended each by hand before landing. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_dispatch.py ends no process after the session; bl_procs only lists orphans (procs) and land refuses them (bl_land.py:1363-1370). The planted check starts an orphaned sleep and a live child in a temp dir: the orphan must be ended and named, the child kept. On this host a PATH wrapper turns the GitKraken plugin off for headless runs, which hides the recurrence but not the gap. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run.",
+  "claimed_by": "orch-r01"
 }
