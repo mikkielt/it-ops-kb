@@ -2,7 +2,7 @@
   "id": "ST-ayaidnw4",
   "kind": "story",
   "title": "Review sprint: Parallel agents and landings keep shared state",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3hyk4eh",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r01"
+  "evidence": {
+    "commit": "271e7353a40a673de9628f7f5428197e1d376f84",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "8a808a4e1ba02a8d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "1f770f77bfc3b6fa"
+      }
+    ]
+  }
 }
