@@ -2,7 +2,7 @@
   "id": "BG-rt4tuih2",
   "kind": "bug",
   "title": "A typed /kb-research never reaches the coord hook, since only PreToolUse on Skill is registered",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xo45jvbj",
   "priority": "P1",
   "rank": 0,
@@ -24,5 +24,6 @@
   ],
   "depends_on": [
     "BG-wh3wardm"
-  ]
+  ],
+  "claimed_by": "orch-r03"
 }
