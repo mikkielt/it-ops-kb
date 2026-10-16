@@ -2,7 +2,7 @@
   "id": "ST-zqbo7xgc",
   "kind": "story",
   "title": "backlog.py claim writes the claims ledger under the lock record_worker takes, so a dispatch running beside a claim keeps its record",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z3hyk4eh",
   "priority": "P3",
   "rank": 1,
@@ -34,5 +34,6 @@
   "links": [
     "parked: SP-g2ssvhi2 review"
   ],
-  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_items.py:236-240 writes the ledger with write_text (truncate, then write) from a read taken at the start of cmd_claim; a locked record_worker reading the truncated file gets ValueError and writes a ledger of its item alone, or claim's stale write drops a worker_session record_worker just wrote, and land then names no worker session. BG-chw4sg54's gate g1 was answered 'record_worker only', which left this open; its notes said the worker would file it, and the worker filed nothing. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_items.py:219-237 still reads the ledger at the start of cmd_claim and writes it with write_text outside any lock; the planted check (a held <ledger>.lock, a claim started beside it, a record_worker-style write while it waits) fails now: the claim does not wait. referrers ledger_lock/record_worker/claims_ledger: bl_dispatch, bl_items, bl_base, bl_land (caller, unchanged), backlog.md, tools.md. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run."
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_items.py:236-240 writes the ledger with write_text (truncate, then write) from a read taken at the start of cmd_claim; a locked record_worker reading the truncated file gets ValueError and writes a ledger of its item alone, or claim's stale write drops a worker_session record_worker just wrote, and land then names no worker session. BG-chw4sg54's gate g1 was answered 'record_worker only', which left this open; its notes said the worker would file it, and the worker filed nothing. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_items.py:219-237 still reads the ledger at the start of cmd_claim and writes it with write_text outside any lock; the planted check (a held <ledger>.lock, a claim started beside it, a record_worker-style write while it waits) fails now: the claim does not wait. referrers ledger_lock/record_worker/claims_ledger: bl_dispatch, bl_items, bl_base, bl_land (caller, unchanged), backlog.md, tools.md. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run.",
+  "claimed_by": "orch-r01"
 }
