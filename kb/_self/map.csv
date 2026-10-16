@@ -138,3 +138,4 @@ kb/_self/content-rules.md,kb/*/decision-makers.csv
 kb/_self/tools.md,_tools/kbdecide.py
 kb/_self/tools.md,kb/*/_decisions.csv
 kb/_self/tools.md,kb/*/decision-makers.csv
+kb/_self/tools.md,_tools/coord.py
