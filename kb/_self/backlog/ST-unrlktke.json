@@ -7,7 +7,7 @@
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",
   "rank": 1,
-  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) What should a message one agent sends another hold to keep the receiver's context small, per Anthropic's context-engineering and multi-agent research guidance? (2) How do A2A message parts give agents typed results rather than free text (MCP outputSchema and structuredContent are in the kb already)? (3) How do parallel agents avoid duplicating each other's research, per official sources? (4) What token cost does coordination add: agent teams, subagent briefs and the summaries they return?",
+  "goal": "(1) What should a message one agent sends another hold to keep the receiver's context small, per Anthropic's context-engineering and multi-agent research guidance? (2) How do A2A message parts give agents typed results rather than free text (MCP outputSchema and structuredContent are in the kb already)? (3) How do parallel agents avoid duplicating each other's research, per official sources? (4) What token cost does coordination add for agent teams, subagent briefs and the summaries they return?",
   "checks": [
     {
       "run": [
@@ -36,6 +36,6 @@
     "kb: claude/cross-session-messaging.md:147 (plain text, size and rate limits)",
     "kb: agents/agent-cost-governance.md:52 (agent teams about 7x tokens)"
   ],
-  "notes": "Plan SP-rsmmwzr2 2026-10-16: narrowed. A pack of question 2 found MCP outputSchema/structuredContent covered (good: agents/subagents-vs-deterministic-tools.md:112), A2A message parts not (none); questions 1, 3 and 4 came back weak. Needed by ST-e3nmjd2s's digest.",
+  "notes": "Plan SP-rsmmwzr2 2026-10-16: narrowed. A pack of question 2 found MCP outputSchema/structuredContent covered (good: agents/subagents-vs-deterministic-tools.md:112), A2A message parts not (none); questions 1, 3 and 4 came back weak. Needed by ST-e3nmjd2s's digest. SP-rsmmwzr2 run 2026-10-16: the goal's lead-in (research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research) moved here, and question 4's colon became 'for', since researched read the lead-in into question 1 and cut question 4 at its colon (sighting on ST-7kl5dnwr).",
   "claimed_by": "orch-r02"
 }
