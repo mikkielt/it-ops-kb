@@ -31,7 +31,6 @@ import shlex
 import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import bl_cli
@@ -39,7 +38,7 @@ import bl_items
 from bl_base import (RESEARCH_KINDS, ROOT as PLUGIN_ROOT, Refused, Rejected, always_in_scope, canonical, claims_ledger, commit_message,
                      external_lines, git, id_re, item_repos, link_target, need, repositories, research_touches, resolved_touch,
                      run_check, say, scope, scratch_dir, setting, split_touch, touches_overlap, trailer_problem, withhold,
-                     worker_dir)
+                     worker_dir, ledger_lock, write_ledger)
 from bl_land import WORK_PREFIX, WORKER_NAME
 from bl_plan import shared_doc
 
@@ -503,43 +502,6 @@ def ledger_path(root):
     return ledger
 
 
-LEDGER_LOCK_STALE_S = 60  # a ledger lock older than this is a crashed writer's, and a waiter clears it
-LEDGER_LOCK_POLL_S = 0.02
-
-
-@contextlib.contextmanager
-def ledger_lock(path):
-    """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
-    (no fcntl, so the same on every OS) and removed on exit, so concurrent dispatch runs read and write the ledger one
-    at a time. Refused when it is still held after twice the stale age."""
-    lock = path.with_name(path.name + ".lock")
-    deadline = time.monotonic() + 2 * LEDGER_LOCK_STALE_S
-    while True:
-        try:
-            os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
-            break
-        except FileExistsError:
-            pass
-        except OSError as e:
-            raise Refused(f"cannot lock the claims ledger {path}: {e}")
-        try:
-            age = time.time() - lock.stat().st_mtime
-        except OSError:  # released since: look again
-            continue
-        if age > LEDGER_LOCK_STALE_S:
-            with contextlib.suppress(OSError):
-                lock.unlink()
-            continue
-        if time.monotonic() > deadline:
-            raise Refused(f"the claims ledger is locked ({lock}); remove the file if no dispatch runs")
-        time.sleep(LEDGER_LOCK_POLL_S)
-    try:
-        yield
-    finally:
-        with contextlib.suppress(OSError):
-            lock.unlink()
-
-
 def record_worker(root, iid, **fields):
     """Add FIELDS (`worker_pid`, `worker_session`) to the item's record in this working tree's claims ledger, which
     `claim` writes in the git dir and git never commits: a session id is no part of a committed item file. The
@@ -552,9 +514,7 @@ def record_worker(root, iid, **fields):
             ledger = {}
         rec = ledger.get(iid)
         ledger[iid] = {**(rec if isinstance(rec, dict) else {"by": rec} if rec else {}), **fields}
-        tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
-        write_text(tmp, json.dumps(ledger, indent=1, sort_keys=True) + "\n")
-        os.replace(tmp, path)
+        write_ledger(path, ledger)
 
 
 def make_worktree(root, iid, wt):

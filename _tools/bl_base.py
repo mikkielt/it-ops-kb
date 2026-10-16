@@ -9,7 +9,7 @@ command wrote, and what an item waits on (`waits`, `open_gates`) with the one-li
 backlog.py and the bl_ modules import it, and it imports no bl_ module at load and never backlog (`run`
 reaches bl_intake.run_argv by an import in the function, so a caller that patches the reader is heard).
 """
-import base64, copy, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile
+import base64, contextlib, copy, functools, getpass, json, os, re, secrets, socket, subprocess, sys, tempfile, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -581,6 +581,52 @@ def claims_ledger(root):
     if len(rev) < 2 or not rev[1]:
         return str(root), None
     return rev[0], Path(rev[1]) / CLAIMS_LEDGER
+
+
+LEDGER_LOCK_STALE_S = 60  # a ledger lock older than this is a crashed writer's, and a waiter clears it
+LEDGER_LOCK_POLL_S = 0.02
+
+
+@contextlib.contextmanager
+def ledger_lock(path):
+    """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
+    (no fcntl, so the same on every OS) and removed on exit, so concurrent `claim` and dispatch runs read and write the
+    ledger one at a time. Refused when it is still held after twice the stale age."""
+    lock = path.with_name(path.name + ".lock")
+    deadline = time.monotonic() + 2 * LEDGER_LOCK_STALE_S
+    while True:
+        try:
+            os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            break
+        except FileExistsError:
+            pass
+        except OSError as e:
+            raise Refused(f"cannot lock the claims ledger {path}: {e}")
+        try:
+            age = time.time() - lock.stat().st_mtime
+        except OSError:  # released since: look again
+            continue
+        if age > LEDGER_LOCK_STALE_S:
+            with contextlib.suppress(OSError):
+                lock.unlink()
+            continue
+        if time.monotonic() > deadline:
+            raise Refused(f"the claims ledger is locked ({lock}); remove the file if no dispatch or claim runs")
+        time.sleep(LEDGER_LOCK_POLL_S)
+    try:
+        yield
+    finally:
+        with contextlib.suppress(OSError):
+            lock.unlink()
+
+
+def write_ledger(path, ledger):
+    """Write LEDGER to the claims ledger PATH through a temp file of this process's own, so a reader never sees a
+    truncated file. Called inside `ledger_lock`."""
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.tmp")
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(ledger, indent=1, sort_keys=True) + "\n")
+    os.replace(tmp, path)
 
 
 def main_worktree_spool(root):
