@@ -10,7 +10,8 @@ else. `load_briefs` and `brief_problems` read and check the briefs file, `questi
 against it, and `status` names each instance's commits since the start commit and the ones a fresh fetch of the real
 origin's main holds. `run` starts every instance's headless `/kb-research` sessions at once, one per area, each instance in
 its own rotation of the briefs' order (`area_order`) and an area only while `may_start` holds, and appends each area's result as a json line to DIR/results.jsonl (`session_argv` is the one argv,
-`area_prompt` the one prompt). `record_results` merges those json lines into the results file as the scenario `repro`.
+`area_prompt` the one prompt). `claude_path` names the command it starts and refuses a wrapper script; a run also refuses
+while the briefs or questions file differs from HEAD and records their sha256 in DIR/run.json. `record_results` merges those json lines into the results file as the scenario `repro`.
 `compare` puts a detached checkout of each instance's bare at the shas of every area and reads it with that checkout's own
 tools by subprocess (`state_of`, `error_counts`, `eval_rows`); `match_facts` and `overlap_and_conflicts` hold the
 comparison of two instances' added facts and `compare_rows` the rows of the scenario `repro-compare`. `pick` applies the
@@ -523,7 +524,27 @@ def instances_of(root, count):
             for n in range(1, (count or 1) + 1)], ""
 
 
-def run_problems(root, insts, rev, count, briefs, questions_path):
+def claude_path():
+    """(path, problem): the resolved path of the command the instances start (CLAUDE[0] on PATH) and "" when it is the
+    claude binary, else a text naming why not: it is not on PATH, or it is a script (a `#!` file), as a wrapper first on
+    PATH is, which can add `--settings` the run does not record. An npm install's `.js` entry point is a script that is
+    claude itself."""
+    found = shutil.which(CLAUDE[0])
+    if not found:
+        return "", f"{CLAUDE[0]} is not on PATH"
+    real = os.path.realpath(found)
+    try:
+        with open(real, "rb") as f:
+            head = f.read(2)
+    except OSError as e:
+        return real, f"{real} cannot be read: {e}"
+    if head == b"#!" and not real.endswith((".js", ".mjs", ".cjs")):
+        return real, (f"{real} is a script, not the claude binary: a wrapper first on PATH can add --settings the run does "
+                      f"not record (start it with the claude binary's directory first on PATH)")
+    return real, ""
+
+
+def run_problems(root, insts, rev, count, briefs, questions_path, briefs_path=None):
     """(refusals, brief problems) a real run would meet: each is a line."""
     refusals, manifest = [], Path(root) / MANIFEST
     if not manifest.exists():
@@ -549,8 +570,15 @@ def run_problems(root, insts, rev, count, briefs, questions_path):
             refusals.append(f"repro questions fails ({len(found)} problem(s); first: {found[0]})")
     else:
         refusals.append(f"no brief rows: {HOME / BRIEFS} is missing or empty")
-    if not shutil.which(CLAUDE[0]):
-        refusals.append(f"{CLAUDE[0]} is not on PATH")
+    for path in (briefs_path or HOME / BRIEFS, questions_path or HOME / ADDED):
+        if Path(path).exists():
+            r = subprocess.run(["git", "status", "--porcelain", "--untracked-files=all", "--", Path(path).name],
+                               cwd=str(Path(path).parent), capture_output=True, text=True, encoding="utf-8")
+            if r.returncode != 0:
+                refusals.append(f"{path} is not in a git checkout: its content cannot be compared with HEAD")
+            elif r.stdout.strip():
+                refusals.append(f"{path} differs from HEAD (commit or restore it): the run records its sha256")
+    refusals.extend(why for _, why in [claude_path()] if why)
     return refusals, brief_problems(briefs)
 
 
@@ -673,7 +701,7 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     root = Path(root) if root else default_dir()
     briefs = load_briefs(briefs_path)
     insts, rev = instances_of(root, count)
-    refusals, bad = run_problems(root, insts, rev, count, briefs, questions_path)
+    refusals, bad = run_problems(root, insts, rev, count, briefs, questions_path, briefs_path)
     path = root / RESULTS
     results = read_results(path)
     areas = len(briefs)
@@ -690,6 +718,7 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     if dry_run:
         out(f"repro run: {len(insts)} instance(s), {areas} area(s), dir {root}")
         out(f"settings: {SETTINGS}")
+        out(f"claude: {claude_path()[0] or '(not found)'}")
         total = 0.0
         for i, todo in plan:
             argv = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], i["mcp_config"])
@@ -716,7 +745,10 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     if refusals or bad:
         raise Refused("; ".join([*refusals, *(f"briefs problem: {b}" for b in bad)]))
     root.mkdir(parents=True, exist_ok=True)
-    record.write_text(json.dumps({**note, "settings": SETTINGS}, indent=2) + "\n", encoding="utf-8", newline="\n")
+    out(f"claude: {claude_path()[0]}")
+    shas = {"briefs_sha256": file_sha256(briefs_path or HOME / BRIEFS),
+            "questions_sha256": file_sha256(questions_path or HOME / ADDED)}
+    record.write_text(json.dumps({**note, "settings": SETTINGS, **shas}, indent=2) + "\n", encoding="utf-8", newline="\n")
     lock = threading.Lock()
     with ThreadPoolExecutor(max_workers=len(insts)) as pool:
         futures = [pool.submit(run_instance, i, ordered[i["n"]], results, opts, root, path, lock, out) for i in insts]
