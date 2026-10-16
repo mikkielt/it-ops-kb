@@ -2,7 +2,7 @@
   "id": "ST-unrlktke",
   "kind": "story",
   "title": "The kb says what a token-efficient message between agents holds and how parallel agents avoid duplicate research",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-ylklxolb",
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",
@@ -36,5 +36,6 @@
     "kb: claude/cross-session-messaging.md:147 (plain text, size and rate limits)",
     "kb: agents/agent-cost-governance.md:52 (agent teams about 7x tokens)"
   ],
-  "notes": "Plan SP-rsmmwzr2 2026-10-16: narrowed. A pack of question 2 found MCP outputSchema/structuredContent covered (good: agents/subagents-vs-deterministic-tools.md:112), A2A message parts not (none); questions 1, 3 and 4 came back weak. Needed by ST-e3nmjd2s's digest."
+  "notes": "Plan SP-rsmmwzr2 2026-10-16: narrowed. A pack of question 2 found MCP outputSchema/structuredContent covered (good: agents/subagents-vs-deterministic-tools.md:112), A2A message parts not (none); questions 1, 3 and 4 came back weak. Needed by ST-e3nmjd2s's digest.",
+  "claimed_by": "orch-r02"
 }
