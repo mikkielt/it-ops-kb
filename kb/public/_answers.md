@@ -3893,3 +3893,13 @@ _Agent: kb-research_
 - See agents/coordination-messages.md, agents/a2a-protocol.md, agents/subagents-vs-deterministic-tools.md, agents/agent-cost-governance.md, claude/cross-session-messaging.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-hook-events-see-skill. Which Claude Code hook events see a skill start, whether Claude called it or the person typed it, for a hook that shows overlapping sessions at the start of a research skill?
+- Claude's own call: a `PreToolUse` hook matching the `Skill` tool fires only when Claude calls the tool. [DOC S743]
+- The person's typed `/skillname` bypasses `PreToolUse`; `UserPromptExpansion` fires on that path, matches on `command_name` and receives `expansion_type`, `command_name`, `command_args`, `command_source` and `prompt`. [DOC S743]
+- Output on `UserPromptExpansion`: `additionalContext` reaches Claude with the expanded prompt, plain stdout on exit 0 is added as context, and `decision` `block` or exit 2 stops the expansion; a hook that only informs prints context and never blocks. [DOC S743]
+- Conclusion: a hook that shows overlaps at every start of one skill registers on both events, since each misses the other's path; it must not rely on `PreToolUse`'s `tool_input` field names for `Skill`, which the docs do not list. [DER S743]
+- Open: the field names of the `Skill` tool's `tool_input`, and whether a plugin skill's name carries the plugin prefix in `command_name` and in `tool_input`. [UNK]
+- See claude/hooks.md.
+
+_Agent: kb-research_
