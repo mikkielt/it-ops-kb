@@ -79,7 +79,9 @@
         "a JSON array of one object per live key": "ST-a57bxubz",
         "keep the one object with an entries array": "ST-a57bxubz"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a JSON array of one object per live key",
+      "by": "operator"
     },
     {
       "id": "g3",
