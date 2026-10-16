@@ -2,7 +2,7 @@
   "id": "ST-y4naelcs",
   "kind": "story",
   "title": "repro briefs fix each area's article paths",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-a3w7xdij",
   "priority": "P2",
   "rank": 0,
@@ -68,5 +68,27 @@
     }
   ],
   "notes": "Premise (lessons analysis 1.4, 2.4): 13, 22 and 45 articles on the 14 common areas, the same path in all three for 4 areas only; kb-research SKILL.md:53-55 leaves the split open, so layout differed by instance and made claims unmatched. The paths column is semicolon-separated (domain/slug.md;...). The next run's start commit is the operator's call (the repeat-run draft): briefs name the target layout either way. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "dc130e2a0b0d1150e7785cb087dbd517e7f93187",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=b.load_briefs()\nok='paths' in b.BRIEF_FILLED and all(x.get('paths','').strip() for x in r) and not b.brief_problems(r)\nprint(len(r),[x['area'] for x in r if not x.get('paths','').strip()][:5]);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4c4831e0ede2c36b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bench_repro as b;r=b.load_briefs()[0];p=b.area_prompt(r);sys.exit(0 if r.get('paths') and r['paths'].split(';')[0].strip() in p else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
