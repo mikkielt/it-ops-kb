@@ -8,8 +8,8 @@ instance writes ~/.claude.json. `instance_env` is the session environment of an 
 instance as a probe, runs `kbgit.py sync --push` in it and proves the push landed on the probe's own bare and nowhere
 else. `load_briefs` and `brief_problems` read and check the briefs file, `question_problems` the frozen questions
 against it, and `status` names each instance's commits since the start commit and the ones a fresh fetch of the real
-origin's main holds. `run` starts every instance's headless `/kb-research` sessions at once, one per area in the
-briefs' order, and appends each area's result as a json line to DIR/results.jsonl (`session_argv` is the one argv,
+origin's main holds. `run` starts every instance's headless `/kb-research` sessions at once, one per area, each instance in
+its own rotation of the briefs' order (`area_order`) and an area only while `may_start` holds, and appends each area's result as a json line to DIR/results.jsonl (`session_argv` is the one argv,
 `area_prompt` the one prompt). `record_results` merges those json lines into the results file as the scenario `repro`.
 `compare` puts a detached checkout of each instance's bare at the shas of every area and reads it with that checkout's own
 tools by subprocess (`state_of`, `error_counts`, `eval_rows`); `match_facts` and `overlap_and_conflicts` hold the
@@ -554,16 +554,41 @@ def run_problems(root, insts, rev, count, briefs, questions_path):
     return refusals, brief_problems(briefs)
 
 
+def area_order(areas, n, count):
+    """`areas` as instance `n` of `count` runs them: the list rotated left by (n-1) times len(areas)//count places, so
+    instance 1 keeps the briefs' order and no area is the last of every instance."""
+    if not areas:
+        return []
+    k = (n - 1) * (len(areas) // max(count, 1)) % len(areas)
+    return [*areas[k:], *areas[:k]]
+
+
+def may_start(spent, area_usd, instance_usd):
+    """Whether an instance with `spent` dollars recorded may start one more area: the spend plus --area-usd, the most
+    the area can add, stays within --instance-usd."""
+    return spent + area_usd <= instance_usd + 1e-9
+
+
+def cap_split(todo, spent, area_usd, instance_usd):
+    """(areas the cap covers, areas it leaves out) of `todo`, in order, when every area costs --area-usd."""
+    start = []
+    for b in todo:
+        if not may_start(spent + len(start) * area_usd, area_usd, instance_usd):
+            break
+        start.append(b)
+    return start, todo[len(start):]
+
+
 def todo_of(briefs, results, n):
-    """The briefs of instance `n` with no finished result, in the briefs' order."""
+    """The briefs of instance `n` with no finished result, in the order `briefs` gives."""
     last = latest(results)
     return [b for b in briefs if last.get((n, b["area"].strip()), {}).get("failure", "x")]
 
 
-def estimate(todo, area_usd, instance_usd):
-    """The most one instance can spend: every area at the area cap, but no area starts once the cap of the instance is
-    reached, so at most the instance cap plus one area."""
-    return min(todo * area_usd, instance_usd + area_usd)
+def estimate(todo, area_usd, instance_usd, spent=0.0):
+    """The most one instance can spend from now on: every area `cap_split` covers at the area cap, so spent plus this
+    never passes the instance cap."""
+    return len(cap_split(range(todo), spent, area_usd, instance_usd)[0]) * area_usd
 
 
 def utc_now():
@@ -601,8 +626,8 @@ def area_record(inst, brief, opts, env, argv, prompt, timeout):
 
 
 def run_instance(inst, briefs, results, opts, root, path, lock, out):
-    """Every area of one instance, in order, until its recorded spend reaches the instance cap: the areas left are
-    recorded as failures named budget. Each result is appended as soon as it exists."""
+    """Every area of one instance, in the order `briefs` gives, while `may_start` holds for its recorded spend: the areas
+    left are recorded as failures named budget. Each result is appended as soon as it exists."""
     n = inst["n"]
     env = instance_env(root, n)
     argv = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], inst["mcp_config"])
@@ -617,14 +642,15 @@ def run_instance(inst, briefs, results, opts, root, path, lock, out):
             f"{rec['wall_s']:.0f} s")
 
     for i, brief in enumerate(todo):
-        if spent >= opts["instance_usd"]:
+        if not may_start(spent, opts["area_usd"], opts["instance_usd"]):
             for left in todo[i:]:
                 append({"instance": n, "area": left["area"].strip(), "started": utc_now(), "model": model_id(opts["model"]),
                         "effort": opts["effort"], "settings": SETTINGS, "bare_before": "", "bare_after": "",
                         "failure": "budget", "subtype": "budget", "wall_s": 0, "cost": 0, "input_tokens": 0,
                         "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "turns": 0,
                         "tool_calls": 0, "model_usage": {},
-                        "error": f"instance spend ${spent:.2f} reached --instance-usd {opts['instance_usd']:g}"})
+                        "error": f"instance spend ${spent:.2f} plus --area-usd {opts['area_usd']:g} passes --instance-usd "
+                                 f"{opts['instance_usd']:g}"})
             break
         rec = area_record(inst, brief, opts, env, argv, area_prompt(brief), opts["timeout"])
         spent += rec["cost"]
@@ -632,8 +658,8 @@ def run_instance(inst, briefs, results, opts, root, path, lock, out):
 
 
 def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=None, out=print, **limits):
-    """`repro run`: start every instance's area sessions at once (one thread each, the areas of an instance in the
-    briefs' order) and append each result to DIR/results.jsonl; a run again skips the areas with a result and retries
+    """`repro run`: start every instance's area sessions at once (one thread each, the areas of an instance in its own
+    `area_order` of the briefs, each only while `may_start` holds) and append each result to DIR/results.jsonl; a run again skips the areas with a result and retries
     the failed ones. `limits` are DEFAULTS' keys. With `dry_run` nothing starts: the argv, the estimate and every
     refusal are printed; returns 0, or 1 for a briefs problem. A real run raises Refused on a refusal or a briefs
     problem and returns 0 when every area has a result, else 1."""
@@ -647,8 +673,10 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     path = root / RESULTS
     results = read_results(path)
     areas = len(briefs)
-    plan = [(i, todo_of(briefs, results, i["n"])) for i in insts]
+    ordered = {i["n"]: area_order(briefs, i["n"], len(insts)) for i in insts}
+    plan = [(i, todo_of(ordered[i["n"]], results, i["n"])) for i in insts]
     note = {k: opts[k] for k in ("model", "effort", "max_turns", "area_usd", "timeout")}
+    note["orders"] = {str(n): [b["area"].strip() for b in order] for n, order in ordered.items()}
     note["argv"] = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], "MCP-CONFIG")
     record = Path(root) / RUN_RECORD
     if record.exists() and not refusals:
@@ -661,12 +689,16 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
         total = 0.0
         for i, todo in plan:
             argv = session_argv(opts["model"], opts["effort"], opts["max_turns"], opts["area_usd"], i["mcp_config"])
-            up = estimate(len(todo), opts["area_usd"], opts["instance_usd"])
+            spent = sum(r.get("cost") or 0 for r in results if r.get("instance") == i["n"])
+            start, left = cap_split(todo, spent, opts["area_usd"], opts["instance_usd"])
+            up = estimate(len(todo), opts["area_usd"], opts["instance_usd"], spent)
             total += up
             out(f"instance {i['n']}: clone {i['clone']}")
             out(f"  argv: {shlex.join(argv)}")
+            out(f"  order: {', '.join(b['area'].strip() for b in ordered[i['n']]) or '(none)'}")
             out(f"  areas to run: {len(todo)} of {areas}, estimate up to ${up:.2f} (--area-usd {opts['area_usd']:g} each, "
-                f"no area starts once ${opts['instance_usd']:g} is recorded)")
+                f"no area starts unless ${spent:.2f} recorded plus --area-usd stays within ${opts['instance_usd']:g})")
+            out(f"  cap leaves out: {', '.join(b['area'].strip() for b in left) or '(none)'}")
         if plan and areas:
             out(f"estimate: up to ${total:.2f} for the run")
             out("prompt of the first area (stdin; the others differ in the brief only):")
@@ -683,7 +715,7 @@ def run(count=None, root=None, dry_run=False, briefs_path=None, questions_path=N
     record.write_text(json.dumps({**note, "settings": SETTINGS}, indent=2) + "\n", encoding="utf-8", newline="\n")
     lock = threading.Lock()
     with ThreadPoolExecutor(max_workers=len(insts)) as pool:
-        futures = [pool.submit(run_instance, i, briefs, results, opts, root, path, lock, out) for i in insts]
+        futures = [pool.submit(run_instance, i, ordered[i["n"]], results, opts, root, path, lock, out) for i in insts]
         for f in futures:
             f.result()
     last = latest(read_results(path))
