@@ -39,7 +39,9 @@
         "plain kb-research matcher": "BG-rt4tuih2",
         "matcher that also takes a namespaced command_name": "BG-rt4tuih2"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "plain kb-research matcher",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-r03"
