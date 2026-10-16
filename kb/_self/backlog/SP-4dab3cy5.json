@@ -1,0 +1,20 @@
+{
+  "id": "SP-4dab3cy5",
+  "kind": "sprint",
+  "title": "The kb covers parallel agent work, shared agent state and multi-agent operations",
+  "status": "planned",
+  "goal": "the kb covers parallel agent work, shared agent state and multi-agent operations",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
