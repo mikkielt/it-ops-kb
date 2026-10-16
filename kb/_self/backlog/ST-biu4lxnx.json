@@ -2,7 +2,7 @@
   "id": "ST-biu4lxnx",
   "kind": "story",
   "title": "Review sprint: repro compare and pick read research gain, claim parity and structural identity",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-75hdeqld",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-75hdeqld"
 }
