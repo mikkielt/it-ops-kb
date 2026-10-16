@@ -487,9 +487,12 @@ MISSING_WORK = ("changes _tools/, .claude/, .githooks/ or .gitlab-ci.yml with no
                 "name the item it works on")
 FORM_ONLY = (MISSING_WORK,)
 WORK_PATHS = ("_tools/", ".claude/", ".githooks/", ".gitlab-ci.yml")  # a change to these is work: it needs a KB-Work
+CONTENT_PATHS = ("_tools/aliases.csv",)  # inside WORK_PATHS, kb content as kblane.py lanes it: a research commit writes it
 
 
 def code_path(path):
+    if path in CONTENT_PATHS:
+        return False
     return any(path == p or (p.endswith("/") and path.startswith(p)) for p in WORK_PATHS)
 
 
