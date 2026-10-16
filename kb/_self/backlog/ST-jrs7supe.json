@@ -58,7 +58,9 @@
         "rename and compare": "ST-jrs7supe",
         "owner token": "ST-jrs7supe"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "rename and compare",
+      "by": "operator"
     }
   ],
   "links": [
