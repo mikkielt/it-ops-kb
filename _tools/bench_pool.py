@@ -15,7 +15,7 @@ effort levels, the per-run record and the per-cell figures, described in kb/_sel
 one run under one `--max-usd`; `--arm-reps`, `--arm-kinds` and `--sample` shape a whole record in one command. This module
 imports agent_bench, bench_core and bench_retrieval and no facade (kb/_self/code.md, Layout and Imports).
 """
-import csv, hashlib, json, math, os, random, re, shutil, subprocess, sys, tempfile, time, uuid
+import csv, hashlib, json, math, random, re, shutil, subprocess, sys, time, uuid
 from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from itertools import zip_longest
@@ -24,8 +24,8 @@ from typing import NamedTuple
 
 import agent_bench
 from bench_core import (HOME, PRICE, RAW, RESULTS, SPEND, WEB_SEARCH_USD, Skip, est_cost, no_plugin_env, pinned,
-                        prompt_tokens, read_rows, resolve_model, run_tokens, spent_run, spent_usd, usage_sum, write_rate,
-                        write_rows)
+                        prompt_tokens, read_rows, resolve_model, run_tokens, scratch_dir, spent_run, spent_usd, usage_sum,
+                        write_rate, write_rows)
 from bench_retrieval import numbered, sonnet_json
 
 SEED = 11
@@ -304,7 +304,7 @@ def regex_prompt(items):
 
 def sonnet_regexes(items):
     """The paid call: one tool-less Sonnet reply with a regex per item (question and fact line), [""] for a miss."""
-    scratch = Path(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench")
+    scratch = scratch_dir()
     scratch.mkdir(parents=True, exist_ok=True)
     got, cost = sonnet_json(regex_prompt(items), scratch)
     out = [""] * len(items)

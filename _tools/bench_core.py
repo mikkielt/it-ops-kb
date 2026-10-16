@@ -105,8 +105,9 @@ def git(*args, cwd, check=True):
 
 
 def scratch_dir():
-    """The scratch directory of the benchmarks' clones: BENCH_SCRATCH, else <temp>/it-ops-kb-bench."""
-    return Path(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench")
+    """The scratch directory of the benchmarks' clones: BENCH_SCRATCH, else <temp>/it-ops-kb-bench, resolved so a clone under
+    a symlinked temp directory (macOS `/var` is `/private/var`) sits at the path its own tools report."""
+    return Path(os.environ.get("BENCH_SCRATCH") or Path(tempfile.gettempdir()) / "it-ops-kb-bench").resolve()
 
 
 def isolate(clone, mode, bare):
