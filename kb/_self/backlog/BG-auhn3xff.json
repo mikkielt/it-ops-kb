@@ -35,7 +35,9 @@
         "four phrases: overlap forms, words-or pairs and word forms": "BG-auhn3xff",
         "only the two phrases the repro plants": "BG-auhn3xff"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "four phrases: overlap forms, words-or pairs and word forms",
+      "by": "operator"
     }
   ],
   "notes": "2026-10-16 BG-ijyjl7ii gate g1: a question and options about the token counts a stream reported (a repro area's cost record) matched 'token' and was made blocking, class secrets. Recurred in SP-a3w7xdij: ST-y4naelcs's worker gate g1 about article paths was classed secrets because its question names the area ssh-windows-estate (word ssh), which made a provisional gate blocking. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: class_reasons still gives secrets for 'token overlap of two facts words'. The repro now has four planted questions: word overlap and 'words or tokens' must be design, a model's output tokens stays design, a credential token file stays secrets. The critical authority-class test file is not in touches: the change narrows one word's sense and the planted cases prove it; the 'ssh' in an area name recurrence named above stays out of this bug's scope.",
