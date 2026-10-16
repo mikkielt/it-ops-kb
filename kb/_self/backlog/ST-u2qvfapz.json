@@ -2,7 +2,7 @@
   "id": "ST-u2qvfapz",
   "kind": "story",
   "title": "kbid.py add names a failed read of a Learn mirror's licence file as a network failure, not as an unrecognised licence",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,

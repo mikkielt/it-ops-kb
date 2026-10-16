@@ -2,7 +2,7 @@
   "id": "ST-yb5x4x3d",
   "kind": "story",
   "title": "factdiff.py anchor --file leaves a still-failing unlocated row unchanged instead of rewriting it on every run",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "ST-wiv62ohc",
   "kind": "story",
   "title": "kbid add takes title, publisher and version from the fetched page and a host registry",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-jqjlwiar",
   "sprint": "SP-b36246xo",
   "priority": "P2",

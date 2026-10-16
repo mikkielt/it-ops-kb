@@ -2,7 +2,7 @@
   "id": "BG-ijt2pwss",
   "kind": "bug",
   "title": "kbid.py add writes the repository's MIT licence for a gitlab-org/gitlab doc/ page, whose LICENSE puts doc/ under CC BY-SA 4.0",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
