@@ -7,7 +7,7 @@
   "sprint": "SP-xo45jvbj",
   "priority": "P3",
   "rank": 3,
-  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does a stateless MCP server keep state several agents share: explicit handles, subscriptions/listen and the tasks extension? (2) How does SEP-2567 let an orchestrator decide which state its subagents share and which each keeps alone?",
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research; (1) How does a stateless MCP server keep state several agents share: explicit handles, subscriptions/listen and the tasks extension? (2) How does SEP-2567 let an orchestrator decide which state its subagents share and which each keeps alone?",
   "checks": [
     {
       "run": [
@@ -20,7 +20,11 @@
   ],
   "clauses": [
     {
-      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does a stateless MCP server keep state several agents share: explicit handles, subscriptions/listen and the tasks extension? (2) How does SEP-2567 let an orchestrator decide which state its subagents share and which each keeps alone?",
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research",
+      "check": 0
+    },
+    {
+      "clause": "(1) How does a stateless MCP server keep state several agents share: explicit handles, subscriptions/listen and the tasks extension? (2) How does SEP-2567 let an orchestrator decide which state its subagents share and which each keeps alone?",
       "check": 0
     }
   ],
@@ -42,5 +46,5 @@
     "live: https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices#state-handle-hijacking",
     "kb: mcp/resources-prompts.md:83 (subscriptions/listen)"
   ],
-  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed: dropped the state handle hijacking question, which the kb answers at mcp/security-best-practices.md:18 (servers MUST NOT treat possession of a handle as authentication; bind handles to the verified user) [DOC S716]. Packs: question 1 weak, SEP-2567 none."
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: narrowed: dropped the state handle hijacking question, which the kb answers at mcp/security-best-practices.md:18 (servers MUST NOT treat possession of a handle as authentication; bind handles to the verified user) [DOC S716]. Packs: question 1 weak, SEP-2567 none. Run 2026-10-16 (orchestrator): the goal's lead-in now ends in '; ' instead of ': ' so goal_questions packs question (1) alone (defect in draft ST-cho3qjfo; ST-cx7qhu3f hit it); the questions are unchanged."
 }
