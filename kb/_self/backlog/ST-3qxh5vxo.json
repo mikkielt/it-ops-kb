@@ -83,6 +83,61 @@
       "class": "querylog",
       "answer": "measure on the query log's real questions first, then pick",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Which share of the smaller lack-set must an overlapping claim on the same anchor topic hold for its terms to count as covered (measured on 871 query-log questions: 689 had an anchor and lack terms; of 10310 same-topic pairs 7612 shared no term, 2542 shared some but under half, 156 shared at least half)?",
+      "options": [
+        "the same anchor topic and at least half of the smaller lack-set's terms",
+        "the same anchor topic and identical lack-sets",
+        "any shared term on the same anchor topic"
+      ],
+      "recommendation": "the same anchor topic and at least half of the smaller lack-set's terms",
+      "do": {
+        "the same anchor topic and at least half of the smaller lack-set's terms": "ST-3qxh5vxo",
+        "the same anchor topic and identical lack-sets": "ST-3qxh5vxo",
+        "any shared term on the same anchor topic": "ST-3qxh5vxo"
+      },
+      "class": "querylog",
+      "answer": "the same anchor topic and at least half of the smaller lack-set's terms",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How is the dedup step numbered in the kb-research skill, whose later steps other docs cite by number?",
+      "options": [
+        "step 0, ahead of step 1, so no step is renumbered",
+        "step 1, with every later step and each citation of one renumbered"
+      ],
+      "recommendation": "step 0, ahead of step 1, so no step is renumbered",
+      "do": {
+        "step 0, ahead of step 1, so no step is renumbered": "ST-3qxh5vxo",
+        "step 1, with every later step and each citation of one renumbered": "ST-3qxh5vxo"
+      },
+      "class": "agents-rule",
+      "answer": "step 0, ahead of step 1, so no step is renumbered",
+      "by": "operator"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "What lease length does coord.py dedup give the terms it claims, and may it run through --url?",
+      "options": [
+        "3600 seconds by default (--ttl overrides), local store only",
+        "1800 seconds, local store only",
+        "3600 seconds, also through --url"
+      ],
+      "recommendation": "3600 seconds by default (--ttl overrides), local store only",
+      "do": {
+        "3600 seconds by default (--ttl overrides), local store only": "ST-3qxh5vxo",
+        "1800 seconds, local store only": "ST-3qxh5vxo",
+        "3600 seconds, also through --url": "ST-3qxh5vxo"
+      },
+      "class": "agents-rule",
+      "answer": "3600 seconds by default (--ttl overrides), local store only",
+      "by": "operator"
     }
   ],
   "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: no dedup exists. Gate g2 answered at planning with its recommendation (measure on the query log's real questions first, then pick): the worker measures and records the threshold it picks as a gate of its own. The planted questions (Intune or SQL Server with the made-up terms wombat, quokka, koala, platypus) keep lacks the kb will not research away; a partial overlap must keep koala uncovered whatever threshold is picked. The skill check reads the first numbered step of the skill. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE).",

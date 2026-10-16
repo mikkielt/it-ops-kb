@@ -16,6 +16,8 @@
                                                      live intents and claims that overlap a key K (repeatable)
   coord.py wait --since N --timeout S                print the events after sequence N, blocking until one arrives or
                                                      S seconds pass
+  coord.py dedup QUESTION [--holder NAME] [--ttl S]  claim the question's lack terms that no overlapping live claim
+                                                     covers (local store only, not through --url)
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
 KB_COORD_STORE; with neither the command is refused (exit 2). Every command prints one JSON object on stdout with
@@ -40,6 +42,16 @@ one line per live intent (posted within a day, its items not all done by a later
 held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
 way), newest first, cut at N lines; with nothing to show it prints nothing.
 
+`dedup` runs `rag.py pack QUESTION` and takes its fingerprint: the anchor topic (the first article's path without `.md`,
+else `unanchored`) and the terms of its `kb lacks:` lines, lowercased and mapped to their canonical form by
+`_tools/aliases.csv` and each root's `_retrieval/aliases.csv`. A live claim of another holder (a `research:TOPIC:TERM` key;
+the same holder under a name other than `anonymous` is itself, never an overlap) overlaps when it is on the same topic and
+shares at least half of the smaller of the two term sets; the shared terms count as covered. In one transaction `dedup`
+claims every term not covered (one lease, one token, shown once, for the keys in `claimed`) and prints `topic`, `terms`,
+`uncovered`, `overlaps` (each: `holder`, `topic`, shared `terms`), `claimed`, `ttl`, `token` (only when it claimed) and
+`seq` (the newest event, for `wait --since`). A question every term of which is covered prints `uncovered` empty and
+claims nothing; exit 0 either way.
+
   coord.py serve --bind [HOST:]PORT --keys DIR       answer every command above as a JSON request over HTTP, on the store
   coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
 
@@ -58,6 +70,7 @@ Exit codes: 0 done; 1 the command's condition failed (key held, wrong or expired
 absent); 2 a bad argument, no store, or a server that refuses (401) or cannot be reached.
 """
 import argparse
+import csv
 import http.client
 import http.server
 import json
@@ -66,13 +79,18 @@ import re
 import secrets
 import socket
 import sqlite3
+import subprocess
 import sys
 import time
 import urllib.parse
 from fnmatch import fnmatchcase
 from pathlib import Path
 
+HERE = Path(__file__).resolve().parent
 BUSY_SECONDS = 30
+PACK_SECONDS = 120
+RESEARCH = "research:"  # a research claim's key: research:<anchor topic>:<lack term>
+DEDUP_SECONDS = 3600
 SCHEMA = (
     "CREATE TABLE IF NOT EXISTS entries ("
     "key TEXT PRIMARY KEY, value TEXT, revision INTEGER NOT NULL, holder TEXT, token TEXT, ttl REAL, expires REAL)"
@@ -342,6 +360,87 @@ def digest(args, now):
     return "\n".join(text for _at, text in lines[:args.lines])
 
 
+def alias_map():
+    """{term: canonical} from the shared product aliases (`_tools/aliases.csv`) and each root's own `aliases.csv`."""
+    files = [HERE / "aliases.csv", *sorted((HERE.parent / "kb").glob("*/_retrieval/aliases.csv"))]
+    out = {}
+    for path in files:
+        try:
+            with open(path, encoding="utf-8", newline="") as f:
+                for row in csv.DictReader(f):
+                    term = " ".join((row.get("term") or "").lower().split())
+                    canon = " ".join((row.get("canonical") or "").lower().split())
+                    if term and canon:
+                        out.setdefault(term, canon)
+        except OSError:
+            pass
+    return out
+
+
+def fingerprint(question):
+    """(anchor topic, lack terms) of the question's pack: the first article's path without `.md` (`unanchored` when
+    the pack names none) and the words of its `kb lacks:` lines, lowercased and mapped to their canonical alias."""
+    pack = HERE / "rag.py"
+    try:
+        p = subprocess.run([sys.executable, str(pack), "pack", question, "--format", "concise", "--budget", "300"],
+                           capture_output=True, text=True, encoding="utf-8", timeout=PACK_SECONDS)
+    except (OSError, subprocess.SubprocessError) as error:
+        raise Refused({"ok": False, "error": f"the pack of the question did not run: {error.__class__.__name__}"}, 2)
+    if p.returncode != 0:
+        raise Refused({"ok": False, "error": f"rag.py pack exited {p.returncode}: {p.stderr.strip()[:120]}"}, 2)
+    article = re.search(r"^## (\S+?)(?:\.md)?  ", p.stdout, re.M)
+    names = alias_map()
+    terms = []
+    for line in re.findall(r"^kb lacks: (.*\S)\s*$", p.stdout, re.M):
+        for word in line.split(","):
+            word = " ".join(word.lower().split())
+            word = names.get(word, word)
+            if word and word != "-" and word not in terms:
+                terms.append(word)
+    return (article.group(1) if article else "unanchored"), terms
+
+
+def research_key(topic, term):
+    return f"{RESEARCH}{topic}:{term}"
+
+
+def dedup(args, now):
+    """Claim the lack terms of the question's pack that no overlapping live claim covers; name the claims that do.
+    A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms."""
+    topic, terms = fingerprint(args.question)
+    holder = args.holder or "anonymous"
+    token = secrets.token_hex(16)
+    overlapping, covered, own, taken = [], set(), set(), []
+    with Tx(args.store) as con:
+        con.execute("DELETE FROM entries WHERE expires IS NOT NULL AND expires <= ?", (now,))
+        theirs = {}
+        for row in con.execute("SELECT key, holder FROM entries WHERE substr(key, 1, ?) = ? ORDER BY key", (len(RESEARCH), RESEARCH)):
+            their_topic, _colon, term = row["key"][len(RESEARCH):].partition(":")
+            if their_topic != topic:
+                continue
+            if row["holder"] == holder and holder != "anonymous":
+                own.add(term)
+            else:
+                theirs.setdefault(row["holder"], set()).add(term)
+        for who, held in sorted(theirs.items(), key=lambda pair: str(pair[0])):
+            shared = [t for t in terms if t in held]
+            if shared and len(shared) * 2 >= min(len(terms), len(held)):
+                covered.update(shared)
+                overlapping.append({"holder": who, "topic": topic, "terms": shared})
+        uncovered = [t for t in terms if t not in covered]
+        for term in uncovered:
+            if term not in own:
+                con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires) VALUES (?, NULL, 1, ?, ?, ?, ?)",
+                            (research_key(topic, term), holder, token, args.ttl, now + args.ttl))
+                taken.append(research_key(topic, term))
+        last = con.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()[0]
+    body = {"ok": True, "topic": topic, "holder": holder, "terms": terms, "uncovered": uncovered, "overlaps": overlapping,
+            "claimed": taken, "ttl": args.ttl, "seq": last}
+    if taken:
+        body["token"] = token
+    return body
+
+
 def positive(text):
     value = float(text)
     if value <= 0:
@@ -415,6 +514,10 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--since", type=not_negative, required=True, help="the highest sequence the caller has seen (0: all)")
     p.add_argument("--timeout", type=seconds, required=True, help="seconds to block when no event is past SINCE")
     if not remote:
+        p = sub.add_parser("dedup", parents=parents)
+        p.add_argument("question")
+        p.add_argument("--holder", help="name shown to a later question that overlaps this one (default anonymous)")
+        p.add_argument("--ttl", type=positive, default=DEDUP_SECONDS, help=f"lease length in seconds (default {DEDUP_SECONDS})")
         p = sub.add_parser("serve", parents=parents)
         p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
         p.add_argument("--keys", required=True, metavar="DIR", help="one file per operator, named for it, holding its token")
@@ -422,7 +525,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
 
 
 COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put": put, "list": listing,
-            "post": post, "digest": digest, "wait": wait}
+            "post": post, "digest": digest, "wait": wait, "dedup": dedup}
 
 
 def run(args, now):
