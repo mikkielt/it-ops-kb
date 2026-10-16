@@ -104,6 +104,14 @@
         "exit": 0,
         "sha256": "fe20985bccffef7e"
       }
+    ],
+    "gone": [
+      [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lookup_eval_passes_on_the_live_kb"
+      ]
     ]
   }
 }

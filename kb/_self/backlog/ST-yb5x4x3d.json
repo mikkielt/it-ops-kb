@@ -112,6 +112,14 @@
         "exit": 0,
         "sha256": "c5751ec9a76bfff9"
       }
+    ],
+    "gone": [
+      [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_lint_names_a_facts_line_with_a_second_bullet"
+      ]
     ]
   }
 }

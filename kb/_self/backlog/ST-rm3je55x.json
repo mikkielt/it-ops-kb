@@ -2,7 +2,7 @@
   "id": "ST-rm3je55x",
   "kind": "story",
   "title": "Review sprint: Research tools decide what a model now writes or works around by hand",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-b36246xo",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-b36246xo"
+  "evidence": {
+    "commit": "9a085a07fa2a9dd9e77380f3d07cd32242574a7d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "7466237acbaba628"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "79b748a3013542ef"
+      }
+    ]
+  }
 }

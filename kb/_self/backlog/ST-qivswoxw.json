@@ -114,6 +114,14 @@
         "exit": 0,
         "sha256": "a7bda19cb2df804d"
       }
+    ],
+    "gone": [
+      [
+        "python3",
+        "_tools/tests.py",
+        "-k",
+        "test_content_commit_reaches_main_and_a_red_gate_stops_the_next"
+      ]
     ]
   }
 }
