@@ -1,0 +1,25 @@
+{
+  "id": "ST-ogg35rzs",
+  "kind": "story",
+  "title": "tools.md says a run that finishes after exactly --max-turns tool turns also sets turns_over_cap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/tools.md's turns_over_cap text says the flag is also true for a session that finished (no failure) after exactly --max-turns tool-use turns, since the final text turn is not capped and num_turns then reads cap + 1 (kb/public/claude/ci-and-headless.md:86-87), so the flag alone is not read as the cap failing to bind",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('kb/_self/tools.md',encoding='utf-8').read().split())\ni=t.find('turns_over_cap');s=t[i:i+900];ok=i>=0 and ('finish' in s or 'success' in s);print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S3 by the sprint's reviewer."
+}

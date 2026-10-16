@@ -1,0 +1,26 @@
+{
+  "id": "ST-jxg3okyd",
+  "kind": "story",
+  "title": "repro run rotates each instance's area order by the manifest's instance count, so a rerun with fewer instances keeps each order",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_repro.run passes area_order the instance count of instances.json, not this run's --instances, and refuses a rerun whose orders differ from the orders run.json recorded (the changed answer of ST-eefdl6am g1), so one instance's results never mix two orders",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import io,json,os,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nfrom pathlib import Path\nr=Path(tempfile.mkdtemp())\nins=[{'n':n,'bare':str(r/f'o{n}.git'),'clone':str(r/f'c{n}'),'mcp_config':str(r/f'm{n}.json'),'lock_dir':str(r/f'l{n}')} for n in (1,2,3)]\n(r/'instances.json').write_text(json.dumps({'rev':'','source':'x','instances':ins}))\no=[];b.run(count=2,root=r,dry_run=True,out=o.append)\nbr=b.load_briefs();want=', '.join(x['area'].strip() for x in b.area_order(br,2,3))\ni=[k for k,l in enumerate(o) if l.startswith('instance 2:')][0];got=[l for l in o[i:] if l.startswith('  order: ')][0].split('order: ',1)[1]\nprint(got[:60]);sys.exit(0 if got==want else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S2 by the sprint's reviewer."
+}

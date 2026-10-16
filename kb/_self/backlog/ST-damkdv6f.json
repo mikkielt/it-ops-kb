@@ -1,0 +1,27 @@
+{
+  "id": "ST-damkdv6f",
+  "kind": "story",
+  "title": "A worker's report gives each item check's exit as land's check runner reads it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a sprint worker runs its item's checks through the same runner land's checks step uses (one command, which reports a malformed check such as a NameError in the check's own code) and quotes that output in its report, so a report cannot say a check exits 0 that fails at land (ST-eefdl6am's worker reported check 0 exit 0; land found it raised NameError)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md',encoding='utf-8').read()\nsys.exit(0 if 'land --checks-only' in t or 'checks-only' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn close"
+  ],
+  "notes": "Retrospective finding of SP-ysuvdxsn."
+}

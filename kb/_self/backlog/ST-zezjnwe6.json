@@ -61,7 +61,7 @@
       },
       "class": "querylog",
       "answer": "keep _private/querylog.json, _private/mcp-config.json and _cache/kbunits* besides _cache/kbindex-*",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise (lessons analysis 1.1): instance 2 wrote two auto-memories (13:15Z, 14:39Z) that its later sessions read; reset_clone runs clean -f -d without -x, so ignored _cache files (quote CSVs, instance 3's _cache/ts-scripts/html2txt.py, worktrees _cache/wt-head whose removal was denied 5 times) persisted between areas. The operator decision of 2026-10-15 fixes the instances' --settings to exactly {\"enabledPlugins\":{\"gitkraken@synced\":false,\"caveman@caveman\":false}} (bench_repro.SETTINGS already holds it), so auto-memory goes off through the environment, not --settings. Merges BG-yxh7bv6y (instance_env keeps KB_ROOTS), whose repro is this story's first check. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 (a planted clone: the kbindex-*.sqlite cache stays, an ignored scratch script goes) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",

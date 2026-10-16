@@ -70,8 +70,8 @@
         "count is every instance in instances.json, a rerun with other orders is refused": "ST-eefdl6am"
       },
       "class": "design",
-      "answer": "count is the instances of this run, orders recorded in run.json and not compared on a rerun",
-      "by": "agent"
+      "answer": "count is every instance in instances.json, a rerun with other orders is refused",
+      "by": "operator"
     }
   ],
   "notes": "Premise (lessons analysis 1.6, 4.2): all 10 budget failures of the first run were tail areas of the one fixed order (age to pip; pip run by none, instance 3 lost 7), and the cap was checked before an area so spend passed it (59.09, 60.79 against 58). The rotation and the reserve rule are the analysis's recommendation 6; the function names are fixed here so the checks can call them. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",

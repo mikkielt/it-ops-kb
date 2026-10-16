@@ -1,0 +1,28 @@
+{
+  "id": "ST-qyhb56tk",
+  "kind": "story",
+  "title": "land of a code-lane item waits for its merge request without --wait-merge being named",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land of an item whose commits are code-lane waits for the merge request by default (the skill's --wait-merge 1800), and --wait-merge 0 keeps today's push-and-stop, so a landing run without the flag does not stop after the push and need a second run (ST-zezjnwe6 of SP-ysuvdxsn)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','land','--help'],capture_output=True,text=True)\nt=' '.join(p.stdout.split());print(t[t.find('--wait-merge'):][:160]);sys.exit(0 if 'default: 1800' in t or 'default 1800' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn close"
+  ],
+  "notes": "Retrospective finding of SP-ysuvdxsn."
+}

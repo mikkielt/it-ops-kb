@@ -71,7 +71,7 @@
       },
       "class": "design",
       "answer": "script except .js/.mjs/.cjs entry point",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -88,7 +88,7 @@
       },
       "class": "design",
       "answer": "keys briefs_sha256 and questions_sha256; git status --porcelain of each file in its own directory",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

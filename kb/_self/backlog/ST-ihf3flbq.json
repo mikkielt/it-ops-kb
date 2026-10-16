@@ -1,0 +1,26 @@
+{
+  "id": "ST-ihf3flbq",
+  "kind": "story",
+  "title": "repro record rows carry cost_unknown for an area recorded at the --area-usd cap",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "repro record writes a cost_unknown row (1 or 0) per area beside cost, so an area that timed out and was recorded at the --area-usd cap is not read as a measured cost",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bench_repro as b\nok=any('cost_unknown' in m for m in b.RECORD_METRICS);print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S3 by the sprint's reviewer."
+}

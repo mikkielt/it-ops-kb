@@ -1,0 +1,26 @@
+{
+  "id": "ST-bayyjscc",
+  "kind": "story",
+  "title": "precheck names a python -c check whose guard line binds names after sys.exit, which fails on NameError once the work is in",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck (and check) warns of a python3 -c check whose 'if ...:' guard line goes on after sys.exit(...) with statements that bind names a later line reads: on the base the guard exits first, so the check fails for its premise, but after the work those names are unbound and the check raises NameError (ST-eefdl6am's check 0 stopped its landing at step checks; ST-xqqcu4zz's had the same defect and was fixed before its claim)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','check'],capture_output=True,text=True)\nsys.exit(0 if 'guard line' in (p.stdout+p.stderr) or 'after sys.exit' in open('_tools/bl_check.py',encoding='utf-8').read() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_check.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn close"
+  ],
+  "notes": "Retrospective finding of SP-ysuvdxsn."
+}

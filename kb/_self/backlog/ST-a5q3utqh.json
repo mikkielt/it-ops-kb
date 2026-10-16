@@ -1,0 +1,26 @@
+{
+  "id": "ST-a5q3utqh",
+  "kind": "story",
+  "title": "repro run refuses a frozen file whose sha256 differs from the one run.json recorded",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "a repro run again refuses while repro_briefs.csv or repro_bench.csv hashes to another sha256 than the briefs_sha256 or questions_sha256 an earlier run recorded in run.json, even when the change is committed and clean against HEAD, and repro record reads the recorded sha256, not the file as it is now",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import io,json,os,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nfrom pathlib import Path\nr=Path(tempfile.mkdtemp())\nins=[{'n':n,'bare':str(r/f'o{n}.git'),'clone':str(r/f'c{n}'),'mcp_config':str(r/f'm{n}.json'),'lock_dir':str(r/f'l{n}')} for n in (1,2,3)]\n(r/'instances.json').write_text(json.dumps({'rev':'','source':'x','instances':ins}))\n(r/'run.json').write_text(json.dumps({'briefs_sha256':'0'*64,'questions_sha256':'0'*64}))\no=[];b.run(count=3,root=r,dry_run=True,out=o.append)\nbad=[l for l in o if l.startswith('refusal') and 'sha256' in l];print(bad[:2]);sys.exit(0 if bad else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S2 by the sprint's reviewer."
+}

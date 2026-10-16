@@ -1,0 +1,25 @@
+{
+  "id": "ST-zc355heu",
+  "kind": "story",
+  "title": "benchmarks.py's repro run help says the rotated order and the spend plus --area-usd cap rule",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/benchmarks.py's repro docstring and --instance-usd help no longer say 'in the briefs' order' or that an instance stops once its spend 'reaches --instance-usd': they say each instance runs its area_order rotation and starts an area only while its spend plus --area-usd stays within --instance-usd, and the exit-2 refusals name a frozen file that differs from HEAD and a claude command that is a script",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('_tools/benchmarks.py',encoding='utf-8').read().split())\nbad=[p for p in (\"in the briefs' order\",'reaches --instance-usd') if p in t];print(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/benchmarks.py"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S3 by the sprint's reviewer."
+}

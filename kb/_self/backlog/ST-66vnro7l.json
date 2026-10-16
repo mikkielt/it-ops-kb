@@ -1,0 +1,26 @@
+{
+  "id": "ST-66vnro7l",
+  "kind": "story",
+  "title": "reset_clone also removes a previous area's local branches and stash",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bench_repro.reset_clone leaves the clone with only its main branch and no stash entries, so a branch or stash a previous area's /kb-research session made does not reach the next area",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nt=tempfile.mkdtemp();g=lambda c,*a:subprocess.run(['git','-C',c,'-c','user.name=t','-c','user.email=t@t','-c','core.hooksPath=/dev/null',*a],check=True,capture_output=True,text=True)\nw=os.path.join(t,'w');os.makedirs(w);g(w,'init','-q','-b','main');open(os.path.join(w,'a'),'w').write('a');g(w,'add','-A');g(w,'commit','-qm','s')\no=os.path.join(t,'o.git');g(t,'clone','-q','--bare',w,o);c=os.path.join(t,'c');g(t,'clone','-q',o,c);g(c,'branch','work/1')\nb.reset_clone(c,dict(os.environ))\nbr=g(c,'branch','--list','work/*').stdout.strip();print(repr(br));sys.exit(1 if br else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S3 by the sprint's reviewer."
+}

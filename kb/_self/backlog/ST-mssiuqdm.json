@@ -1,0 +1,26 @@
+{
+  "id": "ST-mssiuqdm",
+  "kind": "story",
+  "title": "repro run --dry-run says its cap leaves out line assumes --area-usd per area",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "repro run --dry-run's 'cap leaves out' line says it counts each remaining area at --area-usd, a worst case, so an instance that spends less per area is not read as starting fewer areas than it will",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import io,json,os,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nfrom pathlib import Path\nr=Path(tempfile.mkdtemp())\nins=[{'n':n,'bare':str(r/f'o{n}.git'),'clone':str(r/f'c{n}'),'mcp_config':str(r/f'm{n}.json'),'lock_dir':str(r/f'l{n}')} for n in (1,2,3)]\n(r/'instances.json').write_text(json.dumps({'rev':'','source':'x','instances':ins}))\no=[];b.run(count=3,root=r,dry_run=True,out=o.append)\nl=[x for x in o if 'cap leaves out' in x];print(l[:1]);sys.exit(0 if l and all('--area-usd' in x for x in l) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bench_repro.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ysuvdxsn review"
+  ],
+  "notes": "Review gap of SP-ysuvdxsn, rated S3 by the sprint's reviewer."
+}
