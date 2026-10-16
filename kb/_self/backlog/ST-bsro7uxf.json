@@ -2,7 +2,7 @@
   "id": "ST-bsro7uxf",
   "kind": "story",
   "title": "repro records whether --max-turns bound",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
@@ -41,5 +41,6 @@
   "depends_on": [
     "BG-ijyjl7ii"
   ],
-  "notes": "Premise (lessons analysis 1.6): 14 sessions of the first run recorded 201 to 268 turns with subtype success under --max-turns 200, while the CLI reference says the run exits with an error at the limit (live docs, code.claude.com/docs/en/cli-reference, 2026-10-15). The goal research story records what the CLI counts as a turn; this story records the fact per area and does not guess the cause. Merges BG-bzem6xtn (error_max_turns with is_error false read as finished), whose repro is the second check. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Premise (lessons analysis 1.6): 14 sessions of the first run recorded 201 to 268 turns with subtype success under --max-turns 200, while the CLI reference says the run exits with an error at the limit (live docs, code.claude.com/docs/en/cli-reference, 2026-10-15). The goal research story records what the CLI counts as a turn; this story records the fact per area and does not guess the cause. Merges BG-bzem6xtn (error_max_turns with is_error false read as finished), whose repro is the second check. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-r13"
 }
