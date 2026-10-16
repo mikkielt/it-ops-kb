@@ -6,7 +6,7 @@
   provider.py [--root NAME] probe NAME [--url URL] [--write] [--json]
                                                           live requests and deterministic checks of one provider;
                                                           --write stores the measured columns and probed_utc
-  provider.py [--root NAME] read URL [--grep WORDS] [--context N] [--max N] [--from LINE] [--refresh]
+  provider.py [--root NAME] read URL [--grep WORDS] [--context N] [--max N] [--from LINE] [--whole] [--refresh]
                                                           the page in its provider's raw form, with the lines that
                                                           hold every word of WORDS and the url to cite
   provider.py [--root NAME] search NAME TERMS... [--max N] [--refresh]
@@ -78,8 +78,8 @@ _cache/provider-read/ (--refresh fetches again) and prints `cite:` (the url to c
 status and the day of the fetch) and the lines that hold every word of --grep (case-insensitive), numbered as
 `N:line`, with --context lines either side as `N-line`; a repository file (raw.githubusercontent.com, /-/raw/) is
 numbered by the file's own lines, any other page by the reduced text. Without --grep the text is printed from line
---from, --max lines at a time (a long line is cut around its first word). Exit: 0 text read (and a line matched),
-1 the page did not answer 200, is not text (a PDF: left to the Read tool) or no line holds every word, 2 bad arguments.
+--from, --max lines at a time (a long line is cut around its first word, unless --whole prints each line in full).
+Exit: 0 text read (and a line matched), 1 the page did not answer 200, is not text (a PDF: left to the Read tool) or no line holds every word, 2 bad arguments.
 
 search asks the row's search_api once (the terms joined as the API reads them: spaces, `all:` terms for arXiv, `-` for
 a PyPI project name; no credential is read and no Authorization header is sent, so GitHub's code search answers 401),
@@ -1020,7 +1020,7 @@ def cmd_read(a, rows):
         if i:
             print("--")
         for n, ln, matched in g:
-            print(f"{n}{':' if matched else '-'}{excerpt(ln, words)}")
+            print(f"{n}{':' if matched else '-'}{ln if a.whole else excerpt(ln, words)}")
     if shown < total:
         print(f"{total - shown} more: raise --max" + (" or add words to --grep" if words else f", or --from {groups[-1][-1][0] + 1}"))
     return 0
@@ -1657,6 +1657,7 @@ def main():
     r.add_argument("--context", type=int, default=0, metavar="N", help="lines of context either side of a match (default 0)")
     r.add_argument("--max", type=int, default=READ_LINES, metavar="N", dest="limit", help=f"lines printed (default {READ_LINES})")
     r.add_argument("--from", type=int, default=1, metavar="LINE", dest="start", help="first line considered (default 1)")
+    r.add_argument("--whole", action="store_true", help=f"print each line in full, not cut at {READ_WIDTH} characters")
     r.add_argument("--refresh", action="store_true", help=f"fetch again although the cache holds the page ({READ_AGE} days)")
     q = sub.add_parser("search", help="query a provider's own search API: title, url and date of each hit")
     q.add_argument("name", help="a provider row with a search_api (`list` shows them)")

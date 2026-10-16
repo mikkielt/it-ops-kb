@@ -946,7 +946,8 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     served = {raw(blob): (200, "text/plain; charset=utf-8", "---\nx: 1\n---\n" + page),
               raw(abstract): (200, "application/atom+xml", feed), "https://example.com/p": (200, "text/html", html),
               "https://arxiv.org/pdf/2406.12045": (200, "application/pdf", "%PDF-1.7\n1 0 obj"),
-              "https://example.com/gone": (404, "text/html", "")}
+              "https://example.com/gone": (404, "text/html", ""),
+              "https://example.com/long": (200, "text/html", f"<html><body><main><p>{'queue ' * 150}END</p></main></body></html>")}
 
     def serve(url, headers=None, limit=20_000_000, method="GET"):
         fetched.append(url)
@@ -956,7 +957,7 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     monkeypatch.setattr(provider, "READ_CACHE", str(tmp_path / "read"))
 
     def read(url, **kw):
-        ns = argparse.Namespace(url=url, grep=None, context=0, limit=60, start=1, refresh=False)
+        ns = argparse.Namespace(url=url, grep=None, context=0, limit=60, start=1, whole=False, refresh=False)
         ns.__dict__.update(kw)
         code = provider.cmd_read(ns, prov)
         return code, capsys.readouterr().out
@@ -976,11 +977,15 @@ def test_lookup_eval_passes_on_the_live_kb_and_pack_revalidate_marks_only_the_pr
     assert code == 0 and "1:# Orion: a benchmark" in out and "3:authors: Jan Kowalski" in out and "more: raise --max, or --from 4" in out
     code, out = read("https://example.com/p", grep="ten thousand")  # any other page: its HTML reduced to text
     assert code == 0 and out.splitlines()[-1].endswith(":The Orion queue holds ten thousand jobs.")
+    code, out = read("https://example.com/long", grep="queue")  # a long line is cut by default and printed whole by --whole
+    assert code == 0 and out.splitlines()[-1].endswith(" ...") and "END" not in out, out
+    code, out = read("https://example.com/long", grep="queue", whole=True)
+    assert code == 0 and out.splitlines()[-1].endswith(" queue END") and " ..." not in out, out
     code, out = read("https://arxiv.org/pdf/2406.12045")
     assert code == 1 and provider.NOT_TEXT in out, out
     code, out = read("https://example.com/gone", grep="x")
     assert code == 1 and "not read: 404" in out
-    assert len(os.listdir(tmp_path / "read")) == 4, os.listdir(tmp_path / "read")  # a 200 is kept (a PDF too), a miss is not
+    assert len(os.listdir(tmp_path / "read")) == 5, os.listdir(tmp_path / "read")  # a 200 is kept (a PDF too), a miss is not
     # provider.py search: each provider's request is its search_api with the terms in the form that API reads, the answer is
     # parsed to date, title and url, and a 200 is kept 7 days (the second call asks nothing); a failure is named, not printed as hits
     answers = {
