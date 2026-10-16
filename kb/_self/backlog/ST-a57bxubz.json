@@ -2,7 +2,7 @@
   "id": "ST-a57bxubz",
   "kind": "story",
   "title": "A coord.py claim carries the budget the operator approved and the digest shows its spend so far",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-xo45jvbj",
   "priority": "P3",
@@ -67,5 +67,6 @@
       "by": "operator"
     }
   ],
-  "notes": "From the operator interview of 2026-10-15: measured budgets, shown with outputs and approved by the operator. Reads the query log's usage rows, reusing the reader backlog.py cost uses, never a parallel parser; run backlog.py referrers on that reader before the claim and add what it lists to touches. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: the query log's usage rows are per prompt and the work sidecars per item (bl_cost.cost_report), not per session, so the spend is read for the claimed item; bl_cost gives token counts, priced with bench_core.PRICE (gate g1: USD). The check claims ST-gtfpib5q, whose work lines the committed query log keeps (backlog.py cost shows 21 requests), with a budget below its spend, and a fresh id with none. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE)."
+  "notes": "From the operator interview of 2026-10-15: measured budgets, shown with outputs and approved by the operator. Reads the query log's usage rows, reusing the reader backlog.py cost uses, never a parallel parser; run backlog.py referrers on that reader before the claim and add what it lists to touches. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: the query log's usage rows are per prompt and the work sidecars per item (bl_cost.cost_report), not per session, so the spend is read for the claimed item; bl_cost gives token counts, priced with bench_core.PRICE (gate g1: USD). The check claims ST-gtfpib5q, whose work lines the committed query log keeps (backlog.py cost shows 21 requests), with a budget below its spend, and a fresh id with none. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE).",
+  "claimed_by": "orch-r03"
 }
