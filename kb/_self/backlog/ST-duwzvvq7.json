@@ -137,7 +137,9 @@
         "stdout: a header line,source,quote then one CSV line per fact and cited page, sorted by line; stderr: a counts line and one line per fact or page with no passage; exit 0; exit 2 for a missing or multiple --file or a combined selector or --quotes": "ST-duwzvvq7",
         "stdout: two-column line,quote lines with no source": "ST-duwzvvq7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "stdout: a header line,source,quote then one CSV line per fact and cited page, sorted by line; stderr: a counts line and one line per fact or page with no passage; exit 0; exit 2 for a missing or multiple --file or a combined selector or --quotes",
+      "by": "operator"
     }
   ],
   "notes": "Premise (lessons analysis 4.5): 175 calls in 44 sessions got 'is no tagged fact of the file' for a kb/public/... path, 276 'quote not held' (multi-source bullets need one quote per source), 57 inline scripts built quote CSVs. At 5834a99e2 anchor --file kb/public/security/gentoo-in-wsl.md --dry-run prints No file; the root-relative form works. Merges ST-xahz4kok (factdiff.py anchor --file --quotes anchors CODE-tagged facts): its CODE clause no longer reproduces (2026-10-15: a planted --quotes row for the CODE fact python/pytest-xdist.md:68 is read as a tagged fact; cited_facts skips only UNK); its second clause, no other topic's rows rewritten, is this story's fourth clause. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: this story closes BG-vtbn4orn (repo-relative --file with --quotes) and BG-5rqmrtl7 (a quote per cited source, repro reworded to the line,source,quote form of g1); both stay out of the sprint, linked 'closed by: ST-duwzvvq7', and are dropped as delivered when their repros pass after this story lands.",
