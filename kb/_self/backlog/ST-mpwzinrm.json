@@ -1,0 +1,28 @@
+{
+  "id": "ST-mpwzinrm",
+  "kind": "story",
+  "title": "land merges a rebase conflict confined to one-line kb/_self doc hunks that two items edited at different words, so a sibling's doc row edit does not stop it at step rebase",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "when the rebase of land stops only on kb/_self/*.md lines that both sides changed at different words (a table row or a one-line paragraph), land merges the line word by word keeping both sides, continues the rebase and says which lines it merged; a conflict on the same words, or in any other file, still stops it at step rebase",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_land as l\nf=getattr(l,\"merge_line_hunks\",None)\nb=\"| a | imports x and y, never z |\";o=\"| a | imports x, y and w, never z |\";t=\"| a | imports x and y, never z (always q) |\"\nr=f(b,o,t) if f else None;same=f(b,\"| a | imports k |\",\"| a | imports m |\") if f else \"x\"\nprint(\"merged:\",r,\"| same-words conflict refused:\",same is None)\nsys.exit(0 if r==\"| a | imports x, y and w, never z (always q) |\" and same is None else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh close"
+  ],
+  "notes": "SP-z3hyk4eh retrospective: three of nine landings stopped at step rebase (backlog.py ops: ST-zqbo7xgc 13:26, BG-wqc6sgug 13:30, ST-6tz7yhem 13:45, each land.step rebase exit=1): siblings edited different words of the same one-line rows of kb/_self/tools.md, backlog.md and code.md, which the rules treat as no overlap (backlog.md, Running a sprint: a shared doc orders no two items). The orchestrator resolved each by a word-level merge keeping both sides, by hand. The function name in the check is a proposal; the planner may rename it with the check."
+}

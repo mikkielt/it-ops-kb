@@ -1,0 +1,26 @@
+{
+  "id": "ST-tlzrnlpv",
+  "kind": "story",
+  "title": "The plan asks a push-scope gate before the start for an item whose goal changes which pushes the sync gate retries or refuses",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 names a push-gate item (touches _tools/kg_sync.py or _tools/kbgit.py) whose goal changes how a push is retried or refused, and has the planner add before the start gate a blocking gate on which pushes it covers (the push to main, the code-lane branch push, both), so the choice is not found mid-work as a push-class gate the worker cannot answer",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns=[l for l in open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\") if l.startswith(\"6. Read the goal clauses\")]\nok=bool(s) and \"which pushes\" in s[0]\nprint(\"plan step 6 asks which pushes a push-gate item covers:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh close"
+  ],
+  "notes": "SP-z3hyk4eh retrospective: a gate that should have been asked earlier. ST-6qusz4km's worker met the push-scope choice (retry the code-lane push too, or main only) as gate g1, class push; the delegated operator answered 'Push to main only' against the recommendation, and the worker was resumed once to remove the code-lane retry (one extra session, about 0.78 USD). The plan rule 'a choice the goal leaves open on an item whose touches guard a rule is a blocking gate, added before any code' existed but named no push-scope case."
+}

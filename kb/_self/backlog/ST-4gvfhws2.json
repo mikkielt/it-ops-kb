@@ -1,0 +1,26 @@
+{
+  "id": "ST-4gvfhws2",
+  "kind": "story",
+  "title": "The plan step asks an item that narrows a gate class guard for one planted case per new exempt phrase with a credential word inside it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 says that an item whose goal exempts phrases from a gate class's words (secrets, push, ceiling) carries a check that plants each new exempt phrase once with a credential or push word inside it and requires the operator class still, so a narrowing that strips a credential question passes no check (SP-z3hyk4eh: BG-auhn3xff's check passed while 'overlap of the API tokens' fell to design, BG-2dwhxw5p)",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns=[l for l in open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\") if l.startswith(\"6. Read the goal clauses\")]\nok=bool(s) and \"exempt phrase\" in s[0] and \"credential\" in s[0]\nprint(\"plan step 6 asks a planted credential case per exempt phrase:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh close"
+  ],
+  "notes": "SP-z3hyk4eh retrospective: a check that passed although the item did not work. BG-auhn3xff's repro planted three lexical phrases and one credential question ('where is the API token file read from') that none of the new exempt phrases matched, so the regression of 'overlap of the API tokens' (secrets to design) passed it and was found only by the review (gap 1, filed in the sprint as BG-2dwhxw5p)."
+}

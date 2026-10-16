@@ -1,0 +1,26 @@
+{
+  "id": "ST-4erz4mz4",
+  "kind": "story",
+  "title": "A sprint whose goal research plan expects no outside facts claims its first items beside the research story",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint run step 4.4 lets the orchestrator claim and dispatch the sprint's ready items beside the goal research story when that story's notes say no outside fact is expected, and runs precheck SP again once the research has landed, before the next claim, so a research story that records No outside facts does not hold every other item back",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open(\".claude/skills/kb-sprint/SKILL.md\",encoding=\"utf-8\").read();i=t.find(\"Once the goal research story has landed\");s=t[i:i+1500] if i>=0 else \"\"\nok=\"no outside fact\" in s.lower()\nprint(\"run step names the no-outside-facts case:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-z3hyk4eh close"
+  ],
+  "notes": "SP-z3hyk4eh retrospective: the plan's research note expected no outside fact; the orchestrator still claimed nothing else until ST-lhvjzdzf had landed (claim 13:15, landed 13:19, first batch claimed 13:20), so the eight items waited on a research story that wrote only a note. Small cost here; larger on a sprint with a slow research worker."
+}
