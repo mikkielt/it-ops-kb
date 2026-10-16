@@ -47,7 +47,9 @@
         "bl_forge ignores forge_project when repositories is set": "BG-hdvzvy7l",
         "check refuses forge_project beside repositories": "BG-hdvzvy7l"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "bl_forge ignores forge_project when repositories is set",
+      "by": "operator"
     }
   ],
   "links": [
