@@ -3,25 +3,48 @@
   "kind": "story",
   "title": "The claims ledger lock clears a stale lock file once, so two waiters never both hold it",
   "status": "draft",
+  "sprint": "SP-z3hyk4eh",
   "priority": "P3",
-  "rank": 0,
-  "goal": "bl_dispatch.ledger_lock clears a lock file older than LEDGER_LOCK_STALE_S only when it is still the file it judged stale (an owner token or an atomic rename), so two waiters that both see a stale lock never enter the read-modify-write together",
+  "rank": 2,
+  "goal": "ledger_lock (in bl_base once ST-zqbo7xgc has moved it, else bl_dispatch) clears a lock file older than LEDGER_LOCK_STALE_S only when it is still the file it judged stale (an owner token or an atomic rename), so two waiters that both see a stale lock never enter the read-modify-write together, and a lone waiter still clears a crashed writer's lock",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "ledger_lock_stale_clear_has_one_owner"
+        "-c",
+        "import os,sys,tempfile,threading,time,pathlib as P\nsys.path.insert(0,\"_tools\");import bl_base,bl_dispatch\nL=getattr(bl_base,\"ledger_lock\",None) or bl_dispatch.ledger_lock\np=P.Path(tempfile.mkdtemp())/\"kb-backlog-claims.json\";lock=p.with_name(p.name+\".lock\")\nlock.write_text(\"\");os.utime(lock,(time.time()-3600,)*2);old=os.stat(lock)\nA=L(p);A.__enter__()\nreal,once=os.stat,[True]\ndef stat(path,*a,**k):\n    if once[0] and os.fspath(path)==str(lock):once[0]=False;return old\n    return real(path,*a,**k)\nos.stat=stat;inside=[]\ndef b():\n    with L(p):inside.append(time.monotonic())\nt=threading.Thread(target=b,daemon=True);t.start();time.sleep(1.5);early=bool(inside)\nA.__exit__(None,None,None);t.join(30)\nprint(\"second waiter, holding a stale view, entered while the first held the lock:\",early,\"| entered after:\",bool(inside))\nsys.exit(0 if not early and inside else 1)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,sys,tempfile,time,pathlib as P\nsys.path.insert(0,\"_tools\");import bl_base,bl_dispatch\nL=getattr(bl_base,\"ledger_lock\",None) or bl_dispatch.ledger_lock\np=P.Path(tempfile.mkdtemp())/\"kb-backlog-claims.json\";lock=p.with_name(p.name+\".lock\")\nlock.write_text(\"\");os.utime(lock,(time.time()-3600,)*2);t=time.monotonic()\nwith L(p):took=time.monotonic()-t;held=lock.exists()\nprint(\"a crashed writer s stale lock: cleared and entered in %.2f s, held while inside: %s, removed after: %s\"%(took,held,not lock.exists()))\nsys.exit(0 if took<5 and held and not lock.exists() else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "ledger_lock (in bl_base once ST-zqbo7xgc has moved it, else bl_dispatch) clears a lock file older than LEDGER_LOCK_STALE_S only when it is still the file it judged stale (an owner token or an atomic rename), so two waiters that both see a stale lock never enter the read-modify-write together",
+      "check": 0
+    },
+    {
+      "clause": "a lone waiter still clears a crashed writer's lock",
+      "check": 1
+    }
+  ],
   "touches": [
+    "_tools/bl_base.py",
     "_tools/bl_dispatch.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/querylog.md"
+  ],
+  "depends_on": [
+    "ST-zqbo7xgc"
   ],
   "links": [
     "parked: SP-g2ssvhi2 review"
   ],
-  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:519-523; waiter A unlinks the stale lock and creates a fresh one, waiter B (holding the old stat) unlinks A's fresh lock and creates its own, and both are inside. Only a crashed writer's leftover lock opens the window."
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:519-523; waiter A unlinks the stale lock and creates a fresh one, waiter B (holding the old stat) unlinks A's fresh lock and creates its own, and both are inside. Only a crashed writer's leftover lock opens the window. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_dispatch.py:525-532 judges age by stat and unlinks without re-checking the file; the planted check (a waiter whose stale view is forced through os.stat while another holds a fresh lock) enters while the first holds it. The second check is the recovery path: a crashed writer's lock alone is cleared at once. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run. The second check (a crashed writer's lock alone is cleared at once) passes before the work on purpose: it pins the recovery path the fix must keep."
 }
