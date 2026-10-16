@@ -2,7 +2,7 @@
   "id": "ST-kczymrwg",
   "kind": "story",
   "title": "Review sprint: Any agent coordinates through coord.py",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-rsmmwzr2",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r02"
 }
