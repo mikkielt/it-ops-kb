@@ -2,7 +2,7 @@
   "id": "BG-5qgk6hgb",
   "kind": "bug",
   "title": "repro setup keeps an earlier run's results.jsonl and run.json, so run skips areas and record and compare read old shas",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-a3w7xdij",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,6 @@
   "links": [
     "parked: SP-ygsnog4n review"
   ],
-  "notes": "Plan 2026-10-15: merges BG-2iihhs43 (repro setup does not install hooks in run instances; every sync of the first run printed commit hooks not installed, lessons analysis 1.6), whose repro is the first check; this bug's own repro reads setup's source for RESULTS. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 and the repro fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal."
+  "notes": "Plan 2026-10-15: merges BG-2iihhs43 (repro setup does not install hooks in run instances; every sync of the first run printed commit hooks not installed, lessons analysis 1.6), whose repro is the first check; this bug's own repro reads setup's source for RESULTS. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 and the repro fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
+  "claimed_by": "orch-r14"
 }
