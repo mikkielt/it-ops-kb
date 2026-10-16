@@ -2,7 +2,7 @@
   "id": "ST-u2qvfapz",
   "kind": "story",
   "title": "kbid.py add names a failed read of a Learn mirror's licence file as a network failure, not as an unrecognised licence",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-srqmriw6 review"
   ],
-  "notes": "Plan amendment 2026-10-15 (triage fit10): since BG-c3mckvqz provider._licence_file_spdx returns an empty id both when the raw.githubusercontent.com read fails and when the file's first line is no Creative Commons title, so _learn_licence says GitHub recognises no licence even when the read never happened (provider.py _licence_file_spdx, _learn_licence). Found by the SP-srqmriw6 review of BG-c3mckvqz. Check retargeted from a new test id (licence_file_read_failure_named) to the existing kbid licence part of test_lookup_eval_passes_on_the_live_kb (0 new ids, about +0.05 s); check 0 is an offline planted run (provider.request stubbed: the Learn page names a mirror, every other read fails with status 0) that fails at c907de7b3. Runs after BG-ijt2pwss (same function family, provider.py, test_live_kb.py). Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); check 0 fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it."
+  "notes": "Plan amendment 2026-10-15 (triage fit10): since BG-c3mckvqz provider._licence_file_spdx returns an empty id both when the raw.githubusercontent.com read fails and when the file's first line is no Creative Commons title, so _learn_licence says GitHub recognises no licence even when the read never happened (provider.py _licence_file_spdx, _learn_licence). Found by the SP-srqmriw6 review of BG-c3mckvqz. Check retargeted from a new test id (licence_file_read_failure_named) to the existing kbid licence part of test_lookup_eval_passes_on_the_live_kb (0 new ids, about +0.05 s); check 0 is an offline planted run (provider.request stubbed: the Learn page names a mirror, every other read fails with status 0) that fails at c907de7b3. Runs after BG-ijt2pwss (same function family, provider.py, test_live_kb.py). Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); check 0 fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it.",
+  "claimed_by": "orch-b36246xo"
 }
