@@ -2,7 +2,7 @@
   "id": "ST-rk5ks4pf",
   "kind": "story",
   "title": "coord.py serve: the same commands over HTTP for several operators, standard library only",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",

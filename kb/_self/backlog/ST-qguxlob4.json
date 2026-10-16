@@ -2,7 +2,7 @@
   "id": "ST-qguxlob4",
   "kind": "story",
   "title": "coord.py events: closed-field, reference-only messages and a wait that wakes any agent",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-rsmmwzr2",
   "priority": "P2",
