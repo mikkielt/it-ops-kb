@@ -51,6 +51,25 @@
     "kb/public/_answers.md",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How is the goal's third question (it quotes claude/cross-session-messaging.md:38, :51) made to pack good, and the first question, which carries the goal's lead-in words, handled?",
+      "options": [
+        "name-line-references",
+        "leave-weak"
+      ],
+      "recommendation": "name-line-references",
+      "do": {
+        "name-line-references": "ST-cx7qhu3f",
+        "leave-weak": "ST-cx7qhu3f"
+      },
+      "class": "design",
+      "answer": "name-line-references",
+      "by": "agent"
+    }
+  ],
   "links": [
     "live: https://code.claude.com/docs/en/agents",
     "live: https://code.claude.com/docs/en/agent-view",
