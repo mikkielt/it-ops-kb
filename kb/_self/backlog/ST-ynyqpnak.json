@@ -18,8 +18,7 @@
   "touches": [
     "_tools/bl_items.py",
     "_tools/backlog.py",
-    "kb/_self/backlog.md",
-    "_tools/test_backlog_portable.py"
+    "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-ygsnog4n close"

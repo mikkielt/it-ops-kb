@@ -16,8 +16,7 @@
   },
   "repro_reason": "the warning branch runs only on a csv or git failure inside done, which needs a planted broken clone; the read names the branch the fix replaces with a refusal",
   "touches": [
-    "_tools/bl_land.py",
-    "_tools/test_backlog_portable.py"
+    "_tools/bl_land.py"
   ],
   "links": [
     "parked: SP-7nv2ffr2 review"

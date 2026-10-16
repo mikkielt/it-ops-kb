@@ -17,7 +17,6 @@
   "repro_reason": "The defect needs a live kb state where a drifted row's re-judged pack also carries a check: or route: line; main holds none (14 noted, 1 drifted, 13 real notes), so the repro reads the comparison rag.py makes.",
   "touches": [
     "_tools/rag.py",
-    "_tools/test_live_kb.py",
     "kb/_self/tools.md"
   ],
   "links": [

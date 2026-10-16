@@ -17,7 +17,6 @@
   "repro_reason": "Running compare needs instance bares and a start commit's checkout; the repro reads whether a refusal follows the end eval call in compare's source, the fix's own test drives the behaviour.",
   "touches": [
     "_tools/bench_repro.py",
-    "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
   "links": [

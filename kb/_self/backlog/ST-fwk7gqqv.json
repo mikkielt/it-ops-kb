@@ -17,7 +17,6 @@
   ],
   "touches": [
     "_tools/bl_cost.py",
-    "_tools/test_backlog_portable.py",
     "kb/_self/backlog.md"
   ],
   "links": [

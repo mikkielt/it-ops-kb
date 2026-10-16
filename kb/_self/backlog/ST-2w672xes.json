@@ -17,8 +17,7 @@
     }
   ],
   "touches": [
-    "_tools/bl_check.py",
-    "_tools/test_backlog_portable.py"
+    "_tools/bl_check.py"
   ],
   "links": [
     "parked: SP-7ff7c5ui close"

@@ -18,7 +18,6 @@
   ],
   "touches": [
     "_tools/bl_plan.py",
-    "_tools/test_backlog_portable.py",
     "skills/sprint/SKILL.md",
     "kb/_self/backlog.md"
   ],

@@ -15,8 +15,7 @@
     ]
   },
   "touches": [
-    "_tools/bl_land.py",
-    "_tools/test_backlog_portable.py"
+    "_tools/bl_land.py"
   ],
   "links": [
     "parked: SP-7nv2ffr2 review"

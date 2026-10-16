@@ -17,8 +17,7 @@
     }
   ],
   "touches": [
-    "_tools/bl_dispatch.py",
-    "_tools/test_backlog_portable.py"
+    "_tools/bl_dispatch.py"
   ],
   "links": [
     "parked: SP-mujl7ebh close"

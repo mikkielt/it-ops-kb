@@ -17,8 +17,7 @@
     }
   ],
   "touches": [
-    "_tools/bl_land.py",
-    "_tools/test_land_e2e.py"
+    "_tools/bl_land.py"
   ],
   "links": [
     "parked: SP-b7wibqok review"

@@ -19,8 +19,7 @@
   "touches": [
     "kb/public/_retrieval/bench_scenarios.csv",
     "kb/public/_retrieval/bench_pool.csv",
-    "_tools/bench_pool.py",
-    "_tools/test_bench.py"
+    "_tools/bench_pool.py"
   ],
   "links": [
     "parked: SP-honlhzdc review"

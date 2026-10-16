@@ -17,8 +17,7 @@
     }
   ],
   "touches": [
-    "_tools/census.py",
-    "_tools/test_live_kb.py"
+    "_tools/census.py"
   ],
   "links": [
     "parked: SP-djl7za6x review"

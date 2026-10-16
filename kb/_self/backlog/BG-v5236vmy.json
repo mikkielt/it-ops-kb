@@ -17,7 +17,6 @@
   "repro_reason": "the behaviour needs a planted _anchors.csv with a gone row, a stubbed fetch and a topic file; the anchor part of test_live_kb.py is where the fix plants them, so the repro reads the retry condition in cmd_anchor",
   "touches": [
     "_tools/factdiff.py",
-    "_tools/test_live_kb.py",
     "kb/_self/tools.md"
   ],
   "links": [

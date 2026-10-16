@@ -18,8 +18,7 @@
   ],
   "touches": [
     "_tools/bl_dispatch.py",
-    "agents/worker.md",
-    "_tools/test_backlog_portable.py"
+    "agents/worker.md"
   ],
   "links": [
     "parked: SP-mujl7ebh review"

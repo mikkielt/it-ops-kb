@@ -16,7 +16,6 @@
   },
   "touches": [
     "_tools/ql_deliver.py",
-    "_tools/test_land_e2e.py",
     "kb/_self/querylog.md"
   ],
   "links": [

@@ -18,8 +18,7 @@
   ],
   "touches": [
     "_tools/bl_land.py",
-    "_tools/bl_forge.py",
-    "_tools/test_forge.py"
+    "_tools/bl_forge.py"
   ],
   "links": [
     "parked: SP-ofvvong6 close"

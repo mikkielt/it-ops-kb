@@ -18,8 +18,7 @@
     }
   ],
   "touches": [
-    "_tools/bench_pool.py",
-    "_tools/test_bench.py"
+    "_tools/bench_pool.py"
   ],
   "links": [
     "parked: SP-e4fm2ovk review"

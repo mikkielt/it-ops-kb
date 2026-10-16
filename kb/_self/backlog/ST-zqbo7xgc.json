@@ -19,7 +19,6 @@
   "touches": [
     "_tools/bl_items.py",
     "_tools/bl_dispatch.py",
-    "_tools/test_backlog_portable.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md",
     "kb/_self/code.md"

@@ -18,8 +18,7 @@
   ],
   "touches": [
     "skills/sprint/SKILL.md",
-    "_tools/bl_plan.py",
-    "_tools/test_backlog_portable.py"
+    "_tools/bl_plan.py"
   ],
   "links": [
     "parked: SP-7ff7c5ui close"
