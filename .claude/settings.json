@@ -173,6 +173,11 @@
           },
           {
             "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/coord_hook.py",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch",
             "async": true
           },
@@ -228,6 +233,11 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/querylog.py launch"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/coord_hook.py",
+            "timeout": 10
           }
         ]
       }
@@ -258,6 +268,21 @@
           {
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" _tools/kb_hook.py"
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/coord_hook.py",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/coord_hook.py",
+            "timeout": 10
           }
         ]
       },

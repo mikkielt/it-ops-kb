@@ -93,6 +93,59 @@
       "class": "agents-rule",
       "answer": "also at each backlog.py claim and /kb-research start",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which coord store do the hooks use when KB_COORD_STORE is unset?",
+      "options": [
+        "kb-coord/coord.sqlite in the clone's common git directory, shared by its worktrees",
+        "no store: the hooks stay silent until KB_COORD_STORE is set",
+        "_cache/coord.sqlite in each checkout"
+      ],
+      "recommendation": "kb-coord/coord.sqlite in the clone's common git directory, shared by its worktrees",
+      "do": {
+        "kb-coord/coord.sqlite in the clone's common git directory, shared by its worktrees": "ST-x6mvfnmv",
+        "no store: the hooks stay silent until KB_COORD_STORE is set": "ST-x6mvfnmv",
+        "_cache/coord.sqlite in each checkout": "ST-x6mvfnmv"
+      },
+      "class": "agents-rule",
+      "answer": "kb-coord/coord.sqlite in the clone's common git directory, shared by its worktrees",
+      "by": "operator"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "How does SessionEnd find the presence lease's token, which coord.py claim shows once, and how long is the lease?",
+      "options": [
+        "the hook saves the token in _cache/coord_hook/<session id>.json, a 6-hour lease renewed at each claim and research start",
+        "the hook puts the token in the coord store under a second key"
+      ],
+      "recommendation": "the hook saves the token in _cache/coord_hook/<session id>.json, a 6-hour lease renewed at each claim and research start",
+      "do": {
+        "the hook saves the token in _cache/coord_hook/<session id>.json, a 6-hour lease renewed at each claim and research start": "ST-x6mvfnmv",
+        "the hook puts the token in the coord store under a second key": "ST-x6mvfnmv"
+      },
+      "class": "secrets",
+      "answer": "the hook saves the token in _cache/coord_hook/<session id>.json, a 6-hour lease renewed at each claim and research start",
+      "by": "operator"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "What does the hook post at a backlog.py claim, and for a session on no work branch?",
+      "options": [
+        "an intent for the claimed item at a claim; a session with no item takes the presence lease and posts no intent",
+        "no intent at a claim: only the session start posts"
+      ],
+      "recommendation": "an intent for the claimed item at a claim; a session with no item takes the presence lease and posts no intent",
+      "do": {
+        "an intent for the claimed item at a claim; a session with no item takes the presence lease and posts no intent": "ST-x6mvfnmv",
+        "no intent at a claim: only the session start posts": "ST-x6mvfnmv"
+      },
+      "class": "agents-rule",
+      "answer": "an intent for the claimed item at a claim; a session with no item takes the presence lease and posts no intent",
+      "by": "operator"
     }
   ],
   "notes": "From the operator interview of 2026-10-15: overlaps inform and the operator decides in the terminal, never a silent block; scales solo one machine first, then several machines, team, organization. Research dedup itself is ST-3qxh5vxo; this hook only shows it. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Planning before a claim: run backlog.py referrers on the hook registration and on the docs that list SessionStart hooks (maintaining.md, token-efficiency.md, the plugin's hooks file if it mirrors .claude/settings.json). Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: no coord hook exists; .claude/settings.json registers SessionStart, SessionEnd and PreToolUse hooks. The goal now carries gate g1's answer (context and terminal) and g2's (claim and /kb-research start), the 10-line budget and the presence lease the SessionEnd release needs. referrers session_start.py/SessionEnd: settings.json, maintaining.md:9, token-efficiency.md:48 (in touches); the plugin's hooks in .claude-plugin/plugin.json stay as they are (the coord hook is the project's, not the read-only plugin's). The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE).",
