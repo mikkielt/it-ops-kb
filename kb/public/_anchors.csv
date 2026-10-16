@@ -5650,6 +5650,9 @@ fead0dfd883a,claude/api-limits.csv,S-5uxkh3j5,located,Rate limits > Spend limits
 3a9bdcdad8c2,claude/ci-and-headless.md,S1800,unlocated:no-match,,,,,2026-10-12
 3a9bdcdad8c2,claude/ci-and-headless.md,S1824,unlocated:no-match,,,,,2026-10-12
 3cc898e0c03a,claude/ci-and-headless.md,S1800,located,Run Claude Code programmatically > Basic usage > Start faster with bare mode,exception;add-dir;partial;dir;add;skip;directory;load,d20c96ac68872cea,"A directory you name with --add-dir is a partial exception: bare mode loads skills from its .claude/skills/ folder, but still skips its .claude/commands/ and .claude/agents/",2026-10-12
+3fc18ce20225,claude/ci-and-headless.md,S1800,unlocated:no-match,,,,,2026-10-16
+3fc18ce20225,claude/ci-and-headless.md,S-fmj24q2u,unlocated:no-match,,,,,2026-10-16
+3fc18ce20225,claude/ci-and-headless.md,S-wf2dmtu6,unlocated:no-match,,,,,2026-10-16
 3ffa0148fd2a,claude/ci-and-headless.md,S-fksbud2r,unlocated:no-match,,,,,2026-10-12
 41cc63a32244,claude/ci-and-headless.md,S1802,unlocated:no-match,,,,,2026-10-12
 450e6fba8ef6,claude/ci-and-headless.md,S1800,unlocated:no-match,,,,,2026-10-12
@@ -5721,6 +5724,9 @@ c4647d0275dc,claude/ci-and-headless.md,S1800,located,Run Claude Code programmati
 c4647d0275dc,claude/ci-and-headless.md,S-isqfh6pr,unlocated:no-match,,,,,2026-10-12
 c47afe078ffa,claude/ci-and-headless.md,S1824,located,CLI reference > CLI flags,against;amount;budget;cap;cost;enforcement;estimat;fail,9c03132d21c3e6d0,--max-budget-usd | Stop the run once estimated spend on API calls reaches this amount (print mode only). Claude Code checks the cap against its client-side,2026-10-12
 c5172f65382b,claude/ci-and-headless.md,S2131,located,Pricing > Feature-specific pricing > Prompt caching,1-hour;5-minut;million;0.10;minut;writ;5.5;hour,f5767d20af36b981,"A cache hit costs 10% of the standard input price, which means caching pays off after one cache read for the 5-minute duration (1.25x write),",2026-10-12
+c719dd675a0c,claude/ci-and-headless.md,S1800,located,Run Claude Code programmatically > Basic usage,exit;run;code;claud,fe32a81b9a101f18,Claude Code exits with code 0 on success and a non-zero code when the run fails,2026-10-16
+c719dd675a0c,claude/ci-and-headless.md,S-fmj24q2u,located,Agent SDK reference - TypeScript > Types > `Options`,tool-us;trip;maxturn;round;maximum;max;turn;number,109ffeff020a51b9,Maximum agentic turns (tool-use round trips),2026-10-16
+c719dd675a0c,claude/ci-and-headless.md,S-wf2dmtu6,located,How the agent loop works > Turns and messages,tool-us;count;max_turn;maxturn;cap;max;loop;turn,d59fe206c5fbbb8b,which counts tool-use turns only.,2026-10-16
 c72d8fa66b3c,claude/ci-and-headless.md,S-l6l42j6e,located,Configure the sandboxed Bash tool > Get started,sandbox.failifunavailabl;unsupport;gate;platform;failifunavailabl;unavailabl;make;security,72e65257738357f4,"By default, if the sandbox can't start because a dependency is missing or the platform is unsupported, Claude Code runs commands without sandboxing. To make",2026-10-12
 c9a278036f20,claude/ci-and-headless.md,S-32ilsmsf,located,Use Claude Code GitHub Actions with cloud providers > Set up the integration,amazonaw;audienc;aws-marketplac;getinferenceprofil;invok;invokemodel;invokemodelwithresponsestream;list,f9c47867caa4cdfa,"Add a GitHub OIDC identity provider with provider URL https://token.actions.githubusercontent.com and audience sts.amazonaws.com Create an IAM role trusted by that provider as a web identity,",2026-10-12
 cb3c5b7d2dc5,claude/ci-and-headless.md,S-ezqg74ki,located,Model configuration > Special model behavior > Adjust effort level,except;high;medium;4.7;xhigh;haiku;5.5;effort,0c6f726450ba6b5a,"The model's default effort: high on every model that supports effort, except that Opus 5.5, Sonnet 5.5, and Haiku 5.5 default to medium, Opus 4.7",2026-10-12

@@ -3861,3 +3861,13 @@ _Agent: kb-research_
 - See typescript-tsconfig-and-compiler-options.md, typescript-module-resolution.md, typescript-projects-declarations-incremental.md, typescript-native-compiler.md, codebase-mapping.md.
 
 _Agent: kb-research_
+
+## QK-claude-p-max-turns-count-turn. What does `claude -p --max-turns` count as a turn, and what does a print-mode session that reaches the limit return (result subtype, `is_error`, `num_turns`)?
+- A turn is one round trip of the agent loop, and the cap "counts tool-use turns only", so the final text-only response is not capped. [DOC S-wf2dmtu6]
+- A session that reaches the cap ends with a result of subtype `error_max_turns`: no `result` field, an `errors` array, and still `total_cost_usd`, `usage`, `num_turns` and `session_id`; the process exits with a nonzero code. [DOC S-wf2dmtu6, S-fmj24q2u, S1800]
+- Observed (Claude Code 2.1.300, Haiku 5.5, 2026-10-16, caps 1 and 2): exit 1, `is_error` `true`, `terminal_reason` `max_turns`, `stop_reason` `tool_use`, `num_turns` one more than the cap; the same prompt under cap 5 exited 0 with `success`, `is_error` `false`, `num_turns` 4. [DER S-wf2dmtu6, S-fmj24q2u, S1800]
+- Conclusion: a script that must tell a capped run from a finished one reads the exit status, `subtype` or `is_error`, never `num_turns` against its cap, which reads one high. [DER S-wf2dmtu6, S-fmj24q2u]
+- Open: why `num_turns` is the cap plus one, and the result of a cap of 0 or of a stream-json run, are not stated by the docs and were not observed. [UNK]
+- See claude/ci-and-headless.md, claude/cli-flags.csv, claude/agent-sdk.md.
+
+_Agent: kb-research_
