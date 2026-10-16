@@ -23,5 +23,22 @@
     "kb/_self/maintaining.md",
     "kb/_self/web-sources.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does dedup report an uncovered lack term that a live claim below the overlap threshold already holds?",
+      "options": [
+        "held-field",
+        "covered"
+      ],
+      "recommendation": "held-field",
+      "do": {
+        "held-field": "BG-yq2ojoiy",
+        "covered": "BG-yq2ojoiy"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-r03"
 }
