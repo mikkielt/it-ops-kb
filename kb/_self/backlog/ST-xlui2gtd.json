@@ -2,7 +2,7 @@
   "id": "ST-xlui2gtd",
   "kind": "story",
   "title": "Review sprint: Claude Code sessions, research and the kb MCP server coordinate through coord.py",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-xo45jvbj",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r03"
 }
