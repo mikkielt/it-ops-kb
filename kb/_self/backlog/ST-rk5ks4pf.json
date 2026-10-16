@@ -89,7 +89,7 @@
       },
       "class": "design",
       "answer": "POST /v1/run with the command's argv as JSON, parsed by the server's own parser, the operator added as the event field operator",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",

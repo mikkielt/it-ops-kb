@@ -59,7 +59,7 @@
       },
       "class": "design",
       "answer": "exit 0 with timed_out true",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -76,7 +76,7 @@
       },
       "class": "design",
       "answer": "an id of 1 to 120 characters of letters, digits and _ . : / # @ - (no spaces)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -93,7 +93,7 @@
       },
       "class": "design",
       "answer": "poll the events table every 50 ms with a short read; field names of lowercase letters, digits and _ (up to 32), up to 8 fields per event",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",

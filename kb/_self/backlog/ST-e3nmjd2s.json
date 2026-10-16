@@ -70,7 +70,7 @@
       },
       "class": "design",
       "answer": "comma list in item, topic and touch; touch also allows * and ?",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -87,7 +87,7 @@
       },
       "class": "design",
       "answer": "plain text, one line per entry, cut at N lines; intent live for a day unless every item has a later done progress; claim live while its lease holds; overlap is equal, directory prefix or glob match",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -104,7 +104,7 @@
       },
       "class": "design",
       "answer": "both required, a plain cut at N lines, nothing printed when nothing overlaps",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "From the operator interview of 2026-10-15: a session announces intent at start, claims and touches, research topics, and progress, in a structured, token-capped form with usage rules so records do not pollute context. Extends the closed kinds of ST-qguxlob4. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. The digest's claim cases use claim --holder from ST-5iwikc3n. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",

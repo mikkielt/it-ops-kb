@@ -1,0 +1,20 @@
+{
+  "id": "BG-v3fjhmro",
+  "kind": "bug",
+  "title": "A coord.py put on an absent key leaves it unclaimable for good, though the docstring says a claim-and-release replaces it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "SP-rsmmwzr2 review G1 (ST-5iwikc3n): put on an absent key inserts a row with no holder, token or expiry (_tools/coord.py put); claim then refuses it for ever ('held by no lease (a put value)'), release and renew refuse it (NULL token) and no command deletes it, so any agent or operator can block every later claim of a key (an item id, a topic) with one put. A claim of a key that holds only a put value succeeds, or put refuses an absent key; the docstring and kb/_self/tools.md say which.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('put','K1','--value','x','--revision','0')\nr=c('claim','K1','--ttl','5','--holder','a')[0]\nprint('claim after a put exit',r);sys.exit(0 if r==0 else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

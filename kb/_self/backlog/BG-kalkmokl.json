@@ -1,0 +1,20 @@
+{
+  "id": "BG-kalkmokl",
+  "kind": "bug",
+  "title": "coord.py takes the time before it waits for the store's write lock, so a lease granted after a wait is short by that wait",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "SP-rsmmwzr2 review G12 (ST-5iwikc3n): main and the server read time.time() before BEGIN IMMEDIATE, which may wait up to 30 s, so a lease granted after the wait expires early by its length and expiry decisions use a stale time. The time is read inside the transaction.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nimport sqlite3\nc('list','--prefix','x')\ndb=sqlite3.connect(E['KB_COORD_STORE'],isolation_level=None);db.execute('BEGIN IMMEDIATE')\np=s.Popen([sys.executable,T,'claim','K6','--ttl','10','--holder','a'],stdout=s.PIPE,text=True,env=E)\ntime.sleep(2);db.execute('COMMIT');out=p.communicate(timeout=30)[0];t=time.time()\nleft=json.loads(out)['expires']-t\nprint('lease left after a 2 s lock wait:',round(left,2));sys.exit(0 if left>9.5 else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

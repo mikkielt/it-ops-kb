@@ -1,0 +1,20 @@
+{
+  "id": "BG-caynvdnv",
+  "kind": "bug",
+  "title": "A coord.py intent posted after its item's done progress shows state=done in the digest though it is live",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "SP-rsmmwzr2 review G11 (ST-e3nmjd2s): digest labels an intent with the last progress event of its item wherever that event stands, so a new intent for an item that once had a done progress is shown live with state=done. Only progress later than the intent labels it.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('post','--kind','progress','--field','item=ST-dddddddd','--field','state=done');time.sleep(0.05)\nc('post','--kind','intent','--field','item=ST-dddddddd','--field','topic=agents/z')\nd=c('digest','--key','agents/z','--lines','5')[1]\nprint(d.strip());sys.exit(0 if 'ST-dddddddd' in d and 'state=done' not in d else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

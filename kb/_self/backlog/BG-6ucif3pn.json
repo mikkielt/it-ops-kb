@@ -1,0 +1,20 @@
+{
+  "id": "BG-6ucif3pn",
+  "kind": "bug",
+  "title": "coord.py reads operator key files whatever their mode, so a world-readable token file goes unnoticed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "SP-rsmmwzr2 review G8 (ST-rk5ks4pf): serve reads every file in --keys DIR and the client reads --key-file with no mode check, nothing creates a key file and no doc says to make it 0600. Both sides warn (or refuse) when a key file has group or other permission bits, and kb/_self/tools.md says how to create one.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nk=os.path.join(D,'k');open(k,'w').write('k'*40);os.chmod(k,0o644)\nr,_,e=c('--url','http://127.0.0.1:1','--key-file',k,'list')\nlow=e.lower();ok=('0600' in e or 'mode' in low or 'permission' in low)\nprint('client names the 0644 key file mode:',ok,e.strip()[:160]);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

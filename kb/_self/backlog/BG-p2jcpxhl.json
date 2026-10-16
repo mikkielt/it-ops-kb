@@ -1,0 +1,20 @@
+{
+  "id": "BG-p2jcpxhl",
+  "kind": "bug",
+  "title": "A coord.py value put on a leased key is lost when the holder releases it or the lease expires",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "SP-rsmmwzr2 review G2 (ST-5iwikc3n, gate g2): put on a leased key keeps the lease, and release and live_row delete the whole row, value included, once the lease ends; so claim, put the result, release leaves get exiting 1 ('absent') at revision 0. Release or expiry clears holder, token and expiry and keeps the value and revision, or the docs say a value lives only as long as its lease (a changed answer to ST-5iwikc3n gate g2, asked as a gate first).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\ntok=json.loads(c('claim','K2','--ttl','60','--holder','a')[1])['token']\nc('put','K2','--value','V','--revision','1');c('release','K2','--token',tok)\nr1,o1,_=c('get','K2')\nc('claim','K3','--ttl','1','--holder','a');c('put','K3','--value','W','--revision','1');time.sleep(1.6)\nr2,o2,_=c('get','K3')\nprint(dict(after_release=r1,after_expiry=r2));sys.exit(0 if r1==0 and 'V' in o1 and r2==0 and 'W' in o2 else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

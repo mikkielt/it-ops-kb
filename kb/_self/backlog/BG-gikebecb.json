@@ -1,0 +1,21 @@
+{
+  "id": "BG-gikebecb",
+  "kind": "bug",
+  "title": "coord.py serve and its client send operator tokens over plain http to a non-loopback host with no warning",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "SP-rsmmwzr2 review G7 (ST-rk5ks4pf): serve --bind on a non-loopback host starts with only its 'serving http://...' line, and send() puts the bearer token on any http:// url, though the kb's RFC 6750 fact (kb/public/mcp/authorization.md) says the token needs TLS; only the docstring and kb/_self/tools.md mention a TLS front end. Both sides warn on stderr (or refuse without an explicit flag) for plain http to a host that is not loopback.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nt=open('_tools/coord.py',encoding='utf-8').read()\nok='is_loopback' in t\nprint('coord.py tests a host for loopback before plain http:',ok);sys.exit(0 if ok else 1)"
+    ]
+  },
+  "repro_reason": "binding a non-loopback address or sending to a remote host in a repro would expose a server on, or reach out of, the host's network; the repro reads coord.py for a loopback test on the plain-http path instead",
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "BG-bqvcba5e",
+  "kind": "bug",
+  "title": "A coord.py wait authenticated before its operator's key file is removed still returns the next event to that operator",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "SP-rsmmwzr2 review G6 (ST-rk5ks4pf): the docs say removing a key file revokes the operator at once, but authenticate runs only at request start, so a long-poll already in flight (no server cap, gate g3) returns the next event to the revoked operator. The server checks the token again before a wait replies (or in its poll loop) and refuses a revoked one with 401.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nkeys=os.path.join(D,'ops');os.mkdir(keys)\nfor n in ('alice','bob'):\n    open(os.path.join(keys,n),'w').write(n[0]*40);open(os.path.join(D,n+'.key'),'w').write(n[0]*40)\nsrv=s.Popen([sys.executable,T,'serve','--bind','0','--keys',keys],stdout=s.PIPE,stderr=s.STDOUT,text=True,env=E)\nurl=srv.stdout.readline().split()[-1].strip().rstrip('/')\nhp=url.split('//')[1];host,port=hp.rsplit(':',1);port=int(port)\ntry:\n    w=s.Popen([sys.executable,T,'--url',url,'--key-file',os.path.join(D,'alice.key'),'wait','--since','0','--timeout','8'],stdout=s.PIPE,stderr=s.STDOUT,text=True)\n    time.sleep(1.5);os.remove(os.path.join(keys,'alice'))\n    s.run([sys.executable,T,'--url',url,'--key-file',os.path.join(D,'bob.key'),'post','--kind','heartbeat','--field','item=ST-bbbbbbbb'],capture_output=True,timeout=30)\n    out=w.communicate(timeout=30)[0]\n    print('revoked waiter got:',out.strip()[:200])\nfinally:\n    srv.terminate();srv.wait(10)\nsys.exit(0 if 'ST-bbbbbbbb' not in out else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}

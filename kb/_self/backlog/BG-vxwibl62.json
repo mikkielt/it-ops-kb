@@ -1,0 +1,20 @@
+{
+  "id": "BG-vxwibl62",
+  "kind": "bug",
+  "title": "coord.py put needs no holder token, so any agent can overwrite the value of a key another agent has claimed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "SP-rsmmwzr2 review G9 (ST-5iwikc3n): put takes no token, so anyone who reads the revision with get can put a new value on a key whose lease another agent holds; gate g2 allowed put to raise the revision on a leased key but not without the holder. Asked as a gate first: a put on a leased key needs the holder's --token, or kb/_self/tools.md says the lease does not guard the value (then this repro is rewritten).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('claim','K5','--ttl','60','--holder','a')\nr=c('put','K5','--value','hijack','--revision','1')[0]\nprint('put on a leased key without its token exit',r);sys.exit(0 if r!=0 else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-rsmmwzr2 review"
+  ]
+}
