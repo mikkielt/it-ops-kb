@@ -162,6 +162,9 @@ def setup(count, start=None, root=None, dry_run=False, out=print):
     """Build `count` instances; print the plan and every path. Returns 0, or raises Refused."""
     root = Path(root) if root else default_dir()
     _, url = remote_url()
+    left = [name for name in (RESULTS, RUN_RECORD) if (root / name).exists()]
+    if left:  # a run after this setup would skip the areas with a result, and record and compare would read old shas
+        raise Refused(f"{root} holds {' and '.join(left)} of an earlier setup: move {'it' if len(left) == 1 else 'them'} aside or take another --dir")
     if dry_run:
         for ln in plan_lines(count, root, start, url):
             out(ln)
@@ -182,6 +185,9 @@ def setup(count, start=None, root=None, dry_run=False, out=print):
             clone.parent.mkdir(parents=True, exist_ok=True)
             run_git("clone", "-q", str(bare), str(clone), cwd=clone.parent)
             isolate(clone, "off", bare)
+            p = sh([sys.executable, str(clone / "_tools" / "kbgit.py"), "install-hooks"], clone, instance_env(root, n))
+            if p.returncode:
+                raise Refused(f"instance {n}: install-hooks exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
             mcp_path(root, n).write_text(json.dumps(mcp_config(clone), indent=2) + "\n", encoding="utf-8", newline="\n")
             lock_dir(root, n).mkdir(parents=True, exist_ok=True)
     finally:
