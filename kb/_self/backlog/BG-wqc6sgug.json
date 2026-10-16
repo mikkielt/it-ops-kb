@@ -2,7 +2,7 @@
   "id": "BG-wqc6sgug",
   "kind": "bug",
   "title": "The intake hook re-files a draft that land set aside in a linked worktree outside .claude/worktrees/, since land writes under its own root and the hook reads only the main worktree's set-aside directory",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 4,
@@ -26,5 +26,6 @@
   "links": [
     "parked: SP-lyfnpu37 review"
   ],
-  "notes": "Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_land.set_aside_drafts writes under its own root, bl_intake.set_aside_fingerprints reads the main worktree's. The old repro read source text; the new one sets a draft aside from a linked worktree of a temp clone and asks intake for its fingerprint (fails now). Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run."
+  "notes": "Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_land.set_aside_drafts writes under its own root, bl_intake.set_aside_fingerprints reads the main worktree's. The old repro read source text; the new one sets a draft aside from a linked worktree of a temp clone and asks intake for its fingerprint (fails now). Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run.",
+  "claimed_by": "orch-r01"
 }
