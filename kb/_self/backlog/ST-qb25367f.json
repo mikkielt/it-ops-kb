@@ -19,7 +19,8 @@
     }
   ],
   "touches": [
-    "kb/public/**"
+    "kb/public/**",
+    "kb/_self/_retrieval/lookup_eval.csv"
   ],
   "relates_to": [
     "ST-a4sqcsfn"
