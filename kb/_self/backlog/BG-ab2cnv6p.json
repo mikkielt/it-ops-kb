@@ -2,17 +2,17 @@
   "id": "BG-ab2cnv6p",
   "kind": "bug",
   "title": "the sync gate refuses a test deletion recorded in test_ids_dropped.txt when a done item of another active sprint names the test",
-  "status": "done",
+  "status": "todo",
   "sprint": "SP-noqsd4hj",
   "priority": "P1",
   "rank": 0,
   "severity": "S1",
-  "goal": "kg_sync.selector_gate, the sync gate's reading of `backlog.py selectors`, warns and does not refuse a NONE row of a done item of an active sprint whose -k selector names only test ids recorded in _tools/test_ids_dropped.txt (perfcheck.DROPPED_FILE, read with perfcheck's own reader), since a done item's check cannot be repointed (set refuses it) and the sprint review already counts such a check as gone; a NONE row of a done item whose selector names a test not recorded as dropped is still refused; kb/_self/git.md's sync gate text says so. Code-lane path (_tools/): done and the push to main come after its merge request merges (backlog.py land ID --wait-merge 1800).",
+  "goal": "kg_sync.selector_gate, the sync gate's reading of `backlog.py selectors`, warns and does not refuse a NONE row of a done item of an active sprint whose -k selector's name terms each match, as pytest's -k does (a substring of the test id), only test ids recorded in _tools/test_ids_dropped.txt (perfcheck.DROPPED_FILE, read with perfcheck's own reader), a full name and a name prefix alike, since a done item's check cannot be repointed (set refuses it) and the sprint review already counts such a check as gone; a NONE row of a done item whose selector names a term no dropped id holds is still refused; kb/_self/git.md's sync gate text says so. Code-lane path (_tools/): done and the push to main come after its merge request merges (backlog.py land ID --wait-merge 1800).",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,'_tools');import kg_sync as s\ns.item_done=lambda i:True\nk='test_operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions'\na,o=s.selector_gate('    0  NONE   -k '+k+'  ST-qivswoxw \\u201ct\\u201d')\nb,_=s.selector_gate('    0  NONE   -k test_never_dropped_xyz  ST-qivswoxw \\u201ct\\u201d')\nprint(a,b,o);sys.exit(0 if a==0 and b==1 else 1)"
+      "import sys;sys.path.insert(0,'_tools');import kg_sync as s\ns.item_done=lambda i:True\nrow=lambda k:'    0  NONE   -k '+k+'  ST-qivswoxw \\u201ct\\u201d'\na,o=s.selector_gate(row('test_operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions'))\np,_=s.selector_gate(row('test_operator_class_is_derived_from_touches'))\nb,_=s.selector_gate(row('test_never_dropped_xyz'))\nprint(a,p,b,o);sys.exit(0 if a==0 and p==0 and b==1 else 1)"
     ]
   },
   "touches": [
@@ -34,23 +34,9 @@
         "substring match": "BG-ab2cnv6p"
       },
       "class": "push",
-      "answer": "exact names",
+      "answer": "substring match",
       "by": "operator"
     }
   ],
-  "notes": "Premise 2026-10-16: land ST-wfrfy3mp stopped at kbgit.py sync --push, gate backlog.py selectors refused=7: done items of the active sprint SP-b36246xo (ST-qivswoxw, ST-duwzvvq7, ST-yb5x4x3d, BG-ijt2pwss, ST-2t73jxfk, ST-u2qvfapz, ST-wiv62ohc) select test_content_commit_reaches_main_and_a_red_gate_stops_the_next, test_lint_names_a_facts_line_with_a_second_bullet and test_lookup_eval_passes_on_the_live_kb, which ST-wfrfy3mp deletes under D-2tq4fhgs and records in _tools/test_ids_dropped.txt; set refuses repointing a done item's checks, and bl_land.rerun_done_checks already counts them gone. No test: the bug is proven by its repro (kb/_self/code.md, Checks and their tests).",
-  "evidence": {
-    "commit": "ee6a2e417d8518e8b66e6bb871926ff916176d5e",
-    "checks": [
-      {
-        "run": [
-          "python3",
-          "-c",
-          "import sys;sys.path.insert(0,'_tools');import kg_sync as s\ns.item_done=lambda i:True\nk='test_operator_class_is_derived_from_touches_and_question_a_lower_stored_class_changes_nothing_and_secrets_fail_closed_inside_token_exceptions'\na,o=s.selector_gate('    0  NONE   -k '+k+'  ST-qivswoxw \\u201ct\\u201d')\nb,_=s.selector_gate('    0  NONE   -k test_never_dropped_xyz  ST-qivswoxw \\u201ct\\u201d')\nprint(a,b,o);sys.exit(0 if a==0 and b==1 else 1)"
-        ],
-        "exit": 0,
-        "sha256": "6803987f0379ece1"
-      }
-    ]
-  }
+  "notes": "Premise 2026-10-16: land ST-wfrfy3mp stopped at kbgit.py sync --push, gate backlog.py selectors refused=7: done items of the active sprint SP-b36246xo (ST-qivswoxw, ST-duwzvvq7, ST-yb5x4x3d, BG-ijt2pwss, ST-2t73jxfk, ST-u2qvfapz, ST-wiv62ohc) select test_content_commit_reaches_main_and_a_red_gate_stops_the_next, test_lint_names_a_facts_line_with_a_second_bullet and test_lookup_eval_passes_on_the_live_kb, which ST-wfrfy3mp deletes under D-2tq4fhgs and records in _tools/test_ids_dropped.txt; set refuses repointing a done item's checks, and bl_land.rerun_done_checks already counts them gone. No test: the bug is proven by its repro (kb/_self/code.md, Checks and their tests). Gate g1 re-answered by the orchestrator acting as operator, 2026-10-16: substring match, as pytest's -k matches, not exact names. Why: 6 of the 7 premise checks select by a name prefix of a long test id, so exact names left land ST-wfrfy3mp refused; a row is NONE only when no kept test matches the term, so a term held by a dropped id is what pytest selected before the drop. A term no dropped id holds (a typo, a test never written) is still refused."
 }
