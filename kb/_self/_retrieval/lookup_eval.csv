@@ -28,6 +28,7 @@ SE-026,which placeholders must examples use instead of real hostnames and tenant
 SE-027,a real lookup failed: when does it become a lookup_eval.csv row and when a _gaps.md entry,maintaining.md,good,yes,the kb has the answer,kb-add-topic:register;kb-research:write
 SE-028,may a kb/_self doc describe history or how things used to work,README.md,good,yes,the kb as it is now,kb-self:update
 SE-029,where do measurements of the kb's tools get recorded,README.md,good,yes,the measurements `design.md` and `token-efficiency.md`,
+SE-039,which shapes does the leak scan refuse in kb text such as a private address or a user@host form and how is a documented default value written instead,content-rules.md,good,yes,The leak scan refuses these shapes in kb text,kb-add-topic:write;kb-research:write;kb-refresh:update
 SE-030,what does rag.py pack print when the kb does not hold the answer,tools.md,good,yes,does not cover the question,
 SE-031,what does selfdoc.py stale --since report,tools.md,good,yes,in REV..HEAD and the working tree,kb-self:stale
 SE-032,is the query log ever published to GitHub,querylog.md;git.md,good,yes,Never to the public home,kb-setup
