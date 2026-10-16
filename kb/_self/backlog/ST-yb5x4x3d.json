@@ -2,7 +2,7 @@
   "id": "ST-yb5x4x3d",
   "kind": "story",
   "title": "factdiff.py anchor --file leaves a still-failing unlocated row unchanged instead of rewriting it on every run",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-b36246xo",
   "priority": "P3",
   "rank": 0,
@@ -51,5 +51,6 @@
   "links": [
     "parked: SP-srqmriw6 review"
   ],
-  "notes": "Plan amendment 2026-10-15 (triage fit10): since ST-t3mrfi57 anchor --file refetches every fact whose only anchor row is unlocated:fetch-error, not-text or gone, and a retry that fails again rewrites the row with a new verified_utc (factdiff.py cmd_anchor, anchors[k] = row for any RETRY_STATUS row), so _anchors.csv changes on every run for a still-failing source. Found by the SP-srqmriw6 review of ST-t3mrfi57 (its gate g2 chose replace the row). Same function as ST-duwzvvq7 (cmd_anchor's --file branch), so it runs after it. Check retargeted from a new test id (anchor_file_retry_keeps_unchanged_row) to the existing test_lint_names_a_facts_line_with_a_second_bullet, which already drives this branch (0 new ids, about +0.3 s); check 0 is an offline planted run (sources, facts, anchors and fetch stubbed, a fetch-error row retried and failing again) that fails at c907de7b3 because the row is written again. The backoff length is a choice the goal leaves open: the worker records it as a provisional gate. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); check 0 fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it."
+  "notes": "Plan amendment 2026-10-15 (triage fit10): since ST-t3mrfi57 anchor --file refetches every fact whose only anchor row is unlocated:fetch-error, not-text or gone, and a retry that fails again rewrites the row with a new verified_utc (factdiff.py cmd_anchor, anchors[k] = row for any RETRY_STATUS row), so _anchors.csv changes on every run for a still-failing source. Found by the SP-srqmriw6 review of ST-t3mrfi57 (its gate g2 chose replace the row). Same function as ST-duwzvvq7 (cmd_anchor's --file branch), so it runs after it. Check retargeted from a new test id (anchor_file_retry_keeps_unchanged_row) to the existing test_lint_names_a_facts_line_with_a_second_bullet, which already drives this branch (0 new ids, about +0.3 s); check 0 is an offline planted run (sources, facts, anchors and fetch stubbed, a fetch-error row retried and failing again) that fails at c907de7b3 because the row is written again. The backoff length is a choice the goal leaves open: the worker records it as a provisional gate. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green, extending that test); check 0 fails before the work and reads the goal. The guard test selection passes before the work: it pins behaviour that must stay green while the work extends it.",
+  "claimed_by": "orch-b36246xo"
 }
