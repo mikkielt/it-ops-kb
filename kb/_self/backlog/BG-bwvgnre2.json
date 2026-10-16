@@ -1,0 +1,25 @@
+{
+  "id": "BG-bwvgnre2",
+  "kind": "bug",
+  "title": "selector_gate waives a done item's selector whose -k term a dropped id of another test file holds",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_sync.selects_only_dropped reads the file arguments before -k: a NONE row of a done item whose selector names a test file and a term is waived only when a dropped id of that same file holds the term, so `_tools/test_prepush_e2e.py -k test_run_check_exit_code_is_the_result` (a dropped id of test_check_programs.py) is still refused",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import kg_sync as s\nr=s.selects_only_dropped('    0  NONE   _tools/test_prepush_e2e.py -k test_run_check_exit_code_is_the_result  ST-qivswoxw \\u201ct\\u201d')\nprint(r);sys.exit(1 if r else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj review"
+  ],
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+}

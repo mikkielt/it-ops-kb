@@ -1,0 +1,25 @@
+{
+  "id": "ST-eoiziu4t",
+  "kind": "story",
+  "title": "backlog.md says an item file that turns the live-backlog tests red fails its own push, but those tests were deleted",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md's detector paragraph no longer says an item file would turn 'those live-backlog tests' red, since the tests it meant were in the deleted test_backlog_portable.py and test_land_e2e.py; it names backlog.py check in the push gate as what refuses such a file",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md',encoding='utf-8').read()\nsys.exit(1 if 'live-backlog tests' in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj review"
+  ],
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+}

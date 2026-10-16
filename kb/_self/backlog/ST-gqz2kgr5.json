@@ -1,0 +1,25 @@
+{
+  "id": "ST-gqz2kgr5",
+  "kind": "story",
+  "title": "Drafts still name the deleted test files in a repro, notes or goal, so check tells a planner to add them as touches",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "No open item's repro, notes or goal names _tools/test_bench.py, _tools/test_land_e2e.py, _tools/test_live_kb.py, _tools/test_backlog_portable.py or _tools/test_forge.py as a file to change (BG-jgahu3o2's repro, BG-rrutf5bf's and ST-fe76odtm's notes, ST-glgrhz33's goal): each is reworded to the kept tests or a tool run, or dropped under decision D-2tq4fhgs when it asks for a test of a component that is not critical, and backlog.py check prints no warning naming one of those files",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','check'],capture_output=True,text=True)\nbad=[l for l in (p.stdout+p.stderr).splitlines() if any(f in l for f in ('test_bench.py','test_land_e2e.py','test_live_kb.py','test_backlog_portable.py','test_forge.py'))]\nprint(len(bad));sys.exit(1 if bad or p.returncode else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/*.json"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj review"
+  ],
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-qwipu6df",
+  "kind": "story",
+  "title": "The operator decides whether a content-only push runs the tuned lookup eval now that test_live_kb.py is gone",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/git.md's sync gate text says whether a content-only push runs the tuned lookup eval (rag.py eval on lookup_eval.csv): before ST-wfrfy3mp the suite's test_lookup_eval_passes_on_the_live_kb ran it on the content scope, now only the held-out and bench files run in the gate (kg_sync.heldout_checks) and land runs it for _tools/ landings; a gate records the operator's choice (add the eval to the gate, or accept the gap) and the text follows it",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('kb/_self/git.md',encoding='utf-8').read().split())\nsys.exit(0 if 'content-only push' in t and 'tuned lookup eval' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/git.md",
+    "_tools/kg_sync.py"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj review"
+  ],
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+}

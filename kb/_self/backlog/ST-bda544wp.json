@@ -1,0 +1,26 @@
+{
+  "id": "ST-bda544wp",
+  "kind": "story",
+  "title": "code.md and tools.md say the router_broad_lookups test fails a cue change at landing, but that test was dropped",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/code.md's routing paragraph and kb/_self/tools.md's 'Questions a tool decides' no longer say `tests.py -k router_broad_lookups` (or its expert phrasings selector) makes a cue or expert change fail at its landing, since ST-wfrfy3mp dropped TestRouterBroadLookups with test_live_kb.py; they name what guards the cues now, or that nothing does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nbad=[p for p in ('kb/_self/code.md','kb/_self/tools.md') if 'router_broad_lookups' in open(p,encoding='utf-8').read()]\nprint(bad);sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/code.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj review"
+  ],
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+}

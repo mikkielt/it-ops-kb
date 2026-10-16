@@ -1,0 +1,25 @@
+{
+  "id": "ST-ui666qzp",
+  "kind": "story",
+  "title": "backlog.md's worktree-subagent workaround names a -k selector that only the deleted lookup-eval test matched",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kb/_self/backlog.md's worktree-subagent workaround no longer gives `tests.py -k \"test_lookup_ and passes\"`, which collects no test since ST-wfrfy3mp deleted test_live_kb.py; it names a command that runs the lookup eval in a worktree subagent, or says there is none",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md',encoding='utf-8').read()\nsys.exit(1 if 'test_lookup_ and passes' in t else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj review"
+  ],
+  "notes": "Review gap of SP-noqsd4hj, rated S2 by the sprint's reviewer."
+}
