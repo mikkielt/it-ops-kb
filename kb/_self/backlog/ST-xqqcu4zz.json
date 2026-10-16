@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import os,stat,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'claude_path'): print('no claude_path yet');sys.exit(1);d=tempfile.mkdtemp();f=os.path.join(d,'claude')\nopen(f,'w').write('#!/bin/sh\\nexec true\\n');os.chmod(f,0o755);os.environ['PATH']=d+os.pathsep+os.environ['PATH']\np,why=b.claude_path();print(p,why);sys.exit(0 if os.path.realpath(p)==os.path.realpath(f) and why else 1)"
+        "import os,stat,sys,tempfile;sys.path.insert(0,'_tools');import bench_repro as b\nif not hasattr(b,'claude_path'): print('no claude_path yet');sys.exit(1)\nd=tempfile.mkdtemp();f=os.path.join(d,'claude')\nopen(f,'w').write('#!/bin/sh\\nexec true\\n');os.chmod(f,0o755);os.environ['PATH']=d+os.pathsep+os.environ['PATH']\np,why=b.claude_path();print(p,why);sys.exit(0 if os.path.realpath(p)==os.path.realpath(f) and why else 1)"
       ]
     },
     {
@@ -45,7 +45,7 @@
     },
     {
       "clause": "run.json records their sha256 (BG-vry4snnm)",
-      "check": 1
+      "check": 2
     }
   ],
   "touches": [
