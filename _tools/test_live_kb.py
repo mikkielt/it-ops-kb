@@ -260,6 +260,7 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
         gh + "Org/None": (200, repo(None)),
         gh + "Org/Other": (200, repo("NOASSERTION")),
         gl + "grp%2Fsub%2Fproj?license=true": (200, json.dumps({"license": {"key": "apache-2.0", "name": "Apache License 2.0"}})),
+        gl + "gitlab-org%2Fgitlab?license=true": (200, json.dumps({"license": {"key": "mit", "name": "MIT License"}})),
         learn + "page-a": (200, page("Org/Docs")), gh + "Org/Docs": (200, repo("MIT", archived=False)),
         gh + "Org/Docs" + files: (200, names("LICENSE", "LICENSE-CODE", "README.md")),
         learn + "page-b": (200, page("Org/Old")), gh + "Org/Old": (200, repo("CC-BY-4.0", archived=True)),
@@ -333,6 +334,14 @@ def kbid_licence_families(monkeypatch, tmp_path, capsys):
         assert code == 2 and got is None and "recognises no licence" in err, (u, err)
     code, out, err, got = add("https://gitlab.com/grp/sub/proj/-/blob/main/README.md")
     assert got == ("Apache-2.0 (repository licence of grp/sub/proj, from the GitLab API)", "copy"), (code, err, got)
+    # gitlab-org/gitlab: its LICENSE puts doc/ under CC BY-SA 4.0 whatever the API says (MIT); a url outside doc/ keeps the API's
+    gdoc = "https://gitlab.com/gitlab-org/gitlab/-/"
+    n = len(asked)
+    for u in (gdoc + "raw/9f1632e2/doc/user/project/_index.md", gdoc + "blob/master/doc/user/_index.md"):
+        assert add(u)[3] == ("CC BY-SA 4.0 (doc/, per gitlab-org/gitlab LICENSE; code MIT)", "copy"), u
+    assert [u for u, _ in asked[n:]] == [], asked[n:]  # read from the LICENSE's words: the API is not asked
+    for u in (gdoc + "blob/master/app/models/user.rb", gdoc + "blob/master/app/doc/x.rb", gdoc + "raw/master/ee/doc/x.md"):
+        assert add(u)[3] == ("MIT (repository licence of gitlab-org/gitlab, from the GitLab API)", "copy"), u
     # a Learn page: its public mirror's licence (the page's github_feedback_content_git_url); archived, private or in
     # conflict (LICENSE beside LICENSE.md, not beside LICENSE-CODE) it is `quote` under the Learn terms
     assert add(learn + "page-a")[3] == ("MIT (public mirror Org/Docs)", "copy")
