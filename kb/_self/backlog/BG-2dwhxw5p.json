@@ -2,7 +2,7 @@
   "id": "BG-2dwhxw5p",
   "kind": "bug",
   "title": "A credential gate question such as 'overlap of the API tokens' loses its secrets class, since the overlap-of-tokens phrase has no credential exception",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-z3hyk4eh",
   "priority": "P1",
   "rank": 0,
@@ -44,5 +44,18 @@
     "found: SP-z3hyk4eh review"
   ],
   "notes": "Found by the SP-z3hyk4eh review (gap 1, reviewer S2): BG-auhn3xff's phrase \\boverlaps? of (?:\\w+ ){0,3}tokens\\b (_tools/bl_authority.py:72) strips a credential question from the secrets search, a regression of an operator-only class guard, so the delegated operator files it in the sprint rather than parking it. Premise run 2026-10-16 on origin/main f105ef2e4: 'overlap of the API tokens' classes design (was secrets before BG-auhn3xff). Test policy D-6kei5o2z: no new test; the repro is the proof.",
-  "claimed_by": "orch-r01"
+  "evidence": {
+    "commit": "408c9ecac958b38d8479ad494e93be134d8366cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_authority as b\nc=lambda q:b.class_reasons({\"touches\":[\"x.md\"]},{\"id\":\"g\",\"question\":q,\"options\":[\"a\",\"b\"]})[0]\nr=[c(\"overlap of the API tokens\"),c(\"overlap of the deploy tokens between CI and prod\"),c(\"token overlap of two facts\"),c(\"how many words or tokens may two texts share before they count as one\"),c(\"how many output tokens may one run spend\")]\nprint(\"classes (API, deploy, word overlap, words or tokens, output):\",r)\nsys.exit(0 if r[0]==\"secrets\" and r[1] in (\"secrets\",\"push\") and r[1]!=\"design\" and r[2:]==[\"design\"]*3 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "d588da314962ec4a"
+      }
+    ]
+  }
 }
