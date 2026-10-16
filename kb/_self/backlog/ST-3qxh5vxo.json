@@ -2,7 +2,7 @@
   "id": "ST-3qxh5vxo",
   "kind": "story",
   "title": "Research dedup: a pack's lack-set fingerprint is checked and claimed through coord.py before /kb-research starts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-xo45jvbj",
   "priority": "P2",
@@ -85,5 +85,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: no dedup exists. Gate g2 answered at planning with its recommendation (measure on the query log's real questions first, then pick): the worker measures and records the threshold it picks as a gate of its own. The planted questions (Intune or SQL Server with the made-up terms wombat, quokka, koala, platypus) keep lacks the kb will not research away; a partial overlap must keep koala uncovered whatever threshold is picked. The skill check reads the first numbered step of the skill. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE)."
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: no dedup exists. Gate g2 answered at planning with its recommendation (measure on the query log's real questions first, then pick): the worker measures and records the threshold it picks as a gate of its own. The planted questions (Intune or SQL Server with the made-up terms wombat, quokka, koala, platypus) keep lacks the kb will not research away; a partial overlap must keep koala uncovered whatever threshold is picked. The skill check reads the first numbered step of the skill. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE).",
+  "claimed_by": "orch-r03"
 }
