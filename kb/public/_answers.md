@@ -3903,3 +3903,15 @@ _Agent: kb-research_
 - See claude/hooks.md.
 
 _Agent: kb-research_
+
+## QK-claude-code-parallel-work-option-fits. Which Claude Code parallel-work option fits which coordination need, and what does each share or isolate?
+- Who coordinates: Claude in one conversation (subagents), you (agent view), a lead agent (agent teams, experimental), a script (dynamic workflows). (`claude/parallel-sessions.md`, Choosing by coordination need) [DOC S-76oyiuez]
+- Talking to each other: subagents report to their spawner, agent-view sessions only to you, teammates message each other and share a task list; cross-session messaging links sessions you run yourself. [DOC S-76oyiuez]
+- Same files: agent view moves a session into its own worktree before its first edit (skipped when it is already in a worktree, was backgrounded with `←` or `/background`, is outside a git repository without a `WorktreeCreate` hook, or writes outside the working directory); `worktree.bgIsolation` `"worktree"` (default) blocks `Edit` and `Write` in the main checkout until `EnterWorktree`, `"none"` lets background jobs edit the working copy. Agent teams do not isolate teammates, so files are partitioned. [DOC S-aishnkok, S-wzatkg4o, S-76oyiuez]
+- Machines: cross-session messaging reaches other machines and cloud sessions through Remote Control and projects start cloud threads; agent view says its sessions are local, agent teams keep local team directories and one team per session. [DOC S-sdxhnx3i, S-76oyiuez, S-aishnkok, S-qdxfqzln]
+- Workflows against subagents and skills: the script, not Claude's context, holds the loop and intermediate results; the page says to use one when a task needs more agents than one conversation can coordinate or the orchestration should be a rerunnable script (up to 16 agents at once by default, 1,000 per run, no mid-run user input). [DOC S-qulnsg4e]
+- Conclusion: pick by who should hold the plan and whether workers must talk; only cross-session messaging and projects reach beyond one machine. [DER S-76oyiuez, S-qulnsg4e, S-aishnkok, S-qdxfqzln]
+- Open: how a workflow's agents isolate file edits, and an official statement that agent teams and workflows stay on one machine. [UNK]
+- See claude/parallel-sessions.md, claude/cross-session-messaging.md.
+
+_Agent: kb-research_

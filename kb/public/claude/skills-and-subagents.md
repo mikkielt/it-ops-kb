@@ -222,6 +222,8 @@ Related kb articles:
   fields.
 - `claude/cross-session-messaging.md` — `SendMessage` and `ListAgents` beyond one session: messaging your other
   Claude Code sessions on this machine, other machines and the cloud, with its inbound controls.
+- `claude/parallel-sessions.md` — subagents, agent teams, agent view, dynamic workflows and worktrees compared by
+  who coordinates, what each shares or isolates, and which stay on one machine.
 
 ## Examples
 - SNIPPET: a `SKILL.md` frontmatter that forks the skill body into a subagent and never auto-invokes from a model match; context: Claude Code, `.claude/skills/<name>/SKILL.md`; checked: no [DOC S2158: `context: fork` and `disable-model-invocation: true` frontmatter fields]

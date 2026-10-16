@@ -199,6 +199,8 @@ and listing.
     dispatch, multi-repository cloud sessions and the settings they drop.
   - `gitlab/multi-project-pipelines.md` — coordinating work across GitLab projects in CI: trigger jobs, mirrored
     status, job token allowlists.
+  - `claude/parallel-sessions.md` — which parallel-work option (subagents, agent view, agent teams, workflows,
+    worktrees) fits which coordination need, and which of them stay on one machine.
 - Projects: `https://code.claude.com/docs/en/claude-projects` (S-fk46gdey).
 
 ## Examples

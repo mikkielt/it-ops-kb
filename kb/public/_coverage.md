@@ -162,6 +162,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `claude/skills-and-subagents` | P2 | complete | `claude/skills-and-subagents.md`, `claude/skills-and-subagents.csv` | 9 |
 | `claude/cross-session-messaging` | P3 | complete | `claude/cross-session-messaging.md` | 11 |
 | `claude/large-codebases` | P3 | complete | `claude/large-codebases.md` | 7 |
+| `claude/parallel-sessions` | P3 | partial | `claude/parallel-sessions.md` | 9 |
 | `claude/powershell-tool` | P3 | partial | `claude/powershell-tool.md` | 6 |
 | `defender/machine-resource` | P1 | complete | `defender/machine-resource.md`, `defender/machine-properties.csv` | 9 |
 | `defender/mde-onboarding` | P1 | complete | `defender/mde-onboarding.md` | 23 |
