@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Plan 2026-10-16: the sprint's items are internal tooling (claims ledger, dispatch, land, intake, forge target, distill, sync, gate classes); no outside fact is expected, so the worker may record a `No outside facts:` note after a kb check of the goal's terms."
 }

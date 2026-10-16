@@ -27,7 +27,8 @@
     "_tools/bl_forge.py",
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "BG-wqc6sgug"

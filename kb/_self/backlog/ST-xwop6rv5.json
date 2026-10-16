@@ -4,33 +4,50 @@
   "title": "The kb MCP server exposes coord.py's claims, events and digest as tools, local or against coord.py serve",
   "status": "draft",
   "parent": "EP-fxrzbuza",
+  "sprint": "SP-xo45jvbj",
   "priority": "P3",
-  "rank": 0,
-  "goal": "The kb MCP server lists tools for coord.py claim, renew, release, post, digest and wait, run against the local store or against a coord.py serve address when one is configured; each tool takes and returns the same id-only fields as the CLI; a call that does not present a claim's holder token cannot renew or release it; the tools are listed in a fixed order so a client's prompt cache holds across sessions.",
+  "rank": 7,
+  "goal": "The kb MCP server lists tools coord_claim, coord_renew, coord_release, coord_post, coord_digest and coord_wait in that order, each a coord.py command, run against the local store or against a coord.py serve address when KB_COORD_URL and KB_COORD_KEY_FILE name one; each tool takes and returns the same id-only fields as the CLI; a call that does not present a claim's holder token cannot renew or release it; the tools are listed in a fixed order so a client's prompt cache holds across sessions.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "coord_mcp"
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nif not os.path.isfile(\"_tools/coord.py\"):print(\"coord.py missing: SP-rsmmwzr2 adds it\");sys.exit(1)\nd=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(d,\"coord.sqlite\"))\ndef rpc(calls):\n    msgs=[{\"jsonrpc\":\"2.0\",\"id\":0,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2025-11-25\",\"capabilities\":{},\"clientInfo\":{\"name\":\"chk\",\"version\":\"1\"}}},{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"},{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"tools/list\",\"params\":{}}]\n    msgs+=[{\"jsonrpc\":\"2.0\",\"id\":i+2,\"method\":\"tools/call\",\"params\":{\"name\":n,\"arguments\":a}} for i,(n,a) in enumerate(calls)]\n    p=s.run([sys.executable,\"_tools/kb_mcp.py\"],input=\"\\n\".join(json.dumps(m) for m in msgs)+\"\\n\",capture_output=True,text=True,env=E,timeout=120)\n    return {r.get(\"id\"):r for r in map(json.loads,filter(None,p.stdout.splitlines()))}\ne=lambda r,i:(r.get(i,{}).get(\"result\") or {}).get(\"isError\")\nwant=[\"coord_claim\",\"coord_renew\",\"coord_release\",\"coord_post\",\"coord_digest\",\"coord_wait\"]\nr=rpc([(\"coord_claim\",{\"key\":\"k1\",\"ttl\":60,\"holder\":\"alice\"})])\nnames=[t[\"name\"] for t in r[1][\"result\"][\"tools\"]];coord=[n for n in names if n.startswith(\"coord_\")]\nres0=r.get(2,{}).get(\"result\") or {\"isError\":True,\"content\":[{\"text\":\"{}\"}]};tok=json.loads(res0[\"content\"][0][\"text\"] or \"{}\").get(\"token\") if not res0[\"isError\"] else None\nr2=rpc([(\"coord_release\",{\"key\":\"k1\",\"token\":\"not-the-holder\"}),(\"coord_renew\",{\"key\":\"k1\",\"token\":tok}),(\"coord_release\",{\"key\":\"k1\",\"token\":tok})])\nnames2=[t[\"name\"] for t in r2[1][\"result\"][\"tools\"]]\nres=dict(tools_in_order=coord==want,fixed_order=names==names2,claim=not res0[\"isError\"] and bool(tok),\n other_release_refused=e(r2,2) is True,holder_renew=e(r2,3) is False,holder_release=e(r2,4) is False)\nprint(res,names);sys.exit(0 if all(res.values()) else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The kb MCP server lists tools coord_claim, coord_renew, coord_release, coord_post, coord_digest and coord_wait in that order, each a coord.py command, run against the local store or against a coord.py serve address when KB_COORD_URL and KB_COORD_KEY_FILE name one",
+      "check": 0
+    },
+    {
+      "clause": "each tool takes and returns the same id-only fields as the CLI",
+      "check": 0
+    },
+    {
+      "clause": "a call that does not present a claim's holder token cannot renew or release it",
+      "check": 0
+    },
+    {
+      "clause": "the tools are listed in a fixed order so a client's prompt cache holds across sessions",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/kb_mcp.py",
     "_tools/coord.py",
-    "_tools/test_coord.py",
     "kb/_self/tools.md",
     "kb/_self/plugin.md",
     "kb/_self/token-efficiency.md",
-    "kb/_self/embedding.md"
+    "kb/_self/embedding.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
-    "ST-qguxlob4",
-    "ST-rk5ks4pf",
-    "ST-e3nmjd2s",
-    "ST-5h35ouv5"
+    "ST-a57bxubz",
+    "ST-5h35ouv5",
+    "ST-rk5ks4pf"
   ],
   "relates_to": [
     "EP-ylklxolb"
@@ -54,5 +71,5 @@
       "by": "operator"
     }
   ],
-  "notes": "Refines EP-fxrzbuza's 'later, unrefined' note on exposing the coord commands as MCP tools. From the operator interview of 2026-10-15: git is the durable truth and an MCP server the hot cache, local per machine or central for a team. Holder-token checks follow the state-handle-hijacking research of ST-5h35ouv5. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic."
+  "notes": "Refines EP-fxrzbuza's 'later, unrefined' note on exposing the coord commands as MCP tools. From the operator interview of 2026-10-15: git is the durable truth and an MCP server the hot cache, local per machine or central for a team. Holder-token checks follow the state-handle-hijacking research of ST-5h35ouv5. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kb_mcp.py lists no coord tool (TOOL_LIST, kb_mcp.py:119). Holder checks follow mcp/security-best-practices.md:18 (possession of a handle is no authentication) [DOC S716]. The check drives kb_mcp.py over stdio: tools/list twice (order fixed), coord_claim, a release with another holder's value refused, the holder's renew and release accepted. The serve address case is read by the review. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE)."
 }

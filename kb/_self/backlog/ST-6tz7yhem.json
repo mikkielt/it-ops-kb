@@ -20,7 +20,8 @@
     "_tools/bl_dispatch.py",
     "_tools/bl_procs.py",
     "kb/_self/tools.md",
-    "kb/_self/backlog.md"
+    "kb/_self/backlog.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-jrs7supe"

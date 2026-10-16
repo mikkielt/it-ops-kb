@@ -4,26 +4,51 @@
   "title": "Research dedup: a pack's lack-set fingerprint is checked and claimed through coord.py before /kb-research starts",
   "status": "draft",
   "parent": "EP-fxrzbuza",
+  "sprint": "SP-xo45jvbj",
   "priority": "P2",
-  "rank": 0,
-  "goal": "coord.py dedup \"<question>\" runs the question's pack, takes its anchor topic and its kb-lacks terms after alias canonicalisation as a fingerprint, compares it with the live claims, and claims and returns only the lack terms no overlapping live claim covers, naming each overlapping claim's holder and topic; /kb-research runs it as its first step and researches only the returned uncovered terms, so a question whose terms another claim already covers starts no research and waits on that claim's fact_added events.",
+  "rank": 5,
+  "goal": "coord.py dedup \"<question>\" [--holder NAME] runs the question's pack, takes its anchor topic and its kb-lacks terms after alias canonicalisation as a fingerprint, compares it with the live claims, and claims and prints as JSON only the lack terms no overlapping live claim covers (uncovered), naming each overlapping claim's holder and topic (overlaps); /kb-research runs it as its first step and researches only the returned uncovered terms, so a question whose terms another claim already covers starts no research and waits on that claim's fact_added events.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "coord_dedup"
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nT=\"_tools/coord.py\"\nif not os.path.isfile(T):print(\"coord.py missing: SP-rsmmwzr2 adds it\");sys.exit(1)\nE=dict(os.environ,KB_COORD_STORE=os.path.join(tempfile.mkdtemp(),\"coord.sqlite\"))\ndef dd(q,h):\n    p=s.run([sys.executable,T,\"dedup\",q,\"--holder\",h],capture_output=True,text=True,env=E,timeout=300)\n    try:return p.returncode,json.loads(p.stdout)\n    except ValueError:return p.returncode,{\"raw\":p.stdout+p.stderr}\nq=\"Intune wombat quokka enrollment policy\"\na=dd(q,\"alice\");b=dd(q,\"bob\");c=dd(\"Intune wombat koala enrollment policy\",\"carol\");o=dd(\"SQL Server backup wombat platypus compression\",\"dave\")\nlow=lambda r:[str(x).lower() for x in r[1].get(\"uncovered\",[\"?\"])]\nres=dict(first_claims_lacks=\"wombat\" in low(a) and \"quokka\" in low(a),same_question_nothing_left=b[1].get(\"uncovered\")==[] and \"alice\" in json.dumps(b[1].get(\"overlaps\")),\n partial_keeps_uncovered=\"koala\" in low(c) and \"quokka\" not in low(c),other_topic_free=\"platypus\" in low(o))\nprint(res,a,b,c,o);sys.exit(0 if all(res.values()) else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open(\".claude/skills/kb-research/SKILL.md\",encoding=\"utf-8\").read()\nsteps=re.split(r\"\\n(?=## )\",t);first=next((x for x in steps if re.match(r\"## \\d+\\.\",x)),\"\")\nok=\"coord.py dedup\" in first and \"fact_added\" in first\nprint(\"first numbered step:\",first.splitlines()[0] if first else None,\"| runs coord.py dedup and waits on fact_added:\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py dedup \"<question>\" [--holder NAME] runs the question's pack, takes its anchor topic and its kb-lacks terms after alias canonicalisation as a fingerprint, compares it with the live claims",
+      "check": 0
+    },
+    {
+      "clause": "claims and prints as JSON only the lack terms no overlapping live claim covers (uncovered), naming each overlapping claim's holder and topic (overlaps)",
+      "check": 0
+    },
+    {
+      "clause": "/kb-research runs it as its first step and researches only the returned uncovered terms, so a question whose terms another claim already covers starts no research and waits on that claim's fact_added events",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/coord.py",
-    "_tools/test_coord.py",
     "kb/_self/tools.md",
-    ".claude/skills/kb-research/SKILL.md"
+    "kb/_self/code.md",
+    ".claude/skills/kb-research/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/web-sources.md"
   ],
   "depends_on": [
+    "ST-x6mvfnmv",
     "ST-qguxlob4"
   ],
   "gates": [
@@ -56,7 +81,10 @@
         "the same anchor topic and identical lack-sets": "ST-3qxh5vxo",
         "measure on the query log's real questions first, then pick": "ST-3qxh5vxo"
       },
-      "class": "querylog"
+      "class": "querylog",
+      "answer": "measure on the query log's real questions first, then pick",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: no dedup exists. Gate g2 answered at planning with its recommendation (measure on the query log's real questions first, then pick): the worker measures and records the threshold it picks as a gate of its own. The planted questions (Intune or SQL Server with the made-up terms wombat, quokka, koala, platypus) keep lacks the kb will not research away; a partial overlap must keep koala uncovered whatever threshold is picked. The skill check reads the first numbered step of the skill. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE)."
 }

@@ -4,28 +4,42 @@
   "title": "A coord.py claim carries the budget the operator approved and the digest shows its spend so far",
   "status": "draft",
   "parent": "EP-fxrzbuza",
+  "sprint": "SP-xo45jvbj",
   "priority": "P3",
-  "rank": 0,
-  "goal": "coord.py claim takes an optional budget the operator approved for the claimed item, and coord.py digest and list show beside each live claim its spend so far, read from the query log's usage rows of the sessions holding it; a claim past its budget is listed as over budget and nothing is stopped automatically.",
+  "rank": 6,
+  "goal": "coord.py claim takes an optional --budget USD the operator approved for the claimed item (its key, an item id), and coord.py list shows beside each live claim budget_usd, spend_usd and over_budget and digest says over budget, the spend read through backlog.py cost's reader (bl_cost) for the item and priced with bench_core.PRICE; a claim past its budget is listed as over budget and nothing is stopped automatically.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "coord_budget"
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nT=\"_tools/coord.py\"\nif not os.path.isfile(T):print(\"coord.py missing: SP-rsmmwzr2 adds it\");sys.exit(1)\nE=dict(os.environ,KB_COORD_STORE=os.path.join(tempfile.mkdtemp(),\"coord.sqlite\"))\ndef c(*a):p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=300);return p.returncode,p.stdout\nspent,fresh=\"ST-gtfpib5q\",\"ST-aaaaaaaa\"\nr1,o1=c(\"claim\",spent,\"--ttl\",\"60\",\"--budget\",\"0.000001\");r2,_=c(\"claim\",fresh,\"--ttl\",\"60\",\"--budget\",\"5\")\ntry:L={x.get(\"key\"):x for x in json.loads(c(\"list\",\"--prefix\",\"ST-\")[1])}\nexcept ValueError:L={}\na,b=L.get(spent,{}),L.get(fresh,{})\ndg=c(\"digest\",\"--key\",spent,\"--lines\",\"5\")[1].lower()\ntok=(json.loads(o1) if r1==0 else {}).get(\"token\")\nres=dict(claims=r1==0 and r2==0,spend_read=(a.get(\"spend_usd\") or 0)>0 and b.get(\"spend_usd\")==0,budget_kept=a.get(\"budget_usd\")==0.000001 and b.get(\"budget_usd\")==5,\n over_flag=a.get(\"over_budget\") is True and b.get(\"over_budget\") is False,digest_says=\"over budget\" in dg,nothing_stopped=c(\"renew\",spent,\"--token\",str(tok))[0]==0)\nprint(res,a,b);sys.exit(0 if all(res.values()) else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py claim takes an optional --budget USD the operator approved for the claimed item (its key, an item id)",
+      "check": 0
+    },
+    {
+      "clause": "coord.py list shows beside each live claim budget_usd, spend_usd and over_budget and digest says over budget, the spend read through backlog.py cost's reader (bl_cost) for the item and priced with bench_core.PRICE",
+      "check": 0
+    },
+    {
+      "clause": "a claim past its budget is listed as over budget and nothing is stopped automatically",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/coord.py",
-    "_tools/test_coord.py",
-    "kb/_self/tools.md"
+    "_tools/bl_cost.py",
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/backlog.md"
   ],
   "depends_on": [
-    "ST-5iwikc3n",
-    "ST-e3nmjd2s",
-    "ST-5ntg6krr"
+    "ST-3qxh5vxo"
   ],
   "relates_to": [
     "EP-ylklxolb",
@@ -48,10 +62,10 @@
         "model token counts": "ST-a57bxubz",
         "both": "ST-a57bxubz"
       },
-      "class": "design",
+      "class": "agents-rule",
       "answer": "USD",
       "by": "operator"
     }
   ],
-  "notes": "From the operator interview of 2026-10-15: measured budgets, shown with outputs and approved by the operator. Reads the query log's usage rows, reusing the reader backlog.py cost uses, never a parallel parser; run backlog.py referrers on that reader before the claim and add what it lists to touches. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic."
+  "notes": "From the operator interview of 2026-10-15: measured budgets, shown with outputs and approved by the operator. Reads the query log's usage rows, reusing the reader backlog.py cost uses, never a parallel parser; run backlog.py referrers on that reader before the claim and add what it lists to touches. Parked: new orchestration features stay drafts in no sprint until the EP-gzr4mmkm fitness tests pass (operator 2026-10-07), unless the operator lifts that for this epic. Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: the query log's usage rows are per prompt and the work sidecars per item (bl_cost.cost_report), not per session, so the spend is read for the claimed item; bl_cost gives token counts, priced with bench_core.PRICE (gate g1: USD). The check claims ST-gtfpib5q, whose work lines the committed query log keeps (backlog.py cost shows 21 requests), with a budget below its spend, and a fresh id with none. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted run on a temp coord store (KB_COORD_STORE)."
 }

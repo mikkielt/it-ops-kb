@@ -41,7 +41,8 @@
     "_tools/kg_sync.py",
     "_tools/kbgit.py",
     "kb/_self/git.md",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-ilqhjn3k close"

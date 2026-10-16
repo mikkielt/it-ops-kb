@@ -4,8 +4,9 @@
   "title": "The kb says how a team or organization distributes coordination hooks, shares prompt caches and collects token telemetry",
   "status": "draft",
   "parent": "EP-ylklxolb",
+  "sprint": "SP-xo45jvbj",
   "priority": "P2",
-  "rank": 0,
+  "rank": 2,
   "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does an organization distribute coordination hooks to every developer: server-managed settings, an organization plugin marketplace, allowManagedHooksOnly? (2) Is Anthropic prompt caching shared between different sessions or users of one organization or workspace? (3) What does Claude Tag give a team in a Slack channel that Projects, which are one person's, do not? (4) How does a team collect every member's Claude Code token and cost telemetry centrally, per user and per session?",
   "checks": [
     {
@@ -15,6 +16,12 @@
         "researched",
         "ST-5ntg6krr"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does an organization distribute coordination hooks to every developer: server-managed settings, an organization plugin marketplace, allowManagedHooksOnly? (2) Is Anthropic prompt caching shared between different sessions or users of one organization or workspace? (3) What does Claude Tag give a team in a Slack channel that Projects, which are one person's, do not? (4) How does a team collect every member's Claude Code token and cost telemetry centrally, per user and per session?",
+      "check": 0
     }
   ],
   "touches": [
@@ -38,5 +45,6 @@
     "live: https://code.claude.com/docs/en/settings-example",
     "live: https://code.claude.com/docs/en/claude-projects",
     "kb: agents/agent-cost-governance.md:32 (purchase paths, OTel per user)"
-  ]
+  ],
+  "notes": "Plan SP-xo45jvbj 2026-10-16, verified on origin/main 74c7ea6c6: kept whole. Packs: question 1 good only for the plugin managed settings (claude/plugins.csv:75-80), not server-managed hook distribution; 2 a false good (its lines are about messaging, not caching); 3 weak (Slack); 4 good on cost baselines, not on per-user, per-session collection."
 }

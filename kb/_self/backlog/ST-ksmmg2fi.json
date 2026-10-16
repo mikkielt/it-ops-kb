@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Plan 2026-10-16: ST-unrlktke carries the research this goal needs (agent messages, typed parts, research dedup, coordination cost); this story researches only what the goal needs beyond it, or records `No outside facts:` naming ST-unrlktke."
 }

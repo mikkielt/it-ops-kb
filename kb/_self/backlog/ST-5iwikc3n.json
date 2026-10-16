@@ -4,23 +4,39 @@
   "title": "coord.py claims, leases and compare-and-swap on a local SQLite store, usable by any agent",
   "status": "draft",
   "parent": "EP-fxrzbuza",
+  "sprint": "SP-rsmmwzr2",
   "priority": "P2",
-  "rank": 0,
-  "goal": "python3 _tools/coord.py, standard library only, keeps a SQLite store (one file, path from --store or KB_COORD_STORE) with subcommands that print JSON: claim KEY --ttl SECONDS (create-if-absent, so a second claim of a live key fails with exit 1 and names the holder), renew KEY --token T (extends only the holder's lease), release KEY --token T, get KEY, put KEY --value V --revision N (writes only when the key is still at revision N, else exit 1) and list --prefix P; an expired lease counts as absent, and every write runs in one SQLite transaction so two processes racing on one key cannot both win.",
+  "rank": 2,
+  "goal": "python3 _tools/coord.py, standard library only, keeps a SQLite store (one file, path from --store or KB_COORD_STORE) with subcommands that print JSON: claim KEY --ttl SECONDS [--holder NAME] (create-if-absent, printing the key, its holder and the holder's token, so a second claim of a live key fails with exit 1 and names the holder), renew KEY --token T (extends only the holder's lease), release KEY --token T, get KEY, put KEY --value V --revision N (writes only when the key is still at revision N, an absent key being at revision 0, else exit 1) and list --prefix P; an expired lease counts as absent, and every write runs in one SQLite transaction so two processes racing on one key cannot both win.",
   "checks": [
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "coord"
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time,concurrent.futures as F\nT=\"_tools/coord.py\"\nif not os.path.isfile(T):print(\"coord.py missing: the work adds it\");sys.exit(1)\nE=dict(os.environ,KB_COORD_STORE=os.path.join(tempfile.mkdtemp(),\"coord.sqlite\"))\ndef c(*a):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=60);return p.returncode,p.stdout,p.stderr\nr1,o,_=c(\"claim\",\"k1\",\"--ttl\",\"60\",\"--holder\",\"alice\");j=json.loads(o);tok=j.get(\"token\")\nr2,o2,e2=c(\"claim\",\"k1\",\"--ttl\",\"60\",\"--holder\",\"bob\")\nbad=c(\"renew\",\"k1\",\"--token\",\"not-the-holder\")[0];good=c(\"renew\",\"k1\",\"--token\",str(tok))[0]\nrel=c(\"release\",\"k1\",\"--token\",str(tok))[0];again=c(\"claim\",\"k1\",\"--ttl\",\"60\")[0]\np0=c(\"put\",\"v\",\"--value\",\"a\",\"--revision\",\"0\")[0];p1=c(\"put\",\"v\",\"--value\",\"b\",\"--revision\",\"0\")[0]\ngot=json.loads(c(\"get\",\"v\")[1]).get(\"value\")\nc(\"claim\",\"k2\",\"--ttl\",\"1\");time.sleep(1.6);expired=c(\"claim\",\"k2\",\"--ttl\",\"60\")[0]\nlst=c(\"list\",\"--prefix\",\"k\")[1]\nwith F.ThreadPoolExecutor(8) as x:wins=sum(r[0]==0 for r in x.map(lambda _:c(\"claim\",\"race\",\"--ttl\",\"60\"),range(8)))\nres=dict(claim=r1==0 and bool(tok),second_refused=r2==1,holder_named=\"alice\" in o2+e2,renew_other_refused=bad!=0,renew_holder=good==0,\n release_frees=rel==0 and again==0,cas=p0==0 and p1==1 and got==\"a\",expired_absent=expired==0,\n list_prefix=\"k1\" in lst and \"k2\" in lst and \"\\\"v\\\"\" not in lst,one_race_winner=wins==1)\nprint(res);sys.exit(0 if all(res.values()) else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "python3 _tools/coord.py, standard library only, keeps a SQLite store (one file, path from --store or KB_COORD_STORE) with subcommands that print JSON: claim KEY --ttl SECONDS [--holder NAME] (create-if-absent, printing the key, its holder and the holder's token, so a second claim of a live key fails with exit 1 and names the holder), renew KEY --token T (extends only the holder's lease), release KEY --token T, get KEY, put KEY --value V --revision N (writes only when the key is still at revision N, an absent key being at revision 0, else exit 1) and list --prefix P",
+      "check": 0
+    },
+    {
+      "clause": "an expired lease counts as absent",
+      "check": 0
+    },
+    {
+      "clause": "every write runs in one SQLite transaction so two processes racing on one key cannot both win",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/coord.py",
-    "_tools/test_coord.py",
     "kb/_self/map.csv",
-    "kb/_self/tools.md"
-  ]
+    "kb/_self/tools.md",
+    "kb/_self/code.md",
+    "kb/_self/README.md"
+  ],
+  "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Adding a tool module: kb/_self/map.csv gets its row (coord.py to tools.md), and README.md is the doc map.csv maps to. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning."
 }

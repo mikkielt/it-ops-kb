@@ -19,7 +19,8 @@
   "touches": [
     "_tools/ql_base.py",
     "kb/_self/querylog.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/code.md"
   ],
   "links": [
     "parked: SP-g2ssvhi2 review"
