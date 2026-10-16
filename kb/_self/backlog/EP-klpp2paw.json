@@ -2,8 +2,13 @@
   "id": "EP-klpp2paw",
   "kind": "epic",
   "title": "Shared agent state, governance and multi-agent operations are covered by cited facts",
-  "status": "draft",
+  "status": "done",
   "priority": "P2",
   "rank": 0,
-  "goal": "The public kb answers, from official sources, how agents share and lock state, sync it between workstations, coordinate across repositories, are identified, authorized by role, group, attribute and policy, isolated in sandboxes, traced through signed commits, governed by GitOps reconcilers, keep managed memory, and are troubleshot; each question the epic's stories name gets coverage good or an open gap entry naming where official sources were searched."
+  "goal": "The public kb answers, from official sources, how agents share and lock state, sync it between workstations, coordinate across repositories, are identified, authorized by role, group, attribute and policy, isolated in sandboxes, traced through signed commits, governed by GitOps reconcilers, keep managed memory, and are troubleshot; each question the epic's stories name gets coverage good or an open gap entry naming where official sources were searched.",
+  "notes": "Closed 2026-10-16 at the planning of SP-4dab3cy5: every question of the goal packs good on origin/main ed55f4d56 or names its article: share and lock state (agents/shared-state-concurrency.md), sync between workstations (agents/peer-state-sync.md), coordinate across repositories (claude/cross-session-messaging.md, Coordinating sessions across repositories; QK-agents-coordinate-work-across-repositories-gitlab), identity (auth/spiffe-workload-identity.md), authorization by role, group, attribute and policy (agents/policy-as-code.md), sandboxes (agents/agent-sandboxes.md), signed commits (gitlab/commit-signing-and-provenance.md), GitOps reconcilers (agents/gitops-for-agents.md), managed memory (agents/agent-memory-services.md), troubleshooting (agents/agent-troubleshooting-method.md); no open child. The narrower gap on stopping stuck parallel work is filed under EP-ylklxolb as ST-o76aink7.",
+  "evidence": {
+    "commit": "c2b165606267cd8384c361cf27f99284379e170e",
+    "checks": []
+  }
 }
