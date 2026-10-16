@@ -2,7 +2,7 @@
   "id": "ST-ytzxju77",
   "kind": "story",
   "title": "Review sprint: repro setup, replay, status, briefs and report hold none of the snags the first run met",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-a3w7xdij",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "da5a1422fb46eb3dc18f37655fb54ae23e4ffb39",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b13aa473e5f2760d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "e7d87c91622420c9"
+      }
+    ]
+  }
 }
