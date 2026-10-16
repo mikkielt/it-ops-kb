@@ -31,6 +31,23 @@
     "kb/_self/code.md",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does claim hold the ledger lock: over its whole read, busy check, item save and write, or only around a re-read and write at the end?",
+      "options": [
+        "lock from first read to write",
+        "lock only a second read-modify-write at the end"
+      ],
+      "recommendation": "lock from first read to write",
+      "do": {
+        "lock from first read to write": "ST-zqbo7xgc",
+        "lock only a second read-modify-write at the end": "ST-zqbo7xgc"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-g2ssvhi2 review"
   ],
