@@ -2,7 +2,7 @@
   "id": "ST-y45bm4pi",
   "kind": "story",
   "title": "The kb-sprint skill says a planning or park commit of the orchestrator carries no KB-Work line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-a3w7xdij",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-7ff7c5ui close"
   ],
-  "notes": "SP-j65ihctq retrospective, recurrence: the orchestrator wrote a KB-Work line on its review park commit, which the hook appends itself (see ST-ix5wl2lt). Plan amendment 2026-10-15 (triage fit10): found in SP-7ff7c5ui: the orchestrator's commit-msg hook refused two such commits (a review id on a planning commit, three ids on one KB-Work line) before amends. Same file (skills/sprint/SKILL.md) and the same trailer theme as ST-mee3qx7d and BG-gg3aohlm, so it runs after ST-mee3qx7d. Code-lane path (skills/): lands with land --wait-merge. The check now reads the review section only (it read the whole file); it fails at c907de7b3."
+  "notes": "SP-j65ihctq retrospective, recurrence: the orchestrator wrote a KB-Work line on its review park commit, which the hook appends itself (see ST-ix5wl2lt). Plan amendment 2026-10-15 (triage fit10): found in SP-7ff7c5ui: the orchestrator's commit-msg hook refused two such commits (a review id on a planning commit, three ids on one KB-Work line) before amends. Same file (skills/sprint/SKILL.md) and the same trailer theme as ST-mee3qx7d and BG-gg3aohlm, so it runs after ST-mee3qx7d. Code-lane path (skills/): lands with land --wait-merge. The check now reads the review section only (it read the whole file); it fails at c907de7b3.",
+  "claimed_by": "orch-r14"
 }
