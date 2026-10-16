@@ -30,12 +30,18 @@ Run each command on its own (no `;`, `&&`, pipes into other tools or loops): the
 Rules of this section: `python3 _tools/rag.py pack --root _self --set kb-research:queue`.
 
 - `python3 _tools/querylog.py queue N` (default 1): the open gap findings of `kb/_querylog`, each re-run with `pack` first (one that passes now is recorded `fixed-since` and left out), by topic, most-asked first. Each gap prints its question, its `_gaps.md` entry (`path:line`) and its finding id (`F-...`). Nothing listed: say so and stop.
-- Each gap is one question: run steps 1 to 6 below on it, within its topic (the entry's `(topic: ...)`).
+- Each gap is one question: run steps 0 to 6 below on it, within its topic (the entry's `(topic: ...)`).
 - Then close its `_gaps.md` entry by the content rules and record it (the queue's rules: `python3 _tools/selfdoc.py section querylog "The research queue"`):
   - settled: a `  - Resolved <date>: <what settles it, with source ids> (topic: <domain>/<slug>)` line under the entry, then `python3 _tools/querylog.py close F-... --claim`;
   - not settled by official sources: `python3 _tools/querylog.py close F-... --tried "<what was tried, where, and what it still needs>"`, which writes the dated `Tried` note under the entry; the gap stays out of the queue until the note is older than `QUEUE_TRIED_DAYS`.
   - when the work is committed (a backlog item's research), add `--commit --trailer '<your Co-Authored-By>'` (one `--trailer` per line): the findings record goes in a commit of its own with no `KB-Work` trailer. Never commit the record yourself or under the task's `KB-Work`: its touches never name `kb/_querylog/` (a research task's touches are kb content only), so `backlog.py done` would refuse the story. The `_gaps.md` note and the topic go in the task's commit.
 - `python3 _tools/querylog.py check` must print `problems=0`. The report lists each gap's finding id and how it closed.
+
+## 0. Dedup against live claims (first, before the map)
+- `python3 _tools/coord.py dedup "<question>" --holder <your session id or a name of your own>` runs the question's pack and claims, for `--ttl` seconds (default 3600), the lack terms (`kb lacks:`, aliases canonicalised) that no overlapping live claim covers, and prints one JSON object: `uncovered` (the terms you research), `overlaps` (each overlapping claim's `holder`, `topic` and shared `terms`), `claimed` and `token` (the keys you now hold and the one token that releases them) and `seq`. A claim overlaps when it is on the same anchor topic and shares at least half of the smaller term set. The store is `KB_COORD_STORE`, else `--store <git common dir>/kb-coord/coord.sqlite` (`git rev-parse --git-common-dir`, run alone first); no store (exit 2) or no `coord.py`: say so in the report and go on with step 1.
+- `uncovered` empty and `overlaps` not: start no research. Name each overlap's holder and topic, and wait on that claim's `fact_added` events: `python3 _tools/coord.py wait --since <seq> --timeout 300`, again with its `last` while none of them is a `fact_added`; when one arrives, or the operator says to stop waiting, run the question's pack again and answer from the kb.
+- `uncovered` set: research only those terms in steps 1 to 6 (the overlapped terms are another session's work: cite its facts when they land, never repeat them). `uncovered` and `overlaps` both empty: the pack has no lack term, so the kb answers the question; continue only when the user asked to extend or re-verify it.
+- `--queue` runs this step for each gap's question.
 
 ## 1. Map what the kb already knows (before any web search)
 - Split the question into its subjects and angles (e.g. product, sync/integration, use by agents, security).
@@ -118,6 +124,7 @@ The contract in brief (the sections read above hold the rest):
 ## 6. Report
 Rules of this step: `python3 _tools/rag.py pack --root _self --set kb-commit`.
 
+- When step 0 claimed terms: one `python3 _tools/coord.py post --kind fact_added --field fact=<path:line>` for each new fact (so a waiting session wakes), then `python3 _tools/coord.py release KEY --token T` for each key in `claimed`.
 - The context map in brief: anchor topics and what the kb already knew.
 - What is new: facts added per topic, with a count by tag, new source ids, the `QK-<slug>` answer id, and for each new `DOC` fact from a non-Microsoft page the verbatim quote it rests on (the CSV of step 5); rows added to `signals.csv`, `aliases.csv` or `lookup_eval.csv`.
 - Where each fact went (extended topic or new topic) and why, per step 2's rules.
