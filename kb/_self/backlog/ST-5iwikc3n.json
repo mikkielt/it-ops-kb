@@ -38,6 +38,42 @@
     "kb/_self/code.md",
     "kb/_self/README.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "With neither --store nor KB_COORD_STORE, and no --holder, what does coord.py do?",
+      "options": [
+        "refuse with exit 2 and default the holder to anonymous",
+        "default the store to a file under _cache/ and the holder to the user name"
+      ],
+      "recommendation": "refuse with exit 2 and default the holder to anonymous",
+      "do": {
+        "refuse with exit 2 and default the holder to anonymous": "ST-5iwikc3n",
+        "default the store to a file under _cache/ and the holder to the user name": "ST-5iwikc3n"
+      },
+      "class": "design",
+      "answer": "refuse with exit 2 and default the holder to anonymous",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How do claim leases and put values share a key, and what do get and a wrong-token renew do?",
+      "options": [
+        "one row per key: a claim starts at revision 1 with a lease, put writes the value and raises the revision on a leased or plain key, a lease that expired drops the whole row, get of an absent key exits 1, a refused command prints a JSON body with the reason",
+        "separate tables for leases and values, so a key can hold both independently"
+      ],
+      "recommendation": "one row per key: a claim starts at revision 1 with a lease, put writes the value and raises the revision on a leased or plain key, a lease that expired drops the whole row, get of an absent key exits 1, a refused command prints a JSON body with the reason",
+      "do": {
+        "one row per key: a claim starts at revision 1 with a lease, put writes the value and raises the revision on a leased or plain key, a lease that expired drops the whole row, get of an absent key exits 1, a refused command prints a JSON body with the reason": "ST-5iwikc3n",
+        "separate tables for leases and values, so a key can hold both independently": "ST-5iwikc3n"
+      },
+      "class": "secrets",
+      "answer": "one row per key: a claim starts at revision 1 with a lease, put writes the value and raises the revision on a leased or plain key, a lease that expired drops the whole row, get of an absent key exits 1, a refused command prints a JSON body with the reason",
+      "by": "operator"
+    }
+  ],
   "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. Adding a tool module: kb/_self/map.csv gets its row (coord.py to tools.md), and README.md is the doc map.csv maps to. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",
   "claimed_by": "orch-r02"
 }
