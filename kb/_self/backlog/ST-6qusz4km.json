@@ -44,6 +44,23 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the forge-5xx retry cover the code-lane push (push_branch to code/<id>) as well as the push to main?",
+      "options": [
+        "Both pushes",
+        "Push to main only"
+      ],
+      "recommendation": "Both pushes",
+      "do": {
+        "Both pushes": "ST-6qusz4km",
+        "Push to main only": "ST-6qusz4km"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-ilqhjn3k close"
   ],
