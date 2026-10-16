@@ -87,7 +87,8 @@ PUSH_PAUSE_S = 2.0
 PUSH_PAUSE_MAX_S = 30.0
 # A push the forge itself fails (an HTTP 5xx from its pre-receive endpoint: "remote: GitLab: Internal API error (503)",
 # then "[remote rejected] ... (pre-receive hook declined)") says nothing of the commits, so it is tried again like a
-# race. A gate refusal ("You are not allowed to push code to protected branches") names no 5xx and is never retried.
+# race, for the push to the integration main (a code/<id> branch push is not retried on a 5xx). A gate refusal ("You
+# are not allowed to push code to protected branches") names no 5xx and is never retried.
 FORGE_OUTAGE = re.compile(r"\(5\d\d\)|returned error: 5\d\d|HTTP/\S+ 5\d\d|\b5\d\d (?:Server Error|Bad Gateway|Service "
                           r"Unavailable|Gateway Time-?out|Internal Server Error)", re.I)
 
@@ -768,11 +769,6 @@ def push_branch(a, r, branch, target):
         if REJECTED.search(out):
             print(f"push of {branch} refused: it moved on {a.remote} since it was fetched, nothing was overwritten:\n" + out.rstrip())
             r["pushed"] = f"no ({branch} moved on {a.remote})"
-        elif forge_outage(out):
-            print(f"push of {branch} refused by the forge ({a.remote} failed with an HTTP 5xx; nothing is wrong with the commits):\n" + out.rstrip())
-            r["pushed"] = f"no ({a.remote} failed with an HTTP 5xx)"
-            r["retry_why"] = "refused by the forge"
-            return "retry"
         else:
             print("git push failed:\n" + out.rstrip())
             r["pushed"] = "no (push failed)"
@@ -909,9 +905,9 @@ def new_report(push):
 
 
 def sync_rounds(a, r, host):
-    """sync_once, again after each rejected push (the remote moved) or push the forge refused with an HTTP 5xx, with a
-    doubling pause, up to push_tries() rounds in all. r["tries"] counts the rounds made; the exit is 1 when the last
-    one failed too."""
+    """sync_once, again after each rejected push (the remote moved) or push to main the forge refused with an HTTP
+    5xx, with a doubling pause, up to push_tries() rounds in all. r["tries"] counts the rounds made; the exit is 1
+    when the last one failed too."""
     tries = push_tries()
     code = None
     for n in range(1, tries + 1):
