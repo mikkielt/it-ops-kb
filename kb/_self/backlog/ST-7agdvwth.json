@@ -2,7 +2,7 @@
   "id": "ST-7agdvwth",
   "kind": "story",
   "title": "A plugin-data worker distill keeps the worktree's entry script but runs with the main checkout as its working directory",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z3hyk4eh",
   "priority": "P2",
   "rank": 6,
@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-g2ssvhi2 review"
   ],
-  "notes": "Found by the SP-g2ssvhi2 review (S2): ST-oftholty's fix (88137f72a) returns (ENTRY, HOME) when plugin_data() is set, so ql_distill.detach (ql_distill.py:1152) starts the distill with cwd in the worker's worktree; bl_procs.hook_logs (bl_procs.py:169) matches only <checkout>/_cache/querylog/distill.log, so a plugin-data distill waiting on the lock classifies as orphan, not hook, and land refuses the worktree and selfcheck fails for up to USAGE_LOCK_WAIT_S. The landed test asserts (worker entry, worker) and bakes that in. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: ql_base.launch_places still returns (ENTRY, HOME) under plugin data (ql_base.py:65-66); the check runs it with CLAUDE_PLUGIN_DATA set and CLAUDE_PLUGIN_ROOT this worktree and wants (this worktree's entry, the main checkout). The landed test the notes name was deleted under the test policy; none is added."
+  "notes": "Found by the SP-g2ssvhi2 review (S2): ST-oftholty's fix (88137f72a) returns (ENTRY, HOME) when plugin_data() is set, so ql_distill.detach (ql_distill.py:1152) starts the distill with cwd in the worker's worktree; bl_procs.hook_logs (bl_procs.py:169) matches only <checkout>/_cache/querylog/distill.log, so a plugin-data distill waiting on the lock classifies as orphan, not hook, and land refuses the worktree and selfcheck fails for up to USAGE_LOCK_WAIT_S. The landed test asserts (worker entry, worker) and bakes that in. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: ql_base.launch_places still returns (ENTRY, HOME) under plugin data (ql_base.py:65-66); the check runs it with CLAUDE_PLUGIN_DATA set and CLAUDE_PLUGIN_ROOT this worktree and wants (this worktree's entry, the main checkout). The landed test the notes name was deleted under the test policy; none is added.",
+  "claimed_by": "orch-r01"
 }
