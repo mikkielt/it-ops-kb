@@ -85,6 +85,12 @@ REJECTED = re.compile(r"\[rejected\]|non-fast-forward|fetch first|stale info|can
 PUSH_TRIES = 6
 PUSH_PAUSE_S = 2.0
 PUSH_PAUSE_MAX_S = 30.0
+# A push the forge itself fails (an HTTP 5xx from its pre-receive endpoint: "remote: GitLab: Internal API error (503)",
+# then "[remote rejected] ... (pre-receive hook declined)") says nothing of the commits, so it is tried again like a
+# race, for the push to the integration main (a code/<id> branch push is not retried on a 5xx). A gate refusal ("You
+# are not allowed to push code to protected branches") names no 5xx and is never retried.
+FORGE_OUTAGE = re.compile(r"\(5\d\d\)|returned error: 5\d\d|HTTP/\S+ 5\d\d|\b5\d\d (?:Server Error|Bad Gateway|Service "
+                          r"Unavailable|Gateway Time-?out|Internal Server Error)", re.I)
 
 
 def env_number(name, default, cast=float):
@@ -97,6 +103,11 @@ def env_number(name, default, cast=float):
 
 def push_tries():
     return max(int(env_number("KB_SYNC_PUSH_TRIES", PUSH_TRIES, int)), 1)
+
+
+def forge_outage(output):
+    """True when the push OUTPUT shows the forge failing with an HTTP 5xx, not a gate refusal or a moved remote."""
+    return bool(FORGE_OUTAGE.search(output)) and not REJECTED.search(output)
 
 
 def push_pause(n):
@@ -875,6 +886,11 @@ def sync_once(a, r, host):
     if code:
         if REJECTED.search(out):
             print(f"push rejected ({target} moved):\n" + out.rstrip())
+            r["retry_why"] = "rejected"
+            return "retry"
+        if forge_outage(out):
+            print(f"push refused by the forge ({a.remote} failed with an HTTP 5xx; nothing is wrong with the commits):\n" + out.rstrip())
+            r["retry_why"] = "refused by the forge"
             return "retry"
         print("git push failed:\n" + out.rstrip())
         r["pushed"] = "no (push failed)"
@@ -889,8 +905,9 @@ def new_report(push):
 
 
 def sync_rounds(a, r, host):
-    """sync_once, again after each rejected push (the remote moved) with a doubling pause, up to push_tries() rounds
-    in all. r["tries"] counts the rounds made; the exit is 1 when the last one was rejected too."""
+    """sync_once, again after each rejected push (the remote moved) or push to main the forge refused with an HTTP
+    5xx, with a doubling pause, up to push_tries() rounds in all. r["tries"] counts the rounds made; the exit is 1
+    when the last one failed too."""
     tries = push_tries()
     code = None
     for n in range(1, tries + 1):
@@ -898,12 +915,17 @@ def sync_rounds(a, r, host):
         code = sync_once(a, r, host)
         if code != "retry":
             return code
+        why = r.get("retry_why", "rejected")
         if n < tries:
             wait = push_pause(n)
-            print(f"fetching again and rebasing once more after {wait:g} s (try {n} of {tries} rejected)", flush=True)
+            print(f"fetching again and rebasing once more after {wait:g} s (try {n} of {tries} {why})", flush=True)
             pause(wait)
-    print(f"push rejected {tries} times ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
-    r["pushed"] = f"no (rejected {tries} times)"
+    if why == "rejected":
+        print(f"push rejected {tries} times ({a.remote}/{a.branch} keeps moving); giving up, nothing lost locally")
+        r["pushed"] = f"no (rejected {tries} times)"
+    else:
+        print(f"push {why} {tries} times ({a.remote} keeps failing with an HTTP 5xx); giving up, nothing lost locally")
+        r["pushed"] = f"no ({why} {tries} times)"
     return 1
 
 

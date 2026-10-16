@@ -44,9 +44,28 @@
     "kb/_self/tools.md",
     "kb/_self/code.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the forge-5xx retry cover the code-lane push (push_branch to code/<id>) as well as the push to main?",
+      "options": [
+        "Both pushes",
+        "Push to main only"
+      ],
+      "recommendation": "Both pushes",
+      "do": {
+        "Both pushes": "ST-6qusz4km",
+        "Push to main only": "ST-6qusz4km"
+      },
+      "class": "push",
+      "answer": "Push to main only",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-ilqhjn3k close"
   ],
-  "notes": "Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: kg_sync.sync_once returns 1 on any failed push that REJECTED does not match (kg_sync.py:876-882): a 503 is not retried. The check reads kg_sync.forge_outage on a planted 503 output, a gate refusal and a race. The sync end-to-end test file (a push-gate test) was dropped from touches: the gate's refusal behaviour does not change, only a forge outage is retried. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run. Seen in SP-ilqhjn3k, where the forge's pre_receive endpoint answered 503 to three sync pushes in a row with every local gate green, and a hand loop pushed on its next try (moved from the goal at planning). The second check runs sync_rounds with every git and gate call stubbed (no real fetch or push): a first push answered 503, a second accepted; it wants exit 0 after two pushes.",
+  "notes": "Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: kg_sync.sync_once returns 1 on any failed push that REJECTED does not match (kg_sync.py:876-882): a 503 is not retried. The check reads kg_sync.forge_outage on a planted 503 output, a gate refusal and a race. The sync end-to-end test file (a push-gate test) was dropped from touches: the gate's refusal behaviour does not change, only a forge outage is retried. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run. Seen in SP-ilqhjn3k, where the forge's pre_receive endpoint answered 503 to three sync pushes in a row with every local gate green, and a hand loop pushed on its next try (moved from the goal at planning). The second check runs sync_rounds with every git and gate call stubbed (no real fetch or push): a first push answered 503, a second accepted; it wants exit 0 after two pushes. Operator 2026-10-16 (delegated orchestrator): g1 answered 'Push to main only', not the recommendation, since a push-class choice that widens retries to pushes off main takes the conservative option under the operator's policy; reversible by a later item.",
   "claimed_by": "orch-r01"
 }
