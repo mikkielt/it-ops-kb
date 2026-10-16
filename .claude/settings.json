@@ -261,6 +261,18 @@
         ]
       }
     ],
+    "UserPromptExpansion": [
+      {
+        "matcher": "kb-research",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/_tools/kbpy\" .claude/hooks/coord_hook.py",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

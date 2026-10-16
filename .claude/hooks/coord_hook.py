@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""SessionStart, SessionEnd and PreToolUse hook: announce a session's work through coord.py and show overlapping
+"""SessionStart, SessionEnd, PreToolUse and UserPromptExpansion hook: announce a session's work through coord.py and show overlapping
 sessions, leaving the choice to the operator (stdlib only).
 
 Registered in .claude/settings.json only, so it runs in a clone of this repository and never in a host project. It is
@@ -12,7 +12,8 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
   PreToolUse Bash a `backlog.py claim ID` command: the digest lines for ID, then an intent for ID (topic backlog-claim,
                   which the worker dispatched on `work/ID` skips at its SessionStart), so the session's claimed items
                   are announced too; any other command returns at once, touching nothing
-  PreToolUse Skill a `/kb-research` start: the digest lines for this session's items
+  PreToolUse Skill a `/kb-research` start Claude made: the digest lines for this session's items
+  UserPromptExpansion a `/kb-research` the person typed, which bypasses PreToolUse: the same lines
   SessionEnd      releases the presence lease and forgets the token
 
 A digest line is another session's: this session's own intent and lease are left out. The output is at most ten lines:
@@ -176,17 +177,23 @@ def pre_tool_use(payload, sid):
         save(sid, state)
         show("PreToolUse", [claimed], lines)
     elif tool == "Skill":
-        name = str(given.get("skill") or given.get("name") or given.get("command") or "")
-        if name.rsplit(":", 1)[-1].lstrip("/") != "kb-research":
-            return
-        state = load(sid)
-        items = list(state.get("items", []))
-        branch = branch_item(payload.get("cwd") or os.getcwd())
-        if branch and branch not in items:
-            items.append(branch)
-        lease(sid, state)
-        save(sid, {**state, "items": items})
-        show("PreToolUse", items, overlaps(sid, items))
+        research_start(payload, sid, "PreToolUse",
+                       given.get("skill") or given.get("name") or given.get("command"))
+
+
+def research_start(payload, sid, event, name):
+    """A `/kb-research` start, whether Claude called the Skill tool (PreToolUse) or the person typed it
+    (UserPromptExpansion): the digest lines for this session's items."""
+    if str(name or "").rsplit(":", 1)[-1].lstrip("/") != "kb-research":
+        return
+    state = load(sid)
+    items = list(state.get("items", []))
+    branch = branch_item(payload.get("cwd") or os.getcwd())
+    if branch and branch not in items:
+        items.append(branch)
+    lease(sid, state)
+    save(sid, {**state, "items": items})
+    show(event, items, overlaps(sid, items))
 
 
 def main():
@@ -202,6 +209,8 @@ def main():
             session_end(sid)
         elif event == "PreToolUse":
             pre_tool_use(payload, sid)
+        elif event == "UserPromptExpansion":
+            research_start(payload, sid, event, payload.get("command_name"))
     except Exception:  # a hook never breaks a session: any error ends in silence
         pass
     return 0
