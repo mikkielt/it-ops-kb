@@ -2,7 +2,7 @@
   "id": "ST-jkcn4qs4",
   "kind": "story",
   "title": "The test rules say a change gets no test by default and only a critical component keeps one",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-noqsd4hj",
   "priority": "P1",
   "rank": 1,
@@ -104,5 +104,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Policy recorded 2026-10-16: gate policy answered by the operator, decision D-2tq4fhgs. Today's rules (premise): kb/_self/code.md 'Checks and their tests' allows four kinds ('A test is written only for ...'); skills/sprint plan step 2 asks for 'the test file it extends' in touches and step 6 for 'a test selection it extends'; skills/item step 6 repeats the four kinds; skills/sprint review step 4 and kb/_self/backlog.md give the land e2e test as a reason, which goes with ST-wfrfy3mp's deletion. The ceiling rules stay word for word in force: no raise, a ceiling-class gate is the operator's own terminal. Rows of kb/_self/_retrieval/lookup_eval.csv that expect the old phrase (SE-021 'A test is written only for', SQ-four-kinds-test-may-item-add) are reworded to the new rule, not deleted. Check 4 (rag.py eval --root _self) passes before the work and is kept as a guard: the reworded rows must still pass after the rules change. The same policy was recorded earlier on 2026-10-16 as D-6kei5o2z by the orchestrating session (context article:_self/code#Checks and their tests); D-2tq4fhgs is this gate's record of it. The rewritten section may cite either."
+  "notes": "Policy recorded 2026-10-16: gate policy answered by the operator, decision D-2tq4fhgs. Today's rules (premise): kb/_self/code.md 'Checks and their tests' allows four kinds ('A test is written only for ...'); skills/sprint plan step 2 asks for 'the test file it extends' in touches and step 6 for 'a test selection it extends'; skills/item step 6 repeats the four kinds; skills/sprint review step 4 and kb/_self/backlog.md give the land e2e test as a reason, which goes with ST-wfrfy3mp's deletion. The ceiling rules stay word for word in force: no raise, a ceiling-class gate is the operator's own terminal. Rows of kb/_self/_retrieval/lookup_eval.csv that expect the old phrase (SE-021 'A test is written only for', SQ-four-kinds-test-may-item-add) are reworded to the new rule, not deleted. Check 4 (rag.py eval --root _self) passes before the work and is kept as a guard: the reworded rows must still pass after the rules change. The same policy was recorded earlier on 2026-10-16 as D-6kei5o2z by the orchestrating session (context article:_self/code#Checks and their tests); D-2tq4fhgs is this gate's record of it. The rewritten section may cite either.",
+  "claimed_by": "orch-noqsd4hj"
 }
