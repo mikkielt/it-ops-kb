@@ -2,7 +2,7 @@
   "id": "ST-bsro7uxf",
   "kind": "story",
   "title": "repro records whether --max-turns bound",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
@@ -61,5 +61,27 @@
     }
   ],
   "notes": "Premise (lessons analysis 1.6): 14 sessions of the first run recorded 201 to 268 turns with subtype success under --max-turns 200, while the CLI reference says the run exits with an error at the limit (live docs, code.claude.com/docs/en/cli-reference, 2026-10-15). The goal research story records what the CLI counts as a turn; this story records the fact per area and does not guess the cause. Merges BG-bzem6xtn (error_max_turns with is_error false read as finished), whose repro is the second check. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); checks 0 and 1 fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "afdf09f2fc4ed571a6850b6f46a1a67c6a1b9aa1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys,inspect;sys.path.insert(0,'_tools');import bench_repro as b;sys.exit(0 if 'turns_over_cap' in inspect.getsource(b) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import json,agent_bench,bench_repro as b;r=agent_bench.result_of(json.dumps({'type':'result','subtype':'error_max_turns','is_error':False,'num_turns':150,'duration_api_ms':1,'total_cost_usd':3.2,'usage':{'input_tokens':1,'cache_creation_input_tokens':2,'cache_read_input_tokens':3,'output_tokens':4}}),'',5.0);sys.exit(0 if b.failure_of(r) else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
