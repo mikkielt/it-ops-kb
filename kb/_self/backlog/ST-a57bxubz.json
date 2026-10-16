@@ -96,7 +96,9 @@
         "the item's and its descendants' direct and attributed counts, git history asked for that id alone, priced at the tier of each model's mean prompt, cache writes split by cw1h, a model with no PRICE row adding nothing": "ST-a57bxubz",
         "the whole backlog.py cost report (every sidecar's ids resolved from git history, shared lines included), priced at the top tier": "ST-a57bxubz"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "the item's and its descendants' direct and attributed counts, git history asked for that id alone, priced at the tier of each model's mean prompt, cache writes split by cw1h, a model with no PRICE row adding nothing",
+      "by": "operator"
     },
     {
       "id": "g4",
