@@ -40,17 +40,35 @@ one line per live intent (posted within a day, its items not all done by a later
 held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
 way), newest first, cut at N lines; with nothing to show it prints nothing.
 
+  coord.py serve --bind [HOST:]PORT --keys DIR       answer every command above as a JSON request over HTTP, on the store
+  coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
+
+`serve` binds 127.0.0.1 unless --bind names a host (port 0 picks a free port) and prints `coord.py: serving URL` as
+its first line. DIR holds one file per operator, named for the operator and holding that operator's token; the server
+reads DIR on every request, so removing a file revokes that operator at once. A client sends its own token, read from
+the file --key-file names (never from argv or the environment), as `Authorization: Bearer TOKEN` in `POST /v1/run`
+with the body {"argv": [the command and its arguments]}; the server answers 401 to a token no file holds (or two
+files hold) and runs the command on its store otherwise, answering {"code": N, "body": ...}, where code and body are
+what the command would have printed and exited with. The server adds the operator's name as the field `operator` to
+each event it records (a client cannot set it) and never serves `--store`. `wait` is a long-poll: the request is held
+until an event arrives or S seconds pass. The request carries the token in the clear, so reach a server beyond
+loopback through a TLS front end (an https URL is accepted).
+
 Exit codes: 0 done; 1 the command's condition failed (key held, wrong or expired token, revision moved, key
-absent); 2 a bad argument or no store.
+absent); 2 a bad argument, no store, or a server that refuses (401) or cannot be reached.
 """
 import argparse
+import http.client
+import http.server
 import json
 import os
 import re
 import secrets
+import socket
 import sqlite3
 import sys
 import time
+import urllib.parse
 from fnmatch import fnmatchcase
 from pathlib import Path
 
@@ -74,6 +92,10 @@ LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("inte
 INTENT_SECONDS = 86400
 MAX_FIELDS = 8
 POLL_SECONDS = 0.05
+OPERATOR_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
+BODY_LIMIT = 65536
+REQUEST_SECONDS = 60
+ENDPOINT = "/v1/run"
 LIVE = "(expires IS NULL OR expires > ?)"
 PUBLIC = "key, value, revision, holder, expires"
 
@@ -247,6 +269,8 @@ def post(args, now):
         raise Refused({"ok": False, "error": f"unknown kind {args.kind[:40]!r}: one of {', '.join(KINDS)}"}, 2)
     fields = parse_fields(args.field, args.kind)
     check_kind(args.kind, fields)
+    if getattr(args, "operator", None):
+        fields["operator"] = args.operator
     with Tx(args.store) as con:
         seq = con.execute("INSERT INTO events (kind, fields, at) VALUES (?, ?, ?)",
                           (args.kind, json.dumps(fields, sort_keys=True, ensure_ascii=False), now)).lastrowid
@@ -339,39 +363,61 @@ def seconds(text):
     return value
 
 
-def build_parser():
+class QuietParser(argparse.ArgumentParser):
+    """The parser of a request: a bad argument or a help request raises Refused (exit 2) and prints nothing."""
+
+    def _print_message(self, message, file=None):
+        pass
+
+    def error(self, message):
+        raise Refused({"ok": False, "error": message}, 2)
+
+    def exit(self, status=0, message=None):
+        raise Refused({"ok": False, "error": message or "no help is served"}, 2)
+
+
+def build_parser(parser_class=argparse.ArgumentParser, remote=False):
+    """The command line; remote leaves out what a request must not carry (--store, serve, --url, --key-file)."""
     store = argparse.ArgumentParser(add_help=False)
     store.add_argument("--store", default=argparse.SUPPRESS, help="the SQLite file (else KB_COORD_STORE)")
-    parser = argparse.ArgumentParser(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=[store])
+    parents = [] if remote else [store]
+    parser = parser_class(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=parents)
+    if not remote:
+        parser.add_argument("--url", help="send the command to the server at URL (with --key-file) instead of a local store")
+        parser.add_argument("--key-file", help="the file holding this operator's token for --url")
     sub = parser.add_subparsers(dest="command", required=True)
-    p = sub.add_parser("claim", parents=[store])
+    p = sub.add_parser("claim", parents=parents)
     p.add_argument("key")
     p.add_argument("--ttl", type=positive, required=True, help="lease length in seconds")
     p.add_argument("--holder", help="name shown to a second claimer (default anonymous)")
-    p = sub.add_parser("renew", parents=[store])
+    p = sub.add_parser("renew", parents=parents)
     p.add_argument("key")
     p.add_argument("--token", required=True)
     p.add_argument("--ttl", type=positive, help="new lease length in seconds (default: the claim's own)")
-    p = sub.add_parser("release", parents=[store])
+    p = sub.add_parser("release", parents=parents)
     p.add_argument("key")
     p.add_argument("--token", required=True)
-    p = sub.add_parser("get", parents=[store])
+    p = sub.add_parser("get", parents=parents)
     p.add_argument("key")
-    p = sub.add_parser("put", parents=[store])
+    p = sub.add_parser("put", parents=parents)
     p.add_argument("key")
     p.add_argument("--value", required=True)
     p.add_argument("--revision", type=not_negative, required=True, help="the revision the key must still be at (absent: 0)")
-    p = sub.add_parser("list", parents=[store])
+    p = sub.add_parser("list", parents=parents)
     p.add_argument("--prefix", default="")
-    p = sub.add_parser("post", parents=[store])
+    p = sub.add_parser("post", parents=parents)
     p.add_argument("--kind", required=True, help="one of " + ", ".join(KINDS))
     p.add_argument("--field", action="append", default=[], metavar="NAME=VALUE", help="an id field, repeatable")
-    p = sub.add_parser("digest", parents=[store])
+    p = sub.add_parser("digest", parents=parents)
     p.add_argument("--key", action="append", required=True, metavar="K", help="an item id, topic key or path; repeatable")
     p.add_argument("--lines", type=not_negative, required=True, help="at most this many lines")
-    p = sub.add_parser("wait", parents=[store])
+    p = sub.add_parser("wait", parents=parents)
     p.add_argument("--since", type=not_negative, required=True, help="the highest sequence the caller has seen (0: all)")
     p.add_argument("--timeout", type=seconds, required=True, help="seconds to block when no event is past SINCE")
+    if not remote:
+        p = sub.add_parser("serve", parents=parents)
+        p.add_argument("--bind", required=True, metavar="[HOST:]PORT", help="host (default 127.0.0.1) and port (0: a free one)")
+        p.add_argument("--keys", required=True, metavar="DIR", help="one file per operator, named for it, holding its token")
     return parser
 
 
@@ -379,28 +425,223 @@ COMMANDS = {"claim": claim, "renew": renew, "release": release, "get": get, "put
             "post": post, "digest": digest, "wait": wait}
 
 
-def main(argv=None):
-    for stream in (sys.stdout, sys.stderr):
-        if hasattr(stream, "reconfigure"):
-            stream.reconfigure(encoding="utf-8", newline="\n")
-    args = build_parser().parse_args(argv)
-    args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE")
-    if not args.store:
-        print("coord.py: no store: pass --store PATH or set KB_COORD_STORE", file=sys.stderr)
-        return 2
+def run(args, now):
+    """One parsed command on args.store: its body and exit code."""
     try:
-        body, code = COMMANDS[args.command](args, time.time()), 0
+        return COMMANDS[args.command](args, now), 0
     except Refused as refused:
-        body, code = refused.body, refused.code
-        print(f"coord.py: {body['error']}", file=sys.stderr)
-    except sqlite3.Error as error:
-        print(f"coord.py: store {args.store}: {error}", file=sys.stderr)
-        return 2
+        return refused.body, refused.code
+
+
+def emit(body, code):
+    if code and isinstance(body, dict):
+        print(f"coord.py: {body.get('error', 'refused')}", file=sys.stderr)
     if isinstance(body, str):
         if body:
             print(body)
     else:
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
+
+
+def authenticate(keys_dir, header):
+    """The operator a request comes from, else None: the one file in keys_dir (named for the operator) that holds the
+    bearer token in the Authorization header. Every request reads the directory again, so removing a file revokes
+    its operator; a token that two files hold names no one. An OAuth2 bearer-token check replaces or joins this."""
+    scheme, _space, token = (header or "").partition(" ")
+    token = token.strip().encode("utf-8")
+    if scheme.lower() != "bearer" or not token:
+        return None
+    found = []
+    try:
+        names = sorted(os.listdir(keys_dir))
+    except OSError:
+        return None
+    for name in names:
+        path = Path(keys_dir) / name
+        if not OPERATOR_NAME.fullmatch(name) or not path.is_file():
+            continue
+        try:
+            secret = path.read_text(encoding="utf-8").strip().encode("utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if secret and secrets.compare_digest(secret, token):
+            found.append(name)
+    return found[0] if len(found) == 1 else None
+
+
+class Handler(http.server.BaseHTTPRequestHandler):
+    server_version = "coord"
+    protocol_version = "HTTP/1.0"
+    timeout = 30
+
+    def log_message(self, *_args):
+        pass
+
+    def reply(self, status, payload, headers=()):
+        data = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(data)))
+        for name, value in headers:
+            self.send_header(name, value)
+        self.end_headers()
+        self.wfile.write(data)
+
+    def refuse(self, status, text, headers=()):
+        self.reply(status, {"ok": False, "error": text}, headers)
+
+    def do_POST(self):
+        try:
+            size = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            return self.refuse(400, "bad Content-Length")
+        if not 0 <= size <= BODY_LIMIT:
+            return self.refuse(413, f"a request is at most {BODY_LIMIT} bytes")
+        raw = self.rfile.read(size)
+        operator = authenticate(self.server.keys, self.headers.get("Authorization"))
+        if operator is None:
+            return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
+        if self.path != ENDPOINT:
+            return self.refuse(404, f"only POST {ENDPOINT}")
+        try:
+            argv = json.loads(raw.decode("utf-8"))["argv"]
+            if not isinstance(argv, list) or not all(isinstance(a, str) for a in argv):
+                raise ValueError
+        except (ValueError, KeyError, TypeError, UnicodeDecodeError):
+            return self.refuse(400, 'the body is {"argv": [strings]}')
+        try:
+            args = build_parser(QuietParser, True).parse_args(argv)
+            args.store, args.operator = self.server.store, operator
+            body, code = run(args, time.time())
+        except Refused as refused:
+            body, code = refused.body, refused.code
+        except sqlite3.Error as error:
+            body, code = {"ok": False, "error": f"store: {error.__class__.__name__}"}, 2
+        self.reply({0: 200, 1: 409}.get(code, 400), {"code": code, "body": body})
+
+    def do_other(self):
+        self.refuse(405, f"only POST {ENDPOINT}", [("Allow", "POST")])
+
+    do_GET = do_HEAD = do_PUT = do_DELETE = do_PATCH = do_other
+
+
+class Server(http.server.ThreadingHTTPServer):
+    daemon_threads = True
+
+    def __init__(self, address, keys, store):
+        self.keys, self.store = keys, store
+        if ":" in address[0]:
+            self.address_family = socket.AF_INET6
+        super().__init__(address, Handler)
+
+
+def split_bind(text):
+    """[HOST:]PORT to (host, port); the host is 127.0.0.1 unless named."""
+    host, _colon, port = text.rpartition(":")
+    try:
+        number = int(port)
+    except ValueError:
+        number = -1
+    if not 0 <= number <= 65535:
+        raise Refused({"ok": False, "error": f"--bind is [HOST:]PORT with PORT 0 to 65535, not {text[:40]!r}"}, 2)
+    return host.strip("[]") or "127.0.0.1", number
+
+
+def serve(args):
+    if not Path(args.keys).is_dir():
+        print(f"coord.py: --keys {args.keys} is not a directory", file=sys.stderr)
+        return 2
+    try:
+        host, port = split_bind(args.bind)
+        httpd = Server((host, port), args.keys, args.store)
+    except Refused as refused:
+        print(f"coord.py: {refused.body['error']}", file=sys.stderr)
+        return 2
+    except OSError as error:
+        print(f"coord.py: cannot bind {args.bind}: {error}", file=sys.stderr)
+        return 2
+    name, port = httpd.server_address[:2]
+    print(f"coord.py: serving http://{f'[{name}]' if ':' in name else name}:{port}", flush=True)
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        httpd.server_close()
+    return 0
+
+
+def send(url, key_file, argv):
+    """Run the command on the server at url as the operator whose token key_file holds."""
+    parsed = build_parser(argparse.ArgumentParser, True).parse_args(argv)
+    try:
+        token = Path(key_file).read_text(encoding="utf-8").strip()
+    except (OSError, UnicodeDecodeError) as error:
+        print(f"coord.py: key file {key_file}: {error}", file=sys.stderr)
+        return 2
+    if not token or not token.isascii() or not token.isprintable() or " " in token:
+        print(f"coord.py: key file {key_file} holds no token (one line of printable ASCII, no spaces)", file=sys.stderr)
+        return 2
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme not in ("http", "https") or not parts.hostname:
+        print(f"coord.py: --url is http://HOST:PORT or https://HOST[:PORT], not {url[:60]!r}", file=sys.stderr)
+        return 2
+    where = f"{parts.scheme}://{parts.netloc.rpartition('@')[2]}"
+    seconds_to_wait = REQUEST_SECONDS + (parsed.timeout if parsed.command == "wait" else 0)
+    connect_to = http.client.HTTPSConnection if parts.scheme == "https" else http.client.HTTPConnection
+    try:
+        conn = connect_to(parts.hostname, parts.port, timeout=seconds_to_wait)
+        try:
+            conn.request("POST", parts.path.rstrip("/") + ENDPOINT, json.dumps({"argv": argv}),
+                         {"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+            response = conn.getresponse()
+            status, data = response.status, response.read()
+        finally:
+            conn.close()
+    except (OSError, http.client.HTTPException) as error:
+        print(f"coord.py: cannot reach {where}: {error}", file=sys.stderr)
+        return 2
+    try:
+        payload = json.loads(data.decode("utf-8"))
+        code, body = payload["code"], payload["body"]
+    except (ValueError, KeyError, TypeError):
+        try:
+            text = json.loads(data.decode("utf-8")).get("error", "")
+        except (ValueError, AttributeError):
+            text = ""
+        print(f"coord.py: {where} answered HTTP {status}{': ' + text if text else ''}", file=sys.stderr)
+        return 2
+    emit(body, code)
+    return code
+
+
+def main(argv=None):
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", newline="\n")
+    argv = sys.argv[1:] if argv is None else list(argv)
+    remote = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
+    remote.add_argument("--url")
+    remote.add_argument("--key-file")
+    named, rest = remote.parse_known_args(argv)
+    if named.url or named.key_file:
+        if not (named.url and named.key_file):
+            print("coord.py: --url and --key-file go together", file=sys.stderr)
+            return 2
+        return send(named.url, named.key_file, rest)
+    args = build_parser().parse_args(argv)
+    args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE")
+    if not args.store:
+        print("coord.py: no store: pass --store PATH or set KB_COORD_STORE", file=sys.stderr)
+        return 2
+    if args.command == "serve":
+        return serve(args)
+    try:
+        body, code = run(args, time.time())
+    except sqlite3.Error as error:
+        print(f"coord.py: store {args.store}: {error}", file=sys.stderr)
+        return 2
+    emit(body, code)
     return code
 
 

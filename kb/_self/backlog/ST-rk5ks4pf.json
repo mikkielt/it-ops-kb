@@ -73,6 +73,38 @@
       "class": "secrets",
       "answer": "one token per operator, each read from its own file, so a token can be revoked alone; the token check sits behind one authentication function so an OAuth2 bearer-token check can replace or join it later",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What wire format and operator naming does coord.py serve use?",
+      "options": [
+        "POST /v1/run with the command's argv as JSON, parsed by the server's own parser, the operator added as the event field operator",
+        "one endpoint per command with a JSON object of options"
+      ],
+      "recommendation": "POST /v1/run with the command's argv as JSON, parsed by the server's own parser, the operator added as the event field operator",
+      "do": {
+        "POST /v1/run with the command's argv as JSON, parsed by the server's own parser, the operator added as the event field operator": "ST-rk5ks4pf",
+        "one endpoint per command with a JSON object of options": "ST-rk5ks4pf"
+      },
+      "class": "design",
+      "answer": "POST /v1/run with the command's argv as JSON, parsed by the server's own parser, the operator added as the event field operator",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "How does coord.py serve treat a token two operator files hold, a long wait and plain http?",
+      "options": [
+        "refuse a shared token (names no one, 401), hold a wait for its full S seconds, speak plain http and https through a direct connection that ignores proxy variables",
+        "first operator file wins, cap a wait at a server limit, plain http only"
+      ],
+      "recommendation": "refuse a shared token (names no one, 401), hold a wait for its full S seconds, speak plain http and https through a direct connection that ignores proxy variables",
+      "do": {
+        "refuse a shared token (names no one, 401), hold a wait for its full S seconds, speak plain http and https through a direct connection that ignores proxy variables": "ST-rk5ks4pf",
+        "first operator file wins, cap a wait at a server limit, plain http only": "ST-rk5ks4pf"
+      },
+      "class": "secrets"
     }
   ],
   "notes": "Plan SP-rsmmwzr2 2026-10-16, verified on origin/main 74c7ea6c6: _tools/coord.py does not exist and no commit names this item. The operator's request of 2026-10-16 to plan this epic's sprints lifts the 2026-10-07 parking of orchestration features for EP-fxrzbuza. The flag names (--keys, --key-file) were fixed at planning so the check can run them; gate g1's answer (one token per operator, each from its own file) is unchanged. The clause on one authentication function is read by the review, not by a run. Test policy (D-6kei5o2z/D-2tq4fhgs): the planned coord test file is dropped from touches and no test is added; the check is a planted coord.py run on a temp store (KB_COORD_STORE), checked against a throwaway mock of the goal's commands at planning.",
