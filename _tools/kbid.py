@@ -6,7 +6,7 @@
   kbid.py answer "QUESTION" [--root NAME]   suggest a QK-<slug> answer id for the root's _answers.md (and say if it
                                             is taken)
   kbid.py eval "QUESTION" [--root NAME]     the EV-<slug> id for a row of the root's _retrieval/lookup_eval.csv
-  kbid.py add URL --title T --publisher P [--licence L --reuse CLASS] [--version V] [--sha256 HEX] [--root NAME]
+  kbid.py add URL [--title T] [--publisher P] [--licence L --reuse CLASS] [--version V] [--sha256 HEX] [--root NAME]
                                             append the url's row to the root's _sources.csv and print its id
   kbid.py check                             every root's _sources.csv: hash-id collisions, ids that do not match
                                             their url or do not carry the root's prefix
@@ -32,6 +32,17 @@ the existing id; a url in the root with other values, or another url under the s
 message names the differing fields. Exit 0 written or unchanged; 2 refused or a bad argument (an empty title,
 publisher or licence, a reuse class outside kbcommon.REUSE, a url that is not http(s), a hash that is not 64 hex
 characters).
+
+The title, publisher and version. A flag omitted is read, never guessed (`provider.read_page`, printed on stderr
+field by field): the title is the fetched page's og:title or <title> (a Markdown file's front matter title or first
+heading), a ` | SITE` suffix cut when SITE is the page's site name or the host's organisation; the publisher (the
+organisation column) is the `organisation` cell of the host's row in _tools/providers.csv (a root's own
+`_providers.csv` row replaces it), else the page's og:site_name, else the suffix of its <title>; the version is
+`<key> <YYYY-MM-DD>` of the page's own date (updated_at, dateModified, article:modified_time, last-modified, ms.date,
+datePublished, article:published_time, citation_date: the first it carries), empty when it has none. A title or
+publisher neither given nor read is refused (exit 2) naming the flag. `--title`, `--publisher` and `--version` always
+win, and `--version ""` writes none; with all three given no page is fetched, and a url already in the root is
+unchanged without a read.
 
 Parallel adds. `add` holds an exclusive lock, the file `_sources.csv.lock` beside the sources file (made by exclusive
 create, removed when `add` ends), over its read, insert and atomic write, so adds from several processes at once (the
@@ -189,11 +200,12 @@ def main():
         p.add_argument("--root", default="public", help="the root the id is for (default public)")
     d = sub.add_parser("add", help="append a source row for a url (changes nothing when it is there)")
     d.add_argument("url")
-    for flag in ("title", "publisher"):
-        d.add_argument(f"--{flag}", required=True)
+    d.add_argument("--title", default=None, help="the row's title (omitted: the fetched page's title)")
+    d.add_argument("--publisher", default=None,
+                   help="the row's organisation column (omitted: the host's organisation in _tools/providers.csv, else the page's site name)")
     d.add_argument("--licence", default=None, help="the licence in words (omitted with --reuse: read from the source)")
     d.add_argument("--reuse", default=None, choices=sorted(kbcommon.REUSE), help="what the licence allows with the text")
-    d.add_argument("--version", default="", help="the row's version_or_date")
+    d.add_argument("--version", default=None, help="the row's version_or_date (omitted: the page's own date; '' for none)")
     d.add_argument("--sha256", default="", help="the row's artifact_sha256")
     d.add_argument("--root", default="public", help="the root the row is for (default public)")
     sub.add_parser("check", help="every root: hash-id collisions, ids that do not match their url or their root's prefix")
@@ -423,7 +435,7 @@ def usual_pair(rows, url):
                                 if r.get("licence") and (urllib.parse.urlsplit(r.get("url") or "").hostname or "").lower() == host)
     if not host or not pairs:
         return None
-    (pair, n), = sorted(pairs.items(), key=lambda kv: (-kv[1], kv[0]))[:1]
+    pair, n = max(pairs.items(), key=lambda kv: kv[1])  # the Counter keeps the text order: max takes the first of a tie
     return pair, n, sum(pairs.values())
 
 
@@ -448,28 +460,62 @@ def _read_licence(url, rows, root):
     return None, None
 
 
+def _fill_from_page(a, root):
+    """(title, publisher, version) of a new row: the flags given, the rest read from the fetched page and the host's
+    registry row (`provider.read_page`), each field read printed on stderr. ValueError when a title or publisher is
+    wanted and neither is read; a version not read stays empty."""
+    title, publisher, version = a.title, a.publisher, a.version
+    if title is None or publisher is None or version is None:
+        import provider  # the network side, loaded only when a page is read
+        got = provider.read_page(a.url, provider.providers(root))
+        if title is None:
+            title = got["title"]
+            if title:
+                print(f"title read ({got['evidence']}): {title}", file=sys.stderr)
+        if publisher is None:
+            publisher = got["organisation"]
+            if publisher:
+                src = "_tools/providers.csv" if got["organisation_from"] == "registry" else f"the page {got['evidence']}"
+                print(f"publisher read ({src}): {publisher}", file=sys.stderr)
+        if version is None:
+            version = got["version"]
+            print(f"version read ({got['evidence']}): {version}" if version else
+                  f"no version read for {a.url.strip()}: {got['note'] or 'the page carries no date'}", file=sys.stderr)
+        for flag, value in (("title", title), ("publisher", publisher)):
+            if not value:
+                why = got["note"] or ("the page has no title" if flag == "title" else "the host's registry row and the page name no organisation")
+                raise ValueError(f"no {flag} read for {a.url.strip()} ({why}): give --{flag}")
+    return title, publisher, version
+
+
 def cmd_add(a, root):
-    """kbid.py add: the exit code (0 written or unchanged, 2 refused: a bad argument, a conflicting row or a licence
-    that was not read)."""
+    """kbid.py add: the exit code (0 written or unchanged, 2 refused: a bad argument, a conflicting row, a licence
+    that was not read or a title or publisher that was neither given nor read)."""
     licence, reuse = a.licence, a.reuse
     try:
         if (licence is None) != (reuse is None):
             raise ValueError("give --licence and --reuse together, or neither (the licence is then read from the source)")
-        if licence is None:
+        have, rows = None, []
+        if licence is None or None in (a.title, a.publisher, a.version):
             _check_url(a.url)
             try:
                 rows = read_rows(root)
             except (OSError, csv.Error):
-                rows = []
+                pass
             norm = normalize_url(a.url)
             have = next((r for r in rows if normalize_url(r.get("url") or "") == norm), None)
-            if have:  # the url's row is there: nothing to read, and the row's own pair is what it is compared with
+        if have:  # the url's row is there: nothing to read, and the row's own values are what the given ones are compared with
+            title, publisher, version = (have.get(k, "") if v is None else v
+                                         for k, v in (("title", a.title), ("publisher", a.publisher), ("version_or_date", a.version)))
+            if licence is None:
                 licence, reuse = have.get("licence", ""), have.get("reuse", "")
-            else:
+        else:
+            if licence is None:
                 licence, reuse = _read_licence(a.url, rows, root)
                 if licence is None:
                     return 2
-        sid, written = add_source(root, a.url, a.title, a.publisher, licence, reuse, a.version, a.sha256)
+            title, publisher, version = _fill_from_page(a, root)
+        sid, written = add_source(root, a.url, title, publisher, licence, reuse, version, a.sha256)
     except ValueError as e:
         print(f"refused: {e}", file=sys.stderr)
         return 2

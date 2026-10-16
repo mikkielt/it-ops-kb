@@ -123,6 +123,53 @@
       "class": "agents-rule",
       "answer": "a new column of _tools/providers.csv naming the host's organisation, else the page's own site name",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "In what form does kbid.py add write a version_or_date it reads from the page, and when does it ask the page for it?",
+      "options": [
+        "<key> <YYYY-MM-DD> of the first page date key found (updated_at, dateModified, article:modified_time, last-modified, ms.date, datePublished, article:published_time, citation_date), read whenever --version is omitted for a new row; empty when the page has none",
+        "the bare YYYY-MM-DD of the first date found, read only when --title or --publisher also needs the page"
+      ],
+      "recommendation": "<key> <YYYY-MM-DD> of the first page date key found (updated_at, dateModified, article:modified_time, last-modified, ms.date, datePublished, article:published_time, citation_date), read whenever --version is omitted for a new row; empty when the page has none",
+      "do": {
+        "<key> <YYYY-MM-DD> of the first page date key found (updated_at, dateModified, article:modified_time, last-modified, ms.date, datePublished, article:published_time, citation_date), read whenever --version is omitted for a new row; empty when the page has none": "ST-wiv62ohc",
+        "the bare YYYY-MM-DD of the first date found, read only when --title or --publisher also needs the page": "ST-wiv62ohc"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g4",
+      "kind": "blocking",
+      "question": "Which rows of _tools/providers.csv get an organisation cell for kbid.py add, and what does a row with none do?",
+      "options": [
+        "a row for a site with one organisation (Learn, the vendor docs sites, arXiv, PyPI) names it; the rows of hosts that hold many owners' repositories stay empty and fall to the page's own site name",
+        "every row names one, the repository hosts' rows naming the host itself"
+      ],
+      "recommendation": "a row for a site with one organisation (Learn, the vendor docs sites, arXiv, PyPI) names it; the rows of hosts that hold many owners' repositories stay empty and fall to the page's own site name",
+      "do": {
+        "a row for a site with one organisation (Learn, the vendor docs sites, arXiv, PyPI) names it; the rows of hosts that hold many owners' repositories stay empty and fall to the page's own site name": "ST-wiv62ohc",
+        "every row names one, the repository hosts' rows naming the host itself": "ST-wiv62ohc"
+      },
+      "class": "agents-rule"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "Which fixed licence cells of provider.read_licence change to carry where they were read, as gate g2 words the form?",
+      "options": [
+        "the arXiv non-exclusive cell names the abstract page's licence link as the other arXiv cells do; the fixed pair of code.claude.com and anthropic.com stays 'Anthropic terms (no open licence)', the cell of the 162 rows of its hosts",
+        "both change: the fixed pair's cell names the host's terms it is fixed for",
+        "neither changes"
+      ],
+      "recommendation": "the arXiv non-exclusive cell names the abstract page's licence link as the other arXiv cells do; the fixed pair of code.claude.com and anthropic.com stays 'Anthropic terms (no open licence)', the cell of the 162 rows of its hosts",
+      "do": {
+        "the arXiv non-exclusive cell names the abstract page's licence link as the other arXiv cells do; the fixed pair of code.claude.com and anthropic.com stays 'Anthropic terms (no open licence)', the cell of the 162 rows of its hosts": "ST-wiv62ohc",
+        "both change: the fixed pair's cell names the host's terms it is fixed for": "ST-wiv62ohc",
+        "neither changes": "ST-wiv62ohc"
+      },
+      "class": "agents-rule"
     }
   ],
   "notes": "Premise (lessons analysis 1.4, 2.3): in the first repro run kbid.py add took model-written title, publisher, licence, reuse and version in 843 calls (124 with a check: line for a licence guess); of 362 rows of the same source id across instance pairs 6 were byte-identical (licence 221, title 199, version 125, publisher 107, reuse 76 differ). EP-jqjlwiar's clause 'a new source's licence and reuse come from the source's own licence record' is met in part by kbid.py licence (content-rules.md:86); this story makes the rest of the row deterministic. kbid.py add --help at 5834a99e2 requires --title and --publisher. Docs that name kbid.py add without its flags (kb/_self/code.md, maintaining.md, plugin.md, census.py) stay right while the flags remain accepted. Plan review 2026-10-15: the kbid scenarios sit in test_lookup_eval_passes_on_the_live_kb (test_live_kb.py near line 976), not the build_index test. The licence reader is provider.read_licence, which kbid.py add calls when --licence and --reuse are omitted (there is no kbid.py licence subcommand). Gate g2 keeps the 'where read' part of the cell because content-rules.md:80 asks for where the terms are stated; written by the tool from the licence record it is the same for one url in every instance, which is what the 221 differing cells lacked. Checks that pass before the work: the test selection pass before the work and are kept as guards (the change must keep them green); check 0 (the help shows --title and --publisher optional) fails before the work and reads the goal. Each guard check named above as passing on the base passes before the work: it pins behaviour that must stay green (a test selection the work extends, the eval, the lint); the item's failing checks read its goal. Plan amendment 2026-10-15: folds BG-sgsukxgk (usual_pair tie order) and BG-et5yl7mk (tools.md lock-lost exit 2) as clauses; their repros are checks 2 and 3, failing at c907de7b3.",
