@@ -2,7 +2,7 @@
   "id": "BG-ijyjl7ii",
   "kind": "bug",
   "title": "A timed-out repro session is recorded with cost 0, so the instance budget and the repro cost rows undercount",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
@@ -48,5 +48,18 @@
     "parked: SP-ygsnog4n review"
   ],
   "notes": "Plan 2026-10-15: kept beside the cap reserve rule, since an area recorded at cost 0 lets the next area start past the cap. 2026-10-16: the suite part of the plan is dropped under the operator's test policy D-2tq4fhgs; the repro is the proof.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "0c0396e7024c908046453d3f21c8f6589c06b57e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import inspect,agent_bench as a;s=inspect.getsource(a.execute);i=s.find('timeout');sys.exit(1 if 'cost' not in s[i:i+600] else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
