@@ -20,7 +20,7 @@ agents/own-chatbot-architecture,P1,complete,agents/own-chatbot-architecture.md,1
 agents/shared-ner-service,P1,complete,agents/shared-ner-service.md,35
 agents/subagents-vs-deterministic-tools,P1,complete,agents/subagents-vs-deterministic-tools.md,27
 agents/a2a-protocol,P2,complete,agents/a2a-protocol.md;agents/a2a/a2a-proto-digest.md;agents/a2a/a2a.proto,15
-agents/agent-cost-governance,P2,complete,agents/agent-cost-governance.md,2
+agents/agent-cost-governance,P2,complete,agents/agent-cost-governance.md,4
 agents/anthropic-materials,P2,complete,agents/anthropic-materials.md;agents/anthropic-materials.csv,23
 agents/azure-openai-deployments,P2,complete,agents/azure-openai-deployments.md;agents/azure-openai-deployment-types.csv,16
 agents/coding-agents-mcp,P2,complete,agents/coding-agents-mcp.md,9
@@ -145,14 +145,14 @@ claude/elicitation,P1,complete,claude/elicitation.md,5
 claude/hooks,P1,complete,claude/hooks.md,26
 claude/managed-mcp,P1,complete,claude/managed-mcp.md,2
 claude/messages-api,P1,complete,claude/messages-api.md;claude/models.csv;claude/api-limits.csv,11
-claude/otel-monitoring,P1,complete,claude/otel-monitoring.md,7
+claude/otel-monitoring,P1,complete,claude/otel-monitoring.md,9
 claude/permissions-mcp,P1,complete,claude/permissions-mcp.md,5
 claude/tool-output-limits,P1,complete,claude/tool-output-limits.md,3
 claude/agent-sdk,P2,complete,claude/agent-sdk.md;claude/agent-sdk-options.csv,12
 claude/ci-and-headless,P2,complete,claude/ci-and-headless.md,20
-claude/enterprise-admin,P2,complete,claude/enterprise-admin.md,8
+claude/enterprise-admin,P2,complete,claude/enterprise-admin.md,13
 claude/plugins,P2,complete,claude/plugins.md;claude/plugins.csv,16
-claude/settings-and-scopes,P2,partial,claude/settings-and-scopes.md;claude/settings-keys.csv;claude/env-vars.csv,15
+claude/settings-and-scopes,P2,partial,claude/settings-and-scopes.md;claude/settings-keys.csv;claude/env-vars.csv,18
 claude/skills-and-subagents,P2,complete,claude/skills-and-subagents.md;claude/skills-and-subagents.csv,9
 claude/cross-session-messaging,P3,complete,claude/cross-session-messaging.md,11
 claude/large-codebases,P3,complete,claude/large-codebases.md,7

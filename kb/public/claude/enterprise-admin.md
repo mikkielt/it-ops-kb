@@ -2,8 +2,8 @@
 topic: claude/enterprise-admin
 priority: P2
 applies_to: "Claude Code docs and Anthropic help center (retrieved 2026-09-26)"
-retrieved_utc: 2026-09-28
-sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh, S-7cq3hwv7]
+retrieved_utc: 2026-10-16
+sources: [S-gxtvjkv7, S-hoagpet2, S-xsggrooz, S-fqe5wkdo, S-2ym4fr2c, S-dkaaodgp, S-i3esfwsh, S-7cq3hwv7, S-4fzxly7f, S-7kqj6c7m, S-gu5aqnrl, S-fk46gdey, S748]
 status: complete
 ---
 
@@ -60,6 +60,15 @@ scope are covered in `claude/data-retention.md` (not repeated here).
 - Contribution attribution matches PR diff lines against Claude Code session output for sessions active from 21 days before to 2 days after the PR's merge date; lines rewritten by a developer by more than 20% are not attributed; lock files, generated/minified code, build directories, and test fixtures are excluded; matched PRs get the GitHub label `claude-code-assisted`. [DOC S-gxtvjkv7]
 - On Enterprise, the Claude Enterprise Analytics API (`platform.claude.com/docs/en/api/admin/analytics`) returns per-user engagement/usage/cost across Claude surfaces including Claude Code; a Primary Owner creates the key with the `read:analytics` scope at `claude.ai/analytics/api-keys`; not available on the Teams plan; per-user token and estimated spend figures come from the spend report export or OpenTelemetry. [DOC S-gxtvjkv7]
 - API/Console customers get a separate dashboard at `platform.claude.com/claude-code` (requires the UsageView permission, granted to Developer/Billing/Admin/Owner/Primary Owner roles) and the Claude Code Analytics API for daily per-user metrics; contribution/GitHub metrics are not available on this path. [DOC S-gxtvjkv7]
+
+### Claude Tag (Slack) versus Projects
+- Claude Tag is a Slack integration that runs `@Claude` in a team's channels as the organization's shared identity with admin-configured access; anyone in a channel can tag it into a thread and assign a task. It is available on Team and Enterprise plans on Anthropic's first-party service, not on Free, Pro or Max, and is distinct from the earlier Claude Code in Slack, which runs each session under an individual user's account. [DOC S-4fzxly7f, S-7kqj6c7m]
+- Setup is once for everyone at `claude.ai/admin-settings/claude-tag` by an Owner, who pairs the Slack workspace with the Claude organization; after launch everyone in a channel Claude is in can use it with no per-user setup. Claude Tag starts with no access to external systems: an Owner or Claude Tag admin connects services and grants repositories to the Claude GitHub App, for all of Slack, one workspace or one channel. [DOC S-7kqj6c7m]
+- By default anyone in the paired Slack workspace can tag `@Claude`; an Owner can restrict use to people in the Claude organization or, on Enterprise, to specific roles. There is no per-seat charge: channel work bills by usage to the organization's usage balance under a spend limit an Owner sets. [DOC S-7kqj6c7m]
+- Work runs in an ephemeral sandbox created when a conversation starts and discarded when it goes idle; the whole exchange, including the checklist Claude posts as it works, stays visible to the channel. Channel sessions use organization-level environments only (shared or self-hosted), an Owner can pin one to a channel, and Claude Tag sessions do not receive server-managed settings. Members' own claude.ai connectors stay separate from the channel configuration and are used for that member's own requests. [DOC S-7kqj6c7m, S-gu5aqnrl]
+- Projects, by contrast, are one person's conversation that coordinates parallel cloud sessions for that person with shared repositories, instructions and memory; they are public beta on Pro and Max, rolling out gradually, and not yet on Team or Enterprise. [DOC S-fk46gdey]
+- A team in a Slack channel therefore gets what Projects do not: a shared visible thread, an organization identity with admin-set connectors, channel-level environments and organization billing under a spend limit, on the plans (Team, Enterprise) where Projects are not available. The docs' own summary: team work in shared channels is Claude Tag, personal work is Cowork or Claude Code. [DER S-4fzxly7f, S-7kqj6c7m, S-fk46gdey: the plan lists, the shared identity and the per-user scope of Projects compared]
+- Claude Tag is among the features zero data retention disables for an Enterprise organization, with the stated reason that it retains channel memory and session transcripts (see `claude/data-retention.md`). [DOC S748]
 
 ### Compliance API (org-wide audit, distinct from data retention/ZDR)
 - The Compliance API is available to Enterprise plan organizations (excluding Public Sector) and to Claude Platform customers, covering Claude chats, Cowork (Claude, Desktop, Mobile), Claude Code (CLI and Desktop), and beta coverage of Claude for Microsoft 365 add-ins (Excel, Word, PowerPoint, Outlook) and Claude Science. [DOC S-fqe5wkdo]

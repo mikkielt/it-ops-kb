@@ -3915,3 +3915,42 @@ _Agent: kb-research_
 - See claude/parallel-sessions.md, claude/cross-session-messaging.md.
 
 _Agent: kb-research_
+
+## QK-organization-distribute-coordination-hooks-every-developer. How does an organization distribute coordination hooks to every developer: server-managed settings, an organization plugin marketplace, allowManagedHooksOnly?
+- Server-managed settings take a `hooks` block in the `settings.json` format (Teams or Enterprise plan, Owner edits); interactive sessions show a security approval dialog before applying it. (`claude/settings-and-scopes.md`, Managed settings delivery) [DOC S-22qwtmf7]
+- A plugin with `hooks/hooks.json` is force-installed by managed `extraKnownMarketplaces` plus `enabledPlugins`; users cannot disable it. (`claude/plugins.md`, Org / managed settings for plugins) [DOC S-rp4dtt4w]
+- `allowManagedHooksOnly` blocks user, project, local and plugin hooks, exempts plugins force-enabled in managed `enabledPlugins`, and disables `command`-source plugins unless `disableCommandPluginSources` is `false`; without it, hooks merge across levels. [DOC S743, S2042]
+- Claude Tag sessions do not receive server-managed settings, so hooks delivered that way do not run there. [DOC S-gu5aqnrl]
+- Conclusion: a managed `hooks` block is the direct route; a force-installed plugin is the route when the hook ships with scripts; `allowManagedHooksOnly` makes the managed set the only one, with the force-enabled plugin as the exemption. [DER S-22qwtmf7, S-rp4dtt4w, S743, S2042]
+- Open: the settings-reference page's own "what runs under `allowManagedHooksOnly`" section was not read beyond what the hooks and managed-settings pages repeat. [UNK]
+- See claude/settings-and-scopes.md, claude/plugins.md, claude/hooks.md.
+
+_Agent: kb-research_
+
+## QK-anthropic-prompt-caching-shared-sessions-users. Is Anthropic prompt caching shared between different sessions or users of one organization or workspace?
+- Caches are never shared across organizations, even for identical prompts; within an organization they are isolated per workspace on the Claude API, Claude Platform on AWS and Microsoft Foundry, and per organization only on Bedrock and Google Cloud. (`agents/agent-caching.md`, Anthropic prompt caching) [DOC S2130]
+- An entry is keyed on a hash of the identical prefix, so only an identical prompt prefix reads it. [DOC S2130]
+- Conclusion: the isolation boundary is the workspace (or the organization on Bedrock and Google Cloud), not the user or session, so identical-prefix requests inside one scope are in the same cache scope; the page does not say so in a sentence. [DER S2130]
+- Open: an official statement that sessions or users of one workspace hit each other's entries, and the scope for Claude Code on a subscription. [UNK]
+- See agents/agent-caching.md.
+
+_Agent: kb-research_
+
+## QK-claude-tag-give-team-slack-channel-projects. What does Claude Tag give a team in a Slack channel that Projects, which are one person's, do not?
+- Claude Tag runs `@Claude` in channels as the organization's shared identity with admin-configured access, on Team and Enterprise plans; the exchange is visible to the channel, work bills by usage under an Owner's spend limit, and channel sessions use organization-level environments. (`claude/enterprise-admin.md`, Claude Tag versus Projects) [DOC S-4fzxly7f, S-7kqj6c7m, S-gu5aqnrl]
+- Projects coordinate parallel cloud sessions for one person with shared repositories, instructions and memory, in public beta on Pro and Max and not yet on Team or Enterprise. [DOC S-fk46gdey]
+- Conclusion: Claude Tag adds a shared, visible thread, an organization identity with admin-set connectors and environments, and organization billing, on the plans where Projects are not available. [DER S-4fzxly7f, S-7kqj6c7m, S-fk46gdey]
+- Open: what Claude Tag remembers per channel and who sees it; the vendor's comparison with Cowork and Claude Code. [UNK]
+- See claude/enterprise-admin.md, claude/parallel-sessions.md.
+
+_Agent: kb-research_
+
+## QK-team-collect-every-member-claude-code-token-telemetry. How does a team collect every member's Claude Code token and cost telemetry centrally, per user and per session?
+- Put `CLAUDE_CODE_ENABLE_TELEMETRY` and the `OTEL_*` exporter variables in the managed settings `env` block; a managed endpoint removes developer-set endpoints, and repository settings cannot set the exporter variables. (`claude/otel-monitoring.md`, Collecting every member's telemetry centrally) [DOC S744]
+- `claude_code.cost.usage` and `claude_code.token.usage` carry `session.id`, `user.email`, `user.account_id` and `organization.id`; `OTEL_RESOURCE_ATTRIBUTES` adds team labels. [DOC S744]
+- A Claude apps gateway stamps the IdP identity and relays OTLP to listed destinations without per-machine setup; cloud sessions need the variables in server-managed settings or in the cloud environment (the only route for Claude Tag). [DOC S-r7mszxqu, S744]
+- Non-OTel routes: the analytics dashboard, the spend report, the Enterprise Analytics API and the Claude Code Analytics API. [DOC S-ggeduchu]
+- Conclusion: group the two counters by user and session at the collector the managed settings name. [DER S744, S-r7mszxqu]
+- See claude/otel-monitoring.md, agents/agent-cost-governance.md.
+
+_Agent: kb-research_

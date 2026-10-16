@@ -2,8 +2,8 @@
 topic: agents/agent-cost-governance
 priority: P2
 applies_to: "Claude Code docs (code.claude.com, retrieved 2026-09-25); Anthropic Usage & Cost Admin API (platform.claude.com, retrieved 2026-09-25)"
-retrieved_utc: 2026-09-26
-sources: [S2013, S2132]
+retrieved_utc: 2026-10-16
+sources: [S2013, S2132, S744, S-r7mszxqu]
 status: complete
 ---
 
@@ -56,6 +56,7 @@ for any team running a multi-operation MCP tool set that wants per-operation cos
 - `/usage`'s attribution breakdown covers skills, subagents, plugins, and MCP servers — but attribution is per MCP
   *server*, not per individual tool inside a server (a server's share counts requests that consumed any one of its
   tool results). [DOC S2132; gap: no per-tool attribution documented, see `gaps.md`]
+- Central, per-user and per-session token and cost telemetry for every developer: deliver `CLAUDE_CODE_ENABLE_TELEMETRY` and the `OTEL_*` exporter variables in the managed settings `env` block, which locks the collector endpoint against developer overrides, and group `claude_code.cost.usage` and `claude_code.token.usage` by `user.email` and `session.id`; `OTEL_RESOURCE_ATTRIBUTES` adds team or cost-centre labels, and a Claude apps gateway can stamp the IdP identity and relay the data without per-machine configuration. Details and sources: `claude/otel-monitoring.md`, "Collecting every member's telemetry centrally". [DER S744, S-r7mszxqu: the managed `env` delivery, endpoint lock, standard attributes and gateway relay read together]
 
 ## Reference
 | Purchase path | See spend | Cap spend | Per-user reporting |

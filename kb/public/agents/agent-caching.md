@@ -2,7 +2,7 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-10-13
+retrieved_utc: 2026-10-16
 sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512, S1864]
 status: complete
 ---
@@ -31,6 +31,9 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 - Invalidation hierarchy: caching follows the order **tools → system → messages**; a change to tool definitions invalidates everything (tools, system, messages); toggling web search or citations, or switching `speed`, invalidates system+messages but not tools; a change to `tool_choice` or adding/removing images invalidates only the messages cache; thinking parameters and `output_config.effort` always invalidate messages and, depending on the model, tools and system too [DOC S2130]. This is the concrete "invalidation hierarchy" the assignment asked for.
 - Usage fields: responses report `cache_creation_input_tokens` (tokens newly written to cache) and `cache_read_input_tokens` (tokens served from cache); `input_tokens` covers only what follows the last cache breakpoint; total input = read + creation + input [DOC S2130].
 - Practical rules: a cache breakpoint must sit on a block identical across requests (never on a changing timestamp or per-request value); the server looks back up to 20 blocks for a prior cache write; a hit requires the full prefix, text and images, to match exactly; a cache can be pre-warmed with a `max_tokens: 0` request that only writes the cache [DOC S2130].
+- Cache scope ("Cache storage and sharing"): caches are isolated between organizations, so different organizations never share one even for identical prompts; within an organization they are also isolated per workspace on the Claude API, Claude Platform on AWS and Microsoft Foundry, while Bedrock and Google Cloud isolate by organization only. [DOC S2130]
+- A cache key is a cryptographic hash of the prompt up to the cache control point, so only a request with an identical prefix can read an entry; the hashes of cached content are held in memory only, and entries live at least 5 minutes (standard) or 1 hour (extended) before they are deleted promptly, not immediately. [DOC S2130]
+- For a team, the page's only isolation boundaries are the organization and (on the first-party API) the workspace; it names no per-user or per-session boundary. Two sessions or users that send an identical prefix through one workspace, or on Bedrock or Google Cloud through one organization, are therefore inside one isolation scope, and developers on separate workspaces or organizations never read each other's entries. The page does not say in a sentence that such sessions hit each other's entries. [DER S2130: the isolation scopes, the identical-prefix hit rule and the absence of a user or session boundary]
 
 ### Claude Code and the cache
 

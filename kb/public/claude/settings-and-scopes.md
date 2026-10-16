@@ -2,8 +2,8 @@
 topic: claude/settings-and-scopes
 priority: P2
 applies_to: "Claude Code docs (retrieved 2026-10-13)"
-retrieved_utc: 2026-10-15
-sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
+retrieved_utc: 2026-10-16
+sources: [S2057, S-wzatkg4o, S-hfho3uwe, S2042, S-22qwtmf7, S743, S-gu5aqnrl, S-rp4dtt4w, S-zcuxapgb, S-l6l42j6e, S-pmhgjvef, S1800, S1863, S-rfpmkpck, S-vilbjgtf, S-lreom5ko, S-inpjf36q, S-a2zimsvk]
 status: partial
 files: [claude/settings-keys.csv, claude/env-vars.csv]
 ---
@@ -59,6 +59,10 @@ precedence against settings-file `env` values.
 - Server-managed settings require a Claude for Teams or Enterprise plan, the Owner or Primary Owner role to edit, and network access to `api.anthropic.com`; configured at Admin Settings > Claude Code > Managed settings in the claude.ai console. [DOC S-22qwtmf7]
 - Server-managed settings cannot deliver a `managed-mcp.json` (deliver `allowedMcpServers`/`deniedMcpServers` or, on v2.1.259+, `managedMcpServers` for http/sse servers instead), nor OS-level-only keys like `policyHelper` and `wslInheritsWindowsSettings`. [DOC S-22qwtmf7]
 - `claude doctor`'s `Managed settings (remote)` line (v2.1.248+) reports one of: settings loaded, no server-managed settings configured, fetch failed (with cause and whether a cached policy applies), or fetch skipped (with reason). [DOC S-22qwtmf7]
+- Hooks go to every developer in a Teams or Enterprise organization by writing a `hooks` block, in the same format as in `settings.json`, into the server-managed settings; the docs' example runs an audit script after every `Edit|Write` organization-wide. Because hooks execute shell commands, an interactive session shows the security approval dialog before applying them. [DOC S-22qwtmf7]
+- `allowManagedHooksOnly` (managed-only; a lock, so the strictest value any admin source sets applies) blocks user, project, local and plugin hooks, except hooks of plugins force-enabled in managed `enabledPlugins`; it also narrows `statusLine`, `fileSuggestion` and `subagentStatusLine` to the managed value, disables `command`-source plugins (force-enabled ones too) and blocks marketplace `headersHelper` commands unless `disableCommandPluginSources` is explicitly `false`. Without it, hook entries merge across levels, so user, project and local hooks add to managed ones, and `disableAllHooks` set outside managed settings cannot disable managed hooks. [DOC S743, S2042]
+- Server-managed delivery of hooks reaches the sessions that fetch server-managed settings (users' machines and Anthropic-hosted cloud sessions) but not Claude Tag channel sessions, which don't receive server-managed settings, so hooks from them don't run there; `ConfigChange` hooks do not run when server-managed settings arrive or refresh. [DOC S-gu5aqnrl, S-22qwtmf7]
+- Two routes carry a coordination hook to every developer: a `hooks` block in the managed settings (server-managed settings need a Teams or Enterprise plan and a session that authenticates directly to Anthropic's API; the docs name MDM and file delivery as the other managed sources), or a plugin carrying `hooks/hooks.json` that managed `extraKnownMarketplaces` plus `enabledPlugins` force-install. With `allowManagedHooksOnly` on, the managed block runs, and the plugin's hooks run too because force-enabled plugins are exempt, unless the plugin has a `command` source. [DER S-22qwtmf7, S743, S-rp4dtt4w, S2042: the plan requirement, the managed `hooks` format, the force-install keys and the `allowManagedHooksOnly` exemptions read together]
 
 ### Permission modes
 - Six modes: `default` (Manual: reads only), `acceptEdits` (reads + file edits + common filesystem Bash commands like `mkdir`/`touch`/`rm`/`mv`/`cp`/`sed`, and PowerShell `Set-Content`/`Add-Content`/`Clear-Content`/`Remove-Item` when that tool is enabled), `plan` (reads, plus classifier-approved commands when auto mode is available), `auto` (everything, background safety checks via a second-model classifier), `dontAsk` (reads + pre-approved tools only; anything else is denied, not prompted), `bypassPermissions` (everything, isolated containers/VMs only). [DOC S-zcuxapgb]
