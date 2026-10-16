@@ -25,5 +25,22 @@
   "depends_on": [
     "BG-wh3wardm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which matcher does the UserPromptExpansion entry for the coord hook use?",
+      "options": [
+        "plain kb-research matcher",
+        "matcher that also takes a namespaced command_name"
+      ],
+      "recommendation": "plain kb-research matcher",
+      "do": {
+        "plain kb-research matcher": "BG-rt4tuih2",
+        "matcher that also takes a namespaced command_name": "BG-rt4tuih2"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-r03"
 }
