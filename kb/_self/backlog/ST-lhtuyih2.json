@@ -1,0 +1,25 @@
+{
+  "id": "ST-lhtuyih2",
+  "kind": "story",
+  "title": "Drafts whose check selects a test still to write are re-planned under the no-test-by-default rule",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "No open item's check or repro is a tests.py -k selector of a test still to write unless the item's component is a critical kind kb/_self/code.md names: each other is given a tool-run check on a planted input or dropped under decision D-2tq4fhgs; at SP-noqsd4hj's review backlog.py selectors printed 161 NONE rows of open drafts",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','selectors'],capture_output=True,text=True)\nn=sum(1 for l in p.stdout.splitlines() if re.match(r'^\\s*0\\s+NONE',l))\nprint(n);sys.exit(1 if n or p.returncode else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog/*.json"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj close"
+  ],
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+}

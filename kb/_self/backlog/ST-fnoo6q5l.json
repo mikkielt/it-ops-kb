@@ -1,0 +1,26 @@
+{
+  "id": "ST-fnoo6q5l",
+  "kind": "story",
+  "title": "The sync gate runs backlog.py check when a tracked file is deleted or renamed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kg_sync's gate runs backlog.py check when the range deletes or renames a tracked file, since an item's touches may name it, and kb/_self/git.md says so: SP-noqsd4hj's code merge request deleted five test files with backlog check skipped (no item file changed), main then held 98 check errors and the next backlog push was refused until the orchestrator cleaned 93 drafts' touches",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('kb/_self/git.md',encoding='utf-8').read().split())\nsys.exit(0 if 'a deleted or renamed tracked file runs backlog.py check' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_sync.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj close"
+  ],
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+}

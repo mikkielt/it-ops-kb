@@ -1,0 +1,25 @@
+{
+  "id": "ST-tntbe22m",
+  "kind": "story",
+  "title": "A bug filed from a refused gate replays the refused rows as printed in its repro",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "skills/backlog/SKILL.md's bug step says a bug filed from a gate refusal carries a repro that replays the refused rows as the gate printed them, not a planted proxy: SP-noqsd4hj's BG-ab2cnv6p planted an exact test name, its fix passed the repro and landed, and 6 of the 7 real rows (name prefixes) were still refused, so it was reopened",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('skills/backlog/SKILL.md',encoding='utf-8').read().split())\nsys.exit(0 if 'replays the refused rows' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/backlog/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj close"
+  ],
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+}

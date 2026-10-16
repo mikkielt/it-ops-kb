@@ -1,0 +1,26 @@
+{
+  "id": "ST-5yr5syfq",
+  "kind": "story",
+  "title": "A plan or worker that deletes a test runs the selector gate's verdict on the deletion before the landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "Before the start gate an item that deletes or renames a test runs backlog.py selectors against the tree without the test and reads kg_sync.selector_gate's verdict, and the worker brief says to run it before reporting: SP-noqsd4hj's ST-wfrfy3mp stopped at the sync gate twice (selectors refused=7, then refused=6) on done items of another active sprint whose checks named the deleted tests, found only at landing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('agents/worker.md',encoding='utf-8').read().split())\nsys.exit(0 if 'deletes or renames a test' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj close"
+  ],
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-w4fcm7fc",
+  "kind": "story",
+  "title": "A worker's Self-Reviewed trailer names only docs it read whole",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "agents/worker.md says a Self-Reviewed trailer names only a doc the worker read whole and found correct, never one it only searched: SP-noqsd4hj's ST-wfrfy3mp worker named tools.md and querylog.md after a grep for the deleted test names",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=' '.join(open('agents/worker.md',encoding='utf-8').read().split())\nsys.exit(0 if 'Self-Reviewed names only a doc read whole' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md"
+  ],
+  "links": [
+    "parked: SP-noqsd4hj close"
+  ],
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+}
