@@ -154,7 +154,9 @@
         "a row for a site with one organisation (Learn, the vendor docs sites, arXiv, PyPI) names it; the rows of hosts that hold many owners' repositories stay empty and fall to the page's own site name": "ST-wiv62ohc",
         "every row names one, the repository hosts' rows naming the host itself": "ST-wiv62ohc"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a row for a site with one organisation (Learn, the vendor docs sites, arXiv, PyPI) names it; the rows of hosts that hold many owners' repositories stay empty and fall to the page's own site name",
+      "by": "operator"
     },
     {
       "id": "g5",
