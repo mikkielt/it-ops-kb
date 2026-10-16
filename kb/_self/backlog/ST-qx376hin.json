@@ -1,0 +1,21 @@
+{
+  "id": "ST-qx376hin",
+  "kind": "story",
+  "title": "After the goal research story lands, its per-item findings become each sibling's notes and checks before that sibling is claimed",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-xo45jvbj retrospective: ST-nz3edewl recorded that a typed /skill bypasses PreToolUse and ST-x6mvfnmv must register on UserPromptExpansion too, but ST-x6mvfnmv's goal and check were not updated, its check tested only the Skill payload, and the review found it as S1 BG-rt4tuih2. The run step that reruns precheck after the research lands also carries each finding the research names for a sibling into that sibling's notes and a check.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'findings the research names' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xo45jvbj close"
+  ]
+}

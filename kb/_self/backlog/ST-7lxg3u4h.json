@@ -1,0 +1,21 @@
+{
+  "id": "ST-7lxg3u4h",
+  "kind": "story",
+  "title": "A worker's factdiff.py anchor --file adds anchor rows only for the facts its item wrote, not for untouched facts of the file",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-xo45jvbj retrospective: ST-5ntg6krr ran factdiff.py anchor --file on agent-caching.md, which also anchored an untouched S1864 fact; done then refused the row as a source the item does not name. The worker rules (or factdiff anchor) keep the anchor rows of facts the item did not change out of its commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read().lower();sys.exit(0 if 'anchor rows of facts it did not' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xo45jvbj close"
+  ]
+}

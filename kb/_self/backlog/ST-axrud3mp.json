@@ -1,0 +1,21 @@
+{
+  "id": "ST-axrud3mp",
+  "kind": "story",
+  "title": "Planning asks a hook or coord item's open design choices (store default, lease and token keeping, output shape) as gates before the start",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-xo45jvbj retrospective: eight blocking gates were found mid-work on rule-guarding items and answered by the operator's delegate before each landing: ST-x6mvfnmv g3-g5 (store default, lease token keeping, claim intent), ST-3qxh5vxo g4-g5 (skill step number, dedup lease), ST-a57bxubz g2-g4 (list shape, spend pricing, which keys take a budget); plus BG-wh3wardm g1 and BG-yq2ojoiy g1. Plan step 6 names these kinds of open choices for a hook, a coord command or a skill step so the planner asks them before the start.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'output shape' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xo45jvbj close"
+  ]
+}

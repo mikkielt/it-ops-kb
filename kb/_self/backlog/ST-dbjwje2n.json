@@ -1,0 +1,21 @@
+{
+  "id": "ST-dbjwje2n",
+  "kind": "story",
+  "title": "A plan that adds a kb MCP tool names _tools/test_redact.py, whose tools/list assertion reads every tool's annotations",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-xo45jvbj retrospective: ST-xwop6rv5 added six coord tools, four of them writers; test_redact.py's assertion that every tool but kb_feedback is read-only failed in the worker's suite run, outside its touches, and the orchestrator widened the touches mid-sprint and resumed the worker. Planning an item that adds or changes a kb MCP tool puts _tools/test_redact.py in its touches.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read();sys.exit(0 if 'test_redact.py' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xo45jvbj close"
+  ]
+}

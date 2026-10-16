@@ -1,0 +1,21 @@
+{
+  "id": "ST-lj6os2ue",
+  "kind": "story",
+  "title": "A worker whose touches name a kb/_self doc runs rag.py eval before its report, so a lookup-eval regression is not found first at the landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-xo45jvbj retrospective: ST-3qxh5vxo's tools.md row paired 'default' with 'ttl' and turned SE-037 (default TTL of a Kerberos TGT, want none) weak; the worker did not run the eval and the landing stopped at step rag.py eval, fixed by the orchestrator in the worker's branch. A worker's brief has it run rag.py eval when its touches name a kb/_self doc, and report its FAIL lines.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read();sys.exit(0 if 'kb/_self doc runs' in t else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-xo45jvbj close"
+  ]
+}

@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-tjap3mdd close"
-  ]
+  ],
+  "notes": "SP-xo45jvbj 2026-10-16: the three research stories shared only kb/public ledgers (_sources.csv, _anchors.csv, _gaps.md, _answers.md, expansions.csv), so held --overlaps ran them one after another; none conflicted at its rebase."
 }
