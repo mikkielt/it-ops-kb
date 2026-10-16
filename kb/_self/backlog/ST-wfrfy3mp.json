@@ -2,7 +2,7 @@
   "id": "ST-wfrfy3mp",
   "kind": "story",
   "title": "The suite keeps only the 25 critical test ids and records every dropped one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-noqsd4hj",
   "priority": "P1",
   "rank": 2,
@@ -123,5 +123,66 @@
     }
   ],
   "notes": "Premise, run 2026-10-16 on 168a3a7591: perfcheck.py ids collects 87 ids in 14 files; a profiled whole run (tests.py --durations=0, load 5 to 7 on 14 cores) took 50.3 s wall, 298 s summed per test; the 25 kept ids alone (tests.py -k on their names) passed in 23.9 s wall, 64.5 s summed, on the same host; the last plain whole runs took 29.2 to 31.1 s. The keep list is check 1's set. Fitness (EP-gzr4mmkm) is measured by tool runs, not pytest ids: rag.py eval runs at every landing (land_eval) and check.py and build_index at the sync gate, so test_live_kb.py goes whole. Left as is: _tools/fixtures files, conftest.py's SLOW_FIRST names (conftest.py is a guarded runner file) and the dated run in kb/public/python/pytest.md:73 (a kb fact). Serial: one story, since every deletion writes _tools/test_ids_dropped.txt. Checks 2 (perfcheck.py ids --base 168a3a7591 --allow-removed) and 4 (the nine kept files' selection) pass before the work and are kept as guards: every id lost must be recorded as dropped, and the kept tests must still pass once their files lose the others. Referrers left as they are on purpose (comments, no reader that stops the work): _tools/bench_repro.py:52 (test_bench.py named in a comment), _tools/bl_check.py:1188 (a past sprint's example), _tools/conftest.py:46; kb/_self/backlog.md:220 is ST-jkcn4qs4's to reword. Guards that pass before the work: python3 _tools/perfcheck.py ids --base 168a3a7591ea3145a5f8800e9e052a0368231ea1 --allow-removed _tools/test_ids_dropped.txt passes before the work, and so does check 4, the selection run of the nine kept files.",
-  "claimed_by": "orch-noqsd4hj"
+  "evidence": {
+    "commit": "ae2dc83f2799741b88f4789aeea5c4ec17e70642",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess,sys\nK=set(['_tools/test_authority.py::test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate_the_operator_can', '_tools/test_authority.py::test_an_agent_cannot_confirm_an_operator_gate_check_reports_an_answer_or_a_lowered_class_and_a_delegate_grant_needs_the_operator', '_tools/test_authority.py::test_kbdecide_confirm_record_supersede_restore_are_refused_without_the_operator', '_tools/test_authority.py::test_operator_class_is_derived_and_gate_add_makes_an_operator_class_gate_blocking', '_tools/test_ceiling.py::test_counts_over_the_ceiling_are_named_and_the_seconds_factor_applies_only_on_a_ci_runner_and_changed_paths_pick_the_scope', '_tools/test_ceiling.py::test_live_ceiling_holds_the_suite_and_recorded_numbers_are_accepted_and_a_raised_number_or_a_decision_not_the_operators_is_refused', '_tools/test_check_programs.py::test_backlog_check_refuses_programs_outside_the_allowlist', '_tools/test_check_programs.py::test_drift_runs_only_read_only_forms', '_tools/test_kbingest_guards.py::test_map_does_not_follow_a_symlink_out_of_the_repository', '_tools/test_kbingest_guards.py::test_map_never_runs_a_planted_ast_module_or_a_program_inside_the_worktree_and_child_environment_is_scrubbed', '_tools/test_kbingest_guards.py::test_survey_leaves_out_and_keeps_and_map_redacts_leaks_and_keeps_the_rest', '_tools/test_leaks.py::test_backlog_check_refuses_leak_in_item_text', '_tools/test_leaks.py::test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_hook_denies_a_routed_host_and_passes_the_rest', '_tools/test_leaks.py::test_tracked_files_hold_no_secret_and_authored_files_hold_placeholders_only', '_tools/test_prepush_e2e.py::test_code_commit_straight_to_main_is_refused', '_tools/test_prepush_e2e.py::test_public_home_refuses_a_history_with_the_query_log', '_tools/test_publish_e2e.py::test_publish_follows_the_ci_verdict', '_tools/test_publish_e2e.py::test_publish_refuses_a_leak_in_any_commit_of_the_range', '_tools/test_publish_e2e.py::test_publish_sends_the_projection_and_check_public_tells_it_apart', '_tools/test_redact.py::test_an_ops_row_has_a_closed_shape_and_a_free_text_value_is_refused_and_kb_feedback_spools_one_closed_row_once_refuses_each_open_field_and_prints_its_call_on_a_weak_or_none_pack_only', '_tools/test_redact.py::test_distill_stores_a_captured_prompt_and_answer_redacted_and_the_capture_row_of_a_kb_pack_keeps_its_pack_handle', '_tools/test_redact.py::test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_pass_changes_nothing_and_scan_exits_1_on_a_leak', '_tools/test_redact.py::test_store_check_passes_a_clean_store_and_names_the_run_file_with_a_leak_and_distill_joins_feedback_rows_to_their_lookups_and_the_feedback_store_gates_refuse_each_open_field', '_tools/test_sync_e2e.py::TestRedGate::test_a_red_gate_leaves_main_where_the_last_push_put_it', '_tools/test_sync_e2e.py::test_code_commit_goes_to_a_branch'])\np=subprocess.run([sys.executable,'_tools/perfcheck.py','ids'],capture_output=True,text=True,encoding='utf-8')\ngot={l.strip() for l in p.stdout.splitlines() if '::' in l}\nb={l.strip() for l in open('_tools/test_ids_baseline.txt',encoding='utf-8') if l.strip() and not l.startswith('#')}\nbad=sorted(got-K)[:5]+['missing: '+x for x in sorted(K-got)]+(['baseline is not the keep list'] if b!=K else [])\nprint(p.returncode,len(got),'collected;',bad);sys.exit(0 if p.returncode==0 and not bad else 1)"
+        ],
+        "exit": 0,
+        "sha256": "fdd812898698960e"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/perfcheck.py",
+          "ids",
+          "--base",
+          "168a3a7591ea3145a5f8800e9e052a0368231ea1",
+          "--allow-removed",
+          "_tools/test_ids_dropped.txt"
+        ],
+        "exit": 0,
+        "sha256": "3c3f214beedfa7dd"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt=open('_tools/test_ids_dropped.txt',encoding='utf-8').read()\nok='D-2tq4fhgs' in t and all(f in t for f in ('test_backlog_portable.py','test_bench.py','test_forge.py','test_land_e2e.py','test_live_kb.py'))\nprint(ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "a9ac0c3ac83c40e1"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "_tools/test_authority.py",
+          "_tools/test_ceiling.py",
+          "_tools/test_check_programs.py",
+          "_tools/test_kbingest_guards.py",
+          "_tools/test_leaks.py",
+          "_tools/test_prepush_e2e.py",
+          "_tools/test_publish_e2e.py",
+          "_tools/test_redact.py",
+          "_tools/test_sync_e2e.py"
+        ],
+        "exit": 0,
+        "sha256": "e0228cb7771aba12"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ngone=('test_backlog_portable','test_bench.py','test_forge','test_land_e2e','test_live_kb')\nbad=[(p,g) for p in ('kb/_self/code.md','kb/_self/tools.md','kb/_self/querylog.md') for g in gone if g in open(p,encoding='utf-8').read()]\nprint(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
