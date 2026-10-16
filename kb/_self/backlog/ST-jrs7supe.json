@@ -2,7 +2,7 @@
   "id": "ST-jrs7supe",
   "kind": "story",
   "title": "The claims ledger lock clears a stale lock file once, so two waiters never both hold it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-z3hyk4eh",
   "priority": "P3",
   "rank": 2,
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-g2ssvhi2 review"
   ],
-  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:519-523; waiter A unlinks the stale lock and creates a fresh one, waiter B (holding the old stat) unlinks A's fresh lock and creates its own, and both are inside. Only a crashed writer's leftover lock opens the window. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_dispatch.py:525-532 judges age by stat and unlinks without re-checking the file; the planted check (a waiter whose stale view is forced through os.stat while another holds a fresh lock) enters while the first holds it. The second check is the recovery path: a crashed writer's lock alone is cleared at once. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run. The second check (a crashed writer's lock alone is cleared at once) passes before the work on purpose: it pins the recovery path the fix must keep."
+  "notes": "Found by the SP-g2ssvhi2 review (S3): bl_dispatch.py:519-523; waiter A unlinks the stale lock and creates a fresh one, waiter B (holding the old stat) unlinks A's fresh lock and creates its own, and both are inside. Only a crashed writer's leftover lock opens the window. Plan SP-z3hyk4eh 2026-10-16, verified on origin/main 74c7ea6c6: bl_dispatch.py:525-532 judges age by stat and unlinks without re-checking the file; the planted check (a waiter whose stale view is forced through os.stat while another holds a fresh lock) enters while the first holds it. The second check is the recovery path: a crashed writer's lock alone is cleared at once. Test policy (D-6kei5o2z/D-2tq4fhgs): the named test was never written and none is added; the check is a planted run. The second check (a crashed writer's lock alone is cleared at once) passes before the work on purpose: it pins the recovery path the fix must keep.",
+  "claimed_by": "orch-r01"
 }
