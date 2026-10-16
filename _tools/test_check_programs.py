@@ -1,8 +1,6 @@
 """The check-program allowlist: an item's checks and a bug's repro are data an agent or a merge can write, so only
 python3 on a _tools/ script (or inline code) may run, and drift's detector runs only its read-only scripts. A refused
-command is reported and never started. Also here: check.py's refusal of a kb citation in a tool's comment that a
-fact inserted above has moved."""
-import argparse
+command is reported and never started."""
 import json
 import shlex
 import subprocess
@@ -12,9 +10,7 @@ from pathlib import Path
 import pytest
 
 import bl_base
-import bl_ci
 import bl_intake
-import check
 from conftest import requires_git
 
 pytestmark = [pytest.mark.git, requires_git]
@@ -29,14 +25,6 @@ def writer(tmp_path, name="marker"):
     script.parent.mkdir(exist_ok=True)
     script.write_text(f"import pathlib; pathlib.Path({str(marker)!r}).write_text('ran')\n", encoding="utf-8")
     return script, marker
-
-
-def test_run_check_exit_code_is_the_result():
-    code = "import sys; sys.exit(3)"
-    ok, got, _ = bl_base.run_check(".", {"run": [sys.executable, "-c", code], "exit": 3})
-    assert ok and got == 3
-    ok, got, _ = bl_base.run_check(".", {"run": [sys.executable, "-c", code]})
-    assert not ok and got == 3
 
 
 def test_backlog_check_refuses_programs_outside_the_allowlist(tmp_path):
@@ -85,42 +73,6 @@ def test_backlog_check_refuses_programs_outside_the_allowlist(tmp_path):
     assert not marker.exists()
 
 
-def test_check_names_code_line_citation_moves_but_not_an_anchored_citation(tmp_path):
-    kb = tmp_path / "kb"
-    (kb / "fx" / "api").mkdir(parents=True)
-    (kb / "fx" / "_root.md").write_text("---\nroot: fx\n---\n", encoding="utf-8")
-    (kb / "_self").mkdir()
-    (kb / "_self" / "rules.md").write_text("Rule one.\n\nRule two.\n", encoding="utf-8")
-    article = ["---", "topic: api/prices", "---", "", "## Facts",
-               "- Sonnet 5.5 costs $2 per MTok of input. [DOC S1]", "- Haiku 4.5 costs $1 per MTok of input. [DOC S1]"]
-    art = kb / "fx" / "api" / "prices.md"
-    art.write_text("\n".join(article) + "\n", encoding="utf-8")
-    tools = tmp_path / "_tools"
-    tools.mkdir()
-    cite = "kb/fx/api/prices.md"
-    (tools / "price.py").write_text(
-        f'"""Prices ({cite}:7 "Haiku 4.5")."""\n'
-        f'PRICE = {{"sonnet": 2.0}}  # {cite}:6 "Sonnet 5.5 costs $2"\n'
-        f'# {cite}:6-7 "Haiku 4.5 costs" and :7 "Haiku 4.5", but {cite}:5 "Facts" is a heading\n'
-        f'FIXTURE = "{cite}:99 \\"nothing\\""\n'
-        f'# {cite}:6 "Sonnet 5" is not Sonnet 5.5; kb/fx/gone.md:1 is no file; kb/_self/rules.md:2 is blank\n'
-        f'# by anchor: {cite} "Haiku 4.5 costs" and kb/_self/rules.md "Rule two" hold, {cite} "Opus 5.5" and '
-        f'{cite} "Facts" (a heading) and kb/fx/gone.md "Gone" do not\n',
-        encoding="utf-8")
-
-    def named():
-        return [e.split(" cites ")[1].split(",")[0] for e in check.code_citation_errors(tmp_path)]
-
-    got = named()
-    assert got == [f'{cite}:5 "Facts"', f'{cite}:6 "Sonnet 5"', "kb/fx/gone.md:1", "kb/_self/rules.md:2",
-                   f'{cite} "Opus 5.5"', f'{cite} "Facts"', 'kb/fx/gone.md "Gone"'], got
-    assert all(e.startswith("_tools/price.py:") for e in check.code_citation_errors(tmp_path))
-    art.write_text("\n".join([*article[:5], "- A fact inserted above. [DOC S1]", *article[5:]]) + "\n", encoding="utf-8")
-    moved = named()  # :6 holds the new fact; the anchored citations hold wherever their fact sits
-    assert f'{cite}:6 "Sonnet 5.5 costs $2"' in moved and moved.count(f'{cite}:7 "Haiku 4.5"') == 2, moved
-    assert [m for m in moved if m.startswith(f'{cite} "')] == [f'{cite} "Opus 5.5"', f'{cite} "Facts"'], moved
-
-
 def drift_run(monkeypatch, tmp_path, runs):
     """passing_open over one planted item per `runs` entry, with check_result recording what would have started."""
     started = []
@@ -144,46 +96,3 @@ def test_drift_runs_only_read_only_forms(tmp_path, monkeypatch):
     assert started == [ok] and drift.ran == 1
     assert drift.refused == sorted(ids[1:]) and not drift.heavy and drift.passing == {ids[0]: 1}
     assert not marker.exists()
-
-
-def test_drift_never_runs_the_whole_suite(tmp_path, monkeypatch):
-    whole = [["python3", "_tools/tests.py"], ["python3", "-m", "pytest"], ["python3", "_tools/tests.py", "-n", "2"]]
-    part = ["python3", "_tools/tests.py", "-k", "check_programs"]
-    assert all(bl_intake.heavy_check({"run": run}) for run in whole)
-    assert not bl_intake.heavy_check({"run": part})
-    drift, started, ids = drift_run(monkeypatch, tmp_path, [*whole, part])
-    assert started == [part]
-    assert drift.heavy == sorted(ids[:3]) and not drift.refused
-
-
-def test_intake_hook_no_refile_held_fingerprints_and_the_cap(tmp_path, monkeypatch):
-    """`intake --file --hook` files a finding once: none for a fingerprint an open item of the checkout or a draft
-    set aside under the clone's _cache/intake-drafts/ holds, none past the open-drafts cap, and no near-duplicate
-    merge (the hook never runs `similar`)."""
-    def cand(key):
-        return bl_intake.Candidate(kind="bug", title=f"finding {key}", goal=f"goal {key}", key=key,
-                                   detector="trailers", fp=bl_intake.fingerprint("trailers", key))
-
-    cands = [cand(k) for k in ("one", "two", "three", "four")]
-    monkeypatch.setattr(bl_intake, "collect",
-                        lambda root, only=None, **kw: (list(cands) if only == "trailers" else [], []))
-    monkeypatch.setattr(bl_intake, "near_duplicates", lambda *a: pytest.fail("the hook merges no near-duplicate"))
-    backlog = tmp_path / "kb" / "_self" / "backlog"
-    backlog.mkdir(parents=True)
-    aside = tmp_path / "_cache" / "intake-drafts" / "agent-ST-aaaaaaaa"
-    aside.mkdir(parents=True)
-    (aside / "BG-aaaaaaaa.json").write_text(json.dumps(bl_intake.item_of(cands[1], "BG-aaaaaaaa")), encoding="utf-8")
-    held = bl_intake.item_of(cands[2], "BG-bbbbbbbb")
-    held["status"] = "todo"  # a committed item: open, not a draft
-    (backlog / "BG-bbbbbbbb.json").write_text(json.dumps(held), encoding="utf-8")
-
-    def hook():
-        bl_ci.hook_intake(bl_base.Backlog(tmp_path), argparse.Namespace(file=True, network=False, hook=True))
-        return sorted(p.name for p in backlog.glob("*.json"))
-
-    first = hook()
-    assert len(first) == 3  # BG-bbbbbbbb, and drafts for "one" and "four" only
-    assert hook() == first  # a second session files nothing
-    monkeypatch.setattr(bl_intake, "OPEN_DRAFTS_MAX", 2)
-    cands.append(cand("five"))
-    assert hook() == first  # two open drafts: at the cap

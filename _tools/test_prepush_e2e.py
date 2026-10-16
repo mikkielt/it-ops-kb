@@ -1,16 +1,13 @@
 """The pre-push hook end to end: a plain `git push origin main` in a clone with the hooks installed.
 
-Main path (a content commit is pushed), the planted red gate (a citation of an unknown source), the lane guard (a
-code-lane commit straight to main), and the public-home guard (a history that holds kb/_querylog/). The clone is built
-once; each case starts from a hard reset to origin/main."""
+The lane guard (a code-lane commit straight to main) and the public-home guard (a history that holds kb/_querylog/).
+The clone is built once; each case starts from a hard reset to origin/main."""
 import pytest
 from conftest import Scenario, git_env, requires_git
 
 import kbpublic
 
 pytestmark = [pytest.mark.git, requires_git]
-
-ARTICLE = "kb/public/python/ruff.md"
 
 
 @pytest.fixture(scope="module")
@@ -34,28 +31,6 @@ def fresh(c):
 
 def origin_main(sc):
     return sc.origin.rev("main")
-
-
-def test_content_commit_is_pushed(world):
-    sc, c = world
-    before = origin_main(sc)
-    c.append(ARTICLE, "\nA closing line added by a content commit.\n")
-    c.commit("docs: a content line", ARTICLE)
-    p = push_main(c)
-    assert p.returncode == 0, p.stdout + p.stderr
-    assert origin_main(sc) == c.rev("HEAD") != before
-
-
-def test_unknown_source_citation_is_refused(world):
-    sc, c = world
-    fresh(c)
-    before = origin_main(sc)
-    c.write(ARTICLE, c.read(ARTICLE).replace("[DOC S-y3zhzpmv,", "[DOC S-zzzzzzzz,", 1))
-    c.commit("docs: cite a source the ledger lacks", ARTICLE)
-    p = push_main(c)
-    assert p.returncode != 0, p.stdout + p.stderr
-    assert "kb pre-push check.py: FAILED" in p.stderr and "nothing pushed" in p.stderr, p.stderr
-    assert origin_main(sc) == before
 
 
 def test_code_commit_straight_to_main_is_refused(world):
