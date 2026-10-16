@@ -1,0 +1,24 @@
+{
+  "id": "ST-67xgrc6w",
+  "kind": "story",
+  "title": "Planning asks each output-form choice of a story that changes what a tool writes into a ledger before the start gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 6 says a story whose goal changes the form of a field a tool writes into a ledger (_sources.csv, _anchors.csv, providers.csv) gets a blocking gate for each form, source and fallback the goal leaves open, before the start gate. SP-b36246xo close: ST-wiv62ohc had two such gates at the start and its worker opened three more (g1, g4, g5), ST-duwzvvq7 one and three more (g2-g4), all answered by the operator after the work; the review then found ST-wiv62ohc's publisher fallback outside its gate g3 (S2).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.index('6. Read the goal clauses'):];s=s[:s.index('## start')];sys.exit(0 if 'writes into a ledger' in s else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-b36246xo close"
+  ]
+}

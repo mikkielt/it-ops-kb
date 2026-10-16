@@ -1,0 +1,26 @@
+{
+  "id": "ST-qaadte57",
+  "kind": "story",
+  "title": "Planning puts the _self lookup eval file in a goal research story's touches when its notes plan tested _self rows",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py check warns of a goal research story whose notes or goal plan tested rows of kb/_self/_retrieval/lookup_eval.csv while its touches do not name that file, so the planner adds it before the start gate. SP-b36246xo close: ST-qb25367f's notes planned tested _self rows for provider.py and kbid.py, its touches named kb/public/** only, and its worker stopped with no commit until the orchestrator widened them and resumed it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','research_story_self_eval_touch']).returncode)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "_tools/test_land_e2e.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-b36246xo close"
+  ]
+}
