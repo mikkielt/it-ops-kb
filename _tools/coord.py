@@ -56,9 +56,10 @@ else `unanchored`) and the terms of its `kb lacks:` lines, lowercased and mapped
 the same holder under a name other than `anonymous` is itself, never an overlap) overlaps when it is on the same topic and
 shares at least half of the smaller of the two term sets; the shared terms count as covered. In one transaction `dedup`
 claims every term not covered (one lease, one token, shown once, for the keys in `claimed`) and prints `topic`, `terms`,
-`uncovered`, `overlaps` (each: `holder`, `topic`, shared `terms`), `claimed`, `ttl`, `token` (only when it claimed) and
-`seq` (the newest event, for `wait --since`). A question every term of which is covered prints `uncovered` empty and
-claims nothing; exit 0 either way.
+`uncovered`, `overlaps` (each: `holder`, `topic`, shared `terms`), `held` (each uncovered term another live claim
+already holds, below the overlap threshold: `term`, `holder`; `dedup` claims no key a live claim holds), `claimed`,
+`ttl`, `token` (only when it claimed) and `seq` (the newest event, for `wait --since`). A question every term of which
+is covered prints `uncovered` empty and claims nothing; exit 0 either way.
 
   coord.py serve --bind [HOST:]PORT --keys DIR       answer every command above as a JSON request over HTTP, on the store
   coord.py --url URL --key-file PATH COMMAND ...     send COMMAND to such a server instead of a local store
@@ -455,10 +456,10 @@ def dedup(args, now):
     topic, terms = fingerprint(args.question)
     holder = args.holder or "anonymous"
     token = secrets.token_hex(16)
-    overlapping, covered, own, taken = [], set(), set(), []
+    overlapping, covered, own, taken, others = [], set(), set(), [], []
     with Tx(args.store) as con:
         con.execute("DELETE FROM entries WHERE expires IS NOT NULL AND expires <= ?", (now,))
-        theirs = {}
+        theirs, holders = {}, {}
         for row in con.execute("SELECT key, holder FROM entries WHERE substr(key, 1, ?) = ? ORDER BY key", (len(RESEARCH), RESEARCH)):
             their_topic, _colon, term = row["key"][len(RESEARCH):].partition(":")
             if their_topic != topic:
@@ -467,6 +468,7 @@ def dedup(args, now):
                 own.add(term)
             else:
                 theirs.setdefault(row["holder"], set()).add(term)
+                holders.setdefault(term, row["holder"])
         for who, held in sorted(theirs.items(), key=lambda pair: str(pair[0])):
             shared = [t for t in terms if t in held]
             if shared and len(shared) * 2 >= min(len(terms), len(held)):
@@ -474,13 +476,15 @@ def dedup(args, now):
                 overlapping.append({"holder": who, "topic": topic, "terms": shared})
         uncovered = [t for t in terms if t not in covered]
         for term in uncovered:
-            if term not in own:
+            if term in holders:
+                others.append({"term": term, "holder": holders[term]})
+            elif term not in own:
                 con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires) VALUES (?, NULL, 1, ?, ?, ?, ?)",
                             (research_key(topic, term), holder, token, args.ttl, now + args.ttl))
                 taken.append(research_key(topic, term))
         last = con.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()[0]
     body = {"ok": True, "topic": topic, "holder": holder, "terms": terms, "uncovered": uncovered, "overlaps": overlapping,
-            "claimed": taken, "ttl": args.ttl, "seq": last}
+            "held": others, "claimed": taken, "ttl": args.ttl, "seq": last}
     if taken:
         body["token"] = token
     return body
