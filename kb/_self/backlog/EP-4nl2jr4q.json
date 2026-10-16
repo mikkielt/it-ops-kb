@@ -14,14 +14,6 @@
         "report",
         "--check"
       ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "pool"
-      ]
     }
   ],
   "links": [

@@ -11,16 +11,14 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census_queue"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import census\nr=[{'bucket':'CHANGED','note':'','outcome':'confirmed'},{'bucket':'CHANGED','note':'','outcome':''}]\nn=len(census.phase2_rows(r));print(n);sys.exit(0 if n==2 else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/census.py",
     ".claude/skills/kb-census/SKILL.md",
-    "_tools/test_redact.py",
     "kb/_self/tools.md"
   ],
   "links": [

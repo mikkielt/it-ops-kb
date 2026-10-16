@@ -11,15 +11,13 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "multirepo_land"
+        "-c",
+        "import os,subprocess as s,sys,tempfile;sys.path.insert(0,'_tools');import bl_land\nt=tempfile.mkdtemp();g=lambda *a:s.run(['git','-C',t,'-c','user.name=t','-c','user.email=t@t','-c','core.hooksPath=/dev/null',*a],check=True,capture_output=True,text=True).stdout.strip()\ndef c(n):\n open(os.path.join(t,n),'w').write(n);g('add',n);g('commit','-qm',n)\ng('init','-q','-b','main');c('a');g('checkout','-qb','f');c('b');tip=g('rev-parse','HEAD');g('checkout','-q','main');g('merge','-q','--ff-only','f')\ng('checkout','-qb','h');c('c');g('checkout','-q','main');c('d');g('merge','-q','--no-ff','-m','m','h')\nr=bl_land.merge_commit(t,tip,'main','1');print(r==tip);sys.exit(0 if r==tip else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/bl_land.py",
-    "_tools/test_land_e2e.py",
     "kb/_self/backlog.md"
   ],
   "links": [

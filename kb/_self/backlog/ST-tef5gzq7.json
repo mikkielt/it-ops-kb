@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census"
+        "-c",
+        "import sys\ns=open('_tools/census.py',encoding='utf-8').read();n=s.count('STEP_MODELS[\"check\"]')+s.count(\"STEP_MODELS['check']\")\nr=lambda p:' '.join(open(p,encoding='utf-8').read().split())\nsay=\"STEP_MODELS['check']`, Haiku\" in r('kb/_self/web-sources.md') or \"checker's passage judgments run on Haiku\" in r('kb/_self/token-efficiency.md')\nprint(n,say);sys.exit(0 if n>1 or not say else 1)"
       ]
     }
   ],

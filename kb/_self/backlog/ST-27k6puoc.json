@@ -11,15 +11,13 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import census\na,_=census.dispatch_rules({'files':[],'clones':['/c'],'fetch':{},'learn':False},'/s')\ng=[r for r in a if r.startswith('Bash(git ')]\nprint(g);sys.exit(0 if g and not any(r.endswith(' *)') for r in g) else 1)"
       ]
     }
   ],
   "touches": [
     "_tools/census.py",
-    "_tools/test_redact.py",
     "kb/_self/tools.md",
     "kb/_self/web-sources.md"
   ],

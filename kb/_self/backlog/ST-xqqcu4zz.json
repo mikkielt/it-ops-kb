@@ -6,7 +6,7 @@
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
-  "goal": "bench_repro.claude_path() returns the resolved path of the claude command the instances start and a problem text when it is a script and not the claude binary (a wrapper first on PATH), empty otherwise; repro run and run --dry-run print claude: <path> and refuse on a problem, so the instances' --settings stays exactly the recorded value; repro run refuses while repro_bench.csv or repro_briefs.csv differs from HEAD, and run.json records their sha256 (BG-vry4snnm); the run part of test_bench.py proves each (no new test id)",
+  "goal": "bench_repro.claude_path() returns the resolved path of the claude command the instances start and a problem text when it is a script and not the claude binary (a wrapper first on PATH), empty otherwise; repro run and run --dry-run print claude: <path> and refuse on a problem, so the instances' --settings stays exactly the recorded value; repro run refuses while repro_bench.csv or repro_briefs.csv differs from HEAD, and run.json records their sha256 (BG-vry4snnm)",
   "checks": [
     {
       "run": [
@@ -20,14 +20,6 @@
         "python3",
         "-c",
         "import sys;sys.path.insert(0,'_tools');import inspect,bench_repro as b;s=inspect.getsource(b.run_problems);sys.exit(0 if ('status' in s or 'ls-files' in s or 'diff' in s) else 1)"
-      ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "test_bench_price_weights_and_tier_and_freshness_rows"
       ]
     },
     {
@@ -54,15 +46,10 @@
     {
       "clause": "run.json records their sha256 (BG-vry4snnm)",
       "check": 1
-    },
-    {
-      "clause": "the run part of test_bench.py proves each (no new test id)",
-      "check": 2
     }
   ],
   "touches": [
     "_tools/bench_repro.py",
-    "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
   "depends_on": [

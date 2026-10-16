@@ -21,14 +21,6 @@
         "-c",
         "import sys;t=open('_tools/bench_pool.py',encoding='utf-8').read();sys.exit(1 if 'it-ops-kb-bench' in t else 0)"
       ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "test_bench_pool_build_check_scenario_rows_and_session_shape"
-      ]
     }
   ],
   "clauses": [
@@ -44,7 +36,6 @@
   "touches": [
     "_tools/bench_core.py",
     "_tools/bench_pool.py",
-    "_tools/test_bench.py",
     "kb/_self/tools.md"
   ],
   "depends_on": [

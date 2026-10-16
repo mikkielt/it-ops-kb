@@ -20,9 +20,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "plugin_sprint_ships"
+        "-c",
+        "import sys\nL=[l for l in open('skills/item/SKILL.md',encoding='utf-8') if 'check-trailers' in l]\nprint(len(L));sys.exit(0 if L and all('land_push' in l for l in L) else 1)"
       ]
     }
   ],

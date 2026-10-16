@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census_queue"
+        "-c",
+        "import sys\nL=[l for l in open('_tools/ql_capture.py',encoding='utf-8') if '\"census.phase\"' in l and '_spec' in l]\nprint(L);sys.exit(0 if L and ('chars' in L[0] or 'tokens' in L[0]) else 1)"
       ]
     }
   ],

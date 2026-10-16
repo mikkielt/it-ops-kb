@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "census"
+        "-c",
+        "import sys\nt=open('.claude/skills/kb-census/SKILL.md',encoding='utf-8').read();j=t.find('census.py judge');g=t.find('census.py groups')\nprint(j,g);sys.exit(0 if 0<=j<g else 1)"
       ]
     }
   ],

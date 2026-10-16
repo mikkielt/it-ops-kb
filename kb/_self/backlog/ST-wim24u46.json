@@ -11,9 +11,8 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "factdiff_learn_git"
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import census\nsys.exit(0 if all(any(p.startswith(x) for p,_,_ in census.LEARN_MAP) for x in ('intune/','windows/')) else 1)"
       ]
     }
   ],

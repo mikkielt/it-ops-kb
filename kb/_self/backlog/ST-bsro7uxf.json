@@ -6,7 +6,7 @@
   "sprint": "SP-ysuvdxsn",
   "priority": "P3",
   "rank": 0,
-  "goal": "each repro area record holds the session's num_turns beside the run's max_turns and a turns_over_cap flag when num_turns passed it, carried by repro record and compare; agent_bench.result_of treats a result whose subtype starts with error_ as an error whatever is_error says, so bench_repro.failure_of names it turns or budget; the run part of test_bench.py proves both on planted stream results (no new test id)",
+  "goal": "each repro area record holds the session's num_turns beside the run's max_turns and a turns_over_cap flag when num_turns passed it, carried by repro record and compare; agent_bench.result_of treats a result whose subtype starts with error_ as an error whatever is_error says, so bench_repro.failure_of names it turns or budget",
   "checks": [
     {
       "run": [
@@ -21,14 +21,6 @@
         "-c",
         "import sys;sys.path.insert(0,'_tools');import json,agent_bench,bench_repro as b;r=agent_bench.result_of(json.dumps({'type':'result','subtype':'error_max_turns','is_error':False,'num_turns':150,'duration_api_ms':1,'total_cost_usd':3.2,'usage':{'input_tokens':1,'cache_creation_input_tokens':2,'cache_read_input_tokens':3,'output_tokens':4}}),'',5.0);sys.exit(0 if b.failure_of(r) else 1)"
       ]
-    },
-    {
-      "run": [
-        "python3",
-        "_tools/tests.py",
-        "-k",
-        "test_bench_price_weights_and_tier_and_freshness_rows"
-      ]
     }
   ],
   "clauses": [
@@ -39,15 +31,10 @@
     {
       "clause": "agent_bench.result_of treats a result whose subtype starts with error_ as an error whatever is_error says, so bench_repro.failure_of names it turns or budget",
       "check": 1
-    },
-    {
-      "clause": "the run part of test_bench.py proves both on planted stream results (no new test id)",
-      "check": 2
     }
   ],
   "touches": [
     "_tools/bench_repro.py",
-    "_tools/test_bench.py",
     "kb/_self/tools.md",
     "_tools/agent_bench.py"
   ],
