@@ -120,7 +120,9 @@
         "yes: the page's best window when it shares at least 2 of the fact's terms, so a fact the cut leaves unlocated still gets a candidate quote to check": "ST-duwzvvq7",
         "no: only a passage the plain anchoring rule would locate": "ST-duwzvvq7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "yes: the page's best window when it shares at least 2 of the fact's terms, so a fact the cut leaves unlocated still gets a candidate quote to check",
+      "by": "operator"
     },
     {
       "id": "g4",
