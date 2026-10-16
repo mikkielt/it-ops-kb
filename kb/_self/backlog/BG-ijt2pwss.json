@@ -59,7 +59,9 @@
         "return CC BY-SA 4.0 copy": "BG-ijt2pwss",
         "read nothing": "BG-ijt2pwss"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "return CC BY-SA 4.0 copy",
+      "by": "operator"
     },
     {
       "id": "g2",
