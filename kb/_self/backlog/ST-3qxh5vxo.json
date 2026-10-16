@@ -116,7 +116,9 @@
         "step 0, ahead of step 1, so no step is renumbered": "ST-3qxh5vxo",
         "step 1, with every later step and each citation of one renumbered": "ST-3qxh5vxo"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "step 0, ahead of step 1, so no step is renumbered",
+      "by": "operator"
     },
     {
       "id": "g5",
