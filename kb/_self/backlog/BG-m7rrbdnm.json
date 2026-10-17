@@ -2,7 +2,7 @@
   "id": "BG-m7rrbdnm",
   "kind": "bug",
   "title": "backlog.py claim judges busy and keeps ledger records from the item files it read before the ledger lock, so a claim another session made while it waited is dropped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,6 @@
   "links": [
     "parked: SP-z3hyk4eh review"
   ],
-  "notes": "SP-z3hyk4eh review gap 4 (S3), on ST-zqbo7xgc (g1 'lock from first read to write'): _tools/bl_items.py:222-239, bl.items loaded before ledger_lock; the busy check and the here filter use them. Repro plants the other session's claim while this claim waits on a held lock; it fails on origin/main f105ef2e4 (exit 0, record of the other session dropped). Premise rerun 2026-10-16 on origin/main ed55f4d56: repro exits 1 (record of the other session kept: False)."
+  "notes": "SP-z3hyk4eh review gap 4 (S3), on ST-zqbo7xgc (g1 'lock from first read to write'): _tools/bl_items.py:222-239, bl.items loaded before ledger_lock; the busy check and the here filter use them. Repro plants the other session's claim while this claim waits on a held lock; it fails on origin/main f105ef2e4 (exit 0, record of the other session dropped). Premise rerun 2026-10-16 on origin/main ed55f4d56: repro exits 1 (record of the other session kept: False).",
+  "claimed_by": "orch-r04"
 }
