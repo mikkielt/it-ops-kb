@@ -1,0 +1,21 @@
+{
+  "id": "ST-3emh47z5",
+  "kind": "story",
+  "title": "The kb says Remote Control server mode runs several sessions from one process, not only one remote session per interactive process",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-4dab3cy5 review G1 (S2, ST-5mcrotet): kb/public/claude/cross-session-messaging.md's DER fact says Remote Control forwards the prompts of one session at a time, but the Remote Control page (https://code.claude.com/docs/en/remote-control) says that limit is per interactive process and that `claude remote-control` server mode runs concurrent sessions from one process (`--capacity <N>`, `--spawn worktree`). The article states the one-session limit as the interactive-process case and records server mode's concurrent sessions with their flags, tagged and cited.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/public/claude/cross-session-messaging.md').read()\nok='--capacity' in t and 'server mode' in t.lower()\nprint('server mode and --capacity in the article:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-4dab3cy5 review"
+  ]
+}

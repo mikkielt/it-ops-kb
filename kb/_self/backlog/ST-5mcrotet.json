@@ -82,7 +82,7 @@
       },
       "class": "design",
       "answer": "Write the touched ledgers only (sources, anchors, gaps, answers, expansions) and report the rest",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -99,7 +99,7 @@
       },
       "class": "design",
       "answer": "New article claude/statusline.md",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
