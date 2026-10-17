@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "backlog.md says an item file that turns the live-backlog tests red fails its own push, but those tests were deleted",
   "status": "draft",
+  "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
-  "goal": "kb/_self/backlog.md's detector paragraph no longer says an item file would turn 'those live-backlog tests' red, since the tests it meant were in the deleted test_backlog_portable.py and test_land_e2e.py; it names backlog.py check in the push gate as what refuses such a file",
+  "goal": "kb/_self/backlog.md's detector paragraph no longer says an item file would turn 'those live-backlog tests' red, since the tests it meant were deleted with test_backlog_portable.py and test_land_e2e.py.",
   "checks": [
     {
       "run": [
@@ -15,11 +16,17 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/_self/backlog.md's detector paragraph no longer says an item file would turn 'those live-backlog tests' red, since the tests it meant were deleted with test_backlog_portable.py and test_land_e2e.py",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/backlog.md"
   ],
   "links": [
     "parked: SP-noqsd4hj review"
   ],
-  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer."
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the phrase is there). Narrowed to the stale sentence; what refuses such a file now is the sync gate's backlog.py check, which ST-fnoo6q5l widens. Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside."
 }

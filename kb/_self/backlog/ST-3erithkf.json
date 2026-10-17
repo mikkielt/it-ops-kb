@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A worker whose re-anchor leaves its reworded fact unlocated anchors it with a quote or reports it",
   "status": "draft",
+  "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,
   "goal": "The worker role file's done bar says that when factdiff.py anchor reports a reworded or added fact of the item as unlocated, the worker anchors it with a quote the source holds (as ST-dfsfutx4 did) or names it in its report as unanchored. Found by the SP-3g3egfll close: ST-nfrimn67 and ST-diks4hle each left a reworded fact unlocated without following it (ST-gympyz6m).",
@@ -15,11 +16,21 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "The worker role file's done bar says that when factdiff.py anchor reports a reworded or added fact of the item as unlocated, the worker anchors it with a quote the source holds (as ST-dfsfutx4 did) or names it in its report as unanchored. Found by the SP-3g3egfll close: ST-nfrimn67 and ST-diks4hle each left a reworded fact unlocated without following it (ST-gympyz6m)",
+      "check": 0
+    }
+  ],
   "touches": [
     "agents/worker.md",
     "kb/_self/backlog.md"
   ],
+  "depends_on": [
+    "ST-7lxg3u4h"
+  ],
   "links": [
     "parked: SP-3g3egfll close"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the done bar names no unlocated fact). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside."
 }

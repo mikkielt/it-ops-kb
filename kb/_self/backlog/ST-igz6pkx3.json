@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts and gap entries through /kb-research. (1) Which line boundaries does Python's str.splitlines split at (U+2028, U+0085, form feed and the others) and how does bytes.splitlines differ? (2) What does git rebase --abort restore, and which state files show that a rebase is in progress?",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the commit-msg question is good (public/gitlab/git-trailers-and-hooks.md:25: a non-zero exit aborts the commit), so it is not asked again; the splitlines question is none and the rebase --abort question is good only on a line that does not answer it, so both are researched. Knowledge by item: BG-dg4eptu4 reads both; ST-3mfjrjom and ST-7bqcngos read git-trailers-and-hooks.md:25; the other items change the kb's own tools and rules and need no outside facts."
 }

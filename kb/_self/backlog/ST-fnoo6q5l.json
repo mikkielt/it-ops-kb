@@ -3,16 +3,34 @@
   "kind": "story",
   "title": "The sync gate runs backlog.py check when a tracked file is deleted or renamed",
   "status": "draft",
+  "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
-  "goal": "kg_sync's gate runs backlog.py check when the range deletes or renames a tracked file, since an item's touches may name it, and kb/_self/git.md says so: SP-noqsd4hj's code merge request deleted five test files with backlog check skipped (no item file changed), main then held 98 check errors and the next backlog push was refused until the orchestrator cleaned 93 drafts' touches",
+  "goal": "kg_sync.gate_needs runs backlog.py check when a path of the range no longer exists in the tree (a deleted file, or the old path of a renamed one), since an item's touches may name it; kb/_self/git.md says that a deleted or renamed tracked file runs backlog.py check. Found by SP-noqsd4hj: a code merge request deleted five test files with backlog check skipped, so main then held 98 check errors.",
   "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import kg_sync as k\ngone=k.gate_needs({'kb/_self/no-such-doc.md'})['backlog'];renamed=k.gate_needs({'_tools/no_such_tool.py','_tools/coord.py'})['backlog'];kept=k.gate_needs({'README.md'})['backlog']\nprint('deleted:',gone,'| renamed:',renamed,'| changed only:',kept);sys.exit(0 if gone and renamed and not kept else 1)\n"
+      ]
+    },
     {
       "run": [
         "python3",
         "-c",
         "import sys\nt=' '.join(open('kb/_self/git.md',encoding='utf-8').read().split())\nsys.exit(0 if 'a deleted or renamed tracked file runs backlog.py check' in t else 1)"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kg_sync.gate_needs runs backlog.py check when a path of the range no longer exists in the tree (a deleted file, or the old path of a renamed one), since an item's touches may name it",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/git.md says that a deleted or renamed tracked file runs backlog.py check. Found by SP-noqsd4hj: a code merge request deleted five test files with backlog check skipped, so main then held 98 check errors",
+      "check": 1
     }
   ],
   "touches": [
@@ -22,5 +40,5 @@
   "links": [
     "parked: SP-noqsd4hj close"
   ],
-  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator."
+  "notes": "Retrospective finding of SP-noqsd4hj, filed by the orchestrator acting as operator. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (gate_needs gives backlog None for a gone path). The old check read only git.md. Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: public/gitlab/git-history-queries.md:24 (--name-only, --name-status)."
 }

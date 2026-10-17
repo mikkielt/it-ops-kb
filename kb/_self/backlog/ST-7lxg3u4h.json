@@ -3,20 +3,58 @@
   "kind": "story",
   "title": "A worker's factdiff.py anchor --file adds anchor rows only for the facts its item wrote, not for untouched facts of the file",
   "status": "draft",
+  "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
-  "goal": "SP-xo45jvbj retrospective: ST-5ntg6krr ran factdiff.py anchor --file on agent-caching.md, which also anchored an untouched S1864 fact; done then refused the row as a source the item does not name. The worker rules (or factdiff anchor) keep the anchor rows of facts the item did not change out of its commit.",
+  "goal": "factdiff.py anchor --file F --lines N[,N...] anchors only the facts on those lines of F and exits 2 for a line that holds no fact, as gate g1 records, and the worker role file's done bar has a worker pass the lines of the facts its item wrote or reworded, so no anchor row of an untouched fact lands in its commit. SP-xo45jvbj and SP-6jfnx5i3: anchor --file anchored untouched facts and done refused the rows.",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('kb/_self/backlog.md',encoding='utf-8').read().lower();sys.exit(0 if 'anchor rows of facts it did not' in t else 1)"
+        "import subprocess as s,sys\nF='kb/public/security/secret-shapes-in-text.md'\ndef a(*x):\n    p=s.run([sys.executable,'_tools/factdiff.py','anchor','--file',F,*x,'--dry-run'],capture_output=True,text=True,timeout=120);return p.returncode,p.stdout+p.stderr\nfact=a('--lines','17');nofact=a('--lines','3')\nt=open('agents/worker.md',encoding='utf-8').read();rule='--lines' in t[t.find('3. **Done bar.**'):t.find('4. **')]\nprint('fact line',fact[0],'| no-fact line',nofact[0],'| worker rule names --lines',rule);sys.exit(0 if fact[0]==0 and 'sources=0' in fact[1] and nofact[0]==2 and rule else 1)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "factdiff.py anchor --file F --lines N[,N...] anchors only the facts on those lines of F and exits 2 for a line that holds no fact, as gate g1 records",
+      "check": 0
+    },
+    {
+      "clause": "the worker role file's done bar has a worker pass the lines of the facts its item wrote or reworded, so no anchor row of an untouched fact lands in its commit. SP-xo45jvbj and SP-6jfnx5i3: anchor --file anchored untouched facts and done refused the rows",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "agents/worker.md",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does a worker keep anchor rows of facts its item did not touch out of its commit?",
+      "options": [
+        "a --lines N[,N...] option of anchor --file, and the worker rule passes the item's own fact lines",
+        "a --since REF option that anchors only the facts whose line changed from REF",
+        "the worker rule only: restore the rows of untouched facts before the commit"
+      ],
+      "recommendation": "a --lines N[,N...] option of anchor --file, and the worker rule passes the item's own fact lines",
+      "do": {
+        "a --lines N[,N...] option of anchor --file, and the worker rule passes the item's own fact lines": "ST-7lxg3u4h",
+        "a --since REF option that anchors only the facts whose line changed from REF": "ST-7lxg3u4h",
+        "the worker rule only: restore the rows of untouched facts before the commit": "ST-7lxg3u4h"
+      },
+      "class": "agents-rule",
+      "answer": "a --lines N[,N...] option of anchor --file, and the worker rule passes the item's own fact lines",
+      "by": "operator"
     }
   ],
   "links": [
     "parked: SP-xo45jvbj close"
   ],
-  "notes": "SP-6jfnx5i3 2026-10-17: again: ST-jqzp3hai's factdiff.py anchor --file on shared-state-concurrency.md added unlocated anchor rows for the untouched MCP DER facts (about lines 310-314), which done refused."
+  "notes": "SP-6jfnx5i3 2026-10-17: again: ST-jqzp3hai's factdiff.py anchor --file on shared-state-concurrency.md added unlocated anchor rows for the untouched MCP DER facts (about lines 310-314), which done refused. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (--lines is no option: exit 2). It runs offline: line 17 of secret-shapes-in-text.md is a fact whose rows are located, so a dry run fetches nothing. Recurs with ST-adepxxe3 (SP-z3jcdsgr) and ST-3erithkf (SP-3g3egfll). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside."
 }
