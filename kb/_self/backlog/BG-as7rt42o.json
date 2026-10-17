@@ -2,7 +2,7 @@
   "id": "BG-as7rt42o",
   "kind": "bug",
   "title": "coord.py accepts --ttl nan or inf and --timeout nan, so a lease never expires and a wait never ends",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
-  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'ttl_nan': 0, 'ttl_inf': 0, 'wait_nan': 'hung'}). Ordered after BG-vxwibl62 (coord.py)."
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'ttl_nan': 0, 'ttl_inf': 0, 'wait_nan': 'hung'}). Ordered after BG-vxwibl62 (coord.py).",
+  "claimed_by": "orch-r04"
 }
