@@ -2,7 +2,7 @@
   "id": "ST-3gfykmit",
   "kind": "story",
   "title": "backlog.py set takes --commit, so the orchestrator rewords an item on a worker's branch without resuming its session",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-rsmmwzr2 close"
   ],
-  "notes": "SP-4dab3cy5 2026-10-17: the orchestrator reworded ST-5mcrotet's goal on the worker's branch with `backlog.py --root <worktree> set` and a hand commit with KB-Work, since set has no --commit (answer has one). Goal before the 2026-10-17 plan: SP-rsmmwzr2 close: ST-unrlktke's researched check failed only on its goal's wording; set has no --commit, so the orchestrator resumed the Sonnet worker to run set and commit the item file, which cost about 2.6 USD for a two-line change (result.json of the resume). backlog.py --root <worktree> set ID ... --commit commits the item file alone with KB-Work, as answer --commit does. Plan 2026-10-17: recurring (SP-rsmmwzr2 close, SP-4dab3cy5: a hand commit on a worker's branch for a reworded goal). Check: a planted repo where set --add-notes --commit must commit the item file alone with KB-Work while another file is dirty; on origin/main b871374b4 set exits 2 (unrecognized --commit). The kb-sprint run step 4.1 names set --commit beside answer --commit."
+  "notes": "SP-4dab3cy5 2026-10-17: the orchestrator reworded ST-5mcrotet's goal on the worker's branch with `backlog.py --root <worktree> set` and a hand commit with KB-Work, since set has no --commit (answer has one). Goal before the 2026-10-17 plan: SP-rsmmwzr2 close: ST-unrlktke's researched check failed only on its goal's wording; set has no --commit, so the orchestrator resumed the Sonnet worker to run set and commit the item file, which cost about 2.6 USD for a two-line change (result.json of the resume). backlog.py --root <worktree> set ID ... --commit commits the item file alone with KB-Work, as answer --commit does. Plan 2026-10-17: recurring (SP-rsmmwzr2 close, SP-4dab3cy5: a hand commit on a worker's branch for a reworded goal). Check: a planted repo where set --add-notes --commit must commit the item file alone with KB-Work while another file is dirty; on origin/main b871374b4 set exits 2 (unrecognized --commit). The kb-sprint run step 4.1 names set --commit beside answer --commit.",
+  "claimed_by": "orch-r11"
 }
