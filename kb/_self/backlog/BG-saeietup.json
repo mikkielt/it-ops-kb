@@ -1,0 +1,25 @@
+{
+  "id": "BG-saeietup",
+  "kind": "bug",
+  "title": "redact keeps the tail of an escaped-JSON secret value after a nested escaped quote",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "redact replaces the whole value of an escaped-JSON secret assignment whose value holds a nested escaped quote ({\\\"password\\\": \\\"a\\\\\\\"b...\\\"}), at each escape level, and a second pass changes nothing. SP-g4mwrwsv review gap 1: the escaped-quote alternatives of ASSIGNMENT (_tools/redact.py) end the value at the first backslash run before a quote, so the part after a nested escaped quote stays.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact as R;b=chr(92);q=chr(34);v=\"kePass\"+\"12345x\";t=\"{\"+b+q+\"pass\"+\"word\"+b+q+\": \"+b+q+\"a\"+b+b+b+q+\"b\"+v+b+q+\"}\";o=R.redact(t);print(o);sys.exit(1 if v in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv review"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "BG-my67pcip",
+  "kind": "bug",
+  "title": "redact takes any word]: or word]= in prose for a bracketed secret key and replaces the text after it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "redact replaces a bracketed-key assignment (cfg['password'] = 'v', cfg[\"password\"] = \"v\") only when the key has its opening bracket and quote, so prose and markdown such as '[Secret]: see the docs for rotation' and a '[password]: https://x.example.com/a' reference link stay whole. SP-g4mwrwsv review gap 2: the bracket part of ASSIGNMENT that gate g1 of BG-efbghw7n ('both') allowed makes the closing bracket optional and needs no opening one.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact as R;t=\"[Secret]: see the docs for rotation\";o=R.redact(t);print(o);sys.exit(0 if o==t else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv review"
+  ]
+}

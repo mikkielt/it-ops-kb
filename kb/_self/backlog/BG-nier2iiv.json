@@ -1,0 +1,24 @@
+{
+  "id": "BG-nier2iiv",
+  "kind": "bug",
+  "title": "The store gate accepts a gap or conflict finding lead that redact.redact would change",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_store.record_problems refuses a gap or conflict finding whose lead redact.redact would change, as feedback_problems does for a feedback lead since BG-boyagwh4. SP-g4mwrwsv review gap 3: the finding lead gate checks only public_url and redact.scan, so a lead with ;api_key=<value> in its path is accepted (today the lead is copied from a stored feedback lead, ql_learn.py, so it is not reached in normal use).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import ql_store as S;u=\"https://docs.example.net/p/api_\"+\"key=hunter2xFake\";r={\"id\":\"F-\"+\"0\"*12,\"kind\":\"gap\",\"state\":\"open\",\"stage\":\"miss\",\"entry\":\"x\",\"lead\":u};p=[x for x in S.record_problems(r,\"w\",{\"x\"},None) if \"lead\" in x];print(p);sys.exit(0 if p else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_store.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv review"
+  ]
+}
