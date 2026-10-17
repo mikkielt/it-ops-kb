@@ -2,7 +2,7 @@
   "id": "ST-tutlrc2h",
   "kind": "story",
   "title": "Review sprint: Landings read an item's net work and coord keeps live sessions visible",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r11"
 }
