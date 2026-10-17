@@ -1,0 +1,20 @@
+{
+  "id": "SP-yyjwfjtc",
+  "kind": "sprint",
+  "title": "redact catches every common secret shape",
+  "status": "planned",
+  "goal": "no secret value that redact is meant to catch reaches the spool, the query log store or any committed text",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
