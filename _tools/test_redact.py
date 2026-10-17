@@ -317,8 +317,12 @@ def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monk
                 {**good, "lines": [{"line": "see the docs", "issue": "wrong"}]}, {**good, "best": "../outside.md"},
                 {**good, "lead": "http://pl-srv-0042.corp/page"}, {**good, "outcome": "fine"}, {**good, "judged_by": "bot"},
                 {**good, "lead": f"https://learn.microsoft.com/en-us/intune/page?{prose}#more+free+text"},
-                {**good, "lead": "https://learn.microsoft.com/en-us/intune/page#more"}):
+                {**good, "lead": "https://learn.microsoft.com/en-us/intune/page#more"},
+                {**good, "lead": "https://docs.example.net/p/api_" + "key=" + "hunter" + "2xFake"}):  # a secret in the path
         assert ql_store.feedback_problems([bad], "e"), bad
+    secret_url = "https://docs.example.net/p/api_" + "key=" + "hunter" + "2xFake"
+    kept = ql_distill.feedback_report({"outcome": "misled", "source_url": secret_url}, None, ql_learn.KbPages())
+    assert kept["lead"] is None and "2xFake" not in str(kept)  # distill keeps no lead redact would change
     planted = {**first, "feedback": [{**good, "comment": comment}]}
     assert any("free text" in p for p in ql_store.entry_problems(planted, "e", None))
     assert ql_store.entry_problems({k: v for k, v in alone[0].items() if k != "feedback"}, "e", None)  # none of its own
