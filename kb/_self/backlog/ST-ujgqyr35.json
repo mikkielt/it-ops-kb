@@ -2,7 +2,7 @@
   "id": "ST-ujgqyr35",
   "kind": "story",
   "title": "A connect cut short by the remaining revalidation budget starts no down window for a healthy slow host",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -40,5 +40,18 @@
     "parked: SP-u5q37ds3 review"
   ],
   "notes": "Plan 2026-10-17: the check exits 1 on 7cb5e0cbb at its second assertion (a connect cut short by budget(0.6) started a down window); its first, an unbudgeted connect timeout still starts one, holds and must stay.",
-  "claimed_by": "orch-r07"
+  "evidence": {
+    "commit": "74b736f4f07b66be2ce8b9f926b0e032295b1cb1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport sys, time, socket, tempfile, urllib.request, urllib.error\nsys.path.insert(0, '_tools')\nimport provider as P\nP.DOWN_DIR = tempfile.mkdtemp()\nP._down.clear()\ndef fake_open(self, req, data=None, timeout=None):\n    if timeout is not None and timeout < P.TIMEOUT:\n        time.sleep(timeout)\n    raise urllib.error.URLError(socket.timeout('timed out'))\nurllib.request.OpenerDirector.open = fake_open\nslow, down = 'https://slow.example.com/x', 'https://down.example.com/x'\nwith P.down_window():\n    P.gated_request(down)\n    down_window_started = bool(P.host_down(down))\n    with P.budget(0.6):\n        P.gated_request(slow)\n    slow_window = P.host_down(slow)\nprint('unbudgeted timeout starts a window:', down_window_started, '| budget-cut connect window:', slow_window)\nsys.exit(0 if down_window_started and slow_window is None else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "54a2e090c0ca13ad"
+      }
+    ]
+  }
 }
