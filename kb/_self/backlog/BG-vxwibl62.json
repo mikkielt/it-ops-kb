@@ -2,7 +2,7 @@
   "id": "BG-vxwibl62",
   "kind": "bug",
   "title": "coord.py put needs no holder token, so any agent can overwrite the value of a key another agent has claimed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -63,5 +63,6 @@
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
-  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (put on a leased key without its token exit 0). Ordered after BG-p2jcpxhl: both change coord.py put and claim."
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (put on a leased key without its token exit 0). Ordered after BG-p2jcpxhl: both change coord.py put and claim.",
+  "claimed_by": "orch-r04"
 }
