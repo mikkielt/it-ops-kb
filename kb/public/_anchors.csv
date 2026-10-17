@@ -3968,7 +3968,7 @@ d4e43dc46cbe,arch/docs-home-options.md,S1730,unlocated:no-match,,,,,2026-10-10
 091929c9e8b1,arch/fluent-rust-typescript.md,S-adkxxbxo,located,Struct IntlLangMemoizer > Auto Trait Implementations§,send;sync;memoizer,ba8546e0d637af45,impl !Send for IntlLangMemoizer § impl !Sync for IntlLangMemoizer,2026-10-14
 091929c9e8b1,arch/fluent-rust-typescript.md,S-sui7jilt,unlocated:no-match,,,,,2026-10-14
 091929c9e8b1,arch/fluent-rust-typescript.md,S-xxelwvq6,unlocated:no-match,,,,,2026-10-14
-0d6950be749f,arch/fluent-rust-typescript.md,S-dftqctth,unlocated:no-match,,,,,2026-10-15
+0d6950be749f,arch/fluent-rust-typescript.md,S-dftqctth,located,,creation;fallback;handl;languag;localization;string;bundl,304c35ee0da54cb1,"This handles language fallback, bundle creation and string localization.",2026-10-17
 18035162e78e,arch/fluent-rust-typescript.md,S-qucwxqjo,unlocated:no-match,,,,,2026-10-14
 18035162e78e,arch/fluent-rust-typescript.md,S-v5hog4zh,unlocated:no-match,,,,,2026-10-14
 198b0d91d6b9,arch/fluent-rust-typescript.md,S-ejm4457f,unlocated:no-match,,,,,2026-10-14
