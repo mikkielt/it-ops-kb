@@ -445,6 +445,7 @@ def research_without_facts(it):
 
 QUESTION_LEAD_WORDS = 8  # a lead-in of at most this many words before `: ` is no part of a narrowed goal's question
 TOUCH_ROOT = re.compile(r"kb/([^/*?\[\]]+)/")  # a touch inside a named kb root (`kb/public/**`: root `public`)
+SELF_ROOT = "_self"  # the root of the project's own rules, read beside the roots the touches name
 COVERAGE_ORDER = ("none", "weak", "good")
 
 
@@ -498,10 +499,15 @@ def joined_lead_in(goal):
 
 
 def research_roots(it):
-    """The kb roots an item's touches name (`kb/public/**`: `public`), in order; [] when none does, which reads every
-    root."""
+    """The kb roots an item's touches name (`kb/public/**`: `public`), in order, and `_self` after them (the root of
+    this project's own rules, which a question about a tool of the project is answered in, not in a public article);
+    [] when none does, which reads every root, and when `_self` is the only root named (a story touching just the
+    `_self` eval file), which would otherwise read `_self` alone."""
     found = (TOUCH_ROOT.match(t) for t in it.get("touches") or [] if isinstance(t, str))
-    return list(dict.fromkeys(m.group(1) for m in found if m))
+    roots = list(dict.fromkeys(m.group(1) for m in found if m))
+    if roots == [SELF_ROOT]:
+        return []
+    return roots + [SELF_ROOT] if roots else roots
 
 
 def question_coverage(question, roots):
