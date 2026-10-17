@@ -153,7 +153,7 @@ def _assigned(m):
         inner, tail = val[1:-1], q
     else:
         inner, tail = val[len(q):], ""
-    if not inner or ASSIGNED_PLACEHOLDER.match(inner):
+    if not inner or ASSIGNED_PLACEHOLDER.fullmatch(inner):
         return m.group(0)
     return key + q + PLACEHOLDERS["secret"] + tail
 
