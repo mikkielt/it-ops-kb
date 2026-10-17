@@ -44,7 +44,9 @@
         "retry at next SessionStart": "BG-ljlj77kd",
         "wait longer inside SessionEnd": "BG-ljlj77kd"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "retry at next SessionStart",
+      "by": "operator"
     },
     {
       "id": "g2",
