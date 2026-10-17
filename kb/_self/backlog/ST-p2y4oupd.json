@@ -1,0 +1,26 @@
+{
+  "id": "ST-p2y4oupd",
+  "kind": "story",
+  "title": "A goal that lists exceptions gets a planted near-miss case for each exception in its check",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning gives each exception a goal clause lists (a value that is already a placeholder, an allowed form) a planted case that only begins like or resembles the exception and must still be caught, beside the exception itself, and kb/_self/backlog.md step 6 states it as a tested _self question. SP-yyjwfjtc close: BG-w5d2mvwz's checks planted the placeholders themselves only, passed, and the review found password=$FakePass... kept whole because the exception tested the start of the value (BG-hqgtovpo).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "what planted case does a check carry for each exception a goal clause lists"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc close"
+  ]
+}

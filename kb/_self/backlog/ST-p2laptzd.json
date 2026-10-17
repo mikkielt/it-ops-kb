@@ -1,0 +1,26 @@
+{
+  "id": "ST-p2laptzd",
+  "kind": "story",
+  "title": "A planned item that renames, adds or removes a test id has _tools/test_ids_baseline.txt in its touches",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning puts _tools/test_ids_baseline.txt in the touches of an item whose goal renames, adds or removes a test id (or states why the baseline is left), and kb/_self/backlog.md states it as a tested _self question. SP-yyjwfjtc close: ST-zauxo6rs renamed the planted-leak test, its worker could not update the baseline outside its touches, and perfcheck.py ids --against the baseline now exits 1 (ST-rld52wrr).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "which touches does a planned item that renames a test id carry for the test id baseline"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc close"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-hkvvbd4o",
+  "kind": "story",
+  "title": "A rule-set pack says in its first line that its lines are the rules and it has no coverage verdict",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The first line of python3 _tools/rag.py pack --root _self --set NAME says the set prints each tested rule question with its answering line and gives no coverage verdict, so a worker does not read a missing verdict as coverage none. SP-yyjwfjtc close: the ST-vaicbwt7 worker reported --set kb-worker as coverage: none and worked from the brief alone, while the set printed its 13 tested questions with their lines.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",\"--set\",\"kb-worker\"],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage\" in o.splitlines()[0] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc close"
+  ]
+}

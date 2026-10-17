@@ -1,0 +1,26 @@
+{
+  "id": "ST-lcj5ckzg",
+  "kind": "story",
+  "title": "A plan for a redact or scrubber item asks the gate on truncated and partial input before the start",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning an item that adds a redaction or scrubber rule for a delimited shape (a block with BEGIN and END lines, a quoted value, a header) asks, before the start gate, what the rule does with a cut-off or partial instance, and kb/_self/backlog.md states it as a tested _self question. SP-yyjwfjtc close: BG-d2ezi7qd's worker found the cut-off private key block case mid-work, recommended keeping the body, and the orchestrator answered the other way against the sprint goal and resumed the worker for the change (one extra session).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "what does planning ask about a cut-off or partial instance for an item that adds a redaction rule"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc close"
+  ]
+}

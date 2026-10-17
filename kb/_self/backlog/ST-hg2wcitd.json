@@ -1,0 +1,26 @@
+{
+  "id": "ST-hg2wcitd",
+  "kind": "story",
+  "title": "A skill-text check for a rule that names kinds a tool handles lists those kinds from the code",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A planned check of a skill or doc sentence that asks for 'each kind a tool handles' reads the kinds the code handles (its rule names or pattern list) and fails when the sentence names fewer, not only the presence of two words, and kb/_self/backlog.md states it as a tested _self question. SP-yyjwfjtc close: ST-cif2s7rc's check read only the words 'redact' and 'assignment', passed, and the sentence defines each kind as the kbcommon.SECRETS shapes only, missing the header, URL, key block and entropy rules (ST-uuh2gs6p).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "how does a check of a skill sentence that asks for each kind a tool handles read those kinds"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc close"
+  ]
+}

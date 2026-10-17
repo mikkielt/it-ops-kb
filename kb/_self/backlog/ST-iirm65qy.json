@@ -1,0 +1,24 @@
+{
+  "id": "ST-iirm65qy",
+  "kind": "story",
+  "title": "A gate is not classed secrets only because a slug or test name holds the word secret",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.class_reasons classes a gate secrets on what its question and options decide about a secret, not on the word secret inside an article slug, a test name or a helper name (security/secret-shapes-in-text, secret_plants), so a placement or naming gate stays design. SP-yyjwfjtc close: ST-vaicbwt7 g1 (where an article lives) and ST-zauxo6rs g1 (a test's name) were made blocking as class secrets by the word alone.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import bl_authority as A;g={\"id\":\"g1\",\"question\":\"Where do the findings live: a new article security/secret-shapes-in-text, or an existing article?\",\"options\":[\"new article security/secret-shapes-in-text\",\"extend an existing article\"]};c=A.class_reasons({\"touches\":[\"kb/public/**\"]},g);print(c);sys.exit(0 if c[0]!=\"secrets\" else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc close"
+  ]
+}
