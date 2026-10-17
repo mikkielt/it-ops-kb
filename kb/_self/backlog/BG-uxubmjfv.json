@@ -2,7 +2,7 @@
   "id": "BG-uxubmjfv",
   "kind": "bug",
   "title": "A kb-content gate whose do or host_check command writes to a forge, or whose url path names a release, is no longer classed push",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aoiqmnc6",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,18 @@
     "kb/_self/tools.md"
   ],
   "notes": "Filed 2026-10-17 by the SP-aoiqmnc6 review (reviewer graded S2; the orchestrator, acting for the operator, files it S1 because it lowers the push class, an operator-authority guard, against BG-e3o47d6s g1's answer). Premise on 098946887: the repro exits 1 (do_curl, do_gh, host_release, url_release all design). 'tag' was never a push word: a question naming only a tag is out of scope. No new test.",
-  "claimed_by": "orch-r06"
+  "evidence": {
+    "commit": "1c4247fb97bff2e0aa0f8c3bfeb64b6de140590b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nkb={'touches':['kb/public/gitlab/x.md']}\ndef c(q,**k):\n    g=dict(id='g1',question=q,options=['yes','no'],**k);return a.class_reasons(kb,g)[0]\nr=dict(do_curl=c('Create the tag now?',do={'yes':['curl','-X','POST','https://gitlab.com/api/v4/projects/1/repository/tags']}),\n       do_gh=c('Go?',do={'yes':['gh','pr','merge','12','--repo','github']}),\n       host_release=c('Go?',host_check=['curl','-sf','https://github.com/org/repo/releases/1']),\n       url_release=c('Is the asset at github.com/org/repo/releases/download/v1?'),\n       vendor_ok=c('Which GitLab doc row stays?'))\nprint(r);sys.exit(0 if all(v=='push' for k,v in r.items() if k!='vendor_ok') and r['vendor_ok']=='design' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "baf98617580d7713"
+      }
+    ]
+  }
 }
