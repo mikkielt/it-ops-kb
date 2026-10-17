@@ -1,0 +1,21 @@
+{
+  "id": "ST-nuk626qk",
+  "kind": "story",
+  "title": "Planning gives a race fix a check that plants the race on the behaviour, not a hook on the one system call the old code made",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: BG-s3iuw4x2's repro planted the third waiter by patching os.link; the fix stopped calling os.link, so the repro passed with no race planted, and the orchestrator sent the worker back to add a check that tries the third waiter's create at every call of the clear. Planning a lock, lease or race fix gives it one check that plants the competing actor around every file operation of the path (or drives real concurrent processes), so a redesign of the path cannot pass it vacuously.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'pass it vacuously' in open('.claude/skills/kb-sprint/SKILL.md').read() else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

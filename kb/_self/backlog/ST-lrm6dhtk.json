@@ -1,0 +1,21 @@
+{
+  "id": "ST-lrm6dhtk",
+  "kind": "story",
+  "title": "Filing a review gap shows the open drafts that already hold its repro or its words, so a duplicate gets a note and not a new item",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: the review gap BG-txllfs4n (coord.py wait --timeout 1e308 through --url ends in an OverflowError) was filed although BG-gmaaoumg (SP-rsmmwzr2 review) already names wait --timeout 1e12 raising OverflowError; the orchestrator found it only afterwards. new bug or new story prints the open drafts that share the title's key words or the repro's command before it writes, so the gap is added as a note instead.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys;sys.path.insert(0,'_tools');import bl_items;s=inspect.getsource(bl_items);sys.exit(0 if 'similar open' in s else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

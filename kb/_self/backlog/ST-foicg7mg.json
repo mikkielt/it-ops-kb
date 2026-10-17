@@ -17,5 +17,6 @@
   ],
   "links": [
     "parked: SP-xo45jvbj close"
-  ]
+  ],
+  "notes": "SP-6jfnx5i3 2026-10-17: again: ST-jqzp3hai's land stopped twice at done (outside-touches) for anchor rows of S704, S718, S2157, S-bisz7fay, S-gxbtrq7d, S-onc3gpse that its first commit added and a later worker commit removed; the orchestrator folded the removal into the first commit to land."
 }

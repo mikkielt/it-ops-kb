@@ -1,0 +1,21 @@
+{
+  "id": "ST-boqmzypx",
+  "kind": "story",
+  "title": "A worker checks a path against its touches with in_scope before it calls the path outside them",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: ST-jqzp3hai's worker closed its research question with a gap entry and gave as reason that kb/public/_sources.csv was outside its touches, which were kb/public/**; the gap entry was a valid choice, but the reason was wrong. The worker rules have a worker run bl_base.in_scope (or backlog.py's scope check) on a path before it names the path outside its touches in a gate or report.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'in_scope' in open('.claude/agents/kb-worker.md').read() else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

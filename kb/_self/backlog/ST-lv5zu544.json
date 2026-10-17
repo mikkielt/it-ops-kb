@@ -1,0 +1,21 @@
+{
+  "id": "ST-lv5zu544",
+  "kind": "story",
+  "title": "A worker whose report names a limit that contradicts a goal clause records it as a gate or keeps working, not as a limit of a finished item",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: BG-s3iuw4x2's first report listed under Limits that the third waiter can still share the critical section, while the goal says two of three contenders never both hold the lock; the orchestrator caught it by reading the report and resumed the worker, which then met the clause. The worker rules say a limit that contradicts a goal clause is unfinished work or a blocking gate, never a limit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'contradicts a goal clause' in open('.claude/agents/kb-worker.md').read().lower() else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

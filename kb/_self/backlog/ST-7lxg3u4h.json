@@ -17,5 +17,6 @@
   ],
   "links": [
     "parked: SP-xo45jvbj close"
-  ]
+  ],
+  "notes": "SP-6jfnx5i3 2026-10-17: again: ST-jqzp3hai's factdiff.py anchor --file on shared-state-concurrency.md added unlocated anchor rows for the untouched MCP DER facts (about lines 310-314), which done refused."
 }

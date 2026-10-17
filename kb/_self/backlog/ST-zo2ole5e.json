@@ -1,0 +1,21 @@
+{
+  "id": "ST-zo2ole5e",
+  "kind": "story",
+  "title": "A sprint goal of one clause is written so close --summary can map it to the items that carry it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: the sprint goal 'the coordination service and the shared-state fixes hold up under real parallel use' split into two clauses that close --summary printed unmet, since no item's goal shares their words, though all eleven items carried them. Planning words a sprint goal so each clause shares words with an item that carries it, or maps each clause to its items.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,'_tools/backlog.py','close','--help'],capture_output=True,text=True).stdout;sys.exit(0 if '--map' in o or 'clause' in o else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

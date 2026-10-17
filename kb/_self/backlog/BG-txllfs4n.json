@@ -16,5 +16,6 @@
   },
   "links": [
     "parked: SP-6jfnx5i3 review"
-  ]
+  ],
+  "notes": "SP-6jfnx5i3 2026-10-17: duplicates BG-gmaaoumg (SP-rsmmwzr2 review G4, the same OverflowError on a huge --timeout through --url); kept, not dropped, under the run's no-drop rule; the two are worked as one."
 }

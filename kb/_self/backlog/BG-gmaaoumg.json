@@ -16,5 +16,6 @@
   },
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "SP-6jfnx5i3 2026-10-17: still holds on tip 2ff7c336b: coord.py --url http://127.0.0.1:9 --key-file F wait --since 0 --timeout 1e308 ends in OverflowError in socket.settimeout; filed again by the review as BG-txllfs4n."
 }

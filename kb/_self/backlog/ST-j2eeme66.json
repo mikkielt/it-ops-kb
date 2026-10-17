@@ -1,0 +1,21 @@
+{
+  "id": "ST-j2eeme66",
+  "kind": "story",
+  "title": "Planning a claim or lock race fix plants the race on the same key as well as on a neighbour key",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: BG-m7rrbdnm's repro planted another session's claim of a different item while the claim waited, and the fix re-read only the ledger ids' files; the review found the same-item race (both claims succeed), filed as S1 BG-4jtidln5 and fixed in the sprint. A concurrency fix's checks plant each case the goal's 'another session' covers: the same key and a different key.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.exit(0 if 'the same key and a different key' in open('.claude/skills/kb-sprint/SKILL.md').read() else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

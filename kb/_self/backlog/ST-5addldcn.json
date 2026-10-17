@@ -1,0 +1,21 @@
+{
+  "id": "ST-5addldcn",
+  "kind": "story",
+  "title": "land reruns the done checks of sprint siblings whose touches share a file with the landing item, so a landing that breaks a sibling's repro stops at its own landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 retrospective: BG-vxwibl62 (holder-only put) landed after BG-p2jcpxhl and broke BG-p2jcpxhl's repro, which put on a leased key without the holder's token; each landing ran only its own checks, so only the review story's done (rerun_done_checks) found it, and the orchestrator reopened BG-p2jcpxhl to correct the repro. A landing reruns the checks and repros of the sprint's done items whose touches share a file with its own and stops on one that fails.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_land;sys.exit(0 if hasattr(bl_land,'rerun_sibling_checks') else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 close"
+  ]
+}

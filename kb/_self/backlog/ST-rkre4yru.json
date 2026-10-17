@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-b36246xo close"
   ],
-  "notes": "SP-xo45jvbj 2026-10-16: three workers (ST-x6mvfnmv, ST-3qxh5vxo, BG-wh3wardm) reported stage-back --check from their worktree looked for a doubled worktree path and ran it with --root set to the orchestrator checkout."
+  "notes": "SP-xo45jvbj 2026-10-16: three workers (ST-x6mvfnmv, ST-3qxh5vxo, BG-wh3wardm) reported stage-back --check from their worktree looked for a doubled worktree path and ran it with --root set to the orchestrator checkout. SP-6jfnx5i3 2026-10-17: again: BG-iwqcj5zf's worker reported stage-back --check from its worktree failed on a doubled worktree path and ran it with --root on the orchestrator's tree."
 }
