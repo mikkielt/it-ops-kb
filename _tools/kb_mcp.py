@@ -1056,10 +1056,12 @@ def coord_digest(args):
 
 def coord_wait(args):
     timeout = args.get("timeout")
-    if isinstance(timeout, (int, float)) and timeout > COORD_WAIT_MAX_S:
-        raise ToolError(f"timeout is at most {COORD_WAIT_MAX_S} seconds: wait again with the returned last")
+    if timeout is None:
+        return coord_run(coord_argv("wait", args, ("since", "timeout"), {"since": "--since", "timeout": "--timeout"}))
+    if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or not 0 <= timeout <= COORD_WAIT_MAX_S:
+        raise ToolError(f"timeout is a number of seconds from 0 to {COORD_WAIT_MAX_S}: wait again with the returned last")
     return coord_run(coord_argv("wait", args, ("since", "timeout"), {"since": "--since", "timeout": "--timeout"}),
-                     wait_s=int(timeout or 0) if isinstance(timeout, (int, float)) else 0)
+                     wait_s=int(timeout))
 
 
 COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord_release": coord_release,
