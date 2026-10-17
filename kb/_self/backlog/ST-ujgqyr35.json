@@ -2,7 +2,7 @@
   "id": "ST-ujgqyr35",
   "kind": "story",
   "title": "A connect cut short by the remaining revalidation budget starts no down window for a healthy slow host",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -39,5 +39,6 @@
   "links": [
     "parked: SP-u5q37ds3 review"
   ],
-  "notes": "Plan 2026-10-17: the check exits 1 on 7cb5e0cbb at its second assertion (a connect cut short by budget(0.6) started a down window); its first, an unbudgeted connect timeout still starts one, holds and must stay."
+  "notes": "Plan 2026-10-17: the check exits 1 on 7cb5e0cbb at its second assertion (a connect cut short by budget(0.6) started a down window); its first, an unbudgeted connect timeout still starts one, holds and must stay.",
+  "claimed_by": "orch-r07"
 }
