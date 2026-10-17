@@ -34,7 +34,9 @@
         "Re-read the item files of the ledger's ids under the lock": "BG-m7rrbdnm",
         "Reload the whole Backlog under the lock": "BG-m7rrbdnm"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Re-read the item files of the ledger's ids under the lock",
+      "by": "operator"
     }
   ],
   "links": [
