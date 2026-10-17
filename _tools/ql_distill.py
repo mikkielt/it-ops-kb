@@ -401,7 +401,7 @@ def entry_of(rs, k):
     rs = sorted(rs, key=ts_of)
     prompt = next((r for r in rs if r.get("surface") == "prompt"), None)
     intent_ = prompt.get("kb_intent") if prompt and prompt.get("kb_intent") in ("lookup", "skill", "change") else None
-    kb = [r for r in rs if r.get("surface") in KB_SURFACES]
+    kb = [r for r in rs if r.get("surface") in KB_SURFACES and r.get("tool") != "kb_feedback"]  # a report is no lookup
     if not kb and not intent_:
         return None
     first = prompt or rs[0]
