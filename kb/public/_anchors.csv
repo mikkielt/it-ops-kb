@@ -8258,6 +8258,7 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-kzv2kznr,located,,writ;repository;file;git;config,42f9519b9ba6635b,For writing options: write to the repository .git/config file.,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-miw74ti3,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
+0ac9a21aac37,gitlab/git-test-repositories.md,S-oyhmktnd,unlocated:no-match,,,,,2026-10-17
 0b03d5a78c10,gitlab/git-test-repositories.md,S-b6uvvu45,located,,non-zero;stder;error;exit;non;zero;object,d559cf71b8067217,"If <object> is of an invalid format, exit with non-zero status and emit an error on stderr.",2026-10-10
 0b6d55388093,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 0dab76d422cc,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,eventually;automatically;see;remov,0fef2d3221c0bc19,will eventually be removed automatically,2026-10-13
@@ -8351,7 +8352,6 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 8dbeb41cbebb,gitlab/git-test-repositories.md,S-v45en2pm,located,,built;built-in;text;xdl;merg,a8513fb3983a32b4,"{ ""text"", ""built-in 3-way text merge"", llxdlmerge },",2026-10-17
 90c59b9ff312,gitlab/git-test-repositories.md,S-lnlroicz,located,Setup and Config > OPTIONS,leav;side;favour;resolv;union;both;instead;line,9d203aa431a55d3f,"--union Instead of leaving conflicts in the file, resolve conflicts favouring our (or their or both) side of the lines.",2026-10-10
 93fa1d0590f5,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
-94beee677b4e,gitlab/git-test-repositories.md,S-oyhmktnd,located,,overlap;conflict,b713270cb817d1dc,level == 0: mark all overlapping changes as conflict,2026-10-17
 97235b87aa93,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
 9836dbdfe3a7,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
 9ad52a888f26,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,maps;refspec;target;note;includ;mirror;remote-track;bare,e8328dd5177335e3,"Compared to --bare, --mirror not only maps local branches of the source to local branches of the target, it maps all refs (including remote-tracking branches,",2026-10-15
