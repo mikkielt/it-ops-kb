@@ -1,0 +1,24 @@
+{
+  "id": "ST-mxurg2h4",
+  "kind": "story",
+  "title": "Research sprint goal: Landings read an item's net work and coord keeps live sessions visible",
+  "status": "draft",
+  "sprint": "SP-4cc36epy",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-mxurg2h4"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ]
+}
