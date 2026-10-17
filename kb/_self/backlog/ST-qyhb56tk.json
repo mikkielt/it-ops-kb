@@ -48,6 +48,25 @@
   "depends_on": [
     "ST-mpwzinrm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does land's 1800 s default live, and what does a Namespace without wait_merge do?",
+      "options": [
+        "argparse default in args_land",
+        "cmd_land applies the default itself"
+      ],
+      "recommendation": "argparse default in args_land",
+      "do": {
+        "argparse default in args_land": "ST-qyhb56tk",
+        "cmd_land applies the default itself": "ST-qyhb56tk"
+      },
+      "class": "agents-rule",
+      "answer": "argparse default in args_land",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-ysuvdxsn close"
   ],
