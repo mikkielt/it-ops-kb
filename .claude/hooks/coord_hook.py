@@ -22,8 +22,8 @@ proceed; as one JSON object, its `systemMessage` (the operator's terminal) and `
 (Claude's context). With no other session overlapping, a hook prints nothing. No hook blocks or exits 2: an overlap
 informs, the operator decides; a missing store, an unreadable payload or any error ends in silence and exit 0.
 
-The store is `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the clone's common git directory, which the clone's
-worktrees share. The lease token and items of a session sit in `_cache/coord_hook/<session id>.json` until its end.
+The store is coord.py's own: `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the clone's common git directory, which
+the clone's worktrees share. The lease token and items of a session sit in `_cache/coord_hook/<session id>.json` until its end.
 """
 import json, os, re, subprocess, sys
 
@@ -47,18 +47,9 @@ def safe(text):
 
 def coord(*args):
     """(exit code, stdout) of one coord.py command; (None, "") when it cannot run."""
-    env = dict(os.environ)
-    if not env.get("KB_COORD_STORE"):
-        try:
-            p = subprocess.run(["git", "-C", HOME, "rev-parse", "--git-common-dir"], capture_output=True, text=True,
-                               encoding="utf-8", timeout=10)
-            common = os.path.join(HOME, p.stdout.strip())
-        except (OSError, subprocess.TimeoutExpired):
-            return None, ""
-        env["KB_COORD_STORE"] = os.path.join(common, "kb-coord", "coord.sqlite")
     try:
         p = subprocess.run([sys.executable, COORD, *args], capture_output=True, text=True, encoding="utf-8",
-                           errors="replace", env=env, timeout=8)
+                           errors="replace", timeout=8)
     except (OSError, subprocess.TimeoutExpired):
         return None, ""
     return p.returncode, p.stdout

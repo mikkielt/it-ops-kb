@@ -914,7 +914,7 @@ COORD = Path(TOOLS, "coord.py")
 COORD_WAIT_MAX_S = 60  # this server answers one request at a time: a wait holds every other tool call for as long
 COORD_RUN_S = 120
 COORD_DOCS = ("Claims, leases and events other agents share (coord.py; not kb facts, not live device data). "
-              "Runs against KB_COORD_STORE, or against the coord.py serve address KB_COORD_URL names with the token in "
+              "Runs against KB_COORD_STORE (else the clone's own store, the one the coord hook uses), or against the coord.py serve address KB_COORD_URL names with the token in "
               "KB_COORD_KEY_FILE. ")
 COORD_KEY = {"type": "string", "description": "the key: a backlog item id, or a topic or path key"}
 COORD_TOKEN = {"type": "string", "minLength": 1, "description": "the holder token coord_claim returned; without it nothing is renewed or released"}
@@ -993,7 +993,7 @@ def coord_argv(command, args, allowed, flags):
 
 
 def coord_run(argv, wait_s=0):
-    """Run coord.py with argv on the local store (KB_COORD_STORE) or, when KB_COORD_URL and KB_COORD_KEY_FILE name a
+    """Run coord.py with argv on the local store (KB_COORD_STORE, else coord.py's default) or, when KB_COORD_URL and KB_COORD_KEY_FILE name a
     server, against it; its stdout, or a ToolError holding its refusal when it exits non-zero."""
     url, key_file = os.environ.get("KB_COORD_URL"), os.environ.get("KB_COORD_KEY_FILE")
     if bool(url) != bool(key_file):
