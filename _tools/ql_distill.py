@@ -501,7 +501,8 @@ def feedback_report(r, k, pages):
     the row's value has that shape: `outcome` (FEEDBACK_OUTCOMES), `judged_by` (`agent` unless the row says `user`),
     `lines` (a kb path:line with an issue class, each line once), `best` (an article path), `sources` (the ids of the
     kb sources whose url the row's `source_url` is: `pages.named_ids`) or else `lead` (that url, when it passes the
-    research candidate url gate and the leak scan), both from the url with its query and fragment dropped
+    research candidate url gate and the leak scan, and redact.redact leaves it unchanged: a secret assignment in its
+    path stays out), both from the url with its query and fragment dropped
     (`ql_research.bare_url`), `tool_issue`; and `comment`, the row's text when the row has
     no outcome, which only Haiku's mapping reads (never stored). `claim` and every other field stay out."""
     import redact, ql_research
@@ -515,7 +516,7 @@ def feedback_report(r, k, pages):
     sources, lead = [], None
     if url and len(url) <= ARG_MAX_CHARS:
         sources = pages.named_ids(url)
-        if not sources and ql_research.public_url(url) and not redact.scan(url, k):
+        if not sources and ql_research.public_url(url) and not redact.scan(url, k) and redact.redact(url, k) == url:
             lead = url
     outcome = r.get("outcome") if r.get("outcome") in FEEDBACK_OUTCOMES else None
     comment = r.get("comment").strip() if isinstance(r.get("comment"), str) else ""
