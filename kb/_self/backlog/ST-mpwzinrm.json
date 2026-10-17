@@ -62,7 +62,9 @@
         "one-line hunks only, touching words conflict": "ST-mpwzinrm",
         "equal-line hunks, touching words merged": "ST-mpwzinrm"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "equal-line hunks, touching words conflict",
+      "by": "operator"
     }
   ],
   "links": [
