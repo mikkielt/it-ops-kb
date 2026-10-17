@@ -61,7 +61,9 @@
         "keep the token and try again after 60 seconds": "BG-ljlj77kd",
         "drop the token and claim again": "BG-ljlj77kd"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "keep the token and try again after 60 seconds",
+      "by": "operator"
     }
   ],
   "links": [
