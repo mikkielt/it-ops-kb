@@ -32,6 +32,25 @@
   "depends_on": [
     "BG-nlbltqk3"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the coord_post description state the session/<id> claim?",
+      "options": [
+        "In the coord_post description only",
+        "Also in the coord_digest description"
+      ],
+      "recommendation": "In the coord_post description only",
+      "do": {
+        "In the coord_post description only": "ST-rbdvvnk3",
+        "Also in the coord_digest description": "ST-rbdvvnk3"
+      },
+      "class": "design",
+      "answer": "In the coord_post description only",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-6jfnx5i3 review"
   ],
