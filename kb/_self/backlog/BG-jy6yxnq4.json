@@ -58,7 +58,9 @@
         "the state file keeps the expiry the last renew from a tool event returned; a SessionStart keeps none, so the first tool event after a start renews once and reads the expiry from the store": "BG-jy6yxnq4",
         "the state file keeps the expiry the claim or renew at SessionStart returned": "BG-jy6yxnq4"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "the state file keeps the expiry the last renew from a tool event returned; a SessionStart keeps none, so the first tool event after a start renews once and reads the expiry from the store",
+      "by": "operator"
     }
   ],
   "links": [
