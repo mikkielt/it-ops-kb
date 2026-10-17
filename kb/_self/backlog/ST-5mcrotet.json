@@ -7,7 +7,7 @@
   "sprint": "SP-4dab3cy5",
   "priority": "P3",
   "rank": 0,
-  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) What does the Claude Code status line command receive as input, such as cost, context window use and session id? (2) What does a Notification hook receive, and when does it fire? (3) How do channels relay permission prompts, and what does Remote Control let an operator approve from another device?",
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research; (1) What does the Claude Code status line command receive as input, such as cost, context window use and session id? (2) What does a Notification hook receive, and when does it fire? (3) How do channels relay permission prompts, and what does Remote Control let an operator approve from another device?",
   "checks": [
     {
       "run": [
@@ -20,7 +20,11 @@
   ],
   "clauses": [
     {
-      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) What does the Claude Code status line command receive as input, such as cost, context window use and session id? (2) What does a Notification hook receive",
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research",
+      "check": 0
+    },
+    {
+      "clause": "(1) What does the Claude Code status line command receive as input, such as cost, context window use and session id? (2) What does a Notification hook receive",
       "check": 0
     },
     {
