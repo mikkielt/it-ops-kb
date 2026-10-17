@@ -2,7 +2,7 @@
   "id": "ST-iruhuepw",
   "kind": "story",
   "title": "Review sprint: Feedback recorded once, joined right and shown; revalidation treats slow or redirecting hosts right",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ficl7pxl",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r07"
+  "evidence": {
+    "commit": "2eea43d8f9416e8d97ea33dfaa58bdb079bd786f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "2d52ecd1d051ef17"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "b3e400265fbcc26e"
+      }
+    ]
+  }
 }
