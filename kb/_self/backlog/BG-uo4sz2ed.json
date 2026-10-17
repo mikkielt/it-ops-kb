@@ -2,7 +2,7 @@
   "id": "BG-uo4sz2ed",
   "kind": "bug",
   "title": "kb!: reads a negated word as the issue, so 'nothing wrong with PATH:LINE' records outcome misled and flags a correct line",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,
@@ -68,5 +68,27 @@
     "parked: SP-ficl7pxl review"
   ],
   "notes": "Goal before the 2026-10-17 plan: read_user_report leaves a word under a negation (not, nothing, no) out of the closed fields, so a positive kb!: report records no misled outcome and no wrong or stale line; the text stays a redacted comment. Found by the SP-ficl7pxl review (ST-h3y6iym4 gate g2). Plan 2026-10-17: SP-ficl7pxl review. Repro on origin/main b871374b4 exits 1 (both negated reports record misled). The check plants the negated case beside a plain wrong report, which must still record misled and the line (ST-qmb2vefm, retro); it fails today on the negated half.",
-  "claimed_by": "orch-r12"
+  "evidence": {
+    "commit": "a56306a252f09c3776f13db5e98c5c640023ff40",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import ql_capture as C\nneg=C.read_user_report(\"nothing wrong with public/claude/hooks.md:60, it is right\",lambda x:x) or {}\npos=C.read_user_report(\"wrong: public/claude/hooks.md:60 names the old event\",lambda x:x) or {}\nprint(neg,pos)\nok=neg.get(\"outcome\")!=\"misled\" and bool(neg.get(\"comment\")) and pos.get(\"outcome\")==\"misled\" and any(l.get(\"issue\")==\"wrong\" for l in pos.get(\"lines\") or [])\nsys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8ce20bb68f5a9085"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import ql_capture as C;r=[C.read_user_report(t,lambda x:x) for t in [\"nothing wrong with public/claude/hooks.md:60, it is right\",\"not stale: public/claude/hooks.md:60 is current\"]];print(r);sys.exit(1 if any((x or {}).get(\"outcome\")==\"misled\" or any(l.get(\"issue\") in (\"wrong\",\"stale\") for l in ((x or {}).get(\"lines\") or [])) for x in r) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "ab2a95d787351590"
+      }
+    ]
+  }
 }
