@@ -1828,7 +1828,9 @@ def item_state(root, rev, iid):
 def verify_landed(root, remote, upstream, iid):
     """After sync --push reported success: fetch the integration main and require that the item's done commit (the
     last commit on HEAD that wrote its file) is on it and that its file reads done there. Stops, naming the step,
-    when it is not: a sync that gave up quietly must never end in `landed`."""
+    when it is not: a sync that gave up quietly must never end in `landed`. The check is a step of its own in the ops
+    rows (`land.step` `verify`), so a stop here is named by a row with exit 1 and not left to the push row."""
+    ops_mark("verify")
     land_git(root, "verify", "fetch", "--quiet", remote, f"+refs/heads/main:{upstream}")
     done = git(root, "log", "-1", "--format=%H", "HEAD", "--", f"{rel_dir()}/{iid}.json").strip()
     on_main = bool(done) and subprocess.run(["git", "merge-base", "--is-ancestor", done, upstream], cwd=root,
