@@ -30,6 +30,25 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does window_sections treat a window that is not known (the previous text lacks the passage) and starts at a heading line?",
+      "options": [
+        "required and optional key sets",
+        "one key set, parent section dropped only"
+      ],
+      "recommendation": "required and optional key sets",
+      "do": {
+        "required and optional key sets": "BG-beyrus2g",
+        "one key set, parent section dropped only": "BG-beyrus2g"
+      },
+      "class": "design",
+      "answer": "required and optional key sets",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-vk3wf746 review"
   ],

@@ -135,9 +135,10 @@ def words_key(s):
     return " ".join(re.findall(r"\w+", norm(s)))
 
 
-def units(text):
-    """[(heading path, unit text)] of a document text: sentences of prose lines, list items, table rows (cells joined
-    by ` | `), code lines; heading lines set the path and are units too."""
+def scan(text):
+    """[(heading path, unit text, own path)] of a document text: sentences of prose lines, list items, table rows (cells
+    joined by ` | `), code lines; heading lines set the path and are units too. The own path of a heading line is the
+    path of the section it opens; None for any other unit."""
     out, path, fenced = [], [], False
     for ln in (text or "").splitlines():
         s = ln.strip()
@@ -147,27 +148,32 @@ def units(text):
         if not s:
             continue
         if fenced:
-            out.append((" > ".join(path), s))
+            out.append((" > ".join(path), s, None))
             continue
         m = re.match(r"^(#{1,6})\s+(.*)", s)
         if m:
             level, title = len(m.group(1)), m.group(2).strip("# ").strip()
             path = path[:level - 1] + [title]
-            out.append((" > ".join(path[:-1]), title))
+            out.append((" > ".join(path[:-1]), title, " > ".join(path)))
             continue
         if s.startswith("|"):
             cells = [c.strip() for c in s.strip("|").split("|")]
             if all(re.fullmatch(r":?-{2,}:?", c) or not c for c in cells):
                 continue
-            out.append((" > ".join(path), " | ".join(cells)))
+            out.append((" > ".join(path), " | ".join(cells), None))
             continue
         if re.match(r"<(?:img|source|video|picture|iframe)\b", s, re.I):
             continue  # an embedded image or video is markup, not a statement
         s = LIST.sub("", s).lstrip("> ").strip()
         for part in SENT.split(s):
             if part.strip():
-                out.append((" > ".join(path), part.strip()))
+                out.append((" > ".join(path), part.strip(), None))
     return out
+
+
+def units(text):
+    """[(heading path, unit text)] of a document text (scan without the own paths)."""
+    return [(p, u) for p, u, _ in scan(text)]
 
 
 NUM = re.compile(r"(?<![\w.])\d[\d,.]*\d(?![\w])|(?<![\w.])\d(?![\w.])")
@@ -260,31 +266,53 @@ def _ancestor(path, head):
 
 
 def window_sections(anchor, doc, prev):
-    """Keys of the sections that hold an anchor's passage. An anchor's `heading` is the path of its window's first unit,
-    and a heading line's own unit sits under its parent's path, so a window that starts at a heading line spans its
-    parent's section and its own: with the previous text holding the passage, the section of every unit of its window;
-    else (an anchor placed on an earlier text) its `heading` section, every section below it in the current text and
-    the section of each of the SPAN - 1 units that follow a unit of that path, which holds any section the window can
-    enter (a window that runs from a body into the next heading and its body). A following unit under an ancestor of
-    that path is a sibling's heading line, whose section hashes every sibling heading of the page: it is left out, as
-    the section of the sibling's body that the window then enters names the sibling by its heading."""
+    """(required, optional): the keys of the sections that hold an anchor's passage, for section_unchanged. A heading
+    line's own unit sits under its parent's path, whose section hashes every sibling heading of the page, so a heading
+    line stands for the section it opens (its parent's when that section is empty), never its parent's: a heading added,
+    renamed or removed elsewhere moves none of them, and an edit to the line itself moves the section it opens. With
+    the previous text holding the passage, the window is known: the sections of its units (required), and its
+    `heading` section unless the window starts at a heading line, where that is the parent's. Else (an anchor placed on
+    an earlier text) the window is not: the `heading` section is required only where it holds a body unit (a window can
+    start there), and optional are every section below it in the current text and those of the SPAN - 1 units that
+    follow a unit of that path, which holds any section the window can enter (a window that runs from a body into the
+    next heading and its body); a following unit under an ancestor of that path is a sibling's heading line or the
+    parent's body, left out, as the section of the sibling's body that the window then enters names the sibling by its
+    heading."""
     head = (anchor or {}).get("heading") or ""
     if prev is not None and anchor.get("sha") in prev.shas:
         i, k = prev.shas[anchor["sha"]]
-        return {section_key(p) for p, _ in prev.units[i:i + k]} | {section_key(head)}
-    keys = {section_key(head)}
+        have = {section_key(p) for p, _ in prev.units}
+        req = {_unit_key(prev.units[j][0], prev.own[j], have) for j in range(i, i + k)}
+        return req if prev.own[i] is not None else req | {section_key(head)}, set()
     us = doc.units if doc is not None else []
+    own = doc.own if doc is not None else []
+    have = {section_key(p) for p, _ in us}
+    req = {section_key(head)}
+    opt = set()
     for i, (p, _) in enumerate(us):
         if not head or p[:200] == head or p[:200].startswith(head + " > "):
-            keys.add(section_key(p))
+            opt.add(_unit_key(p, own[i], have))
         if p[:200] == head:
-            keys.update(section_key(q) for q, _ in us[i + 1:i + SPAN] if not _ancestor(q[:200], head))
-    return keys
+            opt.update(_unit_key(q, own[j], have) for j, (q, _) in enumerate(us[i + 1:i + SPAN], i + 1)
+                       if not _ancestor(q[:200], head))
+    if section_key(head) in have and all(own[i] is not None for i, (p, _) in enumerate(us) if p[:200] == head):
+        req = set()  # the section holds heading lines only: a window there starts at one of them
+    return req, opt - req
+
+
+def _unit_key(path, own, have):
+    """The section key of a unit: for a heading line the section it opens, when that holds any unit (`have` the keys
+    of the sections that do), else the unit's own path as for any other unit."""
+    return section_key(own) if own is not None and section_key(own) in have else section_key(path)
 
 
 def section_unchanged(keys, old, new):
-    """Whether every section of `keys` (window_sections) hashes the same in both sets."""
-    return bool(keys) and all(k in old and old[k] == new.get(k) for k in keys)
+    """Whether the sections of `keys` (window_sections) hash the same in both sets: every required one, and every
+    optional one the baseline has (a section the baseline lacks is a new one, which no passage of the baseline sat in),
+    with a baseline section among them when none is required."""
+    req, opt = keys
+    known = {k for k in opt if k in old}
+    return bool(req or known) and all(k in old and old[k] == new.get(k) for k in req | known)
 
 
 class Doc:
@@ -292,7 +320,9 @@ class Doc:
     1 to SPAN consecutive units (a fact often condenses two or three sentences)."""
 
     def __init__(self, text):
-        self.units = units(text)
+        scanned = scan(text)
+        self.units = [(p, u) for p, u, _ in scanned]
+        self.own = [o for _, _, o in scanned]
         self.terms = [term_set(u) for _, u in self.units]
         df = collections.Counter(t for ts in self.terms for t in ts)
         n = len(self.units) or 1
