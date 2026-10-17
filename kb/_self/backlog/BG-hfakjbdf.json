@@ -1,0 +1,25 @@
+{
+  "id": "BG-hfakjbdf",
+  "kind": "bug",
+  "title": "Snapshot S2194 starts with page chrome (Repository navigation, You must be signed in) although its header says page chrome removed",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "kb/public/_snapshots/S2194.txt (and any snapshot of the same host) holds the page body without the site chrome lines its header line says are removed, by fixing the reduction that wrote it. Found by the SP-5bvg4tnl review (BG-gjqcfpw4, pre-existing).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nbad = []\nfor s in (\"S2189\", \"S2194\"):\n    body = open(\"kb/public/_snapshots/%s.txt\" % s, encoding=\"utf-8\").read()\n    if \"Repository navigation\" in body or \"You must be signed in\" in body:\n        bad.append(s)\nprint(bad); sys.exit(1 if bad else 0)"
+    ]
+  },
+  "repro_reason": "The snapshot is written from the live page over the network; the stored file is what review reads, so the repro reads it.",
+  "touches": [
+    "kb/public/_snapshots/S2194.txt",
+    "_tools/provider.py"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-3ht6u4pd",
+  "kind": "bug",
+  "title": "fetch.py keeps an aside under an ancestor with role=navigation, or one that holds nav elements, which the kb records as navigation",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The HTML reducer in _tools/fetch.py skips an <aside> with a role=navigation ancestor or one that holds <nav> elements, as kb/public/agents/doc-change-detection.md:190 (DER) and answer QK-html-aside-element-represent-page-tell state, or the fact is reworded to the rule the reducer follows. Found by the SP-5bvg4tnl review (gap 2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0, \"_tools\")\nimport fetch\ndef text(b):\n    p = fetch._PageText(); p.feed(b); return p.text()\nanc = text(\"<main><div role=\\\"navigation\\\"><aside data-type=\\\"sidebar\\\">ANCESTORNAV</aside></div><p>BODY</p></main>\")\nroll = text(\"<main><aside><nav>NAVLINKS</nav><h2>My blogroll</h2><p>BLOGROLLTEXT</p></aside><p>BODY</p></main>\")\nprint(\"ancestor-role aside shown:\", \"ANCESTORNAV\" in anc, \"| nav-holding aside shown:\", \"BLOGROLLTEXT\" in roll)\nsys.exit(0 if \"ANCESTORNAV\" not in anc and \"BLOGROLLTEXT\" not in roll else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/fetch.py",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-2iwrgert",
+  "kind": "story",
+  "title": "kb-verify says the suite runs the lookup eval over the live kb, which went with the deleted test_live_kb.py",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": ".claude/skills/kb-verify/SKILL.md step 5 no longer says the tests.py suite runs check.py and the lookup eval over the live kb, and names where they run now (the landing and sync gate steps). Found by the ST-bda544wp worker in SP-5bvg4tnl; outside its touches.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open(\".claude/skills/kb-verify/SKILL.md\", encoding=\"utf-8\").read().splitlines()\nbad = [i + 1 for i, l in enumerate(t) if \"lookup eval over the live kb\" in l]\nprint(bad); sys.exit(1 if bad else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-verify/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl review"
+  ]
+}
