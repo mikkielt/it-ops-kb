@@ -26,6 +26,25 @@
     "kb/_self/web-sources.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which content does role=navigation hide in the HTML reducer?",
+      "options": [
+        "only an aside inside or carrying role=navigation",
+        "every element under role=navigation, as nav is"
+      ],
+      "recommendation": "only an aside inside or carrying role=navigation",
+      "do": {
+        "only an aside inside or carrying role=navigation": "BG-3ht6u4pd",
+        "every element under role=navigation, as nav is": "BG-3ht6u4pd"
+      },
+      "class": "design",
+      "answer": "only an aside inside or carrying role=navigation",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5bvg4tnl review"
   ],
