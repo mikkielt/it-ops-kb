@@ -2,7 +2,7 @@
   "id": "BG-nr2mv4si",
   "kind": "bug",
   "title": "fetch.py drops <aside> sidebars that hold page content, so facts from them are never anchored",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,

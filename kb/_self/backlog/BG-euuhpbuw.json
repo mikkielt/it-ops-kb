@@ -2,7 +2,7 @@
   "id": "BG-euuhpbuw",
   "kind": "bug",
   "title": "ql_research's fact gate reads eval failures and off-kb good but not noted, so a researched fact that puts a note on an eval good is kept",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,

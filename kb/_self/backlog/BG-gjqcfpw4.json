@@ -2,7 +2,7 @@
   "id": "BG-gjqcfpw4",
   "kind": "bug",
   "title": "The snapshots of S2186, S2187, S2189 and S2194 hold the pages as of the 2026-10-10 anchor run, so review shows their old text as the current one after BG-c2pp5wwl moved their baselines",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,

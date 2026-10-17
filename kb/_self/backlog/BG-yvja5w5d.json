@@ -2,7 +2,7 @@
   "id": "BG-yvja5w5d",
   "kind": "bug",
   "title": "An anchor row ST-ez6r5em7 re-keyed is unlocated although its pinned source holds the quote (fluent-rust-typescript.md, S-dftqctth)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5bvg4tnl",
   "priority": "P3",
   "rank": 0,

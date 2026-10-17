@@ -2,7 +2,7 @@
   "id": "BG-v5236vmy",
   "kind": "bug",
   "title": "factdiff.py anchor --file --refetch does not refetch a gone anchor row inside its 7-day backoff",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5bvg4tnl",
   "priority": "P3",
   "rank": 0,

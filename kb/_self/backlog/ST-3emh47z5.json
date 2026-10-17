@@ -2,7 +2,7 @@
   "id": "ST-3emh47z5",
   "kind": "story",
   "title": "The kb says Remote Control server mode runs several sessions from one process, not only one remote session per interactive process",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
