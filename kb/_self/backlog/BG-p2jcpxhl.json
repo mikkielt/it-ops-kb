@@ -55,6 +55,40 @@
       "class": "design",
       "answer": "keep: the end of a lease clears holder and expiry and keeps the value and revision; a key with no live lease can be claimed again (carries BG-v3fjhmro)",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When a lease ends on a key no put ever wrote (a claim only, value null), does coord.py keep the row or remove it?",
+      "options": [
+        "remove: nothing to keep, so the key is absent again (get exits 1), as before",
+        "keep: the row stays at revision 1 with no holder and a null value"
+      ],
+      "recommendation": "remove: nothing to keep, so the key is absent again (get exits 1), as before",
+      "do": {
+        "remove: nothing to keep, so the key is absent again (get exits 1), as before": "BG-p2jcpxhl",
+        "keep: the row stays at revision 1 with no holder and a null value": "BG-p2jcpxhl"
+      },
+      "class": "design",
+      "answer": "remove: nothing to keep, so the key is absent again (get exits 1), as before",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "A claim of a key that holds a kept value and no lease: does the revision stay or restart at 1?",
+      "options": [
+        "stay: the claim changes no value, so the revision it prints is the key's own (put compare-and-swap keeps working across the claim)",
+        "restart: the claim sets the revision to 1"
+      ],
+      "recommendation": "stay: the claim changes no value, so the revision it prints is the key's own (put compare-and-swap keeps working across the claim)",
+      "do": {
+        "stay: the claim changes no value, so the revision it prints is the key's own (put compare-and-swap keeps working across the claim)": "BG-p2jcpxhl",
+        "restart: the claim sets the revision to 1": "BG-p2jcpxhl"
+      },
+      "class": "design",
+      "answer": "stay: the claim changes no value, so the revision it prints is the key's own (put compare-and-swap keeps working across the claim)",
+      "by": "agent"
     }
   ],
   "links": [
