@@ -2,7 +2,7 @@
   "id": "BG-yya5olzw",
   "kind": "bug",
   "title": "The kb MCP coord tools and the coord hook use different stores by default, so a session's coord_digest never sees the hook's intents",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -54,5 +54,6 @@
   "links": [
     "parked: SP-xo45jvbj review"
   ],
-  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (coord_digest: 'no store: pass --store PATH or set KB_COORD_STORE'). Ordered after BG-iwqcj5zf (coord.py, coord_hook.py) and ST-nlesmlru (kb_mcp.py): with ST-nlesmlru the coord tools are listed only under KB_COORD_TOOLS=1, so this item's repro sets KB_COORD_TOOLS=1 (the repro is updated in this item: it calls coord_digest through kb_mcp.handle). Repro updated at planning (2026-10-16) to set KB_COORD_TOOLS=1, so it still fails for the store (not for an unlisted tool) after ST-nlesmlru; it fails on origin/main ed55f4d56 with 'no store'."
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (coord_digest: 'no store: pass --store PATH or set KB_COORD_STORE'). Ordered after BG-iwqcj5zf (coord.py, coord_hook.py) and ST-nlesmlru (kb_mcp.py): with ST-nlesmlru the coord tools are listed only under KB_COORD_TOOLS=1, so this item's repro sets KB_COORD_TOOLS=1 (the repro is updated in this item: it calls coord_digest through kb_mcp.handle). Repro updated at planning (2026-10-16) to set KB_COORD_TOOLS=1, so it still fails for the store (not for an unlisted tool) after ST-nlesmlru; it fails on origin/main ed55f4d56 with 'no store'.",
+  "claimed_by": "orch-r04"
 }
