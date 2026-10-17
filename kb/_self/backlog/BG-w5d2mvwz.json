@@ -1,0 +1,24 @@
+{
+  "id": "BG-w5d2mvwz",
+  "kind": "bug",
+  "title": "redact.redact leaves password=, secret= and api_key= assignment values in text, so they reach the spool comment and the distill call",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "redact.redact and redact.scan replace the value of a password=, secret=, api_key= (and similar key=value or key: value) assignment, so a kb!: comment or a typed prompt holding one keeps only a placeholder before it is written or sent. Found by the SP-ficl7pxl review (ST-h3y6iym4 leak scope; the exposure predates the sprint).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact as R;t=\"password=Hunter2! secret=abcd1234efgh api_key=abcd1234efgh5678\";o=R.redact(t);o=o[0] if isinstance(o,tuple) else o;print(o);sys.exit(1 if \"Hunter2\" in o or \"abcd1234efgh5678\" in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

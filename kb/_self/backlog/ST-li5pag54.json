@@ -1,0 +1,24 @@
+{
+  "id": "ST-li5pag54",
+  "kind": "story",
+  "title": "rag.py eval prints no DRIFT line: the window share baseline is taken again after the sprint's kb additions, and noted keeps a margin under its baseline",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "rag.py eval passes with no DRIFT line (EV-page-file-size-windows: baseline 0.2015, now 0.1964 after SP-ficl7pxl's research facts), the shares retaken with --write-shares only after the drift is read as benign; noted=13 sits at NOTED_BASELINE with no margin. Found by the SP-ficl7pxl review.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;p=subprocess.run([sys.executable,\"_tools/rag.py\",\"eval\"],capture_output=True,text=True);o=p.stdout+p.stderr;print([l for l in o.splitlines() if \"DRIFT\" in l][:3]);sys.exit(0 if p.returncode==0 and \"DRIFT\" not in o else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/_retrieval/word_shares.csv"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

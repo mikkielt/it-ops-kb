@@ -1,0 +1,25 @@
+{
+  "id": "BG-4x5qp2jh",
+  "kind": "bug",
+  "title": "A feedback flag stays on its reported line number after the article is edited, so it lands on another fact",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "feedback_flags drops or moves a flag whose article changed after the report (a fact-text hash kept with the line, or the file's change after the report's day), so a flag never shows on a fact the report did not name. Found by the SP-ficl7pxl review (ST-lcsgjg6p gap).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open(\"_tools/kbfacts.py\").read();i=s.find(\"def feedback_flags\");b=s[i:s.find(\"\\ndef flag_line\",i)];sys.exit(0 if (\"hashlib\" in b or \"sha256\" in b or \"git_log\" in b) else 1)"
+    ]
+  },
+  "repro_reason": "the drift needs a committed store report plus an article edit between report and read; planting both is the fix's own work, so the repro reads that feedback_flags keeps no fact-text hash or change check yet",
+  "touches": [
+    "_tools/kbfacts.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

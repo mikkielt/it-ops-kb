@@ -1,0 +1,24 @@
+{
+  "id": "BG-i2ns7mxy",
+  "kind": "bug",
+  "title": "A refused redirect hop leaves the redirect response open until garbage collection",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "_Chain.redirect_request closes the redirect response (fp) before it raises _Refused, so a refused hop leaves no socket open. Found by the SP-ficl7pxl review (ST-mrrudfmj).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open(\"_tools/provider.py\").read();i=s.find(\"def redirect_request\");b=s[i:i+400];sys.exit(0 if \"fp.close()\" in b else 1)"
+    ]
+  },
+  "repro_reason": "an unclosed socket shows only as a ResourceWarning at garbage collection, which depends on the interpreter's timing; the repro reads that redirect_request does not close fp before raising",
+  "touches": [
+    "_tools/provider.py"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

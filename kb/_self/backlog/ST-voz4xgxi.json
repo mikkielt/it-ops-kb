@@ -1,0 +1,25 @@
+{
+  "id": "ST-voz4xgxi",
+  "kind": "story",
+  "title": "A feedback report stamped before every lookup that printed its pack handle makes no handle join, not a join to the earliest",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "join_feedback, when every lookup that printed the handle is later than the report, falls through to the session/prompt and window joins instead of joining the earliest lookup the report did not follow. Found by the SP-ficl7pxl review (ST-rdpqhmn4 gate g1, the other option).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport ql_distill\nql_distill.feedback_report = lambda r, k, pages: {\"outcome\": \"ok\"}\ndef kb(i, ts):\n    return {\"id\": i, \"surface\": \"kb_hook\", \"pack\": \"P-aabbccdd\", \"ts\": ts}\nr1, r2 = kb(\"r1\", \"2026-10-16T08:00:00Z\"), kb(\"r2\", \"2026-10-16T09:00:00Z\")\nsessions = {\"s1\": {\"closed\": True, \"groups\": [[\"p1\", [r1], r1[\"ts\"], None]]}, \"s2\": {\"closed\": True, \"groups\": [[\"p2\", [r2], r2[\"ts\"], None]]}}\nt1 = {\"entry\": {\"id\": \"E1\"}, \"sid\": \"s1\", \"key\": \"p1\", \"reports\": [], \"tools\": []}\nt2 = {\"entry\": {\"id\": \"E2\"}, \"sid\": \"s2\", \"key\": \"p2\", \"reports\": [], \"tools\": []}\nfb = {\"id\": \"f1\", \"surface\": \"feedback\", \"pack\": \"P-aabbccdd\", \"ts\": \"2026-10-16T07:00:00Z\"}\nql_distill.join_feedback(sessions, [(fb, \"tools-2026-10-16.jsonl\", None)], {}, [t1, t2], {}, \"2026-10-17\", None)\nprint(\"reports s1:\", len(t1[\"reports\"]), \"s2:\", len(t2[\"reports\"]))\nsys.exit(0 if not t1[\"reports\"] and not t2[\"reports\"] else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/ql_distill.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

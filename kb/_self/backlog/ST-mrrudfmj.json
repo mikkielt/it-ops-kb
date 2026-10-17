@@ -51,7 +51,7 @@
       },
       "class": "design",
       "answer": "request() takes a refuse callback its redirect handler asks before following a hop; gated_request passes the window check",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

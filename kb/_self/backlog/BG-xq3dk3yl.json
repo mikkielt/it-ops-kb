@@ -1,0 +1,24 @@
+{
+  "id": "BG-xq3dk3yl",
+  "kind": "bug",
+  "title": "remember_feedback_id rewrites feedback.ids with no lock or atomic replace, so two hook processes can drop an id",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "remember_feedback_id writes feedback.ids under a lock or by an atomic replace, so the async capture hook and the MCP server recording at once keep both ids. Found by the SP-ficl7pxl review (ST-vpwkr76k gate g1).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;s=open(\"_tools/ql_capture.py\").read();i=s.find(\"def remember_feedback_id\");b=s[i:s.find(\"\\ndef \",i+10)];sys.exit(0 if \"lock\" in b.lower() or \"os.replace\" in b else 1)"
+    ]
+  },
+  "repro_reason": "the lost id needs two processes interleaving the read and the write; the race is not reproducible on demand, so the repro reads that the function takes no lock and no atomic replace yet",
+  "touches": [
+    "_tools/ql_capture.py"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

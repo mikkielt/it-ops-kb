@@ -94,7 +94,7 @@
       },
       "class": "querylog",
       "answer": "wrong, stale or outdated give outcome misled and a path:line the text names becomes a line with issue wrong or stale; missing gives outcome missed; the rest, with the class field unclassified, stays a rule-redacted comment in the spool",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Premise: _tools/kb_hook.py handles kb: and kb+: only; a person who sees a wrong answer has no channel but a new prompt the pipeline reads as another lookup. AGENTS.md is capped at 4096 bytes and nearly full: naming kb!: there needs a cut elsewhere in the same commit (wc -c AGENTS.md). Comment text: D-rd64qovu. Plan 2026-10-17: _tools/tests.py left the touches (nothing in it reads the kb: prefixes). Checks: 0 plants a kb_hook spool row and runs the hook in-process with any socket connect exiting 99 (blocked, one feedback row joined to sess1, judged_by user, the path:line and wrong read); 1 a session with no kb entry (blocked with a reason, no row). Both exit 1 on 7cb5e0cbb (no kb!: handling). Gate g1 (operator): AGENTS.md stays as it is (4091 of 4096 bytes).",

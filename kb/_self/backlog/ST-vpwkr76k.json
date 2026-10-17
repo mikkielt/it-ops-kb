@@ -43,7 +43,7 @@
       },
       "class": "querylog",
       "answer": "feedback.ids file in the querylog directory, newest 200 ids, one per line",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

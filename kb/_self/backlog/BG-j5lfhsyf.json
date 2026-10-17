@@ -1,0 +1,24 @@
+{
+  "id": "BG-j5lfhsyf",
+  "kind": "bug",
+  "title": "A revalidation window that starts at an H2 line still fails section_unchanged on an added H2 when the previous text is unknown and the H1 has intro text",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "window_sections, with the previous text lacking the passage, no longer requires the parent heading's section because it holds intro text, so an added, renamed or removed unrelated H2 passes; an edit to the window's own heading or body still fails. Found by the SP-ficl7pxl review (BG-beyrus2g gap).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import factdiff as F;b=\"# Title\\n\\nIntro.\\n\\n## Alpha\\n\\nAlpha body.\\n\\n## Beta\\n\\nBeta body.\\n\";v=b.replace(\"## Beta\",\"## Gamma\\n\\nGamma body.\\n\\n## Beta\");d=F.Doc(b);a={\"heading\":d.units[2][0],\"sha\":F.sha(d.window(2,2))};r=F.section_unchanged(F.window_sections(a,F.Doc(v),F.Doc(\"# Other\\n\\nx.\\n\")),F.sections(b),F.sections(v));print(r);sys.exit(0 if r else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}

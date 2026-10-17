@@ -1,0 +1,24 @@
+{
+  "id": "BG-uo4sz2ed",
+  "kind": "bug",
+  "title": "kb!: reads a negated word as the issue, so 'nothing wrong with PATH:LINE' records outcome misled and flags a correct line",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "read_user_report leaves a word under a negation (not, nothing, no) out of the closed fields, so a positive kb!: report records no misled outcome and no wrong or stale line; the text stays a redacted comment. Found by the SP-ficl7pxl review (ST-h3y6iym4 gate g2).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import ql_capture as C;r=[C.read_user_report(t,lambda x:x) for t in [\"nothing wrong with public/claude/hooks.md:60, it is right\",\"not stale: public/claude/hooks.md:60 is current\"]];print(r);sys.exit(1 if any((x or {}).get(\"outcome\")==\"misled\" or any(l.get(\"issue\") in (\"wrong\",\"stale\") for l in ((x or {}).get(\"lines\") or [])) for x in r) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-ficl7pxl review"
+  ]
+}
