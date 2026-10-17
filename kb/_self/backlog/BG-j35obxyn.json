@@ -2,7 +2,7 @@
   "id": "BG-j35obxyn",
   "kind": "bug",
   "title": "rag.py eval hides a real pack note when a drifted row's re-judged pack also carries one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,18 @@
     "parked: SP-z3jcdsgr review"
   ],
   "notes": "Plan 2026-10-17: the repro (a read of the comparison, repro_reason) exits 1 on 7cb5e0cbb; the live-kb eval test the old goal named was deleted with test_live_kb.py.",
-  "claimed_by": "orch-r07"
+  "evidence": {
+    "commit": "a0de26af264b12c92a9e13b71e4c67060347fa75",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;s=open('_tools/rag.py',encoding='utf-8').read();sys.exit(1 if \"res['noted'] - res['drifted']\" in s or 'res[\"noted\"] - res[\"drifted\"]' in s else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
