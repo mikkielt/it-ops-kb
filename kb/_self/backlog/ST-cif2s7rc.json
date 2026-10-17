@@ -2,7 +2,7 @@
   "id": "ST-cif2s7rc",
   "kind": "story",
   "title": "A plan for an item that sends new text through redact plants a secret of each kind redact knows, and an assignment form, in its check",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yyjwfjtc",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   "links": [
     "parked: SP-ficl7pxl close"
   ],
-  "notes": "SP-yyjwfjtc plan: still applies on origin/main b97cd6ebf; plan step 6 names no redact path today (the check fails on the base). One sentence in step 6."
+  "notes": "SP-yyjwfjtc plan: still applies on origin/main b97cd6ebf; plan step 6 names no redact path today (the check fails on the base). One sentence in step 6.",
+  "claimed_by": "orch-r09"
 }
