@@ -60,7 +60,10 @@ FEEDBACK_TOOL_ISSUES = ("bad-args", "unclear-output", "too-long", "error")
 FEEDBACK_LINES_MAX = 10
 FEEDBACK_CLAIM_WORDS = 40
 FEEDBACK_JUDGES = ("agent", "user")  # who made a report: a kb_feedback call, or a person's (the row's `judged_by`)
-FEEDBACK_UNCLASSIFIED = "unclassified"  # a person's comment no deterministic reader mapped: distill's Haiku maps it
+FEEDBACK_IDS_NAME = "feedback.ids"  # beside the spool, never committed: the ids of the reports written lately, one per line
+FEEDBACK_IDS_MAX = 200  # the newest ids it keeps
+FEEDBACK_ID = re.compile(r"FB-[0-9a-f]{8}")
+FEEDBACK_UNCLASSIFIED ="unclassified"  # a person's comment no deterministic reader mapped: distill's Haiku maps it
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
@@ -443,18 +446,42 @@ def feedback_id(fields):
     return "FB-" + hashlib.sha1(key.encode("utf-8")).hexdigest()[:8]
 
 
+def written_feedback_ids(spool):
+    """The `FB-<8 hex>` ids kb_feedback wrote lately (the newest FEEDBACK_IDS_MAX, oldest first): the record that
+    outlives a row's delivery, which takes the row out of the spool."""
+    try:
+        text = (spool.parent / FEEDBACK_IDS_NAME).read_text(encoding="utf-8")
+    except OSError:
+        return []
+    return [i for i in text.split() if FEEDBACK_ID.fullmatch(i)]
+
+
+def remember_feedback_id(spool, fb):
+    """Append `fb` to the record of written ids and cut it to the newest FEEDBACK_IDS_MAX. Never raises."""
+    try:
+        ids = [*written_feedback_ids(spool), fb][-FEEDBACK_IDS_MAX:]
+        (spool.parent / FEEDBACK_IDS_NAME).write_text("\n".join(ids) + "\n", encoding="utf-8", newline="\n")
+    except OSError:
+        pass
+
+
 def record_feedback(fields):
-    """Append the `feedback` row of one kb_feedback report to the spool's tools file unless a row of the same id is
-    already in a tools file there, and return (`FB-<8 hex>`, state): `recorded`, `repeat` (nothing written) or `off`
-    (capture writes nothing here, or the write failed)."""
+    """Append the `feedback` row of one kb_feedback report to the spool's tools file unless its id was written
+    lately (the record of written ids) or a row of the same id is in a tools file there, and return
+    (`FB-<8 hex>`, state): `recorded`, `repeat` (nothing written) or `off` (capture writes nothing here, or the
+    write failed)."""
     fb = feedback_id(fields)
     spool = spool_dir()
     if spool is None:
         return fb, "off"
+    if fb in written_feedback_ids(spool):
+        return fb, "repeat"
     for path in sorted(spool.glob("tools-*.jsonl")):
         if any(r.get("surface") == FEEDBACK and r.get("fb") == fb for r in rows(path, fb)):
             return fb, "repeat"
     row = record(FEEDBACK, fb=fb, **{k: v for k, v in fields.items() if v not in (None, "", [])})
+    if row:
+        remember_feedback_id(spool, fb)
     return fb, "recorded" if row else "off"
 
 
