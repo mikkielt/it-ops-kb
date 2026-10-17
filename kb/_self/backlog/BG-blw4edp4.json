@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "ledger_lock's holder judges its own lock by inode number alone, so after a stale clear a reused inode lets it remove the next writer's live lock",
   "status": "draft",
+  "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
@@ -15,7 +16,28 @@
     ]
   },
   "repro_reason": "APFS does not reuse inode numbers at once, so the reuse is planted by patching os.fstat and Path.stat; the run drives ledger_lock itself",
+  "clauses": [
+    {
+      "clause": "SP-6jfnx5i3 review G3 (BG-s3iuw4x2): the holder removes the lock on exit when lock.stat().st_ino equals the inode it made (_tools/bl_base.py ledger_lock)",
+      "check": 0
+    },
+    {
+      "clause": "ext4 and tmpfs hand a freed inode number to the next file at once, so a holder slower than the stale age whose lock a waiter cleared can unlink the next writer's lock and let a third process in beside it",
+      "check": 0
+    },
+    {
+      "clause": "the stale clearer already compares (st_ino, st_mtime_ns). The holder removes the lock only when both the inode and the modification time it recorded at create still match",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_base.py",
+    "kb/_self/querylog.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
   "links": [
     "parked: SP-6jfnx5i3 review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (the next writer's lock is removed after an inode reuse). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
 }

@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "coord.py takes the time before it waits for the store's write lock, so a lease granted after a wait is short by that wait",
   "status": "draft",
+  "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -14,7 +15,21 @@
       "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nimport sqlite3\nc('list','--prefix','x')\ndb=sqlite3.connect(E['KB_COORD_STORE'],isolation_level=None);db.execute('BEGIN IMMEDIATE')\np=s.Popen([sys.executable,T,'claim','K6','--ttl','10','--holder','a'],stdout=s.PIPE,text=True,env=E)\ntime.sleep(2);db.execute('COMMIT');out=p.communicate(timeout=30)[0];t=time.time()\nleft=json.loads(out)['expires']-t\nprint('lease left after a 2 s lock wait:',round(left,2));sys.exit(0 if left>9.5 else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "SP-rsmmwzr2 review G12 (ST-5iwikc3n): main and the server read time.time() before BEGIN IMMEDIATE, which may wait up to 30 s, so a lease granted after the wait expires early by its length and expiry decisions use a stale time. The time is read inside the transaction",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-bqvcba5e"
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (8 s left of a 10 s lease after a 2 s lock wait). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
 }

@@ -1,0 +1,26 @@
+{
+  "id": "ST-e4wg32qq",
+  "kind": "story",
+  "title": "A refused backlog.py claim leaves no coord intent",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The coord hook posts a claim's intent only once the claim has run and succeeded, so a refused or failed backlog.py claim leaves no intent in other sessions' digests. Split from BG-iagias5y at the plan of 2026-10-17: the hook posts at PreToolUse, before the claim runs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.sqlite'))\n[E.pop(k,None) for k in ('KB_COORD_URL','CLAUDE_PLUGIN_ROOT','CLAUDE_PLUGIN_DATA')]\nH=os.path.abspath('.claude/hooks/coord_hook.py');T=os.path.abspath('_tools/coord.py');sid='repro-'+os.urandom(4).hex()\nr=os.path.join(D,'r');s.run(['git','init','-q','-b','main',r],check=True);s.run(['git','-C',r,'-c','user.name=x','-c','user.email=x@x','commit','-q','--allow-empty','-m','i'],check=True)\ndef hook(**p):\n    p.setdefault('cwd',r);return s.run([sys.executable,H],input=json.dumps(p),capture_output=True,text=True,env=E,cwd=r,timeout=60)\nhook(hook_event_name='PreToolUse',session_id=sid,tool_name='Bash',tool_input={'command':'python3 _tools/backlog.py claim ST-zzzzzzzz --by x'})\no=s.run([sys.executable,T,'digest','--key','ST-zzzzzzzz','--lines','5'],capture_output=True,text=True,env=E,timeout=60).stdout\nhook(hook_event_name='SessionEnd',session_id=sid,reason='exit')\nprint(repr(o));sys.exit(0 if 'ST-zzzzzzzz' not in o else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "split from: BG-iagias5y (plan 2026-10-17)"
+  ],
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the PreToolUse of a claim command posts the intent before the claim runs). Its fix likely registers a PostToolUse hook in .claude/settings.json and the plugin's hooks file, so it is left as a draft for a later sprint."
+}

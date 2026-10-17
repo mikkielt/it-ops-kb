@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "The coord hook posts an intent for any Bash text that holds 'backlog.py claim ID', a commit message or echo included",
   "status": "draft",
+  "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "SP-xo45jvbj review G6 (ST-x6mvfnmv): the CLAIM regex of coord_hook.py matches inside a commit message, echo, grep or heredoc, and the intent is posted before the claim runs, so a refused claim also leaves one; other sessions then see an intent for an item nobody works on. Only a command that runs backlog.py claim posts an intent, and a refused claim leaves none.",
+  "goal": "The coord hook posts an intent only for a Bash command that runs backlog.py claim ID as a command, not for text that holds the words inside a commit message, an echo, a grep or a heredoc, so other sessions see no intent for an item nobody claims. Found by the SP-xo45jvbj review (G6, ST-x6mvfnmv): the CLAIM regex of coord_hook.py matches anywhere in the command text. Narrowed at the plan of 2026-10-17: a refused claim that still leaves an intent is the draft the plan filed beside it.",
   "repro": {
     "run": [
       "python3",
@@ -14,8 +15,32 @@
       "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.sqlite'))\nE.pop('KB_COORD_URL',None)\nH=os.path.abspath('.claude/hooks/coord_hook.py');T=os.path.abspath('_tools/coord.py')\ndef repo(n,b):\n    r=os.path.join(D,n);s.run(['git','init','-q','-b',b,r],check=True);s.run(['git','-C',r,'-c','user.name=x','-c','user.email=x@x','commit','-q','--allow-empty','-m','i'],check=True);return r\ndef hook(cwd,**p):\n    p.setdefault('cwd',cwd);return s.run([sys.executable,H],input=json.dumps(p),capture_output=True,text=True,env=E,cwd=cwd,timeout=60).stdout\ndef c(*a):return s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=300)\nr=repo('r','main')\nhook(r,hook_event_name='PreToolUse',session_id='repro-'+os.urandom(4).hex(),tool_name='Bash',tool_input={'command':'git commit -m \"mention backlog.py claim ST-zzzzzzzz in text\"'})\no=c('digest','--key','ST-zzzzzzzz','--lines','5').stdout\nprint(repr(o));sys.exit(0 if 'ST-zzzzzzzz' not in o else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.sqlite'))\n[E.pop(k,None) for k in ('KB_COORD_URL','CLAUDE_PLUGIN_ROOT','CLAUDE_PLUGIN_DATA')]\nH=os.path.abspath('.claude/hooks/coord_hook.py');T=os.path.abspath('_tools/coord.py')\nr=os.path.join(D,'r');s.run(['git','init','-q','-b','main',r],check=True);s.run(['git','-C',r,'-c','user.name=x','-c','user.email=x@x','commit','-q','--allow-empty','-m','i'],check=True)\ndef posted(cmd,item):\n    sid='repro-'+os.urandom(4).hex()\n    s.run([sys.executable,H],input=json.dumps({'hook_event_name':'PreToolUse','session_id':sid,'tool_name':'Bash','tool_input':{'command':cmd},'cwd':r}),capture_output=True,text=True,env=E,cwd=r,timeout=60)\n    o=s.run([sys.executable,T,'digest','--key',item,'--lines','5'],capture_output=True,text=True,env=E,timeout=60).stdout\n    s.run([sys.executable,H],input=json.dumps({'hook_event_name':'SessionEnd','session_id':sid,'reason':'exit','cwd':r}),capture_output=True,text=True,env=E,cwd=r,timeout=60)\n    return item in o\ntext=[('echo \"run backlog.py claim ST-aaaaaaaa next\"','ST-aaaaaaaa'),(\"grep -n 'backlog.py claim ST-bbbbbbbb' notes.txt\",'ST-bbbbbbbb'),(\"cat <<'X'\\nbacklog.py claim ST-cccccccc\\nX\",'ST-cccccccc')]\nbad=[c for c,i in text if posted(c,i)];real=posted('python3 _tools/backlog.py claim ST-dddddddd --by x --commit','ST-dddddddd')\nprint('text that posted:',bad,'| a real claim posts:',real);sys.exit(0 if not bad and real else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "The coord hook posts an intent only for a Bash command that runs backlog.py claim ID as a command, not for text that holds the words inside a commit message, an echo, a grep or a heredoc, so other sessions see no intent for an item nobody claims. Found by the SP-xo45jvbj review (G6, ST-x6mvfnmv): the CLAIM regex of coord_hook.py matches anywhere in the command text. Narrowed at the plan of 2026-10-17: a refused claim that still leaves an intent is the draft the plan filed beside it",
+      "check": 0
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "relates_to": [
+    "ST-e4wg32qq"
+  ],
   "links": [
     "parked: SP-xo45jvbj review"
   ],
-  "notes": "Hygiene 2026-10-17: the old repro passed on origin/main 3dba0ef83 only because SessionEnd now releases the session's intents; the CLAIM regex still posts an intent for a commit message that holds backlog.py claim ID. The repro now reads the digest before the session ends, under a fresh session id (the hook keeps per-session state in the clone's _cache/coord_hook)."
+  "notes": "Hygiene 2026-10-17: the old repro passed on origin/main 3dba0ef83 only because SessionEnd now releases the session's intents; the CLAIM regex still posts an intent for a commit message that holds backlog.py claim ID. The repro now reads the digest before the session ends, under a fresh session id (the hook keeps per-session state in the clone's _cache/coord_hook). Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (an intent for ST-zzzzzzzz from a commit message). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
 }

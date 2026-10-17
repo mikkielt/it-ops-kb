@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "The coord hook's SessionStart saves the lease token only after its post and digest calls, so a hook killed at its 10 s timeout loses a lease the store accepted",
   "status": "draft",
+  "sprint": "SP-fp3hxl6q",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,13 +15,23 @@
       "import importlib.util,json,sys,tempfile,time\ns=importlib.util.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=importlib.util.module_from_spec(s);s.loader.exec_module(h)\nh.STATE=tempfile.mkdtemp();calls=[];resp={}\ndef fake(*a):\n    calls.append(a[0]);r=resp.get(a[0],(0,json.dumps({'token':'T1','expires':time.time()+h.LEASE_SECONDS})))\n    if r=='kill':raise SystemExit('killed')\n    return r\nh.coord=fake\nh.branch_item=lambda c:'ST-abcd1234';resp['post']='kill'\ntry:h.session_start({'cwd':tempfile.gettempdir(),'source':'startup'},'sidA')\nexcept SystemExit:pass\nst=h.load('sidA');print('calls',calls,'saved token',st.get('token'));sys.exit(0 if st.get('token')=='T1' else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "coord_hook.session_start saves the state with the lease token right after the claim or renew returns, before announce and overlaps make their coord calls, so a hook killed at its settings timeout (10 s, while each coord call may take 8 s and retry_releases runs first) keeps a lease the store accepted and the next renew finds it. Found by the SP-4cc36epy review (S3, BG-ljlj77kd \"The coord hook drops its lease token when a coord.py call times out\")",
+      "check": 0
+    }
+  ],
   "touches": [
     ".claude/hooks/coord_hook.py",
     "kb/_self/tools.md",
     "kb/_self/maintaining.md",
     "kb/_self/token-efficiency.md"
   ],
+  "depends_on": [
+    "BG-iagias5y"
+  ],
   "links": [
     "parked: SP-4cc36epy review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (calls claim, post; saved token None). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
 }
