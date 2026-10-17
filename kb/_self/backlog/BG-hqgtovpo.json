@@ -2,7 +2,7 @@
   "id": "BG-hqgtovpo",
   "kind": "bug",
   "title": "redact keeps a secret assignment whose value only begins like a placeholder ($Fake..., %x%y, ***z, <a>b)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 1: ASSIGNED_PLACEHOLDER.match tests only the start of the value. Repro on origin/main b871374b4 exits 1 (values that start %x%y, *** or <a> are kept whole). The $word value is BG-h5l6y43p's (its gate g1), so this item runs after it. Test policy: one planted fake value per new shape joins the existing redact test in _tools/test_redact.py (no new test id); never weaken a guard."
+  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 1: ASSIGNED_PLACEHOLDER.match tests only the start of the value. Repro on origin/main b871374b4 exits 1 (values that start %x%y, *** or <a> are kept whole). The $word value is BG-h5l6y43p's (its gate g1), so this item runs after it. Test policy: one planted fake value per new shape joins the existing redact test in _tools/test_redact.py (no new test id); never weaken a guard.",
+  "claimed_by": "orch-r10"
 }
