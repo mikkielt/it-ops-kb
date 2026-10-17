@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "factdiff.py anchor --file --refetch does not refetch a gone anchor row inside its 7-day backoff",
   "status": "draft",
+  "sprint": "SP-5bvg4tnl",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "anchor --file F --refetch fetches the source of each gone row of F's facts whatever its age, as kb/_self/tools.md says --refetch ignores the cache, while a run without --refetch keeps the 7-day backoff of ST-yb5x4x3d; the anchor part of test_live_kb.py proves both (no new test id). Found by the SP-b36246xo review (S4).",
+  "goal": "anchor --file F --refetch fetches the source of each gone row of F's facts whatever its age, as kb/_self/tools.md says --refetch ignores the cache, while a run without --refetch keeps the 7-day backoff of ST-yb5x4x3d. Found by the SP-b36246xo review (S4).",
   "repro": {
     "run": [
       "python3",
@@ -14,12 +15,14 @@
       "import inspect,sys;sys.path.insert(0,'_tools');import factdiff as f;s=inspect.getsource(f.cmd_anchor);l=[x for x in s.splitlines() if 'again =' in x][0];print(l.strip());sys.exit(0 if 'refetch' in l else 1)"
     ]
   },
-  "repro_reason": "the behaviour needs a planted _anchors.csv with a gone row, a stubbed fetch and a topic file; the anchor part of test_live_kb.py is where the fix plants them, so the repro reads the retry condition in cmd_anchor",
+  "repro_reason": "the behaviour needs a planted _anchors.csv with a gone row, a stubbed fetch and a topic file inside cmd_anchor's nested wanted(); test_live_kb.py, where that fixture was to go, is deleted, so the repro reads the retry condition in cmd_anchor",
   "touches": [
     "_tools/factdiff.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ],
   "links": [
     "parked: SP-b36246xo review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (again = ... not backing_off(row, when), no refetch); the goal's test clause is gone with test_live_kb.py."
 }

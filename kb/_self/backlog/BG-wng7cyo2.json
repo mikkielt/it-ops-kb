@@ -1,12 +1,13 @@
 {
   "id": "BG-wng7cyo2",
   "kind": "bug",
-  "title": "researched refuses a goal research story whose questions the _self root answers: it reads only the roots the touches name",
+  "title": "researched reads only the roots the touches name: a question the _self root answers is refused, and a _self-only story reads _self alone",
   "status": "draft",
+  "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "researched (bl_land.unanswered_questions, question_coverage) counts a narrowed-goal question answered when rag.py pack --root _self gives good for it, beside the roots the touches name, and a question weak in the touched roots and good or tested in _self needs no public gap entry, which content-rules.md refuses for a rule of this project's own tools; kb/_self/backlog.md says so where it describes researched",
+  "goal": "researched (bl_land.research_roots, unanswered_questions, question_coverage) counts a narrowed-goal question answered when rag.py pack --root _self gives good for it, beside the roots the touches name, so a question weak in the touched roots and good or tested in _self needs no public gap entry (content-rules.md refuses one for a rule of this project's own tools), and a goal research story whose only touch is the _self eval file reads every root, not _self alone.",
   "repro": {
     "run": [
       "python3",
@@ -14,10 +15,29 @@
       "import sys;sys.path.insert(0,'_tools');import bl_land;r=bl_land.research_roots({'touches':['kb/public/**']});print(r);sys.exit(0 if '_self' in r else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_land as b\n# a goal research story whose only touch is the _self eval file reads every root, not _self alone\nr = b.research_roots({'touches': ['kb/_self/_retrieval/lookup_eval.csv']})\nprint(r)\nsys.exit(1 if r == ['_self'] else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "researched (bl_land.research_roots, unanswered_questions, question_coverage) counts a narrowed-goal question answered when rag.py pack --root _self gives good for it, beside the roots the touches name, so a question weak in the touched roots and good or tested in _self needs no public gap entry (content-rules.md refuses one for a rule of this project's own tools)",
+      "check": 1
+    },
+    {
+      "clause": "a goal research story whose only touch is the _self eval file reads every root, not _self alone",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/bl_land.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "2026-10-14 triage: the old repro ran researched on ST-bg2kr4rw, a closed sprint's item since deleted, so it exited 2. Premise holds on ae319c43c5: bl_land.research_roots gives ['public'] for touches kb/public/**, and unanswered_questions reads only those roots. Re-filed repro reads research_roots; a fix that adds _self inside unanswered_questions instead re-points it."
+  "notes": "2026-10-14 triage: the old repro ran researched on ST-bg2kr4rw, a closed sprint's item since deleted, so it exited 2. Premise holds on ae319c43c5: bl_land.research_roots gives ['public'] for touches kb/public/**, and unanswered_questions reads only those roots. Re-filed repro reads research_roots; a fix that adds _self inside unanswered_questions instead re-points it. Plan 2026-10-17: merged BG-4vjyube6 (a story touching only the _self eval file reads _self alone); its repro is check 0. Premise on 7cb5e0cbb: the repro gives ['public'] and check 0 gives ['_self'] (both exit 1). Plan 2026-10-17: backlog.md's description of researched is the stale-doc check's to keep right (backlog.md is in the touches)."
 }

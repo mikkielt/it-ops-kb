@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "An anchor row ST-ez6r5em7 re-keyed is unlocated although its pinned source holds the quote (fluent-rust-typescript.md, S-dftqctth)",
   "status": "draft",
+  "sprint": "SP-5bvg4tnl",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "kb/public/_anchors.csv's row of the arch/fluent-rust-typescript.md fact on fallback.py FluentLocalization (S-dftqctth, key 0d6950be749f) is located with the quote its old row e5caacd41f2e held ('This handles language fallback, bundle creation and string localization.'), so pack no longer prints the line [unanchored]; the other rows ST-ez6r5em7 re-keyed to unlocated:no-match (agents/codebase-mapping.csv, security/almalinux-elevate.md) are read for the same; found by the SP-z3jcdsgr review (S3).",
+  "goal": "kb/public/_anchors.csv's row of the arch/fluent-rust-typescript.md fact on fallback.py FluentLocalization (S-dftqctth, key 0d6950be749f) is located with the quote its old row e5caacd41f2e held ('This handles language fallback, bundle creation and string localization.'), so pack no longer prints the line [unanchored].",
   "repro": {
     "run": [
       "python3",
@@ -21,7 +22,11 @@
     "kb/public/agents/codebase-mapping.csv",
     "kb/public/security/almalinux-elevate.md"
   ],
+  "depends_on": [
+    "ST-62irbhyw"
+  ],
   "links": [
     "parked: SP-z3jcdsgr review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (row 0d6950be749f reads unlocated:no-match). Plan 2026-10-17: the goal's other clauses moved here: the other rows ST-ez6r5em7 re-keyed to unlocated:no-match (agents/codebase-mapping.csv, security/almalinux-elevate.md) are read for the same cause in this item; found by the SP-z3jcdsgr review (S3)."
 }

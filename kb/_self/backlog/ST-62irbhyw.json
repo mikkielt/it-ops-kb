@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts or gap entries through /kb-research; (1) What does the HTML aside element represent, and how does a page tell a content sidebar inside its article from navigation (an aside inside the nav element, or one with role=navigation)?",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-17 on origin/main 7cb5e0cbb: (1) packs weak (not in the kb: sidebar). Feeds BG-nr2mv4si (fetch.py keeps a content sidebar). Remote Control server mode is ST-3emh47z5's own research."
 }

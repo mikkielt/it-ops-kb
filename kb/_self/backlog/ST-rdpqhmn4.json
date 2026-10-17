@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "A feedback row joins the latest lookup that printed its pack handle before the report, not the earliest",
   "status": "draft",
+  "sprint": "SP-ficl7pxl",
   "priority": "P2",
   "rank": 0,
-  "goal": "join_feedback maps a pack handle to the latest lookup that printed it no later than the feedback row's time (today handles.setdefault keeps the first session's group, ql_distill.py join_feedback), so a report on a handle looked up in two sessions joins the one it followed; querylog.md's exact-join wording names that rule; a test plants the two-session case (handle in s1 at 08:00 and s2 at 09:00, report at 09:05 joins s2).",
+  "goal": "join_feedback maps a pack handle to the latest lookup that printed it no later than the feedback row's time (today handles.setdefault keeps the first session's group, ql_distill.py join_feedback), so a report on a handle looked up in two sessions joins the one it followed.",
   "checks": [
     {
       "run": [
@@ -15,12 +16,19 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "join_feedback maps a pack handle to the latest lookup that printed it no later than the feedback row's time (today handles.setdefault keeps the first session's group, ql_distill.py join_feedback), so a report on a handle looked up in two sessions joins the one it followed",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/ql_distill.py",
-    "_tools/test_redact.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
   ],
   "links": [
     "parked: SP-waxgh3kg review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the planted check exits 1 on 7cb5e0cbb (reports s1: 1, s2: 0). The goal's test clause is gone (test policy D-6kei5o2z), test_redact.py left the touches; querylog.md's exact-join wording is the stale-doc check's to keep right."
 }

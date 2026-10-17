@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-z3jcdsgr close"
-  ]
+  ],
+  "notes": "Not committed to SP-5bvg4tnl (plan 2026-10-17): the premise did not reproduce from the tree. Since e505df3ac and 7291a6048 (2026-10-13), anchor --file writes only rows that are missing, in RETRY_STATUS, or named by --quotes (factdiff.py cmd_anchor, wanted()); the S-dabwnzz5 rewrite of 2026-10-15 is unexplained by that path. Needs a planted repro (a located row of an unchanged fact rewritten by anchor --file) before a sprint takes it; its only check reads a doc phrase."
 }

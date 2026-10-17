@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "rag.py eval hides a real pack note when a drifted row's re-judged pack also carries one",
   "status": "draft",
+  "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "rag.py eval's NOTED_BASELINE comparison counts every row whose pack carries a check: or route: line, a drifted row included: a row that is both drifted and noted is no longer counted once in noted and subtracted once as drifted (rag.py `over = res['noted'] - res['drifted'] > NOTED_BASELINE`), and the live-kb eval test makes the same count; found by the SP-z3jcdsgr review (S3).",
+  "goal": "rag.py eval's NOTED_BASELINE comparison counts every row whose pack carries a check: or route: line, a drifted row included: a row that is both drifted and noted is no longer counted once in noted and subtracted once as drifted (rag.py `over = res['noted'] - res['drifted'] > NOTED_BASELINE`); found by the SP-z3jcdsgr review (S3).",
   "repro": {
     "run": [
       "python3",
@@ -15,11 +16,24 @@
     ]
   },
   "repro_reason": "The defect needs a live kb state where a drifted row's re-judged pack also carries a check: or route: line; main holds none (14 noted, 1 drifted, 13 real notes), so the repro reads the comparison rag.py makes.",
+  "clauses": [
+    {
+      "clause": "rag.py eval's NOTED_BASELINE comparison counts every row whose pack carries a check: or route: line, a drifted row included: a row that is both drifted and noted is no longer counted once in noted and subtracted once as drifted (rag.py `over = res['noted'] - res['drifted'] > NOTED_BASELINE`)",
+      "check": 0
+    },
+    {
+      "clause": "found by the SP-z3jcdsgr review (S3)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/rag.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "AGENTS.md",
+    "kb/_self/token-efficiency.md"
   ],
   "links": [
     "parked: SP-z3jcdsgr review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro (a read of the comparison, repro_reason) exits 1 on 7cb5e0cbb; the live-kb eval test the old goal named was deleted with test_live_kb.py."
 }

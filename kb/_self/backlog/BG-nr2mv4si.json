@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "fetch.py drops <aside> sidebars that hold page content, so facts from them are never anchored",
   "status": "draft",
+  "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
@@ -17,8 +18,22 @@
       "Wild goose chases"
     ]
   },
-  "touches": [
-    "_tools/fetch.py"
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport fetch\n# a content sidebar inside the article body is kept; an aside in <nav> or with role=navigation is still skipped\nbody = ('<!doctype html><html><body><nav><aside><p>Menu link list</p></aside></nav><main>'\n        '<aside role=\"navigation\"><p>On this page</p></aside><article><h1>Effective troubleshooting</h1>'\n        + '<p>Body text of the chapter, long enough to read as a page.</p>' * 12 +\n        '<aside data-type=\"sidebar\"><h5>Wild goose chases</h5><p>A sidebar that holds page content.</p></aside>'\n        '</article></main></body></html>').encode()\nt = fetch.to_text(body, 'text/html')\nkept, nav = 'Wild goose chases' in t, ('Menu link list' in t or 'On this page' in t)\nprint('content sidebar kept:', kept, '| navigation aside shown:', nav)\nsys.exit(0 if kept and not nav else 1)\n"
+      ]
+    }
   ],
-  "notes": "2026-10-15 ST-bke44brb: platform.claude.com/docs/en/managed-agents/memory (S-ovnqfusm) holds its Beta banner (header agent-memory-2026-07-22) in an <aside> and its 'Don't combine agent-memory-2026-07-22 with managed-agents-2026-04-01' note in a callout; both are missing from the text factdiff.py and provider.py read extract, so the fact at agents/agent-memory-services.md (the beta-header fact) prints 'quote not held' although the raw HTML holds the sentence."
+  "touches": [
+    "_tools/fetch.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "depends_on": [
+    "ST-62irbhyw"
+  ],
+  "notes": "2026-10-15 ST-bke44brb: platform.claude.com/docs/en/managed-agents/memory (S-ovnqfusm) holds its Beta banner (header agent-memory-2026-07-22) in an <aside> and its 'Don't combine agent-memory-2026-07-22 with managed-agents-2026-04-01' note in a callout; both are missing from the text factdiff.py and provider.py read extract, so the fact at agents/agent-memory-services.md (the beta-header fact) prints 'quote not held' although the raw HTML holds the sentence. Plan 2026-10-17: the networked repro exits 1 on 7cb5e0cbb (sre.google page read, no line holds 'Wild goose chases'); check 0 plants a page with a nav aside, a role=navigation aside and an article sidebar and runs fetch.to_text offline (sidebar dropped today, exit 1)."
 }

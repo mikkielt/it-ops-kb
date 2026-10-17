@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "land of a code-lane item waits for its merge request without --wait-merge being named",
   "status": "draft",
+  "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,
   "goal": "backlog.py land of an item whose commits are code-lane waits for the merge request by default (the skill's --wait-merge 1800), and --wait-merge 0 keeps today's push-and-stop, so a landing run without the flag does not stop after the push and need a second run (ST-zezjnwe6 of SP-ysuvdxsn)",
@@ -13,16 +14,42 @@
         "-c",
         "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','land','--help'],capture_output=True,text=True)\nt=' '.join(p.stdout.split());print(t[t.find('--wait-merge'):][:160]);sys.exit(0 if 'default: 1800' in t or 'default 1800' in t else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys, argparse, types\nsys.path.insert(0, '_tools')\nimport bl_land as L, kbpublic\np = argparse.ArgumentParser()\nL.args_land(p)\nd = p.parse_args(['ST-x']).wait_merge\nz = p.parse_args(['ST-x', '--wait-merge', '0']).wait_merge\nL.ops_write = lambda **f: None\nkbpublic.integration_remote = lambda r: 'origin'\ncalls = []\ndef once(bl, a):\n    L.LAND_OPS['pending'] = (['abc'], 'code/ST-x')\n    return 0\nL.land_once = once\nL.wait_merge = lambda *x, **k: calls.append(x[3]) or 1\nL.Backlog = lambda r: None\nbl = types.SimpleNamespace(root='.')\nL.cmd_land(bl, p.parse_args(['ST-x', '--wait-merge', '0']))\nn0 = len(calls)\nL.cmd_land(bl, p.parse_args(['ST-x']))\nprint('default:', d, '| --wait-merge 0:', z, '| waits with 0:', n0, '| waits by default:', len(calls) - n0)\nsys.exit(0 if d == 1800 and z == 0 and n0 == 0 and len(calls) - n0 == 1 else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py land of an item whose commits are code-lane waits for the merge request by default (the skill's --wait-merge 1800)",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py land of an item whose commits are code-lane waits for the merge request by default (the skill's --wait-merge 1800)",
+      "check": 1
+    },
+    {
+      "clause": "--wait-merge 0 keeps today's push-and-stop, so a landing run without the flag does not stop after the push and need a second run (ST-zezjnwe6 of SP-ysuvdxsn)",
+      "check": 1
     }
   ],
   "touches": [
     "_tools/bl_land.py",
-    "_tools/backlog.py",
     "kb/_self/backlog.md",
-    ".claude/skills/kb-sprint/SKILL.md"
+    "kb/_self/querylog.md",
+    "kb/_self/tools.md",
+    "skills/item/SKILL.md",
+    "skills/sprint/SKILL.md"
+  ],
+  "depends_on": [
+    "ST-mpwzinrm"
   ],
   "links": [
     "parked: SP-ysuvdxsn close"
   ],
-  "notes": "Retrospective finding of SP-ysuvdxsn. Recurred in SP-a3w7xdij: ST-mee3qx7d (skills/sprint/SKILL.md) and ST-w2if4brd (kb/_self/reports/research-repro.md) were landed without --wait-merge and stopped after pushing code/<id>, each needing a second land run."
+  "notes": "Retrospective finding of SP-ysuvdxsn. Recurred in SP-a3w7xdij: ST-mee3qx7d (skills/sprint/SKILL.md) and ST-w2if4brd (kb/_self/reports/research-repro.md) were landed without --wait-merge and stopped after pushing code/<id>, each needing a second land run. Premise run 2026-10-17 on origin/main 7cb5e0cbb: land --help shows no default for --wait-merge (args_land, _tools/bl_land.py:3193) and cmd_land with --wait-merge 0 still calls wait_merge (bound 0 is not None). Check 1 runs cmd_land with a stubbed land_once and wait_merge: default 1800 waits, 0 does not."
 }

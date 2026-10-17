@@ -1,12 +1,13 @@
 {
   "id": "BG-hngdvqyy",
   "kind": "bug",
-  "title": "The gate classifier gives a gate that only names the Python tokenize module the secrets class",
+  "title": "The gate classifier gives the secrets class to a gate that only names the Python tokenize module, or by the path of a kb article about secrets",
   "status": "draft",
+  "sprint": "SP-aoiqmnc6",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "A gate whose text only names the Python tokenize module is classed design, not secrets, while a token, secret or credential in it still classes secrets",
+  "goal": "A gate whose text only names the Python tokenize module (tokenize, tokenizer) is classed design, and a gate on an item whose touches name a Markdown article under kb/ whose path holds a secrets word (the auth article shamir-secret-sharing.md) is classed by its own text, not secrets by that path; a token, secret, credential or password in the gate's text (API token, GITLAB_TOKEN) and a touch of a credential or token file (.env, credentials.json, api.token) keep the secrets class.",
   "repro": {
     "run": [
       "python3",
@@ -14,5 +15,47 @@
       "import sys;sys.path.insert(0,'_tools');import bl_authority as a;sys.exit(0 if a.derived_class({'touches':[]},{'id':'g1','question':'Use the tokenize module or a regex scan?','options':['tokenize','regex']})=='design' else 1)"
     ]
   },
-  "notes": "SP-j65ihctq retrospective: the misclass made ST-2jsyxkpf's design gate g1 blocking class secrets, so its landing waited on an operator answer for a choice with no secret in it. Second sighting 2026-10-16 (ST-jrs7supe): a provisional gate that only named an 'owner token' as one implementation option of a file lock (no credential) was classed secrets (matched 'token') and made blocking."
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "\nimport sys\nsys.path.insert(0,'_tools')\nimport bl_authority as a\nitem=dict(touches=['kb/public/auth/shamir-secret-sharing.md'])\ng=dict(id='g1',question='Which anchor rows of the article does the fix keep: the old rows or the reworded ones?',options=['keep the old rows','replace them with the reworded rows'])\nbad=dict(id='g2',question='Should the worker read the credential file .env to fetch the value?',options=['read it','leave it'])\nc1,c2=a.derived_class(item,g),a.derived_class(item,bad)\nprint('wording choice on a secrets-named article:',c1,'| credential file gate:',c2)\nsys.exit(0 if c1=='design' and c2=='secrets' else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport bl_authority as a\ndef c(q, t=()):\n    return a.derived_class({'touches': list(t)}, {'id': 'g1', 'question': q, 'options': ['a', 'b']})\nr = dict(tokenize=c('Use the tokenize module or a regex scan?'),\n         tokenizer=c('Which tokenizer splits the words of a fact?'),\n         api=c('Use the tokenize module to find the API token?'),\n         env_var=c('Where is GITLAB_TOKEN read from?'),\n         dotenv=c('Which anchor rows stay?', ['kb/public/auth/x.md', 'config/.env']),\n         cred_json=c('Which anchor rows stay?', ['kb/public/auth/credentials.json']),\n         token_file=c('Which anchor rows stay?', ['kb/public/auth/api.token']))\nprint(r)\nok = r['tokenize'] == r['tokenizer'] == 'design' and all(r[k] == 'secrets' for k in r if k not in ('tokenize', 'tokenizer'))\nsys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "A gate whose text only names the Python tokenize module (tokenize, tokenizer) is classed design",
+      "check": 2
+    },
+    {
+      "clause": "a gate on an item whose touches name a Markdown article under kb/ whose path holds a secrets word (the auth article shamir-secret-sharing.md) is classed by its own text, not secrets by that path",
+      "check": 0
+    },
+    {
+      "clause": "a token, secret, credential or password in the gate's text (API token, GITLAB_TOKEN) and a touch of a credential or token file (.env, credentials.json, api.token) keep the secrets class",
+      "check": 0
+    },
+    {
+      "clause": "a token, secret, credential or password in the gate's text (API token, GITLAB_TOKEN) and a touch of a credential or token file (.env, credentials.json, api.token) keep the secrets class",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-73wc55ew"
+  ],
+  "notes": "SP-j65ihctq retrospective: the misclass made ST-2jsyxkpf's design gate g1 blocking class secrets, so its landing waited on an operator answer for a choice with no secret in it. Second sighting 2026-10-16 (ST-jrs7supe): a provisional gate that only named an 'owner token' as one implementation option of a file lock (no credential) was classed secrets (matched 'token') and made blocking. Planned 2026-10-17: merged ST-zdxdv4lh (a secrets word in a kb article's path) into this bug; its check is check 0. Premise run on origin/main 7cb5e0cbb: the repro and both checks exit 1 (tokenize and the shamir article class secrets). Operator-authority guard: check 1 plants API token, GITLAB_TOKEN, .env, credentials.json and api.token, which must stay secrets. ST-oq4owwhh (lease and bearer-token wording) stays a draft operator call, not subsumed: it narrows the word token itself. Test policy D-6kei5o2z: no new test."
 }

@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "The kb says Remote Control server mode runs several sessions from one process, not only one remote session per interactive process",
   "status": "draft",
+  "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
   "goal": "SP-4dab3cy5 review G1 (S2, ST-5mcrotet): kb/public/claude/cross-session-messaging.md's DER fact says Remote Control forwards the prompts of one session at a time, but the Remote Control page (https://code.claude.com/docs/en/remote-control) says that limit is per interactive process and that `claude remote-control` server mode runs concurrent sessions from one process (`--capacity <N>`, `--spawn worktree`). The article states the one-session limit as the interactive-process case and records server mode's concurrent sessions with their flags, tagged and cited.",
@@ -15,7 +16,17 @@
       ]
     }
   ],
+  "touches": [
+    "kb/public/claude/cross-session-messaging.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "BG-yvja5w5d"
+  ],
   "links": [
     "parked: SP-4dab3cy5 review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: research item (S2 review gap). The check exits 1 on 7cb5e0cbb (no --capacity, no server mode in the article). Touches carry _sources.csv, _anchors.csv and the doc2query expansions, since the DER fact is reworded."
 }

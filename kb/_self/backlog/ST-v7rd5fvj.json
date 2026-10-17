@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts or gap entries through /kb-research; (1) How does Python's urllib follow an HTTP redirect, and how does a redirect handler (HTTPRedirectHandler.redirect_request) refuse or stop a hop to a given host? (2) How does a Claude Code UserPromptSubmit hook block a prompt and show the person a reason, and does a blocked prompt start a model turn?",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Planned 2026-10-17 on origin/main 7cb5e0cbb: (2) packs good (claude/hooks.md:58 and :62 answer it); (1) packs a false good (agents/doc-change-detection.md:71 is about redirect chains, nothing on refusing a hop). Feeds ST-mrrudfmj (no request for a redirect hop into a host in its down window) and ST-h3y6iym4 (kb!: blocks the prompt)."
 }

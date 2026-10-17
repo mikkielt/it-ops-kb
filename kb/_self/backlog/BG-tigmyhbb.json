@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "A kb_feedback call is captured as a lookup tool, so the digest counts tool issues under kb_feedback and a feedback-only prompt becomes a lookup entry",
   "status": "draft",
+  "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
   "severity": "S4",
-  "goal": "ql_distill.entry_of leaves kb_feedback out of an entry's lookup tools, so a tool_issue counts only under the tools the lookup used (ql_report.feedback_lines), and a prompt whose only kb call is kb_feedback makes no lookup entry whose question is the feedback's question argument; a test plants both cases.",
+  "goal": "ql_distill.entry_of leaves kb_feedback out of an entry's lookup tools, so a tool_issue counts only under the tools the lookup used (ql_report.feedback_lines), and a prompt whose only kb call is kb_feedback makes no lookup entry.",
   "repro": {
     "run": [
       "python3",
@@ -14,14 +15,36 @@
       "import sys; sys.path.insert(0, '_tools'); import ql_distill; rs = [{'id': 'r1', 'ts': '2026-10-14T08:00:00Z', 'surface': 'mcp', 'tool': 'kb_pack', 'verdict': 'none'}, {'id': 'r2', 'ts': '2026-10-14T08:00:05Z', 'surface': 'mcp', 'tool': 'kb_feedback'}]; e = ql_distill.entry_of(rs, None); print(e and e[0].get('tools')); sys.exit(1 if e and 'kb_feedback' in (e[0].get('tools') or []) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, '_tools')\nimport ql_distill\n# a prompt whose only kb call is kb_feedback makes no lookup entry\nrs = [{'id': 'r2', 'ts': '2026-10-14T08:00:05Z', 'surface': 'mcp', 'tool': 'kb_feedback', 'question': 'how does x work'}]\ne = ql_distill.entry_of(rs, None)\nentry = e[0] if e else None\nprint('entry of a feedback-only prompt:', entry)\nsys.exit(0 if not entry or not entry.get('tools') else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "ql_distill.entry_of leaves kb_feedback out of an entry's lookup tools, so a tool_issue counts only under the tools the lookup used (ql_report.feedback_lines)",
+      "check": 1
+    },
+    {
+      "clause": "a prompt whose only kb call is kb_feedback makes no lookup entry",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/ql_distill.py",
     "_tools/ql_report.py",
-    "_tools/ql_capture.py",
-    "_tools/test_redact.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "depends_on": [
+    "ST-rdpqhmn4"
   ],
   "links": [
     "parked: SP-waxgh3kg review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: repro exits 1 on 7cb5e0cbb (tools ['kb_pack', 'kb_feedback']); check 0 plants a feedback-only prompt (an entry with tools ['kb_feedback'] today, exit 1). The test clause is gone (D-6kei5o2z)."
 }

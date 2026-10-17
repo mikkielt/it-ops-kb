@@ -1,12 +1,13 @@
 {
   "id": "ST-lcsgjg6p",
   "kind": "story",
-  "title": "A pack, kb_show and kb_audit show a confirmed open feedback finding on its line as observed signal, never as a fact",
+  "title": "A pack, kb_show and kb_audit show a committed feedback report on its line as observed signal, never as a fact",
   "status": "draft",
   "parent": "EP-x4cqj7zo",
+  "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
-  "goal": "rag.py pack, kb_pack, kb_show and kb_audit print, beside the active LOG rows under observed signal, one line per printed fact line that an open feedback finding names, e.g. 'flagged (feedback, not a fact): public/x.md:42 wrong x2 since 2026-10-11', read from the committed findings only, so an unconfirmed or pending report shows nowhere; it never counts toward coverage; kb_audit gains a flags count per article; rag.py eval keeps passing every row.",
+  "goal": "rag.py show, kb_show, rag.py pack and kb_pack print, beside the active LOG rows under observed signal, one line per printed fact line that a feedback report of the committed query-log store names with the issue wrong or stale (an entry's feedback lines, read from ql_base.STORE), e.g. 'flagged (feedback, not a fact): public/x.md:42 wrong x2 since 2026-10-11', so a report still in a spool shows nowhere; the flagged line never counts toward a pack's coverage; rag.py audit and kb_audit gain a flags count per article; rag.py eval keeps passing every row.",
   "checks": [
     {
       "run": [
@@ -18,10 +19,27 @@
     {
       "run": [
         "python3",
-        "_tools/tests.py",
-        "-k",
-        "feedback_flags"
+        "-c",
+        "import sys, json, io, runpy, tempfile, contextlib\nfrom pathlib import Path\nsys.path.insert(0, '_tools')\nimport ql_base\nst = Path(tempfile.mkdtemp())\n(st / '2026-10').mkdir()\nhdr = {'run': '20261011T000000Z-aaaaaaaa', 'pipeline': 7, 'retrieval': 8, 'kb_commit': '0' * 40,\n       'counts': {'entries': 1, 'dropped': 0, 'waiting': 0}}\ne = {'id': '00000000-0000-0000-0000-000000000001', 'surface': 'prompt', 'day': '2026-10-11', 'tools': ['kb_pack'],\n     'question': 'how is the status line turned off', 'verdict': 'good',\n     'feedback': [{'outcome': 'misled', 'judged_by': 'user',\n                   'lines': [{'line': 'public/claude/statusline.md:27', 'issue': 'wrong'}]}]}\n(st / '2026-10' / '20261011T000000Z-aaaaaaaa.jsonl').write_text(json.dumps(hdr) + '\\n' + json.dumps(e) + '\\n')\nql_base.STORE = st\ndef run(*argv):\n    out = io.StringIO()\n    sys.argv = ['rag.py', *argv]\n    with contextlib.redirect_stdout(out):\n        try:\n            runpy.run_path('_tools/rag.py', run_name='__main__')\n        except SystemExit:\n            pass\n    return out.getvalue()\nshow = run('show', 'public/claude/statusline.md:27', '-n', '3')\naudit = run('audit', 'public/claude/statusline')\nflag = [l for l in show.splitlines() if 'flagged (feedback, not a fact)' in l]\nprint('show flag:', flag, '| audit flags:', [l for l in audit.splitlines() if 'flag' in l.lower()][:2])\nsys.exit(0 if flag and 'statusline.md:27' in flag[0] and 'wrong' in flag[0] and 'flag' in audit.lower() else 1)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "rag.py show, kb_show, rag.py pack and kb_pack print, beside the active LOG rows under observed signal, one line per printed fact line that a feedback report of the committed query-log store names with the issue wrong or stale (an entry's feedback lines, read from ql_base.STORE), e.g. 'flagged (feedback, not a fact): public/x.md:42 wrong x2 since 2026-10-11', so a report still in a spool shows nowhere",
+      "check": 1
+    },
+    {
+      "clause": "the flagged line never counts toward a pack's coverage",
+      "check": 0
+    },
+    {
+      "clause": "rag.py audit and kb_audit gain a flags count per article",
+      "check": 1
+    },
+    {
+      "clause": "rag.py eval keeps passing every row",
+      "check": 0
     }
   ],
   "touches": [
@@ -29,12 +47,16 @@
     "_tools/rag.py",
     "_tools/kb_mcp.py",
     "_tools/kb_hook.py",
-    "_tools/tests.py",
     "kb/_self/tools.md",
     "kb/_self/content-rules.md",
     "kb/_self/token-efficiency.md",
     "kb/_self/embedding.md",
-    "kb/_self/plugin.md"
+    "kb/_self/plugin.md",
+    "AGENTS.md"
   ],
-  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: New 'flagged' line across pack/kb_show/kb_audit/kb_mcp needs a confirmed-open-feedback finding shape; no 'confirmed feedback' kind in ql_store.FINDING_KINDS yet, so no planted input to drive."
+  "depends_on": [
+    "BG-j35obxyn",
+    "ST-h3y6iym4"
+  ],
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: New 'flagged' line across pack/kb_show/kb_audit/kb_mcp needs a confirmed-open-feedback finding shape; no 'confirmed feedback' kind in ql_store.FINDING_KINDS yet, so no planted input to drive. Narrowed at plan 2026-10-17: no confirmed feedback finding kind exists (ql_store.FINDING_KINDS), so the flags read the committed store's entries' feedback lines (FEEDBACK_KEYS lines {line, issue}) instead. The tests.py -k feedback_flags check named a missing test; check 1 plants a store run file under a patched ql_base.STORE and runs rag.py show and audit in-process (exit 1 on 7cb5e0cbb). Check 0, rag.py eval, passes before the work: it pins every eval row."
 }

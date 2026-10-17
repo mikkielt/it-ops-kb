@@ -3,6 +3,7 @@
   "kind": "bug",
   "title": "A revalidation window that starts at a heading line still fails section_unchanged when an unrelated H2 is added, renamed or removed",
   "status": "draft",
+  "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
@@ -14,11 +15,23 @@
       "import sys;sys.path.insert(0,'_tools');import factdiff as f;old='# Guide\\n\\n## Alpha\\n\\nAlpha body.\\n\\n## Beta\\n\\nBeta body.\\n\\n## Gamma\\n\\nGamma body.\\n';new=old+'\\n## Delta\\n\\nNew section.\\n';k=f.window_sections({'heading':'Guide','sha':'x'},f.Doc(new),None);r=f.section_unchanged(k,f.sections(old),f.sections(new));print(r);sys.exit(0 if r else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "factdiff.window_sections leaves out the parent's section, which hashes every sibling heading line, for a window that starts at a heading line (anchor heading = the parent's path) or runs into the next heading, with or without the previous text, so adding, renaming or removing an unrelated H2 does not fail section_unchanged, while an edit to the window's own heading or body still does",
+      "check": 0
+    },
+    {
+      "clause": "tools.md's claim that such a heading edit moves none of them then holds. Found by the SP-vk3wf746 review (S3, factdiff.py:272)",
+      "check": 0
+    }
+  ],
   "touches": [
     "_tools/factdiff.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
   ],
   "links": [
     "parked: SP-vk3wf746 review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (section_unchanged False after an unrelated H2 is added)."
 }

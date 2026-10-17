@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "A connect cut short by the remaining revalidation budget starts no down window for a healthy slow host",
   "status": "draft",
+  "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
   "goal": "provider.request under budget() shortens the timeout to the time left; a URLError timeout from that shortened connect is reported so that host_seen starts no window (the time budget shows nothing of the host). Found by the SP-u5q37ds3 review (_tools/provider.py request, host_seen).",
@@ -11,16 +12,32 @@
       "run": [
         "python3",
         "-c",
-        "\nimport sys, time, socket, tempfile, urllib.request, urllib.error\nsys.path.insert(0, '_tools')\nimport provider as P\nP.DOWN_DIR = tempfile.mkdtemp()\nP._down.clear()\ndef fake_open(self, req, data=None, timeout=None):\n    if timeout is not None and timeout < P.TIMEOUT:\n        time.sleep(timeout)\n    raise urllib.error.URLError(socket.timeout('timed out'))\nurllib.request.OpenerDirector.open = fake_open\nslow, down = 'https://slow.example.com/x', 'https://down.example.com/x'\nwith P.down_window():\n    P.gated_request(down)\n    assert P.host_down(down), 'an unbudgeted connect timeout must still start a window'\n    with P.budget(0.6):\n        P.gated_request(slow)\n    assert P.host_down(slow) is None, 'a connect cut short by the time budget started a down window'\n"
+        "\nimport sys, time, socket, tempfile, urllib.request, urllib.error\nsys.path.insert(0, '_tools')\nimport provider as P\nP.DOWN_DIR = tempfile.mkdtemp()\nP._down.clear()\ndef fake_open(self, req, data=None, timeout=None):\n    if timeout is not None and timeout < P.TIMEOUT:\n        time.sleep(timeout)\n    raise urllib.error.URLError(socket.timeout('timed out'))\nurllib.request.OpenerDirector.open = fake_open\nslow, down = 'https://slow.example.com/x', 'https://down.example.com/x'\nwith P.down_window():\n    P.gated_request(down)\n    down_window_started = bool(P.host_down(down))\n    with P.budget(0.6):\n        P.gated_request(slow)\n    slow_window = P.host_down(slow)\nprint('unbudgeted timeout starts a window:', down_window_started, '| budget-cut connect window:', slow_window)\nsys.exit(0 if down_window_started and slow_window is None else 1)\n"
       ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "provider.request under budget() shortens the timeout to the time left",
+      "check": 0
+    },
+    {
+      "clause": "a URLError timeout from that shortened connect is reported so that host_seen starts no window (the time budget shows nothing of the host). Found by the SP-u5q37ds3 review (_tools/provider.py request, host_seen)",
+      "check": 0
     }
   ],
   "touches": [
     "_tools/factdiff.py",
     "_tools/provider.py",
-    "kb/_self/tools.md"
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md",
+    "kb/_self/content-rules.md"
+  ],
+  "depends_on": [
+    "BG-beyrus2g"
   ],
   "links": [
     "parked: SP-u5q37ds3 review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: the check exits 1 on 7cb5e0cbb at its second assertion (a connect cut short by budget(0.6) started a down window); its first, an unbudgeted connect timeout still starts one, holds and must stay."
 }
