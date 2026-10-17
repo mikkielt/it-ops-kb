@@ -1,0 +1,21 @@
+{
+  "id": "ST-wxodyx66",
+  "kind": "story",
+  "title": "A plan that narrows a gate-class guard plants a case for each part of the gate text the classifier reads",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-aoiqmnc6 retrospective: BG-e3o47d6s passed its six checks, all of them planted in a gate's question and options, while its change also blanked forge names in the do and host_check command words and swallowed url paths, so a forge write command in do was classed design; the review found it and BG-uxubmjfv fixed it in the sprint. Its gate g1 also listed 'tag' as a word that keeps the push class, though tag was never a push word. The kb-sprint plan step 6 asks, for an item that narrows a gate class (push, secrets, agents-rule), one planted case per part of the gate text the classifier reads (question, options, do and host_check commands, a url path) that must keep the class.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\ns=t[t.find('6. Read the goal clauses'):t.find('## start SP')]\nok='host_check' in s and 'do' in s;print('plan step 6 names the do and host_check commands of a classifier change:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-aoiqmnc6 close"
+  ]
+}

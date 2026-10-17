@@ -1,0 +1,21 @@
+{
+  "id": "ST-qoqunqfz",
+  "kind": "story",
+  "title": "The kb-sprint run step that picks parallel items says a shared kb/_self doc is no overlap",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-aoiqmnc6 retrospective: run step 2 says to take items whose touches do not overlap, and the orchestrator first read the shared kb/_self/backlog.md and tools.md of seven items as an overlap and planned them one after another; only a rules pack (kb/_self/backlog.md:305, :317) showed that a kb/_self/<name>.md doc is no overlap and held --overlaps agrees. Run step 2 says that a shared kb/_self/<name>.md doc is no overlap, as held --overlaps reads it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read()\ns=t[t.find('2. From the ready list'):t.find('3. Start one worker')]\nok='kb/_self' in s;print('run step 2 says a kb/_self doc is no overlap:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-aoiqmnc6 close"
+  ]
+}

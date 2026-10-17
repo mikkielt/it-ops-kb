@@ -1,0 +1,21 @@
+{
+  "id": "ST-c3fbam7r",
+  "kind": "story",
+  "title": "land's undelivered work-rows warning says the next sync delivers them, instead of warning on every landing",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-aoiqmnc6 retrospective: 6 of the sprint's 10 landings printed 'landed with no work rows on origin/main (undelivered) ... a session end left the store unpushed', and each time the next kbgit.py sync committed the query log store with those rows (origin/main holds the BG-73wc55ew work sidecar). The warning reads as a fault the orchestrator must act on. A land whose worker session ended just before says that the next sync delivers the rows, and warns only when a sync has run since without them.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('_tools/bl_land.py',encoding='utf-8').read()\nok='next sync' in t;print('the undelivered warning names the next sync:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-aoiqmnc6 close"
+  ]
+}
