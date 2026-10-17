@@ -22,6 +22,25 @@
   "depends_on": [
     "BG-vxwibl62"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which coord.py number options reject nan and inf?",
+      "options": [
+        "all number options",
+        "only claim --ttl and wait --timeout"
+      ],
+      "recommendation": "all number options",
+      "do": {
+        "all number options": "BG-as7rt42o",
+        "only claim --ttl and wait --timeout": "BG-as7rt42o"
+      },
+      "class": "design",
+      "answer": "all number options",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
