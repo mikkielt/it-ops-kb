@@ -24,7 +24,8 @@
                                                      covers (local store only, not through --url)
 
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
-KB_COORD_STORE; with neither the command is refused (exit 2). Every command prints one JSON object on stdout with
+KB_COORD_STORE, else `kb-coord/coord.sqlite` in the common git directory of the clone that holds this script (shared by
+its worktrees, and the store the coord hook uses); a script in no git clone with neither is refused (exit 2). Every command prints one JSON object on stdout with
 sorted keys. A claimed key is a row with a holder, a token, a ttl and an expiry; `put` writes the row's value and
 raises its revision by one (a claim of an absent key starts at revision 1). The end of a lease, a `release` or an expiry,
 clears the row's holder, token and expiry and keeps its value and revision: `get` and `list` show the key with no
@@ -571,7 +572,7 @@ class QuietParser(argparse.ArgumentParser):
 def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     """The command line; remote leaves out what a request must not carry (--store, serve, --url, --key-file)."""
     store = argparse.ArgumentParser(add_help=False)
-    store.add_argument("--store", default=argparse.SUPPRESS, help="the SQLite file (else KB_COORD_STORE)")
+    store.add_argument("--store", default=argparse.SUPPRESS, help="the SQLite file (else KB_COORD_STORE, else the clone's common git directory)")
     parents = [] if remote else [store]
     parser = parser_class(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=parents)
     if not remote:
@@ -813,6 +814,21 @@ def send(url, key_file, argv):
     return code
 
 
+def default_store():
+    """kb-coord/coord.sqlite in the common git directory of the clone that holds this script, which its worktrees share
+    (the store the coord hook uses); None when the script is in no git clone."""
+    root = HERE.parent
+    try:
+        p = subprocess.run(["git", "-C", str(root), "rev-parse", "--git-common-dir"], capture_output=True, text=True,
+                           encoding="utf-8", timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    common = p.stdout.strip()
+    if p.returncode != 0 or not common:
+        return None
+    return str(Path(root, common, "kb-coord", "coord.sqlite"))
+
+
 def main(argv=None):
     for stream in (sys.stdout, sys.stderr):
         if hasattr(stream, "reconfigure"):
@@ -828,9 +844,10 @@ def main(argv=None):
             return 2
         return send(named.url, named.key_file, rest)
     args = build_parser().parse_args(argv)
-    args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE")
+    args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE") or default_store()
     if not args.store:
-        print("coord.py: no store: pass --store PATH or set KB_COORD_STORE", file=sys.stderr)
+        print("coord.py: no store: pass --store PATH or set KB_COORD_STORE (this script's directory is in no git "
+              "clone, which would hold the default)", file=sys.stderr)
         return 2
     if args.command == "serve":
         return serve(args)
