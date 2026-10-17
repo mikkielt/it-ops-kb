@@ -1,0 +1,21 @@
+{
+  "id": "ST-qmb2vefm",
+  "kind": "story",
+  "title": "A plan for code that reads a person's free text into closed fields plants a negated case beside each word it maps",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-ficl7pxl retrospective: ST-h3y6iym4's two checks planted only a positive kb!: text, so its word rule (gate g2) read 'nothing wrong with PATH:LINE' as misled and the review found it (BG-uo4sz2ed). The kb-sprint plan step 6 asks, for an item whose code maps a person's words to closed fields, one planted negated case per mapped word that must not set the field.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.find('6. Read the goal clauses'):t.find('## start SP')];ok='negat' in s;print('plan step 6 asks a negated case:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ficl7pxl close"
+  ]
+}

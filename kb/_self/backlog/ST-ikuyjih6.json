@@ -1,0 +1,21 @@
+{
+  "id": "ST-ikuyjih6",
+  "kind": "story",
+  "title": "Planning leaves AGENTS.md out of an item's touches unless its goal edits it, since that touch makes every gate the worker adds blocking",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-ficl7pxl retrospective: ST-lcsgjg6p had AGENTS.md in its touches; the file is at its cap and the worker left it unedited, but every gate it added was classed agents-rule and made blocking, so the worker stopped with two open gates the orchestrator had to answer on its branch. BG-j35obxyn and ST-h3y6iym4 carried the same touch. The kb-sprint plan step 2 says an item names AGENTS.md in its touches only when its goal changes that file, and names the agents-rule class that touch gives each gate.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.find('2. See what covers'):t.find('3. Map the goal')];ok='agents-rule' in s and 'AGENTS.md' in s;print('plan step 2 names the AGENTS.md touch and its agents-rule class:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ficl7pxl close"
+  ]
+}

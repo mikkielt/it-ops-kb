@@ -1,0 +1,21 @@
+{
+  "id": "ST-xeuix7t2",
+  "kind": "story",
+  "title": "A plan for a bug in parsing a page plants each page shape the code branches on, not only the one the bug report used",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "SP-ficl7pxl retrospective: BG-beyrus2g's repro planted one page shape (an H1 with no intro text), so the fix passed while an H1 with intro text still failed the 'previous text unknown' case the goal named; the review found it (BG-j5lfhsyf). The kb-sprint plan step 6 asks, for a bug in code that branches on a document's shape, one planted page shape per branch (a heading with body and one with none) for each condition of the clause.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.find('6. Read the goal clauses'):t.find('## start SP')];ok='page shape' in s;print('plan step 6 asks one planted page shape per branch:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-ficl7pxl close"
+  ]
+}
