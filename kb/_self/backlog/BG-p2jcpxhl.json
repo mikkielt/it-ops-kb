@@ -12,7 +12,7 @@
     "run": [
       "python3",
       "-c",
-      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\ntok=json.loads(c('claim','K2','--ttl','60','--holder','a')[1])['token']\nc('put','K2','--value','V','--revision','1');c('release','K2','--token',tok)\nr1,o1,_=c('get','K2')\nc('claim','K3','--ttl','1','--holder','a');c('put','K3','--value','W','--revision','1');time.sleep(1.6)\nr2,o2,_=c('get','K3')\nprint(dict(after_release=r1,after_expiry=r2));sys.exit(0 if r1==0 and 'V' in o1 and r2==0 and 'W' in o2 else 1)"
+      "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\ntok=json.loads(c('claim','K2','--ttl','60','--holder','a')[1])['token']\nc('put','K2','--value','V','--revision','1','--token',tok);c('release','K2','--token',tok)\nr1,o1,_=c('get','K2')\nt3=json.loads(c('claim','K3','--ttl','1','--holder','a')[1])['token'];c('put','K3','--value','W','--revision','1','--token',t3);time.sleep(1.6)\nr2,o2,_=c('get','K3')\nprint(dict(after_release=r1,after_expiry=r2));sys.exit(0 if r1==0 and 'V' in o1 and r2==0 and 'W' in o2 else 1)"
     ]
   },
   "checks": [
@@ -96,7 +96,7 @@
   ],
   "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'after_release': 1, 'after_expiry': 1}). Planned with BG-v3fjhmro's repro as a check: keeping a value past its lease leaves a row with no live lease, which claim must take again, the same code path BG-v3fjhmro asks for (a put on an absent key leaves such a row). BG-v3fjhmro stays a draft outside the sprint; once this lands its repro passes and it is dropped naming this item.",
   "evidence": {
-    "commit": "b09a785ceba8a49551f26d9b71a0231f9df1bc59",
+    "commit": "2fbadcbfbf1997ff8ef2b6072a88df4ba95791b4",
     "checks": [
       {
         "run": [
@@ -111,7 +111,7 @@
         "run": [
           "python3",
           "-c",
-          "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\ntok=json.loads(c('claim','K2','--ttl','60','--holder','a')[1])['token']\nc('put','K2','--value','V','--revision','1');c('release','K2','--token',tok)\nr1,o1,_=c('get','K2')\nc('claim','K3','--ttl','1','--holder','a');c('put','K3','--value','W','--revision','1');time.sleep(1.6)\nr2,o2,_=c('get','K3')\nprint(dict(after_release=r1,after_expiry=r2));sys.exit(0 if r1==0 and 'V' in o1 and r2==0 and 'W' in o2 else 1)"
+          "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\ntok=json.loads(c('claim','K2','--ttl','60','--holder','a')[1])['token']\nc('put','K2','--value','V','--revision','1','--token',tok);c('release','K2','--token',tok)\nr1,o1,_=c('get','K2')\nt3=json.loads(c('claim','K3','--ttl','1','--holder','a')[1])['token'];c('put','K3','--value','W','--revision','1','--token',t3);time.sleep(1.6)\nr2,o2,_=c('get','K3')\nprint(dict(after_release=r1,after_expiry=r2));sys.exit(0 if r1==0 and 'V' in o1 and r2==0 and 'W' in o2 else 1)"
         ],
         "exit": 0,
         "sha256": "5ee864df65517b87"
