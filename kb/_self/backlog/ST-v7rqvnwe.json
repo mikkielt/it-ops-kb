@@ -2,7 +2,7 @@
   "id": "ST-v7rqvnwe",
   "kind": "story",
   "title": "Research sprint goal: redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g4mwrwsv",
   "goal_research": true,
   "priority": "P1",

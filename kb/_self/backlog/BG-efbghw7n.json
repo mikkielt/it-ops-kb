@@ -2,7 +2,7 @@
   "id": "BG-efbghw7n",
   "kind": "bug",
   "title": "redact misses backslash-escaped JSON assignments and headers, a subscripted Authorization header and an escaped quote inside a value",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,

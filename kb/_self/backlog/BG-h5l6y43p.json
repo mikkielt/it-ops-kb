@@ -2,7 +2,7 @@
   "id": "BG-h5l6y43p",
   "kind": "bug",
   "title": "redact keeps a URL password or a Bearer credential that is $ and word characters, taking it for a $NAME placeholder",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g4mwrwsv",
   "priority": "P3",
   "rank": 0,
@@ -88,7 +88,8 @@
       },
       "class": "secrets",
       "answer": "replace every $word value there; keep ${NAME}, <...>, %NAME% and ***",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "a redact design choice on text shapes, not a host setup: the word credential names a value shape in text, nothing on this host to check"
     }
   ],
   "links": [

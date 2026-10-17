@@ -2,7 +2,7 @@
   "id": "BG-boyagwh4",
   "kind": "bug",
   "title": "A feedback report's lead reaches the committed store with a secret in its url path, since only the query is dropped",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,

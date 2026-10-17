@@ -2,7 +2,7 @@
   "id": "BG-hqgtovpo",
   "kind": "bug",
   "title": "redact keeps a secret assignment whose value only begins like a placeholder ($Fake..., %x%y, ***z, <a>b)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,

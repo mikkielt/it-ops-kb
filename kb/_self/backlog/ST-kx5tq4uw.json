@@ -2,7 +2,7 @@
   "id": "ST-kx5tq4uw",
   "kind": "story",
   "title": "Review sprint: redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-g4mwrwsv",
   "review": true,
   "priority": "P1",

@@ -2,7 +2,7 @@
   "id": "SP-g4mwrwsv",
   "kind": "sprint",
   "title": "redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
-  "status": "planned",
+  "status": "active",
   "goal": "redact also catches placeholder-prefixed, escaped-JSON and $-word secrets, and every text a feedback report stores passes through it",
   "gates": [
     {
