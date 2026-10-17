@@ -445,6 +445,8 @@ def research_without_facts(it):
 
 
 QUESTION_LEAD_WORDS = 8  # a lead-in of at most this many words before `: ` is no part of a narrowed goal's question
+# a numbered piece whose text before `: ` starts with one of these is itself the question, not a lead-in
+QUESTION_WORDS = frozenset("what which who whom whose when where why how does do did is are was were can could should would will may must has have".split())
 TOUCH_ROOT = re.compile(r"kb/([^/*?\[\]]+)/")  # a touch inside a named kb root (`kb/public/**`: root `public`)
 SELF_ROOT = "_self"  # the root of the project's own rules, read beside the roots the touches name
 COVERAGE_ORDER = ("none", "weak", "good")
@@ -456,7 +458,9 @@ NUMBERED_PIECE = re.compile(r"(?:\(\d+\)|\d+[.)])\s+")  # `(1) `, `1) `, `1. `: 
 def goal_questions(goal, skipped=None):
     """The questions a narrowed goal names: each sentence of the goal that ends in `?`, and each numbered piece
     (`(1) does git record a change`) that has no `?`, the number and a lead-in of up to QUESTION_LEAD_WORDS words
-    ending in `: ` left off, in order, each once. The goal is cut where `goal_clauses` cuts it, but a question is read
+    ending in `: ` left off (not when the number leads the piece and its words before the `: ` start with a question
+    word, QUESTION_WORDS: `(4) What token cost does coordination add: agent teams ...?` is one question), in order,
+    each once. The goal is cut where `goal_clauses` cuts it, but a question is read
     whole: a piece that names no question is joined to the next across a `, and ` (a question's own comma-and, `which
     item ..., and what does it print?`) and left unread at a `; `, which ends a clause, or at the goal's end: SKIPPED,
     when a list, takes each such piece, so a caller says what it did not read. A goal with no such sentence (the
@@ -465,9 +469,12 @@ def goal_questions(goal, skipped=None):
     out, cur = [], ""
 
     def question(piece):
-        piece = NUMBERED_PIECE.sub("", piece.strip(), count=1)
+        piece = piece.strip()
+        numbered_first = bool(NUMBERED_PIECE.match(piece))  # the number leads the text: the words before `: ` are the question's own
+        piece = NUMBERED_PIECE.sub("", piece, count=1)
         lead, sep, rest = piece.partition(": ")
-        if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS:
+        own = numbered_first and lead.split()[:1] and lead.split()[0].lower() in QUESTION_WORDS
+        if sep and rest.strip() and len(lead.split()) <= QUESTION_LEAD_WORDS and not own:
             piece = rest.strip()
         return piece
 

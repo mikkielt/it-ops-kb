@@ -29,6 +29,23 @@
   "depends_on": [
     "BG-vdahbfso"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which words count as a question word that keeps a numbered piece's text before its colon as the question?",
+      "options": [
+        "a fixed list of English interrogatives and auxiliaries (what, which, who, how, does, is, can, should, ...) in bl_land.QUESTION_WORDS, kept only when the number leads the piece",
+        "a narrower list of interrogatives only (what, which, who, whom, whose, when, where, why, how)"
+      ],
+      "recommendation": "a fixed list of English interrogatives and auxiliaries (what, which, who, how, does, is, can, should, ...) in bl_land.QUESTION_WORDS, kept only when the number leads the piece",
+      "do": {
+        "a fixed list of English interrogatives and auxiliaries (what, which, who, how, does, is, can, should, ...) in bl_land.QUESTION_WORDS, kept only when the number leads the piece": "BG-lgzf4rw7",
+        "a narrower list of interrogatives only (what, which, who, whom, whose, when, where, why, how)": "BG-lgzf4rw7"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 close"
   ],
