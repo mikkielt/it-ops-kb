@@ -2,7 +2,7 @@
   "id": "BG-3ht6u4pd",
   "kind": "bug",
   "title": "fetch.py keeps an aside under an ancestor with role=navigation, or one that holds nav elements, which the kb records as navigation",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,6 @@
   "links": [
     "parked: SP-5bvg4tnl review"
   ],
-  "notes": "BG-gqkbrd2r (510bed806) makes the reducer keep an aside only with data-type=sidebar, so its nav-holding role-less aside clause now passes; the ancestor role=navigation case with data-type=sidebar still shows. Goal before the 2026-10-17 plan: The HTML reducer in _tools/fetch.py skips an <aside> with a role=navigation ancestor or one that holds <nav> elements, as kb/public/agents/doc-change-detection.md:190 (DER) and answer QK-html-aside-element-represent-page-tell state, or the fact is reworded to the rule the reducer follows. Found by the SP-5bvg4tnl review (gap 2). Plan 2026-10-17, narrowed: BG-gqkbrd2r (510bed806) already made the reducer keep an aside only with data-type=sidebar, so the nav-holding aside clause passes on origin/main b871374b4; the repro still fails on the ancestor role=navigation case (ancestor-role aside shown: True). A reducer change can change stored snapshots: the worker runs fetch.py --offline and names any snapshot whose reduced text the change moves (ST-bvoiaqtz, retro)."
+  "notes": "BG-gqkbrd2r (510bed806) makes the reducer keep an aside only with data-type=sidebar, so its nav-holding role-less aside clause now passes; the ancestor role=navigation case with data-type=sidebar still shows. Goal before the 2026-10-17 plan: The HTML reducer in _tools/fetch.py skips an <aside> with a role=navigation ancestor or one that holds <nav> elements, as kb/public/agents/doc-change-detection.md:190 (DER) and answer QK-html-aside-element-represent-page-tell state, or the fact is reworded to the rule the reducer follows. Found by the SP-5bvg4tnl review (gap 2). Plan 2026-10-17, narrowed: BG-gqkbrd2r (510bed806) already made the reducer keep an aside only with data-type=sidebar, so the nav-holding aside clause passes on origin/main b871374b4; the repro still fails on the ancestor role=navigation case (ancestor-role aside shown: True). A reducer change can change stored snapshots: the worker runs fetch.py --offline and names any snapshot whose reduced text the change moves (ST-bvoiaqtz, retro).",
+  "claimed_by": "orch-r12"
 }
