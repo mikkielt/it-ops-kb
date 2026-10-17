@@ -2,7 +2,7 @@
   "id": "BG-jjbditkb",
   "kind": "bug",
   "title": "precheck's lead-in warning misses a research goal whose lead-in ends with a colon and a line break or two spaces before (1)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-aoiqmnc6 review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-aoiqmnc6 review G6 (ST-7kl5dnwr): joined_lead_in looks for the lead-in followed by ': ' and the number with one space, so a goal research story whose lead-in ends ':\\n(1)' or ':  (1)' gets no warning although goal_questions still joins the lead-in to the first question in both shapes. precheck warns of such a lead-in whatever whitespace stands between the colon and the number. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 ([False, False] for a line break and two spaces). Runs after BG-lgzf4rw7 (same module, the same lead-in rule)."
+  "notes": "Goal before the 2026-10-17 plan: SP-aoiqmnc6 review G6 (ST-7kl5dnwr): joined_lead_in looks for the lead-in followed by ': ' and the number with one space, so a goal research story whose lead-in ends ':\\n(1)' or ':  (1)' gets no warning although goal_questions still joins the lead-in to the first question in both shapes. precheck warns of such a lead-in whatever whitespace stands between the colon and the number. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 ([False, False] for a line break and two spaces). Runs after BG-lgzf4rw7 (same module, the same lead-in rule).",
+  "claimed_by": "orch-r11"
 }
