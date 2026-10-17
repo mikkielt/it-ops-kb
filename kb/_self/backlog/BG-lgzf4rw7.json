@@ -2,7 +2,7 @@
   "id": "BG-lgzf4rw7",
   "kind": "bug",
   "title": "goal_questions drops a numbered question's own words before its colon as a lead-in, so researched packs only the list after it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-rsmmwzr2 close"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-rsmmwzr2 close: ST-unrlktke's question '(4) What token cost does coordination add: agent teams, subagent briefs and the summaries they return?' was read by researched as 'agent teams, subagent briefs and the summaries they return?', since bl_land.goal_questions' question() drops any text of up to QUESTION_LEAD_WORDS words before ': ' even when that text is the question itself; the orchestrator had the goal reworded on the worker's branch. A piece whose text before ': ' is itself the question (it starts with a question word or holds the clause's verb) keeps it. Plan 2026-10-17: recurring research-goal colon finding (SP-rsmmwzr2, SP-aoiqmnc6, SP-yyjwfjtc). Repro on origin/main b871374b4 exits 1 (the (4) question loses 'What token cost does coordination add')."
+  "notes": "Goal before the 2026-10-17 plan: SP-rsmmwzr2 close: ST-unrlktke's question '(4) What token cost does coordination add: agent teams, subagent briefs and the summaries they return?' was read by researched as 'agent teams, subagent briefs and the summaries they return?', since bl_land.goal_questions' question() drops any text of up to QUESTION_LEAD_WORDS words before ': ' even when that text is the question itself; the orchestrator had the goal reworded on the worker's branch. A piece whose text before ': ' is itself the question (it starts with a question word or holds the clause's verb) keeps it. Plan 2026-10-17: recurring research-goal colon finding (SP-rsmmwzr2, SP-aoiqmnc6, SP-yyjwfjtc). Repro on origin/main b871374b4 exits 1 (the (4) question loses 'What token cost does coordination add').",
+  "claimed_by": "orch-r11"
 }
