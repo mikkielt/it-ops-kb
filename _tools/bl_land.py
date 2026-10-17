@@ -2349,12 +2349,12 @@ def land_once(bl, a):
                     raise land_stop("done", str(e)) from None
                 land_git(root, "done", "update-ref", f"{LAND_REF}/{iid}", "HEAD")
         if late:  # the code lane pushes an auto-merging merge request: its proof runs before that, not after
-            if getattr(a, "wait_merge", None) is None:  # a two-pass landing is read before its push, not after it
+            if not getattr(a, "wait_merge", None):  # a two-pass landing is read before its push, not after it
                 say(f"land: {bl.label(iid)} goes through the code lane: this run pushes the merge request of branch "
                     f"{code_branch} and stops there as not done yet, without waiting for it; to land it in one run "
                     f"(reading {remote}/main every {WAIT_POLL} s until the merge request has merged) run "
-                    f"backlog.py land {iid} --wait-merge SECONDS, else run backlog.py land {iid} again once it has "
-                    "merged")
+                    f"backlog.py land {iid} with --wait-merge SECONDS above 0, else run backlog.py land {iid} again "
+                    "once it has merged")
             stray =out_of_scope(root, item_commits(root, family), own_globs(scope(bl, iid)))
             if stray:  # done's scope rule, read before the merge request opens rather than after it merged
                 raise land_stop("scope", f"{bl.label(iid)}'s commits change files outside its touches, so done would "
@@ -2436,6 +2436,7 @@ def pushed_tip(root, remote, code_branch):
 
 
 WAIT_POLL = 60  # seconds between land --wait-merge's reads of the integration main
+WAIT_MERGE_DEFAULT = 1800  # seconds land waits for a code item's merge request when --wait-merge is not named
 
 
 def merged_on_main(root, remote, shas):
@@ -2463,14 +2464,14 @@ def wait_merge(root, remote, shas, bound, poll=WAIT_POLL, sleep=time.sleep):
 
 @ops_land
 def cmd_land(bl, a):
-    """Land a finished item's branch (land_once). With --wait-merge SECONDS a code item's first pass is followed by a
-    bounded wait for its merge request, read from git (a fetch of the integration main every WAIT_POLL seconds, not
-    the forge CLI), then the second pass in the same run; a wait that runs out stops at step wait-merge naming the
-    merge request."""
+    """Land a finished item's branch (land_once). A code item's first pass is followed by a bounded wait for its merge
+    request, WAIT_MERGE_DEFAULT seconds or --wait-merge SECONDS, read from git (a fetch of the integration main every
+    WAIT_POLL seconds, not the forge CLI), then the second pass in the same run; a wait that runs out stops at step
+    wait-merge naming the merge request; --wait-merge 0 pushes and stops without waiting."""
     LAND_OPS["pending"] = None
     code = land_once(bl, a)
     pending, bound = LAND_OPS.get("pending"), getattr(a, "wait_merge", None)
-    if code or not pending or bound is None:
+    if code or not pending or not bound:
         return code
     import kbpublic
     shas, code_branch = pending
@@ -3269,9 +3270,9 @@ def args_done(p):
 def args_land(p):
     p.add_argument("id")
     p.add_argument("--branch", help="the local branch to land (default work/ID)")
-    p.add_argument("--wait-merge", type=int, metavar="SECONDS",
+    p.add_argument("--wait-merge", type=int, metavar="SECONDS", default=WAIT_MERGE_DEFAULT,
                    help="after a code item's first pass, wait up to SECONDS for its merge request (read from git "
-                        "every 60 s), then run the second pass")
+                        "every 60 s), then run the second pass; 0 pushes and stops (default: %(default)s)")
     p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
                    help="a trailer of the session's own for the done --commit commit (repeatable)")
 
