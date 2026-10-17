@@ -2,7 +2,7 @@
   "id": "ST-bda544wp",
   "kind": "story",
   "title": "code.md, tools.md and backlog.md name test selectors that only the deleted test_live_kb.py matched",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,6 @@
   "links": [
     "parked: SP-noqsd4hj review"
   ],
-  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Plan 2026-10-17: merged ST-ui666qzp (backlog.md's workaround selector, its check is check 1); both selectors collect no test since ST-wfrfy3mp deleted test_live_kb.py. Both checks exit 1 on 7cb5e0cbb."
+  "notes": "Review gap of SP-noqsd4hj, rated S3 by the sprint's reviewer. Plan 2026-10-17: merged ST-ui666qzp (backlog.md's workaround selector, its check is check 1); both selectors collect no test since ST-wfrfy3mp deleted test_live_kb.py. Both checks exit 1 on 7cb5e0cbb.",
+  "claimed_by": "orch-r08"
 }
