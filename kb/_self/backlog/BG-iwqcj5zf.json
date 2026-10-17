@@ -58,7 +58,9 @@
         "digest in coord.py": "BG-iwqcj5zf",
         "filter in the hook": "BG-iwqcj5zf"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "digest in coord.py",
+      "by": "operator"
     }
   ],
   "links": [
