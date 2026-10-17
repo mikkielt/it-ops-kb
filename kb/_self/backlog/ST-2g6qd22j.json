@@ -2,7 +2,7 @@
   "id": "ST-2g6qd22j",
   "kind": "story",
   "title": "land writes a step row for a stop after its push step, so ops names the after-push step that failed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,
@@ -35,5 +35,18 @@
     "parked: SP-uvz65lvm close"
   ],
   "notes": "SP-uvz65lvm retrospective finding (2026-10-13), parked as a draft by the orchestrating session acting for the operator. Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Failing after-push step unknown (push exit 0, land.end 1, no step line); driving land needs a full planted remote, worktree and sprint, beyond reasonable effort. Narrowed at plan 2026-10-17: the ops rows of BG-prsp6j2z (kb/_querylog/ops, 2026-10-13T20:08:46Z) show push exit 0 then land.end exit 1 with no later step row; on origin/main 7cb5e0cbb verify_landed's land_stop('verify') is the only stop after the push and land_git(root, 'verify', ...) calls no ops_mark, so the open push row closes with exit 0. The fast-forward and branch deletion in land_once's finally already say each refusal and change no exit. The old check named a test the pruned suite lacks; the new one drives ops_land, land_run and verify_landed on a planted repository and remote and exits 1 today (steps: push exit 0 only).",
-  "claimed_by": "orch-r06"
+  "evidence": {
+    "commit": "bfb279c2414dbe0358bc7b2ba588adad0c7febeb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, subprocess, tempfile, types\nsys.path.insert(0, '_tools')\nimport bl_land as L\nrows = []\nL.ops_write = lambda **f: rows.append(f)\nt = tempfile.mkdtemp()\ndef g(*a):\n    return subprocess.run(['git', *a], cwd=t, capture_output=True, text=True, check=True)\ng('init', '-q', '-b', 'main'); g('config', 'user.email', 'a@b.c'); g('config', 'user.name', 'n')\ng('commit', '-q', '--allow-empty', '-m', 'x')\nsubprocess.run(['git', 'init', '-q', '--bare', '-b', 'main', t + '.git'], check=True)\ng('remote', 'add', 'origin', t + '.git'); g('push', '-q', 'origin', 'main')\ndef handler(bl, a):\n    L.land_run(t, 'kbgit.py sync --push', ['-c', 'pass'])\n    L.verify_landed(t, 'origin', 'refs/remotes/origin/main', a.id)\n    return 0\ntry:\n    L.ops_land(handler)(None, types.SimpleNamespace(id='ST-planted'))\nexcept Exception as e:\n    print('stopped:', str(e)[:120])\nsteps = [(r['step'], r['exit']) for r in rows if r.get('event') == 'land.step']\nend = [r['exit'] for r in rows if r.get('event') == 'land.end']\nprint('steps:', steps, 'end:', end)\nsys.exit(0 if end == [1] and steps and steps[-1] == ('verify', 1) and ('kbgit.py-sync-push', 0) in steps else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "ca15fd5b4c5f7042"
+      }
+    ]
+  }
 }
