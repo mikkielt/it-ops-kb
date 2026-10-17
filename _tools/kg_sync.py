@@ -88,8 +88,9 @@ PUSH_PAUSE_MAX_S = 30.0
 # A push the forge itself fails (an HTTP 5xx from its pre-receive endpoint: "remote: GitLab: Internal API error (503)",
 # then "[remote rejected] ... (pre-receive hook declined)") says nothing of the commits, so it is tried again like a
 # race, for the push to the integration main (a code/<id> branch push is not retried on a 5xx). A gate refusal ("You
-# are not allowed to push code to protected branches") names no 5xx and is never retried.
-FORGE_OUTAGE = re.compile(r"\(5\d\d\)|returned error: 5\d\d|HTTP/\S+ 5\d\d|\b5\d\d (?:Server Error|Bad Gateway|Service "
+# are not allowed to push code to protected branches") names no 5xx and is never retried, and a bare parenthesised
+# number (a push-rule refusal such as "commit message longer than the limit (500)") is no status.
+FORGE_OUTAGE = re.compile(r"Internal API error \(5\d\d\)|returned error: 5\d\d|HTTP/\S+ 5\d\d|\b5\d\d (?:Server Error|Bad Gateway|Service "
                           r"Unavailable|Gateway Time-?out|Internal Server Error)", re.I)
 
 
