@@ -2,7 +2,7 @@
   "id": "BG-as7rt42o",
   "kind": "bug",
   "title": "coord.py accepts --ttl nan or inf and --timeout nan, so a lease never expires and a wait never ends",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,18 @@
     "parked: SP-rsmmwzr2 review"
   ],
   "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'ttl_nan': 0, 'ttl_inf': 0, 'wait_nan': 'hung'}). Ordered after BG-vxwibl62 (coord.py).",
-  "claimed_by": "orch-r04"
+  "evidence": {
+    "commit": "c9a3acfe90ae9d625baf1578d7bf5189ac6849db",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\na=c('claim','K3','--ttl','nan','--holder','a')[0];b=c('claim','K4','--ttl','inf','--holder','a')[0]\ntry:\n    w=c('wait','--since','0','--timeout','nan',t=5)[0]\nexcept s.TimeoutExpired:\n    w='hung'\nprint(dict(ttl_nan=a,ttl_inf=b,wait_nan=w));sys.exit(0 if a==2 and b==2 and w==2 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "df9c3947cfb21209"
+      }
+    ]
+  }
 }
