@@ -4023,3 +4023,14 @@ _Agent: kb-research_
 - See python/stdlib-urllib-errors.md, claude/hooks.md, agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-html-aside-element-represent-page-tell. What does the HTML aside element represent, and how does a page tell a content sidebar inside its article from navigation (an aside inside the nav element, or one with role=navigation)?
+- `aside` represents a section whose content is tangentially related to the content around it and could be considered separate from it (sidebars, pull quotes, advertising, groups of `nav`); it is not for parentheticals, and its placement (inside an `article` or outside it) says what it is about. [DOC S-zrzsmepn]
+- `nav` represents a section of links to other pages or to parts of the page, primarily for major navigation blocks; both elements are sectioning content with a flow content model, and the entries state no ban on either inside the other. [DOC S-zrzsmepn]
+- ARIA in HTML allows no `navigation` role on an `aside` (its roles are `feed`, `none`, `note`, `presentation`, `region`, `search`); HTML-AAM gives an `aside` inside sectioning content the complementary role only with an accessible name, else generic. [DOC S-jj4lbdze, S-er62secx]
+- Probe: the SRE book chapter holds six `aside data-type="sidebar"` elements inside `main`, with no `nav`, and a text reduction that drops `aside` loses the sentence in the first. [DER S-bykh7vnm]
+- Conclusion: an `aside` with a `nav` ancestor, or with `role=navigation` on it or an ancestor, or one that holds `nav` elements, is navigation; an `aside` inside the `article` or `main` that holds the prose, with none of those, is a content sidebar whose text belongs to the page, named or not. [DER S-zrzsmepn, S-jj4lbdze, S-er62secx, S-umpci7ic]
+- Open: how browsers and screen readers expose an `aside` inside a `nav`, and whether `data-type="sidebar"` is a published convention, were not confirmed. [UNK]
+- See agents/doc-change-detection.md.
+
+_Agent: kb-research_

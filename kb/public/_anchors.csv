@@ -1666,6 +1666,7 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 02d2717d196f,agents/doc-change-detection.md,S-yrqtp5aq,unlocated:no-match,,,,,2026-10-13
 034ab3393b8a,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 09144ce257e9,agents/doc-change-detection.md,S-tjb5zoq2,unlocated:no-match,,,,,2026-10-13
+099f3bf33397,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.5 The aside element,parenthetical;just;appropriat;main;part;flow;asid;element,3800db63adefc159,"It's not appropriate to use the aside element just for parentheticals, since those are part of the main flow of the document.",2026-10-17
 0f4215460890,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
 1161b96c0360,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 124aa0d4379a,agents/doc-change-detection.md,S-7ivxsp4z,located,,api;link;local;next;nextlink;top;search;com,0f96067b1589adf1,"""nextLink"": ""https://learn.microsoft.com/api/Search?search=device%20identity%20overview&locale=en-us&$top=3&accept=text%2Fmarkdown&$skip=3"",",2026-10-13
@@ -1692,11 +1693,13 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 2db1a75be387,agents/doc-change-detection.md,S-rcaeqaft,located,FreshLLMs: Refreshing Large Language Models with Search Engine Augmentation,size;struggl;substantially;correctness;fast;fast-chang;both;chang,4ad7329013b5be5c,We benchmark a diverse array of both closed and open-source LLMs under a two-mode evaluation procedure that allows us to measure both correctness and hallucination.,2026-10-12
 310f5ca9b5a3,agents/doc-change-detection.md,S-5lkuonr6,unlocated:no-match,,,,,2026-10-13
 310f5ca9b5a3,agents/doc-change-detection.md,S-oqvrq2wq,unlocated:no-match,,,,,2026-10-12
+31f819edf09c,agents/doc-change-detection.md,S-umpci7ic,located,Accessible Rich Internet Applications (WAI-ARIA) 1.2 > 5. The Roles Model > 5.4 Definition of Roles,hierarchy;meaningful;complementary;remain;separat;main;similar;level,2c35ffd5916feafb,"complementary to the main content at a similar level in the DOM hierarchy, but remaining meaningful when separated from the main content",2026-10-17
 3220f4fe393f,agents/doc-change-detection.md,S-vrx7t6cc,located,Abstract > 1 Introduction,bias;last;clearly;crawler;access;sinc;chang;page,52e23d5b86685c96,This is clearly biased since the crawler only has access to partial information about the page change process,2026-10-12
 327a2fe7ffac,agents/doc-change-detection.md,S-gceoq2qq,located,Detect Website Changes Automatically — Monitor Web Page Changes in Real Time > AI-powered website change detection — smart alerts and plain-language summaries > Example use cases > Key Features,expression;regular;remov;css;ignor;element;trigger;xpath,29d5610eda0172ea,"Lots of trigger filters, such as ""Trigger on text"", ""Remove text by selector"", ""Ignore text"", ""Extract text"", also using regular-expressions! Target elements with xPath 1",2026-10-12
 34316a91c2ca,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 3553c0d749e7,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 358a329e8822,agents/doc-change-detection.md,S-uymc3nwh,located,,closed_at;updat;updated_at;clos,4733ee1a3312b0fa,"""updatedat"": ""2026-10-13T00:42:29Z"", ""closedat"": ""2026-10-12T19:32:16Z"",",2026-10-13
+380dad29bfd8,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.4 The nav element,within;navigation;part;link;represent;other;nav;page,8a7139cffbd5b8c9,represents a section of a page that links to other pages or to parts within the page: a section with navigation links.,2026-10-17
 384f19af2226,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-12
 384f19af2226,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 38aa7b88899c,agents/doc-change-detection.md,S-km6slvii,located,Wayback Machine APIs > Memento API,compliant;fully;protocol;internet;memento;machin;archiv;wayback,ddf1527781c1fc31,The Internet Archive Wayback Machine is also fully compliant with the Memento Protocol,2026-10-12
@@ -1714,16 +1717,22 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 4b1a6d22c32b,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
 5218c34e9457,agents/doc-change-detection.md,S-o6lmrcgh,located,,path;open;endpoint;rest;api,935cf3053542c219,"If you omit the path parameter, you will receive the contents of the repository's root directory.\n\nThis endpoint supports the following custom media types. For more",2026-10-12
 55098332e2a0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
+565614912ff6,agents/doc-change-detection.md,S-jj4lbdze,located,ARIA in HTML > 4.,navigation;recommend;allow,9fe9feb3c627ea4d,"navigation is also allowed, but NOT RECOMMENDED.",2026-10-17
 5b65d533eaca,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 62355725c83f,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
 62355725c83f,agents/doc-change-detection.md,S-yrqtp5aq,unlocated:no-match,,,,,2026-10-13
 631a70679ec8,agents/doc-change-detection.md,S-g3ciqhyh,located,Avoid polling,interval;x-poll-interval;again;befor;least;many;second;wait,abe3c4cd2b8960ae,"If a response includes an x-poll-interval header, wait at least that many seconds before you poll the same endpoint again.",2026-10-12
+66caad0713d2,agents/doc-change-detection.md,S-er62secx,unlocated:no-match,,,,,2026-10-17
+66caad0713d2,agents/doc-change-detection.md,S-jj4lbdze,unlocated:no-match,,,,,2026-10-17
+66caad0713d2,agents/doc-change-detection.md,S-umpci7ic,unlocated:no-match,,,,,2026-10-17
+66caad0713d2,agents/doc-change-detection.md,S-zrzsmepn,unlocated:no-match,,,,,2026-10-17
 68b0a7091ea4,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Renaming or deleting an existing article,whether;redirect_document_id;document;redirect,b256b81f1ac66571,redirectdocumentid indicates whether you would like to keep the document ID from the previous file.,2026-10-12
 6c32ef455421,agents/doc-change-detection.md,S-gceoq2qq,located,Detect Website Changes Automatically — Monitor Web Page Changes in Real Time > AI-powered website change detection — smart alerts and plain-language summaries,english;evaluat;plain-english;rule;against;intent;plain;dif,db00751a6ffbc86b,"AI change detection rules - write a plain-English intent once: ""notify me only when the price drops below $50"", ""alert me when the item comes",2026-10-12
 6f4a7da98844,agents/doc-change-detection.md,S-shha3est,unlocated:no-match,,,,,2026-10-12
 6f4a7da98844,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
 6f529669285c,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 6f529669285c,agents/doc-change-detection.md,S-vrx7t6cc,unlocated:no-match,,,,,2026-10-12
+707d121b9337,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.2 The article element,expect;content;section,0e98c85bb3b0de80,Where sectioning content is expected.,2026-10-17
 7119ab8cbca5,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
 716428e80a5e,agents/doc-change-detection.md,S-f6ejsacc,unlocated:no-match,,,,,2026-10-13
 716428e80a5e,agents/doc-change-detection.md,S-xmqy75h7,unlocated:no-match,,,,,2026-10-12
@@ -1746,6 +1755,8 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 881411082933,agents/doc-change-detection.md,S2188,located,Rate limits for the REST API > About primary rate limits > Primary rate limit for unauthenticated users,address;application;originat;unauthenticat;hour;user;primary;request,39e327b73da769c4,"Unauthenticated requests are associated with the originating IP address, not with the user or application that made the request. The primary rate limit for unauthenticated",2026-10-12
 881411082933,agents/doc-change-detection.md,S-zlvv4mum,located,,address;application;hour;limit;originat;primary;user;request,39e327b73da769c4,"Unauthenticated requests are associated with the originating IP address, not with the user or application that made the request. The primary rate limit for unauthenticated",2026-10-12
 89ccbd3bd4c5,agents/doc-change-detection.md,S-m7xkty3c,unlocated:no-match,,,,,2026-10-12
+89fce4e9a811,agents/doc-change-detection.md,S-er62secx,located,HTML Accessibility API Mappings 1.0 > 3. Mapping HTML to Accessibility APIs > 3.5 HTML Element Role Mappings > 3.5.10 aside (scoped to a sectioning content element),complementary;asid;generic;otherwis;name;accessibl;role;element,673629d3b1d049eb,"complementary role if the aside element has an accessible name. Otherwise, generic role.",2026-10-17
+8beef627af48,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.5 The aside element,around;separat;consider;tangentially;relat;could;asid;content,76aaf62156d31667,"content that is tangentially related to the content around the aside element, and which could be considered separate from that content",2026-10-17
 909dd83cd532,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 96eebf1662fb,agents/doc-change-detection.md,S-zb3jd525,located,,intune_en;intune_en-us_1.xml;intun;us_1;_sitemap;com;learn;learn.microsoft.com,095eee3433ce25f5,<loc>https://learn.microsoft.com/sitemaps/intuneen-us1.xml</loc>,2026-10-12
 98465666b107,agents/doc-change-detection.md,S-stitrqhm,located,,chang;metadata;ms.author;ms.servic;servic;move;bulk;updat,25e94a94479f928a,"""message"": ""[BULK UPDATE] Metadata: Move author/ms.author/ms.service/ms.subservice/manager to folder level (3/5)\n\nFolders: identity/devices, identity/monitoring-health\n\nChanges to docfx.json:\n- author/ms.author: Added folder entries for identity/devices, identity/monitoring-health\n- ms.service: Added identity/devices=entra-id, identity/monitoring-health=entra-id\n-",2026-10-12
@@ -1773,6 +1784,7 @@ acfae9242371,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S2181,unlocated:gone,,,,,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S-uq2hafxi,unlocated:no-match,,,,,2026-10-13
 b1b7af2b4b2c,agents/doc-change-detection.md,S-2dckbgu5,located,,past;stat;accept-datetim;accept;request;gate;timegat;header,8a9dfc15d3eea5ed,"to indicate it wants to access a past state of an Original Resource. To that end, the ""Accept-Datetime"" header is conveyed in an HTTP request",2026-10-12
+b31b5b010710,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.5 The aside element,insid;asid;blog;post;articl,d2d59fc36fbec583,"this aside is about the blog post, since it's inside the <article> element",2026-10-17
 b3c61a5a975a,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-10-13
 b3c61a5a975a,agents/doc-change-detection.md,S-wze42rd7,unlocated:no-match,,,,,2026-10-12
 b53322c02265,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors,primary;remain;secondary;too;x-ratelimit-remain;forbidden;many;ratelimit,15edbe4054f0dbbf,"If you exceed your primary rate limit, you will receive a 403 Forbidden or 429 Too Many Requests response, and the x-ratelimit-remaining header will be",2026-10-12
@@ -1789,6 +1801,7 @@ bcd869aab2b2,agents/doc-change-detection.md,S-wze42rd7,unlocated:no-match,,,,,20
 bcd869aab2b2,agents/doc-change-detection.md,S-y23orbo7,unlocated:gone,,,,,2026-10-13
 be855cafc63a,agents/doc-change-detection.md,S-xv7jeuvk,located,,manage-group-based-licensing-error;error;licen;based;admin;group;microsoft;manag,853be7c891ad4855,"""sourcepathfromroot"": ""/docs/fundamentals/licensing-groups-resolve-problems.md"", ""redirecturl"": ""/microsoft-365/admin/manage/manage-group-licenses?view=o365-worldwide&preserve-view=true#manage-group-based-licensing-errors"",",2026-10-12
 bf004c167f86,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,2026-10-12
+bfa9b9e06087,agents/doc-change-detection.md,S-jj4lbdze,located,ARIA in HTML > 4.,complementary;recommend;allow,2e6b9c0ef1d8ec4a,"complementary is also allowed, but NOT RECOMMENDED.",2026-10-17
 c111db35dca3,agents/doc-change-detection.md,S-ghhbd6g6,unlocated:no-match,,,,,2026-10-13
 c111db35dca3,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-10-13
 c211c11b0cd6,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors > `404 Not Found` for an existing resource,existenc;avoid;privat;forbidden;instead;confirm;found;repository,00d89c49c030bfae,"If you make a request to access a private resource and your request isn't properly authenticated, you will receive a 404 Not Found response. {%",2026-10-12
@@ -1845,6 +1858,7 @@ f939a872e323,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,20
 fa2cb870740e,agents/doc-change-detection.md,S2196,unlocated:gone,,,,,2026-10-13
 fa2cb870740e,agents/doc-change-detection.md,S-2r7j5aw2,unlocated:no-match,,,,,2026-10-12
 fb7acfd5cce7,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > How Google processes JavaScript,queu;status;http;code;render;googl;page,f62a56c761d1af52,Googlebot queues all pages with a 200 HTTP status code for rendering,2026-10-13
+fcf0fb7dec37,agents/doc-change-detection.md,S-bykh7vnm,unlocated:no-match,,,,,2026-10-17
 fe90da5dc6b5,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 ffc6fc39c93d,agents/doc-change-detection.md,S-g3ciqhyh,located,Avoid polling > Use conditional requests,authoriz;correctly;against;count;primary;authorization;conditional;endpoint,bc2c6381efa0fd24,Making a conditional request does not count against your primary rate limit if a 304 response is returned and the request was made while correctly,2026-10-12
 1674bc8cf9a9,agents/doc-lookup-sources.csv,S2185,unlocated:no-match,,,,,2026-10-13
