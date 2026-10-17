@@ -2,7 +2,7 @@
   "id": "ST-mpwzinrm",
   "kind": "story",
   "title": "land merges a rebase conflict confined to one-line kb/_self doc hunks that two items edited at different words, so a sibling's doc row edit does not stop it at step rebase",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,
@@ -49,5 +49,6 @@
   "links": [
     "parked: SP-z3hyk4eh close"
   ],
-  "notes": "SP-z3hyk4eh retrospective: three of nine landings stopped at step rebase (backlog.py ops: ST-zqbo7xgc 13:26, BG-wqc6sgug 13:30, ST-6tz7yhem 13:45, each land.step rebase exit=1): siblings edited different words of the same one-line rows of kb/_self/tools.md, backlog.md and code.md, which the rules treat as no overlap (backlog.md, Running a sprint: a shared doc orders no two items). The orchestrator resolved each by a word-level merge keeping both sides, by hand. The function name in the check is a proposal; the planner may rename it with the check. SP-xo45jvbj 2026-10-16: BG-yq2ojoiy's landing stopped at rebase on the one-line coord.py row of kb/_self/tools.md, which BG-wh3wardm had edited at other words; the orchestrator merged both inserts by hand. SP-6jfnx5i3 2026-10-17: again: BG-p2jcpxhl's landing stopped at rebase on the one-line coord.py row of kb/_self/tools.md, which ST-nlesmlru had edited at other words (KB_COORD_TOOLS=1); the orchestrator kept both by hand. Plan 2026-10-17: check 1 drives a real git rebase through bl_land.rebase_merging_doc_rows(root, upstream, branch) (a proposed name, as merge_line_hunks is) on three planted repositories: different words of a kb/_self row merge (exit 0, both edits kept, the merged file named in the output); the same words, and a kb/public file, stop (exit not 0). Premise on 7cb5e0cbb: both checks exit 1."
+  "notes": "SP-z3hyk4eh retrospective: three of nine landings stopped at step rebase (backlog.py ops: ST-zqbo7xgc 13:26, BG-wqc6sgug 13:30, ST-6tz7yhem 13:45, each land.step rebase exit=1): siblings edited different words of the same one-line rows of kb/_self/tools.md, backlog.md and code.md, which the rules treat as no overlap (backlog.md, Running a sprint: a shared doc orders no two items). The orchestrator resolved each by a word-level merge keeping both sides, by hand. The function name in the check is a proposal; the planner may rename it with the check. SP-xo45jvbj 2026-10-16: BG-yq2ojoiy's landing stopped at rebase on the one-line coord.py row of kb/_self/tools.md, which BG-wh3wardm had edited at other words; the orchestrator merged both inserts by hand. SP-6jfnx5i3 2026-10-17: again: BG-p2jcpxhl's landing stopped at rebase on the one-line coord.py row of kb/_self/tools.md, which ST-nlesmlru had edited at other words (KB_COORD_TOOLS=1); the orchestrator kept both by hand. Plan 2026-10-17: check 1 drives a real git rebase through bl_land.rebase_merging_doc_rows(root, upstream, branch) (a proposed name, as merge_line_hunks is) on three planted repositories: different words of a kb/_self row merge (exit 0, both edits kept, the merged file named in the output); the same words, and a kb/public file, stop (exit not 0). Premise on 7cb5e0cbb: both checks exit 1.",
+  "claimed_by": "orch-r06"
 }
