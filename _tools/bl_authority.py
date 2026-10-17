@@ -213,6 +213,33 @@ PUSH_ACTION = re.compile(
     re.I)
 
 
+# Vendor and product names that hold a `push` word, blanked only in a gate about kb content: a forge's host name
+# (`gitlab.com`), its repository path (`gitlab-org/gitlab`), its bare name unless a `/` follows it (`gitlab/main` is a
+# remote ref), the product `Remote Control`, and `Publish` inside a longer identifier (`datePublished`, `date_published`).
+# `push`, `publish`, `remote`, `origin`, `mirror` and `release` stay as they are.
+VENDOR_HOST = re.compile(r"\bgit(?:hub|lab)\.com\b(?:/[\w.-]+)*", re.I)
+VENDOR_NAME = re.compile(r"\bgit(?:hub|lab)\b(?!/)", re.I)
+PRODUCT_NAME = re.compile(r"\bremote[- ]control\b", re.I)
+KEY_IN_WORD = re.compile(r"\b\w*(?:[a-z]Publish|[A-Za-z0-9]_publish)\w*\b")
+
+
+def kb_content_only(item):
+    """Whether the item's touches all lie under `kb/` and none in the query log store (`kb/_querylog/`): a gate on such
+    an item names a forge or a product as the subject of a fact, not as a push target. An item with no touches is no
+    such item."""
+    touches = [t for t in item.get("touches", []) or [] if isinstance(t, str) and t.strip()]
+    return bool(touches) and all(
+        norm(t).startswith("kb/") and not touch_names(t, "kb/_querylog/") for t in touches)
+
+
+def without_vendor_names(text):
+    """The text with each forge name or host name, the product `Remote Control` and each identifier that holds
+    `Publish` inside a longer word replaced by a space."""
+    for rx in (KEY_IN_WORD, VENDOR_HOST, VENDOR_NAME, PRODUCT_NAME):
+        text = rx.sub(" ", text)
+    return text
+
+
 def topic_slugs():
     """The hyphenated slugs of the articles under `kb/*/gitlab/` of this checkout (an empty set where there is no
     `kb/` beside `_tools/`, so a `gitlab/` path then keeps the class)."""
@@ -220,16 +247,18 @@ def topic_slugs():
     return {f.stem for f in kb.glob("*/gitlab/*.md") if "-" in f.stem}
 
 
-def without_benign_push_words(text, question=None):
+def without_benign_push_words(text, question=None, kb_content=False):
     """The text with the three wordings above replaced by a space: what the `push` words are searched in. `question` is
     the gate's question: a count question's push noun is blanked only in it, so an option that says `push` keeps the
     class, and only when the question also holds a display word (`list`, `count`, `show`) and no word that acts on the
-    push or asks for it."""
+    push or asks for it. `kb_content` (the item's touches all under `kb/`, `kb_content_only`) also blanks the vendor
+    and product names of `without_vendor_names`."""
     if (question and question in text and COUNT_QUESTION.search(question) and DISPLAY_WORD.search(question)
             and not PUSH_ACTION.search(question)):
         text = text.replace(question, PUSH_NOUN.sub(" ", question), 1)
     slugs = topic_slugs()
-    return TOPIC_PATH.sub(lambda m: " " if m.group(1) in slugs else m.group(0), UPLOAD_DATE.sub(" ", text))
+    text = TOPIC_PATH.sub(lambda m: " " if m.group(1) in slugs else m.group(0), UPLOAD_DATE.sub(" ", text))
+    return without_vendor_names(text) if kb_content else text
 
 
 def command_words(gate):
@@ -279,7 +308,7 @@ def class_reasons(item, gate):
             found.setdefault("secrets", []).append(f"touch '{t}'")
     options = [str(o) for o in gate.get("options", []) or []]
     text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
-    push_text = without_benign_push_words(text, str(gate.get("question", "")))
+    push_text = without_benign_push_words(text, str(gate.get("question", "")), kb_content_only(item))
     # a unit-noun list is read within the question or one option, never across the join of two texts
     secrets_text = without_token_counts(" ".join(
         without_unit_lists(str(p)) for p in [gate.get("question", ""), *options, command_words(gate)]))
