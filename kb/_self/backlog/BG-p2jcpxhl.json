@@ -2,7 +2,7 @@
   "id": "BG-p2jcpxhl",
   "kind": "bug",
   "title": "A coord.py value put on a leased key is lost when the holder releases it or the lease expires",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -60,5 +60,6 @@
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
-  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'after_release': 1, 'after_expiry': 1}). Planned with BG-v3fjhmro's repro as a check: keeping a value past its lease leaves a row with no live lease, which claim must take again, the same code path BG-v3fjhmro asks for (a put on an absent key leaves such a row). BG-v3fjhmro stays a draft outside the sprint; once this lands its repro passes and it is dropped naming this item."
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 ({'after_release': 1, 'after_expiry': 1}). Planned with BG-v3fjhmro's repro as a check: keeping a value past its lease leaves a row with no live lease, which claim must take again, the same code path BG-v3fjhmro asks for (a put on an absent key leaves such a row). BG-v3fjhmro stays a draft outside the sprint; once this lands its repro passes and it is dropped naming this item.",
+  "claimed_by": "orch-r04"
 }
