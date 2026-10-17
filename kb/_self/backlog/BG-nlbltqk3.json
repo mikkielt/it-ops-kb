@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "The kb MCP coord_wait cap of 60 seconds is skipped for a string timeout",
   "status": "draft",
+  "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
   "severity": "S4",
-  "goal": "SP-xo45jvbj review G7 (ST-xwop6rv5, gate g4): kb_mcp checks the coord_wait cap only for an int or float timeout, so a client that does not validate the schema sends \"timeout\": \"100\" and coord.py accepts it, holding the single-threaded server up to COORD_RUN_S. A timeout that is not a number of at most 60 is refused as a tool error before coord.py runs.",
+  "goal": "kb_mcp refuses a coord_wait timeout that is not a number of at most 60 as a tool error before coord.py runs",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,21 @@
       "import json,os,sys,tempfile\nos.environ['KB_COORD_STORE']=os.path.join(tempfile.mkdtemp(),'c.sqlite');os.environ.pop('KB_COORD_URL',None)\nsys.path.insert(0,'_tools');import kb_mcp\ncall=lambda n,a:(kb_mcp.handle({'jsonrpc':'2.0','id':1,'method':'tools/call','params':{'name':n,'arguments':a}}).get('result') or {})\ncall('coord_post',{'kind':'heartbeat','fields':{'session':'repro'}})\nr=call('coord_wait',{'since':0,'timeout':'100'})\nprint(json.dumps(r)[:300]);sys.exit(0 if r.get('isError') is True else 1)"
     ]
   },
+  "clauses": [
+    {
+      "clause": "kb_mcp refuses a coord_wait timeout that is not a number of at most 60 as a tool error before coord.py runs",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
   "links": [
     "parked: SP-xo45jvbj review"
-  ]
+  ],
+  "notes": "Goal before the 2026-10-17 plan: SP-xo45jvbj review G7 (ST-xwop6rv5, gate g4): kb_mcp checks the coord_wait cap only for an int or float timeout, so a client that does not validate the schema sends \"timeout\": \"100\" and coord.py accepts it, holding the single-threaded server up to COORD_RUN_S. A timeout that is not a number of at most 60 is refused as a tool error before coord.py runs. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (a string timeout reaches coord.py)."
 }

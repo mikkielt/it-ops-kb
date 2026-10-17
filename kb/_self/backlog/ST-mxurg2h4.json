@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: every goal clause is about the kb's own tools (done's ledger check, set, goal_questions and precheck, land, the coord hook, the kb MCP coord tools), read against their own docs in kb/_self; no outside question. No outside facts: the sprint fixes this kb's own tools to their own documented rules."
 }

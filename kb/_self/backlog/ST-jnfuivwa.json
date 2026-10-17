@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The kb's claude rm --discard-unpushed fact gives the argument and version the command table gives",
   "status": "draft",
+  "sprint": "SP-3g3egfll",
   "priority": "P2",
   "rank": 0,
-  "goal": "SP-4dab3cy5 review G3 (S4, ST-o76aink7): kb/public/claude/parallel-sessions.md's `claude rm <id> --discard-unpushed` fact omits the value the agent-view command table (https://code.claude.com/docs/en/agent-view) gives, `--discard-unpushed <commit>@<worktree-id>` (v2.1.260+, the exact value the refusal printed). The fact gives the argument form and its version.",
+  "goal": "kb/public/claude/parallel-sessions.md's claude rm <id> --discard-unpushed fact gives the argument form the agent-view command table gives (--discard-unpushed <commit>@<worktree-id>) and its version",
   "checks": [
     {
       "run": [
@@ -15,7 +16,23 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/public/claude/parallel-sessions.md's claude rm <id> --discard-unpushed fact gives the argument form the agent-view command table gives (--discard-unpushed <commit>@<worktree-id>) and its version",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "kb/public/claude/parallel-sessions.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "depends_on": [
+    "ST-nfrimn67"
+  ],
   "links": [
     "parked: SP-4dab3cy5 review"
-  ]
+  ],
+  "notes": "Goal before the 2026-10-17 plan: SP-4dab3cy5 review G3 (S4, ST-o76aink7): kb/public/claude/parallel-sessions.md's `claude rm <id> --discard-unpushed` fact omits the value the agent-view command table (https://code.claude.com/docs/en/agent-view) gives, `--discard-unpushed <commit>@<worktree-id>` (v2.1.260+, the exact value the refusal printed). The fact gives the argument form and its version. Plan 2026-10-17: SP-4dab3cy5 review G3 (S4). Check on origin/main b871374b4 exits 1 (argument form not given). Source: https://code.claude.com/docs/en/agent-view (claude-code-docs server)."
 }

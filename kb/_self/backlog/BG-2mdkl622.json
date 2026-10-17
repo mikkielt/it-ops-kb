@@ -24,5 +24,5 @@
   "links": [
     "parked: SP-honlhzdc review"
   ],
-  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry."
+  "notes": "Found by the SP-honlhzdc review (S2): BG-viwywxml's goal clause 'the landing that closes an entry fails a check while a row still names it' is not delivered: gap_problems is right, but no gate (sync gate, land_stale/eval/lint, review_checks) runs pool check, and test_bench.py calls check_problems on fixtures only. The repro reads kg_sync's gate table; planning adds a check that drives a landing which closes a named gap entry. Plan 2026-10-17 (SP-4cc36epy, not committed): benchmarks.py pool check exits 1 on origin/main b871374b4 (BP-0181112b: its answer regex matches no line of the pack for its question), so a sync gate that runs it would refuse every landing that changes a _gaps.md now; the pool row is a benchmark matter (operator), so this waits until that row passes or the operator decides."
 }

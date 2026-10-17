@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts and gap entries through /kb-research. (1) Which page metadata names a web page's site or publisher (Open Graph og:site_name, the HTML application-name meta), and what does each spec say it holds?",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: rag.py pack ran four questions; the publisher metadata question is not in the kb (og, site_name, application-name missing), so it is the research. The aside-in-navigation (public/agents/doc-change-detection.md), git merge-file hunks (public/gitlab/git-test-repositories.md) and agent_needs_input (public/claude/hooks.md) questions lead with their articles; the items that fix those facts read their own sources. Knowledge by item: BG-wlpbhug7 reads the publisher metadata facts."
 }

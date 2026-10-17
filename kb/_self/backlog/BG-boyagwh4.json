@@ -1,25 +1,54 @@
 {
   "id": "BG-boyagwh4",
   "kind": "bug",
-  "title": "A kb!: comment's source_url and kb_feedback's source_url and claim reach the spool without redact.redact",
+  "title": "A feedback report's lead reaches the committed store with a secret in its url path, since only the query is dropped",
   "status": "draft",
+  "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "ql_capture.read_user_report and the kb_mcp kb_feedback path pass the source_url they cut from the comment, and kb_feedback's claim, through redact.redact (or drop the url's query) before the spool row is written. SP-yyjwfjtc review gap 4: kb!: wrong, see https://learn.example.com/p?api_key=<v> stores the value in source_url; the committed store is safe (distill's bare_url drops the query). What the spool records is an operator matter (kb/_self/querylog.md, Spool): the fix gates the field change with the operator before any code.",
+  "goal": "ql_distill.feedback_report keeps a feedback report's lead only when redact.redact leaves the url unchanged; the store gate (ql_store.feedback_problems) refuses a stored feedback lead that redact.redact would change",
   "repro": {
     "run": [
       "python3",
       "-c",
-      "import sys;sys.path.insert(0,\"_tools\");import ql_capture as Q;v=\"hunter\"+\"2xFake\";o=str(Q.read_user_report(\"wrong, see https://learn.example.com/p?api_key=\"+v));print(o);sys.exit(1 if v in o else 0)"
+      "import sys;sys.path.insert(0,\"_tools\");v=\"hunter\"+\"2xFake\";u=\"https://learn.example.com/p/api_\"+\"key=\"+v;import ql_distill as D,ql_learn as L;r=D.feedback_report({\"outcome\":\"misled\",\"source_url\":u},None,L.KbPages());print(r[\"lead\"]);sys.exit(1 if v in str(r) else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");v=\"hunter\"+\"2xFake\";u=\"https://learn.example.com/p/api_\"+\"key=\"+v;import ql_store as S;p=S.feedback_problems([{\"outcome\":\"misled\",\"judged_by\":\"agent\",\"lead\":u}],\"e\");print(p);ok=S.feedback_problems([{\"outcome\":\"misled\",\"judged_by\":\"agent\",\"lead\":\"https://learn.example.com/p\"}],\"e\");print(ok);sys.exit(0 if p and not ok else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "ql_distill.feedback_report keeps a feedback report's lead only when redact.redact leaves the url unchanged",
+      "check": 1
+    },
+    {
+      "clause": "the store gate (ql_store.feedback_problems) refuses a stored feedback lead that redact.redact would change",
+      "check": 0
+    }
+  ],
   "touches": [
-    "_tools/ql_capture.py",
-    "_tools/kb_mcp.py",
-    "kb/_self/querylog.md"
+    "_tools/ql_distill.py",
+    "_tools/ql_store.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md",
+    "_tools/test_redact.py"
+  ],
+  "depends_on": [
+    "BG-efbghw7n"
+  ],
+  "relates_to": [
+    "BG-yk6xxwwa"
   ],
   "links": [
     "parked: SP-yyjwfjtc review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17, narrowed to the committed store: the stored lead is bare_url (query and fragment dropped), but a key=value in the url's path or ;params stays, and the store gate checks only the leak scan, which does not read assignments. Premise on origin/main b871374b4: feedback_report keeps an https://learn.example.com/p/api_key=<value> url as lead (repro exits 1). The claim and comment never reach the store (closed_reports, FEEDBACK_KEYS). The spool side (source_url query, claim) is BG-yk6xxwwa, open gate g1 for the operator. Test policy: one planted fake value in the existing distill/store test of _tools/test_redact.py (no new test id)."
 }

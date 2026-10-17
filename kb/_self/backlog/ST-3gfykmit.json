@@ -3,20 +3,35 @@
   "kind": "story",
   "title": "backlog.py set takes --commit, so the orchestrator rewords an item on a worker's branch without resuming its session",
   "status": "draft",
+  "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
-  "goal": "SP-rsmmwzr2 close: ST-unrlktke's researched check failed only on its goal's wording; set has no --commit, so the orchestrator resumed the Sonnet worker to run set and commit the item file, which cost about 2.6 USD for a two-line change (result.json of the resume). backlog.py --root <worktree> set ID ... --commit commits the item file alone with KB-Work, as answer --commit does.",
+  "goal": "backlog.py set ID ... --commit commits the item file alone, with KB-Work naming the item, as answer --commit does",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','set','--help'],capture_output=True,text=True)\nok=p.returncode==0 and '--commit' in p.stdout\nprint('set --help exits 0 and names --commit:',ok);sys.exit(0 if ok else 1)"
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");d=r/\"kb\"/\"_self\"/\"backlog\";d.mkdir(parents=True)\n(d/\"ST-aaaaaaaa.json\").write_text(json.dumps({\"id\":\"ST-aaaaaaaa\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"_tools/x.py\"]}]},indent=2)+\"\\n\")\n(r/\"x.txt\").write_text(\"x\\n\");g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"i\");(r/\"x.txt\").write_text(\"y\\n\")\nenv=dict(os.environ);env.pop(\"KB_BACKLOG_CONFIG\",None)\np=s.run([sys.executable,T,\"--root\",str(r),\"set\",\"ST-aaaaaaaa\",\"--add-notes\",\"reworded\",\"--commit\"],capture_output=True,text=True,env=env)\nprint(\"set --commit: exit\",p.returncode,(p.stdout+p.stderr).strip()[-200:])\nif p.returncode:sys.exit(1)\nfiles=g(\"show\",\"--name-only\",\"--format=\",\"HEAD\").split();msg=g(\"log\",\"-1\",\"--format=%B\")\nok=files==[\"kb/_self/backlog/ST-aaaaaaaa.json\"] and \"KB-Work: ST-aaaaaaaa\" in msg and \"reworded\" in (d/\"ST-aaaaaaaa.json\").read_text()\nprint(\"commit holds\",files,\"KB-Work named:\",\"KB-Work: ST-aaaaaaaa\" in msg);sys.exit(0 if ok else 1)\n"
       ]
     }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py set ID ... --commit commits the item file alone, with KB-Work naming the item, as answer --commit does",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "skills/sprint/SKILL.md",
+    "AGENTS.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/tools.md"
   ],
   "links": [
     "parked: SP-rsmmwzr2 close"
   ],
-  "notes": "SP-4dab3cy5 2026-10-17: the orchestrator reworded ST-5mcrotet's goal on the worker's branch with `backlog.py --root <worktree> set` and a hand commit with KB-Work, since set has no --commit (answer has one)."
+  "notes": "SP-4dab3cy5 2026-10-17: the orchestrator reworded ST-5mcrotet's goal on the worker's branch with `backlog.py --root <worktree> set` and a hand commit with KB-Work, since set has no --commit (answer has one). Goal before the 2026-10-17 plan: SP-rsmmwzr2 close: ST-unrlktke's researched check failed only on its goal's wording; set has no --commit, so the orchestrator resumed the Sonnet worker to run set and commit the item file, which cost about 2.6 USD for a two-line change (result.json of the resume). backlog.py --root <worktree> set ID ... --commit commits the item file alone with KB-Work, as answer --commit does. Plan 2026-10-17: recurring (SP-rsmmwzr2 close, SP-4dab3cy5: a hand commit on a worker's branch for a reworded goal). Check: a planted repo where set --add-notes --commit must commit the item file alone with KB-Work while another file is dirty; on origin/main b871374b4 set exits 2 (unrecognized --commit). The kb-sprint run step 4.1 names set --commit beside answer --commit."
 }

@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "provider.read_page takes a title's or heading's suffix as the publisher, so kbid.py add writes 'Windows' for '# Install - Windows'",
   "status": "draft",
+  "sprint": "SP-3g3egfll",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
-  "goal": "provider.read_page takes the organisation only from the host's providers.csv organisation cell or the page's own site name (og:site_name, application-name or the like), never from the part of a <title> or Markdown heading after a dash or bar, and keeps the whole title, so a raw file '# Install - Windows' gives title 'Install - Windows' and no organisation (kbid.py add then exits 2 naming --publisher); the kbid part of test_live_kb.py proves it (no new test id). Found by the SP-b36246xo review (S2): ST-wiv62ohc gate g3 allows the registry or the page's site name only.",
+  "goal": "provider.read_page takes the organisation only from the host's providers.csv organisation cell or the page's own site name (og:site_name, application-name), never from the part of a <title> or Markdown heading after a dash or bar, and keeps the whole title",
   "repro": {
     "run": [
       "python3",
@@ -14,6 +15,25 @@
       "import sys;sys.path.insert(0,'_tools');import provider as p;p.request=lambda u,**k:{'status':200,'error':'','body':b'# Install - Windows\\n','headers':{'content-type':'text/plain'}};r=p.read_page('https://example.com/a.md',p.providers(None));print(r);sys.exit(1 if r['organisation']=='Windows' or r['title']!='Install - Windows' else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import provider as p\ndef page(body,ct):\n    p.request=lambda u,**k:{\"status\":200,\"error\":\"\",\"body\":body,\"headers\":{\"content-type\":ct}}\n    return p.read_page(\"https://example.com/a\",p.providers(None))\na=page(b\"<html><head><title>Install | Windows</title></head><body><p>x</p></body></html>\",\"text/html\")\nb=page(b\"<html><head><title>Install - Windows</title><meta property=\\\"og:site_name\\\" content=\\\"Contoso Docs\\\"></head><body><p>x</p></body></html>\",\"text/html\")\nprint(a,b);sys.exit(0 if a[\"organisation\"]!=\"Windows\" and a[\"title\"]==\"Install | Windows\" and b[\"organisation\"]==\"Contoso Docs\" else 1)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "provider.read_page takes the organisation only from the host's providers.csv organisation cell or the page's own site name (og:site_name, application-name), never from the part of a <title> or Markdown heading after a dash or bar",
+      "check": 0
+    },
+    {
+      "clause": "keeps the whole title",
+      "check": 1
+    }
+  ],
   "touches": [
     "_tools/provider.py",
     "kb/_self/tools.md",
@@ -21,5 +41,6 @@
   ],
   "links": [
     "parked: SP-b36246xo review"
-  ]
+  ],
+  "notes": "Goal before the 2026-10-17 plan: provider.read_page takes the organisation only from the host's providers.csv organisation cell or the page's own site name (og:site_name, application-name or the like), never from the part of a <title> or Markdown heading after a dash or bar, and keeps the whole title, so a raw file '# Install - Windows' gives title 'Install - Windows' and no organisation (kbid.py add then exits 2 naming --publisher); the kbid part of test_live_kb.py proves it (no new test id). Found by the SP-b36246xo review (S2): ST-wiv62ohc gate g3 allows the registry or the page's site name only. Goal before the 2026-10-17 plan: provider.read_page takes the organisation only from the host's providers.csv organisation cell or the page's own site name (og:site_name, application-name), never from the part of a <title> or Markdown heading after a dash or bar, and keeps the whole title Plan 2026-10-17: SP-b36246xo review (S2). Repro (a Markdown heading) and check (an HTML title with a bar, and an og:site_name page that must keep its site name) fail on origin/main b871374b4: '# Install - Windows' gives organisation Windows. The goal's old test_live_kb.py clause is gone with that file; no test (test policy). The check's og:site_name case passes today and must keep passing."
 }

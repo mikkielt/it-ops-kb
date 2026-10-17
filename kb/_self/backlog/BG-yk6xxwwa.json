@@ -1,0 +1,47 @@
+{
+  "id": "BG-yk6xxwwa",
+  "kind": "bug",
+  "title": "A kb!: comment's and a kb_feedback call's source_url query and claim reach the spool without redact.redact",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "The spool row of a kb!: comment and of a kb_feedback call records its source_url and claim as the operator decides in gate g1: as today (distill redacts before the committed store) or through redact.redact before the row is written. What the spool records is an operator matter (kb/_self/querylog.md, Spool): no code before g1 is answered.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import ql_capture as Q;v=\"hunter\"+\"2xFake\";o=str(Q.read_user_report(\"wrong, see https://learn.example.com/p?api_key=\"+v));print(o);sys.exit(1 if v in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/querylog.md",
+    "kb/_self/usage.md"
+  ],
+  "relates_to": [
+    "BG-boyagwh4"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Should the spool row of a kb!: comment or a kb_feedback call keep source_url and claim as given, or hold them through redact.redact before the row is written (a change to what the spool records)?",
+      "options": [
+        "keep the spool row as it is; distill redacts before the committed store",
+        "write source_url and claim through redact.redact before the spool row"
+      ],
+      "recommendation": "write source_url and claim through redact.redact before the spool row",
+      "do": {
+        "keep the spool row as it is; distill redacts before the committed store": "BG-yk6xxwwa",
+        "write source_url and claim through redact.redact before the spool row": "BG-yk6xxwwa"
+      },
+      "class": "querylog"
+    }
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ],
+  "notes": "Split 2026-10-17 from BG-boyagwh4 at SP-g4mwrwsv planning: the operator kept the spool rows and the query log's recorded fields out of the sprint, so this part waits on the operator's answer to g1 (left open on purpose). Repro on origin/main b871374b4 exits 1: read_user_report keeps the url's query value in source_url."
+}

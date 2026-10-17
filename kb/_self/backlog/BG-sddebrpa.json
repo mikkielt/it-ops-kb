@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "content-rules.md:65 says a wrong-root gap is recorded as a rules finding, which ql_learn cannot make from a public lookup, and names the answering row SQ-<slug> where the rows are EV- ids",
   "status": "draft",
+  "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,
   "severity": "S2",
-  "goal": "kb/_self/content-rules.md's rule for a gap the gap step filed on the wrong root names a step the query-log tools can run (or a tool change makes ql_learn record it as a rules finding), and the row id form it names matches the rows ST-aezkm3zh added: the repro exits 0",
+  "goal": "kb/_self/content-rules.md's rule for a gap the gap step filed on the wrong root names a step the query-log tools can run; it names the answering row by the EV- id form the lookup eval rows use",
   "repro": {
     "run": [
       "python3",
@@ -15,6 +16,16 @@
     ]
   },
   "repro_reason": "the doc's wording is the defect; the id form is the line the repro reads, the rules-finding step needs a reading of ql_learn",
+  "clauses": [
+    {
+      "clause": "kb/_self/content-rules.md's rule for a gap the gap step filed on the wrong root names a step the query-log tools can run",
+      "check": 0
+    },
+    {
+      "clause": "it names the answering row by the EV- id form the lookup eval rows use",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/_self/content-rules.md",
     "kb/_self/querylog.md",
@@ -22,5 +33,6 @@
   ],
   "links": [
     "parked: SP-enudabdr review"
-  ]
+  ],
+  "notes": "Goal before the 2026-10-17 plan: kb/_self/content-rules.md's rule for a gap the gap step filed on the wrong root names a step the query-log tools can run (or a tool change makes ql_learn record it as a rules finding), and the row id form it names matches the rows ST-aezkm3zh added: the repro exits 0 Goal before the 2026-10-17 plan: kb/_self/content-rules.md's rule for a gap the gap step filed on the wrong root names a step the query-log tools can run, and names the answering row by the EV- id form the lookup eval rows use Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (content-rules.md still says SQ-<slug>). A tested _self row of kb/_self/_retrieval/lookup_eval.csv is a code-lane path: this item lands with backlog.py land ID --wait-merge 1800."
 }

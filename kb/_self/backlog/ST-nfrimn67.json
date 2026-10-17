@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The kb's git merge-file fact says that adjacent hunks of the two sides conflict too",
   "status": "draft",
+  "sprint": "SP-3g3egfll",
   "priority": "P2",
   "rank": 0,
-  "goal": "SP-aoiqmnc6 review G5 (ST-npj66d6y): kb/public/gitlab/git-test-repositories.md (section Two edits of one line) says both sides' hunks are taken only when one ends before the other starts, but xmerge.c v2.55.0 tests xscr1->i1 + xscr1->chg1 < xscr2->i1 (strict), so two hunks that touch (adjacent lines, no line between) conflict as well; the section names adjacent hunks as a conflict, cited to the xmerge.c source row.",
+  "goal": "kb/public/gitlab/git-test-repositories.md (section Two edits of one line) says two hunks that touch (adjacent lines, no line between) conflict too, cited to the xmerge.c source row at v2.55.0",
   "checks": [
     {
       "run": [
@@ -15,13 +16,23 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "kb/public/gitlab/git-test-repositories.md (section Two edits of one line) says two hunks that touch (adjacent lines, no line between) conflict too, cited to the xmerge.c source row at v2.55.0",
+      "check": 0
+    }
+  ],
   "touches": [
     "kb/public/gitlab/git-test-repositories.md",
     "kb/public/_sources.csv",
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "BG-ekrp4dw2"
+  ],
   "links": [
     "parked: SP-aoiqmnc6 review"
-  ]
+  ],
+  "notes": "Goal before the 2026-10-17 plan: SP-aoiqmnc6 review G5 (ST-npj66d6y): kb/public/gitlab/git-test-repositories.md (section Two edits of one line) says both sides' hunks are taken only when one ends before the other starts, but xmerge.c v2.55.0 tests xscr1->i1 + xscr1->chg1 < xscr2->i1 (strict), so two hunks that touch (adjacent lines, no line between) conflict as well; the section names adjacent hunks as a conflict, cited to the xmerge.c source row. Plan 2026-10-17: SP-aoiqmnc6 review G5. Check on origin/main b871374b4 exits 1 (the section does not name adjacent hunks). Runs after BG-ekrp4dw2 (same article)."
 }

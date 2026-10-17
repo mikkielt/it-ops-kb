@@ -3,9 +3,10 @@
   "kind": "story",
   "title": "The kb MCP coord_post description says an intent with a session field shows in the digest only while that session's presence lease is held",
   "status": "draft",
+  "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
-  "goal": "SP-6jfnx5i3 review G4 (ST-nlesmlru, BG-iwqcj5zf): digest drops an intent whose session/<id> lease is not held, but the coord_post tool description does not say so, so an MCP client that posts an intent with a session field and never claims session/<id> gets no digest line for it and no error. The coord_post description names the session/<id> claim (coord_claim) an intent with a session field needs.",
+  "goal": "the coord_post tool description names the session/<id> claim (coord_claim) that an intent with a session field needs to show in the digest",
   "checks": [
     {
       "run": [
@@ -15,7 +16,24 @@
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the coord_post tool description names the session/<id> claim (coord_claim) that an intent with a session field needs to show in the digest",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kb_mcp.py",
+    "kb/_self/tools.md",
+    "kb/_self/embedding.md",
+    "kb/_self/plugin.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "BG-nlbltqk3"
+  ],
   "links": [
     "parked: SP-6jfnx5i3 review"
-  ]
+  ],
+  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 review G4 (ST-nlesmlru, BG-iwqcj5zf): digest drops an intent whose session/<id> lease is not held, but the coord_post tool description does not say so, so an MCP client that posts an intent with a session field and never claims session/<id> gets no digest line for it and no error. The coord_post description names the session/<id> claim (coord_claim) an intent with a session field needs. Plan 2026-10-17: check on origin/main b871374b4 exits 1 (the description does not name the claim). The redact test reads every tool's tools/list entry: if its assertion refuses the new description, stop and report (the test file is outside the touches by the test policy)."
 }

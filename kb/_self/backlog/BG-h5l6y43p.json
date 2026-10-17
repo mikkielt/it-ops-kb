@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "redact keeps a URL password or a Bearer credential that is $ and word characters, taking it for a $NAME placeholder",
   "status": "draft",
+  "sprint": "SP-g4mwrwsv",
   "priority": "P3",
   "rank": 0,
   "severity": "S3",
-  "goal": "redact replaces a URL user:password@ password and an Authorization credential that is $ followed by word characters (a real password such as $Tr0ub4dor), or a gate records the operator's choice between that and keeping $NAME environment references; SP-yyjwfjtc review gap 2: _credential accepts \\$\\w+ as a placeholder by fullmatch.",
+  "goal": "redact replaces a URL user:password@ password that is $ followed by word characters; redact replaces an Authorization Bearer or Basic credential that is $ followed by word characters; redact replaces a secret assignment's value that is $ followed by word characters; ${NAME}, <...>, %NAME% and *** stay as placeholders in those places; kb/_self/querylog.md no longer lists $NAME among the values that stay",
   "repro": {
     "run": [
       "python3",
@@ -14,11 +15,84 @@
       "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"$Fake\"+\"Pass12345x\";o=R.redact(\"https://user:\"+v+\"@db.example.com\");print(o);sys.exit(1 if v in o else 0)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(\"Authorization: Bearer $\"+v);print(o);sys.exit(1 if v in o else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(K+\"$\"+v);print(o);sys.exit(1 if v in o else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";k=[\"Authorization: Bearer ${API_KEY}\",\"https://user:<secret>@db.example.com\",K+\"%DBPASS%\",K+\"***\"];c=[x for x in k if R.redact(x)!=x];o=R.redact(\"https://user:$\"+v+\"@db.example.com\");print(\"changed:\",c,o);sys.exit(1 if c or v in o else 0)"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/_self/querylog.md\",encoding=\"utf-8\").read();l=[x for x in t.splitlines() if x.startswith(\"1. **Rules**\")][0];print(\"$NAME listed:\",\"`$NAME`\" in l);sys.exit(1 if \"`$NAME`\" in l else 0)"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "redact replaces a URL user:password@ password that is $ followed by word characters",
+      "check": 4
+    },
+    {
+      "clause": "redact replaces an Authorization Bearer or Basic credential that is $ followed by word characters",
+      "check": 0
+    },
+    {
+      "clause": "redact replaces a secret assignment's value that is $ followed by word characters",
+      "check": 1
+    },
+    {
+      "clause": "${NAME}, <...>, %NAME% and *** stay as placeholders in those places",
+      "check": 2
+    },
+    {
+      "clause": "kb/_self/querylog.md no longer lists $NAME among the values that stay",
+      "check": 3
+    }
+  ],
   "touches": [
     "_tools/redact.py",
-    "kb/_self/querylog.md"
+    "kb/_self/querylog.md",
+    "_tools/test_redact.py"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "In a secret place (a URL user:password@ password, an Authorization Bearer or Basic credential, a secret assignment value), is a $ followed by word characters a placeholder that stays, or a value redact replaces?",
+      "options": [
+        "replace every $word value there; keep ${NAME}, <...>, %NAME% and ***",
+        "keep an upper-case $NAME env reference there; replace a $word that holds a lower-case letter"
+      ],
+      "recommendation": "replace every $word value there; keep ${NAME}, <...>, %NAME% and ***",
+      "do": {
+        "replace every $word value there; keep ${NAME}, <...>, %NAME% and ***": "BG-h5l6y43p",
+        "keep an upper-case $NAME env reference there; replace a $word that holds a lower-case letter": "BG-h5l6y43p"
+      },
+      "class": "secrets",
+      "answer": "replace every $word value there; keep ${NAME}, <...>, %NAME% and ***",
+      "by": "operator"
+    }
   ],
   "links": [
     "parked: SP-yyjwfjtc review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 2: _credential and _assigned take \\$\\w+ as a placeholder by fullmatch. Repro on origin/main b871374b4 exits 1 (the $word url password is kept). Gate g1 (the operator's choice) is answered before the start. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); the test's own $NAME placeholder case, if any, is changed to the new rule, never dropped."
 }
