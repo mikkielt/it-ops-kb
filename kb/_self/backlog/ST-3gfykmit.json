@@ -44,7 +44,9 @@
         "plant-backlog-json": "ST-3gfykmit",
         "change-default-item-dir": "ST-3gfykmit"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "plant-backlog-json",
+      "by": "operator"
     }
   ],
   "links": [
