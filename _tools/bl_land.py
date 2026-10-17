@@ -399,7 +399,7 @@ def gone_checks(it):
     return [list(g) for g in ev.get("gone", []) if isinstance(g, list)] if isinstance(ev, dict) else []
 
 
-def rerun_done_checks(bl, sid, record=True):
+def rerun_done_checks(bl, sid, record=True, ids=None):
     """[(item id, check, exit code)] of each check and bug repro of the sprint's done items, the review story left
     out, that fails when run once more on the checkout as it is (the sprint's tip): a check that passed when its item
     was done and fails now (another item broke it, or it never passed on main) is named before the sprint closes. One
@@ -408,9 +408,10 @@ def rerun_done_checks(bl, sid, record=True):
     such a selection as malformed (land_checks). A gone check is found once per sprint: it is recorded in its item's
     evidence (`gone`, saved: the review's done commits it with its own record, close names it in its summary) and is
     not run again at the sprint's next landing. RECORD false (a `done --dry-run`) writes no evidence, so the run that
-    commits finds the check gone again and commits its record with the review's."""
+    commits finds the check gone again and commits its record with the review's. IDS limits the run to those items
+    (rerun_sibling_checks)."""
     out = []
-    for i in sorted(bl.sprint_items(sid)):
+    for i in sorted(bl.sprint_items(sid) if ids is None else ids):
         it = bl.items[i]
         if it.get("status") != "done" or it.get("review"):
             continue
@@ -431,6 +432,37 @@ def rerun_done_checks(bl, sid, record=True):
             if not ok:
                 out.append((i, c, code))
     return out
+
+
+def rerun_sibling_checks(bl, iid):
+    """[(item id, check, exit code)] of each check and bug repro, as rerun_done_checks gives them, of the done items of
+    IID's sprint whose touches share a file with IID's scope (bl_plan.touches_meet: a kb/_self doc is no shared file;
+    IID's own family is left out): a landing that breaks a sibling's proof is named at its own landing, not at the
+    sprint's review. Nothing is recorded: a check found gone is said and not saved. [] for an item outside a sprint
+    or with no touches."""
+    sid = bl.sprint_of(iid)
+    mine = scope(bl, iid)
+    if not sid or not mine:
+        return []
+    family = {iid, *bl.descendants(iid)}
+    files = bl_plan.touch_files(bl.root)
+    sibs = [i for i in bl.sprint_items(sid)
+            if i not in family and bl.items[i].get("status") == "done"
+            and any(bl_plan.touches_meet(t, m, files) for t in bl.items[i].get("touches", []) for m in mine)]
+    return rerun_done_checks(bl, sid, record=False, ids=sibs) if sibs else []
+
+
+def land_siblings(bl, iid):
+    """The landing's sibling stage: rerun_sibling_checks before done, stopping at step `siblings` and naming each
+    item and check that fails, so nothing is pushed for a landing that breaks another item's proof."""
+    say("land: sibling checks")
+    ops_mark("siblings")
+    failed = rerun_sibling_checks(bl, iid)
+    if failed:
+        raise land_stop("siblings", f"{bl.label(iid)} breaks the proof of a done item of its sprint that shares a "
+                                    "file with it; nothing was pushed: "
+                                    + "; ".join(f"{bl.label(i)}: {shlex.join(c['run'])} exited {code}"
+                                                for i, c, code in failed))
 
 
 # a goal research story that needs no outside facts is done with no work commit when its notes say why: the notes hold
@@ -2370,6 +2402,7 @@ def land_once(bl, a):
                 say(f"land: done: {bl.label(iid)} has its done commit from the last run ({LAND_REF}/{iid}), "
                     "not run again")
             else:
+                land_siblings(bl, iid)
                 say("land: done --commit")
                 ops_mark("done")
                 try:
@@ -2392,7 +2425,8 @@ def land_once(bl, a):
                                 + "; ".join(f"commit {sha[:10]} changed {p}" for sha, p in stray)
                                 + " (revert it, or widen touches: backlog.py set ID --add-touch PATH)")
             land_checks(bl, iid)
-        changed = git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
+            land_siblings(bl, iid)
+        changed =git(root, "diff", "--name-only", upstream, "HEAD").splitlines()
         if any(p.startswith("_tools/") for p in changed):
             stale = land_stale()
             if stale[1]:
