@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Close question (1)'s second half (may a client other than the lease holder write a leased etcd key) with a gap entry now, or register the etcd gRPC API reference, the authentication guide and the lessor code as sources to answer it? A source row goes in kb/public/_sources.csv, outside this item's touches.",
+      "options": [
+        "gap entry now",
+        "new sources, then facts"
+      ],
+      "recommendation": "gap entry now",
+      "do": {
+        "gap entry now": "ST-jqzp3hai",
+        "new sources, then facts": "ST-jqzp3hai"
+      },
+      "class": "design",
+      "answer": "gap entry now",
+      "by": "agent"
+    }
+  ],
   "notes": "Planned 2026-10-16: (2) and (3) pack good on origin/main ed55f4d56; (1) packs weak although kb/public/agents/shared-state-concurrency.md:250-252 hold the etcd lease facts, so (1) is a retrieval fix (lookup_eval row, doc2query) or a missing fact on who may write a leased key. Feeds the BG-p2jcpxhl and BG-vxwibl62 gates and the coord MCP opt-in story.",
   "claimed_by": "orch-r04"
 }
