@@ -51,6 +51,23 @@
     "BG-iwqcj5zf",
     "ST-nlesmlru"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does the default coord store come from: coord.py itself, or each caller (hook, kb_mcp, skill) setting KB_COORD_STORE?",
+      "options": [
+        "coord.py derives the default itself",
+        "each caller sets KB_COORD_STORE"
+      ],
+      "recommendation": "coord.py derives the default itself",
+      "do": {
+        "coord.py derives the default itself": "BG-yya5olzw",
+        "each caller sets KB_COORD_STORE": "BG-yya5olzw"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-xo45jvbj review"
   ],
