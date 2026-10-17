@@ -2,7 +2,7 @@
   "id": "BG-h5l6y43p",
   "kind": "bug",
   "title": "redact keeps a URL password or a Bearer credential that is $ and word characters, taking it for a $NAME placeholder",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g4mwrwsv",
   "priority": "P3",
   "rank": 0,
@@ -96,5 +96,54 @@
     "parked: SP-yyjwfjtc review"
   ],
   "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 2: _credential and _assigned take \\$\\w+ as a placeholder by fullmatch. Repro on origin/main b871374b4 exits 1 (the $word url password is kept). Gate g1 (the operator's choice) is answered before the start. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); the test's own $NAME placeholder case, if any, is changed to the new rule, never dropped.",
-  "claimed_by": "orch-r10"
+  "evidence": {
+    "commit": "9245338e12141594ae272e8536122ab63a70f492",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(\"Authorization: Bearer $\"+v);print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "89363458226f7e56"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(K+\"$\"+v);print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "3abdcee24ea4c939"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";k=[\"Authorization: Bearer ${API_KEY}\",\"https://user:<secret>@db.example.com\",K+\"%DBPASS%\",K+\"***\"];c=[x for x in k if R.redact(x)!=x];o=R.redact(\"https://user:$\"+v+\"@db.example.com\");print(\"changed:\",c,o);sys.exit(1 if c or v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "aa2480d54805c917"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/_self/querylog.md\",encoding=\"utf-8\").read();l=[x for x in t.splitlines() if x.startswith(\"1. **Rules**\")][0];print(\"$NAME listed:\",\"`$NAME`\" in l);sys.exit(1 if \"`$NAME`\" in l else 0)"
+        ],
+        "exit": 0,
+        "sha256": "5466038e1d4ba6e2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"$Fake\"+\"Pass12345x\";o=R.redact(\"https://user:\"+v+\"@db.example.com\");print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "782fd4411ae6717e"
+      }
+    ]
+  }
 }
