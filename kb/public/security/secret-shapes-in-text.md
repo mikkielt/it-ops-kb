@@ -52,20 +52,22 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - A longer key whose last word is on the deny-list (`DB_PASSWORD`, `aws_secret_access_key`, a prefixed environment variable) is therefore the same assignment as the bare word, in the scanner's reading. [DER S-spzetxhy: the prefix and suffix `\w*` of the deny-list regex]
 
 ### JSON string values
-- A JSON string begins and ends with quotation marks, and the characters that must be escaped inside it are the quotation mark, the reverse solidus (backslash) and the control characters U+0000 to U+001F. [DOC S-4rjxcq6v]
+- A JSON string (RFC 8259, section 7) begins and ends with quotation marks, and the characters that must be escaped inside it are the quotation mark, the reverse solidus (backslash) and the control characters U+0000 to U+001F. [DOC S-4rjxcq6v]
 - The two-character escapes are `\"` for the quotation mark and `\\` for the backslash (also `\/`, `\b`, `\f`, `\n`, `\r`, `\t`); any character may instead be written as `\u` and four hex digits, so one backslash is `"\\"` or `"\u005C"`. [DOC S-4rjxcq6v]
 - The grammar of a string character is `unescaped / escape ( %x22 / %x5C / %x2F / %x62 / %x66 / %x6E / %x72 / %x74 / %x75 4HEXDIG )`, and `unescaped` is `%x20-21 / %x23-5B / %x5D-10FFFF`, which leaves out `"` (%x22) and `\` (%x5C): a bare one of them never sits inside a string value. [DOC S-4rjxcq6v]
 - The RFC warns that an implementation comparing strings with the escapes unconverted may find `"a\\b"` and `"a\u005Cb"` unequal, so one value has more than one spelling in the text. [DOC S-4rjxcq6v]
 - A string's closing quote is therefore the first `"` that is not the second character of an escape: a `"` preceded by an odd number of backslashes is data, one preceded by an even number (none included) ends the string. [DER S-4rjxcq6v: the escape grammar above, where `\\` consumes a backslash before the next character is read]
-- JSON text carried as a string inside another JSON text (a log line whose field holds a payload) has every `"` of the inner text written `\"` and every `\` written `\\`, so `{"client_secret": "<secret>"}` appears as `{\"client_secret\": \"<secret>\"}`, and a secret that holds a quote or a backslash appears with that escape in it. A pattern written for bare quotes around the key and the value does not match this text, and a value rule that stops at the first quote or backslash ends inside the secret. [DER S-4rjxcq6v: the two-character escapes and the `unescaped` set above]
+- JSON text carried as a string inside another JSON text (a log line whose field holds a payload that went through a logger) has every `"` of the inner text written `\"` and every `\` written `\\`, so `{"client_secret": "<secret>"}` appears as `{\"client_secret\": \"<secret>\"}`, and a secret that holds a quote or a backslash appears with that escape in it. A pattern written for bare quotes around the key and the value does not match this text, and a value rule that stops at the first quote or backslash ends inside the secret. [DER S-4rjxcq6v: the two-character escapes and the `unescaped` set above]
 
 ### URL path parameters
 - A path segment is `*pchar` and `pchar = unreserved / pct-encoded / sub-delims / ":" / "@"`; the `sub-delims` set is `! $ & ' ( ) * + , ; =`, so a segment may hold `=` and `;` as they are, with no percent-encoding. [DOC S-bs6jgunr]
 - The RFC calls a path segment opaque to the generic syntax and says producers often use `;` and `=` to delimit parameters and parameter values of that segment, with `name;v=1.1` as its example. [DOC S-bs6jgunr]
-- A `key=value` pair can therefore ride in a URL's path, as in `https://api.corp.example.com/v1/jobs;token=<secret>/run`, with no `?` and no `&` before it; its value runs to the next `/`, `?` or `#` (a `/` ends the segment, and a segment has no `/`), and may hold further `;` and `=`. [DER S-bs6jgunr: the `segment` and `pchar` grammar and the parameter example]
+- A `key=value` pair can therefore ride in a URL's path, so no `?` or `&` need come before it, as in `https://api.corp.example.com/v1/jobs;token=<secret>/run`; its value runs to the next `/`, `?` or `#` (a `/` ends the segment, and a segment has no `/`), and may hold further `;` and `=`. [DER S-bs6jgunr: the `segment` and `pchar` grammar and the parameter example]
 - A rule that looks for a key only after `?` or `&`, or that ends a value at the first `;`, therefore misses or cuts a credential carried as a path parameter. [DER S-bs6jgunr: the path grammar above allows `=` and `;` in a segment]
 
 ## Reference
+Open gaps of this topic: `python3 _tools/rag.py audit security/secret-shapes-in-text --entries`; a gap is worked with /kb-research.
+
 | Shape | Marker | Value | Source |
 | --- | --- | --- | --- |
 | Authorization Bearer | `Bearer` + space(s) | `b64token`, no length floor | RFC 6750 |
