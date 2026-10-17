@@ -2,7 +2,7 @@
   "id": "ST-5mcrotet",
   "kind": "story",
   "title": "The kb says what the status line and notification hooks show the operator, and what channels and Remote Control relay",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ylklxolb",
   "sprint": "SP-4dab3cy5",
   "priority": "P3",
@@ -109,5 +109,19 @@
     "kb: claude/hooks.md:144 (Notification exists, input not recorded)"
   ],
   "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: researched exits 1; packs: (1) status line input lacks context window (no claude/statusline.md article), (2) Notification hook input packs good only on a false check line (hooks.md:144 names the event, not its input), (3) channels relay of permission prompts: kb lacks channels and relay; Remote Control approval partly in claude/cross-session-messaging.md.",
-  "claimed_by": "orch-r05"
+  "evidence": {
+    "commit": "562e83ff4caa271332edb297720f30cb7231a017",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-5mcrotet"
+        ],
+        "exit": 0,
+        "sha256": "c84910e39114b417"
+      }
+    ]
+  }
 }
