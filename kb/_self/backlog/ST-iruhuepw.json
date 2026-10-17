@@ -2,7 +2,7 @@
   "id": "ST-iruhuepw",
   "kind": "story",
   "title": "Review sprint: Feedback recorded once, joined right and shown; revalidation treats slow or redirecting hosts right",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r07"
 }
