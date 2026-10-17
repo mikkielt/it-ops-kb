@@ -4034,3 +4034,13 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-json-string-escape-quotation-mark-backslash. How does a JSON string escape a quotation mark and a backslash (RFC 8259), and may an RFC 3986 URL path segment hold = and ; so a key=value pair can ride in a URL's path?
+- RFC 8259 requires the quotation mark, the reverse solidus and U+0000 to U+001F to be escaped inside a string; the two-character escapes are `\"` and `\\`, and the six-character form (a backslash, `u` and four hex digits) can spell one backslash too. [DOC S-4rjxcq6v]
+- The string grammar leaves `"` and `\` out of the `unescaped` set, so neither appears bare inside a value; JSON carried as a string in another JSON therefore shows `\"` around its keys and values. [DOC S-4rjxcq6v]
+- RFC 3986 defines `segment = *pchar` with `pchar` including `sub-delims`, which hold `;` and `=`; the RFC says producers often use them to delimit parameters of a segment (`name;v=1.1`). [DOC S-bs6jgunr]
+- Conclusion: a credential can appear as `\"key\": \"value\"` inside a JSON string and as `;key=value` inside a URL path with no `?` or `&`, so a redaction rule written for bare quotes, or for a key after `?` or `&`, misses both. [DER S-4rjxcq6v, S-bs6jgunr: the escape grammar and the path grammar]
+- Open: which path parameter names carry a credential, and how a deployed scanner reads escaped JSON, were not confirmed. [UNK]
+- See security/secret-shapes-in-text.md, python/stdlib-argparse-json.md.
+
+_Agent: kb-research_

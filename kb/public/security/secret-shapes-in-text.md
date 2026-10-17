@@ -3,14 +3,14 @@ topic: security/secret-shapes-in-text
 priority: P2
 applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM and OpenSSH private key blocks, key=value assignments, SQL Server connection strings"
 retrieved_utc: 2026-10-17
-sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc]
+sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v]
 status: partial
 ---
 
 # Credential shapes in free text
 
 ## Summary
-A credential in free text has a grammar its specification fixes, and that grammar does not depend on the value's length or randomness. An HTTP `Authorization` header carries `Bearer <token68>` or `Basic <base64 of user:password>`; a URL may carry `user:password@` before the host; a private key is a multi-line block between a `BEGIN ... PRIVATE KEY` line and an `END` line; an assignment is a key name, a separator and a value. The specifications say what the value looks like (which characters, how it ends); no specification lists the key names that mark an assignment as secret. Scanners keep their own lists, and the one read here (detect-secrets) is a community tool, not a standard.
+A credential in free text has a grammar its specification fixes, and that grammar does not depend on the value's length or randomness. An HTTP `Authorization` header carries `Bearer <token68>` or `Basic <base64 of user:password>`; a URL may carry `user:password@` before the host; a private key is a multi-line block between a `BEGIN ... PRIVATE KEY` line and an `END` line; an assignment is a key name, a separator and a value. The same text can reach a scanner in another spelling: inside a JSON string every quotation mark and backslash is escaped, and a URL path segment may carry `;key=value` parameters. The specifications say what the value looks like (which characters, how it ends); no specification lists the key names that mark an assignment as secret. Scanners keep their own lists, and the one read here (detect-secrets) is a community tool, not a standard.
 
 ## Facts
 ### HTTP Authorization header
@@ -51,6 +51,20 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - No official source lists the key names that mark an assignment as secret: the deny-list above is one community tool's, and Microsoft's detector covers connection strings only. [UNK: no standard found]
 - A longer key whose last word is on the deny-list (`DB_PASSWORD`, `aws_secret_access_key`, a prefixed environment variable) is therefore the same assignment as the bare word, in the scanner's reading. [DER S-spzetxhy: the prefix and suffix `\w*` of the deny-list regex]
 
+### JSON string values
+- A JSON string begins and ends with quotation marks, and the characters that must be escaped inside it are the quotation mark, the reverse solidus (backslash) and the control characters U+0000 to U+001F. [DOC S-4rjxcq6v]
+- The two-character escapes are `\"` for the quotation mark and `\\` for the backslash (also `\/`, `\b`, `\f`, `\n`, `\r`, `\t`); any character may instead be written as `\u` and four hex digits, so one backslash is `"\\"` or `"\u005C"`. [DOC S-4rjxcq6v]
+- The grammar of a string character is `unescaped / escape ( %x22 / %x5C / %x2F / %x62 / %x66 / %x6E / %x72 / %x74 / %x75 4HEXDIG )`, and `unescaped` is `%x20-21 / %x23-5B / %x5D-10FFFF`, which leaves out `"` (%x22) and `\` (%x5C): a bare one of them never sits inside a string value. [DOC S-4rjxcq6v]
+- The RFC warns that an implementation comparing strings with the escapes unconverted may find `"a\\b"` and `"a\u005Cb"` unequal, so one value has more than one spelling in the text. [DOC S-4rjxcq6v]
+- A string's closing quote is therefore the first `"` that is not the second character of an escape: a `"` preceded by an odd number of backslashes is data, one preceded by an even number (none included) ends the string. [DER S-4rjxcq6v: the escape grammar above, where `\\` consumes a backslash before the next character is read]
+- JSON text carried as a string inside another JSON text (a log line whose field holds a payload) has every `"` of the inner text written `\"` and every `\` written `\\`, so `{"client_secret": "<secret>"}` appears as `{\"client_secret\": \"<secret>\"}`, and a secret that holds a quote or a backslash appears with that escape in it. A pattern written for bare quotes around the key and the value does not match this text, and a value rule that stops at the first quote or backslash ends inside the secret. [DER S-4rjxcq6v: the two-character escapes and the `unescaped` set above]
+
+### URL path parameters
+- A path segment is `*pchar` and `pchar = unreserved / pct-encoded / sub-delims / ":" / "@"`; the `sub-delims` set is `! $ & ' ( ) * + , ; =`, so a segment may hold `=` and `;` as they are, with no percent-encoding. [DOC S-bs6jgunr]
+- The RFC calls a path segment opaque to the generic syntax and says producers often use `;` and `=` to delimit parameters and parameter values of that segment, with `name;v=1.1` as its example. [DOC S-bs6jgunr]
+- A `key=value` pair can therefore ride in a URL's path, as in `https://api.corp.example.com/v1/jobs;token=<secret>/run`, with no `?` and no `&` before it; its value runs to the next `/`, `?` or `#` (a `/` ends the segment, and a segment has no `/`), and may hold further `;` and `=`. [DER S-bs6jgunr: the `segment` and `pchar` grammar and the parameter example]
+- A rule that looks for a key only after `?` or `&`, or that ends a value at the first `;`, therefore misses or cuts a credential carried as a path parameter. [DER S-bs6jgunr: the path grammar above allows `=` and `;` in a segment]
+
 ## Reference
 | Shape | Marker | Value | Source |
 | --- | --- | --- | --- |
@@ -62,9 +76,11 @@ A credential in free text has a grammar its specification fixes, and that gramma
 | OpenSSH key | `BEGIN OPENSSH PRIVATE KEY` | base64 lines to the `END` line | sshkey.c |
 | Connection string | `Password=` or `PWD=` | text up to `;`, or a quoted value | SqlClient docs |
 | Environment line | `AWS_SECRET_ACCESS_KEY=` | may hold `/` and `+` | AWS docs |
+| JSON string value, escaped | `\"key\": \"` inside another string | `\"` for a quote, `\\` for a backslash | RFC 8259 |
+| URL path parameter | `;key=` inside a path segment | text up to `/`, `?` or `#` | RFC 3986 |
 
 ## Examples
-- SNIPPET: placeholder inputs, one for each shape in the table, as a redaction test would plant them (build real-looking values at run time, never commit one); context: free text, any language; checked: no [DER S-wct3uoax, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-xnlryf7y: the shapes the facts above give]
+- SNIPPET: placeholder inputs, one for each shape in the table, as a redaction test would plant them (build real-looking values at run time, never commit one); context: free text, any language; checked: no [DER S-wct3uoax, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-xnlryf7y, S-4rjxcq6v: the shapes the facts above give]
 
 ```text
 Authorization: Bearer <token>
@@ -73,4 +89,6 @@ postgres://jan.kowalski:<password>@db.corp.example.com:5432/app
 Server=db.corp.example.com;User Id=jan.kowalski;Password=<password>;
 DB_PASSWORD=<password>
 {"client_secret": "<secret>"}
+{"msg": "{\"client_secret\": \"<secret>\"}"}
+https://api.corp.example.com/v1/jobs;token=<secret>/run
 ```
