@@ -79,6 +79,21 @@
       "class": "querylog",
       "answer": "redact rules only",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How far does the assignment rule reach: any text 'key: value' or 'key=value' whose key ends in a secret name (also prose such as 'password: see below', and an unquoted value ends at whitespace, & ; or a quote), or only code-like forms?",
+      "options": [
+        "any text assignment",
+        "code-like forms only"
+      ],
+      "recommendation": "any text assignment",
+      "do": {
+        "any text assignment": "BG-w5d2mvwz",
+        "code-like forms only": "BG-w5d2mvwz"
+      },
+      "class": "secrets"
     }
   ],
   "links": [
