@@ -44,7 +44,9 @@
         "os.open mode 0600 plus os.chmod": "BG-6jwv6ag3",
         "umask 0077 around the write": "BG-6jwv6ag3"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "os.open mode 0600 plus os.chmod",
+      "by": "operator"
     }
   ],
   "links": [
