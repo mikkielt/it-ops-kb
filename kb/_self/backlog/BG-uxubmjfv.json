@@ -2,7 +2,7 @@
   "id": "BG-uxubmjfv",
   "kind": "bug",
   "title": "A kb-content gate whose do or host_check command writes to a forge, or whose url path names a release, is no longer classed push",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-aoiqmnc6",
   "priority": "P1",
   "rank": 0,
@@ -20,5 +20,6 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Filed 2026-10-17 by the SP-aoiqmnc6 review (reviewer graded S2; the orchestrator, acting for the operator, files it S1 because it lowers the push class, an operator-authority guard, against BG-e3o47d6s g1's answer). Premise on 098946887: the repro exits 1 (do_curl, do_gh, host_release, url_release all design). 'tag' was never a push word: a question naming only a tag is out of scope. No new test."
+  "notes": "Filed 2026-10-17 by the SP-aoiqmnc6 review (reviewer graded S2; the orchestrator, acting for the operator, files it S1 because it lowers the push class, an operator-authority guard, against BG-e3o47d6s g1's answer). Premise on 098946887: the repro exits 1 (do_curl, do_gh, host_release, url_release all design). 'tag' was never a push word: a question naming only a tag is out of scope. No new test.",
+  "claimed_by": "orch-r06"
 }
