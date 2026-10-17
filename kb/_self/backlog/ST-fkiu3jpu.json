@@ -1,0 +1,21 @@
+{
+  "id": "ST-fkiu3jpu",
+  "kind": "story",
+  "title": "shared-state-concurrency.md still says retrieved 2026-10-16 after the etcd lease facts read on 2026-10-17",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 review G6 (ST-jqzp3hai): the goal research story added etcd lease facts read on 2026-10-17 (S-6hgplow2 confirmed that day) to kb/public/agents/shared-state-concurrency.md, but its front matter still says retrieved 2026-10-16. (The reviewer also found the writer question's pack weak without the absence fact; on 2026-10-17 the pack returns that fact at line 258, so only the date holds.) The article's retrieved date is no older than the newest source read for its facts.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('kb/public/agents/shared-state-concurrency.md').read(2000);m=re.search(r'^retrieved_utc: *(\\S+)',t,re.M)\nprint('retrieved',m and m.group(1));sys.exit(0 if m and m.group(1)>='2026-10-17' else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 review"
+  ]
+}

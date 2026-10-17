@@ -71,7 +71,7 @@
       },
       "class": "design",
       "answer": "remove: nothing to keep, so the key is absent again (get exits 1), as before",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -88,7 +88,7 @@
       },
       "class": "design",
       "answer": "stay: the claim changes no value, so the revision it prints is the key's own (put compare-and-swap keeps working across the claim)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

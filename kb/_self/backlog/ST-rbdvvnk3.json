@@ -1,0 +1,21 @@
+{
+  "id": "ST-rbdvvnk3",
+  "kind": "story",
+  "title": "The kb MCP coord_post description says an intent with a session field shows in the digest only while that session's presence lease is held",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-6jfnx5i3 review G4 (ST-nlesmlru, BG-iwqcj5zf): digest drops an intent whose session/<id> lease is not held, but the coord_post tool description does not say so, so an MCP client that posts an intent with a session field and never claims session/<id> gets no digest line for it and no error. The coord_post description names the session/<id> claim (coord_claim) an intent with a session field needs.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,sys;os.environ['KB_COORD_TOOLS']='1';sys.path.insert(0,'_tools');import kb_mcp\nt={x['name']:x for x in kb_mcp.handle({'jsonrpc':'2.0','id':1,'method':'tools/list','params':{}})['result']['tools']}\nd=json.dumps(t['coord_post']);print(t['coord_post']['description'][:300]);sys.exit(0 if 'session/' in d else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-6jfnx5i3 review"
+  ]
+}

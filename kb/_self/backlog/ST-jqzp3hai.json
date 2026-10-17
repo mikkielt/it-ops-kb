@@ -37,7 +37,7 @@
       },
       "class": "design",
       "answer": "gap entry now",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Planned 2026-10-16: (2) and (3) pack good on origin/main ed55f4d56; (1) packs weak although kb/public/agents/shared-state-concurrency.md:250-252 hold the etcd lease facts, so (1) is a retrieval fix (lookup_eval row, doc2query) or a missing fact on who may write a leased key. Feeds the BG-p2jcpxhl and BG-vxwibl62 gates and the coord MCP opt-in story.",
