@@ -2,7 +2,7 @@
   "id": "BG-yvja5w5d",
   "kind": "bug",
   "title": "An anchor row ST-ez6r5em7 re-keyed is unlocated although its pinned source holds the quote (fluent-rust-typescript.md, S-dftqctth)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5bvg4tnl",
   "priority": "P3",
   "rank": 0,
@@ -28,5 +28,6 @@
   "links": [
     "parked: SP-z3jcdsgr review"
   ],
-  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (row 0d6950be749f reads unlocated:no-match). Plan 2026-10-17: the goal's other clauses moved here: the other rows ST-ez6r5em7 re-keyed to unlocated:no-match (agents/codebase-mapping.csv, security/almalinux-elevate.md) are read for the same cause in this item; found by the SP-z3jcdsgr review (S3)."
+  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (row 0d6950be749f reads unlocated:no-match). Plan 2026-10-17: the goal's other clauses moved here: the other rows ST-ez6r5em7 re-keyed to unlocated:no-match (agents/codebase-mapping.csv, security/almalinux-elevate.md) are read for the same cause in this item; found by the SP-z3jcdsgr review (S3).",
+  "claimed_by": "orch-r08"
 }
