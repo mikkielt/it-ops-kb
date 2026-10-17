@@ -36,8 +36,8 @@
                                            check: or route: line) is above NOTED_BASELINE;
                                            --free adds the _self rows' leave-one-out rate (slow);
                                            a row failing only through a key word whose share crossed COMMON_SHARE
-                                           since word_shares.csv was written prints DRIFT and passes, counted in
-                                           noted=; --write-shares rewrites that file for every root
+                                           since word_shares.csv was written prints DRIFT and passes, left out of
+                                           noted= unless its pack carries a note; --write-shares rewrites that file for every root
   rag.py topics-for PATH... | --keywords TEXT [--imports]   kb topics that code touches, from the curated code signals in
                                            each root's signals.csv (e.g. PublicClientApplication -> public/auth/msal-public-client);
                                            --imports matches only the packages the files declare, not comments or strings
@@ -462,7 +462,8 @@ def run_eval(path=None, root=None, free=False):
     (kbfacts.routed: a count, a decision id, a conflict, a gap, a citation) fails with `routed`: the eval rows rank.
     A row that fails its verdict is judged once more on the committed key-word shares (shares_baseline) of the words
     whose share is on the other side of COMMON_SHARE than the file's: when it then passes, it is `drift` ({word: now,
-    baseline}), passes, and counts under `noted` and `drifted` (the pack a lookup prints is not re-judged)."""
+    baseline}), passes, and counts under `drifted`, and under `noted` only when its re-judged pack carries a `check:` or `route:` line
+    (the pack a lookup prints is not re-judged)."""
     rows, hits, anchored, passages, bases = [], 0, 0, None, {}
     for name, c in eval_cases(path, root):
         own = name == kbfacts.SELF_ROOT
@@ -518,7 +519,7 @@ def run_eval(path=None, root=None, free=False):
     n = len(rows)
     return {"n": n, "passed": sum(r["ok"] for r in rows), "verdict_ok": sum(r["verdict_ok"] for r in rows),
             "found_ok": sum(r["found_ok"] for r in rows), "mean_chars": round(sum(r["chars"] for r in rows) / max(n, 1)),
-            "noted": sum(r["noted"] or bool(r["drift"]) for r in rows), "drifted": sum(bool(r["drift"]) for r in rows), "free": hits if free else None, "anchored": anchored, "rows": rows}
+            "noted": sum(r["noted"] for r in rows), "drifted": sum(bool(r["drift"]) for r in rows), "free": hits if free else None, "anchored": anchored, "rows": rows}
 
 
 def main():
@@ -706,7 +707,7 @@ def main():
         if pairs or overlaps:
             sys.exit(1)
         res = run_eval(a.file, a.root, a.free)
-        over = a.file is None and res["noted"] - res["drifted"] > NOTED_BASELINE  # drift is no pack note
+        over = a.file is None and res["noted"] > NOTED_BASELINE
         failing = res["passed"] < (res["n"] if a.min is None else a.min) or over  # the exit code, --json or not
         if a.json:
             print(json.dumps(res, indent=1))
