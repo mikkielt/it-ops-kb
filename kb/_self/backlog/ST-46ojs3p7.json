@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-g4mwrwsv close"
-  ]
+  ],
+  "notes": "Hygiene 2026-10-17: its check passes on origin/main 3dba0ef83 without the work (the phrase \"before the start\" is in bl_check.py and bl_plan.py for other rules); a plan that commits it replaces the check with a planted ops run."
 }

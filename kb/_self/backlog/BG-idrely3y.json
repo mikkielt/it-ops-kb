@@ -20,6 +20,8 @@
     "kb/_self/tools.md"
   ],
   "links": [
-    "parked: SP-4cc36epy close"
-  ]
+    "parked: SP-4cc36epy close",
+    "duplicate: ST-rkre4yru (merged 2026-10-17)"
+  ],
+  "notes": "Hygiene 2026-10-17: ST-rkre4yru merged here. Seen in four sprints: SP-b36246xo (ST-wiv62ohc, ST-2t73jxfk, ST-qivswoxw), SP-xo45jvbj (ST-x6mvfnmv, ST-3qxh5vxo, BG-wh3wardm), SP-4cc36epy (BG-jy6yxnq4, BG-ljlj77kd, BG-6jwv6ag3), SP-6jfnx5i3 (BG-iwqcj5zf): each worker reran stage-back --check with --root set to the orchestrator checkout."
 }
