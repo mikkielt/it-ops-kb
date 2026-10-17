@@ -44,6 +44,7 @@ SHAPES = {"bearer": ("Authorization: Bearer " + VALUE, VALUE), "basic": ("Author
           "$word bearer": ("Authorization: Bearer $" + VALUE, VALUE),
           "$word userinfo": ("postgres://fakeuser:$" + VALUE + "@db.example.com/app", VALUE),
           "$word assignment": ("password=$" + VALUE, VALUE),
+          "placeholder-prefixed assignments": ("password=%x%y" + VALUE + "\npassword=***" + VALUE + "\npassword=<a>" + VALUE, VALUE),
           "key body": ("before\n" + KEY_BLOCK + "\nafter", KEY_BODY),
           "cut-off key": ("before\n-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\nmore lines", KEY_BODY)}
 ORDINARY = ("Set the Windows LAPS password length to 14 in Intune. See https://learn.microsoft.com/windows/laps and "
