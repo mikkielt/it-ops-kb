@@ -2,7 +2,7 @@
   "id": "ST-zauxo6rs",
   "kind": "story",
   "title": "test_leaks' pre-screens are tested against every kbcommon.SECRETS shape",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yyjwfjtc",
   "priority": "P3",
   "rank": 0,

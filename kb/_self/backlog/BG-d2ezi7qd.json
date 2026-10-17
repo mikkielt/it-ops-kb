@@ -2,7 +2,7 @@
   "id": "BG-d2ezi7qd",
   "kind": "bug",
   "title": "redact.redact leaves Authorization header credentials, a URL's user:password@ password and a private key block's body in text",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-yyjwfjtc",
   "priority": "P2",
   "rank": 0,
