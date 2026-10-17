@@ -58,6 +58,23 @@
       "class": "design",
       "answer": "holder only: put on a key under a live lease is refused (exit 1) unless it names the holder's handle that claim printed; a key with no live lease takes a put from anyone at its revision",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does coord.py put with --token on a key that holds no live lease succeed or exit 1?",
+      "options": [
+        "exit 1: a token that does not hold the key is refused, as renew and release refuse it",
+        "succeed: the token is ignored when no lease holds the key"
+      ],
+      "recommendation": "exit 1: a token that does not hold the key is refused, as renew and release refuse it",
+      "do": {
+        "exit 1: a token that does not hold the key is refused, as renew and release refuse it": "BG-vxwibl62",
+        "succeed: the token is ignored when no lease holds the key": "BG-vxwibl62"
+      },
+      "class": "secrets",
+      "answer": "exit 1: a token that does not hold the key is refused, as renew and release refuse it",
+      "by": "operator"
     }
   ],
   "links": [
