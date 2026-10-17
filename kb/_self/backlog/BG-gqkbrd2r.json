@@ -2,7 +2,7 @@
   "id": "BG-gqkbrd2r",
   "kind": "bug",
   "title": "fetch.py shows a role-less navigation aside inside <main> as page content (kali docs menu, docker table of contents, slsa on-this-page)",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5bvg4tnl",
   "priority": "P1",
   "rank": 0,
@@ -18,5 +18,6 @@
   "touches": [
     "_tools/fetch.py",
     "kb/_self/web-sources.md"
-  ]
+  ],
+  "claimed_by": "orch-r08"
 }
