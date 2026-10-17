@@ -485,6 +485,18 @@ def goal_questions(goal, skipped=None):
     return list(dict.fromkeys(out))
 
 
+def joined_lead_in(goal):
+    """The lead-in (text before `: `) that `goal_questions` joins to a numbered piece's question because it is longer
+    than QUESTION_LEAD_WORDS words (`Research with the kb tools first ... through /kb-research: (1) Which ...?`), the
+    first such one, else ''. The pack of the whole piece then reads the lead-in's words as part of the question."""
+    for q in goal_questions(goal):
+        lead, sep, rest = q.partition(": ")
+        if sep and rest.strip() and len(lead.split()) > QUESTION_LEAD_WORDS \
+                and re.search(re.escape(lead + ": ") + NUMBERED_PIECE.pattern, str(goal)):
+            return lead
+    return ""
+
+
 def research_roots(it):
     """The kb roots an item's touches name (`kb/public/**`: `public`), in order; [] when none does, which reads every
     root."""
@@ -3206,7 +3218,10 @@ def cmd_precheck(bl, a):
     add. It warns of an item whose touches name a kb/_self doc that eval rows added by the sprint's goal research story
     (its commits, `research_rows`) name in expect_paths and have no touch that covers the _self eval file
     (`bl_plan.research_rows_warnings`), so a reworded line moves its row in the item; it reads those rows once the
-    research story has landed, so the orchestrator runs it again then. kb-sprint plan runs it before the start gate is
+    research story has landed, so the orchestrator runs it again then. It warns of an open goal research story whose
+    goal has a numbered piece behind a lead-in of more than QUESTION_LEAD_WORDS words (`joined_lead_in`): `researched`
+    reads that lead-in together with the first question, so the planner moves it to the notes or ends it with a
+    semicolon. kb-sprint plan runs it before the start gate is
     asked, so start stays fast."""
     sid = need(bl, a.sprint)
     if bl.items[sid].get("kind") != "sprint":
@@ -3241,6 +3256,14 @@ def cmd_precheck(bl, a):
             "and why (a check that pins behaviour that must stay)")
     unread = 0
     quoted = research_rows(bl, sid)
+    for iid in sorted(bl.sprint_items(sid)):
+        it = bl.items[iid]
+        lead = joined_lead_in(it.get("goal")) if it.get("goal_research") and it.get("status") in ("draft", "todo", "doing") else ""
+        if lead:
+            say(f"warning: {bl.label(iid)}: researched would read the goal's lead-in of {len(lead.split())} words "
+                f"(more than {QUESTION_LEAD_WORDS}: {lead[:60]}...) together with its first question, so the pack of "
+                "the whole piece is weak: move the lead-in to the item's notes, or end it with a semicolon, before "
+                "the start gate")
     for iid in precheck_items(bl, sid):
         late = after_merge_proof(bl, iid)
         if late:

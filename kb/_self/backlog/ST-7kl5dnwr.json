@@ -30,6 +30,25 @@
   "depends_on": [
     "ST-2g6qd22j"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which goals does precheck's lead-in warning cover, and what does it match?",
+      "options": [
+        "open goal research stories, a lead-in longer than QUESTION_LEAD_WORDS words directly before a numbered piece",
+        "every open item whose goal_questions output holds a long lead-in, numbered piece or not"
+      ],
+      "recommendation": "open goal research stories, a lead-in longer than QUESTION_LEAD_WORDS words directly before a numbered piece",
+      "do": {
+        "open goal research stories, a lead-in longer than QUESTION_LEAD_WORDS words directly before a numbered piece": "ST-7kl5dnwr",
+        "every open item whose goal_questions output holds a long lead-in, numbered piece or not": "ST-7kl5dnwr"
+      },
+      "class": "agents-rule",
+      "answer": "open goal research stories, a lead-in longer than QUESTION_LEAD_WORDS words directly before a numbered piece",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-5dffnlxn close"
   ],
