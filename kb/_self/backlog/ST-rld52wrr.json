@@ -2,7 +2,7 @@
   "id": "ST-rld52wrr",
   "kind": "story",
   "title": "The test id baseline names the renamed planted-leak test of test_leaks.py",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g4mwrwsv",
   "priority": "P3",
   "rank": 0,
@@ -36,5 +36,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: small (one id renamed). perfcheck.py ids --against the baseline on origin/main b871374b4 exits 1 (1 missing, 1 added). The work is perfcheck.py ids --write _tools/test_ids_baseline.txt after the sprint's other items, which add no test id; it runs last (depends on the redact items) so the baseline is today's suite. SP-yyjwfjtc review gap 7: ST-zauxo6rs renamed the planted-leak test (suffix _and_leak_screens_cover_secrets) and the baseline was outside its touches; nothing that gates reads the file."
+  "notes": "Plan 2026-10-17: small (one id renamed). perfcheck.py ids --against the baseline on origin/main b871374b4 exits 1 (1 missing, 1 added). The work is perfcheck.py ids --write _tools/test_ids_baseline.txt after the sprint's other items, which add no test id; it runs last (depends on the redact items) so the baseline is today's suite. SP-yyjwfjtc review gap 7: ST-zauxo6rs renamed the planted-leak test (suffix _and_leak_screens_cover_secrets) and the baseline was outside its touches; nothing that gates reads the file.",
+  "claimed_by": "orch-r10"
 }
