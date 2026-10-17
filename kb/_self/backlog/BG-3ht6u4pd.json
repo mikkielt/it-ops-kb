@@ -20,5 +20,6 @@
   ],
   "links": [
     "parked: SP-5bvg4tnl review"
-  ]
+  ],
+  "notes": "BG-gqkbrd2r (510bed806) makes the reducer keep an aside only with data-type=sidebar, so its nav-holding role-less aside clause now passes; the ancestor role=navigation case with data-type=sidebar still shows."
 }

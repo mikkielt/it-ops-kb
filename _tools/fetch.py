@@ -108,9 +108,9 @@ def repo_roots():
 class _PageText(html.parser.HTMLParser):
     """Visible text of an HTML page, one block per line; <main> only when the page has one. `headings` starts each
     h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none). An <aside>
-    inside <main> or <article> is a content sidebar and is kept, unless its role marks it as page chrome."""
+    inside <main> or <article> is kept only when it has data-type="sidebar" (a book's content box); any other aside is
+    site navigation or an on-this-page list and is skipped."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
-    CHROME_ROLES = {"navigation", "search", "banner", "contentinfo"}
     BLOCK = {"p", "div", "li", "tr", "br", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "table", "section", "article", "dd", "dt"}
 
     def __init__(self, headings=False):
@@ -122,8 +122,8 @@ class _PageText(html.parser.HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == "aside":
-            role = (dict(attrs).get("role") or "").strip().lower()
-            dropped = bool(self.skip) or not (self.main or self.article) or role in self.CHROME_ROLES
+            kind = (dict(attrs).get("data-type") or "").strip().lower()
+            dropped = bool(self.skip) or not (self.main or self.article) or kind != "sidebar"
             self.asides.append(dropped)
             self.skip += dropped
         elif tag in self.SKIP:
