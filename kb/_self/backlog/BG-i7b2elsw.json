@@ -1,0 +1,18 @@
+{
+  "id": "BG-i7b2elsw",
+  "kind": "bug",
+  "title": "kbid.py's module docstring says the publisher is read from the suffix of the page's <title>, which provider.read_page no longer does",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kbid.py's module docstring (the paragraph on the title, publisher and version) names the publisher's sources as the host's organisation cell, else the page's og:site_name or application-name, with no title suffix",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1 if \"else the suffix of its <title>\" in open(\"_tools/kbid.py\",encoding=\"utf-8\").read() else 0)"
+    ]
+  },
+  "repro_reason": "a docstring sentence has no behaviour to run; the text is the defect"
+}
