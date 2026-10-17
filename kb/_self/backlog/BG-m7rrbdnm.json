@@ -20,6 +20,23 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does cmd_claim see a claim another session made while it waited for the ledger lock?",
+      "options": [
+        "Re-read the item files of the ledger's ids under the lock",
+        "Reload the whole Backlog under the lock"
+      ],
+      "recommendation": "Re-read the item files of the ledger's ids under the lock",
+      "do": {
+        "Re-read the item files of the ledger's ids under the lock": "BG-m7rrbdnm",
+        "Reload the whole Backlog under the lock": "BG-m7rrbdnm"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-z3hyk4eh review"
   ],
