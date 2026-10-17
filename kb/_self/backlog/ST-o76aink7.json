@@ -7,7 +7,7 @@
   "sprint": "SP-4dab3cy5",
   "priority": "P3",
   "rank": 0,
-  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does an operator see and stop a running background subagent, agent-view session, agent-team teammate or dynamic workflow in Claude Code? (2) What is kept of a stopped subagent's, teammate's or background session's work: its transcript, its partial result, its worktree? (3) Which failure modes of parallel or multi-agent work do Anthropic's official docs and engineering posts name, such as duplicated work, too many subagents or agents that do not stop, and which mitigations do they give?",
+  "goal": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research; (1) How does an operator see and stop a running background subagent, agent-view session, agent-team teammate or dynamic workflow in Claude Code? (2) What is kept of a stopped subagent's, teammate's or background session's work: its transcript, its partial result, its worktree? (3) Which failure modes of parallel or multi-agent work do Anthropic's official docs and engineering posts name, such as duplicated work, too many subagents or agents that do not stop, and which mitigations do they give?",
   "checks": [
     {
       "run": [
@@ -20,7 +20,11 @@
   ],
   "clauses": [
     {
-      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research: (1) How does an operator see and stop a running background subagent, agent-view session, agent-team teammate or dynamic workflow in Claude Code? (2) What is kept of a stopped subagent's, teammate's or background session's work: its transcript, its partial result, its worktree? (3) Which failure modes of parallel or multi-agent work do Anthropic's official docs and engineering posts name, such as duplicated work, too many subagents or agents that do not stop",
+      "clause": "Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research",
+      "check": 0
+    },
+    {
+      "clause": "(1) How does an operator see and stop a running background subagent, agent-view session, agent-team teammate or dynamic workflow in Claude Code? (2) What is kept of a stopped subagent's, teammate's or background session's work: its transcript, its partial result, its worktree? (3) Which failure modes of parallel or multi-agent work do Anthropic's official docs and engineering posts name, such as duplicated work, too many subagents or agents that do not stop",
       "check": 0
     },
     {
