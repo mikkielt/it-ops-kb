@@ -9,8 +9,10 @@
   coord.py renew KEY --token T [--ttl SECONDS]       extend the lease of the holder of T (SECONDS: the claim's own)
   coord.py release KEY --token T                     drop the lease of the holder of T
   coord.py get KEY                                   print KEY's holder, value and revision (exit 1 when absent)
-  coord.py put KEY --value V --revision N            write V only while KEY is at revision N (an absent key is at
-                                                     revision 0); prints the new revision (exit 1 when KEY moved on)
+  coord.py put KEY --value V --revision N [--token T] write V only while KEY is at revision N (an absent key is at
+                                                     revision 0); prints the new revision (exit 1 when KEY moved on);
+                                                     a key a live lease holds takes the put only with the holder's T
+                                                     (exit 1 without it), and the lease goes on
   coord.py list [--prefix P]                         print, as a JSON array, every live key that starts with P
   coord.py post --kind K --field NAME=VALUE ...      add an event; prints its sequence number as seq (exit 2 for a kind
                                                      off the closed list or a value that is not a short id)
@@ -266,7 +268,13 @@ def get(args, now):
 
 def put(args, now):
     with Tx(args.store) as con:
-        row = live_row(con, args.key, now)
+        if args.token is not None:
+            row = held_by(con, args.key, args.token, now)
+        else:
+            row = live_row(con, args.key, now)
+            if row is not None and row["holder"] is not None:
+                raise Refused({"ok": False, "key": args.key, "holder": row["holder"],
+                               "error": f"{args.key} is held by {row['holder']}: put needs the holder's --token"})
         have = row["revision"] if row is not None else 0
         if have != args.revision:
             raise Refused({"ok": False, "key": args.key, "revision": have,
@@ -575,6 +583,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("key")
     p.add_argument("--value", required=True)
     p.add_argument("--revision", type=not_negative, required=True, help="the revision the key must still be at (absent: 0)")
+    p.add_argument("--token", help="the holder's token: needed to write a key a live lease holds, refused for a key none holds")
     p = sub.add_parser("list", parents=parents)
     p.add_argument("--prefix", default="")
     p = sub.add_parser("post", parents=parents)
