@@ -2,7 +2,7 @@
   "id": "ST-v7rqvnwe",
   "kind": "story",
   "title": "Research sprint goal: redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g4mwrwsv",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Plan 2026-10-17: rag.py pack ran three questions; the shell parameter expansion question ($NAME, ${NAME}) is good (public/security/zsh-expansion-globbing-arrays.md); the JSON escape and the URL path questions came back good on articles that do not answer them (cmd-exe quoting, claude/hooks), so they are researched. Knowledge by item: BG-efbghw7n reads the JSON escape facts, BG-boyagwh4 the URL path facts, BG-h5l6y43p and BG-hqgtovpo the shell expansion facts.",
-  "claimed_by": "orch-r10"
+  "evidence": {
+    "commit": "f1f751169f3441d23968d4393fe727c31b9fde67",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-v7rqvnwe"
+        ],
+        "exit": 0,
+        "sha256": "9ba94a4b4ba5b439"
+      }
+    ]
+  }
 }
