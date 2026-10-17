@@ -35,6 +35,25 @@
     "ST-ujgqyr35",
     "ST-v7rd5fvj"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a redirect hop into a host in its window get refused?",
+      "options": [
+        "request() takes a refuse callback its redirect handler asks before following a hop; gated_request passes the window check",
+        "gated_request follows no redirect itself and checks each hop after the fact"
+      ],
+      "recommendation": "request() takes a refuse callback its redirect handler asks before following a hop; gated_request passes the window check",
+      "do": {
+        "request() takes a refuse callback its redirect handler asks before following a hop; gated_request passes the window check": "ST-mrrudfmj",
+        "gated_request follows no redirect itself and checks each hop after the fact": "ST-mrrudfmj"
+      },
+      "class": "design",
+      "answer": "request() takes a refuse callback its redirect handler asks before following a hop; gated_request passes the window check",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-srqmriw6 review"
   ],
