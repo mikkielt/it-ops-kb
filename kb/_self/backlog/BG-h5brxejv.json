@@ -2,7 +2,7 @@
   "id": "BG-h5brxejv",
   "kind": "bug",
   "title": "kg_sync.forge_outage takes any parenthesised 5xx number in the push output for a forge outage, so a push-rule refusal that prints '(500)' is retried six times",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,
@@ -23,5 +23,18 @@
     "parked: SP-z3hyk4eh review"
   ],
   "notes": "SP-z3hyk4eh review gap 2 (S3), on ST-6qusz4km: _tools/kg_sync.py:92 FORGE_OUTAGE's \\(5\\d\\d\\) matches any parenthesised 5xx number; bounded (6 tries, about 60 s of pauses), nothing lost. Repro fails on origin/main f105ef2e4. Premise rerun 2026-10-16 on origin/main ed55f4d56: repro exits 1 (forge_outage (push-rule 500, real 503): [True, True]).",
-  "claimed_by": "orch-r04"
+  "evidence": {
+    "commit": "b27c53f9b596a13d6bef84210e3714e44a83fc83",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import kg_sync as k\nr=[k.forge_outage(\"remote: gate: commit message longer than the limit (500)\\n ! [remote rejected] main -> main (pre-receive hook declined)\"),k.forge_outage(\"remote: GitLab: Internal API error (503)\\n ! [remote rejected] HEAD -> main (pre-receive hook declined)\")]\nprint(\"forge_outage (push-rule 500, real 503):\",r);sys.exit(0 if r==[False,True] else 1)"
+        ],
+        "exit": 0,
+        "sha256": "40412067360a2890"
+      }
+    ]
+  }
 }
