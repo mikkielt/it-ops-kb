@@ -1,0 +1,21 @@
+{
+  "id": "ST-ubn2p6e2",
+  "kind": "story",
+  "title": "A research worker reads each DER fact that states a limit against the scope the source gives that limit",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "SP-4dab3cy5 close: the review found a DER fact in kb/public/claude/cross-session-messaging.md (ST-5mcrotet) saying Remote Control forwards the prompts of one session at a time, while the page limits that to one interactive process and gives a server mode with concurrent sessions (parked as ST-3emh47z5), plus two facts that list fewer cases or omit an argument the page gives (ST-dfsfutx4, ST-jnfuivwa); researched passed since it reads whether a pack answers, not whether a fact is complete. The kb-research skill tells a worker to read each fact that states a limit (`only`, `one at a time`, a maximum) against the source's scope for it, and each enumerating fact against the source's full list.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('.claude/skills/kb-research/SKILL.md').read().lower()\nok='states a limit' in t and 'scope' in t\nprint('kb-research names the limit-scope read:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "links": [
+    "parked: SP-4dab3cy5 close"
+  ]
+}

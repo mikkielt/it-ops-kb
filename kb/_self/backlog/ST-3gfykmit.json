@@ -17,5 +17,6 @@
   ],
   "links": [
     "parked: SP-rsmmwzr2 close"
-  ]
+  ],
+  "notes": "SP-4dab3cy5 2026-10-17: the orchestrator reworded ST-5mcrotet's goal on the worker's branch with `backlog.py --root <worktree> set` and a hand commit with KB-Work, since set has no --commit (answer has one)."
 }
