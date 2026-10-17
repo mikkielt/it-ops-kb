@@ -18,6 +18,26 @@ def planted():
     }
 
 
+def secret_plants():
+    """One string for each kbcommon.SECRETS pattern, in its order, built from parts. The `(?i)` shape's plant is in
+    capitals, which only a screen that casefolds the text and the pattern together finds."""
+    return [
+        "-----BEGIN " + "RSA PRIVATE KEY-----",
+        "AK" + "IA" + "ABCDEFGHIJKLMNOP",
+        "gh" + "p_" + "a" * 36,
+        "github" + "_pat_" + "a" * 22,
+        "glp" + "at-" + "a" * 20,
+        "glr" + "t-" + "a" * 20,
+        "xo" + "xb-" + "1234567890",
+        "sk-" + "ant-" + "a" * 20,
+        "sk-" + "proj-" + "a" * 32,
+        "Account" + "Key=" + "A" * 40,
+        "?si" + "g=" + "a" * 30,
+        "ey" + "J" + "a" * 10 + ".ey" + "J" + "a" * 10 + "." + "a" * 10,
+        "PASS" + "WORD" + ' = "' + "hunter22xx" + '"',
+    ]
+
+
 def allowlist():
     return kbpublic.parse_allowlist(text(kbpublic.ALLOWLIST_PATH) or "")
 
@@ -95,11 +115,21 @@ def test_tracked_files_hold_no_secret_and_authored_files_hold_placeholders_only(
         f"  {f}: {k} {v}" for f, k, v in found[:20])
 
 
-def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_hook_denies_a_routed_host_and_passes_the_rest(
+def test_scan_reports_each_planted_leak_and_honours_the_allowlist_and_webfetch_hook_denies_a_routed_host_and_passes_the_rest_and_leak_screens_cover_secrets(
         tmp_path, monkeypatch):
     values = planted()
     for kind, value in values.items():
         assert kind in [k for k, _ in kbpublic.file_hits("notes.md", f"see {value} here", {})], kind
+    # each production secret shape has a plant its own pattern matches, and the scan's pre-screen (candidate) keeps
+    # the whole text for an authored and a vendored file while file_hits reports a secret
+    plants = secret_plants()
+    assert len(plants) == len(kbcommon.SECRETS), (len(plants), len(kbcommon.SECRETS))
+    for pattern, plant in zip(kbcommon.SECRETS, plants):
+        assert re.search(pattern, plant), pattern
+        body = f"see {plant} here"
+        assert candidate(body, False) == body and candidate(body, True) == body, pattern
+        assert "secret" in [k for k, _ in kbpublic.file_hits("notes.md", body, {})], pattern
+        assert "secret" in [k for k, _ in kbpublic.file_hits("kb/x/artifacts/a.txt", body, {})], pattern
     # the placeholders pass, an allowlisted value passes
     ok = "jan.kowalski t@example.com 00000000-0000-0000-0000-000000000000 192.0.2.7"
     assert kbpublic.file_hits("notes.md", ok, {}) == []

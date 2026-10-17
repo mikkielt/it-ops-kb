@@ -30,6 +30,23 @@
   "touches": [
     "_tools/test_leaks.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the planted-leak test get its new name and its per-pattern plants?",
+      "options": [
+        "Append the suffix to the existing name, plants in a secret_plants helper checked against their own pattern",
+        "Shorten the old name while renaming, plants inline in the test"
+      ],
+      "recommendation": "Append the suffix to the existing name, plants in a secret_plants helper checked against their own pattern",
+      "do": {
+        "Append the suffix to the existing name, plants in a secret_plants helper checked against their own pattern": "ST-zauxo6rs",
+        "Shorten the old name while renaming, plants inline in the test": "ST-zauxo6rs"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-wjp5qllo review"
   ],
