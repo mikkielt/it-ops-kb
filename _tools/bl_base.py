@@ -588,26 +588,32 @@ LEDGER_LOCK_POLL_S = 0.02
 
 
 def _clear_stale_lock(lock, seen):
-    """Remove the ledger lock file LOCK that a waiter judged stale from its stat SEEN, only if it is still that file.
-    The file is renamed to a name of this waiter's own (atomic: of two waiters one rename wins, the other finds no lock
-    file), and its stat is compared with SEEN: the same file is removed; another one, a fresh lock a live writer made
-    after the waiter looked, is put back by an atomic replace, so the live writer's lock is again the file at the name
-    even when a third waiter made a lock there while it was renamed away (that waiter's release removes only its own
-    file, see `ledger_lock`)."""
-    taken = lock.with_name(f"{lock.name}.{os.getpid()}.{threading.get_ident()}.stale")
+    """Remove the ledger lock file LOCK that a waiter judged stale from its stat SEEN, only if it is still that file;
+    True when this call was the one allowed to look, False when another waiter was clearing (the caller waits and looks
+    again). The lock is never renamed away: a live writer's lock stays at its name the whole time, so no third waiter
+    can create one beside it. Waiters clear one at a time, holding the file `<lock>.clear` made by exclusive create, so
+    nobody removes the file at the name but the one that compares it with SEEN (a lock another waiter cleared and a
+    live writer made anew after this waiter looked differs from SEEN and stays). A `.clear` file older than the stale
+    age is a crashed waiter's and is removed."""
+    guard = lock.with_name(lock.name + ".clear")
     try:
-        os.rename(lock, taken)
-    except OSError:  # cleared or released by another waiter since
-        return
-    try:
-        now = taken.stat()
-        if (now.st_ino, now.st_mtime_ns) != (seen.st_ino, seen.st_mtime_ns):
-            os.replace(taken, lock)
-            return
+        os.close(os.open(guard, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+    except FileExistsError:
+        with contextlib.suppress(OSError):
+            if time.time() - guard.stat().st_mtime > LEDGER_LOCK_STALE_S:
+                guard.unlink()
+        return False
     except OSError:
-        pass
-    with contextlib.suppress(OSError):
-        taken.unlink()
+        return False
+    try:
+        with contextlib.suppress(OSError):
+            now = lock.stat()
+            if (now.st_ino, now.st_mtime_ns) == (seen.st_ino, seen.st_mtime_ns):
+                lock.unlink()
+    finally:
+        with contextlib.suppress(OSError):
+            guard.unlink()
+    return True
 
 
 @contextlib.contextmanager
@@ -615,8 +621,8 @@ def ledger_lock(path):
     """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
     (no fcntl, so the same on every OS) and removed on exit, so concurrent `claim` and dispatch runs read and write the
     ledger one at a time. Refused when it is still held after twice the stale age. The holder removes the lock on exit
-    only when the file at the name is the one it made (its inode), so a lock another waiter put there while a stale
-    clearer had the holder's renamed away is never removed by the wrong holder."""
+    only when the file at the name is the one it made (its inode), so a lock another waiter made after a stale clearer
+    removed the holder's is never removed by the wrong holder."""
     lock = path.with_name(path.name + ".lock")
     deadline = time.monotonic() + 2 * LEDGER_LOCK_STALE_S
     while True:
@@ -636,7 +642,8 @@ def ledger_lock(path):
         except OSError:  # released since: look again
             continue
         if time.time() - seen.st_mtime > LEDGER_LOCK_STALE_S:
-            _clear_stale_lock(lock, seen)
+            if not _clear_stale_lock(lock, seen):
+                time.sleep(LEDGER_LOCK_POLL_S)
             continue
         if time.monotonic() > deadline:
             raise Refused(f"the claims ledger is locked ({lock}); remove the file if no dispatch or claim runs")
