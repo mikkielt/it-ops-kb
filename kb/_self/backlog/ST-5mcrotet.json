@@ -59,7 +59,9 @@
         "Extend claude/cross-session-messaging.md": "ST-5mcrotet",
         "Create a new claude/channels.md article": "ST-5mcrotet"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "Extend claude/cross-session-messaging.md",
+      "by": "operator"
     },
     {
       "id": "g2",
