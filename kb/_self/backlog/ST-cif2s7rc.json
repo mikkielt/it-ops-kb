@@ -3,19 +3,30 @@
   "kind": "story",
   "title": "A plan for an item that sends new text through redact plants a secret of each kind redact knows, and an assignment form, in its check",
   "status": "draft",
+  "sprint": "SP-yyjwfjtc",
   "priority": "P3",
   "rank": 0,
-  "goal": "SP-ficl7pxl retrospective: ST-h3y6iym4 routes a person's free kb!: comment through redact into the spool and the distill call, and its checks planted no secret; the review planted ten kinds by hand and found that password=, secret= and api_key= values pass (BG-w5d2mvwz, older than the sprint). The kb-sprint plan step 6 asks, for an item that adds a path of free text through redact, a planted check with one secret of each kind redact handles and one key=value assignment.",
+  "goal": "the kb-sprint plan step 6 (skills/sprint/SKILL.md) asks, for a committed item that sends new text through redact (a new field, comment or prompt path into the spool, the query log store or a Haiku call), a check on a planted input that holds one fake secret of each kind redact handles and one key=value assignment, built at run time",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
-        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.find('6. Read the goal clauses'):t.find('## start SP')];ok='redact' in s;print('plan step 6 asks planted secrets for a redact path:',ok);sys.exit(0 if ok else 1)"
+        "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.find('6. Read the goal clauses'):t.find('## start SP')];ok='redact' in s and 'assignment' in s;print('plan step 6 asks planted secrets and an assignment for a redact path:',ok);sys.exit(0 if ok else 1)"
       ]
     }
   ],
+  "clauses": [
+    {
+      "clause": "the kb-sprint plan step 6 (skills/sprint/SKILL.md) asks, for a committed item that sends new text through redact (a new field, comment or prompt path into the spool, the query log store or a Haiku call), a check on a planted input that holds one fake secret of each kind redact handles and one key=value assignment, built at run time",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
   "links": [
     "parked: SP-ficl7pxl close"
-  ]
+  ],
+  "notes": "SP-yyjwfjtc plan: still applies on origin/main b97cd6ebf; plan step 6 names no redact path today (the check fails on the base). One sentence in step 6."
 }

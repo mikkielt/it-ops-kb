@@ -14,7 +14,10 @@
         "change",
         "cancel"
       ],
-      "recommendation": "approve"
+      "recommendation": "approve",
+      "answer": "approve",
+      "by": "operator"
     }
-  ]
+  ],
+  "notes": "Plan 2026-10-17 (operator request 'fix redact'): the goal covers text that passes through redact (a kb!: comment into the spool, distill's question and Haiku inputs, the committed query log store and its gates). The spool's prompt row keeps the raw prompt by design (kb/_self/querylog.md, Spool; local, never committed): what the spool records is an operator matter and stays as it is. kbcommon.SECRETS, the committed-file leak scan, stays unchanged (gates scope of BG-w5d2mvwz and BG-d2ezi7qd): a wider shared shape would flag about 159 assignment-like and 241 Bearer/Basic matches in tracked files today."
 }
