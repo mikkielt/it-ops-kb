@@ -2,7 +2,7 @@
   "id": "ST-qyhb56tk",
   "kind": "story",
   "title": "land of a code-lane item waits for its merge request without --wait-merge being named",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,
@@ -51,5 +51,6 @@
   "links": [
     "parked: SP-ysuvdxsn close"
   ],
-  "notes": "Retrospective finding of SP-ysuvdxsn. Recurred in SP-a3w7xdij: ST-mee3qx7d (skills/sprint/SKILL.md) and ST-w2if4brd (kb/_self/reports/research-repro.md) were landed without --wait-merge and stopped after pushing code/<id>, each needing a second land run. Premise run 2026-10-17 on origin/main 7cb5e0cbb: land --help shows no default for --wait-merge (args_land, _tools/bl_land.py:3193) and cmd_land with --wait-merge 0 still calls wait_merge (bound 0 is not None). Check 1 runs cmd_land with a stubbed land_once and wait_merge: default 1800 waits, 0 does not."
+  "notes": "Retrospective finding of SP-ysuvdxsn. Recurred in SP-a3w7xdij: ST-mee3qx7d (skills/sprint/SKILL.md) and ST-w2if4brd (kb/_self/reports/research-repro.md) were landed without --wait-merge and stopped after pushing code/<id>, each needing a second land run. Premise run 2026-10-17 on origin/main 7cb5e0cbb: land --help shows no default for --wait-merge (args_land, _tools/bl_land.py:3193) and cmd_land with --wait-merge 0 still calls wait_merge (bound 0 is not None). Check 1 runs cmd_land with a stubbed land_once and wait_merge: default 1800 waits, 0 does not.",
+  "claimed_by": "orch-r06"
 }
