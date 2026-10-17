@@ -2,7 +2,7 @@
   "id": "BG-h5l6y43p",
   "kind": "bug",
   "title": "redact keeps a URL password or a Bearer credential that is $ and word characters, taking it for a $NAME placeholder",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g4mwrwsv",
   "priority": "P3",
   "rank": 0,
@@ -95,5 +95,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 2: _credential and _assigned take \\$\\w+ as a placeholder by fullmatch. Repro on origin/main b871374b4 exits 1 (the $word url password is kept). Gate g1 (the operator's choice) is answered before the start. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); the test's own $NAME placeholder case, if any, is changed to the new rule, never dropped."
+  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 2: _credential and _assigned take \\$\\w+ as a placeholder by fullmatch. Repro on origin/main b871374b4 exits 1 (the $word url password is kept). Gate g1 (the operator's choice) is answered before the start. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); the test's own $NAME placeholder case, if any, is changed to the new rule, never dropped.",
+  "claimed_by": "orch-r10"
 }
