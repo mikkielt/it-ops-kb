@@ -3266,7 +3266,6 @@ f20dc33b7082,agents/shared-ner-service.md,S2102,unlocated:no-match,,,,,2026-10-1
 f20dc33b7082,agents/shared-ner-service.md,S-hocpkynn,located,,export;inferenc;ner;rust;engin;onnx;model,326aca563d16d8f7,"This repository contains the ONNX-exported weights for GLiNER2-Multi-v1. The model is specifically exported in a fragmented format (encoder, spanrep, countpred, countlstm, classifier) to be directly",2026-10-10
 0134038a93f7,agents/shared-state-concurrency.md,S-5lu6lddr,located,,exclusion;mutual;one;property;lock,670515086f90d3a0,"Safety property: Mutual exclusion. At any given moment, only one client can hold a lock.",2026-10-15
 01d0d12b38d8,agents/shared-state-concurrency.md,S-qdltospe,located,How to prevent object overwrites with conditional writes > Conditional write behavior,found;object,d1daa0d073d4aaba,You should reupload the object when you receive a 404 Not Found response.,2026-10-15
-06a811a6c818,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Lease API,within;expir;ttl;aliv;keep;cluster;leas,81a20a3fb5adeaa3,A lease expires if the etcd cluster does not receive a keepAlive within a given TTL period.,2026-10-15
 09c508916b48,agents/shared-state-concurrency.md,S-2fthx3xp,unlocated:no-match,,,,,2026-10-14
 09c508916b48,agents/shared-state-concurrency.md,S-qdltospe,unlocated:no-match,,,,,2026-10-14
 0b2317d80787,agents/shared-state-concurrency.md,S-bayxg4xz,unlocated:no-match,,,,,2026-10-15
@@ -3316,9 +3315,11 @@ f20dc33b7082,agents/shared-ner-service.md,S-hocpkynn,located,,export;inferenc;ne
 61d11e6d2d90,agents/shared-state-concurrency.md,S-qdltospe,located,How to prevent object overwrites with conditional writes > Conditional write behavior,may;retri;conflict;putobject;put;upload;conditional;object,bdc36550737d6e0c,"When using conditional writes with PutObject, uploads may be retried after receiving a 409 Conflict error.",2026-10-15
 62a686622ef4,agents/shared-state-concurrency.md,S-srqpsf7c,located,Microsoft Entra ID (recommended) > Permissions,blobservic;contributor;microsoft.storag;storageaccount;built;built-in;least;privileg,4ce87816e6aa71b8,Azure RBAC action:Microsoft.Storage/storageAccounts/blobServices/containers/blobs/write Least privileged built-in role:Storage Blob Data Contributor,2026-10-14
 64c4b9115f58,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Key-Value API > Key-Value pair,lock;ownership;wait;creation;client;etcd;revision,f59460f952655c76,The etcd client's distributed shared locks use the creation revision to wait for lock ownership.,2026-10-15
+6505e6766f85,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Lease API,liveness;mechanism;within;expir;grant;ttl;aliv;keep,16ca27a1ee233f7d,Leases are a mechanism for detecting client liveness. The cluster grants leases with a time-to-live. A lease expires if the etcd cluster does not receive,2026-10-17
 6636a1d17fd7,agents/shared-state-concurrency.md,S-5lu6lddr,located,,del;another;remov;client;lock,e1ee490d24158289,Using just DEL is not safe as a client may remove another client's lock.,2026-10-15
 67db57281415,agents/shared-state-concurrency.md,S-6hgplow2,unlocated:no-match,,,,,2026-10-15
 67db57281415,agents/shared-state-concurrency.md,S-srqpsf7c,unlocated:no-match,,,,,2026-10-15
+69112a60a420,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Lease API > Obtaining leases,choos;etcd;leas;request,3a6e4dd07100b676,"ID - the requested ID for the lease. If ID is set to 0, etcd will choose an ID.",2026-10-17
 6a8d97327165,agents/shared-state-concurrency.md,S-5lu6lddr,unlocated:no-match,,,,,2026-10-15
 6a8d97327165,agents/shared-state-concurrency.md,S-eoyz3p4t,unlocated:no-match,,,,,2026-10-15
 6f463814c05a,agents/shared-state-concurrency.md,S-qdltospe,unlocated:no-match,,,,,2026-10-14
@@ -3331,6 +3332,8 @@ f20dc33b7082,agents/shared-ner-service.md,S-hocpkynn,located,,export;inferenc;ne
 8aea7e4e9d15,agents/shared-state-concurrency.md,S-5lu6lddr,located,,alway;fsync;persistenc;restart;instanc;lock,5d3e97d73416452c,"if we want to guarantee the lock safety in the face of any kind of instance restart, we need to enable fsync=always",2026-10-15
 8ce6716ccf18,agents/shared-state-concurrency.md,S-5lu6lddr,unlocated:no-match,,,,,2026-10-14
 8ce6716ccf18,agents/shared-state-concurrency.md,S-srqpsf7c,unlocated:no-match,,,,,2026-10-14
+8e601ee65bf6,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Lease API,most;expir;history;one;revok;attach;each;delet,0dedaca8a32f48c9,"To tie leases into the key-value store, each key may be attached to at most one lease. When a lease expires or is revoked, all",2026-10-17
+8f4006f56fe4,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Key-Value API > Key-Value pair,attach;leas;key,1ec4b7d8dd5333a3,"Lease - the ID of the lease attached to the key. If lease is 0, then no lease is attached to the key.",2026-10-17
 9322bee1ccac,agents/shared-state-concurrency.md,S-ulnpjwb7,located,History and revisions > Revisions and history​,counter;every;keep;next;bucket;one;writ;key,3553bf51f973cea5,"The bucket keeps one counter across all of its keys, and every write - to any key - takes the next number.",2026-10-15
 998482f6d6ee,agents/shared-state-concurrency.md,S-2fthx3xp,unlocated:no-match,,,,,2026-10-14
 998482f6d6ee,agents/shared-state-concurrency.md,S-4oanvdmr,unlocated:no-match,,,,,2026-10-14
@@ -3372,9 +3375,9 @@ d8ddfc5819cc,agents/shared-state-concurrency.md,S-srqpsf7c,located,Shared key > 
 df83b98271e2,agents/shared-state-concurrency.md,S-2fthx3xp,located,Manage concurrency in Blob Storage - Azure Storage | Microsoft Learn,insert;list;within;isolation;partition;snapshot;return;read,ad36cce6fba4b52f,"Azure Storage was designed to embrace a strong consistency model that guarantees that after the service performs an insert or update operation, subsequent read or",2026-10-14
 e124cf342f9a,agents/shared-state-concurrency.md,S-v7s32e7q,located,Security Deep Dive > The three parts of security​,deni;everyth;grant;admit;else;subscrib;publish;subject,b0725e07ad37deca,a user can publish and subscribe only to the subjects you grant it; the server denies everything else.,2026-10-15
 e3736868b835,agents/shared-state-concurrency.md,S-523ddbfr,located,Object Store,latest;keep;metadata;stor;object,10750ea66d5dc268,"The Object Store keeps large chunked files and only the latest metadata per object,",2026-10-15
-e8a188433f6d,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Lease API,expir;revok;attach;delet;leas,623ef5b9aabb46d6,"When a lease expires or is revoked, all keys attached to that lease will be deleted.",2026-10-15
 edc8146c6546,agents/shared-state-concurrency.md,S-3l6vhq2q,located,,checkprecondfn;precond;check;object,325495cc223c7da8,opts.CheckPrecondFn = func(oi ObjectInfo) bool {,2026-10-15
 edc8146c6546,agents/shared-state-concurrency.md,S-s7uvhjek,located,,checkprecondfn;precond;check;object,325495cc223c7da8,opts.CheckPrecondFn = func(oi ObjectInfo) bool {,2026-10-15
+eef604a1256e,agents/shared-state-concurrency.md,S-6hgplow2,unlocated:no-match,,,,,2026-10-17
 f040005b4b90,agents/shared-state-concurrency.md,S-v7s32e7q,unlocated:no-match,,,,,2026-10-15
 f235e6a8bffd,agents/shared-state-concurrency.md,S-6hgplow2,located,etcd API > Key-Value API > Transaction,atomic;else;over;transaction;stor;key-valu;valu;key,f6c3d541946b7a9c,A transaction is an atomic If/Then/Else construct over the key-value store.,2026-10-15
 f8896b94cf4c,agents/shared-state-concurrency.md,S-5lu6lddr,located,,availability;network;partition;ttl,7e8512a841e514d3,we pay an availability penalty equal to TTL time on network partitions,2026-10-15

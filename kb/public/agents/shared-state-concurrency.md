@@ -247,10 +247,18 @@ status: partial
   [DOC S-6hgplow2]
 - Each key records its creation and modification revisions; etcd's client locks wait for ownership
   by creation revision. [DOC S-6hgplow2]
-- A lease is a client-liveness mechanism: the cluster grants it with a TTL, and it expires when no
-  keep-alive arrives within that TTL. [DOC S-6hgplow2]
-- A key can be attached to at most one lease; when the lease expires or is revoked, every attached
-  key is deleted and each deletion is an event in the history. [DOC S-6hgplow2]
+- An etcd lease is a client-liveness mechanism: the cluster grants it with a TTL, and it expires when
+  no keep-alive arrives within that TTL. [DOC S-6hgplow2]
+- In etcd a key can be attached to at most one lease; when the lease expires or is revoked, all keys
+  attached to that lease are deleted and each deletion is an event in the history. [DOC S-6hgplow2]
+- Each etcd key-value pair has a `lease` field holding the ID of the lease attached to the key; 0
+  means no lease is attached. [DOC S-6hgplow2]
+- A lease is requested with `LeaseGrant`, which takes a TTL and an optional requested ID (0 lets
+  etcd choose one), and ended early with `LeaseRevoke` by ID. [DOC S-6hgplow2]
+- The etcd API page names no owner of a lease and no rule that only the client that obtained a
+  lease may write a key attached to it: leases and keys are tied by the lease ID alone, so whether
+  another client may write a leased key, or attach its own key to that ID, is not answered by the
+  page. [DER S-6hgplow2: absence of a holder check on the page]
 - Leases are refreshed over a bidirectional `LeaseKeepAlive` stream, and each response returns the
   lease's remaining TTL. [DOC S-6hgplow2]
 
