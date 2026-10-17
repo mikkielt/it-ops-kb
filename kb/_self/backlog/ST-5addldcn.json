@@ -59,7 +59,9 @@
         "touches_meet; before done (content) and after checks (code lane)": "ST-5addldcn",
         "touches_overlap; before done only": "ST-5addldcn"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "touches_meet; before done (content) and after checks (code lane)",
+      "by": "operator"
     }
   ],
   "links": [
