@@ -21,6 +21,23 @@
     "kb/_self/backlog.md",
     "kb/_self/querylog.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the ledger lock keep a live holder's lock when a third waiter made the lock while it was renamed away?",
+      "options": [
+        "put the renamed-away lock back by an atomic replace and let a holder remove the lock on exit only when it is the file it made",
+        "put it back by a hard link and give the lock an owner token the third waiter checks"
+      ],
+      "recommendation": "put the renamed-away lock back by an atomic replace and let a holder remove the lock on exit only when it is the file it made",
+      "do": {
+        "put the renamed-away lock back by an atomic replace and let a holder remove the lock on exit only when it is the file it made": "BG-s3iuw4x2",
+        "put it back by a hard link and give the lock an owner token the third waiter checks": "BG-s3iuw4x2"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-z3hyk4eh review"
   ],

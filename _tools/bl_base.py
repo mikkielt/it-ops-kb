@@ -591,7 +591,9 @@ def _clear_stale_lock(lock, seen):
     """Remove the ledger lock file LOCK that a waiter judged stale from its stat SEEN, only if it is still that file.
     The file is renamed to a name of this waiter's own (atomic: of two waiters one rename wins, the other finds no lock
     file), and its stat is compared with SEEN: the same file is removed; another one, a fresh lock a live writer made
-    after the waiter looked, is put back by a hard link (which never replaces a lock made meanwhile) and stays."""
+    after the waiter looked, is put back by an atomic replace, so the live writer's lock is again the file at the name
+    even when a third waiter made a lock there while it was renamed away (that waiter's release removes only its own
+    file, see `ledger_lock`)."""
     taken = lock.with_name(f"{lock.name}.{os.getpid()}.{threading.get_ident()}.stale")
     try:
         os.rename(lock, taken)
@@ -600,8 +602,8 @@ def _clear_stale_lock(lock, seen):
     try:
         now = taken.stat()
         if (now.st_ino, now.st_mtime_ns) != (seen.st_ino, seen.st_mtime_ns):
-            with contextlib.suppress(OSError):
-                os.link(taken, lock)
+            os.replace(taken, lock)
+            return
     except OSError:
         pass
     with contextlib.suppress(OSError):
@@ -612,12 +614,18 @@ def _clear_stale_lock(lock, seen):
 def ledger_lock(path):
     """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
     (no fcntl, so the same on every OS) and removed on exit, so concurrent `claim` and dispatch runs read and write the
-    ledger one at a time. Refused when it is still held after twice the stale age."""
+    ledger one at a time. Refused when it is still held after twice the stale age. The holder removes the lock on exit
+    only when the file at the name is the one it made (its inode), so a lock another waiter put there while a stale
+    clearer had the holder's renamed away is never removed by the wrong holder."""
     lock = path.with_name(path.name + ".lock")
     deadline = time.monotonic() + 2 * LEDGER_LOCK_STALE_S
     while True:
         try:
-            os.close(os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            try:
+                mine = os.fstat(fd).st_ino
+            finally:
+                os.close(fd)
             break
         except FileExistsError:
             pass
@@ -637,7 +645,8 @@ def ledger_lock(path):
         yield
     finally:
         with contextlib.suppress(OSError):
-            lock.unlink()
+            if lock.stat().st_ino == mine:
+                lock.unlink()
 
 
 def write_ledger(path, ledger):
