@@ -75,6 +75,25 @@
   "depends_on": [
     "BG-hqgtovpo"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does the bracketed-key form (cfg['password'] = 'v') apply to ASSIGNMENT too, or only to the Authorization header the goal names?",
+      "options": [
+        "both",
+        "header-only"
+      ],
+      "recommendation": "both",
+      "do": {
+        "both": "BG-efbghw7n",
+        "header-only": "BG-efbghw7n"
+      },
+      "class": "secrets",
+      "answer": "both",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-yyjwfjtc review"
   ],

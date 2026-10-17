@@ -29,6 +29,7 @@ TEXT = f"key {TOKEN}, mail {EMAIL}, ip {IP}, file {HOME}, tenant {GUID}, share {
 VALUE = "Fake" + "Pass12345x"
 SHORT = "Fk" + "12ab"
 Q = chr(34)
+BS = chr(92)
 ASSIGNMENTS = ["password=" + VALUE, "passwd: " + VALUE, "pwd=" + SHORT, "secret=" + VALUE,
                "{" + Q + "client_secret" + Q + ": " + Q + VALUE + Q + "}", "DB_PASSWORD=" + VALUE, "api_key=" + VALUE,
                "apikey: " + VALUE, "x-api-key: " + VALUE, "https://api.example.com/v1?api_key=" + VALUE + "&page=2",
@@ -45,6 +46,10 @@ SHAPES = {"bearer": ("Authorization: Bearer " + VALUE, VALUE), "basic": ("Author
           "$word userinfo": ("postgres://fakeuser:$" + VALUE + "@db.example.com/app", VALUE),
           "$word assignment": ("password=$" + VALUE, VALUE),
           "placeholder-prefixed assignments": ("password=%x%y" + VALUE + "\npassword=***" + VALUE + "\npassword=<a>" + VALUE, VALUE),
+          "escaped JSON assignment": ("{" + BS + Q + "password" + BS + Q + ": " + BS + Q + VALUE + BS + Q + "}", VALUE),
+          "escaped JSON header": ("{" + BS + Q + "Authorization" + BS + Q + ": " + BS + Q + "Bearer " + VALUE + BS + Q + "}", VALUE),
+          "subscripted header": ("headers['Authorization'] = 'Bearer " + VALUE + "'", VALUE),
+          "escaped quote in a value": ("password=" + Q + "Fa" + BS + Q + "kePass12345x" + Q, "kePass12345x"),
           "key body": ("before\n" + KEY_BLOCK + "\nafter", KEY_BODY),
           "cut-off key": ("before\n-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\nmore lines", KEY_BODY)}
 ORDINARY = ("Set the Windows LAPS password length to 14 in Intune. See https://learn.microsoft.com/windows/laps and "
