@@ -1,0 +1,26 @@
+{
+  "id": "ST-jtui2erv",
+  "kind": "story",
+  "title": "The rule pack answers the csv header and word limit of factdiff.py anchor --quotes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "rag.py pack --root _self gives good for the csv header (line,source,quote) and the quote word limit of factdiff.py anchor --quotes, from a tested _self question. SP-5bvg4tnl close: the ST-3emh47z5 worker learned both from the tool errors (a rules miss it reported).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "what is the csv header and word limit of factdiff.py anchor --quotes"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/tools.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl close"
+  ]
+}

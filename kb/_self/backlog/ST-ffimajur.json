@@ -1,0 +1,26 @@
+{
+  "id": "ST-ffimajur",
+  "kind": "story",
+  "title": "A sibling item that implements a rule the goal research story found gets those fact lines in its brief",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When the goal research story lands facts that state a rule a sibling item implements (an HTML or format rule the code follows), the sibling brief or its notes name those fact lines, so the code follows the researched rule or a gate records why not; kb/_self/backlog.md states it as a tested _self question. SP-5bvg4tnl close: ST-62irbhyw recorded aside-in-nav, ancestor role=navigation and nav-holding asides as navigation (doc-change-detection.md:190), BG-nr2mv4si implemented its own role list, and the review found the mismatch (BG-3ht6u4pd).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "how does a sibling item that implements a rule the goal research story found get those fact lines"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl close"
+  ]
+}

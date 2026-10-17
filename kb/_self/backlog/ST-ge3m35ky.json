@@ -1,0 +1,27 @@
+{
+  "id": "ST-ge3m35ky",
+  "kind": "story",
+  "title": "A research fact about a kb tool that a sibling item of the same sprint changes names the tool state it was measured on",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "A goal research story fact that describes what a kb tool does today (provider.py read did not print X) is worded against the tool version or date it was measured on, or reworded at the landing of the sibling that changes the tool, and kb/_self/content-rules.md or backlog.md states it as a tested _self question. SP-5bvg4tnl close: doc-change-detection.md:189 says provider.py read did not print the SRE sidebar, and BG-nr2mv4si made it print six minutes later (ST-diks4hle).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "how is a research fact worded that describes a kb tool a sibling item of the same sprint changes"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/content-rules.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl close"
+  ]
+}

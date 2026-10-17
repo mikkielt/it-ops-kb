@@ -1,0 +1,26 @@
+{
+  "id": "ST-46opgi2i",
+  "kind": "story",
+  "title": "A code bug whose checks only read its source is not committed to a sprint without a planted run",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Planning refuses or gates a committed code item whose every check and repro reads source text (inspect.getsource, a grep of the file) and none runs the changed path on a planted input; kb/_self/backlog.md states it as a tested _self question. SP-5bvg4tnl close: BG-euuhpbuw (ql_research noted gate) and BG-v5236vmy (anchor --refetch backoff) were proven only by reading their source lines; their workers ran no planted case.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "is a code bug whose checks only read its source committed to a sprint"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/backlog.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl close"
+  ]
+}

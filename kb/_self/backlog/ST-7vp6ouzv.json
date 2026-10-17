@@ -1,0 +1,27 @@
+{
+  "id": "ST-7vp6ouzv",
+  "kind": "story",
+  "title": "factdiff.py anchor --file keeps a located row's quote when a reworded fact re-keys it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "When factdiff.py anchor --file re-keys a fact whose old anchor row was located with a quote, the new row keeps that quote and is located again when the source still holds it, instead of landing as no-match until a --quotes run; kb/_self/tools.md states it as a tested _self question. SP-5bvg4tnl close: BG-yvja5w5d had to re-anchor the fluent-rust-typescript.md row by hand after ST-ez6r5em7 re-keyed it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys;o=subprocess.run([sys.executable,\"_tools/rag.py\",\"pack\",\"--root\",\"_self\",sys.argv[1]],capture_output=True,text=True).stdout;print(o.splitlines()[:1]);sys.exit(0 if \"coverage: good\" in o else 1)",
+        "does factdiff.py anchor --file keep the quote of a located row when it re-keys a reworded fact"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md",
+    "kb/_self/_retrieval/lookup_eval.csv"
+  ],
+  "links": [
+    "parked: SP-5bvg4tnl close"
+  ]
+}
