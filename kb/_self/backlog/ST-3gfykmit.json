@@ -12,7 +12,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");d=r/\"kb\"/\"_self\"/\"backlog\";d.mkdir(parents=True)\n(d/\"ST-aaaaaaaa.json\").write_text(json.dumps({\"id\":\"ST-aaaaaaaa\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"_tools/x.py\"]}]},indent=2)+\"\\n\")\n(r/\"x.txt\").write_text(\"x\\n\");g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"i\");(r/\"x.txt\").write_text(\"y\\n\")\nenv=dict(os.environ);env.pop(\"KB_BACKLOG_CONFIG\",None)\np=s.run([sys.executable,T,\"--root\",str(r),\"set\",\"ST-aaaaaaaa\",\"--add-notes\",\"reworded\",\"--commit\"],capture_output=True,text=True,env=env)\nprint(\"set --commit: exit\",p.returncode,(p.stdout+p.stderr).strip()[-200:])\nif p.returncode:sys.exit(1)\nfiles=g(\"show\",\"--name-only\",\"--format=\",\"HEAD\").split();msg=g(\"log\",\"-1\",\"--format=%B\")\nok=files==[\"kb/_self/backlog/ST-aaaaaaaa.json\"] and \"KB-Work: ST-aaaaaaaa\" in msg and \"reworded\" in (d/\"ST-aaaaaaaa.json\").read_text()\nprint(\"commit holds\",files,\"KB-Work named:\",\"KB-Work: ST-aaaaaaaa\" in msg);sys.exit(0 if ok else 1)\n"
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");d=r/\"kb\"/\"_self\"/\"backlog\";d.mkdir(parents=True);(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"kb/_self/backlog\"}))\n(d/\"ST-aaaaaaaa.json\").write_text(json.dumps({\"id\":\"ST-aaaaaaaa\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"draft\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"_tools/x.py\"]}]},indent=2)+\"\\n\")\n(r/\"x.txt\").write_text(\"x\\n\");g(\"add\",\"-A\");g(\"commit\",\"-qm\",\"i\");(r/\"x.txt\").write_text(\"y\\n\")\nenv=dict(os.environ);env.pop(\"KB_BACKLOG_CONFIG\",None)\np=s.run([sys.executable,T,\"--root\",str(r),\"set\",\"ST-aaaaaaaa\",\"--add-notes\",\"reworded\",\"--commit\"],capture_output=True,text=True,env=env)\nprint(\"set --commit: exit\",p.returncode,(p.stdout+p.stderr).strip()[-200:])\nif p.returncode:sys.exit(1)\nfiles=g(\"show\",\"--name-only\",\"--format=\",\"HEAD\").split();msg=g(\"log\",\"-1\",\"--format=%B\")\nok=files==[\"kb/_self/backlog/ST-aaaaaaaa.json\"] and \"KB-Work: ST-aaaaaaaa\" in msg and \"reworded\" in (d/\"ST-aaaaaaaa.json\").read_text()\nprint(\"commit holds\",files,\"KB-Work named:\",\"KB-Work: ST-aaaaaaaa\" in msg);sys.exit(0 if ok else 1)\n"
       ]
     }
   ],
@@ -29,6 +29,23 @@
     "AGENTS.md",
     "kb/_self/maintaining.md",
     "kb/_self/tools.md"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The item's check plants a repo with no backlog.json, so backlog.py reads items from the default _backlog and never finds the planted item (exit 2, no item): which fix?",
+      "options": [
+        "plant-backlog-json",
+        "change-default-item-dir"
+      ],
+      "recommendation": "plant-backlog-json",
+      "do": {
+        "plant-backlog-json": "ST-3gfykmit",
+        "change-default-item-dir": "ST-3gfykmit"
+      },
+      "class": "agents-rule"
+    }
   ],
   "links": [
     "parked: SP-rsmmwzr2 close"
