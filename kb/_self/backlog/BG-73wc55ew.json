@@ -2,7 +2,7 @@
   "id": "BG-73wc55ew",
   "kind": "bug",
   "title": "Gate classifier reads a kb article named *-agents.md as AGENTS.md and makes the gate blocking agents-rule",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aoiqmnc6",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,27 @@
     "kb/_self/tools.md"
   ],
   "notes": "Premise run 2026-10-17 on origin/main 7cb5e0cbb: the repro exits 1 (a gate naming kb/public/agents/gitops-for-agents.md on a kb item classes agents-rule). Operator-authority guard: the check plants AGENTS.md, CLAUDE.md and a path ending /AGENTS.md, which must stay agents-rule. Test policy D-6kei5o2z: no new test.",
-  "claimed_by": "orch-r06"
+  "evidence": {
+    "commit": "26ab55d477d21ca9e37da2da115fd1a8c4d9e13e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport bl_authority as a\nit = {'touches': ['kb/public/agents/x.md']}\nc = lambda q: a.derived_class(it, {'id': 'g1', 'question': q, 'options': ['yes', 'no']})\nr = [c('Link it from kb/public/agents/gitops-for-agents.md?'), c('Does AGENTS.md carry the new rule?'),\n     c('Edit CLAUDE.md or ./AGENTS.md?'), c('Should skills/sprint/AGENTS.md gain a line?')]\nprint('kb article named *-agents.md, AGENTS.md, CLAUDE.md, a path to AGENTS.md:', r)\nsys.exit(0 if r[0] == 'design' and r[1:] == ['agents-rule'] * 3 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "960e46bbfddd5568"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import bl_authority as a;c=a.derived_class({'touches':['kb/public/agents/x.md']},{'id':'g1','question':'Link it from kb/public/agents/gitops-for-agents.md?','options':['yes','no']});sys.exit(1 if c=='agents-rule' else 0)"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
