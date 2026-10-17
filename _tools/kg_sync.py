@@ -135,7 +135,7 @@ def gitx(*args, env=None):
 def gitx_net(*args, env=None):
     """gitx for a network call (fetch, push) with the bounded wait of kg_lock.run_git_bounded: past it git's process
     group is ended and the result is (124, the timeout message), which the callers report as a failed fetch or push;
-    nothing is pushed by a run that gave up."""
+    the push to the integration branch reads the remote ref first (landed_after_timeout), as the push may have landed."""
     try:
         p = kg_lock.run_git_bounded(args, KB, f"kbgit.py sync: git {args[0]}", env={**os.environ, **(env or {})})
     except kg_lock.GitNetworkTimeout as e:
@@ -785,6 +785,13 @@ def push_branch(a, r, branch, target):
     return 0
 
 
+def landed_after_timeout(a, target):
+    """True when a push to the integration branch that gave up at the network timeout had landed anyway: a fetch of the
+    branch shows the remote ref holding HEAD. A failed or timed-out fetch reads as not landed."""
+    code, _ = gitx_net("fetch", "--quiet", a.remote, f"+refs/heads/{a.branch}:refs/remotes/{target}")
+    return code == 0 and gitx("merge-base", "--is-ancestor", "HEAD", f"refs/remotes/{target}")[0] == 0
+
+
 def sync_once(a, r, host):
     """One fetch -> rebase -> fix -> gate -> push round. Returns an exit code, or "retry" when the push was rejected."""
     target = f"{a.remote}/{a.branch}"
@@ -884,6 +891,9 @@ def sync_once(a, r, host):
         print(f"lane: code; pushing branch {branch}, {a.branch} does not move")
         return push_branch(a, r, branch, target)
     code, out = gitx_net("push", a.remote, f"HEAD:refs/heads/{a.branch}", env={"KB_GATE_DONE": "1"})  # gated above
+    if code == 124 and landed_after_timeout(a, target):
+        print(f"git push did not finish in time, but {target} holds the local commits:\n" + out.rstrip())
+        code = 0
     if code:
         if REJECTED.search(out):
             print(f"push rejected ({target} moved):\n" + out.rstrip())
