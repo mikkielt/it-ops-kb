@@ -2,7 +2,7 @@
   "id": "BG-j35obxyn",
   "kind": "bug",
   "title": "rag.py eval hides a real pack note when a drifted row's re-judged pack also carries one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,

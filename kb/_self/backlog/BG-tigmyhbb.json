@@ -2,7 +2,7 @@
   "id": "BG-tigmyhbb",
   "kind": "bug",
   "title": "A kb_feedback call is captured as a lookup tool, so the digest counts tool issues under kb_feedback and a feedback-only prompt becomes a lookup entry",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
