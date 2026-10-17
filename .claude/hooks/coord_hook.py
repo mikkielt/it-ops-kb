@@ -79,7 +79,10 @@ def load(sid):
 
 def save(sid, state):
     os.makedirs(STATE, exist_ok=True)
-    with open(state_path(sid), "w", encoding="utf-8", newline="\n") as f:
+    path = state_path(sid)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)  # the lease token: owner-only
+    os.chmod(path, 0o600)  # a file an earlier version made keeps its mode through the open
+    with open(fd, "w", encoding="utf-8", newline="\n") as f:
         json.dump(state, f)
 
 
