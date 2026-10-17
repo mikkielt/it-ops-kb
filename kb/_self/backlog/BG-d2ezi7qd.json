@@ -2,7 +2,7 @@
   "id": "BG-d2ezi7qd",
   "kind": "bug",
   "title": "redact.redact leaves Authorization header credentials, a URL's user:password@ password and a private key block's body in text",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-yyjwfjtc",
   "priority": "P2",
   "rank": 0,
@@ -73,5 +73,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Found by the SP-yyjwfjtc plan probe on origin/main b97cd6ebf: Authorization: Bearer v passes unless v is 20+ characters of high entropy (the TOKEN rule), Basic likewise (a long base64 credential is caught, a short one is not), postgres://user:pass@host keeps the password, and a private key block keeps its body (only the BEGIN line, a kbcommon.SECRETS shape, is replaced). Repro on the base: exit 1, left: bearer, basic, userinfo, key body. Separate from BG-w5d2mvwz (assignment forms) and after it, since both change redact.py and test_redact.py. Check 0 (tests.py -k redact_replaces_every_class) passes before the work on purpose: it pins idempotence and the ordinary sample under the wider rules; the repro and check 1 fail until the work."
+  "notes": "Found by the SP-yyjwfjtc plan probe on origin/main b97cd6ebf: Authorization: Bearer v passes unless v is 20+ characters of high entropy (the TOKEN rule), Basic likewise (a long base64 credential is caught, a short one is not), postgres://user:pass@host keeps the password, and a private key block keeps its body (only the BEGIN line, a kbcommon.SECRETS shape, is replaced). Repro on the base: exit 1, left: bearer, basic, userinfo, key body. Separate from BG-w5d2mvwz (assignment forms) and after it, since both change redact.py and test_redact.py. Check 0 (tests.py -k redact_replaces_every_class) passes before the work on purpose: it pins idempotence and the ordinary sample under the wider rules; the repro and check 1 fail until the work.",
+  "claimed_by": "orch-r09"
 }
