@@ -44,6 +44,23 @@
       "class": "agents-rule",
       "answer": "when less than half of the lease is left, so most hook events make no coord call",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a tool event know its lease has less than half left, with most events making no coord call?",
+      "options": [
+        "the state file keeps the expiry the last renew from a tool event returned; a SessionStart keeps none, so the first tool event after a start renews once and reads the expiry from the store",
+        "the state file keeps the expiry the claim or renew at SessionStart returned"
+      ],
+      "recommendation": "the state file keeps the expiry the last renew from a tool event returned; a SessionStart keeps none, so the first tool event after a start renews once and reads the expiry from the store",
+      "do": {
+        "the state file keeps the expiry the last renew from a tool event returned; a SessionStart keeps none, so the first tool event after a start renews once and reads the expiry from the store": "BG-jy6yxnq4",
+        "the state file keeps the expiry the claim or renew at SessionStart returned": "BG-jy6yxnq4"
+      },
+      "class": "agents-rule",
+      "answer": "the state file keeps the expiry the last renew from a tool event returned; a SessionStart keeps none, so the first tool event after a start renews once and reads the expiry from the store",
+      "by": "operator"
     }
   ],
   "links": [
