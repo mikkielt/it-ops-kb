@@ -43,7 +43,9 @@
         "a fixed list of English interrogatives and auxiliaries (what, which, who, how, does, is, can, should, ...) in bl_land.QUESTION_WORDS, kept only when the number leads the piece": "BG-lgzf4rw7",
         "a narrower list of interrogatives only (what, which, who, whom, whose, when, where, why, how)": "BG-lgzf4rw7"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a fixed list of English interrogatives and auxiliaries (what, which, who, how, does, is, can, should, ...) in bl_land.QUESTION_WORDS, kept only when the number leads the piece",
+      "by": "operator"
     }
   ],
   "links": [
