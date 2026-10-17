@@ -566,7 +566,7 @@ def fetch_all(ids, srcs, max_age=7, refetch=False, log=True):
 
 # rows a fetch that failed or returned no text left: `anchor --file` tries their facts again (no-match rows stay as they are)
 RETRY_STATUS = ("unlocated:fetch-error", "unlocated:not-text", "unlocated:gone")
-GONE_BACKOFF_DAYS = 7  # a gone row (404/410) is fetched again by `anchor --file` only once its `verified_utc` is this old
+GONE_BACKOFF_DAYS = 7  # a gone row (404/410) is fetched again by `anchor --file` only once its `verified_utc` is this old (at once under --refetch)
 
 
 def backing_off(row, when):
@@ -797,7 +797,7 @@ def cmd_anchor(a):
     before = dict(anchors)
     # --file alone: only the facts of those files that hold no anchor row (a new or reworded fact: its key is new), whose
     # row a failed or non-text fetch left (RETRY_STATUS: fetched again past the cache, a gone row once GONE_BACKOFF_DAYS
-    # old) or that the quote CSV names; no other row of the ledger and no `_fetch_state.csv` row is written, and a retry
+    # old, or at once under --refetch) or that the quote CSV names; no other row of the ledger and no `_fetch_state.csv` row is written, and a retry
     # that fails the same way leaves its row as it was
     when = today()
     only = {os.path.normpath(f).replace(os.sep, "/") for f in a.file} if a.file and not (a.topic or a.dir or a.source) else None
@@ -805,7 +805,7 @@ def cmd_anchor(a):
     if only is not None:
         def wanted(f, sid):
             row = anchors.get((f[0], f[1], sid))
-            again = row is not None and row["status"] in RETRY_STATUS and not backing_off(row, when)
+            again = row is not None and row["status"] in RETRY_STATUS and (a.refetch or not backing_off(row, when))
             if again:
                 retry.add(sid)
             return row is None or again or (f[1] == rel and quote_for(quotes, f[2], sid) is not None)
