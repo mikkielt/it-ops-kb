@@ -2,7 +2,7 @@
   "id": "ST-rdpqhmn4",
   "kind": "story",
   "title": "A feedback row joins the latest lookup that printed its pack handle before the report, not the earliest",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "priority": "P2",
   "rank": 0,
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-waxgh3kg review"
   ],
-  "notes": "Plan 2026-10-17: the planted check exits 1 on 7cb5e0cbb (reports s1: 1, s2: 0). The goal's test clause is gone (test policy D-6kei5o2z), test_redact.py left the touches; querylog.md's exact-join wording is the stale-doc check's to keep right."
+  "notes": "Plan 2026-10-17: the planted check exits 1 on 7cb5e0cbb (reports s1: 1, s2: 0). The goal's test clause is gone (test policy D-6kei5o2z), test_redact.py left the touches; querylog.md's exact-join wording is the stale-doc check's to keep right.",
+  "claimed_by": "orch-r07"
 }
