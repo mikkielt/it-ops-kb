@@ -81,7 +81,7 @@ SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in k
 ASSIGNMENT = re.compile(
     r"""(?i)(?<![\w.-])([\w.-]*?(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)["']?[ \t]*[:=](?![=>])[ \t]*)"""
     r"""("[^"\n]*"|'[^'\n]*'|["']?[^\s&;"']+)""")
-ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|\$\w+|%\w+%|\*{3}")  # a value that is not a secret
+ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
 # A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
 # (the BEGIN line alone is a kbcommon.SECRETS shape).
 KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)

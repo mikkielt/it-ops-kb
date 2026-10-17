@@ -34,13 +34,16 @@ ASSIGNMENTS = ["password=" + VALUE, "passwd: " + VALUE, "pwd=" + SHORT, "secret=
                "apikey: " + VALUE, "x-api-key: " + VALUE, "https://api.example.com/v1?api_key=" + VALUE + "&page=2",
                "aws_secret_access_key=" + VALUE + "/x+y", "access_key=" + VALUE,
                "Server=db.example.com;Password=" + VALUE + ";"]
-PLACEHOLDER_VALUES = ["password=<secret>", "password=${DB_PASS}", "password=$DB_PASS", "password=%DB_PASS%", "password=***",
+PLACEHOLDER_VALUES = ["password=<secret>", "password=${DB_PASS}", "password=%DB_PASS%", "password=***",
                       "Authorization: Bearer <token>", "postgres://fakeuser:${DB_PASS}@db.example.com/app"]
 BASIC = "ZmFr" + "ZTpmYWtl"
 KEY_BODY = "MIIfake" + "FAKEfake"
 KEY_BLOCK = "-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\n-----END " + "PRIVATE KEY-----"
 SHAPES = {"bearer": ("Authorization: Bearer " + VALUE, VALUE), "basic": ("Authorization: Basic " + BASIC, BASIC),
           "userinfo": ("postgres://fakeuser:" + VALUE + "@db.example.com:5432/app", VALUE),
+          "$word bearer": ("Authorization: Bearer $" + VALUE, VALUE),
+          "$word userinfo": ("postgres://fakeuser:$" + VALUE + "@db.example.com/app", VALUE),
+          "$word assignment": ("password=$" + VALUE, VALUE),
           "key body": ("before\n" + KEY_BLOCK + "\nafter", KEY_BODY),
           "cut-off key": ("before\n-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\nmore lines", KEY_BODY)}
 ORDINARY = ("Set the Windows LAPS password length to 14 in Intune. See https://learn.microsoft.com/windows/laps and "
