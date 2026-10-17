@@ -1,0 +1,20 @@
+{
+  "id": "SP-5xnbspyp",
+  "kind": "sprint",
+  "title": "redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
+  "status": "planned",
+  "goal": "redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
