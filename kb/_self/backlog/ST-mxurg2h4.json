@@ -2,7 +2,7 @@
   "id": "ST-mxurg2h4",
   "kind": "story",
   "title": "Research sprint goal: Landings read an item's net work and coord keeps live sessions visible",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-17: every goal clause is about the kb's own tools (done's ledger check, set, goal_questions and precheck, land, the coord hook, the kb MCP coord tools), read against their own docs in kb/_self; no outside question. No outside facts: the sprint fixes this kb's own tools to their own documented rules."
+  "notes": "Plan 2026-10-17: every goal clause is about the kb's own tools (done's ledger check, set, goal_questions and precheck, land, the coord hook, the kb MCP coord tools), read against their own docs in kb/_self; no outside question. No outside facts: the sprint fixes this kb's own tools to their own documented rules.",
+  "claimed_by": "orch-r11"
 }
