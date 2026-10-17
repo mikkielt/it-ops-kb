@@ -34,7 +34,9 @@
         "Read the item's own file again under the lock and refuse when it is doing for another claimer": "BG-4jtidln5",
         "Compare the ledger record of the item with this session and refuse on a mismatch": "BG-4jtidln5"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Read the item's own file again under the lock and refuse when it is doing for another claimer",
+      "by": "operator"
     }
   ],
   "claimed_by": "orch-r04"
