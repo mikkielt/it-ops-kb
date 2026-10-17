@@ -979,3 +979,4 @@ e196c0820480,How often is the statusLine script executed?
 85fa437fc791,status line prompt_cache warm hit_ratio misses expires_at
 85fa437fc791,What prompt cache statistics does the status line input hold?
 85fa437fc791,Can the status line show whether the prompt cache is still warm?
+0b94b2374f64,"What does the Claude Code status line command receive as input, such as cost, context window use and session id?"
