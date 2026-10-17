@@ -82,6 +82,13 @@ ASSIGNMENT = re.compile(
     r"""(?i)(?<![\w.-])([\w.-]*?(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)["']?[ \t]*[:=](?![=>])[ \t]*)"""
     r"""("[^"\n]*"|'[^'\n]*'|["']?[^\s&;"']+)""")
 ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|\$\w+|%\w+%|\*{3}")  # a value that is not a secret
+# A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
+# (the BEGIN line alone is a kbcommon.SECRETS shape).
+KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
+# The credential of an Authorization header, Bearer or Basic, whatever its length or entropy; the scheme stays.
+AUTH_HEADER = re.compile(r"""(?i)(\bAuthorization["']?[ \t]*[:=][ \t]*["']?(?:Bearer|Basic)[ \t]+)([^\s"',;]+)""")
+# The password of a URL's user:password@ part; the user stays.
+URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
 
 
 def entropy(s):
@@ -149,6 +156,14 @@ def _assigned(m):
     if not inner or ASSIGNED_PLACEHOLDER.match(inner):
         return m.group(0)
     return key + q + PLACEHOLDERS["secret"] + tail
+
+
+def _credential(m):
+    """The credential group of an Authorization header or a URL's user:password@ becomes the placeholder; one that is
+    already a placeholder stays."""
+    if ASSIGNED_PLACEHOLDER.fullmatch(m.group(2)):
+        return m.group(0)
+    return m.group(1) + PLACEHOLDERS["secret"]
 
 
 def _segment(seg, k):
@@ -232,9 +247,12 @@ def redact(text, k=None):
     """The rules pass: every identifier shape in `text` becomes its kb placeholder; what the public root contains, the
     well-known and documentation values and the placeholders stay. Idempotent."""
     k = k or known()
+    text = KEY_BLOCK.sub(PLACEHOLDERS["secret"], text)
     for rx in SECRETS:
         text = rx.sub(_secret, text)
     text = ASSIGNMENT.sub(_assigned, text)
+    text = AUTH_HEADER.sub(_credential, text)
+    text = URL_USERINFO.sub(_credential, text)
     text = UNC.sub(lambda m: PLACEHOLDERS["unc"] + _path(m.group(2), k, False), text)
     text = DRIVE.sub(lambda m: m.group(0)[:2] + _path(m.group(1), k, True), text)
     text = HOME.sub(lambda m: m.group(0)[:m.start(1) - m.start(0)] + (
