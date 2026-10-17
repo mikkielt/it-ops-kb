@@ -1450,7 +1450,7 @@ def iso_date(value):
 
 
 def _page_head(text, ctype):
-    """(title, site, meta) of a page text: an HTML page's og:title (or <title>) and og:site_name; a Markdown file's
+    """(title, site, meta) of a page text: an HTML page's og:title (or <title>) and og:site_name (else application-name); a Markdown file's
     front matter title, else its first `# ` heading."""
     if "html" in (ctype or "") or text.lstrip()[:15].lower().startswith(("<!doctype html", "<html")):
         head = _Head()
@@ -1463,7 +1463,7 @@ def _page_head(text, ctype):
             m = re.search(rf'"{re.escape(k)}"\s*:\s*"([^"]+)"', text)
             if m:
                 meta.setdefault(k.lower(), m.group(1))
-        return (meta.get("og:title") or meta.get("citation_title") or " ".join(head.title.split())), meta.get("og:site_name", ""), meta
+        return (meta.get("og:title") or meta.get("citation_title") or " ".join(head.title.split())), meta.get("og:site_name") or meta.get("application-name", ""), meta
     fm = front_matter(text)
     heading = re.search(r"^# +(.+?)\s*$", FRONT.sub("", text, count=1), re.M)
     return fm.get("title") or (heading.group(1) if heading else ""), "", {k.lower(): v for k, v in fm.items()}
@@ -1473,9 +1473,9 @@ def read_page(url, rows=None):
     """What a `kbid.py add` row takes from the fetched page and the host's registry row:
     {title, organisation, organisation_from, version, evidence, note}. `title`: the page's og:title, else its
     citation_title (an arXiv abstract page), else its <title> (a Markdown file's front matter title or first heading), with a ` | SITE` suffix cut when SITE is the page's
-    og:site_name or the registry's organisation. `organisation`: the organisation cell of the row serving the url
-    (`organisation_from` `registry`), else the page's og:site_name, else the suffix of its <title> (`page`); "" when
-    neither names one. `version`: `<key> <YYYY-MM-DD>` of the first of PAGE_DATE_KEYS the page carries, "" when it has none.
+    og:site_name or the registry's organisation, and otherwise kept whole. `organisation`: the organisation cell of the
+    row serving the url (`organisation_from` `registry`), else the page's og:site_name or application-name (`page`), never a part of the
+    title or heading; "" when neither names one. `version`: `<key> <YYYY-MM-DD>` of the first of PAGE_DATE_KEYS the page carries, "" when it has none.
     A field not found is "" and `note` says why the page was not read (no answer)."""
     row = for_url(url, rows) or {}
     out = {"title": "", "organisation": (row.get("organisation") or "").strip(), "organisation_from": "", "version": "",
@@ -1492,10 +1492,6 @@ def read_page(url, rows=None):
     out["evidence"] = page
     text = r["body"].decode("utf-8", "replace")
     title, site, meta = _page_head(text, r["headers"].get("content-type", ""))
-    if not out["organisation"] and not site:
-        parts = TITLE_SEP.split(title)
-        if len(parts) > 1 and parts[-1].strip():
-            site = parts[-1].strip()
     known = [x.lower() for x in (out["organisation"], site) if x]
     parts = TITLE_SEP.split(title)
     if len(parts) > 1 and parts[-1].strip().lower() in known:
