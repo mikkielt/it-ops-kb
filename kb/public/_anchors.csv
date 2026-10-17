@@ -1689,6 +1689,7 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 1d4468a67537,agents/doc-change-detection.md,S-2biiolic,located,Adding wiki pages > Adding or editing wiki pages locally > Cloning wikis to your computer,branch;default;exist;live;made;push;clon;chang,9d1620de15471167,"Once you have cloned the wiki, you can add new files, edit existing ones, and commit your changes. You and your collaborators can create branches",2026-10-12
 2086710e4899,agents/doc-change-detection.md,S-lldnrkhv,unlocated:no-match,,,,,2026-10-12
 2099abdbac9a,agents/doc-change-detection.md,S-ecrpwvoh,located,Contributing instructions | Microsoft Learn > Editing an existing article,clarification;fixe;grammar;major;ms.dat;date;spell;format,53b9d929e8be75c8,"ms.date: Update the date if you're adding major content to the page, but not for fixes like clarification, formatting, grammar, or spelling.",2026-10-12
+2398aff1681c,agents/doc-change-detection.md,S-bykh7vnm,unlocated:no-match,,,,,2026-10-17
 23f538eb3f3c,agents/doc-change-detection.md,S-s6xjctzu,unlocated:no-match,,,,,2026-10-12
 246cc8009b50,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 248d821e6e75,agents/doc-change-detection.md,S-qvogwadn,unlocated:no-match,,,,,2026-10-12
@@ -1868,7 +1869,6 @@ f939a872e323,agents/doc-change-detection.md,S-wcrrjfwh,unlocated:no-match,,,,,20
 fa2cb870740e,agents/doc-change-detection.md,S2196,unlocated:gone,,,,,2026-10-13
 fa2cb870740e,agents/doc-change-detection.md,S-2r7j5aw2,unlocated:no-match,,,,,2026-10-12
 fb7acfd5cce7,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > How Google processes JavaScript,queu;status;http;code;render;googl;page,f62a56c761d1af52,Googlebot queues all pages with a 200 HTTP status code for rendering,2026-10-13
-fcf0fb7dec37,agents/doc-change-detection.md,S-bykh7vnm,unlocated:no-match,,,,,2026-10-17
 fe90da5dc6b5,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 ffc6fc39c93d,agents/doc-change-detection.md,S-g3ciqhyh,located,Avoid polling > Use conditional requests,authoriz;correctly;against;count;primary;authorization;conditional;endpoint,bc2c6381efa0fd24,Making a conditional request does not count against your primary rate limit if a 304 response is returned and the request was made while correctly,2026-10-12
 1674bc8cf9a9,agents/doc-lookup-sources.csv,S2185,unlocated:no-match,,,,,2026-10-13
