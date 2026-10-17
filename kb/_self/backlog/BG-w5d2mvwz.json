@@ -2,7 +2,7 @@
   "id": "BG-w5d2mvwz",
   "kind": "bug",
   "title": "redact.redact leaves password=, secret= and api_key= assignment values in text, so they reach the spool comment and the distill call",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yyjwfjtc",
   "priority": "P2",
   "rank": 0,
@@ -102,5 +102,46 @@
     "parked: SP-ficl7pxl review"
   ],
   "notes": "Found by the SP-ficl7pxl review (ST-h3y6iym4 leak scope; the exposure predates the sprint). Widened by the SP-yyjwfjtc plan probe on origin/main b97cd6ebf: every unquoted, colon, JSON, prefixed-env and URL-query form of password/passwd/pwd/secret/client_secret/api_key/apikey/x-api-key passes redact.redact unchanged; aws_secret_access_key=v is cut at its first / so the part before it stays; only the quoted password='v' of 8+ characters (kbcommon.SECRETS) is caught. Repro run on the base: exit 1, left: 13 of 13. kbcommon.SECRETS (the tracked-file scan) stays as it is: see gate scope. Checks 0 (tests.py -k redact_replaces_every_class) and 1 (querylog.py check) pass before the work on purpose: they pin behaviour that must stay (idempotence, the ordinary sample, the committed store's gates under the wider rules); the repro and check 2 fail until the work.",
-  "claimed_by": "orch-r09"
+  "evidence": {
+    "commit": "d178dd7b71493de8eef05664caac2854b4d4d83d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "redact_replaces_every_class"
+        ],
+        "exit": 0,
+        "sha256": "da260518bf544af9"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/querylog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "ca69e22a961e6b9a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/test_redact.py',encoding='utf-8').read();need=['passwd','client_secret','api_key','x-api-key','secret_access_key','Password=','DB_PASSWORD'];miss=[n for n in need if n not in t];print('missing in test_redact.py:',miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "6837419a8b1826bf"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import redact as R;v='Fake'+'Pass12345x';w='Fk'+'12ab';q=chr(34);forms=['password='+v,'passwd: '+v,'pwd='+w,'secret='+v,'{'+q+'client_secret'+q+': '+q+v+q+'}','DB_PASSWORD='+v,'api_key='+v,'apikey: '+v,'x-api-key: '+v,'https://api.example.com/v1?api_key='+v+'&page=2','aws_secret_access_key='+v+'/x+y','access_key='+v,'Server=db.example.com;Password='+v+';'];o=R.redact(chr(10).join(forms));left=[f for f,l in zip(forms,o.split(chr(10))) if v in l or w in l];print('left:',len(left),'of',len(forms));sys.exit(1 if left else 0)"
+        ],
+        "exit": 0,
+        "sha256": "a73abd3b34196583"
+      }
+    ]
+  }
 }
