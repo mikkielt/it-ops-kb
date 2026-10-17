@@ -87,6 +87,7 @@ import csv
 import http.client
 import http.server
 import json
+import math
 import os
 import re
 import secrets
@@ -521,8 +522,15 @@ def dedup(args, now):
     return body
 
 
-def positive(text):
+def finite(text):
     value = float(text)
+    if not math.isfinite(value):
+        raise argparse.ArgumentTypeError("must be a finite number")
+    return value
+
+
+def positive(text):
+    value = finite(text)
     if value <= 0:
         raise argparse.ArgumentTypeError("must be above 0")
     return value
@@ -536,7 +544,7 @@ def not_negative(text):
 
 
 def seconds(text):
-    value = float(text)
+    value = finite(text)
     if value < 0:
         raise argparse.ArgumentTypeError("must be 0 or more")
     return value
