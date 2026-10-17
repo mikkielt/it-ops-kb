@@ -37,7 +37,7 @@
       },
       "class": "design",
       "answer": "extend agents/doc-change-detection.md",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-17: rag.py pack ran four questions; the publisher metadata question is not in the kb (og, site_name, application-name missing), so it is the research. The aside-in-navigation (public/agents/doc-change-detection.md), git merge-file hunks (public/gitlab/git-test-repositories.md) and agent_needs_input (public/claude/hooks.md) questions lead with their articles; the items that fix those facts read their own sources. Knowledge by item: BG-wlpbhug7 reads the publisher metadata facts.",

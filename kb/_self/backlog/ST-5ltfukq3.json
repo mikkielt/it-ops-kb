@@ -1,0 +1,25 @@
+{
+  "id": "ST-5ltfukq3",
+  "kind": "story",
+  "title": "The lookup eval row about a wrong-root gap asks how it is closed, not whether it is recorded as a rules finding",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/_retrieval/lookup_eval.csv's row about a gap the gap step filed on the wrong root asks the question content-rules.md now answers (the querylog.py close F-ID --claim step and the EV- row), not the old premise 'recorded as a rules finding', and the _self pack answers it from content-rules.md. Found by the SP-3g3egfll review (S3, BG-sddebrpa \"content-rules.md:65 says a wrong-root gap is recorded as a rules finding\"): no check read its clause 1.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys\nrs=[r for r in csv.DictReader(open('kb/_self/_retrieval/lookup_eval.csv',encoding='utf-8')) if 'wrong root' in ' '.join(r.values()).lower() or 'wrong-root' in ' '.join(r.values()).lower()]\nbad=[r for r in rs if 'rules finding' in ' '.join(r.values()).lower()];ok=[r for r in rs if '--claim' in ' '.join(r.values())]\nprint(len(rs),'rows',len(bad),'with the old premise',len(ok),'naming --claim');sys.exit(0 if rs and not bad and ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/_retrieval/lookup_eval.csv",
+    "kb/_self/content-rules.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll review"
+  ]
+}

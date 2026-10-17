@@ -1,0 +1,26 @@
+{
+  "id": "BG-7po2pir4",
+  "kind": "bug",
+  "title": "provider.read_page takes an application-name meta as any page's organisation, which the kb says names a web application only",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "provider.read_page reads the HTML application-name meta as the organisation only as the kb's fact at kb/public/agents/doc-change-detection.md (the site name section) allows (a page that is a web application), or the fact and tools.md say why the tool reads it for every page; either way a check plants a page with application-name alone and asserts the result, since no check of BG-wlpbhug7 covers that case. Found by the SP-3g3egfll review (S3 and S4, BG-wlpbhug7 \"provider.read_page takes a title's or heading's suffix as the publisher\"): its goal named application-name, the research story's fact says it is no publisher. A choice for the operator: a gate before work.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import provider as P\nP.request=lambda *a,**k:{'status':200,'error':'','body':b'<html><head><title>Install - Contoso</title><meta name=\"application-name\" content=\"Contoso\"></head><body><p>x</p></body></html>','headers':{'content-type':'text/html'}}\nr=P.read_page('https://example.com/x',P.providers(None));print(r);sys.exit(1 if r.get('organisation')=='Contoso' else 0)"
+    ]
+  },
+  "repro_reason": "the repro asserts the kb fact's reading (no organisation from application-name on a plain page); a gate may choose to keep it and reword the fact instead",
+  "touches": [
+    "_tools/provider.py",
+    "kb/_self/tools.md",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "BG-hxp3f73q",
+  "kind": "bug",
+  "title": "A revalidation window whose passage is in neither the previous nor the current text still fails section_unchanged on an unrelated added H2",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "factdiff.window_sections, for an anchor whose passage is in neither the previous nor the current text, compares the window's own section and not the parent heading's section that holds every sibling heading line, so an unrelated H2 added between the previous and the current text no longer fails section_unchanged, while an edit of the window's own section or the H1 intro still fails. Found by the SP-3g3egfll review (S3, BG-j5lfhsyf \"A revalidation window that starts at an H2 line still fails section_unchanged on an added H2\"): its fix covers a passage found in the current text, which resolve already returns as verbatim before window_sections runs.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import factdiff as F\nb='# Title\\n\\nIntro.\\n\\n## Alpha\\n\\nAlpha body NEW.\\n\\n## Beta\\n\\nBeta body.\\n';o=b.replace('NEW','OLD')\nd=F.Doc(o);a={'heading':d.units[2][0],'sha':F.sha(d.window(2,2))}\nv=b.replace('## Beta','## Gamma\\n\\nG.\\n\\n## Beta');r=F.section_unchanged(F.window_sections(a,F.Doc(v),F.Doc(b)),F.sections(b),F.sections(v))\ni=b.replace('Intro.','Intro, edited.');s=F.section_unchanged(F.window_sections(a,F.Doc(i),F.Doc(b)),F.sections(b),F.sections(i))\nprint('unrelated H2 passes:',r,'intro edit passes:',s);sys.exit(0 if r and not s else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/factdiff.py",
+    "kb/_self/tools.md",
+    "kb/_self/content-rules.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll review"
+  ],
+  "notes": "BG-j5lfhsyf gate g1 was confirmed at the review (its code is correct for a passage in the current text); the reviewer proposed option 2 (drop the parent section when the window may start at a heading line), which the worker rejected because an intro edit would pass: the repro asks for both."
+}

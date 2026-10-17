@@ -1,0 +1,29 @@
+{
+  "id": "ST-gympyz6m",
+  "kind": "story",
+  "title": "The kb's git merge-file adjacent-hunks fact and the application-name bookmark fact are anchored or reworded to their sources",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/gitlab/git-test-repositories.md's reworded merge-file fact (anchor 0ac9a21aac37, S-oyhmktnd, now unlocated:no-match) and kb/public/agents/doc-change-detection.md's application-name fact ('the standard's example use is labelling a bookmark', S-inrmedim) are each read against their pinned source: anchored with a quote the source holds, or reworded to what it says. Found by the SP-3g3egfll review (S4, ST-nfrimn67 and ST-oqpd34ep): the reviewer could not confirm either offline.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys\nrows={r[0]:r for r in csv.reader(open('kb/public/_anchors.csv',encoding='utf-8'))}\na=rows.get('0ac9a21aac37');t=open('kb/public/agents/doc-change-detection.md',encoding='utf-8').read()\nbm='labelling a bookmark' in t;print('merge-file anchor',a and a[3],'bookmark wording kept',bm)\nsys.exit(0 if (not a or a[3]=='located') and not bm else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/gitlab/git-test-repositories.md",
+    "kb/public/agents/doc-change-detection.md",
+    "kb/public/_anchors.csv",
+    "kb/public/_sources.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-3g3egfll review"
+  ],
+  "notes": "Check: the merge-file anchor row is located (or gone with a reworded fact) and the bookmark wording is gone; if the HTML standard does name a bookmark use, reword the check to read the fact's located anchor instead before claiming."
+}

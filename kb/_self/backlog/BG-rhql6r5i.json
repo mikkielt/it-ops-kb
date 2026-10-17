@@ -1,0 +1,24 @@
+{
+  "id": "BG-rhql6r5i",
+  "kind": "bug",
+  "title": "fetch.py's reducer drops every later sidebar aside after a role=navigation element that has no end tag",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "fetch._PageText ends a role=navigation element's reach where its element ends, an element whose end tag HTML lets the parser leave out (p, li) included, so a sidebar aside after `<p role=navigation>x` is kept. Found by the SP-3g3egfll review (S4, BG-3ht6u4pd \"fetch.py keeps an aside under an ancestor with role=navigation\", gate g1 confirmed).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import fetch\np=fetch._PageText();p.feed('<main><p role=\"navigation\">x<p>t</p><aside data-type=\"sidebar\">KEEP</aside></main>');t=p.text()\nprint(repr(t[:200]));sys.exit(0 if 'KEEP' in t else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/fetch.py",
+    "kb/_self/web-sources.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll review"
+  ]
+}

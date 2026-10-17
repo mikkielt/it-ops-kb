@@ -1,0 +1,24 @@
+{
+  "id": "BG-d3b2wx43",
+  "kind": "bug",
+  "title": "kb!: a negation reaches across 'and' or 'but', so 'not correct and wrong PATH:LINE' records no issue",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "ql_capture.read_user_report stops a negation's reach at a clause word (and, but, or) as at a comma, so 'it is not correct and wrong PATH:LINE' records outcome misled with the line's issue wrong, and 'not only wrong but stale: PATH:LINE' keeps both words. Found by the SP-3g3egfll review (S3, BG-uo4sz2ed \"kb!: reads a negated word as the issue\", gate g1 confirmed).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import ql_capture as C\nr=C.read_user_report('it is not correct and wrong kb/public/a/b.md:3',lambda x:x) or {}\nn=C.read_user_report('nothing wrong with kb/public/a/b.md:3, it is right',lambda x:x) or {}\nprint(r,n);ok=r.get('outcome')=='misled' and any(l.get('issue')=='wrong' for l in r.get('lines') or []) and n.get('outcome')!='misled'\nsys.exit(0 if ok else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll review"
+  ]
+}

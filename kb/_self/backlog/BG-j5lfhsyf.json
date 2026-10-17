@@ -55,7 +55,7 @@
       },
       "class": "design",
       "answer": "Locate the anchor's hash in the current text and treat that window as known",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
