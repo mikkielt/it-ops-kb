@@ -1,0 +1,25 @@
+{
+  "id": "BG-boyagwh4",
+  "kind": "bug",
+  "title": "A kb!: comment's source_url and kb_feedback's source_url and claim reach the spool without redact.redact",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "ql_capture.read_user_report and the kb_mcp kb_feedback path pass the source_url they cut from the comment, and kb_feedback's claim, through redact.redact (or drop the url's query) before the spool row is written. SP-yyjwfjtc review gap 4: kb!: wrong, see https://learn.example.com/p?api_key=<v> stores the value in source_url; the committed store is safe (distill's bare_url drops the query). What the spool records is an operator matter (kb/_self/querylog.md, Spool): the fix gates the field change with the operator before any code.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import ql_capture as Q;v=\"hunter\"+\"2xFake\";o=str(Q.read_user_report(\"wrong, see https://learn.example.com/p?api_key=\"+v));print(o);sys.exit(1 if v in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/ql_capture.py",
+    "_tools/kb_mcp.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

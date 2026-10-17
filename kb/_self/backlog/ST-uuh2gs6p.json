@@ -1,0 +1,24 @@
+{
+  "id": "ST-uuh2gs6p",
+  "kind": "story",
+  "title": "Plan step 6 names every kind redact handles for a planted redact-path check, not only the kbcommon.SECRETS shapes",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint plan step 6 sentence on items that send new text through redact asks one fake secret of each kind redact handles: the kbcommon.SECRETS shapes, an Authorization Bearer or Basic credential, a URL user:password@ password, a private key block body and a long high-entropy token, and one key=value assignment. SP-yyjwfjtc review gap 6: the sentence ST-cif2s7rc added defines each kind as the SECRETS shapes only.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();s=t[t.find(\"6. Read the goal clauses\"):t.find(\"## start SP\")];ok=all(w in s for w in (\"Bearer\",\"user:password@\",\"private key\"));print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-qwrhatjh",
+  "kind": "story",
+  "title": "security/secret-shapes-in-text names the EC, DSA and PGP private key labels and the Purview value first-character rule",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/public/security/secret-shapes-in-text.md states the EC, DSA and PGP PRIVATE KEY BLOCK labels that kbcommon.SECRETS and redact cover (from an official source, or as a gap), the SQL Server connection string entity's first-character rule for the value (S-k57sryj7), and the title of source row S-wct3uoax names the sections the article cites it for. SP-yyjwfjtc review gap 8.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"kb/public/security/secret-shapes-in-text.md\",encoding=\"utf-8\").read();ok=\"EC PRIVATE KEY\" in t;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/security/secret-shapes-in-text.md",
+    "kb/public/_sources.csv",
+    "kb/public/_anchors.csv",
+    "kb/public/_retrieval/doc2query/expansions.csv"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

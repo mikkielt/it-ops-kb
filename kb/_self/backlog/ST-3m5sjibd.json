@@ -1,0 +1,25 @@
+{
+  "id": "ST-3m5sjibd",
+  "kind": "story",
+  "title": "redact keeps the words of an ordinary kb question that uses a secret key name, an Authorization scheme or a key BEGIN line in prose",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "redact keeps 'LAPS password: where stored', 'use Authorization: Bearer in Graph' and a question that quotes a private key BEGIN line ('What does <the BEGIN line> mean in a PFX export?', the line assembled at run time) whole while still replacing every value the goals of BG-w5d2mvwz and BG-d2ezi7qd list, or a gate records the operator's choice to keep the over-redaction. SP-yyjwfjtc review gap 5: the any-text-assignment answer and the cut-off key rule take prose words (the cut-off rule takes the rest of the question).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,\"_tools\");import redact as R;o=R.redact(\"LAPS password: where stored\");print(o);sys.exit(0 if \"where\" in o else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "BG-h5l6y43p",
+  "kind": "bug",
+  "title": "redact keeps a URL password or a Bearer credential that is $ and word characters, taking it for a $NAME placeholder",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "redact replaces a URL user:password@ password and an Authorization credential that is $ followed by word characters (a real password such as $Tr0ub4dor), or a gate records the operator's choice between that and keeping $NAME environment references; SP-yyjwfjtc review gap 2: _credential accepts \\$\\w+ as a placeholder by fullmatch.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"$Fake\"+\"Pass12345x\";o=R.redact(\"https://user:\"+v+\"@db.example.com\");print(o);sys.exit(1 if v in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

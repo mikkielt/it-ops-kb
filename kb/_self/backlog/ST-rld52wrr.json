@@ -1,0 +1,26 @@
+{
+  "id": "ST-rld52wrr",
+  "kind": "story",
+  "title": "The test id baseline names the renamed planted-leak test of test_leaks.py",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "_tools/test_ids_baseline.txt lists the test ids of today's suite, so perfcheck.py ids --against it exits 0. SP-yyjwfjtc review gap 7: ST-zauxo6rs renamed the planted-leak test (suffix _and_leak_screens_cover_secrets) and the baseline was outside its touches; nothing that gates reads the file.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/perfcheck.py",
+        "ids",
+        "--against",
+        "_tools/test_ids_baseline.txt"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/test_ids_baseline.txt"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

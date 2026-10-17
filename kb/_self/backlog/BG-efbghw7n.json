@@ -1,0 +1,24 @@
+{
+  "id": "BG-efbghw7n",
+  "kind": "bug",
+  "title": "redact misses backslash-escaped JSON assignments and headers, a subscripted Authorization header and an escaped quote inside a value",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "redact replaces the value of {\\\"password\\\": \\\"v\\\"} and {\\\"Authorization\\\": \\\"Bearer v\\\"} (JSON inside a JSON or shell string), headers['Authorization'] = 'Bearer v', and the whole of a quoted value holding an escaped quote; a second pass changes nothing. SP-yyjwfjtc review gap 3.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);o=R.redact(\"{\"+b+\"password\"+b+\": \"+b+v+b+\"}\");print(o);sys.exit(1 if v in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}

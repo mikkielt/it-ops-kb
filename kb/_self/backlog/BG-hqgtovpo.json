@@ -1,0 +1,24 @@
+{
+  "id": "BG-hqgtovpo",
+  "kind": "bug",
+  "title": "redact keeps a secret assignment whose value only begins like a placeholder ($Fake..., %x%y, ***z, <a>b)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "redact._assigned keeps a value only when the whole value is a placeholder (<...>, ${...}, $NAME, %NAME%, ***), as kb/_self/querylog.md says, not when it only begins with one; querylog.md lists the redact rules in the order redact() runs them (KEY_BLOCK first). SP-yyjwfjtc review gap 1: ASSIGNED_PLACEHOLDER.match tests the start of the value only, so password=$FakePass12345x stays whole.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"$Fake\"+\"Pass12345x\";o=R.redact(\"password=\"+v);print(o);sys.exit(1 if v in o else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md"
+  ],
+  "links": [
+    "parked: SP-yyjwfjtc review"
+  ]
+}
