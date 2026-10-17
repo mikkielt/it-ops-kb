@@ -2,7 +2,7 @@
   "id": "ST-npj66d6y",
   "kind": "story",
   "title": "Research sprint goal: Gates classed by what they decide; landings finish without hand fixes",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aoiqmnc6",
   "goal_research": true,
   "priority": "P1",
@@ -22,5 +22,19 @@
     "kb/public/**"
   ],
   "notes": "Planned 2026-10-17 on origin/main 7cb5e0cbb: (1) packs weak (gitlab/git-commit-paths-and-symlinks.md matches 7 of 13 key words and holds no merge fact); (2) packs a false good (gitlab/repository-mirroring.md lines do not answer it). Feeds ST-mpwzinrm (word-level merge of one-line doc rows in land) and ST-txcazatg (read-back after a timed-out push).",
-  "claimed_by": "orch-r06"
+  "evidence": {
+    "commit": "3b7b677fe2052571bcae889a117c73c9593969b0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-npj66d6y"
+        ],
+        "exit": 0,
+        "sha256": "e575d838e4f0e8f3"
+      }
+    ]
+  }
 }
