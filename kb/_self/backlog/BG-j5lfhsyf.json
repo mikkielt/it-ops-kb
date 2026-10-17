@@ -39,6 +39,25 @@
     "kb/_self/tools.md",
     "kb/_self/content-rules.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does window_sections stop requiring the parent heading's section when the previous text lacks the passage?",
+      "options": [
+        "Locate the anchor's hash in the current text and treat that window as known",
+        "Drop the parent section from the required set whenever the window may start at a heading line"
+      ],
+      "recommendation": "Locate the anchor's hash in the current text and treat that window as known",
+      "do": {
+        "Locate the anchor's hash in the current text and treat that window as known": "BG-j5lfhsyf",
+        "Drop the parent section from the required set whenever the window may start at a heading line": "BG-j5lfhsyf"
+      },
+      "class": "design",
+      "answer": "Locate the anchor's hash in the current text and treat that window as known",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ficl7pxl review"
   ],
