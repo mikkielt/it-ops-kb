@@ -2,7 +2,7 @@
   "id": "ST-o76aink7",
   "kind": "story",
   "title": "The kb says how an operator sees and stops parallel Claude Code work and which multi-agent failure modes official sources name",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-ylklxolb",
   "sprint": "SP-4dab3cy5",
   "priority": "P3",
@@ -72,5 +72,19 @@
     "live: https://code.claude.com/docs/en/workflows"
   ],
   "notes": "Gap found 2026-10-16 comparing EP-ylklxolb's and EP-klpp2paw's goals with the kb on origin/main ed55f4d56: 'stop or kill a stuck background session, subagent or teammate' packs good only on a false check line (kb lacks kill, stuck; no fact says how to stop one), 'troubleshooting a multi-agent system: stuck agent, deadlock, duplicate work' packs weak/false good (lead article subagents-vs-deterministic-tools never mentions troubleshooting); lock recovery (shared-state-concurrency.md fencing, lease expiry) and general agent troubleshooting (agents/agent-troubleshooting-method.md) are covered. Premise: researched ST-o76aink7 exits 1.",
-  "claimed_by": "orch-r05"
+  "evidence": {
+    "commit": "06af9cb7e673f8e8c087d197ccb693d527c1e2e0",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-o76aink7"
+        ],
+        "exit": 0,
+        "sha256": "b941d53d5806864e"
+      }
+    ]
+  }
 }
