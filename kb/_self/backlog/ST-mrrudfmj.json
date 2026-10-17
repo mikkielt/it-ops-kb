@@ -2,7 +2,7 @@
   "id": "ST-mrrudfmj",
   "kind": "story",
   "title": "Under the lookup's down window a redirect hop into a host already in its window gets no request",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -38,5 +38,6 @@
   "links": [
     "parked: SP-srqmriw6 review"
   ],
-  "notes": "Plan 2026-10-17: the check exits 1 on 7cb5e0cbb (host B, already in its window, is requested through A's redirect)."
+  "notes": "Plan 2026-10-17: the check exits 1 on 7cb5e0cbb (host B, already in its window, is requested through A's redirect).",
+  "claimed_by": "orch-r07"
 }
