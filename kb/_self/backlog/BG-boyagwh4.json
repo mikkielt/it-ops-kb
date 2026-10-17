@@ -2,7 +2,7 @@
   "id": "BG-boyagwh4",
   "kind": "bug",
   "title": "A feedback report's lead reaches the committed store with a secret in its url path, since only the query is dropped",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,27 @@
     "parked: SP-yyjwfjtc review"
   ],
   "notes": "Plan 2026-10-17, narrowed to the committed store: the stored lead is bare_url (query and fragment dropped), but a key=value in the url's path or ;params stays, and the store gate checks only the leak scan, which does not read assignments. Premise on origin/main b871374b4: feedback_report keeps an https://learn.example.com/p/api_key=<value> url as lead (repro exits 1). The claim and comment never reach the store (closed_reports, FEEDBACK_KEYS). The spool side (source_url query, claim) is BG-yk6xxwwa, open gate g1 for the operator. Test policy: one planted fake value in the existing distill/store test of _tools/test_redact.py (no new test id).",
-  "claimed_by": "orch-r10"
+  "evidence": {
+    "commit": "edd2ff6293f6d189cb1c632cb8c1976976eed75a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");v=\"hunter\"+\"2xFake\";u=\"https://learn.example.com/p/api_\"+\"key=\"+v;import ql_store as S;p=S.feedback_problems([{\"outcome\":\"misled\",\"judged_by\":\"agent\",\"lead\":u}],\"e\");print(p);ok=S.feedback_problems([{\"outcome\":\"misled\",\"judged_by\":\"agent\",\"lead\":\"https://learn.example.com/p\"}],\"e\");print(ok);sys.exit(0 if p and not ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ca10d040815d8111"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");v=\"hunter\"+\"2xFake\";u=\"https://learn.example.com/p/api_\"+\"key=\"+v;import ql_distill as D,ql_learn as L;r=D.feedback_report({\"outcome\":\"misled\",\"source_url\":u},None,L.KbPages());print(r[\"lead\"]);sys.exit(1 if v in str(r) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "af5d8a21858f4280"
+      }
+    ]
+  }
 }
