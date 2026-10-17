@@ -117,7 +117,9 @@ def without_token_counts(text):
 
 # A gate's text is its question, its options and the words of its `do` and `host_check` commands. `origin`, `mirror` and
 # `release` are word-bounded (`original` is not `origin`) and take their endings (`releases`, `released`, `mirrored`),
-# so a gate about a release note is `push` too, wherever the word stands: the classifier fails closed. The word `rule`
+# so a gate about a release note is `push` too, wherever the word stands: the classifier fails closed. `AGENTS.md` and
+# `CLAUDE.md` are `agents-rule` words only as a whole file name, alone or after a `/` (`skills/x/AGENTS.md`), so a kb
+# article such as `gitops-for-agents.md` is none. The word `rule`
 # is no `agents-rule` word of its own (a design question about which rows count by rule is no rule-guarding work): it
 # classes only where the item's touches or the gate's text name a rule-guarding path or file (`rule_paths`).
 QUESTION_WORDS = {
@@ -130,7 +132,7 @@ QUESTION_WORDS = {
                        r"\bmirror(?:s|ed|ing)?\b|\breleas(?:e|es|ed|ing)\b|public[- ]repositor(?:y|ies)|"
                        r"\buploa(?:d|ds|ded|ding)\b|\bdeploy(?:s|ed|ing|ment)?\b|merge[- ]requests?\b", re.I),
     "querylog": re.compile(r"query[- ]?log|querylog|redact", re.I),
-    "agents-rule": re.compile(r"AGENTS\.md|CLAUDE\.md|\bskill\b|\bagent definition", re.I),
+    "agents-rule": re.compile(r"(?<![\w.-])(?:AGENTS|CLAUDE)\.md|\bskill\b|\bagent definition", re.I),
     "delete": re.compile(r"\bdelet|\bremov(?:e|ing) .*(?:kb|content|history)|purge|erase", re.I),
 }
 # The `ceiling` words are the wordings the rules use for the suite's ceiling (`seconds ceiling`, `darwin ceiling`, `the
