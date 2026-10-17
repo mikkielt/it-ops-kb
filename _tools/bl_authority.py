@@ -47,13 +47,18 @@ TOKEN_WORD = re.compile(r"token", re.I)
 
 
 def names_secret(touch):
-    """Whether the touch's path names a secret, credential, password, `.env`, private key or token file."""
+    """Whether the touch's path names a secret, credential, password, `.env`, private key or token file. The file name of
+    a Markdown article under `kb/` (`kb/public/auth/shamir-secret-sharing.md`) is none: it is about the word, and its
+    directories still count."""
     if not isinstance(touch, str):
         return False
+    head, _, name = touch.strip().replace("\\", "/").rstrip("/").rpartition("/")
+    doc = name.lower().endswith(".md")
+    if doc and posixpath.normpath(head).lower().split("/")[0] == "kb":
+        return bool(SECRET_WORDS.search(head) or TOKEN_WORD.search(head))
     if SECRET_WORDS.search(touch):
         return True
-    head, _, name = touch.strip().replace("\\", "/").rstrip("/").rpartition("/")
-    return bool(TOKEN_WORD.search(head) or TOKEN_WORD.search(name) and not name.lower().endswith(".md"))
+    return bool(TOKEN_WORD.search(head) or TOKEN_WORD.search(name) and not doc)
 
 
 # In a gate's text `token` is a secret word, but not in the sense of a model's token counts (`output tokens`, `token
@@ -63,6 +68,7 @@ def names_secret(touch):
 # token counts that holds `TOKENS` in the plural (`DISPATCH_BASE_TOKENS`, `MAX_TOKENS`). A bare `token`, one qualified
 # as a credential (`API token counts` is a count of API tokens), a singular identifier (`GITLAB_TOKEN`) and a token file
 # keep the class: the classifier fails closed.
+TOKENIZE_WORD = re.compile(r"(?<![\w.-])tokeni[sz](?:e|es|ed|er|ers|ing|ation)(?![\w-])", re.I)
 TOKEN_DOC = re.compile(r"[\w./\\-]*token[\w./\\-]*\.md\b", re.I)
 CRED_WORDS = "api|access|auth|bearer|refresh|session|personal|oauth|csrf|jwt|id"
 TOKEN_COUNT = re.compile(
@@ -106,9 +112,11 @@ def without_unit_lists(text):
 
 
 def without_token_counts(text):
-    """The text with each token-count phrase, each upper-case identifier of token counts and each Markdown doc name that
-    holds `token` replaced by a space: what the `secrets` words are searched in, so a model's token counts, a constant
-    such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token` and a doc such as `token-efficiency.md` are no secret."""
+    """The text with each token-count phrase, each upper-case identifier of token counts, each Markdown doc name that
+    holds `token` and each word of the Python `tokenize` module replaced by a space: what the `secrets` words are
+    searched in, so a model's token counts, a constant such as `DISPATCH_BASE_TOKENS`, the ops-row `phase token`, a doc
+    such as `token-efficiency.md` and `the tokenize module` are no secret."""
+    text = TOKENIZE_WORD.sub(" ", text)
     text = TOKEN_DOC.sub(lambda m: m.group(0) if names_secret(m.group(0)) else " ", text)
     text = TOKEN_IDENT.sub(
         lambda m: m.group(0) if any(CRED_PART.match(p) for p in m.group(0).split("_")) else " ", text)
