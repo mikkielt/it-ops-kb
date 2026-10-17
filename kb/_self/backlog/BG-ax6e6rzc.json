@@ -13,5 +13,8 @@
       "-c",
       "import sys;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('Answer with the kb tools first. (1) How does X work (RFC 1)? (2) May a path hold = and ; so a pair rides in it?');print(q);sys.exit(0 if len(q)==2 and not q[0].startswith('Answer') and q[1].startswith('May') and q[1].endswith('in it?') else 1)"
     ]
-  }
+  },
+  "links": [
+    "parked: SP-g4mwrwsv close"
+  ]
 }

@@ -1,0 +1,24 @@
+{
+  "id": "ST-yegjt7tb",
+  "kind": "story",
+  "title": "Plan step 6 asks a planted prose near-miss that stays whole for each pattern a redact item widens",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint plan step 6 sentence on redact items asks, beside the planted secret of each shape, one planted near-miss of ordinary prose or markdown for each matching pattern the item widens (a key name, bracket or quote form), asserted unchanged after redact, and names the scope of a widened key form (header only or every assignment) as a blocking gate before any code. SP-g4mwrwsv close: BG-efbghw7n's worker asked the bracketed-key scope as a blocking gate after its code; the answer 'both' let the bracket part match '[Secret]: see the docs' (review gap BG-my67pcip), which no check planted.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();s=t[t.find(\"6. Read the goal clauses\"):t.find(\"## start SP\")];ok=\"near-miss\" in s;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv close"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-r3uya6gu",
+  "kind": "story",
+  "title": "The review step says the orchestrator runs a done item's check the reviewer's session was refused, and names it in the review",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint review step 1 says a check the read-only reviewer cannot run in its session (refused by the permission classifier, such as backlog.py researched) is run by the orchestrator on the same tip and its result given beside the reviewer's report. SP-g4mwrwsv close: the reviewer's session was denied backlog.py researched ST-v7rqvnwe as an external write and read the research by hand; only the review's done re-ran it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;t=open(\"skills/sprint/SKILL.md\",encoding=\"utf-8\").read();s=t[t.find(\"## review SP\"):t.find(\"## close SP\")];ok=\"researched\" in s;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv close"
+  ]
+}

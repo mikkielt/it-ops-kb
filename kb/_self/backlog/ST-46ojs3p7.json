@@ -1,0 +1,25 @@
+{
+  "id": "ST-46ojs3p7",
+  "kind": "story",
+  "title": "ops SP marks the done.refused rows written before the sprint started",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py ops SP marks each row stamped before the sprint's start commit (a planning session's done probe of a todo item), so a retrospective reads only the refusals of the run. SP-g4mwrwsv close: ops showed four done.refused rows at 2026-10-17T11:33 (reasons no-work-commit, not-ready, status) for BG-hqgtovpo, BG-efbghw7n, BG-h5l6y43p and BG-boyagwh4, written by the planning session before the start, not by the run.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,glob;t=\"\".join(open(p,encoding=\"utf-8\").read() for p in glob.glob(\"_tools/bl_*.py\"));ok=\"before the start\" in t and \"done.refused\" in t;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_ops.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv close"
+  ]
+}

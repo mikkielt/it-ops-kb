@@ -1,0 +1,26 @@
+{
+  "id": "ST-lyjlhpix",
+  "kind": "story",
+  "title": "precheck SP prints each sprint goal clause with the item close --summary would name as its carrier",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck SP prints each clause of the sprint goal with the committed items close --summary would name as carrying it (clause_carriers' word share, read on the items' goals before they are done), and warns of a clause no item carries, so a sprint clause worded apart from its carrier's goal is reworded before the start gate. SP-g4mwrwsv close: clause 2 'every text a feedback report stores passes through it' printed unmet although BG-boyagwh4 carried it (its goal names ql_distill.feedback_report and the store gate, not the clause's words), and clause 1 named neither BG-hqgtovpo nor the research story.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,glob;t=\"\".join(open(p,encoding=\"utf-8\").read() for p in glob.glob(\"_tools/bl_*.py\"));ok=\"sprint goal clause\" in t and \"precheck\" in t;print(ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-g4mwrwsv close"
+  ]
+}
