@@ -4044,3 +4044,13 @@ _Agent: kb-research_
 - See security/secret-shapes-in-text.md, python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
+
+## QK-page-metadata-names-web-page-s. Which page metadata names a web page's site or publisher (Open Graph `og:site_name`, the HTML `application-name` meta), and what does each spec say it holds?
+- `og:site_name` is an optional Open Graph property: "if your object is part of a larger web site", the name to display for the overall site (example "IMDb"); it is a `<meta property="og:site_name" ...>` tag with the `og:` prefix declared. [DOC S-4e2arcjz]
+- `application-name` is an HTML Standard metadata name: a short free-form string naming the web application the page represents, not to be used on a page that is not a web application, at most one for each language; user agents may show it in preference to the title. [DOC S-inrmedim]
+- The HTML Standard's metadata names (read 2026-10-17) have `author` for a page's authors but no `publisher`; Open Graph has no publisher property beside `og:site_name`. [DOC S-inrmedim, S-4e2arcjz]
+- Conclusion: `og:site_name` is the nearest metadata for the site that publishes a page and `application-name` names an application, so a tool that finds neither should leave the publisher open rather than take it from the `<title>`. [DER S-4e2arcjz, S-inrmedim]
+- Open: how often real documentation sites set either tag was not measured. [UNK]
+- See agents/doc-change-detection.md.
+
+_Agent: kb-research_

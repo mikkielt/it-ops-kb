@@ -1664,10 +1664,15 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 02d2717d196f,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 02d2717d196f,agents/doc-change-detection.md,S-xc4ibwg4,unlocated:not-text,,,,,2026-10-13
 02d2717d196f,agents/doc-change-detection.md,S-yrqtp5aq,unlocated:no-match,,,,,2026-10-13
+030e70c3a954,agents/doc-change-detection.md,S-inrmedim,located,HTML > 4 The elements of HTML > 4.2 Document metadata > 4.2.5 The meta > 4.2.5.1 Standard metadata names,author;one;page;name,e26a02a2bd6b57d5,The value must be a free-form string giving the name of one of the page's authors.,2026-10-17
 034ab3393b8a,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
+071582789129,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Basic Metadata > Optional Metadata,site_nam;site;name;imdb;content;meta;property,2e4c6ba13068f3e7,"<meta property=""og:sitename"" content=""IMDb"" />",2026-10-17
 09144ce257e9,agents/doc-change-detection.md,S-tjb5zoq2,unlocated:no-match,,,,,2026-10-13
 099f3bf33397,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.5 The aside element,parenthetical;just;appropriat;main;part;flow;asid;element,3800db63adefc159,"It's not appropriate to use the aside element just for parentheticals, since those are part of the main flow of the document.",2026-10-17
+0e8e82c21554,agents/doc-change-detection.md,S-inrmedim,located,HTML > 4 The elements of HTML > 4.2 Document metadata > 4.2.5 The meta > 4.2.5.1 Standard metadata names,free-form;short;free;giving;application;form;represent;web,3da6a1356f4eb41b,The value must be a short free-form string giving the name of the web application that the page represents.,2026-10-17
 0f4215460890,agents/doc-change-detection.md,S-7uckhkxr,unlocated:no-match,,,,,2026-10-12
+0f87db96e894,agents/doc-change-detection.md,S-4e2arcjz,unlocated:no-match,,,,,2026-10-17
+0f87db96e894,agents/doc-change-detection.md,S-inrmedim,unlocated:no-match,,,,,2026-10-17
 1161b96c0360,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 124aa0d4379a,agents/doc-change-detection.md,S-7ivxsp4z,located,,api;link;local;next;nextlink;top;search;com,0f96067b1589adf1,"""nextLink"": ""https://learn.microsoft.com/api/Search?search=device%20identity%20overview&locale=en-us&$top=3&accept=text%2Fmarkdown&$skip=3"",",2026-10-13
 1314c7621883,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
@@ -1699,6 +1704,8 @@ fb236feed15a,agents/declarative-agent-manifest.csv,S-gum2njhe,unlocated:no-match
 34316a91c2ca,agents/doc-change-detection.md,S-ea26tgr2,unlocated:not-text,,,,,2026-10-13
 3553c0d749e7,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
 358a329e8822,agents/doc-change-detection.md,S-uymc3nwh,located,,closed_at;updat;updated_at;clos,4733ee1a3312b0fa,"""updatedat"": ""2026-10-13T00:42:29Z"", ""closedat"": ""2026-10-12T19:32:16Z"",",2026-10-13
+3693b66b6131,agents/doc-change-detection.md,S-4e2arcjz,unlocated:no-match,,,,,2026-10-17
+3693b66b6131,agents/doc-change-detection.md,S-inrmedim,unlocated:no-match,,,,,2026-10-17
 380dad29bfd8,agents/doc-change-detection.md,S-zrzsmepn,located,HTML > 4.3 Sections > 4.3.1 The body element > 4.3.4 The nav element,within;navigation;part;link;represent;other;nav;page,8a7139cffbd5b8c9,represents a section of a page that links to other pages or to parts within the page: a section with navigation links.,2026-10-17
 384f19af2226,agents/doc-change-detection.md,S-7jumyiid,unlocated:no-match,,,,,2026-10-12
 384f19af2226,agents/doc-change-detection.md,S-ybuoluc4,unlocated:no-match,,,,,2026-10-12
@@ -1778,6 +1785,7 @@ aaa88f7580d0,agents/doc-change-detection.md,S-m7xkty3c,unlocated:no-match,,,,,20
 aaa88f7580d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
 aafceaa1e4ff,agents/doc-change-detection.md,S-tyedhnrz,located,Circuit Breaker Pattern - Azure Architecture Center | Microsoft Learn > Solution,initially;few;increas;minut;plac;second;resolv;time-out,0fea709c17a57d56,"You can place the circuit breaker in the Open state for a few seconds initially. If the failure isn't resolved, increase the time-out to a",2026-10-13
 ab72fb8d60d7,agents/doc-change-detection.md,S-o6lmrcgh,unlocated:no-match,,,,,2026-10-12
+abd690c95eaa,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Object Types > No Vertical,publish;articl,c42e2faa9c4b7566,When the article was first published.,2026-10-17
 acbb0e1f8477,agents/doc-change-detection.md,S-xc5fkeod,located,Circuit breaker resilience strategy > Defaults > Note > Important,ignor;failureratio;minimumthroughput;samplingduration;throughput;minimum;ratio;sampl,4d85192b9febe242,If the MinimumThroughput is not reached during the SamplingDuration then the FailureRatio is ignored.,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S2177,unlocated:fetch-error,,,,,2026-10-13
 acfae9242371,agents/doc-change-detection.md,S2180,unlocated:gone,,,,,2026-10-13
@@ -1807,6 +1815,7 @@ c111db35dca3,agents/doc-change-detection.md,S-may2otwt,unlocated:gone,,,,,2026-1
 c211c11b0cd6,agents/doc-change-detection.md,S-a76fjdhb,located,Rate limit errors > `404 Not Found` for an existing resource,existenc;avoid;privat;forbidden;instead;confirm;found;repository,00d89c49c030bfae,"If you make a request to access a private resource and your request isn't properly authenticated, you will receive a 404 Not Found response. {%",2026-10-12
 c2dce6186ec9,agents/doc-change-detection.md,S1217,unlocated:no-match,,,,,2026-10-13
 c595f49699d0,agents/doc-change-detection.md,S-ods72iyh,unlocated:no-match,,,,,2026-10-12
+c8062f0b9ca5,agents/doc-change-detection.md,S-inrmedim,located,HTML > 4 The elements of HTML > 4.2 Document metadata > 4.2.5 The meta > 4.2.5.1 Standard metadata names,preferenc;sinc;status;application;may;page;agent;titl,c8e58362b168cc93,User agents may use the application name in UI in preference to the page's title,2026-10-17
 c9782fbdadbd,agents/doc-change-detection.md,S-yrqtp5aq,located,Understand the JavaScript SEO basics > Use meaningful HTTP status codes > Avoid soft 404 errors in single-page apps,impossibl;impractical;meaningful;status;http;code,ee06a7369af55893,using meaningful HTTP status codes can be impossible or impractical,2026-10-13
 cb43a9db108c,agents/doc-change-detection.md,S-7tff4woa,unlocated:no-match,,,,,2026-10-12
 ccf9e285650b,agents/doc-change-detection.md,S-niqtbnmc,unlocated:no-match,,,,,2026-10-12
@@ -1841,6 +1850,7 @@ e6e3158bcbe0,agents/doc-change-detection.md,S-tyedhnrz,unlocated:no-match,,,,,20
 e6e3158bcbe0,agents/doc-change-detection.md,S-xc5fkeod,unlocated:no-match,,,,,2026-10-13
 e7b46fadd142,agents/doc-change-detection.md,S-2dckbgu5,unlocated:no-match,,,,,2026-10-12
 eaa325a6632d,agents/doc-change-detection.md,S-a6bblnnl,located,,old;time;new;retriev;dif;content;filter,78a170cb34628efa,"(see :ref:configurationdisplay for details), and the diff output will be between (old content with filter at the time old content was retrieved) and (new content",2026-10-12
+efd9db787fae,agents/doc-change-detection.md,S-4e2arcjz,located,The Open Graph protocol > Basic Metadata > Optional Metadata,larger;overall;part;display;site_nam;site;name;imdb,bd7bddc0f2aa9c64,"If your object is part of a larger web site, the name which should be displayed for the overall site.",2026-10-17
 f13e2588bbd9,agents/doc-change-detection.md,S-s6xjctzu,unlocated:no-match,,,,,2026-10-12
 f14b56b45fb6,agents/doc-change-detection.md,S-uq2hafxi,located,Resources > Capabilities,two;featur;listchang;capability;support;optional;chang;list,86ea85c4ff93d301,The capability supports two optional features: listChanged: whether the server will emit notifications when the list of available,2026-10-13
 f2446aa821ac,agents/doc-change-detection.md,S-yvdwutca,unlocated:no-match,,,,,2026-10-12
