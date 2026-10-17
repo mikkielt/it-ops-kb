@@ -926,8 +926,6 @@ c0ff298e07cb,When does a task need a workflow rather than one conversation?
 5ad35287f892,Notification hook matcher types permission_prompt idle_prompt
 5ad35287f892,Which notification types can a Notification hook match on?
 5ad35287f892,List of Claude Code notification kinds that trigger hooks
-c3816736a30b,Notification hook when fires permission_prompt idle_prompt six seconds 60 seconds
-c3816736a30b,When does a Claude Code Notification hook fire for a waiting permission prompt or an idle session?
 c259cd820758,permission_prompt notification canUseTool VS Code Desktop six seconds
 c259cd820758,When does the permission_prompt notification fire in Claude Desktop or the VS Code extension?
 c259cd820758,How to switch off permission prompt notification hooks in SDK hosted sessions
