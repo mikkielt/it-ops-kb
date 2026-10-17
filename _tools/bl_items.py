@@ -636,10 +636,17 @@ def cmd_set(bl, a):
             def edit_child(new):
                 new["status"] = "todo" if state == "active" else "draft"
             edits.update({c: edit_child for c in bl.descendants(iid) if bl.items[c].get("status") in ("draft", "todo")})
+    if a.trailer:
+        if not a.commit:
+            raise Refused("--trailer goes with --commit")
+        why = next(filter(None, map(trailer_problem, a.trailer)), None)
+        if why:
+            raise Refused(why)
     if changed_items(bl, edits):
         say(f"set {bl.label(iid)}: {', '.join(named)}")
     else:
         say(f"set {bl.label(iid)}: unchanged")
+    commit_written(bl, a, "set", iid)
     return 0
 
 
@@ -1182,6 +1189,10 @@ def args_set(p):
         p.add_argument(flag, dest="add_" + f, action="append", metavar=value,
                        help=f"append to {f} (repeatable; refused beside {replace_flag(f)})")
     p.add_argument("--clear", action="append", default=[], metavar="FIELD", help="remove a field (repeatable)")
+    p.add_argument("--commit", action="store_true",
+                   help="commit the item file this set wrote, alone, with a fixed subject and KB-Work")
+    p.add_argument("--trailer", action="append", default=[], metavar="'KEY: VALUE'",
+                   help="a trailer of the session's own after KB-Work in the --commit commit (repeatable)")
     for f in SET_REFUSED:  # accepted only to be refused with the rule that applies
         p.add_argument("--" + f.replace("_", "-"), dest="no_" + f, help=argparse.SUPPRESS)
 
