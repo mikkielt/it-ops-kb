@@ -1,0 +1,20 @@
+{
+  "id": "SP-g4mwrwsv",
+  "kind": "sprint",
+  "title": "redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
+  "status": "planned",
+  "goal": "redact also catches placeholder-prefixed, escaped-JSON and $-word secrets, and every text a feedback report stores passes through it",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
