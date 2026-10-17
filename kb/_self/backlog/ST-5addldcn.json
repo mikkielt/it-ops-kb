@@ -45,6 +45,25 @@
     "BG-jjbditkb",
     "ST-3gfykmit"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which touches overlap makes a done item a sibling whose checks land reruns, and where does the step sit in the landing? Rationale for the first: a shared doc is merged by the rebase and gated by stale, so counting it would turn most landings into whole-sprint reruns.",
+      "options": [
+        "touches_meet; before done (content) and after checks (code lane)",
+        "touches_overlap; before done only"
+      ],
+      "recommendation": "touches_meet; before done (content) and after checks (code lane)",
+      "do": {
+        "touches_meet; before done (content) and after checks (code lane)": "ST-5addldcn",
+        "touches_overlap; before done only": "ST-5addldcn"
+      },
+      "class": "agents-rule",
+      "answer": "touches_meet; before done (content) and after checks (code lane)",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-6jfnx5i3 close"
   ],
