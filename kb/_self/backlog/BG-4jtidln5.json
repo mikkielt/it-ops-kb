@@ -2,7 +2,7 @@
   "id": "BG-4jtidln5",
   "kind": "bug",
   "title": "Two sessions that claim the same item while the ledger lock is held both succeed, and the later one overwrites the item file",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P1",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/bl_items.py",
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-r04"
 }
