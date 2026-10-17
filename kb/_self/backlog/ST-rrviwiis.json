@@ -1,0 +1,26 @@
+{
+  "id": "ST-rrviwiis",
+  "kind": "story",
+  "title": "set --commit refuses a malformed --trailer before it runs a --repro",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py set checks each --trailer before it runs the --repro it was given, so a malformed trailer is refused with nothing executed, as answer --commit refuses it. The reviewer also noted that set --parent on a draft or todo item commits its descendants' status changes in the same commit, which matches move and is kept. Found by the SP-4cc36epy review (S4, ST-3gfykmit \"backlog.py set takes --commit\").",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath('_tools/backlog.py');r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run(['git','-C',str(r),'-c','user.name=x','-c','user.email=x@x',*a],check=True,capture_output=True,text=True).stdout.strip()\ng('init','-q');d=r/'kb'/'_self'/'backlog';d.mkdir(parents=True);(r/'backlog.json').write_text(json.dumps({'item_dir':'kb/_self/backlog'}))\n(d/'BG-aaaaaaaa.json').write_text(json.dumps({'id':'BG-aaaaaaaa','kind':'bug','title':'t','status':'draft','priority':'P3','severity':'S4','goal':'g','touches':['x.txt'],'repro':{'run':['python3','-c','import sys;sys.exit(1)']}},indent=2)+'\\n')\ng('add','-A');g('commit','-qm','i');m=r/'ran'\nenv=dict(os.environ);env.pop('KB_BACKLOG_CONFIG',None)\nimport shlex;rep=shlex.join(['python3','-c',f'open({str(m)!r},\"w\");raise SystemExit(1)'])\np=s.run([sys.executable,T,'--root',str(r),'set','BG-aaaaaaaa','--repro',rep,'--commit','--trailer','no colon here'],capture_output=True,text=True,env=env)\nprint('exit',p.returncode,'repro ran',m.exists());sys.exit(0 if p.returncode and not m.exists() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-e3taytnl",
+  "kind": "story",
+  "title": "goal_questions keeps a numbered piece's lead-in that starts with a question word but asks nothing",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "goal_questions drops a numbered piece's text before its colon when that text is a lead-in that asks nothing (no question mark and no auxiliary after its question word, as in '(1) How to proceed: does git record a change?'), and keeps it when it is the question itself, as BG-lgzf4rw7 made it. Found by the SP-4cc36epy review (S4, BG-lgzf4rw7 gate g1).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_land as b\nq=b.goal_questions('(1) How to proceed: does git record a change? (2) What token cost does coordination add: agent teams and subagent briefs?')\nprint(q);sys.exit(0 if q and q[0].startswith('does git') and q[1].startswith('What token cost') else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy review"
+  ]
+}

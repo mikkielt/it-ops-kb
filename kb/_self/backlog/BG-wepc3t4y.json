@@ -1,0 +1,26 @@
+{
+  "id": "BG-wepc3t4y",
+  "kind": "bug",
+  "title": "A session whose SessionStart claim of its presence lease failed never takes the lease on a tool event",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "coord_hook.renew_if_due claims the session's presence lease afresh on a tool event when the state holds no token (a SessionStart claim the store refused or could not run, a re-claim after a refused renew), with the same RETRY_SECONDS backoff a timed-out renew gets, so a live session whose start claim failed shows in other sessions' digests again within a minute of its next tool event. Found by the SP-4cc36epy review (S3, BG-jy6yxnq4 \"A live session's coord intent drops out of the digest once its 6-hour presence lease lapses\").",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import importlib.util,json,sys,tempfile,time\ns=importlib.util.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=importlib.util.module_from_spec(s);s.loader.exec_module(h)\nh.STATE=tempfile.mkdtemp();calls=[];resp={}\ndef fake(*a):\n    calls.append(a[0]);r=resp.get(a[0],(0,json.dumps({'token':'T1','expires':time.time()+h.LEASE_SECONDS})))\n    if r=='kill':raise SystemExit('killed')\n    return r\nh.coord=fake\nh.branch_item=lambda c:None;resp['claim']=(1,'{}')\nh.session_start({'cwd':tempfile.gettempdir(),'source':'startup'},'sidA');resp.clear();calls.clear()\nh.pre_tool_use({'tool_name':'Bash','tool_input':{'command':'ls'}},'sidA')\nprint('tool-event calls',calls,'state',h.load('sidA'));sys.exit(0 if 'claim' in calls else 1)"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy review"
+  ]
+}
