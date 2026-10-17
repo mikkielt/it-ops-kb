@@ -162,6 +162,7 @@ def feedback_is_spooled_once_and_refuses_open_fields(tmp_path, monkeypatch):
     for bad in refused:
         assert call(**bad)[1] is True, bad
     assert len(spooled()) == 2
+    monkeypatch.setenv("KB_COORD_TOOLS", "1")  # the coord_ tools are listed only when the server is started with it
     listed = kb_mcp.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
     tool = next(t for t in listed if t["name"] == "kb_feedback")
     assert tool["annotations"] == {"title": tool["title"], "readOnlyHint": False, "destructiveHint": False,

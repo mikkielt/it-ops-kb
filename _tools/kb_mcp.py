@@ -1062,6 +1062,12 @@ COORD_HANDLERS = {"coord_claim": coord_claim, "coord_renew": coord_renew, "coord
                   "coord_post": coord_post, "coord_digest": coord_digest, "coord_wait": coord_wait}
 
 
+def coord_enabled():
+    """True when the team's own server is started with KB_COORD_TOOLS=1: the coord_ tools write to the coord store, so
+    a default server lists and serves none of them."""
+    return not limited() and os.environ.get("KB_COORD_TOOLS") == "1"
+
+
 # ---------------------------------------------------------------- protocol
 
 def result(msg_id, res):
@@ -1111,13 +1117,15 @@ def handle(msg):
     if method == "ping":
         return result(msg_id, {})
     if method == "tools/list":
-        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL, *COORD_TOOL_LIST])
+        return result(msg_id, {"tools": TOOL_LIST + ([] if limited() else [FEEDBACK_TOOL])
+                               + (COORD_TOOL_LIST if coord_enabled() else [])
                                + (LIVE_TOOL_LIST if live_enabled() else []), "ttlMs": 3600000, "cacheScope": "public"})
     if method == "tools/call":
         name, args = params.get("name"), params.get("arguments") or {}
         handlers = {**HANDLERS, **LIVE_HANDLERS} if live_enabled() else dict(HANDLERS)
         if not limited():
             handlers["kb_feedback"] = kb_feedback
+        if coord_enabled():
             handlers.update(COORD_HANDLERS)
         if name not in handlers:
             return error(msg_id, -32602, f"Unknown tool: {name}")
