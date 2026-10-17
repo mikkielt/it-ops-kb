@@ -2,7 +2,7 @@
   "id": "ST-kx5tq4uw",
   "kind": "story",
   "title": "Review sprint: redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g4mwrwsv",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r10"
+  "evidence": {
+    "commit": "d82f5867ed5b730853842ddacaffb2c742dc42b8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "b5457ec9903bfdfd"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "63dff3e209871a0d"
+      }
+    ]
+  }
 }
