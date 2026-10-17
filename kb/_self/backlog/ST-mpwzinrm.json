@@ -2,7 +2,7 @@
   "id": "ST-mpwzinrm",
   "kind": "story",
   "title": "land merges a rebase conflict confined to one-line kb/_self doc hunks that two items edited at different words, so a sibling's doc row edit does not stop it at step rebase",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,
@@ -71,5 +71,27 @@
     "parked: SP-z3hyk4eh close"
   ],
   "notes": "SP-z3hyk4eh retrospective: three of nine landings stopped at step rebase (backlog.py ops: ST-zqbo7xgc 13:26, BG-wqc6sgug 13:30, ST-6tz7yhem 13:45, each land.step rebase exit=1): siblings edited different words of the same one-line rows of kb/_self/tools.md, backlog.md and code.md, which the rules treat as no overlap (backlog.md, Running a sprint: a shared doc orders no two items). The orchestrator resolved each by a word-level merge keeping both sides, by hand. The function name in the check is a proposal; the planner may rename it with the check. SP-xo45jvbj 2026-10-16: BG-yq2ojoiy's landing stopped at rebase on the one-line coord.py row of kb/_self/tools.md, which BG-wh3wardm had edited at other words; the orchestrator merged both inserts by hand. SP-6jfnx5i3 2026-10-17: again: BG-p2jcpxhl's landing stopped at rebase on the one-line coord.py row of kb/_self/tools.md, which ST-nlesmlru had edited at other words (KB_COORD_TOOLS=1); the orchestrator kept both by hand. Plan 2026-10-17: check 1 drives a real git rebase through bl_land.rebase_merging_doc_rows(root, upstream, branch) (a proposed name, as merge_line_hunks is) on three planted repositories: different words of a kb/_self row merge (exit 0, both edits kept, the merged file named in the output); the same words, and a kb/public file, stop (exit not 0). Premise on 7cb5e0cbb: both checks exit 1.",
-  "claimed_by": "orch-r06"
+  "evidence": {
+    "commit": "08394862f1621b0c6affbafa0c803d76b943195d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import bl_land as l\nf=getattr(l,\"merge_line_hunks\",None)\nb=\"| a | imports x and y, never z |\";o=\"| a | imports x, y and w, never z |\";t=\"| a | imports x and y, never z (always q) |\"\nr=f(b,o,t) if f else None;same=f(b,\"| a | imports k |\",\"| a | imports m |\") if f else \"x\"\nprint(\"merged:\",r,\"| same-words conflict refused:\",same is None)\nsys.exit(0 if r==\"| a | imports x, y and w, never z (always q) |\" and same is None else 1)"
+        ],
+        "exit": 0,
+        "sha256": "c0decfe04ec39824"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys, os, io, subprocess, tempfile, contextlib\nsys.path.insert(0, '_tools')\nimport bl_land as L\nf = getattr(L, 'rebase_merging_doc_rows', None)\nROW = '| a | imports x and y, never z |'\nBASE = '# T\\n\\n' + ROW + '\\n| b | other row |\\n'\ndef land(path, main_line, work_line):\n    t = tempfile.mkdtemp()\n    g = lambda *a: subprocess.run(['git', *a], cwd=t, capture_output=True, text=True)\n    g('init', '-q', '-b', 'main'); g('config', 'user.email', 'a@b.c'); g('config', 'user.name', 'n')\n    p = os.path.join(t, path)\n    os.makedirs(os.path.dirname(p), exist_ok=True)\n    open(p, 'w').write(BASE); g('add', '-A'); g('commit', '-qm', 'base')\n    g('checkout', '-qb', 'work'); open(p, 'w').write(BASE.replace(ROW, work_line)); g('commit', '-qam', 'work')\n    g('checkout', '-q', 'main'); open(p, 'w').write(BASE.replace(ROW, main_line)); g('commit', '-qam', 'main')\n    out = io.StringIO()\n    with contextlib.redirect_stdout(out):\n        r = f(t, 'main', 'work') if f else 1\n    code = r if isinstance(r, int) else getattr(r, 'returncode', 1)\n    g('checkout', '-q', 'work')\n    return code, open(p).read(), out.getvalue()\nM, W = '| a | imports x, y and w, never z |', '| a | imports x and y, never z (always q) |'\nok = land('kb/_self/tools.md', M, W)\nsame = land('kb/_self/tools.md', '| a | imports k |', '| a | imports m |')\nother = land('kb/public/x.md', M, W)\nprint('different words in a _self doc row:', ok[0], '| same words:', same[0], '| other file:', other[0])\nsys.exit(0 if ok[0] == 0 and '| a | imports x, y and w, never z (always q) |' in ok[1] and 'tools.md' in ok[2]\n         and same[0] != 0 and other[0] != 0 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "eab9107e064c8214"
+      }
+    ]
+  }
 }
