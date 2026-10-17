@@ -2,7 +2,7 @@
   "id": "BG-vxwibl62",
   "kind": "bug",
   "title": "coord.py put needs no holder token, so any agent can overwrite the value of a key another agent has claimed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -81,5 +81,27 @@
     "parked: SP-rsmmwzr2 review"
   ],
   "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (put on a leased key without its token exit 0). Ordered after BG-p2jcpxhl: both change coord.py put and claim.",
-  "claimed_by": "orch-r04"
+  "evidence": {
+    "commit": "c3d2e39d7a56c3ce2cc1cb503bb1151e2154838c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,\"c.db\"))\ndef c(*a):\n    p=s.run([sys.executable,\"_tools/coord.py\",*a],capture_output=True,text=True,env=E,timeout=60);return p.returncode,p.stdout\ntok=json.loads(c(\"claim\",\"K6\",\"--ttl\",\"60\",\"--holder\",\"a\")[1])[\"token\"]\nother=c(\"put\",\"K6\",\"--value\",\"x\",\"--revision\",\"1\")[0]\nown=c(\"put\",\"K6\",\"--value\",\"y\",\"--revision\",\"1\",\"--token\",tok)[0]\nfree=c(\"put\",\"K7\",\"--value\",\"z\",\"--revision\",\"0\")[0]\nprint(dict(without_holder=other,holder=own,no_lease=free));sys.exit(0 if other==1 and own==0 and free==0 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "4376550868aa130b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('claim','K5','--ttl','60','--holder','a')\nr=c('put','K5','--value','hijack','--revision','1')[0]\nprint('put on a leased key without its token exit',r);sys.exit(0 if r!=0 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "8932543341b88f74"
+      }
+    ]
+  }
 }
