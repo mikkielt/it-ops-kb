@@ -2,7 +2,7 @@
   "id": "ST-mpwzinrm",
   "kind": "story",
   "title": "land merges a rebase conflict confined to one-line kb/_self doc hunks that two items edited at different words, so a sibling's doc row edit does not stop it at step rebase",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,

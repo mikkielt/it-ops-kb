@@ -2,7 +2,7 @@
   "id": "BG-73wc55ew",
   "kind": "bug",
   "title": "Gate classifier reads a kb article named *-agents.md as AGENTS.md and makes the gate blocking agents-rule",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-aoiqmnc6",
   "priority": "P2",
   "rank": 0,

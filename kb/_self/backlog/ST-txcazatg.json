@@ -2,7 +2,7 @@
   "id": "ST-txcazatg",
   "kind": "story",
   "title": "kbgit.py sync reads the remote ref after a push that timed out before it reports the push failed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-aoiqmnc6",
   "priority": "P3",
   "rank": 0,

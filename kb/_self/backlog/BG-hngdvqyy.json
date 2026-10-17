@@ -2,7 +2,7 @@
   "id": "BG-hngdvqyy",
   "kind": "bug",
   "title": "The gate classifier gives the secrets class to a gate that only names the Python tokenize module, or by the path of a kb article about secrets",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-aoiqmnc6",
   "priority": "P2",
   "rank": 0,
