@@ -2,7 +2,7 @@
   "id": "BG-jy6yxnq4",
   "kind": "bug",
   "title": "A live session's coord intent drops out of the digest once its 6-hour presence lease lapses, since only a session start, a claim or a research start renews it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -49,5 +49,6 @@
   "links": [
     "parked: SP-6jfnx5i3 review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 review G2 (BG-iwqcj5zf with the coord hook): digest now shows an intent only while its session/<id> lease is held, and the hook renews that lease (LEASE_SECONDS, 6 h) only at SessionStart, a backlog.py claim command or a /kb-research start, so a session that runs longer without one of them (an orchestrator running a sprint) vanishes from other sessions' digests while it is alive. Any hook event of a live session renews its presence lease, so its intents keep showing while it runs. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (30 s left after a later hook event). Gate g1 settles how often a hook event renews (asked before the start: a coord call per hook event costs every tool call)."
+  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 review G2 (BG-iwqcj5zf with the coord hook): digest now shows an intent only while its session/<id> lease is held, and the hook renews that lease (LEASE_SECONDS, 6 h) only at SessionStart, a backlog.py claim command or a /kb-research start, so a session that runs longer without one of them (an orchestrator running a sprint) vanishes from other sessions' digests while it is alive. Any hook event of a live session renews its presence lease, so its intents keep showing while it runs. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (30 s left after a later hook event). Gate g1 settles how often a hook event renews (asked before the start: a coord call per hook event costs every tool call).",
+  "claimed_by": "orch-r11"
 }
