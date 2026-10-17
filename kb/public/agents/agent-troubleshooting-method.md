@@ -2,8 +2,8 @@
 topic: agents/agent-troubleshooting-method
 priority: P3
 applies_to: "a troubleshooting method for agentic work: Google's Site Reliability Engineering book (2017), chapters 12 (Effective Troubleshooting) and 15 (Postmortem Culture); DORA's 2024 Accelerate State of DevOps report and 2025 State of AI-assisted Software Development report; Claude Code best practices, troubleshooting and configuration debugging pages (retrieved 2026-10-15)"
-retrieved_utc: 2026-10-15
-sources: [S-bykh7vnm, S-u2rergzb, S-2k5yy4cc, S-acskf4b2, S-xyroxc3f, S-hs7ypnlx, S-o3v6ozch, S-odq4ke5n, S-aqddt7m6]
+retrieved_utc: 2026-10-17
+sources: [S-bykh7vnm, S-u2rergzb, S-2k5yy4cc, S-acskf4b2, S-xyroxc3f, S-hs7ypnlx, S-o3v6ozch, S-odq4ke5n, S-aqddt7m6, S-aishnkok, S-qulnsg4e, S-qdxfqzln, S2157, S1921]
 status: complete
 ---
 
@@ -63,6 +63,14 @@ Google's Site Reliability Engineering (SRE) book treats troubleshooting as the h
 - `/context` shows what occupies the context window (system prompt, tools, MCP tools, subagents, memory files, skills, messages); if a file loaded but an instruction is still not followed, the issue is likely how it is written. [DOC S-aqddt7m6]
 - `claude --safe-mode` turns off CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles and keybindings (managed hooks and settings policy still apply); a problem that disappears there lies in one of the items turned off. [DOC S-aqddt7m6]
 - `claude --debug` writes a debug log that records each hook event, the matchers checked and the hook's exit code and output; `claude --debug=mcp` puts an MCP server's stderr in the log at `~/.claude/debug/<session-id>.txt`. [DOC S-aqddt7m6]
+
+### Troubleshooting a multi-agent run (Claude Code and Anthropic's Research system)
+- In agent view a session is `blocked` only when it waits on you (a question, a permission or sandbox decision, an error only you can clear such as an expired login), `working` while a turn or a self-driven step such as a `/loop` iteration or a CI wait runs, and `done` when the last turn finished; `waitingFor` names the open prompt. A session in `working` for long is therefore not waiting on you. [DOC S-aishnkok]
+- To see what a parallel agent is doing before stopping it: `claude logs <id|name>` prints a background session's recent output, `/workflows` shows an agent's prompt, recent tool calls (with their state) and result, a teammate's transcript opens from the agent panel, and a subagent's transcript opens from `/tasks`. [DOC S-aishnkok, S-qulnsg4e, S-qdxfqzln, S2157]
+- A workflow agent whose output stops arriving restarts by itself from the same prompt (shown as `(retry 1)`, at most five restarts) and then fails the `agent()` call; the stall window is lengthened per agent with `stallMs` or for all agents with `CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS`. [DOC S-qulnsg4e]
+- Anthropic's Research post found that users reporting "not finding obvious information" could not be diagnosed until it added full production tracing, which showed whether agents used bad queries, chose poor sources or hit tool failures. [DOC S1921]
+- A stuck or looping parallel agent maps onto the SRE loop as: report (which agent, its state and last output), triage (stop that agent, not the whole run, and keep its transcript), examine (its transcript and tool calls, the brief it was given), diagnose (a vague brief explains duplicated work, a missing stop condition or cap explains runaway spawning, a failed tool or an unanswered permission prompt explains a hang) and treat (fix the brief or the cap, then resume the same agent or start a replacement). [DER S-bykh7vnm, S-aishnkok, S-qulnsg4e, S-qdxfqzln, S1921: the SRE steps applied to the states, transcripts and failure causes the vendor pages name]
+- Duplicated work between parallel agents is diagnosed from the briefs, not from the agents: Anthropic traced it to short instructions without a division of labour, and the fix it gives is a brief with an objective, output format, tool guidance and task boundaries; for teammates editing one file the Claude Code fix is a file partition. [DER S1921, S-qdxfqzln: both pages name the cause and fix; the common diagnosis is derived]
 
 ### How it fits a coding agent's failures
 - The SRE loop maps onto a failed agent task: the report is the failing check's output (expected, actual, the command that reproduces it); triage is stopping or rewinding the agent before root-causing, keeping the transcript as evidence; examine is `/context`, the debug log and the transcript; diagnose starts from what changed last (the last edit, a new CLAUDE.md rule, plugin or hook) and bisects the configuration with `--safe-mode`. [DER S-bykh7vnm, S-o3v6ozch, S-aqddt7m6: SRE steps and pitfalls; Claude Code's stop, rewind, `/context`, safe mode and debug log]

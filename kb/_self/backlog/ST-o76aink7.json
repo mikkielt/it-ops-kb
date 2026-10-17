@@ -46,6 +46,25 @@
   "depends_on": [
     "ST-5mcrotet"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where do the new stop, kept-work and failure-mode facts go: in the four touched articles, or in a new topic?",
+      "options": [
+        "extend the touched articles",
+        "open a new topic"
+      ],
+      "recommendation": "extend the touched articles",
+      "do": {
+        "extend the touched articles": "ST-o76aink7",
+        "open a new topic": "ST-o76aink7"
+      },
+      "class": "design",
+      "answer": "extend the touched articles",
+      "by": "agent"
+    }
+  ],
   "links": [
     "live: https://code.claude.com/docs/en/agents",
     "live: https://code.claude.com/docs/en/sub-agents",

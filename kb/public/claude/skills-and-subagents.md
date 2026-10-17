@@ -2,8 +2,8 @@
 topic: claude/skills-and-subagents
 priority: P2
 applies_to: "Claude Code docs (code.claude.com), skills/sub-agents/agent-teams, retrieved 2026-10-12"
-retrieved_utc: 2026-10-12
-sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy]
+retrieved_utc: 2026-10-17
+sources: [S2158, S2157, S-j22fjuka, S-hvuk3dqt, S-qdxfqzln, S-ezqg74ki, S-bisz7fay, S1824, S-gxuoqjzy, S2132]
 status: complete
 ---
 
@@ -202,6 +202,18 @@ shared task list and direct inter-agent messaging on top of ordinary subagent de
 - `TeammateIdle`, `TaskCreated`, `TaskCompleted` hooks let a project enforce quality gates on team activity; exiting
   2 sends feedback and blocks the transition (idle continuation, task creation, or task completion respectively).
   [DOC S-qdxfqzln]
+
+### Agent teams: failure modes the docs name and their fixes
+- Teammates that stop after an error instead of recovering: open the teammate (select it and press Enter in in-process mode, click its pane in split mode) to read its output, then give it more instructions or spawn a replacement teammate to continue the work; a message from the lead or another teammate wakes an in-process teammate that is waiting to retry a failed API request. [DOC S-qdxfqzln]
+- A lead that decides the team is finished before all tasks are done: tell it to keep going; a lead that starts implementing tasks itself instead of waiting: tell it to wait for its teammates to complete their tasks. [DOC S-qdxfqzln]
+- Task status can lag, because teammates sometimes fail to mark tasks completed, which blocks dependent tasks: check whether the work is done and update the status manually or tell the lead to nudge the teammate. [DOC S-qdxfqzln]
+- Two teammates editing one file overwrite each other; the fix is to give each teammate a different set of files. [DOC S-qdxfqzln]
+- Sizing: the page sets no hard limit on teammates and recommends 3 to 5 for most work, with 5 to 6 tasks per teammate; tasks that are too small cost more in coordination than they gain, and tasks that are too large let teammates work too long without a check-in, which raises the risk of wasted effort. [DOC S-qdxfqzln]
+- A team left running unattended for too long raises the risk of wasted effort, so the page asks you to check in, redirect approaches that are not working and synthesize findings as they arrive. [DOC S-qdxfqzln]
+- Cost: each active teammate keeps using tokens until it exits or the session ends, so the cost page says to keep teams small, use Sonnet for teammates, keep spawn prompts focused and shut teammates down when their work is done. [DOC S2132]
+- A tmux session that outlives the Claude Code session was not fully cleaned up: list sessions with `tmux ls` and end the team's with `tmux kill-session -t <session-name>`. [DOC S-qdxfqzln]
+- Teammate permission requests bubble up to the lead and create friction; the page's mitigation is to pre-approve common operations in permission settings before spawning teammates. [DOC S-qdxfqzln]
+- Teammates in the same session cannot be shut down at once by a documented single command; the page's graceful route is a shutdown request per teammate through the lead, and the team's shared directories are cleaned up when the session ends. [DER S-qdxfqzln: the shutdown section names only the per-teammate request; no all-teammates command found on the page on 2026-10-17]
 
 ## Reference
 See `claude/skills-and-subagents.csv` for the full SKILL.md and agent `.md` frontmatter field table (type/values,

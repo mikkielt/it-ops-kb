@@ -2,8 +2,8 @@
 topic: claude/parallel-sessions
 priority: P3
 applies_to: "Claude Code docs: run agents in parallel, agent view (research preview), worktrees, dynamic workflows, agent teams (experimental), subagents; retrieved 2026-10-16"
-retrieved_utc: 2026-10-16
-sources: [S-76oyiuez, S-qulnsg4e, S-aishnkok, S-j22fjuka, S-qdxfqzln, S-wzatkg4o, S-hvuk3dqt, S2157, S-sdxhnx3i]
+retrieved_utc: 2026-10-17
+sources: [S-76oyiuez, S-qulnsg4e, S-aishnkok, S-j22fjuka, S-qdxfqzln, S-wzatkg4o, S-hvuk3dqt, S2157, S-sdxhnx3i, S-2ip5zngf, S-eumxht6x]
 status: partial
 ---
 
@@ -18,7 +18,9 @@ or beyond it. Agent view puts each background session's edits in its own git wor
 (`worktree.bgIsolation` turns that off); agent teams do not isolate teammates, so their files are partitioned by
 hand; a dynamic workflow holds the plan in a script instead of in Claude's context. Only cross-session messaging
 (over Remote Control) and projects reach other machines or the cloud; agent view, agent teams, worktrees and
-workflows run on the machine that started them.
+workflows run on the machine that started them. Each kind has its own way to be watched and stopped (agent view,
+`/tasks`, the agent panel, `/workflows`) and its own record of what a stop leaves behind: a transcript for every
+kind, a worktree only where one was made.
 
 ## Facts
 ### The options and what each is for
@@ -62,6 +64,45 @@ workflows run on the machine that started them.
 - Claude Code checks four things while a session is isolated: edits that target the main checkout, a command whose working directory resolves to it, git redirected into it (`git -C`, `--git-dir`, `GIT_DIR`, `cd`), and a command whose text does not show that its git stays inside the worktree; none of them tracks what a shell command writes, so `cp` or a redirect into the main checkout is not refused by them. [DOC S-j22fjuka]
 - For a background session's changes in a worktree it entered, Claude is told to commit without asking, push the branch when a remote exists and open a draft pull request when the task calls for it, and never to push to `main` or `master`, force-push or merge; the user's own git instructions take precedence. [DOC S-aishnkok]
 - Deleting a session in agent view removes the worktree Claude created for it unless a kept case applies, so changes are committed first; a periodic sweep removes subagent and background-session worktrees older than `cleanupPeriodDays` except those that still hold work, and a `git worktree lock` protects a worktree while its agent runs. [DOC S-j22fjuka]
+
+### Seeing and stopping running parallel work
+- In agent view, `Ctrl+X` on a selected session stops it and a second `Ctrl+X` within two seconds deletes it; on a group header it deletes every session in the group after confirmation, and a stop that fails (for example because the background service does not respond) does not block the delete. [DOC S-aishnkok]
+- A reply to a session from agent view's peek panel that is exactly `/stop` stops the session at once instead of being delivered, whether the session is working or waiting on you; for a shell job the reply goes to the command's terminal as typed input. [DOC S-aishnkok]
+- Detaching never stops a background session: `←`, `Ctrl+Z`, `/exit` and a double `Ctrl+C` or `Ctrl+D` all leave it running, and `/stop` ends a session from inside it. [DOC S-aishnkok]
+- From a shell, `claude agents` lists background sessions, `claude logs <id|name>` prints a session's recent output, `claude attach <id|name>` opens it, `claude stop <id>` stops it (`claude kill` is accepted), and `claude respawn <id>` restarts a running or stopped session. [DOC S-aishnkok]
+- `claude agents --json` is the page's supported way to read session state from a script: each background session has a `state` of `working`, `blocked`, `done`, `failed` or `stopped`, and a live process has a `status` of `busy`, `waiting` or `idle` plus a `waitingFor` such as `permission prompt` or `input needed`; the files under `~/.claude/jobs/<id>/` are not a stable interface. [DOC S-aishnkok]
+- Agent view shows `Stopped` for a session you stopped with `Ctrl+X` or `claude stop`, whose process was ended from outside Claude Code, or that ended while the background service was off; a session whose process exits unexpectedly is restarted by the supervisor, but ending one you backgrounded yourself with `←` or `/background` (for example with `kill`) marks it stopped instead. [DOC S-aishnkok]
+- `claude daemon stop --any` stops the supervisor and the background sessions it hosts, and `--keep-workers` leaves the sessions running for the next supervisor; on macOS and Linux a session's process waits about a minute for a new supervisor and stops if none comes, which is why the page says to run `claude agents` within that minute after a stall. [DOC S-aishnkok]
+- When attaching, peeking or `claude logs` reports that the background service did not respond, the page treats the supervisor as stalled and gives `claude daemon stop --any --keep-workers` followed by `claude agents` as the recovery; on Windows a supervisor that ignores the stop request needs `taskkill /PID <pid>`. [DOC S-aishnkok]
+- Deleting a session stops the background shell commands, workflows and background subagents it carried over; `CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF=1` makes them stop with the session's process instead of carrying over. [DOC S-aishnkok]
+- For subagents of the current session, `/tasks` lists them and `x` on a row stops one; a subagent Claude stops with the `TaskStop` tool, which also accepts a teammate or a named background agent by ID or name, can be resumed by a message, while one you stopped with `x` does not auto-resume. [DOC S2157, S-2ip5zngf]
+- `Ctrl+X Ctrl+K`, pressed twice within three seconds, stops every running background subagent in the session and turns off artifact auto-replies for the rest of it; it works while a background subagent's permission prompt is open. [DOC S-eumxht6x]
+- A background subagent's permission prompt appears in the main session naming the subagent, and `Esc` denies that one tool call without stopping the subagent; `Ctrl+B` moves a running task to the background. [DOC S2157]
+- For an in-process agent-team teammate, the arrow keys select a teammate in the agent panel, `Enter` opens its session, `x` stops it, and `Esc` while viewing its transcript interrupts its current turn; the graceful route is to ask the lead to shut the teammate down, which sends a request the teammate can approve or reject. [DOC S-qdxfqzln]
+- Teammates finish their current request or tool call before shutting down, so the page lists slow shutdown as a limitation; a teammate row that vanished after sitting idle has been hidden, not stopped, and a message to the teammate by name brings the row back. [DOC S-qdxfqzln]
+- For a dynamic workflow, `/workflows` lists runs and `x` on a list entry stops a running one; in the progress view `p` pauses or resumes the run, `x` stops the selected agent or, with focus on the run, the whole workflow, and `r` restarts the selected running agent. [DOC S-qulnsg4e]
+- A stopped workflow stays in the task panel while any of its agents' processes still run, and stopping it again signals those processes again; the `Large workflow` warning (more than 25 agents or a projected 1.5 million tokens) is advisory and points to `/workflows`, where the run can be stopped. [DOC S-qulnsg4e]
+
+### What is kept when parallel work is stopped
+- A deleted background session leaves the list but its transcript stays on the machine and opens with `claude --resume`; on v2.1.212 or later a bare `/resume` in agent view's dispatch input lists past sessions, deleted ones included, and resumes the chosen one as a background session. [DOC S-aishnkok]
+- A finished or waiting background session that stays unattached for about an hour has its process stopped by the supervisor; the conversation stays on disk and resumes when you attach or reply, and `Ctrl+T` pins a session to keep its process running. [DOC S-aishnkok]
+- Agent view deletes a session's worktree including uncommitted changes, `claude rm` keeps it when it holds uncommitted changes, and neither removes a worktree another running session uses or has locked; a worktree with commits Claude Code cannot confirm are saved elsewhere is kept until the delete is repeated, and `claude rm <id> --discard-unpushed` discards the commits and the branch. [DOC S-aishnkok]
+- A worktree you made yourself and started the session in is left in place whichever way the session is deleted. [DOC S-aishnkok]
+- When a session is backgrounded, running background shell commands, background subagents and dynamic workflows carry over to its new process, a subagent still running in a workflow restarts from the beginning, and running monitors stop. [DOC S-aishnkok]
+- Subagent transcripts are files `agent-<agentId>.jsonl` under the session's `subagents/` folder in `~/.claude/projects/`; they are untouched by the main conversation's compaction, last for the session and are deleted after `cleanupPeriodDays` (30 days by default). [DOC S2157]
+- A background subagent that fails or that you stop keeps its row in the subagent panel for 30 seconds, and `x` clears it sooner; while the row is there, typing into the subagent's transcript resumes it yourself, after which a message from Claude can auto-resume it again. [DOC S2157]
+- A background subagent that ends on an API error is marked failed and the message Claude receives names the error and includes the subagent's last output, so partial work is not lost; a foreground subagent cut off after producing text returns that partial output with a note that it did not finish. [DOC S2157]
+- A subagent worktree with no changes is removed when the subagent finishes, one with changes stays until the periodic sweep can remove it without losing work, and Claude Code holds a `git worktree lock` on a worktree while its agent runs. [DOC S-j22fjuka]
+- The sweep releases a lock Claude Code set for a session whose process has exited, so a killed background session does not keep its worktree locked (before v2.1.210 the lock stayed until `git worktree unlock`); `-p` runs are not cleaned up at exit. [DOC S-j22fjuka]
+- When the session ends, the team config directory of an agent team is removed but the task list under `~/.claude/tasks/{team-name}/` stays until the `cleanupPeriodDays` sweep; `/resume` and `/rewind` do not restore in-process teammates, and a message to a stopped in-process teammate in the same session brings it back with its saved conversation. [DOC S-qdxfqzln]
+- A workflow run that is stopped keeps the results of completed agents: on relaunch a completed agent returns its saved result, an agent that was running when the whole run stopped starts over without counting as failed, and an agent stopped on its own with `x` counts as failed, so it and every agent that started after it run again. [DOC S-qulnsg4e]
+- Relaunching a stopped workflow is refused until the agents of the stopped run have exited, so a second copy cannot run beside them; a stalled agent's restart starts without the earlier attempt's transcript, files the attempt changed stay changed and its tokens stay in the run total. [DOC S-qulnsg4e]
+- Choosing `Exit and stop tasks` when leaving a session stops a running workflow, but its saved results stay under the session's directory in `~/.claude/projects/` for a session resumed with `claude --resume`; in a session started fresh Claude has no earlier run to relaunch. [DOC S-qulnsg4e]
+- The docs name no worktree or file-level rollback for the files a stopped agent-team teammate or a stopped workflow agent had already changed: agent teams do not isolate teammates in worktrees, and the workflows page says only that files a stalled attempt changed stay changed. [DER S-qdxfqzln, S-qulnsg4e: the isolation rows and the stall paragraph; the agent-teams and workflows pages read on 2026-10-17 state neither]
+
+### How it fits: which stop for which kind of work
+- No single command stops every kind of parallel work: a background session stops with `Ctrl+X`, `/stop` or `claude stop <id>`, a subagent with `x` in `/tasks` or `Ctrl+X Ctrl+K` for all of them, a teammate with `x` in the agent panel or a shutdown request through the lead, a workflow with `x` in `/workflows`, and the supervisor with `claude daemon stop --any`. [DER S-aishnkok, S2157, S-eumxht6x, S-qdxfqzln, S-qulnsg4e: the per-kind stop rows above]
+- A stop keeps the conversation or transcript in every kind and the files only where an isolation exists: a background session's changes sit in its worktree until a delete removes them, so commit or push first; a teammate's edits are in the shared checkout and stay there. [DER S-aishnkok, S-qdxfqzln, S-j22fjuka: delete rules and the teams isolation row]
 
 ### Which options reach other machines or the cloud
 - Agent view runs sessions on your machine under a per-user supervisor process that outlives the terminal; sessions survive sleep but stop when the machine shuts down, and the page sends anyone who wants Claude to start and track cloud sessions to projects. [DOC S-aishnkok]

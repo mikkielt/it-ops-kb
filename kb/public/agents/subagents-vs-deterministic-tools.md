@@ -2,8 +2,8 @@
 topic: agents/subagents-vs-deterministic-tools
 priority: P1
 applies_to: "Claude Code / Agent Skills (2026-09 docs), MCP spec 2025-06-18, Microsoft Agent Framework 1.0 (GA 2026-04-03)"
-retrieved_utc: 2026-09-28
-sources: [S1920, S1921, S1922, S1923, S1924, S1925, S1926, S1927, S1928, S1930, S1931, S1932, S1934, S1935, S1936, S1937, S1938, S1939, S1940, S1941, S1942, S1943, S1944, S1945, S-teeldzof, S744, S745]
+retrieved_utc: 2026-10-17
+sources: [S1920, S1921, S1922, S1923, S1924, S1925, S1926, S1927, S1928, S1930, S1931, S1932, S1934, S1935, S1936, S1937, S1938, S1939, S1940, S1941, S1942, S1943, S1944, S1945, S-teeldzof, S744, S745, S-qulnsg4e, S1824, S2157, S-qdxfqzln]
 status: complete
 ---
 
@@ -73,6 +73,19 @@ because no observed failure yet justifies scripting them.
 - Cognition's later, undated follow-up softens this: it now reports multi-agent setups that work in
   production provided writes stay single-threaded — the same vendor revising an earlier absolute claim
   (see `conflicts.md`). [COMMUNITY S1927]
+
+### QG13b — failure modes of parallel or multi-agent work that Anthropic names, and its mitigations
+- The Research post says its early agents spawned 50 subagents for simple queries, scoured the web endlessly for nonexistent sources and distracted each other with excessive updates, and that prompt engineering was its primary lever against these behaviours. [DOC S1921]
+- Watching agents step by step in simulations with the exact prompts and tools revealed more failure modes: agents continuing when they already had sufficient results, using overly verbose search queries and selecting incorrect tools. [DOC S1921]
+- The post's mitigations by failure: a delegation brief with an objective, output format, tool guidance and task boundaries against duplicated work and gaps; embedded effort-scaling rules against over-investment in simple queries; explicit tool-selection heuristics and distinct tool descriptions against wrong-tool paths; and subagent output stored externally with a lightweight reference returned against information loss. [DOC S1921]
+- On stuck or failed runs the post says agents are stateful and errors compound, so a run cannot simply restart from the beginning; it built systems that resume from where the agent was when the error occurred, tells the agent when a tool is failing so it can adapt, and combines that with deterministic safeguards "like retry logic and regular checkpoints". [DOC S1921]
+- For debugging the post says agents are non-deterministic between runs even with identical prompts, and that full production tracing plus monitoring of agent decision patterns and interaction structures (without reading conversation contents) let it diagnose why agents failed; for deployment it used rainbow deployments, shifting traffic gradually so running agents are not broken by a new version. [DOC S1921]
+- The post names the cost of its design: lead agents run subagents synchronously, so the lead cannot steer subagents, subagents cannot coordinate and one slow subagent can block the system; asynchronous execution would add parallelism but also problems of result coordination, state consistency and error propagation. [DOC S1921]
+- The post says domains where all agents must share the same context or have many dependencies between them are not a good fit for multi-agent systems today, and that most coding tasks have fewer truly parallelizable parts than research. [DOC S1921]
+- "Building effective agents" names the generic risk and its mitigations: the autonomy of agents means higher costs and potentially compounding errors, so it recommends extensive testing in sandboxed environments with guardrails, and says an agent loop commonly includes stopping conditions such as a maximum number of iterations. [DOC S1920]
+- Claude Code gives the operator hard stops for the same failure modes: a workflow run stops at 1,000 agents, which the workflows page says prevents runaway loops; `--max-budget-usd` stops a `claude -p` run at an estimated spend and makes a further subagent spawn fail; a subagent's `maxTurns` returns its output marked partial. [DOC S-qulnsg4e, S1824, S2157]
+- Claude Code's agent teams page names its own failure modes (teammates that stop after errors, a lead that finishes early or does the work itself, lagging task status, same-file overwrites, runaway token cost) with fixes in `claude/skills-and-subagents.md`, and how to stop each kind of parallel work is in `claude/parallel-sessions.md`. [DOC S-qdxfqzln]
+- No Anthropic page found names deadlock or livelock between agents as a failure mode; the nearest are the Research post's blocked-on-one-subagent synchronous bottleneck and the workflow stall restart (`agent stalled on all 6 attempts`). The claude-code-docs server was searched on 2026-10-17 for "deadlock" and found it only in a changelog line about a skill-file watcher. [DER S1921, S-qulnsg4e: the sync bottleneck and the stall paragraph; absence checked in the docs search, not a vendor statement]
 
 ### QG14 — decision signals for replacing a child agent with a deterministic tool
 - **Stable, repeated tool-call sequence**: Anthropic's tool-writing guidance treats a fixed multi-step
