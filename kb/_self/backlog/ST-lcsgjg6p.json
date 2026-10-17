@@ -72,7 +72,9 @@
         "Under the observed signal label after the LOG lines, at most 3 per pack or show, audit gets a flags column of flagged lines per article": "ST-lcsgjg6p",
         "A separate block with its own label and cap, audit prints a flagged-line list": "ST-lcsgjg6p"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "Under the observed signal label after the LOG lines, at most 3 per pack or show, audit gets a flags column of flagged lines per article",
+      "by": "operator"
     },
     {
       "id": "g2",
