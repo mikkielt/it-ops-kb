@@ -82,8 +82,9 @@ ASSIGNMENT = re.compile(
     r"""(?i)(?<![\w.-])([\w.-]*?(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)["']?[ \t]*[:=](?![=>])[ \t]*)"""
     r"""("[^"\n]*"|'[^'\n]*'|["']?[^\s&;"']+)""")
 ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|\$\w+|%\w+%|\*{3}")  # a value that is not a secret
-# A private key block whole, BEGIN line through END line (the BEGIN line alone is a kbcommon.SECRETS shape).
-KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----", re.S)
+# A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
+# (the BEGIN line alone is a kbcommon.SECRETS shape).
+KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
 # The credential of an Authorization header, Bearer or Basic, whatever its length or entropy; the scheme stays.
 AUTH_HEADER = re.compile(r"""(?i)(\bAuthorization["']?[ \t]*[:=][ \t]*["']?(?:Bearer|Basic)[ \t]+)([^\s"',;]+)""")
 # The password of a URL's user:password@ part; the user stays.

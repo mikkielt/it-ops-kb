@@ -41,7 +41,8 @@ KEY_BODY = "MIIfake" + "FAKEfake"
 KEY_BLOCK = "-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\n-----END " + "PRIVATE KEY-----"
 SHAPES = {"bearer": ("Authorization: Bearer " + VALUE, VALUE), "basic": ("Authorization: Basic " + BASIC, BASIC),
           "userinfo": ("postgres://fakeuser:" + VALUE + "@db.example.com:5432/app", VALUE),
-          "key body": ("before\n" + KEY_BLOCK + "\nafter", KEY_BODY)}
+          "key body": ("before\n" + KEY_BLOCK + "\nafter", KEY_BODY),
+          "cut-off key": ("before\n-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\nmore lines", KEY_BODY)}
 ORDINARY = ("Set the Windows LAPS password length to 14 in Intune. See https://learn.microsoft.com/windows/laps and "
             "t@example.com, 192.0.2.10, 00000000-0000-0000-0000-000000000000, PL-LT-00123, corp.example.com.")
 
@@ -77,6 +78,7 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
         assert redact.redact(shaped) == shaped, kind
     assert "fakeuser:<secret>@db.example.com" in redact.redact(SHAPES["userinfo"][0])
     assert redact.redact(SHAPES["key body"][0]) == "before\n<secret>\nafter"
+    assert redact.redact(SHAPES["cut-off key"][0]) == "before\n<secret>"
     assert redact.redact("\n".join(PLACEHOLDER_VALUES)) == "\n".join(PLACEHOLDER_VALUES)
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
