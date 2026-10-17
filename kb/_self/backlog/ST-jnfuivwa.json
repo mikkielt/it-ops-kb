@@ -2,7 +2,7 @@
   "id": "ST-jnfuivwa",
   "kind": "story",
   "title": "The kb's claude rm --discard-unpushed fact gives the argument and version the command table gives",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3g3egfll",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,18 @@
     "parked: SP-4dab3cy5 review"
   ],
   "notes": "Goal before the 2026-10-17 plan: SP-4dab3cy5 review G3 (S4, ST-o76aink7): kb/public/claude/parallel-sessions.md's `claude rm <id> --discard-unpushed` fact omits the value the agent-view command table (https://code.claude.com/docs/en/agent-view) gives, `--discard-unpushed <commit>@<worktree-id>` (v2.1.260+, the exact value the refusal printed). The fact gives the argument form and its version. Plan 2026-10-17: SP-4dab3cy5 review G3 (S4). Check on origin/main b871374b4 exits 1 (argument form not given). Source: https://code.claude.com/docs/en/agent-view (claude-code-docs server).",
-  "claimed_by": "orch-r12"
+  "evidence": {
+    "commit": "96bc46836ffd76a0c8e122ae41ff00df55c1f9b5",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nls=[l for l in open('kb/public/claude/parallel-sessions.md') if 'discard-unpushed' in l]\nok=any('<commit>@<worktree-id>' in l for l in ls)\nprint(len(ls),'discard-unpushed line(s); argument form given:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "af5eb9e9095dbf0f"
+      }
+    ]
+  }
 }
