@@ -1,0 +1,20 @@
+{
+  "id": "BG-dry4luf6",
+  "kind": "bug",
+  "title": "A gate naming a tokenize module function (tokenize.generate_tokens, tokenize.tokenize) is still classed secrets",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "SP-aoiqmnc6 review G3 (BG-hngdvqyy): TOKENIZE_WORD clears only a bare tokenize, tokenizer or tokenizing, so a gate naming the module's own functions (tokenize.generate_tokens, tokenize.tokenize(f.readline), tokenize.TokenInfo) still matches token and classes secrets; it fails closed. A gate whose only secret word is a name of the tokenize module's API is classed by its other words, and a gate naming an API token, GITLAB_TOKEN or a credential file stays secrets.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['_tools/bl_check.py']}\nqs=['Use tokenize.generate_tokens to find comments?','Does tokenize.tokenize(f.readline) read bytes?']\nr=[a.class_reasons(it,dict(id='g1',question=q,options=['one','two']))[0] for q in qs]\nprint(r);sys.exit(0 if r==['design','design'] else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-aoiqmnc6 review"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "BG-jjbditkb",
+  "kind": "bug",
+  "title": "precheck's lead-in warning misses a research goal whose lead-in ends with a colon and a line break or two spaces before (1)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "SP-aoiqmnc6 review G6 (ST-7kl5dnwr): joined_lead_in looks for the lead-in followed by ': ' and the number with one space, so a goal research story whose lead-in ends ':\\n(1)' or ':  (1)' gets no warning although goal_questions still joins the lead-in to the first question in both shapes. precheck warns of such a lead-in whatever whitespace stands between the colon and the number.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_land as L\nlead='Research with the kb tools first and the live docs for gaps, written as kb facts and gap entries through /kb-research:'\nr=[L.joined_lead_in(lead+sep+'(1) Which option?') for sep in ('\\n','  ')]\nprint([bool(x) for x in r]);sys.exit(0 if all(r) else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-aoiqmnc6 review"
+  ]
+}

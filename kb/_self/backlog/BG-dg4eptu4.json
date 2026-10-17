@@ -1,0 +1,20 @@
+{
+  "id": "BG-dg4eptu4",
+  "kind": "bug",
+  "title": "land's doc-row merge leaves the rebase in progress on a non-UTF-8 kb/_self doc and splits a row at U+2028",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "SP-aoiqmnc6 review G4 (ST-mpwzinrm): rebase_merging_doc_rows reads the conflicted kb/_self doc with read_text(encoding='utf-8') and splits it with str.splitlines, so a doc that is not UTF-8 raises UnicodeDecodeError with the rebase left in progress (UU file, .git/rebase-merge present), and a row holding U+2028, U+0085 or a form feed is written back broken into two lines; a CRLF doc is rewritten LF and a missing final newline is added. A doc the merge cannot read whole is refused with the rebase aborted, and a merged doc keeps every byte outside the merged words.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys,os,subprocess,tempfile,io,contextlib\nsys.path.insert(0,'_tools');import bl_land as L\ndef run(base,main,work):\n    t=tempfile.mkdtemp();g=lambda *a:subprocess.run(['git',*a],cwd=t,capture_output=True)\n    g('init','-q','-b','main');g('config','user.email','a@b.c');g('config','user.name','n')\n    p=os.path.join(t,'kb/_self/x.md');os.makedirs(os.path.dirname(p))\n    open(p,'wb').write(base);g('add','-A');g('commit','-qm','b')\n    g('checkout','-qb','work');open(p,'wb').write(work);g('commit','-qam','w')\n    g('checkout','-q','main');open(p,'wb').write(main);g('commit','-qam','m')\n    try:\n        with contextlib.redirect_stdout(io.StringIO()):L.rebase_merging_doc_rows(t,'main','work')\n    except Exception as e:print('raised',type(e).__name__)\n    return os.path.isdir(os.path.join(t,'.git/rebase-merge')),open(p,'rb').read()\nlatin=run(b'caf\\xe9\\n| a | p q r z |\\n',b'caf\\xe9\\n| a | k p q r z |\\n',b'caf\\xe9\\n| a | p q r z w |\\n')\nls=run('| a | p q r z |\\n'.encode(),'| a | k p q r z |\\n'.encode(),'| a | p q r z w |\\n'.encode())\nprint('non-utf8 rebase left in progress:',latin[0],'| U+2028 row kept:',b'\\xe2\\x80\\xa8' in ls[1])\nsys.exit(0 if not latin[0] and not ls[0] and b'\\xe2\\x80\\xa8' in ls[1] else 1)"
+    ]
+  },
+  "links": [
+    "parked: SP-aoiqmnc6 review"
+  ]
+}
