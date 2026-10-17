@@ -2,7 +2,7 @@
   "id": "ST-kx5tq4uw",
   "kind": "story",
   "title": "Review sprint: redact catches placeholder-prefixed, escaped-JSON and $-word secrets",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g4mwrwsv",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r10"
 }
