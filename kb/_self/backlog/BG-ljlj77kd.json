@@ -2,7 +2,7 @@
   "id": "BG-ljlj77kd",
   "kind": "bug",
   "title": "The coord hook drops its lease token when a coord.py call times out, so a session whose SessionEnd release timed out shows for six more hours",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-6jfnx5i3 review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 review G5 (BG-iwqcj5zf, BG-yya5olzw): coord() in .claude/hooks/coord_hook.py returns (None, '') on its own 8 s timeout while coord.py waits up to 30 s on a busy store, lease() treats a failed renew as a lost token and session_end removes the state file whether or not the release worked, so after a busy store the session holds session/<id> for the full lease with no token and its intent shows to others after a clean SessionEnd. A session whose SessionEnd release could not run while the store was busy does not show to a later session once the store is free. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (the busy session's intent still shows to a later session). Runs after BG-jy6yxnq4 (same hook functions lease and session_end)."
+  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 review G5 (BG-iwqcj5zf, BG-yya5olzw): coord() in .claude/hooks/coord_hook.py returns (None, '') on its own 8 s timeout while coord.py waits up to 30 s on a busy store, lease() treats a failed renew as a lost token and session_end removes the state file whether or not the release worked, so after a busy store the session holds session/<id> for the full lease with no token and its intent shows to others after a clean SessionEnd. A session whose SessionEnd release could not run while the store was busy does not show to a later session once the store is free. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (the busy session's intent still shows to a later session). Runs after BG-jy6yxnq4 (same hook functions lease and session_end).",
+  "claimed_by": "orch-r11"
 }
