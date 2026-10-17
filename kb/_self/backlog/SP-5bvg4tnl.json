@@ -1,0 +1,20 @@
+{
+  "id": "SP-5bvg4tnl",
+  "kind": "sprint",
+  "title": "Researched facts anchored to what their sources hold now",
+  "status": "planned",
+  "goal": "researched facts are anchored to what their sources hold now",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
