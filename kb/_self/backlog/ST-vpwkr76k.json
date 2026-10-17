@@ -2,7 +2,7 @@
   "id": "ST-vpwkr76k",
   "kind": "story",
   "title": "A kb_feedback report repeated after its first row was delivered records no second row or own entry",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -50,5 +50,18 @@
     "parked: SP-waxgh3kg review"
   ],
   "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Two allowed designs (capture-side record in ql_capture.record_feedback:446 outliving delivery, or distill dropping a held report); a check fits one only, full drive needs distill with a store fixture Plan 2026-10-17: the capture-side design of the two the goal allowed (the planner's choice: one check fits it, the distill side would need a store fixture). The check records a report, removes the spool's tools files as delivery does and records it again: on 7cb5e0cbb both calls say recorded (exit 1).",
-  "claimed_by": "orch-r07"
+  "evidence": {
+    "commit": "b65acf421c46dda0df52485e6321c16f9e0c9e1b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os, sys, tempfile\nfrom pathlib import Path\ntmp = Path(tempfile.mkdtemp())\nos.environ.update(CLAUDE_PLUGIN_DATA=str(tmp), CLAUDE_PLUGIN_ROOT=str(Path('.').resolve()))\n(tmp / 'querylog' / 'spool').mkdir(parents=True)\nsys.path.insert(0, '_tools')\nimport ql_capture as C\nf = {'pack': 'P-0123abcd', 'outcome': 'misled', 'judged_by': 'agent', 'lines': [{'line': 'public/claude/statusline.md:25', 'issue': 'wrong'}]}\nfirst = C.record_feedback(f)\nfor p in (tmp / 'querylog' / 'spool').glob('tools-*.jsonl'):\n    p.unlink()  # delivery took the row out of the spool\nagain = C.record_feedback(f)\nprint('first:', first, '| after delivery:', again)\nsys.exit(0 if first[1] == 'recorded' and again == (first[0], 'repeat') else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "8a66dc28a5893a76"
+      }
+    ]
+  }
 }
