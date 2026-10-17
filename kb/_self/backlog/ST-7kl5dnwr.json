@@ -44,7 +44,9 @@
         "open goal research stories, a lead-in longer than QUESTION_LEAD_WORDS words directly before a numbered piece": "ST-7kl5dnwr",
         "every open item whose goal_questions output holds a long lead-in, numbered piece or not": "ST-7kl5dnwr"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "open goal research stories, a lead-in longer than QUESTION_LEAD_WORDS words directly before a numbered piece",
+      "by": "operator"
     }
   ],
   "links": [
