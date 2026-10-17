@@ -2,7 +2,7 @@
   "id": "BG-efbghw7n",
   "kind": "bug",
   "title": "redact misses backslash-escaped JSON assignments and headers, a subscripted Authorization header and an escaped quote inside a value",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,
@@ -98,5 +98,54 @@
     "parked: SP-yyjwfjtc review"
   ],
   "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 3. Repro on origin/main b871374b4 exits 1 (the escaped JSON value is kept). Reads the JSON escape facts of the goal research story ST-v7rqvnwe. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); never weaken a guard. Runs after BG-hqgtovpo: both edit _assigned.",
-  "claimed_by": "orch-r10"
+  "evidence": {
+    "commit": "31b8d3cb8cbe86e9a9017991381ccedc79fa9ebb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(\"{\"+b+\"Authorization\"+b+\": \"+b+\"Bearer \"+v+b+\"}\");print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "fb9bb8444a24346f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(\"headers['Authorization'] = 'Bearer \"+v+\"'\");print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "4f9e7b6c6475b19b"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";o=R.redact(K+chr(34)+\"Fa\"+b+\"kePass12345x\"+chr(34));print(o);sys.exit(1 if \"kePass12345x\" in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "127c2ca7b937de15"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);K=\"pass\"+\"word=\";s=[\"{\"+b+\"password\"+b+\": \"+b+v+b+\"}\",\"{\"+b+\"Authorization\"+b+\": \"+b+\"Bearer \"+v+b+\"}\",\"headers['Authorization'] = 'Bearer \"+v+\"'\",K+chr(34)+\"Fa\"+b+\"kePass12345x\"+chr(34)];o=[R.redact(x) for x in s];bad=[x for x in o if \"kePass12345x\" in x or R.redact(x)!=x];print(bad);sys.exit(1 if bad else 0)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;v=\"Fake\"+\"Pass12345x\";b=chr(92)+chr(34);o=R.redact(\"{\"+b+\"password\"+b+\": \"+b+v+b+\"}\");print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "647bc924f3a0efca"
+      }
+    ]
+  }
 }
