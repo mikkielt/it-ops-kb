@@ -2,7 +2,7 @@
   "id": "BG-jjbditkb",
   "kind": "bug",
   "title": "precheck's lead-in warning misses a research goal whose lead-in ends with a colon and a line break or two spaces before (1)",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

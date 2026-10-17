@@ -2,7 +2,7 @@
   "id": "BG-jy6yxnq4",
   "kind": "bug",
   "title": "A live session's coord intent drops out of the digest once its 6-hour presence lease lapses, since only a session start, a claim or a research start renews it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

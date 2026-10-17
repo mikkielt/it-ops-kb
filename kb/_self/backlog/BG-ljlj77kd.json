@@ -2,7 +2,7 @@
   "id": "BG-ljlj77kd",
   "kind": "bug",
   "title": "The coord hook drops its lease token when a coord.py call times out, so a session whose SessionEnd release timed out shows for six more hours",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

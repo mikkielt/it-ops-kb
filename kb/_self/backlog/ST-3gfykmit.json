@@ -2,7 +2,7 @@
   "id": "ST-3gfykmit",
   "kind": "story",
   "title": "backlog.py set takes --commit, so the orchestrator rewords an item on a worker's branch without resuming its session",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

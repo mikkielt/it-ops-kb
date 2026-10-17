@@ -2,7 +2,7 @@
   "id": "BG-nlbltqk3",
   "kind": "bug",
   "title": "The kb MCP coord_wait cap of 60 seconds is skipped for a string timeout",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

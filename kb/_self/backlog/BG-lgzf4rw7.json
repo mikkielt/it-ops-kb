@@ -2,7 +2,7 @@
   "id": "BG-lgzf4rw7",
   "kind": "bug",
   "title": "goal_questions drops a numbered question's own words before its colon as a lead-in, so researched packs only the list after it",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

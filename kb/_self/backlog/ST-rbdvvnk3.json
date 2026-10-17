@@ -2,7 +2,7 @@
   "id": "ST-rbdvvnk3",
   "kind": "story",
   "title": "The kb MCP coord_post description says an intent with a session field shows in the digest only while that session's presence lease is held",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

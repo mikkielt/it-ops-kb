@@ -2,7 +2,7 @@
   "id": "ST-5addldcn",
   "kind": "story",
   "title": "land reruns the done checks of sprint siblings whose touches share a file with the landing item, so a landing that breaks a sibling's repro stops at its own landing",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

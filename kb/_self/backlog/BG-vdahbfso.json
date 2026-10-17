@@ -2,7 +2,7 @@
   "id": "BG-vdahbfso",
   "kind": "bug",
   "title": "done's ledger check reports an _anchors.csv row an item added and a later commit dropped as added",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,

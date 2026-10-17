@@ -2,7 +2,7 @@
   "id": "BG-6jwv6ag3",
   "kind": "bug",
   "title": "The coord hook writes the presence lease token to a world-readable file",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
