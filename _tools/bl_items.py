@@ -225,7 +225,17 @@ def cmd_claim(bl, a):
         except (OSError, ValueError):
             here = {}
         here = {i: (r if isinstance(r, dict) else {"by": r, "session": f"by:{r}"}) for i, r in here.items()}
-        busy = sorted(i for i, r in here.items() if r.get("session") != session and i != iid and i in bl.items
+        # the item files of the ledger's ids are read again under the lock: a claim another session made while this one
+        # waited for it is in the ledger and in its item file, and the files read at start predate both
+        for i in here:
+            try:
+                text = (bl.dir / f"{i}.json").read_text(encoding="utf-8")
+                item = json.loads(text)
+            except (OSError, ValueError):
+                continue
+            if isinstance(item, dict):
+                bl.items[i], bl.raw[i] = item, text
+        busy =sorted(i for i, r in here.items() if r.get("session") != session and i != iid and i in bl.items
                       and bl.items[i].get("status") == "doing" and bl.items[i].get("claimed_by") == r.get("by"))
         if busy:
             raise Refused(f"claim refuses {bl.label(iid)} for {a.by}: another session ({here[busy[0]].get('by')}) works "
