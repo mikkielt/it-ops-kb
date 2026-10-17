@@ -65,7 +65,9 @@
         "coord.py derives the default itself": "BG-yya5olzw",
         "each caller sets KB_COORD_STORE": "BG-yya5olzw"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "coord.py derives the default itself",
+      "by": "operator"
     }
   ],
   "links": [
