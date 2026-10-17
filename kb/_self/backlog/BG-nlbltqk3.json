@@ -2,7 +2,7 @@
   "id": "BG-nlbltqk3",
   "kind": "bug",
   "title": "The kb MCP coord_wait cap of 60 seconds is skipped for a string timeout",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-xo45jvbj review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-xo45jvbj review G7 (ST-xwop6rv5, gate g4): kb_mcp checks the coord_wait cap only for an int or float timeout, so a client that does not validate the schema sends \"timeout\": \"100\" and coord.py accepts it, holding the single-threaded server up to COORD_RUN_S. A timeout that is not a number of at most 60 is refused as a tool error before coord.py runs. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (a string timeout reaches coord.py)."
+  "notes": "Goal before the 2026-10-17 plan: SP-xo45jvbj review G7 (ST-xwop6rv5, gate g4): kb_mcp checks the coord_wait cap only for an int or float timeout, so a client that does not validate the schema sends \"timeout\": \"100\" and coord.py accepts it, holding the single-threaded server up to COORD_RUN_S. A timeout that is not a number of at most 60 is refused as a tool error before coord.py runs. Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (a string timeout reaches coord.py).",
+  "claimed_by": "orch-r11"
 }
