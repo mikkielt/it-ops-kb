@@ -213,11 +213,14 @@ PUSH_ACTION = re.compile(
     re.I)
 
 
-# Vendor and product names that hold a `push` word, blanked only in a gate about kb content: a forge's host name
-# (`gitlab.com`), its repository path (`gitlab-org/gitlab`), its bare name unless a `/` follows it (`gitlab/main` is a
-# remote ref), the product `Remote Control`, and `Publish` inside a longer identifier (`datePublished`, `date_published`).
-# `push`, `publish`, `remote`, `origin`, `mirror` and `release` stay as they are.
-VENDOR_HOST = re.compile(r"\bgit(?:hub|lab)\.com\b(?:/[\w.-]+)*", re.I)
+# Vendor and product names that hold a `push` word, blanked only in the question and options of a gate about kb content,
+# never in its `do` and `host_check` command words: a forge's host name (`gitlab.com`, without the url path after it, so
+# `github.com/org/repo/releases/1` keeps `releases`), a forge's name inside a path (`gitlab-org/gitlab`), its bare name
+# unless a `/` follows it (`gitlab/main` is a remote ref), the product `Remote Control`, and `Publish` inside a longer
+# identifier (`datePublished`, `date_published`). `push`, `publish`, `remote`, `origin`, `mirror` and `release` stay as
+# they are.
+VENDOR_HOST = re.compile(r"\bgit(?:hub|lab)\.com\b", re.I)
+VENDOR_PATH_NAME = re.compile(r"(?<=/)git(?:hub|lab)\b", re.I)
 VENDOR_NAME = re.compile(r"\bgit(?:hub|lab)\b(?!/)", re.I)
 PRODUCT_NAME = re.compile(r"\bremote[- ]control\b", re.I)
 KEY_IN_WORD = re.compile(r"\b\w*(?:[a-z]Publish|[A-Za-z0-9]_publish)\w*\b")
@@ -233,9 +236,9 @@ def kb_content_only(item):
 
 
 def without_vendor_names(text):
-    """The text with each forge name or host name, the product `Remote Control` and each identifier that holds
-    `Publish` inside a longer word replaced by a space."""
-    for rx in (KEY_IN_WORD, VENDOR_HOST, VENDOR_NAME, PRODUCT_NAME):
+    """The text with each forge name or host name (the url path after a host stays), the product `Remote Control` and
+    each identifier that holds `Publish` inside a longer word replaced by a space."""
+    for rx in (KEY_IN_WORD, VENDOR_HOST, VENDOR_PATH_NAME, VENDOR_NAME, PRODUCT_NAME):
         text = rx.sub(" ", text)
     return text
 
@@ -308,7 +311,12 @@ def class_reasons(item, gate):
             found.setdefault("secrets", []).append(f"touch '{t}'")
     options = [str(o) for o in gate.get("options", []) or []]
     text = f"{gate.get('question', '')} {' '.join(options)} {command_words(gate)}"
-    push_text = without_benign_push_words(text, str(gate.get("question", "")), kb_content_only(item))
+    # the vendor names are blanked in the question and options only: a `do` or `host_check` command that names a forge acts on it
+    commands = command_words(gate)
+    push_text = " ".join((
+        without_benign_push_words(f"{gate.get('question', '')} {' '.join(options)}", str(gate.get("question", "")),
+                                  kb_content_only(item)),
+        without_benign_push_words(commands)))
     # a unit-noun list is read within the question or one option, never across the join of two texts
     secrets_text = without_token_counts(" ".join(
         without_unit_lists(str(p)) for p in [gate.get("question", ""), *options, command_words(gate)]))
