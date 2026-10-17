@@ -2,7 +2,7 @@
   "id": "BG-tigmyhbb",
   "kind": "bug",
   "title": "A kb_feedback call is captured as a lookup tool, so the digest counts tool issues under kb_feedback and a feedback-only prompt becomes a lookup entry",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -47,5 +47,27 @@
     "parked: SP-waxgh3kg review"
   ],
   "notes": "Plan 2026-10-17: repro exits 1 on 7cb5e0cbb (tools ['kb_pack', 'kb_feedback']); check 0 plants a feedback-only prompt (an entry with tools ['kb_feedback'] today, exit 1). The test clause is gone (D-6kei5o2z).",
-  "claimed_by": "orch-r07"
+  "evidence": {
+    "commit": "1eaa281af25e1cad361789dc0d937d68a7b79da7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nsys.path.insert(0, '_tools')\nimport ql_distill\n# a prompt whose only kb call is kb_feedback makes no lookup entry\nrs = [{'id': 'r2', 'ts': '2026-10-14T08:00:05Z', 'surface': 'mcp', 'tool': 'kb_feedback', 'question': 'how does x work'}]\ne = ql_distill.entry_of(rs, None)\nentry = e[0] if e else None\nprint('entry of a feedback-only prompt:', entry)\nsys.exit(0 if not entry or not entry.get('tools') else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "30983a4ca608f1a9"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys; sys.path.insert(0, '_tools'); import ql_distill; rs = [{'id': 'r1', 'ts': '2026-10-14T08:00:00Z', 'surface': 'mcp', 'tool': 'kb_pack', 'verdict': 'none'}, {'id': 'r2', 'ts': '2026-10-14T08:00:05Z', 'surface': 'mcp', 'tool': 'kb_feedback'}]; e = ql_distill.entry_of(rs, None); print(e and e[0].get('tools')); sys.exit(1 if e and 'kb_feedback' in (e[0].get('tools') or []) else 0)"
+        ],
+        "exit": 0,
+        "sha256": "2d6e5e23ff9ebe5c"
+      }
+    ]
+  }
 }
