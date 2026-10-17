@@ -271,19 +271,21 @@ def window_sections(anchor, doc, prev):
     line stands for the section it opens (its parent's when that section is empty), never its parent's: a heading added,
     renamed or removed elsewhere moves none of them, and an edit to the line itself moves the section it opens. With
     the previous text holding the passage, the window is known: the sections of its units (required), and its
-    `heading` section unless the window starts at a heading line, where that is the parent's. Else (an anchor placed on
-    an earlier text) the window is not: the `heading` section is required only where it holds a body unit (a window can
+    `heading` section unless the window starts at a heading line, where that is the parent's; so does the current text
+    holding it (a section hash of the parent, with intro text under it, cannot tell an edit of that text from a heading
+    added beside the window). Else (an anchor placed on an earlier text) the window is not: the `heading` section is required only where it holds a body unit (a window can
     start there), and optional are every section below it in the current text and those of the SPAN - 1 units that
     follow a unit of that path, which holds any section the window can enter (a window that runs from a body into the
     next heading and its body); a following unit under an ancestor of that path is a sibling's heading line or the
     parent's body, left out, as the section of the sibling's body that the window then enters names the sibling by its
     heading."""
     head = (anchor or {}).get("heading") or ""
-    if prev is not None and anchor.get("sha") in prev.shas:
-        i, k = prev.shas[anchor["sha"]]
-        have = {section_key(p) for p, _ in prev.units}
-        req = {_unit_key(prev.units[j][0], prev.own[j], have) for j in range(i, i + k)}
-        return req if prev.own[i] is not None else req | {section_key(head)}, set()
+    for known in (prev, doc):
+        if known is not None and anchor.get("sha") in known.shas:
+            i, k = known.shas[anchor["sha"]]
+            have = {section_key(p) for p, _ in known.units}
+            req = {_unit_key(known.units[j][0], known.own[j], have) for j in range(i, i + k)}
+            return req if known.own[i] is not None else req | {section_key(head)}, set()
     us = doc.units if doc is not None else []
     own = doc.own if doc is not None else []
     have = {section_key(p) for p, _ in us}
