@@ -108,22 +108,31 @@ def repo_roots():
 class _PageText(html.parser.HTMLParser):
     """Visible text of an HTML page, one block per line; <main> only when the page has one. `headings` starts each
     h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none). An <aside>
-    inside <main> or <article> is kept only when it has data-type="sidebar" (a book's content box); any other aside is
-    site navigation or an on-this-page list and is skipped."""
+    inside <main> or <article> is kept only when it has data-type="sidebar" (a book's content box) and neither it nor
+    an ancestor has role=navigation; any other aside is site navigation or an on-this-page list and is skipped."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
+    VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
     BLOCK = {"p", "div", "li", "tr", "br", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "table", "section", "article", "dd", "dt"}
 
     def __init__(self, headings=False):
         super().__init__(convert_charrefs=True)
         self.skip = self.main = self.article = 0
         self.asides = []  # per open <aside>: True when it was skipped
+        self.navtag, self.navdepth = None, 0  # the outermost open element with role=navigation, and its nesting
         self.headings = headings
         self.all, self.in_main, self.saw_main = [], [], False
 
     def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        navrole = "navigation" in (a.get("role") or "").lower().split()
+        if self.navtag:
+            self.navdepth += tag == self.navtag
+        elif navrole and tag != "aside" and tag not in self.VOID:
+            self.navtag, self.navdepth = tag, 1
         if tag == "aside":
-            kind = (dict(attrs).get("data-type") or "").strip().lower()
-            dropped = bool(self.skip) or not (self.main or self.article) or kind != "sidebar"
+            kind = (a.get("data-type") or "").strip().lower()
+            dropped = (bool(self.skip) or not (self.main or self.article) or kind != "sidebar"
+                       or navrole or bool(self.navtag))
             self.asides.append(dropped)
             self.skip += dropped
         elif tag in self.SKIP:
@@ -139,6 +148,10 @@ class _PageText(html.parser.HTMLParser):
             self._emit("#" * int(tag[1]) + " ")
 
     def handle_endtag(self, tag):
+        if self.navtag == tag:
+            self.navdepth -= 1
+            if not self.navdepth:
+                self.navtag = None
         if tag == "aside":
             if self.asides and self.asides.pop() and self.skip:
                 self.skip -= 1
