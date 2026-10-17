@@ -233,11 +233,12 @@ def ledger_rows(text, state):
 def ledger_change(state, key, b, a, detection):
     """(source id, [changed columns], what) of one ledger row from B to A (None when the row is absent there): a
     _fetch_state.csv row (STATE true) differs in the DETECTION columns, an _anchors.csv row is added, dropped or
-    differs in a column other than verified_utc; no columns when it did not change."""
+    differs in a column other than verified_utc; no columns when it did not change, or when the row is absent at both
+    ends (one commit added it and a later one dropped it)."""
     if state:
         cols = [c for c in detection if ((b or {}).get(c) or "") != ((a or {}).get(c) or "")]
         return key, cols, ", ".join(cols) if a else "row dropped"
-    cols = (["added"] if b is None else ["dropped"] if a is None
+    cols = ([] if b is None and a is None else ["added"] if b is None else ["dropped"] if a is None
             else [c for c in a.keys() | b.keys()
                   if isinstance(c, str) and c != "verified_utc" and (a.get(c) or "") != (b.get(c) or "")])
     return key[2] or "", cols, ", ".join(sorted(cols))
