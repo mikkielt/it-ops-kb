@@ -2,7 +2,7 @@
   "id": "ST-oqpd34ep",
   "kind": "story",
   "title": "Research sprint goal: Lookup facts and feedback read true",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3g3egfll",
   "goal_research": true,
   "priority": "P1",
@@ -41,5 +41,19 @@
     }
   ],
   "notes": "Plan 2026-10-17: rag.py pack ran four questions; the publisher metadata question is not in the kb (og, site_name, application-name missing), so it is the research. The aside-in-navigation (public/agents/doc-change-detection.md), git merge-file hunks (public/gitlab/git-test-repositories.md) and agent_needs_input (public/claude/hooks.md) questions lead with their articles; the items that fix those facts read their own sources. Knowledge by item: BG-wlpbhug7 reads the publisher metadata facts.",
-  "claimed_by": "orch-r12"
+  "evidence": {
+    "commit": "3d4a4a678cbdaf3c944af180981ed9bdde0df806",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-oqpd34ep"
+        ],
+        "exit": 0,
+        "sha256": "2e0ad0a45919b0f2"
+      }
+    ]
+  }
 }
