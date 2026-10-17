@@ -2,7 +2,7 @@
   "id": "BG-uo4sz2ed",
   "kind": "bug",
   "title": "kb!: reads a negated word as the issue, so 'nothing wrong with PATH:LINE' records outcome misled and flags a correct line",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,
@@ -46,5 +46,6 @@
   "links": [
     "parked: SP-ficl7pxl review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: read_user_report leaves a word under a negation (not, nothing, no) out of the closed fields, so a positive kb!: report records no misled outcome and no wrong or stale line; the text stays a redacted comment. Found by the SP-ficl7pxl review (ST-h3y6iym4 gate g2). Plan 2026-10-17: SP-ficl7pxl review. Repro on origin/main b871374b4 exits 1 (both negated reports record misled). The check plants the negated case beside a plain wrong report, which must still record misled and the line (ST-qmb2vefm, retro); it fails today on the negated half."
+  "notes": "Goal before the 2026-10-17 plan: read_user_report leaves a word under a negation (not, nothing, no) out of the closed fields, so a positive kb!: report records no misled outcome and no wrong or stale line; the text stays a redacted comment. Found by the SP-ficl7pxl review (ST-h3y6iym4 gate g2). Plan 2026-10-17: SP-ficl7pxl review. Repro on origin/main b871374b4 exits 1 (both negated reports record misled). The check plants the negated case beside a plain wrong report, which must still record misled and the line (ST-qmb2vefm, retro); it fails today on the negated half.",
+  "claimed_by": "orch-r12"
 }
