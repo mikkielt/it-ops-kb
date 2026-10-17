@@ -104,7 +104,7 @@ candidate page, a made-up sibling and a pinned url's repository) reads and recor
 lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
 revalidation at question time and fetch.py --status read it.
 """
-import argparse, calendar, collections, contextlib, csv, datetime, email.utils, hashlib, html.parser, io, json, math, os, random, re, ssl, string, subprocess, sys, threading, time
+import argparse, calendar, collections, contextlib, csv, datetime, email.utils, hashlib, html.parser, io, json, math, os, random, re, socket, ssl, string, subprocess, sys, threading, time
 import urllib.error, urllib.parse, urllib.request, zlib
 import xml.etree.ElementTree as ET
 
@@ -487,7 +487,8 @@ BUDGET_ERROR = "time budget used up"
 @contextlib.contextmanager
 def budget(seconds):
     """Bound every request of the block to `seconds` in all: one that could not finish in the time left is not sent and
-    answers status 0 with error BUDGET_ERROR, a started one is cut at the time left. For a lookup that must answer
+    answers status 0 with error BUDGET_ERROR, a started one is cut at the time left (a connect that timed out at the
+    shortened timeout keeps its URLError and carries `cut`, so host_seen reads it as the budget). For a lookup that must answer
     within its caller's timeout; one block at a time (the budget is the process's)."""
     _budget["until"] = time.monotonic() + seconds
     try:
@@ -571,7 +572,7 @@ def host_seen(url, error, now=None):
     """Record what a request to the host of `url` showed: `error` is the answer's `error` ("" for an HTTP answer of any
     status). A connection that was not made (a URLError: refused, a name that did not resolve, a timeout of the
     connect) starts the host's window, doubled when the host failed again after the earlier window ended; the time
-    budget used up shows nothing; anything else (the host answered, or accepted the connection) ends the window. A record
+    budget used up (BUDGET_ERROR, which gated_request also passes for a connect cut short by it) shows nothing; anything else (the host answered, or accepted the connection) ends the window. A record
     that cannot be written is kept in the process only."""
     if error == BUDGET_ERROR:
         return
@@ -629,14 +630,15 @@ def gated_request(url, *args, **kwargs):
     chain = [url] + [hop[1] for hop in r.get("hops") or []]
     for hop in chain[:-1]:
         host_seen(hop, "")
-    host_seen(chain[-1], r.get("error") or "")
+    host_seen(chain[-1], BUDGET_ERROR if r.get("cut") else r.get("error") or "")
     return r
 
 
 def request(url, headers=None, limit=20_000_000, method="GET"):
     """{status, headers (lowercase keys), body (bytes), final, hops, error}; one request per DELAY seconds per host.
     A Content-Encoding body is decoded (decode_body); the headers stay as the server sent them.
-    Never raises for HTTP or network errors: status is the code, or 0 with `error`."""
+    Never raises for HTTP or network errors: status is the code, or 0 with `error`; `cut` is set (only then) when the
+    timeout of a connect that failed was shortened by budget()."""
     host = urllib.parse.urlsplit(url).netloc
     wait = DELAY - (time.time() - _last.get(host, 0))
     until = _budget["until"]
@@ -650,8 +652,9 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
     opener = urllib.request.build_opener(chain, urllib.request.HTTPSHandler(context=ssl_ctx()))
     req = urllib.request.Request(url, method=method, headers={"User-Agent": UA, "Accept": "*/*", **(headers or {})})
     out = {"status": 0, "headers": {}, "body": b"", "final": url, "hops": chain.hops, "error": ""}
+    timeout = TIMEOUT if until is None else max(0.5, min(TIMEOUT, until - time.monotonic()))
     try:
-        with opener.open(req, timeout=TIMEOUT if until is None else max(0.5, min(TIMEOUT, until - time.monotonic()))) as r:
+        with opener.open(req, timeout=timeout) as r:
             out.update(status=r.status, headers={k.lower(): v for k, v in r.headers.items()}, body=r.read(limit), final=r.geturl())
     except urllib.error.HTTPError as e:
         out.update(status=e.code, headers={k.lower(): v for k, v in (e.headers or {}).items()}, final=e.geturl() or url)
@@ -661,6 +664,8 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
             pass
     except Exception as e:  # noqa: BLE001 - a change check must never stop a run
         out["error"] = f"{type(e).__name__}: {str(getattr(e, 'reason', e))[:120]}"
+        if timeout < TIMEOUT and isinstance(getattr(e, "reason", None), (TimeoutError, socket.timeout)):
+            out["cut"] = True  # the connect was cut short by the time left: it shows nothing of the host (gated_request)
     if out["error"]:
         _failed[0] += 1
     if out["body"] and out["headers"].get("content-encoding"):
