@@ -2,7 +2,7 @@
   "id": "BG-vdahbfso",
   "kind": "bug",
   "title": "done's ledger check reports an _anchors.csv row an item added and a later commit dropped as added",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -29,5 +29,6 @@
   "links": [
     "parked: SP-ia6xayiy review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: ledger_change returns ['added'] for an _anchors.csv row absent both at the first parent and at HEAD (b and a both None, b is None tested first), so ledger_moves names a row an item's commit added and a later commit dropped though its net change is nothing, against its docstring's 'a later revert clears it' (SP-ia6xayiy review, S2, from BG-ph7dcjhz's per-commit rewrite): a row absent at both ends counts no change Plan 2026-10-17: repro on origin/main b871374b4 exits 1 ({'S900': ['_anchors.csv: added']}). Carries ST-foicg7mg (the same defect seen at landings in SP-xo45jvbj and SP-6jfnx5i3: rows of S1864, S704, S718, S2157 and three S- ids added then removed, refused as outside-touches), dropped as its duplicate."
+  "notes": "Goal before the 2026-10-17 plan: ledger_change returns ['added'] for an _anchors.csv row absent both at the first parent and at HEAD (b and a both None, b is None tested first), so ledger_moves names a row an item's commit added and a later commit dropped though its net change is nothing, against its docstring's 'a later revert clears it' (SP-ia6xayiy review, S2, from BG-ph7dcjhz's per-commit rewrite): a row absent at both ends counts no change Plan 2026-10-17: repro on origin/main b871374b4 exits 1 ({'S900': ['_anchors.csv: added']}). Carries ST-foicg7mg (the same defect seen at landings in SP-xo45jvbj and SP-6jfnx5i3: rows of S1864, S704, S718, S2157 and three S- ids added then removed, refused as outside-touches), dropped as its duplicate.",
+  "claimed_by": "orch-r11"
 }
