@@ -2,7 +2,7 @@
   "id": "BG-gjqcfpw4",
   "kind": "bug",
   "title": "The snapshots of S2186, S2187, S2189 and S2194 hold the pages as of the 2026-10-10 anchor run, so review shows their old text as the current one after BG-c2pp5wwl moved their baselines",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
@@ -25,5 +25,6 @@
   "depends_on": [
     "ST-62irbhyw"
   ],
-  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (S2189.txt does not say generally available). factdiff.py snapshot writes only the snapshot files (write_snapshot), so the touches are the four files."
+  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (S2189.txt does not say generally available). factdiff.py snapshot writes only the snapshot files (write_snapshot), so the touches are the four files.",
+  "claimed_by": "orch-r08"
 }
