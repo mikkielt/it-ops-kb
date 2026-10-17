@@ -2,7 +2,7 @@
   "id": "BG-4jtidln5",
   "kind": "bug",
   "title": "Two sessions that claim the same item while the ledger lock is held both succeed, and the later one overwrites the item file",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6jfnx5i3",
   "priority": "P1",
   "rank": 0,
@@ -39,5 +39,18 @@
       "by": "operator"
     }
   ],
-  "claimed_by": "orch-r04"
+  "evidence": {
+    "commit": "24c79fd21874303c6bc016c7afee7cafd114edb3",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\nit={\"id\":\"ST-aaaaaaaa\",\"kind\":\"story\",\"title\":\"t\",\"status\":\"todo\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"-c\",\"pass\"]}]}\n(r/\"items\"/\"ST-aaaaaaaa.json\").write_text(json.dumps(it,indent=2)+\"\\n\")\ng(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nled=P.Path(g(\"rev-parse\",\"--absolute-git-dir\"))/\"kb-backlog-claims.json\";lock=led.with_name(led.name+\".lock\")\nbase={k:v for k,v in os.environ.items() if not k.startswith(\"CLAUDE\") and k!=\"KB_BACKLOG_CONFIG\"}\nlock.write_text(\"\")\nps=[s.Popen([sys.executable,T,\"--root\",str(r),\"claim\",\"ST-aaaaaaaa\",\"--by\",b],stdout=s.PIPE,stderr=s.STDOUT,text=True,env=dict(base,CLAUDE_CODE_SESSION_ID=sid)) for b,sid in ((\"w1\",\"S1\"),(\"w2\",\"S2\"))]\ntime.sleep(3);lock.unlink()\nrcs=[(p.communicate(timeout=60),p.returncode)[1] for p in ps]\nd=json.loads(led.read_text()) if led.exists() else {}\ncb=json.loads((r/\"items\"/\"ST-aaaaaaaa.json\").read_text()).get(\"claimed_by\")\nok=sorted(rcs).count(0)==1 and d.get(\"ST-aaaaaaaa\",{}).get(\"by\")==cb\nprint(\"two claims of one item while the ledger lock was held: exits\",rcs,\"| item claimed_by\",cb,\"| ledger\",d);sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "68a11c999fa95b1b"
+      }
+    ]
+  }
 }
