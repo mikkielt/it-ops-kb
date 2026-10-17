@@ -610,7 +610,8 @@ def run_time(run):
 def join_feedback(sessions, tools_rows, attached, todo, stored_at, today, k):
     """Join the feedback rows (`tools_rows`, [(row, tools file, its window or None)], and those of the closed
     sessions) to their lookups, and give the rows that join
-    none an entry of their own. A row joins, in order: the lookup whose kb row recorded its `pack` handle; the prompt
+    none an entry of their own. A row joins, in order: the latest lookup whose kb row recorded its `pack` handle no
+    later than the row's time (the earliest when every one is later); the prompt
     its `session_id` and `prompt_id` name; the prompt window that holds its time (as every tools row does, `attached`
     for the tools rows). It attaches (its report joins the entry's `reports`, and a tools row is consumed with the
     entry) when that lookup is a closed session's entry, written no earlier than the row (`stored_at`: a stored
@@ -620,11 +621,19 @@ def join_feedback(sessions, tools_rows, attached, todo, stored_at, today, k):
     import ql_learn
     pages = ql_learn.KbPages()
     by_group = {(t["sid"], t["key"]): t for t in todo if t["sid"] is not None and not t.get("own")}
-    handles = {}
+    handles = {}  # handle -> [(time of a row that printed it, (session id, key))]
     for sid, s in sessions.items():
         for key, rs, _, _ in s["groups"]:
-            for h in pack_handles(rs + [r for _, r in attached.get((sid, key), [])]):
-                handles.setdefault(h, (sid, key))
+            for r in rs + [r for _, r in attached.get((sid, key), [])]:
+                for h in pack_handles([r]):
+                    handles.setdefault(h, []).append((ts_of(r)[:19], (sid, key)))
+
+    def printed(h, at):
+        """The lookup of handle `h` a report at `at` follows: the latest that printed it no later than `at`, else
+        (a report stamped before every lookup) the earliest."""
+        seen = sorted(handles[h], key=lambda x: x[0])
+        before = [x for x in seen if x[0] <= at]
+        return (before[-1] if before else seen[0])[1]
     rows = list(tools_rows)
     for sid, s in sessions.items():
         if s["closed"]:
@@ -635,7 +644,7 @@ def join_feedback(sessions, tools_rows, attached, todo, stored_at, today, k):
         h, sid, pid = r.get("pack"), r.get("session_id"), r.get("prompt_id")
         if name is not None:  # a tools row: its handle, else its session and prompt, else its window
             if isinstance(h, str) and h in handles:
-                target = handles[h]
+                target = printed(h, ts_of(r)[:19])
             elif isinstance(sid, str) and isinstance(pid, str) and sid in sessions \
                     and any(g[0] == pid for g in sessions[sid]["groups"]):
                 target = (sid, pid)

@@ -27,6 +27,25 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "When every lookup that printed the handle is later than the feedback row's time, which lookup does the report join?",
+      "options": [
+        "the earliest lookup that printed it",
+        "no handle join (fall through to session/prompt, then window)"
+      ],
+      "recommendation": "the earliest lookup that printed it",
+      "do": {
+        "the earliest lookup that printed it": "ST-rdpqhmn4",
+        "no handle join (fall through to session/prompt, then window)": "ST-rdpqhmn4"
+      },
+      "class": "design",
+      "answer": "the earliest lookup that printed it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-waxgh3kg review"
   ],
