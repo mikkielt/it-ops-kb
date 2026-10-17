@@ -3,10 +3,11 @@
   "kind": "bug",
   "title": "coord.py reads operator key files whatever their mode, so a world-readable token file goes unnoticed",
   "status": "draft",
+  "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "SP-rsmmwzr2 review G8 (ST-rk5ks4pf): serve reads every file in --keys DIR and the client reads --key-file with no mode check, nothing creates a key file and no doc says to make it 0600. Both sides warn (or refuse) when a key file has group or other permission bits, and kb/_self/tools.md says how to create one.",
+  "goal": "coord.py's client refuses a --key-file, and serve refuses a --keys directory file, that has group or other permission bits, with exit 2 and a line naming the file and mode 0600, as gate g1 records, and kb/_self/tools.md says to create a key file with mode 0600. Found by the SP-rsmmwzr2 review (G8): serve reads every file in --keys DIR and the client reads --key-file with no mode check.",
   "repro": {
     "run": [
       "python3",
@@ -14,7 +15,57 @@
       "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nk=os.path.join(D,'k');open(k,'w').write('k'*40);os.chmod(k,0o644)\nr,_,e=c('--url','http://127.0.0.1:1','--key-file',k,'list')\nlow=e.lower();ok=('0600' in e or 'mode' in low or 'permission' in low)\nprint('client names the 0644 key file mode:',ok,e.strip()[:160]);sys.exit(0 if ok else 1)"
     ]
   },
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys,tempfile\nT='_tools/coord.py';D=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'));E.pop('KB_COORD_URL',None)\ndef run(a,t=30):\n    try:\n        p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stderr\n    except s.TimeoutExpired as e:\n        return None,(e.stderr.decode() if isinstance(e.stderr,bytes) else (e.stderr or ''))\nsaid=lambda e:any(w in e.lower() for w in ('0600','mode','permission'))\nk=os.path.join(D,'k');open(k,'w').write('k'*40);os.chmod(k,0o644)\nc1=run(['--url','http://127.0.0.1:1','--key-file',k,'list'])\nos.chmod(k,0o600);c2=run(['--url','http://127.0.0.1:1','--key-file',k,'list'])\nK=os.path.join(D,'keys');os.mkdir(K);f=os.path.join(K,'alice');open(f,'w').write('a'*40);os.chmod(f,0o644)\nc3=run(['serve','--bind','127.0.0.1:0','--keys',K],t=5)\nok=c1[0]==2 and said(c1[1]) and not said(c2[1]) and c3[0]==2 and said(c3[1])\nprint('client 0644',c1[0],'client 0600',c2[0],'serve 0644',c3[0],ok);sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "coord.py's client refuses a --key-file",
+      "check": 0
+    },
+    {
+      "clause": "serve refuses a --keys directory file, that has group or other permission bits, with exit 2 and a line naming the file and mode 0600, as gate g1 records",
+      "check": 0
+    },
+    {
+      "clause": "kb/_self/tools.md says to create a key file with mode 0600. Found by the SP-rsmmwzr2 review (G8): serve reads every file in --keys DIR and the client reads --key-file with no mode check",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "BG-dn5n7z7k"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "What do coord.py's client and serve do with a key file that has group or other permission bits?",
+      "options": [
+        "refuse it with exit 2 and a line naming the file and mode 0600",
+        "warn on stderr and go on"
+      ],
+      "recommendation": "refuse it with exit 2 and a line naming the file and mode 0600",
+      "do": {
+        "refuse it with exit 2 and a line naming the file and mode 0600": "BG-6ucif3pn",
+        "warn on stderr and go on": "BG-6ucif3pn"
+      },
+      "class": "design",
+      "answer": "refuse it with exit 2 and a line naming the file and mode 0600",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the client gets only a connection error for a 0644 file; serve with a 0644 key runs). Knowledge: public/windows/openssh-key-management.md:38 (a private key file readable by no other user), the model for the 0600 rule."
 }

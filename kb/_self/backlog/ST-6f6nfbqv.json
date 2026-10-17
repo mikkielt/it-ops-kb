@@ -7,7 +7,7 @@
   "goal_research": true,
   "priority": "P1",
   "rank": 0,
-  "goal": "The sprint goal's open questions are answered with the kb tools first and the live docs for the gaps, and the findings are written as kb facts and gap entries through the kb skills, so each committed item can name the knowledge it needs. Tested rows for kb/_self/_retrieval/lookup_eval.csv are a code-lane path (_tools/kblane.py): a story finished with them lands through backlog.py land ID --wait-merge SECONDS, not done --commit.",
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts and gap entries through /kb-research, extending security/secret-shapes-in-text. (1) What is the CommonMark syntax of a link reference definition (a line such as [label]: destination) and may its label hold any word? (2) Does RFC 6750 require TLS when a client sends a bearer credential and what does it say of plain http?",
   "checks": [
     {
       "run": [
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the JSON escape question is good (public/security/secret-shapes-in-text.md:55, RFC 8259 section 7), so it is not asked again; the link reference definition question is none, and the RFC 6750 question is good only on mcp/authorization.md lines that do not say TLS, so both are researched. Knowledge by item: BG-my67pcip and ST-3m5sjibd read the link reference definition facts (the prose shapes redact must keep whole); BG-gikebecb reads the RFC 6750 TLS facts; BG-saeietup reads the RFC 8259 escape fact already in the kb; ST-qwrhatjh researches its own private key labels."
 }

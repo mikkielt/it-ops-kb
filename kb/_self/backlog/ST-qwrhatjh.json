@@ -3,6 +3,7 @@
   "kind": "story",
   "title": "security/secret-shapes-in-text names the EC, DSA and PGP private key labels and the Purview value first-character rule",
   "status": "draft",
+  "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
   "goal": "kb/public/security/secret-shapes-in-text.md states the EC, DSA and PGP PRIVATE KEY BLOCK labels that kbcommon.SECRETS and redact cover (from an official source, or as a gap), the SQL Server connection string entity's first-character rule for the value (S-k57sryj7), and the title of source row S-wct3uoax names the sections the article cites it for. SP-yyjwfjtc review gap 8.",
@@ -11,8 +12,25 @@
       "run": [
         "python3",
         "-c",
-        "import sys;t=open(\"kb/public/security/secret-shapes-in-text.md\",encoding=\"utf-8\").read();ok=\"EC PRIVATE KEY\" in t;print(ok);sys.exit(0 if ok else 1)"
+        "import sys;t=open(\"kb/public/security/secret-shapes-in-text.md\",encoding=\"utf-8\").read()\nw=[\"EC PRIVATE KEY\",\"DSA PRIVATE KEY\",\"PGP PRIVATE KEY BLOCK\"];m=[x for x in w if x not in t]\nfc=[l for l in t.splitlines() if \"S-k57sryj7\" in l and \"first character\" in l.lower()]\nprint(\"missing\",m,\"first-character facts\",len(fc));sys.exit(1 if m or not fc else 0)\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys;r=[x for x in csv.reader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\")) if x and x[0]==\"S-wct3uoax\"]\nt=r[0][2] if r else \"\";ok=\"Authorization\" in t and \"Retry-After\" in t;print(repr(t),ok);sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kb/public/security/secret-shapes-in-text.md states the EC, DSA and PGP PRIVATE KEY BLOCK labels that kbcommon.SECRETS and redact cover (from an official source, or as a gap), the SQL Server connection string entity's first-character rule for the value (S-k57sryj7)",
+      "check": 0
+    },
+    {
+      "clause": "the title of source row S-wct3uoax names the sections the article cites it for. SP-yyjwfjtc review gap 8",
+      "check": 1
     }
   ],
   "touches": [
@@ -21,7 +39,11 @@
     "kb/public/_anchors.csv",
     "kb/public/_retrieval/doc2query/expansions.csv"
   ],
+  "depends_on": [
+    "ST-6f6nfbqv"
+  ],
   "links": [
     "parked: SP-yyjwfjtc review"
-  ]
+  ],
+  "notes": "Plan 2026-10-17: rag.py pack on the EC, DSA and PGP labels is weak (secret-shapes-in-text.md:34 names only PRIVATE KEY and ENCRYPTED PRIVATE KEY); the check fails on all three labels. It shares kb/public with the goal research story, so it runs after it."
 }
