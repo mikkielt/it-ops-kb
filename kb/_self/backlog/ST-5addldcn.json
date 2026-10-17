@@ -2,7 +2,7 @@
   "id": "ST-5addldcn",
   "kind": "story",
   "title": "land reruns the done checks of sprint siblings whose touches share a file with the landing item, so a landing that breaks a sibling's repro stops at its own landing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,6 @@
   "links": [
     "parked: SP-6jfnx5i3 close"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 retrospective: BG-vxwibl62 (holder-only put) landed after BG-p2jcpxhl and broke BG-p2jcpxhl's repro, which put on a leased key without the holder's token; each landing ran only its own checks, so only the review story's done (rerun_done_checks) found it, and the orchestrator reopened BG-p2jcpxhl to correct the repro. A landing reruns the checks and repros of the sprint's done items whose touches share a file with its own and stops on one that fails. Plan 2026-10-17: SP-6jfnx5i3 retro (BG-vxwibl62 broke BG-p2jcpxhl's repro; only the review found it). Check 0 plants a sprint with two done items (one sharing x.txt with the landing item, one not), both failing: only the sharing one is named. On origin/main b871374b4: no such function (exit 1). Check 1 reads bl_land for a call of it (paired with check 0, which runs it)."
+  "notes": "Goal before the 2026-10-17 plan: SP-6jfnx5i3 retrospective: BG-vxwibl62 (holder-only put) landed after BG-p2jcpxhl and broke BG-p2jcpxhl's repro, which put on a leased key without the holder's token; each landing ran only its own checks, so only the review story's done (rerun_done_checks) found it, and the orchestrator reopened BG-p2jcpxhl to correct the repro. A landing reruns the checks and repros of the sprint's done items whose touches share a file with its own and stops on one that fails. Plan 2026-10-17: SP-6jfnx5i3 retro (BG-vxwibl62 broke BG-p2jcpxhl's repro; only the review found it). Check 0 plants a sprint with two done items (one sharing x.txt with the landing item, one not), both failing: only the sharing one is named. On origin/main b871374b4: no such function (exit 1). Check 1 reads bl_land for a call of it (paired with check 0, which runs it).",
+  "claimed_by": "orch-r11"
 }
