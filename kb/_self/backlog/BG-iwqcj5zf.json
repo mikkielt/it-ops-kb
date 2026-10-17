@@ -44,6 +44,25 @@
   "depends_on": [
     "BG-as7rt42o"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where does an ended session's intent get dropped from the digest?",
+      "options": [
+        "digest in coord.py",
+        "filter in the hook"
+      ],
+      "recommendation": "digest in coord.py",
+      "do": {
+        "digest in coord.py": "BG-iwqcj5zf",
+        "filter in the hook": "BG-iwqcj5zf"
+      },
+      "class": "agents-rule",
+      "answer": "digest in coord.py",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-xo45jvbj review"
   ],
