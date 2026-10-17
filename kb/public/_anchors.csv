@@ -6076,6 +6076,7 @@ fe5dab79e3a9,claude/env-vars.csv,S-lreom5ko,located,Enterprise network configura
 04ac36d89524,claude/hooks.md,S743,located,Hooks reference > Hook events > SubagentStop > SubagentStop input,agent_transcript_path;stop_hook_activ;nest;folder;main;agent_id;activ;last_assistant_messag,faf60feab0ffb0dd,"In addition to the common input fields, SubagentStop hooks receive stophookactive, agentid, agenttype, agenttranscriptpath, and lastassistantmessage. The agenttype field is the value used for matcher",2026-10-12
 07f2979b329e,claude/hooks.md,S743,unlocated:no-match,,,,,2026-10-12
 0aedcca9a374,claude/hooks.md,S743,unlocated:no-match,,,,,2026-10-12
+0fada335d89d,claude/hooks.md,S743,located,Hooks reference > Hook events > UserPromptSubmit > What a blocked prompt leaves behind,everywher;reach;never;remov;text;prompt;block;claud,421ce72fff9e7c7c,A blocked prompt never reaches Claude,2026-10-17
 1001919af01b,claude/hooks.md,S743,located,Hooks reference > Hook events > SubagentStart > SubagentStart input,agent_id;agent_typ;subagentstart;filter;common;receiv;subagent;matcher,9bedacf2c40fe1d3,"In addition to the common input fields, SubagentStart hooks receive agentid with the unique identifier for the subagent and agenttype with the agent name that",2026-10-12
 1056cc4d271c,claude/hooks.md,S743,located,Hooks reference > Hook input and output > Common input fields,over;explor;in-process;precedenc;agent_id;take;agent_typ;insid,64a4fc030f5fa79e,"agentid | Unique identifier for the subagent or in-process teammate the hook fires in. agenttype | Agent name (for example, ""Explore"" or ""security-reviewer""). Present when",2026-10-12
 10da3ef29913,claude/hooks.md,S743,located,Hooks reference > Hook events > PreToolUse > PreToolUse input,base;v2.1.274;mcp_server;trust;sourc;server;mcp;name,bd3e60325c8fbd5a,Base trust decisions on source rather than on name or the mcp<server> tool-name prefix. The mcpserver field requires Claude Code v2.1.274 or later.,2026-10-12
@@ -13199,22 +13200,32 @@ fbd94ec928b0,python/stdlib-sqlite3-csv.md,S-vc2lihhb,unlocated:no-match,,,,,2026
 fc093c46784d,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 02b44c8a34fe,python/stdlib-urllib-errors.md,S-ia6oszzb,located,,address-relat;getnameinfo;relat;subclass;pair;getaddrinfo;oserror;string,368ca8014f00dd7b,"A subclass of :exc:OSError, this exception is raised for address-related errors by :func:getaddrinfo and :func:getnameinfo. The accompanying value is a pair (error, string) representing an",2026-10-10
 214b321382cc,python/stdlib-urllib-errors.md,S-kudz6dke,located,,connectionreseterror;disconnect;remotedisconnect;reset;error;remot;bad;badstatuslin,ddbfec8ee4df9475,.. exception:: RemoteDisconnected A subclass of :exc:ConnectionResetError and :exc:BadStatusLine.,2026-10-10
+224f440312cc,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-17
 3627a300f6e5,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
+4592e3ed4db0,python/stdlib-urllib-errors.md,S-mv5seea3,located,,front;them;unless;contain;instanc;class;handler,28861abf2efb38f1,Instances of the following classes will be in front of the,2026-10-17
 4dfbbcd1daa6,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-10
 4ebb0a41c13f,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
+572b85680fbc,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-17
 711ba24cb878,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-10
 711ba24cb878,python/stdlib-urllib-errors.md,S-ia6oszzb,unlocated:no-match,,,,,2026-10-10
 711ba24cb878,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,2026-10-10
 711ba24cb878,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
+7b50ace802a4,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-17
 8cb8cf366696,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-10
 8cb8cf366696,python/stdlib-urllib-errors.md,S-ia6oszzb,unlocated:no-match,,,,,2026-10-10
 8cb8cf366696,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,2026-10-10
 8cb8cf366696,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
+97998a5c42cc,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-17
+97998a5c42cc,python/stdlib-urllib-errors.md,S-mv5seea3,unlocated:no-match,,,,,2026-10-17
 9e0b9f57d5e9,python/stdlib-urllib-errors.md,S-ia6oszzb,unlocated:no-match,,,,,2026-10-10
+a5a0d8ce6702,python/stdlib-urllib-errors.md,S-mv5seea3,located,,try;other;handl;none;return;url;handler,7c606adcc0f96f3f,no other handler should try to handle this URL,2026-10-17
 a8c9e2b65f00,python/stdlib-urllib-errors.md,S-ia6oszzb,unlocated:no-match,,,,,2026-10-10
 a8c9e2b65f00,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
+afb4ef9a99fd,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-17
+afb4ef9a99fd,python/stdlib-urllib-errors.md,S-mv5seea3,unlocated:no-match,,,,,2026-10-17
 b67e2c9755f6,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
 d087fc71005d,python/stdlib-urllib-errors.md,S-mktiemgc,unlocated:no-match,,,,,2026-10-10
+da1e187a35fe,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-17
 dc0ca92d51fb,python/stdlib-urllib-errors.md,S-dh7elejp,unlocated:no-match,,,,,2026-10-10
 dc0ca92d51fb,python/stdlib-urllib-errors.md,S-ia6oszzb,unlocated:no-match,,,,,2026-10-10
 dc0ca92d51fb,python/stdlib-urllib-errors.md,S-kudz6dke,unlocated:no-match,,,,,2026-10-10

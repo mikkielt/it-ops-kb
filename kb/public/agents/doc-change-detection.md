@@ -201,7 +201,7 @@ counts against the 60 requests an hour. Design context: `kb/_self/tools.md`,
 ## Reference
 - Cheapest check first, per Learn source: a `HEAD` or conditional `GET` with the stored ETag (`304` means unchanged); else the `updated_at`/`git_commit_id` from the first few KB of the page or its markdown form; then a text hash. Site level: sitemap diff for added and removed URLs, redirection files for moves. [DER S-7jumyiid, S-lldnrkhv, S-ecrpwvoh]
 - `agents/doc-lookup-sources.md`: the servers and APIs used to read current docs, and the licence terms that decide whether old text may be kept.
-- `python/stdlib-urllib-errors.md`: how a name-resolution, connection or timeout failure and an HTTP `304` surface in Python's `urllib`, for a retry that must not take one for the other.
+- `python/stdlib-urllib-errors.md`: how a name-resolution, connection or timeout failure and an HTTP `304` surface in Python's `urllib`, for a retry that must not take one for the other, and how `HTTPRedirectHandler.redirect_request` follows, refuses or stops a redirect hop to a host.
 - `agents/docs-maintenance-agents.md`: products that regenerate documentation; this article covers detecting changes in sources someone else publishes.
 - `_tools/fetch.py --diff`: the kb's current text-hash check; `_fetch_state.csv` holds its hashes.
 
