@@ -57,6 +57,23 @@
   "depends_on": [
     "BG-73wc55ew"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "For a touch that is a Markdown article under kb/, does only its file name stop counting as a secrets path, or the whole path with its directories too?",
+      "options": [
+        "file name only",
+        "whole path"
+      ],
+      "recommendation": "file name only",
+      "do": {
+        "file name only": "BG-hngdvqyy",
+        "whole path": "BG-hngdvqyy"
+      },
+      "class": "secrets"
+    }
+  ],
   "notes": "SP-j65ihctq retrospective: the misclass made ST-2jsyxkpf's design gate g1 blocking class secrets, so its landing waited on an operator answer for a choice with no secret in it. Second sighting 2026-10-16 (ST-jrs7supe): a provisional gate that only named an 'owner token' as one implementation option of a file lock (no credential) was classed secrets (matched 'token') and made blocking. Planned 2026-10-17: merged ST-zdxdv4lh (a secrets word in a kb article's path) into this bug; its check is check 0. Premise run on origin/main 7cb5e0cbb: the repro and both checks exit 1 (tokenize and the shamir article class secrets). Operator-authority guard: check 1 plants API token, GITLAB_TOKEN, .env, credentials.json and api.token, which must stay secrets. ST-oq4owwhh (lease and bearer-token wording) stays a draft operator call, not subsumed: it narrows the word token itself. Test policy D-6kei5o2z: no new test.",
   "claimed_by": "orch-r06"
 }
