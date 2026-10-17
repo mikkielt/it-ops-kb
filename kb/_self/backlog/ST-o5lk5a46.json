@@ -1,0 +1,26 @@
+{
+  "id": "ST-o5lk5a46",
+  "kind": "story",
+  "title": "Review sprint: coord shows each session's real work and its server and locks hold under bad input",
+  "status": "draft",
+  "sprint": "SP-fp3hxl6q",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}
