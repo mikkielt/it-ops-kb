@@ -68,6 +68,7 @@ FEEDBACK_COMMENT_MAX_CHARS = 1000  # a person's comment kept in the spool, after
 USER_REF = re.compile(r"(?<![\w/.-])((?:[\w-]+/)+[\w.-]*\.md):([1-9]\d*)(?![\w:])")  # a kb path:line in a person's text
 USER_WORDS = {"wrong": re.compile(r"\bwrong\b", re.I), "stale": re.compile(r"\b(?:stale|outdated)\b", re.I),
               "missing": re.compile(r"\bmissing\b", re.I)}
+USER_NEGATION = re.compile(r"(?:\b(?:not|no|nothing|never|neither|nor|without)|n't)(?:[ \t]+\w+){0,2}[ \t]+$", re.I)  # before a word
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
@@ -492,12 +493,14 @@ def record_feedback(fields):
 def read_user_report(text, valid=None):
     """The closed fields of kb_feedback in a person's text after `kb!:`, read by rule alone: `lines` (each kb
     path:line `valid` accepts, with the issue `wrong` or `stale` when the text says wrong, or stale or outdated),
-    `outcome` (`misled` for those words, `missed` for missing), `source_url` (the first public url the leak scan
+    `outcome` (`misled` for those words, `missed` for missing; a word under a negation, as in `nothing wrong`, says
+    nothing), `source_url` (the first public url the leak scan
     passes), and `comment`, the rest rule-redacted (cut to FEEDBACK_COMMENT_MAX_CHARS, dropped when the leak scan
     still flags it) with `class` FEEDBACK_UNCLASSIFIED. Fields with no value are left out; nothing here reads the
     network."""
     import redact, ql_research
-    said = {w for w, rx in USER_WORDS.items() if rx.search(text)}
+    said = {w for w, rx in USER_WORDS.items()
+            if any(not USER_NEGATION.search(text[:m.start()]) for m in rx.finditer(text))}
     issue = "wrong" if "wrong" in said else "stale" if "stale" in said else None
     outcome = "misled" if issue else "missed" if "missing" in said else None
     k = redact.known()

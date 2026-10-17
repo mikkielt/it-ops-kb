@@ -43,6 +43,27 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How far before a word does a negation reach (not, no, nothing, never, neither, nor, without, n't)?",
+      "options": [
+        "Up to two words between, same clause",
+        "Only the word right after the negation",
+        "Anywhere earlier in the sentence"
+      ],
+      "recommendation": "Up to two words between, same clause",
+      "do": {
+        "Up to two words between, same clause": "BG-uo4sz2ed",
+        "Only the word right after the negation": "BG-uo4sz2ed",
+        "Anywhere earlier in the sentence": "BG-uo4sz2ed"
+      },
+      "class": "design",
+      "answer": "Up to two words between, same clause",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-ficl7pxl review"
   ],
