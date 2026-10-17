@@ -2,7 +2,7 @@
   "id": "BG-m7rrbdnm",
   "kind": "bug",
   "title": "backlog.py claim judges busy and keeps ledger records from the item files it read before the ledger lock, so a claim another session made while it waited is dropped",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,
@@ -43,5 +43,18 @@
     "parked: SP-z3hyk4eh review"
   ],
   "notes": "SP-z3hyk4eh review gap 4 (S3), on ST-zqbo7xgc (g1 'lock from first read to write'): _tools/bl_items.py:222-239, bl.items loaded before ledger_lock; the busy check and the here filter use them. Repro plants the other session's claim while this claim waits on a held lock; it fails on origin/main f105ef2e4 (exit 0, record of the other session dropped). Premise rerun 2026-10-16 on origin/main ed55f4d56: repro exits 1 (record of the other session kept: False).",
-  "claimed_by": "orch-r04"
+  "evidence": {
+    "commit": "84937b223fce4fe7c93f648cecbc7efe6bd854cb",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time,pathlib as P\nT=os.path.abspath(\"_tools/backlog.py\");r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run([\"git\",\"-C\",str(r),*a],check=True,capture_output=True,text=True).stdout.strip()\ng(\"init\",\"-q\");(r/\"backlog.json\").write_text(json.dumps({\"item_dir\":\"items\"}));(r/\"items\").mkdir()\nit=lambda i,**k:dict({\"id\":i,\"kind\":\"story\",\"title\":\"t \"+i,\"status\":\"todo\",\"priority\":\"P3\",\"goal\":\"g\",\"touches\":[\"x.txt\"],\"checks\":[{\"run\":[\"python3\",\"-c\",\"pass\"]}]},**k)\nfor i in (\"ST-aaaaaaaa\",\"ST-bbbbbbbb\"):(r/\"items\"/(i+\".json\")).write_text(json.dumps(it(i),indent=2)+\"\\n\")\ng(\"add\",\"-A\");g(\"-c\",\"user.name=x\",\"-c\",\"user.email=x@x\",\"commit\",\"-qm\",\"i\")\nled=P.Path(g(\"rev-parse\",\"--absolute-git-dir\"))/\"kb-backlog-claims.json\";lock=led.with_name(led.name+\".lock\")\nenv=dict(os.environ,CLAUDE_CODE_SESSION_ID=\"S1\");env.pop(\"KB_BACKLOG_CONFIG\",None)\nlock.write_text(\"\");p=s.Popen([sys.executable,T,\"--root\",str(r),\"claim\",\"ST-aaaaaaaa\",\"--by\",\"w1\"],stdout=s.PIPE,stderr=s.STDOUT,text=True,env=env);time.sleep(3)\n(r/\"items\"/\"ST-bbbbbbbb.json\").write_text(json.dumps(it(\"ST-bbbbbbbb\",status=\"doing\",claimed_by=\"w2\"),indent=2)+\"\\n\")\nled.write_text(json.dumps({\"ST-bbbbbbbb\":{\"by\":\"w2\",\"session\":\"S2\"}}));lock.unlink()\nout=p.communicate(timeout=60)[0];d=json.loads(led.read_text())\nok=p.returncode!=0 or \"ST-bbbbbbbb\" in d\nprint(\"claim beside a claim of another session made while it waited: exit\",p.returncode,\"| record of the other session kept:\",\"ST-bbbbbbbb\" in d,out[-160:]);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "e46ab64779308191"
+      }
+    ]
+  }
 }
