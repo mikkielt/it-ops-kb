@@ -2,7 +2,7 @@
   "id": "BG-d2ezi7qd",
   "kind": "bug",
   "title": "redact.redact leaves Authorization header credentials, a URL's user:password@ password and a private key block's body in text",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yyjwfjtc",
   "priority": "P2",
   "rank": 0,
@@ -91,5 +91,37 @@
     }
   ],
   "notes": "Found by the SP-yyjwfjtc plan probe on origin/main b97cd6ebf: Authorization: Bearer v passes unless v is 20+ characters of high entropy (the TOKEN rule), Basic likewise (a long base64 credential is caught, a short one is not), postgres://user:pass@host keeps the password, and a private key block keeps its body (only the BEGIN line, a kbcommon.SECRETS shape, is replaced). Repro on the base: exit 1, left: bearer, basic, userinfo, key body. Separate from BG-w5d2mvwz (assignment forms) and after it, since both change redact.py and test_redact.py. Check 0 (tests.py -k redact_replaces_every_class) passes before the work on purpose: it pins idempotence and the ordinary sample under the wider rules; the repro and check 1 fail until the work. Gate g1 answered by the orchestrator acting as operator (2026-10-17) against the worker recommendation: a cut-off key body left in text is the risky outcome the sprint goal and the operator secrets policy rule out, so the conservative option (more redaction) was taken.",
-  "claimed_by": "orch-r09"
+  "evidence": {
+    "commit": "08e19a499716874701c2e686f30532ffbc5c5084",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py",
+          "-k",
+          "redact_replaces_every_class"
+        ],
+        "exit": 0,
+        "sha256": "d903dcb76cb1266f"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('_tools/test_redact.py',encoding='utf-8').read();need=['Bearer','Basic ','END ','PRIVATE'];miss=[n for n in need if n not in t];print('missing in test_redact.py:',miss);sys.exit(1 if miss else 0)"
+        ],
+        "exit": 0,
+        "sha256": "6837419a8b1826bf"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import redact as R;v='Fake'+'Pass12345x';b='ZmFr'+'ZTpmYWtl';body='MIIfake'+'FAKEfake';pem='-----BEGIN '+'PRIVATE KEY-----'+chr(10)+body+chr(10)+'-----END PRIVATE KEY-----';cases={'bearer':('Authorization: Bearer '+v,v),'basic':('Authorization: Basic '+b,b),'userinfo':('postgres://fakeuser:'+v+'@db.example.com:5432/app',v),'key body':(pem,body)};left=[n for n,(t,x) in cases.items() if x in R.redact(t)];print('left:',left);sys.exit(1 if left else 0)"
+        ],
+        "exit": 0,
+        "sha256": "389b73b75fbbc92d"
+      }
+    ]
+  }
 }
