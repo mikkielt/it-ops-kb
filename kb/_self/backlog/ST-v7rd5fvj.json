@@ -2,7 +2,7 @@
   "id": "ST-v7rd5fvj",
   "kind": "story",
   "title": "Research sprint goal: Feedback recorded once, joined right and shown; revalidation treats slow or redirecting hosts right",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Planned 2026-10-17 on origin/main 7cb5e0cbb: (2) packs good (claude/hooks.md:58 and :62 answer it); (1) packs a false good (agents/doc-change-detection.md:71 is about redirect chains, nothing on refusing a hop). Feeds ST-mrrudfmj (no request for a redirect hop into a host in its down window) and ST-h3y6iym4 (kb!: blocks the prompt)."
+  "notes": "Planned 2026-10-17 on origin/main 7cb5e0cbb: (2) packs good (claude/hooks.md:58 and :62 answer it); (1) packs a false good (agents/doc-change-detection.md:71 is about redirect chains, nothing on refusing a hop). Feeds ST-mrrudfmj (no request for a redirect hop into a host in its down window) and ST-h3y6iym4 (kb!: blocks the prompt).",
+  "claimed_by": "orch-r07"
 }
