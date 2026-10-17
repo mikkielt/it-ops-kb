@@ -27,6 +27,25 @@
     "kb/_self/querylog.md",
     "kb/_self/usage.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does record_feedback's bounded record of written feedback ids keep its state?",
+      "options": [
+        "feedback.ids file in the querylog directory, newest 200 ids, one per line",
+        "a spool-side marker file per day"
+      ],
+      "recommendation": "feedback.ids file in the querylog directory, newest 200 ids, one per line",
+      "do": {
+        "feedback.ids file in the querylog directory, newest 200 ids, one per line": "ST-vpwkr76k",
+        "a spool-side marker file per day": "ST-vpwkr76k"
+      },
+      "class": "querylog",
+      "answer": "feedback.ids file in the querylog directory, newest 200 ids, one per line",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-waxgh3kg review"
   ],
