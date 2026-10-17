@@ -2,7 +2,7 @@
   "id": "BG-beyrus2g",
   "kind": "bug",
   "title": "A revalidation window that starts at a heading line still fails section_unchanged when an unrelated H2 is added, renamed or removed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-vk3wf746 review"
   ],
-  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (section_unchanged False after an unrelated H2 is added)."
+  "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (section_unchanged False after an unrelated H2 is added).",
+  "claimed_by": "orch-r07"
 }
