@@ -1,0 +1,18 @@
+{
+  "id": "BG-hyk3wh4l",
+  "kind": "bug",
+  "title": "The answer QK-claude-code-status-line-notification-hooks says Remote Control answers prompts one session at a time although server mode runs concurrent sessions (_answers.md)",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kb/public/_answers.md's conclusion of QK-claude-code-status-line-notification-hooks says an operator answers prompts through Remote Control (one session at a time), but the Remote Control page says the limit is one remote session per interactive process and that claude remote-control server mode runs concurrent sessions (--capacity <N>, --spawn worktree); ST-3emh47z5 corrected the same claim in kb/public/claude/cross-session-messaging.md. The conclusion states the per-process limit and server mode, cited.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;t=open('kb/public/_answers.md').read();sys.exit(1 if 'Remote Control (one session at a time' in t else 0)"
+    ]
+  },
+  "repro_reason": "a prose claim in a ledger entry has no behaviour to run; the repro tests the stale wording"
+}
