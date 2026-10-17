@@ -106,6 +106,21 @@
       "answer": "vendor names only: forge names and host names, the product Remote Control and a key inside a longer word; release, tag and the push verbs keep the class",
       "by": "operator",
       "host_unchecked": "the gate decides which words the classifier skips; 'host name' names a forge's domain, no host setup to prove"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Which identifier shapes with Publish inside count as a key name in a kb-content gate?",
+      "options": [
+        "camelCase and snake_case identifiers only (datePublished, date_published); a bare publish or published stays push",
+        "any word that holds publish inside a longer word"
+      ],
+      "recommendation": "camelCase and snake_case identifiers only (datePublished, date_published); a bare publish or published stays push",
+      "do": {
+        "camelCase and snake_case identifiers only (datePublished, date_published); a bare publish or published stays push": "BG-e3o47d6s",
+        "any word that holds publish inside a longer word": "BG-e3o47d6s"
+      },
+      "class": "push"
     }
   ],
   "notes": "Second trigger word, 2026-10-14: ST-xlr5flob gate g1 ('Which langgraph commit should the PostgresStore CODE facts be pinned to?', options: the latest commit that changed store/postgres/base.py, or the latest langgraph-checkpoint-postgres release tag) was classed push (matched 'release') on an item whose touches are kb/public content only; 'release' there names an upstream package release a CODE fact is pinned to, not a push. The fix should cover 'release' (and 'tag') in content gates, not only product names. Third case, 2026-10-15: ST-a25p6qsy gate g2 ('Which source row backs the trigger keyword facts: the existing CI/CD YAML reference row S447 (gitlab master@56c82a97 ...) or a new row for the same file at master@9f1632e2?') was made blocking as class push (matched 'gitlab') on an item whose touches are kb/public content only; 'gitlab' there is part of a source url's repository name (gitlab-org/gitlab), not a push target. ST-52lihy7z (2026-10-15): gate 'licence' (which licence the new GitLab doc source rows carry, CC BY-SA 4.0 per the gitlab-org/gitlab LICENSE or MIT as kbid.py read it) was made blocking as class push, matched 'GitLab'; committed open as printed. Plan 2026-10-17: merged ST-zq4onq3e, ST-lbkiwyu2, ST-x2mqvkju (checks 0-2). Premise on 7cb5e0cbb: repro, checks 0-3 exit 1. Gate g1: release/tag stay push. Check 4 passes before the work: it pins the refusals. No new test.",
