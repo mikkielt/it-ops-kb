@@ -1,0 +1,25 @@
+{
+  "id": "ST-o5dmjjay",
+  "kind": "story",
+  "title": "A worker that rewords a rule updates the eval rows that ask the old premise",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The worker role file's done bar says a worker that rewords a kb/_self rule searches the root's lookup_eval.csv for rows whose question states the old premise and rewords them in the item when the file is in its touches, else reports them. Found by the SP-3g3egfll close: BG-sddebrpa had lookup_eval.csv in its touches and left EV-gap-gap-step-filed-wrong-root asking the old premise (ST-5ltfukq3).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('agents/worker.md',encoding='utf-8').read();i=t.find('3. **Done bar.**');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='old premise' in s;print('3. **Done bar.**','names','old premise',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll close"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-3erithkf",
+  "kind": "story",
+  "title": "A worker whose re-anchor leaves its reworded fact unlocated anchors it with a quote or reports it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The worker role file's done bar says that when factdiff.py anchor reports a reworded or added fact of the item as unlocated, the worker anchors it with a quote the source holds (as ST-dfsfutx4 did) or names it in its report as unanchored. Found by the SP-3g3egfll close: ST-nfrimn67 and ST-diks4hle each left a reworded fact unlocated without following it (ST-gympyz6m).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('agents/worker.md',encoding='utf-8').read();i=t.find('3. **Done bar.**');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='unlocated' in s;print('3. **Done bar.**','names','unlocated',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll close"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-jjn5jrss",
+  "kind": "story",
+  "title": "After the goal research lands, the orchestrator rereads the goals the research's knowledge feeds",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint run step 4.4 says that once the goal research story has landed, the orchestrator reads the goal of each item the research notes name under 'Knowledge by item' against the facts the research added, and asks a gate before that item's claim when the goal contradicts one. Found by the SP-3g3egfll close: BG-wlpbhug7's goal took application-name as a publisher, which the research's own fact says it is not (BG-7po2pir4).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## run');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='Knowledge by item' in s;print('## run','names','Knowledge by item',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll close"
+  ]
+}

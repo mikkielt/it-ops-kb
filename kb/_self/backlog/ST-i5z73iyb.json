@@ -1,0 +1,25 @@
+{
+  "id": "ST-i5z73iyb",
+  "kind": "story",
+  "title": "A planned check of a helper runs the entry point the goal's behaviour goes through",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb-sprint plan step 6 says a committed item whose goal names a behaviour a tool reaches through an entry point (factdiff.resolve, provider.read_page) carries a check that runs that entry point on a planted input, not only the helper it changes, so a fix the entry point never reaches fails its check. Found by the SP-3g3egfll close: BG-j5lfhsyf's check and repro called window_sections directly, passed, and the review found the fix unreachable from resolve (BG-hxp3f73q).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='entry point' in s;print('## plan','names','entry point',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-3g3egfll close"
+  ]
+}
