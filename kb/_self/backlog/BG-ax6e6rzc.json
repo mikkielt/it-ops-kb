@@ -1,0 +1,17 @@
+{
+  "id": "BG-ax6e6rzc",
+  "kind": "bug",
+  "title": "researched reads a goal's lead-in sentence into question 1 and cuts a question at a semicolon inside it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "goal_questions keeps the sentence before the first numbered piece when it ends in a period (not a colon), so question 1 carries the goal's own words (kb-research, a topic slug) and the pack reads them as key words that make a good article weak, and it cuts a numbered question at a ; inside it (hold = and ; so a pair rides), so the tail is read as a question of its own that no article holds as a whole (ST-v7rqvnwe, where two wording changes of a kb article were needed for researched to pass): a lead-in sentence before a numbered piece is dropped whatever its ending, and a ; inside a question ending in ? stays in it",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import bl_land as b;q=b.goal_questions('Answer with the kb tools first. (1) How does X work (RFC 1)? (2) May a path hold = and ; so a pair rides in it?');print(q);sys.exit(0 if len(q)==2 and not q[0].startswith('Answer') and q[1].startswith('May') and q[1].endswith('in it?') else 1)"
+    ]
+  }
+}
