@@ -1730,8 +1730,88 @@ def carry_claims(root, claims, upstream, branch):
                                   f"{upstream} (cherry-pick aborted, nothing changed): push the claim first "
                                   f"(kbgit.py sync --push), then run land again\n{(p.stderr or p.stdout).strip()}")
     tip = git(root, "rev-parse", "HEAD").strip()
-    return subprocess.run(["git", "rebase", "--quiet", "--onto", tip, upstream, branch], cwd=root,
-                          capture_output=True, text=True, encoding="utf-8", errors="replace")
+    return rebase_merging_doc_rows(root, upstream, branch, onto=tip)
+
+
+DOC_ROW_FILE = re.compile(r"kb/_self/[^/]+\.md\Z")
+WORD_RE = re.compile(r"\s*\S+\s*")
+
+
+def merge_line_hunks(base, ours, theirs):
+    """BASE's line with the changes of OURS and THEIRS both made, word by word (each word keeps its trailing
+    whitespace), or None when the two changed the same words or touching ones, or a line is not whole words."""
+    import difflib
+    words = {name: WORD_RE.findall(text) for name, text in (("b", base), ("o", ours), ("t", theirs))}
+    if any("".join(words[name]) != text for name, text in (("b", base), ("o", ours), ("t", theirs))):
+        return None
+    changes = []  # (start, end, replacement words) in BASE's words
+    for side in ("o", "t"):
+        sm = difflib.SequenceMatcher(None, words["b"], words[side], autojunk=False)
+        changes += [(i1, i2, tuple(words[side][j1:j2])) for tag, i1, i2, j1, j2 in sm.get_opcodes() if tag != "equal"]
+    changes = sorted(set(changes))  # a change both sides made the same way counts once
+    out, at = [], 0
+    for n, (i1, i2, repl) in enumerate(changes):
+        if n and i1 <= changes[n - 1][1]:  # overlaps or touches the change before it
+            return None
+        out += words["b"][at:i1] + list(repl)
+        at = i2
+    return "".join(out + words["b"][at:])
+
+
+CONFLICT_HUNK = re.compile(r"^<<<<<<< [^\n]*\n(.*?)^\|\|\|\|\|\|\| [^\n]*\n(.*?)^=======\n(.*?)^>>>>>>> [^\n]*\n",
+                           re.M | re.S)
+
+
+def merged_doc_hunks(text):
+    """(TEXT with each diff3 conflict hunk merged line by line, the merged lines), or None when a hunk's sides do not
+    hold the same number of lines or one line's words clash. A text with no hunk is None."""
+    merged = []
+
+    def one(m):
+        ours, base, theirs = (part.splitlines() for part in m.groups())
+        if not base or not len(base) == len(ours) == len(theirs):
+            raise ValueError("not line for line")
+        lines = [merge_line_hunks(*trio) for trio in zip(base, ours, theirs)]
+        if None in lines:
+            raise ValueError("same words")
+        merged.extend(lines)
+        return "".join(line + "\n" for line in lines)
+    try:
+        out = CONFLICT_HUNK.sub(one, text)
+    except ValueError:
+        return None
+    return (out, merged) if merged and not re.search(r"^(<<<<<<<|=======|>>>>>>>)", out, re.M) else None
+
+
+def rebase_merging_doc_rows(root, upstream, branch, onto=None):
+    """`git rebase UPSTREAM BRANCH` (`--onto ONTO` with it): where it stops only on kb/_self/*.md lines both sides
+    changed at different words (a table row, a one-line paragraph), the lines are merged word by word keeping both
+    sides, said, and the rebase continues. A conflict on the same words or in another file is aborted, nothing changed;
+    the process returned is the failed one."""
+    def git_run(*args):
+        return subprocess.run(["git", "-c", "merge.conflictStyle=diff3", "-c", "core.editor=true", *args], cwd=root,
+                              capture_output=True, text=True, encoding="utf-8", errors="replace",
+                              env={**os.environ, "GIT_EDITOR": "true"})
+    p = git_run("rebase", "--quiet", *(["--onto", onto] if onto else []), upstream, branch)
+    while p.returncode:
+        files = git_run("diff", "--name-only", "--diff-filter=U").stdout.split()
+        fixed = {}
+        for name in files:
+            path = Path(root) / name
+            result = merged_doc_hunks(path.read_text(encoding="utf-8")) if DOC_ROW_FILE.match(name) else None
+            if result is None:
+                break
+            fixed[name] = result
+        if not files or len(fixed) < len(files):
+            git_run("rebase", "--abort")
+            return p
+        for name, (text, lines) in fixed.items():
+            (Path(root) / name).write_text(text, encoding="utf-8", newline="\n")
+            git_run("add", "--", name)
+            for line in lines:
+                say(f"land: merged the line of {name} word by word, both sides kept: {line}")
+        p = git_run("rebase", "--continue")
+    return p
 
 
 def item_state(root, rev, iid):
@@ -2225,8 +2305,7 @@ def land_once(bl, a):
                 say(f"land: carry the claim commit(s) {', '.join(c[:10] for c in claims)} under {branch}")
                 p = carry_claims(root, claims, upstream, branch)
             else:
-                p = subprocess.run(["git", "rebase", "--quiet", upstream, branch], cwd=root, capture_output=True,
-                                   text=True, encoding="utf-8", errors="replace")
+                p = rebase_merging_doc_rows(root, upstream, branch)
         if p.returncode:
             subprocess.run(["git", "rebase", "--abort"], cwd=root, capture_output=True)
             raise land_stop("rebase", f"{branch} does not rebase cleanly on {remote}/main (rebase aborted, nothing "

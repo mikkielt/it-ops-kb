@@ -46,6 +46,27 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which hunks may the doc-row merge take, and which word changes count as different? (adjacent rows edited by two items form one git hunk)",
+      "options": [
+        "equal-line hunks, touching words conflict",
+        "one-line hunks only, touching words conflict",
+        "equal-line hunks, touching words merged"
+      ],
+      "recommendation": "equal-line hunks, touching words conflict",
+      "do": {
+        "equal-line hunks, touching words conflict": "ST-mpwzinrm",
+        "one-line hunks only, touching words conflict": "ST-mpwzinrm",
+        "equal-line hunks, touching words merged": "ST-mpwzinrm"
+      },
+      "class": "agents-rule",
+      "answer": "equal-line hunks, touching words conflict",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-z3hyk4eh close"
   ],
