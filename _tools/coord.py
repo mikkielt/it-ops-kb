@@ -2,8 +2,8 @@
 """Claims, leases, compare-and-swap and events on a local SQLite store (stdlib only), usable by any agent. Docs: kb/_self/tools.md.
 
   coord.py claim KEY --ttl SECONDS [--holder NAME] [--budget USD]
-                                                     create KEY if it is absent, held for SECONDS; prints the key, its
-                                                     holder and the holder's token (exit 1, naming the holder, when a
+                                                     lease KEY for SECONDS, creating it if it is absent; prints the key,
+                                                     its holder and the holder's token (exit 1, naming the holder, when a
                                                      live lease already holds KEY); --budget is the USD the operator
                                                      approved for the claimed item, so KEY is then an item id
   coord.py renew KEY --token T [--ttl SECONDS]       extend the lease of the holder of T (SECONDS: the claim's own)
@@ -24,9 +24,11 @@
 The store is one SQLite file: `--store PATH` (before or after the command), else the environment variable
 KB_COORD_STORE; with neither the command is refused (exit 2). Every command prints one JSON object on stdout with
 sorted keys. A claimed key is a row with a holder, a token, a ttl and an expiry; `put` writes the row's value and
-raises its revision by one (a claim starts at revision 1). A lease whose expiry has passed counts as absent: the
-next write on that key removes the row, value included, and `get` and `list` skip it. A row `put` made has no lease
-and stays until a claim-and-release or a later `put` replaces it. The token is shown once, to the claimer; `get`,
+raises its revision by one (a claim of an absent key starts at revision 1). The end of a lease, a `release` or an expiry,
+clears the row's holder, token and expiry and keeps its value and revision: `get` and `list` show the key with no
+holder, and a claim of a key that holds no live lease (one a `put` made included) succeeds and leaves its value and
+revision as they were. A row no `put` wrote has nothing to keep, so the end of its lease removes it and the key is
+absent. The token is shown once, to the claimer; `get`,
 `list` and a refused claim never print it. Every write runs in one `BEGIN IMMEDIATE` transaction, so two processes
 racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock.
 
@@ -123,8 +125,9 @@ OPERATOR_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
 BODY_LIMIT = 65536
 REQUEST_SECONDS = 60
 ENDPOINT = "/v1/run"
-LIVE = "(expires IS NULL OR expires > ?)"
-PUBLIC = "key, value, revision, holder, expires"
+LIVE = "(expires IS NULL OR expires > :now OR value IS NOT NULL)"  # a row with a value outlives its lease
+PUBLIC = ("key, value, revision, CASE WHEN expires > :now THEN holder END AS holder, "
+          "CASE WHEN expires > :now THEN expires END AS expires")
 
 
 class Refused(Exception):
@@ -176,10 +179,28 @@ def row_json(row):
     return out
 
 
+def end_leases(con, now, key=None):
+    """End every lease (of KEY alone, when given) whose expiry has passed: a row holding a value loses its holder,
+    token, ttl, expiry and budget and keeps value and revision; a row a claim made and no put wrote is removed."""
+    where = "expires IS NOT NULL AND expires <= ?" + (" AND key = ?" if key is not None else "")
+    params = (now,) if key is None else (now, key)
+    con.execute(f"DELETE FROM entries WHERE value IS NULL AND {where}", params)
+    con.execute(f"UPDATE entries SET holder = NULL, token = NULL, ttl = NULL, expires = NULL, budget = NULL WHERE {where}", params)
+
+
 def live_row(con, key, now):
-    """The key's row inside a write transaction, an expired lease removed first (it counts as absent)."""
-    con.execute("DELETE FROM entries WHERE key = ? AND expires IS NOT NULL AND expires <= ?", (key, now))
+    """The key's row inside a write transaction, an expired lease ended first (the row then holds no lease)."""
+    end_leases(con, now, key)
     return con.execute("SELECT * FROM entries WHERE key = ?", (key,)).fetchone()
+
+
+def take(con, key, holder, token, ttl, now, budget=None):
+    """Lease KEY to HOLDER: a new row at revision 1, else the row that holds no lease, its value and revision kept."""
+    con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires, budget) VALUES (?, NULL, 1, ?, ?, ?, ?, ?) "
+                "ON CONFLICT(key) DO UPDATE SET holder = excluded.holder, token = excluded.token, ttl = excluded.ttl, "
+                "expires = excluded.expires, budget = excluded.budget",
+                (key, holder, token, ttl, now + ttl, budget))
+    return con.execute("SELECT revision FROM entries WHERE key = ?", (key,)).fetchone()["revision"]
 
 
 def claim(args, now):
@@ -192,13 +213,11 @@ def claim(args, now):
     token = secrets.token_hex(16)
     with Tx(args.store) as con:
         row = live_row(con, args.key, now)
-        if row is not None:
+        if row is not None and row["holder"] is not None:
             raise Refused({"ok": False, "key": args.key, "holder": row["holder"], "revision": row["revision"],
-                           "expires": row_json(row)["expires"],
-                           "error": f"{args.key} is held by {row['holder'] or 'no lease (a put value)'}"})
-        con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires, budget) VALUES (?, NULL, 1, ?, ?, ?, ?, ?)",
-                    (args.key, holder, token, args.ttl, now + args.ttl, budget))
-    body = {"ok": True, "key": args.key, "holder": holder, "token": token, "ttl": args.ttl, "revision": 1,
+                           "expires": row_json(row)["expires"], "error": f"{args.key} is held by {row['holder']}"})
+        revision = take(con, args.key, holder, token, args.ttl, now, budget)
+    body = {"ok": True, "key": args.key, "holder": holder, "token": token, "ttl": args.ttl, "revision": revision,
             "expires": round(now + args.ttl, 3)}
     if budget is not None:
         body["budget_usd"] = budget
@@ -226,7 +245,10 @@ def renew(args, now):
 def release(args, now):
     with Tx(args.store) as con:
         row = held_by(con, args.key, args.token, now)
-        con.execute("DELETE FROM entries WHERE key = ?", (args.key,))
+        if row["value"] is None:
+            con.execute("DELETE FROM entries WHERE key = ?", (args.key,))
+        else:
+            con.execute("UPDATE entries SET holder = NULL, token = NULL, ttl = NULL, expires = NULL, budget = NULL WHERE key = ?", (args.key,))
     return {"ok": True, "key": args.key, "holder": row["holder"], "released": True}
 
 
@@ -234,7 +256,7 @@ def get(args, now):
     con = connect(args.store)
     try:
         con.execute(SCHEMA)
-        row = con.execute(f"SELECT {PUBLIC} FROM entries WHERE key = ? AND {LIVE}", (args.key, now)).fetchone()
+        row = con.execute(f"SELECT {PUBLIC} FROM entries WHERE key = :key AND {LIVE}", {"key": args.key, "now": now}).fetchone()
     finally:
         con.close()
     if row is None:
@@ -276,7 +298,8 @@ def listing(args, now):
     con = connect(args.store)
     try:
         ensure_schema(con)
-        rows = con.execute(f"SELECT {PUBLIC}, budget FROM entries WHERE {LIVE} ORDER BY key", (now,)).fetchall()
+        rows = con.execute(f"SELECT {PUBLIC}, CASE WHEN expires > :now THEN budget END AS budget FROM entries "
+                           f"WHERE {LIVE} ORDER BY key", {"now": now}).fetchall()
     finally:
         con.close()
     out = []
@@ -458,9 +481,10 @@ def dedup(args, now):
     token = secrets.token_hex(16)
     overlapping, covered, own, taken, others = [], set(), set(), [], []
     with Tx(args.store) as con:
-        con.execute("DELETE FROM entries WHERE expires IS NOT NULL AND expires <= ?", (now,))
+        end_leases(con, now)
         theirs, holders = {}, {}
-        for row in con.execute("SELECT key, holder FROM entries WHERE substr(key, 1, ?) = ? ORDER BY key", (len(RESEARCH), RESEARCH)):
+        for row in con.execute("SELECT key, holder FROM entries WHERE holder IS NOT NULL AND substr(key, 1, ?) = ? ORDER BY key",
+                               (len(RESEARCH), RESEARCH)):
             their_topic, _colon, term = row["key"][len(RESEARCH):].partition(":")
             if their_topic != topic:
                 continue
@@ -479,8 +503,7 @@ def dedup(args, now):
             if term in holders:
                 others.append({"term": term, "holder": holders[term]})
             elif term not in own:
-                con.execute("INSERT INTO entries (key, value, revision, holder, token, ttl, expires) VALUES (?, NULL, 1, ?, ?, ?, ?)",
-                            (research_key(topic, term), holder, token, args.ttl, now + args.ttl))
+                take(con, research_key(topic, term), holder, token, args.ttl, now)
                 taken.append(research_key(topic, term))
         last = con.execute("SELECT COALESCE(MAX(seq), 0) FROM events").fetchone()[0]
     body = {"ok": True, "topic": topic, "holder": holder, "terms": terms, "uncovered": uncovered, "overlaps": overlapping,
