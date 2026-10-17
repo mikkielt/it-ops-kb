@@ -450,7 +450,8 @@ def research_one(g, entry, gate, research, day, claim=None):
     """One research run on a gap finding (stage gap): the model's candidate facts (the finding promoted to
     candidate-fact), each checked (candidate_problems, then quotecheck on its page), the accepted ones written
     (write_research), then the gates: no existing fact, entry or source line edited (edit_problems), build_index and
-    check.py with errors=0, no eval question newly failing and off-kb `good` not rising. A fact written promotes the
+    check.py with errors=0, no eval question newly failing, off-kb `good` not rising and `noted` at or under
+    `rag.NOTED_BASELINE`. A fact written promotes the
     finding to claim (`applied`); conflicts only leave it at candidate-fact (`applied`); nothing accepted, a reply
     that is not the expected JSON, or a failed gate is `rejected` with the reasons, and every file is put back. None
     when the call itself fails (no record: a later run tries again). The finding's `lead` url and the report's
@@ -503,12 +504,15 @@ def research_one(g, entry, gate, research, day, claim=None):
     if not after:
         after += gate.index_and_check()
     if not after:
+        import rag
         m = gate.measure()
         newly = [i for i in m["failed"] if i not in base["failed"]]
         if newly:
             after.append(f"eval fails: {', '.join(newly[:3])}")
         if m["offkb_good"] > base["offkb_good"]:
             after.append(f"off-kb good rises: {base['offkb_good']} -> {m['offkb_good']}")
+        if m["noted"] > rag.NOTED_BASELINE:
+            after.append(f"pack notes rise: noted={m['noted']} is above NOTED_BASELINE={rag.NOTED_BASELINE}")
     if after:
         restore(saved)
         gate.fresh()
