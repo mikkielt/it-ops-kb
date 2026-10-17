@@ -89,7 +89,9 @@
         "both": "BG-efbghw7n",
         "header-only": "BG-efbghw7n"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "both",
+      "by": "operator"
     }
   ],
   "links": [
