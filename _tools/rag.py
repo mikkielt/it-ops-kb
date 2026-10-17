@@ -212,33 +212,33 @@ def format_hits(hits, fmt="concise"):
 
 def format_audit(rows, entries=False, fmt="detailed"):
     if fmt == "concise":
-        out = ["| path | status | facts | DOC | CODE | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|"]
+        out = ["| path | status | facts | DOC | CODE | DER | COMMUNITY | UNK | gaps | conflicts | flags |", "|---|---|---|---|---|---|---|---|---|---|---|"]
         for r in rows:
             gv, cv = len(r["gaps_via_sources"]), len(r["conflicts_via_sources"])
             out.append(f"| {r['path']} | {r['status']} | {r['facts']} | {r['DOC']} | {r['CODE']} | {r['DER']} | {r['COMMUNITY']} | "
                        f"{r['UNK']} | {len(r['gaps'])}" + (f"+{gv}" if gv else "") + f" | {len(r['conflicts'])}"
-                       + (f"+{cv}" if cv else "") + " |")
+                       + (f"+{cv}" if cv else "") + f" | {r['flags']} |")
         if entries:
             for r in rows:
                 for key in ("gaps", "gaps_via_sources", "conflicts", "conflicts_via_sources"):
                     for e in r[key]:
                         out.append(f"{r['topic']}  {key}: {e['file']}:{e['line']}  {e['text'][:100]}")
-        out.append(f"articles={len(rows)}; gaps/conflicts N+M: N name the topic, M cite a source it uses")
+        out.append(f"articles={len(rows)}; gaps/conflicts N+M: N name the topic, M cite a source it uses; flags: lines a feedback report calls wrong or stale")
         return "\n".join(out)
-    out = ["| path | status | retrieved | facts | DOC | CODE | DER | COMMUNITY | UNK | gaps | conflicts |", "|---|---|---|---|---|---|---|---|---|---|---|"]
+    out = ["| path | status | retrieved | facts | DOC | CODE | DER | COMMUNITY | UNK | gaps | conflicts | flags |", "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for r in rows:
         g, c = len(r["gaps"]), len(r["conflicts"])
         gv, cv = len(r["gaps_via_sources"]), len(r["conflicts_via_sources"])
         out.append(f"| {r['path']} | {r['status']} | {r['retrieved_utc']} | {r['facts']} | {r['DOC']} | {r['CODE']} | {r['DER']} | "
                    f"{r['COMMUNITY']} | {r['UNK']} | {g}" + (f" (+{gv} via sources)" if gv else "") + f" | {c}"
-                   + (f" (+{cv} via sources)" if cv else "") + " |")
+                   + (f" (+{cv} via sources)" if cv else "") + f" | {r['flags']} |")
     if entries:
         for r in rows:
             for key in ("gaps", "gaps_via_sources", "conflicts", "conflicts_via_sources"):
                 for e in r[key]:
                     out.append(f"{r['topic']}  {key}: {e['file']}:{e['line']}  {e['text'][:140]}")
     out.append(f"articles={len(rows)}; gaps/conflicts: named = the entry names the topic (marker, path or section); "
-               f"via sources = it cites a source the topic uses")
+               f"via sources = it cites a source the topic uses; flags = lines a committed feedback report calls wrong or stale")
     return "\n".join(out)
 
 

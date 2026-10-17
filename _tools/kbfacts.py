@@ -35,6 +35,8 @@ and so every unit's `tags` leave it out (EVIDENCE_KINDS are the kinds that count
 and a fact whose only tag is a LOG one is a fact with no tag. Logs are rows, not facts: log_rows() reads every `_logs.csv`;
 pack(), show_logs() and audit_logs() print the active ones beside the facts whose article they are about, labelled as
 observed signal and never counted in a pack's verdict, route or `check:` lines.
+A feedback report of the committed query-log store that names a line `wrong` or `stale` prints beside them as
+`flagged (feedback, not a fact)` (feedback_flags, flags_in), also outside any verdict; audit() counts such lines per article.
 
 Snippets. A bullet that starts `SNIPPET:` introduces the fenced code block right below it: `- SNIPPET: <what it does>;
 context: <versions, prerequisites>; checked: no|syntax|run [DER S1: ...]`. It is an ordinary fact unit (the pack
@@ -780,11 +782,13 @@ def _source_rows():
 
 def audit(prefix=None, status=None, root=None):
     """One row per article under a prefix (bare or qualified: in_prefix), in one root or all: status, dates, fact
-    counts by kind (a fact counts once per kind it carries) and the gap/conflict entries linked to it."""
+    counts by kind (a fact counts once per kind it carries), the gap/conflict entries linked to it and `flags`, the
+    lines of its files that a committed feedback report flags (feedback_flags)."""
     prefix = scope(prefix, root)
     tfiles = topic_files()
     srcs = source_rows()
     ledgers = {n: link_entries(ledger_entries(n), tfiles, srcs) for n in (kbcommon.GAPS, kbcommon.CONFLICTS)}
+    flags = feedback_flags()
     rows = []
     for rel, meta in sorted(articles().items()):
         if prefix and not in_prefix(rel, prefix):
@@ -797,7 +801,8 @@ def audit(prefix=None, status=None, root=None):
         counts = Counter(k for u in us for k in kinds_of(u["tags"]))
         row = {"path": rel, "topic": topic, "status": meta.get("status", ""), "priority": meta.get("priority", ""),
                "retrieved_utc": meta.get("retrieved_utc", ""), "facts": sum(1 for u in us if u["tags"]),
-               **{k: counts.get(k, 0) for k in EVIDENCE_KINDS}}
+               **{k: counts.get(k, 0) for k in EVIDENCE_KINDS},
+               "flags": sum(len(flags.get(f, {})) for f in tfiles.get(topic, [rel]))}
         for n, key in ((kbcommon.GAPS, "gaps"), (kbcommon.CONFLICTS, "conflicts")):
             row[key] = [e for e in ledgers[n] if topic in e["explicit"]]
             row[key + "_via_sources"] = [e for e in ledgers[n] if topic in e["via_sources"]]
@@ -1125,16 +1130,71 @@ def logs_for(arts, us):
     return sorted(tied, key=lambda r: r["observed_to"], reverse=True)
 
 
+FLAG_LABEL = "flagged (feedback, not a fact):"  # what a line a feedback report names opens with
+FLAG_ISSUES = ("wrong", "stale")  # the issue classes of a report's line that flag it (ql_capture.FEEDBACK_ISSUES)
+MAX_FLAGS = 3  # flagged lines one pack or show prints
+_FLAGS = [None, {}]  # [signature of the store's run files, {path: {line: {issue: [reports, first day]}}}]
+
+
+def feedback_flags():
+    """{qualified path: {line: {issue: [reports, first day]}}} of the lines that a feedback report of the committed
+    query-log store (ql_base.STORE, read at the call) names with an issue of FLAG_ISSUES: the entries' `feedback`
+    lines, each report counted once per line it names. A report still in a spool is in no run file and shows nowhere.
+    Read again when a run file's time or size changes; {} for a store with none."""
+    import ql_base
+    store = ql_base.STORE
+    if not os.path.isdir(store):
+        return {}
+    import ql_store
+    files = ql_store.run_files(store)
+    sig = []
+    for p in files:
+        try:
+            st = p.stat()
+            sig.append((str(p), st.st_mtime_ns, st.st_size))
+        except OSError:
+            continue
+    if _FLAGS[0] != sig:
+        out = {}
+        for _, e in ql_store.store_entries(store):
+            for rep in e.get("feedback") or []:
+                for x in rep.get("lines") or []:
+                    path, _, n = str(x.get("line", "")).rpartition(":")
+                    if x.get("issue") in FLAG_ISSUES and path and n.isdigit():
+                        hit = out.setdefault(path, {}).setdefault(int(n), {}).setdefault(x["issue"], [0, ""])
+                        hit[0] += 1
+                        hit[1] = min(hit[1], e.get("day") or "") if hit[1] else (e.get("day") or "")
+        _FLAGS[:] = [sig, out]
+    return _FLAGS[1]
+
+
+def flag_line(path, n, issues):
+    """`- flagged (feedback, not a fact): PATH:LINE wrong x2, stale x1 since DAY` for one line's issues."""
+    since = min((d for _, d in issues.values() if d), default="")
+    said = ", ".join(f"{i} x{issues[i][0]}" for i in FLAG_ISSUES if i in issues)
+    return f"- {FLAG_LABEL} {path}:{n} {said}" + (f" since {since}" if since else "")
+
+
+def flags_in(path, lines):
+    """The flag lines of `lines` (numbers) of the qualified article `path`, in line order."""
+    by = feedback_flags().get(path)
+    return [flag_line(path, n, by[n]) for n in sorted(set(lines) & set(by))] if by else []
+
+
 def show_logs(qpath, first, last):
     """LOG lines for lines `first`..`last` of the kb file `qpath` (`rag.py show`, `kb_show`), as logs_for() ties them
-    to the article and the facts that start in that range; [] when none, or the file is no article or data file."""
-    if not _active_logs() or not qpath.endswith((".md", ".csv")):
+    to the article and the facts that start in that range, then at most MAX_FLAGS flag lines of the lines shown
+    (flags_in); [] when none, or the file is no article or data file."""
+    if not qpath.endswith((".md", ".csv")):
         return []
+    flags = flags_in(qpath, range(first, last + 1))[:MAX_FLAGS]
+    if not _active_logs():
+        return flags
     text = read(qpath)
     if text is None:
-        return []
+        return flags
     us = md_units(qpath, text) if qpath.endswith(".md") else csv_units(qpath, text)
-    return [log_line(r) for r in logs_for({qpath}, [u for u in us if first <= u["line"] <= last])[:MAX_LOGS]]
+    return [log_line(r) for r in logs_for({qpath}, [u for u in us if first <= u["line"] <= last])[:MAX_LOGS]] + flags
 
 
 def audit_logs(rows):
@@ -2543,7 +2603,9 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
     and the active rows whose context is a printed article or fact (logs_for: at most MAX_LOGS lines, newest first, each
     with the dates it covers), paid from what budget the facts leave, so a small budget drops them first. They are
     computed after the verdict, the route and the `check:` lines and change none of them, nor any fact line; a `none`
-    that routes web prints none. A kb with none prints what it always did, byte for byte. fmt
+    that routes web prints none. Under the same label follow at most MAX_FLAGS `flagged (feedback, not a fact):` lines,
+    one per printed fact line that a committed feedback report flags (flags_in), paid from the same budget and as little
+    a part of the verdict. A kb with none prints what it always did, byte for byte. fmt
     `concise` drops the article flags and the source url footer; footer=False leaves the footer out of the text (pack_many prints one shared footer). `domain` (bare `intune`
     or qualified `public/intune`) and `root` narrow the units (scope()); paths print qualified (`public/intune/x.md`)."""
     rules = scope(domain, root) == SELF_ROOT  # the kb's own rule docs: facts without sources, no web route
@@ -2874,6 +2936,17 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
         llines.append(line)
         lshown.append(r)
         lused += len(line) + 1
+    flagged = []  # lines of the printed facts that a committed feedback report flags: never a fact, never in the verdict
+    if not (shut or rules):
+        for path in dict.fromkeys(u["path"] for u in printed):
+            flagged += flags_in(path, [u["line"] for u in printed if u["path"] == path])
+    fshown = []
+    for line in flagged[:MAX_FLAGS]:
+        if used + lused + len(line) + 1 > limit:
+            break
+        llines.append(line)
+        fshown.append(line)
+        lused += len(line) + 1
     if llines:
         out += ["", LOG_LABEL] + llines
     if shut or rules:
@@ -2891,7 +2964,8 @@ def pack(question, budget=1200, domain=None, max_articles=4, fmt="detailed", foo
             "decisions": [{"id": d["id"], "status": d["status"], "label": decision_label(d), "path": d["path"],
                            "line": d["line"], "text": d["text"], "answers": d["answers"]} for d in kept],
             "logs": [{"id": r["id"], "path": r["path"], "line": r["line"], "observed_from": r["observed_from"],
-                      "observed_to": r["observed_to"], "text": r["text"]} for r in lshown]}
+                      "observed_to": r["observed_to"], "text": r["text"]} for r in lshown],
+            "flags": fshown}
 
 
 # language and format names: a question asking for a topic the kb covers in one of them (T-SQL for sp_getapplock) is a
@@ -3857,7 +3931,7 @@ def routed(question, domain=None, root=None, fmt="detailed", footer=True, invali
             "route": "web" if verdict == "none" else None, "has": [],
             "lacks": [chosen[0]["title"]] if verdict == "none" else [], "paths": paths, "tested": [], "pinned": 0,
             "key_missing": [], "sources": [s[0] for s in srcs], "source_rows": srcs, "text": "\n".join(out),
-            "decisions": [], "logs": [], "routed": {"kinds": kinds, "lines": keys}}
+            "decisions": [], "logs": [], "flags": [], "routed": {"kinds": kinds, "lines": keys}}
 
 
 def pack_routed(question, budget=1200, domain=None, max_articles=4, fmt="detailed", footer=True, root=None,

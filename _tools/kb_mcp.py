@@ -19,7 +19,9 @@ asks and, unasked, for a source past its freshness lifetime):
              Operator decisions come beside the facts, labelled decided or proposed (`include_invalidated` adds the
              withdrawn ones, with why); an active decision that answers the question counts toward `good`. The active
              LOG rows (observed signals) of the printed articles and facts follow under `observed signal (LOG, not a
-             fact):` with the dates they cover; they never count toward coverage and are never an answer on their own.
+             fact):` with the dates they cover, then a `flagged (feedback, not a fact)` line for each printed fact line that a
+             committed feedback report calls wrong or stale; they never count toward coverage and are never an
+             answer on their own.
              `questions` (1-6) batches the parts of a multi-part question: a section per part, one shared footer.
              `revalidate` (the team's own server only) asks each printed fact's cited sources now, within a time
              budget under the client's idle timeout, and marks each line current, moved (with the new passage), not
@@ -30,11 +32,13 @@ asks and, unasked, for a source past its freshness lifetime):
   kb_search  line search on the pack index, like `rag.py search -u`: hits with path:line, heading and text, one footer of the cited
              source ids and their urls, and rag.py's notes ("not found anywhere", "weak match")
   kb_facts   fact lines under a path prefix, optionally only some tag kinds, like `rag.py facts`
-  kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries, like `rag.py audit`;
+  kb_audit   per article: status, retrieved_utc, fact counts by tag kind, linked gap/conflict entries and `flags` (lines a
+             committed feedback report calls wrong or stale), like `rag.py audit`;
              then the possible contradictions (active decisions that share a context) and the active LOG rows of the
              audited articles, as observed signal
   kb_show    lines of a kb file, like `rag.py show PATH:LINE -n N`, then the decisions tied to those lines and the
-             active LOG rows (observed signal, not facts) of the article and its facts
+             active LOG rows (observed signal, not facts) of the article and its facts, and a `flagged (feedback, not a fact)`
+             line for each shown line a committed feedback report calls wrong or stale
   kb_source  source rows by id (legacy S123 or hash S-xxxxxxxx), with superseded_by, like `rag.py src`; `cited`
              adds every file line that names each id
   kb_status  how current this copy is: its commit and date, the latest census-* tag (or _census/ log), source and
