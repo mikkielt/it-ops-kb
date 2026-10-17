@@ -1,0 +1,27 @@
+{
+  "id": "ST-cf63y2o2",
+  "kind": "story",
+  "title": "set --repro judges that a repro fails now against a named base, so a repro is fixed on a branch that holds the fix",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py set ID --repro CMD --base REF runs the repro in a temporary checkout of REF to judge that it fails there, and records it when it does, so an orchestrator or worker fixes a broken repro on a work branch whose fix already makes it pass, with no hand revert of the fixed file. Found by the SP-4cc36epy close: BG-nlbltqk3's repro lacked KB_COORD_TOOLS=1; set --repro refused it on the worker's branch, and the orchestrator restored the base kb_mcp.py by hand to record it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath('_tools/backlog.py');r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run(['git','-C',str(r),'-c','user.name=x','-c','user.email=x@x',*a],check=True,capture_output=True,text=True).stdout.strip()\ng('init','-q');d=r/'kb'/'_self'/'backlog';d.mkdir(parents=True);(r/'backlog.json').write_text(json.dumps({'item_dir':'kb/_self/backlog'}))\n(d/'BG-aaaaaaaa.json').write_text(json.dumps({'id':'BG-aaaaaaaa','kind':'bug','title':'t','status':'draft','priority':'P3','severity':'S4','goal':'g','touches':['f.txt'],'repro':{'run':['python3','-c','import sys;sys.exit(1)']}},indent=2)+'\\n')\n(r/'f.txt').write_text('bad\\n');g('add','-A');g('commit','-qm','base');(r/'f.txt').write_text('good\\n');g('commit','-qam','fix')\nenv=dict(os.environ);env.pop('KB_BACKLOG_CONFIG',None)\nrep=\"python3 -c 'import sys;sys.exit(0 if open(\\\"f.txt\\\").read().strip()==\\\"good\\\" else 1)'\"\np=s.run([sys.executable,T,'--root',str(r),'set','BG-aaaaaaaa','--repro',rep,'--base','HEAD~1'],capture_output=True,text=True,env=env)\no=(p.stdout+p.stderr).strip();print('exit',p.returncode,o[-200:]);sys.exit(0 if p.returncode==0 and 'good' in (d/'BG-aaaaaaaa.json').read_text() else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_items.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy close"
+  ]
+}

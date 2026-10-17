@@ -1,0 +1,26 @@
+{
+  "id": "ST-wqbibuy6",
+  "kind": "story",
+  "title": "The kb MCP coord write tools ask before they run, and a coord hook copy outside a git repository writes no store under the clone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "An operator decision is recorded for two points SP-xo45jvbj's review noted and BG-6jwv6ag3 left out of its repro: settings.json allows all of mcp__kb, so coord_claim, coord_release and coord_post run without a prompt; and a copy of the coord hook outside a git repository makes <clone>/kb-coord/coord.sqlite. The check reads the ask rule the recommended answer would add; a run never edits settings, so the change is the operator's (a gate). Kept from BG-6jwv6ag3's notes at the SP-4cc36epy close.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,sys\np=json.load(open('.claude/settings.json')).get('permissions',{});ask=' '.join(p.get('ask',[]))\nneed=['mcp__kb__coord_claim','mcp__kb__coord_release','mcp__kb__coord_post'];miss=[n for n in need if n not in ask]\nprint('not asked:',miss);sys.exit(1 if miss else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/settings.json",
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy close"
+  ]
+}

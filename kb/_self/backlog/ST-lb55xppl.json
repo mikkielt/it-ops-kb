@@ -1,0 +1,25 @@
+{
+  "id": "ST-lb55xppl",
+  "kind": "story",
+  "title": "A gate about the coord hook's lease token or a lease release is not classed secrets or push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.class_reasons reads a coord lease's token (`lease token`) and a coord lease release (`release` beside lease or SessionEnd) as no secrets or push words, so such a gate takes the class its touches give (agents-rule for .claude/hooks/) and is not handled as a secret or a push. Found by the SP-4cc36epy close: BG-ljlj77kd's gates were classed push (matched 'release') and secrets (matched 'token').",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as a\nit={'touches':['.claude/hooks/coord_hook.py']}\nq=[{'id':'g1','question':'How does the coord hook make a SessionEnd release that could not run reach the store once it is free?','options':['retry at next SessionStart','wait longer inside SessionEnd']},\n   {'id':'g2','question':'What does the coord hook do with its lease token when a renew call times out?','options':['keep the token and try again after 60 seconds','drop the token and claim again']}]\nc=[a.derived_class(it,x) for x in q];print(c);sys.exit(0 if c==['agents-rule','agents-rule'] else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy close"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-tdxgaavt",
+  "kind": "story",
+  "title": "precheck warns of a check that fails before the work with exit 2, a usage error rather than the premise",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "precheck prints a warning line naming the item and the exit code for each committed item's check or repro that fails on the base with exit 2 (an argparse usage error, an unknown item, a missing file), so a check that fails for a reason other than its premise is fixed before the start gate. Found by the SP-4cc36epy close: ST-3gfykmit's check exited 2 with `no item` (its fixture had no backlog.json) and BG-nlbltqk3's repro read an unlisted tool; both passed precheck as failing before the work and were fixed mid-sprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath('_tools/backlog.py');r=P.Path(tempfile.mkdtemp());g=lambda *a:s.run(['git','-C',str(r),'-c','user.name=x','-c','user.email=x@x',*a],check=True,capture_output=True,text=True).stdout.strip()\ng('init','-q');d=r/'kb'/'_self'/'backlog';d.mkdir(parents=True);(r/'backlog.json').write_text(json.dumps({'item_dir':'kb/_self/backlog'}))\nw=lambda i,**k:(d/(i+'.json')).write_text(json.dumps({'id':i,'priority':'P3','title':'t '+i,**k},indent=2)+'\\n')\nw('SP-aaaaaaaa',kind='sprint',status='planned',goal='g')\nw('ST-aaaaaaaa',kind='story',status='draft',sprint='SP-aaaaaaaa',goal='g',touches=['x.txt'],checks=[{'run':['python3','-c','import sys;print(\"usage: no item\");sys.exit(2)']}])\ng('add','-A');g('commit','-qm','i')\nenv=dict(os.environ);env.pop('KB_BACKLOG_CONFIG',None)\np=s.run([sys.executable,T,'--root',str(r),'precheck','SP-aaaaaaaa'],capture_output=True,text=True,env=env)\no=p.stdout+p.stderr;print(o[-600:])\nsys.exit(0 if any(l.startswith('warning') and 'ST-aaaaaaaa' in l and 'exit 2' in l for l in o.splitlines()) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-4cc36epy close"
+  ]
+}
