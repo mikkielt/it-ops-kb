@@ -2,7 +2,7 @@
   "id": "ST-d7bapwep",
   "kind": "story",
   "title": "Review sprint: Researched facts anchored to what their sources hold now",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5bvg4tnl",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r08"
+  "evidence": {
+    "commit": "5a7b33f2cbca9edcb8311c7a4082da24efc522ce",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "6c115c9d6c2cf31d"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ae940b4bba3ce85b"
+      }
+    ]
+  }
 }
