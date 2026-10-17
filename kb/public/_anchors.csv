@@ -8275,6 +8275,11 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 2fd9bf69a867,gitlab/git-test-repositories.md,S-6foknrbi,located,,plain;real;gitdir;root;text;contain;point;path,d1ed3eb170c6c5f6,"Note: Also you can have a plain text file .git at the root of your working tree, containing gitdir: <path> to point at the real",2026-10-10
 30a2e502775a,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
 30f86c880983,gitlab/git-test-repositories.md,S-oyhmktnd,located,,differ;few,ab53c3818741fb48,"Sometimes, changes are not quite identical, but differ in only a few",2026-10-17
+340d1ebdacc0,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-17
+340d1ebdacc0,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-17
+340d1ebdacc0,gitlab/git-test-repositories.md,S-i3btr2xr,unlocated:no-match,,,,,2026-10-17
+340d1ebdacc0,gitlab/git-test-repositories.md,S-tx5lxmr3,unlocated:no-match,,,,,2026-10-17
+340d1ebdacc0,gitlab/git-test-repositories.md,S-udwlzday,unlocated:no-match,,,,,2026-10-17
 38548518567f,gitlab/git-test-repositories.md,S-3au2dknw,located,,refus;already;another;worktre;otherwis;check;out;checkout,68033a0ec65cc800,refuses when the wanted branch is already checked out or otherwise in use by another worktree,2026-10-13
 38548518567f,gitlab/git-test-repositories.md,S-hwicl2h6,located,,ignor;ignore-other-worktr;worktr;already;another;refus;check;worktre,d6d29a537a0f091a,--ignore-other-worktrees:: git switch refuses when the wanted ref is already checked out by another worktree.,2026-10-13
 3b71ae74f4da,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
@@ -8285,10 +8290,6 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 41cdc1fa00e2,gitlab/git-test-repositories.md,S-wyfuoqs5,located,Setup and Config > OPTIONS,unclean;unless;refus;forc;remov;worktre,f494ef72d7dd81f3,remove refuses to remove an unclean worktree unless --force is used.,2026-10-13
 41e151f551ac,gitlab/git-test-repositories.md,S-4aovy2cm,located,,eof;read;writ;stream;packfil;repository;one;data,3c5d5fc1622b864d,fast-import reads a mixed command/data stream from standard input and writes one or more packfiles directly into the current repository. When EOF is received on,2026-10-10
 432d5c80d2c7,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
-462200b1c2ae,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
-462200b1c2ae,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-15
-462200b1c2ae,gitlab/git-test-repositories.md,S-i3btr2xr,unlocated:no-match,,,,,2026-10-15
-462200b1c2ae,gitlab/git-test-repositories.md,S-tx5lxmr3,unlocated:no-match,,,,,2026-10-15
 46dfcb3bea5e,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
 482718f43a28,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,hardlink;under;file;instead;object;git,f59fd272259de911,filesystem to copy the files under the .git/objects directory instead of using hardlinks.,2026-10-10
 482d4a20b5ef,gitlab/git-test-repositories.md,S-6foknrbi,unlocated:no-match,,,,,2026-10-10

@@ -203,7 +203,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-commit-paths-and-symlinks` | P3 | complete | `gitlab/git-commit-paths-and-symlinks.md` | 7 |
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
-| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 51 |
+| `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 52 |
 | `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 14 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |

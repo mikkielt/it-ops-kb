@@ -3,7 +3,7 @@ topic: gitlab/git-test-repositories
 priority: P3
 applies_to: "Git 2.55.0 (documentation and source at the v2.55.0 tag): throwaway repositories built by test suites (local clones, templates, fast-import, automatic maintenance, per-process configuration), and how tools read revisions, worktree links, a branch a worktree holds, index bits and a temporary index (`GIT_INDEX_FILE`, `git write-tree`), and how `git merge-file`, the built-in merge drivers and a rebase resolve two edits of one line; Git for Windows v2.56.0.windows.2 (core.longpaths)"
 retrieved_utc: 2026-10-17
-sources: [S-r4j6qovt, S-njfmq56u, S-oyhmktnd, S-v45en2pm, S-uea2fdpv, S-vmz33l7n, S-7kl4eeso, S-f5whqkwk, S-3qf7ndi6, S-ali5r4n7, S-sx4rosvv, S-i3btr2xr, S-3au2dknw, S-hwicl2h6, S-hnrqsiz4, S-xcnkwrn4, S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
+sources: [S-r4j6qovt, S-njfmq56u, S-oyhmktnd, S-v45en2pm, S-uea2fdpv, S-vmz33l7n, S-7kl4eeso, S-f5whqkwk, S-3qf7ndi6, S-ali5r4n7, S-sx4rosvv, S-i3btr2xr, S-udwlzday, S-3au2dknw, S-hwicl2h6, S-hnrqsiz4, S-xcnkwrn4, S-j3galfta, S-2u6tfn4r, S-rzi7mtmw, S-r6wgcwme, S-33l7g2u2, S-k2jlpd4u, S-nv6io42x, S-miw74ti3, S-zflhytlw, S-waqn37nq, S-4aovy2cm, S-kzv2kznr, S-dcbs6vpj, S-vupwsv3m, S-fqaj6jn5, S-wyfuoqs5, S-lnlroicz, S-j4qkzgvv, S-rscocily, S-b6uvvu45, S-nftrmgem, S-nxowyi4h, S-zwbgb73y, S-tdddef3t, S-qovha7ae, S-y5k6dlda, S-slmllv74, S-6foknrbi, S-3yfc6nj7, S-tx5lxmr3, S-lr3jwdq2, S-4h6wi6hb, S-vif3vb3s, S-3iovxrkf, S-q2ovao5z]
 status: complete
 ---
 
@@ -265,11 +265,14 @@ This repository's own suites (`_tools/tests.py`, `_tools/stress_test.py`) build 
   counts as holding it. A branch named only in the update-refs of a rebase running with `--update-refs` is not
   held for this check, so these four commands do not refuse it. The error text is "'<branch>' is already used
   by worktree at '<path>'". Not every run of those commands reaches the check: `git checkout` and
-  `git switch` return before it under `--ignore-other-worktrees`, and also when the main worktree's `HEAD`
-  is already a symref to that branch; `git worktree add` runs it only without `--force` (for `-B`, too);
+  `git switch` return before it under `--ignore-other-worktrees`, and also when the current worktree's `HEAD`
+  is already a symref to that branch (`die_if_switching_to_a_branch_in_use` reads `HEAD` through
+  `get_main_ref_store`, which opens the current worktree's git directory, so in a linked worktree a branch held
+  only by the main worktree still dies); `git worktree add` runs it only without `--force` (for `-B`, too);
   `git rebase <upstream> <branch>` runs it with no such option. [CODE S-tx5lxmr3: worktree.c#is_shared_symref,
   is_worktree_being_rebased, is_worktree_being_bisected; CODE S-3qf7ndi6: branch.c#die_if_checked_out; CODE
-  S-i3btr2xr: builtin/checkout.c#die_if_switching_to_a_branch_in_use; CODE S-ali5r4n7: builtin/worktree.c#add]
+  S-i3btr2xr: builtin/checkout.c#die_if_switching_to_a_branch_in_use; CODE S-udwlzday: refs.c#get_main_ref_store;
+  CODE S-ali5r4n7: builtin/worktree.c#add]
 - The wider check is `branch_checked_out` (`prepare_checked_out_branches`): it collects each worktree's `HEAD`
   branch, the branch of a rebase in progress, the branch a bisect started from, and every ref in the
   update-refs state of a rebase in that worktree. In `branch.c` the only caller is `validate_new_branchname`,
