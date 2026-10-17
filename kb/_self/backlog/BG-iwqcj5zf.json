@@ -2,7 +2,7 @@
   "id": "BG-iwqcj5zf",
   "kind": "bug",
   "title": "An ended session's coord intent keeps showing to later sessions for a day, also after a clean SessionEnd",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-xo45jvbj review"
   ],
-  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (session B's SessionStart shows 'intent session=repro-sessA item=ST-abcd1234' after A's clean SessionEnd). Ordered after BG-as7rt42o (coord.py)."
+  "notes": "Premise run 2026-10-16 on origin/main ed55f4d56: repro exits 1 (session B's SessionStart shows 'intent session=repro-sessA item=ST-abcd1234' after A's clean SessionEnd). Ordered after BG-as7rt42o (coord.py).",
+  "claimed_by": "orch-r04"
 }
