@@ -45,6 +45,57 @@
   "depends_on": [
     "ST-4xswahsz"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Where do the channels permission-relay and Remote Control facts go, since the touches name no channels article?",
+      "options": [
+        "Extend claude/cross-session-messaging.md",
+        "Create a new claude/channels.md article"
+      ],
+      "recommendation": "Extend claude/cross-session-messaging.md",
+      "do": {
+        "Extend claude/cross-session-messaging.md": "ST-5mcrotet",
+        "Create a new claude/channels.md article": "ST-5mcrotet"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which retrieval ledgers does this research item write, given that signals.csv, aliases.csv and lookup_eval.csv are outside its touches?",
+      "options": [
+        "Write the touched ledgers only (sources, anchors, gaps, answers, expansions) and report the rest",
+        "Stop and ask for the touches to be widened"
+      ],
+      "recommendation": "Write the touched ledgers only (sources, anchors, gaps, answers, expansions) and report the rest",
+      "do": {
+        "Write the touched ledgers only (sources, anchors, gaps, answers, expansions) and report the rest": "ST-5mcrotet",
+        "Stop and ask for the touches to be widened": "ST-5mcrotet"
+      },
+      "class": "design",
+      "answer": "Write the touched ledgers only (sources, anchors, gaps, answers, expansions) and report the rest",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Do the status line facts form a new article claude/statusline.md or extend claude/settings-and-scopes.md?",
+      "options": [
+        "New article claude/statusline.md",
+        "Extend claude/settings-and-scopes.md"
+      ],
+      "recommendation": "New article claude/statusline.md",
+      "do": {
+        "New article claude/statusline.md": "ST-5mcrotet",
+        "Extend claude/settings-and-scopes.md": "ST-5mcrotet"
+      },
+      "class": "design",
+      "answer": "New article claude/statusline.md",
+      "by": "agent"
+    }
+  ],
   "links": [
     "live: https://code.claude.com/docs/en/statusline",
     "live: https://code.claude.com/docs/en/channels-reference#relay-permission-prompts",

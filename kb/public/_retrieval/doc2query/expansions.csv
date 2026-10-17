@@ -920,3 +920,62 @@ c0ff298e07cb,When does a task need a workflow rather than one conversation?
 4de08b6434d9,"Beyond cross-session messaging, which parallel-work options reach sessions on several machines or cloud sessions?"
 4de08b6434d9,Which options stay on one machine?
 4de08b6434d9,"Do agent view, agent teams, worktrees or workflows reach other machines?"
+66e8181d43c4,Notification hook input fields message title notification_type
+66e8181d43c4,What fields does a Notification hook receive besides the common input?
+66e8181d43c4,Does turning off desktop notifications stop the Notification hook from running?
+5ad35287f892,Notification hook matcher types permission_prompt idle_prompt
+5ad35287f892,Which notification types can a Notification hook match on?
+5ad35287f892,List of Claude Code notification kinds that trigger hooks
+c3816736a30b,Notification hook when fires permission_prompt idle_prompt six seconds 60 seconds
+c3816736a30b,When does a Claude Code Notification hook fire for a waiting permission prompt or an idle session?
+c259cd820758,permission_prompt notification canUseTool VS Code Desktop six seconds
+c259cd820758,When does the permission_prompt notification fire in Claude Desktop or the VS Code extension?
+c259cd820758,How to switch off permission prompt notification hooks in SDK hosted sessions
+9e56932614b5,Notification hook cannot block systemMessage ignored terminalSequence
+9e56932614b5,Can a Notification hook block or change a notification?
+9e56932614b5,"What is a Notification hook for, forwarding alerts to an external service"
+41fe0998d2e6,Remote Control permission prompts AskUserQuestion forwarded dialogs expire dialogExpiry
+41fe0998d2e6,What does Remote Control forward to the phone and how long do forwarded dialogs wait?
+41fe0998d2e6,Can I answer a Claude Code permission prompt from my phone?
+fab8765d7f40,Remote Control not forwarded Fable usage credits consent prompt local-only commands
+fab8765d7f40,Which dialogs and slash commands do not work from the mobile app in Remote Control?
+fab8765d7f40,What stays terminal-only when a session is connected to Remote Control?
+f235044916a8,Remote Control mobile push notification Push when actions required permission prompts
+f235044916a8,How do I get a phone notification when Claude Code needs permission?
+f235044916a8,Claude app push notifications settings for a waiting Claude Code session
+9d55df98366c,Remote Control Trusted Devices enrolled device 18 hours sign-in
+9d55df98366c,What does Trusted Devices require to steer a Remote Control session?
+9d55df98366c,Biometric step-up for viewing Remote Control sessions from a new device
+d7abb5357e70,channel permission relay claude/channel/permission capability approve from phone
+d7abb5357e70,How do channels forward Claude Code permission prompts to a chat app?
+d7abb5357e70,Approve or deny tool use remotely through Telegram or Discord channel
+162406146c6c,channels permission relay covers Bash Write Edit not project trust MCP consent
+162406146c6c,Which prompts does a channel relay and which stay in the terminal?
+162406146c6c,Channel permission relay requires --channels opt-in v2.1.234
+b2fe47705164,permission_request notification request_id tool_name description input_preview behavior allow deny
+b2fe47705164,What is the message flow of channel permission relay between Claude Code and the channel server?
+b2fe47705164,How is a remote yes or no reply turned into a verdict for a pending permission prompt?
+56e174eb9c63,permission relay request_id five letters description input_preview Run shell command
+56e174eb9c63,What do description and input_preview hold in a relayed permission request?
+56e174eb9c63,Why is the relay request id shown only by the channel and not the terminal dialog?
+69423d5e3da9,channel sender allowlist anyone who can reply can approve tool use
+69423d5e3da9,Who can approve tool use through a channel permission relay?
+69423d5e3da9,Gate channel on sender id not room id prompt injection
+65f3392423bb,status line stdin JSON session_id session_name prompt_id transcript_path
+65f3392423bb,What session identifiers does the Claude Code status line script receive?
+65f3392423bb,Which fields identify the session in status line input?
+6537bf446150,status line cost.total_cost_usd estimated session cost list price
+6537bf446150,How does the status line show Claude Code session cost in dollars?
+6537bf446150,Is the status line cost the real bill?
+0b94b2374f64,status line context_window used_percentage current_usage context_window_size
+0b94b2374f64,How can a status line script read context window use in Claude Code?
+0b94b2374f64,Which fields tell how full the context is for the status line command?
+c32681163a3a,used_percentage input tokens only cache_read_input_tokens output_tokens excluded
+c32681163a3a,How is context used percentage calculated in the status line?
+c32681163a3a,Does the context percentage count output tokens?
+e196c0820480,status line update triggers refreshInterval new assistant message compact
+e196c0820480,When does Claude Code re-run the status line command?
+e196c0820480,How often is the statusLine script executed?
+85fa437fc791,status line prompt_cache warm hit_ratio misses expires_at
+85fa437fc791,What prompt cache statistics does the status line input hold?
+85fa437fc791,Can the status line show whether the prompt cache is still warm?

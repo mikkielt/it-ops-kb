@@ -1,9 +1,9 @@
 ---
 topic: claude/cross-session-messaging
 priority: P3
-applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current)"
-retrieved_utc: 2026-10-15
-sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e]
+applies_to: "Claude Code v2.1.224+ (macOS, Linux, WSL 2), native Windows per the docs page v2.1.234+; cross-session messaging page and changelog, retrieved 2026-09-30 (Claude Code 2.1.285 current); Remote Control and channels pages read 2026-10-17"
+retrieved_utc: 2026-10-17
+sources: [S-sdxhnx3i, S746, S-3yod3u7q, S-wzatkg4o, S748, S-d3ythwgb, S2057, S2042, S-fk46gdey, S-4jj4dtg4, S-s67nwj2e, S-yhad7wiu, S-m6qlxza7, S-uw2bn2un]
 status: complete
 ---
 
@@ -173,7 +173,80 @@ and listing.
   S-sdxhnx3i: the Projects page and this page's targets; S-4jj4dtg4 in `claude/large-codebases.md`; S-s67nwj2e in
   `gitlab/multi-project-pipelines.md`]
 
+### Answering a session's prompts from another device: Remote Control and channels
+- Remote Control connects claude.ai/code or the Claude mobile app to a Claude Code session that keeps running on the
+  user's machine, with code execution and filesystem access staying local; the session transcript is stored on
+  Anthropic servers while it is connected. It needs a Pro, Max, Team or Enterprise claude.ai login (an Owner enables
+  the toggle on Team and Enterprise), and is unavailable with API keys, Bedrock, Google Cloud's Agent Platform,
+  Microsoft Foundry, an `ANTHROPIC_BASE_URL` other than `api.anthropic.com`, or a Claude apps gateway sign-in. [DOC
+  S-yhad7wiu]
+- The conversation and the progress of subagents and dynamic workflows stay in sync across the terminal, the browser
+  and the phone, and messages can be sent from any of them. Claude Code keeps permission prompts and `AskUserQuestion`
+  questions open until they are answered, and another kind of dialog it forwards to the remote session (its example is
+  the model-choice prompt after a safety refusal) closes after five minutes by default with the dialog's no-action
+  default, adjustable with `dialogExpiry` (v2.1.224+). The page has no sentence that says in so many words that a
+  permission prompt is approved from the phone; see the open gap in `_gaps.md`. [DOC S-yhad7wiu]
+- Not every dialog travels: the Fable usage-credits consent prompt is shown only where the session runs, and when
+  nobody there answers before it closes the turn ends without sending the request. Commands that only exist in the
+  terminal interface (`/plugin`, `/resume`) work only from the local CLI, while `/model`, `/effort`, `/compact`,
+  `/clear`, `/context`, `/usage` and a few others work from mobile and web. [DOC S-yhad7wiu]
+- Mobile push notifications (Remote Control active, Claude app signed in to the same account) have two toggles in
+  `/config`: **Push when Claude decides** (typically a finished long task or a needed decision) and **Push when actions
+  required** (permission prompts and questions). There is no per-event configuration, and pushes are skipped while the
+  user is typing in the connected terminal; `CLAUDE_CLIENT_PRESENCE_FILE` extends that skip to any time a marker file
+  exists. [DOC S-yhad7wiu]
+- Trusted Devices (beta, off by default; an Owner turns it on for Team and Enterprise, a Pro or Max user for self) makes
+  viewing or steering a Remote Control session require an enrolled device and a sign-in no more than 18 hours old,
+  refreshed by Face ID, Touch ID, Windows Hello or a passkey; unenrolled devices cannot view or steer the session, and
+  sessions already running when the toggle is turned on are not retroactively protected. [DOC S-yhad7wiu]
+- `disableRemoteControl` turns Remote Control off entirely, and organizations with Zero Data Retention or the HIPAA
+  configuration cannot enable it. [DOC S-yhad7wiu]
+- A channel is an MCP server that Claude Code spawns on the same machine over stdio to push events (chat messages,
+  webhooks) into a running session; Telegram, Discord and iMessage plugins ship in the research preview, started with
+  `--channels plugin:<name>@<marketplace>`. A server in `.mcp.json` does not push messages unless `--channels` names
+  it. Channels need claude.ai or Console API key authentication and are not available on Bedrock, Google Cloud's Agent
+  Platform or Microsoft Foundry. [DOC S-uw2bn2un]
+- A channel that declares `capabilities.experimental['claude/channel/permission']` receives the session's tool approval
+  prompts in parallel with the local terminal dialog, so the user can approve or deny from a phone or chat app: both
+  stay live and Claude Code applies whichever answer arrives first and closes the other. [DOC S-m6qlxza7]
+- Relay covers tool-use approvals such as `Bash`, `Write` and `Edit`; project trust and MCP server consent dialogs do
+  not relay and appear only in the local terminal. Since v2.1.234 Claude Code sends permission requests only to
+  servers registered as channels for the session with `--channels` or the development flag, so relay sits behind the
+  same session opt-in and organization controls as message delivery. [DOC S-m6qlxza7]
+- Relay loop: Claude Code generates a short request id and sends `notifications/claude/channel/permission_request`
+  with `request_id`, `tool_name`, `description` and `input_preview`; the channel server formats it for the chat app;
+  the remote user replies with yes or no and the id; the server answers with `notifications/claude/channel/permission`
+  carrying `request_id` and `behavior` (`allow` or `deny`). Claude Code applies a verdict only if its id matches an open
+  request and drops any other silently, and a verdict covers that one call, not future calls. [DOC S-m6qlxza7]
+- `request_id` is five lowercase letters from `a` to `z` without `l`; the local dialog does not display it, so the
+  channel's outbound handler is the only way for the remote user to learn it. `description` is a summary of what the
+  call does, never the command itself (for a Bash call with no model description it is the constant `Run shell
+  command`), and `input_preview` carries the arguments (for Bash the command). [DOC S-m6qlxza7]
+- Clients on v2.1.211+ sanitize `description` and `input_preview` (direction-override and invisible characters,
+  lookalike quotes, runs of whitespace) and relay up to 3,500 code points whole, else the start and end around a
+  counted elision marker; clients before it relay `description` raw and cut `input_preview` to 200 UTF-16 units. From
+  v2.1.234 credentials with a recognizable provider prefix are masked as `[REDACTED]`, but a secret without a
+  recognizable prefix or one spanning whitespace (a private-key block) reaches the server unmasked. [DOC S-m6qlxza7]
+- Authority: every approved channel plugin keeps a sender allowlist, and the allowlist also gates permission relay, so
+  anyone who can reply through the channel can approve or deny tool use in the session; the page says to allowlist only
+  senders trusted with that authority, and the reference says to gate on the sender's id, not the room's. [DOC
+  S-uw2bn2un, S-m6qlxza7]
+- Organization controls: on Team and Enterprise plans `channelsEnabled` is the master switch (off or unset blocks every
+  channel, the development flag included) and `allowedChannelPlugins` replaces the Anthropic-maintained allowlist; Pro
+  and Max users without an organization skip these checks. Channels are a research preview, so the flag syntax and
+  protocol contract may change, and custom channels need `--dangerously-load-development-channels` to load. [DOC
+  S-uw2bn2un]
+- Without a relay-capable channel, a session that hits a permission prompt while the user is away pauses until the
+  prompt is answered; `--dangerously-skip-permissions` bypasses most prompts but is for trusted environments only. [DOC
+  S-uw2bn2un]
+
 ### How it fits
+- For an operator approving a fleet of sessions from one place, the documented remote answers are narrow: Remote Control
+  forwards the prompts of one session at a time to the Claude app or claude.ai/code and pushes a notification for a
+  waiting permission prompt (and needs claude.ai sign-in, so not an API-key or gateway estate), and a channel relays tool approvals to a chat app the operator controls. Neither
+  relays project trust or MCP consent dialogs, and an approver's authority is exactly whoever the sender allowlist or
+  the signed-in account admits. [DER S-yhad7wiu, S-m6qlxza7, S-uw2bn2un: the endpoint and login limits, the relay
+  coverage and the allowlist statement]
 - For unattended agents in this kb's frame, a bypass-mode session (e.g. a background job with
   `bypassPermissions`) holds every message from a prompting session for approval by default, so an orchestrator that
   must reach a headless worker sets `crossSessionInbound: "accept"` in that worker's `--settings`, and never in user
@@ -202,6 +275,11 @@ and listing.
   - `claude/parallel-sessions.md` — which parallel-work option (subagents, agent view, agent teams, workflows,
     worktrees) fits which coordination need, and which of them stay on one machine.
 - Projects: `https://code.claude.com/docs/en/claude-projects` (S-fk46gdey).
+- Remote Control: `https://code.claude.com/docs/en/remote-control` (S-yhad7wiu); channels:
+  `https://code.claude.com/docs/en/channels` (S-uw2bn2un) and the contract
+  `https://code.claude.com/docs/en/channels-reference` (S-m6qlxza7).
+- `claude/hooks.md` — the `Notification` hook (`permission_prompt`, `idle_prompt`) that fires when a session waits;
+  `claude/statusline.md` — the per-session cost and context line.
 
 ## Examples
 - SNIPPET: managed settings that turn cross-session messaging off for an organization; context: Claude Code v2.1.224+, managed settings file; checked: syntax [DOC S-sdxhnx3i: "Turn off cross-session messaging" example]
