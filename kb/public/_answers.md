@@ -4001,3 +4001,14 @@ _Agent: kb-research_
 - See claude/parallel-sessions.md, claude/skills-and-subagents.md, agents/subagents-vs-deterministic-tools.md, agents/agent-troubleshooting-method.md.
 
 _Agent: kb-research_
+
+## QK-git-resolve-two-branches-edits-one. How does git resolve two branches' edits of one line that change different words, and how does git ls-remote tell whether a timed-out push reached the remote?
+- `git merge-file` reports a conflict when both sides change "a common segment of lines", and its exit value is the number of conflicts; the merge code works on whole-line hunks and counts overlapping hunks as a conflict unless the two sides' lines are identical, so edits of different words of one line conflict. (`gitlab/git-test-repositories.md`) [DOC S-r4j6qovt] [CODE S-oyhmktnd]
+- The built-in `text` merge driver (the default for `git merge`, `revert` and `cherry-pick`) and `git merge-file` call the same merge function; `binary` takes the current side and declares a conflict; `union` keeps the lines of both sides; a custom driver set in the configuration and named by the `merge` attribute is the only way to merge by words. A rebase uses the `ort` strategy by default for each commit, so it conflicts the same way. [DOC S-vmz33l7n, S-7kl4eeso] [CODE S-uea2fdpv, S-v45en2pm]
+- `git ls-remote <remote> <full ref name>` prints `<oid> TAB <ref>` for the ref as the remote has it, nothing (exit 0) when the ref is absent, and exit 2 with `--exit-code` when nothing matched. (`gitlab/git-trailers-and-hooks.md`) [DOC S-rzi7mtmw]
+- A server updates the ref after the pack is received and validated and sends the `ok <ref>` report afterwards, so a push that times out waiting for the report may already have moved the ref; `git push` calls this `remote failure`. [DOC S-iz4bgagx, S-l6s4hfqp]
+- Conclusion: git has no setting that merges two edits of one line, so a word-level merge of a one-line row needs a custom merge driver or a step in the landing tool. After a timed-out push the client reads `git ls-remote` on a new connection: the pushed commit's id means it arrived, no line means no branch, and a different id needs a fetch and `git merge-base --is-ancestor` to tell a push that did not arrive from one that a later push followed. [DER S-r4j6qovt, S-oyhmktnd, S-vmz33l7n, S-rzi7mtmw, S-iz4bgagx, S-l6s4hfqp, S-gvt5wbk7: line-level merge, driver list, ref read-back, update-before-report order]
+- Open: the exit status of `git ls-remote` for a failed or timed-out connection, and whether a server can complete a ref update after the client's connection has dropped, are not stated by the pages read on 2026-10-17. [UNK]
+- See gitlab/git-test-repositories.md, gitlab/git-trailers-and-hooks.md, gitlab/automated-merge-requests.md.
+
+_Agent: kb-research_

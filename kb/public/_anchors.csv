@@ -8228,6 +8228,7 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 01e0ab8b9b9c,gitlab/git-test-repositories.md,S-f5whqkwk,located,,explicit;ignor;pushurl;git;remot,a68cd15d9f79f109,"If a remote has an explicit pushurl, Git will ignore this setting for that remote.",2026-10-15
 02213c124346,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 02a75c353b39,gitlab/git-test-repositories.md,S-b6uvvu45,unlocated:no-match,,,,,2026-10-10
+05de2821029a,gitlab/git-test-repositories.md,S-vmz33l7n,located,,cherry;cherry-pick;pick;revert;other;command;git,82f0f3b1586da257,and other commands such as git revert and git cherry-pick.,2026-10-17
 087d2832a96b,gitlab/git-test-repositories.md,S-kzv2kznr,located,,writ;repository;file;git;config,42f9519b9ba6635b,For writing options: write to the repository .git/config file.,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-miw74ti3,unlocated:no-match,,,,,2026-10-10
 087d2832a96b,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
@@ -8247,10 +8248,12 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 2e41099c9984,gitlab/git-test-repositories.md,S-sx4rosvv,located,,die_if_checked_out;out;check;die,f935f0e3507500c0,"dieifcheckedout(buf.buf, 1);",2026-10-13
 2fd9bf69a867,gitlab/git-test-repositories.md,S-6foknrbi,located,,plain;real;gitdir;root;text;contain;point;path,d1ed3eb170c6c5f6,"Note: Also you can have a plain text file .git at the root of your working tree, containing gitdir: <path> to point at the real",2026-10-10
 30a2e502775a,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
+30f86c880983,gitlab/git-test-repositories.md,S-oyhmktnd,located,,differ;few,ab53c3818741fb48,"Sometimes, changes are not quite identical, but differ in only a few",2026-10-17
 38548518567f,gitlab/git-test-repositories.md,S-3au2dknw,located,,refus;already;another;worktre;otherwis;check;out;checkout,68033a0ec65cc800,refuses when the wanted branch is already checked out or otherwise in use by another worktree,2026-10-13
 38548518567f,gitlab/git-test-repositories.md,S-hwicl2h6,located,,ignor;ignore-other-worktr;worktr;already;another;refus;check;worktre,d6d29a537a0f091a,--ignore-other-worktrees:: git switch refuses when the wanted ref is already checked out by another worktree.,2026-10-13
 3b71ae74f4da,gitlab/git-test-repositories.md,S-waqn37nq,unlocated:no-match,,,,,2026-10-10
 3cb5e028e2c2,gitlab/git-test-repositories.md,S-i3btr2xr,located,,bypass;current;already;one;check;branch,ac47ca515683d5f2,"The check is bypassed when the branch is already the current one,",2026-10-13
+3e882b3956ad,gitlab/git-test-repositories.md,S-r4j6qovt,located,,both;chang;other;current;conflict,d710da06526e8b0f,A conflict occurs if both <current> and <other> have changes,2026-10-17
 41cdc1fa00e2,gitlab/git-test-repositories.md,S-ali5r4n7,unlocated:no-match,,,,,2026-10-13
 41cdc1fa00e2,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-13
 41cdc1fa00e2,gitlab/git-test-repositories.md,S-wyfuoqs5,located,Setup and Config > OPTIONS,unclean;unless;refus;forc;remov;worktre,f494ef72d7dd81f3,remove refuses to remove an unclean worktree unless --force is used.,2026-10-13
@@ -8285,10 +8288,16 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 66ec2aec0e14,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 676e1adf1f66,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,rev-pars;rev;common;directory;pars;dir;link;git,67cdc4c7687e38e3,the top directory of the linked worktree. Path resolution via git rev-parse --git-path uses either $GITDIR or $GITCOMMONDIR depending on the path.,2026-10-10
 676e1adf1f66,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
+684c5cac2640,gitlab/git-test-repositories.md,S-7kl4eeso,located,,copy;full;file;each;work;backend;merg,78b6edd9bca386b4,"The 'merge' backend works with a full copy of each relevant file,",2026-10-17
 6c78926ae843,gitlab/git-test-repositories.md,S-lr3jwdq2,unlocated:no-match,,,,,2026-10-10
 6e8cbe172453,gitlab/git-test-repositories.md,S-zflhytlw,unlocated:no-match,,,,,2026-10-10
 6fc77e684957,gitlab/git-test-repositories.md,S-2u6tfn4r,unlocated:no-match,,,,,2026-10-10
 71403960e7f3,gitlab/git-test-repositories.md,S-k2jlpd4u,unlocated:no-match,,,,,2026-10-10
+721e2360e2ae,gitlab/git-test-repositories.md,S-7kl4eeso,unlocated:no-match,,,,,2026-10-17
+721e2360e2ae,gitlab/git-test-repositories.md,S-oyhmktnd,unlocated:no-match,,,,,2026-10-17
+721e2360e2ae,gitlab/git-test-repositories.md,S-r4j6qovt,unlocated:no-match,,,,,2026-10-17
+721e2360e2ae,gitlab/git-test-repositories.md,S-v45en2pm,unlocated:no-match,,,,,2026-10-17
+721e2360e2ae,gitlab/git-test-repositories.md,S-vmz33l7n,unlocated:no-match,,,,,2026-10-17
 74c88a560dca,gitlab/git-test-repositories.md,S-q2ovao5z,located,,well;adds;match;modify;entry;new;remov;tree,4955a7fc8a1a8f38,"This removes as well as modifies index entries to match the working tree, but adds no new files.",2026-10-10
 76fdaa2be2e2,gitlab/git-test-repositories.md,S-3yfc6nj7,located,,extension;extensions.relativeworktr;imply;older;relativeworktr;set;version;userelativepath,06a098578995da9a,"Note that setting worktree.useRelativePaths to ""true"" implies enabling the extensions.relativeWorktrees config (see linkgit:git-config[1]), thus making it incompatible with older versions of Git.",2026-10-10
 76fdaa2be2e2,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10
@@ -8306,12 +8315,16 @@ f6180b076942,gitlab/git-refs.md,S-xahbgevi,unlocated:no-match,,,,,2026-10-10
 844ac17318ab,gitlab/git-test-repositories.md,S-hwicl2h6,unlocated:no-match,,,,,2026-10-13
 844ac17318ab,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-13
 844ac17318ab,gitlab/git-test-repositories.md,S-sx4rosvv,unlocated:no-match,,,,,2026-10-13
+86959b0cb1bc,gitlab/git-test-repositories.md,S-njfmq56u,located,,stag;merge_head;head;merg,421c97950e73d9f6,"stage 2 from HEAD, and stage 3 from MERGEHEAD (you",2026-10-17
 8a054cecf47b,gitlab/git-test-repositories.md,S-ali5r4n7,located,,prun;git;worktre,edac497bf8dbf942,"expire = TIMEMAX; ac = parseoptions(ac, av, prefix, options, gitworktreepruneusage,",2026-10-13
 8a054cecf47b,gitlab/git-test-repositories.md,S-tx5lxmr3,located,,miss;git;worktr;worktre,62a5cfb232a7b82b,"Repair worktree's /path/to/worktree/.git file if missing, corrupt, or not pointing at <repo>/worktrees/<id>.",2026-10-13
 8afccdb15bd9,gitlab/git-test-repositories.md,S-dcbs6vpj,unlocated:no-match,,,,,2026-10-10
 8c3087d27585,gitlab/git-test-repositories.md,S-j4qkzgvv,unlocated:no-match,,,,,2026-10-10
+8dbeb41cbebb,gitlab/git-test-repositories.md,S-uea2fdpv,located,,alnum;level;zealous;xdl;merg,b3463ceec5ce2bb6,xmp.level = XDLMERGEZEALOUSALNUM;,2026-10-17
+8dbeb41cbebb,gitlab/git-test-repositories.md,S-v45en2pm,located,,built;built-in;text;xdl;merg,a8513fb3983a32b4,"{ ""text"", ""built-in 3-way text merge"", llxdlmerge },",2026-10-17
 90c59b9ff312,gitlab/git-test-repositories.md,S-lnlroicz,located,Setup and Config > OPTIONS,leav;side;favour;resolv;union;both;instead;line,9d203aa431a55d3f,"--union Instead of leaving conflicts in the file, resolve conflicts favouring our (or their or both) side of the lines.",2026-10-10
 93fa1d0590f5,gitlab/git-test-repositories.md,S-3iovxrkf,unlocated:no-match,,,,,2026-10-10
+94beee677b4e,gitlab/git-test-repositories.md,S-oyhmktnd,located,,overlap;conflict,b713270cb817d1dc,level == 0: mark all overlapping changes as conflict,2026-10-17
 97235b87aa93,gitlab/git-test-repositories.md,S-3qf7ndi6,unlocated:no-match,,,,,2026-10-15
 9836dbdfe3a7,gitlab/git-test-repositories.md,S-rscocily,unlocated:no-match,,,,,2026-10-10
 9ad52a888f26,gitlab/git-test-repositories.md,S-k2jlpd4u,located,,maps;refspec;target;note;includ;mirror;remote-track;bare,e8328dd5177335e3,"Compared to --bare, --mirror not only maps local branches of the source to local branches of the target, it maps all refs (including remote-tracking branches,",2026-10-15
@@ -8371,10 +8384,13 @@ f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;r
 35f98595551c,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,core.hookspath;hookspath;core;path;git_dir;dir;directory;git,21aafcea05815932,"By default the hooks directory is $GITDIR/hooks, but that can be changed via the core.hooksPath configuration variable (see",2026-10-10
 36604cd3e671,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,generat;git-generat;user-configur;user;group;least;one;configur,fc65c25379a35a19,"a group of one or more lines that (i) is all trailers, or (ii) contains at least one Git-generated or user-configured trailer and consists of",2026-10-10
 37d656062c32,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
+3bf0febc45b4,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,located,,successfully;whether;talk;repository;remot,60070148ef89643e,"it successfully talked with the remote repository, whether it",2026-10-17
 3ff9827f09bc,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,delet;yet;all-zero;exist;local;remot;object;zero,a3e293e007a3a5e2,"yet exist the <remote-object-name> will be the all-zeroes object name. If a ref is to be deleted, the <local-ref> will be supplied as (delete) and",2026-10-10
 4dcdf21e0b43,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,located,,addifdifferentneighbor;neighbor;different;donoth;noth;replac;default;add,eaf2ad168951670c,"The valid values for this option are: addIfDifferentNeighbor (this is the default), addIfDifferent, add, replace or doNothing.",2026-10-10
 519a7592a849,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 51fcb50cf44d,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,allow;between;insid;read;separator;befor;spac;whitespac,db248a1620e5ddeb,"When reading trailers, there can be no whitespace before or inside the <key>, but any number of regular space and tab characters are allowed between",2026-10-10
+522b1e939e14,gitlab/git-trailers-and-hooks.md,S-iz4bgagx,unlocated:no-match,,,,,2026-10-17
+522b1e939e14,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-17
 53cf14fea86c,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,read;messag;commit;trailer,2014cfaa9b2f73a8,the last two lines starting with Signed-off-by are trailers. This command reads commit messages from either the,2026-10-10
 5756b6d1cda3,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,unlocated:no-match,,,,,2026-10-10
 57f8d49777e2,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,bypass;hold;propo;no-verify;verify;abort;non-zero;non,b20877ee250b948b,"bypassed with the --no-verify option. It takes a single parameter, the name of the file that holds the proposed commit log message. Exiting with a",2026-10-10
@@ -8383,11 +8399,13 @@ f9e69d474f69,gitlab/git-test-repositories.md,S-j4qkzgvv,located,,mark;upstream;r
 68475d0634bb,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 68475d0634bb,gitlab/git-trailers-and-hooks.md,S-ziyhuwyc,located,,commit-msg;no-verify;pre;bypass;verify;msg;commit,5130e8023c90f063,--no-verify:: Bypass the pre-commit and commit-msg hooks.,2026-10-10
 6ac986529563,gitlab/git-trailers-and-hooks.md,S-j3galfta,located,,pushurl;clear;empty;urls;list;push;name;remot,79ae1371dd045080,"for pushing (assuming no remote.<name>.pushurl is defined). Setting this key to the empty string clears the list of urls,",2026-10-10
+6d1e5176751e,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,located,,foo;slash;full;like;name;match;head;refs,b3e82a6ffae81c26,(so a full name like refs/heads/foo matches) or from a slash,2026-10-17
 6e61284932f9,gitlab/git-trailers-and-hooks.md,S-gvt5wbk7,unlocated:no-match,,,,,2026-10-10
 6e61284932f9,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-10
 6e61284932f9,gitlab/git-trailers-and-hooks.md,S-zhftykfq,unlocated:no-match,,,,,2026-10-10
 7110a4eb6531,gitlab/git-trailers-and-hooks.md,S-zhftykfq,located,,exit;non-zero;status;zero;non;refus;ff-only;resolv,bac41362a7f2f597,"With --ff-only, resolve the merge as a fast-forward when possible. When not possible, refuse to merge and exit with a non-zero status.",2026-10-10
 754a5016fc53,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,only-input;only-trailer;pars;unfold;alia;input;trailer,886c8ef5713a97e6,The default is --no-unfold. --parse:: A convenience alias for --only-trailers --only-input,2026-10-10
+75eec267faa2,gitlab/git-trailers-and-hooks.md,S-iz4bgagx,located,,updat;server,0a0e5e4ee2d83e0c,"If all of that is fine, the server will then update the references.",2026-10-17
 86272d833602,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
 89e0649c12b4,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
 8f90fd9e0b08,gitlab/git-trailers-and-hooks.md,S-gvt5wbk7,located,,error;exit;non;non-zero;zero;status,ab62443c6f49e6a0,"and exit with status 0 if true, or with status 1 if not. Errors are signaled by a non-zero status that is not 1.",2026-10-10
@@ -8397,7 +8415,12 @@ afd8fc43a49f,gitlab/git-trailers-and-hooks.md,S-wjfrtzpf,unlocated:no-match,,,,,
 c15a16a6daf3,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
 c382160226ac,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,located,,completely;bypass;no-verify;verify;hook,71a58e8f30f37b85,"With --no-verify, the hook is bypassed completely.",2026-10-10
 cc81a25b475d,gitlab/git-trailers-and-hooks.md,S-7dwkyip6,located,,suppress;no-verify;verify;abort;non-zero;non;exit;zero,e6e035d02c61edb9,"If the exit status is non-zero, git commit will abort. The purpose of the hook is to edit the message file in place, and it",2026-10-10
+d1c62af57fa9,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,located,,along;associat;availabl;display;referenc;repository;remot,24223fb90edd693d,Displays references available in a remote repository along with the associated,2026-10-17
 df7dadc16951,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,located,,prec;whitespace-only;one;whitespac;empty;line,2cefcf276e78673e,The group must be preceded by one or more empty (or whitespace-only) lines.,2026-10-10
+e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-gvt5wbk7,unlocated:no-match,,,,,2026-10-17
+e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-iz4bgagx,unlocated:no-match,,,,,2026-10-17
+e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-l6s4hfqp,unlocated:no-match,,,,,2026-10-17
+e3e23fad2e39,gitlab/git-trailers-and-hooks.md,S-rzi7mtmw,unlocated:no-match,,,,,2026-10-17
 e7f92909eecb,gitlab/git-trailers-and-hooks.md,S-d6iv4nbm,unlocated:no-match,,,,,2026-10-10
 e7f92909eecb,gitlab/git-trailers-and-hooks.md,S-wtbq3lvm,unlocated:no-match,,,,,2026-10-10
 e9db34dd6283,gitlab/git-trailers-and-hooks.md,S-ziyhuwyc,located,,duplicat;omit;trailer;configuration;run;git,1e3455eb71d54934,"The trailer. configuration variables (linkgit:git-interpret-trailers[1]) can be used to define if a duplicated trailer is omitted, where in the run of trailers",2026-10-10

@@ -2,8 +2,8 @@
 topic: gitlab/git-trailers-and-hooks
 priority: P3
 applies_to: "git v2.55.0 documentation (git/git tag v2.55.0): git-interpret-trailers, pretty-formats, git-commit, git-push, githooks, trailer.* configuration, and for the push facts git-merge (`--ff-only`), git-merge-base, git-ls-remote and the remote.* and receive.* configuration; the parse examples were run with a local git; behaviour is the same on GitHub and GitLab remotes because the trailer rules are client-side"
-retrieved_utc: 2026-10-05
-sources: [S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7, S-r6wgcwme, S-33l7g2u2]
+retrieved_utc: 2026-10-17
+sources: [S-iz4bgagx, S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7, S-r6wgcwme, S-33l7g2u2]
 status: complete
 ---
 
@@ -47,6 +47,12 @@ Git reads a trailer only inside the trailer block: the last group of lines of th
 - A publisher that pushes only fast-forwards checks the remote tip is an ancestor of what it pushes (fetch, then `git merge-base --is-ancestor`, or push without force and read the `rejected` or `remote rejected` flag) and never falls back to a force; the failure is the signal that someone pushed to the public home directly. [DER S-l6s4hfqp, S-zhftykfq, S-gvt5wbk7: fast-forward definition, refusal by default, `--ff-only`]
 - `git fetch <remote> <ref>` of a ref the remote does not have stops with `fatal: couldn't find remote ref <ref>` (`die`), and `die` exits with status 128; the git-fetch page states no exit status. [CODE S-r6wgcwme: remote.c#get_fetch_map; CODE S-33l7g2u2: usage.c#die_builtin]
 - So a step that fetches a branch and then reads its tip must check the fetch's own exit status: after a failed fetch the remote-tracking ref still holds the previous tip, or none. [DER S-r6wgcwme, S-33l7g2u2]
+- `git ls-remote` "displays references available in a remote repository along with the associated commit IDs", one line `<oid> TAB <ref> LF` for each ref (an annotated tag also gets a second line, `<ref>^{}`, with the object the tag points at). [DOC S-rzi7mtmw]
+- Its `<patterns>` match the tail of a ref name, either from the start (a full name such as `refs/heads/foo`) or after a slash (`bar` matches `refs/heads/bar` but not `refs/heads/foobar`); with no pattern every ref is shown, and `--refs` drops peeled tags and pseudorefs such as `HEAD`. So `git ls-remote <remote> refs/heads/main` prints at most the one line of that branch, and a short name like `main` can also match `refs/tags/main`. [DOC S-rzi7mtmw]
+- The page gives ls-remote's exit status only as: usually 0 ("it successfully talked with the remote repository, whether it found any matching refs"), 2 with `--exit-code` when nothing matched; it states no status for a failed connection. An empty output with status 0 therefore means the remote answered and has no such ref. [DOC S-rzi7mtmw]
+- A server updates a ref only after it has received and unpacked the whole pack, checked that each ref still holds the old id the client named and run its update hooks; only then it sends the report (`unpack ok`, then `ok <ref>` or `ng <ref> <error>` for each ref) when `report-status` is in effect. [DOC S-iz4bgagx]
+- So a client that loses the connection while waiting for that report (a timeout) cannot tell from the push alone whether the ref moved: the update may have been done before the report was sent; `git push` names this case `remote failure` ("did not report the successful update of the ref, perhaps because of ... a break in the network connection") and fails. [DER S-iz4bgagx, S-l6s4hfqp: the server updates the refs before it reports; the push page's `remote failure` flag]
+- To tell whether a timed-out push reached the remote, read the ref on a new connection and compare it with the commit pushed: `git ls-remote <remote> refs/heads/<branch>` against `git rev-parse <pushed-commit>`. Equal ids: the push reached the remote. No line: the branch does not exist there. A different id is not proof that the push did not arrive, since another push may have moved the branch on after it; `git fetch` then `git merge-base --is-ancestor <pushed-commit> <remote-tip>` (exit 0 when the pushed commit is an ancestor) separates the two. An ls-remote that itself fails or times out leaves the question open and is retried, never read as "not pushed". [DER S-rzi7mtmw, S-iz4bgagx, S-l6s4hfqp, S-gvt5wbk7: ls-remote output and exit status, update-before-report order, `remote failure`, `--is-ancestor` exit statuses]
 
 ## Reference
 | Need | Command | Source |
