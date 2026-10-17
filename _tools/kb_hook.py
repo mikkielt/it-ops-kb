@@ -17,6 +17,13 @@
                     the 10,000 characters Claude Code keeps.
   kb+: <question>   always let the prompt through (the model reasons over it): a clean good pack, or a routed answer,
                     attached with a short instruction, a pack with a route as for kb:.
+  kb!: <report>     a person's report on the session's last kb entry (a `kb:` or `kb+:` prompt, or a kb tool call):
+                    one `feedback` row of the session, judged by the user, with that entry's prompt_id and pack handle
+                    (ql_capture.record_user_feedback). A kb path:line is read as a line at fault when the text says
+                    wrong, stale or outdated, those words and `missing` as the outcome, a public url as the source;
+                    the rest is kept as a rule-redacted comment, class unclassified, in the local spool only. The
+                    prompt is blocked with a one-line receipt naming the id: no model turn, no network call. A session
+                    with no earlier kb entry gets a line that says so, and nothing is recorded.
   backlog: [text]   run `backlog.py horizon` and `backlog.py next --all --any` (subprocesses; the text is not read) and
                     block the prompt with their output as the reason: no model call. A command that fails or times out
                     lets the prompt through with a note of what failed.
@@ -47,6 +54,7 @@ writes one query log spool row (querylog.record: the question, the verdict, the 
 import json, os, re, subprocess, sys
 
 PREFIX = re.compile(r"^\s*kb(\+)?\s*:\s*(\S.*)$", re.I | re.S)
+FEEDBACK_PREFIX = re.compile(r"^\s*kb!\s*:(.*)$", re.I | re.S)
 BACKLOG_PREFIX = re.compile(r"^\s*backlog(\+)?\s*:", re.I)
 BACKLOG_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backlog.py")
 BACKLOG_COMMANDS = (("horizon",), ("next", "--all", "--any"))  # the plain-words backlog question's two answers
@@ -102,6 +110,43 @@ def respond(prompt):
                "it with path:line and source urls. Search the kb again only if the pack misses what was asked."
                + "\n\n" + res["text"])
     return {"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": context}}, dict(row, answered=False)
+
+
+def kb_ref(ref):
+    """`root/path:line` of a kb path:line a person named (the form the tools print), None when no kb file has that
+    line."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import kbcommon, kbfacts
+    path, _, number = ref.rpartition(":")
+    full = kbfacts.locate(path)
+    if not (kbfacts.showable(full) and os.path.isfile(full)):
+        return None
+    rel = kbfacts.qpath_of(full) or os.path.relpath(full, os.path.realpath(kbcommon.HOME)).replace(os.sep, "/")
+    if {".git", "_private", "_cache"} & set(rel.split("/")):
+        return None
+    with open(full, encoding="utf-8", errors="replace") as f:
+        count = sum(1 for _ in f)
+    return f"{rel}:{int(number)}" if int(number) <= count else None
+
+
+def feedback_answer(event):
+    """The answer to a `kb!:` prompt: the person's report on the session's last kb entry written as one `feedback`
+    row (ql_capture.record_user_feedback) and a one-line receipt as the block reason, so no model turn runs; a
+    session with no kb entry gets the line that says so, and nothing is written."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import ql_capture
+    text = FEEDBACK_PREFIX.match(event.get("prompt") or "").group(1).strip()
+    state, fb, entry = ql_capture.record_user_feedback(event.get("session_id"), text, kb_ref)
+    what = (entry or {}).get("pack") or "the lookup"
+    reasons = {
+        "none": "kb!: no kb answer earlier in this session to report on; nothing recorded. Ask with `kb:` first.",
+        "empty": "kb!: nothing to record; say what was wrong, e.g. `kb!: wrong, see public/auth/kerberos.md:42`.",
+        "off": "kb!: not recorded; the query log writes nothing on this machine.",
+        "repeat": f"kb! {fb}: already recorded for your last kb answer ({what}).",
+        "recorded": f"kb! {fb}: recorded on your last kb answer ({what}); the next query log distill joins it to that "
+                    "lookup, maps it to the closed feedback classes and its gates check it. No model turn ran.",
+    }
+    return {"decision": "block", "reason": reasons[state]}
 
 
 def cut_block(text, share, shown):
@@ -368,6 +413,9 @@ def main():
         out = webfetch_deny(event) if event.get("tool_name") == "WebFetch" else raw_read_nudge(event)
         if out is not None:
             print(json.dumps(out, ensure_ascii=False))
+        return
+    if FEEDBACK_PREFIX.match(event.get("prompt") or ""):  # a person's report: no pack, no model, one feedback row
+        print(json.dumps(feedback_answer(event), ensure_ascii=False))
         return
     out, row = respond(event.get("prompt", ""))
     if out is not None:

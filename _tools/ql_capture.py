@@ -64,6 +64,10 @@ FEEDBACK_IDS_NAME = "feedback.ids"  # beside the spool, never committed: the ids
 FEEDBACK_IDS_MAX = 200  # the newest ids it keeps
 FEEDBACK_ID = re.compile(r"FB-[0-9a-f]{8}")
 FEEDBACK_UNCLASSIFIED ="unclassified"  # a person's comment no deterministic reader mapped: distill's Haiku maps it
+FEEDBACK_COMMENT_MAX_CHARS = 1000  # a person's comment kept in the spool, after the rules
+USER_REF = re.compile(r"(?<![\w/.-])((?:[\w-]+/)+[\w.-]*\.md):([1-9]\d*)(?![\w:])")  # a kb path:line in a person's text
+USER_WORDS = {"wrong": re.compile(r"\bwrong\b", re.I), "stale": re.compile(r"\b(?:stale|outdated)\b", re.I),
+              "missing": re.compile(r"\bmissing\b", re.I)}
 _lock = threading.Lock()
 
 # ---------------------------------------------------------------- operational rows (the `ops` surface)
@@ -483,6 +487,88 @@ def record_feedback(fields):
     if row:
         remember_feedback_id(spool, fb)
     return fb, "recorded" if row else "off"
+
+
+def read_user_report(text, valid=None):
+    """The closed fields of kb_feedback in a person's text after `kb!:`, read by rule alone: `lines` (each kb
+    path:line `valid` accepts, with the issue `wrong` or `stale` when the text says wrong, or stale or outdated),
+    `outcome` (`misled` for those words, `missed` for missing), `source_url` (the first public url the leak scan
+    passes), and `comment`, the rest rule-redacted (cut to FEEDBACK_COMMENT_MAX_CHARS, dropped when the leak scan
+    still flags it) with `class` FEEDBACK_UNCLASSIFIED. Fields with no value are left out; nothing here reads the
+    network."""
+    import redact, ql_research
+    said = {w for w, rx in USER_WORDS.items() if rx.search(text)}
+    issue = "wrong" if "wrong" in said else "stale" if "stale" in said else None
+    outcome = "misled" if issue else "missed" if "missing" in said else None
+    k = redact.known()
+    rest, lines = text, []
+
+    def take_ref(m):
+        ref = valid(f"{m.group(1)}:{m.group(2)}") if valid else f"{m.group(1)}:{m.group(2)}"
+        if not ref or not issue or len(lines) >= FEEDBACK_LINES_MAX:
+            return m.group(0)
+        if not any(x["line"] == ref for x in lines):
+            lines.append({"line": ref, "issue": issue})
+        return ""
+
+    rest = USER_REF.sub(take_ref, rest)
+    url = ""
+    for m in URL.finditer(rest):
+        cand = m.group(0).rstrip(".,:!?")
+        if len(cand) <= ARG_MAX_CHARS and ql_research.public_url(cand) and not redact.scan(cand, k):
+            url = cand
+            rest = rest.replace(m.group(0), "", 1)
+            break
+    comment = " ".join(rest.split())
+    comment = redact.redact(comment, k)[:FEEDBACK_COMMENT_MAX_CHARS] if re.search(r"\w", comment) else ""
+    if comment and redact.scan(comment, k):
+        comment = ""
+    return {key: v for key, v in (("outcome", outcome), ("lines", lines), ("source_url", url), ("comment", comment),
+                                  ("class", FEEDBACK_UNCLASSIFIED if comment else None)) if v}
+
+
+def last_kb_entry(spool, session_id):
+    """The newest `kb_hook` or kb tool (`mcp`) spool row of a session, a kb_feedback call apart, or None."""
+    if not (isinstance(session_id, str) and SAFE_SESSION.fullmatch(session_id)):
+        return None
+    last = None
+    for r in rows(spool / f"{session_id}.jsonl"):
+        if r.get("surface") == "kb_hook" or (r.get("surface") == "mcp" and r.get("tool") != "kb_feedback"):
+            last = r
+    return last
+
+
+def record_user_feedback(session_id, text, valid=None):
+    """A person's `kb!:` report on the session's last kb entry as one `feedback` row of that session, judged by the
+    user, with the entry's `prompt_id` and pack handle (its question when it has none) and the fields
+    read_user_report reads. Returns (state, FB id or None, the entry or None): `none` (no kb entry earlier in the
+    session; nothing written), `empty` (the text gives no outcome, line or comment; nothing written), `repeat`
+    (the same report was written; nothing written), `recorded` or `off` (capture writes nothing here, or the write
+    failed). Never raises."""
+    try:
+        spool = spool_dir()
+        if spool is None:
+            return "off", None, None
+        entry = last_kb_entry(spool, session_id)
+        if entry is None:
+            return "none", None, None
+        read = read_user_report(text, valid)
+        if not (read.get("outcome") or read.get("lines") or read.get("comment")):
+            return "empty", None, entry
+        pack = entry.get("pack") if isinstance(entry.get("pack"), str) else None
+        fields = {"pack": pack, "question": None if pack else entry.get("question"), "judged_by": "user",
+                  "prompt_id": entry.get("prompt_id"), **read}
+        fb = feedback_id({**fields, "session_id": session_id})
+        if fb in written_feedback_ids(spool) or any(r.get("surface") == FEEDBACK and r.get("fb") == fb
+                                                   for r in rows(spool / f"{session_id}.jsonl", fb)):
+            return "repeat", fb, entry
+        row = record(FEEDBACK, session_id, fb=fb, **{k: v for k, v in fields.items() if v not in (None, "", [])})
+        if not row:
+            return "off", fb, entry
+        remember_feedback_id(spool, fb)
+        return "recorded", fb, entry
+    except Exception:  # noqa: BLE001 - a report never fails a prompt
+        return "off", None, None
 
 
 def intent(prompt):
