@@ -2,7 +2,7 @@
   "id": "ST-oqpd34ep",
   "kind": "story",
   "title": "Research sprint goal: Lookup facts and feedback read true",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3g3egfll",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-17: rag.py pack ran four questions; the publisher metadata question is not in the kb (og, site_name, application-name missing), so it is the research. The aside-in-navigation (public/agents/doc-change-detection.md), git merge-file hunks (public/gitlab/git-test-repositories.md) and agent_needs_input (public/claude/hooks.md) questions lead with their articles; the items that fix those facts read their own sources. Knowledge by item: BG-wlpbhug7 reads the publisher metadata facts."
+  "notes": "Plan 2026-10-17: rag.py pack ran four questions; the publisher metadata question is not in the kb (og, site_name, application-name missing), so it is the research. The aside-in-navigation (public/agents/doc-change-detection.md), git merge-file hunks (public/gitlab/git-test-repositories.md) and agent_needs_input (public/claude/hooks.md) questions lead with their articles; the items that fix those facts read their own sources. Knowledge by item: BG-wlpbhug7 reads the publisher metadata facts.",
+  "claimed_by": "orch-r12"
 }
