@@ -1,0 +1,20 @@
+{
+  "id": "SP-ficl7pxl",
+  "kind": "sprint",
+  "title": "Feedback recorded once, joined right and shown; revalidation treats slow or redirecting hosts right",
+  "status": "planned",
+  "goal": "a person's feedback on a kb answer is recorded once, joined to the right lookup and shown beside its line, and revalidation treats slow or redirecting hosts right",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
