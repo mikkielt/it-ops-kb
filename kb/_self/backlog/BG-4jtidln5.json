@@ -20,5 +20,22 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does claim detect a same-item claim another session made while it waited for the ledger lock?",
+      "options": [
+        "Read the item's own file again under the lock and refuse when it is doing for another claimer",
+        "Compare the ledger record of the item with this session and refuse on a mismatch"
+      ],
+      "recommendation": "Read the item's own file again under the lock and refuse when it is doing for another claimer",
+      "do": {
+        "Read the item's own file again under the lock and refuse when it is doing for another claimer": "BG-4jtidln5",
+        "Compare the ledger record of the item with this session and refuse on a mismatch": "BG-4jtidln5"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-r04"
 }
