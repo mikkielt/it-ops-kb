@@ -2,7 +2,7 @@
   "id": "BG-6jwv6ag3",
   "kind": "bug",
   "title": "The coord hook writes the presence lease token to a world-readable file",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-4cc36epy",
   "priority": "P2",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-xo45jvbj review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: SP-xo45jvbj review G8 (ST-x6mvfnmv, gate g4): _cache/coord_hook/<session id>.json holds the presence lease token with mode 0644 (coord_hook.py save), readable by any local user; it is gitignored and covers only the presence lease. Also noted, not in the repro: a copy of the hook outside a git repository makes <clone>/kb-coord/coord.sqlite, and settings.json allows all of mcp__kb, so coord_claim, coord_release and coord_post run without a prompt. The token file is written owner-only (0600). Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (mode 0o644)."
+  "notes": "Goal before the 2026-10-17 plan: SP-xo45jvbj review G8 (ST-x6mvfnmv, gate g4): _cache/coord_hook/<session id>.json holds the presence lease token with mode 0644 (coord_hook.py save), readable by any local user; it is gitignored and covers only the presence lease. Also noted, not in the repro: a copy of the hook outside a git repository makes <clone>/kb-coord/coord.sqlite, and settings.json allows all of mcp__kb, so coord_claim, coord_release and coord_post run without a prompt. The token file is written owner-only (0600). Plan 2026-10-17: repro on origin/main b871374b4 exits 1 (mode 0o644).",
+  "claimed_by": "orch-r11"
 }
