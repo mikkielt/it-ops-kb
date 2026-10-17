@@ -35,7 +35,9 @@
         "new article security/secret-shapes-in-text": "ST-vaicbwt7",
         "extend an existing article": "ST-vaicbwt7"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "new article security/secret-shapes-in-text",
+      "by": "operator"
     }
   ],
   "notes": "Research 2026-10-17: new article security/secret-shapes-in-text (kb/public/security/secret-shapes-in-text.md), gaps under '## security/secret-shapes-in-text' in kb/public/_gaps.md. Knowledge by item: BG-w5d2mvwz (assignments) reads the Connection strings, AWS and detect-secrets facts: password/passwd/pwd/secret/api_key names are a community list (UNK: no official list), PWD and Password are SqlClient keywords (case-insensitive), a quoted value may hold ';', Microsoft's own detector skips a placeholder value (*, <...>), an AWS secret access key holds '/' so the value must not stop there. BG-d2ezi7qd (headers, URL, key blocks) reads the Authorization, URL userinfo and Private key blocks facts: Bearer/Basic take any token68 (no length or entropy floor, scheme case-insensitive, Proxy-Authorization the same), Basic is base64 of user:password, userinfo password ends at the closing '@' and may be percent-encoded, key labels PRIVATE KEY, ENCRYPTED PRIVATE KEY, RSA PRIVATE KEY, OPENSSH PRIVATE KEY with the body on the lines up to the END line. Not researched (gaps): Digest, vendor private-token headers, cookies.",
