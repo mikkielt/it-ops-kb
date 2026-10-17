@@ -2,7 +2,7 @@
   "id": "BG-efbghw7n",
   "kind": "bug",
   "title": "redact misses backslash-escaped JSON assignments and headers, a subscripted Authorization header and an escaped quote inside a value",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,
@@ -78,5 +78,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 3. Repro on origin/main b871374b4 exits 1 (the escaped JSON value is kept). Reads the JSON escape facts of the goal research story ST-v7rqvnwe. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); never weaken a guard. Runs after BG-hqgtovpo: both edit _assigned."
+  "notes": "Plan 2026-10-17: SP-yyjwfjtc review gap 3. Repro on origin/main b871374b4 exits 1 (the escaped JSON value is kept). Reads the JSON escape facts of the goal research story ST-v7rqvnwe. Test policy: one planted fake value per new shape in the existing redact test of _tools/test_redact.py (no new test id); never weaken a guard. Runs after BG-hqgtovpo: both edit _assigned.",
+  "claimed_by": "orch-r10"
 }
