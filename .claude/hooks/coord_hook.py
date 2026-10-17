@@ -11,10 +11,15 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
                   claimed earlier; not again after /compact), then prints the `coord.py digest` lines for those items
   PreToolUse Bash a `backlog.py claim ID` command: the digest lines for ID, then an intent for ID (topic backlog-claim,
                   which the worker dispatched on `work/ID` skips at its SessionStart), so the session's claimed items
-                  are announced too; any other command returns at once, touching nothing
+                  are announced too; any other command only renews the lease when it is due (below)
   PreToolUse Skill a `/kb-research` start Claude made: the digest lines for this session's items
   UserPromptExpansion a `/kb-research` the person typed, which bypasses PreToolUse: the same lines
   SessionEnd      releases the presence lease and forgets the token
+
+A tool event (Bash or Skill) of a live session renews its lease once less than half of LEASE_SECONDS is left, so the
+session's intents keep showing in other sessions' digests however long it runs. The state file keeps the expiry the
+last renew from a tool event returned, and the event reads that, so most events make no coord call; a SessionStart
+keeps none, so the first tool event after a start renews once and takes the expiry from the store.
 
 A digest line is another session's: this session's own intent and lease are left out. The output is at most ten lines:
 a first line, up to eight digest lines, and a line telling Claude to ask the operator whether to wait, join or
@@ -25,7 +30,7 @@ informs, the operator decides; a missing store, an unreadable payload or any err
 The store is coord.py's own: `KB_COORD_STORE`, else `kb-coord/coord.sqlite` in the clone's common git directory, which
 the clone's worktrees share. The lease token and items of a session sit in `_cache/coord_hook/<session id>.json` until its end.
 """
-import json, os, re, subprocess, sys
+import json, os, re, subprocess, sys, time
 
 HOME = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 COORD = os.path.join(HOME, "_tools", "coord.py")
@@ -97,6 +102,22 @@ def lease(sid, state):
         state["token"] = json.loads(out)["token"]
 
 
+def renew_if_due(sid, state):
+    """On a tool event: renew the lease when less than half of LEASE_SECONDS is left by the expiry the state kept, or
+    none is kept; the state is saved only when the lease changed."""
+    if not state.get("token") or state.get("lease_until", 0) - time.time() >= LEASE_SECONDS / 2:
+        return
+    rc, out = coord("renew", "session/" + sid, "--token", state["token"], "--ttl", str(LEASE_SECONDS))
+    if rc == 0:
+        state["lease_until"] = json.loads(out)["expires"]
+    else:
+        state.pop("token")
+        state.pop("lease_until", None)
+        lease(sid, state)
+        state["lease_until"] = time.time() + LEASE_SECONDS if state.get("token") else 0
+    save(sid, state)
+
+
 def announce(sid, items, topic=None):
     if items:
         extra = ["--field", "topic=" + topic] if topic else []
@@ -136,6 +157,7 @@ def session_start(payload, sid):
         items.append(branch)
     state["items"] = items
     lease(sid, state)
+    state.pop("lease_until", None)
     if payload.get("source") != "compact":
         announce(sid, items)
     save(sid, state)
@@ -156,35 +178,40 @@ def pre_tool_use(payload, sid):
     tool, given = payload.get("tool_name"), payload.get("tool_input") or {}
     if tool == "Bash":
         found = CLAIM.search(given.get("command") or "")
+        state = load(sid)
         if not found:
+            renew_if_due(sid, state)
             return
         claimed = found.group(1)
-        state = load(sid)
         lines = overlaps(sid, [claimed])
         if claimed not in state.get("items", []):
             state["items"] = [*state.get("items", []), claimed]
             announce(sid, [claimed], CLAIM_TOPIC)
         lease(sid, state)
+        state.pop("lease_until", None)
         save(sid, state)
         show("PreToolUse", [claimed], lines)
     elif tool == "Skill":
-        research_start(payload, sid, "PreToolUse",
-                       given.get("skill") or given.get("name") or given.get("command"))
+        if not research_start(payload, sid, "PreToolUse",
+                              given.get("skill") or given.get("name") or given.get("command")):
+            renew_if_due(sid, load(sid))
 
 
 def research_start(payload, sid, event, name):
     """A `/kb-research` start, whether Claude called the Skill tool (PreToolUse) or the person typed it
-    (UserPromptExpansion): the digest lines for this session's items."""
+    (UserPromptExpansion): the digest lines for this session's items. False when name is no `/kb-research`."""
     if str(name or "").rsplit(":", 1)[-1].lstrip("/") != "kb-research":
-        return
+        return False
     state = load(sid)
     items = list(state.get("items", []))
     branch = branch_item(payload.get("cwd") or os.getcwd())
     if branch and branch not in items:
         items.append(branch)
     lease(sid, state)
+    state.pop("lease_until", None)
     save(sid, {**state, "items": items})
     show(event, items, overlaps(sid, items))
+    return True
 
 
 def main():
