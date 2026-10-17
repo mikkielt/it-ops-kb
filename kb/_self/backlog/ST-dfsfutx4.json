@@ -2,7 +2,7 @@
   "id": "ST-dfsfutx4",
   "kind": "story",
   "title": "The kb's agent_needs_input Notification type names every case the hooks page gives, not only background sessions in agent view",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-3g3egfll",
   "priority": "P2",
   "rank": 0,
@@ -35,5 +35,18 @@
     "parked: SP-4dab3cy5 review"
   ],
   "notes": "Goal before the 2026-10-17 plan: SP-4dab3cy5 review G2 (S4, ST-5mcrotet): kb/public/claude/hooks.md says agent_needs_input fires for background sessions while agent view is open, but the hooks page's Notification table (https://code.claude.com/docs/en/hooks) also fires it for an agent-team teammate's terminal setup question and for auto mode's classifier-charge notice. The agent_needs_input fact names each case the page gives, with its version where the page gives one. Plan 2026-10-17: SP-4dab3cy5 review G2 (S4). Check on origin/main b871374b4 exits 1 (no teammate case). Source: https://code.claude.com/docs/en/hooks (claude-code-docs server).",
-  "claimed_by": "orch-r12"
+  "evidence": {
+    "commit": "81c5e9e6c2890d16c2ea4b6b62585b5d71831bf1",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nls=[l for l in open('kb/public/claude/hooks.md') if 'agent_needs_input' in l]\nok=any('teammate' in l for l in ls)\nprint(len(ls),'agent_needs_input line(s); a teammate case named:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "ced6634eaa75f293"
+      }
+    ]
+  }
 }
