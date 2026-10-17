@@ -67,7 +67,9 @@
         "never rename the lock away: waiters clear one at a time under an exclusive-create guard file and remove the lock only when it still matches the stat they judged stale": "BG-s3iuw4x2",
         "keep the rename-and-put-back and move the lock to an OS file lock in a follow-up item": "BG-s3iuw4x2"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "never rename the lock away: waiters clear one at a time under an exclusive-create guard file and remove the lock only when it still matches the stat they judged stale",
+      "by": "operator"
     }
   ],
   "links": [
