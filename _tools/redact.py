@@ -76,6 +76,12 @@ ID_LIKE = re.compile(r"CVE-\d{4}-\d+|KB\d+|RFC\d+|MS\d\d-\d+|PL-[A-Z]+-\d+|S(?:-
 TOKEN = re.compile(r"(?<![A-Za-z0-9+_=])[A-Za-z0-9+_]{%d,}={0,2}(?![A-Za-z0-9+_=])" % ENTROPY_MIN_LEN)
 WORD_PIECES = re.compile(r"[A-Z]?[a-z]+|[A-Z]+(?![a-z])|\d+")
 SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in kbcommon.SECRETS]
+# An assignment of a secret whatever the value: key=v, key: v, "key": "v", DB_PASSWORD=v, ?api_key=v, Password=v; in a
+# connection string. The key is one of the names or ends in one (aws_secret_access_key, client_secret, x-api-key).
+ASSIGNMENT = re.compile(
+    r"""(?i)(?<![\w.-])([\w.-]*?(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)["']?[ \t]*[:=](?![=>])[ \t]*)"""
+    r"""("[^"\n]*"|'[^'\n]*'|["']?[^\s&;"']+)""")
+ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|\$\w+|%\w+%|\*{3}")  # a value that is not a secret
 
 
 def entropy(s):
@@ -129,6 +135,20 @@ def _secret(m):
     if "=" in s:  # AccountKey=..., ?sig=...: keep the name
         return s[:s.index("=") + 1] + PLACEHOLDERS["secret"]
     return PLACEHOLDERS["secret"]
+
+
+def _assigned(m):
+    """The value of a secret assignment becomes the placeholder, the key and any quotes staying; a value that is empty
+    or already a placeholder stays."""
+    key, val = m.group(1), m.group(2)
+    q = val[0] if val[0] in "\"'" else ""
+    if q and len(val) > 1 and val[-1] == q:
+        inner, tail = val[1:-1], q
+    else:
+        inner, tail = val[len(q):], ""
+    if not inner or ASSIGNED_PLACEHOLDER.match(inner):
+        return m.group(0)
+    return key + q + PLACEHOLDERS["secret"] + tail
 
 
 def _segment(seg, k):
@@ -214,6 +234,7 @@ def redact(text, k=None):
     k = k or known()
     for rx in SECRETS:
         text = rx.sub(_secret, text)
+    text = ASSIGNMENT.sub(_assigned, text)
     text = UNC.sub(lambda m: PLACEHOLDERS["unc"] + _path(m.group(2), k, False), text)
     text = DRIVE.sub(lambda m: m.group(0)[:2] + _path(m.group(1), k, True), text)
     text = HOME.sub(lambda m: m.group(0)[:m.start(1) - m.start(0)] + (

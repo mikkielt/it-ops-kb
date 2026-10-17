@@ -26,6 +26,15 @@ COMPUTER = "DESKTOP-" + "AB12CD3"
 PLANTED = {"token": TOKEN, "email": EMAIL, "ip": IP, "home": "anna.nowak", "guid": GUID, "host": HOST,
            "computer": COMPUTER}
 TEXT = f"key {TOKEN}, mail {EMAIL}, ip {IP}, file {HOME}, tenant {GUID}, share {HOST}, laptop {COMPUTER}"
+VALUE = "Fake" + "Pass12345x"
+SHORT = "Fk" + "12ab"
+Q = chr(34)
+ASSIGNMENTS = ["password=" + VALUE, "passwd: " + VALUE, "pwd=" + SHORT, "secret=" + VALUE,
+               "{" + Q + "client_secret" + Q + ": " + Q + VALUE + Q + "}", "DB_PASSWORD=" + VALUE, "api_key=" + VALUE,
+               "apikey: " + VALUE, "x-api-key: " + VALUE, "https://api.example.com/v1?api_key=" + VALUE + "&page=2",
+               "aws_secret_access_key=" + VALUE + "/x+y", "access_key=" + VALUE,
+               "Server=db.example.com;Password=" + VALUE + ";"]
+PLACEHOLDER_VALUES = ["password=<secret>", "password=${DB_PASS}", "password=$DB_PASS", "password=%DB_PASS%", "password=***"]
 ORDINARY = ("Set the Windows LAPS password length to 14 in Intune. See https://learn.microsoft.com/windows/laps and "
             "t@example.com, 192.0.2.10, 00000000-0000-0000-0000-000000000000, PL-LT-00123, corp.example.com.")
 
@@ -50,6 +59,12 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
         assert placeholder in out, placeholder
     assert redact.redact(out) == out
     assert redact.scan(out) == []
+    done = redact.redact("\n".join(ASSIGNMENTS))  # each assignment form loses its value, whatever its length, and keeps its key
+    assert VALUE not in done and SHORT not in done and done.count("<secret>") == len(ASSIGNMENTS), done
+    for key in ("passwd", "client_secret", "x-api-key", "aws_secret_access_key", "Password=", "DB_PASSWORD"):
+        assert key in done, key
+    assert redact.redact(done) == done
+    assert redact.redact("\n".join(PLACEHOLDER_VALUES)) == "\n".join(PLACEHOLDER_VALUES)
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1
