@@ -2,7 +2,7 @@
   "id": "BG-s3iuw4x2",
   "kind": "bug",
   "title": "ledger_lock's stale-lock put-back can lose a live lock when a third waiter creates the lock while it is renamed away",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,

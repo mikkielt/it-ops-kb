@@ -2,7 +2,7 @@
   "id": "BG-p2jcpxhl",
   "kind": "bug",
   "title": "A coord.py value put on a leased key is lost when the holder releases it or the lease expires",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,

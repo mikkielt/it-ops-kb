@@ -2,7 +2,7 @@
   "id": "ST-nlesmlru",
   "kind": "story",
   "title": "The kb MCP coord_ tools are opt-in by a setting, so a default kb server serves no write tool but kb_feedback",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",

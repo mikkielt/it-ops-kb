@@ -2,7 +2,7 @@
   "id": "BG-m7rrbdnm",
   "kind": "bug",
   "title": "backlog.py claim judges busy and keeps ledger records from the item files it read before the ledger lock, so a claim another session made while it waited is dropped",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,

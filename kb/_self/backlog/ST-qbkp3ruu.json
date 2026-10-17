@@ -2,7 +2,7 @@
   "id": "ST-qbkp3ruu",
   "kind": "story",
   "title": "Review sprint: The coordination service and the shared-state fixes hold up under real parallel use",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "review": true,
   "priority": "P1",

@@ -2,7 +2,7 @@
   "id": "BG-vxwibl62",
   "kind": "bug",
   "title": "coord.py put needs no holder token, so any agent can overwrite the value of a key another agent has claimed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,

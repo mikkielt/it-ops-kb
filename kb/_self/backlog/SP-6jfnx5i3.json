@@ -2,7 +2,7 @@
   "id": "SP-6jfnx5i3",
   "kind": "sprint",
   "title": "The coordination service and the shared-state fixes hold up under real parallel use",
-  "status": "planned",
+  "status": "active",
   "goal": "the coordination service and the shared-state fixes hold up under real parallel use",
   "gates": [
     {

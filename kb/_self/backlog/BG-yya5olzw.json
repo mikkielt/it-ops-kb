@@ -2,7 +2,7 @@
   "id": "BG-yya5olzw",
   "kind": "bug",
   "title": "The kb MCP coord tools and the coord hook use different stores by default, so a session's coord_digest never sees the hook's intents",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,

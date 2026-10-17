@@ -2,7 +2,7 @@
   "id": "BG-iwqcj5zf",
   "kind": "bug",
   "title": "An ended session's coord intent keeps showing to later sessions for a day, also after a clean SessionEnd",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,

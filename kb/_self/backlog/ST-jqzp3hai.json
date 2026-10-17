@@ -2,7 +2,7 @@
   "id": "ST-jqzp3hai",
   "kind": "story",
   "title": "Research sprint goal: The coordination service and the shared-state fixes hold up under real parallel use",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "goal_research": true,
   "priority": "P1",

@@ -2,7 +2,7 @@
   "id": "BG-h5brxejv",
   "kind": "bug",
   "title": "kg_sync.forge_outage takes any parenthesised 5xx number in the push output for a forge outage, so a push-rule refusal that prints '(500)' is retried six times",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P3",
   "rank": 0,

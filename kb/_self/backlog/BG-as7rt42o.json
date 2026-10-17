@@ -2,7 +2,7 @@
   "id": "BG-as7rt42o",
   "kind": "bug",
   "title": "coord.py accepts --ttl nan or inf and --timeout nan, so a lease never expires and a wait never ends",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-6jfnx5i3",
   "priority": "P2",
   "rank": 0,
