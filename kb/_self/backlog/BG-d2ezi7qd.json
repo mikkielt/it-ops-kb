@@ -71,6 +71,21 @@
       "class": "secrets",
       "answer": "redact rules only",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Does a private key block with no END line (cut off) lose its body too, or only its BEGIN line as before?",
+      "options": [
+        "whole block with an END line only",
+        "cut-off block to the end of the text too"
+      ],
+      "recommendation": "whole block with an END line only",
+      "do": {
+        "whole block with an END line only": "BG-d2ezi7qd",
+        "cut-off block to the end of the text too": "BG-d2ezi7qd"
+      },
+      "class": "secrets"
     }
   ],
   "notes": "Found by the SP-yyjwfjtc plan probe on origin/main b97cd6ebf: Authorization: Bearer v passes unless v is 20+ characters of high entropy (the TOKEN rule), Basic likewise (a long base64 credential is caught, a short one is not), postgres://user:pass@host keeps the password, and a private key block keeps its body (only the BEGIN line, a kbcommon.SECRETS shape, is replaced). Repro on the base: exit 1, left: bearer, basic, userinfo, key body. Separate from BG-w5d2mvwz (assignment forms) and after it, since both change redact.py and test_redact.py. Check 0 (tests.py -k redact_replaces_every_class) passes before the work on purpose: it pins idempotence and the ordinary sample under the wider rules; the repro and check 1 fail until the work.",
