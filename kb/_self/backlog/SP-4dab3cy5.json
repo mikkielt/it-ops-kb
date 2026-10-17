@@ -2,7 +2,7 @@
   "id": "SP-4dab3cy5",
   "kind": "sprint",
   "title": "The kb covers parallel agent work, shared agent state and multi-agent operations",
-  "status": "planned",
+  "status": "active",
   "goal": "the kb covers parallel agent work, shared agent state and multi-agent operations",
   "gates": [
     {
