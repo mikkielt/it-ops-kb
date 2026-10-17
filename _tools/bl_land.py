@@ -497,11 +497,13 @@ def goal_questions(goal, skipped=None):
 def joined_lead_in(goal):
     """The lead-in (text before `: `) that `goal_questions` joins to a numbered piece's question because it is longer
     than QUESTION_LEAD_WORDS words (`Research with the kb tools first ... through /kb-research: (1) Which ...?`), the
-    first such one, else ''. The pack of the whole piece then reads the lead-in's words as part of the question."""
+    first such one, else ''. The pack of the whole piece then reads the lead-in's words as part of the question. Any
+    whitespace between the colon and the number (a line break, two spaces) counts as the `: `."""
     for q in goal_questions(goal):
-        lead, sep, rest = q.partition(": ")
-        if sep and rest.strip() and len(lead.split()) > QUESTION_LEAD_WORDS \
-                and re.search(re.escape(lead + ": ") + NUMBERED_PIECE.pattern, str(goal)):
+        colon = re.search(r":\s+", q)
+        lead, rest = (q[:colon.start()], q[colon.end():]) if colon else (q, "")
+        if rest.strip() and len(lead.split()) > QUESTION_LEAD_WORDS \
+                and re.search(re.escape(lead) + r":\s+" + NUMBERED_PIECE.pattern, str(goal)):
             return lead
     return ""
 
