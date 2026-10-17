@@ -14,12 +14,15 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
                   are announced too; any other command only renews the lease when it is due (below)
   PreToolUse Skill a `/kb-research` start Claude made: the digest lines for this session's items
   UserPromptExpansion a `/kb-research` the person typed, which bypasses PreToolUse: the same lines
-  SessionEnd      releases the presence lease and forgets the token
+  SessionEnd      releases the presence lease and forgets the token; a release that could not run (the store busy past
+                  the call's timeout) keeps the token, and the next SessionStart of any session retries it
 
 A tool event (Bash or Skill) of a live session renews its lease once less than half of LEASE_SECONDS is left, so the
 session's intents keep showing in other sessions' digests however long it runs. The state file keeps the expiry the
 last renew from a tool event returned, and the event reads that, so most events make no coord call; a SessionStart
-keeps none, so the first tool event after a start renews once and takes the expiry from the store.
+keeps none, so the first tool event after a start renews once and takes the expiry from the store. A call that timed
+out or failed for a busy store says nothing about the lease: the token stays, and the next try comes a minute later.
+Only a refusal (exit 1: the token no longer holds the lease) drops the token.
 
 A digest line is another session's: this session's own intent and lease are left out. The output is at most ten lines:
 a first line, up to eight digest lines, and a line telling Claude to ask the operator whether to wait, join or
@@ -36,6 +39,7 @@ HOME = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 COORD = os.path.join(HOME, "_tools", "coord.py")
 STATE = os.path.join(HOME, "_cache", "coord_hook")  # one file per session: its lease token and items
 LEASE_SECONDS = 6 * 3600  # a session that ends without SessionEnd (a crash) drops out of `list` after this
+RETRY_SECONDS = 60  # after a renew that could not run, the next tool event waits this long
 SHOWN = 8  # digest lines shown: with the first and last line, ten in all
 ITEM = r"[A-Za-z]{2}-[a-z0-9]{8}"
 CLAIM = re.compile(r"\bbacklog\.py\s+claim\s+(" + ITEM + r")\b")
@@ -91,10 +95,12 @@ def branch_item(cwd):
 
 
 def lease(sid, state):
-    """Hold the presence lease session/<sid>: renew it with the saved token, else claim it."""
+    """Hold the presence lease session/<sid>: renew it with the saved token, else claim it. A renew that could not run
+    (not exit 0 or 1) leaves the token: only a refusal means the lease is gone."""
     key = "session/" + sid
     if state.get("token"):
-        if coord("renew", key, "--token", state["token"], "--ttl", str(LEASE_SECONDS))[0] == 0:
+        rc = coord("renew", key, "--token", state["token"], "--ttl", str(LEASE_SECONDS))[0]
+        if rc != 1:
             return
         state.pop("token")
     rc, out = coord("claim", key, "--ttl", str(LEASE_SECONDS), "--holder", sid)
@@ -110,6 +116,8 @@ def renew_if_due(sid, state):
     rc, out = coord("renew", "session/" + sid, "--token", state["token"], "--ttl", str(LEASE_SECONDS))
     if rc == 0:
         state["lease_until"] = json.loads(out)["expires"]
+    elif rc != 1:
+        state["lease_until"] = time.time() + LEASE_SECONDS / 2 + RETRY_SECONDS
     else:
         state.pop("token")
         state.pop("lease_until", None)
@@ -150,7 +158,9 @@ def show(event, keys, lines):
 
 
 def session_start(payload, sid):
+    retry_releases(sid)
     state = load(sid)
+    state.pop("ending", None)
     branch = branch_item(payload.get("cwd") or os.getcwd())
     items = list(state.get("items", []))
     if branch and branch not in items:
@@ -164,14 +174,47 @@ def session_start(payload, sid):
     show("SessionStart", items, overlaps(sid, items, branch))
 
 
-def session_end(sid):
-    state = load(sid)
-    if state.get("token"):
-        coord("release", "session/" + sid, "--token", state["token"])
+def forget(path):
     try:
-        os.remove(state_path(sid))
+        os.remove(path)
     except OSError:
         pass
+
+
+def session_end(sid):
+    state = load(sid)
+    if state.get("token") and coord("release", "session/" + sid, "--token", state["token"])[0] not in (0, 1):
+        state["ending"] = sid  # the release could not run: a later SessionStart retries it with this token
+        save(sid, state)
+        return
+    forget(state_path(sid))
+
+
+def retry_releases(own):
+    """At a SessionStart: release the lease of each session whose SessionEnd could not (its state file says ending),
+    so its intents leave other sessions' digests once the store is free. The first release that cannot run ends the
+    pass; a file older than the lease holds nothing and is removed."""
+    try:
+        names = sorted(os.listdir(STATE))
+    except OSError:
+        return
+    for name in names:
+        path = os.path.join(STATE, name)
+        if path == state_path(own) or not name.endswith(".json"):
+            continue
+        try:
+            with open(path, encoding="utf-8") as f:
+                state = json.load(f)
+            old = time.time() - os.path.getmtime(path) > LEASE_SECONDS
+        except (OSError, ValueError):
+            continue
+        if not isinstance(state, dict) or not state.get("ending"):
+            continue
+        if state.get("token") and not old:
+            rc = coord("release", "session/" + str(state["ending"]), "--token", state["token"])[0]
+            if rc not in (0, 1):
+                return
+        forget(path)
 
 
 def pre_tool_use(payload, sid):

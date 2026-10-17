@@ -30,6 +30,42 @@
   "depends_on": [
     "BG-jy6yxnq4"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the coord hook make a SessionEnd release that could not run reach the store once it is free?",
+      "options": [
+        "retry at next SessionStart",
+        "wait longer inside SessionEnd"
+      ],
+      "recommendation": "retry at next SessionStart",
+      "do": {
+        "retry at next SessionStart": "BG-ljlj77kd",
+        "wait longer inside SessionEnd": "BG-ljlj77kd"
+      },
+      "class": "push",
+      "answer": "retry at next SessionStart",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does the coord hook do with its lease token when a renew call times out or errors without a refusal?",
+      "options": [
+        "keep the token and try again after 60 seconds",
+        "drop the token and claim again"
+      ],
+      "recommendation": "keep the token and try again after 60 seconds",
+      "do": {
+        "keep the token and try again after 60 seconds": "BG-ljlj77kd",
+        "drop the token and claim again": "BG-ljlj77kd"
+      },
+      "class": "secrets",
+      "answer": "keep the token and try again after 60 seconds",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-6jfnx5i3 review"
   ],
