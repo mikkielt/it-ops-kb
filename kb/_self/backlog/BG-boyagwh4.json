@@ -2,7 +2,7 @@
   "id": "BG-boyagwh4",
   "kind": "bug",
   "title": "A feedback report's lead reaches the committed store with a secret in its url path, since only the query is dropped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-g4mwrwsv",
   "priority": "P2",
   "rank": 0,
@@ -47,5 +47,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17, narrowed to the committed store: the stored lead is bare_url (query and fragment dropped), but a key=value in the url's path or ;params stays, and the store gate checks only the leak scan, which does not read assignments. Premise on origin/main b871374b4: feedback_report keeps an https://learn.example.com/p/api_key=<value> url as lead (repro exits 1). The claim and comment never reach the store (closed_reports, FEEDBACK_KEYS). The spool side (source_url query, claim) is BG-yk6xxwwa, open gate g1 for the operator. Test policy: one planted fake value in the existing distill/store test of _tools/test_redact.py (no new test id)."
+  "notes": "Plan 2026-10-17, narrowed to the committed store: the stored lead is bare_url (query and fragment dropped), but a key=value in the url's path or ;params stays, and the store gate checks only the leak scan, which does not read assignments. Premise on origin/main b871374b4: feedback_report keeps an https://learn.example.com/p/api_key=<value> url as lead (repro exits 1). The claim and comment never reach the store (closed_reports, FEEDBACK_KEYS). The spool side (source_url query, claim) is BG-yk6xxwwa, open gate g1 for the operator. Test policy: one planted fake value in the existing distill/store test of _tools/test_redact.py (no new test id).",
+  "claimed_by": "orch-r10"
 }
