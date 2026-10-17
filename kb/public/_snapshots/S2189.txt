@@ -3,20 +3,25 @@ url: https://docs.gitlab.com/user/model_context_protocol/mcp_server/
 title: GitLab MCP server
 publisher: GitLab
 licence: CC BY-SA 4.0 (GitLab docs)
-retrieved: 2026-09-28
+retrieved: 2026-10-17
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
 /
 # GitLab MCP server
 Tier: Free, Premium, Ultimate
 Offering: GitLab.com, GitLab Self-Managed, GitLab Dedicated
-Status: Beta
+Status: Generally available
 Introduced as an experiment in GitLab 18.3 with feature flags named mcp_server and oauth_dynamic_client_registration. Disabled by default.
 Changed from experiment to beta in GitLab 18.6. Feature flags mcp_server and oauth_dynamic_client_registration removed.
 Support for 2025-03-26 and 2025-06-18 MCP protocol specifications added in GitLab 18.7.
 Support for the 2025-11-25 MCP protocol specification added in GitLab 18.7.
 Changed to a separate setting and moved from GitLab Premium to GitLab Free in GitLab 19.2.
-Toolset selection added in GitLab 19.5 with a feature flag named mcp_toolsets. Disabled by default.
+Toolset selection added in GitLab 19.5.
+duo_agent_platform toolset included by default in GitLab 19.5.
+Changed from beta to generally available in GitLab 19.5.
+duo_agent_platform toolset listed only when GitLab Duo Agent Platform is available for the user in GitLab 19.5.
+code_security tools listed only when the licensed feature behind each tool is available for the user in GitLab 19.5.
+orbit toolset added in GitLab 19.6.
 To provide feedback on this feature, leave a comment on issue 630189.
 With the GitLab Model Context Protocol (MCP) server,
 you can securely connect AI tools and applications to your GitLab instance.
@@ -38,6 +43,19 @@ For a click-through demo, see GitLab Duo Agent Platform - GitLab MCP server.
 Allow access to the MCP server:
 On GitLab.com, for the top-level group.
 On GitLab Self-Managed and GitLab Dedicated, for the instance.
+## Authentication
+The GitLab MCP server accepts the following tokens:
+An OAuth access token with the mcp scope. MCP clients get this token through the OAuth flow
+when they connect, either with dynamic client registration or with a
+pre-registered OAuth application.
+A fine-grained personal access token with the
+MCP tool resource and the Execute permission.
+These tokens cannot have the mcp scope, so the GitLab MCP server rejects them, even with scopes such as api:
+Legacy personal access tokens
+Project access tokens
+Group access tokens
+If you use one of these tokens, the GitLab MCP server returns 403 Forbidden.
+Support for these authentication methods is proposed in issue 586184.
 ## Connect a client to the GitLab MCP server
 The GitLab MCP server supports two transport types:
 HTTP transport (recommended): Direct connection without additional dependencies.
@@ -79,7 +97,6 @@ json
 }
 }
 ### Select tool groups (toolsets)
-The availability of this feature is controlled by a feature flag. For more information, see the history.
 To limit the tools returned by the GitLab MCP server to specific groups, configure the
 X-Gitlab-Enabled-Mcp-Server-Toolsets HTTP header with a comma-separated list of toolset names.
 Available toolsets:
@@ -90,9 +107,37 @@ merge_requestsYes
 work_itemsYes
 repositoryYes
 ciYes
-duo_agent_platformNo (opt-in)
+duo_agent_platformYes, if GitLab Duo Agent Platform is available
 wikisNo (opt-in)
 code_securityNo (opt-in)
+orbitNo (opt-in)
+The duo_agent_platform tools are listed only when GitLab Duo Agent Platform is available for you.
+This applies even when you request the toolset in the header or set the header to all.
+On GitLab.com, both of the following must be true:
+You belong to a top-level group on the Premium or Ultimate plan that has GitLab Duo Agent Platform turned on,
+or you have GitLab Duo Agent Platform through GitLab credits.
+You are allowed to use GitLab Duo Agent Platform, for example, you have the required seat.
+On GitLab Self-Managed and GitLab Dedicated, all of the following must be true:
+GitLab Duo is not set to Always off for the instance. With Off by default, the tools are listed
+so that groups that turn GitLab Duo on can use them.
+The instance has a license that includes GitLab Duo Agent Platform, or has GitLab credits.
+GitLab Duo Agent Platform is turned on for your organization.
+You are allowed to use GitLab Duo Agent Platform, for example, you have the required seat.
+For more information, see the GitLab Duo Agent Platform prerequisites
+and how to turn GitLab Duo Agent Platform on or off.
+The code_security tools are listed only when the feature behind each tool is available for you.
+This applies even when you request the toolset in the header or set the header to all.
+list_vulnerabilities, get_vulnerability, and save_vulnerability require the security dashboard.
+attach_scan_profile requires security scan profiles.
+Both are Ultimate features. On GitLab.com, the tools are listed if you belong to at least one top-level group
+on the Ultimate plan, including Ultimate trials. Access to a project in that group also counts.
+On GitLab Self-Managed and GitLab Dedicated, the tools are listed if the instance license includes the feature.
+The orbit toolset has one tool for each Orbit command, for example query_graph.
+The Orbit server sets the tool names, descriptions, and input schemas.
+The tools are listed and run only when you meet the Orbit requirements.
+Orbit tools are listed only when you request the orbit toolset or set the header to all.
+Naming an Orbit tool in X-Gitlab-Enabled-Mcp-Server-Tools does not list it.
+Listing a tool does not grant access. Each tool still checks your project and namespace permissions when called.
 To include an opt-in toolset, add it to the header value explicitly. To request every toolset,
 including all opt-in toolsets, set the header to all.
 When you omit both headers, the server returns the default toolsets. If you omit the toolsets header
@@ -503,6 +548,30 @@ Pre-registered applications created with the REST API do not enforce Proof Key f
 PKCE defends against authorization code interception for public clients.
 To enforce PKCE, verify that your MCP client sends code_challenge and code_challenge_method parameters during the OAuth flow.
 GitLab accepts PKCE parameters for pre-registered applications, but does not require them.
+## Rate limits
+Tier: Free, Premium, Ultimate
+Offering: GitLab.com
+Introduced in GitLab 19.5 with feature flags named rate_limiter_mcp_limits_free_info, rate_limiter_mcp_limits_free_enforce, rate_limiter_mcp_limits_premium_info, rate_limiter_mcp_limits_premium_enforce, rate_limiter_mcp_limits_ultimate_info, and rate_limiter_mcp_limits_ultimate_enforce. Disabled by default.
+The availability of this feature is controlled by a feature flag. For more information, see the history.
+Requests to the MCP server endpoint, POST /api/v4/mcp, are limited for each user by the plan of
+their namespace:
+PlanLimit
+Free60 each minute
+Premium600 each minute
+Ultimate600 each minute
+These limits apply for each user, not for each client or token. A user who connects several MCP
+clients shares one allowance across all of them.
+MCP server requests also count toward the
+GitLab.com rate limits that apply to all traffic, so a request can
+reach either limit. The MCP server limit is the lower of the two for every plan.
+When you exceed the limit, GitLab returns 429 Too Many Requests with the
+standard rate limit headers,
+including Retry-After and RateLimit-Reset. RateLimit-Name identifies which limit you reached.
+A rate limit on the GitLab API endpoint behind a tool is reported differently. For that case, see
+the rate_limited tool result.
+On GitLab Self-Managed and GitLab Dedicated, an administrator sets a single MCP server limit for
+the instance. For more information, see
+authenticated MCP server request rate limit.
 ## Supported MCP protocol versions
 The GitLab MCP server negotiates the protocol version in the initialize request.
 If the client requests a version that the server does not support, the server returns

@@ -3,25 +3,40 @@ url: https://github.com/upstash/context7
 title: upstash/context7
 publisher: Upstash (community-contributed library index)
 licence: MIT
-retrieved: 2026-09-28
+retrieved: 2026-10-17
 changes: normalized to text by _tools/provider.py (raw form; front matter, link targets, images and page chrome removed); not the publisher's formatting
 ---
-upstash
-/
+## Repository navigation
 context7
 Public
-Notifications
-You must be signed in to change notification settings
-Fork
-3k
-Star
-62.5k
+NotificationsYou must be signed in to change notification settings
+Fork3.1k (3.1k)
+Star63.2k (63.2k)You must be signed in to star a repository
+## About
+Context7 Platform -- Up-to-date docs for AI agents
+context7.com
+### Topics
+llmmcpmcp-servervibe-coding
+### Resources
+Readme
+MIT license
+### Security policy
+Security policy
+Activity
+Custom properties
+### Stars
+63.2k stars
+### Watchers
+164 watching
+### Forks
+3.1k forks
+Report repository
 BranchesTags
 Open more actions menu
 ## Latest commit
 ## History
-990 Commits
-990 Commits
+1,055 Commits
+1,055 Commits
 ## Folders and files
 NameName
 Last commit message
@@ -32,6 +47,8 @@ Last commit date
 .changeset
 .claude-plugin
 .claude-plugin
+.cursor-plugin
+.cursor-plugin
 .github
 .github
 docs
@@ -76,30 +93,32 @@ prettier.config.mjs
 prettier.config.mjs
 server.json
 server.json
+tsconfig.bundler.json
+tsconfig.bundler.json
 tsconfig.json
 tsconfig.json
 ## Repository files navigation
-# Context7 Platform - Up-to-date Code Docs For Any Prompt
+# Context7 - Up-to-date Docs for AI Agents
 ## ❌ Without Context7
 LLMs rely on outdated or generic information about the libraries you use. You get:
 ❌ Code examples are outdated and based on year-old training data
 ❌ Hallucinated APIs that don't even exist
 ❌ Generic answers for old package versions
 ## ✅ With Context7
-Context7 pulls up-to-date, version-specific documentation and code examples straight from the source — and places them directly into your prompt.
-Create a Next.js middleware that checks for a valid JWT in cookies
+Context7 pulls up-to-date, version-specific documentation and code examples straight from the source — and gives them to your coding agent.
+Create a Next.js proxy that checks for a valid JWT in cookies
 and redirects unauthenticated users to `/login`. use context7
 Configure a Cloudflare Worker script to cache
 JSON API responses for five minutes. use context7
 Show me the Supabase auth API for email/password sign-up.
-Context7 fetches up-to-date code examples and documentation right into your LLM's context. No tab-switching, no hallucinated APIs that don't exist, no outdated code generation.
+Context7 fetches up-to-date code examples and documentation right into your coding agent's context. No tab-switching, no hallucinated APIs that don't exist, no outdated code generation.
 Works in two modes:
 CLI + Skills — installs a skill that guides your agent to fetch docs using ctx7 CLI commands (no MCP required)
 MCP — registers a Context7 MCP server so your agent can call documentation tools natively
 ## Installation
 Note
 API Key Recommended: Get a free API key at context7.com/dashboard for higher rate limits.
-Set up Context7 for your coding agents with a single command. The ctx7 CLI requires Node.js 18 or newer.
+Set up Context7 for your coding agents with a single command. The ctx7 CLI requires Node.js 22.13 or newer.
 npx ctx7 setup
 Authenticates via OAuth, generates an API key, and installs the appropriate skill. You can choose between CLI + Skills or MCP mode. Use --cursor, --claude, or --opencode to target a specific agent.
 To remove the generated setup later, run npx ctx7 remove. If you globally installed the CLI with npm install -g ctx7, remove that package separately with npm uninstall -g ctx7.
@@ -112,7 +131,7 @@ Implement basic authentication with Supabase. use library /supabase/supabase for
 The slash syntax tells Context7 exactly which library to load docs for.
 ### Specify a Version
 To get documentation for a specific library version, just mention the version in your prompt:
-How do I set up Next.js 14 middleware? use context7
+How do I set up a Next.js 16 proxy? use context7
 Context7 will automatically match the appropriate version.
 ### Add a Rule
 If you installed via ctx7 setup, a skill is configured automatically that triggers Context7 for library-related questions. To set up a rule manually instead, add one to your coding agent:
@@ -132,6 +151,7 @@ libraryName (required): The name of the library to search for
 query-docs: Retrieves documentation for a library using a Context7-compatible library ID.
 libraryId (required): Exact Context7-compatible library ID (e.g., /mongodb/docs, /vercel/next.js)
 query (required): The question or task to get relevant documentation for
+language (optional): The programming language you write in, used to rank code examples in that language first
 ## More Documentation
 CLI Reference - Full CLI documentation
 MCP Clients - Manual MCP installation for 30+ clients
@@ -165,7 +185,7 @@ Sean Kochel: "5 MCP Servers For Vibe Coding Glory (Just Plug-In & Go)"
 ## 📄 License
 MIT
 ## About
-Context7 Platform -- Up-to-date code documentation for LLMs and AI code editors
+Context7 Platform -- Up-to-date docs for AI agents
 context7.com
 ### Topics
 llmmcpmcp-servervibe-coding
@@ -177,11 +197,11 @@ Security policy
 Activity
 Custom properties
 ### Stars
-62.5k stars
+63.2k stars
 ### Watchers
-162 watching
+164 watching
 ### Forks
-3.0k forks
+3.1k forks
 Report repository
 ## Releases
 ## Used by
