@@ -100,7 +100,7 @@ is the seconds a row's rate limit asks between two requests and new_run() forget
 host_seen() and host_down() keep, in the process and under _cache/provider-down/, a host that did not accept a
 connection for a window that doubles with each failure in a row (DOWN_BASE_S up to DOWN_CAP_S), so a lookup asks it no
 more until the window is over: under down_window(), gated_request() (the requests of a source's page, a search, a
-candidate page, a made-up sibling and a pinned url's repository) reads and records it for the host each request went to.
+candidate page, a made-up sibling and a pinned url's repository) reads and records it for the host each request went to, and follows no redirect hop into a host in its window.
 lifetimes() gives each source a freshness lifetime with no request (the section "freshness lifetime"): the factdiff
 revalidation at question time and fetch.py --status read it.
 """
@@ -445,12 +445,20 @@ def ssl_ctx():
     return _ctx[0]
 
 
+class _Refused(Exception):
+    """A redirect hop into a host `refuse` holds back: the hop is not requested."""
+
+
 class _Chain(urllib.request.HTTPRedirectHandler):
-    """Follows redirects and records each hop (status, target)."""
-    def __init__(self):
+    """Follows redirects and records each hop (status, target); a hop `refuse(target)` gives a reason for is not followed."""
+    def __init__(self, refuse=None):
         self.hops = []
+        self.refuse = refuse
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
+        why = self.refuse(newurl) if self.refuse else ""
+        if why:
+            raise _Refused(why)
         self.hops.append((code, newurl))
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
@@ -616,7 +624,8 @@ def down_window():
 
 def gated_request(url, *args, **kwargs):
     """request() for a source's page, a search, a candidate page, a made-up sibling and a repository: under down_window()
-    a host in its window gets no request (status 0, the reason of down_why as `error`, counted in failures()), and the
+    a host in its window gets no request (status 0, the reason of down_why as `error`, counted in failures()), nor does
+    a redirect hop into one (the hosts before it answered; the refused hop starts no new window), and the
     answer of any other request is recorded with host_seen for every host it went through: the hosts a redirect was
     followed through answered, and a connection that was not made is the window of the host it was made to, the last
     hop's, not of the url that was asked. Outside the block it is request()."""
@@ -626,19 +635,21 @@ def gated_request(url, *args, **kwargs):
     if rec:
         _failed[0] += 1
         return {"status": 0, "headers": {}, "body": b"", "final": url, "hops": [], "error": down_why(rec)}
-    r = request(url, *args, **kwargs)
+    r = request(url, *args, refuse=lambda hop: down_why(host_down(hop)) if host_down(hop) else "", **kwargs)
     chain = [url] + [hop[1] for hop in r.get("hops") or []]
+    last = "" if r.get("refused") else BUDGET_ERROR if r.get("cut") else r.get("error") or ""  # a refused hop shows nothing
     for hop in chain[:-1]:
         host_seen(hop, "")
-    host_seen(chain[-1], BUDGET_ERROR if r.get("cut") else r.get("error") or "")
+    host_seen(chain[-1], last)
     return r
 
 
-def request(url, headers=None, limit=20_000_000, method="GET"):
+def request(url, headers=None, limit=20_000_000, method="GET", refuse=None):
     """{status, headers (lowercase keys), body (bytes), final, hops, error}; one request per DELAY seconds per host.
     A Content-Encoding body is decoded (decode_body); the headers stay as the server sent them.
     Never raises for HTTP or network errors: status is the code, or 0 with `error`; `cut` is set (only then) when the
-    timeout of a connect that failed was shortened by budget()."""
+    timeout of a connect that failed was shortened by budget(). `refuse(hop_url)` gives the reason a redirect hop is not
+    followed ("" to follow it): the answer is then status 0 with that reason as `error`, and `refused` is set (only then)."""
     host = urllib.parse.urlsplit(url).netloc
     wait = DELAY - (time.time() - _last.get(host, 0))
     until = _budget["until"]
@@ -648,7 +659,7 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
     if wait > 0:
         time.sleep(wait)
     _last[host] = time.time()
-    chain = _Chain()
+    chain = _Chain(refuse)
     opener = urllib.request.build_opener(chain, urllib.request.HTTPSHandler(context=ssl_ctx()))
     req = urllib.request.Request(url, method=method, headers={"User-Agent": UA, "Accept": "*/*", **(headers or {})})
     out = {"status": 0, "headers": {}, "body": b"", "final": url, "hops": chain.hops, "error": ""}
@@ -662,6 +673,8 @@ def request(url, headers=None, limit=20_000_000, method="GET"):
             out["body"] = e.read(limit)
         except Exception:  # noqa: BLE001
             pass
+    except _Refused as e:
+        out.update(error=str(e), refused=True)
     except Exception as e:  # noqa: BLE001 - a change check must never stop a run
         out["error"] = f"{type(e).__name__}: {str(getattr(e, 'reason', e))[:120]}"
         if timeout < TIMEOUT and isinstance(getattr(e, "reason", None), (TimeoutError, socket.timeout)):
