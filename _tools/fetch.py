@@ -107,32 +107,47 @@ def repo_roots():
 
 class _PageText(html.parser.HTMLParser):
     """Visible text of an HTML page, one block per line; <main> only when the page has one. `headings` starts each
-    h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none)."""
+    h1-h6 line with Markdown `#` marks (provider.py's document text; the hash text of --diff has none). An <aside>
+    inside <main> or <article> is a content sidebar and is kept, unless its role marks it as page chrome."""
     SKIP = {"script", "style", "noscript", "svg", "template", "head", "nav", "footer", "button", "form", "aside"}
+    CHROME_ROLES = {"navigation", "search", "banner", "contentinfo"}
     BLOCK = {"p", "div", "li", "tr", "br", "h1", "h2", "h3", "h4", "h5", "h6", "pre", "table", "section", "article", "dd", "dt"}
 
     def __init__(self, headings=False):
         super().__init__(convert_charrefs=True)
-        self.skip = self.main = 0
+        self.skip = self.main = self.article = 0
+        self.asides = []  # per open <aside>: True when it was skipped
         self.headings = headings
         self.all, self.in_main, self.saw_main = [], [], False
 
     def handle_starttag(self, tag, attrs):
-        if tag in self.SKIP:
+        if tag == "aside":
+            role = (dict(attrs).get("role") or "").strip().lower()
+            dropped = bool(self.skip) or not (self.main or self.article) or role in self.CHROME_ROLES
+            self.asides.append(dropped)
+            self.skip += dropped
+        elif tag in self.SKIP:
             self.skip += 1
         elif tag == "main":
             self.main += 1
             self.saw_main = True
+        elif tag == "article":
+            self.article += 1
         if tag in self.BLOCK:
             self._emit("\n")
         if self.headings and not self.skip and re.fullmatch(r"h[1-6]", tag):
             self._emit("#" * int(tag[1]) + " ")
 
     def handle_endtag(self, tag):
-        if tag in self.SKIP and self.skip:
+        if tag == "aside":
+            if self.asides and self.asides.pop() and self.skip:
+                self.skip -= 1
+        elif tag in self.SKIP and self.skip:
             self.skip -= 1
         elif tag == "main" and self.main:
             self.main -= 1
+        elif tag == "article" and self.article:
+            self.article -= 1
         if tag in self.BLOCK:
             self._emit("\n")
 
