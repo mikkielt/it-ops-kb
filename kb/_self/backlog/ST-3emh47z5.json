@@ -25,6 +25,25 @@
   "depends_on": [
     "BG-yvja5w5d"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the article record server mode's concurrent sessions?",
+      "options": [
+        "DOC fact plus reworded DER fact",
+        "reworded DER fact only"
+      ],
+      "recommendation": "DOC fact plus reworded DER fact",
+      "do": {
+        "DOC fact plus reworded DER fact": "ST-3emh47z5",
+        "reworded DER fact only": "ST-3emh47z5"
+      },
+      "class": "design",
+      "answer": "DOC fact plus reworded DER fact",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-4dab3cy5 review"
   ],

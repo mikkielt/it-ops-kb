@@ -201,6 +201,13 @@ and listing.
   sessions already running when the toggle is turned on are not retroactively protected. [DOC S-yhad7wiu]
 - `disableRemoteControl` turns Remote Control off entirely, and organizations with Zero Data Retention or the HIPAA
   configuration cannot enable it. [DOC S-yhad7wiu]
+- The one-remote-session limit is per interactive Claude Code process: outside server mode each instance supports one
+  remote session at a time, and with auto-connect on every interactive process registers its own. `claude
+  remote-control` (server mode) runs several concurrent sessions from one process: `--capacity <N>` sets the maximum
+  (default 32; not with `--spawn=session`), and `--spawn` picks how sessions are created, `same-dir` (default, all
+  sessions share the working directory and can conflict on the same files), `worktree` (each on-demand session gets its
+  own git worktree; needs a git repository or a `WorktreeCreate` hook) or `session` (serves exactly one session and
+  rejects more, set at startup only). [DOC S-yhad7wiu]
 - A channel is an MCP server that Claude Code spawns on the same machine over stdio to push events (chat messages,
   webhooks) into a running session; Telegram, Discord and iMessage plugins ship in the research preview, started with
   `--channels plugin:<name>@<marketplace>`. A server in `.mcp.json` does not push messages unless `--channels` names
@@ -242,11 +249,13 @@ and listing.
 
 ### How it fits
 - For an operator approving a fleet of sessions from one place, the documented remote answers are narrow: Remote Control
-  forwards the prompts of one session at a time to the Claude app or claude.ai/code and pushes a notification for a
-  waiting permission prompt (and needs claude.ai sign-in, so not an API-key or gateway estate), and a channel relays tool approvals to a chat app the operator controls. Neither
-  relays project trust or MCP consent dialogs, and an approver's authority is exactly whoever the sender allowlist or
-  the signed-in account admits. [DER S-yhad7wiu, S-m6qlxza7, S-uw2bn2un: the endpoint and login limits, the relay
-  coverage and the allowlist statement]
+  gives each interactive Claude Code process one remote session, so a fleet of interactive sessions is one remote
+  session per process, while `claude remote-control` server mode serves several concurrent sessions (`--capacity <N>`,
+  `--spawn worktree`) from one process; it pushes a notification for a waiting permission prompt (and needs claude.ai
+  sign-in, so not an API-key or gateway estate), and a channel relays tool approvals to a chat app the operator
+  controls. Neither relays project trust or MCP consent dialogs, and an approver's authority is exactly whoever the
+  sender allowlist or the signed-in account admits. [DER S-yhad7wiu, S-m6qlxza7, S-uw2bn2un: the per-process limit and
+  server mode, the endpoint and login limits, the relay coverage and the allowlist statement]
 - For unattended agents in this kb's frame, a bypass-mode session (e.g. a background job with
   `bypassPermissions`) holds every message from a prompting session for approval by default, so an orchestrator that
   must reach a headless worker sets `crossSessionInbound: "accept"` in that worker's `--settings`, and never in user
