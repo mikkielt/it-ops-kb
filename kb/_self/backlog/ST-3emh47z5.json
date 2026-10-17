@@ -2,7 +2,7 @@
   "id": "ST-3emh47z5",
   "kind": "story",
   "title": "The kb says Remote Control server mode runs several sessions from one process, not only one remote session per interactive process",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5bvg4tnl",
   "priority": "P2",
   "rank": 0,
@@ -48,5 +48,18 @@
     "parked: SP-4dab3cy5 review"
   ],
   "notes": "Plan 2026-10-17: research item (S2 review gap). The check exits 1 on 7cb5e0cbb (no --capacity, no server mode in the article). Touches carry _sources.csv, _anchors.csv and the doc2query expansions, since the DER fact is reworded.",
-  "claimed_by": "orch-r08"
+  "evidence": {
+    "commit": "05323eddffc44872388eaa6eb80efe906f179f96",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt=open('kb/public/claude/cross-session-messaging.md').read()\nok='--capacity' in t and 'server mode' in t.lower()\nprint('server mode and --capacity in the article:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "7e816a7a3b66fdba"
+      }
+    ]
+  }
 }
