@@ -2,7 +2,7 @@
   "id": "ST-cif2s7rc",
   "kind": "story",
   "title": "A plan for an item that sends new text through redact plants a secret of each kind redact knows, and an assignment form, in its check",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-yyjwfjtc",
   "priority": "P3",
   "rank": 0,
@@ -29,5 +29,18 @@
     "parked: SP-ficl7pxl close"
   ],
   "notes": "SP-yyjwfjtc plan: still applies on origin/main b97cd6ebf; plan step 6 names no redact path today (the check fails on the base). One sentence in step 6.",
-  "claimed_by": "orch-r09"
+  "evidence": {
+    "commit": "729c2aea1dbd556c0f97b45510da20c80ee72926",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open('skills/sprint/SKILL.md',encoding='utf-8').read();s=t[t.find('6. Read the goal clauses'):t.find('## start SP')];ok='redact' in s and 'assignment' in s;print('plan step 6 asks planted secrets and an assignment for a redact path:',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "60c8bac50052e114"
+      }
+    ]
+  }
 }
