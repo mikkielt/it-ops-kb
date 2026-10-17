@@ -2,7 +2,7 @@
   "id": "BG-j5lfhsyf",
   "kind": "bug",
   "title": "A revalidation window that starts at an H2 line still fails section_unchanged on an added H2 when the previous text is unknown and the H1 has intro text",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,

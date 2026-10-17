@@ -2,7 +2,7 @@
   "id": "SP-3g3egfll",
   "kind": "sprint",
   "title": "Lookup facts and feedback read true",
-  "status": "planned",
+  "status": "active",
   "goal": "the kb's git, Claude Code and doc-change facts say what their sources say; fetch and provider read a page's navigation and publisher as the kb records; kb!: reads a negated word as no issue; a revalidation window ignores an unrelated added heading; content-rules names a wrong-root gap step the tools can run",
   "gates": [
     {

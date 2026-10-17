@@ -2,7 +2,7 @@
   "id": "BG-uo4sz2ed",
   "kind": "bug",
   "title": "kb!: reads a negated word as the issue, so 'nothing wrong with PATH:LINE' records outcome misled and flags a correct line",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,

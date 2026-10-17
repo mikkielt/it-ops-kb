@@ -2,7 +2,7 @@
   "id": "BG-wlpbhug7",
   "kind": "bug",
   "title": "provider.read_page takes a title's or heading's suffix as the publisher, so kbid.py add writes 'Windows' for '# Install - Windows'",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3g3egfll",
   "priority": "P2",
   "rank": 0,

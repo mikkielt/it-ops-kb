@@ -2,7 +2,7 @@
   "id": "BG-3ht6u4pd",
   "kind": "bug",
   "title": "fetch.py keeps an aside under an ancestor with role=navigation, or one that holds nav elements, which the kb records as navigation",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,

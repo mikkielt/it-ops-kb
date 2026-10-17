@@ -2,7 +2,7 @@
   "id": "BG-ekrp4dw2",
   "kind": "bug",
   "title": "git-test-repositories says git checkout and git switch skip die_if_checked_out when the main worktree's HEAD is a symref to the branch, but the check reads the current worktree's HEAD",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,

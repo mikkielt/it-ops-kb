@@ -2,7 +2,7 @@
   "id": "BG-sddebrpa",
   "kind": "bug",
   "title": "content-rules.md:65 says a wrong-root gap is recorded as a rules finding, which ql_learn cannot make from a public lookup, and names the answering row SQ-<slug> where the rows are EV- ids",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,
