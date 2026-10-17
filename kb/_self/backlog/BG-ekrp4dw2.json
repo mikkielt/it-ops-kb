@@ -2,7 +2,7 @@
   "id": "BG-ekrp4dw2",
   "kind": "bug",
   "title": "git-test-repositories says git checkout and git switch skip die_if_checked_out when the main worktree's HEAD is a symref to the branch, but the check reads the current worktree's HEAD",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-3g3egfll",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,6 @@
   "links": [
     "parked: SP-xt4t63xw review"
   ],
-  "notes": "Goal before the 2026-10-17 plan: kb/public/gitlab/git-test-repositories.md's 'In use is wider' fact says only what builtin/checkout.c's die_if_switching_to_a_branch_in_use at v2.55.0 does: it returns early when the current worktree's HEAD already is the branch (get_main_ref_store reads the current worktree's gitdir; its comment: 'bypassed when the branch is already the current one'), so in a linked worktree a branch held only by the main worktree still dies. Found by the SP-xt4t63xw review (S2, git-test-repositories.md:268). Plan 2026-10-17: SP-xt4t63xw review (S2, git-test-repositories.md:268). Repro on origin/main b871374b4 exits 1 (the fact still names the main worktree's HEAD). A CODE fact at a pinned commit: the source row is the checkout.c one the article cites."
+  "notes": "Goal before the 2026-10-17 plan: kb/public/gitlab/git-test-repositories.md's 'In use is wider' fact says only what builtin/checkout.c's die_if_switching_to_a_branch_in_use at v2.55.0 does: it returns early when the current worktree's HEAD already is the branch (get_main_ref_store reads the current worktree's gitdir; its comment: 'bypassed when the branch is already the current one'), so in a linked worktree a branch held only by the main worktree still dies. Found by the SP-xt4t63xw review (S2, git-test-repositories.md:268). Plan 2026-10-17: SP-xt4t63xw review (S2, git-test-repositories.md:268). Repro on origin/main b871374b4 exits 1 (the fact still names the main worktree's HEAD). A CODE fact at a pinned commit: the source row is the checkout.c one the article cites.",
+  "claimed_by": "orch-r12"
 }
