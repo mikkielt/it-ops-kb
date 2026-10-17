@@ -2,7 +2,7 @@
   "id": "ST-vpwkr76k",
   "kind": "story",
   "title": "A kb_feedback report repeated after its first row was delivered records no second row or own entry",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-ficl7pxl",
   "priority": "P3",
   "rank": 0,
@@ -30,5 +30,6 @@
   "links": [
     "parked: SP-waxgh3kg review"
   ],
-  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Two allowed designs (capture-side record in ql_capture.record_feedback:446 outliving delivery, or distill dropping a held report); a check fits one only, full drive needs distill with a store fixture Plan 2026-10-17: the capture-side design of the two the goal allowed (the planner's choice: one check fits it, the distill side would need a store fixture). The check records a report, removes the spool's tools files as delivery does and records it again: on 7cb5e0cbb both calls say recorded (exit 1)."
+  "notes": "Triage 2026-10-16: its check names a test the pruned suite (D-6kei5o2z) lacks; no planted check yet: Two allowed designs (capture-side record in ql_capture.record_feedback:446 outliving delivery, or distill dropping a held report); a check fits one only, full drive needs distill with a store fixture Plan 2026-10-17: the capture-side design of the two the goal allowed (the planner's choice: one check fits it, the distill side would need a store fixture). The check records a report, removes the spool's tools files as delivery does and records it again: on 7cb5e0cbb both calls say recorded (exit 1).",
+  "claimed_by": "orch-r07"
 }
