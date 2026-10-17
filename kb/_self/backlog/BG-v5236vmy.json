@@ -2,7 +2,7 @@
   "id": "BG-v5236vmy",
   "kind": "bug",
   "title": "factdiff.py anchor --file --refetch does not refetch a gone anchor row inside its 7-day backoff",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5bvg4tnl",
   "priority": "P3",
   "rank": 0,
@@ -25,5 +25,18 @@
     "parked: SP-b36246xo review"
   ],
   "notes": "Plan 2026-10-17: the repro exits 1 on 7cb5e0cbb (again = ... not backing_off(row, when), no refetch); the goal's test clause is gone with test_live_kb.py.",
-  "claimed_by": "orch-r08"
+  "evidence": {
+    "commit": "f82b172832450525cf7dda4f6b2e579795bec90c",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import inspect,sys;sys.path.insert(0,'_tools');import factdiff as f;s=inspect.getsource(f.cmd_anchor);l=[x for x in s.splitlines() if 'again =' in x][0];print(l.strip());sys.exit(0 if 'refetch' in l else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2e7fefbe38a67ada"
+      }
+    ]
+  }
 }
