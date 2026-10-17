@@ -50,8 +50,9 @@ S passes with no event exits 0 with `timed_out` true, and a post from any other 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch; at least one of item, topic and touch;
 item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters) and `progress`
 (fields item and state, state one of working, blocked, done). `digest` is the one command that prints text, not JSON:
-one line per live intent (posted within a day, its items not all done by a later progress event) or live claim (a
-held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
+one line per live intent (posted within a day, its items not all done by a later progress event, and, when it names a
+session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
+live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
 way), newest first, cut at N lines; with nothing to show it prints nothing.
 
 `dedup` runs `rag.py pack QUESTION` and takes its fingerprint: the anchor topic (the first article's path without `.md`,
@@ -122,6 +123,7 @@ ID_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@-]+(,[A-Za-z0-9_.:/#@-]+)*")
 GLOB_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@*?-]+(,[A-Za-z0-9_.:/#@*?-]+)*")
 LIST_VALUES = {("intent", "item"): ID_LIST, ("intent", "topic"): ID_LIST, ("intent", "touch"): GLOB_LIST}
 INTENT_SECONDS = 86400
+SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
 MAX_FIELDS = 8
 POLL_SECONDS = 0.05
 OPERATOR_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
@@ -418,7 +420,10 @@ def digest(args, now):
         items = [i for i in fields.get("item", "").split(",") if i]
         found.append((row["at"], row["seq"], fields, items))
     lines = []
+    live = {row["key"] for row in claims}
     for at, seq, fields, items in found:
+        if "session" in fields and SESSION_LEASE + fields["session"] not in live:
+            continue
         if items and all(i in state and state[i][0] > seq and state[i][1] == "done" for i in items):
             continue
         values = [v for n in ("item", "topic", "touch") for v in fields.get(n, "").split(",") if v]
