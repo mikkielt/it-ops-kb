@@ -44,7 +44,9 @@
         "Append the suffix to the existing name, plants in a secret_plants helper checked against their own pattern": "ST-zauxo6rs",
         "Shorten the old name while renaming, plants inline in the test": "ST-zauxo6rs"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "Append the suffix to the existing name, plants in a secret_plants helper checked against their own pattern",
+      "by": "operator"
     }
   ],
   "links": [
