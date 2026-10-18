@@ -5,6 +5,8 @@
                                querylog, host, sprint and log, each with its state (ok, timeout, error, absent or
                                unsupported), its seconds and, unless it timed out or is absent, its data
   kbmon.py --once              print the same panels as plain text, with no escape byte
+  kbmon.py --metrics           print the snapshot as one JSON object of metric points (name kbmon.<panel>.<measure>, unit,
+                               kind gauge or sum, value, attributes of numbers, flags and redacted ids; no claim holder)
   kbmon.py                     show the text view every --interval seconds, --count times (default: until interrupted); on a
                                terminal it is redrawn in place with ANSI escapes, on a pipe or under NO_COLOR it is
                                plain frames one after another
@@ -22,7 +24,7 @@
 A run reads and writes nothing: no index is built, no eval is run, no file of the clone, the query log home or `_cache/`
 is written. Every string printed passes `redact.redact`, a saved snapshot's too. Exit codes: 0 shown, 1 shown and an alert
 is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
-run, `mon_view.py` the output).
+run, `mon_view.py` the output, `mon_export.py` the metric points).
 """
 import argparse
 import os
@@ -32,6 +34,7 @@ import time
 from pathlib import Path
 
 import mon_base
+import mon_export
 import mon_view
 
 DEFAULT_TIMEOUT = 10.0  # seconds a panel may take
@@ -67,6 +70,7 @@ def parser():
     mode = ap.add_mutually_exclusive_group()
     mode.add_argument("--json", action="store_true", help="print one snapshot as JSON")
     mode.add_argument("--once", action="store_true", help="print one snapshot as plain text")
+    mode.add_argument("--metrics", action="store_true", help="print one snapshot as JSON metric points")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
     ap.add_argument("--interval", type=interval, default=DEFAULT_INTERVAL, metavar="S")
     ap.add_argument("--count", type=frames, default=None, metavar="N")
@@ -131,9 +135,12 @@ def main(argv=None, out=None):
     names = tuple(dict.fromkeys(a.panel)) if a.panel else mon_base.PANELS
     names = tuple(n for n in mon_base.PANELS if n in names)
     try:
-        if a.json or a.once:
+        if a.json or a.once or a.metrics:
             snap = take(a, names)
-            text = mon_view.render_json(snap) if a.json else frame_text(snap, a, colour(a, out, False), out, 1)
+            if a.metrics:
+                text = mon_export.render(snap)
+            else:
+                text = mon_view.render_json(snap) if a.json else frame_text(snap, a, colour(a, out, False), out, 1)
             out.write(text + "\n")
             out.flush()
             return 1 if snap["alerts"] else 0

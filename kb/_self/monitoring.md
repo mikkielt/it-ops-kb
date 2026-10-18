@@ -1,6 +1,6 @@
 # Monitoring: kbmon, one snapshot of the kb and its surroundings
 
-`python3 _tools/kbmon.py` names seven panels (the kb, coord, running sessions, the query log, the host, the sprint and the log) and shows each whose module exists, as one JSON snapshot (`--json`), as plain text (`--once`) or live (without either), laid out as the Layout section gives it. The facade `_tools/kbmon.py` holds the command line, the usage text and the exit codes; `_tools/mon_base.py` the panels, the run of a panel and the snapshot; `_tools/mon_view.py` the redaction, the layout of the text view and the console's escape support; each panel is the module `_tools/mon_<name>.py` (`mon_kb.py` for the kb panel). A command's flags and exit codes are in `python3 _tools/kbmon.py --help` and `kb/_self/tools.md`.
+`python3 _tools/kbmon.py` names seven panels (the kb, coord, running sessions, the query log, the host, the sprint and the log) and shows each whose module exists, as one JSON snapshot (`--json`), as metric points (`--metrics`), as plain text (`--once`) or live (without any of them), laid out as the Layout section gives it. The facade `_tools/kbmon.py` holds the command line, the usage text and the exit codes; `_tools/mon_base.py` the panels, the run of a panel and the snapshot; `_tools/mon_view.py` the redaction, the layout of the text view and the console's escape support; `_tools/mon_export.py` the metric points; each panel is the module `_tools/mon_<name>.py` (`mon_kb.py` for the kb panel). A command's flags and exit codes are in `python3 _tools/kbmon.py --help` and `kb/_self/tools.md`.
 
 ## The snapshot
 
@@ -15,6 +15,15 @@
 - **A run writes nothing and starts nothing.** It builds no pack index, runs no lookup eval, makes no network request (but for the coord panel's, to the `--url` server) and writes no file in the clone, the query log home or `_cache/`. The kb panel sets `KB_INDEX=0` for the rest of the process, so even the fingerprint memo the lookup tools keep in the index directory is not written.
 - **Every printed string passes `redact.redact`**, in `--json` and in `--once`: each string and each key of the snapshot, and each line of the text view once more after a panel's own `lines` made it. A snapshot saved with `--json` and shown with `--from-snapshot FILE` passes the same rules, so a saved file that holds a token, a path or a host name prints with the query log's placeholders. The public root's content, which `redact` allows, is read only when a string matches an identifier shape (`mon_view.LazyKnown`).
 - **The text view prints no control character** of a panel's text; an escape byte appears only in a frame that is coloured and redrawn in place (see The live view).
+
+## The metric points
+
+`--metrics` prints one JSON object: `schema` (1), `taken` and `points`, from the same snapshot as `--json` (so `--panel` and `--from-snapshot` work, and the strings have passed `redact.redact`). `mon_export.py` turns it into points, each with `name`, `unit`, `kind`, `value` and `attributes`.
+
+- **Names.** `kbmon.<panel>.<measure>`: `kbmon.kb.facts` (unit `{fact}`, attributes `root` and `tag`, the counts of `rag.py audit`), `kbmon.kb.articles`, `kbmon.kb.gaps`, `kbmon.kb.conflicts`, `kbmon.kb.index_age`, `kbmon.kb.eval_passed`; `kbmon.coord.claims` (attribute `state`: `live` or `over_budget`), `kbmon.coord.claim.left`, `.budget` and `.spend` (attribute `item`), `kbmon.coord.event_seq`; `kbmon.sessions.procs` (attribute `class`), `.worktrees` and `.stalled`; for every panel `kbmon.panel.up` (1 for `ok`) and `kbmon.panel.seconds` (attribute `panel`); and `kbmon.alerts`. A panel with no exporter gives its `up` and `seconds` points only.
+- **Kinds.** `gauge` for a value that goes up and down, `sum` for the coord event sequence number, which only grows.
+- **Attributes are numbers, flags or identifiers.** A string value is kept only when it is letters, digits and `_ . : / # @ -` (120 characters at most) and `redact.redact` returns it as it is; a point with any other attribute value is left out whole. No free text of a panel (an error, an event field, a digest line, a path) is exported.
+- **No holder.** Claims are counted by state; a claim's key is the `item` attribute only when it is a backlog item id (two letters, a dash and eight characters), and a claim's holder is never an attribute.
 
 ## Layout
 
