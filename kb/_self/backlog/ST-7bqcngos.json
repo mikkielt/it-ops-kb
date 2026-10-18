@@ -2,7 +2,7 @@
   "id": "ST-7bqcngos",
   "kind": "story",
   "title": "check-trailers and WORK_RULE agree on a planning commit that leaves a changed item unnamed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,
@@ -55,5 +55,18 @@
     "parked: SP-a3w7xdij review"
   ],
   "notes": "Review gap of SP-a3w7xdij, rated S3 by the sprint's reviewer. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (work_state accepts the commit while WORK_RULE says 'exactly'). Making work_state refuse instead would fire on today's planning commits (backlog.py new sprint --commit names the sprint and changes three item files), so gate g1 recommends rewording the rule. Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: public/gitlab/git-trailers-and-hooks.md (trailers). Orchestrator 2026-10-18: ST-3mfjrjom makes the commit-msg hook refuse (exit passed on); kb/_self/backlog.md:287-288 still says \"the commit-msg hook warns\" and is fixed here, since this item touches backlog.md and ST-3mfjrjom does not. Orchestrator 2026-10-18: after ST-3mfjrjom the commit-msg hook blocks a refused KB-Work line (exit 3); lookup_eval.csv row SS2-065 (\"does the commit-msg hook block a commit\", expects \"never blocks a commit\") now misleads and gets a new expected answer here, beside backlog.md:287-288.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "dbb6efbbe64a91208cb8e576eb7400e75e9de935",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,'_tools');import kg_trailers as k\nB='kb/_self/backlog/'\np=k.work_state(['ST-a'],[B+'ST-a.json',B+'ST-b.json'],lambda r:'{}')\nprint(p);sys.exit(0 if p or 'exactly' not in k.WORK_RULE else 1)"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
