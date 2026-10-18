@@ -2,7 +2,7 @@
   "id": "ST-sgzhsq4p",
   "kind": "story",
   "title": "A worker whose touches name a kb/_self doc runs the _self lookup eval before it reports, so a reword that costs a tested row a pack note is found before the landing",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
@@ -34,5 +34,6 @@
     "parked: SP-g2ssvhi2 close",
     "duplicate: ST-lj6os2ue (merged 2026-10-17)"
   ],
-  "notes": "Retrospective of SP-g2ssvhi2: BG-6bb4zzdy's land stopped at step rag.py eval (noted=14 above NOTED_BASELINE=13): its _sources.csv sentence lengthened the Plan list line of kb/_self/backlog.md, which prefixes the pack excerpt of every line under it, so SQ-may-review-retrospective-propose-raising-tests-ceiling lost its ceiling words and gained a check: line. The worker said it cannot run rag.py eval (worker rule SS1-055); the orchestrator found the row by hand and resumed the worker (one rework round, about $0.86). Hygiene 2026-10-17: ST-lj6os2ue merged here (SP-xo45jvbj close: ST-3qxh5vxo turned SE-037 weak; the worker did not run the eval and land stopped at step rag.py eval). Seen in SP-g2ssvhi2 and SP-xo45jvbj. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the brief names no _self eval). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside."
+  "notes": "Retrospective of SP-g2ssvhi2: BG-6bb4zzdy's land stopped at step rag.py eval (noted=14 above NOTED_BASELINE=13): its _sources.csv sentence lengthened the Plan list line of kb/_self/backlog.md, which prefixes the pack excerpt of every line under it, so SQ-may-review-retrospective-propose-raising-tests-ceiling lost its ceiling words and gained a check: line. The worker said it cannot run rag.py eval (worker rule SS1-055); the orchestrator found the row by hand and resumed the worker (one rework round, about $0.86). Hygiene 2026-10-17: ST-lj6os2ue merged here (SP-xo45jvbj close: ST-3qxh5vxo turned SE-037 weak; the worker did not run the eval and land stopped at step rag.py eval). Seen in SP-g2ssvhi2 and SP-xo45jvbj. Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the brief names no _self eval). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside.",
+  "claimed_by": "orch-r14"
 }
