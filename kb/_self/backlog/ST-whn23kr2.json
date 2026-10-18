@@ -2,7 +2,7 @@
   "id": "ST-whn23kr2",
   "kind": "story",
   "title": "A content worker runs the landing's lint on every article its branch changes, not only the new one",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
@@ -46,5 +46,18 @@
     "parked: SP-rsmmwzr2 close"
   ],
   "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (lint.py takes --changed as a path and exits 1; rule 4 names no such command). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "d49fab4a6ee74d6e9edc83f94fde92418b8407cf",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import subprocess as s,sys\np=s.run([sys.executable,'.claude/skills/kb-verify/lint.py','--changed','origin/main'],capture_output=True,text=True,timeout=300)\nt=open('agents/worker.md',encoding='utf-8').read();r=t[t.find('4. **'):];rule='lint.py --changed origin/main' in r[:r.find('\\n5. ')]\nprint('lint --changed exit',p.returncode,'| rule 4 names it',rule);sys.exit(0 if p.returncode==0 and rule else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "196664281b36522e"
+      }
+    ]
+  }
 }
