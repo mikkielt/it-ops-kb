@@ -2,7 +2,7 @@
   "id": "ST-3erithkf",
   "kind": "story",
   "title": "A worker whose re-anchor leaves its reworded fact unlocated anchors it with a quote or reports it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,
@@ -52,5 +52,18 @@
     "parked: SP-3g3egfll close"
   ],
   "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the done bar names no unlocated fact). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "9c4815bbf1e39bbb545c4ddeabb015d3571ead8f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\nt=open('agents/worker.md',encoding='utf-8').read();i=t.find('3. **Done bar.**');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='unlocated' in s;print('3. **Done bar.**','names','unlocated',ok);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "abff236256ab547f"
+      }
+    ]
+  }
 }
