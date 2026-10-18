@@ -50,7 +50,8 @@
     "_tools/bench_multi.py",
     "_tools/benchmarks.py",
     "kb/_self/tools.md",
-    "_tools/bench_replay.py"
+    "_tools/bench_replay.py",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-ovfyfksp"
