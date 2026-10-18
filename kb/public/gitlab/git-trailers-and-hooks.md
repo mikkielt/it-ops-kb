@@ -2,9 +2,9 @@
 topic: gitlab/git-trailers-and-hooks
 priority: P3
 applies_to: "git v2.55.0 documentation (git/git tag v2.55.0): git-interpret-trailers, pretty-formats, git-commit, git-push, githooks, trailer.* configuration, and for the push facts git-merge (`--ff-only`), git-merge-base, git-ls-remote and the remote.* and receive.* configuration; the parse examples were run with a local git; behaviour is the same on GitHub and GitLab remotes because the trailer rules are client-side"
-retrieved_utc: 2026-10-17
-sources: [S-iz4bgagx, S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7, S-r6wgcwme, S-33l7g2u2]
-status: complete
+retrieved_utc: 2026-10-18
+sources: [S-iz4bgagx, S-wtbq3lvm, S-d6iv4nbm, S-ziyhuwyc, S-wjfrtzpf, S-7dwkyip6, S-l6s4hfqp, S-ygtpb7no, S-zhftykfq, S-j3galfta, S-rzi7mtmw, S-gvt5wbk7, S-r6wgcwme, S-33l7g2u2, S-wk436jat]
+status: partial
 ---
 
 # Git commit trailers and the commit-msg and pre-push hooks
@@ -53,6 +53,9 @@ Git reads a trailer only inside the trailer block: the last group of lines of th
 - A server updates a ref only after it has received and unpacked the whole pack, checked that each ref still holds the old id the client named and run its update hooks; only then it sends the report (`unpack ok`, then `ok <ref>` or `ng <ref> <error>` for each ref) when `report-status` is in effect. [DOC S-iz4bgagx]
 - So a client that loses the connection while waiting for that report (a timeout) cannot tell from the push alone whether the ref moved: the update may have been done before the report was sent; `git push` names this case `remote failure` ("did not report the successful update of the ref, perhaps because of ... a break in the network connection") and fails. [DER S-iz4bgagx, S-l6s4hfqp: the server updates the refs before it reports; the push page's `remote failure` flag]
 - To tell whether a timed-out push reached the remote, read the ref on a new connection and compare it with the commit pushed: `git ls-remote <remote> refs/heads/<branch>` against `git rev-parse <pushed-commit>`. Equal ids: the push reached the remote. No line: the branch does not exist there. A different id is not proof that the push did not arrive, since another push may have moved the branch on after it; `git fetch` then `git merge-base --is-ancestor <pushed-commit> <remote-tip>` (exit 0 when the pushed commit is an ancestor) separates the two. An ls-remote that itself fails or times out leaves the question open and is retried, never read as "not pushed". [DER S-rzi7mtmw, S-iz4bgagx, S-l6s4hfqp, S-gvt5wbk7: ls-remote output and exit status, update-before-report order, `remote failure`, `--is-ancestor` exit statuses]
+- At `v2.55.0` the server side of a push, `update()` in `builtin/receive-pack.c`, hands each command's old id, the one the client sent, to `ref_transaction_update` as the value the ref must still hold; when that call fails it prints the error and sets the ref's status to `failed to update ref` (a generic transaction error) or the message `ref_transaction_error_msg` gives for the error kind. A commit that fails at the end of the transaction reports `failed to update refs` (separate updates) or `atomic transaction failed` (`--atomic`). [CODE S-wk436jat: builtin/receive-pack.c#update, #execute_commands]
+- So two clients (two agents, say) that push from the same base to one ref (one branch) of one bare repository at once do not both land: the first update moves the ref, and the second finds a ref that no longer holds the old id it named, so the server refuses it for that ref alone (a second client that connects after the first update sees the new tip and is refused by `git push` itself as a non-fast-forward). Which `ng` reason a stale old id yields (`failed to update ref` or a text from `ref_transaction_error_msg`) is not read here: that mapping lives in the refs code, outside the cited file. [DER S-wk436jat, S-iz4bgagx: the expected-old-value argument and the old-id check before the update; the stale-id error kind is UNK]
+- The loser's way forward is the one for any refused push: fetch the new tip, rebase onto it (or merge), push again, repeated while pushes keep racing; a client that retries without fetching sends the same stale old id and is refused again. [DER S-l6s4hfqp, S-wk436jat: the fast-forward rule and the old-id check]
 
 ## Reference
 | Need | Command | Source |

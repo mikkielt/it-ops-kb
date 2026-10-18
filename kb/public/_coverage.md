@@ -9,7 +9,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `ad/krbtgt-password-reset` | P1 | complete | `ad/krbtgt-password-reset.md` | 7 |
 | `ad/ldap-paging-filters` | P1 | complete | `ad/ldap-paging-filters.md` | 6 |
 | `ad/fsmo-roles` | P2 | complete | `ad/fsmo-roles.md` | 4 |
-| `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 10 |
+| `agents/agent-caching` | P1 | complete | `agents/agent-caching.md` | 11 |
 | `agents/agent-dispatch-and-shared-services` | P1 | complete | `agents/agent-dispatch-and-shared-services.md` | 10 |
 | `agents/agent-error-catalogue` | P1 | complete | `agents/agent-error-catalogue.md`, `agents/agent-error-catalogue.csv` | 23 |
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 39 |
@@ -204,7 +204,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `gitlab/git-history-queries` | P3 | complete | `gitlab/git-history-queries.md` | 8 |
 | `gitlab/git-refs` | P3 | complete | `gitlab/git-refs.md` | 3 |
 | `gitlab/git-test-repositories` | P3 | complete | `gitlab/git-test-repositories.md` | 53 |
-| `gitlab/git-trailers-and-hooks` | P3 | complete | `gitlab/git-trailers-and-hooks.md` | 14 |
+| `gitlab/git-trailers-and-hooks` | P3 | partial | `gitlab/git-trailers-and-hooks.md` | 15 |
 | `gitlab/github-branch-rules-and-auto-merge` | P3 | complete | `gitlab/github-branch-rules-and-auto-merge.md` | 18 |
 | `gitlab/hosted-runners-windows` | P3 | complete | `gitlab/hosted-runners-windows.md` | 5 |
 | `gitlab/issue-closing-patterns` | P3 | complete | `gitlab/issue-closing-patterns.md` | 5 |

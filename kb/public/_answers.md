@@ -4088,3 +4088,14 @@ _Agent: kb-research_
 - See python/stdlib-sqlite3-csv.md, agents/shared-state-concurrency.md, python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
+
+## QK-concurrent-agents-cache-and-shared-bare-push. When several agents start at once on an identical prompt prefix, do they share the prompt cache, and what happens when two clients push to one ref of a bare git repository at once?
+- The API docs say "a cache entry only becomes available after the first response begins" and advise that parallel requests wanting hits wait for the first response. [DOC S2130]
+- A Claude Code headless session is one subprocess with its own transcript, and N concurrent sessions are N subprocesses; each takes a distinct `cwd` for filesystem isolation. [DOC S-gztpah4d]
+- The API rate limits count only uncached input tokens toward the input-tokens-per-minute limit for most models and answer an overrun with a 429 and `retry-after`; Claude Code's own guidance sizes tokens per minute for an organization, not for one user. [DOC S-5uxkh3j5, S2132]
+- At `v2.55.0` the server side of a push passes the old id the client sent as the value the ref must still hold, and a failed update is reported for that ref alone. [CODE S-wk436jat]
+- Conclusion: agents started together on one prefix each write the cache and none reads it, so a concurrent run costs more cache-write tokens than a staggered or sequential one; two pushes from the same base to one bare repository do not both land, and the loser fetches, rebases onto the new tip and pushes again. [DER S2130, S-wk436jat, S-l6s4hfqp, S-iz4bgagx]
+- Open: which refusal reason a stale old id or a held ref lock gives is not read (`_gaps.md`, gitlab/git-trailers-and-hooks). [UNK]
+- See agents/agent-caching.md, gitlab/git-trailers-and-hooks.md, claude/parallel-sessions.md, claude/messages-api.md.
+
+_Agent: kb-research_

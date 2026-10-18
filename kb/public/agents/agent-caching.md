@@ -2,8 +2,8 @@
 topic: agents/agent-caching
 priority: P1
 applies_to: "Anthropic prompt caching (Claude Developer Platform, retrieved 2026-09-25); Claude Code >=2.1.251; OpenAI Responses/Completions API; Azure OpenAI/Foundry Models; MCP spec 2026-07-28"
-retrieved_utc: 2026-10-16
-sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512, S1864]
+retrieved_utc: 2026-10-18
+sources: [S2130, S2131, S2132, S2133, S2134, S2135, S2136, S2159, S1512, S1864, S-qulnsg4e]
 status: complete
 ---
 
@@ -34,6 +34,8 @@ Anthropic prompt caching stores the KV state for an unchanged prefix, keyed by u
 - Cache scope ("Cache storage and sharing"): caches are isolated between organizations, so different organizations never share one even for identical prompts; within an organization they are also isolated per workspace on the Claude API, Claude Platform on AWS and Microsoft Foundry, while Bedrock and Google Cloud isolate by organization only. [DOC S2130]
 - A cache key is a cryptographic hash of the prompt up to the cache control point, so only a request with an identical prefix can read an entry; the hashes of cached content are held in memory only, and entries live at least 5 minutes (standard) or 1 hour (extended) before they are deleted promptly, not immediately. [DOC S2130]
 - For a team, the page's only isolation boundaries are the organization and (on the first-party API) the workspace; it names no per-user or per-session boundary. Two sessions or users that send an identical prefix through one workspace, or on Bedrock or Google Cloud through one organization, are therefore inside one isolation scope, and developers on separate workspaces or organizations never read each other's entries. The page does not say in a sentence that such sessions hit each other's entries. [DER S2130: the isolation scopes, the identical-prefix hit rule and the absence of a user or session boundary]
+- Concurrent requests: "a cache entry only becomes available after the first response begins", so the page advises that parallel requests wanting cache hits wait for the first response before the others are sent. [DOC S2130]
+- So parallel agents started at once on an identical prefix (the same system prompt, tools and files) get no cache hits from each other at the start: each sends that prefix before any of them has a response, none reads an entry the others are writing, and each pays the cache-write price (1.25x for 5 minutes) on it. This agrees with the workflows page, which says agents of one workflow can read each other's cache when they share a prefix: the read comes once an entry exists. An agent that starts after another's first response began reads the entry at the read price, so staggering starts or running agents one at a time moves the prefix cost from writes to reads, and a benchmark of concurrent against sequential agents must record `cache_creation_input_tokens` and `cache_read_input_tokens` apart to show it. [DER S2130, S-qulnsg4e: the entry-availability rule, the write and read multipliers and the workflows page's shared-prefix sentence]
 
 ### Claude Code and the cache
 
