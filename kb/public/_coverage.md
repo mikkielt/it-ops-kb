@@ -15,7 +15,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `agents/agent-evaluation` | P1 | complete | `agents/agent-evaluation.md` | 39 |
 | `agents/agent-overuse-patterns` | P1 | complete | `agents/agent-overuse-patterns.md`, `agents/agent-overuse-patterns.csv` | 29 |
 | `agents/agent-rbac` | P1 | complete | `agents/agent-rbac.md` | 23 |
-| `agents/api-tokens-issue-and-store` | P1 | complete | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 15 |
+| `agents/api-tokens-issue-and-store` | P1 | partial | `agents/api-tokens-issue-and-store.md`, `agents/api-tokens.csv`, `agents/secret-storage-options.csv` | 18 |
 | `agents/copilot-studio-inventory` | P1 | complete | `agents/copilot-studio-inventory.md`, `agents/copilot-studio-feature-map.csv` | 23 |
 | `agents/eval-question-baseline` | P1 | complete | `agents/eval-question-baseline.md`, `agents/eval-question-baseline.csv` | 3 |
 | `agents/foundry-agent-service` | P1 | complete | `agents/foundry-agent-service.md`, `agents/foundry-agent-tools.csv` | 16 |

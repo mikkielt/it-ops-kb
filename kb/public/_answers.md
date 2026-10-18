@@ -4138,3 +4138,15 @@ _Agent: kb-research_
 - See logs/otel-python-sdk.md, logs/otel-collector-otlp-pipeline.md, claude/otel-monitoring.md, logs/prometheus-retention-exposition.md.
 
 _Agent: kb-research_
+
+## QK-multiple-agents-sharing-one-clone-coord. How do multiple agents sharing one clone, coord store and bare avoid lost claims, duplicate research, landing stops and leaked secrets, and how does a harness check each?
+- A claim lost when its holder stops is the case leases and TTLs cover: a blob lease expires on its own, an etcd lease deletes its keys when keep-alive stops, and a NATS key-value claim cannot be renewed by an `update` (see `agents/shared-state-concurrency.md`). [DOC S-2fthx3xp, S-6hgplow2]
+- A landing stop is a refused push: a shared bare repository refuses a push that is not a fast-forward until the pusher fetches and merges, and a forge hook can refuse it for another reason (see `agents/peer-state-sync.md`, `gitlab/automated-merge-requests.md`). [DOC S-l6s4hfqp, S-7dwkyip6]
+- Duplicate research is avoided in the documented systems by the lead's division of labour, a shared task list with claim locking and file or lens ownership, not by a ledger of searches made (see `agents/coordination-messages.md`). [DOC S1921, S-qdxfqzln]
+- A secret that reaches a commit can be stopped at the server: GitLab secret push protection scans the diffs of a push in the `pre-receive` hook for high-confidence patterns and blocks by default, and is skipped over 3,150 paths or 350,000 lines or with its skip option. [DOC S-75p7zmds]
+- A decoy found where it should not be is the idea behind a Canarytoken, placed in a single location so a hit names the place. [DOC S-h7wl75vd, S-uyzwls57]
+- Conclusion: a harness check for these four faults is the kb's own method, not a vendor one: it reads the claim store and the bare after a run for a claim still held or a landing that did not arrive, pairs research terms with the claims held, and searches the run's streams, commits and events for each agent's planted value. A planted value shaped like a scanned pattern can itself cause a push stop on a forge. [DER S-2fthx3xp, S-6hgplow2, S-l6s4hfqp, S-75p7zmds, S-h7wl75vd: leases, fast-forward refusal, push protection and one-location decoys as the documented analogues]
+- Open: no official statement of a ledger of searches as deduplication, and none of a planted-value leak test for multi-agent runs. [UNK]
+- See agents/api-tokens-issue-and-store.md, agents/shared-state-concurrency.md, agents/coordination-messages.md, agents/peer-state-sync.md.
+
+_Agent: kb-research_

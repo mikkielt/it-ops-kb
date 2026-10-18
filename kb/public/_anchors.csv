@@ -762,6 +762,8 @@ ff926d16eac4,agents/agent-troubleshooting-method.md,S-o3v6ozch,unlocated:no-matc
 ca692da0d54c,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
 d1658536bb95,agents/anthropic-materials.md,S2137,located,Engineering at Anthropic: Inside the team building reliable AI systems,across;contain;featur;product;claud,f7f764c9e2256cf4,Featured How we contain Claude across products,2026-10-10
 de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-10
+0081de9718b1,agents/api-tokens-issue-and-store.md,S-h7wl75vd,unlocated:no-match,,,,,2026-10-18
+0081de9718b1,agents/api-tokens-issue-and-store.md,S-uyzwls57,unlocated:no-match,,,,,2026-10-18
 197178218c67,agents/api-tokens-issue-and-store.md,S2044,unlocated:no-match,,,,,2026-10-10
 24b86864dabc,agents/api-tokens-issue-and-store.md,S2041,located,Authentication > Credential management,inherit;userprofil;control;linux;mac;maco;credentials.json;directory,fc77f28e09a328c0,"On Linux, credentials are stored in ~/.claude/.credentials.json with file mode 0600. On Windows, credentials are stored in %USERPROFILE%\.claude\.credentials.json and inherit the access controls of your",2026-10-10
 25e7cbb053b6,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
@@ -769,22 +771,30 @@ de5c948b6b9d,agents/anthropic-materials.md,S2137,unlocated:no-match,,,,,2026-10-
 3421315dea48,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
 35455ce792b9,agents/api-tokens-issue-and-store.md,S2056,unlocated:no-match,,,,,2026-10-10
 42fd605a992d,agents/api-tokens-issue-and-store.md,S740,unlocated:no-match,,,,,2026-10-10
+47c10c6a5e31,agents/api-tokens-issue-and-store.md,S-h7wl75vd,located,Introduction > What are Canarytokens,like;motion;sensor;canarytoken,7dd887e7c6e87246,Canarytokens are like motion sensors for your networks,2026-10-18
+47c10c6a5e31,agents/api-tokens-issue-and-store.md,S-uyzwls57,located,Search > What are Canarytokens?,singl;each;creat;location;canarytoken;plac,0fa939206a022dd2,each Canarytoken you create should only be placed in a single location,2026-10-18
 47dd366ab672,agents/api-tokens-issue-and-store.md,S2049,unlocated:no-match,,,,,2026-10-10
 4b0aaa05cf47,agents/api-tokens-issue-and-store.md,S2054,unlocated:no-match,,,,,2026-10-10
 4be47023d0ea,agents/api-tokens-issue-and-store.md,S2048,unlocated:no-match,,,,,2026-10-10
 4c957743c150,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python,dpapi;keychain;libsecret;linux;mac;window;encryption,51dc83950194d7ef,Windows - DPAPI is used for encryption. MAC - The MAC KeyChain is used. Linux - LibSecret is used for encryption.,2026-10-10
 5424a5629586,agents/api-tokens-issue-and-store.md,S2043,unlocated:no-match,,,,,2026-10-10
 59aa936e7937,agents/api-tokens-issue-and-store.md,S2044,located,Microsoft Authentication Extensions for Python,apps;desktop;performanc;scal;such;issu;web;client,d31110ba3f2c0c2b,"Note: It is recommended to use this library for cache persistance support for Public client applications such as Desktop apps only. In web applications, this",2026-10-10
+5dc7e577c1f5,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow,hook;pre-receiv;pre;receiv;protection;push;secret,ef02c5e72ddd2e2e,Secret push protection takes place in the pre-receive hook.,2026-10-18
 6124eb6a6e4c,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
+6c68dfcb24c7,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Resolve a blocked push > Skip secret push protection,pipelin;content;detection;enabl;scan;commit;push;secret,5dca04488c5d3c4f,"If pipeline secret detection is enabled, the content of all commits is scanned after they are pushed to the repository.",2026-10-18
 749bcfb43dcd,agents/api-tokens-issue-and-store.md,S2054,unlocated:no-match,,,,,2026-10-10
+77748b47d6b3,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Detected secrets,chosen;confidenc;high;fals;pattern;push,760006fe6ade1109,Only high-confidence patterns were chosen for secret push protection,2026-10-18
+82e205939f53,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Push size threshold,path;line;chang;skip;protection;push;secret,60408ebab7231739,"Secret push protection is skipped when a push changes more than 3,150 paths or 350,000 lines.",2026-10-18
 832a83577782,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
 832a83577782,agents/api-tokens-issue-and-store.md,S2057,located,Settings files and precedence > Change a setting > When edits take effect,apikeyhelper;watch;credential;helper;reload;restart;api;hook,e8e27f045a57a263,"Claude Code watches your settings files and reloads them when they change, so it applies most edits to the running session without a restart, including",2026-10-12
+89e04707b27c,agents/api-tokens-issue-and-store.md,S-75p7zmds,unlocated:no-match,,,,,2026-10-18
 90a1a8b0be60,agents/api-tokens-issue-and-store.md,S2055,unlocated:no-match,,,,,2026-10-10
 90c30576660e,agents/api-tokens-issue-and-store.md,S2047,unlocated:no-match,,,,,2026-10-10
 9b8dc12070ec,agents/api-tokens-issue-and-store.md,S449,unlocated:no-match,,,,,2026-10-10
 ac10cd29993d,agents/api-tokens-issue-and-store.md,S2055,located,Use external secrets in CI/CD,alway;availabl;explicitly;job;must;request;variabl;git,dbee0558678d1e70,"Unlike CI/CD variables which are always available in jobs, secrets must be explicitly requested by a job. GitLab supports several secret management providers, including:",2026-10-10
 b464d03f3790,agents/api-tokens-issue-and-store.md,S1297,unlocated:no-match,,,,,2026-10-10
 cbeac38fd2fd,agents/api-tokens-issue-and-store.md,S2046,unlocated:no-match,,,,,2026-10-10
+d27435038c6d,agents/api-tokens-issue-and-store.md,S-75p7zmds,located,Secret push protection workflow > Coverage > Diff scanning,already;present;part;chang;detect;file;secret,bd30732222fc5878,"If a secret is already present in a file and not part of the changes, it is not detected.",2026-10-18
 ecc6dc4b26c2,agents/api-tokens-issue-and-store.md,S2041,unlocated:no-match,,,,,2026-10-10
 fb5121e560ae,agents/api-tokens-issue-and-store.md,S-2spmezqp,unlocated:no-match,,,,,2026-10-10
 115cbdc78d46,agents/api-tokens.csv,S2047,unlocated:no-match,,,,,2026-10-10

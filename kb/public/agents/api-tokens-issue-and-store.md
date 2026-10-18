@@ -2,9 +2,9 @@
 topic: agents/api-tokens-issue-and-store
 priority: P1
 applies_to: "GitLab (docs current 2026-09), python keyring 25.7.0, msal-extensions (main branch 2026-09), Azure Key Vault (docs 2025-12), HashiCorp Vault (docs current 2026-09), Claude Code 2.1.x"
-retrieved_utc: 2026-09-28
-sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057, S-2spmezqp]
-status: complete
+retrieved_utc: 2026-10-19
+sources: [S449, S740, S1297, S2041, S2043, S2044, S2046, S2047, S2048, S2049, S2054, S2055, S2056, S2057, S-2spmezqp, S-75p7zmds, S-h7wl75vd, S-uyzwls57]
+status: partial
 files: [agents/api-tokens.csv, agents/secret-storage-options.csv]
 ---
 
@@ -178,6 +178,17 @@ Encrypted, DPAPI-NG, age/sops) and `mcp/authorization.md` (MCP OAuth 2.1, DCR de
   credential" and "the running process picks it up," with no static value stored at any point in between.
   [DOC S2057, S2041] `managed-settings.json` (S2042, `agent-rbac.md`) sits above project/user settings in
   precedence and can pin or forbid a project's own `apiKeyHelper` value organization-wide.
+
+### Detecting a leaked secret: push protection and planted canary values
+- GitLab secret push protection runs in the `pre-receive` hook and checks each file or commit of a push; by default a push in which it finds a secret is blocked. It is generally available since GitLab 17.5; the client sees `remote: PUSH BLOCKED: Secrets detected in code changes`. [DOC S-75p7zmds]
+- Push protection scans the diffs of commits pushed over HTTP(S) and SSH only: "If a secret is already present in a file and not part of the changes, it is not detected." [DOC S-75p7zmds]
+- Its patterns are chosen for high confidence, to keep pushes fast and false alerts few; the page's own example is that a personal access token with a custom prefix is not detected. [DOC S-75p7zmds]
+- Push protection does not block a push that uses the skip option (`git push -o secret_push_protection.skip_all`, or `[skip secret push protection]` in a commit message for other clients), a secret or path set as an exclusion, or a push over its size threshold (more than 3,150 paths or 350,000 changed lines); a skipped push writes an audit event. [DOC S-75p7zmds]
+- Pipeline secret detection is the second layer: when it is enabled, the content of all commits is scanned after they are pushed. [DOC S-75p7zmds]
+- Thinkst describes a Canarytoken as a decoy "like motion sensors", placed where nobody should be poking around, that raises an alarm when it is accessed. Its help centre adds that "each Canarytoken you create should only be placed in a single location". [DOC S-h7wl75vd, S-uyzwls57]
+- A canary value that a test harness plants in the sandbox of each agent differs from a Canarytoken in how a leak is found: a Canarytoken alerts at the vendor's server when the decoy is used, while a planted string is found by searching the streams, commits and events of the run for it. Giving each agent a value of its own is the one-location rule applied: the value found names the agent it was planted for. [DER S-h7wl75vd, S-uyzwls57: Canarytokens alert on access, one token for one location; the search for a string is the harness's own method]
+- A canary shaped like a pattern the server scans for can itself stop a landing: a push to a GitLab project with push protection enabled blocks on it unless skipped, so a push stopped for a planted value is a landing stop caused by the check and not by the agent. A bare repository made for a sandbox has no such hook unless one is installed there. [DER S-75p7zmds: the scan is the server's `pre-receive` hook and blocks by default; a local bare repository runs only the hooks installed in it, `gitlab/automated-merge-requests.md`]
+- Looked 2026-10-19 in the Claude Code docs (`claude-code-docs` search "canary honeytoken test that secrets do not leak between subagents") and the Canarytokens guide for an official method that tests a multi-agent run for a secret reaching another agent: none found. [UNK]
 
 ## Reference: each option's threat and what it does not cover
 | Option | What it protects against | What it does not cover | Source |
