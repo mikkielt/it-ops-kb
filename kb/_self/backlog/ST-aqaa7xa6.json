@@ -77,7 +77,8 @@
       },
       "class": "secrets",
       "answer": "only from OTEL_EXPORTER_OTLP_HEADERS in the environment, never from a flag or a file in the clone, never printed or logged",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "the answer names an environment variable the adapter reads at run time, not a setup installed on a host; the item's checks plant it per run"
     },
     {
       "id": "publish",
