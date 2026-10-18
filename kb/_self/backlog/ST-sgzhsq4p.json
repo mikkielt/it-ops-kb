@@ -44,7 +44,9 @@
         "fixed rule in the brief naming rag.py eval --root _self": "ST-sgzhsq4p",
         "new backlog.py wrapper command": "ST-sgzhsq4p"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "fixed rule in the brief naming rag.py eval --root _self",
+      "by": "operator"
     }
   ],
   "links": [
