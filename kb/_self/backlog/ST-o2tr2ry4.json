@@ -2,7 +2,7 @@
   "id": "ST-o2tr2ry4",
   "kind": "story",
   "title": "kbmon live view: ANSI redraw in place on macOS, Linux and Windows, plain frames on a pipe or NO_COLOR",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",
@@ -173,5 +173,54 @@
     ]
   },
   "notes": "Plan 2026-10-18: curses is not on Windows, so the view is ANSI with ctypes for the console mode. No host of this project runs the Windows console in a check: the planted enable_vt() case and the review stand in for it. Layout (operator's spec, 2026-10-18; the worker writes it into kb/_self/monitoring.md). W = columns - 1, the last column never written. Rows: [alert line], header, blank, panels kb coord sessions querylog host sprint with a blank between, then the log tail filling the rest (at least 3 lines; rows that do not fit are cut at the bottom). Header: `kbmon · YYYY-MM-DD HH:MM:SSZ · refresh Ns · frame n · root` (space U+00B7 space, UTC, root `.` for the clone, kbmon bold). Title at column 0: `name  state  S.Ss`; a state other than ok adds `  — reason` and has no body; name bold, state coloured, the rest dim when not ok. Body: columns 0-1 a gutter (`  ` plain, `! ` warning in yellow, `!!` error in red); label at column 2 padded to 10, value at column 12; lists joined by ` · `; tables with a lowercase header row, 2-space gaps, flags by the gutter. Colours (16 ANSI plus bold, each run ends in SGR 0): 32 ok, passed, bars under 80%; 33 warning, timeout, `! ` rows, bars 80-99%; 31 error, `!!` rows, bars at 100%+; 1;97;41 the alert line only; 90 dim (absent, unsupported, reasons); 1 bold names; colour never carries meaning alone. Narrow, in this order: under 100 columns side blocks stack (coord events under the claims, host ceiling as 3 rows); ` · ` lists wrap at an item, continuing at column 12; tables shrink gaps 2 to 1, cut paths from the left as `…/`, then drop the lowest column (sessions: session, then age); free text is cut at W with `…`; ids, counts and states are never cut. Glyphs: ASCII plus · — – …. The alert line is in the alert story's notes, each panel's rows in its own story's notes. Each panel module renders its own body rows; the log title shows absent until mon_log.py lands.",
-  "claimed_by": "orch-r17"
+  "evidence": {
+    "commit": "fb39929e4fdd5bc55f6f3f5ad9b14f09578d27d2",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\np=k('--ansi','--interval','1','--count','2','--panel','coord')\nif p.returncode!=0: fail('exit %s: %s'%(p.returncode,p.stderr[-300:]))\nif p.stdout.count('\\x1b[H')<2: fail('fewer than 2 cursor-home sequences')\nif p.stdout.count('\\x1b[2J')<2 or p.stdout.count('\\u00b7 refresh ')<2: fail('fewer than 2 erased frames with the layout header')\nif not 0.9<p.wall<60: fail('2 frames at --interval 1 took %.1f s'%p.wall)\nprint('ok: 2 redraws in place in %.1f s'%p.wall)\n"
+        ],
+        "exit": 0,
+        "sha256": "ea0247337b0f5a39"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport io,contextlib\nsys.path.insert(0,'_tools')\ntry: import mon_view,kbmon\nexcept ImportError: fail('no _tools/mon_view.py or kbmon.py')\nreal=sys.platform;sys.platform='win32'\ntry: on=mon_view.enable_vt()\nfinally: sys.platform=real\nif on is not False: fail('enable_vt() on a planted Windows without a console: %r'%on)\nmon_view.enable_vt=lambda:False;b=io.StringIO()\nwith contextlib.redirect_stdout(b): code=kbmon.main(['--count','1','--panel','coord'])\nif code!=0 or '\\x1b' in b.getvalue() or 'coord' not in b.getvalue(): fail('fallback frame exit %r'%code)\nprint('ok: no virtual terminal gives a plain frame')\n"
+        ],
+        "exit": 0,
+        "sha256": "83be9a841a7815d2"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nE=dict(os.environ,NO_COLOR='1')\nfor env,args,want in ((E,(),False),(os.environ,(),False),(E,('--ansi',),True)):\n    p=k('--count','1','--panel','coord',*args,env=env)\n    if p.returncode!=0 or ('\\x1b' in p.stdout)!=want: fail('%r NO_COLOR=%s: exit %s, escapes %s'%(args,'NO_COLOR' in env,p.returncode,'\\x1b' in p.stdout))\n    if '\\u00b7 refresh ' not in p.stdout: fail('%r: no layout header in the frame'%(args,))\nprint('ok: plain frames on a pipe and under NO_COLOR, escapes with --ansi')\n"
+        ],
+        "exit": 0,
+        "sha256": "b9f5131228868001"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nif k('--once','--panel','coord').returncode not in (0,1): fail('kbmon --once does not run')\nfor a in (('--interval','0'),('--interval','301'),('--count','0')):\n    p=k(*a)\n    if p.returncode!=2: fail('%r exit %s'%(a,p.returncode))\nprint('ok: out-of-bounds --interval and --count exit 2')\n"
+        ],
+        "exit": 0,
+        "sha256": "83a578f89d30d52a"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport re\nT=re.compile(r'^(kb|coord|sessions|querylog|host|sprint|log)  (ok|timeout|error|absent|unsupported)  \\d+\\.\\ds(  — .+)?$')\nH=re.compile(r'^kbmon · \\d{4}-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\dZ · refresh \\d+s · frame \\d+ · \\S+$')\nfor cols in (80,120):\n    E=dict(os.environ,COLUMNS=str(cols),LINES='60',NO_COLOR='1');p=k('--once',env=E)\n    if p.returncode not in (0,1): fail('--once exit %s: %s'%(p.returncode,p.stderr[-300:]))\n    L=p.stdout.splitlines()\n    over=[x for x in L if len(x)>cols-1]\n    if over: fail('%d lines past W=%d, first %r'%(len(over),cols-1,over[0][:60]))\n    i=2 if L and L[0].startswith('!! ALERT') else 0\n    if len(L)<=i or not H.match(L[i]): fail('header %r'%(L[i] if len(L)>i else None))\n    titles=[m[1] for x in L if (m:=T.match(x))]\n    if titles!=['kb','coord','sessions','querylog','host','sprint','log']: fail('panel titles %r'%titles)\n    bad=[x for x in L[i+1:] if x and not T.match(x) and x[:2] not in ('  ','! ','!!')]\n    if bad: fail('a body row without its gutter: %r'%bad[0][:60])\nprint('ok: header, seven panel titles in order, gutters, no line past W at 80 and 120 columns')\n"
+        ],
+        "exit": 0,
+        "sha256": "904bbf8e511de034"
+      }
+    ]
+  }
 }
