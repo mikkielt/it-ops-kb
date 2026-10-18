@@ -47,6 +47,25 @@
     "kb/_self/backlog.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the doc-row merge keep a doc's final-newline state, which git hides behind the newline it writes after the last conflict line?",
+      "options": [
+        "read the sides from the index",
+        "always keep the added newline"
+      ],
+      "recommendation": "read the sides from the index",
+      "do": {
+        "read the sides from the index": "BG-dg4eptu4",
+        "always keep the added newline": "BG-dg4eptu4"
+      },
+      "class": "agents-rule",
+      "answer": "read the sides from the index",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-aoiqmnc6 review"
   ],
