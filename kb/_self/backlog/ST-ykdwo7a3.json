@@ -2,7 +2,7 @@
   "id": "ST-ykdwo7a3",
   "kind": "story",
   "title": "The multi-agent scenarios' inputs are frozen and each run prints its plan and cost estimate with no model call",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -90,5 +90,6 @@
     "kb/public/_retrieval/repro_briefs.csv",
     "_tools/bench_core.py"
   ],
-  "notes": "The estimate reads the recorded means as the epic's notes give them (pool sonnet-5-5:default 0.147 USD per question, haiku-5-5 0.0085, opus-5-5 0.236; repro 2.83 USD and 573 s per area; a code item about 1.0 USD from usage rows), each knob priced at its model's PRICE. The research area is one no instance of the repro record researched, so the sandbox's kb lacks it. Inputs live under kb/_self/reports/, which research sessions read nothing under (bench_repro.NO_READ)."
+  "notes": "The estimate reads the recorded means as the epic's notes give them (pool sonnet-5-5:default 0.147 USD per question, haiku-5-5 0.0085, opus-5-5 0.236; repro 2.83 USD and 573 s per area; a code item about 1.0 USD from usage rows), each knob priced at its model's PRICE. The research area is one no instance of the repro record researched, so the sandbox's kb lacks it. Inputs live under kb/_self/reports/, which research sessions read nothing under (bench_repro.NO_READ).",
+  "claimed_by": "orch-r16"
 }
