@@ -33,10 +33,49 @@
   ],
   "touches": [
     "_tools/kbask.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-hp5cccy7"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a summary session reach coord when kbask is pointed at a served coord (--url)?",
+      "options": [
+        "Not at all: the prompt says coord is out of reach",
+        "Allow coord.py with --url and --key-file in the session's Bash rules"
+      ],
+      "recommendation": "Not at all: the prompt says coord is out of reach",
+      "do": {
+        "Not at all: the prompt says coord is out of reach": "ST-xlxkap7l",
+        "Allow coord.py with --url and --key-file in the session's Bash rules": "ST-xlxkap7l"
+      },
+      "class": "design",
+      "answer": "Not at all: the prompt says coord is out of reach",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does a summary take the coord claim that remediate takes, and what does summary --wait exit with when the session gives no result?",
+      "options": [
+        "No claim, exit 1 on no result",
+        "A claim summary/QUESTION-hash, exit 1 on no result",
+        "No claim, exit 0 with the failure printed"
+      ],
+      "recommendation": "No claim, exit 1 on no result",
+      "do": {
+        "No claim, exit 1 on no result": "ST-xlxkap7l",
+        "A claim summary/QUESTION-hash, exit 1 on no result": "ST-xlxkap7l",
+        "No claim, exit 0 with the failure printed": "ST-xlxkap7l"
+      },
+      "class": "design",
+      "answer": "No claim, exit 1 on no result",
+      "by": "agent"
+    }
   ],
   "notes": "Plan 2026-10-18 (operator, mid-plan): 'how my team's sprint and researches are going' is the same read-only agent with the operator's question. A team shares the backlog through git and coord through a serve URL (kbask --url and --key-file as coord.py takes them).",
   "claimed_by": "orch-r20"
