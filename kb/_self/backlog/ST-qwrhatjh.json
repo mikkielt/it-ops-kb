@@ -2,7 +2,7 @@
   "id": "ST-qwrhatjh",
   "kind": "story",
   "title": "security/secret-shapes-in-text names the EC, DSA and PGP private key labels and the Purview value first-character rule",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
@@ -45,5 +45,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: rag.py pack on the EC, DSA and PGP labels is weak (secret-shapes-in-text.md:34 names only PRIVATE KEY and ENCRYPTED PRIVATE KEY); the check fails on all three labels. It shares kb/public with the goal research story, so it runs after it."
+  "notes": "Plan 2026-10-17: rag.py pack on the EC, DSA and PGP labels is weak (secret-shapes-in-text.md:34 names only PRIVATE KEY and ENCRYPTED PRIVATE KEY); the check fails on all three labels. It shares kb/public with the goal research story, so it runs after it.",
+  "claimed_by": "orch-r13"
 }
