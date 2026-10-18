@@ -2,7 +2,7 @@
   "id": "BG-6ucif3pn",
   "kind": "bug",
   "title": "coord.py reads operator key files whatever their mode, so a world-readable token file goes unnoticed",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
@@ -67,5 +67,6 @@
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
-  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the client gets only a connection error for a 0644 file; serve with a 0644 key runs). Knowledge: public/windows/openssh-key-management.md:38 (a private key file readable by no other user), the model for the 0600 rule."
+  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the client gets only a connection error for a 0644 file; serve with a 0644 key runs). Knowledge: public/windows/openssh-key-management.md:38 (a private key file readable by no other user), the model for the 0600 rule.",
+  "claimed_by": "orch-r13"
 }
