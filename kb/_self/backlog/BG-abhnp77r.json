@@ -1,0 +1,17 @@
+{
+  "id": "BG-abhnp77r",
+  "kind": "bug",
+  "title": "agent.run ops rows carry no exit, so a failed worker run is always an ok span",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "an agent.run ops row records whether the run failed, so kbmon --events gives its kb.agent.run span the status error and the OTLP trace shows a failed worker run in error",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,\"_tools\");import ql_capture;sys.exit(0 if \"exit\" in ql_capture.OPS_EVENTS[\"agent.run\"] else 1)"
+    ]
+  }
+}
