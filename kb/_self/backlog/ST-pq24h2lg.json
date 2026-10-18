@@ -21,5 +21,6 @@
   ],
   "links": [
     "parked: SP-kbrxa4c4 close"
-  ]
+  ],
+  "notes": "SP-fp3hxl6q 2026-10-18: a claim sync stopped again on `Permission denied (publickey)` at git fetch and passed on a plain rerun."
 }

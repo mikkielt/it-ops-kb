@@ -1,0 +1,24 @@
+{
+  "id": "ST-ut4l77tp",
+  "kind": "story",
+  "title": "A plan's repro that starts coord.py serve writes its key files with mode 0600",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 6 says a repro or check that starts a server reading key or token files (coord.py serve) writes them with the mode the server demands (0600), and precheck's traceback line is read before the start gate. Found at the SP-fp3hxl6q close: two committed repros (BG-bqvcba5e, BG-ih3awckg) failed on a traceback because serve refused their 0644 key files; precheck flagged it and the orchestrator rewrote both after the start.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan \"<goal>\"');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='0600' in s;print('## plan \"<goal>\"','names','0600',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q close"
+  ]
+}

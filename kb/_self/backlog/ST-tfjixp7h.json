@@ -1,0 +1,24 @@
+{
+  "id": "ST-tfjixp7h",
+  "kind": "story",
+  "title": "A goal research story whose questions span unrelated subjects is split, one research item per subject",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 1 says a goal research story whose questions fall in unrelated subjects (here SQLite busy timeouts, inode reuse, http.server body reads and socket.settimeout limits) is split, one research item per subject, each with its own turn cap, so no single worker runs near its cap. Found at the SP-fp3hxl6q close: the one research worker ST-vyb5q5gp used 191 of its 200 turns and $3.08, four tenths of the sprint's worker cost, while each bug worker used 22 to 51 turns.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan \"<goal>\"');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='one research item per subject' in s;print('## plan \"<goal>\"','names','one research item per subject',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q close"
+  ]
+}

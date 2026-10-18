@@ -18,5 +18,5 @@
   "links": [
     "parked: SP-6jfnx5i3 close"
   ],
-  "notes": "SP-aoiqmnc6 close 2026-10-17: close --summary printed clause 2 'landings finish without hand fixes' as unmet, though ST-mpwzinrm, ST-qyhb56tk, ST-2g6qd22j and ST-txcazatg carry it (none shares two words with the clause)."
+  "notes": "SP-aoiqmnc6 close 2026-10-17: close --summary printed clause 2 'landings finish without hand fixes' as unmet, though ST-mpwzinrm, ST-qyhb56tk, ST-2g6qd22j and ST-txcazatg carry it (none shares two words with the clause). SP-fp3hxl6q close 2026-10-18: close --summary printed \"client answer bad input\" (carried by BG-gmaaoumg) and \"the ledger lock report true times\" (carried by BG-blw4edp4) unmet, since the split at \", and\"/\"and\" cut \"server and client\" and \"the ledger lock report true times, states and holders\" mid-phrase."
 }
