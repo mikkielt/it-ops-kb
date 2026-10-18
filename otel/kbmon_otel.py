@@ -2,15 +2,18 @@
 
 Run it from the clone's root, with the SDK pinned in otel/uv.lock:
 
-    uv run --frozen --project otel python otel/kbmon_otel.py [--once] [--interval S] [--panel NAME] [--from-snapshot FILE]
+    uv run --frozen --project otel python otel/kbmon_otel.py [--once] [--count N] [--interval S] [--panel NAME]
+        [--from-snapshot FILE] [--prometheus-port N [--prometheus-bind HOST]]
 
 The points come from `python3 _tools/kbmon.py --metrics`, run as a child process (the stdlib tools import no
 OpenTelemetry package). The SDK reads the endpoint and the headers itself, from OTEL_EXPORTER_OTLP_ENDPOINT
 (or OTEL_EXPORTER_OTLP_METRICS_ENDPOINT) and OTEL_EXPORTER_OTLP_HEADERS (or OTEL_EXPORTER_OTLP_METRICS_HEADERS);
 the adapter takes no flag or file for either and prints and logs no header value. With no endpoint set it sends
-nothing and says export is off. Docs: kb/_self/monitoring.md.
+nothing and says export is off. `--prometheus-port N` also serves the same points at /metrics through the SDK's
+Prometheus reader, on loopback only (otel_prom.py); it is off unless the flag is given. Docs: kb/_self/monitoring.md.
 
-Exit codes: 0 sent (or export off), 1 a send failed, 2 kbmon gave no points or a bad argument.
+Exit codes: 0 sent (or export off), 1 a send failed, 2 kbmon gave no points or a bad argument (a
+--prometheus-bind that is not loopback included).
 """
 
 import argparse
@@ -23,6 +26,7 @@ import time
 from pathlib import Path
 from urllib.parse import urlsplit
 
+import otel_prom
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.metrics import Observation
 from opentelemetry.sdk.metrics import MeterProvider
@@ -105,14 +109,14 @@ class Exporter(OTLPMetricExporter):
 class Sender:
     """One meter provider that lives across exports; each export reads the latest points."""
 
-    def __init__(self):
+    def __init__(self, export: bool = True, extra_readers=()):
         self.latest: dict[str, list[dict]] = {}
         self.created: set[str] = set()
         self.reader = InMemoryMetricReader()
         resource = Resource.create({"service.name": os.environ.get("OTEL_SERVICE_NAME", "kbmon")})
-        self.provider = MeterProvider(metric_readers=[self.reader], resource=resource)
+        self.provider = MeterProvider(metric_readers=[self.reader, *extra_readers], resource=resource)
         self.meter = self.provider.get_meter("kbmon")
-        self.exporter = Exporter()
+        self.exporter = Exporter() if export else None
 
     def _callback(self, name: str):
         def observe(options):
@@ -121,14 +125,17 @@ class Sender:
         return observe
 
     def send(self, points: list[dict]) -> bool:
-        self.latest = {}
+        latest: dict[str, list[dict]] = {}
         for point in points:
-            self.latest.setdefault(point["name"], []).append(point)
-        for name, group in self.latest.items():
+            latest.setdefault(point["name"], []).append(point)
+        self.latest = latest
+        for name, group in latest.items():
             if name not in self.created:
                 make = self.meter.create_observable_counter if group[0].get("kind") == "sum" else self.meter.create_observable_gauge
                 make(name, callbacks=[self._callback(name)], unit=group[0].get("unit", ""))
                 self.created.add(name)
+        if self.exporter is None:
+            return True
         data = self.reader.get_metrics_data()
         if data is None:
             return True
@@ -137,7 +144,8 @@ class Sender:
 
     def close(self):
         self.provider.shutdown()
-        self.exporter.shutdown()
+        if self.exporter is not None:
+            self.exporter.shutdown()
 
 
 def main(argv=None) -> int:
@@ -146,14 +154,27 @@ def main(argv=None) -> int:
     ap.add_argument("--panel", action="append", default=[], help="a kbmon panel to send (repeatable; default: all)")
     ap.add_argument("--from-snapshot", metavar="FILE", help="send the points of a saved kbmon --json snapshot")
     ap.add_argument("--once", action="store_true", help="send one snapshot and exit")
+    ap.add_argument("--count", type=int, default=0, metavar="N", help="send N snapshots and exit (default 0: no limit)")
     ap.add_argument("--interval", type=float, default=60.0, metavar="S", help="seconds between sends (default 60)")
     ap.add_argument("--timeout", type=float, default=60.0, metavar="S", help="seconds kbmon may take (default 60)")
+    ap.add_argument("--prometheus-port", type=int, metavar="N", help="also serve /metrics on loopback port N (0: a free port; default: not served)")
+    ap.add_argument("--prometheus-bind", default="127.0.0.1", metavar="HOST", help="the loopback address /metrics binds (default 127.0.0.1)")
     args = ap.parse_args(argv)
     if args.interval < 1 or args.timeout < 1:
         ap.error("--interval and --timeout are 1 or more")
+    if args.count < 0:
+        ap.error("--count is 0 or more")
+    if args.once:
+        args.count = 1
+    if args.prometheus_port is not None and not 0 <= args.prometheus_port <= 65535:
+        ap.error("--prometheus-port is 0 to 65535")
+    try:
+        args.prometheus_bind = otel_prom.loopback(args.prometheus_bind)
+    except ValueError as e:
+        ap.error(str(e))
 
     url = endpoint()
-    if not url:
+    if not url and args.prometheus_port is None:
         print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); nothing sent")
         return 0
 
@@ -162,10 +183,19 @@ def main(argv=None) -> int:
     for handler in logging.getLogger().handlers:
         handler.addFilter(scrub)
 
-    print(f"kbmon_otel: export is on, metrics to {shown_endpoint(url)}")
-    sender = Sender()
+    if url:
+        print(f"kbmon_otel: export is on, metrics to {shown_endpoint(url)}")
+    else:
+        print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); /metrics only")
+    prom = otel_prom.reader() if args.prometheus_port is not None else None
+    sender = Sender(export=bool(url), extra_readers=[prom] if prom else [])
+    server = None
     code = 0
+    sent = 0
     try:
+        if prom:
+            server, metrics = otel_prom.serve(args.prometheus_port, args.prometheus_bind)
+            print(f"kbmon_otel: serving {metrics}", flush=True)
         while True:
             try:
                 points = collect(args)
@@ -174,18 +204,22 @@ def main(argv=None) -> int:
                 code = 2
             else:
                 if sender.send(points):
-                    print(f"kbmon_otel: sent {len(points)} points")
+                    print(f"kbmon_otel: {'sent' if url else 'read'} {len(points)} points", flush=True)
                     code = 0
                 else:
                     print("kbmon_otel: export failed", file=sys.stderr)
                     code = 1
-            if args.once:
+            sent += 1
+            if args.count and sent >= args.count:
                 return code
             time.sleep(args.interval)
     except KeyboardInterrupt:
         return code
     finally:
         sender.close()
+        if server:
+            server.shutdown()
+            server.server_close()
 
 
 if __name__ == "__main__":
