@@ -49,11 +49,28 @@
       "class": "secrets",
       "answer": "only a closed list of English function words (where, in, is, it, the, see, for, to, of and the like) and no value at all; every other word stays replaced",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does redact apply the closed function-word list: which words, and which values may a listed word keep?",
+      "options": [
+        "about 50 function words in PROSE_WORDS, any case, one trailing . , ? or ! allowed; kept only as a bare value of a secret key or an Authorization header, never quoted and never in a URL user:password@ part",
+        "only the nine words the goal names (where, in, is, it, the, see, for, to, of), bare, no punctuation"
+      ],
+      "recommendation": "about 50 function words in PROSE_WORDS, any case, one trailing . , ? or ! allowed; kept only as a bare value of a secret key or an Authorization header, never quoted and never in a URL user:password@ part",
+      "do": {
+        "about 50 function words in PROSE_WORDS, any case, one trailing . , ? or ! allowed; kept only as a bare value of a secret key or an Authorization header, never quoted and never in a URL user:password@ part": "ST-3m5sjibd",
+        "only the nine words the goal names (where, in, is, it, the, see, for, to, of), bare, no punctuation": "ST-3m5sjibd"
+      },
+      "class": "secrets",
+      "answer": "only the nine words the goal names (where, in, is, it, the, see, for, to, of), bare, no punctuation",
+      "by": "operator"
     }
   ],
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it).",
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it). Orchestrator 2026-10-18 (operator delegate): g2 answered with the nine-word option, not the recommendation: the gate is class secrets on a leak guard, and the operator's policy takes the conservative option there; the nine words cover every prose line of the goal's check, and a smaller allow list lets fewer real values through.",
   "claimed_by": "orch-r13"
 }

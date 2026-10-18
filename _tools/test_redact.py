@@ -93,6 +93,11 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     assert redact.redact("\n".join(PLACEHOLDER_VALUES)) == "\n".join(PLACEHOLDER_VALUES)
     prose = "[Secret]: see the docs for rotation\n[password]: https://x.example.com/a\nSee [api_key]: the field list"
     assert redact.redact(prose) == prose  # a closing bracket with no opening bracket and quote is prose, not a subscripted key
+    words = ["LAPS password: where stored", "use Authorization: Bearer in Graph", "Is the password: is it rotated?"]
+    assert [redact.redact(w) for w in words] == words  # a function word after a key name or a scheme is prose
+    assert "sunshine" not in redact.redact("password: sunshine") and VALUE not in redact.redact("password: " + VALUE)
+    assert all("<secret>" in redact.redact("password: " + w) for w in ("stored", "where?", "are"))  # only the nine words, bare
+    assert "<secret>" in redact.redact('password: "where"') and "<secret>" in redact.redact("postgres://fakeuser:in@db.example.com/app")
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1
