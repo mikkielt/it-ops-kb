@@ -88,6 +88,14 @@ ASSIGNMENT = re.compile(
     r"""((?P<bd>\\+)"(?:[^"\\\n]|\\+(?![\\"])|(?P=bd)\\+")*(?P=bd)"|(?P<bs>\\+)'(?:[^'\\\n]|\\+(?![\\'])|(?P=bs)\\+')*(?P=bs)'"""
     r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\\*["']?[^\s&;"']+)""")
 ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
+# English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
+# password: where stored", "use Authorization: Bearer in Graph"), not a value. No other word is kept, a quoted word
+# is a value, and so is a word of the list inside a URL's user:password@ part.
+PROSE_WORDS = frozenset(
+    "a an the is are was were be been it its this that these those in on at of to for from with by as into about see "
+    "where when how what why which who whom whether if and or but not can do does should must may will would could "
+    "there here then than so".split())
+PROSE_VALUE = re.compile(r"([A-Za-z]+)[.,?!]?")
 # A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
 # (the BEGIN line alone is a kbcommon.SECRETS shape).
 KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
@@ -162,15 +170,21 @@ def _assigned(m):
     rest = val[len(lead):]
     closing = re.search(r"\\*" + lead[-1:] + "$", rest) if lead else None
     inner, tail = (rest[:closing.start()], closing.group(0)) if closing else (rest, "")
-    if not inner or ASSIGNED_PLACEHOLDER.fullmatch(inner):
+    if not inner or ASSIGNED_PLACEHOLDER.fullmatch(inner) or (not lead and _prose(inner)):
         return m.group(0)
     return key + lead + PLACEHOLDERS["secret"] + tail
 
 
-def _credential(m):
+def _prose(word):
+    """True for a bare word of PROSE_WORDS, in either case, with at most one closing punctuation mark."""
+    w = PROSE_VALUE.fullmatch(word)
+    return bool(w) and w.group(1).lower() in PROSE_WORDS
+
+
+def _credential(m, prose=False):
     """The credential group of an Authorization header or a URL's user:password@ becomes the placeholder; one that is
-    already a placeholder stays."""
-    if ASSIGNED_PLACEHOLDER.fullmatch(m.group(2)):
+    already a placeholder stays, and so does a word of PROSE_WORDS where `prose` (the header)."""
+    if ASSIGNED_PLACEHOLDER.fullmatch(m.group(2)) or (prose and _prose(m.group(2))):
         return m.group(0)
     return m.group(1) + PLACEHOLDERS["secret"]
 
@@ -260,7 +274,7 @@ def redact(text, k=None):
     for rx in SECRETS:
         text = rx.sub(_secret, text)
     text = ASSIGNMENT.sub(_assigned, text)
-    text = AUTH_HEADER.sub(_credential, text)
+    text = AUTH_HEADER.sub(lambda m: _credential(m, True), text)
     text = URL_USERINFO.sub(_credential, text)
     text = UNC.sub(lambda m: PLACEHOLDERS["unc"] + _path(m.group(2), k, False), text)
     text = DRIVE.sub(lambda m: m.group(0)[:2] + _path(m.group(1), k, True), text)

@@ -49,6 +49,21 @@
       "class": "secrets",
       "answer": "only a closed list of English function words (where, in, is, it, the, see, for, to, of and the like) and no value at all; every other word stays replaced",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does redact apply the closed function-word list: which words, and which values may a listed word keep?",
+      "options": [
+        "about 50 function words in PROSE_WORDS, any case, one trailing . , ? or ! allowed; kept only as a bare value of a secret key or an Authorization header, never quoted and never in a URL user:password@ part",
+        "only the nine words the goal names (where, in, is, it, the, see, for, to, of), bare, no punctuation"
+      ],
+      "recommendation": "about 50 function words in PROSE_WORDS, any case, one trailing . , ? or ! allowed; kept only as a bare value of a secret key or an Authorization header, never quoted and never in a URL user:password@ part",
+      "do": {
+        "about 50 function words in PROSE_WORDS, any case, one trailing . , ? or ! allowed; kept only as a bare value of a secret key or an Authorization header, never quoted and never in a URL user:password@ part": "ST-3m5sjibd",
+        "only the nine words the goal names (where, in, is, it, the, see, for, to, of), bare, no punctuation": "ST-3m5sjibd"
+      },
+      "class": "secrets"
     }
   ],
   "links": [
