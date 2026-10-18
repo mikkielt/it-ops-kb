@@ -2,7 +2,7 @@
   "id": "BG-bkdrmiy5",
   "kind": "bug",
   "title": "kbmon's live view cuts the log tail at the bottom, so on a short terminal the newest rows are the ones dropped",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-v4yih547",
   "priority": "P2",
   "rank": 0,
@@ -19,5 +19,6 @@
     "_tools/mon_view.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "claimed_by": "orch-r18"
 }
