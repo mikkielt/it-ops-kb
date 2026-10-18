@@ -2,7 +2,7 @@
   "id": "ST-e45yoqly",
   "kind": "story",
   "title": "Review sprint: kbmon shows the query log, the host and the active sprint, and alerts loudly on a refused delivery",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-v4yih547",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r18"
+  "evidence": {
+    "commit": "45e7833d41121fbba86b15ec33c6a9de9551530d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "e82ef7d34c5abaef"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "ab3e268d70c85166"
+      }
+    ]
+  }
 }
