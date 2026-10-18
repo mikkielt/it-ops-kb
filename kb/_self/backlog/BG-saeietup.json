@@ -2,7 +2,7 @@
   "id": "BG-saeietup",
   "kind": "bug",
   "title": "redact keeps the tail of an escaped-JSON secret value after a nested escaped quote",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
@@ -66,5 +66,27 @@
     "parked: SP-g4mwrwsv review"
   ],
   "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the tail bkePass12345x stays at both levels); the near-miss under a title key stays whole today and must stay so. Knowledge: public/security/secret-shapes-in-text.md:55 (RFC 8259 escapes).",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "3d32707e989829248bed317369e0f890450eaf8a",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R\nb=chr(92);q=chr(34);v=\"kePass\"+\"12345x\";bad=[]\nfor n in (1,2):\n    Q=b*(2**n-1)+q;N=b*(2**(n+1)-1)+q\n    t=\"{\"+Q+\"pass\"+\"word\"+Q+\": \"+Q+\"a\"+N+\"b\"+v+Q+\"}\";o=R.redact(t)\n    if v in o or R.redact(o)!=o:bad.append((\"secret\",n,o))\n    p=\"{\"+Q+\"title\"+Q+\": \"+Q+\"a\"+N+\"b see the docs\"+Q+\"}\"\n    if R.redact(p)!=p:bad.append((\"prose\",n,R.redact(p)))\nprint(bad);sys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;b=chr(92);q=chr(34);v=\"kePass\"+\"12345x\";t=\"{\"+b+q+\"pass\"+\"word\"+b+q+\": \"+b+q+\"a\"+b+b+b+q+\"b\"+v+b+q+\"}\";o=R.redact(t);print(o);sys.exit(1 if v in o else 0)"
+        ],
+        "exit": 0,
+        "sha256": "647bc924f3a0efca"
+      }
+    ]
+  }
 }
