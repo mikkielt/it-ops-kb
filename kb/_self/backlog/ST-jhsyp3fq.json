@@ -2,7 +2,7 @@
   "id": "ST-jhsyp3fq",
   "kind": "story",
   "title": "kbmon.py snapshot core and kb panel: --json and --once, per-panel timeouts, read-only and redacted",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",
@@ -143,5 +143,6 @@
       "python/stdlib-argparse-json"
     ]
   },
-  "notes": "Plan 2026-10-18: new capability, so every check fails on origin/main 423d72d05 for want of _tools/kbmon.py (precheck). Contract the later items' checks read: kbmon.main(argv) returns the exit code; each panel module mon_<name>.py has collect(ctx) returning its data dict (or raising for unsupported); a missing module is state absent. Flags: --root DIR, --panel NAME (repeatable), --json, --once, --ansi, --interval S, --count N, --timeout S, --store PATH, --url URL, --key-file PATH, --from-snapshot FILE. Exit 0 shown, 1 an alert is shown (SP-v4yih547), 2 a bad argument. kb panel data: roots [{root, articles, facts {TAG: n}}], gaps, conflicts, refreshed, census, eval {state, when} or null, index_age_s or null. Measured 2026-10-18: rag.py --json audit takes about 3.2 s warm, so the kb panel at --timeout 0.2 times out. No outside facts needed beyond the research story's (2). Layout of the kb panel (operator's spec): roots (articles per root) · facts by tag (DOC CODE DER COMMUNITY UNK DECISION) · open gaps, conflicts · refresh (last refresh date, census tag, eval passed/total with time, pack index age)."
+  "notes": "Plan 2026-10-18: new capability, so every check fails on origin/main 423d72d05 for want of _tools/kbmon.py (precheck). Contract the later items' checks read: kbmon.main(argv) returns the exit code; each panel module mon_<name>.py has collect(ctx) returning its data dict (or raising for unsupported); a missing module is state absent. Flags: --root DIR, --panel NAME (repeatable), --json, --once, --ansi, --interval S, --count N, --timeout S, --store PATH, --url URL, --key-file PATH, --from-snapshot FILE. Exit 0 shown, 1 an alert is shown (SP-v4yih547), 2 a bad argument. kb panel data: roots [{root, articles, facts {TAG: n}}], gaps, conflicts, refreshed, census, eval {state, when} or null, index_age_s or null. Measured 2026-10-18: rag.py --json audit takes about 3.2 s warm, so the kb panel at --timeout 0.2 times out. No outside facts needed beyond the research story's (2). Layout of the kb panel (operator's spec): roots (articles per root) · facts by tag (DOC CODE DER COMMUNITY UNK DECISION) · open gaps, conflicts · refresh (last refresh date, census tag, eval passed/total with time, pack index age).",
+  "claimed_by": "orch-r17"
 }
