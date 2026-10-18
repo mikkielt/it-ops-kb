@@ -59,7 +59,7 @@ Enable with `CLAUDE_CODE_ENABLE_TELEMETRY=1` plus OTLP exporter variables. MCP a
 | tool_decision | decision, source, tool_source | mcp_server_name, mcp_tool_name |
 | tool_result | success, duration_ms, mcp_server_scope, sizes | tool_parameters, tool_input, error |
 
-Scraping the `prometheus` metrics exporter with a Prometheus server (retention, text format, scrape config, security): `logs/prometheus-retention-exposition.md`.
+Scraping the `prometheus` metrics exporter with a Prometheus server (retention, text format, scrape config, security): `logs/prometheus-retention-exposition.md`. Sending OTLP/HTTP from a Python process with the OpenTelemetry SDK (headers, retries, partial success, spans, log events): `logs/otel-python-sdk.md`.
 
 ## Examples
 `CLAUDE_CODE_ENABLE_TELEMETRY=1 OTEL_LOGS_EXPORTER=otlp OTEL_EXPORTER_OTLP_ENDPOINT=http://otel.corp.example.com:4317`

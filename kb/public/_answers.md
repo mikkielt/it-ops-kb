@@ -4122,3 +4122,19 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md.
 
 _Agent: kb-research_
+
+## QK-otel-python-sdk-adapter. How does a Python process export metrics, events and spans with the OpenTelemetry SDK over OTLP/HTTP and serve a Prometheus /metrics: packages and versions, body format and Content-Type, environment variables and the headers format, observable gauge callbacks and the periodic reader, the Prometheus reader and its address, partial success and retries, spans with explicit times and a parent, and log records with an event name?
+- At 2026-10-18 `opentelemetry-sdk` and `opentelemetry-exporter-otlp-proto-http` are 1.45.1 (Production/Stable) and `opentelemetry-exporter-prometheus` and `opentelemetry-exporter-otlp-json-http` are 0.66b1 (Beta). [DOC S-wz5eea44, S-omxbv3ul, S-3lbw2wrz, S-ozi35eb7]
+- The proto exporter sends protobuf with `Content-Type: application/x-protobuf`; the JSON body comes from the separate beta package, which sets `application/json`. [CODE S-rto5it2w, S-3ocg3rma, S-gn4cbgug]
+- A per-signal endpoint variable is used as-is, the generic one gets `/v1/<signal>` appended, and the default is `http://localhost:4318`; headers are `name=value` pairs separated by commas with percent-encoded values, from the per-signal variable or else the generic one, never merged. [CODE S-4kd2fl7f, S-6avl2ftj]
+- An observable gauge callback returns or yields `Observation(value, attributes)` objects; `PeriodicExportingMetricReader` collects every 60000 ms by default (`OTEL_METRIC_EXPORT_INTERVAL`), first after one interval. [CODE S-5chmnjba, S-lsg4pugj, S-d46zfljm]
+- `PrometheusMetricReader` only registers with `prometheus_client`; `start_http_server` serves `/metrics` and binds `0.0.0.0` unless `addr` is given, and every scrape runs the callbacks. [CODE S-qpknqjro, S-3ylk7y4h]
+- A partial success is an `HTTP 200` with `partial_success` populated and is not retried; only 429, 502, 503 and 504 may be retried. [DOC S-v2wnj4qk]
+- The Python client retries those four codes up to 6 attempts and treats any status from 200 to below 400 as success without reading the body. [CODE S-mi6kw3ft]
+- A span takes integer nanosecond `start_time` in `start_span` and `end_time` in `end`, and an explicit parent through `set_span_in_context(parent)` passed as `context`. [CODE S-kzsjk7w6, S-ai2idcjy, S-adxo34qo]
+- A log record with an event name is `Logger.emit(event_name=..., attributes=..., body=...)` on a logger from `opentelemetry.sdk._logs.LoggerProvider` with a batch processor and `OTLPLogExporter`. [CODE S-x74lzie5, S-tx2jwcse, S-qtwfnvws, S-ybidjd44]
+- Conclusion: a loopback `/metrics` needs `start_http_server(port, addr="127.0.0.1")` before the Prometheus reader is built, an OTLP/HTTP push needs only the endpoint and headers variables and the protobuf exporter, and the first gauge callback runs one export interval after start (or at the first scrape). [DER S-qpknqjro, S-3ylk7y4h, S-d46zfljm, S-4kd2fl7f: the reader opens no socket, the helper defaults to all interfaces, the ticker waits before collecting]
+- Open: the exporter timeout variable is milliseconds in the specification and seconds in the Python code (`_conflicts.md`); the trace and log exporters' own variable handling, the release that split out the HTTP client packages and the logs signal's stability statement were not read (`_gaps.md`, logs/otel-python-sdk). [UNK]
+- See logs/otel-python-sdk.md, logs/otel-collector-otlp-pipeline.md, claude/otel-monitoring.md, logs/prometheus-retention-exposition.md.
+
+_Agent: kb-research_

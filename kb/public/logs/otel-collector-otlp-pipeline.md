@@ -70,7 +70,7 @@ The Collector's own telemetry is Prometheus metrics on port 8888 and logs on std
 - JSON logs on stdout need `encoding: json` and `output_paths: [stdout]` together, since the stated default destination is stderr; this was not run here. [DER S-42ulxlwb, S-p23y4jgk, S-2blrcu72: documented defaults plus the zap stream rule]
 
 ## Reference
-- Receivers for files and the Windows Event Log: `logs/otel-collector-receivers`. Log data model: `logs/otel-log-data-model`. Claude Code's own OTLP export: `claude/otel-monitoring`.
+- Receivers for files and the Windows Event Log: `logs/otel-collector-receivers`. Log data model: `logs/otel-log-data-model`. Claude Code's own OTLP export: `claude/otel-monitoring`. A Python process sending OTLP/HTTP, observable gauges and a Prometheus reader: `logs/otel-python-sdk`.
 - Component stability definitions: development, alpha, beta, stable, deprecated, unmaintained (S-j5eil3ej). OTLP specification: S-v2wnj4qk.
 - Defaults at a glance: OTLP gRPC 4317, OTLP HTTP 4318, Collector metrics 8888, Loki OTLP path `/otlp`, Prometheus OTLP path `/api/v1/otlp/v1/metrics`, Prometheus flag `--web.enable-otlp-receiver`.
 

@@ -926,3 +926,15 @@ tsBuildInfoFile,agents/typescript-projects-declarations-incremental
 emitDeclarationOnly,agents/typescript-projects-declarations-incremental
 typescript-go,agents/typescript-native-compiler
 @typescript/native-preview,agents/typescript-native-compiler
+PrometheusMetricReader,logs/otel-python-sdk
+PeriodicExportingMetricReader,logs/otel-python-sdk
+OTLPMetricExporter,logs/otel-python-sdk
+OTLPLogExporter,logs/otel-python-sdk
+create_observable_gauge,logs/otel-python-sdk
+set_span_in_context,logs/otel-python-sdk
+opentelemetry-sdk,logs/otel-python-sdk
+opentelemetry-exporter-otlp-proto-http,logs/otel-python-sdk
+opentelemetry-exporter-prometheus,logs/otel-python-sdk
+opentelemetry-exporter-otlp-json-http,logs/otel-python-sdk
+OTEL_METRIC_EXPORT_INTERVAL,logs/otel-python-sdk
+OTEL_EXPORTER_PROMETHEUS_PORT,logs/otel-python-sdk

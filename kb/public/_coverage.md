@@ -262,6 +262,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `logs/loki-tempo-grafana-retention` | P3 | partial | `logs/loki-tempo-grafana-retention.md` | 37 |
 | `logs/otel-collector-otlp-pipeline` | P3 | partial | `logs/otel-collector-otlp-pipeline.md` | 34 |
 | `logs/otel-collector-receivers` | P3 | complete | `logs/otel-collector-receivers.md`, `logs/otel-filelogreceiver.config.csv`, `logs/otel-windowseventlogreceiver.config.csv`, `logs/otel-filelogreceiver.metadata.yaml`, `logs/otel-windowseventlogreceiver.metadata.yaml` | 5 |
+| `logs/otel-python-sdk` | P3 | partial | `logs/otel-python-sdk.md` | 28 |
 | `logs/prometheus-retention-exposition` | P3 | partial | `logs/prometheus-retention-exposition.md` | 29 |
 | `logs/python-rust-json-stdout-logs` | P3 | partial | `logs/python-rust-json-stdout-logs.md` | 8 |
 | `mcp/authorization` | P1 | complete | `mcp/authorization.md` | 4 |
