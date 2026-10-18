@@ -2,7 +2,7 @@
   "id": "BG-ytbjm2n6",
   "kind": "bug",
   "title": "multi run reuses a DIR that holds a finished run with no reset, so the sequential run of the delta pair fails its code agents",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-7s6uubs7",
   "priority": "P2",
@@ -23,5 +23,6 @@
   ],
   "links": [
     "parked: SP-5y4ut64g review"
-  ]
+  ],
+  "claimed_by": "orch-r21"
 }
