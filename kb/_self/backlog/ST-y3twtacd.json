@@ -38,7 +38,8 @@
     "kb/_self/tools.md"
   ],
   "depends_on": [
-    "ST-go6vdmnt"
+    "ST-go6vdmnt",
+    "ST-bhvh6jh6"
   ],
   "gates": [
     {
