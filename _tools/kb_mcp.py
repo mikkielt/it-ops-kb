@@ -950,11 +950,13 @@ COORD_TOOL_LIST = [
      "annotations": {"title": "Release a claim", **COORD_WRITE, "destructiveHint": True}},
     {"name": "coord_post", "title": "Post an event",
      "description": COORD_DOCS + "Add an event: kind (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat, "
-                    "intent, progress) and up to 8 id fields. A value is an id of at most 120 characters of letters, "
+                    "intent, progress, ask, answer) and up to 8 id fields. A value is an id of at most 120 characters of letters, "
                     "digits and _ . : / # @ -; free text is refused. intent takes session, item, topic, touch; an intent "
                     "with a session shows in coord_digest only while coord_claim holds the key session/<that id>: without "
                     "that claim it is posted and never shown, with no error. progress takes item and state (working, "
-                    "blocked, done). Returns seq.",
+                    "blocked, done). ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds "
+                    "the question); answer takes id, state (working, input-required, completed, failed, rejected) and "
+                    "ref (the key whose value holds the answer): put the text under that key first. Returns seq.",
      "inputSchema": {"type": "object", "properties": {
          "kind": {"type": "string"},
          "fields": {"type": "object", "maxProperties": 8, "additionalProperties": {"type": "string"},

@@ -87,6 +87,40 @@
       "class": "design",
       "answer": "any key holder, each ask tagged with the server's operator field",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Does an ask need its to field, or may it default to any?",
+      "options": [
+        "to is required",
+        "to defaults to any"
+      ],
+      "recommendation": "to is required",
+      "do": {
+        "to is required": "ST-lfjdie2c",
+        "to defaults to any": "ST-lfjdie2c"
+      },
+      "class": "design",
+      "answer": "to is required",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does coord.py's top-level usage list the ask and answer kinds?",
+      "options": [
+        "an epilog on the top-level parser",
+        "only the docstring and the post --kind help"
+      ],
+      "recommendation": "an epilog on the top-level parser",
+      "do": {
+        "an epilog on the top-level parser": "ST-lfjdie2c",
+        "only the docstring and the post --kind help": "ST-lfjdie2c"
+      },
+      "class": "design",
+      "answer": "an epilog on the top-level parser",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-18 (operator): reuse coord's shared state, not a Claude Code built-in, so any agent asks and answers: coord.py (local store or serve URL), the kb MCP server's coord tools (KB_COORD_TOOLS=1) and the coord hook. Events stay references only (coord.py:126): the text lives in a put value. The task states follow A2A (agents/a2a-protocol.md:24, DOC S2120). A served post already gets the server's operator field (coord.py usage), which tags an ask from another operator.",
