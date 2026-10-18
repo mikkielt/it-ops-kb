@@ -6,13 +6,13 @@ the store and the week go into the digest, so every clone at one commit prints t
 import datetime, json, math, re, sys, time
 from pathlib import Path
 
-from ql_base import HOME, STORE, logging_off, places, run_cmd, write_text
+from ql_base import HOME, STORE, STORE_REL, iso, logging_off, places, read_mode, run_cmd, write_text
 from ql_deliver import BRANCH, CONFLICT_BRANCH_PREFIX, REMOTE, auto_log, forge_list, origin_forge
 from ql_learn import FAILED, feedback_reports, host_fetches, is_miss
 from ql_store import (DAY, ENTRY_KEYS, FETCH_KEYS, FINDING_KINDS, FINDING_STATES, JUDGED, ROW_SURFACES, RULES_ROOT,
-                      RUN_ID, SURFACES, finding_id, finding_states, findings_files, load_run, records, resolve_id, run_files,
-                      run_ids, store_entries, usage_files, usage_records, work_files, work_line_problems, ops_files,
-                      ops_line_problems)
+                      RUN_ID, SURFACES, USAGE, add_models, finding_id, finding_states, findings_files, load_run, records,
+                      resolve_id, run_files, run_ids, store_entries, usage_counts, usage_files, usage_records, work_files,
+                      work_line_problems, ops_files, ops_line_problems)
 from ql_capture import FEEDBACK_ISSUES, FEEDBACK_OUTCOMES, FEEDBACK_TOOL_ISSUES, VERDICTS
 
 DIGEST_MARKER = "digest-week"  # beside the spool: the ISO week in which the SessionStart digest was last shown
@@ -22,6 +22,7 @@ BACKLOG = HOME / "kb" / "_self" / "backlog"  # the item files, which `intake --f
 DETECTOR_LINK = "detector "  # the last link of an item intake files (bl_intake.DETECTOR_LINK; no import of it here)
 WEEK = re.compile(r"(\d{4})-W(\d{2})")
 WORK_TOP = 5  # the items the digest's work lines list, most tokens first
+LAST_PUSH_LOOKBACK = 200  # first-parent commits of the delivery ref searched for the last query log commit
 MISS_KINDS = ("eval", "gap")  # one finding per judged miss: an eval finding with a best article, else a gap finding
 
 
@@ -638,20 +639,15 @@ def show_usage(store, given, limit, out):
     _capped(lines, limit, "--limit 0 prints all", out)
 
 
-def show_spool(out, spool=None):
-    """The local spool by file and by kind of row, never by what a row holds: the spool keeps prompts and answers as
-    typed, and what the store holds is all `show` prints. A session file is named by its number (the store holds no
-    session id), a tools file by its day; each line gives the file's rows by surface, the days they fall on, the
-    rows distill cannot read, and whether its session ended. The last line counts the rows whose id an entry of the
-    committed store carries (rows mode `auto` keeps until their run file is on origin/main)."""
+def spool_scan(spool=None):
+    """The local spool as data, never by what a row holds: [(label, rows, unreadable)] for each file in name order,
+    `rows` being the rows distill reads (the spool keeps prompts and answers as typed: a caller counts them and prints
+    none of their text). A session file is labelled by its number (the store holds no session id) and whether its
+    session ended, a tools file by its day."""
     import ql_distill
     spool = Path(spool) if spool else places()[0] / "spool"
     files = sorted(spool.glob("*.jsonl")) if spool.is_dir() else []
-    if not files:
-        out("spool: empty")
-        return
-    held = {e["id"] for _, e in store_entries(STORE)}
-    parsed, n_session = [], 0
+    out, n_session = [], 0
     for p in files:
         rs, bad = ql_distill.spool_rows(p)
         if p.name.startswith("tools-"):
@@ -659,14 +655,186 @@ def show_spool(out, spool=None):
         else:
             n_session += 1
             label = f"session {n_session}, " + ("ended" if p.with_suffix(".end").exists() else "open")
-        by = _counts((s, n) for s, n in ((s, sum(1 for r in rs if r["surface"] == s)) for s in ROW_SURFACES) if n)
+        out.append((label, rs, bad))
+    return out
+
+
+def by_surface(rows):
+    """{surface: rows of it} in ROW_SURFACES order, the surfaces that have a row only."""
+    return {s: n for s, n in ((s, sum(1 for r in rows if r["surface"] == s)) for s in ROW_SURFACES) if n}
+
+
+def spool_state(spool=None):
+    """The spool's waiting rows: {files, rows, by_kind: {surface: rows}, unreadable}."""
+    scan = spool_scan(spool)
+    rows = [r for _, rs, _ in scan for r in rs]
+    return {"files": len(scan), "rows": len(rows), "by_kind": by_surface(rows), "unreadable": sum(b for _, _, b in scan)}
+
+
+def show_spool(out, spool=None):
+    """The local spool by file and by kind of row, never by what a row holds: the spool keeps prompts and answers as
+    typed, and what the store holds is all `show` prints. A session file is named by its number (the store holds no
+    session id), a tools file by its day; each line gives the file's rows by surface, the days they fall on, the
+    rows distill cannot read, and whether its session ended. The last line counts the rows whose id an entry of the
+    committed store carries (rows mode `auto` keeps until their run file is on origin/main)."""
+    scan = spool_scan(spool)
+    if not scan:
+        out("spool: empty")
+        return
+    held = {e["id"] for _, e in store_entries(STORE)}
+    out(f"spool: {len(scan)} files, {sum(len(rs) for _, rs, _ in scan)} rows")
+    for label, rs, bad in scan:
+        by = _counts(by_surface(rs).items())
         days = sorted({r["ts"][:10] for r in rs if DAY.fullmatch(r["ts"][:10])})
         span = f", days {days[0]}" + (f" to {days[-1]}" if days[-1] != days[0] else "") if days else ""
-        parsed.append((rs, f"  {label}: {len(rs)} rows ({by or 'none'}){span}" + (f", {bad} unreadable" if bad else "")))
-    out(f"spool: {len(files)} files, {sum(len(rs) for rs, _ in parsed)} rows")
-    for _, line in parsed:
-        out(line)
-    out(f"rows whose id the committed store holds: {sum(1 for rs, _ in parsed for r in rs if r['id'] in held)}")
+        out(f"  {label}: {len(rs)} rows ({by or 'none'}){span}" + (f", {bad} unreadable" if bad else ""))
+    out(f"rows whose id the committed store holds: {sum(1 for _, rs, _ in scan for r in rs if r['id'] in held)}")
+
+
+# ---------------------------------------------------------------- structured readers (kbmon's querylog panel)
+
+LOG_TAIL = 200_000  # bytes of the end of distill.log the outcome readers look at
+APPLY_OUTCOMES = (  # (the start of an `apply --push:` line's text, the outcome it ends the run in), tested in order
+    ("pushed ", "pushed"), ("nothing to push", "nothing"), ("conflict: pushed", "conflict"), ("another distill", "locked"),
+    ("CI of the last automatic commit", "waiting"), ("refused", "refused"), ("kbgit.py sync exit", "refused"),
+    ("commit failed", "refused"), ("conflict", "refused"), ("the worktree", "refused"), ("git fetch", "fetch-failed"),
+    ("the revert of", "refused"), ("git clone", "refused"), ("the findings a", "refused"),
+    ("the push was refused", "refused"))
+DISTILL_OUTCOMES = (("logging is off", "off"), ("another distill", "locked"), ("nothing to write", "nothing"),
+                    ("run=", "written"), ("Haiku call failed", "failed"))
+
+
+def log_tail(qdir):
+    """(lines, the log's last write as a UTC time) of the end of the distill.log beside the spool; ([], None) when
+    there is none."""
+    from ql_distill import LOG_NAME
+    log = Path(qdir) / LOG_NAME
+    try:
+        with open(log, "rb") as f:
+            f.seek(0, 2)
+            f.seek(max(0, f.tell() - LOG_TAIL))
+            text = f.read().decode("utf-8", errors="replace")
+        return text.splitlines(), iso(log.stat().st_mtime)
+    except OSError:
+        return [], None
+
+
+def last_outcomes(qdir=None):
+    """{distill, apply}: the last `distill:` line's and the last terminal `apply --push:` line's outcome in the
+    distill.log beside the spool, each None when the log has none, else {outcome, line, when}. The outcome is one of
+    DISTILL_OUTCOMES' or APPLY_OUTCOMES'; `line` is the log line's number from the end, and `when` the log's last write
+    for the outcome that stands last in the log (the lines carry no time), else None. A distill line also gives
+    `entries`, `dropped` and `waiting` when it counts them."""
+    lines, when = log_tail(qdir or places()[0])
+    found = {}
+    for i in range(len(lines) - 1, -1, -1):
+        text = lines[i]
+        for key, prefix, table in (("apply", "apply --push: ", APPLY_OUTCOMES), ("distill", "distill: ", DISTILL_OUTCOMES)):
+            if key in found or not text.startswith(prefix):
+                continue
+            body = text[len(prefix):]
+            outcome = next((o for start, o in table if (start in body if key == "distill" else body.startswith(start))), None)
+            if outcome:
+                found[key] = {"outcome": outcome, "line": len(lines) - i, "when": None}
+                if key == "distill":
+                    found[key].update({k: int(v) for k, v in re.findall(r"\b(entries|dropped|waiting)=(\d+)", body)})
+    last = min((v["line"] for v in found.values()), default=None)
+    for v in found.values():
+        if v["line"] == last:
+            v["when"] = when
+    return {"distill": found.get("distill"), "apply": found.get("apply")}
+
+
+def delivery_home(qdir):
+    """The clone `apply --push` delivers from: a plugin host's managed clone beside its spool, else the clone."""
+    from ql_base import clone_home, plugin_data
+    from ql_deliver import CLONE_NAME
+    return Path(qdir) / CLONE_NAME if plugin_data() is not None else clone_home()
+
+
+def undelivered(qdir=None, cfg=None, run=None):
+    """{entries, runs, since} of the local store's run files that the delivery ref (REMOTE/BRANCH of the clone
+    `apply --push` delivers from) does not hold: the entries in them, the run files, and the time of the oldest run
+    id; zeros and None when the mode is `local` (an entry is delivered once distill wrote it) or the store holds none.
+    `ref` is False when that ref cannot be read, so every run file of the store counts."""
+    qdir, run = Path(qdir or places()[0]), run or run_cmd
+    local = qdir / "store"
+    files = run_files(local)
+    mode = read_mode(cfg or places()[1])
+    out = {"entries": 0, "runs": 0, "since": None, "ref": True}
+    if mode == "local" or not files:
+        return out
+    code, o, _ = run(["git", "ls-tree", "-r", "--name-only", f"refs/remotes/{REMOTE}/{BRANCH}", "--", STORE_REL],
+                     cwd=str(delivery_home(qdir)))
+    held = set(o.split()) if code == 0 else set()
+    out["ref"] = code == 0
+    missing = [p for p in files if f"{STORE_REL}/{p.relative_to(local).as_posix()}" not in held]
+    for p in missing:
+        try:
+            out["entries"] += len(load_run(p)) - 1
+        except (OSError, ValueError):
+            pass
+    out["runs"] = len(missing)
+    days = [p.stem for p in missing if RUN_ID.fullmatch(p.stem)]
+    if days:
+        d = min(days)
+        out["since"] = f"{d[:4]}-{d[4:6]}-{d[6:8]}T{d[9:11]}:{d[11:13]}:{d[13:15]}Z"
+    return out
+
+
+def last_pushed(qdir=None, run=None):
+    """{commit, when} of the newest first-parent commit on the delivery ref whose KB-Auto trailer holds `querylog`
+    (short hash, committer time in UTC), or None."""
+    qdir, run = Path(qdir or places()[0]), run or run_cmd
+    code, o, _ = run(["git", "log", "--first-parent", "-n", str(LAST_PUSH_LOOKBACK), f"refs/remotes/{REMOTE}/{BRANCH}",
+                      "--format=%h%x1f%ct%x1f%(trailers:key=KB-Auto,valueonly,separator=%x2C)%x1e"],
+                     cwd=str(delivery_home(qdir)))
+    for rec in o.split("\x1e") if code == 0 else []:
+        parts = rec.strip("\n").split("\x1f")
+        if len(parts) == 3 and "querylog" in parts[2] and parts[1].isdigit():
+            return {"commit": parts[0], "when": iso(int(parts[1]))}
+    return None
+
+
+def usage_today(qdir=None, today=None):
+    """{rows, models} of the usage the query log holds for the UTC day `today` (default: now): the spool's `usage`
+    rows stamped that day (a prompt's last row of the current reader, as distill reads it) and the usage sidecars of
+    the local store's runs of that day for the entries no such row names. `models` is {model: counts} (`in`, `cw`,
+    `cr`, `out`, `requests`, `cw1h`) summed over the main and the subagent counts; the caller prices it. Only counts
+    leave: the rows' prompts and replies are not read."""
+    import ql_distill
+    qdir = Path(qdir or places()[0])
+    today = today or datetime.datetime.now(datetime.timezone.utc).date()
+    day = today.isoformat()
+    by_prompt = {}
+    for p in sorted((qdir / "spool").glob("*.jsonl")) if (qdir / "spool").is_dir() else []:
+        for r in ql_distill.spool_rows(p)[0]:
+            if r["surface"] == USAGE and r["ts"][:10] == day and isinstance(r.get("prompt_id"), str):
+                by_prompt.setdefault(r["prompt_id"], []).append(r)
+    models, rows = {}, 0
+    counted = set()
+    for pid, rs in by_prompt.items():
+        counts = usage_counts(ql_distill.usage_of(rs))
+        if counts:
+            rows += 1
+            counted.add(pid)
+            add_usage_models(models, counts)
+    local = qdir / "store"
+    for p, objs in records([f for f in usage_files(local) if run_day(f.stem) == today]):
+        for _, u in objs:
+            counts = usage_counts({k: v for k, v in u.items() if k != "id"})
+            if counts and u.get("id") not in counted:
+                rows += 1
+                add_usage_models(models, counts)
+    return {"rows": rows, "models": models}
+
+
+def add_usage_models(into, counts):
+    """The (main, sub) counts of one usage record added into `into`, {model: counts}."""
+    main, sub = counts
+    add_models(into, main)
+    for group in sub.values():
+        add_models(into, group)
 
 
 def show(store=None, run=None, entry=None, findings=False, usage=None, spool=False, kind=None, article=None,
