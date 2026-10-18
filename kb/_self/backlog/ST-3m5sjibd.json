@@ -2,7 +2,7 @@
   "id": "ST-3m5sjibd",
   "kind": "story",
   "title": "redact keeps the words of an ordinary kb question that uses a secret key name or an Authorization scheme in prose",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
@@ -54,5 +54,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it)."
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it).",
+  "claimed_by": "orch-r13"
 }
