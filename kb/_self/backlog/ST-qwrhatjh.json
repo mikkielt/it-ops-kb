@@ -2,7 +2,7 @@
   "id": "ST-qwrhatjh",
   "kind": "story",
   "title": "security/secret-shapes-in-text names the EC, DSA and PGP private key labels and the Purview value first-character rule",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
@@ -65,5 +65,27 @@
     "parked: SP-yyjwfjtc review"
   ],
   "notes": "Plan 2026-10-17: rag.py pack on the EC, DSA and PGP labels is weak (secret-shapes-in-text.md:34 names only PRIVATE KEY and ENCRYPTED PRIVATE KEY); the check fails on all three labels. It shares kb/public with the goal research story, so it runs after it. Orchestrator 2026-10-18 (operator delegate): g1 answered with its recommendation; its secrets class came from the words PRIVATE KEY in a question about which source states a label, and no secret value is involved.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "dabcdff3289059083f0516aa3f415b714fa6abb6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;t=open(\"kb/public/security/secret-shapes-in-text.md\",encoding=\"utf-8\").read()\nw=[\"EC PRIVATE KEY\",\"DSA PRIVATE KEY\",\"PGP PRIVATE KEY BLOCK\"];m=[x for x in w if x not in t]\nfc=[l for l in t.splitlines() if \"S-k57sryj7\" in l and \"first character\" in l.lower()]\nprint(\"missing\",m,\"first-character facts\",len(fc));sys.exit(1 if m or not fc else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "121301f64abff468"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import csv,sys;r=[x for x in csv.reader(open(\"kb/public/_sources.csv\",encoding=\"utf-8\")) if x and x[0]==\"S-wct3uoax\"]\nt=r[0][2] if r else \"\";ok=\"Authorization\" in t and \"Retry-After\" in t;print(repr(t),ok);sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e81e8d61334993c6"
+      }
+    ]
+  }
 }
