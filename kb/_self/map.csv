@@ -139,3 +139,7 @@ kb/_self/tools.md,_tools/kbdecide.py
 kb/_self/tools.md,kb/*/_decisions.csv
 kb/_self/tools.md,kb/*/decision-makers.csv
 kb/_self/tools.md,_tools/coord.py
+kb/_self/monitoring.md,_tools/kbmon.py
+kb/_self/monitoring.md,_tools/mon_*.py
+kb/_self/tools.md,_tools/kbmon.py
+kb/_self/tools.md,_tools/mon_*.py
