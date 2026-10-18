@@ -2,7 +2,7 @@
   "id": "BG-wyz54vd5",
   "kind": "bug",
   "title": "kbmon's live view keeps one CPU core busy the whole time it runs",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-w6amecjt",
   "priority": "P1",
   "rank": 0,
@@ -91,5 +91,18 @@
       "by": "agent"
     }
   ],
-  "claimed_by": "orch-r20"
+  "evidence": {
+    "commit": "61e36cbfb889cf476ee2dc6a6e9fcfc6e7f43ce7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,pty,sys,time,select,signal,resource\npid,fd=pty.fork()\nif pid==0:\n    os.execvp(sys.executable,[sys.executable,\"_tools/kbmon.py\",\"--interval\",\"5\"])\nt=time.time()\nwhile time.time()-t<30:\n    r,_,_=select.select([fd],[],[],0.5)\n    if r:\n        try: os.read(fd,65536)\n        except OSError: break\nos.kill(pid,signal.SIGTERM); os.waitpid(pid,0)\nu=resource.getrusage(resource.RUSAGE_CHILDREN); cpu=u.ru_utime+u.ru_stime\nprint(\"kbmon cpu seconds in 30 s of live view:\",round(cpu,1))\nsys.exit(0 if cpu<6 else 1)"
+        ],
+        "exit": 0,
+        "sha256": "b9da46a13df5049e"
+      }
+    ]
+  }
 }
