@@ -2,7 +2,7 @@
   "id": "ST-qkme64fk",
   "kind": "story",
   "title": "The kb-observer agent: diagnoses an alert or summarises the monitored work, read-only, and only proposes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -51,5 +51,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-18 (operator interview): diagnose and propose, never fix; its proposal is in its answer only, so it writes nothing in the clone. A project agent, not a plugin one: plugin agents ignore permissionMode, hooks and mcpServers (claude/skills-and-subagents.md:104, DOC S2157); kbask passes the caps on the command line all the same. claude --agent runs the whole session as the agent (claude/skills-and-subagents.md:145, DOC S2157)."
+  "notes": "Plan 2026-10-18 (operator interview): diagnose and propose, never fix; its proposal is in its answer only, so it writes nothing in the clone. A project agent, not a plugin one: plugin agents ignore permissionMode, hooks and mcpServers (claude/skills-and-subagents.md:104, DOC S2157); kbask passes the caps on the command line all the same. claude --agent runs the whole session as the agent (claude/skills-and-subagents.md:145, DOC S2157).",
+  "claimed_by": "orch-r20"
 }
