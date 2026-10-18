@@ -57,7 +57,8 @@
     "kb/_self/tools.md",
     "_tools/bench_report.py",
     "kb/_self/reports/benchmarks.md",
-    "README.md"
+    "README.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-dj4bgo4s"
