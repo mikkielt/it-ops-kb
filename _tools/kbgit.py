@@ -63,7 +63,7 @@ runs its own .githooks. A clone whose value is an absolute path to the main clon
 scripts in every worktree, and install-hooks and sync count it as installed there too (hooks_path_is_ours). commit-msg
 replaces any KB-Topics/KB-Sources-*/KB-Answers lines with the computed ones via `git interpret-trailers` (so
 re-running, `-m`, editor commits and --amend never duplicate them), skips merges, skips a rebase re-application whose
-message already has KB-* trailers. It refuses (exit 1, no commit) a message whose KB-Work line check-trailers
+message already has KB-* trailers. It refuses (exit 3, no commit) a message whose KB-Work line check-trailers
 would refuse (an unknown id, an item not claimed, a planning commit naming an item whose file it does not change),
 not a merge or a rebase's commit, and an error of its own refuses nothing (a warning). prepare-commit-msg only
 notes an --amend so commit-msg diffs against HEAD's parent. `git commit --no-verify` skips commit-msg: CI's
@@ -164,7 +164,7 @@ put your commits on): its source and answer ids win a collision.
 
 Exit (fix, fmt): 0 clean (or fixed), 1 --check and something would change, 2 a problem needs a human (nothing is written).
 Exit (history): 0 ok; 1 check-trailers found bad commits, log found nothing, asof/blame found no such file or line;
-2 bad arguments, not a git clone, or a git error. Hooks exit 0, except commit-msg on a refused KB-Work line (1).
+2 bad arguments, not a git clone, or a git error. Hooks exit 0, except commit-msg on a refused KB-Work line (3).
 
 lost-definitions FILE (kg_merge.py), run on a resolved conflict in a Python file before `git add`, with its stages
 still in the index: the definitions the base (:1:) lacks and ours (:2:) or theirs (:3:) has (a top-level function, class

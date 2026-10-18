@@ -68,6 +68,21 @@
       "class": "push",
       "answer": "kg_trailers.refuse_commit_msg called from the cmd_hook wrapper in kbgit.py",
       "by": "operator"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "Which exit status does the refusing commit-msg hook give, so the hook script blocks on a refusal and not on a crash?",
+      "options": [
+        "exit 3, the only code the script turns into a blocked commit",
+        "exit 1, as any crash of the tool also gives"
+      ],
+      "recommendation": "exit 3, the only code the script turns into a blocked commit",
+      "do": {
+        "exit 3, the only code the script turns into a blocked commit": "ST-3mfjrjom",
+        "exit 1, as any crash of the tool also gives": "ST-3mfjrjom"
+      },
+      "class": "push"
     }
   ],
   "links": [

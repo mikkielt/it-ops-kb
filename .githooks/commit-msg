@@ -1,7 +1,11 @@
 #!/bin/sh
-# it-ops-kb: add the KB-* trailers (KB-Topics, KB-Sources-*, KB-Answers) of the staged change.
-# Enabled by `python3 _tools/kbgit.py install-hooks` (git config core.hooksPath .githooks). Never blocks a commit.
+# it-ops-kb: add the KB-* trailers (KB-Topics, KB-Sources-*, KB-Answers) of the staged change, and refuse (exit 1, no
+# commit) a message whose KB-Work line check-trailers would refuse at the push.
+# Enabled by `python3 _tools/kbgit.py install-hooks` (git config core.hooksPath .githooks). Only that refusal blocks a
+# commit: an error of the hook, or no Python (_tools/kbpy exits 127), lets it through. `git commit --no-verify` skips it.
 # _tools/kbpy finds the interpreter on every OS (python3, python, py -3).
 top=$(git rev-parse --show-toplevel 2>/dev/null) || exit 0
-sh "$top/_tools/kbpy" _tools/kbgit.py hook commit-msg "$@" || true
+sh "$top/_tools/kbpy" _tools/kbgit.py hook commit-msg "$@"
+rc=$?
+[ "$rc" = 3 ] && exit 1
 exit 0

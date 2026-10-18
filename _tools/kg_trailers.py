@@ -562,6 +562,9 @@ WORK_RULE = ("a commit's KB-Work names, on one line, only items claimed (doing o
              "item and no other, and no later work commit names that item until it is claimed again")
 
 
+REFUSED = 3  # refuse_commit_msg's exit: the hook script blocks the commit on this code only, not on a crash (exit 1)
+
+
 def amend_base(mark):
     """The base the prepare-commit-msg hook noted in file MARK for an --amend ("merge", "root" or a commit), else None.
     Read before the commit-msg hook runs, which removes the mark."""
@@ -573,7 +576,7 @@ def amend_base(mark):
 
 
 def refuse_commit_msg(path, base):
-    """1, with the reason on stderr, when the commit-msg hook must refuse the message in file PATH: its KB-Work line
+    """REFUSED, with the reason on stderr, when the commit-msg hook must refuse the message in file PATH: its KB-Work line
     fails the checks check-trailers runs on the commit before a push (work_ids_ok, work_state). BASE is amend_base's.
     Merge commits and a rebase's commits are not judged; an error in the check refuses nothing (a hook never blocks
     a commit it cannot judge). The caller runs the hook first, so the message holds its trailers and it has printed
@@ -597,7 +600,7 @@ def refuse_commit_msg(path, base):
         print(f"kbgit.py commit-msg: {WORK} refused: no commit made; fix the message and commit again "
               "(`git commit --no-verify` skips the hook, the pre-push hook and sync's gate still refuse it)",
               file=sys.stderr)
-    return 1 if refused else 0
+    return REFUSED if refused else 0
 
 
 WORKED = ("doing", "done")  # a claimed item (done drops claimed_by but was claimed to get there)
