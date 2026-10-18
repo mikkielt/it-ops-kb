@@ -2,7 +2,7 @@
   "id": "ST-ggsixlo3",
   "kind": "story",
   "title": "multi check names each lost claim and each landing stop of a run",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-7s6uubs7",
   "priority": "P2",
@@ -49,5 +49,6 @@
     "_tools/coord.py",
     "kb/_self/_decisions.csv"
   ],
-  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): a fitness check the harness runs on replays and on paid runs, not a tests.py test; no test file and no change to _tools/tests_ceiling.json."
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): a fitness check the harness runs on replays and on paid runs, not a tests.py test; no test file and no change to _tools/tests_ceiling.json.",
+  "claimed_by": "orch-r21"
 }
