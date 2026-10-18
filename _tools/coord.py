@@ -209,8 +209,18 @@ def take(con, key, holder, token, ttl, now, budget=None):
     return con.execute("SELECT revision FROM entries WHERE key = ?", (key,)).fetchone()["revision"]
 
 
-def claim(args, now):
+def holder_name(args):
+    """The claim's --holder, else `anonymous`: an id like an event's field value, so a digest line never carries free text."""
     holder = args.holder or "anonymous"
+    if not FIELD_VALUE.fullmatch(holder):
+        raise Refused({"ok": False, "error": f"--holder is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {holder[:40]!r}"}, 2)
+    return holder
+
+
+def claim(args, now):
+    holder = holder_name(args)
+    if not FIELD_VALUE.fullmatch(args.key):
+        raise Refused({"ok": False, "error": f"a claim's key is an id of 1 to 120 characters of letters, digits and _ . : / # @ -, not {args.key[:40]!r}"}, 2)
     budget = getattr(args, "budget", None)
     if budget is not None:
         import bl_base
@@ -397,7 +407,7 @@ def overlaps(a, b):
 
 
 def one_line(text, limit=80):
-    return re.sub(r"\s+", "_", str(text))[:limit]
+    return re.sub(r"[\x00-\x1f\x7f-\x9f]", "", re.sub(r"\s+", "_", str(text)))[:limit]
 
 
 def digest(args, now):
@@ -491,8 +501,8 @@ def research_key(topic, term):
 def dedup(args, now):
     """Claim the lack terms of the question's pack that no overlapping live claim covers; name the claims that do.
     A claim on the same anchor topic overlaps when it shares at least half of the smaller lack-set's terms."""
+    holder = holder_name(args)
     topic, terms = fingerprint(args.question)
-    holder = args.holder or "anonymous"
     token = secrets.token_hex(16)
     overlapping, covered, own, taken, others = [], set(), set(), [], []
     with Tx(args.store) as con:

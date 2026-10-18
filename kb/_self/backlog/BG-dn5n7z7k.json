@@ -29,6 +29,25 @@
     "_tools/coord.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the id pattern apply: claim key and --holder of claim only, or also dedup's --holder; and are dedup's research keys left as they are?",
+      "options": [
+        "claim key and holder, dedup holder; dedup research keys left (filed as BG-v53e2pef)",
+        "claim only"
+      ],
+      "recommendation": "claim key and holder, dedup holder; dedup research keys left (filed as BG-v53e2pef)",
+      "do": {
+        "claim key and holder, dedup holder; dedup research keys left (filed as BG-v53e2pef)": "BG-dn5n7z7k",
+        "claim only": "BG-dn5n7z7k"
+      },
+      "class": "design",
+      "answer": "claim key and holder, dedup holder; dedup research keys left (filed as BG-v53e2pef)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
