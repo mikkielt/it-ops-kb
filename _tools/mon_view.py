@@ -2,7 +2,8 @@
 Standard library only; imports `mon_base` and `redact` (at the first redaction).
 
   scrub(obj)                     a copy of a snapshot with every string, key and value, passed through `redact.redact`
-                                 (its `LazyKnown` reads the public root only when a rule needs it)
+                                 (its `LazyKnown` reads the public root only when a rule needs it); a snapshot also gets
+                                 the alerts its `ok` panels judge (`judged`: each module's `alerts(data)`)
   render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, root=".")
                                  one frame of the text view, laid out as the Layout section of the doc gives it: no line
                                  past `width` less one columns, each string redacted, an escape byte only with `ansi`
@@ -46,10 +47,34 @@ class LazyKnown:
         return getattr(redact.known(), name)
 
 
+def judged(snap):
+    """The snapshot with the alerts its `ok` panels judge (a panel module's `alerts(data)`, a list of {kind, id, message,
+    since}) added to its `alerts`; an alert whose id the snapshot already holds is not added twice, so a saved snapshot
+    shown again keeps one."""
+    alerts = list(snap.get("alerts") or [])
+    seen = {a.get("id") for a in alerts if isinstance(a, dict)}
+    for name, panel in snap["panels"].items():
+        if not isinstance(panel, dict) or panel.get("state") != "ok" or not isinstance(panel.get("data"), dict):
+            continue
+        try:
+            module = mon_base.panel_module(name)
+            found = module.alerts(panel["data"]) if hasattr(module, "alerts") else []
+        except Exception:  # noqa: BLE001 - a saved snapshot may hold data the module's judgement does not take
+            continue
+        for alert in found:
+            if alert.get("id") not in seen:
+                seen.add(alert.get("id"))
+                alerts.append(alert)
+    return {**snap, "alerts": alerts}
+
+
 def scrub(obj, memo=None):
     """The snapshot with each string redacted (`redact.redact`), also the keys of an object; numbers, booleans and
-    null stay. A string is redacted once however often it occurs."""
+    null stay. A string is redacted once however often it occurs. A snapshot (an object with `panels`) also gets the
+    alerts its panels judge (`judged`)."""
     import redact
+    if isinstance(obj, dict) and isinstance(obj.get("panels"), dict):
+        obj = judged(obj)
     memo = {} if memo is None else memo
     known = LazyKnown()
 
@@ -249,15 +274,21 @@ def cut(row, width):
     return out
 
 
-def alert_text(alerts):
+def alert_text(alerts, cols=None):
+    """`!! ALERT message — since HH:MM (+N more)` of the first alert; with `cols` a message too long for the line is cut
+    with an ellipsis so that the since and the count stay."""
     first = alerts[0]
     if isinstance(first, dict):
         message = first.get("message") or first.get("id") or json.dumps(first, ensure_ascii=False)
         since = first.get("since")
     else:
         message, since = first, None
-    text = f"!! ALERT {one_line(message)}" + (f" \u2014 since {one_line(since)}" if since else "")
-    return text + (f" (+{len(alerts) - 1} more)" if len(alerts) > 1 else "")
+    head = "!! ALERT "
+    tail = (f" \u2014 since {one_line(since)}" if since else "") + (f" (+{len(alerts) - 1} more)" if len(alerts) > 1 else "")
+    message = one_line(message)
+    if cols and len(head) + len(message) + len(tail) > cols:
+        message = message[:max(1, cols - len(head) - len(tail) - 1)].rstrip() + "\u2026"
+    return head + message + tail
 
 
 def to_text(row, ansi):
@@ -293,7 +324,7 @@ def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, ro
     rows = [[(next(it), s) for _, s in row] for row in rows]
     alerts = snap.get("alerts") or []
     if alerts:
-        head = [[(scrub([alert_text(alerts)])[0], ALERT_COLOUR)]]
+        head = [[(scrub([alert_text(alerts, cols)])[0], ALERT_COLOUR)]]
         rows = head + ([] if ansi else [[("=" * cols, "")]]) + rows
     if height:
         rows = rows[:max(1, int(height) - 1)]

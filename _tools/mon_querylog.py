@@ -5,7 +5,8 @@ The panel reads the query log home of this copy of the tools (`ql_base.places`) 
 `ql_report` and writes nothing. It carries counts, kinds, outcomes, times and commit hashes: no question, prompt or reply
 text of the spool or the store. Cost is priced as `backlog.py cost` prices it (`bl_cost.price_usd`, at
 `bench_core.PRICE`); a model the table has no price for adds nothing and is named. Imports `mon_base`, `ql_base` and
-`ql_report`; `bl_cost` only when it prices.
+`ql_report`; `bl_cost` only when it prices. `alerts(data)` is the panel's judgement of its data (a refused delivery), which
+`mon_view.judged` adds to the snapshot's `alerts`.
 """
 import ql_base
 import ql_report
@@ -83,6 +84,18 @@ def delivery_rows(data):
         row += f" · apply {last['outcome']}"
     flag = "! " if (last and last.get("outcome") == "fetch-failed") or (n and data.get("delivery_ref") is False) else ""
     return [flag + row if flag else row]
+
+
+def alerts(data):
+    """The alerts of the panel's data: one `delivery` alert (id `querylog.delivery`) while the log's last apply outcome is a
+    refused run or a failed gate. A fetch that failed is a `! ` row only, and a later push that delivered clears it (the
+    outcome is then `pushed`). `since` is the `HH:MM` (UTC) of the log's last write."""
+    last = data.get("last_delivery")
+    if not isinstance(last, dict) or last.get("outcome") != "refused":
+        return []
+    since = str(last.get("when") or "")[11:16]
+    return [{"kind": "delivery", "id": "querylog.delivery", "panel": "querylog",
+             "message": "query-log delivery REFUSED: " + (last.get("why") or "no gate named"), "since": since}]
 
 
 def lines(data):

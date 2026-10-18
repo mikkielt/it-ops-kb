@@ -75,6 +75,40 @@
       "class": "design",
       "answer": "yes: 1, the tool found what it looks for",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the snapshot's alerts list get the querylog delivery alert, with mon_base.py and kbmon.py outside the touches?",
+      "options": [
+        "mon_view.scrub adds each ok panel module's alerts(data) to the snapshot (mon_querylog.alerts), once per id",
+        "mon_base.snapshot collects the panels' alerts (needs mon_base.py in the touches)"
+      ],
+      "recommendation": "mon_view.scrub adds each ok panel module's alerts(data) to the snapshot (mon_querylog.alerts), once per id",
+      "do": {
+        "mon_view.scrub adds each ok panel module's alerts(data) to the snapshot (mon_querylog.alerts), once per id": "ST-y3twtacd",
+        "mon_base.snapshot collects the panels' alerts (needs mon_base.py in the touches)": "ST-y3twtacd"
+      },
+      "class": "querylog",
+      "answer": "mon_view.scrub adds each ok panel module's alerts(data) to the snapshot (mon_querylog.alerts), once per id",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Does the alert line cut a long message to keep its since, and what does the alert message say?",
+      "options": [
+        "cut the message with an ellipsis so the since and count stay; message names the failed gate and first error line",
+        "cut the whole line at the width"
+      ],
+      "recommendation": "cut the message with an ellipsis so the since and count stay; message names the failed gate and first error line",
+      "do": {
+        "cut the message with an ellipsis so the since and count stay; message names the failed gate and first error line": "ST-y3twtacd",
+        "cut the whole line at the width": "ST-y3twtacd"
+      },
+      "class": "design",
+      "answer": "cut the message with an ellipsis so the since and count stay; message names the failed gate and first error line",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-18: the reader exists (bl_land.last_push_failure over distill.log, imported, not changed). Run against this host's main checkout on 2026-10-18 the last outcome was 'apply --push: git fetch origin failed; nothing pushed' (a connection reset): with every failure an alert it would fire now, hence gate which. A refused push writes DISABLED in the query log directory; that also alerts. Alert line (operator's layout): colour `ESC[1;97;41m!! ALERT {message} — since {HH:MM}ESC[K ESC[0m`; NO_COLOR `!! ALERT {message} — since {HH:MM}`, then a row of W `=`, the header on line 3. Only blocking failures alert; a fetch or connection failure is a `! ` row in its panel.",
