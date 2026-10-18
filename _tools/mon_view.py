@@ -3,17 +3,30 @@ Standard library only; imports `mon_base` and `redact` (at the first redaction).
 
   scrub(obj)                     a copy of a snapshot with every string, key and value, passed through `redact.redact`
                                  (its `LazyKnown` reads the public root only when a rule needs it)
-  render_text(snap, ansi=False)  the lines of a snapshot as text, each redacted; an escape byte only with `ansi` (colour),
-                                 and no control character of a panel's own text ever reaches the terminal
+  render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, root=".")
+                                 one frame of the text view, laid out as the Layout section of the doc gives it: no line
+                                 past `width` less one columns, each string redacted, an escape byte only with `ansi`
+                                 (colour), and no control character of a panel's own text ever reaches the terminal
+  enable_vt()                    True when the console takes ANSI escapes: always off Windows, there the console's
+                                 virtual terminal processing switched on, False when it cannot be
+  CLEAR                          the cursor-home and erase sequences that start a frame redrawn in place
   render_json(snap)              the snapshot as JSON text
 """
+import inspect
 import json
 import re
+import sys
 
 import mon_base
 
 CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f]")
 COLOURS = {"ok": "32", "timeout": "33", "error": "31", "absent": "90", "unsupported": "90"}
+GUTTER_COLOURS = {"! ": "33", "!!": "31"}  # a warning row, an error row
+ALERT_COLOUR = "1;97;41"
+CLEAR = "\x1b[H\x1b[2J"
+MIN_LOG_ROWS = 3
+VT_FLAG = 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+STD_OUTPUT_HANDLE = -11
 FIELD_CHARS = 200  # characters of a value the generic view of a panel prints
 
 
@@ -79,23 +92,155 @@ def panel_lines(name, data):
     return generic_lines(data)
 
 
-def paint(text, state, ansi):
-    return f"\x1b[{COLOURS.get(state, '0')}m{text}\x1b[0m" if ansi else text
+def enable_vt():
+    """True when this console takes ANSI escape sequences. Off Windows every terminal does; on Windows the console's
+    virtual terminal processing is switched on for standard output, and False says it cannot be (no console, an old
+    console host, a redirected output)."""
+    if sys.platform != "win32":
+        return True
+    try:
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        kernel32.GetStdHandle.restype = ctypes.c_void_p
+        kernel32.GetConsoleMode.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_ulong)]
+        kernel32.SetConsoleMode.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
+        handle = kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+        mode = ctypes.c_ulong()
+        if not handle or not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+            return False
+        return bool(kernel32.SetConsoleMode(handle, mode.value | VT_FLAG))
+    except (AttributeError, OSError, ValueError, ctypes.ArgumentError):
+        return False
 
 
-def render_text(snap, ansi=False):
-    """The text view: a head line, then per panel a line `name  state  seconds` and the panel's lines, indented."""
-    lines = [f"kbmon  schema {plain(snap.get('schema'))}  taken {plain(snap.get('taken', '?'))}"]
-    for name, panel in snap.get("panels", {}).items():
-        panel = panel if isinstance(panel, dict) else {}
-        state = plain(panel.get("state", "?"))
-        seconds = panel.get("seconds")
-        shown = f"{seconds:.2f}s" if isinstance(seconds, (int, float)) and not isinstance(seconds, bool) else "?"
-        lines.append(f"{plain(name):<9} {paint(f'{state:<11}', state, ansi)} {shown}")
-        if state == "ok" and "data" in panel:
-            lines += ["  " + x for x in panel_lines(name, panel["data"])]
-        elif isinstance(panel.get("data"), dict):
-            lines += ["  " + x for x in generic_lines(panel["data"])]
-    for alert in snap.get("alerts", []):
-        lines.append(paint("alert: ", "error", ansi) + plain(alert if isinstance(alert, str) else json.dumps(alert)))
-    return "\n".join(scrub(lines))  # a panel's own view may join redacted values into a shape the rules change
+def takes_width(view):
+    try:
+        params = inspect.signature(view).parameters.values()
+    except (TypeError, ValueError):
+        return False
+    return len(params) >= 2 or any(x.kind is x.VAR_POSITIONAL for x in params)
+
+
+def panel_lines(name, data, width):
+    """The body rows of a panel: its module's `lines(data[, width])` (a second parameter gets the columns it may use), each
+    cut into printable lines; the generic view when it has none or fails."""
+    try:
+        module = mon_base.panel_module(name)
+        view = getattr(module, "lines", None)
+        if view is not None:
+            rows = view(data, width) if takes_width(view) else view(data)
+            return [part for x in rows for part in (plain(x).expandtabs(4).splitlines() or [""])]
+    except Exception:  # noqa: BLE001 - a saved snapshot may hold data the module's view does not take
+        pass
+    return generic_lines(data)
+
+
+def reason(name, state, panel):
+    """The text after a title's dash: why a panel that is not ok shows nothing."""
+    data = panel.get("data") if isinstance(panel.get("data"), dict) else {}
+    if state == "timeout":
+        return "no answer in time"
+    if state == "absent":
+        return f"no mon_{name}.py"
+    if state in ("error", "unsupported"):
+        return one_line(data.get("error" if state == "error" else "reason", ""))
+    return ""
+
+
+def one_line(text):
+    return " ".join(plain(text).split())
+
+
+def title_row(name, panel):
+    """`name  state  S.Ss` at column 0, then `  — reason` unless ok: the name bold, the state coloured, the rest dim."""
+    state = one_line(panel.get("state", "?"))
+    seconds = panel.get("seconds")
+    shown = f"{seconds:.1f}s" if isinstance(seconds, (int, float)) and not isinstance(seconds, bool) else "?"
+    dim = "" if state == "ok" else "90"
+    row = [(one_line(name), "1"), ("  ", ""), (state, COLOURS.get(state, "")), (f"  {shown}", dim)]
+    why = reason(name, state, panel)
+    if state != "ok" and why:
+        row.append((f"  \u2014 {why}", "90"))
+    return row
+
+
+def body_rows(name, panel, width):
+    """The rows under a title, each behind the two-column gutter: a row of the panel's own that starts `! ` or `!!` keeps
+    it (its colour is the whole row's), any other gets two spaces. A panel that is not ok has none."""
+    if panel.get("state") != "ok" or "data" not in panel:
+        return []
+    rows = []
+    for x in panel_lines(name, panel["data"], width):
+        x = x.rstrip()
+        if x[:2] not in GUTTER_COLOURS and x:
+            x = "  " + x
+        rows.append([(x, GUTTER_COLOURS.get(x[:2], ""))])
+    return rows
+
+
+def cut(row, width):
+    """The row within `width` characters: a longer one ends in an ellipsis in the colour of the run it cuts."""
+    if sum(len(t) for t, _ in row) <= width:
+        return row
+    out, used = [], 0
+    for text, sgr in row:
+        room = width - 1 - used
+        if room <= 0:
+            break
+        out.append((text[:room], sgr))
+        used += min(len(text), room)
+        if len(text) > room:
+            break
+    out.append(("\u2026", out[-1][1] if out else ""))
+    return out
+
+
+def alert_text(alerts):
+    first = alerts[0]
+    if isinstance(first, dict):
+        message = first.get("message") or first.get("id") or json.dumps(first, ensure_ascii=False)
+        since = first.get("since")
+    else:
+        message, since = first, None
+    text = f"!! ALERT {one_line(message)}" + (f" \u2014 since {one_line(since)}" if since else "")
+    return text + (f" (+{len(alerts) - 1} more)" if len(alerts) > 1 else "")
+
+
+def to_text(row, ansi):
+    if not ansi:
+        return "".join(t for t, _ in row)
+    return "".join(f"\x1b[{s}m{t}\x1b[K\x1b[0m" if s == ALERT_COLOUR else f"\x1b[{s}m{t}\x1b[0m" if s and t else t
+                   for t, s in row)
+
+
+def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, root="."):
+    """One frame of the text view (the layout in kb/_self/monitoring.md): the alert line when the snapshot has an alert
+    (and, without colour, a row of `=` under it), the header, a blank row, then each panel's title and body rows with a
+    blank row between, the log last. With `height` the log's rows are cut to what the screen has left (three at least)
+    and the frame to `height` less one rows. `width` is the terminal's columns: no line passes `width` less one."""
+    cols = max(20, int(width) - 1)
+    taken = one_line(snap.get("taken", "?")).replace("T", " ", 1)
+    rows = [[("kbmon", "1"), (f" \u00b7 {taken} \u00b7 refresh {interval}s \u00b7 frame {frame} \u00b7 {root}", "")], []]
+    panels = [(n, p if isinstance(p, dict) else {}) for n, p in snap.get("panels", {}).items()]
+    for name, panel in panels:
+        if name == "log":
+            continue
+        rows += [title_row(name, panel)] + body_rows(name, panel, cols) + [[]]
+    for name, panel in panels:
+        if name == "log":
+            tail = body_rows(name, panel, cols)
+            if height:
+                tail = tail[:max(MIN_LOG_ROWS, int(height) - 2 - len(rows))]
+            rows += [title_row(name, panel)] + tail
+    while rows and not rows[-1]:
+        rows.pop()
+    texts = scrub([t for row in rows for t, _ in row])  # a panel's own view may join redacted values into a new shape
+    it = iter(texts)
+    rows = [[(next(it), s) for _, s in row] for row in rows]
+    alerts = snap.get("alerts") or []
+    if alerts:
+        head = [[(scrub([alert_text(alerts)])[0], ALERT_COLOUR)]]
+        rows = head + ([] if ansi else [[("=" * cols, "")]]) + rows
+    if height:
+        rows = rows[:max(1, int(height) - 1)]
+    return "\n".join(to_text(cut(row, cols), ansi) for row in rows)

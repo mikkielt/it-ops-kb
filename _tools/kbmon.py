@@ -5,13 +5,17 @@
                                querylog, host, sprint and log, each with its state (ok, timeout, error, absent or
                                unsupported), its seconds and, unless it timed out or is absent, its data
   kbmon.py --once              print the same panels as plain text, with no escape byte
-  kbmon.py                     print the text view every --interval seconds, --count times (0: until interrupted)
+  kbmon.py                     show the text view every --interval seconds, --count times (default: until interrupted); on a
+                               terminal it is redrawn in place with ANSI escapes, on a pipe or under NO_COLOR it is
+                               plain frames one after another
 
   --root DIR                   the clone to read (default: the one this script is in)
   --panel NAME                 only this panel (repeatable)
   --timeout S                  seconds each panel may take; one still running then is shown as timeout (default 10)
-  --ansi                       colour the text view (an escape byte); a clear of the screen between live frames
-  --interval S, --count N      the live view's pause between frames and number of frames
+  --ansi                       colour the text view and redraw live frames in place (an escape byte), also on a pipe
+                               or under NO_COLOR
+  --interval S, --count N      the live view's pause between frames, 1 to 300 seconds (default 5), and number of frames
+                               (1 or more)
   --store PATH, --url URL, --key-file PATH   the coord store, or the coord server and its operator's key file
   --from-snapshot FILE         show a snapshot saved with --json instead of reading the sources
 
@@ -21,6 +25,8 @@ is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `m
 run, `mon_view.py` the output).
 """
 import argparse
+import os
+import shutil
 import sys
 import time
 from pathlib import Path
@@ -29,8 +35,8 @@ import mon_base
 import mon_view
 
 DEFAULT_TIMEOUT = 10.0  # seconds a panel may take
-DEFAULT_INTERVAL = 2.0  # seconds between live frames
-CLEAR = "\x1b[H\x1b[2J"
+DEFAULT_INTERVAL = 5  # seconds between live frames
+MAX_INTERVAL = 300
 
 
 def positive(text):
@@ -40,10 +46,17 @@ def positive(text):
     return value
 
 
-def whole(text):
+def interval(text):
     value = int(text)
-    if value < 0:
-        raise argparse.ArgumentTypeError("must be 0 or more")
+    if not 1 <= value <= MAX_INTERVAL:
+        raise argparse.ArgumentTypeError(f"must be 1 to {MAX_INTERVAL}")
+    return value
+
+
+def frames(text):
+    value = int(text)
+    if value < 1:
+        raise argparse.ArgumentTypeError("must be 1 or more")
     return value
 
 
@@ -55,8 +68,8 @@ def parser():
     mode.add_argument("--json", action="store_true", help="print one snapshot as JSON")
     mode.add_argument("--once", action="store_true", help="print one snapshot as plain text")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
-    ap.add_argument("--interval", type=positive, default=DEFAULT_INTERVAL, metavar="S")
-    ap.add_argument("--count", type=whole, default=0, metavar="N")
+    ap.add_argument("--interval", type=interval, default=DEFAULT_INTERVAL, metavar="S")
+    ap.add_argument("--count", type=frames, default=None, metavar="N")
     ap.add_argument("--timeout", type=positive, default=DEFAULT_TIMEOUT, metavar="S")
     ap.add_argument("--store", metavar="PATH")
     ap.add_argument("--url", metavar="URL")
@@ -75,17 +88,36 @@ def take(a, names):
     return mon_view.scrub(snap)
 
 
+def colour(a, out, live_view):
+    """Whether the text view carries escape bytes: with `--ansi`; else a live view on a terminal without NO_COLOR. Where
+    the console cannot take them (`mon_view.enable_vt()` is False, Windows only) the frames are plain."""
+    if not (a.ansi or (live_view and out.isatty() and not os.environ.get("NO_COLOR"))):
+        return False
+    return mon_view.enable_vt()
+
+
+def frame_text(snap, a, ansi, out, frame):
+    """One frame, laid out for the terminal's columns (and, redrawn in place on a terminal, its lines)."""
+    size = shutil.get_terminal_size()
+    root = "." if a.root.resolve() == Path(__file__).resolve().parent.parent else str(a.root)
+    height = size.lines if ansi and out.isatty() else None
+    return mon_view.render_text(snap, ansi, size.columns, height, frame, a.interval, root)
+
+
 def live(a, names, out):
-    """The text view again and again; the exit code is that of the last snapshot."""
+    """The text view again and again, redrawn in place with ANSI escapes or one plain frame after another; the exit code
+    is that of the last snapshot."""
+    ansi = colour(a, out, True)
     code, frame = 0, 0
     try:
-        while not a.count or frame < a.count:
+        while a.count is None or frame < a.count:
             snap = take(a, names)
             code = 1 if snap["alerts"] else 0
-            out.write((CLEAR if a.ansi else "") + mon_view.render_text(snap, a.ansi) + "\n" + ("" if a.ansi else "\n"))
-            out.flush()
             frame += 1
-            if not a.count or frame < a.count:
+            text = frame_text(snap, a, ansi, out, frame)
+            out.write((mon_view.CLEAR if ansi else "") + text + "\n" + ("" if ansi else "\n"))
+            out.flush()
+            if a.count is None or frame < a.count:
                 time.sleep(a.interval)
     except KeyboardInterrupt:
         pass
@@ -101,7 +133,8 @@ def main(argv=None, out=None):
     try:
         if a.json or a.once:
             snap = take(a, names)
-            out.write((mon_view.render_json(snap) if a.json else mon_view.render_text(snap, a.ansi)) + "\n")
+            text = mon_view.render_json(snap) if a.json else frame_text(snap, a, colour(a, out, False), out, 1)
+            out.write(text + "\n")
             out.flush()
             return 1 if snap["alerts"] else 0
         return live(a, names, out)
