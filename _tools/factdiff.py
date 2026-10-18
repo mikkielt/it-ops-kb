@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fact diff: turn "a source changed" into "these facts still hold, these changed, these are gone" (stdlib only).
 
-  factdiff.py [--root NAME] anchor [SELECTION] [--refetch] [--max-age DAYS] [--dry-run] [--quotes CSV | --propose]
+  factdiff.py [--root NAME] anchor [SELECTION] [--refetch] [--max-age DAYS] [--dry-run] [--lines N[,N...]] [--quotes CSV | --propose]
       locate each fact's backing sentence in the current text of its sources and write its anchor; --quotes CSV
       (header `line,quote` or `line,source,quote`; needs one --file F) gives the quote each new fact of F rests on, at
       most QUOTE_WORDS words, by the fact's line, and in the three-column form by the one cited source the quote is
@@ -14,7 +14,9 @@
       with --file and no other selector only the facts of those files that hold no anchor row (a new or reworded
       fact), whose row is unlocated:fetch-error, not-text or gone (its source fetched again, past the cache) and the
       lines the quote CSV names are anchored, the rows of other facts and files are kept and _fetch_state.csv is not
-      written
+      written; --lines N[,N...] (needs one --file F and no other selector) keeps that to the facts on those lines of F, so
+      that the rows of facts the caller did not write stay out of its commit, and a line that holds no tagged fact of F
+      is refused, exit 2, nothing written
   factdiff.py [--root NAME] snapshot [SELECTION] [--refetch] [--max-age DAYS] [--dry-run]
       write the normalized text of the root's live copy sources, with attribution, to <root>/_snapshots/<id>.txt
   factdiff.py [--root NAME] calibrate history --repo DIR [--path P] [--since D] [--pairs N] | soft404 [--hosts N]
@@ -783,6 +785,12 @@ def cmd_anchor(a):
         return 2
     if a.file:
         rel = a.file[0]
+    lines = set(getattr(a, "lines", None) or ())
+    if lines:
+        held = {f[2] for fs in facts.values() for f in fs if f[1] == rel}
+        if lines - held:
+            print("\n".join(f"anchor: --lines {n}: {rel}:{n} is no tagged fact of the file" for n in sorted(lines - held)), file=sys.stderr)
+            return 2
     if propose:
         if not any(f[1] == rel for fs in facts.values() for f in fs):
             print(f"anchor: {rel} holds no tagged fact", file=sys.stderr)
@@ -810,6 +818,8 @@ def cmd_anchor(a):
             again = row is not None and row["status"] in RETRY_STATUS and (a.refetch or not backing_off(row, when))
             if again:
                 retry.add(sid)
+            if lines and f[2] not in lines:
+                return False
             return row is None or again or (f[1] == rel and quote_for(quotes, f[2], sid) is not None)
         todo = {sid: [f for f in fs if f[1] in only and wanted(f, sid)] for sid, fs in facts.items()}
         ids = [i for i in ids if todo.get(i)]
@@ -2553,6 +2563,17 @@ def cmd_anchors(a):
 PHASES = {"detect": cmd_detect, "review": cmd_review, "apply": cmd_apply}  # each writes a census.phase ops row
 
 
+def line_list(text):
+    """The set of line numbers of a `--lines N[,N...]` argument."""
+    try:
+        out = {int(n) for n in text.split(",")}
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"{text!r}: want line numbers as N[,N...]")
+    if min(out) < 1:
+        raise argparse.ArgumentTypeError(f"{text!r}: line numbers start at 1")
+    return out
+
+
 def main():
     global ROOT
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -2569,6 +2590,8 @@ def main():
     an.add_argument("--dry-run", action="store_true")
     an.add_argument("--quotes", metavar="CSV", help=f"the quote each new fact of the one --file rests on, at most {QUOTE_WORDS} "
                                                      "words, as a CSV of `line,quote` or, for a fact that cites several sources, `line,source,quote`")
+    an.add_argument("--lines", metavar="N[,N...]", type=line_list, help="anchor only the facts on these lines of the one --file "
+                                                                        "(a line that holds no tagged fact: exit 2)")
     an.add_argument("--propose", action="store_true", help="print, for each fact of the one --file that holds no located anchor, the "
                                                            "passage of each cited page that best holds it as a `line,source,quote` "
                                                            "CSV line; writes nothing")
@@ -2632,6 +2655,8 @@ def main():
     kbcommon.KB = ROOT.path
     if a.cmd == "anchor" and (a.quotes or a.propose) and len(a.file) != 1:
         ap.error(f"{'--quotes' if a.quotes else '--propose'} needs exactly one --file: its lines are that file's")
+    if a.cmd == "anchor" and a.lines and (len(a.file) != 1 or a.topic or a.dir or a.source or a.propose):
+        ap.error("--lines needs exactly one --file and no other selector and no --propose: its lines are that file's")
     if a.cmd == "anchor" and a.propose and (a.quotes or a.topic or a.dir or a.source):
         ap.error("--propose takes one --file and no other selector and no --quotes")
     if a.cmd == "calibrate" and a.what == "history" and not a.repo:
