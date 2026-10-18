@@ -66,7 +66,9 @@
         "at most every 10 seconds, kept in the session state": "ST-46kxzalv",
         "at every Bash or Skill tool event": "ST-46kxzalv"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "at most every 10 seconds, kept in the session state",
+      "by": "operator"
     },
     {
       "id": "g2",
