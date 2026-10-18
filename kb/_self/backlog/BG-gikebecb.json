@@ -2,7 +2,7 @@
   "id": "BG-gikebecb",
   "kind": "bug",
   "title": "coord.py serve and its client send operator tokens over plain http to a non-loopback host with no warning",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
@@ -60,5 +60,6 @@
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
-  "notes": "Plan 2026-10-17: the old repro only read coord.py for is_loopback; it is now the planted run (client to 192.0.2.1, serve on 192.0.2.1, which never binds, and --plain-http), which fails on origin/main 3dba0ef83. Knowledge: the goal research story's RFC 6750 TLS facts. Plan 2026-10-17: kb_mcp.py's coord tools pass KB_COORD_URL as --url (kb_mcp.py:1004), so a plain http url to a host that is not loopback is refused there too; the remedy is an https url (a TLS front end), as the kb's RFC 6750 fact asks."
+  "notes": "Plan 2026-10-17: the old repro only read coord.py for is_loopback; it is now the planted run (client to 192.0.2.1, serve on 192.0.2.1, which never binds, and --plain-http), which fails on origin/main 3dba0ef83. Knowledge: the goal research story's RFC 6750 TLS facts. Plan 2026-10-17: kb_mcp.py's coord tools pass KB_COORD_URL as --url (kb_mcp.py:1004), so a plain http url to a host that is not loopback is refused there too; the remedy is an https url (a TLS front end), as the kb's RFC 6750 fact asks.",
+  "claimed_by": "orch-r13"
 }
