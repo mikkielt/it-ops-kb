@@ -2,7 +2,7 @@
   "id": "ST-hp5cccy7",
   "kind": "story",
   "title": "kbask.py asks and answers through coord and runs one capped read-only remediation per alert",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -110,5 +110,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-18 (operator interview): you start it by hand; kbmon stays read-only and kbask is the one writer of asks. Caps: --max-budget-usd 0.5 --max-turns 30 --model sonnet, --permission-mode dontAsk (claude -p denies what would prompt, agents/headless-agent-runtimes.md:23, DOC S1800; the budget is an estimate a run can pass, :52, DOC S1824). The checks put a fake claude first on PATH, so no check makes a paid model call; the paid path is the operator's first real run."
+  "notes": "Plan 2026-10-18 (operator interview): you start it by hand; kbmon stays read-only and kbask is the one writer of asks. Caps: --max-budget-usd 0.5 --max-turns 30 --model sonnet, --permission-mode dontAsk (claude -p denies what would prompt, agents/headless-agent-runtimes.md:23, DOC S1800; the budget is an estimate a run can pass, :52, DOC S1824). The checks put a fake claude first on PATH, so no check makes a paid model call; the paid path is the operator's first real run.",
+  "claimed_by": "orch-r20"
 }
