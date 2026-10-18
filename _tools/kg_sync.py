@@ -441,13 +441,14 @@ def gate_needs(paths):
     def why(hit, what):
         return f"{what} changed: {sorted(hit)[0]}" + (f" (+{len(hit) - 1})" if len(hit) > 1 else "") if hit else None
     root = {p for p in ps if "/" not in p}  # README.md, AGENTS.md: check.py validates their citations too
+    gone = {p for p in ps if not os.path.lexists(os.path.join(KB, p))}  # deleted, or the old path of a rename: an item's touches may name it
     return {"check": why(content | tools | root, "kb content, a root file or a tool"),
             "fetch": why({p for p in ps if p in arts or p.endswith(("/_artifacts.csv", "/_sources.csv")) or p == "_tools/fetch.py"},
                          "a pinned artifact or its row"),
             "doc2query": why({p for p in content if p.endswith(".md") or "/doc2query/" in p} | ({"_tools/doc2query.py"} & ps),
                              "an article or its expansions"),
             "selfdoc": why(ps - content - items - store, "a file kb/_self describes"),
-            "backlog": why(items | ({"_tools/backlog.py"} & ps), "a backlog item"),
+            "backlog": why(items | ({"_tools/backlog.py"} & ps) | gone, "a backlog item or a deleted or renamed file"),
             "querylog": why(store, "the query log store"),
             "dropped": why(ps & {"_tools/test_ids_dropped.txt", "_tools/perfcheck.py"}, "the dropped test ids"),
             "selectors": why({p for p in tools if TEST_FILE.fullmatch(p)}, "a test file")}  # a deleted or renamed one too
@@ -649,7 +650,7 @@ def gate(r, up, host, fix_check=False, since=None):
     """The checks the changed paths (gate_paths) can break, then check-trailers on up..HEAD:
     check.py for kb content, a root file (README.md, AGENTS.md) or a tool, fetch.py --offline for a pinned artifact or its row, doc2query.py stale for an
     article or its expansions, selfdoc.py stale --since UP for a file kb/_self describes (a `Self-Reviewed:` trailer
-    clears a doc), backlog.py check for backlog items, backlog.py selectors for a changed, deleted or renamed
+    clears a doc), backlog.py check for backlog items or a deleted or renamed tracked file, backlog.py selectors for a changed, deleted or renamed
     _tools/test_*.py file (selector_gate: refused for a done item whose check selects no test), querylog.py check for the
     query log store, rag.py eval --file on the lookup_heldout.csv beside a changed lookup_eval.csv, lookup_heldout.csv
     or doc2query/expansions.csv, or of the root of a changed article (heldout_checks: refused for a REWORD line), and tests.py
