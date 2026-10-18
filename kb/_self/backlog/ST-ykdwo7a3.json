@@ -57,7 +57,8 @@
     "_tools/bench_multi.py",
     "_tools/benchmarks.py",
     "kb/_self/tools.md",
-    "kb/_self/reports/multi_bench.csv"
+    "kb/_self/reports/multi_bench.csv",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-b2k5y46l"
