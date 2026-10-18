@@ -81,6 +81,57 @@
       "class": "design",
       "answer": "coord.py --url URL --key-file PATH as a child process bounded by --timeout",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the coord panel report absent and timeout, which mon_base's worker (outside this item's touches) gives a panel no way to say?",
+      "options": [
+        "mon_coord wraps mon_base's worker so collect declares absent or timeout, and a bug asks mon_base for the state",
+        "report error or unsupported instead"
+      ],
+      "recommendation": "mon_coord wraps mon_base's worker so collect declares absent or timeout, and a bug asks mon_base for the state",
+      "do": {
+        "mon_coord wraps mon_base's worker so collect declares absent or timeout, and a bug asks mon_base for the state": "ST-q4qqiw2w",
+        "report error or unsupported instead": "ST-q4qqiw2w"
+      },
+      "class": "design",
+      "answer": "mon_coord wraps mon_base's worker so collect declares absent or timeout, and a bug asks mon_base for the state",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How are the panel's three coord.py children bounded, given the panel is not told --timeout?",
+      "options": [
+        "all three at once, capped together at 30 seconds, killed at exit; kbmon's --timeout bounds the panel",
+        "one at a time with the panel's own cap each"
+      ],
+      "recommendation": "all three at once, capped together at 30 seconds, killed at exit; kbmon's --timeout bounds the panel",
+      "do": {
+        "all three at once, capped together at 30 seconds, killed at exit; kbmon's --timeout bounds the panel": "ST-q4qqiw2w",
+        "one at a time with the panel's own cap each": "ST-q4qqiw2w"
+      },
+      "class": "design",
+      "answer": "all three at once, capped together at 30 seconds, killed at exit; kbmon's --timeout bounds the panel",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does the coord panel ask of wait and digest, which take a since and key list?",
+      "options": [
+        "wait --since 0 --timeout 0 keeping the newest 10 events; digest --key '*' --lines 20",
+        "track the last sequence seen between frames"
+      ],
+      "recommendation": "wait --since 0 --timeout 0 keeping the newest 10 events; digest --key '*' --lines 20",
+      "do": {
+        "wait --since 0 --timeout 0 keeping the newest 10 events; digest --key '*' --lines 20": "ST-q4qqiw2w",
+        "track the last sequence seen between frames": "ST-q4qqiw2w"
+      },
+      "class": "design",
+      "answer": "wait --since 0 --timeout 0 keeping the newest 10 events; digest --key '*' --lines 20",
+      "by": "agent"
     }
   ],
   "knowledge": {
