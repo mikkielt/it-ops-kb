@@ -1,9 +1,9 @@
 ---
 topic: security/secret-shapes-in-text
 priority: P2
-applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM and OpenSSH private key blocks, key=value assignments, SQL Server connection strings"
+applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM, OpenSSH and OpenPGP private key blocks, key=value assignments, SQL Server connection strings"
 retrieved_utc: 2026-10-18
-sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys]
+sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys, S-vstqd426, S-mi4dlpr3, S-4tr3garn]
 status: partial
 ---
 
@@ -41,13 +41,22 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - OpenSSL's traditional format, which the RSA write routines still use, is a block labelled `RSA PRIVATE KEY`. [DOC S-as3c23xb]
 - OpenSSH writes its own private key files between `BEGIN OPENSSH PRIVATE KEY` and `END OPENSSH PRIVATE KEY`, and still names a `SSH PRIVATE KEY FILE FORMAT 1.1` legacy header. [CODE S-cr2wj4s2: sshkey.c#MARK_BEGIN, sshkey.c#MARK_END, sshkey.c#LEGACY_BEGIN]
 - The key material of every one of these formats sits on the lines between the two markers, over many lines, so replacing only the `BEGIN` line leaves the secret in the body. [DER S-kskf5yv7, S-cr2wj4s2: the body is between the markers, not on the marker line]
-- Four labels end in `PRIVATE KEY` (`PRIVATE KEY`, `ENCRYPTED PRIVATE KEY`, `RSA PRIVATE KEY`, `OPENSSH PRIVATE KEY`); the label may be preceded by an algorithm word, so a match on the marker's last two words covers all four. [DER S-kskf5yv7, S-as3c23xb, S-cr2wj4s2: the labels listed above]
+- An elliptic curve key in the PEM form is the Base64 of a DER `ECPrivateKey` sandwiched between `-----BEGIN EC PRIVATE KEY-----` and `-----END EC PRIVATE KEY-----`; RFC 5915 calls local storage of the key out of its scope and names this one as the popular format. [DOC S-vstqd426]
+- An encrypted `ECPrivateKey` in that PEM form puts `Proc-Type:` and `DEK-INFO:` fields before the DER data, between the same two `EC PRIVATE KEY` markers. [DOC S-vstqd426]
+- OpenSSL's header names the traditional private key labels as `RSA PRIVATE KEY`, `DSA PRIVATE KEY` and `EC PRIVATE KEY`, beside `PRIVATE KEY` (PKCS #8) and `ENCRYPTED PRIVATE KEY`. [CODE S-mi4dlpr3: include/openssl/pem.h#L43-L57]
+- The `DSA PRIVATE KEY` label is stated here from that header only: no specification text naming it was read, so it is implementation, not a promise. [UNK: no RFC or product page naming the DSA label found]
+- OpenPGP armors a private key with the header line `-----BEGIN PGP PRIVATE KEY BLOCK-----`: five dashes on each side of the text, and the line must start at the beginning of a line with nothing but whitespace after it; the tail line is the matching `END PGP PRIVATE KEY BLOCK`. [DOC S-4tr3garn]
+- The armor is the header line, armor headers (`Key: value` lines such as `Version` and `Comment`), a blank line, the base64 data, an optional checksum and the tail; the base64 lines are at most 76 characters, so the key material is in the data lines, not on the header line. [DOC S-4tr3garn]
+- The PGP label ends in `PRIVATE KEY BLOCK`, the others in `PRIVATE KEY`: `PRIVATE KEY`, `ENCRYPTED PRIVATE KEY`, `RSA PRIVATE KEY`, `EC PRIVATE KEY`, `DSA PRIVATE KEY` and `OPENSSH PRIVATE KEY` all close with `PRIVATE KEY-----`, the label may be preceded by an algorithm word, and `PGP PRIVATE KEY BLOCK` has ` BLOCK` after those two words, so a match on `PRIVATE KEY-----` alone covers the six and misses the PGP block. [DER S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-vstqd426, S-mi4dlpr3, S-4tr3garn: the labels listed above]
 
 ### Assignments and connection strings
 - A SqlClient connection string is semicolon-separated keyword=value pairs; the password keyword is `Password` or `PWD`, and the page advises against it in favour of integrated security. [DOC S-xnlryf7y]
 - A connection string value that contains a semicolon or a quote character must be enclosed in double quotation marks (single quotation marks when it holds a semicolon and a double quote), so a quoted value can hold a `;`. [DOC S-xnlryf7y]
 - Connection string keywords are case-insensitive. [DOC S-lglgs6wg]
 - Microsoft's Purview pattern for a SQL Server connection string takes the string `Password` or `pwd` (where `pwd` isn't preceded by a lowercase letter), an equal sign, then any combination of 7-128 characters that aren't a semicolon, forward slash or quotation mark. [DOC S-k57sryj7]
+- The same pattern puts one more rule on the first character of the value: after the equal sign comes one character that isn't a dollar sign, percent symbol, greater than symbol, at symbol, quotation mark, semicolon, left brace or left bracket (the page prints `[` for the brace and `{` for the bracket), and only then the 7-128 characters; the match ends at a semicolon or quotation mark. [DOC S-k57sryj7]
+- The first character is outside the 7-128 count, so a value the entity matches is 8 to 129 characters long, and a password that starts with one of those eight characters, or is shorter than 8, is not matched by it. [DER S-k57sryj7: the pattern order above (first character, then 7-128 characters)]
+- That first-character rule belongs to a detector tuned for few false matches, not to the grammar of a connection string value: the SqlClient page restricts a value only by the quoting rule above, so a redactor that copies the first-character rule leaves such a password in the text. [DER S-k57sryj7, S-xnlryf7y: the pattern against the quoting rule]
 - The same detector ignores a value that is already a placeholder: `Password` or `pwd` followed by `=` and an asterisk, or by `=` and a `<...>` form of up to 200 letters, digits, `*`, hyphens, underscores or spaces. [DOC S-k57sryj7]
 - The AWS documentation pairs an access key ID with a secret access key and exports the latter as the environment variable `AWS_SECRET_ACCESS_KEY`; its example value contains `/` characters. [DOC S-d2kitjup, S-imedhmhc]
 - A value rule that stops at `/` therefore cuts an AWS secret access key at its first slash and leaves the rest in the text; a value rule for that key reads up to whitespace, a quote or the end of the assignment. [DER S-d2kitjup, S-imedhmhc: the documented example holds `/`]
@@ -94,8 +103,11 @@ Open gaps of this topic: `python3 _tools/rag.py audit security/secret-shapes-in-
 | URL userinfo | `scheme://user:` ... `@host` | pct-encoded text up to `@` | RFC 3986 |
 | PKCS #8 / PEM key | `BEGIN [ENCRYPTED ]PRIVATE KEY` | base64 lines to the `END` line | RFC 7468 |
 | Traditional RSA | `BEGIN RSA PRIVATE KEY` | base64 lines, may carry headers | OpenSSL |
+| Traditional EC | `BEGIN EC PRIVATE KEY` | base64 of a DER `ECPrivateKey`, may carry `Proc-Type:` and `DEK-INFO:` | RFC 5915 |
+| Traditional DSA | `BEGIN DSA PRIVATE KEY` | base64 lines to the `END` line | OpenSSL pem.h |
+| OpenPGP key | `BEGIN PGP PRIVATE KEY BLOCK` | armor headers, a blank line, base64 lines to the `END` line | RFC 9580 |
 | OpenSSH key | `BEGIN OPENSSH PRIVATE KEY` | base64 lines to the `END` line | sshkey.c |
-| Connection string | `Password=` or `PWD=` | text up to `;`, or a quoted value | SqlClient docs |
+| Connection string | `Password=` or `PWD=` | text up to `;`, or a quoted value; Purview: a first character outside 8 symbols, then 7-128 characters | SqlClient docs, Purview |
 | Environment line | `AWS_SECRET_ACCESS_KEY=` | may hold `/` and `+` | AWS docs |
 | JSON string value, escaped | `\"key\": \"` inside another string | `\"` for a quote, `\\` for a backslash | RFC 8259 |
 | Markdown link reference definition | `[label]:` at line start | a destination with no space, or `<...>`, then an optional quoted title | CommonMark 0.31.2 |

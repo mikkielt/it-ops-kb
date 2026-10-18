@@ -42,6 +42,23 @@
   "depends_on": [
     "ST-6f6nfbqv"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which source states the DSA PRIVATE KEY label in secret-shapes-in-text, since no RFC or product page names it?",
+      "options": [
+        "OpenSSL pem.h header as a CODE fact plus an UNK note that no specification text was read",
+        "leave the DSA label as a gap with no fact"
+      ],
+      "recommendation": "OpenSSL pem.h header as a CODE fact plus an UNK note that no specification text was read",
+      "do": {
+        "OpenSSL pem.h header as a CODE fact plus an UNK note that no specification text was read": "ST-qwrhatjh",
+        "leave the DSA label as a gap with no fact": "ST-qwrhatjh"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
