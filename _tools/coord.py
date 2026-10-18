@@ -76,7 +76,8 @@ reads DIR on every request, so removing a file revokes that operator at once. A 
 the file --key-file names (never from argv or the environment), as `Authorization: Bearer TOKEN` in `POST /v1/run`
 with the body {"argv": [the command and its arguments]}; the server answers 401 to a token no file holds (or two
 files hold) and runs the command on its store otherwise, answering {"code": N, "body": ...}, where code and body are
-what the command would have printed and exited with. The server adds the operator's name as the field `operator` to
+what the command would have printed and exited with; a `wait` checks the token again once a second and before it
+replies, and answers 401 instead of an event when the file is gone. The server adds the operator's name as the field `operator` to
 each event it records (a client cannot set it) and never serves `--store`. `wait` is a long-poll: the request is held
 until an event arrives or S seconds pass. The request carries the token in the clear over plain http, so reach a server
 beyond loopback through a TLS front end (an https URL is accepted): a plain http --url whose host is not loopback, and a
@@ -130,6 +131,7 @@ INTENT_SECONDS = 86400
 SESSION_LEASE = "session/"  # the presence lease of a session: key session/<id>, held while the session lives
 MAX_FIELDS = 8
 POLL_SECONDS = 0.05
+RECHECK_SECONDS = 1.0
 OPERATOR_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,63}")
 BODY_LIMIT = 65536
 REQUEST_SECONDS = 60
@@ -137,6 +139,10 @@ ENDPOINT = "/v1/run"
 LIVE = "(expires IS NULL OR expires > :now OR value IS NOT NULL)"  # a row with a value outlives its lease
 PUBLIC = ("key, value, revision, CASE WHEN expires > :now THEN holder END AS holder, "
           "CASE WHEN expires > :now THEN expires END AS expires")
+
+
+class Revoked(Exception):
+    """A served command found its caller's token no longer names its operator."""
 
 
 class Refused(Exception):
@@ -388,7 +394,12 @@ def post(args, now):
 
 
 def wait(args, now):
+    """Events after --since, held until one arrives or --timeout passes. Behind `serve`, args.recheck says whether the
+    caller's token still names its operator: asked about once a second and before any reply, and a revoked caller
+    gets Revoked, not an event."""
+    recheck = getattr(args, "recheck", None)
     deadline = time.monotonic() + args.timeout
+    next_recheck = time.monotonic() + RECHECK_SECONDS
     con = connect(args.store)
     try:
         con.execute(EVENTS_SCHEMA)
@@ -396,9 +407,15 @@ def wait(args, now):
             rows = con.execute("SELECT * FROM events WHERE seq > ? ORDER BY seq", (args.since,)).fetchall()
             if rows or time.monotonic() >= deadline:
                 break
+            if recheck and time.monotonic() >= next_recheck:
+                if not recheck():
+                    raise Revoked
+                next_recheck = time.monotonic() + RECHECK_SECONDS
             time.sleep(min(POLL_SECONDS, max(deadline - time.monotonic(), 0)))
     finally:
         con.close()
+    if recheck and not recheck():
+        raise Revoked
     return {"ok": True, "since": args.since, "last": rows[-1]["seq"] if rows else args.since,
             "events": [event_json(r) for r in rows], "timed_out": not rows}
 
@@ -756,7 +773,11 @@ class Handler(http.server.BaseHTTPRequestHandler):
         try:
             args = build_parser(QuietParser, True).parse_args(argv)
             args.store, args.operator = self.server.store, operator
+            header = self.headers.get("Authorization")
+            args.recheck = lambda: authenticate(self.server.keys, header) == operator
             body, code = run(args, time.time())
+        except Revoked:
+            return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
         except Refused as refused:
             body, code = refused.body, refused.code
         except sqlite3.Error as error:
