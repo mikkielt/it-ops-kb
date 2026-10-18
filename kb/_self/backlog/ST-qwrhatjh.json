@@ -56,7 +56,9 @@
         "OpenSSL pem.h header as a CODE fact plus an UNK note that no specification text was read": "ST-qwrhatjh",
         "leave the DSA label as a gap with no fact": "ST-qwrhatjh"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "OpenSSL pem.h header as a CODE fact plus an UNK note that no specification text was read",
+      "by": "operator"
     }
   ],
   "links": [
