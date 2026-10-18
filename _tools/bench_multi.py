@@ -10,8 +10,9 @@ clone has its query log `off` and an mcp-config file of its own; `agent_env` is 
 directory, as the clones of bench_repro do, in a directory of their own for each DIR. `probe` builds a two-agent sandbox
 of each coordination mode in a temporary directory, lands one `_gaps.md` commit from each clone of the shared one on its
 bare through `kbgit.py sync --push` and proves the landing and the stores stayed inside the sandbox. Nothing but `execute`
-(`multi run` without `--dry-run`) starts a model or reads the network. This module imports bench_repro for its instance
-helpers (kb/_self/code.md, Layout); benchmarks.py holds the command line.
+(`multi run` without `--dry-run`) starts a model or reads the network, and under `--replay` it starts bench_replay.py, a
+scripted stand-in for `claude`, instead: no model call. This module imports bench_repro for its instance helpers
+(kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
 import base64, hashlib, json, os, re, shlex, shutil, signal, subprocess, sys, threading, time
 from collections import OrderedDict
@@ -49,6 +50,9 @@ PACK_LIMITS = (200, 6000)
 LOOKUP_LIMITS = {"max_turns": 40, "usd": 3.0}  # the turns and dollars one lookup agent's session may use
 CODE_ITEM_USD = 1.0  # what one code item costs on RECORDED_MODEL: about the mean of the usage rows of a worker's session
 RECORDED_MODEL = "claude-sonnet-5-5"  # the model the recorded repro rows and the code figure were taken on
+DEFAULT_USAGE = {"input_tokens": 120, "output_tokens": 30000, "cache_creation_input_tokens": 150000, "cache_read_input_tokens": 6000000,
+                 "num_turns": 80}  # what a replayed code agent prints, and a role with no recorded row: about one worker session
+REPLAY = "_tools/bench_replay.py"  # the scripted stand-in of `--replay`, run from this checkout in the agents' clones
 POOL_ARM = re.compile(r"[a-z]+-\d+(?:-\d+)*(?::default)?(/session)?")  # a kb arm of the pool at its default effort
 GAP = ("\n## multi-probe-agent{n}\n\n- **A probe entry that multi probe commits and syncs from agent {n}.** Nothing was tried; "
        "the entry exists to be pushed to the sandbox's bare. [UNK] (topic: {topic})\n")
@@ -107,6 +111,7 @@ def agent_lines(root, coord, count):
 def plan_lines(root, coord, count, rev, why, items=()):
     return [f"multi setup: {count} agent(s), coord {coord}", f"dir: {root}", f"rev: {rev} ({why})", f"bare: {origin_path(root)}",
             f"base: {base_message(items)} (one commit on {rev[:12]}, the bare's main)",
+            *([f"planted sprint {items[0][2]['sprint']}, started, with its review story and the items below"] if items else []),
             *(f"planted item {iid} for {agent}: {item['title']}" for agent, iid, item in items),
             *agent_lines(root, coord, count)]
 
@@ -115,10 +120,11 @@ def base_message(items):
     return BASE_MESSAGE + (f" and {len(items)} planted backlog item(s)" if items else "")
 
 
-def base_commit(root, bare, items=()):
+def base_commit(root, bare, items=(), scenario=None):
     """Put one commit on the bare's main that empties `lane_module` in backlog.json, so the sandbox has no code lane and an
     item lands on the bare as content (bl_land, unlanded_code), and adds each of `items` ((agent, id, item) of `planted`) as an
-    item file under ITEM_DIR: made in a throwaway clone, hooks skipped. The commit's sha."""
+    item file under ITEM_DIR, with the started sprint of `scenario` they belong to: made in a throwaway clone, hooks skipped.
+    The commit's sha."""
     work = Path(root) / "base-work"
     shutil.rmtree(work, ignore_errors=True)
     try:
@@ -128,6 +134,13 @@ def base_commit(root, bare, items=()):
         config["lane_module"] = ""
         path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8", newline="\n")
         files = [BACKLOG]
+        if items:
+            sid = items[0][2]["sprint"]
+            rel = f"{ITEM_DIR}/{sid}.json"
+            (work / rel).write_text(json.dumps(sprint_of(sid, scenario), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            review = review_of(sid)
+            (work / ITEM_DIR / f"{review['id']}.json").write_text(json.dumps(review, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+            files += [rel, f"{ITEM_DIR}/{review['id']}.json"]
         for _, iid, item in items:
             rel = f"{ITEM_DIR}/{iid}.json"
             (work / rel).write_text(json.dumps(item, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -167,7 +180,7 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
     root.mkdir(parents=True, exist_ok=True)
     run_git("init", "-q", "--bare", "--initial-branch=main", str(bare), cwd=root)
     run_git("fetch", "-q", "--depth", "1", "--no-tags", str(HOME), f"+{sha}:refs/heads/main", cwd=bare)
-    base = base_commit(root, bare, items)
+    base = base_commit(root, bare, items, scenario)
     for n in range(1, count + 1):
         clone = clone_path(root, n)
         clone.parent.mkdir(parents=True, exist_ok=True)
@@ -253,11 +266,12 @@ def commit_gap(root, coord, a):
     return run_git("rev-parse", "HEAD", cwd=clone)
 
 
-def sync_push(root, coord, a, out):
-    """Run `kbgit.py sync --push` in agent A's clone under its environment: the exit code."""
+def sync_push(root, coord, a, out, no_tests=False):
+    """Run `kbgit.py sync --push` in agent A's clone under its environment: the exit code. `no_tests` skips the gate's test run
+    (a replay's), as the KB_SYNC_NO_TESTS of the caller's own environment does."""
     clone, env = Path(a["clone"]), agent_env(root, coord, a["n"])
-    if os.environ.get("KB_SYNC_NO_TESTS"):  # the tool's own tests skip the gate's test run, as repro check does
-        env["KB_SYNC_NO_TESTS"] = os.environ["KB_SYNC_NO_TESTS"]
+    if os.environ.get("KB_SYNC_NO_TESTS") or no_tests:  # the tool's own tests skip the gate's test run, as repro check does
+        env["KB_SYNC_NO_TESTS"] = os.environ.get("KB_SYNC_NO_TESTS", "1")
     p = sh([sys.executable, str(clone / "_tools" / "kbgit.py"), "sync", "--push"], clone, env)
     if p.returncode:
         for ln in (p.stdout + p.stderr).strip().splitlines()[-15:]:
@@ -428,11 +442,34 @@ def item_id(scenario, agent):
     return "ST-" + base64.b32encode(hashlib.sha1(f"{scenario}/{agent}".encode("utf-8")).digest()[:5]).decode().lower()
 
 
-def item_of(spec, iid):
+def sprint_id(scenario):
+    """The id of the sprint planted with a scenario's code items: SP- and 8 base32 characters of the hash of the scenario."""
+    return "SP-" + base64.b32encode(hashlib.sha1(f"{scenario}/sprint".encode("utf-8")).digest()[:5]).decode().lower()
+
+
+def sprint_of(sid, scenario):
+    """The started sprint (a dict, in the field order of an item file) the planted code items belong to: a commit's `KB-Work`
+    names only items of a started sprint (kbgit.py check-trailers), so a worker's commit passes the sandbox's hooks."""
+    return {"id": sid, "kind": "sprint", "title": f"The planted code items of the {scenario} scenario", "status": "active",
+            "goal": f"The code items of the {scenario} scenario of the multi-agent benchmark are worked and landed in this sandbox.",
+            "gates": [{"id": "start", "kind": "blocking", "question": "Approve this sprint's goal and committed items?",
+                       "options": ["approve", "change", "cancel"], "recommendation": "approve", "answer": "approve", "by": OPERATOR}]}
+
+
+def review_of(sid):
+    """The review story a sprint needs (backlog.py check): a draft of the sprint, which nothing in a sandbox works."""
+    rid = "ST-" + base64.b32encode(hashlib.sha1(f"{sid}/review".encode("utf-8")).digest()[:5]).decode().lower()
+    return {"id": rid, "kind": "story", "title": f"Review sprint: {sid}", "status": "draft", "sprint": sid, "review": True,
+            "priority": "P1", "rank": 999999, "goal": "Every committed item is done or dropped.",
+            "checks": [{"run": ["python3", "_tools/backlog.py", "check"]}]}
+
+
+def item_of(spec, iid, sprint=None):
     """The backlog item (a dict, in the field order of an item file) an item spec stands for: a ready story with the spec's
-    check, touches and one blocking gate whose every option names this item as the work that carries it out."""
+    check, touches and one blocking gate whose every option names this item as the work that carries it out, in `sprint`."""
     gate = spec["gate"]
-    return {"id": iid, "kind": "story", "title": spec["title"], "status": "todo", "priority": "P2", "rank": 0, "goal": spec["goal"],
+    return {"id": iid, "kind": "story", "title": spec["title"], "status": "todo", **({"sprint": sprint} if sprint else {}),
+            "priority": "P2", "rank": 0, "goal": spec["goal"],
             "checks": [{"run": spec["check"]}], "touches": spec["touches"],
             "gates": [{"id": "g1", "kind": "blocking", "question": gate["question"], "options": gate["options"],
                        "recommendation": gate["recommendation"], "do": {o: iid for o in gate["options"]}, "class": "design"}]}
@@ -447,7 +484,7 @@ def planted(scenario, rows=None):
             if isinstance(spec, str) or spec_problems(spec):
                 raise Refused(f"the item spec of {scenario}/{a['agent']} does not resolve: python3 _tools/benchmarks.py multi inputs")
             iid = item_id(scenario, a["agent"])
-            out.append((a["agent"], iid, item_of(spec, iid)))
+            out.append((a["agent"], iid, item_of(spec, iid, sprint_id(scenario))))
     return out
 
 
@@ -501,6 +538,35 @@ def recorded_means(rows):
             out[mid] = (tot / n, int(n), shape)
     repro = {m: [float(r["value"]) for r in rows if r["scenario"] == "repro" and r["metric"] == m] for m in ("cost", "wall_s")}
     return {"pool": out, "repro": {m: sum(v) / len(v) for m, v in repro.items() if v}, "repro_runs": len(repro["cost"])}
+
+
+def recorded_usage(rows, mid):
+    """{role: {usage key: mean}} of what a replayed agent prints as its usage: for a lookup agent the mean of one question of the
+    pool's kb arms at their default effort (`mid`'s cell, else RECORDED_MODEL's), for a research agent the mean of one `repro`
+    area (a stopped area at its zero), as `recorded_means` selects them; a code agent has no recorded row, and
+    a role whose rows are missing, so both take DEFAULT_USAGE. `rows` are the results file's."""
+    keys = {"input": "input_tokens", "out": "output_tokens", "cache_write": "cache_creation_input_tokens",
+            "cache_read": "cache_read_input_tokens", "turns": "num_turns"}
+
+    def mean(sel, total=False):
+        """The means of `sel`'s rows; `total`: the pool's `input` counts the cache tokens too, so they are taken off."""
+        got = {}
+        for r in sel:
+            if r["metric"] in keys and r["value"] != "":
+                tot, runs = got.get(r["metric"], (0.0, 0.0))
+                weight = float(r["runs"] or 1)
+                got[r["metric"]] = (tot + float(r["value"]) * weight, runs + weight)
+        if len(got) < len(keys):
+            return None
+        out = {keys[m]: round(tot / runs) for m, (tot, runs) in got.items() if runs}
+        if total:
+            out["input_tokens"] -= out["cache_creation_input_tokens"] + out["cache_read_input_tokens"]
+        return {key: max(1, val) for key, val in out.items()}
+
+    pool = [r for r in rows if r["scenario"] == "pool" and r["case"] == "all" and POOL_ARM.fullmatch(r["arm"])]
+    cell = [r for r in pool if r["model"] == mid] or [r for r in pool if r["model"] == RECORDED_MODEL]
+    return {"lookup": mean(cell, True) or DEFAULT_USAGE, "research": mean([r for r in rows if r["scenario"] == "repro"]) or DEFAULT_USAGE,
+            "code": DEFAULT_USAGE}
 
 
 def question_usd(means, mid):
@@ -558,6 +624,7 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
         one, why = question_usd(means, mid)
         plan["usd"], plan["basis"] = one * len(qs), f"{len(qs)} question(s) x ${one:.4f}, {why}"
         plan["what"] = f"{len(qs)} question(s): {', '.join(agent['inputs'])}"
+        plan["questions"] = qs
     elif role == "research":
         brief = next(b for b in briefs if b["area"].strip() == agent["inputs"][0])
         plan["argv"] = session_argv(model, d["max_turns"], d["area_usd"], mcp)
@@ -570,6 +637,7 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
                          + (f" x {price_ratio(mid):.3g} (the input price ratio)" if mid != RECORDED_MODEL else ""))
         plan["wall"] = means["repro"].get("wall_s") if mid == RECORDED_MODEL else None
         plan["what"] = f"area {agent['inputs'][0]}"
+        plan["area"] = agent["inputs"][0]
     else:
         spec = spec_of(agent["inputs"][0])
         iid = item_id(scenario, agent["agent"])
@@ -583,6 +651,22 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
     return plan
 
 
+def replay_argv(plan, usage, k):
+    """The argv that stands in for plan's `claude` session under --replay: bench_replay.py of this checkout with the planted usage
+    (a lookup agent's scaled to its questions) and the plan's estimate as the cost. A code agent's is made by the wrapper in
+    DIR/bin, which `dispatch` starts in place of claude (`write_wrapper`), so its argv stays the dispatch's."""
+    n = len(plan.get("questions", [])) or 1
+    planted = {key: val * n for key, val in usage[plan["role"]].items()} if plan["role"] == "lookup" else usage[plan["role"]]
+    plan["usage"], plan["cost"] = planted, plan["usd"]
+    if plan["role"] == "code":
+        return plan["argv"]
+    argv = [sys.executable, str(HOME / REPLAY), plan["role"], "--usage", json.dumps(planted), "--cost", f"{plan['usd']:.4f}",
+            "--holder", f"agent{plan['n']}"]
+    if plan["role"] == "lookup":
+        return argv + ["--budget", str(k["pack_budget"])] + [x for q in plan["questions"] for x in ("--question", q)]
+    return argv + ["--area", plan["area"]]
+
+
 def money(usd):
     return f"${usd:.2f}" if usd >= 0.1 else f"${usd:.3f}"
 
@@ -591,11 +675,12 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     """`multi run SCENARIO`: with `dry_run`, print each agent's role, model, argv and coordination store, the knob values and
     an estimate in US dollars, and create nothing and start no model. Returns 0, or 1 when an input does not resolve. Without
     it, `execute` runs the scenario: the sandbox of DIR (built when DIR holds none), every agent's session, the operator's
-    steps and DIR/results.jsonl. Raises Refused on an unknown scenario, knob or model."""
+    steps and DIR/results.jsonl; the knob `replay` makes each session a bench_replay.py run (`replay_argv`). Raises Refused on
+    an unknown scenario, knob or model."""
     if scenario not in SCENARIOS:
         raise Refused(f"no scenario {scenario}; one of {', '.join(SCENARIOS)}")
     k = {"sequential": False, "coord": "shared", "stagger": 0.0, "model": "", "pack_budget": PACK_BUDGET, "tools": "kb", "manager": "code",
-         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], **(knobs or {})}
+         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], "replay": False, **(knobs or {})}
     bad = [f"--coord is one of {', '.join(COORDS)}"] if k["coord"] not in COORDS else []
     bad += [f"--tools is one of {', '.join(TOOL_SETS)}"] if k["tools"] not in TOOL_SETS else []
     bad += [f"--manager is one of {', '.join(MANAGERS)}"] if k["manager"] not in MANAGERS else []
@@ -615,12 +700,17 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
         for ln in problems or [f"no rows of scenario {scenario} in {INPUTS}"]:
             out(f"FAIL: {ln}")
         return 1
-    means = recorded_means(read_rows(RESULTS))
+    recorded = read_rows(RESULTS)
+    means = recorded_means(recorded)
     plans = [agent_plan(a, scenario, n, root, k, models, means, questions, briefs) for n, a in enumerate(agents, 1)]
+    if k["replay"]:
+        for p in plans:
+            p["argv"] = replay_argv(p, recorded_usage(recorded, p["mid"]), k)
     if not dry_run:
         return execute(scenario, root, k, plans, out)
     order = "one at a time (--sequential)" if k["sequential"] else f"at once, {k['stagger']:g} s apart (--stagger)"
-    out(f"multi run {scenario} --dry-run: {len(plans)} agent(s), started {order}, coord {k['coord']}, manager {k['manager']}")
+    out(f"multi run {scenario} --dry-run: {len(plans)} agent(s), started {order}, coord {k['coord']}, manager {k['manager']}"
+        + (", replay (scripted agents, no model call)" if k["replay"] else ""))
     out(f"dir: {root} (nothing is created)")
     out(f"knobs: --sequential {'on' if k['sequential'] else 'off'}, --coord {k['coord']}, --stagger {k['stagger']:g}, --model "
         + ",".join(f"{r}={m}" for r, m in models.items()) + f", --pack-budget {k['pack_budget']}, --tools {k['tools']}, --manager {k['manager']}")
@@ -664,11 +754,19 @@ sys.exit("claude is not on PATH")
 """  # DIR/bin/claude: the claude `dispatch` starts, with the run's session settings, the agent's mcp-config and the dollar cap added
 
 
-def write_wrapper(root):
-    """Write DIR/bin/claude, the wrapper a code agent's dispatch finds first on PATH."""
+REPLAY_WRAPPER = """#!{python}
+import os, sys
+os.execv({python!r}, [{python!r}, {replay!r}, "code", "--usage", os.environ["MULTI_REPLAY_USAGE"], "--cost", os.environ["MULTI_REPLAY_COST"]])
+"""  # DIR/bin/claude under --replay: bench_replay.py as the code agent's worker, which makes no model call
+
+
+def write_wrapper(root, replay=False):
+    """Write DIR/bin/claude, the wrapper a code agent's dispatch finds first on PATH: the session wrapper, or under `replay` the
+    scripted worker."""
     path = Path(root) / BIN / "claude"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(WRAPPER.format(python=sys.executable), encoding="utf-8", newline="\n")
+    text = REPLAY_WRAPPER.format(python=sys.executable, replay=str(HOME / REPLAY)) if replay else WRAPPER.format(python=sys.executable)
+    path.write_text(text, encoding="utf-8", newline="\n")
     path.chmod(0o755)
 
 
@@ -707,14 +805,28 @@ def filled(stdout):
     return "\n".join(lines) + "\n"
 
 
+def event_steps(stdout):
+    """The `steps` a replayed agent's result event holds (the commands it ran); [] for a stream with none."""
+    for ln in reversed(stdout.splitlines()):
+        try:
+            ev = json.loads(ln)
+        except ValueError:
+            continue
+        if isinstance(ev, dict) and ev.get("type") == "result":
+            return [s for s in ev.get("steps") or [] if isinstance(s, str)]
+    return []
+
+
 def run_session(argv, prompt, cwd, env, timeout):
     """One agent's session parsed as bench_core.stream_run parses it (agent_bench.result_of over the stream, `filled`), and
-    its cost counted in the run's spend; the whole `env` is the session's environment."""
+    its cost counted in the run's spend; the whole `env` is the session's environment. A replayed agent's commands are the
+    result's `steps`."""
     t = time.time()
     try:
         p = subprocess.run(argv, cwd=str(cwd), input=prompt, capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=timeout, env=env)
         r = agent_bench.result_of(filled(p.stdout), p.stderr, time.time() - t)
+        r["steps"] = event_steps(p.stdout)
     except subprocess.TimeoutExpired as e:
         out = e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes) else e.stdout
         r = {**agent_bench.unfinished(out, "timeout", time.time() - t, always=True), "timeout_s": timeout}
@@ -751,9 +863,9 @@ def answer_gates(clone, where, item, env):
     return steps
 
 
-def operator_pass(root, coord, manifest, plans, out):
+def operator_pass(root, coord, manifest, plans, out, replay=False):
     """Before any agent starts: answer every open gate of each planted item in the first code agent's clone and sync it to the
-    bare (`kbgit.py sync --push`). {item id: [steps]}. Raises Refused when the sync stops."""
+    bare (`kbgit.py sync --push`, without its test run under `replay`). {item id: [steps]}. Raises Refused when the sync stops."""
     codes = [p for p in plans if p["role"] == "code"]
     if not codes:
         return {}
@@ -761,7 +873,7 @@ def operator_pass(root, coord, manifest, plans, out):
     clone, env = Path(a["clone"]), agent_env(root, coord, a["n"])
     steps = {p["item"]: answer_gates(clone, clone, json.loads((clone / ITEM_DIR / f"{p['item']}.json").read_text(encoding="utf-8")), env)
              for p in codes}
-    if any(steps.values()) and sync_push(root, coord, a, out):
+    if any(steps.values()) and sync_push(root, coord, a, out, replay):
         raise Refused("the operator's gate answers did not reach the bare: kbgit.py sync --push stopped")
     return steps
 
@@ -820,19 +932,44 @@ def transcript_tools(session):
 
 
 def land_result(code, out, err, timed):
-    """What the record's `land` says of a `backlog.py land` run: `landed`, the step it stopped at, or its last line."""
+    """What the record's `land` says of a `backlog.py land` run: `ok`, the step it stopped at, or its last line."""
     if timed:
         return "timeout"
     if code == 0:
-        return "landed"
+        return "ok"
     text = (out + "\n" + err).strip().splitlines()
     stop = next((ln for ln in text if ln.startswith("land stopped at step")), "")
     return (stop.split(":")[0] if stop else f"exit {code}: {text[-1] if text else ''}")[:200]
 
 
+def branch_exists(root, branch):
+    """True when the sandbox's bare holds the branch `branch`."""
+    return sh(["git", "rev-parse", "-q", "--verify", f"refs/heads/{branch}"], origin_path(root), os.environ).returncode == 0
+
+
+def merge_request(root, branch, tries=5):
+    """Merge `branch` of the sandbox's bare into its main as the forge's merge request would: a merge commit made in a throwaway
+    clone and pushed, again after a push of another agent moved main in between. Raises Refused when it cannot be pushed."""
+    work = Path(root) / ("merge-" + branch.replace("/", "-"))
+    shutil.rmtree(work, ignore_errors=True)
+    try:
+        run_git("clone", "-q", str(origin_path(root)), str(work), cwd=root)
+        for _ in range(tries):
+            run_git("fetch", "-q", "origin", "+refs/heads/main:refs/remotes/origin/main", f"+refs/heads/{branch}:refs/remotes/origin/{branch}", cwd=work)
+            run_git("checkout", "-q", "-B", "main", "refs/remotes/origin/main", cwd=work)
+            run_git("-c", "user.name=multi sandbox", "-c", "user.email=jan.kowalski@corp.example.com", "merge", "-q", "--no-ff",
+                    "--no-verify", "-m", f"Merge branch '{branch}' into 'main'", f"refs/remotes/origin/{branch}", cwd=work)
+            if sh(["git", "push", "-q", "--no-verify", "origin", "HEAD:refs/heads/main"], work, os.environ).returncode == 0:
+                return
+        raise Refused(f"the merge of {branch} into main was rejected {tries} times")
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+
+
 def code_agent(plan, ctx, rec):
     """A code agent, the operator's side of it: claim the item, `dispatch` its worker in the clone, answer the gates the worker
-    left open, `land` the item. Fills `rec` (the session's fields are the worker's)."""
+    left open, `land` the item; a land that left the code on its `code/<id>` branch (sync --push routes a code-lane path there)
+    is followed by the merge request (`merge_request`) and a second land. Fills `rec` (the session's fields are the worker's)."""
     clone, env, iid, steps = ctx.clone(plan), ctx.env(plan), plan["item"], rec["steps"]
     steps += ctx.gate_steps.get(iid, [])
     p = sh(backlog_cmd(clone, "claim", iid, "--by", f"multi-agent{plan['n']}", "--commit"), clone, env)
@@ -840,7 +977,8 @@ def code_agent(plan, ctx, rec):
         raise Refused(f"claim of {iid} exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
     steps.append("claimed")
     denv = {**env, "PATH": str(ctx.root / BIN) + os.pathsep + env.get("PATH", ""), "MULTI_SETTINGS": bench_repro.SETTINGS,
-            "MULTI_MCP_CONFIG": str(mcp_path(ctx.root, plan["n"])), "MULTI_MAX_USD": f"{plan['cap']:g}"}
+            "MULTI_MCP_CONFIG": str(mcp_path(ctx.root, plan["n"])), "MULTI_MAX_USD": f"{plan['cap']:g}",
+            **({"MULTI_REPLAY_USAGE": json.dumps(plan["usage"]), "MULTI_REPLAY_COST": f"{plan['cost']:.4f}"} if ctx.k["replay"] else {})}
     rec["started"] = utc_now()
     t = time.time()
     code, out, err, timed = run_group(plan["argv"], clone, denv, ctx.timeout)
@@ -857,16 +995,27 @@ def code_agent(plan, ctx, rec):
         except ValueError:
             pass
     r = agent_bench.unfinished(text, "timeout", wall, always=True) if timed else agent_bench.result_of(filled(text), err or out, wall)
-    rec.update(session_fields(r, plan, wall, transcript_tools(session) if session else None))
+    worked = event_steps(text)  # a replayed worker's commands
+    steps += worked
+    rec.update(session_fields(r, plan, wall, transcript_tools(session) if session else len(worked) or None))
     wt = clone / ".claude" / "worktrees" / f"agent-{iid}"
     shown = sh(["git", "show", f"work/{iid}:{ITEM_DIR}/{iid}.json"], clone, env)
     if shown.returncode == 0 and wt.is_dir():
         for step in answer_gates(clone, wt, json.loads(shown.stdout), env):
             steps.append(step + " on the worker's branch")
     t = time.time()
-    rec["land"] = land_result(*run_group(backlog_cmd(clone, "land", iid), clone, operator_env(env), STEP_TIMEOUT))
+    branch = f"code/{iid}"
+    for attempt in (1, 2):
+        code, lout, lerr, timed = run_group(backlog_cmd(clone, "land", iid), clone, operator_env(env), STEP_TIMEOUT)
+        rec["land"] = land_result(code, lout, lerr, timed)
+        steps.append("land: " + rec["land"])
+        if rec["land"] == "ok" or attempt == 2 or not branch_exists(ctx.root, branch):
+            break
+        merge_request(ctx.root, branch)  # sync --push put the code on a branch; the forge's merge request is the operator's
+        steps.append(f"merged {branch} into main")
+    if rec["land"] != "ok":
+        rec["land_detail"] = (lout + "\n" + lerr).strip()[-600:]
     rec["land_s"] = round(time.time() - t, 1)
-    steps.append("land: " + rec["land"])
 
 
 def session_agent(plan, ctx, rec):
@@ -875,8 +1024,9 @@ def session_agent(plan, ctx, rec):
     rec["started"] = utc_now()
     t = time.time()
     r = run_session(plan["argv"], plan["prompt"], clone, env, ctx.timeout)
-    rec.update(session_fields(r, plan, time.time() - t))
-    rec["steps"].append("session")
+    worked = r.get("steps", [])
+    rec.update(session_fields(r, plan, time.time() - t, len(worked) or None))
+    rec["steps"] += worked or ["session"]
 
 
 class Context:
@@ -890,7 +1040,12 @@ class Context:
         return Path(self.manifest["agents"][plan["n"] - 1]["clone"])
 
     def env(self, plan):
-        return agent_env(self.root, self.k["coord"], plan["n"])
+        """The agent's environment; under replay the sync gate skips its test run, as the sandbox's code is this checkout's, which
+        the replayed changes do not touch."""
+        env = agent_env(self.root, self.k["coord"], plan["n"])
+        if self.k["replay"]:
+            env["KB_SYNC_NO_TESTS"] = "1"
+        return env
 
     def fresh(self, plan):
         """A lookup agent's clone is as setup made it; the others start from the bare's main."""
@@ -936,7 +1091,7 @@ def execute(scenario, root, k, plans, out):
     Raises Refused on a refusal."""
     if k["manager"] == "session":
         raise Refused("--manager session is not supported by a real run: the harness code starts the agents (--manager code)")
-    if not shutil.which(bench_repro.CLAUDE[0]):
+    if not k["replay"] and not shutil.which(bench_repro.CLAUDE[0]):
         raise Refused(f"{bench_repro.CLAUDE[0]} is not on PATH")
     if not (root / MANIFEST).exists():
         setup(None, k["coord"], root, scenario=scenario, out=out)
@@ -944,10 +1099,10 @@ def execute(scenario, root, k, plans, out):
     if manifest.get("scenario") != scenario or manifest.get("coord") != k["coord"] or len(manifest["agents"]) != len(plans):
         raise Refused(f"{root} holds the sandbox of scenario {manifest.get('scenario')}, coord {manifest.get('coord')}, "
                       f"{len(manifest['agents'])} agent(s): remove it or use another --dir")
-    write_wrapper(root)
+    write_wrapper(root, k["replay"])
     path = root / RUN_RESULTS
     ctx = Context(scenario, root, k, manifest, Budget(k["max_usd"], sum(r.get("cost") or 0 for r in bench_repro.read_results(path))),
-                  operator_pass(root, k["coord"], manifest, plans, out))
+                  operator_pass(root, k["coord"], manifest, plans, out, k["replay"]))
     out(f"multi run {scenario}: {len(plans)} agent(s), " + ("one at a time" if k["sequential"] else "all at once")
         + f", coord {k['coord']}, results {path}")
     recs = []
@@ -965,7 +1120,7 @@ def execute(scenario, root, k, plans, out):
             return ctx.one(plan, out)
         with ThreadPoolExecutor(max_workers=len(plans)) as pool:
             recs = [f.result() for f in [pool.submit(start, i, p) for i, p in enumerate(plans)]]
-    failed = [r for r in recs if r["failure"] or (r["role"] == "code" and r["land"] != "landed")]
+    failed = [r for r in recs if r["failure"] or (r["role"] == "code" and r["land"] != "ok")]
     out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
         + ", ".join(f"{r['agent']} ({r['failure'] or r['land']})" for r in failed)) + f", ${ctx.budget.spent:.2f} recorded in {path}")
     return 1 if failed else 0
