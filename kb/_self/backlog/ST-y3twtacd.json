@@ -2,7 +2,7 @@
   "id": "ST-y3twtacd",
   "kind": "story",
   "title": "kbmon alerts loudly on a refused query-log delivery: first line of every view and the snapshot's alerts",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -34,7 +34,8 @@
   "touches": [
     "_tools/mon_querylog.py",
     "_tools/mon_view.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-go6vdmnt"

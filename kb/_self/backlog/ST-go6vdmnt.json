@@ -2,7 +2,7 @@
   "id": "ST-go6vdmnt",
   "kind": "story",
   "title": "kbmon querylog panel: spool waiting, undelivered entries, last delivery outcome, usage and cost today",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -39,7 +39,8 @@
     "_tools/ql_report.py",
     "kb/_self/querylog.md",
     "kb/_self/monitoring.md",
-    "kb/_self/usage.md"
+    "kb/_self/usage.md",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {

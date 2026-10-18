@@ -2,7 +2,7 @@
   "id": "ST-l75rp2ow",
   "kind": "story",
   "title": "Research sprint goal: kbmon shows the query log, the host and the active sprint, and alerts loudly on a refused delivery",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-v4yih547",
   "goal_research": true,
   "priority": "P1",

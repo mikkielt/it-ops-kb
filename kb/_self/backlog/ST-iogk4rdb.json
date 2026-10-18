@@ -2,7 +2,7 @@
   "id": "ST-iogk4rdb",
   "kind": "story",
   "title": "kbmon host panel: load, whole-suite and main lock holders, suite ceiling status, read-only",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -47,7 +47,8 @@
   ],
   "touches": [
     "_tools/mon_host.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "gates": [
     {
@@ -65,7 +66,8 @@
       },
       "class": "design",
       "answer": "this or other",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "a design choice of how the panel words a clone; no host setup to prove"
     }
   ],
   "knowledge": {

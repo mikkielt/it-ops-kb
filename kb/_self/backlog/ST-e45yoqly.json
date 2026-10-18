@@ -2,7 +2,7 @@
   "id": "ST-e45yoqly",
   "kind": "story",
   "title": "Review sprint: kbmon shows the query log, the host and the active sprint, and alerts loudly on a refused delivery",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-v4yih547",
   "review": true,
   "priority": "P1",

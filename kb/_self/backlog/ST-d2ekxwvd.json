@@ -2,7 +2,7 @@
   "id": "ST-d2ekxwvd",
   "kind": "story",
   "title": "kbmon log tail: the newest coord events, ops rows and delivery outcomes under the panels",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -40,7 +40,8 @@
   ],
   "touches": [
     "_tools/mon_log.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-go6vdmnt"
