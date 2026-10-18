@@ -177,7 +177,9 @@
                                             role, model, argv and KB_COORD_STORE, the knob values and an estimate in USD from
                                             bench_core.PRICE and the recorded rows' means; creates nothing, starts no model;
                                             exit 1 naming a row that does not resolve. Without it the run builds the sandbox
-                                            in DIR when DIR holds none, answers each open gate of a planted item by its
+                                            in DIR when DIR holds none (a DIR whose results.jsonl holds a finished run gets its
+                                            results moved to results.N.jsonl and the sandbox built again at its start commit,
+                                            so a second run starts with no spend and no landed item), answers each open gate of a planted item by its
                                             recommendation as the operator (backlog.py answer --by operator, synced to the
                                             bare), starts every agent at once, one thread each, in its own clone (--sequential:
                                             each after the one before it ended; --stagger seconds apart), lands each code

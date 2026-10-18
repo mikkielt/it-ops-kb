@@ -1106,6 +1106,21 @@ class Context:
         return rec
 
 
+def reset_sandbox(root, manifest, scenario, coord, path, out):
+    """A run in a DIR that holds a finished run's results starts from a fresh sandbox: the results file is moved to the next
+    free results.N.jsonl (the new run's spend starts at 0; `multi record` reads the file it is given the DIR of, so record the
+    finished run first), and the bare, the planted items, the coordination stores, the locks and the clones are built again
+    at the sandbox's start commit. Returns the new manifest."""
+    n = 1
+    while (root / f"results.{n}.jsonl").exists():
+        n += 1
+    kept = root / f"results.{n}.jsonl"
+    path.replace(kept)
+    out(f"multi run {scenario}: {root} holds a finished run: its results moved to {kept}, the sandbox built again at {manifest['rev'][:12]}")
+    setup(None, coord, root, start=manifest["rev"], scenario=scenario, out=lambda _: None)
+    return json.loads((root / MANIFEST).read_text(encoding="utf-8"))
+
+
 def execute(scenario, root, k, plans, out):
     """The real `multi run`: the sandbox of `root` (built when it holds none), the operator's answers to the planted items'
     gates, every agent's session (all at once, one thread each, `--stagger` apart; one after the other with `--sequential`) and
@@ -1121,8 +1136,10 @@ def execute(scenario, root, k, plans, out):
     if manifest.get("scenario") != scenario or manifest.get("coord") != k["coord"] or len(manifest["agents"]) != len(plans):
         raise Refused(f"{root} holds the sandbox of scenario {manifest.get('scenario')}, coord {manifest.get('coord')}, "
                       f"{len(manifest['agents'])} agent(s): remove it or use another --dir")
-    write_wrapper(root, k["replay"])
     path = root / RUN_RESULTS
+    if path.is_file() and path.stat().st_size:
+        manifest = reset_sandbox(root, manifest, scenario, k["coord"], path, out)
+    write_wrapper(root, k["replay"])
     ctx = Context(scenario, root, k, manifest, Budget(k["max_usd"], sum(r.get("cost") or 0 for r in bench_repro.read_results(path))),
                   operator_pass(root, k["coord"], manifest, plans, out, k["replay"]))
     out(f"multi run {scenario}: {len(plans)} agent(s), " + ("one at a time" if k["sequential"] else "all at once")

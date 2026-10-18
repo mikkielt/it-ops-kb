@@ -21,6 +21,42 @@
     "_tools/benchmarks.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "A second multi run in a DIR that holds a finished run: reset the sandbox or refuse the DIR?",
+      "options": [
+        "reset",
+        "refuse"
+      ],
+      "recommendation": "reset",
+      "do": {
+        "reset": "BG-ytbjm2n6",
+        "refuse": "BG-ytbjm2n6"
+      },
+      "class": "design",
+      "answer": "reset",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Where does a reset run keep the finished run's results.jsonl?",
+      "options": [
+        "results.N.jsonl beside it",
+        "delete it"
+      ],
+      "recommendation": "results.N.jsonl beside it",
+      "do": {
+        "results.N.jsonl beside it": "BG-ytbjm2n6",
+        "delete it": "BG-ytbjm2n6"
+      },
+      "class": "delete",
+      "answer": "results.N.jsonl beside it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5y4ut64g review"
   ],
