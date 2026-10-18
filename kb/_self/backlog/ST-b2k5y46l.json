@@ -2,7 +2,7 @@
   "id": "ST-b2k5y46l",
   "kind": "story",
   "title": "benchmarks.py multi setup builds a sandbox whose agents share one bare origin and a coord store shared or per agent",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -70,5 +70,6 @@
     "kb/_self/backlog.md",
     "_tools/coord.py"
   ],
-  "notes": "Extends bench_repro (setup, instance_env, mcp_config, LEAKY_ENV, reset_clone): repro gives each instance its own bare, this sandbox gives every agent one shared bare, so claims, rebases and landing stops between agents are real. The coord store knob is KB_COORD_STORE (coord.py and its hook read it), so no coord.py change; coord.py is held by SP-5xnbspyp and SP-fp3hxl6q. No network: the probe reads the clone's own origin/main ref, never a fetch."
+  "notes": "Extends bench_repro (setup, instance_env, mcp_config, LEAKY_ENV, reset_clone): repro gives each instance its own bare, this sandbox gives every agent one shared bare, so claims, rebases and landing stops between agents are real. The coord store knob is KB_COORD_STORE (coord.py and its hook read it), so no coord.py change; coord.py is held by SP-5xnbspyp and SP-fp3hxl6q. No network: the probe reads the clone's own origin/main ref, never a fetch.",
+  "claimed_by": "orch-r16"
 }
