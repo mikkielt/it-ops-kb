@@ -79,6 +79,74 @@
       "class": "design",
       "answer": "kb/_self/reports/multi_bench.csv, which research sessions read nothing under",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which rows does multi_bench.csv freeze where the goal gives only counts?",
+      "options": [
+        "Ten full-sentence pool rows of ten domains, each asked by two lookup agents; research on pip; mixed research on pip and cmd, two planted code items adding one small stdlib module each under examples/multi-bench, and the last five of the ten rows for its lookup agent",
+        "Rows drawn at random with a seed at each run"
+      ],
+      "recommendation": "Ten full-sentence pool rows of ten domains, each asked by two lookup agents; research on pip; mixed research on pip and cmd, two planted code items adding one small stdlib module each under examples/multi-bench, and the last five of the ten rows for its lookup agent",
+      "do": {
+        "Ten full-sentence pool rows of ten domains, each asked by two lookup agents; research on pip; mixed research on pip and cmd, two planted code items adding one small stdlib module each under examples/multi-bench, and the last five of the ten rows for its lookup agent": "ST-ykdwo7a3",
+        "Rows drawn at random with a seed at each run": "ST-ykdwo7a3"
+      },
+      "class": "design",
+      "answer": "Ten full-sentence pool rows of ten domains, each asked by two lookup agents; research on pip; mixed research on pip and cmd, two planted code items adding one small stdlib module each under examples/multi-bench, and the last five of the ten rows for its lookup agent",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What are the defaults of the run knobs and the lookup agent's limits?",
+      "options": [
+        "Models lookup haiku-5-5, research sonnet-5-5, code sonnet-5-5, manager sonnet-5-5; stagger 0, coord shared, pack budget 1200 (kb_pack's default), tools kb, manager code; a lookup agent runs with no effort flag, 40 turns and 3 dollars, its files tools being Read Grep Glob with the kb server disallowed",
+        "Every role on sonnet-5-5 and the lookup agent at effort high"
+      ],
+      "recommendation": "Models lookup haiku-5-5, research sonnet-5-5, code sonnet-5-5, manager sonnet-5-5; stagger 0, coord shared, pack budget 1200 (kb_pack's default), tools kb, manager code; a lookup agent runs with no effort flag, 40 turns and 3 dollars, its files tools being Read Grep Glob with the kb server disallowed",
+      "do": {
+        "Models lookup haiku-5-5, research sonnet-5-5, code sonnet-5-5, manager sonnet-5-5; stagger 0, coord shared, pack budget 1200 (kb_pack's default), tools kb, manager code; a lookup agent runs with no effort flag, 40 turns and 3 dollars, its files tools being Read Grep Glob with the kb server disallowed": "ST-ykdwo7a3",
+        "Every role on sonnet-5-5 and the lookup agent at effort high": "ST-ykdwo7a3"
+      },
+      "class": "design",
+      "answer": "Models lookup haiku-5-5, research sonnet-5-5, code sonnet-5-5, manager sonnet-5-5; stagger 0, coord shared, pack budget 1200 (kb_pack's default), tools kb, manager code; a lookup agent runs with no effort flag, 40 turns and 3 dollars, its files tools being Read Grep Glob with the kb server disallowed",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How is the estimate priced where the recorded rows have no figure for an agent?",
+      "options": [
+        "A lookup question is the run-weighted mean of its model's pool cells at the default effort (session shape where recorded), a research agent the mean cost of all repro area runs with a stopped one at zero, a code agent 1.00 dollar; a model with no recorded cell is scaled from sonnet-5-5 by the ratio of first-tier input list prices in bench_core.PRICE; a manager session costs one lookup question",
+        "Price every agent from token counts assumed per role"
+      ],
+      "recommendation": "A lookup question is the run-weighted mean of its model's pool cells at the default effort (session shape where recorded), a research agent the mean cost of all repro area runs with a stopped one at zero, a code agent 1.00 dollar; a model with no recorded cell is scaled from sonnet-5-5 by the ratio of first-tier input list prices in bench_core.PRICE; a manager session costs one lookup question",
+      "do": {
+        "A lookup question is the run-weighted mean of its model's pool cells at the default effort (session shape where recorded), a research agent the mean cost of all repro area runs with a stopped one at zero, a code agent 1.00 dollar; a model with no recorded cell is scaled from sonnet-5-5 by the ratio of first-tier input list prices in bench_core.PRICE; a manager session costs one lookup question": "ST-ykdwo7a3",
+        "Price every agent from token counts assumed per role": "ST-ykdwo7a3"
+      },
+      "class": "design",
+      "answer": "A lookup question is the run-weighted mean of its model's pool cells at the default effort (session shape where recorded), a research agent the mean cost of all repro area runs with a stopped one at zero, a code agent 1.00 dollar; a model with no recorded cell is scaled from sonnet-5-5 by the ratio of first-tier input list prices in bench_core.PRICE; a manager session costs one lookup question",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "What does multi run do without --dry-run, and how do planted items reach the sandbox?",
+      "options": [
+        "multi run without --dry-run refuses with exit 2 (it only plans); multi setup takes --scenario, which plants each code agent's item in the base commit and defaults --agents to the scenario's agent count",
+        "multi run without --dry-run prints the plan and starts the agents"
+      ],
+      "recommendation": "multi run without --dry-run refuses with exit 2 (it only plans); multi setup takes --scenario, which plants each code agent's item in the base commit and defaults --agents to the scenario's agent count",
+      "do": {
+        "multi run without --dry-run refuses with exit 2 (it only plans); multi setup takes --scenario, which plants each code agent's item in the base commit and defaults --agents to the scenario's agent count": "ST-ykdwo7a3",
+        "multi run without --dry-run prints the plan and starts the agents": "ST-ykdwo7a3"
+      },
+      "class": "design",
+      "answer": "multi run without --dry-run refuses with exit 2 (it only plans); multi setup takes --scenario, which plants each code agent's item in the base commit and defaults --agents to the scenario's agent count",
+      "by": "agent"
     }
   ],
   "links": [

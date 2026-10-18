@@ -1,0 +1,33 @@
+scenario,agent,role,input
+lookups,lookup-1,lookup,BP-34d1ec62
+lookups,lookup-1,lookup,BP-7e7e0d4c
+lookups,lookup-1,lookup,BP-4f71647e
+lookups,lookup-1,lookup,BP-ff6bf9a2
+lookups,lookup-1,lookup,BP-bf9fc816
+lookups,lookup-2,lookup,BP-64252b06
+lookups,lookup-2,lookup,BP-a8bc73e4
+lookups,lookup-2,lookup,BP-39ac74b8
+lookups,lookup-2,lookup,BP-3d340150
+lookups,lookup-2,lookup,BP-8edcdeb2
+lookups,lookup-3,lookup,BP-4f71647e
+lookups,lookup-3,lookup,BP-ff6bf9a2
+lookups,lookup-3,lookup,BP-bf9fc816
+lookups,lookup-3,lookup,BP-64252b06
+lookups,lookup-3,lookup,BP-a8bc73e4
+lookups,lookup-4,lookup,BP-39ac74b8
+lookups,lookup-4,lookup,BP-3d340150
+lookups,lookup-4,lookup,BP-8edcdeb2
+lookups,lookup-4,lookup,BP-34d1ec62
+lookups,lookup-4,lookup,BP-7e7e0d4c
+research,research-1,research,pip
+research,research-2,research,pip
+research,research-3,research,pip
+mixed,research-1,research,pip
+mixed,research-2,research,cmd
+mixed,code-1,code,"{""title"": ""A slugify helper for the multi-agent benchmark examples"", ""goal"": ""examples/multi-bench/slugify.py defines slugify(text), which lowercases the text, replaces each run of characters outside a-z and 0-9 with one hyphen and strips the hyphens from both ends"", ""touches"": [""examples/multi-bench/slugify.py""], ""check"": [""python3"", ""-c"", ""import sys; sys.path.insert(0, 'examples/multi-bench'); from slugify import slugify; assert slugify('Hello, World!') == 'hello-world'; assert slugify('  --a  b-- ') == 'a-b'; assert slugify('') == ''""], ""gate"": {""question"": ""How does slugify treat accented letters?"", ""options"": [""Drop each one like any other character outside a-z and 0-9"", ""Transliterate each one to its base letter with unicodedata first""], ""recommendation"": ""Transliterate each one to its base letter with unicodedata first""}}"
+mixed,code-2,code,"{""title"": ""A word counter for the multi-agent benchmark examples"", ""goal"": ""examples/multi-bench/wordcount.py defines count_words(text), which returns a dict of each lowercased word of the text to the number of times it occurs, a word being a run of letters and digits"", ""touches"": [""examples/multi-bench/wordcount.py""], ""check"": [""python3"", ""-c"", ""import sys; sys.path.insert(0, 'examples/multi-bench'); from wordcount import count_words; assert count_words('a b, A!') == {'a': 2, 'b': 1}; assert count_words('') == {}""], ""gate"": {""question"": ""Does a hyphenated word count as one word or two?"", ""options"": [""One word"", ""Two words""], ""recommendation"": ""Two words""}}"
+mixed,lookup-1,lookup,BP-64252b06
+mixed,lookup-1,lookup,BP-a8bc73e4
+mixed,lookup-1,lookup,BP-39ac74b8
+mixed,lookup-1,lookup,BP-3d340150
+mixed,lookup-1,lookup,BP-8edcdeb2
