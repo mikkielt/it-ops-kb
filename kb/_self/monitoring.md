@@ -103,3 +103,16 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 - **Stalled.** The signals are those of `backlog.py stalled`, read without the forge: the panel starts no network request, so `mr-dead` is never in `signals` and an item with only an unknown signal is left out.
 - **Unsupported.** A host that cannot list working directories (Windows, or no `/proc` and no `lsof`) makes the panel `unsupported`, with the reason of `backlog.py procs`.
 - **View.** A table of pid, age, class, session, item and checkout, an orphan's row starting `! ` and orphans first (12 rows at most, then `+N more`); `worktrees` with `path  branch` joined by ` · `, those on a `work/` branch first (12 at most); then a `! ` row for each stalled item with its id and signals.
+
+## The sprint panel
+
+`data` of `mon_sprint.py`:
+
+| key | holds |
+|---|---|
+| `sprints` | per sprint of the backlog that is active or planned, active first, then approved, then planned, ids in order within a state: `id`, `state` (`active`; `approved`, a planned sprint whose start gate the operator approved and `backlog.py start` is left; `planned`), `items` (the count of its items for each status), `next` and `waiting` |
+| `landings` | per landing in progress, newest first: `item`, `step` (the newest `land.step` row's step) and `since` (the time of the landing's first `land.step` row) |
+
+- **Read through backlog.py.** The sprints and their items are `bl_base.Backlog`'s, `next` is the item `bl_view.ready` puts first (an active sprint only, else null) and `waiting` holds `{item, gate}` for each open blocking gate of the sprint (its start gate until it is answered) and of its items that are not done or dropped. A root with no backlog has an empty `sprints`.
+- **Landings.** The ops rows are `bl_stall.ops_rows`' (this host's spool and the committed sidecars). An item is in progress while its newest `land.step` row has no later `land.end` row; rows of one millisecond in the spool keep the order of the file. A landing that stopped without a `land.end` row (a killed process, or a row from before landing wrote one) stays listed.
+- **View.** A row for each sprint, its id, its state padded to 10 and `4/11 done · next ST-xxxxxxxx · todo 3, doing 1, done 4` (done and dropped count as done) for an active sprint, `not started` for an approved one and `waits on start gate` for a planned one; under it up to two `waiting  ITEM/GATE` rows of its other open gates (12 sprints at most); then up to six `landing  ITEM  STEP  since TIME` rows, each state written, not coloured.
