@@ -2,7 +2,7 @@
   "id": "BG-caynvdnv",
   "kind": "bug",
   "title": "A coord.py intent posted after its item's done progress shows state=done in the digest though it is live",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
@@ -32,5 +32,18 @@
     "parked: SP-rsmmwzr2 review"
   ],
   "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (a live intent shows state=done). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
-  "claimed_by": "orch-r15"
+  "evidence": {
+    "commit": "4e4ef396b2414add42e85c8ad703f8932ceade73",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nc('post','--kind','progress','--field','item=ST-dddddddd','--field','state=done');time.sleep(0.05)\nc('post','--kind','intent','--field','item=ST-dddddddd','--field','topic=agents/z')\nd=c('digest','--key','agents/z','--lines','5')[1]\nprint(d.strip());sys.exit(0 if 'ST-dddddddd' in d and 'state=done' not in d else 1)"
+        ],
+        "exit": 0,
+        "sha256": "4c3c1ada82403482"
+      }
+    ]
+  }
 }
