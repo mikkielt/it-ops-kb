@@ -1,0 +1,28 @@
+{
+  "id": "ST-avjz756h",
+  "kind": "story",
+  "title": "Planning ties two items that each state one side of a contract with one check that reads both",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint skill's plan step 6 says when one item writes a list another item enforces (an agent role's commands and the session's allow list), the later item carries a check that every command the first names is admitted by the second",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read()\nm=re.search(r'^6\\. .*?(?=^## )',t,re.S|re.M)\ns=m.group(0) if m else ''\nok='both sides' in s\nprint('step 6 names a check of both sides of a contract:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "relates_to": [
+    "BG-5p3bfm4u"
+  ],
+  "links": [
+    "parked: SP-w6amecjt close"
+  ],
+  "notes": "SP-w6amecjt close: ST-qkme64fk's role lists commands ST-hp5cccy7's allow list leaves out (parked as BG-5p3bfm4u)."
+}

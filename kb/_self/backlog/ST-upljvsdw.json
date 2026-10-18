@@ -1,0 +1,26 @@
+{
+  "id": "ST-upljvsdw",
+  "kind": "story",
+  "title": "Planning gives a goal that calls a headless session read-only a check of the permissions the session really loads",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint skill's plan step 6 says an item whose goal calls a claude -p session read-only carries a check that starts the session against a fake claude and computes the allow rules of every settings source its argv loads (user, project, local, unless --setting-sources leaves them out) together with --allowedTools, failing on a rule that admits a write, and not only a check that the flags are present",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read()\nm=re.search(r'^6\\. .*?(?=^## )',t,re.S|re.M)\ns=m.group(0) if m else ''\nok='read-only' in s and 'settings source' in s\nprint('step 6 names read-only sessions and settings sources:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt close"
+  ],
+  "notes": "SP-w6amecjt close: ST-hp5cccy7's check 2 (flags_ok) passed on --permission-mode dontAsk and --allowedTools while every settings source's allow rules still loaded; the review found it as S1 (BG-jpzlj4gi, fixed in the sprint)."
+}

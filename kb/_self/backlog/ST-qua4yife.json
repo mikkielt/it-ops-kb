@@ -1,0 +1,28 @@
+{
+  "id": "ST-qua4yife",
+  "kind": "story",
+  "title": "precheck prints a failing check's first line and its output, not the whole source of an inline python check",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py precheck shows each failing check by its first line and an index, with the last lines of its output, so the plan's step 5 and step 6 reading of a sprint with long inline checks stays short; the full command stays in backlog.py show",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\nsys.exit(0 if 'brief' in s.run([sys.executable,'_tools/backlog.py','precheck','--help'],capture_output=True,text=True).stdout else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt close"
+  ],
+  "notes": "SP-w6amecjt close: precheck of a 7-item sprint printed about 850 lines, nearly all echoed check source."
+}

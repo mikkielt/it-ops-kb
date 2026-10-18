@@ -1,0 +1,26 @@
+{
+  "id": "ST-w3ox5ctj",
+  "kind": "story",
+  "title": "A gate that bounds coord or display text after redaction is not classed querylog",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.gate_class classes a gate querylog when it is about the query log or its recorded fields, not when it only names redaction of other text (a coord value, kbmon's display), while a gate about the query log's redaction stays querylog",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,'_tools');import bl_authority as a\nit={'id':'ST-aaaaaaaa','touches':['_tools/kbask.py'],'goal':'x'}\ng={'id':'g3','kind':'provisional','question':'What bounds the text of a question or an answer, and how is an ask id made?','options':['at most 8000 characters after redaction; id is A plus 10 hex digits','4000 characters']}\nq={'id':'g4','kind':'provisional','question':'Which recorded fields of the query log does redaction blank?','options':['all','none']}\nc1,c2=a.gate_class(it,g),a.gate_class(it,q);print(c1,c2);sys.exit(0 if c1!='querylog' and c2=='querylog' else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt close"
+  ],
+  "notes": "SP-w6amecjt close: ST-hp5cccy7 g3 and BG-wyz54vd5 g2/g3 were classed querylog by the word redact alone. bl_authority guards operator-only authority: a change keeps the planted query-log case."
+}

@@ -1,0 +1,25 @@
+{
+  "id": "ST-eluuxmhd",
+  "kind": "story",
+  "title": "The docs map sends a coord hook change to tools.md, which states the hook's output bound",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kb/_self/map.csv maps .claude/hooks/coord_hook.py to kb/_self/tools.md, so an item that changes the hook's output gets tools.md in its touches at planning time",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import csv,sys\nr=[x for x in csv.reader(open('kb/_self/map.csv')) if len(x)>1 and x[0]=='kb/_self/tools.md' and x[1] in ('.claude/hooks/coord_hook.py','.claude/hooks/*')]\nprint(r);sys.exit(0 if r else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_self/map.csv"
+  ],
+  "links": [
+    "parked: SP-w6amecjt close"
+  ],
+  "notes": "SP-w6amecjt close: ST-46kxzalv's worker stopped on tools.md (the hook prints at most ten lines) outside its touches; the orchestrator widened them on the branch and resumed the worker."
+}

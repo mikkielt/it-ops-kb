@@ -1,0 +1,26 @@
+{
+  "id": "ST-7txodrfr",
+  "kind": "story",
+  "title": "After a landing adds docs map rows, the orchestrator widens the open siblings' touches before claiming them",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the kb-sprint skill's run step 4 says that after a landing that changes the docs map, backlog.py check runs again and each open sibling it warns of gets the mapped doc in its touches (set --add-touch) before its claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nt=open('.claude/skills/kb-sprint/SKILL.md').read()\nm=re.search(r'^4\\. When a worker returns.*?(?=^5\\. )',t,re.S|re.M)\ns=m.group(0) if m else ''\nok='docs map' in s and 'add-touch' in s\nprint('run step 4 widens siblings after a docs map change:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt close"
+  ],
+  "notes": "SP-w6amecjt close: ST-hp5cccy7 added the map rows of the new _tools/kbask.py (to tools.md and monitoring.md); ST-xlxkap7l, planned before them, lacked tools.md, and its worker stopped on it; one resume."
+}
