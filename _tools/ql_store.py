@@ -745,8 +745,8 @@ def record_problems(r, where, ids, k):
         if r.get("kind") not in ("gap", "conflict"):
             out.append(f"{where}: a `lead` url belongs to a gap or conflict finding only")
         elif not (isinstance(lead, str) and len(lead) <= ARG_MAX_CHARS and ql_research.public_url(lead)
-                  and not redact.scan(lead, k)):
-            out.append(f"{where}: lead is not a url that passes the candidate url gate")
+                  and not redact.scan(lead, k) and redact.redact(lead, k) == lead):
+            out.append(f"{where}: lead is not a url that passes the candidate url gate and the redact rules")
     if r.get("kind") == "gap" and r.get("stage") in STAGES[2:] and not ARTICLE.fullmatch(str(r.get("article", ""))):
         out.append(f"{where}: a gap finding at stage {r.get('stage')} names no article")
     return out

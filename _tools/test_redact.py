@@ -332,6 +332,10 @@ def feedback_rows_join_their_lookups_and_the_store_refuses_open_fields(tmp, monk
     secret_url = "https://docs.example.net/p/api_" + "key=" + "hunter" + "2xFake"
     kept = ql_distill.feedback_report({"outcome": "misled", "source_url": secret_url}, None, ql_learn.KbPages())
     assert kept["lead"] is None and "2xFake" not in str(kept)  # distill keeps no lead redact would change
+    finding = {"id": "F-" + "0" * 12, "kind": "gap", "state": "open", "stage": "miss", "entry": "x"}
+    assert not [p for p in ql_store.record_problems({**finding, "lead": "https://docs.example.net/p/laps"}, "f", {"x"}, None)
+                if "lead" in p]
+    assert [p for p in ql_store.record_problems({**finding, "lead": secret_url}, "f", {"x"}, None) if "lead" in p]  # as a feedback lead
     planted = {**first, "feedback": [{**good, "comment": comment}]}
     assert any("free text" in p for p in ql_store.entry_problems(planted, "e", None))
     assert ql_store.entry_problems({k: v for k, v in alone[0].items() if k != "feedback"}, "e", None)  # none of its own
