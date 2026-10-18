@@ -2,7 +2,7 @@
   "id": "BG-6ucif3pn",
   "kind": "bug",
   "title": "coord.py reads operator key files whatever their mode, so a world-readable token file goes unnoticed",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
@@ -102,5 +102,27 @@
     "parked: SP-rsmmwzr2 review"
   ],
   "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the client gets only a connection error for a 0644 file; serve with a 0644 key runs). Knowledge: public/windows/openssh-key-management.md:38 (a private key file readable by no other user), the model for the 0600 rule.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "2fdea8b1a5dc816e5440df766e39a506cda84d8f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,subprocess as s,sys,tempfile\nT='_tools/coord.py';D=tempfile.mkdtemp();E=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'));E.pop('KB_COORD_URL',None)\ndef run(a,t=30):\n    try:\n        p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stderr\n    except s.TimeoutExpired as e:\n        return None,(e.stderr.decode() if isinstance(e.stderr,bytes) else (e.stderr or ''))\nsaid=lambda e:any(w in e.lower() for w in ('0600','mode','permission'))\nk=os.path.join(D,'k');open(k,'w').write('k'*40);os.chmod(k,0o644)\nc1=run(['--url','http://127.0.0.1:1','--key-file',k,'list'])\nos.chmod(k,0o600);c2=run(['--url','http://127.0.0.1:1','--key-file',k,'list'])\nK=os.path.join(D,'keys');os.mkdir(K);f=os.path.join(K,'alice');open(f,'w').write('a'*40);os.chmod(f,0o644)\nc3=run(['serve','--bind','127.0.0.1:0','--keys',K],t=5)\nok=c1[0]==2 and said(c1[1]) and not said(c2[1]) and c3[0]==2 and said(c3[1])\nprint('client 0644',c1[0],'client 0600',c2[0],'serve 0644',c3[0],ok);sys.exit(0 if ok else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "6f32de41c470ab2d"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,socket,subprocess as s,sys,tempfile,time\nT='_tools/coord.py'\nD=tempfile.mkdtemp()\nE=dict(os.environ,KB_COORD_STORE=os.path.join(D,'c.db'))\ndef c(*a,t=30):\n    p=s.run([sys.executable,T,*a],capture_output=True,text=True,env=E,timeout=t);return p.returncode,p.stdout,p.stderr\nk=os.path.join(D,'k');open(k,'w').write('k'*40);os.chmod(k,0o644)\nr,_,e=c('--url','http://127.0.0.1:1','--key-file',k,'list')\nlow=e.lower();ok=('0600' in e or 'mode' in low or 'permission' in low)\nprint('client names the 0644 key file mode:',ok,e.strip()[:160]);sys.exit(0 if ok else 1)"
+        ],
+        "exit": 0,
+        "sha256": "52488e1f732729e5"
+      }
+    ]
+  }
 }
