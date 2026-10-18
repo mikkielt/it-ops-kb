@@ -159,7 +159,7 @@ SS2-061,can the Self-Reviewed trailer get past the docs gate,maintaining.md,good
 SS2-062,who writes the Self-Reviewed trailer,git.md,good,yes,is typed by hand,kb-self:commit;kb-commit
 SS2-063,what does a change to tools or rules change in kb/_self,maintaining.md,good,yes,changes what `kb/_self/` says,kb-self:commit
 SS2-064,what does install-python.ps1 do when it finds a conflict on the host,maintaining.md,good,yes,stops without changing anything when it finds one,kb-setup
-SS2-065,does the commit-msg hook block a commit,git.md,good,yes,never blocks a commit,kb-setup
+SS2-065,does the commit-msg hook block a commit,git.md,good,yes,does refuse a message whose,kb-setup
 SS2-066,what does the publish remote leave out,maintaining.md,good,yes,leaves out `kb/_querylog/` and any `_logs.csv`,kb-setup
 SS2-067,at which scope are the MCP servers registered,maintaining.md,good,yes,at local scope (this machine and this clone only),kb-setup
 SS2-068,why must the plugin not be loaded in the clone,maintaining.md,good,yes,Do not load the plugin in a clone,kb-setup
