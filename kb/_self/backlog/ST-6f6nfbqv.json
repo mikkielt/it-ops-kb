@@ -21,6 +21,25 @@
   "touches": [
     "kb/public/**"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Reuse class of the CommonMark spec source row (CC-BY-SA-4.0): facts use our own words and quotes of 25 words or fewer; the share-alike term favours the safer class",
+      "options": [
+        "quote",
+        "copy"
+      ],
+      "recommendation": "quote",
+      "do": {
+        "quote": "ST-6f6nfbqv",
+        "copy": "ST-6f6nfbqv"
+      },
+      "class": "design",
+      "answer": "quote",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the JSON escape question is good (public/security/secret-shapes-in-text.md:55, RFC 8259 section 7), so it is not asked again; the link reference definition question is none, and the RFC 6750 question is good only on mcp/authorization.md lines that do not say TLS, so both are researched. Knowledge by item: BG-my67pcip and ST-3m5sjibd read the link reference definition facts (the prose shapes redact must keep whole); BG-gikebecb reads the RFC 6750 TLS facts; BG-saeietup reads the RFC 8259 escape fact already in the kb; ST-qwrhatjh researches its own private key labels.",
   "claimed_by": "orch-r13"
 }

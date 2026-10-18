@@ -4054,3 +4054,15 @@ _Agent: kb-research_
 - See agents/doc-change-detection.md.
 
 _Agent: kb-research_
+
+## QK-commonmark-link-reference-definition-syntax-may. What is the CommonMark syntax of a link reference definition, may its label hold any word, and does RFC 6750 require TLS when a client sends a bearer credential?
+- A CommonMark link reference definition is a link label, a colon, a link destination and an optional link title, with spaces or tabs (and at most one line ending) between the parts and "No further character may occur." [DOC S-jkdywrys]
+- The label starts at `[`, ends at the first unescaped `]`, holds at least one character that is not whitespace, no unescaped square brackets and at most 999 characters; it is any such text, not only a word. [DOC S-jkdywrys]
+- A definition needs a destination (`<>` is an empty one), and text after the title on the same line makes the line plain text. [DOC S-jkdywrys]
+- RFC 6750 says TLS "is mandatory to implement and use" with the Bearer scheme and that clients "MUST always use TLS (https) or equivalent transport security" with bearer tokens, because failing to do so exposes the token. [DOC S-neu52zjd]
+- The RFC has no sentence on plain `http`: it neither allows nor describes such a request. [DER S-neu52zjd: the TLS MUST and the text searched for `plain`]
+- Conclusion: a line `[token]: abc123` is a definition whose destination is a bare value, a line `[1]: https://corp.example.com/docs` is one too, and `[note]: see below` is not; a redactor must not treat the bracketed label as a key name. A Bearer credential next to an `http://` URL is still a credential, as the RFC permits it on TLS only. [DER S-jkdywrys, S-neu52zjd]
+- Open: how a deployed Markdown renderer or scanner treats these lines was not tested. [UNK]
+- See security/secret-shapes-in-text.md, mcp/authorization.md.
+
+_Agent: kb-research_

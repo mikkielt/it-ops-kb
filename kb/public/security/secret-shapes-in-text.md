@@ -2,8 +2,8 @@
 topic: security/secret-shapes-in-text
 priority: P2
 applies_to: "free text (a command line, a log line, a pasted note) that a redactor or scanner reads for credentials: HTTP Authorization headers, URL userinfo, PEM and OpenSSH private key blocks, key=value assignments, SQL Server connection strings"
-retrieved_utc: 2026-10-17
-sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v]
+retrieved_utc: 2026-10-18
+sources: [S-wct3uoax, S-neu52zjd, S-3mhhoprh, S-bs6jgunr, S-kskf5yv7, S-as3c23xb, S-cr2wj4s2, S-xnlryf7y, S-lglgs6wg, S-k57sryj7, S-spzetxhy, S-d2kitjup, S-imedhmhc, S-bcbpadtc, S-4rjxcq6v, S-jkdywrys]
 status: partial
 ---
 
@@ -22,6 +22,11 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - The RFC calls Basic not secure without an external system such as TLS, because the user-id and password are passed as cleartext inside the Base64. [DOC S-3mhhoprh]
 - The Claude API takes its key as `Authorization: Bearer <token>` or, as a legacy fallback, in an `x-api-key` header. [DOC S-bcbpadtc]
 - A Bearer or Basic credential has no minimum length or entropy: any non-empty `token68` is valid, and a Basic value is only the Base64 of `user:password`, so a short pair gives a short, low-entropy value. The shape (scheme word, then the token68) is what marks it, not the value. [DER S-wct3uoax, S-neu52zjd, S-3mhhoprh: grammar sets no length floor and Base64 adds no randomness]
+- RFC 6750 makes TLS a condition of the Bearer scheme itself: it defines bearer tokens over HTTP/1.1 using TLS and says TLS "is mandatory to implement and use with this specification". [DOC S-neu52zjd]
+- Its security considerations say clients "MUST always use TLS (https) or equivalent transport security" when making requests with bearer tokens, and that failing to do so exposes the token to numerous attacks. [DOC S-neu52zjd]
+- The RFC names the https scheme only as the form of that TLS rule; it has no sentence on a request sent over plain `http`, no allowance for one and no fallback: a Bearer request on plain `http` breaks a MUST, and the credential travels in clear text. [DER S-neu52zjd: the TLS MUST above and the RFC's lack of any plain-`http` provision, read by searching the text for `plain`]
+- A redactor therefore keys on the `Bearer` shape alone: the RFC gives a client no case where the header is sent unprotected, so a `Bearer <token>` in free text next to an `http://` URL is still a credential and is not a harmless example. [DER S-neu52zjd, S-wct3uoax: the TLS MUST and the header grammar]
+- The RFC also requires the client to validate the TLS certificate chain when requesting protected resources, and requires measures to keep the token confidential between a TLS-terminating front end and the back end. [DOC S-neu52zjd]
 
 ### URL userinfo
 - The `userinfo` part of a URI is `*( unreserved / pct-encoded / sub-delims / ":" )`, written before `@` in the authority. [DOC S-bs6jgunr]
@@ -59,6 +64,20 @@ A credential in free text has a grammar its specification fixes, and that gramma
 - A string's closing quote is therefore the first `"` that is not the second character of an escape: a `"` preceded by an odd number of backslashes is data, one preceded by an even number (none included) ends the string. [DER S-4rjxcq6v: the escape grammar above, where `\\` consumes a backslash before the next character is read]
 - JSON text carried as a string inside another JSON text (a log line whose field holds a payload that went through a logger) has every `"` of the inner text written `\"` and every `\` written `\\`, so `{"client_secret": "<secret>"}` appears as `{\"client_secret\": \"<secret>\"}`, and a secret that holds a quote or a backslash appears with that escape in it. A pattern written for bare quotes around the key and the value does not match this text, and a value rule that stops at the first quote or backslash ends inside the secret. [DER S-4rjxcq6v: the two-character escapes and the `unescaped` set above]
 
+### Markdown link reference definitions
+- A CommonMark link reference definition is a link label (up to three spaces of indentation before it), a colon, optional spaces or tabs with at most one line ending, a link destination, optional spaces or tabs with at most one line ending, and an optional link title; "No further character may occur." [DOC S-jkdywrys]
+- A definition is not rendered: it defines a label that reference links and reference-style images elsewhere in the document can use, before or after the definition, and a document of one definition has no visible content. [DOC S-jkdywrys]
+- A link label starts at `[` and ends at the first `]` that is not backslash-escaped; between them there must be at least one character that is not a space, tab or line ending, unescaped square brackets are not allowed inside, and the label holds at most 999 characters. [DOC S-jkdywrys]
+- The label is therefore not limited to a word: it may hold spaces, digits, punctuation, an escaped `]` (`[Foo*bar\]]` is a label in the spec's examples) and a line ending, and `[1]` or `[see note]` is as valid a label as `[token]`. [DER S-jkdywrys: the label rule above]
+- Two labels match when their normalized forms are equal: the brackets are stripped, the Unicode case fold is applied, leading and trailing whitespace is stripped and inner runs of whitespace become one space; when several definitions match, the first in the document is used. [DOC S-jkdywrys]
+- A link destination is either `<` ... `>` holding zero or more characters with no line ending and no unescaped `<` or `>`, or a nonempty run that does not start with `<` and holds no ASCII control character and no space, with parentheses only when escaped or in a balanced pair. [DOC S-jkdywrys]
+- A link title is zero or more characters between double quotes, between single quotes or between parentheses, and a title must be separated from the destination by spaces or tabs. [DOC S-jkdywrys]
+- The destination may not be omitted (`[foo]:` alone is paragraph text), but `<>` gives an empty one, and the title may be omitted. [DOC S-jkdywrys]
+- Characters after the title on its line make the line no definition (`[foo]: /url "title" ok` stays text); the same text on the next line leaves a definition without a title and `"title" ok` as a paragraph. [DOC S-jkdywrys]
+- A line indented four spaces, a line inside a fenced code block and a line that continues a paragraph (a definition "cannot interrupt a paragraph") are not definitions; a definition may directly follow a heading or thematic break, need not be followed by a blank line, and may sit inside a list or block quotation yet affect the whole document. [DOC S-jkdywrys]
+- So a line `[token]: abc123` is a definition (label `token`, destination `abc123`) and its destination is a bare value of the same look as a secret in a `key: value` line, while `[note]: see below` is not one, because the destination `see` ends at the space and `below` is no title (it starts with no quote or parenthesis) and no character may follow. [DER S-jkdywrys: the destination rule (no space in a bare destination) and the "no further character" rule]
+- A rule that treats `[label]:` followed by any text as an assignment would therefore also take footnote-style lines of ordinary prose (`[1]: https://corp.example.com/docs`), which are definitions for a link and no credential, and a label such as `[1]` or `[see note]` is not a key name. [DER S-jkdywrys: the label may hold any text, so the bracketed word is no sign of a secret key]
+
 ### URL path parameters
 - A path segment is `*pchar` and `pchar = unreserved / pct-encoded / sub-delims / ":" / "@"`; the `sub-delims` set is `! $ & ' ( ) * + , ; =`, so a segment may hold `=` and `;` as they are, with no percent-encoding. [DOC S-bs6jgunr]
 - The RFC calls a path segment opaque to the generic syntax and says producers often use `;` and `=` to delimit parameters and parameter values of that segment, with `name;v=1.1` as its example. [DOC S-bs6jgunr]
@@ -70,7 +89,7 @@ Open gaps of this topic: `python3 _tools/rag.py audit security/secret-shapes-in-
 
 | Shape | Marker | Value | Source |
 | --- | --- | --- | --- |
-| Authorization Bearer | `Bearer` + space(s) | `b64token`, no length floor | RFC 6750 |
+| Authorization Bearer | `Bearer` + space(s) | `b64token`, no length floor; sent over TLS only (MUST) | RFC 6750 |
 | Authorization Basic | `Basic` + space(s) | Base64 of `user-id:password` | RFC 7617 |
 | URL userinfo | `scheme://user:` ... `@host` | pct-encoded text up to `@` | RFC 3986 |
 | PKCS #8 / PEM key | `BEGIN [ENCRYPTED ]PRIVATE KEY` | base64 lines to the `END` line | RFC 7468 |
@@ -79,6 +98,7 @@ Open gaps of this topic: `python3 _tools/rag.py audit security/secret-shapes-in-
 | Connection string | `Password=` or `PWD=` | text up to `;`, or a quoted value | SqlClient docs |
 | Environment line | `AWS_SECRET_ACCESS_KEY=` | may hold `/` and `+` | AWS docs |
 | JSON string value, escaped | `\"key\": \"` inside another string | `\"` for a quote, `\\` for a backslash | RFC 8259 |
+| Markdown link reference definition | `[label]:` at line start | a destination with no space, or `<...>`, then an optional quoted title | CommonMark 0.31.2 |
 | URL path parameter | `;key=` inside a path segment | text up to `/`, `?` or `#` | RFC 3986 |
 
 ## Examples
