@@ -7,11 +7,12 @@
   kbask.py answer ID TEXT [--state S]   the same for an answer: the value answer/ID and an `answer` event with the state
                                         (working, input-required, completed, failed or rejected; default completed)
   kbask.py remediate ALERT              claim the coord key remediate/ALERT for the run, ask `kb-observer` to diagnose the
-                                        alert, and start one detached `claude -p --agent kb-observer` session (the caps
-                                        and the read-only tool list below); when it ends, its result is posted as the
-                                        answer of that ask and the claim is released. A second remediation of the same
-                                        alert exits 1 while the first runs. The prompt names the alert's id and holds no
-                                        alert text: the session reads the alert itself with `kbmon.py --json`
+                                        alert, and start one detached `claude -p --agent kb-observer` session (the caps,
+                                        the read-only tool list below, and no settings source or hook); when it ends,
+                                        its result is posted as the answer of that ask and the claim is released. A
+                                        second remediation of the same alert exits 1 while the first runs. The prompt
+                                        names the alert's id and holds no alert text: the session reads the alert itself
+                                        with `kbmon.py --json`
   kbask.py summary QUESTION [--wait]    the same capped read-only session with the operator's QUESTION (after redact.redact),
                                         asking for a summary of the monitored work: sprints, research, sessions, coord and the
                                         query log, read from this clone's backlog and the coord store kbask is pointed at.
@@ -44,6 +45,9 @@ MODEL = "sonnet"
 MAX_BUDGET_USD = "0.5"
 MAX_TURNS = "30"
 PERMISSION_MODE = "dontAsk"
+AGENT_FILE = ROOT / ".claude" / "agents" / "kb-observer.md"
+BUILT_IN_TOOLS = ("Read", "Grep", "Glob", "Bash")
+NO_HOOKS = '{"disableAllHooks": true}'
 # The Bash a remediation session may run (a trailing ` *` also matches the bare command), and the file tools.
 ALLOWED_TOOLS = (
     "Read", "Grep", "Glob",
@@ -191,10 +195,29 @@ def session_env(conn):
     return env
 
 
+def observer_agent():
+    """The kb-observer agent as the --agents JSON: its file's description, tools and model, and its body as the prompt. The
+    session loads no settings source, so the project's agent file is not found by itself; Stop when it cannot be read."""
+    try:
+        text = AGENT_FILE.read_text(encoding="utf-8")
+    except OSError as error:
+        raise Stop(f"kbask: cannot read {AGENT_FILE.name}: {error.__class__.__name__}") from error
+    head, _, body = text.removeprefix("---\n").partition("\n---\n")
+    fields = dict(line.split(":", 1) for line in head.splitlines() if ":" in line)
+    agent = {key: fields[key].strip() for key in ("description", "tools", "model") if key in fields}
+    if not text.startswith("---\n") or "description" not in agent or not body.strip():
+        raise Stop(f"kbask: {AGENT_FILE.name} has no frontmatter description or no body")
+    return json.dumps({OBSERVER: {**agent, "prompt": body.strip()}})
+
+
 def session_argv(claude):
-    """The claude -p command line of a remediation: the project agent, the caps, no prompt (it goes on stdin), and the
-    tool list last, since --allowedTools takes every argument after it."""
-    return [claude, "-p", "--agent", OBSERVER, "--model", MODEL, "--max-budget-usd", MAX_BUDGET_USD, "--max-turns", MAX_TURNS,
+    """The claude -p command line of a session: the agent inline, no settings source, hooks, MCP server or tool beyond the
+    four, the caps, no prompt (it goes on stdin), and the tool list last, since --allowedTools takes every argument
+    after it. A settings source adds its permissions.allow rules to --allowedTools and the project's hooks write
+    into the clone, so none loads."""
+    return [claude, "-p", "--agent", OBSERVER, "--agents", observer_agent(), "--setting-sources", "",
+            "--settings", NO_HOOKS, "--strict-mcp-config", "--tools", ",".join(BUILT_IN_TOOLS),
+            "--model", MODEL, "--max-budget-usd", MAX_BUDGET_USD, "--max-turns", MAX_TURNS,
             "--permission-mode", PERMISSION_MODE, "--output-format", "json", "--allowedTools", *ALLOWED_TOOLS]
 
 
@@ -221,6 +244,7 @@ def cmd_remediate(args):
     claude = shutil.which("claude")
     if claude is None:
         raise Stop("kbask: claude is not on PATH")
+    observer_agent()
     key = CLAIM_PREFIX + alert
     claimed = need(run_coord(conn, "claim", key, "--ttl", str(CLAIM_SECONDS), "--holder", "kbask"), f"cannot claim {key}")
     token = claimed["token"]
@@ -293,6 +317,7 @@ def cmd_summary(args):
     claude = shutil.which("claude")
     if claude is None:
         raise Stop("kbask: claude is not on PATH")
+    observer_agent()
     question = clean(args.question)
     prompt = SUMMARY_PROMPT.format(question=question, coord=COORD_URL_NOTE if "--url" in conn else COORD_STORE_NOTE)
     ask_id = "A" + secrets.token_hex(5)
