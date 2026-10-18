@@ -2,7 +2,7 @@
   "id": "ST-xlxkap7l",
   "kind": "story",
   "title": "kbask.py summary: the observer summarises sprints, research, sessions, coord and the query log on request",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -78,5 +78,18 @@
     }
   ],
   "notes": "Plan 2026-10-18 (operator, mid-plan): 'how my team's sprint and researches are going' is the same read-only agent with the operator's question. A team shares the backlog through git and coord through a serve URL (kbask --url and --key-file as coord.py takes them).",
-  "claimed_by": "orch-r20"
+  "evidence": {
+    "commit": "dc813849909da334e0af06e483ec18b5282a36de",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nimport re\nA40='A'*40\nSEC=['-----BEGIN '+'PRIVATE KEY-----','AK'+'IA'+'Q'*16,'gh'+'p_'+'b'*36,'github'+'_pat_'+'c'*22,'gl'+'pat-'+'d'*20,'gl'+'rt-'+'e'*20,'xo'+'xb-'+'f'*10,'sk-'+'ant-'+'g'*20,'sk-'+'h'*32,'Account'+'Key='+A40,'x?s'+'ig='+'i'*30,'ey'+'J'+'j'*10+'.ey'+'J'+'k'*10+'.'+'l'*10,'pass'+'word = \"'+'m'*9+'\"','api'+'_key='+'n7Qz'*6,'/Users/'+'zofia.nowak/x']\nTAILS=['PRIVATE KEY','Q'*16,'b'*36,'c'*22,'d'*20,'e'*20,'f'*10,'g'*20,'h'*32,A40,'i'*30,'j'*10,'m'*9,'n7Qz'*6,'zofia.nowak']\nIDS=[x for x in SEC if re.fullmatch(r'[A-Za-z0-9_.:/#@-]{1,120}',x)]\ndef leaks(t): return [x[:6] for x in TAILS if x in t]\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\nB=tempfile.mkdtemp();LOG=os.path.join(B,'argv.json');fc=os.path.join(B,'claude')\nopen(fc,'w').write('#!'+sys.executable+'\\nimport json,sys,time\\nd={\"argv\":sys.argv[1:],\"stdin\":sys.stdin.read()}\\nopen(%r,\"w\").write(json.dumps(d))\\ntime.sleep(4)\\nprint(json.dumps({\"type\":\"result\",\"subtype\":\"success\",\"session_id\":\"00000000-0000-0000-0000-0000000000aa\",\"result\":\"diagnosis: planted; proposed: python3 _tools/querylog.py check\",\"total_cost_usd\":0.01}))\\n'%LOG)\nos.chmod(fc,0o755)\ndef ask(*a,env=None,t=120):\n    return s.run([sys.executable,'_tools/kbask.py',*a],capture_output=True,text=True,env=env,timeout=t)\ndef events(env):\n    r=s.run([sys.executable,'_tools/coord.py','wait','--since','0','--timeout','1'],capture_output=True,text=True,env=env,timeout=60)\n    try: return json.loads(r.stdout).get('events',[])\n    except ValueError: return []\ndef flags_ok(argv):\n    need=[('--agent','kb-observer'),('--model','sonnet'),('--max-budget-usd','0.5'),('--max-turns','30'),('--permission-mode','dontAsk')]\n    miss=[a for a,v in need if not any(argv[i]==a and argv[i+1]==v for i in range(len(argv)-1))]\n    if '-p' not in argv: miss.append('-p')\n    if '--allowedTools' not in argv: miss.append('--allowedTools')\n    return miss\n\nst=os.path.join(tempfile.mkdtemp(),'c.sqlite');E=dict(QE,KB_COORD_STORE=st,PATH=B+os.pathsep+os.environ['PATH'])\np=ask('summary',\"how are my team's sprints and research going \"+IDS[0],'--wait',env=E,t=180)\nif p.returncode!=0: fail('summary exit %s: %s'%(p.returncode,(p.stdout+p.stderr)[-300:]))\nif 'diagnosis: planted' not in p.stdout: fail('--wait printed no answer')\nd=json.load(open(LOG));miss=flags_ok(d['argv'])\nif miss: fail('session flags missing: %r'%miss)\nif \"team's sprints\" not in d['stdin'] or leaks(d['stdin']): fail('prompt lacks the question or keeps a planted secret')\nkinds=[e.get('kind') for e in events(E)]\nif 'ask' not in kinds or 'answer' not in kinds: fail('events %r'%kinds)\nprint('ok: summary session capped, question redacted, ask and answer posted, answer printed')\n"
+        ],
+        "exit": 0,
+        "sha256": "d9c3898593ef4e43"
+      }
+    ]
+  }
 }
