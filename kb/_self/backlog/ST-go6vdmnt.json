@@ -73,7 +73,9 @@
         "run files of the local store that origin/main lacks (0 in mode local)": "ST-go6vdmnt",
         "spool rows whose entry the local store holds": "ST-go6vdmnt"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "run files of the local store that origin/main lacks (0 in mode local)",
+      "by": "operator"
     },
     {
       "id": "g2",
