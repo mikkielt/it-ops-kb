@@ -61,6 +61,70 @@
       "class": "design",
       "answer": "on the sandbox bare as content: the sandbox's backlog.json names no code lane",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "What does the sandbox's bare hold and where does it come from by default?",
+      "options": [
+        "the one commit REV (default: this checkout's HEAD), copied from the checkout's own objects with no history and no network",
+        "REV's full history, fetched from the real origin"
+      ],
+      "recommendation": "the one commit REV (default: this checkout's HEAD), copied from the checkout's own objects with no history and no network",
+      "do": {
+        "the one commit REV (default: this checkout's HEAD), copied from the checkout's own objects with no history and no network": "ST-b2k5y46l",
+        "REV's full history, fetched from the real origin": "ST-b2k5y46l"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Where do the agents' clones and coordination stores sit?",
+      "options": [
+        "clones under the scratch directory in a directory of their own for each DIR; stores DIR/coord/coord.sqlite (shared) and DIR/coord/agentN/coord.sqlite (isolated)",
+        "clones and stores all inside DIR"
+      ],
+      "recommendation": "clones under the scratch directory in a directory of their own for each DIR; stores DIR/coord/coord.sqlite (shared) and DIR/coord/agentN/coord.sqlite (isolated)",
+      "do": {
+        "clones under the scratch directory in a directory of their own for each DIR; stores DIR/coord/coord.sqlite (shared) and DIR/coord/agentN/coord.sqlite (isolated)": "ST-b2k5y46l",
+        "clones and stores all inside DIR": "ST-b2k5y46l"
+      },
+      "class": "design",
+      "answer": "clones under the scratch directory in a directory of their own for each DIR; stores DIR/coord/coord.sqlite (shared) and DIR/coord/agentN/coord.sqlite (isolated)",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How does setup carry out gate g1, that the sandbox names no code lane?",
+      "options": [
+        "one base commit on the sandbox bare that empties lane_module in backlog.json",
+        "a backlog config file named by KB_BACKLOG_CONFIG in each agent's environment"
+      ],
+      "recommendation": "one base commit on the sandbox bare that empties lane_module in backlog.json",
+      "do": {
+        "one base commit on the sandbox bare that empties lane_module in backlog.json": "ST-b2k5y46l",
+        "a backlog config file named by KB_BACKLOG_CONFIG in each agent's environment": "ST-b2k5y46l"
+      },
+      "class": "design",
+      "answer": "one base commit on the sandbox bare that empties lane_module in backlog.json",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "blocking",
+      "question": "Which landings does multi probe run, and how does it read the checkout's own remote ref?",
+      "options": [
+        "the two commits land in the shared sandbox; the isolated sandbox is built and its stores proven by one claim of a key by each agent; the ref is read and the commits must not be in its history",
+        "the two commits land in both sandboxes"
+      ],
+      "recommendation": "the two commits land in the shared sandbox; the isolated sandbox is built and its stores proven by one claim of a key by each agent; the ref is read and the commits must not be in its history",
+      "do": {
+        "the two commits land in the shared sandbox; the isolated sandbox is built and its stores proven by one claim of a key by each agent; the ref is read and the commits must not be in its history": "ST-b2k5y46l",
+        "the two commits land in both sandboxes": "ST-b2k5y46l"
+      },
+      "class": "push"
     }
   ],
   "links": [
