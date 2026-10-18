@@ -43,6 +43,25 @@
     "kb/_self/querylog.md",
     "_tools/test_redact.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does ASSIGNMENT end an escaped-quote value that holds a nested escaped quote?",
+      "options": [
+        "closing quote must have the same backslash run as the opening one; a longer run before a quote is nested (backreference)",
+        "keep first backslash run before a quote as the end"
+      ],
+      "recommendation": "closing quote must have the same backslash run as the opening one; a longer run before a quote is nested (backreference)",
+      "do": {
+        "closing quote must have the same backslash run as the opening one; a longer run before a quote is nested (backreference)": "BG-saeietup",
+        "keep first backslash run before a quote as the end": "BG-saeietup"
+      },
+      "class": "design",
+      "answer": "closing quote must have the same backslash run as the opening one; a longer run before a quote is nested (backreference)",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-g4mwrwsv review"
   ],

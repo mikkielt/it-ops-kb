@@ -47,6 +47,7 @@ SHAPES = {"bearer": ("Authorization: Bearer " + VALUE, VALUE), "basic": ("Author
           "$word assignment": ("password=$" + VALUE, VALUE),
           "placeholder-prefixed assignments": ("password=%x%y" + VALUE + "\npassword=***" + VALUE + "\npassword=<a>" + VALUE, VALUE),
           "escaped JSON assignment": ("{" + BS + Q + "password" + BS + Q + ": " + BS + Q + VALUE + BS + Q + "}", VALUE),
+          "escaped quote nested in an escaped JSON value": ("{" + BS + Q + "password" + BS + Q + ": " + BS + Q + "a" + BS * 3 + Q + "b" + VALUE + BS + Q + "}", VALUE),
           "escaped JSON header": ("{" + BS + Q + "Authorization" + BS + Q + ": " + BS + Q + "Bearer " + VALUE + BS + Q + "}", VALUE),
           "subscripted header": ("headers['Authorization'] = 'Bearer " + VALUE + "'", VALUE),
           "escaped quote in a value": ("password=" + Q + "Fa" + BS + Q + "kePass12345x" + Q, "kePass12345x"),
