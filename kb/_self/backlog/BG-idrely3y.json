@@ -2,7 +2,7 @@
   "id": "BG-idrely3y",
   "kind": "bug",
   "title": "stage-back run in a worker's own worktree looks for the worktree nested inside itself",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,
@@ -31,5 +31,18 @@
     "duplicate: ST-rkre4yru (merged 2026-10-17)"
   ],
   "notes": "Hygiene 2026-10-17: ST-rkre4yru merged here. Seen in four sprints: SP-b36246xo (ST-wiv62ohc, ST-2t73jxfk, ST-qivswoxw), SP-xo45jvbj (ST-x6mvfnmv, ST-3qxh5vxo, BG-wh3wardm), SP-4cc36epy (BG-jy6yxnq4, BG-ljlj77kd, BG-6jwv6ag3), SP-6jfnx5i3 (BG-iwqcj5zf): each worker reran stage-back --check with --root set to the orchestrator checkout. Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (has no worktree at <worktree>/.claude/worktrees/agent-ST-...). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside; the tree's own worktree layout.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "e5f804ffb171c29d6f142a7c8ada63977b63712f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,pathlib as P\nT=os.path.abspath('_tools/backlog.py');r=P.Path(tempfile.mkdtemp());g=lambda *a,c=r:s.run(['git','-C',str(c),'-c','user.name=x','-c','user.email=x@x',*a],check=True,capture_output=True,text=True).stdout.strip()\ng('init','-q');d=r/'kb'/'_self'/'backlog';d.mkdir(parents=True);(r/'backlog.json').write_text(json.dumps({'item_dir':'kb/_self/backlog'}))\n(r/'.gitignore').write_text('_cache/\\n.claude/worktrees/\\n')\n(d/'ST-aaaaaaaa.json').write_text(json.dumps({'id':'ST-aaaaaaaa','kind':'story','title':'t','status':'doing','priority':'P3','goal':'g','touches':['x.txt'],'checks':[{'run':['python3','-c','print(1)']}]},indent=2)+'\\n')\n(r/'x.txt').write_text('x\\n');g('add','-A');g('commit','-qm','i')\nw=r/'.claude'/'worktrees'/'agent-ST-aaaaaaaa';g('worktree','add','-q','-b','work/ST-aaaaaaaa',str(w))\n(r/'_cache'/'scratch'/'ST-aaaaaaaa'/'staging').mkdir(parents=True)\nenv=dict(os.environ);env.pop('KB_BACKLOG_CONFIG',None)\np=s.run([sys.executable,T,'--root',str(w),'stage-back','ST-aaaaaaaa','--check'],cwd=str(w),capture_output=True,text=True,env=env)\no=(p.stdout+p.stderr).strip();print('exit',p.returncode,o[-300:]);sys.exit(1 if 'has no worktree' in o else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "df98a46361b57ce1"
+      }
+    ]
+  }
 }
