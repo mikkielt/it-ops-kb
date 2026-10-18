@@ -2,7 +2,7 @@
   "id": "ST-b2k5y46l",
   "kind": "story",
   "title": "benchmarks.py multi setup builds a sandbox whose agents share one bare origin and a coord store shared or per agent",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -140,5 +140,27 @@
     "_tools/coord.py"
   ],
   "notes": "Extends bench_repro (setup, instance_env, mcp_config, LEAKY_ENV, reset_clone): repro gives each instance its own bare, this sandbox gives every agent one shared bare, so claims, rebases and landing stops between agents are real. The coord store knob is KB_COORD_STORE (coord.py and its hook read it), so no coord.py change; coord.py is held by SP-5xnbspyp and SP-fp3hxl6q. No network: the probe reads the clone's own origin/main ref, never a fetch.",
-  "claimed_by": "orch-r16"
+  "evidence": {
+    "commit": "628bebda3b93158b622e9a7bd7b1f626325ce1ec",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nbench(\"multi\", \"probe\", timeout=1800)\nassert not os.path.exists(MARK), \"the probe started claude\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nimport re\nd = os.path.join(T, \"sb\")\nfor coord, n in ((\"shared\", 1), (\"isolated\", 3)):\n    r = bench(\"multi\", \"setup\", \"--agents\", \"3\", \"--coord\", coord, \"--dir\", d, \"--dry-run\")\n    assert not os.path.exists(d), \"--dry-run created the sandbox\"\n    stores = set(re.findall(r\"KB_COORD_STORE (\\S+)\", r.stdout))\n    assert len(stores) == n, (coord, stores, r.stdout[-600:])\n    assert len(re.findall(r\"mcp-config (\\S+)\", r.stdout)) == 3, r.stdout[-600:]\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
