@@ -2,7 +2,7 @@
   "id": "ST-y3twtacd",
   "kind": "story",
   "title": "kbmon alerts loudly on a refused query-log delivery: first line of every view and the snapshot's alerts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -77,5 +77,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-18: the reader exists (bl_land.last_push_failure over distill.log, imported, not changed). Run against this host's main checkout on 2026-10-18 the last outcome was 'apply --push: git fetch origin failed; nothing pushed' (a connection reset): with every failure an alert it would fire now, hence gate which. A refused push writes DISABLED in the query log directory; that also alerts. Alert line (operator's layout): colour `ESC[1;97;41m!! ALERT {message} — since {HH:MM}ESC[K ESC[0m`; NO_COLOR `!! ALERT {message} — since {HH:MM}`, then a row of W `=`, the header on line 3. Only blocking failures alert; a fetch or connection failure is a `! ` row in its panel."
+  "notes": "Plan 2026-10-18: the reader exists (bl_land.last_push_failure over distill.log, imported, not changed). Run against this host's main checkout on 2026-10-18 the last outcome was 'apply --push: git fetch origin failed; nothing pushed' (a connection reset): with every failure an alert it would fire now, hence gate which. A refused push writes DISABLED in the query log directory; that also alerts. Alert line (operator's layout): colour `ESC[1;97;41m!! ALERT {message} — since {HH:MM}ESC[K ESC[0m`; NO_COLOR `!! ALERT {message} — since {HH:MM}`, then a row of W `=`, the header on line 3. Only blocking failures alert; a fetch or connection failure is a `! ` row in its panel.",
+  "claimed_by": "orch-r18"
 }
