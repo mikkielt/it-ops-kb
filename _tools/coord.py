@@ -735,18 +735,18 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.reply(status, {"ok": False, "error": text}, headers)
 
     def do_POST(self):
+        operator = authenticate(self.server.keys, self.headers.get("Authorization"))
+        if operator is None:
+            return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
         try:
             size = int(self.headers.get("Content-Length") or 0)
         except ValueError:
             return self.refuse(400, "bad Content-Length")
         if not 0 <= size <= BODY_LIMIT:
             return self.refuse(413, f"a request is at most {BODY_LIMIT} bytes")
-        raw = self.rfile.read(size)
-        operator = authenticate(self.server.keys, self.headers.get("Authorization"))
-        if operator is None:
-            return self.refuse(401, "unknown or revoked token", [("WWW-Authenticate", "Bearer")])
         if self.path != ENDPOINT:
             return self.refuse(404, f"only POST {ENDPOINT}")
+        raw = self.rfile.read(size)
         try:
             argv = json.loads(raw.decode("utf-8"))["argv"]
             if not isinstance(argv, list) or not all(isinstance(a, str) for a in argv):
