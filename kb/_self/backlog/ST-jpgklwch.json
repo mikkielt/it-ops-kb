@@ -1,0 +1,27 @@
+{
+  "id": "ST-jpgklwch",
+  "kind": "story",
+  "title": "The commit-msg KB-Work judgement lives in one function the hook and refuse_commit_msg share",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kg_hooks.hook_commit_msg and kg_trailers.refuse_commit_msg judge a message's KB-Work line through one shared function, so the hook's printed problems and its refusal cannot drift apart. Follow-up of gate ST-3mfjrjom g2 (the refusal was placed in kg_trailers because kg_hooks.py was outside that item's touches), confirmed by the SP-kbrxa4c4 review with this follow-up.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys\nsys.path.insert(0,'_tools')\nimport kg_hooks,kg_trailers\nh=inspect.getsource(kg_hooks.hook_commit_msg);r=inspect.getsource(kg_trailers.refuse_commit_msg)\nok=('refuse_commit_msg' in h) or ('hook_commit_msg' in r) or ('judge_work' in h and 'judge_work' in r)\nprint('one shared KB-Work judgement',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kg_hooks.py",
+    "_tools/kg_trailers.py",
+    "_tools/kbgit.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 review"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "ST-zlxsefqf",
+  "kind": "story",
+  "title": "A plan's check of a git hook item commits through the installed hook script",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 6 says an item that changes a git hook's behaviour carries a check that commits through the installed hook script (core.hooksPath in a scratch repo), not only a run of the tool the script calls. Found by the SP-kbrxa4c4 review (S4, ST-3mfjrjom): its check ran `kbgit.py hook commit-msg` directly and never `.githooks/commit-msg`, whose exit mapping blocks the commit.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan \"<goal>\"');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='installed hook script' in s;print('## plan \"<goal>\"','names','installed hook script',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 review"
+  ]
+}

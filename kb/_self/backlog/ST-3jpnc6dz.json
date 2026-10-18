@@ -1,0 +1,24 @@
+{
+  "id": "ST-3jpnc6dz",
+  "kind": "story",
+  "title": "A plan's check of an option that narrows a selection plants a case the option must leave out",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 6 says a check of an option that narrows what a command acts on (a --lines, a filter, a selector) plants a case the option must leave out and asserts it is left out, not only a case it keeps. Found by the SP-kbrxa4c4 review (S3, ST-7lxg3u4h): the check of anchor --file --lines used an already anchored line, so it gave sources=0 with or without --lines.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan \"<goal>\"');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='must leave out' in s;print('## plan \"<goal>\"','names','must leave out',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 review"
+  ]
+}

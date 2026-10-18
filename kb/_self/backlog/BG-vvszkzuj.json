@@ -1,0 +1,25 @@
+{
+  "id": "BG-vvszkzuj",
+  "kind": "bug",
+  "title": "The commit-msg hook prints that check-trailers refuses a stray KB-Work line but lets the commit through",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "kg_trailers.refuse_commit_msg gives the verdict check-trailers gives for a KB-Work line outside the message's last paragraph (a stray line git does not read as a trailer): REFUSED where check-trailers refuses the commit, so the hook never prints 'refuses this commit' and exits 0, and kb/_self/git.md says what the hook does with such a line. Found by the SP-kbrxa4c4 review (S3, ST-3mfjrjom).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile\nsys.path.insert(0,'_tools')\nimport kg_trailers as k\nf=tempfile.NamedTemporaryFile('w',delete=False,suffix='.txt');f.write('feat: x\\n\\nKB-Work: ST-cccccccc\\n\\nbody\\n');f.close()\nr=k.refuse_commit_msg(f.name,None);os.unlink(f.name)\nprint('stray KB-Work line refused',r==k.REFUSED);sys.exit(0 if r==k.REFUSED else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/kg_trailers.py",
+    "kb/_self/git.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 review"
+  ],
+  "notes": "Review 2026-10-18: in a scratch repo with the hook, `git commit -m $'feat: x\\n\\nKB-Work: ST-cccccccc\\n\\nbody'` returns 0, then `python3 _tools/kbgit.py check-trailers HEAD` returns 1."
+}

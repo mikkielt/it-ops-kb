@@ -1,0 +1,27 @@
+{
+  "id": "ST-fye5hsc3",
+  "kind": "story",
+  "title": "A kb/_self doc worker's brief has it run the landing's own eval, or compare with its pre-edit noted count",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "The brief rule bl_dispatch.self_eval_rules gives a worker whose touches name a kb/_self doc either the eval command land runs (backlog.json land_eval, all roots, whose noted= is compared with NOTED_BASELINE) or a comparison of the _self noted= count with the count before its edits, so a reword that adds notes and stops land's eval step fails the worker's own run. Found by the SP-kbrxa4c4 review (S2, ST-sgzhsq4p): the _self-only noted is 4 against a baseline of 13, while the all-root noted already equals 13.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys\nsys.path.insert(0,'_tools')\nimport bl_dispatch as b\ns=inspect.getsource(b.self_eval_rules)\nok=('rag.py eval --root _self' not in s) or ('before your edits' in s) or ('pre-edit' in s)\nprint('brief names the landing eval or a pre-edit count',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_dispatch.py",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 review"
+  ],
+  "notes": "Review 2026-10-18: `python3 _tools/rag.py eval --root _self | tail -1` gives noted=4, `python3 _tools/rag.py eval | tail -1` gives noted=13 = NOTED_BASELINE. The gate answer ST-sgzhsq4p g1 (a fixed rule in the brief) stays; the reviewer asked to change the command it names."
+}
