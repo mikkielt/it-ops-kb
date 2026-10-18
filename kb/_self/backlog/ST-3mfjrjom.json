@@ -82,7 +82,9 @@
         "exit 3, the only code the script turns into a blocked commit": "ST-3mfjrjom",
         "exit 1, as any crash of the tool also gives": "ST-3mfjrjom"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "exit 3, the only code the script turns into a blocked commit",
+      "by": "operator"
     }
   ],
   "links": [
