@@ -2,7 +2,7 @@
   "id": "ST-o7rootzj",
   "kind": "story",
   "title": "Review sprint: An optional OpenTelemetry adapter exports kbmon's metrics, events and spans and serves /metrics on loopback",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-qvlnptiw",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r19"
 }
