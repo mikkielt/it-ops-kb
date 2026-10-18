@@ -44,7 +44,7 @@
       },
       "class": "design",
       "answer": "recheck once a second in the poll loop and before the reply",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

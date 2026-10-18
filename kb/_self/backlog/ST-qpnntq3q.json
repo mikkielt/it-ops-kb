@@ -1,0 +1,25 @@
+{
+  "id": "ST-qpnntq3q",
+  "kind": "story",
+  "title": "Two parallel tool events of a coord hook session with no token keep the token of the claim the store granted",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord_hook.renew_if_due and save keep the token a granted claim returned when a parallel tool event of the same session saved its refused claim later (a lock on the session's state file, or a save that keeps a token another event wrote), so a session's presence lease stays renewable and releasable. Found by the SP-fp3hxl6q review (S4, BG-wepc3t4y): the loser's save drops the winner's token, and the lease holds up to 6 h with no one to renew it.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import importlib.util as u,sys\ns=u.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=u.module_from_spec(s);s.loader.exec_module(h)\nimport inspect\nsrc=inspect.getsource(h.save)+inspect.getsource(h.renew_if_due)\nok=any(w in src for w in ('flock','lockf','O_EXCL','merge'))\nprint('state save guards a parallel event',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q review"
+  ]
+}

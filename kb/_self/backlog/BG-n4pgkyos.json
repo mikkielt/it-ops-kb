@@ -1,0 +1,24 @@
+{
+  "id": "BG-n4pgkyos",
+  "kind": "bug",
+  "title": "coord.py digest labels a two-item intent state=done when only one of its items is done",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "coord.py digest gives an intent that names several items (item=A,B) the state of the item the digest was asked for, or one state per item, so a done progress for A after the intent does not show state=done on the line read for B, which is still live. Found by the SP-fp3hxl6q review (S4, BG-kalkmokl/BG-caynvdnv residue).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,sys,tempfile,types\nsys.path.insert(0,'_tools')\nimport coord\nD=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');t=[1000.0];clock=lambda:t[0]\nA=lambda **k:types.SimpleNamespace(store=st,**k)\ndef post(kind,**f):\n    t[0]+=1;return coord.run(A(command='post',kind=kind,field=[f'{a}={b}' for a,b in f.items()]),clock)[0]\ncoord.run(A(command='claim',key='session/s1',ttl=21600,holder='s1',budget=None),clock)\npost('intent',session='s1',item='BG-aaaaaaaa,BG-bbbbbbbb');post('progress',item='BG-aaaaaaaa',state='done')\nd=repr(coord.run(A(command='digest',key=['BG-bbbbbbbb'],lines=10),clock)[0]);print(d)\nsys.exit(0 if 'BG-bbbbbbbb' in d and 'state=done' not in d else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q review"
+  ]
+}

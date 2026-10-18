@@ -1,0 +1,25 @@
+{
+  "id": "ST-6pvqtejh",
+  "kind": "story",
+  "title": "A served coord.py wait ends when its client disconnects",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "coord.py serve ends a long-poll wait whose client has closed the connection (checked in the poll loop beside the key recheck), so a client that gives up on a wait --timeout 1e9 does not hold a handler thread for the whole timeout. Found by the SP-fp3hxl6q review (S4): BG-ih3awckg closed the unauthenticated hold, not this one.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys\nsys.path.insert(0,'_tools')\nimport coord\nsrc=inspect.getsource(coord)\nok=('MSG_PEEK' in src) or ('select.select' in src) or ('selectors' in src)\nprint('served wait checks its client',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q review"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "BG-jrs3k6mt",
+  "kind": "bug",
+  "title": "The coord hook posts no intent for a claim run as backlog.py --root X claim ID or behind a wrapper such as timeout",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "coord_hook.claimed_item finds the claim in `python3 _tools/backlog.py --root X claim ID` (a global option before the subcommand), `timeout 60 python3 _tools/backlog.py claim ID` and `{ python3 _tools/backlog.py claim ID; }`, while the text forms (a commit message, an echo, a heredoc, a grep pattern) still post nothing. Found by the SP-fp3hxl6q review (S3, BG-iagias5y).",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import importlib.util as u,sys\ns=u.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=u.module_from_spec(s);s.loader.exec_module(h)\nforms=['python3 _tools/backlog.py --root X claim BG-abcd1234','timeout 60 python3 _tools/backlog.py claim BG-abcd1234','{ python3 _tools/backlog.py claim BG-abcd1234; }']\ngot=[h.claimed_item(f) for f in forms];text=h.claimed_item('git commit -m \"backlog.py claim BG-abcd1234\"')\nprint(got,text);sys.exit(0 if got==['BG-abcd1234']*3 and text is None else 1)"
+    ]
+  },
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q review"
+  ]
+}

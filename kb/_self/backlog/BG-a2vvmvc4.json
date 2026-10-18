@@ -1,0 +1,25 @@
+{
+  "id": "BG-a2vvmvc4",
+  "kind": "bug",
+  "title": "coord.py wait --since with a number past SQLite's integer range ends in an OverflowError traceback, and a served one kills its handler thread",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S2",
+  "goal": "coord.py answers a wait --since (and any other integer argument it binds into SQLite) outside SQLite's signed 64-bit range with exit 2 and a one-line reason, locally and through serve (a 400 the client prints as a refusal), never a traceback or a dropped connection. Found by the SP-fp3hxl6q review (S2): the sprint goal's 'refusal, not a traceback' for an authenticated operator.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess as s,sys,tempfile\nD=tempfile.mkdtemp()\np=s.run([sys.executable,'_tools/coord.py','--store',os.path.join(D,'c.sqlite'),'wait','--since','99999999999999999999','--timeout','0'],capture_output=True,text=True,timeout=60)\nprint('exit',p.returncode,'traceback','Traceback' in p.stderr);sys.exit(0 if p.returncode==2 and 'Traceback' not in p.stderr else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-fp3hxl6q review"
+  ],
+  "notes": "Review 2026-10-18: `python3 _tools/coord.py --store $(mktemp -d)/c.sqlite wait --since 99999999999999999999 --timeout 0` prints `OverflowError: Python int too large to convert to SQLite INTEGER` (coord.py:413). Served, the handler thread dies and the client reports `RemoteDisconnected` as 'cannot reach'."
+}
