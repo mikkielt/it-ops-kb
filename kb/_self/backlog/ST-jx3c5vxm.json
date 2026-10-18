@@ -31,7 +31,8 @@
     "_tools/kbmon.py",
     "_tools/mon_events.py",
     "kb/_self/tools.md",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-exnzb4pf",
@@ -54,6 +55,91 @@
       "class": "design",
       "answer": "the newest spool row time and coord sequence, as one opaque text",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is a delivery span, since the log gives one time for it?",
+      "options": [
+        "start equal to end at the log's last write, only when the log gives that time",
+        "an event only, no span"
+      ],
+      "recommendation": "start equal to end at the log's last write, only when the log gives that time",
+      "do": {
+        "start equal to end at the log's last write, only when the log gives that time": "ST-jx3c5vxm",
+        "an event only, no span": "ST-jx3c5vxm"
+      },
+      "class": "design",
+      "answer": "start equal to end at the log's last write, only when the log gives that time",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "When is a landing exported as a span?",
+      "options": [
+        "once its land.end row is in the log, with the steps of its item in its span",
+        "as soon as a land.step row is seen, with an open end"
+      ],
+      "recommendation": "once its land.end row is in the log, with the steps of its item in its span",
+      "do": {
+        "once its land.end row is in the log, with the steps of its item in its span": "ST-jx3c5vxm",
+        "as soon as a land.step row is seen, with an open end": "ST-jx3c5vxm"
+      },
+      "class": "design",
+      "answer": "once its land.end row is in the log, with the steps of its item in its span",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does an attribute hold a list of ids, and what happens to an attribute that is no number, flag or stable id?",
+      "options": [
+        "the attribute is left out and the record stays; a list is name_n (its length) and name_1.. (the first four)",
+        "the whole record is left out, as a metric point is; a list is one attribute joined by a comma"
+      ],
+      "recommendation": "the attribute is left out and the record stays; a list is name_n (its length) and name_1.. (the first four)",
+      "do": {
+        "the attribute is left out and the record stays; a list is name_n (its length) and name_1.. (the first four)": "ST-jx3c5vxm",
+        "the whole record is left out, as a metric point is; a list is one attribute joined by a comma": "ST-jx3c5vxm"
+      },
+      "class": "design",
+      "answer": "the attribute is left out and the record stays; a list is name_n (its length) and name_1.. (the first four)",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How much does a call without --since return?",
+      "options": [
+        "the newest 4000 ops rows' records and the newest 1000 coord events",
+        "all of both"
+      ],
+      "recommendation": "the newest 4000 ops rows' records and the newest 1000 coord events",
+      "do": {
+        "the newest 4000 ops rows' records and the newest 1000 coord events": "ST-jx3c5vxm",
+        "all of both": "ST-jx3c5vxm"
+      },
+      "class": "design",
+      "answer": "the newest 4000 ops rows' records and the newest 1000 coord events",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "What are a span's id and trace?",
+      "options": [
+        "16 hex characters of a hash of the ops row's id, and the landing root's id as the trace of its steps",
+        "the ops row's own id, one trace id for all"
+      ],
+      "recommendation": "16 hex characters of a hash of the ops row's id, and the landing root's id as the trace of its steps",
+      "do": {
+        "16 hex characters of a hash of the ops row's id, and the landing root's id as the trace of its steps": "ST-jx3c5vxm",
+        "the ops row's own id, one trace id for all": "ST-jx3c5vxm"
+      },
+      "class": "design",
+      "answer": "16 hex characters of a hash of the ops row's id, and the landing root's id as the trace of its steps",
+      "by": "agent"
     }
   ],
   "knowledge": {

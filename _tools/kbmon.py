@@ -7,6 +7,12 @@
   kbmon.py --once              print the same panels as plain text, with no escape byte
   kbmon.py --metrics           print the snapshot as one JSON object of metric points (name kbmon.<panel>.<measure>, unit,
                                kind gauge or sum, value, attributes of numbers, flags and redacted ids; no claim holder)
+  kbmon.py --events [--since CURSOR]
+                               print one JSON object of schema 1: a cursor, the events (coord events, `done.refused` rows
+                               and the query log's apply outcome) and the spans (each landing with a child span per
+                               `land.step`, each `agent.run` and `test.run`, each timed delivery) newer than CURSOR, with
+                               times in Unix nanoseconds and attributes of numbers, flags and redacted ids; the cursor is
+                               the caller's to keep, and a call with the one it was given repeats none of them
   kbmon.py                     show the text view every --interval seconds, --count times (default: until interrupted); on a
                                terminal it is redrawn in place with ANSI escapes (and again, from the last snapshot,
                                when the window is resized), on a pipe or under NO_COLOR it is plain frames one after
@@ -25,7 +31,7 @@
 A run reads and writes nothing: no index is built, no eval is run, no file of the clone, the query log home or `_cache/`
 is written. Every string printed passes `redact.redact`, a saved snapshot's too. Exit codes: 0 shown, 1 shown and an alert
 is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
-run, `mon_view.py` the output, `mon_export.py` the metric points).
+run, `mon_view.py` the output, `mon_export.py` the metric points, `mon_events.py` the event and span records).
 """
 import argparse
 import contextlib
@@ -36,6 +42,7 @@ import time
 from pathlib import Path
 
 import mon_base
+import mon_events
 import mon_export
 import mon_view
 
@@ -73,6 +80,8 @@ def parser():
     mode.add_argument("--json", action="store_true", help="print one snapshot as JSON")
     mode.add_argument("--once", action="store_true", help="print one snapshot as plain text")
     mode.add_argument("--metrics", action="store_true", help="print one snapshot as JSON metric points")
+    mode.add_argument("--events", action="store_true", help="print events and spans newer than --since as JSON")
+    ap.add_argument("--since", metavar="CURSOR", help="with --events: the cursor an earlier call printed (default: the newest records)")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
     ap.add_argument("--interval", type=interval, default=DEFAULT_INTERVAL, metavar="S")
     ap.add_argument("--count", type=frames, default=None, metavar="N")
@@ -154,9 +163,18 @@ def main(argv=None, out=None):
     out = out or sys.stdout
     ap = parser()
     a = ap.parse_args(argv)
+    if a.since is not None and not a.events:
+        ap.error("--since needs --events")
+    if a.events and (a.panel or a.from_snapshot):
+        ap.error("--events reads the sources and takes neither --panel nor --from-snapshot")
     names = tuple(dict.fromkeys(a.panel)) if a.panel else mon_base.PANELS
     names = tuple(n for n in mon_base.PANELS if n in names)
     try:
+        if a.events:
+            ctx = mon_base.Ctx(root=a.root.resolve(), store=a.store, url=a.url, key_file=a.key_file)
+            out.write(mon_events.render(ctx, a.since) + "\n")
+            out.flush()
+            return 0
         if a.json or a.once or a.metrics:
             snap = take(a, names)
             if a.metrics:
