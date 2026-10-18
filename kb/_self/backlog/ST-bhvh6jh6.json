@@ -14,6 +14,34 @@
         "-c",
         "import os,pty,sys,time,struct,fcntl,termios,signal,select,json,tempfile,subprocess\nsnap=tempfile.NamedTemporaryFile(\"w\",suffix=\".json\",delete=False)\nsubprocess.run([sys.executable,\"_tools/kbmon.py\",\"--json\",\"--panel\",\"kb\"],stdout=snap,stderr=subprocess.DEVNULL); snap.close()\ndef setsz(fd,r,c): fcntl.ioctl(fd,termios.TIOCSWINSZ,struct.pack(\"HHHH\",r,c,0,0))\npid,fd=pty.fork()\nif pid==0:\n    os.execvp(sys.executable,[sys.executable,\"_tools/kbmon.py\",\"--from-snapshot\",snap.name,\"--interval\",\"30\",\"--count\",\"3\"])\nsetsz(fd,24,60)\nbuf=b\"\";t=time.time()\nwhile time.time()-t<4:\n    r,_,_=select.select([fd],[],[],0.2)\n    if r:\n        try: buf+=os.read(fd,65536)\n        except OSError: break\n    if b\"kbmon\" in buf and time.time()-t>1.5: break\nsetsz(fd,40,140); os.kill(pid,signal.SIGWINCH)\nbuf2=b\"\";t=time.time()\nwhile time.time()-t<2:\n    r,_,_=select.select([fd],[],[],0.2)\n    if r:\n        try: buf2+=os.read(fd,65536)\n        except OSError: break\nos.kill(pid,signal.SIGTERM)\nimport re\nlines=re.sub(rb\"\\x1b\\[[0-9;?]*[A-Za-z]\",b\"\\n\",buf2).split(b\"\\n\")\nw=max((len(l.rstrip()) for l in lines),default=0)\nprint(\"widest line after resize:\",w)\nsys.exit(0 if w>60 else 1)"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,pty,sys,time,struct,fcntl,termios,signal,select,tempfile,subprocess,re\nsnap=tempfile.NamedTemporaryFile(\"w\",suffix=\".json\",delete=False)\nsubprocess.run([sys.executable,\"_tools/kbmon.py\",\"--json\",\"--panel\",\"kb\"],stdout=snap,stderr=subprocess.DEVNULL); snap.close()\ndef setsz(fd,r,c): fcntl.ioctl(fd,termios.TIOCSWINSZ,struct.pack(\"HHHH\",r,c,0,0))\ndef read(fd,secs,stop=None):\n    b=b\"\";t=time.time()\n    while time.time()-t<secs:\n        r,_,_=select.select([fd],[],[],0.2)\n        if r:\n            try: b+=os.read(fd,65536)\n            except OSError: break\n        if stop and stop(b,time.time()-t): break\n    return b\npid,fd=pty.fork()\nif pid==0:\n    os.execvp(sys.executable,[sys.executable,\"_tools/kbmon.py\",\"--from-snapshot\",snap.name,\"--interval\",\"30\",\"--count\",\"3\"])\nsetsz(fd,40,140)\nread(fd,4,lambda b,e: b\"kbmon\" in b and e>1.5)\nsetsz(fd,24,60); os.kill(pid,signal.SIGWINCH)\nafter=read(fd,2)\nos.kill(pid,signal.SIGTERM)\nif b\"\\x1b[2J\" not in after: print(\"no clear-screen redraw within 2 s of a shrink\"); sys.exit(1)\ntail=after[after.rindex(b\"\\x1b[2J\"):]\nlines=re.sub(rb\"\\x1b\\[[0-9;?]*[A-Za-z]\",b\"\\n\",tail).split(b\"\\n\")\nw=max((len(l.rstrip()) for l in lines),default=0)\nprint(\"widest line after the shrink's clear:\",w)\nsys.exit(0 if 0<w<=60 else 1)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess,sys,tempfile\nsnap=tempfile.NamedTemporaryFile(\"w\",suffix=\".json\",delete=False)\nsubprocess.run([sys.executable,\"_tools/kbmon.py\",\"--json\",\"--panel\",\"kb\"],stdout=snap,stderr=subprocess.DEVNULL); snap.close()\ndef k(*a): return subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--from-snapshot\",snap.name,*a],capture_output=True,text=True,timeout=60)\nfor args in ((\"--once\",),(\"--count\",\"1\",\"--interval\",\"1\")):\n    p=k(*args)\n    if p.returncode not in (0,1) or \"\\x1b[\" in p.stdout or \"kbmon\" not in p.stdout: print(\"piped %s changed: exit %s %r\"%(args,p.returncode,p.stdout[:120])); sys.exit(1)\np=k(\"--json\")\ntry: json.loads(p.stdout)\nexcept ValueError: print(\"--json is no JSON: %r\"%p.stdout[:120]); sys.exit(1)\nprint(\"ok: --once, --json and a piped live view print plain text or JSON\")\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "Operator feedback 2026-10-18: \"I need it resizing progressively with terminal window\". Today the live view reads shutil.get_terminal_size only when a frame is due (every --interval seconds, default 5), so after a resize the old frame wraps or is cut until the next refresh. The live view redraws the last snapshot at the new width and height right after a resize, without re-reading the panels: on POSIX on SIGWINCH, on Windows (no SIGWINCH) by polling the size a few times a second between refreshes",
+      "check": 0
+    },
+    {
+      "clause": "a shrink clears the screen first so no stale text is left",
+      "check": 1
+    },
+    {
+      "clause": "--once, --json and a pipe are unchanged",
+      "check": 2
     }
   ],
   "touches": [
@@ -21,5 +49,6 @@
     "_tools/mon_view.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
-  ]
+  ],
+  "notes": "Planner 2026-10-18: check 2 (--once, --json and a piped live view stay plain) passes before the work by design: it pins the modes the goal says stay unchanged. The Windows polling path cannot run on this macOS host; the worker proves it by a run of the polling function on a planted size sequence, reported in its notes."
 }
