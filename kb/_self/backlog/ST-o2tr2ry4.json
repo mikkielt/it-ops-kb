@@ -7,7 +7,7 @@
   "sprint": "SP-5gph7fh6",
   "priority": "P2",
   "rank": 0,
-  "goal": "kbmon.py on a terminal or with --ansi redraws the panels in place every --interval seconds (1 to 300, default 5) with the ANSI cursor-home and erase sequences, cut to the terminal width, until Ctrl-C or --count frames and exits 0; on Windows mon_view.enable_vt() turns on the console's virtual terminal processing and kbmon writes plain frames when it returns False; NO_COLOR or a standard output that is no terminal gives frames with no escape byte unless --ansi; an --interval outside 1 to 300 or a --count below 1 exits 2",
+  "goal": "kbmon.py lays every frame out as the layout in this item's notes gives it: a header line, the alert line first while an alert is shown, each panel's title line at column 0 in the order kb, coord, sessions, querylog, host, sprint, log and its body rows, which its own mon_ module renders, behind a two-column gutter, with no line longer than the terminal's columns less one; on a terminal or with --ansi it redraws the frame in place every --interval seconds (1 to 300, default 5) with the ANSI cursor-home and erase sequences until Ctrl-C or --count frames and exits 0; on Windows mon_view.enable_vt() turns on the console's virtual terminal processing and kbmon writes plain frames when it returns False; NO_COLOR or a standard output that is no terminal gives frames with no escape byte unless --ansi; an --interval outside 1 to 300 or a --count below 1 exits 2",
   "checks": [
     {
       "run": [
@@ -36,11 +36,22 @@
         "-c",
         "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nif k('--once','--panel','coord').returncode not in (0,1): fail('kbmon --once does not run')\nfor a in (('--interval','0'),('--interval','301'),('--count','0')):\n    p=k(*a)\n    if p.returncode!=2: fail('%r exit %s'%(a,p.returncode))\nprint('ok: out-of-bounds --interval and --count exit 2')\n"
       ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport re\nT=re.compile(r'^(kb|coord|sessions|querylog|host|sprint|log)  (ok|timeout|error|absent|unsupported)  \\d+\\.\\ds(  — .+)?$')\nH=re.compile(r'^kbmon · \\d{4}-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\dZ · refresh \\d+s · frame \\d+ · \\S+$')\nfor cols in (80,120):\n    E=dict(os.environ,COLUMNS=str(cols),LINES='60',NO_COLOR='1');p=k('--once',env=E)\n    if p.returncode not in (0,1): fail('--once exit %s: %s'%(p.returncode,p.stderr[-300:]))\n    L=p.stdout.splitlines()\n    over=[x for x in L if len(x)>cols-1]\n    if over: fail('%d lines past W=%d, first %r'%(len(over),cols-1,over[0][:60]))\n    i=2 if L and L[0].startswith('!! ALERT') else 0\n    if len(L)<=i or not H.match(L[i]): fail('header %r'%(L[i] if len(L)>i else None))\n    titles=[m[1] for x in L if (m:=T.match(x))]\n    if titles!=['kb','coord','sessions','querylog','host','sprint','log']: fail('panel titles %r'%titles)\n    bad=[x for x in L[i+1:] if x and not T.match(x) and x[:2] not in ('  ','! ','!!')]\n    if bad: fail('a body row without its gutter: %r'%bad[0][:60])\nprint('ok: header, seven panel titles in order, gutters, no line past W at 80 and 120 columns')\n"
+      ]
     }
   ],
   "clauses": [
     {
-      "clause": "kbmon.py on a terminal or with --ansi redraws the panels in place every --interval seconds (1 to 300, default 5) with the ANSI cursor-home and erase sequences, cut to the terminal width, until Ctrl-C or --count frames and exits 0",
+      "clause": "kbmon.py lays every frame out as the layout in this item's notes gives it: a header line, the alert line first while an alert is shown, each panel's title line at column 0 in the order kb, coord, sessions, querylog, host, sprint, log and its body rows, which its own mon_ module renders, behind a two-column gutter, with no line longer than the terminal's columns less one",
+      "check": 4
+    },
+    {
+      "clause": "on a terminal or with --ansi it redraws the frame in place every --interval seconds (1 to 300, default 5) with the ANSI cursor-home and erase sequences until Ctrl-C or --count frames and exits 0",
       "check": 0
     },
     {
@@ -91,5 +102,5 @@
       "python/stdlib-windows-portability"
     ]
   },
-  "notes": "Plan 2026-10-18: curses is not on Windows, so the view is ANSI with ctypes for the console mode. No host of this project runs the Windows console in a check: the planted enable_vt() case and the review stand in for it."
+  "notes": "Plan 2026-10-18: curses is not on Windows, so the view is ANSI with ctypes for the console mode. No host of this project runs the Windows console in a check: the planted enable_vt() case and the review stand in for it. Layout (operator's spec, 2026-10-18; the worker writes it into kb/_self/monitoring.md). W = columns - 1, the last column never written. Rows: [alert line], header, blank, panels kb coord sessions querylog host sprint with a blank between, then the log tail filling the rest (at least 3 lines; rows that do not fit are cut at the bottom). Header: `kbmon · YYYY-MM-DD HH:MM:SSZ · refresh Ns · frame n · root` (space U+00B7 space, UTC, root `.` for the clone, kbmon bold). Title at column 0: `name  state  S.Ss`; a state other than ok adds `  — reason` and has no body; name bold, state coloured, the rest dim when not ok. Body: columns 0-1 a gutter (`  ` plain, `! ` warning in yellow, `!!` error in red); label at column 2 padded to 10, value at column 12; lists joined by ` · `; tables with a lowercase header row, 2-space gaps, flags by the gutter. Colours (16 ANSI plus bold, each run ends in SGR 0): 32 ok, passed, bars under 80%; 33 warning, timeout, `! ` rows, bars 80-99%; 31 error, `!!` rows, bars at 100%+; 1;97;41 the alert line only; 90 dim (absent, unsupported, reasons); 1 bold names; colour never carries meaning alone. Narrow, in this order: under 100 columns side blocks stack (coord events under the claims, host ceiling as 3 rows); ` · ` lists wrap at an item, continuing at column 12; tables shrink gaps 2 to 1, cut paths from the left as `…/`, then drop the lowest column (sessions: session, then age); free text is cut at W with `…`; ids, counts and states are never cut. Glyphs: ASCII plus · — – …. The alert line is in the alert story's notes, each panel's rows in its own story's notes. Each panel module renders its own body rows; the log title shows absent until mon_log.py lands."
 }

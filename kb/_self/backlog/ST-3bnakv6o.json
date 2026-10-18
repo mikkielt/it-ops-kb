@@ -1,0 +1,26 @@
+{
+  "id": "ST-3bnakv6o",
+  "kind": "story",
+  "title": "Review sprint: Operators ask agents through coord, and a read-only observer agent diagnoses alerts and summarises the work",
+  "status": "draft",
+  "sprint": "SP-w6amecjt",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

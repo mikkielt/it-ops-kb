@@ -88,5 +88,5 @@
       "python/stdlib-urllib-errors"
     ]
   },
-  "notes": "Plan 2026-10-18: coord.py itself is in the touches of SP-fp3hxl6q's items, so this item reads through coord.py's commands and changes no line of it. Data: source (local, url or absent), claims [{key, holder, left_s, budget_usd, spend_usd, over_budget}], events [{seq, kind, fields}], digest [lines]. coord.py's holder is an id by its own rule (holder_name), so the console shows it; SP-qvlnptiw decides what is exported."
+  "notes": "Plan 2026-10-18: coord.py itself is in the touches of SP-fp3hxl6q's items, so this item reads through coord.py's commands and changes no line of it. Data: source (local, url or absent), claims [{key, holder, left_s, budget_usd, spend_usd, over_budget}], events [{seq, kind, fields}], digest [lines]. coord.py's holder is an id by its own rule (holder_name), so the console shows it; SP-qvlnptiw decides what is exported. Layout of the coord panel (operator's spec): claims table (key, holder, left, budget, spend), an over-budget row takes `! `; at W >= 100 the last 5 events beside the table from column 52 under `events` (`#410  claim     topic/winget  w2`: id, 2 spaces, kind padded to 10, subject), below 100 under the table; then 2 lines of the intent digest labelled `intents`."
 }

@@ -34,7 +34,8 @@
     "kb/_self/monitoring.md"
   ],
   "depends_on": [
-    "ST-exnzb4pf"
+    "ST-exnzb4pf",
+    "ST-d2ekxwvd"
   ],
   "gates": [
     {
@@ -60,5 +61,5 @@
       "logs/otel-log-data-model"
     ]
   },
-  "notes": "Plan 2026-10-18: kbmon stays read-only, so the cursor is the caller's to keep. coord event fields are ids by coord.py's own rule, and id-shaped fake secrets (IDS in the check) pass it, so the redaction is proved on them."
+  "notes": "Plan 2026-10-18: kbmon stays read-only, so the cursor is the caller's to keep. coord event fields are ids by coord.py's own rule, and id-shaped fake secrets (IDS in the check) pass it, so the redaction is proved on them. Plan 2026-10-18: reuses mon_log.py's reader of coord events and ops rows; the cursor and the span records are this item's."
 }

@@ -1,0 +1,25 @@
+{
+  "id": "ST-jgdqm4xi",
+  "kind": "story",
+  "title": "Research sprint goal: Operators ask agents through coord, and a read-only observer agent diagnoses alerts and summarises the work",
+  "status": "draft",
+  "sprint": "SP-w6amecjt",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts and gap entries through /kb-research. (1) Which permission mode makes claude -p deny every tool call that would prompt? (2) Does claude --agent run the whole session as that agent with its tools and model? (3) Which A2A task states mark a task that waits for input and one that has finished?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-jgdqm4xi"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "No outside facts: rag.py pack on 2026-10-18 answers (1) from agents/headless-agent-runtimes.md:23 (DOC S1800), (2) from claude/skills-and-subagents.md:145 (DOC S2157) and (3) from agents/a2a-protocol.md:24 (DOC S2120)."
+}

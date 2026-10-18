@@ -76,5 +76,5 @@
       "python/stdlib-os-loadavg"
     ]
   },
-  "notes": "Plan 2026-10-18: read-only on _tools/tests_ceiling.json and the lock files: the panel imports tests and kg_lock and changes neither (tests.py is an agents-rule path). kb: os.getloadavg is documented for Unix only (python/stdlib-os-loadavg.md:22, DOC S-ew7mucsg). Data: load [1,5,15] or unsupported, cores, suite_lock {pid, clone, started} or null, main_lock {pid, step, clone} or null, ceiling {max_ids, max_files, max_seconds, ids, files, last_run_s}."
+  "notes": "Plan 2026-10-18: read-only on _tools/tests_ceiling.json and the lock files: the panel imports tests and kg_lock and changes neither (tests.py is an agents-rule path). kb: os.getloadavg is documented for Unix only (python/stdlib-os-loadavg.md:22, DOC S-ew7mucsg). Data: load [1,5,15] or unsupported, cores, suite_lock {pid, clone, started} or null, main_lock {pid, step, clone} or null, ceiling {max_ids, max_files, max_seconds, ids, files, last_run_s}. Layout of the host panel (operator's spec): load (1/5/15 · cores) · locks (suite pid · this clone or another · since; main lock or none) · ceiling: ids, files and last full run, each `{used}/{limit} [|||||||||.] {pct}%` with 10 cells, green under 80%, yellow 80-99%, red at 100% or more; under 100 columns the three as aligned rows."
 }
