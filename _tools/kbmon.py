@@ -7,6 +7,10 @@
   kbmon.py --once              print the same panels as plain text, with no escape byte
   kbmon.py --metrics           print the snapshot as one JSON object of metric points (name kbmon.<panel>.<measure>, unit,
                                kind gauge or sum, value, attributes of numbers, flags and redacted ids; no claim holder)
+  kbmon.py --receipt           print one JSON object of `line` and `fingerprint` for an agent: the line (at most 200
+                               characters) names up to two alerts of the querylog, sessions and host panels (or of the
+                               panels --panel names), how many more there are and the command for the state on ask; the
+                               fingerprint moves only when the set of alert kinds and ids does
   kbmon.py --events [--since CURSOR]
                                print one JSON object of schema 1: a cursor, the events (coord events, `done.refused` rows
                                and the query log's apply outcome) and the spans (each landing with a child span per
@@ -29,12 +33,13 @@
   --from-snapshot FILE         show a snapshot saved with --json instead of reading the sources
 
 A run reads and writes nothing: no index is built, no eval is run, no file of the clone, the query log home or `_cache/`
-is written. Every string printed passes `redact.redact`, a saved snapshot's too. Exit codes: 0 shown, 1 shown and an alert
-is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
+is written. Every string printed passes `redact.redact`, a saved snapshot's too. Exit codes: 0 shown (also `--receipt`,
+with or without an alert), 1 shown and an alert is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `mon_<name>.py` (`mon_base.py` holds the
 run, `mon_view.py` the output, `mon_export.py` the metric points, `mon_events.py` the event and span records).
 """
 import argparse
 import contextlib
+import json
 import os
 import shutil
 import sys
@@ -44,6 +49,7 @@ from pathlib import Path
 import mon_base
 import mon_events
 import mon_export
+import mon_receipt
 import mon_view
 
 DEFAULT_TIMEOUT = 10.0  # seconds a panel may take
@@ -80,6 +86,7 @@ def parser():
     mode.add_argument("--json", action="store_true", help="print one snapshot as JSON")
     mode.add_argument("--once", action="store_true", help="print one snapshot as plain text")
     mode.add_argument("--metrics", action="store_true", help="print one snapshot as JSON metric points")
+    mode.add_argument("--receipt", action="store_true", help="print the agent's one-line receipt and an alert fingerprint as JSON")
     mode.add_argument("--events", action="store_true", help="print events and spans newer than --since as JSON")
     ap.add_argument("--since", metavar="CURSOR", help="with --events: the cursor an earlier call printed (default: the newest records)")
     ap.add_argument("--ansi", action="store_true", help="colour the text view")
@@ -170,12 +177,16 @@ def main(argv=None, out=None):
         ap.error("--since needs --events")
     if a.events and (a.panel or a.from_snapshot):
         ap.error("--events reads the sources and takes neither --panel nor --from-snapshot")
-    names = tuple(dict.fromkeys(a.panel)) if a.panel else mon_base.PANELS
+    names = tuple(dict.fromkeys(a.panel)) if a.panel else (mon_receipt.DEFAULT_PANELS if a.receipt else mon_base.PANELS)
     names = tuple(n for n in mon_base.PANELS if n in names)
     try:
         if a.events:
             ctx = mon_base.Ctx(root=a.root.resolve(), store=a.store, url=a.url, key_file=a.key_file)
             out.write(mon_events.render(ctx, a.since) + "\n")
+            out.flush()
+            return 0
+        if a.receipt:
+            out.write(json.dumps(mon_receipt.receipt(take(a, names), names), ensure_ascii=False) + "\n")
             out.flush()
             return 0
         if a.json or a.once or a.metrics:

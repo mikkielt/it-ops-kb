@@ -1,6 +1,6 @@
 # Monitoring: kbmon, one snapshot of the kb and its surroundings
 
-`python3 _tools/kbmon.py` names seven panels (the kb, coord, running sessions, the query log, the host, the sprint and the log) and shows each whose module exists, as one JSON snapshot (`--json`), as metric points (`--metrics`), as event and span records (`--events`), as plain text (`--once`) or live (without any of them), laid out as the Layout section gives it. The facade `_tools/kbmon.py` holds the command line, the usage text and the exit codes; `_tools/mon_base.py` the panels, the run of a panel and the snapshot; `_tools/mon_view.py` the redaction, the layout of the text view and the console's escape support; `_tools/mon_export.py` the metric points; `_tools/mon_events.py` the event and span records; each panel is the module `_tools/mon_<name>.py` (`mon_kb.py` for the kb panel). A command's flags and exit codes are in `python3 _tools/kbmon.py --help` and `kb/_self/tools.md`.
+`python3 _tools/kbmon.py` names seven panels (the kb, coord, running sessions, the query log, the host, the sprint and the log) and shows each whose module exists, as one JSON snapshot (`--json`), as metric points (`--metrics`), as event and span records (`--events`), as the agent's one-line receipt (`--receipt`), as plain text (`--once`) or live (without any of them), laid out as the Layout section gives it. The facade `_tools/kbmon.py` holds the command line, the usage text and the exit codes; `_tools/mon_base.py` the panels, the run of a panel and the snapshot; `_tools/mon_view.py` the redaction, the layout of the text view and the console's escape support; `_tools/mon_export.py` the metric points; `_tools/mon_events.py` the event and span records; `_tools/mon_receipt.py` the receipt; each panel is the module `_tools/mon_<name>.py` (`mon_kb.py` for the kb panel). A command's flags and exit codes are in `python3 _tools/kbmon.py --help` and `kb/_self/tools.md`.
 
 ## The snapshot
 
@@ -8,7 +8,7 @@
 - **A panel has a state and seconds.** `state` is `ok`, `timeout`, `error`, `absent` or `unsupported`; `seconds` is how long the panel took (the timeout itself for `timeout`, 0 for `absent`); `data` holds the panel's object for `ok`, `{"error": ...}` for `error` and `{"reason": ...}` for `unsupported`, and is left out for `timeout` and `absent`.
 - **A panel is a module.** `mon_<name>.py` has `collect(ctx)`, which returns the panel's data (a dict of JSON values) and reads without writing, and may have `lines(data)` or `lines(data, width)`, the panel's body rows (`width` is the columns the view may use), which the view prints under the panel's title behind the gutter, and `REFRESH_S`, the seconds the live view serves the panel's last `ok` result before it runs the panel again (see The live view). `collect` raises `mon_base.Unsupported` when this host or setting cannot give the panel (state `unsupported`), any other exception is state `error`; a panel with no module is `absent`. The coord panel also ends in `absent` or `timeout` by its own word, with `{"reason": ...}` as its data (see The coord panel). `ctx` holds the clone `root`, the coord `store`, `url` and `key_file` (`--root`, `--store`, `--url`, `--key-file`). All flags are defined by the facade, so a panel's module changes none of them.
 - **Each panel runs in a daemon thread, all at once, bounded by `--timeout` seconds** (default 10). A panel still running then is `timeout` and its thread is left behind: a daemon thread never holds the process at exit, so the snapshot returns when the slowest bound passes, not when the slow source answers. The panels that read the ops rows (`bl_stall.ops_rows`: kb, sessions, host, sprint and log) share one read of them within a snapshot.
-- **Exit codes.** 0 a snapshot was shown; 1 it was shown and its `alerts` are not empty; 2 a bad argument, or a `--from-snapshot` file that is unreadable or is no snapshot of schema 1.
+- **Exit codes.** 0 a snapshot was shown (`--receipt` too, with or without an alert); 1 it was shown and its `alerts` are not empty; 2 a bad argument, or a `--from-snapshot` file that is unreadable or is no snapshot of schema 1.
 
 ## Read only and redacted
 
@@ -24,6 +24,13 @@
 - **Kinds.** `gauge` for a value that goes up and down, `sum` for the coord event sequence number, which only grows.
 - **Attributes are numbers, flags or identifiers.** A string value is kept only when it is letters, digits and `_ . : / # @ -` (120 characters at most) and `redact.redact` returns it as it is; a point with any other attribute value is left out whole. No free text of a panel (an error, an event field, a digest line, a path) is exported.
 - **No holder.** Claims are counted by state; a claim's key is the `item` attribute only when it is a backlog item id (two letters, a dash and eight characters), and a claim's holder is never an attribute.
+
+## The receipt
+
+`--receipt` prints one JSON object, `line` and `fingerprint`, from `mon_receipt.py`, for an agent that wants the monitor's state in a few tokens. It takes the snapshot of the querylog, sessions and host panels, or of the panels `--panel` names (so `--timeout` and `--from-snapshot` work, and the strings have passed `redact.redact`), and uses its `alerts`. It writes no file and exits 0 with or without an alert, so a caller reads the object, not the code.
+
+- **The line.** With alerts: `ALERT`, the messages of the first two alerts, `(+N more)` when there are more, and `state on ask: python3 _tools/kbmon.py --once --panel NAME`, with NAME the panel of the first alert. It is at most 200 characters (the messages are cut with an ellipsis to fit) and `redact.redact` leaves it as it is. With none: `kbmon: no alert on` and the panels read; a panel that timed out or errored judges nothing, so it is no alert.
+- **The fingerprint.** Twelve hex characters of a hash of the sorted kinds and ids of the alerts. It moves when an alert appears, goes or changes kind or id, and stays when only an alert's message or `since` changes; kbmon keeps no earlier fingerprint, the caller compares.
 
 ## The OpenTelemetry adapter
 

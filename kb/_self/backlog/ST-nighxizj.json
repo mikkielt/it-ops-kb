@@ -44,10 +44,47 @@
     "_tools/mon_receipt.py",
     "kb/_self/monitoring.md",
     "kb/_self/tools.md",
-    "kb/_self/map.csv"
+    "kb/_self/map.csv",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-dtahnx2a"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which panel does the receipt line's command name when alerts come from several panels?",
+      "options": [
+        "the first alert's panel",
+        "every alert's panel, comma-joined"
+      ],
+      "recommendation": "the first alert's panel",
+      "do": {
+        "the first alert's panel": "ST-nighxizj",
+        "every alert's panel, comma-joined": "ST-nighxizj"
+      },
+      "class": "design",
+      "answer": "the first alert's panel",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What form does the fingerprint take?",
+      "options": [
+        "12 hex characters of a sha256 of the sorted kinds and ids",
+        "the sorted kind:id pairs joined as plain text"
+      ],
+      "recommendation": "12 hex characters of a sha256 of the sorted kinds and ids",
+      "do": {
+        "12 hex characters of a sha256 of the sorted kinds and ids": "ST-nighxizj",
+        "the sorted kind:id pairs joined as plain text": "ST-nighxizj"
+      },
+      "class": "design",
+      "answer": "12 hex characters of a sha256 of the sorted kinds and ids",
+      "by": "agent"
+    }
   ],
   "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --receipt (exit 2). Prototype in the discovery session: a receipt line of 99-186 characters (about 25-46 tokens at 4 characters a token, an estimate) from the querylog and sessions panels took 1.4 s warm and 6.5 s cold; querylog alone 0.23 s. A planted distill.log line 'apply --push: refused: ...' with CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT gives the delivery alert whose message carries the line's text, so the planted secrets reach the receipt's input. The mod (ST-fobzhr5o) keeps the last fingerprint; kbmon stays read-only.",
   "claimed_by": "orch-r23"
