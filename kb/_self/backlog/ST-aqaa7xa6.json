@@ -113,6 +113,40 @@
       "class": "design",
       "answer": "the SDK OTLP/HTTP exporter's own encoding",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which OTLP variables does the adapter honour for the endpoint and headers?",
+      "options": [
+        "the generic OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS and the SDK's metrics-specific ones (OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_HEADERS)",
+        "only the two generic variables"
+      ],
+      "recommendation": "the generic OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS and the SDK's metrics-specific ones (OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_HEADERS)",
+      "do": {
+        "the generic OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS and the SDK's metrics-specific ones (OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_HEADERS)": "ST-aqaa7xa6",
+        "only the two generic variables": "ST-aqaa7xa6"
+      },
+      "class": "design",
+      "answer": "the generic OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS and the SDK's metrics-specific ones (OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_HEADERS)",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the adapter run: one send or a loop, and at what default pace?",
+      "options": [
+        "--once sends one snapshot; without it a send every --interval seconds, default 60, until Ctrl-C",
+        "one send only, a scheduler repeats it"
+      ],
+      "recommendation": "--once sends one snapshot; without it a send every --interval seconds, default 60, until Ctrl-C",
+      "do": {
+        "--once sends one snapshot; without it a send every --interval seconds, default 60, until Ctrl-C": "ST-aqaa7xa6",
+        "one send only, a scheduler repeats it": "ST-aqaa7xa6"
+      },
+      "class": "design",
+      "answer": "--once sends one snapshot; without it a send every --interval seconds, default 60, until Ctrl-C",
+      "by": "agent"
     }
   ],
   "knowledge": {
