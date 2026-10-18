@@ -1,0 +1,20 @@
+{
+  "id": "SP-3hgirkur",
+  "kind": "sprint",
+  "title": "kbmon live beside the chat, a tiny receipt for the agent",
+  "status": "planned",
+  "goal": "an interactive Claude Code session in the clone shows kbmon live in the pane of a kbmon-pane mod, refreshed on a timer and laid out again at the pane's width after a resize; kbmon.py --split opens the live view beside the session in WezTerm, tmux or Windows Terminal and prints the command to run elsewhere; the agent gets one redacted kbmon receipt line at SessionStart and one async line only when the alert set changes; headless claude -p sessions and sprint workers get no receipt and start no pane timer",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
