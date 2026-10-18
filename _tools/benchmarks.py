@@ -142,6 +142,24 @@
                                             branch repro-replay-instanceN, the files in conflict are named and it exits
                                             1; exit 2 on a refusal (no instances.json or instance, a detached HEAD, a
                                             work tree with changes)
+  benchmarks.py multi setup --agents N --coord shared|isolated [--dir DIR] [--start REV] [--dry-run]
+                                            build the sandbox of the multi-agent scenarios (bench_multi.py): DIR/origin.git,
+                                            a bare copy of the one commit REV (default REV: this checkout's HEAD, copied
+                                            from its own objects, no network; DIR: _cache/bench-multi of the clone's main
+                                            worktree), and N agent clones of it under the scratch directory whose only
+                                            remote is that bare,
+                                            each with its query log `off`, an mcp-config file of its own and KB_COORD_STORE:
+                                            the one store of DIR under shared, the agent's own under isolated; the bare's main
+                                            is REV plus one base commit that empties `lane_module` in backlog.json, so the
+                                            sandbox has no code lane and an item lands on the bare as content; prints each
+                                            agent's clone, mcp-config and KB_COORD_STORE; --dry-run prints them and creates
+                                            nothing; exit 2 on a refusal
+  benchmarks.py multi probe                 build a two-agent sandbox of each coordination mode in a temporary directory, land
+                                            one _gaps.md commit from each clone of the shared one on its bare through
+                                            `kbgit.py sync --push` (the second after a rebase) and exit 0 only when both are on
+                                            the bare's main, neither reached the clone's own origin/main ref and the stores
+                                            follow --coord in both modes; then removes the sandboxes; no model, no network;
+                                            exit 1 naming each failure, 2 on a refusal
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -169,6 +187,7 @@ from pathlib import Path
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS))
+import bench_multi  # noqa: E402
 import bench_pool  # noqa: E402
 import bench_repro  # noqa: E402
 from bench_core import (ARMED, HOME, RAW, RESULTS, SLOTTED, SPEND, Bench, Skip, merge_rows, read_rows,  # noqa: E402
@@ -312,6 +331,15 @@ def main(argv=None):
     ry.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
     rt = rp.add_parser("status")
     rt.add_argument("--dir", help="the instances' directory (default: _cache/bench-repro of the clone's main worktree)")
+    mp = sub.add_parser("multi").add_subparsers(dest="multi_cmd", required=True)
+    ms = mp.add_parser("setup")
+    ms.add_argument("--agents", type=int, required=True, help="the number of agents (1 or more)")
+    ms.add_argument("--coord", choices=bench_multi.COORDS, required=True,
+                    help="one coordination store for every agent, or one for each")
+    ms.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
+    ms.add_argument("--start", metavar="REV", help="the commit every agent starts at (default: HEAD of this checkout)")
+    ms.add_argument("--dry-run", action="store_true", help="print each agent's clone, mcp-config and KB_COORD_STORE and create nothing")
+    mp.add_parser("probe")
     a = ap.parse_args(argv)
     if a.cmd == "list":
         for name, (section, _) in SCENARIOS.items():
@@ -352,6 +380,14 @@ def main(argv=None):
             return bench_repro.setup(a.instances, a.start, a.dir, a.dry_run)
         except bench_repro.Refused as e:
             print(f"repro {a.repro_cmd}: {e}", file=sys.stderr)
+            return 2
+    if a.cmd == "multi":
+        try:
+            if a.multi_cmd == "probe":
+                return bench_multi.probe()
+            return bench_multi.setup(a.agents, a.coord, a.dir, a.start, a.dry_run)
+        except bench_repro.Refused as e:
+            print(f"multi {a.multi_cmd}: {e}", file=sys.stderr)
             return 2
     if a.cmd == "report":
         rows = read_rows(RESULTS)
