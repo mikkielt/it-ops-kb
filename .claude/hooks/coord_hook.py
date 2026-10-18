@@ -9,9 +9,11 @@ command, and the hook adds no state of its own beyond the lease token coord.py s
   SessionStart    takes the presence lease `session/<session id>` (renewed when this session still holds it), posts an
                   `intent` with fields session and item (the item of a `work/<id>` branch and the items this session
                   claimed earlier; not again after /compact), then prints the `coord.py digest` lines for those items
-  PreToolUse Bash a `backlog.py claim ID` command: the digest lines for ID, then an intent for ID (topic backlog-claim,
-                  which the worker dispatched on `work/ID` skips at its SessionStart), so the session's claimed items
-                  are announced too; any other command only renews the lease when it is due (below)
+  PreToolUse Bash a command that runs `backlog.py claim ID` (text that only holds the words, as a commit message, an
+                  echo, a grep pattern or a heredoc does, is no claim): the digest lines for ID, then an intent for ID
+                  (topic backlog-claim, which the worker dispatched on `work/ID` skips at its SessionStart), so the
+                  session's claimed items are announced too; any other command only renews the lease when it is due
+                  (below)
   PreToolUse Skill a `/kb-research` start Claude made: the digest lines for this session's items
   UserPromptExpansion a `/kb-research` the person typed, which bypasses PreToolUse: the same lines
   SessionEnd      releases the presence lease and forgets the token; a release that could not run (the store busy past
@@ -42,7 +44,11 @@ LEASE_SECONDS = 6 * 3600  # a session that ends without SessionEnd (a crash) dro
 RETRY_SECONDS = 60  # after a renew that could not run, the next tool event waits this long
 SHOWN = 8  # digest lines shown: with the first and last line, ten in all
 ITEM = r"[A-Za-z]{2}-[a-z0-9]{8}"
-CLAIM = re.compile(r"\bbacklog\.py\s+claim\s+(" + ITEM + r")\b")
+ITEM_WORD = re.compile(ITEM)
+ASSIGN = re.compile(r"[A-Za-z_][A-Za-z0-9_]*=")
+PYTHON = re.compile(r"python[0-9.]*(\.exe)?|py", re.I)
+SHELL = ("sh", "bash", "zsh", "dash")
+PREFIX = ("env", "time", "nohup", "command", "exec", "if", "then", "else", "elif", "do", "while", "until", "!")
 WORK_BRANCH = re.compile(r"work/(" + ITEM + r")")
 CLAIM_TOPIC = "backlog-claim"  # the topic of the intent posted at a `backlog.py claim`, which a dispatched worker skips
 UNSAFE = re.compile(r"[^A-Za-z0-9_.:/#@-]")  # what a coord.py field value may not hold
@@ -52,6 +58,97 @@ FOOTER = ("Claude: ask the operator whether to wait, join or proceed before star
 
 def safe(text):
     return UNSAFE.sub("_", str(text))[:120]
+
+
+def commands(text):
+    """The simple commands of a shell text as lists of words: quoted text stays inside one word, a heredoc body and a
+    comment are left out, and `;`, `&`, `|`, a newline, a parenthesis, a backtick and a redirection end a command. A
+    scan, not a shell: it needs no shell to run and an odd text only changes which commands it finds."""
+    out, words, word, heredocs, i, n = [], [], None, [], 0, len(text)
+
+    def flush():
+        nonlocal word
+        if word is not None:
+            words.append(word)
+            word = None
+
+    while i < n:
+        c = text[i]
+        if c == "\\":
+            word = (word or "") + text[i + 1:i + 2].replace("\n", "")
+            i += 2
+        elif c in "'\"":
+            j, part = i + 1, ""
+            while j < n and text[j] != c:
+                if c == '"' and text[j] == "\\":
+                    j += 1
+                part += text[j:j + 1]
+                j += 1
+            word = (word or "") + part
+            i = j + 1
+        elif c in " \t\r":
+            flush()
+            i += 1
+        elif c == "#" and word is None:
+            while i < n and text[i] != "\n":
+                i += 1
+        elif text.startswith("<<", i) and not text.startswith("<<<", i):
+            flush()
+            m = re.compile(r"<<(-?)\s*(?:'([^']*)'|\"([^\"]*)\"|([^\s;&|()<>]+))").match(text, i)
+            if m:
+                heredocs.append(m.group(2) or m.group(3) or m.group(4) or "")
+                i = m.end()
+            else:
+                i += 2
+        elif c in ";&|()`\n<>":
+            flush()
+            if words:
+                out.append(words)
+                words = []
+            i += 1
+            if c == "\n":
+                while heredocs and i < n:
+                    end = text.find("\n", i)
+                    end = n if end < 0 else end
+                    line = text[i:end].strip()
+                    i = end + 1
+                    if line == heredocs[0]:
+                        heredocs.pop(0)
+        else:
+            word = (word or "") + c
+            i += 1
+    flush()
+    if words:
+        out.append(words)
+    return out
+
+
+def claimed_item(text, depth=0):
+    """The item id of the first `backlog.py claim ID` that text runs as a command (also as `python3 backlog.py ...`,
+    after variable assignments, `env`, `time` and the like, and in a `sh -c` text), else None; the words inside a
+    quoted argument of another command, a heredoc or a comment run nothing."""
+    for argv in commands(text):
+        k = 0
+        while k < len(argv) and (ASSIGN.match(argv[k]) or argv[k] in PREFIX):
+            k += 1
+        argv = argv[k:]
+        if not argv:
+            continue
+        head = os.path.basename(argv[0])
+        if head in SHELL and depth < 3:
+            for j, word in enumerate(argv[1:-1], 1):
+                if word.startswith("-") and not word.startswith("--") and "c" in word:
+                    found = claimed_item(argv[j + 1], depth + 1)
+                    if found:
+                        return found
+        if PYTHON.fullmatch(head):
+            k = 1
+            while k < len(argv) and argv[k].startswith("-"):
+                k += 1
+            argv = argv[k:]
+        if len(argv) > 2 and os.path.basename(argv[0]) == "backlog.py" and argv[1] == "claim" and ITEM_WORD.fullmatch(argv[2]):
+            return argv[2]
+    return None
 
 
 def coord(*args):
@@ -223,12 +320,11 @@ def retry_releases(own):
 def pre_tool_use(payload, sid):
     tool, given = payload.get("tool_name"), payload.get("tool_input") or {}
     if tool == "Bash":
-        found = CLAIM.search(given.get("command") or "")
+        claimed = claimed_item(given.get("command") or "")
         state = load(sid)
-        if not found:
+        if not claimed:
             renew_if_due(sid, state)
             return
-        claimed = found.group(1)
         lines = overlaps(sid, [claimed])
         if claimed not in state.get("items", []):
             state["items"] = [*state.get("items", []), claimed]
