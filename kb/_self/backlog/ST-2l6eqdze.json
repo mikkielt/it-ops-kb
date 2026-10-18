@@ -1,0 +1,26 @@
+{
+  "id": "ST-2l6eqdze",
+  "kind": "story",
+  "title": "Review sprint: kbmon shows the kb, coord and running sessions live and as one JSON snapshot",
+  "status": "draft",
+  "sprint": "SP-5gph7fh6",
+  "review": true,
+  "priority": "P1",
+  "rank": 999999,
+  "goal": "Every committed item is done or dropped, provisional answers are confirmed by the operator, and a fresh-context review of the sprint's diff found no unfiled defect.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "check"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "_tools/tests.py"
+      ]
+    }
+  ]
+}

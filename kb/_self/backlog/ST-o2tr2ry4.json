@@ -1,0 +1,95 @@
+{
+  "id": "ST-o2tr2ry4",
+  "kind": "story",
+  "title": "kbmon live view: ANSI redraw in place on macOS, Linux and Windows, plain frames on a pipe or NO_COLOR",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-5gph7fh6",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon.py on a terminal or with --ansi redraws the panels in place every --interval seconds (1 to 300, default 5) with the ANSI cursor-home and erase sequences, cut to the terminal width, until Ctrl-C or --count frames and exits 0; on Windows mon_view.enable_vt() turns on the console's virtual terminal processing and kbmon writes plain frames when it returns False; NO_COLOR or a standard output that is no terminal gives frames with no escape byte unless --ansi; an --interval outside 1 to 300 or a --count below 1 exits 2",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\np=k('--ansi','--interval','1','--count','2','--panel','coord')\nif p.returncode!=0: fail('exit %s: %s'%(p.returncode,p.stderr[-300:]))\nif p.stdout.count('\\x1b[H')<2: fail('fewer than 2 cursor-home sequences')\nif not 0.9<p.wall<60: fail('2 frames at --interval 1 took %.1f s'%p.wall)\nprint('ok: 2 redraws in place in %.1f s'%p.wall)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport io,contextlib\nsys.path.insert(0,'_tools')\ntry: import mon_view,kbmon\nexcept ImportError: fail('no _tools/mon_view.py or kbmon.py')\nreal=sys.platform;sys.platform='win32'\ntry: on=mon_view.enable_vt()\nfinally: sys.platform=real\nif on is not False: fail('enable_vt() on a planted Windows without a console: %r'%on)\nmon_view.enable_vt=lambda:False;b=io.StringIO()\nwith contextlib.redirect_stdout(b): code=kbmon.main(['--count','1','--panel','coord'])\nif code!=0 or '\\x1b' in b.getvalue() or 'coord' not in b.getvalue(): fail('fallback frame exit %r'%code)\nprint('ok: no virtual terminal gives a plain frame')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nE=dict(os.environ,NO_COLOR='1')\nfor env,args,want in ((E,(),False),(os.environ,(),False),(E,('--ansi',),True)):\n    p=k('--count','1','--panel','coord',*args,env=env)\n    if p.returncode!=0 or ('\\x1b' in p.stdout)!=want: fail('%r NO_COLOR=%s: exit %s, escapes %s'%(args,'NO_COLOR' in env,p.returncode,'\\x1b' in p.stdout))\nprint('ok: plain frames on a pipe and under NO_COLOR, escapes with --ansi')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nif k('--once','--panel','coord').returncode not in (0,1): fail('kbmon --once does not run')\nfor a in (('--interval','0'),('--interval','301'),('--count','0')):\n    p=k(*a)\n    if p.returncode!=2: fail('%r exit %s'%(a,p.returncode))\nprint('ok: out-of-bounds --interval and --count exit 2')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon.py on a terminal or with --ansi redraws the panels in place every --interval seconds (1 to 300, default 5) with the ANSI cursor-home and erase sequences, cut to the terminal width, until Ctrl-C or --count frames and exits 0",
+      "check": 0
+    },
+    {
+      "clause": "on Windows mon_view.enable_vt() turns on the console's virtual terminal processing and kbmon writes plain frames when it returns False",
+      "check": 1
+    },
+    {
+      "clause": "NO_COLOR or a standard output that is no terminal gives frames with no escape byte unless --ansi",
+      "check": 2
+    },
+    {
+      "clause": "an --interval outside 1 to 300 or a --count below 1 exits 2",
+      "check": 3
+    }
+  ],
+  "touches": [
+    "_tools/mon_view.py",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-jhsyp3fq"
+  ],
+  "gates": [
+    {
+      "id": "vt",
+      "kind": "blocking",
+      "question": "What does kbmon do on a Windows console where virtual terminal processing cannot be turned on?",
+      "options": [
+        "plain frames one after another",
+        "exit 2 naming the console"
+      ],
+      "recommendation": "plain frames one after another",
+      "do": {
+        "plain frames one after another": "ST-o2tr2ry4",
+        "exit 2 naming the console": "ST-o2tr2ry4"
+      },
+      "class": "design",
+      "answer": "plain frames one after another",
+      "by": "operator"
+    }
+  ],
+  "knowledge": {
+    "ask": [
+      "Does the Windows console honour ANSI escape sequences from Python print, or must virtual terminal processing be enabled with SetConsoleMode?",
+      "Which ANSI escape sequences clear the screen and move the cursor to the top left?"
+    ],
+    "refs": [
+      "python/stdlib-windows-portability"
+    ]
+  },
+  "notes": "Plan 2026-10-18: curses is not on Windows, so the view is ANSI with ctypes for the console mode. No host of this project runs the Windows console in a check: the planted enable_vt() case and the review stand in for it."
+}

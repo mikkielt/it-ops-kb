@@ -1,0 +1,9 @@
+{
+  "id": "EP-wqgicmmj",
+  "kind": "epic",
+  "title": "A live console shows the kb, coord, running sessions, the query log and the host, and exports the same as OpenTelemetry",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "python3 _tools/kbmon.py shows, refreshing live in a portable ANSI console view and as one --once or --json snapshot, the kb, coord, the running sessions with the active sprint, the query log and the host, read-only and with no model call; an optional OpenTelemetry SDK adapter under otel/ exports the same as metrics, events as log records and landings, worker runs, suite runs and query-log deliveries as spans over OTLP/HTTP, and serves /metrics on loopback, with id-only redacted attributes"
+}

@@ -1,0 +1,79 @@
+{
+  "id": "ST-y3twtacd",
+  "kind": "story",
+  "title": "kbmon alerts loudly on a refused query-log delivery: first line of every view and the snapshot's alerts",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-v4yih547",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a query-log delivery whose last outcome bl_land.last_push_failure names as refused or a failed gate shows as an alert on the first line of --once and of every live frame and in the snapshot's alerts, and kbmon --once and --json then exit 1; a later delivery that succeeded clears the alert",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\n\nq=os.path.join(H,'querylog');os.makedirs(q,exist_ok=True)\nsys.path.insert(0,'_tools');import ql_deliver\nsay=ql_deliver.logged(q,out=lambda t:None)\nsay('  gate querylog.py check: FAILED (exit 1): planted problem');say('apply --push: kbgit.py sync exit 1; nothing pushed')\no=k('--once',env=QE);d=k('--json',env=QE)\nif o.returncode!=1 or d.returncode!=1: fail('exit %s and %s while a delivery is refused'%(o.returncode,d.returncode))\nfirst=o.stdout.splitlines()[0] if o.stdout else ''\nif 'ALERT' not in first: fail('first line %r'%first)\nal=json.loads(d.stdout).get('alerts',[])\nif not any(a.get('kind')=='delivery' for a in al): fail('alerts %r'%al)\nsay('apply --push: pushed 0123abc to origin/main')\no=k('--once',env=QE)\nif o.returncode!=0 or 'ALERT' in o.stdout: fail('alert stays after a delivered push: exit %s'%o.returncode)\nprint('ok: refused delivery alerts first and exits 1, a later push clears it')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a query-log delivery whose last outcome bl_land.last_push_failure names as refused or a failed gate shows as an alert on the first line of --once and of every live frame and in the snapshot's alerts",
+      "check": 0
+    },
+    {
+      "clause": "kbmon --once and --json then exit 1",
+      "check": 0
+    },
+    {
+      "clause": "a later delivery that succeeded clears the alert",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/mon_querylog.py",
+    "_tools/mon_view.py",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-go6vdmnt"
+  ],
+  "gates": [
+    {
+      "id": "which",
+      "kind": "blocking",
+      "question": "Which last outcomes of a query-log delivery raise the loud alert?",
+      "options": [
+        "a refused run or a failed gate; a fetch or connection failure is a warning line",
+        "every failed run that bl_land.last_push_failure names"
+      ],
+      "recommendation": "a refused run or a failed gate; a fetch or connection failure is a warning line",
+      "do": {
+        "a refused run or a failed gate; a fetch or connection failure is a warning line": "ST-y3twtacd",
+        "every failed run that bl_land.last_push_failure names": "ST-y3twtacd"
+      },
+      "class": "querylog",
+      "answer": "a refused run or a failed gate; a fetch or connection failure is a warning line",
+      "by": "operator"
+    },
+    {
+      "id": "exit",
+      "kind": "blocking",
+      "question": "Do kbmon --once and --json exit 1 while an alert is shown?",
+      "options": [
+        "yes: 1, the tool found what it looks for",
+        "no: always 0"
+      ],
+      "recommendation": "yes: 1, the tool found what it looks for",
+      "do": {
+        "yes: 1, the tool found what it looks for": "ST-y3twtacd",
+        "no: always 0": "ST-y3twtacd"
+      },
+      "class": "design",
+      "answer": "yes: 1, the tool found what it looks for",
+      "by": "operator"
+    }
+  ],
+  "notes": "Plan 2026-10-18: the reader exists (bl_land.last_push_failure over distill.log, imported, not changed). Run against this host's main checkout on 2026-10-18 the last outcome was 'apply --push: git fetch origin failed; nothing pushed' (a connection reset): with every failure an alert it would fire now, hence gate which. A refused push writes DISABLED in the query log directory; that also alerts."
+}

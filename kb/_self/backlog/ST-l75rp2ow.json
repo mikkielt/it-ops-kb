@@ -1,0 +1,25 @@
+{
+  "id": "ST-l75rp2ow",
+  "kind": "story",
+  "title": "Research sprint goal: kbmon shows the query log, the host and the active sprint, and alerts loudly on a refused delivery",
+  "status": "draft",
+  "sprint": "SP-v4yih547",
+  "goal_research": true,
+  "priority": "P1",
+  "rank": 0,
+  "goal": "Answer with the kb tools first and the live docs for the gaps, written as kb facts and gap entries through /kb-research, extending python/stdlib-windows-portability. (1) Which ANSI SGR escape sequences set bold and red text and reset them? (2) What does the NO_COLOR convention ask of a console program, and who publishes it?",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "_tools/backlog.py",
+        "researched",
+        "ST-l75rp2ow"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/public/**"
+  ],
+  "notes": "Plan 2026-10-18: rag.py pack on 423d72d05 gives none for both. Knowledge by item: ST-y3twtacd reads (1) and (2) for the loud alert line. The query log, host and sprint panels read the kb's own tools; os.getloadavg is Unix only (python/stdlib-os-loadavg.md:22, coverage good), so no outside facts for ST-go6vdmnt, ST-iogk4rdb and ST-n5d72sm3."
+}

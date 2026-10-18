@@ -1,0 +1,80 @@
+{
+  "id": "ST-iogk4rdb",
+  "kind": "story",
+  "title": "kbmon host panel: load, whole-suite and main lock holders, suite ceiling status, read-only",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-v4yih547",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the host panel of kbmon.py shows the 1, 5 and 15 minute load with the core count, the whole-suite lock's holder pid with this clone or another and its start, the main lock's holder and step and the suite's ids, files and last full-run seconds against the numbers of _tools/tests_ceiling.json, read through tests.py's and kg_lock's readers; a host with no os.getloadavg shows the load as unsupported and the rest as on other hosts",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nD=tempfile.mkdtemp();HE=dict(os.environ,KB_HOST_LOCK_DIR=D)\nch=s.Popen([sys.executable,'-c',\"import sys,time;sys.path.insert(0,'_tools');import tests\\nwith tests.host_lock('planted'):\\n    print('held',flush=True);time.sleep(60)\"],stdout=s.PIPE,text=True,env=HE)\ntry:\n    if ch.stdout.readline().strip()!='held': fail('planting the suite lock failed')\n    d=js(k('--json','--panel','host',env=HE))['panels']['host']\nfinally:\n    ch.kill()\nif d.get('state')!='ok': fail('host panel %r'%d.get('state'))\ndata=d['data'];sl=data.get('suite_lock') or {}\nif sl.get('pid')!=ch.pid or sl.get('clone')!='this': fail('suite lock %r'%sl)\nc=json.load(open('_tools/tests_ceiling.json',encoding='utf-8'));ce=data.get('ceiling',{})\nif ce.get('max_ids')!=c.get('max_ids') or ce.get('max_files')!=c.get('max_files'): fail('ceiling %r'%ce)\nld=data.get('load')\nif not (isinstance(ld,list) and len(ld)==3) or not isinstance(data.get('cores'),int): fail('load %r'%ld)\nprint('ok: planted suite lock holder, ceiling numbers and load')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nD=tempfile.mkdtemp();HE=dict(os.environ,KB_HOST_LOCK_DIR=D)\nch=s.Popen([sys.executable,'-c',\"import sys,time;sys.path.insert(0,'_tools');import kg_lock\\nwith kg_lock.main_lock('planted-step'):\\n    print('held',flush=True);time.sleep(60)\"],stdout=s.PIPE,text=True,env=HE)\ntry:\n    if ch.stdout.readline().strip()!='held': fail('planting the main lock failed')\n    d=js(k('--json','--panel','host',env=HE))['panels']['host']\nfinally:\n    ch.kill()\nml=d.get('data',{}).get('main_lock') or {}\nif ml.get('pid')!=ch.pid or 'planted-step' not in str(ml.get('step')): fail('main lock %r'%ml)\nprint('ok: planted main lock holder and step')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport io,contextlib\nsys.path.insert(0,'_tools')\ntry: import kbmon\nexcept ImportError: fail('no _tools/kbmon.py')\ndel os.getloadavg;b=io.StringIO()\nwith contextlib.redirect_stdout(b): code=kbmon.main(['--json','--panel','host'])\nq=json.loads(b.getvalue())['panels']['host']\nif q.get('state')!='ok' or q['data'].get('load')!='unsupported' or 'ceiling' not in q['data']: fail('no getloadavg: %r'%q)\nprint('ok: load unsupported, the rest shown')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the host panel of kbmon.py shows the 1, 5 and 15 minute load with the core count, the whole-suite lock's holder pid with this clone or another and its start, the main lock's holder and step and the suite's ids, files and last full-run seconds against the numbers of _tools/tests_ceiling.json, read through tests.py's and kg_lock's readers",
+      "check": 0
+    },
+    {
+      "clause": "the host panel of kbmon.py shows the 1, 5 and 15 minute load with the core count, the whole-suite lock's holder pid with this clone or another and its start, the main lock's holder and step and the suite's ids, files and last full-run seconds against the numbers of _tools/tests_ceiling.json, read through tests.py's and kg_lock's readers",
+      "check": 1
+    },
+    {
+      "clause": "a host with no os.getloadavg shows the load as unsupported and the rest as on other hosts",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/mon_host.py",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-jhsyp3fq"
+  ],
+  "gates": [
+    {
+      "id": "clone",
+      "kind": "blocking",
+      "question": "How does the host panel name the clone a lock holder runs in, given that no path outside the clone is shown?",
+      "options": [
+        "this or other",
+        "the clone directory's last name"
+      ],
+      "recommendation": "this or other",
+      "do": {
+        "this or other": "ST-iogk4rdb",
+        "the clone directory's last name": "ST-iogk4rdb"
+      },
+      "class": "design",
+      "answer": "this or other",
+      "by": "operator"
+    }
+  ],
+  "knowledge": {
+    "refs": [
+      "python/stdlib-os-loadavg"
+    ]
+  },
+  "notes": "Plan 2026-10-18: read-only on _tools/tests_ceiling.json and the lock files: the panel imports tests and kg_lock and changes neither (tests.py is an agents-rule path). kb: os.getloadavg is documented for Unix only (python/stdlib-os-loadavg.md:22, DOC S-ew7mucsg). Data: load [1,5,15] or unsupported, cores, suite_lock {pid, clone, started} or null, main_lock {pid, step, clone} or null, ceiling {max_ids, max_files, max_seconds, ids, files, last_run_s}."
+}

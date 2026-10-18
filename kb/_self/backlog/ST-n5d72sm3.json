@@ -1,0 +1,64 @@
+{
+  "id": "ST-n5d72sm3",
+  "kind": "story",
+  "title": "kbmon sprint panel: every sprint with its items' states, waiting gates and landings in progress",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-v4yih547",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "the sprint panel of kbmon.py shows every sprint of the backlog with its state (active, approved or planned), its items' counts by status, its next item and its waiting gates, read through backlog.py's own readers; it shows each landing in progress, an item whose newest land.step row has no later land.end, with its last step",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nGE={x:v for x,v in os.environ.items() if not x.startswith('GIT_')}\nGE.update(GIT_AUTHOR_NAME='t',GIT_AUTHOR_EMAIL='t@example.com',GIT_COMMITTER_NAME='t',GIT_COMMITTER_EMAIL='t@example.com',GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_NOSYSTEM='1')\nR=os.path.realpath(tempfile.mkdtemp())\ndef g(*a,cwd=None):\n    return s.run(['git',*a],cwd=cwd or R,capture_output=True,text=True,env=GE)\ng('init','-q','-b','main');open(os.path.join(R,'f'),'w').write('x');g('add','f');g('commit','-qm','x')\n\no=s.run([sys.executable,'_tools/backlog.py','--root',R,'new','sprint','--title','planted sprint','--goal','a planted goal'],capture_output=True,text=True,timeout=60).stdout\nimport re;m=re.search(r'SP-[a-z0-9]{8}',o)\nif not m: fail('planting the backlog failed: '+o[:200])\nd=js(k('--root',R,'--json','--panel','sprint'))['panels']['sprint']\nif d.get('state')!='ok': fail('sprint panel %r'%d.get('state'))\nsp={x.get('id'):x for x in d['data'].get('sprints',[])}.get(m[0])\nif not sp or sp.get('state')!='planned' or sp.get('items',{}).get('draft')!=2: fail('planted sprint %r'%sp)\nif not any(w.get('gate')=='start' for w in sp.get('waiting',[])): fail('start gate not waiting')\nprint('ok: planted planned sprint with its drafts and start gate')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\n\nsys.path.insert(0,'_tools');os.environ.update(CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd());import ql_capture\nql_capture.record('ops',event='land.step',item='ST-cccccccc',step='fetch',exit=0,ms=10)\nql_capture.record('ops',event='land.step',item='ST-cccccccc',step='rebase',exit=0,ms=10)\nd=js(k('--json','--panel','sprint',env=QE))['panels']['sprint']\nla={x.get('item'):x for x in d.get('data',{}).get('landings',[])}\nif la.get('ST-cccccccc',{}).get('step')!='rebase': fail('landing in progress %r'%la)\nql_capture.record('ops',event='land.end',item='ST-cccccccc',exit=0,ms=20)\nd=js(k('--json','--panel','sprint',env=QE))['panels']['sprint']\nif 'ST-cccccccc' in [x.get('item') for x in d.get('data',{}).get('landings',[])]: fail('an ended landing is still shown')\nprint('ok: a landing shows until its land.end')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "the sprint panel of kbmon.py shows every sprint of the backlog with its state (active, approved or planned), its items' counts by status, its next item and its waiting gates, read through backlog.py's own readers",
+      "check": 0
+    },
+    {
+      "clause": "it shows each landing in progress, an item whose newest land.step row has no later land.end, with its last step",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/mon_sprint.py",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-jhsyp3fq"
+  ],
+  "gates": [
+    {
+      "id": "which",
+      "kind": "blocking",
+      "question": "Which sprints does the sprint panel show?",
+      "options": [
+        "every sprint with its state: active first, then approved, then planned",
+        "active sprints only"
+      ],
+      "recommendation": "every sprint with its state: active first, then approved, then planned",
+      "do": {
+        "every sprint with its state: active first, then approved, then planned": "ST-n5d72sm3",
+        "active sprints only": "ST-n5d72sm3"
+      },
+      "class": "design",
+      "answer": "every sprint with its state: active first, then approved, then planned",
+      "by": "operator"
+    }
+  ],
+  "notes": "Plan 2026-10-18: backlog.py's readers (bl_view, bl_base.Backlog) are imported, not changed: every bl_ module is an agents-rule path. Data: sprints [{id, state, items {status: n}, next, waiting [{item, gate}]}], landings [{item, step, since}]. No outside facts: the backlog and its ops rows are the kb's own."
+}
