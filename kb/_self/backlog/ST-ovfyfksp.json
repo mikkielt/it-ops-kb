@@ -88,6 +88,108 @@
       "class": "design",
       "answer": "the harness code by default, a headless orchestrator session as the --manager session knob",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does a code agent's work run in a real multi run?",
+      "options": [
+        "The operator's steps claim, dispatch and land in the agent's clone, the worker started by backlog.py dispatch through a claude wrapper in DIR/bin that adds the session settings, the agent's mcp-config and the dollar cap",
+        "This tool starts the code agent's session itself with a /kb-item prompt, and only lands the item"
+      ],
+      "recommendation": "The operator's steps claim, dispatch and land in the agent's clone, the worker started by backlog.py dispatch through a claude wrapper in DIR/bin that adds the session settings, the agent's mcp-config and the dollar cap",
+      "do": {
+        "The operator's steps claim, dispatch and land in the agent's clone, the worker started by backlog.py dispatch through a claude wrapper in DIR/bin that adds the session settings, the agent's mcp-config and the dollar cap": "ST-ovfyfksp",
+        "This tool starts the code agent's session itself with a /kb-item prompt, and only lands the item": "ST-ovfyfksp"
+      },
+      "class": "design",
+      "answer": "The operator's steps claim, dispatch and land in the agent's clone, the worker started by backlog.py dispatch through a claude wrapper in DIR/bin that adds the session settings, the agent's mcp-config and the dollar cap",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "blocking",
+      "question": "When does the operator answer the gates of the planted items?",
+      "options": [
+        "Once before any agent starts, in the first code agent's clone, synced to the bare with kbgit.py sync --push; a gate a worker leaves open on its branch is answered after its session, before land",
+        "Only when a worker leaves a gate open, during the run"
+      ],
+      "recommendation": "Once before any agent starts, in the first code agent's clone, synced to the bare with kbgit.py sync --push; a gate a worker leaves open on its branch is answered after its session, before land",
+      "do": {
+        "Once before any agent starts, in the first code agent's clone, synced to the bare with kbgit.py sync --push; a gate a worker leaves open on its branch is answered after its session, before land": "ST-ovfyfksp",
+        "Only when a worker leaves a gate open, during the run": "ST-ovfyfksp"
+      },
+      "class": "push",
+      "answer": "Once before any agent starts, in the first code agent's clone, synced to the bare with kbgit.py sync --push; a gate a worker leaves open on its branch is answered after its session, before land",
+      "by": "operator"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How does a real run parse an agent's session stream?",
+      "options": [
+        "With agent_bench.result_of over the stream after defaulting the result event's missing keys (bench_multi.filled), so a short stream parses as a full one",
+        "With bench_core.stream_run as it is, which fails on a result event that lacks the duration"
+      ],
+      "recommendation": "With agent_bench.result_of over the stream after defaulting the result event's missing keys (bench_multi.filled), so a short stream parses as a full one",
+      "do": {
+        "With agent_bench.result_of over the stream after defaulting the result event's missing keys (bench_multi.filled), so a short stream parses as a full one": "ST-ovfyfksp",
+        "With bench_core.stream_run as it is, which fails on a result event that lacks the duration": "ST-ovfyfksp"
+      },
+      "class": "design",
+      "answer": "With agent_bench.result_of over the stream after defaulting the result event's missing keys (bench_multi.filled), so a short stream parses as a full one",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "What does a real run do with --manager session?",
+      "options": [
+        "Refuse it with exit 2 and say the harness code starts the agents; only --manager code runs",
+        "Start a headless orchestrator session as one more agent with the role manager"
+      ],
+      "recommendation": "Refuse it with exit 2 and say the harness code starts the agents; only --manager code runs",
+      "do": {
+        "Refuse it with exit 2 and say the harness code starts the agents; only --manager code runs": "ST-ovfyfksp",
+        "Start a headless orchestrator session as one more agent with the role manager": "ST-ovfyfksp"
+      },
+      "class": "design",
+      "answer": "Refuse it with exit 2 and say the harness code starts the agents; only --manager code runs",
+      "by": "agent"
+    },
+    {
+      "id": "g6",
+      "kind": "provisional",
+      "question": "What do steps, commit, land and the exit code of a results line hold?",
+      "options": [
+        "steps lists what the harness did for the agent, commit is the clone's HEAD at the end, land is landed, the step land stopped at or timeout, wall_s is the session's, and the exit is 1 when an agent failed or a code item did not land",
+        "steps lists the session's tool names, commit is the landed commit only, and the exit is 1 only for a failed session"
+      ],
+      "recommendation": "steps lists what the harness did for the agent, commit is the clone's HEAD at the end, land is landed, the step land stopped at or timeout, wall_s is the session's, and the exit is 1 when an agent failed or a code item did not land",
+      "do": {
+        "steps lists what the harness did for the agent, commit is the clone's HEAD at the end, land is landed, the step land stopped at or timeout, wall_s is the session's, and the exit is 1 when an agent failed or a code item did not land": "ST-ovfyfksp",
+        "steps lists the session's tool names, commit is the landed commit only, and the exit is 1 only for a failed session": "ST-ovfyfksp"
+      },
+      "class": "design",
+      "answer": "steps lists what the harness did for the agent, commit is the clone's HEAD at the end, land is landed, the step land stopped at or timeout, wall_s is the session's, and the exit is 1 when an agent failed or a code item did not land",
+      "by": "agent"
+    },
+    {
+      "id": "g7",
+      "kind": "provisional",
+      "question": "How does a real run treat a DIR that already holds a sandbox?",
+      "options": [
+        "Reuse it when its scenario, coord mode and agent count match this run's, else refuse; the lines of the run are appended to the DIR's results.jsonl and its recorded spend counts against --max-usd",
+        "Always rebuild the sandbox and truncate results.jsonl"
+      ],
+      "recommendation": "Reuse it when its scenario, coord mode and agent count match this run's, else refuse; the lines of the run are appended to the DIR's results.jsonl and its recorded spend counts against --max-usd",
+      "do": {
+        "Reuse it when its scenario, coord mode and agent count match this run's, else refuse; the lines of the run are appended to the DIR's results.jsonl and its recorded spend counts against --max-usd": "ST-ovfyfksp",
+        "Always rebuild the sandbox and truncate results.jsonl": "ST-ovfyfksp"
+      },
+      "class": "design",
+      "answer": "Reuse it when its scenario, coord mode and agent count match this run's, else refuse; the lines of the run are appended to the DIR's results.jsonl and its recorded spend counts against --max-usd",
+      "by": "agent"
     }
   ],
   "links": [
