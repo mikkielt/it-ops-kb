@@ -2,7 +2,7 @@
   "id": "ST-jokdpvsi",
   "kind": "story",
   "title": "kbmon sessions panel: Claude Code sessions, worktrees with branches, dispatch runs, stalled items, orphans",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",
@@ -123,5 +123,27 @@
     ]
   },
   "notes": "Plan 2026-10-18: bl_procs reads only a process's command name, never its command line, so headless and interactive are told by the checkout. The planted check names a symlink claude to the interpreter; ps shows it as ./claude on this macOS host (tried 2026-10-18). Data: procs [{pid, age_s, class, checkout, session, item}], worktrees [{path, branch}], stalled [{item, signals}] or absent where the root has no backlog. Layout of the sessions panel (operator's spec): table (pid, age, class, session, item, checkout), an orphan row takes `! `; then `worktrees` (path  branch, joined by ` · `) and `stalled` (a `! ` row: item, then reasons).",
-  "claimed_by": "orch-r17"
+  "evidence": {
+    "commit": "3718f25312cd01b37f52f1c4feea1c656ee47456",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nGE={x:v for x,v in os.environ.items() if not x.startswith('GIT_')}\nGE.update(GIT_AUTHOR_NAME='t',GIT_AUTHOR_EMAIL='t@example.com',GIT_COMMITTER_NAME='t',GIT_COMMITTER_EMAIL='t@example.com',GIT_CONFIG_GLOBAL=os.devnull,GIT_CONFIG_NOSYSTEM='1')\nR=os.path.realpath(tempfile.mkdtemp())\ndef g(*a,cwd=None):\n    return s.run(['git',*a],cwd=cwd or R,capture_output=True,text=True,env=GE)\ng('init','-q','-b','main');open(os.path.join(R,'f'),'w').write('x');g('add','f');g('commit','-qm','x')\n\nwt=os.path.join(R,'.claude','worktrees','ST-bbbbbbbb');os.makedirs(os.path.dirname(wt));g('worktree','add','-q',wt,'-b','work/ST-bbbbbbbb')\nB=tempfile.mkdtemp();cl=os.path.join(B,'claude');os.symlink(sys.executable,cl)\np1=s.Popen([cl,'-c','import time;time.sleep(90)'],cwd=wt);p2=s.Popen([cl,'-c','import time;time.sleep(90)'],cwd=R);time.sleep(1)\ntry:\n    p=k('--root',R,'--json','--panel','sessions');d=js(p)['panels']['sessions']\nfinally:\n    p1.kill();p2.kill()\nif d.get('state')!='ok': fail('sessions panel %r'%d.get('state'))\npr={x.get('pid'):x for x in d['data'].get('procs',[])}\na,b=pr.get(p1.pid),pr.get(p2.pid)\nif not a or not b: fail('planted processes missing: %r'%sorted(pr))\nif a.get('class') not in ('orphan','hook','foreign'): fail('class %r'%a.get('class'))\nif a.get('session')!='headless' or a.get('item')!='ST-bbbbbbbb': fail('worker worktree process %r'%a)\nif b.get('session')!='interactive': fail('main checkout process %r'%b)\nif 'work/ST-bbbbbbbb' not in {w.get('branch') for w in d['data'].get('worktrees',[])}: fail('worktree branch missing')\nif R in p.stdout: fail('an absolute path of the clone was printed')\nprint('ok: headless and interactive sessions, worktree branch, relative paths')\n"
+        ],
+        "exit": 0,
+        "sha256": "6e5d4134d0ea5903"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport io,contextlib\nsys.path.insert(0,'_tools');import bl_procs\nbl_procs.snapshot=lambda root:(None,None,'planted: no working directories')\ntry: import kbmon\nexcept ImportError: fail('no _tools/kbmon.py')\nb=io.StringIO()\nwith contextlib.redirect_stdout(b): code=kbmon.main(['--json','--panel','sessions'])\nq=json.loads(b.getvalue())['panels']['sessions']\nif q.get('state')!='unsupported' or code not in (0,1): fail('planted host: %r exit %r'%(q.get('state'),code))\nprint('ok: a host without working directories shows unsupported')\n"
+        ],
+        "exit": 0,
+        "sha256": "90baedb3cf1cd4ed"
+      }
+    ]
+  }
 }
