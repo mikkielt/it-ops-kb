@@ -468,7 +468,7 @@ def digest(args, clock):
         if not any(overlaps(v, k) for v in values for k in args.key):
             continue
         text = "intent " + " ".join(f"{n}={fields[n]}" for n in KIND_FIELDS["intent"] if n in fields)
-        now_states = sorted({state[i][1] for i in items if i in state})
+        now_states = sorted({state[i][1] for i in items if i in state and state[i][0] > seq})
         lines.append((at, text + (f" state={'/'.join(now_states)}" if now_states else "")))
     for row in claims:
         if any(overlaps(row["key"], k) for k in args.key):
