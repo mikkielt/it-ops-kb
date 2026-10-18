@@ -18,5 +18,5 @@
   "links": [
     "parked: SP-rsmmwzr2 close"
   ],
-  "notes": "SP-6jfnx5i3 2026-10-17: three design gates were classed secrets or blocking only for the word token in an option: BG-s3iuw4x2 g1 (a lock owner token), BG-vxwibl62 g1 (a lease token on a key with no lease), and the workers had to stop for the operator's answer."
+  "notes": "SP-6jfnx5i3 2026-10-17: three design gates were classed secrets or blocking only for the word token in an option: BG-s3iuw4x2 g1 (a lock owner token), BG-vxwibl62 g1 (a lease token on a key with no lease), and the workers had to stop for the operator's answer. SP-fp3hxl6q close 2026-10-18: BG-gmaaoumg g2 (\"Is a non-ASCII --token a usage error (exit 2 at parse) or a refusal at the store (exit 1)?\") was made blocking as class secrets for a parse choice about a coord lease token; one more case for this story."
 }
