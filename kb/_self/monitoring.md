@@ -6,13 +6,13 @@
 
 - **Schema 1.** `--json` prints one object: `schema` (1), `taken` (UTC time), `panels` and `alerts` (a list, empty until a panel judges its data). `panels` holds one entry for each of `kb`, `coord`, `sessions`, `querylog`, `host`, `sprint` and `log`, or only those `--panel NAME` (repeatable) names, in that order.
 - **A panel has a state and seconds.** `state` is `ok`, `timeout`, `error`, `absent` or `unsupported`; `seconds` is how long the panel took (the timeout itself for `timeout`, 0 for `absent`); `data` holds the panel's object for `ok`, `{"error": ...}` for `error` and `{"reason": ...}` for `unsupported`, and is left out for `timeout` and `absent`.
-- **A panel is a module.** `mon_<name>.py` has `collect(ctx)`, which returns the panel's data (a dict of JSON values) and reads without writing, and may have `lines(data)` or `lines(data, width)`, the panel's body rows (`width` is the columns the view may use), which the view prints under the panel's title behind the gutter. `collect` raises `mon_base.Unsupported` when this host or setting cannot give the panel (state `unsupported`), any other exception is state `error`; a panel with no module is `absent`. `ctx` holds the clone `root`, the coord `store`, `url` and `key_file` (`--root`, `--store`, `--url`, `--key-file`). All flags are defined by the facade, so a panel's module changes none of them.
+- **A panel is a module.** `mon_<name>.py` has `collect(ctx)`, which returns the panel's data (a dict of JSON values) and reads without writing, and may have `lines(data)` or `lines(data, width)`, the panel's body rows (`width` is the columns the view may use), which the view prints under the panel's title behind the gutter. `collect` raises `mon_base.Unsupported` when this host or setting cannot give the panel (state `unsupported`), any other exception is state `error`; a panel with no module is `absent`. The coord panel also ends in `absent` or `timeout` by its own word, with `{"reason": ...}` as its data (see The coord panel). `ctx` holds the clone `root`, the coord `store`, `url` and `key_file` (`--root`, `--store`, `--url`, `--key-file`). All flags are defined by the facade, so a panel's module changes none of them.
 - **Each panel runs in a daemon thread, all at once, bounded by `--timeout` seconds** (default 10). A panel still running then is `timeout` and its thread is left behind: a daemon thread never holds the process at exit, so the snapshot returns when the slowest bound passes, not when the slow source answers.
 - **Exit codes.** 0 a snapshot was shown; 1 it was shown and its `alerts` are not empty; 2 a bad argument, or a `--from-snapshot` file that is unreadable or is no snapshot of schema 1.
 
 ## Read only and redacted
 
-- **A run writes nothing and starts nothing.** It builds no pack index, runs no lookup eval, makes no network request and writes no file in the clone, the query log home or `_cache/`. The kb panel sets `KB_INDEX=0` for the rest of the process, so even the fingerprint memo the lookup tools keep in the index directory is not written.
+- **A run writes nothing and starts nothing.** It builds no pack index, runs no lookup eval, makes no network request (but for the coord panel's, to the `--url` server) and writes no file in the clone, the query log home or `_cache/`. The kb panel sets `KB_INDEX=0` for the rest of the process, so even the fingerprint memo the lookup tools keep in the index directory is not written.
 - **Every printed string passes `redact.redact`**, in `--json` and in `--once`: each string and each key of the snapshot, and each line of the text view once more after a panel's own `lines` made it. A snapshot saved with `--json` and shown with `--from-snapshot FILE` passes the same rules, so a saved file that holds a token, a path or a host name prints with the query log's placeholders. The public root's content, which `redact` allows, is read only when a string matches an identifier shape (`mon_view.LazyKnown`).
 - **The text view prints no control character** of a panel's text; an escape byte appears only in a frame that is coloured and redrawn in place (see The live view).
 
@@ -51,3 +51,20 @@ Without `--json` and `--once`, kbmon shows a frame every `--interval` seconds (1
 | `index_age_s` | seconds since the newest pack index file was written or last used, or null when there is none |
 
 The panel reads the clone the script is in; `--root` naming another clone makes it `unsupported`.
+
+## The coord panel
+
+`data` of `mon_coord.py`:
+
+| key | holds |
+|---|---|
+| `source` | `local` (the store) or `url` (a `coord.py serve` server) |
+| `claims` | per live claim, in key order: `key`, `holder`, `left_s` (whole seconds left of the lease), `budget_usd`, `spend_usd` (null for a claim with no budget) and `over_budget` |
+| `events` | the newest 10 events, newest first: `seq`, `kind` and `fields` |
+| `digest` | the lines of `coord.py digest`: the live intents and claims, with the progress state of an intent's items |
+
+- **Read through coord.py.** The panel runs `coord.py list`, `wait --since 0 --timeout 0` and `digest --key '*'` as three child processes at once, so it opens no SQLite file and no key file itself. The lease tokens `list` and `digest` leave out are never in the data, and the key file's content is never read or printed by kbmon.
+- **Where it reads.** With `--url` (and `--key-file`, which coord.py reads) from the server, else from the store `--store` names, else `KB_COORD_STORE`, else the clone's default store.
+- **Absent.** A local store file that is not there makes the panel `absent` and is not created (coord.py's own commands would create it).
+- **Timeout.** A server that cannot be reached, or whose three commands take over 30 seconds, makes the panel `timeout` with `{"reason": ...}`; one that is reached and gives no answer is `timeout` when `--timeout` passes, whichever is sooner. The children are killed when kbmon exits. Any other failure of a command (a key file others can read, a refused token) is `error` with coord.py's last line.
+- **View.** A table of key, holder, seconds left, budget and spend, a row over budget starting `! `; at 100 columns or more the newest 5 events sit beside it from column 52 under `events` (`#410  claim     topic/winget  w2`), below 100 under it; then up to two intent lines of the digest under `intents`.
