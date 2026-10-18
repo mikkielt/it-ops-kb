@@ -63,7 +63,9 @@
         "kg_trailers.refuse_commit_msg called from the cmd_hook wrapper in kbgit.py": "ST-3mfjrjom",
         "return the refusal from kg_hooks.hook_commit_msg (needs kg_hooks.py in touches)": "ST-3mfjrjom"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "kg_trailers.refuse_commit_msg called from the cmd_hook wrapper in kbgit.py",
+      "by": "operator"
     }
   ],
   "links": [
