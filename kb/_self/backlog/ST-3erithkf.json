@@ -29,6 +29,23 @@
   "depends_on": [
     "ST-7lxg3u4h"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Besides anchoring with a quote or naming the fact unanchored, may the role file let the worker reword an unlocated fact to what its source says?",
+      "options": [
+        "quote, reword or report",
+        "quote or report only"
+      ],
+      "recommendation": "quote, reword or report",
+      "do": {
+        "quote, reword or report": "ST-3erithkf",
+        "quote or report only": "ST-3erithkf"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "links": [
     "parked: SP-3g3egfll close"
   ],
