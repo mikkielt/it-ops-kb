@@ -69,7 +69,9 @@
   ],
   "touches": [
     "_tools/mon_view.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "_tools/kbmon.py",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-jhsyp3fq"
