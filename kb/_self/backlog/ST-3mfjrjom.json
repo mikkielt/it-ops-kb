@@ -32,6 +32,38 @@
     "kb/_self/git.md",
     "_tools/kg_trailers.py"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "The hook script .githooks/commit-msg ends with '|| true; exit 0', so kbgit.py's exit 1 leaves the commit made. Add .githooks/commit-msg to this item's touches and make it pass the exit status on (127, no Python, still lets the commit through)?",
+      "options": [
+        "add .githooks/commit-msg to touches and pass the exit on",
+        "leave the script: the refusal is only kbgit.py's exit status"
+      ],
+      "recommendation": "add .githooks/commit-msg to touches and pass the exit on",
+      "do": {
+        "add .githooks/commit-msg to touches and pass the exit on": "ST-3mfjrjom",
+        "leave the script: the refusal is only kbgit.py's exit status": "ST-3mfjrjom"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Where does the commit-msg refusal live, given kg_hooks.py is outside the touches?",
+      "options": [
+        "kg_trailers.refuse_commit_msg called from the cmd_hook wrapper in kbgit.py",
+        "return the refusal from kg_hooks.hook_commit_msg (needs kg_hooks.py in touches)"
+      ],
+      "recommendation": "kg_trailers.refuse_commit_msg called from the cmd_hook wrapper in kbgit.py",
+      "do": {
+        "kg_trailers.refuse_commit_msg called from the cmd_hook wrapper in kbgit.py": "ST-3mfjrjom",
+        "return the refusal from kg_hooks.hook_commit_msg (needs kg_hooks.py in touches)": "ST-3mfjrjom"
+      },
+      "class": "push"
+    }
+  ],
   "links": [
     "parked: SP-vk3wf746 close",
     "merged: ST-ix5wl2lt",

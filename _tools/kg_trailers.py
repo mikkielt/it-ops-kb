@@ -4,7 +4,7 @@ sync's gate) and the work state of the KB-Work items a commit names (work_state)
 of the repository directory (a caller may point it at a scratch clone). Standard library only; kbgit.py imports it, and
 it imports no facade.
 """
-import csv, datetime, io, json, os, re, subprocess
+import csv, datetime, io, json, os, re, subprocess, sys
 
 import build_index
 import kbcommon
@@ -560,6 +560,44 @@ WORK_RULE = ("a commit's KB-Work names, on one line, only items claimed (doing o
              "sprint or review item; a backlog-planning commit (it changes only item files: a claim, a release, a "
              "gate, a plan) names exactly the items whose files it changes, so a release commit names the released "
              "item and no other, and no later work commit names that item until it is claimed again")
+
+
+def amend_base(mark):
+    """The base the prepare-commit-msg hook noted in file MARK for an --amend ("merge", "root" or a commit), else None.
+    Read before the commit-msg hook runs, which removes the mark."""
+    try:
+        with open(mark, encoding="utf-8") as f:
+            return f.read().strip() or None
+    except (OSError, TypeError):
+        return None
+
+
+def refuse_commit_msg(path, base):
+    """1, with the reason on stderr, when the commit-msg hook must refuse the message in file PATH: its KB-Work line
+    fails the checks check-trailers runs on the commit before a push (work_ids_ok, work_state). BASE is amend_base's.
+    Merge commits and a rebase's commits are not judged; an error in the check refuses nothing (a hook never blocks
+    a commit it cannot judge). The caller runs the hook first, so the message holds its trailers and it has printed
+    each problem."""
+    try:
+        if base == "merge" or rev_parse("MERGE_HEAD"):
+            return 0
+        if any(os.path.isdir(os.path.join(KB, (git("rev-parse", "--git-path", d) or "").strip()))
+               for d in ("rebase-merge", "rebase-apply")):
+            return 0
+        base = "" if base == "root" else (base or rev_parse("HEAD") or "")
+        with open(path, encoding="utf-8", errors="replace", newline="") as f:
+            work = message_trailers(f.read())[1].get(WORK, [])
+        if not work:
+            return 0
+        staged = lambda rel: blob(INDEX, rel) if blob(INDEX, rel) is not None else blob(base, rel)  # noqa: E731
+        refused = (not work_ids_ok(work, staged)) or work_state(work, changed_paths(base, INDEX), staged)
+    except Exception:  # noqa: BLE001
+        return 0
+    if refused:
+        print(f"kbgit.py commit-msg: {WORK} refused: no commit made; fix the message and commit again "
+              "(`git commit --no-verify` skips the hook, the pre-push hook and sync's gate still refuse it)",
+              file=sys.stderr)
+    return 1 if refused else 0
 
 
 WORKED = ("doing", "done")  # a claimed item (done drops claimed_by but was claimed to get there)
