@@ -233,13 +233,12 @@ def body_rows(name, panel, width):
 
 
 def cut(row, width):
-    """The row within `width` characters: a longer one is cut to one character less, its last being an ellipsis in the
-    colour of the run it cuts (its three bytes then never make the line longer than `width` bytes)."""
+    """The row within `width` characters: a longer one ends in an ellipsis in the colour of the run it cuts."""
     if sum(len(t) for t, _ in row) <= width:
         return row
     out, used = [], 0
     for text, sgr in row:
-        room = width - 2 - used
+        room = width - 1 - used
         if room <= 0:
             break
         out.append((text[:room], sgr))
