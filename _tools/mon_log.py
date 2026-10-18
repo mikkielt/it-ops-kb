@@ -20,6 +20,7 @@ from pathlib import Path
 
 import mon_view
 
+REFRESH_S = 10  # seconds the live view serves the last result: the spool is read whole to put rows in order
 COORD = Path(__file__).resolve().with_name("coord.py")
 CHILD_SECONDS = 30  # the longest `coord.py wait` may take; the panel's own bound is kbmon's --timeout
 LOG_KEPT = 100  # newest rows in the data

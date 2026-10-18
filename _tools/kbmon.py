@@ -93,13 +93,14 @@ def parser():
     return ap
 
 
-def take(a, names):
-    """The snapshot to show: the saved one, or one read now, with every string redacted."""
+def take(a, names, kept=None):
+    """The snapshot to show: the saved one, or one read now (`kept`: the live view's memory of the earlier ones), with
+    every string redacted."""
     if a.from_snapshot:
         snap = mon_base.load_snapshot(a.from_snapshot, names if a.panel else None)
     else:
         ctx = mon_base.Ctx(root=a.root.resolve(), store=a.store, url=a.url, key_file=a.key_file)
-        snap = mon_base.snapshot(ctx, names, a.timeout)
+        snap = mon_base.snapshot(ctx, names, a.timeout, kept)
     return mon_view.scrub(snap)
 
 
@@ -131,7 +132,7 @@ def pause(seconds, watch, redraw):
         return
     end = time.monotonic() + seconds
     while end > time.monotonic():
-        time.sleep(min(watch.slice, max(0.0, end - time.monotonic())))
+        watch.wait(end - time.monotonic())
         if watch.poll():
             redraw()
 
@@ -139,14 +140,16 @@ def pause(seconds, watch, redraw):
 def live(a, names, out):
     """The text view again and again, redrawn in place with ANSI escapes or one plain frame after another; the exit code
     is that of the last snapshot. On a terminal redrawn in place the last snapshot is drawn again, from the start of the
-    screen, as soon as the terminal's size changes, without reading the panels."""
+    screen, as soon as the terminal's size changes, without reading the panels. The next frame is read one `--interval`
+    after the last was drawn, and between frames the process waits without work; a panel that is slow to read keeps its
+    last result for its `REFRESH_S` seconds (`mon_base.Kept`)."""
     ansi = colour(a, out, True)
     in_place = ansi and out.isatty()
-    code, frame = 0, 0
+    code, frame, kept = 0, 0, mon_base.Kept()
     try:
         with (mon_view.ResizeWatch() if in_place else contextlib.nullcontext()) as watch:
             while a.count is None or frame < a.count:
-                snap = take(a, names)
+                snap = take(a, names, kept)
                 code = 1 if snap["alerts"] else 0
                 frame += 1
                 if watch:

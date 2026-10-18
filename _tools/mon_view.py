@@ -14,7 +14,8 @@ Standard library only; imports `mon_base` and `redact` (at the first redaction).
   ResizeWatch(size=None, use_signal=None)
                                  a context manager that reports a terminal size change: `poll()` gives `(old, new)` (columns,
                                  lines) once the size differs from the last `mark()`, on SIGWINCH where there is one, else
-                                 by reading the size; `slice` is the seconds to wait between polls
+                                 by reading the size; `wait(seconds)` blocks until the signal or the time is up (without a
+                                 signal it sleeps one `POLL_SLICE` at most, then the caller polls)
   render_json(snap)              the snapshot as JSON text
 """
 import inspect
@@ -23,6 +24,9 @@ import re
 import shutil
 import signal
 import sys
+import threading
+import time
+from pathlib import Path
 
 import mon_base
 
@@ -34,17 +38,39 @@ CLEAR = "\x1b[H\x1b[2J"
 MIN_LOG_ROWS = 3
 VT_FLAG = 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
 STD_OUTPUT_HANDLE = -11
+GUID_JOINTS = re.compile(r"-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-")  # the middle of a dashed guid
 FIELD_CHARS = 200  # characters of a value the generic view of a panel prints
 
 
 class LazyKnown:
-    """`redact.known()` read at the first attribute a rule asks for. `redact.redact` takes it for what the public root
-    already contains and a rule needs it only for a string that matches an identifier shape, so a snapshot of plain words,
-    numbers and dates pays no read of the whole public root (some seconds) and one with a host name or a path does."""
+    """What `redact.known()` holds, read at the first attribute a rule asks for. `redact.redact` takes it for what the public
+    root already contains and a rule needs it only for a string that matches an identifier shape, so a snapshot of plain
+    words, numbers and dates pays no read of the whole public root (some seconds). The rule that asks most is the GUID one
+    (the ids of coord events), so `guids` is scanned alone, as `redact.scan_known` scans it (a fifth of the time of the whole
+    scan); any other attribute reads the whole of `redact.known()`. Like `redact.known()`, the scan is read once per process."""
+
+    guids_read = None
 
     def __getattr__(self, name):
         import redact
+        if name == "guids":
+            if LazyKnown.guids_read is None:
+                LazyKnown.guids_read = self.scan_guids(redact)
+            return LazyKnown.guids_read
         return getattr(redact.known(), name)
+
+    @staticmethod
+    def scan_guids(redact):
+        if redact.known.cache_info().currsize:
+            return redact.known().guids
+        found = set()
+        for p in sorted(Path(redact.kbcommon.PUBLIC).rglob("*")):
+            if p.suffix.lower() in redact.TEXT_SUFFIXES and p.is_file():
+                low = p.read_text(encoding="utf-8", errors="replace").lower()
+                for m in GUID_JOINTS.finditer(low):  # `redact.GUID` only where a dashed guid's middle groups are
+                    found.update(g.replace("-", "") for g in redact.GUID.findall(low[max(0, m.start() - 9):m.end() + 13]))
+                found.update(redact.GUID_BARE.findall(low))
+        return found
 
 
 def judged(snap):
@@ -145,19 +171,18 @@ def enable_vt():
 
 
 class ResizeWatch:
-    """Tells the live view that the terminal changed size. Where the platform has SIGWINCH the signal sets a flag and
-    `poll` then reads the size; where it has not (Windows) `poll` reads the size itself, so the caller polls it a few times a
-    second. `mark` records the size of the frame just drawn; `poll` returns `(old, new)` sizes once they differ, else None.
-    `size` and `use_signal` can be given for a planted size sequence."""
+    """Tells the live view that the terminal changed size. Where the platform has SIGWINCH the signal sets a flag and wakes
+    `wait`, and `poll` then reads the size; where it has not (Windows) `poll` reads the size itself, so the caller polls it
+    a few times a second. `mark` records the size of the frame just drawn; `poll` returns `(old, new)` sizes once they
+    differ, else None. `size` and `use_signal` can be given for a planted size sequence."""
 
-    SIGNAL_SLICE = 0.1  # seconds between flag checks (the flag is a bool read, so this is cheap)
     POLL_SLICE = 0.25  # seconds between size reads without SIGWINCH
 
     def __init__(self, size=None, use_signal=None):
         self.size = size or shutil.get_terminal_size
         self.use_signal = hasattr(signal, "SIGWINCH") if use_signal is None else use_signal
-        self.slice = self.SIGNAL_SLICE if self.use_signal else self.POLL_SLICE
         self.flag = False
+        self.woken = threading.Event()
         self.last = tuple(self.size())
         self.previous = None
 
@@ -166,7 +191,7 @@ class ResizeWatch:
             try:
                 self.previous = signal.signal(signal.SIGWINCH, self.on_winch)
             except ValueError:  # not the main thread: read the size instead
-                self.use_signal, self.slice = False, self.POLL_SLICE
+                self.use_signal = False
         return self
 
     def __exit__(self, *exc):
@@ -175,6 +200,16 @@ class ResizeWatch:
 
     def on_winch(self, *_):
         self.flag = True
+        self.woken.set()
+
+    def wait(self, seconds):
+        """Block for up to `seconds`, less when the terminal is resized meanwhile (it blocks, so it uses no CPU); without
+        SIGWINCH, for one POLL_SLICE at most."""
+        if self.use_signal:
+            self.woken.wait(max(0.0, seconds))
+            self.woken.clear()
+        else:
+            time.sleep(min(self.POLL_SLICE, max(0.0, seconds)))
 
     def mark(self):
         self.flag = False

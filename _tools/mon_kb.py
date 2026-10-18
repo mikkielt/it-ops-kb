@@ -1,21 +1,27 @@
 """kbmon's kb panel (kb/_self/monitoring.md): the roots with their articles and facts by tag, the open gaps and conflicts,
 the newest refresh and census dates, the last recorded lookup-eval outcome and the age of the pack index.
 
-The counts are `rag.py audit`'s (`kbfacts.audit`, read in this process). The panel reads and writes nothing: it builds no
-index (KB_INDEX=0 for the rest of the process, so the fingerprint memo is not written either), runs no eval (the outcome is
-the newest `land.step` row of `rag.py-eval` in the ops rows) and starts no network request. Imports `mon_base`;
-`kbfacts`, `kbcommon` and `bl_stall` where it reads them.
+The counts are `rag.py audit`'s (`kbfacts.audit`'s rows without the gap and conflict entries it links to each article,
+which the panel does not show and which take most of its time), read in this process and read again only when a file of a
+root changed (its name, time or size). The panel reads and writes nothing: it builds no index (KB_INDEX=0 for the rest of the
+process, so the fingerprint memo is not written either), runs no eval (the outcome is the newest `land.step` row of
+`rag.py-eval` in the ops rows) and starts no network request. Imports `mon_base`; `kbfacts`, `kbcommon` and `bl_stall`
+where it reads them.
 """
+import collections
 import os
 import re
 import subprocess
+import threading
 import time
 from pathlib import Path
 
 import mon_base
 
 CENSUS_FILE = re.compile(r"\d{4}-\d{2}-\d{2}\.csv")
+REFRESH_S = 10  # seconds the live view serves the last result
 EVAL_STEP = "rag.py-eval"  # the `land.step` row of the lookup eval at a landing
+COUNTED = {"lock": threading.Lock(), "signature": None, "value": None}  # the counts of the last read and the files they came from
 
 
 def index_age(kbfacts):
@@ -68,22 +74,60 @@ def last_eval(root):
     return {"state": "passed" if last.get("exit") == 0 else "failed", "when": last.get("ts")}
 
 
+def tree_signature(kbcommon):
+    """The name, time and size of every file under the roots: what the counts are read from."""
+    out = []
+    for r in kbcommon.roots():
+        for where, _, names in os.walk(r.path):
+            for name in names:
+                try:
+                    st = os.stat(os.path.join(where, name))
+                except OSError:
+                    continue
+                out.append((where, name, st.st_mtime_ns, st.st_size))
+    return out
+
+
+def audit_rows(kbfacts):
+    """`kbfacts.audit()`'s rows (path, retrieved_utc and the fact counts by kind) with no ledger entries linked."""
+    tfiles = kbfacts.topic_files()
+    rows = []
+    for rel, meta in sorted(kbfacts.articles().items()):
+        units = [u for f in tfiles.get(meta["topic"], [rel])
+                 for u in (kbfacts.md_units if f.endswith(".md") else kbfacts.csv_units)(f, kbfacts.read(f) or "")]
+        counts = collections.Counter(k for u in units for k in kbfacts.kinds_of(u["tags"]))
+        rows.append({"path": rel, "retrieved_utc": meta.get("retrieved_utc", ""),
+                     **{k: counts.get(k, 0) for k in kbfacts.EVIDENCE_KINDS}})
+    return rows
+
+
+def counts(kbfacts, kbcommon):
+    """(roots, refreshed): the articles and facts by tag of each root and the newest refresh date, served again while no file
+    of a root changed."""
+    with COUNTED["lock"]:
+        sig = tree_signature(kbcommon)
+        if COUNTED["signature"] != sig:
+            os.environ["KB_INDEX"] = "0"
+            rows = audit_rows(kbfacts)
+            roots = []
+            for r in kbcommon.roots():
+                mine = [x for x in rows if x["path"].startswith(r.name + "/")]
+                roots.append({"root": r.name, "articles": len(mine),
+                              "facts": {k: sum(x.get(k, 0) for x in mine) for k in kbfacts.EVIDENCE_KINDS}})
+            dates = [x["retrieved_utc"] for x in rows if x.get("retrieved_utc")]
+            COUNTED.update(signature=sig, value=(roots, max(dates) if dates else None))
+        return COUNTED["value"]
+
+
 def collect(ctx):
     import kbcommon
     if Path(ctx.root).resolve() != Path(kbcommon.HOME).resolve():
         raise mon_base.Unsupported("the kb panel reads the clone this script is in; --root names another")
     import kbfacts
     age = index_age(kbfacts)
-    os.environ["KB_INDEX"] = "0"
-    rows = kbfacts.audit()
-    kinds = kbfacts.EVIDENCE_KINDS
-    roots = []
-    for r in kbcommon.roots():
-        mine = [x for x in rows if x["path"].startswith(r.name + "/")]
-        roots.append({"root": r.name, "articles": len(mine), "facts": {k: sum(x.get(k, 0) for x in mine) for k in kinds}})
-    dates = [x["retrieved_utc"] for x in rows if x.get("retrieved_utc")]
+    roots, refreshed = counts(kbfacts, kbcommon)
     return {"roots": roots, "gaps": open_entries(kbfacts, kbcommon.GAPS), "conflicts": open_entries(kbfacts, kbcommon.CONFLICTS),
-            "refreshed": max(dates) if dates else None, "census": census_date(kbcommon), "census_tag": census_tag(ctx.root),
+            "refreshed": refreshed, "census": census_date(kbcommon), "census_tag": census_tag(ctx.root),
             "eval": last_eval(ctx.root), "index_age_s": age}
 
 
