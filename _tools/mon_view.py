@@ -10,11 +10,17 @@ Standard library only; imports `mon_base` and `redact` (at the first redaction).
   enable_vt()                    True when the console takes ANSI escapes: always off Windows, there the console's
                                  virtual terminal processing switched on, False when it cannot be
   CLEAR                          the cursor-home and erase sequences that start a frame redrawn in place
+  ResizeWatch(size=None, use_signal=None)
+                                 a context manager that reports a terminal size change: `poll()` gives `(old, new)` (columns,
+                                 lines) once the size differs from the last `mark()`, on SIGWINCH where there is one, else
+                                 by reading the size; `slice` is the seconds to wait between polls
   render_json(snap)              the snapshot as JSON text
 """
 import inspect
 import json
 import re
+import shutil
+import signal
 import sys
 
 import mon_base
@@ -111,6 +117,54 @@ def enable_vt():
         return bool(kernel32.SetConsoleMode(handle, mode.value | VT_FLAG))
     except (AttributeError, OSError, ValueError, ctypes.ArgumentError):
         return False
+
+
+class ResizeWatch:
+    """Tells the live view that the terminal changed size. Where the platform has SIGWINCH the signal sets a flag and
+    `poll` then reads the size; where it has not (Windows) `poll` reads the size itself, so the caller polls it a few times a
+    second. `mark` records the size of the frame just drawn; `poll` returns `(old, new)` sizes once they differ, else None.
+    `size` and `use_signal` can be given for a planted size sequence."""
+
+    SIGNAL_SLICE = 0.1  # seconds between flag checks (the flag is a bool read, so this is cheap)
+    POLL_SLICE = 0.25  # seconds between size reads without SIGWINCH
+
+    def __init__(self, size=None, use_signal=None):
+        self.size = size or shutil.get_terminal_size
+        self.use_signal = hasattr(signal, "SIGWINCH") if use_signal is None else use_signal
+        self.slice = self.SIGNAL_SLICE if self.use_signal else self.POLL_SLICE
+        self.flag = False
+        self.last = tuple(self.size())
+        self.previous = None
+
+    def __enter__(self):
+        if self.use_signal:
+            try:
+                self.previous = signal.signal(signal.SIGWINCH, self.on_winch)
+            except ValueError:  # not the main thread: read the size instead
+                self.use_signal, self.slice = False, self.POLL_SLICE
+        return self
+
+    def __exit__(self, *exc):
+        if self.use_signal and self.previous is not None:
+            signal.signal(signal.SIGWINCH, self.previous)
+
+    def on_winch(self, *_):
+        self.flag = True
+
+    def mark(self):
+        self.flag = False
+        self.last = tuple(self.size())
+
+    def poll(self):
+        if self.use_signal:
+            if not self.flag:
+                return None
+            self.flag = False
+        now = tuple(self.size())
+        if now == self.last:
+            return None
+        old, self.last = self.last, now
+        return old, now
 
 
 def takes_width(view):
