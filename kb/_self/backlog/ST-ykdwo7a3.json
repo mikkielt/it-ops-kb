@@ -2,7 +2,7 @@
   "id": "ST-ykdwo7a3",
   "kind": "story",
   "title": "The multi-agent scenarios' inputs are frozen and each run prints its plan and cost estimate with no model call",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -160,5 +160,46 @@
     "_tools/bench_core.py"
   ],
   "notes": "The estimate reads the recorded means as the epic's notes give them (pool sonnet-5-5:default 0.147 USD per question, haiku-5-5 0.0085, opus-5-5 0.236; repro 2.83 USD and 573 s per area; a code item about 1.0 USD from usage rows), each knob priced at its model's PRICE. The research area is one no instance of the repro record researched, so the sandbox's kb lacks it. Inputs live under kb/_self/reports/, which research sessions read nothing under (bench_repro.NO_READ).",
-  "claimed_by": "orch-r16"
+  "evidence": {
+    "commit": "7a8f111ef348374148f1f50e929159ee437ea98d",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/benchmarks.py",
+          "multi",
+          "inputs"
+        ],
+        "exit": 0,
+        "sha256": "0ca1e4c662595f12"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os\nassert os.path.exists(\"kb/_self/reports/multi_bench.csv\"), \"no kb/_self/reports/multi_bench.csv\"\n\nimport csv, collections\nrows = list(csv.DictReader(open(\"kb/_self/reports/multi_bench.csv\", encoding=\"utf-8\")))\nby = collections.defaultdict(list)\nfor r in rows:\n    by[r[\"scenario\"]].append(r)\nlook = by[\"lookups\"]\nagents = collections.Counter(r[\"agent\"] for r in look)\nassert len(agents) == 4 and set(agents.values()) == {5}, agents\nassert len({r[\"input\"] for r in look}) == 10, sorted({r[\"input\"] for r in look})\nres = by[\"research\"]\nassert len({r[\"agent\"] for r in res}) == 3 and len({r[\"input\"] for r in res}) == 1, res\nroles = collections.Counter(r[\"role\"] for r in {r[\"agent\"]: r for r in by[\"mixed\"]}.values())\nassert roles == collections.Counter(research=2, code=2, lookup=1), roles\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os\nassert os.path.exists(\"kb/_self/reports/multi_bench.csv\"), \"no kb/_self/reports/multi_bench.csv\"\n\nimport csv, os, subprocess, sys, tempfile\nsrc = \"kb/_self/reports/multi_bench.csv\"\nrows = list(csv.DictReader(open(src, encoding=\"utf-8\")))\nbad = dict(next(r for r in rows if r[\"role\"] == \"lookup\"), input=\"no-such-row-zz9\")\np = os.path.join(tempfile.mkdtemp(), \"bad.csv\")\nwith open(p, \"w\", newline=\"\", encoding=\"utf-8\") as f:\n    w = csv.DictWriter(f, fieldnames=list(rows[0]))\n    w.writeheader()\n    w.writerows(rows + [bad])\nr = subprocess.run([sys.executable, \"_tools/benchmarks.py\", \"multi\", \"inputs\", \"--file\", p], capture_output=True, text=True)\nassert r.returncode == 1 and \"no-such-row-zz9\" in r.stdout + r.stderr, (r.returncode, r.stdout[-400:], r.stderr[-400:])\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\n\nimport os, subprocess, sys, tempfile\nT = tempfile.mkdtemp()\nB = os.path.join(T, \"bin\"); os.mkdir(B)\nMARK = os.path.join(T, \"claude-was-started\")\nopen(os.path.join(B, \"claude\"), \"w\").write(\"#!/bin/sh\\necho started >> \" + MARK + \"\\nexit 1\\n\")\nos.chmod(os.path.join(B, \"claude\"), 0o755)\nENV = dict(os.environ, PATH=B + os.pathsep + os.environ[\"PATH\"])\ndef bench(*a, ok=(0,), timeout=1200):\n    r = subprocess.run([sys.executable, \"_tools/benchmarks.py\", *a], capture_output=True, text=True, env=ENV, timeout=timeout)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-600:], r.stderr[-600:])\n    return r\n\nd = os.path.join(T, \"none\")\nknobs = [\"--coord\", \"isolated\", \"--stagger\", \"30\", \"--model\", \"lookup=haiku-5-5,research=haiku-5-5,code=sonnet-5-5\",\n         \"--pack-budget\", \"600\", \"--tools\", \"files\", \"--manager\", \"session\"]\nfor s in (\"lookups\", \"research\", \"mixed\"):\n    for extra in ([], [\"--sequential\"], knobs):\n        r = bench(\"multi\", \"run\", s, \"--dir\", d, \"--dry-run\", *extra)\n        assert \"estimate\" in r.stdout and \"$\" in r.stdout, (s, extra, r.stdout[-600:])\nassert not os.path.exists(d), \"--dry-run created the sandbox\"\nassert not os.path.exists(MARK), \"a dry run started claude\"\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
