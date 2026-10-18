@@ -2,7 +2,7 @@
   "id": "ST-jgdqm4xi",
   "kind": "story",
   "title": "Research sprint goal: Operators ask agents through coord, and a read-only observer agent diagnoses alerts and summarises the work",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w6amecjt",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "No outside facts: rag.py pack on 2026-10-18 answers (1) from agents/headless-agent-runtimes.md:23 (DOC S1800), (2) from claude/skills-and-subagents.md:145 (DOC S2157) and (3) from agents/a2a-protocol.md:24 (DOC S2120)."
+  "notes": "No outside facts: rag.py pack on 2026-10-18 answers (1) from agents/headless-agent-runtimes.md:23 (DOC S1800), (2) from claude/skills-and-subagents.md:145 (DOC S2157) and (3) from agents/a2a-protocol.md:24 (DOC S2120).",
+  "claimed_by": "orch-r20"
 }
