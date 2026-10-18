@@ -2,7 +2,7 @@
   "id": "ST-46kxzalv",
   "kind": "story",
   "title": "The coord hook shows a Claude Code session the open asks addressed to it, as data",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -54,5 +54,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-18: a harness without hooks polls coord.py wait or the coord MCP tools itself; this item is the Claude Code client. The hook already prints systemMessage and additionalContext (coord_hook.py:271). The check plants its own store and removes its session's state file under _cache/coord_hook."
+  "notes": "Plan 2026-10-18: a harness without hooks polls coord.py wait or the coord MCP tools itself; this item is the Claude Code client. The hook already prints systemMessage and additionalContext (coord_hook.py:271). The check plants its own store and removes its session's state file under _cache/coord_hook.",
+  "claimed_by": "orch-r20"
 }
