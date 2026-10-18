@@ -40,6 +40,25 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What does an orphan or disk alert carry in its since field, and how is free_pct rounded?",
+      "options": [
+        "since empty, free_pct to one decimal",
+        "since the oldest orphan's start time, free_pct a whole number"
+      ],
+      "recommendation": "since empty, free_pct to one decimal",
+      "do": {
+        "since empty, free_pct to one decimal": "ST-dtahnx2a",
+        "since the oldest orphan's start time, free_pct a whole number": "ST-dtahnx2a"
+      },
+      "class": "design",
+      "answer": "since empty, free_pct to one decimal",
+      "by": "agent"
+    }
+  ],
   "notes": "Plan 2026-10-19: premise run on the base: a planted snapshot with an orphan process and 3% free disk judges no alert (alerts [] exit 0), and the host panel has no disk data. The sessions panel listed 2-4 real orphans during the session. The receipt (ST-nighxizj) and the pane read these alerts.",
   "claimed_by": "orch-r23"
 }
