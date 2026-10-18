@@ -2,7 +2,7 @@
   "id": "ST-o5lk5a46",
   "kind": "story",
   "title": "Review sprint: coord shows each session's real work and its server and locks hold under bad input",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fp3hxl6q",
   "review": true,
   "priority": "P1",
@@ -23,5 +23,26 @@
       ]
     }
   ],
-  "claimed_by": "orch-r15"
+  "evidence": {
+    "commit": "4c60d2771d473dc9e014a7f6b930b5e7fc9b326b",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "check"
+        ],
+        "exit": 0,
+        "sha256": "95b2b32d3ac45060"
+      },
+      {
+        "run": [
+          "python3",
+          "_tools/tests.py"
+        ],
+        "exit": 0,
+        "sha256": "5bd906bf21153b79"
+      }
+    ]
+  }
 }
