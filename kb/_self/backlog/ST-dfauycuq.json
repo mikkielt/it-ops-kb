@@ -22,5 +22,5 @@
   "links": [
     "parked: SP-5gph7fh6 close"
   ],
-  "notes": "SP-5gph7fh6 close: ST-o2tr2ry4 g4 was classed delete by the word erase. It caused no stop; the classifier fails closed by design, so narrowing it is the operator's call (operator-only authority)."
+  "notes": "SP-5gph7fh6 close: ST-o2tr2ry4 g4 was classed delete by the word erase. It caused no stop; the classifier fails closed by design, so narrowing it is the operator's call (operator-only authority). ST-bhvh6jh6 worker 2026-10-18: gate redraw (question: does a resize redraw start with the full erase on a grow too) printed class delete (matched 'erase') again."
 }
