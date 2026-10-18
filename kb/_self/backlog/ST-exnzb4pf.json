@@ -38,7 +38,8 @@
     "_tools/kbmon.py",
     "_tools/mon_export.py",
     "kb/_self/tools.md",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md"
   ],
   "gates": [
     {
@@ -74,6 +75,40 @@
       "class": "design",
       "answer": "kbmon.<panel>.<measure>, e.g. kbmon.kb.facts with root and tag",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does --metrics treat an attribute value that is no number, flag or redaction-stable identifier?",
+      "options": [
+        "the whole point is left out",
+        "only that attribute is dropped"
+      ],
+      "recommendation": "the whole point is left out",
+      "do": {
+        "the whole point is left out": "ST-exnzb4pf",
+        "only that attribute is dropped": "ST-exnzb4pf"
+      },
+      "class": "querylog",
+      "answer": "the whole point is left out",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which flag selects the metrics output and which points does it carry beyond the panels' data?",
+      "options": [
+        "--metrics beside --json and --once; every panel's up and seconds, kb, coord and sessions measures, the alert count",
+        "--metrics with the kb and coord measures only"
+      ],
+      "recommendation": "--metrics beside --json and --once; every panel's up and seconds, kb, coord and sessions measures, the alert count",
+      "do": {
+        "--metrics beside --json and --once; every panel's up and seconds, kb, coord and sessions measures, the alert count": "ST-exnzb4pf",
+        "--metrics with the kb and coord measures only": "ST-exnzb4pf"
+      },
+      "class": "design",
+      "answer": "--metrics beside --json and --once; every panel's up and seconds, kb, coord and sessions measures, the alert count",
+      "by": "agent"
     }
   ],
   "knowledge": {
