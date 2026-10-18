@@ -2,7 +2,7 @@
   "id": "ST-vau24eqm",
   "kind": "story",
   "title": "otel/ adapter sends kbmon's events as OTLP log records",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",
@@ -38,5 +38,6 @@
       "claude/otel-monitoring"
     ]
   },
-  "notes": "Plan 2026-10-18 (operator interview): events go as log records and spans, not metrics only."
+  "notes": "Plan 2026-10-18 (operator interview): events go as log records and spans, not metrics only.",
+  "claimed_by": "orch-r19"
 }
