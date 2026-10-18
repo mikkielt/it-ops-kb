@@ -1,4 +1,4 @@
-"""kbmon_otel: send kbmon's metric points and event records over OTLP/HTTP with the OpenTelemetry Python SDK.
+"""kbmon_otel: send kbmon's metric points, event records and spans over OTLP/HTTP with the OpenTelemetry Python SDK.
 
 Run it from the clone's root, with the SDK pinned in otel/uv.lock:
 
@@ -6,9 +6,9 @@ Run it from the clone's root, with the SDK pinned in otel/uv.lock:
         [--store PATH] [--url URL --key-file PATH] [--from-snapshot FILE] [--prometheus-port N [--prometheus-bind HOST]]
 
 The points come from `python3 _tools/kbmon.py --metrics` and the events from `--events` (otel_logs.py: one OTLP log
-record each, the cursor kept in memory), run as child processes (the stdlib tools import no OpenTelemetry package).
-The SDK reads the endpoints and the headers itself, from OTEL_EXPORTER_OTLP_ENDPOINT (or the _METRICS_ and _LOGS_
-variant of each signal) and OTEL_EXPORTER_OTLP_HEADERS (or its _METRICS_ and _LOGS_ variant); the adapter takes no
+record each, and otel_spans.py: one span each, the cursor kept in memory), run as child processes (the stdlib tools
+import no OpenTelemetry package). The SDK reads the endpoints and the headers itself, from OTEL_EXPORTER_OTLP_ENDPOINT
+(or the _METRICS_, _LOGS_ and _TRACES_ variant of each signal) and OTEL_EXPORTER_OTLP_HEADERS (or its variants); the adapter takes no
 flag or file for either and prints and logs no header value. With no endpoint set it sends nothing and says export
 is off. `--prometheus-port N` also serves the same points at /metrics through the SDK's
 Prometheus reader, on loopback only (otel_prom.py); it is off unless the flag is given. Docs: kb/_self/monitoring.md.
@@ -29,6 +29,7 @@ from urllib.parse import urlsplit
 
 import otel_logs
 import otel_prom
+import otel_spans
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.metrics import Observation
 from opentelemetry.sdk.metrics import MeterProvider
@@ -37,11 +38,11 @@ from opentelemetry.sdk.resources import Resource
 
 ROOT = Path(__file__).resolve().parent.parent
 KBMON = ROOT / "_tools" / "kbmon.py"
-HEADER_VARS = tuple(f"OTEL_EXPORTER_OTLP_{signal}HEADERS" for signal in ("METRICS_", "LOGS_", ""))
+HEADER_VARS = tuple(f"OTEL_EXPORTER_OTLP_{signal}HEADERS" for signal in ("METRICS_", "LOGS_", "TRACES_", ""))
 
 
 def endpoint(signal: str = "METRICS") -> str:
-    """The endpoint the SDK exporter of a signal (METRICS or LOGS) would send to, or "" when none is set."""
+    """The endpoint the SDK exporter of a signal (METRICS, LOGS or TRACES) would send to, or "" when none is set."""
     for var in (f"OTEL_EXPORTER_OTLP_{signal}_ENDPOINT", "OTEL_EXPORTER_OTLP_ENDPOINT"):
         if os.environ.get(var, "").strip():
             return os.environ[var].strip()
@@ -171,20 +172,37 @@ class Sender:
             self.exporter.shutdown()
 
 
-def send_events(args, logs) -> int:
-    """One round of event records: 0 sent, 1 the send failed (the cursor stays), 2 kbmon gave no events."""
+class Cursor:
+    """The `--events` cursor, kept in memory: it moves only when every signal of a round was sent."""
+
+    value = None
+
+
+def send_events(args, cursor: Cursor, logs, spans) -> int:
+    """One round of event records and spans: 0 sent, 1 a send failed (the cursor stays), 2 kbmon gave no events."""
     try:
-        got = collect_events(args, logs.cursor)
+        got = collect_events(args, cursor.value)
     except (RuntimeError, subprocess.TimeoutExpired) as e:
         print(f"kbmon_otel: {e}", file=sys.stderr)
         return 2
     for problem in got.get("problems") or []:
         print(f"kbmon_otel: {problem}", file=sys.stderr)
-    if not logs.send(got):
-        print("kbmon_otel: log export failed", file=sys.stderr)
-        return 1
-    print(f"kbmon_otel: sent {len(got['events'])} log records", flush=True)
-    return 0
+    code = 0
+    if logs:
+        if logs.send(got):
+            print(f"kbmon_otel: sent {len(got['events'])} log records", flush=True)
+        else:
+            print("kbmon_otel: log export failed", file=sys.stderr)
+            code = 1
+    if spans:
+        if spans.send(got):
+            print(f"kbmon_otel: sent {len(got.get('spans') or [])} spans", flush=True)
+        else:
+            print("kbmon_otel: span export failed", file=sys.stderr)
+            code = 1
+    if code == 0:
+        cursor.value = got.get("cursor") or cursor.value
+    return code
 
 
 def main(argv=None) -> int:
@@ -217,7 +235,8 @@ def main(argv=None) -> int:
 
     url = endpoint("METRICS")
     logs_url = "" if args.from_snapshot else endpoint("LOGS")
-    if not url and not logs_url and args.prometheus_port is None:
+    spans_url = "" if args.from_snapshot else endpoint("TRACES")
+    if not url and not logs_url and not spans_url and args.prometheus_port is None:
         print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); nothing sent")
         return 0
 
@@ -226,14 +245,18 @@ def main(argv=None) -> int:
     for handler in logging.getLogger().handlers:
         handler.addFilter(scrub)
 
-    if url or logs_url:
-        targets = [f"{kind} to {shown_endpoint(u)}" for kind, u in (("metrics", url), ("logs", logs_url)) if u]
+    if url or logs_url or spans_url:
+        targets = [f"{kind} to {shown_endpoint(u)}"
+                   for kind, u in (("metrics", url), ("logs", logs_url), ("traces", spans_url)) if u]
         print(f"kbmon_otel: export is on, {', '.join(targets)}")
     else:
         print("kbmon_otel: export is off (no OTEL_EXPORTER_OTLP_ENDPOINT set); /metrics only")
     prom = otel_prom.reader() if args.prometheus_port is not None else None
     sender = Sender(export=bool(url), extra_readers=[prom] if prom else []) if url or prom else None
-    logs = otel_logs.Logs(Resource.create({"service.name": os.environ.get("OTEL_SERVICE_NAME", "kbmon")})) if logs_url else None
+    resource = Resource.create({"service.name": os.environ.get("OTEL_SERVICE_NAME", "kbmon")})
+    logs = otel_logs.Logs(resource) if logs_url else None
+    spans = otel_spans.Spans(resource) if spans_url else None
+    cursor = Cursor()
     server = None
     code = 0
     sent = 0
@@ -255,8 +278,8 @@ def main(argv=None) -> int:
                     else:
                         print("kbmon_otel: export failed", file=sys.stderr)
                         code = 1
-            if logs:
-                code = max(code, send_events(args, logs))
+            if logs or spans:
+                code = max(code, send_events(args, cursor, logs, spans))
             sent += 1
             if args.count and sent >= args.count:
                 return code
@@ -268,6 +291,8 @@ def main(argv=None) -> int:
             sender.close()
         if logs:
             logs.close()
+        if spans:
+            spans.close()
         if server:
             server.shutdown()
             server.server_close()

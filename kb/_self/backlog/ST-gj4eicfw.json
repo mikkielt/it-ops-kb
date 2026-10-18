@@ -49,6 +49,40 @@
       "class": "design",
       "answer": "one root span per land run from its first land.step to its land.end, a child span per step",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a round move the events cursor when logs and spans are both sent?",
+      "options": [
+        "one cursor, moved only when every signal that is on was sent",
+        "one cursor for each signal"
+      ],
+      "recommendation": "one cursor, moved only when every signal that is on was sent",
+      "do": {
+        "one cursor, moved only when every signal that is on was sent": "ST-gj4eicfw",
+        "one cursor for each signal": "ST-gj4eicfw"
+      },
+      "class": "design",
+      "answer": "one cursor, moved only when every signal that is on was sent",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which ids does an exported span carry?",
+      "options": [
+        "the ids kbmon gives each span (stable across rounds), the 64-bit trace id read as a 128-bit one",
+        "ids the SDK generates, the parent links rebuilt by the adapter"
+      ],
+      "recommendation": "the ids kbmon gives each span (stable across rounds), the 64-bit trace id read as a 128-bit one",
+      "do": {
+        "the ids kbmon gives each span (stable across rounds), the 64-bit trace id read as a 128-bit one": "ST-gj4eicfw",
+        "ids the SDK generates, the parent links rebuilt by the adapter": "ST-gj4eicfw"
+      },
+      "class": "design",
+      "answer": "the ids kbmon gives each span (stable across rounds), the 64-bit trace id read as a 128-bit one",
+      "by": "agent"
     }
   ],
   "knowledge": {
