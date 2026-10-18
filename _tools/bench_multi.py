@@ -1,5 +1,5 @@
-"""The multi-agent benchmark's sandbox and plan: `benchmarks.py multi setup`, `multi probe`, `multi inputs` and `multi run
---dry-run` (stdlib only).
+"""The multi-agent benchmark's sandbox, plan and run: `benchmarks.py multi setup`, `multi probe`, `multi inputs` and `multi run`
+(stdlib only).
 
 A sandbox is a directory DIR holding one bare copy of one pinned commit (DIR/origin.git: the commit alone, no history,
 and on it one base commit that empties `lane_module` in backlog.json, so the sandbox has no code lane and an item lands on
@@ -9,20 +9,22 @@ clone has its query log `off` and an mcp-config file of its own; `agent_env` is 
 (bench_repro.instance_env's, with `KB_COORD_STORE` the agent's store). The clones sit under bench_core's scratch
 directory, as the clones of bench_repro do, in a directory of their own for each DIR. `probe` builds a two-agent sandbox
 of each coordination mode in a temporary directory, lands one `_gaps.md` commit from each clone of the shared one on its
-bare through `kbgit.py sync --push` and proves the landing and the stores stayed inside the
-sandbox. Nothing here starts a model or reads the network. This module imports bench_repro for its instance helpers
-(kb/_self/code.md, Layout); benchmarks.py holds the command line.
+bare through `kbgit.py sync --push` and proves the landing and the stores stayed inside the sandbox. Nothing but `execute`
+(`multi run` without `--dry-run`) starts a model or reads the network. This module imports bench_repro for its instance
+helpers (kb/_self/code.md, Layout); benchmarks.py holds the command line.
 """
-import base64, hashlib, json, os, re, shlex, shutil, sys
+import base64, hashlib, json, os, re, shlex, shutil, signal, subprocess, sys, threading, time
 from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import agent_bench
 import bench_pool
 import bench_repro
 import kbpublic
-from bench_core import HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir
-from bench_repro import Refused, inside, instance_env, lock_dir, mcp_config, run_git, same_path, sh
+from bench_core import HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, transcript
+from bench_repro import (Refused, failure_of, inside, instance_env, lock_dir, mcp_config, reset_clone, run_git, same_path, sh,
+                         utc_now)
 
 COORDS = ("shared", "isolated")
 MANIFEST = "sandbox.json"  # DIR/sandbox.json: the pinned commit and each agent's paths
@@ -39,6 +41,9 @@ TOOL_SETS = {"kb": ["mcp__kb"], "files": ["Read", "Grep", "Glob"]}  # --tools: t
 MANAGERS = ("code", "session")  # --manager: this tool starts the agents, or a model session does
 DEFAULT_MODELS = {"lookup": "haiku-5-5", "research": "sonnet-5-5", "code": "sonnet-5-5"}
 MANAGER_MODEL = "sonnet-5-5"
+RUN_RESULTS = "results.jsonl"  # DIR/results.jsonl: one json line per agent of a run
+BIN = "bin"  # DIR/bin: the claude wrapper dispatch's worker starts through
+OPERATOR = "operator"  # who the harness answers a gate as
 PACK_BUDGET = 1200  # kb_pack's default budget in tokens; its limits are the next two
 PACK_LIMITS = (200, 6000)
 LOOKUP_LIMITS = {"max_turns": 40, "usd": 3.0}  # the turns and dollars one lookup agent's session may use
@@ -530,16 +535,25 @@ def session_argv(model, max_turns, usd, mcp, tools=None):
     return argv
 
 
+def dispatch_argv(root, n, iid, model, max_turns):
+    """The argv that makes agent N's code item's worker: `backlog.py dispatch` in the agent's clone, which starts a headless
+    session on the item's brief (the worker's own claude argv is dispatch's; the wrapper in DIR/bin adds the session
+    settings, the agent's mcp-config and the dollar cap)."""
+    return [sys.executable, str(clone_path(root, n) / "_tools" / "backlog.py"), "dispatch", iid, "--model", bench_repro.model_id(model),
+            "--max-turns", str(max_turns)]
+
+
 def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs):
     """The plan of one agent, the Nth of its scenario: its role, model, argv, prompt, coordination store and estimate. Raises Refused."""
     role, mcp = agent["role"], mcp_path(root, n)
     model, mid = models[role], model_price_id(models[role])
     d = bench_repro.DEFAULTS
     plan = {"agent": agent["agent"], "role": role, "model": model, "mid": mid, "store": store_path(root, knobs["coord"], n),
-            "wall": None}
+            "wall": None, "n": n, "turns": d["max_turns"], "cap": d["area_usd"]}
     if role == "lookup":
         qs = [questions[i] for i in agent["inputs"]]
         plan["argv"] = session_argv(model, LOOKUP_LIMITS["max_turns"], LOOKUP_LIMITS["usd"], mcp, knobs["tools"])
+        plan["turns"], plan["cap"] = LOOKUP_LIMITS["max_turns"], LOOKUP_LIMITS["usd"]
         plan["prompt"] = lookup_prompt(qs, knobs["tools"], knobs["pack_budget"])
         one, why = question_usd(means, mid)
         plan["usd"], plan["basis"] = one * len(qs), f"{len(qs)} question(s) x ${one:.4f}, {why}"
@@ -559,8 +573,9 @@ def agent_plan(agent, scenario, n, root, knobs, models, means, questions, briefs
     else:
         spec = spec_of(agent["inputs"][0])
         iid = item_id(scenario, agent["agent"])
-        plan["argv"] = session_argv(model, d["max_turns"], d["area_usd"], mcp)
-        plan["prompt"] = f"/kb-item {iid}\n"
+        plan["item"] = iid
+        plan["argv"] = dispatch_argv(root, n, iid, model, d["max_turns"])
+        plan["prompt"] = f"the brief `backlog.py brief {iid}` prints, on the stdin of the worker `dispatch` starts\n"
         plan["usd"] = CODE_ITEM_USD * price_ratio(mid)
         plan["basis"] = f"about ${CODE_ITEM_USD:.2f} for one code item on {RECORDED_MODEL}" + (
             f" x {price_ratio(mid):.3g} (the input price ratio)" if mid != RECORDED_MODEL else "")
@@ -575,17 +590,18 @@ def money(usd):
 def run(scenario, root=None, dry_run=False, knobs=None, out=print):
     """`multi run SCENARIO`: with `dry_run`, print each agent's role, model, argv and coordination store, the knob values and
     an estimate in US dollars, and create nothing and start no model. Returns 0, or 1 when an input does not resolve. Without
-    `dry_run` it raises Refused: this command only plans. Raises Refused on an unknown scenario, knob or model."""
+    it, `execute` runs the scenario: the sandbox of DIR (built when DIR holds none), every agent's session, the operator's
+    steps and DIR/results.jsonl. Raises Refused on an unknown scenario, knob or model."""
     if scenario not in SCENARIOS:
         raise Refused(f"no scenario {scenario}; one of {', '.join(SCENARIOS)}")
-    if not dry_run:
-        raise Refused("only --dry-run is supported: it prints the plan and the estimate and starts no model")
     k = {"sequential": False, "coord": "shared", "stagger": 0.0, "model": "", "pack_budget": PACK_BUDGET, "tools": "kb", "manager": "code",
-         **(knobs or {})}
+         "max_usd": None, "timeout": bench_repro.DEFAULTS["timeout"], **(knobs or {})}
     bad = [f"--coord is one of {', '.join(COORDS)}"] if k["coord"] not in COORDS else []
     bad += [f"--tools is one of {', '.join(TOOL_SETS)}"] if k["tools"] not in TOOL_SETS else []
     bad += [f"--manager is one of {', '.join(MANAGERS)}"] if k["manager"] not in MANAGERS else []
     bad += ["--stagger needs 0 or more seconds"] if k["stagger"] < 0 else []
+    bad += ["--max-usd needs more than 0"] if k["max_usd"] is not None and k["max_usd"] <= 0 else []
+    bad += ["--timeout needs 1 or more seconds"] if k["timeout"] < 1 else []
     bad += [f"--pack-budget is {PACK_LIMITS[0]} to {PACK_LIMITS[1]} tokens"] if not PACK_LIMITS[0] <= k["pack_budget"] <= PACK_LIMITS[1] else []
     if bad:
         raise Refused("; ".join(bad))
@@ -601,6 +617,8 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
         return 1
     means = recorded_means(read_rows(RESULTS))
     plans = [agent_plan(a, scenario, n, root, k, models, means, questions, briefs) for n, a in enumerate(agents, 1)]
+    if not dry_run:
+        return execute(scenario, root, k, plans, out)
     order = "one at a time (--sequential)" if k["sequential"] else f"at once, {k['stagger']:g} s apart (--stagger)"
     out(f"multi run {scenario} --dry-run: {len(plans)} agent(s), started {order}, coord {k['coord']}, manager {k['manager']}")
     out(f"dir: {root} (nothing is created)")
@@ -628,3 +646,326 @@ def run(scenario, root=None, dry_run=False, knobs=None, out=print):
         out(f"wall: about {sum(walls) if k['sequential'] else max(walls):.0f} s for the {len(walls)} research agent(s) at the recorded mean "
             f"of {means['repro']['wall_s']:.0f} s per area; the others have no recorded wall time")
     return 0
+
+
+# ------------------------------------------------------------------------------------------------------- a real run
+
+STEP_TIMEOUT = 7200  # seconds one operator command (claim, answer, land) may take
+WRAPPER = """#!{python}
+import os, sys
+here = os.path.dirname(os.path.abspath(__file__))
+for d in os.environ.get("PATH", "").split(os.pathsep):
+    found = os.path.join(d, "claude")
+    if d and os.path.abspath(d) != here and os.path.isfile(found) and os.access(found, os.X_OK):
+        extra = ["--settings", os.environ["MULTI_SETTINGS"], "--mcp-config", os.environ["MULTI_MCP_CONFIG"], "--strict-mcp-config",
+                 "--max-budget-usd", os.environ["MULTI_MAX_USD"]]
+        os.execv(found, [found, *sys.argv[1:], *extra])
+sys.exit("claude is not on PATH")
+"""  # DIR/bin/claude: the claude `dispatch` starts, with the run's session settings, the agent's mcp-config and the dollar cap added
+
+
+def write_wrapper(root):
+    """Write DIR/bin/claude, the wrapper a code agent's dispatch finds first on PATH."""
+    path = Path(root) / BIN / "claude"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(WRAPPER.format(python=sys.executable), encoding="utf-8", newline="\n")
+    path.chmod(0o755)
+
+
+def run_group(argv, cwd, env, timeout):
+    """(exit code, stdout, stderr, timed out) of `argv` run in its own process group, which a timeout ends whole."""
+    p = subprocess.Popen(argv, cwd=str(cwd), env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, encoding="utf-8",
+                         errors="replace", start_new_session=True)
+    try:
+        out, err = p.communicate(timeout=timeout)
+        return p.returncode, out, err, False
+    except subprocess.TimeoutExpired:
+        if hasattr(os, "killpg"):
+            os.killpg(p.pid, signal.SIGKILL)
+        else:
+            p.kill()
+        out, err = p.communicate()
+        return p.returncode, out, err, True
+
+
+def filled(stdout):
+    """`stdout` with the keys of its result event that agent_bench.result_of reads and a stream may lack (the duration, the
+    cost, the turns and the four token counts) defaulted to 0, so a short stream is parsed as the full one is."""
+    lines = []
+    for ln in stdout.splitlines():
+        try:
+            ev = json.loads(ln)
+        except ValueError:
+            ev = None
+        if isinstance(ev, dict) and ev.get("type") == "result":
+            for key in ("duration_api_ms", "total_cost_usd", "num_turns"):
+                ev.setdefault(key, 0)
+            ev["usage"] = {k: 0 for k in ("input_tokens", "output_tokens", "cache_creation_input_tokens",
+                                          "cache_read_input_tokens")} | (ev.get("usage") or {})
+            ln = json.dumps(ev)
+        lines.append(ln)
+    return "\n".join(lines) + "\n"
+
+
+def run_session(argv, prompt, cwd, env, timeout):
+    """One agent's session parsed as bench_core.stream_run parses it (agent_bench.result_of over the stream, `filled`), and
+    its cost counted in the run's spend; the whole `env` is the session's environment."""
+    t = time.time()
+    try:
+        p = subprocess.run(argv, cwd=str(cwd), input=prompt, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                           timeout=timeout, env=env)
+        r = agent_bench.result_of(filled(p.stdout), p.stderr, time.time() - t)
+    except subprocess.TimeoutExpired as e:
+        out = e.stdout.decode("utf-8", "replace") if isinstance(e.stdout, bytes) else e.stdout
+        r = {**agent_bench.unfinished(out, "timeout", time.time() - t, always=True), "timeout_s": timeout}
+    spent_run(r)
+    return r
+
+
+def backlog_cmd(clone, *args, root=None):
+    """The argv of `backlog.py` of `clone` with `args`, against the checkout `root` when given."""
+    return [sys.executable, str(Path(clone) / "_tools" / "backlog.py"), *(["--root", str(root)] if root else []), *args]
+
+
+def operator_env(env):
+    """`env` for an operator command: KB_SYNC_NO_TESTS of this process kept, as sync_push keeps it."""
+    return {**env, **({"KB_SYNC_NO_TESTS": os.environ["KB_SYNC_NO_TESTS"]} if os.environ.get("KB_SYNC_NO_TESTS") else {})}
+
+
+def open_gates(item):
+    """The gates of an item (a dict) with no answer and a recommendation."""
+    return [g for g in item.get("gates", []) if isinstance(g, dict) and not g.get("answer") and g.get("recommendation")]
+
+
+def answer_gates(clone, where, item, env):
+    """Answer each open gate of `item` by its recommendation as the operator (`backlog.py answer --by operator --commit`) in
+    the checkout `where` of `clone`: the step of each. Raises Refused when an answer is refused."""
+    steps = []
+    for g in open_gates(item):
+        argv = backlog_cmd(clone, "answer", item["id"], g["id"], "--answer", g["recommendation"], "--by", OPERATOR, "--commit",
+                           root=None if Path(where) == Path(clone) else where)
+        p = sh(argv, where, operator_env(env))
+        if p.returncode:
+            raise Refused(f"the answer of gate {g['id']} of {item['id']} exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
+        steps.append(f"answered gate {g['id']}")
+    return steps
+
+
+def operator_pass(root, coord, manifest, plans, out):
+    """Before any agent starts: answer every open gate of each planted item in the first code agent's clone and sync it to the
+    bare (`kbgit.py sync --push`). {item id: [steps]}. Raises Refused when the sync stops."""
+    codes = [p for p in plans if p["role"] == "code"]
+    if not codes:
+        return {}
+    a = manifest["agents"][codes[0]["n"] - 1]
+    clone, env = Path(a["clone"]), agent_env(root, coord, a["n"])
+    steps = {p["item"]: answer_gates(clone, clone, json.loads((clone / ITEM_DIR / f"{p['item']}.json").read_text(encoding="utf-8")), env)
+             for p in codes}
+    if any(steps.values()) and sync_push(root, coord, a, out):
+        raise Refused("the operator's gate answers did not reach the bare: kbgit.py sync --push stopped")
+    return steps
+
+
+class Budget:
+    """--max-usd: the recorded spend and the estimates of the agents started and not yet recorded."""
+
+    def __init__(self, cap, spent):
+        self.cap, self.spent, self.held, self.lock = cap, spent, 0.0, threading.Lock()
+
+    def reserve(self, estimate):
+        """(True, spend) and hold `estimate` when the spend plus it stays within the cap, else (False, spend)."""
+        with self.lock:
+            total = self.spent + self.held
+            if self.cap is not None and total + estimate > self.cap + 1e-9:
+                return False, total
+            self.held += estimate
+            return True, total
+
+    def settle(self, estimate, cost):
+        with self.lock:
+            self.held -= estimate
+            self.spent += cost
+
+
+def blank_line(plan, scenario, k):
+    return {"scenario": scenario, "agent": plan["agent"], "role": plan["role"], "item": plan.get("item", ""), "model": bench_repro.model_id(plan["model"]),
+            "coord": k["coord"], "sequential": k["sequential"], "started": "", "ended": "", "failure": "", "subtype": "", "wall_s": 0,
+            "cost": 0, "input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "turns": 0,
+            "max_turns": plan["turns"], "tool_calls": 0, "steps": [], "commit": "", "land": ""}
+
+
+def session_fields(r, plan, wall, tool_calls=None):
+    """The result-line fields of a parsed session `r` (agent_bench.execute's): a session that timed out or ended with no result
+    event states no cost, so it is recorded at the agent's dollar cap, the most it can have spent."""
+    fail = failure_of(r)
+    out = {"failure": fail, "subtype": r.get("subtype") or ("success" if not fail else fail), "wall_s": round(wall, 1),
+           "cost": plan["cap"] if r.get("cost_unknown") else r.get("cost") or 0, "input_tokens": r.get("in_uncached", 0),
+           "output_tokens": r.get("out", 0), "cache_write_tokens": r.get("cache_write", 0), "cache_read_tokens": r.get("cache_read", 0),
+           "turns": r.get("turns", 0),
+           "tool_calls": sum(r.get("tools", {}).values()) + sum(r.get("sub_tools", {}).values()) if tool_calls is None else tool_calls}
+    if r.get("cost_unknown"):
+        out["cost_unknown"] = True
+    if fail:
+        out["error"] = str(r.get("error", ""))[:300]
+    return out
+
+
+def transcript_tools(session):
+    """The tool calls of a persisted session, its subagents' included; 0 when it has no transcript."""
+    try:
+        main, subs = transcript(session)
+    except (OSError, ValueError):
+        return 0
+    return sum(len(r["tools"]) for r in main) + sum(len(r["tools"]) for reqs in subs.values() for r in reqs)
+
+
+def land_result(code, out, err, timed):
+    """What the record's `land` says of a `backlog.py land` run: `landed`, the step it stopped at, or its last line."""
+    if timed:
+        return "timeout"
+    if code == 0:
+        return "landed"
+    text = (out + "\n" + err).strip().splitlines()
+    stop = next((ln for ln in text if ln.startswith("land stopped at step")), "")
+    return (stop.split(":")[0] if stop else f"exit {code}: {text[-1] if text else ''}")[:200]
+
+
+def code_agent(plan, ctx, rec):
+    """A code agent, the operator's side of it: claim the item, `dispatch` its worker in the clone, answer the gates the worker
+    left open, `land` the item. Fills `rec` (the session's fields are the worker's)."""
+    clone, env, iid, steps = ctx.clone(plan), ctx.env(plan), plan["item"], rec["steps"]
+    steps += ctx.gate_steps.get(iid, [])
+    p = sh(backlog_cmd(clone, "claim", iid, "--by", f"multi-agent{plan['n']}", "--commit"), clone, env)
+    if p.returncode:
+        raise Refused(f"claim of {iid} exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
+    steps.append("claimed")
+    denv = {**env, "PATH": str(ctx.root / BIN) + os.pathsep + env.get("PATH", ""), "MULTI_SETTINGS": bench_repro.SETTINGS,
+            "MULTI_MCP_CONFIG": str(mcp_path(ctx.root, plan["n"])), "MULTI_MAX_USD": f"{plan['cap']:g}"}
+    rec["started"] = utc_now()
+    t = time.time()
+    code, out, err, timed = run_group(plan["argv"], clone, denv, ctx.timeout)
+    wall = time.time() - t
+    steps.append("dispatched")
+    line = next((ln for ln in out.splitlines() if ln.startswith("dispatched")), "")
+    found = re.search(r", output (\S+)\s*$", line)
+    text, session = "", None
+    if found and Path(found.group(1)).is_file():
+        text = Path(found.group(1)).read_text(encoding="utf-8", errors="replace")
+        try:
+            data = json.loads(text)
+            session = data.get("session_id") if isinstance(data, dict) else None
+        except ValueError:
+            pass
+    r = agent_bench.unfinished(text, "timeout", wall, always=True) if timed else agent_bench.result_of(filled(text), err or out, wall)
+    rec.update(session_fields(r, plan, wall, transcript_tools(session) if session else None))
+    wt = clone / ".claude" / "worktrees" / f"agent-{iid}"
+    shown = sh(["git", "show", f"work/{iid}:{ITEM_DIR}/{iid}.json"], clone, env)
+    if shown.returncode == 0 and wt.is_dir():
+        for step in answer_gates(clone, wt, json.loads(shown.stdout), env):
+            steps.append(step + " on the worker's branch")
+    t = time.time()
+    rec["land"] = land_result(*run_group(backlog_cmd(clone, "land", iid), clone, operator_env(env), STEP_TIMEOUT))
+    rec["land_s"] = round(time.time() - t, 1)
+    steps.append("land: " + rec["land"])
+
+
+def session_agent(plan, ctx, rec):
+    """A lookup or research agent: one session in the agent's clone with its prompt, argv and environment."""
+    clone, env = ctx.clone(plan), ctx.env(plan)
+    rec["started"] = utc_now()
+    t = time.time()
+    r = run_session(plan["argv"], plan["prompt"], clone, env, ctx.timeout)
+    rec.update(session_fields(r, plan, time.time() - t))
+    rec["steps"].append("session")
+
+
+class Context:
+    """What the agents of one run share: the sandbox, its manifest, the results file and the budget."""
+
+    def __init__(self, scenario, root, k, manifest, budget, steps):
+        self.scenario, self.root, self.k, self.manifest, self.budget, self.gate_steps = scenario, root, k, manifest, budget, steps
+        self.timeout, self.path, self.lock = k["timeout"], root / RUN_RESULTS, threading.Lock()
+
+    def clone(self, plan):
+        return Path(self.manifest["agents"][plan["n"] - 1]["clone"])
+
+    def env(self, plan):
+        return agent_env(self.root, self.k["coord"], plan["n"])
+
+    def fresh(self, plan):
+        """A lookup agent's clone is as setup made it; the others start from the bare's main."""
+        if plan["role"] != "lookup":
+            reset_clone(self.clone(plan), self.env(plan))
+
+    def append(self, rec, out):
+        with self.lock, open(self.path, "a", encoding="utf-8", newline="\n") as f:
+            f.write(json.dumps(rec, sort_keys=True) + "\n")
+            f.flush()
+        out(f"agent {rec['agent']}: {rec['failure'] or 'ok'}, ${rec['cost']:.2f}, {rec['turns']} turns, {rec['wall_s']:.0f} s"
+            + (f", land {rec['land']}" if rec["land"] else ""))
+
+    def one(self, plan, out):
+        """Run one agent and append its line: its session, its operator steps, or, when the spend would pass --max-usd, the line
+        that records it with the failure budget. A harness error is a line with failure `error`: it ends no other agent."""
+        rec = blank_line(plan, self.scenario, self.k)
+        ok, spent = self.budget.reserve(plan["usd"])
+        if not ok:
+            rec.update(failure="budget", subtype="budget", started=utc_now(), ended=utc_now(),
+                       error=f"recorded spend ${spent:.2f} plus the estimate ${plan['usd']:.2f} passes --max-usd {self.budget.cap:g}")
+            self.append(rec, out)
+            return rec
+        try:
+            (code_agent if plan["role"] == "code" else session_agent)(plan, self, rec)
+        except Exception as e:  # noqa: BLE001 - a harness error is the agent's line, never the run's end
+            rec.update(failure="error", subtype="error", error=f"harness: {e}"[:300])
+            rec["started"] = rec["started"] or utc_now()
+        try:
+            rec["commit"] = run_git("rev-parse", "HEAD", cwd=self.clone(plan))
+        except Refused:
+            pass
+        rec["ended"] = utc_now()
+        self.budget.settle(plan["usd"], rec["cost"])
+        self.append(rec, out)
+        return rec
+
+
+def execute(scenario, root, k, plans, out):
+    """The real `multi run`: the sandbox of `root` (built when it holds none), the operator's answers to the planted items'
+    gates, every agent's session (all at once, one thread each, `--stagger` apart; one after the other with `--sequential`) and
+    each agent's line appended to DIR/results.jsonl. Returns 0 when every agent finished and every code item landed, else 1.
+    Raises Refused on a refusal."""
+    if k["manager"] == "session":
+        raise Refused("--manager session is not supported by a real run: the harness code starts the agents (--manager code)")
+    if not shutil.which(bench_repro.CLAUDE[0]):
+        raise Refused(f"{bench_repro.CLAUDE[0]} is not on PATH")
+    if not (root / MANIFEST).exists():
+        setup(None, k["coord"], root, scenario=scenario, out=out)
+    manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
+    if manifest.get("scenario") != scenario or manifest.get("coord") != k["coord"] or len(manifest["agents"]) != len(plans):
+        raise Refused(f"{root} holds the sandbox of scenario {manifest.get('scenario')}, coord {manifest.get('coord')}, "
+                      f"{len(manifest['agents'])} agent(s): remove it or use another --dir")
+    write_wrapper(root)
+    path = root / RUN_RESULTS
+    ctx = Context(scenario, root, k, manifest, Budget(k["max_usd"], sum(r.get("cost") or 0 for r in bench_repro.read_results(path))),
+                  operator_pass(root, k["coord"], manifest, plans, out))
+    out(f"multi run {scenario}: {len(plans)} agent(s), " + ("one at a time" if k["sequential"] else "all at once")
+        + f", coord {k['coord']}, results {path}")
+    recs = []
+    if k["sequential"]:
+        for i, plan in enumerate(plans):
+            time.sleep(k["stagger"] if i else 0)
+            ctx.fresh(plan)
+            recs.append(ctx.one(plan, out))
+    else:
+        for plan in plans:
+            ctx.fresh(plan)
+
+        def start(i, plan):
+            time.sleep(i * k["stagger"])
+            return ctx.one(plan, out)
+        with ThreadPoolExecutor(max_workers=len(plans)) as pool:
+            recs = [f.result() for f in [pool.submit(start, i, p) for i, p in enumerate(plans)]]
+    failed = [r for r in recs if r["failure"] or (r["role"] == "code" and r["land"] != "landed")]
+    out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
+        + ", ".join(f"{r['agent']} ({r['failure'] or r['land']})" for r in failed)) + f", ${ctx.budget.spent:.2f} recorded in {path}")
+    return 1 if failed else 0

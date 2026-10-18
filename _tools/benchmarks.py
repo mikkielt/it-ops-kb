@@ -167,13 +167,23 @@
                                             agent's area one of repro_briefs.csv, a code agent's item spec has a title, goal,
                                             touches, check and a gate with a recommendation; exit 1 naming each row that does
                                             not resolve, 0 otherwise; no model, no network
-  benchmarks.py multi run SCENARIO --dry-run [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
+  benchmarks.py multi run SCENARIO [--dry-run] [--dir DIR] [--sequential] [--coord shared|isolated] [--stagger SECONDS]
                                             [--model [ROLE=]MODEL,...] [--pack-budget TOKENS] [--tools kb|files]
-                                            [--manager code|session]
-                                            print each agent of the scenario (lookups, research or mixed) with its role,
-                                            model, argv and KB_COORD_STORE, the knob values and an estimate in USD from
-                                            bench_core.PRICE and the recorded rows' means; creates nothing, starts no model
-                                            (without --dry-run: exit 2); exit 1 naming a row that does not resolve
+                                            [--manager code|session] [--max-usd USD] [--timeout SECONDS]
+                                            --dry-run prints each agent of the scenario (lookups, research or mixed) with its
+                                            role, model, argv and KB_COORD_STORE, the knob values and an estimate in USD from
+                                            bench_core.PRICE and the recorded rows' means; creates nothing, starts no model;
+                                            exit 1 naming a row that does not resolve. Without it the run builds the sandbox
+                                            in DIR when DIR holds none, answers each open gate of a planted item by its
+                                            recommendation as the operator (backlog.py answer --by operator, synced to the
+                                            bare), starts every agent at once, one thread each, in its own clone (--sequential:
+                                            each after the one before it ended; --stagger seconds apart), lands each code
+                                            agent's item through backlog.py dispatch and land in the sandbox, and appends one
+                                            json line per agent to DIR/results.jsonl (role, item, the four token counts, cost,
+                                            turns, tool_calls, wall_s, started, ended, steps, commit, land, failure); --max-usd
+                                            starts no agent once the recorded spend plus its estimate would pass it and records
+                                            it with the failure budget; exit 1 when an agent failed or an item did not land,
+                                            2 on a refusal
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
                                             the results file, or a `bench:` marker names a scenario with no rows in it
@@ -361,7 +371,7 @@ def main(argv=None):
     mr = mp.add_parser("run")
     mr.add_argument("scenario", help="one of " + ", ".join(bench_multi.SCENARIOS))
     mr.add_argument("--dry-run", action="store_true", help="print each agent's role, model, argv and the knob values and an estimate in USD; "
-                    "create nothing and start no model (the only mode of this command so far)")
+                    "create nothing and start no model")
     mr.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
     mr.add_argument("--sequential", action="store_true", help="start the agents one at a time (default: all at once)")
     mr.add_argument("--coord", choices=bench_multi.COORDS, default="shared", help="one coordination store for every agent, or one for each (default: shared)")
@@ -373,6 +383,10 @@ def main(argv=None):
                     help=f"the budget a lookup agent passes kb_pack (default: {bench_multi.PACK_BUDGET})")
     mr.add_argument("--tools", choices=list(bench_multi.TOOL_SETS), default="kb", help="the lookup agent's tools: the kb's, or Read, Grep and Glob (default: kb)")
     mr.add_argument("--manager", choices=bench_multi.MANAGERS, default="code", help="who starts the agents: this tool, or a model session (default: code)")
+    mr.add_argument("--max-usd", type=float, metavar="USD", help="start no agent once the recorded spend plus its estimate would pass USD; "
+                    "it is recorded with the failure budget (default: no cap)")
+    mr.add_argument("--timeout", type=int, default=bench_repro.DEFAULTS["timeout"], metavar="SECONDS",
+                    help=f"the seconds one agent's session may take (default: {bench_repro.DEFAULTS['timeout']})")
     a = ap.parse_args(argv)
     if a.cmd == "list":
         for name, (section, _) in SCENARIOS.items():
@@ -423,7 +437,7 @@ def main(argv=None):
             if a.multi_cmd == "run":
                 return bench_multi.run(a.scenario, a.dir, a.dry_run, {"sequential": a.sequential, "coord": a.coord, "stagger": a.stagger,
                                                                     "model": a.model, "pack_budget": a.pack_budget, "tools": a.tools,
-                                                                    "manager": a.manager})
+                                                                    "manager": a.manager, "max_usd": a.max_usd, "timeout": a.timeout})
             return bench_multi.setup(a.agents, a.coord, a.dir, a.start, a.dry_run, scenario=a.scenario)
         except bench_repro.Refused as e:
             print(f"multi {a.multi_cmd}: {e}", file=sys.stderr)
