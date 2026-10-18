@@ -1,0 +1,26 @@
+{
+  "id": "ST-54ck5p3j",
+  "kind": "story",
+  "title": "precheck names each committed item whose touches guard a rule and that carries no gate",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "`backlog.py precheck SP` prints, for each committed item whose touches guard a rule (the classes `gate add` makes blocking, such as agents-rule and push) and that has no gate, a line saying a choice its goal leaves open will be made blocking at the worker and hold its landing for the operator, so the plan asks it before the start. Found at the SP-kbrxa4c4 close: four of eleven items (ST-3mfjrjom three gates, BG-dg4eptu4, ST-sgzhsq4p, ST-3erithkf) came back with a worker gate `gate add` had made blocking, each a choice the plan could have asked.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\no=subprocess.run(['grep','-l','guard a rule and carries no gate','_tools/bl_plan.py','_tools/bl_check.py'],capture_output=True,text=True).stdout\nok=bool(o.strip());print('precheck names a rule-guarding item with no gate',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 close"
+  ]
+}

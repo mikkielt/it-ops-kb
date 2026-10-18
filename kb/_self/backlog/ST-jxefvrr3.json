@@ -1,0 +1,25 @@
+{
+  "id": "ST-jxefvrr3",
+  "kind": "story",
+  "title": "The sprint skill's run step judges overlap as held --overlaps does, so items sharing only kb/_self docs run at once",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md run step 2 says items overlap as `backlog.py held --overlaps` judges it: a kb/_self doc (bl_plan.shared_doc) is no overlap, since a landing's rebase merges the doc hunks, so the orchestrator takes items that share only such docs at the same time. Found at the SP-kbrxa4c4 close: the orchestrator read 'touches do not overlap' as any shared path and ran seven items one at a time over kb/_self/backlog.md and tools.md, though held --overlaps printed no overlap for each.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## run [SP]');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='kb/_self doc' in s;print('## run [SP]','names','kb/_self doc',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 close"
+  ]
+}

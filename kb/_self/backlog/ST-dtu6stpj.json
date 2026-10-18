@@ -1,0 +1,25 @@
+{
+  "id": "ST-dtu6stpj",
+  "kind": "story",
+  "title": "A plan whose goal changes what a doc says a tool does runs referrers on that doc's phrase",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "skills/sprint/SKILL.md plan step 2 says a goal that changes a behaviour a doc states (a hook that now refuses where a doc says it warns) runs `backlog.py referrers -- \"<the doc's phrase>\"` for each such phrase, and each file it lists (a kb/_self doc, a lookup_eval.csv row, a hook script's comment) goes into the item's touches. Found at the SP-kbrxa4c4 close: ST-3mfjrjom's worker stopped twice on files outside its touches (.githooks/commit-msg and its comment 'Never blocks a commit', backlog.md 'the commit-msg hook warns', lookup_eval.csv row SS2-065 expecting 'never blocks a commit'), which the orchestrator moved to the hook item's touches and to ST-7bqcngos mid-sprint.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('skills/sprint/SKILL.md',encoding='utf-8').read();i=t.find('## plan \"<goal>\"');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok=\"the doc's phrase\" in s;print('## plan \"<goal>\"','names',\"the doc's phrase\",ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 close"
+  ]
+}

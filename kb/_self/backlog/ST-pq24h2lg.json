@@ -1,0 +1,25 @@
+{
+  "id": "ST-pq24h2lg",
+  "kind": "story",
+  "title": "land retries a network fetch once after a transient remote refusal instead of stopping the second pass",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_land.land_git_network runs a fetch, push or ls-remote that fails with a transient remote error (an authentication refusal such as `Permission denied (publickey)` that a rerun clears, a reset connection) once more before it stops the landing, and prints both tries. Found at the SP-kbrxa4c4 close: ST-7bqcngos's second pass stopped at step fetch on `Permission denied (publickey)` after its merge request merged, and a claim's `kbgit.py sync --push` exited 2 with `pushed: no`; both passed on a plain rerun a minute later.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys\nsys.path.insert(0,'_tools')\nimport bl_land\ns=inspect.getsource(bl_land.land_git_network).lower()\nok='retry' in s or 'again' in s;print('land_git_network retries once',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-kbrxa4c4 close"
+  ]
+}
