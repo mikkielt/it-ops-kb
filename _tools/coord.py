@@ -33,7 +33,7 @@ holder, and a claim of a key that holds no live lease (one a `put` made included
 revision as they were. A row no `put` wrote has nothing to keep, so the end of its lease removes it and the key is
 absent. The token is shown once, to the claimer; `get`,
 `list` and a refused claim never print it. Every write runs in one `BEGIN IMMEDIATE` transaction, so two processes
-racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock and reads the time (a lease's start, an expiry's test, an event's `at`) once it holds it, so a lease runs its full ttl from the grant.
+racing on one key serialise on SQLite's lock and exactly one wins; a writer waits up to 30 seconds for the lock and reads the time (a lease's start, an expiry's test, an event's `at`) once it holds it, so a lease runs its full length from the moment it was taken.
 
 A claim made with `--budget USD` carries the budget the operator approved for the item its key names. `list` prints,
 beside each live claim, `budget_usd` (null without one), `spend_usd` (what the query log's work sidecars hold for the
