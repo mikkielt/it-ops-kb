@@ -119,6 +119,23 @@
       "class": "design",
       "answer": "no holder (null)",
       "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How does the host panel lay out the three ceiling bars (ids, files, last run) by width?",
+      "options": [
+        "one shared row from 100 columns, coloured by the worst bar, else three aligned rows",
+        "always three aligned rows, each with its own colour"
+      ],
+      "recommendation": "one shared row from 100 columns, coloured by the worst bar, else three aligned rows",
+      "do": {
+        "one shared row from 100 columns, coloured by the worst bar, else three aligned rows": "ST-iogk4rdb",
+        "always three aligned rows, each with its own colour": "ST-iogk4rdb"
+      },
+      "class": "design",
+      "answer": "one shared row from 100 columns, coloured by the worst bar, else three aligned rows",
+      "by": "agent"
     }
   ],
   "knowledge": {
