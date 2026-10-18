@@ -22,5 +22,24 @@
     ".claude/agents/kb-observer.md",
     "kb/_self/plugin.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How is the kbask observer session kept read-only?",
+      "options": [
+        "--setting-sources with an empty value (no user, project or local settings), --settings disableAllHooks, --strict-mcp-config, --tools Read,Grep,Glob,Bash, and the kb-observer agent passed inline with --agents from its project file",
+        "--restricted (ignores the settings files and removes Bash unless --tools names it), no --setting-sources",
+        "No Bash tool at all: Read, Grep and Glob only"
+      ],
+      "recommendation": "--setting-sources with an empty value (no user, project or local settings), --settings disableAllHooks, --strict-mcp-config, --tools Read,Grep,Glob,Bash, and the kb-observer agent passed inline with --agents from its project file",
+      "do": {
+        "--setting-sources with an empty value (no user, project or local settings), --settings disableAllHooks, --strict-mcp-config, --tools Read,Grep,Glob,Bash, and the kb-observer agent passed inline with --agents from its project file": "BG-jpzlj4gi",
+        "--restricted (ignores the settings files and removes Bash unless --tools names it), no --setting-sources": "BG-jpzlj4gi",
+        "No Bash tool at all: Read, Grep and Glob only": "BG-jpzlj4gi"
+      },
+      "class": "agents-rule"
+    }
+  ],
   "claimed_by": "orch-r20"
 }
