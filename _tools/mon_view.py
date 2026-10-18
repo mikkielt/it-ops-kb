@@ -302,8 +302,11 @@ def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, ro
     """One frame of the text view (the layout in kb/_self/monitoring.md): the alert line when the snapshot has an alert
     (and, without colour, a row of `=` under it), the header, a blank row, then each panel's title and body rows with a
     blank row between, the log last. With `height` the log's rows are cut to what the screen has left (three at least)
-    and the frame to `height` less one rows. `width` is the terminal's columns: no line passes `width` less one."""
+    and the frame to `height` less one rows; the log keeps its newest rows (the bottom ones) and drops the oldest.
+    `width` is the terminal's columns: no line passes `width` less one."""
     cols = max(20, int(width) - 1)
+    alerts = snap.get("alerts") or []
+    alert_rows = (1 if ansi else 2) if alerts else 0
     taken = one_line(snap.get("taken", "?")).replace("T", " ", 1)
     rows = [[("kbmon", "1"), (f" \u00b7 {taken} \u00b7 refresh {interval}s \u00b7 frame {frame} \u00b7 {root}", "")], []]
     panels = [(n, p if isinstance(p, dict) else {}) for n, p in snap.get("panels", {}).items()]
@@ -315,14 +318,13 @@ def render_text(snap, ansi=False, width=80, height=None, frame=1, interval=5, ro
         if name == "log":
             tail = body_rows(name, panel, cols)
             if height:
-                tail = tail[:max(MIN_LOG_ROWS, int(height) - 2 - len(rows))]
+                tail = tail[-max(MIN_LOG_ROWS, int(height) - 2 - alert_rows - len(rows)):]
             rows += [title_row(name, panel)] + tail
     while rows and not rows[-1]:
         rows.pop()
     texts = scrub([t for row in rows for t, _ in row])  # a panel's own view may join redacted values into a new shape
     it = iter(texts)
     rows = [[(next(it), s) for _, s in row] for row in rows]
-    alerts = snap.get("alerts") or []
     if alerts:
         head = [[(scrub([alert_text(alerts, cols)])[0], ALERT_COLOUR)]]
         rows = head + ([] if ansi else [[("=" * cols, "")]]) + rows
