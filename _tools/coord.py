@@ -14,8 +14,8 @@
                                                      a key a live lease holds takes the put only with the holder's T
                                                      (exit 1 without it), and the lease goes on
   coord.py list [--prefix P]                         print, as a JSON array, every live key that starts with P
-  coord.py post --kind K --field NAME=VALUE ...      add an event; prints its sequence number as seq (exit 2 for a kind
-                                                     off the closed list or a value that is not a short id)
+  coord.py post --kind K --field NAME=VALUE ...      add an event (kinds incl. ask, answer); prints its sequence number as seq
+                                                     (exit 2 for a kind off the closed list or a value that is not a short id)
   coord.py digest --key K ... --lines N              print at most N lines (plain text, not JSON), newest first, of the
                                                      live intents and claims that overlap a key K (repeatable)
   coord.py wait --since N --timeout S                print the events after sequence N, blocking until one arrives or
@@ -41,7 +41,7 @@ item and its descendants, read through `bl_cost.spend_usd`, the reader `backlog.
 `bench_core.PRICE`; null without a budget) and `over_budget` (true when the spend is above the budget), and `digest`
 adds `over budget` to the line of such a claim. Nothing is stopped: the claim, its renewals and its holder go on.
 
-An event is a kind from a closed list (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat) and up to
+An event is a kind from a closed list (claim, release, fact_added, gap_opened, dup_of, lesson, heartbeat, ask, answer) and up to
 eight fields, each NAME=VALUE: an event carries references only, so a VALUE is an id of at most 120 characters of
 letters, digits and `_ . : / # @ -` (a source id, a `path:line` fact key, a QK answer id, a backlog item id, a pack
 handle) and free text is refused. `post` numbers events 1, 2, 3 ... in the store; `wait` polls the store twice a second
@@ -50,7 +50,13 @@ S passes with no event exits 0 with `timed_out` true, and a post from any other 
 
 Two kinds carry a session's plan: `intent` (fields session, item, topic, touch; at least one of item, topic and touch;
 item and topic hold a comma-separated list of ids, touch of globs with * and ?, up to 120 characters) and `progress`
-(fields item and state, state one of working, blocked, done). `digest` is the one command that prints text, not JSON:
+(fields item and state, state one of working, blocked, done). Two kinds carry a question and its reply between
+agents: `ask` (fields id, to, ref: to is a session, item or agent id, or `any`; ref is the coord key whose `put` value
+holds the question) and `answer` (fields id, state, ref: state is one of working, input-required, completed, failed,
+rejected, the names A2A gives its task states; ref is the key whose `put` value holds the answer text). An event keeps
+references only, so the text is put under a key such as `ask/ID` and `answer/ID` first; an ask or answer without id or
+ref, an ask without to, or an answer with another state exits 2. Behind `serve`, an ask carries the server's `operator`
+field like every event. `digest` is the one command that prints text, not JSON:
 one line per live intent (posted within a day, its items not all done by a later progress event, and, when it names a
 session, that session's presence lease `session/<id>` still held: a release or an expiry drops the session's intents) or
 live claim (a held lease) with a value that overlaps a key (equal, a directory-style prefix either way, or a glob match either
@@ -119,9 +125,11 @@ EVENTS_SCHEMA = (
     "CREATE TABLE IF NOT EXISTS events ("
     "seq INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, fields TEXT NOT NULL, at REAL NOT NULL)"
 )
-KINDS = ("claim", "release", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress")
-KIND_FIELDS = {"intent": ("session", "item", "topic", "touch"), "progress": ("item", "state")}
+KINDS = ("claim", "release", "fact_added", "gap_opened", "dup_of", "lesson", "heartbeat", "intent", "progress", "ask", "answer")
+KIND_FIELDS = {"intent": ("session", "item", "topic", "touch"), "progress": ("item", "state"),
+               "ask": ("id", "to", "ref"), "answer": ("id", "state", "ref")}
 STATES = ("working", "blocked", "done")
+ANSWER_STATES = ("working", "input-required", "completed", "failed", "rejected")  # A2A's task states
 FIELD_NAME = re.compile(r"[a-z][a-z0-9_]{0,31}")
 FIELD_VALUE = re.compile(r"[A-Za-z0-9_.:/#@-]{1,120}")
 ID_LIST = re.compile(r"(?=.{1,120}$)[A-Za-z0-9_.:/#@-]+(,[A-Za-z0-9_.:/#@-]+)*")
@@ -368,7 +376,7 @@ def parse_fields(pairs, kind=""):
 
 
 def check_kind(kind, fields):
-    """The closed field names (and, for progress, the closed states) of the intent and progress kinds."""
+    """The closed field names (and the closed states) of the intent, progress, ask and answer kinds."""
     names = KIND_FIELDS.get(kind)
     if names is None:
         return
@@ -380,6 +388,11 @@ def check_kind(kind, fields):
     if kind == "progress":
         if "item" not in fields or fields.get("state") not in STATES:
             raise Refused({"ok": False, "error": f"progress takes item and state, state one of {', '.join(STATES)}"}, 2)
+    if kind == "ask" and not {"id", "to", "ref"} <= set(fields):
+        raise Refused({"ok": False, "error": "an ask takes id, to (a session, item or agent id, or any) and ref (the key whose value holds the question)"}, 2)
+    if kind == "answer" and ("id" not in fields or "ref" not in fields or fields.get("state") not in ANSWER_STATES):
+        raise Refused({"ok": False, "error": "an answer takes id, state (one of " + ", ".join(ANSWER_STATES)
+                                             + ") and ref (the key whose value holds the answer)"}, 2)
 
 
 def event_json(row):
@@ -618,7 +631,9 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     store = argparse.ArgumentParser(add_help=False)
     store.add_argument("--store", default=argparse.SUPPRESS, help="the SQLite file (else KB_COORD_STORE, else the clone's common git directory)")
     parents = [] if remote else [store]
-    parser = parser_class(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=parents)
+    parser = parser_class(prog="coord.py", description=__doc__.split("\n", 1)[0], parents=parents,
+                         epilog="post --kind: " + ", ".join(KINDS) + ". ask takes id, to, ref; answer takes id, state, ref "
+                                "(state: " + ", ".join(ANSWER_STATES) + ")")
     if not remote:
         parser.add_argument("--url", help="send the command to the server at URL (with --key-file) instead of a local store")
         parser.add_argument("--key-file", help="the file holding this operator's token for --url")
