@@ -68,3 +68,19 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 - **Absent.** A local store file that is not there makes the panel `absent` and is not created (coord.py's own commands would create it).
 - **Timeout.** A server that cannot be reached, or whose three commands take over 30 seconds, makes the panel `timeout` with `{"reason": ...}`; one that is reached and gives no answer is `timeout` when `--timeout` passes, whichever is sooner. The children are killed when kbmon exits. Any other failure of a command (a key file others can read, a refused token) is `error` with coord.py's last line.
 - **View.** A table of key, holder, seconds left, budget and spend, a row over budget starting `! `; at 100 columns or more the newest 5 events sit beside it from column 52 under `events` (`#410  claim     topic/winget  w2`), below 100 under it; then up to two intent lines of the digest under `intents`.
+
+## The sessions panel
+
+`data` of `mon_sessions.py`:
+
+| key | holds |
+|---|---|
+| `procs` | per process with a working directory in a checkout of the clone, in pid order (`backlog.py procs`' inventory): `pid`, `age_s`, `class` (`orphan`, `hook` or `foreign`), `checkout`, `session` and `item` |
+| `worktrees` | per worktree of `git worktree list`: `path` and `branch` (null for a detached head) |
+| `stalled` | per claimed or ready item with a signal of `backlog.py stalled`: `item` and `signals`; left out where the root has no backlog items |
+
+- **Checkout, never an absolute path.** `checkout` and a worktree's `path` are relative to the clone: `.` is the clone itself, a worktree under it is its path under it (`.claude/worktrees/agent-ST-xxxxxxxx`), one outside it is its directory name alone, and a process in a subdirectory adds it (`./_tools`).
+- **Session.** A process whose command name is `claude` is a Claude Code session: `headless`, with `item` set to the id in the branch, when its checkout is a worktree on a `work/<id>` branch, else `interactive`. Any other process has null `session` and `item`. A directory name that two worktrees share names no branch, so a process in one is `interactive`. The command line of a process is never read.
+- **Stalled.** The signals are those of `backlog.py stalled`, read without the forge: the panel starts no network request, so `mr-dead` is never in `signals` and an item with only an unknown signal is left out.
+- **Unsupported.** A host that cannot list working directories (Windows, or no `/proc` and no `lsof`) makes the panel `unsupported`, with the reason of `backlog.py procs`.
+- **View.** A table of pid, age, class, session, item and checkout, an orphan's row starting `! ` and orphans first (12 rows at most, then `+N more`); `worktrees` with `path  branch` joined by ` · `, those on a `work/` branch first (12 at most); then a `! ` row for each stalled item with its id and signals.
