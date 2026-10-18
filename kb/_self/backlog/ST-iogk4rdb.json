@@ -49,9 +49,6 @@
     "_tools/mon_host.py",
     "kb/_self/monitoring.md"
   ],
-  "depends_on": [
-    "ST-jhsyp3fq"
-  ],
   "gates": [
     {
       "id": "clone",
