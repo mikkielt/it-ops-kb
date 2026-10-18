@@ -2,7 +2,7 @@
   "id": "ST-3m5sjibd",
   "kind": "story",
   "title": "redact keeps the words of an ordinary kb question that uses a secret key name or an Authorization scheme in prose",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
@@ -72,5 +72,18 @@
     "parked: SP-yyjwfjtc review"
   ],
   "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 only on its three prose lines; its five planted credentials, 'password: sunshine' among them, are replaced today and must stay so. Narrowed: the BEGIN-line clause is out, the cut-off key rule is a leak guard. Knowledge: the goal research story's link reference definition facts and public/security/secret-shapes-in-text.md:24 (a Bearer or Basic credential has no minimum length, so the scheme word marks it). Orchestrator 2026-10-18 (operator delegate): g2 answered with the nine-word option, not the recommendation: the gate is class secrets on a leak guard, and the operator's policy takes the conservative option there; the nine words cover every prose line of the goal's check, and a smaller allow list lets fewer real values through.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "c9166e6e0efd3bc7bb601dfd1ec153f7383a1f47",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R\nK=\"pass\"+\"word\";A=\"Authori\"+\"zation\"\nS={K+\": hunterFake12345\":\"hunterFake12345\",K+\": sunshine\":\"sunshine\",\"LAPS \"+K+\": Xy7kq2Fake\":\"Xy7kq2Fake\",A+\": Bearer abcFake1234567890xyz\":\"abcFake1234567890xyz\",A+\": Basic dXNlcjpwYXNzRmFrZQ==\":\"dXNlcjpwYXNzRmFrZQ==\"}\nP=[\"LAPS \"+K+\": where stored\",\"use \"+A+\": Bearer in Graph\",\"Is the \"+K+\": is it rotated?\"]\nbad=[s for s,x in S.items() if x in R.redact(s)]+[p for p in P if R.redact(p)!=p]\nprint(bad);sys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      }
+    ]
+  }
 }
