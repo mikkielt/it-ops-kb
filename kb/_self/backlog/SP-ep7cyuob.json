@@ -1,0 +1,20 @@
+{
+  "id": "SP-ep7cyuob",
+  "kind": "sprint",
+  "title": "A Haiku remediation agent asks the operator through coord about the leftovers tidy cannot decide, and each answer is claimed before tidy removes it",
+  "status": "planned",
+  "goal": "tidy gives a recorded leftover it cannot decide the verdict ask, and the operator's answer is recorded through coord; kbask.py cleanup makes no model call when tidy decides every candidate and otherwise runs one capped headless Haiku session that writes no file and posts one coord ask per ambiguous candidate; tidy --apply removes an answered candidate only after claiming it through coord, so two sessions never act on the same candidate",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
