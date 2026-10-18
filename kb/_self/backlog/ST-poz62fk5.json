@@ -1,0 +1,26 @@
+{
+  "id": "ST-poz62fk5",
+  "kind": "story",
+  "title": "land runs an item's checks again when its branch gained commits after its done commit",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land, on a branch whose item is done already and that holds commits after the done commit (a fix after a failed sync), runs the item's checks on the rebased tip before the push and stops on a failing one, and kb/_self/backlog.md says so. Found by the SP-5xnbspyp close: ST-qwrhatjh's second landing printed 'is done already' and pushed its fix commit 502252dad with no check run by land (the worker had run them).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('kb/_self/backlog.md',encoding='utf-8').read();i=t.find('## Landing');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='after its done commit' in s;print('## Landing','names','after its done commit',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5xnbspyp close"
+  ],
+  "notes": "Check is a doc phrase placeholder: before the claim, replace it with a planted land fixture (a done item whose branch adds a commit that breaks a check) that land must stop on; read the real section heading of kb/_self/backlog.md first."
+}

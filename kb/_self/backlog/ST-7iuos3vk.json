@@ -1,0 +1,25 @@
+{
+  "id": "ST-7iuos3vk",
+  "kind": "story",
+  "title": "A content worker runs the gate's own changed-paths test selection before it hands back",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The worker role file's done bar says a worker of a kb-content-only item runs python3 _tools/tests.py --changed origin/main (the selection the sync gate runs for content: the leak scan among it) before it hands back, so a flagged line fails in the worker and not at the landing's push. Found by the SP-5xnbspyp close: ST-qwrhatjh's worker skipped tests.py as content-only, its done passed, and the landing's sync stopped on test_leaks.py flagging a dashed private key label in the article and _anchors.csv.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('agents/worker.md',encoding='utf-8').read();i=t.find('3. **Done bar.**');s=t[i:t.find('\\n## ',i+3)] if i>=0 else ''\nok='--changed origin/main' in s;print('3. **Done bar.**','names','--changed origin/main',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5xnbspyp close"
+  ]
+}

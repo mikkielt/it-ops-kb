@@ -1,0 +1,26 @@
+{
+  "id": "ST-kwoincux",
+  "kind": "story",
+  "title": "A kb-content gate that names a private key label in its question is classed design, not secrets",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "bl_authority.class_reasons classes a gate of a kb-content-only item whose question names a key label such as PRIVATE KEY (which source states a label, how a fact words it) as design, while a gate on a real secret value or an item touching a secret-bearing file stays secrets. Found by the SP-5xnbspyp close: ST-qwrhatjh's g1 (which source states the DSA PRIVATE KEY label) was made blocking, class secrets, by the words PRIVATE KEY alone, and its landing waited for an operator answer.",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_authority as A\ni={'touches':['kb/public/security/secret-shapes-in-text.md','kb/public/_sources.csv']}\ng={'id':'g1','question':'Which source states the DSA PRIVATE KEY label?','options':['OpenSSL pem.h as a CODE fact','leave it a gap']}\nc=A.class_reasons(i,g);print(c);sys.exit(0 if c[0]=='design' else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5xnbspyp close"
+  ],
+  "notes": "A ruling on what secrets class covers is the operator's: ask a gate before the work (the safe default keeps secrets)."
+}
