@@ -73,6 +73,123 @@
       "class": "design",
       "answer": "it runs its role's real coord, backlog, rag and git steps in the sandbox and prints planted usage",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "How does a replayed code agent's item reach the sandbox bare's main, when kbgit.py sync --push sends a code-lane path to a code/<id> branch?",
+      "options": [
+        "After a land that left the code on its code/<id> branch, the harness merges the branch into the bare's main as the forge's merge request would (a merge commit in a throwaway clone) and runs land again",
+        "The planted items' touches are moved to a content-lane path, so sync pushes them to main"
+      ],
+      "recommendation": "After a land that left the code on its code/<id> branch, the harness merges the branch into the bare's main as the forge's merge request would (a merge commit in a throwaway clone) and runs land again",
+      "do": {
+        "After a land that left the code on its code/<id> branch, the harness merges the branch into the bare's main as the forge's merge request would (a merge commit in a throwaway clone) and runs land again": "ST-dj4bgo4s",
+        "The planted items' touches are moved to a content-lane path, so sync pushes them to main": "ST-dj4bgo4s"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Where does a replayed agent's planted usage come from?",
+      "options": [
+        "The recorded means: a lookup agent's the pool's kb-arm mean of one question times its questions, a research agent's the mean of a repro area, a code agent's a fixed DEFAULT_USAGE of about one worker session (bench_multi.recorded_usage)",
+        "A fixed figure for every role"
+      ],
+      "recommendation": "The recorded means: a lookup agent's the pool's kb-arm mean of one question times its questions, a research agent's the mean of a repro area, a code agent's a fixed DEFAULT_USAGE of about one worker session (bench_multi.recorded_usage)",
+      "do": {
+        "The recorded means: a lookup agent's the pool's kb-arm mean of one question times its questions, a research agent's the mean of a repro area, a code agent's a fixed DEFAULT_USAGE of about one worker session (bench_multi.recorded_usage)": "ST-dj4bgo4s",
+        "A fixed figure for every role": "ST-dj4bgo4s"
+      },
+      "class": "design",
+      "answer": "The recorded means: a lookup agent's the pool's kb-arm mean of one question times its questions, a research agent's the mean of a repro area, a code agent's a fixed DEFAULT_USAGE of about one worker session (bench_multi.recorded_usage)",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "What does a replayed research agent commit as its one planted fact?",
+      "options": [
+        "One planted entry in kb/public/_gaps.md naming a topic the root has, committed in its clone and synced to the bare",
+        "A planted fact in a kb article of the agent's area"
+      ],
+      "recommendation": "One planted entry in kb/public/_gaps.md naming a topic the root has, committed in its clone and synced to the bare",
+      "do": {
+        "One planted entry in kb/public/_gaps.md naming a topic the root has, committed in its clone and synced to the bare": "ST-dj4bgo4s",
+        "A planted fact in a kb article of the agent's area": "ST-dj4bgo4s"
+      },
+      "class": "design",
+      "answer": "One planted entry in kb/public/_gaps.md naming a topic the root has, committed in its clone and synced to the bare",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "Does the sync gate of a replayed agent run the sandbox's test suite?",
+      "options": [
+        "No: a replay sets KB_SYNC_NO_TESTS=1 in the agents' and the operator's environment, as the tool's own tests do, since the replayed changes touch no tested code",
+        "Yes: the gate runs the suite in every sandbox clone that syncs"
+      ],
+      "recommendation": "No: a replay sets KB_SYNC_NO_TESTS=1 in the agents' and the operator's environment, as the tool's own tests do, since the replayed changes touch no tested code",
+      "do": {
+        "No: a replay sets KB_SYNC_NO_TESTS=1 in the agents' and the operator's environment, as the tool's own tests do, since the replayed changes touch no tested code": "ST-dj4bgo4s",
+        "Yes: the gate runs the suite in every sandbox clone that syncs": "ST-dj4bgo4s"
+      },
+      "class": "design",
+      "answer": "No: a replay sets KB_SYNC_NO_TESTS=1 in the agents' and the operator's environment, as the tool's own tests do, since the replayed changes touch no tested code",
+      "by": "agent"
+    },
+    {
+      "id": "g6",
+      "kind": "provisional",
+      "question": "What does the land field of a results line hold for a landed item?",
+      "options": [
+        "ok (the second check of the goal reads it), the step land stopped at, or timeout",
+        "landed, as the line recorded before this item"
+      ],
+      "recommendation": "ok (the second check of the goal reads it), the step land stopped at, or timeout",
+      "do": {
+        "ok (the second check of the goal reads it), the step land stopped at, or timeout": "ST-dj4bgo4s",
+        "landed, as the line recorded before this item": "ST-dj4bgo4s"
+      },
+      "class": "design",
+      "answer": "ok (the second check of the goal reads it), the step land stopped at, or timeout",
+      "by": "agent"
+    },
+    {
+      "id": "g7",
+      "kind": "provisional",
+      "question": "How does a sandbox let a worker's commit name a planted item in its KB-Work trailer?",
+      "options": [
+        "The base commit also plants a started sprint and its review story, and each planted item names the sprint",
+        "The replayed worker commits with --no-verify"
+      ],
+      "recommendation": "The base commit also plants a started sprint and its review story, and each planted item names the sprint",
+      "do": {
+        "The base commit also plants a started sprint and its review story, and each planted item names the sprint": "ST-dj4bgo4s",
+        "The replayed worker commits with --no-verify": "ST-dj4bgo4s"
+      },
+      "class": "design",
+      "answer": "The base commit also plants a started sprint and its review story, and each planted item names the sprint",
+      "by": "agent"
+    },
+    {
+      "id": "g8",
+      "kind": "provisional",
+      "question": "Which bench_replay.py does a replay start, and how does a code agent's worker reach it?",
+      "options": [
+        "The one of this checkout, by absolute path, in the agents' clones; a code agent's worker is DIR/bin/claude, a wrapper that starts it with the planted usage and cost in its environment",
+        "The clone's own copy of _tools/bench_replay.py"
+      ],
+      "recommendation": "The one of this checkout, by absolute path, in the agents' clones; a code agent's worker is DIR/bin/claude, a wrapper that starts it with the planted usage and cost in its environment",
+      "do": {
+        "The one of this checkout, by absolute path, in the agents' clones; a code agent's worker is DIR/bin/claude, a wrapper that starts it with the planted usage and cost in its environment": "ST-dj4bgo4s",
+        "The clone's own copy of _tools/bench_replay.py": "ST-dj4bgo4s"
+      },
+      "class": "design",
+      "answer": "The one of this checkout, by absolute path, in the agents' clones; a code agent's worker is DIR/bin/claude, a wrapper that starts it with the planted usage and cost in its environment",
+      "by": "agent"
     }
   ],
   "links": [
