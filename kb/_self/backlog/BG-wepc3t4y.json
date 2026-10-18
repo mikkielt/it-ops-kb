@@ -44,7 +44,9 @@
         "a separate claim_after timestamp in the state file": "BG-wepc3t4y",
         "reuse lease_until as the next-try time": "BG-wepc3t4y"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "a separate claim_after timestamp in the state file",
+      "by": "operator"
     }
   ],
   "links": [
