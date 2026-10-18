@@ -2,7 +2,7 @@
   "id": "ST-whn23kr2",
   "kind": "story",
   "title": "A content worker runs the landing's lint on every article its branch changes, not only the new one",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
@@ -45,5 +45,6 @@
   "links": [
     "parked: SP-rsmmwzr2 close"
   ],
-  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (lint.py takes --changed as a path and exits 1; rule 4 names no such command). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside."
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (lint.py takes --changed as a path and exits 1; rule 4 names no such command). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside.",
+  "claimed_by": "orch-r14"
 }
