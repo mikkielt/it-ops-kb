@@ -33,10 +33,46 @@
     "_tools/coord.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the client decide a wait --timeout is too large to send?",
+      "options": [
+        "probe",
+        "cap"
+      ],
+      "recommendation": "probe",
+      "do": {
+        "probe": "BG-gmaaoumg",
+        "cap": "BG-gmaaoumg"
+      },
+      "class": "design",
+      "answer": "probe",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Is a non-ASCII --token a usage error (exit 2 at parse) or a refusal at the store (exit 1, token does not hold the key)?",
+      "options": [
+        "usage",
+        "refusal"
+      ],
+      "recommendation": "usage",
+      "do": {
+        "usage": "BG-gmaaoumg",
+        "refusal": "BG-gmaaoumg"
+      },
+      "class": "secrets",
+      "answer": "usage",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review",
     "duplicate: BG-txllfs4n (merged 2026-10-17)"
   ],
-  "notes": "SP-6jfnx5i3 2026-10-17: still holds on tip 2ff7c336b: coord.py --url http://127.0.0.1:9 --key-file F wait --since 0 --timeout 1e308 ends in OverflowError in socket.settimeout; filed again by the review as BG-txllfs4n. Hygiene 2026-10-17: BG-txllfs4n (SP-6jfnx5i3 review, wait --timeout 1e308 through --url, OverflowError) merged here; its refusal case (a --timeout too large for the socket timeout exits 2 before any request) is part of this goal. Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (bad_port, huge_timeout and non_ascii_token each exit 1 with a traceback). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
+  "notes": "SP-6jfnx5i3 2026-10-17: still holds on tip 2ff7c336b: coord.py --url http://127.0.0.1:9 --key-file F wait --since 0 --timeout 1e308 ends in OverflowError in socket.settimeout; filed again by the review as BG-txllfs4n. Hygiene 2026-10-17: BG-txllfs4n (SP-6jfnx5i3 review, wait --timeout 1e308 through --url, OverflowError) merged here; its refusal case (a --timeout too large for the socket timeout exits 2 before any request) is part of this goal. Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (bad_port, huge_timeout and non_ascii_token each exit 1 with a traceback). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests. Orchestrator as operator 2026-10-18: g2 answered usage, the conservative option (a malformed token is refused at parse and never sent to the store); the gate is classed secrets only because its question names a token.",
   "claimed_by": "orch-r15"
 }
