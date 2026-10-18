@@ -2,7 +2,7 @@
   "id": "ST-jx3c5vxm",
   "kind": "story",
   "title": "kbmon --events: ops rows, coord events and delivery outcomes as event and span records with id-only attributes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",
@@ -61,5 +61,6 @@
       "logs/otel-log-data-model"
     ]
   },
-  "notes": "Plan 2026-10-18: kbmon stays read-only, so the cursor is the caller's to keep. coord event fields are ids by coord.py's own rule, and id-shaped fake secrets (IDS in the check) pass it, so the redaction is proved on them. Plan 2026-10-18: reuses mon_log.py's reader of coord events and ops rows; the cursor and the span records are this item's."
+  "notes": "Plan 2026-10-18: kbmon stays read-only, so the cursor is the caller's to keep. coord event fields are ids by coord.py's own rule, and id-shaped fake secrets (IDS in the check) pass it, so the redaction is proved on them. Plan 2026-10-18: reuses mon_log.py's reader of coord events and ops rows; the cursor and the span records are this item's.",
+  "claimed_by": "orch-r19"
 }
