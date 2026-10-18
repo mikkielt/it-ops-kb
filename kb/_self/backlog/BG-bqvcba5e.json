@@ -28,6 +28,25 @@
   "depends_on": [
     "BG-ih3awckg"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a served wait find a revoked operator?",
+      "options": [
+        "recheck once a second in the poll loop and before the reply",
+        "recheck only before the reply"
+      ],
+      "recommendation": "recheck once a second in the poll loop and before the reply",
+      "do": {
+        "recheck once a second in the poll loop and before the reply": "BG-bqvcba5e",
+        "recheck only before the reply": "BG-bqvcba5e"
+      },
+      "class": "design",
+      "answer": "recheck once a second in the poll loop and before the reply",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
