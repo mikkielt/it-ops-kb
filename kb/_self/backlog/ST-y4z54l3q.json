@@ -2,7 +2,7 @@
   "id": "ST-y4z54l3q",
   "kind": "story",
   "title": "multi record writes per-agent rows, run metrics and deltas against the baseline and the report renders them",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -71,5 +71,6 @@
     "_tools/bench_report.py",
     "kb/_self/reports/benchmarks.csv"
   ],
-  "notes": "One record per run as bench_report's other sections: the generated tables, never hand-written numbers. The sprint is proven by a dry run: this story's check replays the mixed scenario at once and one at a time and records both into a temporary --out. Its second check, report --check, passes before the work by design: a guard that the new section keeps the report and README in step with the rows."
+  "notes": "One record per run as bench_report's other sections: the generated tables, never hand-written numbers. The sprint is proven by a dry run: this story's check replays the mixed scenario at once and one at a time and records both into a temporary --out. Its second check, report --check, passes before the work by design: a guard that the new section keeps the report and README in step with the rows.",
+  "claimed_by": "orch-r16"
 }
