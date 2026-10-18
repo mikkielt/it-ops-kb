@@ -2,7 +2,7 @@
   "id": "ST-bhvh6jh6",
   "kind": "story",
   "title": "kbmon's live view redraws to the terminal's new size as soon as the window is resized",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-v4yih547",
   "priority": "P1",
   "rank": 0,
@@ -50,5 +50,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Planner 2026-10-18: check 2 (--once, --json and a piped live view stay plain) passes before the work by design: it pins the modes the goal says stay unchanged. The Windows polling path cannot run on this macOS host; the worker proves it by a run of the polling function on a planted size sequence, reported in its notes."
+  "notes": "Planner 2026-10-18: check 2 (--once, --json and a piped live view stay plain) passes before the work by design: it pins the modes the goal says stay unchanged. The Windows polling path cannot run on this macOS host; the worker proves it by a run of the polling function on a planted size sequence, reported in its notes.",
+  "claimed_by": "orch-r18"
 }
