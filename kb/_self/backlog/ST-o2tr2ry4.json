@@ -2,7 +2,7 @@
   "id": "ST-o2tr2ry4",
   "kind": "story",
   "title": "kbmon live view: ANSI redraw in place on macOS, Linux and Windows, plain frames on a pipe or NO_COLOR",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",

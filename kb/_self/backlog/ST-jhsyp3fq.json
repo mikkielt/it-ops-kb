@@ -2,7 +2,7 @@
   "id": "ST-jhsyp3fq",
   "kind": "story",
   "title": "kbmon.py snapshot core and kb panel: --json and --once, per-panel timeouts, read-only and redacted",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",

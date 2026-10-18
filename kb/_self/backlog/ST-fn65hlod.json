@@ -2,7 +2,7 @@
   "id": "ST-fn65hlod",
   "kind": "story",
   "title": "Research sprint goal: kbmon shows the kb, coord and running sessions live and as one JSON snapshot",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5gph7fh6",
   "goal_research": true,
   "priority": "P1",
