@@ -39,6 +39,27 @@
   "relates_to": [
     "ST-e4wg32qq"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the coord hook tell a run of backlog.py claim ID from text that holds the words?",
+      "options": [
+        "own-scan",
+        "shlex-split",
+        "regex-outside-quotes"
+      ],
+      "recommendation": "own-scan",
+      "do": {
+        "own-scan": "BG-iagias5y",
+        "shlex-split": "BG-iagias5y",
+        "regex-outside-quotes": "BG-iagias5y"
+      },
+      "class": "agents-rule",
+      "answer": "own-scan",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-xo45jvbj review"
   ],
