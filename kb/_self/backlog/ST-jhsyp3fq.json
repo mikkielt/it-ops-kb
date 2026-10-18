@@ -133,6 +133,74 @@
       "class": "design",
       "answer": "yes: every flag now, panels fill them in",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "What is the default --timeout for a kbmon panel?",
+      "options": [
+        "10 seconds",
+        "3 seconds"
+      ],
+      "recommendation": "10 seconds",
+      "do": {
+        "10 seconds": "ST-jhsyp3fq",
+        "3 seconds": "ST-jhsyp3fq"
+      },
+      "class": "design",
+      "answer": "10 seconds",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the kb panel read the audit counts and the lookup-eval status?",
+      "options": [
+        "in this process through kbfacts.audit, with KB_INDEX=0, and the newest land.step row of rag.py-eval",
+        "a rag.py --json audit child process and rag.py eval"
+      ],
+      "recommendation": "in this process through kbfacts.audit, with KB_INDEX=0, and the newest land.step row of rag.py-eval",
+      "do": {
+        "in this process through kbfacts.audit, with KB_INDEX=0, and the newest land.step row of rag.py-eval": "ST-jhsyp3fq",
+        "a rag.py --json audit child process and rag.py eval": "ST-jhsyp3fq"
+      },
+      "class": "design",
+      "answer": "in this process through kbfacts.audit, with KB_INDEX=0, and the newest land.step row of rag.py-eval",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does --root DIR mean for the kb panel, and what does a bare kbmon.py do?",
+      "options": [
+        "root other than this clone is unsupported; a bare run is a live text view of --count frames every --interval seconds",
+        "root is run through that clone's rag.py; a bare run prints one snapshot"
+      ],
+      "recommendation": "root other than this clone is unsupported; a bare run is a live text view of --count frames every --interval seconds",
+      "do": {
+        "root other than this clone is unsupported; a bare run is a live text view of --count frames every --interval seconds": "ST-jhsyp3fq",
+        "root is run through that clone's rag.py; a bare run prints one snapshot": "ST-jhsyp3fq"
+      },
+      "class": "design",
+      "answer": "root other than this clone is unsupported; a bare run is a live text view of --count frames every --interval seconds",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How does kbmon redact every string without reading the whole public root on every run?",
+      "options": [
+        "redact.redact with a lazy Known that reads the public root when a rule first needs it",
+        "redact.known() read up front on every run"
+      ],
+      "recommendation": "redact.redact with a lazy Known that reads the public root when a rule first needs it",
+      "do": {
+        "redact.redact with a lazy Known that reads the public root when a rule first needs it": "ST-jhsyp3fq",
+        "redact.known() read up front on every run": "ST-jhsyp3fq"
+      },
+      "class": "querylog",
+      "answer": "redact.redact with a lazy Known that reads the public root when a rule first needs it",
+      "by": "agent"
     }
   ],
   "knowledge": {
