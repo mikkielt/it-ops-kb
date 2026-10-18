@@ -2,7 +2,7 @@
   "id": "BG-6ucif3pn",
   "kind": "bug",
   "title": "coord.py reads operator key files whatever their mode, so a world-readable token file goes unnoticed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,

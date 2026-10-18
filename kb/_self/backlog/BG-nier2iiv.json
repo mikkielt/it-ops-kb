@@ -2,7 +2,7 @@
   "id": "BG-nier2iiv",
   "kind": "bug",
   "title": "The store gate accepts a gap or conflict finding lead that redact.redact would change",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,

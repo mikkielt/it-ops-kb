@@ -2,7 +2,7 @@
   "id": "ST-zqxaz5xd",
   "kind": "story",
   "title": "Review sprint: redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "review": true,
   "priority": "P1",

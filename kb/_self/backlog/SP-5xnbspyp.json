@@ -2,7 +2,7 @@
   "id": "SP-5xnbspyp",
   "kind": "sprint",
   "title": "redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
-  "status": "planned",
+  "status": "active",
   "goal": "redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
   "gates": [
     {

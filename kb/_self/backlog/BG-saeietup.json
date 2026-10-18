@@ -2,7 +2,7 @@
   "id": "BG-saeietup",
   "kind": "bug",
   "title": "redact keeps the tail of an escaped-JSON secret value after a nested escaped quote",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,

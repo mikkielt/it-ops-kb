@@ -2,7 +2,7 @@
   "id": "BG-dn5n7z7k",
   "kind": "bug",
   "title": "A coord.py claim's free-text holder reaches every digest reader, past the references-only rule",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,

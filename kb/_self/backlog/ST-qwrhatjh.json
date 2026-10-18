@@ -2,7 +2,7 @@
   "id": "ST-qwrhatjh",
   "kind": "story",
   "title": "security/secret-shapes-in-text names the EC, DSA and PGP private key labels and the Purview value first-character rule",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,

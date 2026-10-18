@@ -2,7 +2,7 @@
   "id": "ST-6f6nfbqv",
   "kind": "story",
   "title": "Research sprint goal: redact leaves no part of a secret in escaped JSON and never eats ordinary prose",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "goal_research": true,
   "priority": "P1",

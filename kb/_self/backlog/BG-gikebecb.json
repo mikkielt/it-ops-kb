@@ -2,7 +2,7 @@
   "id": "BG-gikebecb",
   "kind": "bug",
   "title": "coord.py serve and its client send operator tokens over plain http to a non-loopback host with no warning",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-5xnbspyp",
   "priority": "P2",
   "rank": 0,
@@ -53,7 +53,8 @@
       },
       "class": "design",
       "answer": "refuse with exit 2 unless the global flag --plain-http is given",
-      "by": "operator"
+      "by": "operator",
+      "host_unchecked": "the gate is a design choice about remote hosts in coord.py's url and bind, not a setup of this host; the item's repro plants it with the unroutable 192.0.2.1"
     }
   ],
   "links": [
