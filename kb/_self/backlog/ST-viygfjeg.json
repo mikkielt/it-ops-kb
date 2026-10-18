@@ -1,0 +1,71 @@
+{
+  "id": "ST-viygfjeg",
+  "kind": "story",
+  "title": "kbmon's cleanup panel and a selfcheck leftovers line show each candidate's verdict and the leftover counts",
+  "status": "draft",
+  "sprint": "SP-ipeewrlv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "mon_clean, kbmon's cleanup panel, lists each candidate with its class, verdict, reason and bytes from bl_clean.safe_to_remove and a count per class, within the panel timeout; kbmon.py --json --panel cleanup carries the same rows and counts; backlog.py selfcheck adds a leftovers line naming the removable count and bytes, which fails only below tidy's disk-pressure limit",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nimport json, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/kbmon.py\", \"--json\", \"--panel\", \"cleanup\"], capture_output=True, text=True, timeout=120)\nassert r.returncode == 0, (r.returncode, r.stderr[-400:])\np = json.loads(r.stdout)[\"panels\"][\"cleanup\"]\nassert p[\"state\"] == \"ok\", p\nrows = p[\"data\"][\"rows\"]\nassert isinstance(rows, list) and all({\"class\", \"verdict\", \"reason\", \"bytes\"} <= set(x) for x in rows), rows[:3]\nassert isinstance(p[\"data\"].get(\"counts\"), dict), p[\"data\"].keys()\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nimport json, subprocess, sys\nr = subprocess.run([sys.executable, \"_tools/backlog.py\", \"selfcheck\", \"--json\"], capture_output=True, text=True, timeout=300)\nc = {x[\"name\"]: x for x in json.loads(r.stdout)[\"checks\"]}\nassert \"leftovers\" in c and \"removable\" in (c[\"leftovers\"][\"detail\"] or \"\"), c.get(\"leftovers\")\nassert c[\"leftovers\"][\"state\"] in (\"ok\", \"fail\", \"unknown\"), c[\"leftovers\"]\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "mon_clean, kbmon's cleanup panel, lists each candidate with its class, verdict, reason and bytes from bl_clean.safe_to_remove and a count per class, within the panel timeout",
+      "check": 0
+    },
+    {
+      "clause": "kbmon.py --json --panel cleanup carries the same rows and counts",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py selfcheck adds a leftovers line naming the removable count and bytes, which fails only below tidy's disk-pressure limit",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/mon_clean.py",
+    "_tools/mon_base.py",
+    "_tools/kbmon.py",
+    "_tools/mon_export.py",
+    "_tools/bl_selfcheck.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-nkc5supu"
+  ],
+  "gates": [
+    {
+      "id": "g-selfcheck",
+      "kind": "blocking",
+      "question": "When does selfcheck's leftovers line fail?",
+      "options": [
+        "fail only when free space is below tidy's disk-pressure limit; otherwise ok, with the removable count and bytes in its detail",
+        "whenever a removable leftover exists",
+        "never: information only"
+      ],
+      "recommendation": "fail only when free space is below tidy's disk-pressure limit; otherwise ok, with the removable count and bytes in its detail",
+      "class": "agents-rule",
+      "answer": "fail only when free space is below tidy's disk-pressure limit; otherwise ok, with the removable count and bytes in its detail",
+      "by": "operator"
+    }
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Premise (2026-10-19, this host): kbmon.py --json gave the sessions panel state timeout at 10 s with 50 worktrees; the cleanup panel's bytes walk is capped (gate g-bytes of the tidy story) so it stays inside the panel timeout."
+}

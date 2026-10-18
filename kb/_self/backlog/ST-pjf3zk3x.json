@@ -1,0 +1,62 @@
+{
+  "id": "ST-pjf3zk3x",
+  "kind": "story",
+  "title": "kbask.py cleanup runs one capped Haiku session only when tidy has ask candidates, and posts one coord ask to the operator per candidate",
+  "status": "draft",
+  "sprint": "SP-ep7cyuob",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbask.py cleanup [--root CLONE] reads tidy --json and starts no claude session when no candidate has the verdict ask; otherwise it starts one detached headless session of the kb-observer agent with --model haiku and --max-budget-usd 0.25, whose allowed tools read kbmon.py --json and tidy --json and write no file, and posts one coord ask addressed to the operator per ask candidate, naming its key; a second kbask.py cleanup while the first runs exits 1 through the coord claim remediate/cleanup",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nimport stat\nS = ENV[\"KB_COORD_STORE\"]\nBIN = os.path.join(T, \"bin\"); os.mkdir(BIN); MARK = os.path.join(T, \"claude-started\")\nopen(os.path.join(BIN, \"claude\"), \"w\").write(\"#!/bin/sh\\necho \\\"$@\\\" >> \" + MARK + \"\\necho '{\\\"result\\\": \\\"ok\\\", \\\"session_id\\\": \\\"x\\\"}'\\n\")\nos.chmod(os.path.join(BIN, \"claude\"), 0o755)\nE = dict(ENV, PATH=BIN + os.pathsep + ENV[\"PATH\"])\nok = wt(\"agent-ok\", \"work/ST-aaaaaaaa\"); own(ok, \"worktree\", \"--item\", \"ST-aaaaaaaa\")\ntool(\"_tools/kbask.py\", \"cleanup\", \"--root\", C, \"--older-than\", \"0\", env=E)\nassert not os.path.exists(MARK), \"a model call although tidy decided every candidate\"\nit = {\"id\": \"ST-bbbbbbbb\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"doing\", \"priority\": \"P2\", \"rank\": 0, \"goal\": \"g\",\n      \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"x\"]}\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \"ST-bbbbbbbb.json\"), \"w\").write(json.dumps(it, indent=2) + \"\\n\")\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"item\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nst = wt(\"agent-stale\", \"work/ST-bbbbbbbb\"); own(st, \"worktree\", \"--item\", \"ST-bbbbbbbb\", \"--session\", \"s-gone\")\ntool(\"_tools/kbask.py\", \"cleanup\", \"--root\", C, \"--older-than\", \"0\", env=E)\nargv = open(MARK).read()\nassert argv.count(\"\\n\") == 1 and \"haiku\" in argv and \"0.25\" in argv, argv\nev = tool(\"_tools/coord.py\", \"--store\", S, \"wait\", \"--since\", \"0\", \"--timeout\", \"1\").stdout\nassert '\"ask\"' in ev and \"operator\" in ev, ev[-600:]\ntool(\"_tools/coord.py\", \"--store\", S, \"claim\", \"remediate/cleanup\", \"--ttl\", \"600\", \"--holder\", \"other\")\ntool(\"_tools/kbask.py\", \"cleanup\", \"--root\", C, \"--older-than\", \"0\", env=E, ok=(1,))\nassert open(MARK).read().count(\"\\n\") == 1, \"a second session started while the first holds the claim\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbask.py cleanup [--root CLONE] reads tidy --json and starts no claude session when no candidate has the verdict ask",
+      "check": 0
+    },
+    {
+      "clause": "otherwise it starts one detached headless session of the kb-observer agent with --model haiku and --max-budget-usd 0.25, whose allowed tools read kbmon.py --json and tidy --json and write no file",
+      "check": 0
+    },
+    {
+      "clause": "posts one coord ask addressed to the operator per ask candidate, naming its key",
+      "check": 0
+    },
+    {
+      "clause": "a second kbask.py cleanup while the first runs exits 1 through the coord claim remediate/cleanup",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "agents/kb-observer.md",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-kcs6y7sj"
+  ],
+  "gates": [
+    {
+      "id": "g-model",
+      "kind": "blocking",
+      "question": "Which model and per-run cap for the cleanup remediation session?",
+      "options": [
+        "haiku, --max-budget-usd 0.25 per run (a cap with no data behind it)",
+        "sonnet, --max-budget-usd 0.5, as kbask remediate"
+      ],
+      "recommendation": "haiku, --max-budget-usd 0.25 per run (a cap with no data behind it)",
+      "class": "agents-rule",
+      "answer": "haiku, --max-budget-usd 0.25 per run (a cap with no data behind it)",
+      "by": "operator"
+    }
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. Reuses SP-w6amecjt's kbask.py (ask, answer, remediate: one claim per run, detached session, caps) and its read-only kb-observer role. kbask.py is in the touches of SP-w6amecjt's open ST-xlxkap7l (kbask.py summary): start this sprint after SP-w6amecjt closes."
+}

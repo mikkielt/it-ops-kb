@@ -1,0 +1,57 @@
+{
+  "id": "ST-skoaypsh",
+  "kind": "story",
+  "title": "land and close run tidy for their own recorded leftovers, and SessionStart prints tidy's one-line report",
+  "status": "draft",
+  "sprint": "SP-ipeewrlv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "land removes its item's recorded scratch directory once the item has landed; close runs bl_clean for the sprint's own recorded leftovers (its items' worktrees and scratch directories, the orchestrator's and the reviewer's worktrees) with the age limit waived for them, within the operator's answer to gate g1; backlog.py tidy --report prints one line of counts and bytes per class, reads only, within 10 seconds on this clone; the SessionStart hook prints that line and removes nothing",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nimport subprocess, sys, time\nt = time.monotonic()\nr = subprocess.run([sys.executable, \"_tools/backlog.py\", \"tidy\", \"--report\"], capture_output=True, text=True, timeout=60)\ntook = time.monotonic() - t\nlines = [l for l in r.stdout.splitlines() if l.strip()]\nassert r.returncode == 0 and len(lines) == 1 and \"worktree\" in lines[0], (r.returncode, r.stdout[-400:], r.stderr[-400:])\nassert took < 10, (\"tidy --report took\", took)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nsrc = lambda f: open(f, encoding=\"utf-8\").read()\ns = src(\".claude/hooks/session_start.py\")\nassert \"\\\"tidy\\\", \\\"--report\\\"\" in s and \"--apply\" not in s, \"SessionStart does not print the report line, or removes\"\nassert \"bl_clean.\" in src(\"_tools/bl_land.py\"), \"land and close do not call bl_clean\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "land removes its item's recorded scratch directory once the item has landed",
+      "check": 1
+    },
+    {
+      "clause": "close runs bl_clean for the sprint's own recorded leftovers (its items' worktrees and scratch directories, the orchestrator's and the reviewer's worktrees) with the age limit waived for them, within the operator's answer to gate g1",
+      "check": 1
+    },
+    {
+      "clause": "backlog.py tidy --report prints one line of counts and bytes per class, reads only, within 10 seconds on this clone",
+      "check": 0
+    },
+    {
+      "clause": "the SessionStart hook prints that line and removes nothing",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_clean.py",
+    ".claude/hooks/session_start.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/maintaining.md",
+    "kb/_self/token-efficiency.md"
+  ],
+  "depends_on": [
+    "ST-nkc5supu"
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. What land and close may remove follows gate g1 of the tidy story: under option (a) they remove only their own items' worker worktrees as today and scratch directories (a plain directory removal, not a denied git command); the orchestrator's and reviewer's worktrees then wait for the operator's run."
+}

@@ -1,0 +1,46 @@
+{
+  "id": "ST-kcs6y7sj",
+  "kind": "story",
+  "title": "tidy gives an undecidable recorded leftover the verdict ask, records the operator's answer through coord, and claims a candidate before removing it",
+  "status": "draft",
+  "sprint": "SP-ep7cyuob",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_clean.safe_to_remove gives the verdict ask to a recorded, clean and merged candidate whose item is still claimed with no live coord lease, or whose process outlives its recorded session's lease, with the candidate's key in its row; backlog.py tidy --decide KEY remove|keep records the operator's answer as a coord value of that key, refused in an agent session; tidy --apply removes an ask candidate answered remove only after it claims the coord key clean/<KEY>, and while another holder has that claim it removes nothing and exits 1",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nS = ENV[\"KB_COORD_STORE\"]\nit = {\"id\": \"ST-aaaaaaaa\", \"kind\": \"story\", \"title\": \"t\", \"status\": \"doing\", \"priority\": \"P2\", \"rank\": 0, \"goal\": \"g\",\n      \"checks\": [{\"run\": [\"true\"]}], \"touches\": [\"x\"]}\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \"ST-aaaaaaaa.json\"), \"w\").write(json.dumps(it, indent=2) + \"\\n\")\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"item\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nst = wt(\"agent-stale\", \"work/ST-aaaaaaaa\"); own(st, \"worktree\", \"--item\", \"ST-aaaaaaaa\", \"--session\", \"s-gone\")\nx = by_path(rows(\"--older-than\", \"0\"), \"worktree\")[n(st)]\nassert x[\"verdict\"] == \"ask\" and \"claim\" in x[\"reason\"] and x.get(\"key\"), x\nkey = x[\"key\"]\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--decide\", key, \"remove\", env=dict(ENV, CLAUDECODE=\"1\"), ok=(2,))\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--decide\", key, \"remove\")\nheld = json.loads(tool(\"_tools/coord.py\", \"--store\", S, \"claim\", \"clean/\" + key, \"--ttl\", \"600\", \"--holder\", \"other\").stdout)\nr = tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--apply\", \"--older-than\", \"0\", ok=(1,))\nassert os.path.isdir(st), (\"removed a candidate another holder claims\", r.stdout)\ntool(\"_tools/coord.py\", \"--store\", S, \"release\", \"clean/\" + key, \"--token\", held[\"token\"])\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--apply\", \"--older-than\", \"0\")\nassert not os.path.exists(st), \"an answered, unclaimed candidate stays\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_clean.safe_to_remove gives the verdict ask to a recorded, clean and merged candidate whose item is still claimed with no live coord lease, or whose process outlives its recorded session's lease, with the candidate's key in its row",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py tidy --decide KEY remove|keep records the operator's answer as a coord value of that key, refused in an agent session",
+      "check": 0
+    },
+    {
+      "clause": "tidy --apply removes an ask candidate answered remove only after it claims the coord key clean/<KEY>",
+      "check": 0
+    },
+    {
+      "clause": "while another holder has that claim it removes nothing and exits 1",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-nkc5supu"
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with its own coord store and a stand-in claude on PATH, so no paid model call; no change to _tools/tests_ceiling.json. An uncommitted worktree stays keep even when answered: tidy never passes --force, so a dirty one is reported for a hand clean. Starts after SP-ipeewrlv has landed bl_clean.py."
+}

@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "notes": "Open questions for this sprint (kb first, then live docs): (1) does the forge keep a merged request's source branch when the branch matches a protected pattern (code/* is protected here; request !1247 merged with force_remove_source_branch true and its branch remains; a community lead says protected branches cannot be deleted); (2) Windows: what refuses a rename or removal of a directory a process uses, and how \\\\?\\ long paths and drive-letter case compare (os.path.normcase, realpath); (3) how a scheduled run is installed outside agent sessions: cron, launchd StartInterval, Task Scheduler (schtasks); (4) git worktree remove, prune and lock semantics (porcelain list, prunable, locked)."
 }

@@ -1,0 +1,62 @@
+{
+  "id": "ST-y53hvh64",
+  "kind": "story",
+  "title": "backlog.py own records what this clone's tools make as coord own/ keys, and dispatch, bench multi and the sprint skill's runner and reviewer steps record theirs",
+  "status": "draft",
+  "sprint": "SP-ipeewrlv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py own PATH|PID --class worktree|sandbox|scratch|process [--item ID] [--sprint SP] [--session ID] records the path or pid with its item, sprint, session and time as the coord key own/<class>/<digest of the normalised path or pid>, and --drop clears it; a path is normalised once (realpath, normcase, no \\\\?\\ prefix, one case for a drive letter) so one directory gives one key on every platform; dispatch records the worker's worktree, its scratch directory and the worker's pid through bl_clean.record_owner; bench multi records its sandbox the same way; the kb-sprint skill's run and review steps record the orchestrator's and the reviewer's worktrees with backlog.py own",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\np = wt(\"agent-own\", \"work/ST-aaaaaaaa\")\nS = ENV[\"KB_COORD_STORE\"]\ndef keys():\n    r = tool(\"_tools/coord.py\", \"--store\", S, \"list\", \"--prefix\", \"own/\")\n    return [k for k in json.loads(r.stdout) if k.get(\"value\")]\nown(p, \"worktree\", \"--item\", \"ST-aaaaaaaa\")\nown(p + os.sep, \"worktree\", \"--item\", \"ST-aaaaaaaa\")\nk = keys()\nassert len(k) == 1 and k[0][\"key\"].startswith(\"own/worktree/\"), (\"one key for one directory\", k)\nv = json.loads(k[0][\"value\"])\nassert os.path.normcase(v[\"path\"]) == n(p) and v.get(\"item\") == \"ST-aaaaaaaa\" and v.get(\"at\"), v\ntool(\"_tools/backlog.py\", \"--root\", C, \"own\", p, \"--class\", \"nonsense\", ok=(2,))\nown(p, \"worktree\", \"--drop\")\nassert not keys(), (\"--drop leaves the record\", keys())\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nsrc = lambda f: open(f, encoding=\"utf-8\").read()\nfor f in (\"_tools/bl_dispatch.py\", \"_tools/bench_multi.py\"):\n    assert \"record_owner(\" in src(f), (f, \"does not record what it makes\")\ns = src(\"skills/sprint/SKILL.md\")\nrun = s.split(\"\\n## run\", 1)[1].split(\"\\n## \", 1)[0]\nrev = s.split(\"\\n## review\", 1)[1].split(\"\\n## \", 1)[0]\nassert \"backlog.py own\" in run and \"backlog.py own\" in rev, \"the run and review steps do not record their worktrees\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py own PATH|PID --class worktree|sandbox|scratch|process [--item ID] [--sprint SP] [--session ID] records the path or pid with its item, sprint, session and time as the coord key own/<class>/<digest of the normalised path or pid>",
+      "check": 0
+    },
+    {
+      "clause": "--drop clears it",
+      "check": 0
+    },
+    {
+      "clause": "a path is normalised once (realpath, normcase, no \\\\?\\ prefix, one case for a drive letter) so one directory gives one key on every platform",
+      "check": 0
+    },
+    {
+      "clause": "dispatch records the worker's worktree, its scratch directory and the worker's pid through bl_clean.record_owner",
+      "check": 1
+    },
+    {
+      "clause": "bench multi records its sandbox the same way",
+      "check": 1
+    },
+    {
+      "clause": "the kb-sprint skill's run and review steps record the orchestrator's and the reviewer's worktrees with backlog.py own",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "_tools/backlog.py",
+    "_tools/bl_dispatch.py",
+    "_tools/bench_multi.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Owner store: coord (operator, 2026-10-19). bench_multi.py is also in the touches of the planned benchmark sprint SP-7s6uubs7: do not claim this while one of its items holding bench_multi.py is in flight (held --overlaps)."
+}

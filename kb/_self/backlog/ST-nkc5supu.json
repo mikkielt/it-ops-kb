@@ -1,0 +1,171 @@
+{
+  "id": "ST-nkc5supu",
+  "kind": "story",
+  "title": "tidy lists every recorded leftover with one safe_to_remove verdict, reason and bytes, and --apply removes only the safe set",
+  "status": "draft",
+  "sprint": "SP-ipeewrlv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "bl_clean.safe_to_remove(candidate, snapshot, coord_state) returns (verdict, reason) and is the one function tidy, kbmon and the remediation agent call; a candidate is removable only when its owner is recorded, no live coord lease or claim names it or its branch or item, no live process has it as its working directory, its item is done or dropped or gone with its closed sprint, it is clean and merged into origin/main, with its last activity older than --older-than HOURS (default 4); backlog.py tidy lists each recorded worktree, local branch, bench sandbox and scratch directory with that verdict, its reason and the bytes it frees, one summary line per class, and --json prints the same rows; the main checkout, the worktree tidy runs in, _cache/querylog/worktree and everything no record names are always kept; --apply removes the safe set with git worktree remove (never --force), deletes a branch only when git cherry finds its commits on origin/main, then runs git worktree prune, under the operator's answer to gate g1; a directory Windows refuses to rename is kept and reported, never forced; under disk pressure (free space below --disk-free-gb) bench sandboxes are listed first with their age limit waived",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nsys.path.insert(0, \"_tools\")\ntry:\n    import bl_clean\nexcept ImportError:\n    bl_clean = None\nassert callable(getattr(bl_clean, \"safe_to_remove\", None)), \"no bl_clean.safe_to_remove\"\nS = ENV[\"KB_COORD_STORE\"]\nok = wt(\"agent-ok\", \"work/ST-aaaaaaaa\"); own(ok, \"worktree\", \"--item\", \"ST-aaaaaaaa\")\ndirty = wt(\"agent-dirty\", \"work/ST-bbbbbbbb\"); own(dirty, \"worktree\", \"--item\", \"ST-bbbbbbbb\")\nopen(os.path.join(dirty, \"new.txt\"), \"w\").write(\"x\")\nunm = wt(\"agent-unmerged\", \"work/ST-cccccccc\"); own(unm, \"worktree\", \"--item\", \"ST-cccccccc\")\nopen(os.path.join(unm, \"f.txt\"), \"w\").write(\"x\"); g(\"add\", \"f.txt\", cwd=unm); g(\"commit\", \"-qm\", \"unmerged\", cwd=unm)\nforeign = wt(\"agent-foreign\", \"work/ST-dddddddd\")\nbusy = wt(\"agent-busy\", \"work/ST-eeeeeeee\"); own(busy, \"worktree\", \"--item\", \"ST-eeeeeeee\")\nP = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(600)\"], cwd=busy)\nlease = wt(\"agent-lease\", \"work/ST-ffffffff\"); own(lease, \"worktree\", \"--item\", \"ST-ffffffff\", \"--session\", \"s-live\")\ntool(\"_tools/coord.py\", \"--store\", S, \"claim\", \"session/s-live\", \"--ttl\", \"600\")\nql = os.path.join(C, \"_cache\", \"querylog\", \"worktree\"); g(\"worktree\", \"add\", \"-q\", \"--detach\", ql, \"HEAD\", cwd=C); own(ql, \"worktree\")\ntry:\n    v = by_path(rows(), \"worktree\")\n    assert v[n(ok)][\"verdict\"] == \"keep\" and \"4\" in v[n(ok)][\"reason\"], (\"the default age limit of 4 hours\", v[n(ok)])\n    v = by_path(rows(\"--older-than\", \"0\"), \"worktree\")\n    want = {ok: None, dirty: \"uncommitted\", unm: \"lacks\", foreign: \"no owner record\", busy: \"process\", lease: \"lease\",\n            ql: \"query log\"}\n    for p, word in want.items():\n        x = v.get(n(p)); assert x, (p, sorted(v))\n        if word is None:\n            assert x[\"verdict\"] == \"remove\" and isinstance(x.get(\"bytes\"), int), x\n        else:\n            assert x[\"verdict\"] == \"keep\" and word in x[\"reason\"], (p, x)\n    r = tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--older-than\", \"0\")\n    assert any(ln.startswith(\"tidy: worktree\") for ln in r.stdout.splitlines()), (\"no summary line per class\", r.stdout)\n    assert all(os.path.isdir(p) for p in want), \"a dry run removed something\"\nfinally:\n    P.kill()\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nok = wt(\"agent-ok\", \"work/ST-aaaaaaaa\"); own(ok, \"worktree\", \"--item\", \"ST-aaaaaaaa\")\ndirty = wt(\"agent-dirty\", \"work/ST-bbbbbbbb\"); own(dirty, \"worktree\", \"--item\", \"ST-bbbbbbbb\")\nopen(os.path.join(dirty, \"new.txt\"), \"w\").write(\"x\")\nunm = wt(\"agent-unmerged\", \"work/ST-cccccccc\"); own(unm, \"worktree\", \"--item\", \"ST-cccccccc\")\nopen(os.path.join(unm, \"f.txt\"), \"w\").write(\"x\"); g(\"add\", \"f.txt\", cwd=unm); g(\"commit\", \"-qm\", \"unmerged\", cwd=unm)\nforeign = wt(\"agent-foreign\", \"work/ST-dddddddd\")\nbusy = wt(\"agent-busy\", \"work/ST-eeeeeeee\"); own(busy, \"worktree\", \"--item\", \"ST-eeeeeeee\")\nP = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(600)\"], cwd=busy)\nql = os.path.join(C, \"_cache\", \"querylog\", \"worktree\"); g(\"worktree\", \"add\", \"-q\", \"--detach\", ql, \"HEAD\", cwd=C); own(ql, \"worktree\")\ntry:\n    r = tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--apply\", \"--older-than\", \"0\")\n    assert not os.path.exists(ok), (\"the safe worktree stays\", r.stdout)\n    listed = [n(l[9:]) for l in g(\"worktree\", \"list\", \"--porcelain\", cwd=C).splitlines() if l.startswith(\"worktree \")]\n    assert n(ok) not in listed, \"git still lists the removed worktree\"\n    assert \"work/ST-aaaaaaaa\" not in g(\"branch\", \"--list\", cwd=C), \"the removed worktree's merged branch stays\"\n    for p in (dirty, unm, foreign, busy, ql):\n        assert os.path.isdir(p) and n(p) in listed, (\"removed a worktree the rules keep\", p, r.stdout)\n    assert \"work/ST-cccccccc\" in g(\"branch\", \"--list\", cwd=C), \"deleted an unmerged branch\"\nfinally:\n    P.kill()\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nB = os.path.join(T, \"bench\"); ENV[\"BENCH_SCRATCH\"] = B\nsb = os.path.join(B, \"multi-0123abcd\"); os.makedirs(sb); open(os.path.join(sb, \"blob\"), \"wb\").write(b\"x\" * 1048576)\nown(sb, \"sandbox\")\nsc = os.path.join(C, \"_cache\", \"scratch\", \"ST-aaaaaaaa\"); os.makedirs(sc); own(sc, \"scratch\", \"--item\", \"ST-aaaaaaaa\")\nassert by_path(rows())[n(sb)][\"verdict\"] == \"keep\", \"a young sandbox is removable with no disk pressure\"\nrs = rows(\"--disk-free-gb\", \"1000000\")\nassert rs[0][\"class\"] == \"sandbox\" and rs[0][\"verdict\"] == \"remove\" and rs[0][\"bytes\"] >= 1048576, (\"sandboxes first under disk pressure\", rs[:2])\nassert by_path(rows(\"--older-than\", \"0\"))[n(sc)][\"verdict\"] == \"remove\", \"a finished item's scratch directory stays\"\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--apply\", \"--disk-free-gb\", \"1000000\")\nassert not os.path.exists(sb) and os.path.isdir(sc), \"disk pressure removed the wrong class\"\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "bl_clean.safe_to_remove(candidate, snapshot, coord_state) returns (verdict, reason) and is the one function tidy, kbmon and the remediation agent call",
+      "check": 0
+    },
+    {
+      "clause": "a candidate is removable only when its owner is recorded, no live coord lease or claim names it or its branch or item, no live process has it as its working directory, its item is done or dropped or gone with its closed sprint, it is clean and merged into origin/main, with its last activity older than --older-than HOURS (default 4)",
+      "check": 0
+    },
+    {
+      "clause": "backlog.py tidy lists each recorded worktree, local branch, bench sandbox and scratch directory with that verdict, its reason and the bytes it frees, one summary line per class",
+      "check": 0
+    },
+    {
+      "clause": "--json prints the same rows",
+      "check": 0
+    },
+    {
+      "clause": "the main checkout, the worktree tidy runs in, _cache/querylog/worktree and everything no record names are always kept",
+      "check": 0
+    },
+    {
+      "clause": "--apply removes the safe set with git worktree remove (never --force), deletes a branch only when git cherry finds its commits on origin/main, then runs git worktree prune, under the operator's answer to gate g1",
+      "check": 1
+    },
+    {
+      "clause": "a directory Windows refuses to rename is kept and reported, never forced",
+      "check": 1
+    },
+    {
+      "clause": "under disk pressure (free space below --disk-free-gb) bench sandboxes are listed first with their age limit waived",
+      "check": 2
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "_tools/bl_land.py",
+    "_tools/backlog.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md"
+  ],
+  "depends_on": [
+    "ST-y53hvh64"
+  ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Agent shells are denied git worktree remove and git branch -D (.claude/settings.json). How may tidy's removal of worktrees and local branches run without getting around that rule? Note: the allow rule Bash(python3 _tools/backlog.py *) already lets agent sessions run tidy --apply, land and close, which run those git commands as their own processes (bl_land.release_worker_worktree, delete_landed_branch); the answer also says whether today's tidy --apply gets the same refusal.",
+      "options": [
+        "operator-run: tidy --apply refuses in a Claude Code session (bl_authority.in_agent_session); the operator runs it in a terminal of their own or installs a scheduled run (cron, launchd or Task Scheduler) outside agent sessions; land and close keep only the removal of their own items' worker worktrees they do today",
+        "narrow allow: the operator records a decision that agent sessions may run exactly python3 _tools/backlog.py tidy --apply, which removes only what safe_to_remove proves finished and owned; every other removal stays operator-run",
+        "as the narrow allow, and land and close also call it for their own recorded leftovers (orchestrator and reviewer worktrees, scratch)"
+      ],
+      "recommendation": "operator-run: tidy --apply refuses in a Claude Code session (bl_authority.in_agent_session); the operator runs it in a terminal of their own or installs a scheduled run (cron, launchd or Task Scheduler) outside agent sessions; land and close keep only the removal of their own items' worker worktrees they do today",
+      "class": "agents-rule"
+    },
+    {
+      "id": "g-owners",
+      "kind": "blocking",
+      "question": "What proves that this clone's tools own a leftover?",
+      "options": [
+        "records only: a coord own/ key written by backlog.py own; tidy's name rule (any agent-* worktree, orch/* branch) goes; unrecorded leftovers are listed and never removed; today's legacy leftovers go by a separate one-time script outside the repo",
+        "known directory and name patterns count as owned"
+      ],
+      "recommendation": "records only: a coord own/ key written by backlog.py own; tidy's name rule (any agent-* worktree, orch/* branch) goes; unrecorded leftovers are listed and never removed; today's legacy leftovers go by a separate one-time script outside the repo",
+      "class": "agents-rule",
+      "answer": "records only: a coord own/ key written by backlog.py own; tidy's name rule (any agent-* worktree, orch/* branch) goes; unrecorded leftovers are listed and never removed; today's legacy leftovers go by a separate one-time script outside the repo",
+      "by": "operator"
+    },
+    {
+      "id": "g-store",
+      "kind": "blocking",
+      "question": "Where do ownership records live?",
+      "options": [
+        "coord store: own/<class>/<digest> keys in the clone's coord SQLite store",
+        "a JSON ledger in the common git directory"
+      ],
+      "recommendation": "coord store: own/<class>/<digest> keys in the clone's coord SQLite store",
+      "class": "agents-rule",
+      "answer": "coord store: own/<class>/<digest> keys in the clone's coord SQLite store",
+      "by": "operator"
+    },
+    {
+      "id": "g-age",
+      "kind": "blocking",
+      "question": "How old must a recorded, finished leftover's last activity be before tidy removes it (the --older-than default)?",
+      "options": [
+        "4 hours for all",
+        "own at once, others 24 hours",
+        "2 hours"
+      ],
+      "recommendation": "own at once, others 24 hours",
+      "class": "agents-rule",
+      "answer": "4 hours for all",
+      "by": "operator"
+    },
+    {
+      "id": "g-exit",
+      "kind": "blocking",
+      "question": "tidy's exit codes (kb/_self/code.md, Exit codes)?",
+      "options": [
+        "0 listed, or removed all it planned; 1 an --apply removal failed or a candidate's coord claim is held by another; 2 a refusal (bad arguments, an agent session where the operator's answer refuses, no integration main); 3 the coord store stayed locked past its wait",
+        "0 always, as tidy today"
+      ],
+      "recommendation": "0 listed, or removed all it planned; 1 an --apply removal failed or a candidate's coord claim is held by another; 2 a refusal (bad arguments, an agent session where the operator's answer refuses, no integration main); 3 the coord store stayed locked past its wait",
+      "class": "agents-rule",
+      "answer": "0 listed, or removed all it planned; 1 an --apply removal failed or a candidate's coord claim is held by another; 2 a refusal (bad arguments, an agent session where the operator's answer refuses, no integration main); 3 the coord store stayed locked past its wait",
+      "by": "operator"
+    },
+    {
+      "id": "g-disk",
+      "kind": "blocking",
+      "question": "The default disk-pressure limit?",
+      "options": [
+        "20 GiB free by default (--disk-free-gb), a figure with no data behind it: this host had 190 GiB free on 2026-10-19 and a multi sandbox takes about 1.3 GB per clone",
+        "no default: disk pressure only when --disk-free-gb is given"
+      ],
+      "recommendation": "20 GiB free by default (--disk-free-gb), a figure with no data behind it: this host had 190 GiB free on 2026-10-19 and a multi sandbox takes about 1.3 GB per clone",
+      "class": "agents-rule",
+      "answer": "20 GiB free by default (--disk-free-gb), a figure with no data behind it: this host had 190 GiB free on 2026-10-19 and a multi sandbox takes about 1.3 GB per clone",
+      "by": "operator"
+    },
+    {
+      "id": "g-bytes",
+      "kind": "blocking",
+      "question": "How does tidy measure the bytes a candidate frees without blowing kbmon's panel timeout?",
+      "options": [
+        "a walk with os.scandir capped at 2 seconds per candidate, the figure marked approximate past the cap (a number with no data behind it)",
+        "no bytes for worktrees, only for sandboxes and scratch"
+      ],
+      "recommendation": "a walk with os.scandir capped at 2 seconds per candidate, the figure marked approximate past the cap (a number with no data behind it)",
+      "class": "agents-rule",
+      "answer": "a walk with os.scandir capped at 2 seconds per candidate, the figure marked approximate past the cap (a number with no data behind it)",
+      "by": "operator"
+    }
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Reuses from the operator's one-off cleanup.sh: dry run by default and --apply to act; never --force; skip a dirty worktree, one with untracked files, one a process sits in, one whose HEAD is not in origin/main; always keep the main checkout and _cache/querylog/worktree; git worktree prune afterwards. Reuses from tidy and bl_land: tidy_worktree_kept, release_worker_worktree, delete_landed_branch, live_processes (lsof/proc) and held_by_process (Windows rename). cmd_tidy and its registration move from bl_land.py to bl_clean.py; tidy's name rule (any agent-* worktree, orch/* branch) goes, per the operator's records-only answer. Premise (2026-10-19, this host): git worktree list shows 50 worktrees, of which tidy today would remove 0 and keeps 18 branches; 846 code/* branches on origin, all merged. Last activity, measured on this host 2026-10-19: a worktree's index file time is rewritten by any git status (tidy's own clean check included; use git --no-optional-locks), and every worktree's logs/HEAD file time was rewritten at once by a gc; the newest HEAD reflog entry's own time (git log -g -1 --format=%ct) is the reliable figure. A dry run of the operator's one-time script with these rules found 36 of 49 worktrees removable (34 rebase-landed planning worktrees, so the merged test is git cherry, not merge-base --is-ancestor) and kept two worktrees of a sprint that had closed minutes before only by their recent activity: a record plus the coord lease covers that case in tidy."
+}

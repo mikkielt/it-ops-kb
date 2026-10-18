@@ -1,0 +1,84 @@
+{
+  "id": "ST-hpbjc2gc",
+  "kind": "story",
+  "title": "Merged remote code branches and recorded orphan processes are removed only by an operator command",
+  "status": "draft",
+  "sprint": "SP-ipeewrlv",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "backlog.py tidy --remote lists each code/<id> branch on origin whose commits git cherry finds on origin/main, and --remote --apply deletes those in batches, refused in an agent session (bl_authority.in_agent_session) and never run by land, close or SessionStart; tidy --class process lists each process an own record names, removable only when its recorded session's coord lease is gone and its start time matches the record; --apply ends those with SIGTERM, then SIGKILL after END_WAIT_S, refused in an agent session; a process no record names is listed and never signalled",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\ndef push(*a, cwd=C): g(\"push\", \"-q\", \"origin\", *a, cwd=cwd)\npush(\"HEAD:refs/heads/code/ST-aaaaaaaa\")\nx = wt(\"agent-x\", \"tmp-x\"); open(os.path.join(x, \"f.txt\"), \"w\").write(\"x\"); g(\"add\", \"f.txt\", cwd=x); g(\"commit\", \"-qm\", \"unmerged\", cwd=x)\npush(\"HEAD:refs/heads/code/ST-bbbbbbbb\", cwd=x)\ng(\"fetch\", \"-q\", \"origin\", cwd=C)\nremote = lambda: g(\"ls-remote\", \"origin\", \"refs/heads/code/*\", cwd=C)\nr = tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--remote\")\nout = r.stdout.splitlines()\nassert any(\"code/ST-aaaaaaaa\" in l and \"would delete\" in l for l in out), r.stdout\nassert not any(\"code/ST-bbbbbbbb\" in l and \"would delete\" in l for l in out), r.stdout\nagent = dict(ENV, CLAUDECODE=\"1\")\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--remote\", \"--apply\", env=agent, ok=(2,))\nassert \"code/ST-aaaaaaaa\" in remote(), \"an agent session deleted a remote branch\"\ntool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--remote\", \"--apply\")\nassert \"code/ST-aaaaaaaa\" not in remote() and \"code/ST-bbbbbbbb\" in remote(), remote()\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ndef _fail(t, e, tb, _d=sys.excepthook):\n    if issubclass(t, AssertionError):\n        print(\"check failed:\", e); sys.exit(1)\n    _d(t, e, tb)\nsys.excepthook = _fail\nimport os, subprocess, sys, tempfile, json, time\nT = tempfile.mkdtemp()\nENV = {k: v for k, v in os.environ.items() if not k.startswith((\"GIT_\", \"KB_COORD\"))}\nENV.pop(\"CLAUDECODE\", None)\nENV.update(KB_COORD_STORE=os.path.join(T, \"coord.sqlite\"), GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM=\"1\",\n           GIT_AUTHOR_NAME=\"t\", GIT_AUTHOR_EMAIL=\"t@example.com\", GIT_COMMITTER_NAME=\"t\", GIT_COMMITTER_EMAIL=\"t@example.com\")\ndef g(*a, cwd):\n    return subprocess.run([\"git\", *a], cwd=cwd, env=ENV, capture_output=True, text=True, check=True).stdout\ndef tool(*a, env=None, ok=(0,)):\n    r = subprocess.run([sys.executable, *a], capture_output=True, text=True, env=env or ENV, timeout=300)\n    assert r.returncode in ok, (a, r.returncode, r.stdout[-800:], r.stderr[-800:])\n    return r\nO, C = os.path.join(T, \"origin.git\"), os.path.join(T, \"clone\")\ng(\"init\", \"-q\", \"--bare\", \"-b\", \"main\", O, cwd=T)\ng(\"clone\", \"-q\", O, C, cwd=T)\nos.makedirs(os.path.join(C, \"kb\", \"_self\", \"backlog\"))\nopen(os.path.join(C, \"backlog.json\"), \"w\").write('{\"item_dir\": \"kb/_self/backlog\"}\\n')\nopen(os.path.join(C, \"kb\", \"_self\", \"backlog\", \".keep\"), \"w\").close()\ng(\"add\", \"-A\", cwd=C); g(\"commit\", \"-qm\", \"base\", cwd=C); g(\"push\", \"-q\", \"origin\", \"main\", cwd=C); g(\"fetch\", \"-q\", cwd=C)\nWT = os.path.join(C, \".claude\", \"worktrees\")\ndef wt(name, branch=None, at=\"HEAD\"):\n    p = os.path.join(WT, name)\n    g(\"worktree\", \"add\", \"-q\", *([\"-b\", branch] if branch else [\"--detach\"]), p, at, cwd=C)\n    return p\nn = lambda p: os.path.normcase(os.path.realpath(p))\ndef own(p, cls, *a, env=None):\n    return tool(\"_tools/backlog.py\", \"--root\", C, \"own\", str(p), \"--class\", cls, *a, env=env)\ndef rows(*a):\n    return json.loads(tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--json\", *a).stdout)\ndef by_path(rs, cls=None):\n    return {n(x[\"path\"]): x for x in rs if \"path\" in x and (cls is None or x.get(\"class\") == cls)}\nmine = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(600)\"], cwd=C)\nother = subprocess.Popen([sys.executable, \"-c\", \"import time; time.sleep(600)\"], cwd=C)\ntry:\n    own(mine.pid, \"process\", \"--session\", \"s-gone\")\n    rs = [x for x in rows(\"--class\", \"process\", \"--older-than\", \"0\") if x.get(\"class\") == \"process\"]\n    v = {x.get(\"pid\"): x for x in rs}\n    assert v[mine.pid][\"verdict\"] == \"remove\", v.get(mine.pid)\n    assert other.pid not in v or v[other.pid][\"verdict\"] == \"keep\", v.get(other.pid)\n    tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--class\", \"process\", \"--apply\", \"--older-than\", \"0\", env=dict(ENV, CLAUDECODE=\"1\"), ok=(2,))\n    assert mine.poll() is None, \"an agent session ended a process\"\n    tool(\"_tools/backlog.py\", \"--root\", C, \"tidy\", \"--class\", \"process\", \"--apply\", \"--older-than\", \"0\")\n    for _ in range(100):\n        if mine.poll() is not None: break\n        time.sleep(0.1)\n    assert mine.poll() is not None and other.poll() is None, (mine.poll(), other.poll())\nfinally:\n    for p in (mine, other):\n        if p.poll() is None: p.kill()\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "backlog.py tidy --remote lists each code/<id> branch on origin whose commits git cherry finds on origin/main",
+      "check": 0
+    },
+    {
+      "clause": "--remote --apply deletes those in batches, refused in an agent session (bl_authority.in_agent_session) and never run by land, close or SessionStart",
+      "check": 0
+    },
+    {
+      "clause": "tidy --class process lists each process an own record names, removable only when its recorded session's coord lease is gone and its start time matches the record",
+      "check": 1
+    },
+    {
+      "clause": "--apply ends those with SIGTERM, then SIGKILL after END_WAIT_S, refused in an agent session",
+      "check": 1
+    },
+    {
+      "clause": "a process no record names is listed and never signalled",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/bl_clean.py",
+    "_tools/bl_procs.py",
+    "kb/_self/backlog.md",
+    "kb/_self/tools.md",
+    "kb/_self/git.md"
+  ],
+  "depends_on": [
+    "ST-skoaypsh"
+  ],
+  "gates": [
+    {
+      "id": "g-remote",
+      "kind": "blocking",
+      "question": "Who deletes merged code/<id> branches on origin (846 today, all merged), and should the forge delete them itself on merge?",
+      "options": [
+        "operator command only: tidy --remote --apply from the operator's own terminal, merged-only, refused in agent sessions; and the operator changes the forge's code/* protection so a merge deletes its own source branch, once the research story confirms that protection as the cause",
+        "operator command only, forge settings unchanged",
+        "no remote deletion: tidy only counts them"
+      ],
+      "recommendation": "operator command only: tidy --remote --apply from the operator's own terminal, merged-only, refused in agent sessions; and the operator changes the forge's code/* protection so a merge deletes its own source branch, once the research story confirms that protection as the cause",
+      "class": "push"
+    },
+    {
+      "id": "g-procs",
+      "kind": "blocking",
+      "question": "May tidy end processes? (Today a live detached headless worker shows in procs as an orphan with parent 1, so parent 1 is no proof.)",
+      "options": [
+        "end only a process an own record names whose recorded session's coord lease is gone and whose start time matches the record, by an operator run outside agent sessions; every other process is reported only (backlog.py procs)",
+        "report only: the operator ends processes by hand"
+      ],
+      "recommendation": "end only a process an own record names whose recorded session's coord lease is gone and whose start time matches the record, by an operator run outside agent sessions; every other process is reported only (backlog.py procs)",
+      "class": "agents-rule"
+    }
+  ],
+  "notes": "Test policy (D-6kei5o2z, D-2tq4fhgs): no new test or test file; the checks are tool runs on a throwaway clone with planted inputs (KB_COORD_STORE points at its own coord store, so no check writes the clone's real one); no change to _tools/tests_ceiling.json. Never kill by pattern (a host hook blocks pkill -f). Premise (2026-10-19): backlog.py procs names 3 orphans, one a gk MCP server orphaned 4 days in review-j65ihctq, and one a live detached headless worker (claude, parent 1, in agent-ST-xlxkap7l): parent 1 is no proof a process is finished. The 846 origin code/* branches remain although every request is sent with merge_request.remove_source_branch (kg_sync.push_options; request !1247 merged with force_remove_source_branch true): code/* is a protected branch pattern on the forge, a likely cause the research story confirms."
+}
