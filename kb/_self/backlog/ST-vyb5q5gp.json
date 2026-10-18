@@ -2,7 +2,7 @@
   "id": "ST-vyb5q5gp",
   "kind": "story",
   "title": "Research sprint goal: coord shows each session's real work and its server and locks hold under bad input",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fp3hxl6q",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the BEGIN IMMEDIATE and http.server questions come back good on lines that do not answer them (sqlite3 autocommit, MCP headers), the inode and settimeout questions weak, so all four are researched. Knowledge by item: BG-kalkmokl reads (1), BG-blw4edp4 reads (2), BG-ih3awckg reads (3), BG-gmaaoumg reads (4); the hook items, BG-bqvcba5e and BG-caynvdnv change the kb's own coord rules and need no outside facts."
+  "notes": "Plan 2026-10-17: rag.py pack on the tree of 3dba0ef83: the BEGIN IMMEDIATE and http.server questions come back good on lines that do not answer them (sqlite3 autocommit, MCP headers), the inode and settimeout questions weak, so all four are researched. Knowledge by item: BG-kalkmokl reads (1), BG-blw4edp4 reads (2), BG-ih3awckg reads (3), BG-gmaaoumg reads (4); the hook items, BG-bqvcba5e and BG-caynvdnv change the kb's own coord rules and need no outside facts.",
+  "claimed_by": "orch-r15"
 }
