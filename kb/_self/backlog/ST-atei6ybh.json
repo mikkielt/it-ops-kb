@@ -7,13 +7,20 @@
   "sprint": "SP-3hgirkur",
   "priority": "P2",
   "rank": 0,
-  "goal": "kbmon.py --split opens the live view (kbmon.py --interval 60) in a pane beside the session: wezterm cli split-pane where WEZTERM_PANE is set, tmux split-window where TMUX is set, Windows Terminal split-pane where WT_SESSION is set; elsewhere it prints the command to run in a second terminal and names the optional WezTerm installer; --dry-run prints the command it would run; it exits 0 in every case",
+  "goal": "kbmon.py --split opens the live view (kbmon.py --interval 60) in a pane beside the session: wezterm cli split-pane where WEZTERM_PANE is set, tmux split-window where TMUX is set, Windows Terminal split-pane where WT_SESSION is set; elsewhere it prints the command to run in a second terminal and names the optional WezTerm installer; --dry-run prints the command it would run; it exits 0 in every case; the split pane's live view adds no constant CPU load (operator, 2026-10-19): 30 s of kbmon.py --interval 60 cost under 6 CPU seconds",
   "checks": [
     {
       "run": [
         "python3",
         "-c",
         "import os,subprocess as s,sys\ndef fail(m):\n    print(m);sys.exit(1)\ndef run(env):\n    E={k:v for k,v in os.environ.items() if k not in ('TMUX','TMUX_PANE','WEZTERM_PANE','WT_SESSION','TERM_PROGRAM')};E.update(env)\n    p=s.run([sys.executable,'_tools/kbmon.py','--split','--dry-run'],capture_output=True,text=True,env=E,timeout=60)\n    return p.returncode,p.stdout\nrc,o=run({'WEZTERM_PANE':'7'})\nif rc!=0 or 'wezterm' not in o or 'split-pane' not in o or 'kbmon.py' not in o or '--interval 60' not in o: fail('wezterm: %s %r'%(rc,o))\nrc,o=run({'TMUX':'/tmp/tmux-0/default,1,0','TMUX_PANE':'%1'})\nif rc!=0 or 'split-window' not in o or 'kbmon.py' not in o: fail('tmux: %s %r'%(rc,o))\nrc,o=run({'WT_SESSION':'00000000-0000-0000-0000-000000000000'})\nif rc!=0 or ('wt' not in o.split() and 'wt.exe' not in o) or ('split-pane' not in o and ' sp ' not in o): fail('windows terminal: %s %r'%(rc,o))\nrc,o=run({})\nif rc!=0 or 'kbmon.py --interval 60' not in o or 'install_wezterm' not in o: fail('no splitter: %s %r'%(rc,o))\nprint('ok: wezterm, tmux and Windows Terminal commands, and the hint elsewhere')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,pty,sys,time,select,signal,resource,subprocess\nd=subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--split\",\"--dry-run\"],capture_output=True,text=True,env={k:v for k,v in os.environ.items() if k not in (\"TMUX\",\"WEZTERM_PANE\",\"WT_SESSION\")})\nif d.returncode!=0 or \"--interval\" not in d.stdout:\n    print(\"kbmon --split --dry-run prints no live-view command:\",d.stdout[-200:],d.stderr[-200:]);sys.exit(1)\npid,fd=pty.fork()\nif pid==0:\n    os.execvp(sys.executable,[sys.executable,\"_tools/kbmon.py\",\"--interval\",\"60\"])\nt=time.time()\nwhile time.time()-t<30:\n    r,_,_=select.select([fd],[],[],0.5)\n    if r:\n        try: os.read(fd,65536)\n        except OSError: break\nos.kill(pid,signal.SIGTERM); os.waitpid(pid,0)\nu=resource.getrusage(resource.RUSAGE_CHILDREN); cpu=u.ru_utime+u.ru_stime\nprint(\"split live view cpu seconds in 30 s:\",round(cpu,1)); sys.exit(0 if cpu<6 else 1)"
       ]
     }
   ],
@@ -33,6 +40,10 @@
     {
       "clause": "it exits 0 in every case",
       "check": 0
+    },
+    {
+      "clause": "the split pane's live view adds no constant CPU load (operator, 2026-10-19): 30 s of kbmon.py --interval 60 cost under 6 CPU seconds",
+      "check": 1
     }
   ],
   "touches": [

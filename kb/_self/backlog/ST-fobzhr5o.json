@@ -7,7 +7,7 @@
   "sprint": "SP-3hgirkur",
   "priority": "P2",
   "rank": 0,
-  "goal": "a plugin of function hooks in .claude/skills/kbmon-pane loads in every session of the clone and does nothing in a session whose session.start says isInteractive false; in an interactive session it opens a kbmon pane that a 60-second timer fills with kbmon.py --once at the pane's columns, finding Python as python3, python or py -3; after a resize it lays the pane out again at the new width within one refresh; /kbmon opens the pane again; a toast tells the person when the alert set changes; the agent gets the kbmon.py --receipt line as one appended user-role row at session start and another only when the fingerprint changes",
+  "goal": "a plugin of function hooks in .claude/skills/kbmon-pane loads in every session of the clone and does nothing in a session whose session.start says isInteractive false; in an interactive session it opens a kbmon pane that a 60-second timer fills with kbmon.py --once at the pane's columns, finding Python as python3, python or py -3; after a resize it lays the pane out again at the new width within one refresh; /kbmon opens the pane again; a toast tells the person when the alert set changes; the agent gets the kbmon.py --receipt line as one appended user-role row at session start and another only when the fingerprint changes; the pane adds no constant CPU load (operator, 2026-10-19): its timer never starts kbmon.py --once while the last run is still going, and one refresh costs under 6 CPU seconds",
   "checks": [
     {
       "run": [
@@ -21,6 +21,13 @@
         "python3",
         "-c",
         "import glob,sys\nt=''.join(open(f,encoding='utf-8').read() for f in glob.glob('.claude/skills/kbmon-pane/hooks/**/*.ts*',recursive=True))\nneed=['isInteractive','--receipt','--once','bodyColumns',\"'-3'\",'60_000']\nmiss=[n for n in need if n not in t]\nprint('missing:',miss) if miss else print('ok');sys.exit(1 if miss else 0)\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,re,sys,subprocess,resource,time\nsrc=\"\".join(open(f,encoding=\"utf-8\").read() for f in glob.glob(\".claude/skills/kbmon-pane/hooks/**/*.ts*\",recursive=True))\nif not src:\n    print(\"no kbmon-pane hooks yet\");sys.exit(1)\nif not re.search(r\"(inFlight|running|busy|pending)\",src):\n    print(\"the pane timer has no guard against starting kbmon.py --once while the last run is still going\");sys.exit(1)\nt=time.time();subprocess.run([sys.executable,\"_tools/kbmon.py\",\"--once\"],capture_output=True)\nu=resource.getrusage(resource.RUSAGE_CHILDREN);cpu=u.ru_utime+u.ru_stime\nprint(\"one pane refresh (kbmon.py --once) cpu seconds:\",round(cpu,1),\"wall\",round(time.time()-t,1))\nsys.exit(0 if cpu<6 else 1)"
       ]
     }
   ],
@@ -48,6 +55,14 @@
     {
       "clause": "the agent gets the kbmon.py --receipt line as one appended user-role row at session start and another only when the fingerprint changes",
       "check": 0
+    },
+    {
+      "clause": "the pane adds no constant CPU load (operator, 2026-10-19): its timer never starts kbmon.py --once while the last run is still going",
+      "check": 2
+    },
+    {
+      "clause": "one refresh costs under 6 CPU seconds",
+      "check": 2
     }
   ],
   "touches": [
