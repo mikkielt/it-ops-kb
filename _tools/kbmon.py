@@ -8,8 +8,9 @@
   kbmon.py --metrics           print the snapshot as one JSON object of metric points (name kbmon.<panel>.<measure>, unit,
                                kind gauge or sum, value, attributes of numbers, flags and redacted ids; no claim holder)
   kbmon.py                     show the text view every --interval seconds, --count times (default: until interrupted); on a
-                               terminal it is redrawn in place with ANSI escapes, on a pipe or under NO_COLOR it is
-                               plain frames one after another
+                               terminal it is redrawn in place with ANSI escapes (and again, from the last snapshot,
+                               when the window is resized), on a pipe or under NO_COLOR it is plain frames one after
+                               another
 
   --root DIR                   the clone to read (default: the one this script is in)
   --panel NAME                 only this panel (repeatable)
@@ -27,6 +28,7 @@ is in the snapshot, 2 a bad argument or an unreadable snapshot. Each panel is `m
 run, `mon_view.py` the output, `mon_export.py` the metric points).
 """
 import argparse
+import contextlib
 import os
 import shutil
 import sys
@@ -108,21 +110,41 @@ def frame_text(snap, a, ansi, out, frame):
     return mon_view.render_text(snap, ansi, size.columns, height, frame, a.interval, root)
 
 
+def draw(snap, a, ansi, out, frame):
+    out.write((mon_view.CLEAR if ansi else "") + frame_text(snap, a, ansi, out, frame) + "\n" + ("" if ansi else "\n"))
+    out.flush()
+
+
+def pause(seconds, watch, redraw):
+    """Wait `seconds`, calling `redraw()` whenever the terminal's size changes meanwhile (without a watch: just wait)."""
+    if watch is None:
+        time.sleep(seconds)
+        return
+    end = time.monotonic() + seconds
+    while end > time.monotonic():
+        time.sleep(min(watch.slice, max(0.0, end - time.monotonic())))
+        if watch.poll():
+            redraw()
+
+
 def live(a, names, out):
     """The text view again and again, redrawn in place with ANSI escapes or one plain frame after another; the exit code
-    is that of the last snapshot."""
+    is that of the last snapshot. On a terminal redrawn in place the last snapshot is drawn again, from the start of the
+    screen, as soon as the terminal's size changes, without reading the panels."""
     ansi = colour(a, out, True)
+    in_place = ansi and out.isatty()
     code, frame = 0, 0
     try:
-        while a.count is None or frame < a.count:
-            snap = take(a, names)
-            code = 1 if snap["alerts"] else 0
-            frame += 1
-            text = frame_text(snap, a, ansi, out, frame)
-            out.write((mon_view.CLEAR if ansi else "") + text + "\n" + ("" if ansi else "\n"))
-            out.flush()
-            if a.count is None or frame < a.count:
-                time.sleep(a.interval)
+        with (mon_view.ResizeWatch() if in_place else contextlib.nullcontext()) as watch:
+            while a.count is None or frame < a.count:
+                snap = take(a, names)
+                code = 1 if snap["alerts"] else 0
+                frame += 1
+                if watch:
+                    watch.mark()
+                draw(snap, a, ansi, out, frame)
+                if a.count is None or frame < a.count:
+                    pause(a.interval, watch, lambda: draw(snap, a, ansi, out, frame))
     except KeyboardInterrupt:
         pass
     return code

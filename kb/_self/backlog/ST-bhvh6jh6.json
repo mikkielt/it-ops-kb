@@ -50,6 +50,59 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "cut",
+      "kind": "provisional",
+      "question": "How does a row cut with an ellipsis meet check 2, which measures bytes (the ellipsis is 3 bytes, so a 59-character row is 61 bytes)?",
+      "options": [
+        "cut such a row one character short, ellipsis last",
+        "keep the cut at the width and change the check"
+      ],
+      "recommendation": "cut such a row one character short, ellipsis last",
+      "do": {
+        "cut such a row one character short, ellipsis last": "ST-bhvh6jh6",
+        "keep the cut at the width and change the check": "ST-bhvh6jh6"
+      },
+      "class": "design",
+      "answer": "cut such a row one character short, ellipsis last",
+      "by": "agent"
+    },
+    {
+      "id": "redraw",
+      "kind": "provisional",
+      "question": "Does a resize redraw start with the full erase on a grow too, or only on a shrink?",
+      "options": [
+        "every redraw starts with the erase sequences, as every frame does",
+        "only a shrink erases first"
+      ],
+      "recommendation": "every redraw starts with the erase sequences, as every frame does",
+      "do": {
+        "every redraw starts with the erase sequences, as every frame does": "ST-bhvh6jh6",
+        "only a shrink erases first": "ST-bhvh6jh6"
+      },
+      "class": "delete",
+      "answer": "every redraw starts with the erase sequences, as every frame does",
+      "by": "agent"
+    },
+    {
+      "id": "slice",
+      "kind": "provisional",
+      "question": "How often does the live view look for a resize between frames?",
+      "options": [
+        "SIGWINCH flag every 0.1 s, Windows size read every 0.25 s",
+        "one slice for both, 0.25 s"
+      ],
+      "recommendation": "SIGWINCH flag every 0.1 s, Windows size read every 0.25 s",
+      "do": {
+        "SIGWINCH flag every 0.1 s, Windows size read every 0.25 s": "ST-bhvh6jh6",
+        "one slice for both, 0.25 s": "ST-bhvh6jh6"
+      },
+      "class": "design",
+      "answer": "SIGWINCH flag every 0.1 s, Windows size read every 0.25 s",
+      "by": "agent"
+    }
+  ],
   "notes": "Planner 2026-10-18: check 2 (--once, --json and a piped live view stay plain) passes before the work by design: it pins the modes the goal says stay unchanged. The Windows polling path cannot run on this macOS host; the worker proves it by a run of the polling function on a planted size sequence, reported in its notes.",
   "claimed_by": "orch-r18"
 }
