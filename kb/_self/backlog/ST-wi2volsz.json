@@ -37,7 +37,9 @@
   "touches": [
     "otel/otel_prom.py",
     "otel/kbmon_otel.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "otel/pyproject.toml",
+    "otel/uv.lock"
   ],
   "depends_on": [
     "ST-aqaa7xa6"
@@ -59,6 +61,40 @@
       "class": "design",
       "answer": "none: /metrics is served only when --prometheus-port is given",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Which hosts does --prometheus-bind accept, and what does /metrics do with no OTLP endpoint?",
+      "options": [
+        "loopback addresses and localhost only; with the flag and no endpoint the adapter serves /metrics and sends nothing over OTLP",
+        "loopback IP literals only; the flag needs an endpoint too"
+      ],
+      "recommendation": "loopback addresses and localhost only; with the flag and no endpoint the adapter serves /metrics and sends nothing over OTLP",
+      "do": {
+        "loopback addresses and localhost only; with the flag and no endpoint the adapter serves /metrics and sends nothing over OTLP": "ST-wi2volsz",
+        "loopback IP literals only; the flag needs an endpoint too": "ST-wi2volsz"
+      },
+      "class": "design",
+      "answer": "loopback addresses and localhost only; with the flag and no endpoint the adapter serves /metrics and sends nothing over OTLP",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the adapter stop after a number of snapshots, which the checks need?",
+      "options": [
+        "a new --count N flag (0 = no limit), with --once as --count 1",
+        "no flag; the checks end the process themselves"
+      ],
+      "recommendation": "a new --count N flag (0 = no limit), with --once as --count 1",
+      "do": {
+        "a new --count N flag (0 = no limit), with --once as --count 1": "ST-wi2volsz",
+        "no flag; the checks end the process themselves": "ST-wi2volsz"
+      },
+      "class": "design",
+      "answer": "a new --count N flag (0 = no limit), with --once as --count 1",
+      "by": "agent"
     }
   ],
   "knowledge": {
