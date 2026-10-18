@@ -1,0 +1,26 @@
+{
+  "id": "ST-rqaam5lb",
+  "kind": "story",
+  "title": "The kb-research skill and the coord MCP tools say a dedup holder and a claim key take the id pattern",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-research skill's dedup step (.claude/skills/kb-research/SKILL.md, step 0) says --holder takes an id of letters, digits and _ . : / # @ - (a session id), not a free name, and kb_mcp.py's COORD_KEY description says the same of a key, since coord.py now exits 2 on any other, which step 0 reads as no store and skips dedup quietly. Found by the SP-5xnbspyp review (S4, BG-dn5n7z7k \"A coord.py claim's free-text holder reaches every digest reader, past the references-only rule\").",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\ns=open('.claude/skills/kb-research/SKILL.md',encoding='utf-8').read();m=open('_tools/kb_mcp.py',encoding='utf-8').read()\na='a name of your own' not in s;k=[l for l in m.splitlines() if l.startswith('COORD_KEY')];b=bool(k) and 'letters' in k[0]\nprint('skill free name gone',a,'COORD_KEY names the id characters',b);sys.exit(0 if a and b else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-research/SKILL.md",
+    "_tools/kb_mcp.py"
+  ],
+  "links": [
+    "parked: SP-5xnbspyp review"
+  ],
+  "notes": "The skill path is a plugin skill linked from the project's .claude/skills; check its real file before the claim. kb_mcp.py is code: it takes the code lane."
+}

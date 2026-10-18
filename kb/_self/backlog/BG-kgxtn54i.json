@@ -1,0 +1,25 @@
+{
+  "id": "BG-kgxtn54i",
+  "kind": "bug",
+  "title": "redact keeps the tail of a cut-off escaped-quote secret value after a nested escaped quote",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "redact.redact replaces the whole of an escaped-quote secret value that holds a nested escaped quote and has no closing quote (a JSON string cut off mid-value), at escape levels 1 and 2, so no part of the value after the nested quote is left, and a second pass changes nothing. Found by the SP-5xnbspyp review (S3, BG-saeietup \"redact keeps the tail of an escaped-JSON secret value after a nested escaped quote\"): an unterminated value falls through to the bare-value alternative, which stops at the nested quote.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import redact as R\nb=chr(92);q=chr(34);v='hunter'+'Fake123'\nt1=b+q+'password'+b+q+': '+b+q+'a'+b*3+q+v\nt2=b*3+q+'password'+b*3+q+': '+b*3+q+'a'+b*7+q+v\no=[R.redact(t) for t in (t1,t2)];print(o);sys.exit(1 if any(v in x for x in o) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/redact.py",
+    "kb/_self/querylog.md",
+    "_tools/test_redact.py"
+  ],
+  "links": [
+    "parked: SP-5xnbspyp review"
+  ]
+}
