@@ -108,6 +108,74 @@
       "class": "design",
       "answer": "sonnet, --max-budget-usd 0.5, --max-turns 30",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does remediate run the detached half (the session and the answer)?",
+      "options": [
+        "a hidden _watch subcommand of kbask.py, fed a JSON line on stdin",
+        "a separate script _tools/kbask_watch.py"
+      ],
+      "recommendation": "a hidden _watch subcommand of kbask.py, fed a JSON line on stdin",
+      "do": {
+        "a hidden _watch subcommand of kbask.py, fed a JSON line on stdin": "ST-hp5cccy7",
+        "a separate script _tools/kbask_watch.py": "ST-hp5cccy7"
+      },
+      "class": "design",
+      "answer": "a hidden _watch subcommand of kbask.py, fed a JSON line on stdin",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How long does a remediation hold its claim and run its session?",
+      "options": [
+        "claim lease 1800 seconds, session stopped after 1500 seconds",
+        "claim lease 600 seconds, session stopped after 500 seconds"
+      ],
+      "recommendation": "claim lease 1800 seconds, session stopped after 1500 seconds",
+      "do": {
+        "claim lease 1800 seconds, session stopped after 1500 seconds": "ST-hp5cccy7",
+        "claim lease 600 seconds, session stopped after 500 seconds": "ST-hp5cccy7"
+      },
+      "class": "design",
+      "answer": "claim lease 1800 seconds, session stopped after 1500 seconds",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What bounds the text of a question or an answer, and how is an ask id made?",
+      "options": [
+        "at most 8000 characters after redaction; id is A plus 10 hex digits",
+        "no bound; id is a counter"
+      ],
+      "recommendation": "at most 8000 characters after redaction; id is A plus 10 hex digits",
+      "do": {
+        "at most 8000 characters after redaction; id is A plus 10 hex digits": "ST-hp5cccy7",
+        "no bound; id is a counter": "ST-hp5cccy7"
+      },
+      "class": "querylog",
+      "answer": "at most 8000 characters after redaction; id is A plus 10 hex digits",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How does a remediation's result map to the answer state?",
+      "options": [
+        "completed with the result text when the session succeeded with a text, else failed with the reason (timeout, no start, no result)",
+        "always completed"
+      ],
+      "recommendation": "completed with the result text when the session succeeded with a text, else failed with the reason (timeout, no start, no result)",
+      "do": {
+        "completed with the result text when the session succeeded with a text, else failed with the reason (timeout, no start, no result)": "ST-hp5cccy7",
+        "always completed": "ST-hp5cccy7"
+      },
+      "class": "design",
+      "answer": "completed with the result text when the session succeeded with a text, else failed with the reason (timeout, no start, no result)",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-18 (operator interview): you start it by hand; kbmon stays read-only and kbask is the one writer of asks. Caps: --max-budget-usd 0.5 --max-turns 30 --model sonnet, --permission-mode dontAsk (claude -p denies what would prompt, agents/headless-agent-runtimes.md:23, DOC S1800; the budget is an estimate a run can pass, :52, DOC S1824). The checks put a fake claude first on PATH, so no check makes a paid model call; the paid path is the operator's first real run.",
