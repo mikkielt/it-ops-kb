@@ -2,7 +2,7 @@
   "id": "ST-vyb5q5gp",
   "kind": "story",
   "title": "Research sprint goal: coord shows each session's real work and its server and locks hold under bad input",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "goal_research": true,
   "priority": "P1",

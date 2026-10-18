@@ -2,7 +2,7 @@
   "id": "BG-blw4edp4",
   "kind": "bug",
   "title": "ledger_lock's holder judges its own lock by inode number alone, so after a stale clear a reused inode lets it remove the next writer's live lock",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,

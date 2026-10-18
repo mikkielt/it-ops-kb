@@ -2,7 +2,7 @@
   "id": "BG-caynvdnv",
   "kind": "bug",
   "title": "A coord.py intent posted after its item's done progress shows state=done in the digest though it is live",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,

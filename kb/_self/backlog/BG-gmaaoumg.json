@@ -2,7 +2,7 @@
   "id": "BG-gmaaoumg",
   "kind": "bug",
   "title": "The coord.py client ends in a traceback and exit 1 on a huge --timeout, a bad URL port or a non-ASCII token",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,

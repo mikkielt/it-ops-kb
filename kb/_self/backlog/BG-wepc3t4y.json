@@ -2,7 +2,7 @@
   "id": "BG-wepc3t4y",
   "kind": "bug",
   "title": "A session whose SessionStart claim of its presence lease failed never takes the lease on a tool event",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-4xuulmms",
   "kind": "bug",
   "title": "The coord hook's SessionStart saves the lease token only after its post and digest calls, so a hook killed at its 10 s timeout loses a lease the store accepted",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P3",
   "rank": 0,

@@ -2,7 +2,7 @@
   "id": "BG-iagias5y",
   "kind": "bug",
   "title": "The coord hook posts an intent for any Bash text that holds 'backlog.py claim ID', a commit message or echo included",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,

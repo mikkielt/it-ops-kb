@@ -2,7 +2,7 @@
   "id": "BG-bqvcba5e",
   "kind": "bug",
   "title": "A coord.py wait authenticated before its operator's key file is removed still returns the next event to that operator",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,

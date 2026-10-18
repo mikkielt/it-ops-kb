@@ -2,7 +2,7 @@
   "id": "BG-ih3awckg",
   "kind": "bug",
   "title": "coord.py serve reads a request body before it checks the token, so a client with no valid token holds a thread",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,

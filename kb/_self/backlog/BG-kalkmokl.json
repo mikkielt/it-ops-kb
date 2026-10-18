@@ -2,7 +2,7 @@
   "id": "BG-kalkmokl",
   "kind": "bug",
   "title": "coord.py takes the time before it waits for the store's write lock, so a lease granted after a wait is short by that wait",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
