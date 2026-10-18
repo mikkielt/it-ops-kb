@@ -1768,3 +1768,7 @@ Still open: (topic: auth/configmgr-rbac-auth)
 ## mcp/registry-and-extensions
 
 - **SEP-2567 sessionless MCP** The kb was asked this in a logged lookup of 2026-10-16, and no article answered it (query log finding F-0b28ea9edbd0). Looked in the kb 2026-10-16: `rag.py pack` gives `none`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: mcp/registry-and-extensions)
+
+## claude/powershell-tool
+
+- **Which permission mode makes claude -p deny every tool call that would prompt?** The kb was asked this in a logged lookup of 2026-10-18, and no article answered it (query log finding F-a1c83547238b). Looked in the kb 2026-10-18: `rag.py pack` gives `weak`, with this topic in the lead. Needs an official source that states it (`/kb-research`, or the query log's opt-in research). (topic: claude/powershell-tool)
