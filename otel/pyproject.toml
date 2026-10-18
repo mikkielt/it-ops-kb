@@ -1,0 +1,14 @@
+# The optional OpenTelemetry adapter for kbmon. It is a project of its own, apart from the stdlib-only tools in _tools/:
+# `uv run --frozen --project otel python otel/kbmon_otel.py` installs the SDK from otel/uv.lock and nothing else does.
+[project]
+name = "kbmon-otel"
+version = "0"
+description = "Exports kbmon's metric points over OTLP/HTTP with the OpenTelemetry Python SDK"
+requires-python = ">=3.11"
+dependencies = [
+    "opentelemetry-sdk>=1.30",
+    "opentelemetry-exporter-otlp-proto-http>=1.30",
+]
+
+[tool.uv]
+package = false

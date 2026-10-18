@@ -25,6 +25,16 @@
 - **Attributes are numbers, flags or identifiers.** A string value is kept only when it is letters, digits and `_ . : / # @ -` (120 characters at most) and `redact.redact` returns it as it is; a point with any other attribute value is left out whole. No free text of a panel (an error, an event field, a digest line, a path) is exported.
 - **No holder.** Claims are counted by state; a claim's key is the `item` attribute only when it is a backlog item id (two letters, a dash and eight characters), and a claim's holder is never an attribute.
 
+## The OpenTelemetry adapter
+
+`otel/kbmon_otel.py` sends the metric points over OTLP/HTTP with the OpenTelemetry Python SDK. It is a project of its own: `otel/pyproject.toml` names the SDK and the OTLP/HTTP exporter, `otel/uv.lock` pins them, and `uv run --frozen --project otel python otel/kbmon_otel.py` installs them into `otel/.venv` and runs it. No file in `_tools/` imports an OpenTelemetry package; the adapter runs `kbmon.py --metrics` as a child process and exports its points.
+
+- **Off until an endpoint is set.** The SDK's own variables name where to send: `OTEL_EXPORTER_OTLP_ENDPOINT` (a base URL; the exporter appends `v1/metrics`) or `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`. With neither set the adapter sends nothing, prints `export is off` and exits 0.
+- **Credentials from the environment only.** Headers come from `OTEL_EXPORTER_OTLP_HEADERS` (or `OTEL_EXPORTER_OTLP_METRICS_HEADERS`) and no flag or file names them. No header value is printed or logged: a filter on the log handler replaces each value with `***`, the endpoint is shown as scheme, host and port only, and the child kbmon run gets the environment without any `OTEL_` variable.
+- **Encoding.** The SDK exporter's own (protobuf over HTTP); nothing is encoded by hand.
+- **What is sent.** The points of one snapshot as observable gauges, and `sum` points as observable counters, with the point's unit and attributes under the resource `service.name` `kbmon` (`OTEL_SERVICE_NAME` overrides it). The attribute rules of The metric points apply, since the points are kbmon's own.
+- **Flags.** `--once` sends one snapshot and exits; without it the adapter sends every `--interval` seconds (default 60) until Ctrl-C. `--panel` and `--from-snapshot` are kbmon's, and `--timeout` bounds the child run. Exit codes: 0 sent or export off; 1 a send failed; 2 kbmon gave no points or an argument was bad.
+
 ## Layout
 
 `mon_view.render_text` lays out every frame. `W` is the terminal's columns less one (`COLUMNS`, else the terminal's size, else 80): the last column is never written, and no line is longer than `W`.

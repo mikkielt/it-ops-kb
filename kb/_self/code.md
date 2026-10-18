@@ -5,6 +5,7 @@ The Python under `_tools/` follows these rules; a change to it keeps them. They 
 ## Runtime
 
 - **Standard library only.** A tool runs with the interpreter alone, on Python 3.11 or newer, with no install step. `pyproject.toml` names dependencies for development only (pytest, pytest-xdist, ruff); no tool imports them outside a test.
+- **The one place a package is installed is `otel/`.** The optional OpenTelemetry adapter `otel/kbmon_otel.py` has its own `otel/pyproject.toml` and `otel/uv.lock` and runs as `uv run --frozen --project otel python otel/kbmon_otel.py`; no file in `_tools/` imports an OpenTelemetry package, and the adapter reaches the tools by running them as child processes (`kb/_self/monitoring.md`, The OpenTelemetry adapter).
 - **One entry point.** A hook reaches a script through `_tools/kbpy`, never by naming an interpreter (`kb/_self/querylog.md`, Portability).
 
 ## Portability
