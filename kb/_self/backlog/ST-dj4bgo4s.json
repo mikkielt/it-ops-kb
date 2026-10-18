@@ -2,7 +2,7 @@
   "id": "ST-dj4bgo4s",
   "kind": "story",
   "title": "multi run --replay runs every scenario with scripted agents and no model call",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-giqleoy2",
   "sprint": "SP-5y4ut64g",
   "priority": "P2",
@@ -83,5 +83,6 @@
     "_tools/coord.py",
     "_tools/rag.py"
   ],
-  "notes": "The free proof of the harness: every check of this epic's fitness sprint (SP-7s6uubs7) and the dry run of the paid sprint run on replays. The planted usage is the recorded means of each role, so a replay's record has the shape and the scale of a paid one."
+  "notes": "The free proof of the harness: every check of this epic's fitness sprint (SP-7s6uubs7) and the dry run of the paid sprint run on replays. The planted usage is the recorded means of each role, so a replay's record has the shape and the scale of a paid one.",
+  "claimed_by": "orch-r16"
 }
