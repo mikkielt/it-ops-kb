@@ -2,7 +2,7 @@
   "id": "BG-wepc3t4y",
   "kind": "bug",
   "title": "A session whose SessionStart claim of its presence lease failed never takes the lease on a tool event",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fp3hxl6q",
   "priority": "P3",
   "rank": 0,
@@ -53,5 +53,18 @@
     "parked: SP-4cc36epy review"
   ],
   "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (a tool event makes no claim when the state holds no token). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
-  "claimed_by": "orch-r15"
+  "evidence": {
+    "commit": "23f792b4d4f8c5fec3e9cebacbd305f6e01bcf68",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util,json,sys,tempfile,time\ns=importlib.util.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=importlib.util.module_from_spec(s);s.loader.exec_module(h)\nh.STATE=tempfile.mkdtemp();calls=[];resp={}\ndef fake(*a):\n    calls.append(a[0]);r=resp.get(a[0],(0,json.dumps({'token':'T1','expires':time.time()+h.LEASE_SECONDS})))\n    if r=='kill':raise SystemExit('killed')\n    return r\nh.coord=fake\nh.branch_item=lambda c:None;resp['claim']=(1,'{}')\nh.session_start({'cwd':tempfile.gettempdir(),'source':'startup'},'sidA');resp.clear();calls.clear()\nh.pre_tool_use({'tool_name':'Bash','tool_input':{'command':'ls'}},'sidA')\nprint('tool-event calls',calls,'state',h.load('sidA'));sys.exit(0 if 'claim' in calls else 1)"
+        ],
+        "exit": 0,
+        "sha256": "2aee86b863709b22"
+      }
+    ]
+  }
 }
