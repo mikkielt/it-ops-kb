@@ -38,6 +38,25 @@
   "depends_on": [
     "BG-saeietup"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does redact require the opening bracket and quote of a bracketed key, and does AUTH_HEADER get the same rule?",
+      "options": [
+        "both-alternation",
+        "assignment-only"
+      ],
+      "recommendation": "both-alternation",
+      "do": {
+        "both-alternation": "BG-my67pcip",
+        "assignment-only": "BG-my67pcip"
+      },
+      "class": "querylog",
+      "answer": "both-alternation",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-g4mwrwsv review"
   ],
