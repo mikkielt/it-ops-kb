@@ -77,7 +77,7 @@
       },
       "class": "design",
       "answer": "loopback addresses and localhost only; with the flag and no endpoint the adapter serves /metrics and sends nothing over OTLP",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -94,7 +94,7 @@
       },
       "class": "design",
       "answer": "a new --count N flag (0 = no limit), with --once as --count 1",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

@@ -64,8 +64,8 @@
         "one cursor for each signal": "ST-gj4eicfw"
       },
       "class": "design",
-      "answer": "one cursor, moved only when every signal that is on was sent",
-      "by": "agent"
+      "answer": "a cursor per signal, so a signal that fails does not resend the other (the change: BG-bubaqrja)",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -82,7 +82,7 @@
       },
       "class": "design",
       "answer": "the ids kbmon gives each span (stable across rounds), the 64-bit trace id read as a 128-bit one",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

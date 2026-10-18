@@ -91,7 +91,7 @@
       },
       "class": "querylog",
       "answer": "the whole point is left out",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -108,7 +108,7 @@
       },
       "class": "design",
       "answer": "--metrics beside --json and --once; every panel's up and seconds, kb, coord and sessions measures, the alert count",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

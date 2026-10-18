@@ -1,0 +1,26 @@
+{
+  "id": "BG-ttwih3wd",
+  "kind": "bug",
+  "title": "kbmon --events exports the same query-log delivery again after any later distill.log line",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "a delivery's id and time stay the same while its apply outcome stands last in distill.log, so --since the returned cursor never exports it again",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,time\nH=tempfile.mkdtemp();q=os.path.join(H,'querylog');os.makedirs(q);L=os.path.join(q,'distill.log')\nopen(L,'w').write('apply --push: pushed ok\\n')\nE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd(),KB_COORD_STORE=os.path.join(H,'c.sqlite'))\nk=lambda *a: json.loads(s.run([sys.executable,'_tools/kbmon.py','--events',*a],capture_output=True,text=True,env=E,timeout=120).stdout)\nc=k().get('cursor');time.sleep(1.2);open(L,'a').write('x\\n')\nd=k('--since',str(c))\nagain=[x.get('name') for x in d.get('events',[])+d.get('spans',[]) if str(x.get('name','')).startswith('kb.delivery')]\nif again: print('the same delivery exported again: %r'%again);sys.exit(1)\nprint('ok: an unrelated log line exports no delivery again')\n"
+    ]
+  },
+  "touches": [
+    "_tools/mon_events.py",
+    "_tools/ql_report.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw review"
+  ],
+  "notes": "SP-qvlnptiw review (ST-jx3c5vxm g1 changed): the delivery time is the log's last write and its id delivery-<when>, so any appended line makes a new record."
+}

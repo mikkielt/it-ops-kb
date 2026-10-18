@@ -48,7 +48,7 @@
       },
       "class": "design",
       "answer": "independent",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -65,7 +65,7 @@
       },
       "class": "design",
       "answer": "on-by-default-keep-cursor",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

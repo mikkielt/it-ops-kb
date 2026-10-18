@@ -1,0 +1,25 @@
+{
+  "id": "BG-fjfoh3p4",
+  "kind": "bug",
+  "title": "The otel adapter's /metrics carries the Python process and GC metrics beside kbmon's",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "/metrics on loopback serves kbmon's metric points only (a registry of its own, not prometheus_client's global one), and answers 404 on any other path",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,re,shutil,subprocess as s,sys,time,urllib.request\nU=shutil.which('uv') or sys.exit('uv is not on PATH')\npr=s.Popen([U,'run','--frozen','--project','otel','python','otel/kbmon_otel.py','--prometheus-port','0','--interval','1','--count','20','--panel','kb'],stdout=s.PIPE,stderr=s.PIPE,text=True,env={k:v for k,v in os.environ.items() if not k.startswith('OTEL_')})\ntry:\n    url=None;t0=time.time()\n    while time.time()-t0<120 and not url:\n        line=pr.stdout.readline()\n        if not line: sys.exit('adapter ended: '+pr.stderr.read()[-300:])\n        m=re.search(r'http://127\\.0\\.0\\.1:\\d+/metrics',line);url=m[0] if m else None\n    body='';t0=time.time()\n    while time.time()-t0<60 and 'kbmon_' not in body:\n        body=urllib.request.urlopen(url,timeout=10).read().decode('utf-8','replace');time.sleep(1)\nfinally:\n    pr.terminate()\nextra=sorted({l.split('{')[0].split()[0] for l in body.splitlines() if l and not l.startswith('#') and not l.startswith('kbmon_') and not l.startswith('target_info')})\nif extra: print('/metrics carries more than kbmon metrics: %s'%extra[:5]);sys.exit(1)\nprint('ok: /metrics carries only kbmon metrics')\n"
+    ]
+  },
+  "touches": [
+    "otel/otel_prom.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw review"
+  ],
+  "notes": "SP-qvlnptiw review (ST-wi2volsz): the reviewer found the bind loopback-only (127.0.0.1 and [::1]; 0.0.0.0, :: and 127.1 refused)."
+}

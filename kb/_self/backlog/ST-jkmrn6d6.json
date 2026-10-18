@@ -1,0 +1,26 @@
+{
+  "id": "ST-jkmrn6d6",
+  "kind": "story",
+  "title": "otel/pyproject.toml's SDK floor is the release the adapter's log and span code needs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "otel/pyproject.toml names opentelemetry-sdk from the release that has LogRecordExportResult and Logger.emit(event_name=...), re-locked with uv lock --project otel",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re,sys\nm=re.search(r'opentelemetry-sdk>=([0-9.]+)',open('otel/pyproject.toml',encoding='utf-8').read())\nv=tuple(int(x) for x in m[1].split('.')) if m else (0,)\nprint(v);sys.exit(0 if v>=(1,39) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "otel/pyproject.toml",
+    "otel/uv.lock"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw review"
+  ],
+  "notes": "SP-qvlnptiw: the ST-vau24eqm worker found the floor >=1.30 while the code relies on the pinned 1.45.1; the floor in the check (1.39) is a guess to be read from the SDK changelog by the item."
+}

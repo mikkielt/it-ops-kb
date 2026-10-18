@@ -1,0 +1,25 @@
+{
+  "id": "ST-tir2xzxy",
+  "kind": "story",
+  "title": "The operator decides whether the stray ST-dddddddd sample landing rows leave the committed query log",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the committed query log holds no ops rows of the planted item ST-dddddddd that a worker's sample run wrote into the real spool on 2026-10-18, or the operator records that they stay",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run(['git','grep','-l','ST-dddddddd','--','kb/_querylog'],capture_output=True,text=True)\nprint(p.stdout.strip());sys.exit(1 if p.stdout.strip() else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "kb/_querylog/**"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw review"
+  ],
+  "notes": "SP-qvlnptiw: a ST-jx3c5vxm sample run with CLAUDE_PLUGIN_DATA unset wrote a land.step, a land.end (ST-dddddddd) and a test.run (ms=900) into the main checkout's spool; the land.step and land.end reached kb/_querylog/ops/2026-10/20261018T214927Z-38d6c0ad.jsonl. Deleting query-log content is the operator's call, so the orchestrator left them; the test.run row may read as a 0.9 s whole-suite run."
+}

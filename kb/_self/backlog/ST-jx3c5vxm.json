@@ -69,8 +69,8 @@
         "an event only, no span": "ST-jx3c5vxm"
       },
       "class": "design",
-      "answer": "start equal to end at the log's last write, only when the log gives that time",
-      "by": "agent"
+      "answer": "start equal to end at the log's last write, only when the log gives that time; a failed delivery is a span in error and its id stays the same while the outcome stands last (the change: BG-vssjcjwq, BG-ttwih3wd)",
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -87,7 +87,7 @@
       },
       "class": "design",
       "answer": "once its land.end row is in the log, with the steps of its item in its span",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -103,8 +103,8 @@
         "the whole record is left out, as a metric point is; a list is one attribute joined by a comma": "ST-jx3c5vxm"
       },
       "class": "design",
-      "answer": "the attribute is left out and the record stays; a list is name_n (its length) and name_1.. (the first four)",
-      "by": "agent"
+      "answer": "the attribute is left out and the record stays; a list, comma-separated coord id lists included, is name_n (its length) and name_1.. (the first four) (the change: BG-jy6ipg4a)",
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -121,7 +121,7 @@
       },
       "class": "design",
       "answer": "the newest 4000 ops rows' records and the newest 1000 coord events",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g5",
@@ -138,7 +138,7 @@
       },
       "class": "design",
       "answer": "16 hex characters of a hash of the ops row's id, and the landing root's id as the trace of its steps",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

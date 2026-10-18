@@ -1,0 +1,26 @@
+{
+  "id": "BG-cpa4b3gy",
+  "kind": "bug",
+  "title": "kbmon --events loses an ops row written in the same millisecond as the cursor",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "the --events cursor keeps every ops row newer than the last one exported, rows of the same millisecond included (a row id set or a tie-break beside the time)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;src=open('_tools/mon_events.py',encoding='utf-8').read()\nsys.exit(1 if 'if t > after:' in src else 0)"
+    ]
+  },
+  "repro_reason": "the loss needs two ops rows stamped in one millisecond on either side of a cursor, which a run cannot time; the repro reads the strict time comparison the reviewer found at _tools/mon_events.py:148",
+  "touches": [
+    "_tools/mon_events.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw review"
+  ],
+  "notes": "SP-qvlnptiw review, from the code, no probe run."
+}

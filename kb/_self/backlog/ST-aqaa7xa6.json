@@ -129,7 +129,7 @@
       },
       "class": "design",
       "answer": "the generic OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS and the SDK's metrics-specific ones (OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_HEADERS)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -146,7 +146,7 @@
       },
       "class": "design",
       "answer": "--once sends one snapshot; without it a send every --interval seconds, default 60, until Ctrl-C",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {
