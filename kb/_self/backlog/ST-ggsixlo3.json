@@ -41,9 +41,6 @@
     "kb/_self/tools.md",
     "_tools/bench_replay.py"
   ],
-  "depends_on": [
-    "ST-dj4bgo4s"
-  ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/research-repro.md",
