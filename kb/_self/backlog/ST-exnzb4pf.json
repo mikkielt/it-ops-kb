@@ -2,7 +2,7 @@
   "id": "ST-exnzb4pf",
   "kind": "story",
   "title": "kbmon --metrics: a snapshot as metric points with id-only, redacted attributes",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",
@@ -82,5 +82,6 @@
       "logs/otel-collector-otlp-pipeline"
     ]
   },
-  "notes": "Plan 2026-10-18: the stdlib side owns the allowlist and the redaction, so the SDK adapter only forwards points it is given and the leak guard runs without the SDK. The planted snapshot holds one fake secret of each kbcommon.SECRETS shape and a key=value assignment, built at run time."
+  "notes": "Plan 2026-10-18: the stdlib side owns the allowlist and the redaction, so the SDK adapter only forwards points it is given and the leak guard runs without the SDK. The planted snapshot holds one fake secret of each kbcommon.SECRETS shape and a key=value assignment, built at run time.",
+  "claimed_by": "orch-r19"
 }
