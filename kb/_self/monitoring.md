@@ -133,3 +133,22 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 - **`this` or `other`, never a path.** A holder's `clone` is `this` when it is the clone the panel reads (`--root`), else `other`; the path in the lock record is not printed.
 - **Unsupported load.** A host with no `os.getloadavg` shows `load` as `unsupported`; the locks and the ceiling are shown as on any host.
 - **View.** `load` (`1.00 · 2.00 · 3.00 · 8 cores`), `suite` and `main` (`pid · this clone · since YYYY-MM-DD HH:MMZ`, the main lock also `step`, or `none`), then the ceiling: `ids`, `files` and `last run`, each as `{used}/{limit} [|||||||...] {pct}%` with 10 cells (the percentage floored to a cell). From 100 columns the three share one row, below that three aligned rows. A bar of 80 to 99% starts its row with `! ` (yellow) and one of 100% or more with `!!` (red), the shared row by its worst bar; a row under 80% has no colour, since the view colours whole rows.
+
+## The querylog panel
+
+`data` of `mon_querylog.py`:
+
+| key | holds |
+|---|---|
+| `mode`, `disabled` | the query log's mode in the config file (`auto`, `local` or `off`) and whether the `DISABLED` marker is there |
+| `spool` | the rows waiting in the local spool: `files`, `rows`, `by_kind` (rows per surface, the surfaces that have a row) and `unreadable` (rows distill cannot read) |
+| `undelivered`, `undelivered_runs`, `undelivered_since`, `delivery_ref` | the entries in the local store's run files that `origin/main` does not hold yet (0 in mode `local`, where an entry is delivered once distill wrote it), the run files holding them, the time of the oldest such run id or null, and false when the delivery ref cannot be read (then every run file of the store counts) |
+| `last_distill` | the outcome of the last `distill:` line of `distill.log` (`written` with `entries`, `dropped` and `waiting`, `nothing`, `off`, `locked` or `failed`), or null |
+| `last_delivery` | `{outcome, why, when}` of the last terminal `apply --push:` line (`pushed`, `nothing`, `conflict`, `waiting`, `locked`, `refused`, `fetch-failed`), or null; `why` is the failed gate and its first error line that `backlog.py land` reads for a push that delivered nothing, else empty |
+| `last_pushed` | `{commit, when}` of the newest query log commit on `origin/main` (a first-parent commit with a `KB-Auto` trailer holding `querylog`), or null |
+| `usage_today` | `{rows, tokens, usd, unpriced}`: the UTC day's usage rows (Usage, In the query log), their tokens (uncached input, cache writes, cache reads and output) and their cost at `backlog.py cost`'s prices; `unpriced` names a model the price table lacks |
+
+- **Read through the query log's readers.** The counts come from the structured readers beside the text ones in `ql_report.py` (`spool_state`, `undelivered`, `last_outcomes`, `last_pushed`, `usage_today`), which `querylog.py show --spool` shares (`spool_scan`); the panel parses none of the lines `show` and `status` print. It reads the query log home of this copy of the tools (`ql_base.places`: the clone's `_cache/querylog`, or the plugin's data directory), whatever `--root` names, and writes nothing; the delivery ref is read with `git ls-tree` and `git log` on the local ref, with no fetch.
+- **Counts and kinds only.** The spool keeps prompts and answers as typed; the panel carries no question, prompt or reply text, no session id and no row id: rows are counted by surface, runs by their id's time, commits by hash.
+- **When.** `distill.log` carries no time per line, so `when` of an outcome is the log's last write, set only on the outcome that stands last in the log and null on the other.
+- **View.** Four rows: `spool` (rows in files, then the four surfaces with most rows and `+N more`), `delivery` (the undelivered count, the last pushed commit and time, the last apply outcome), `distill` (the outcome with its counts, the mode, `DISABLED` when the marker is there) and `today` (rows, tokens and dollars, with the model that has no price). A refused push replaces the delivery row with `!!delivery  REFUSED <gate and first error line> · since <oldest undelivered run> · undelivered N`; a push whose fetch failed, or an undelivered entry with no readable delivery ref, makes it a `! ` row.
