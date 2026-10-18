@@ -22,5 +22,6 @@
   ],
   "links": [
     "parked: SP-z3jcdsgr review"
-  ]
+  ],
+  "notes": "ST-kio3rfoh 2026-10-19: rag.py eval printed DRIFT EV-page-file-size-windows (window share baseline 0.2015, now 0.1957) while 717 of 717 rows passed, after a change of kb/public articles only; --write-shares rewrote word_shares.csv for every word, so the drift is corpus-wide."
 }
