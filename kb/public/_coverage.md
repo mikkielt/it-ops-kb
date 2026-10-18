@@ -336,7 +336,7 @@ Every topic of this root with its priority (the research order, not importance),
 | `python/stdlib-datetime-iso-week` | P3 | complete | `python/stdlib-datetime-iso-week.md` | 1 |
 | `python/stdlib-os-loadavg` | P3 | partial | `python/stdlib-os-loadavg.md` | 7 |
 | `python/stdlib-urllib-errors` | P3 | partial | `python/stdlib-urllib-errors.md` | 5 |
-| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 35 |
+| `python/stdlib-windows-portability` | P3 | partial | `python/stdlib-windows-portability.md` | 36 |
 | `python/testcontainers-postgres-pytest` | P3 | partial | `python/testcontainers-postgres-pytest.md` | 15 |
 | `python/typer-cli` | P3 | partial | `python/typer-cli.md` | 16 |
 | `python/uv-windows-install` | P3 | partial | `python/uv-windows-install.md` | 3 |

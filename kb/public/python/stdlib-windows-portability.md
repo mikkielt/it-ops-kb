@@ -3,7 +3,7 @@ topic: python/stdlib-windows-portability
 priority: P3
 applies_to: "CPython 3.14.7 documentation (release tag); stdlib behaviour on Windows versus POSIX for detached processes, file locks, text files and interpreter names"
 retrieved_utc: 2026-10-18
-sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-inakn5ad, S-qvjkxdub, S-kkrnrh7n, S-j6wqryzp, S-iv3usyoz, S-ctjl4gek, S-4a5xeg5l]
+sources: [S-vfd5kpka, S-hlwenztu, S-kyzwo2d6, S-2cf7ptty, S-dabwnzz5, S-ew7mucsg, S-oavxfpsn, S-f5bnvamj, S-ntbllsvy, S-sjuwcuhk, S-6bobcclf, S-e4zz24dq, S-ttcgrkbl, S-obrkrr52, S-hjy5rcb2, S743, S-5brdhqgo, S-jwv5eevl, S-ymqlfpgy, S-ujjrcinq, S-t5ahy22o, S-qz6kfi4i, S-qo63gfo7, S-edjp43o7, S-oqrlzkwe, S-ip5ugdeb, S-5qbsemqm, S-7ctlvynr, S-inakn5ad, S-qvjkxdub, S-kkrnrh7n, S-j6wqryzp, S-iv3usyoz, S-ctjl4gek, S-4a5xeg5l, S-zch3x2zi]
 status: partial
 ---
 
@@ -18,7 +18,9 @@ byte-range lock. `open()` in text mode picks the locale encoding and translates 
 otherwise, so every read and write passes `encoding="utf-8"` and writes `newline="\n"`. On Windows the documented
 commands are `python` and `py`; `python3` exists only as a compatibility alias. Escape sequences printed to the Windows
 console act only when `ENABLE_VIRTUAL_TERMINAL_PROCESSING` is set on the screen buffer, which CPython reads but does not
-set; `ESC [ H` then `ESC [ 2 J` homes the cursor and erases the display.
+set; `ESC [ H` then `ESC [ 2 J` homes the cursor and erases the display. Bold red text is `ESC [ 31 ; 1 m` and the reset is
+`ESC [ 0 m`; the NO_COLOR convention (no-color.org) asks software that adds ANSI colour by default to add none when the
+variable is set to a non-empty value.
 
 ## Facts
 ### Detached processes
@@ -127,6 +129,21 @@ set; `ESC [ H` then `ESC [ 2 J` homes the cursor and erases the display.
 - So the sequence that clears the screen and starts a redraw at the top left is `ESC [ H` plus `ESC [ 2 J` (`"\x1b[H\x1b[2J"`), the two together because ED 2 is not documented to move the cursor and CUP does not erase; `ESC [ 2 J` alone erases but leaves the cursor where it was. [DER S-qvjkxdub, S-j6wqryzp: CUP default 1;1, ED 2, no cursor move stated for ED]
 - A full-screen program can switch to the alternate screen buffer with `ESC [ ? 1 0 4 9 h`, "so that they can modify the entire contents of the buffer, without affecting the application that started them"; the alternate buffer is the window's size, with no scrollback. [DOC S-qvjkxdub]
 - Open: whether the Windows console honours `ESC [ 3 J` (xterm's erase of saved lines) is not stated on the page read; the flag's default per console host and Windows version, and the effect of the sequences with the flag off, are not stated either; no Windows host was available to probe them. [UNK: see `_gaps.md`]
+
+### Bold and red text (SGR) and the NO_COLOR convention
+- Text styling is the SGR sequence (Set Graphics Rendition), a CSI sequence ending in `m` whose `<n>` takes 0 to 16 parameters separated by semicolons; with no parameter it is treated as a single 0. The page calls these commands "generally equivalent to calling" `SetConsoleTextAttribute` for all later writes. [DOC S-qvjkxdub]
+- The Windows page's value table: 0 "Returns all attributes to the default state prior to modification", 1 Bold/Bright "Applies brightness/intensity flag to foreground color", 22 No bold/bright, 31 Foreground Red ("non-bold/bright red"), 39 Foreground Default (only the foreground part of the defaults), and 91 Bright Foreground Red ("bold/bright red"). [DOC S-qvjkxdub]
+- xterm's list gives the same codes: `CSI Pm m` is "Character Attributes (SGR)" with `Ps = 0` Normal, `1` Bold, `22` "Normal (neither bold nor faint)", `31` "Set foreground color to Red" and `39` "Set foreground color to default"; `91` is the aixterm bright red, present only where 16-colour support is compiled. [DOC S-j6wqryzp]
+- Parameters of one sequence are applied left to right, and a later competing option wins ("the right-most option taking precedence"); the page's sample prints red with `"\x1b[31m"`, adds bold with `"\x1b[1m"` ("to affect the previous color setting"), resets with `"\x1b[m"` (implicit SGR 0) or `"\x1b[0m"`, and restores only the foreground with `"\x1b[39m"`. [DOC S-qvjkxdub]
+- So bold red text is `"\x1b[31;1m"` and the reset after it is `"\x1b[0m"`, or `"\x1b[m"` for the same; a reset that leaves other styling alone uses `22` for bold and `39` for the colour. The Windows page orders red before bold in its sample and does not say what `1;31` gives there, since its 31 is "non-bold/bright", so the sequence that follows the page is red first, then bold. [DER S-qvjkxdub, S-j6wqryzp: SGR 0, 1, 22, 31, 39; left-to-right rule; the Windows sample's order]
+- The NO_COLOR page (no-color.org, "Last updated: 2026-10-12") states an informal standard "proposed in 2017": command-line software that "adds ANSI color to its output by default" should check for a `NO_COLOR` environment variable that, "when present and not an empty string (regardless of its value)", prevents the addition of ANSI color. [DOC S-zch3x2zi]
+- The page's C sample reads `getenv("NO_COLOR")` and turns colour off only when the result is neither NULL nor an empty string; so `NO_COLOR=1` disables it and `NO_COLOR=` (empty) does not. Software that does not add colour by default "does not need to care about NO_COLOR". [DOC S-zch3x2zi]
+- NO_COLOR is "a hint to the software running in the terminal to suppress addition of color", not to the terminal; user-level configuration files and per-instance command-line arguments "should override the NO_COLOR environment variable", so a user can export `NO_COLOR=1` and still enable colour for one program. [DOC S-zch3x2zi]
+- NO_COLOR does not turn off other styling: asked whether it should disable bold, underline and italic, the page answers "No", since the standard "only signals the user's intention regarding adding ANSI color". [DOC S-zch3x2zi]
+- The convention is published at no-color.org, whose pages link the GitHub repository `jcs/no_color` for pull requests that add software to the list; the page names no standards body, person or organisation as author and states no licence. [DOC S-zch3x2zi]
+- CPython 3.14.7 follows it in its own colour check: `_colorize.can_colorize` returns false when `NO_COLOR` is set to a non-empty value, tested after `PYTHON_COLORS` (`0` or `1`, which win, unless `-E` ignores the environment) and before `FORCE_COLOR` (a non-empty value turns colour on), then `TERM=dumb`, the Windows virtual-terminal flag and `os.isatty` of the stream. [CODE S-4a5xeg5l: Lib/_colorize.py#can_colorize]
+- So a stdlib-only tool that prints a loud alert line writes the colour only when the stream is a terminal (`isatty`), on Windows only once the virtual-terminal flag is on, and `NO_COLOR` is unset or empty; with `NO_COLOR` set it prints the same text without the colour (bold may stay, by the page's answer), and a plain-text marker such as `ALERT:` carries the alert wherever colour is off. [DER S-zch3x2zi, S-4a5xeg5l, S-qvjkxdub: the NO_COLOR rule, CPython's order of checks, the console flag]
+- Open: who maintains no-color.org (a person or organisation) is not stated on the pages read, and neither is its licence; whether the Windows console renders `1;31` (bold before red) as bright red is not stated. [UNK: see `_gaps.md`]
 
 ## Reference
 | Need | POSIX | Windows | Source |

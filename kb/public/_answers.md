@@ -4110,3 +4110,15 @@ _Agent: kb-research_
 - See python/stdlib-windows-portability.md, python/stdlib-argparse-json.md.
 
 _Agent: kb-research_
+
+## QK-ansi-sgr-escape-sequences-set-bold. Which ANSI SGR escape sequences set bold and red text and reset them, and what does the NO_COLOR convention ask of a console program and who publishes it?
+- SGR is `ESC [ <n> m`; `1` sets bold (on Windows "bold/bright"), `31` sets a red foreground, `0` (or no parameter) resets all attributes, `22` ends bold alone and `39` restores the default foreground. [DOC S-qvjkxdub, S-j6wqryzp]
+- Parameters apply left to right and the right-most competing one wins; the Windows page's own sample sets red (`31`) first and bold (`1`) after it. [DOC S-qvjkxdub]
+- NO_COLOR, an informal standard proposed in 2017, asks software that adds ANSI colour by default to add none when the `NO_COLOR` environment variable is present and not an empty string, whatever its value; user configuration and per-run arguments may override it, and it does not cover bold, underline or italic. [DOC S-zch3x2zi]
+- It is published at no-color.org, whose pages link the GitHub repository `jcs/no_color`; no standards body is named. [DOC S-zch3x2zi]
+- CPython 3.14.7's `_colorize.can_colorize` returns false when `NO_COLOR` is non-empty. [CODE S-4a5xeg5l: Lib/_colorize.py#can_colorize]
+- Conclusion: a loud alert line is `"\x1b[31;1m" + text + "\x1b[0m"`, written only to a terminal, on Windows once the virtual-terminal flag is on, and with no colour (a plain `ALERT:` marker instead) when `NO_COLOR` is set non-empty. [DER S-qvjkxdub, S-j6wqryzp, S-zch3x2zi, S-4a5xeg5l: SGR 0, 1, 31, the NO_COLOR rule, CPython's check]
+- Open: the maintainer and licence of no-color.org, and what a Windows console does with `1;31` (bold before red), are not stated on the pages read. [UNK]
+- See python/stdlib-windows-portability.md.
+
+_Agent: kb-research_
