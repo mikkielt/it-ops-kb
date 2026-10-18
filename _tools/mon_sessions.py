@@ -102,6 +102,18 @@ def collect(ctx):
     return data
 
 
+def alerts(data):
+    """The alerts of the panel's data: one `orphan` alert (id `sessions.orphan`) while a process of class `orphan` is listed;
+    its message counts them and names the oldest one's pid."""
+    orphans = [p for p in data.get("procs") or [] if isinstance(p, dict) and p.get("class") == "orphan"]
+    if not orphans:
+        return []
+    oldest = max(orphans, key=lambda p: p.get("age_s") or 0)
+    return [{"kind": "orphan", "id": "sessions.orphan", "panel": "sessions", "since": "",
+             "message": f"{len(orphans)} orphan process{'' if len(orphans) == 1 else 'es'}, the oldest pid {oldest.get('pid')} "
+                        f"for {age_text(oldest.get('age_s') or 0)}"}]
+
+
 def age_text(seconds):
     s = max(0, int(seconds))
     if s < 60:
