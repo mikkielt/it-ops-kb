@@ -2,7 +2,7 @@
   "id": "ST-l75rp2ow",
   "kind": "story",
   "title": "Research sprint goal: kbmon shows the query log, the host and the active sprint, and alerts loudly on a refused delivery",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-v4yih547",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-18: rag.py pack on 423d72d05 gives none for both. Knowledge by item: ST-y3twtacd reads (1) and (2) for the loud alert line. The query log, host and sprint panels read the kb's own tools; os.getloadavg is Unix only (python/stdlib-os-loadavg.md:22, coverage good), so no outside facts for ST-go6vdmnt, ST-iogk4rdb and ST-n5d72sm3."
+  "notes": "Plan 2026-10-18: rag.py pack on 423d72d05 gives none for both. Knowledge by item: ST-y3twtacd reads (1) and (2) for the loud alert line. The query log, host and sprint panels read the kb's own tools; os.getloadavg is Unix only (python/stdlib-os-loadavg.md:22, coverage good), so no outside facts for ST-go6vdmnt, ST-iogk4rdb and ST-n5d72sm3.",
+  "claimed_by": "orch-r18"
 }
