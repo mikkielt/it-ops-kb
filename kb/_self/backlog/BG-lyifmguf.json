@@ -21,6 +21,42 @@
     "_tools/benchmarks.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a removed multi sandbox free its clones?",
+      "options": [
+        "a multi remove command that deletes DIR and its clones dir",
+        "clones inside DIR"
+      ],
+      "recommendation": "a multi remove command that deletes DIR and its clones dir",
+      "do": {
+        "a multi remove command that deletes DIR and its clones dir": "BG-lyifmguf",
+        "clones inside DIR": "BG-lyifmguf"
+      },
+      "class": "delete",
+      "answer": "a multi remove command that deletes DIR and its clones dir",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does multi remove do with a DIR that holds no sandbox.json?",
+      "options": [
+        "refuse with exit 2",
+        "remove it anyway"
+      ],
+      "recommendation": "refuse with exit 2",
+      "do": {
+        "refuse with exit 2": "BG-lyifmguf",
+        "remove it anyway": "BG-lyifmguf"
+      },
+      "class": "design",
+      "answer": "refuse with exit 2",
+      "by": "agent"
+    }
+  ],
   "links": [
     "parked: SP-5y4ut64g review"
   ],
