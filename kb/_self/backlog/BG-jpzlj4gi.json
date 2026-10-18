@@ -2,7 +2,7 @@
   "id": "BG-jpzlj4gi",
   "kind": "bug",
   "title": "kbask's observer session is not read-only: it loads the project's and the user's allow rules and the project's hooks",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-w6amecjt",
   "priority": "P1",
   "rank": 0,
@@ -21,5 +21,6 @@
     "kb/_self/tools.md",
     ".claude/agents/kb-observer.md",
     "kb/_self/plugin.md"
-  ]
+  ],
+  "claimed_by": "orch-r20"
 }
