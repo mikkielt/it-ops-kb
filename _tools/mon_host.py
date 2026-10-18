@@ -10,11 +10,13 @@ row of mode `full` that ran pytest, from the ops rows. Imports `mon_base`; `test
 reads them.
 """
 import os
+import shutil
 import sys
 from pathlib import Path
 
 import mon_base
 
+LOW_DISK_PCT = 10  # percent free below which the clone's file system is an alert
 CELLS = 10  # cells of a bar
 WARN_PCT = 80  # a bar from here on is a warning, at 100 an error
 LABEL = 10  # columns of a body row's label
@@ -77,6 +79,31 @@ def ceiling(root):
             "ids": ids, "files": files, "last_run_s": seconds}
 
 
+def disk(root):
+    """{free_bytes, total_bytes, free_pct} of the file system that holds ROOT (`free_pct` rounded to one decimal), or
+    `{"error": ...}` where `shutil.disk_usage` refuses it."""
+    try:
+        u = shutil.disk_usage(root)
+    except OSError as e:
+        return {"error": " ".join(str(e).split())[:mon_base.ERROR_CHARS]}
+    return {"free_bytes": u.free, "total_bytes": u.total, "free_pct": round(u.free * 100 / u.total, 1) if u.total else 0.0}
+
+
+def alerts(data):
+    """The alerts of the panel's data: one `disk` alert (id `host.disk`) while the clone's file system has under LOW_DISK_PCT
+    percent free."""
+    d = data.get("disk")
+    pct = d.get("free_pct") if isinstance(d, dict) else None
+    if not isinstance(pct, (int, float)) or isinstance(pct, bool) or pct >= LOW_DISK_PCT:
+        return []
+    return [{"kind": "disk", "id": "host.disk", "panel": "host", "since": "",
+             "message": f"disk low: {pct:g}% free ({gigabytes(d.get('free_bytes'))} of {gigabytes(d.get('total_bytes'))})"}]
+
+
+def gigabytes(n):
+    return f"{n / 10 ** 9:.1f} GB" if isinstance(n, (int, float)) and not isinstance(n, bool) else "? GB"
+
+
 def collect(ctx):
     import kg_lock
     import tests
@@ -85,7 +112,7 @@ def collect(ctx):
     return {"load": load(), "cores": cores if isinstance(cores, int) else None,
             "suite_lock": holder(os.path.join(base, tests.HOST_LOCK_NAME), ctx.root),
             "main_lock": holder(os.path.join(base, kg_lock.LOCK_NAME), ctx.root),
-            "ceiling": ceiling(ctx.root)}
+            "ceiling": ceiling(ctx.root), "disk": disk(ctx.root)}
 
 
 def bar(used, limit):
