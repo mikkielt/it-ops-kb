@@ -188,8 +188,13 @@ def report_line(root):
 # ------------------------------------------------------------------ paths and the turn cap
 
 def clone_top(root):
-    """The git toplevel of ROOT: where the clone's worker worktrees and scratch directories sit."""
-    return Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    """The git toplevel of ROOT: where the clone's worker worktrees and scratch directories sit. A ROOT that is itself
+    a worker's worktree (`<top>/<worktree_dir>/agent-<id>`) gives the checkout that dispatched it, not the worktree."""
+    top = Path(git(root, "rev-parse", "--show-toplevel").strip()).resolve()
+    parts = worker_dir()
+    if top.name.startswith(WORKER_NAME) and top.parent.parts[-len(parts):] == parts:
+        return top.parents[len(parts)]
+    return top
 
 
 def worktree_path(root, iid):
