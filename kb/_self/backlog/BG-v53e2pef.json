@@ -1,0 +1,17 @@
+{
+  "id": "BG-v53e2pef",
+  "kind": "bug",
+  "title": "coord.py dedup claims research keys from the question's own words, past the id pattern a claim key takes",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "coord.py dedup builds research:TOPIC:TERM keys from the words of the question's kb lacks lines (free text with spaces and any punctuation) and claims them past the FIELD_VALUE pattern claim keys take (BG-dn5n7z7k), so a digest --key that overlaps research: prints such a term; found while fixing BG-dn5n7z7k, not fixed there since dedup keys need terms mapped to ids. dedup research keys hold only ids, or digest prints no research key term.",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.exit(1)"
+    ]
+  }
+}
