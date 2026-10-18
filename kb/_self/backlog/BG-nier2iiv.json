@@ -2,7 +2,7 @@
   "id": "BG-nier2iiv",
   "kind": "bug",
   "title": "The store gate accepts a gap or conflict finding lead that redact.redact would change",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
@@ -42,5 +42,6 @@
   "links": [
     "parked: SP-g4mwrwsv review"
   ],
-  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the api_key lead is accepted); the check also asks that an ordinary documentation url lead stays accepted. test_redact.py's store-gate test plants one lead of this shape (no new test id). Knowledge: the tree's own rule (ql_store.feedback_problems since BG-boyagwh4); no outside facts."
+  "notes": "Plan 2026-10-17: repro and check fail on origin/main 3dba0ef83 (the api_key lead is accepted); the check also asks that an ordinary documentation url lead stays accepted. test_redact.py's store-gate test plants one lead of this shape (no new test id). Knowledge: the tree's own rule (ql_store.feedback_problems since BG-boyagwh4); no outside facts.",
+  "claimed_by": "orch-r13"
 }
