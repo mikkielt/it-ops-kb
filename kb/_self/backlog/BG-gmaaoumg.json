@@ -33,6 +33,40 @@
     "_tools/coord.py",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the client decide a wait --timeout is too large to send?",
+      "options": [
+        "probe",
+        "cap"
+      ],
+      "recommendation": "probe",
+      "do": {
+        "probe": "BG-gmaaoumg",
+        "cap": "BG-gmaaoumg"
+      },
+      "class": "design",
+      "answer": "probe",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "blocking",
+      "question": "Is a non-ASCII --token a usage error (exit 2 at parse) or a refusal at the store (exit 1, token does not hold the key)?",
+      "options": [
+        "usage",
+        "refusal"
+      ],
+      "recommendation": "usage",
+      "do": {
+        "usage": "BG-gmaaoumg",
+        "refusal": "BG-gmaaoumg"
+      },
+      "class": "secrets"
+    }
+  ],
   "links": [
     "parked: SP-rsmmwzr2 review",
     "duplicate: BG-txllfs4n (merged 2026-10-17)"
