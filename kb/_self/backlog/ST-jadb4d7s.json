@@ -1,0 +1,24 @@
+{
+  "id": "ST-jadb4d7s",
+  "kind": "story",
+  "title": "A planned check never asserts that the clone's shared origin/main ref is unchanged",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint plan step says a check proving a tool leaves this clone alone compares HEAD and refs the check owns, not refs/remotes/origin/main, which every worktree of the clone shares and another session's push moves (SP-5y4ut64g close: ST-dj4bgo4s's landing stopped at checks on 'the replay moved this clone' after two pushes by other sessions; the rerun passed).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open(\".claude/skills/kb-sprint/SKILL.md\", encoding=\"utf-8\").read()\nstep = t[t.index(\"## plan\"):t.index(\"## start\")]\nsys.exit(0 if \"refs/remotes/origin/main\" in step and \"shares\" in step else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g close"
+  ]
+}

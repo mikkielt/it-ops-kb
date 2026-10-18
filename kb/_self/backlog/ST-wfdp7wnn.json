@@ -1,0 +1,24 @@
+{
+  "id": "ST-wfdp7wnn",
+  "kind": "story",
+  "title": "A planned check that builds a sandbox removes it, since land and the review rerun every sibling check",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "The kb-sprint plan step says a check that builds a sandbox or clone (a multi or repro instance) removes everything it made in a finally, clones outside its temp dir included, since land's siblings step and the review's done rerun each done item's checks (SP-5y4ut64g close: about 110 multi sandboxes of 1.3 GB from the checks filled the disk; ST-y4z54l3q's landing stopped on ENOSPC at its siblings step after 415 s).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt = open(\".claude/skills/kb-sprint/SKILL.md\", encoding=\"utf-8\").read()\nstep = t[t.index(\"## plan\"):t.index(\"## start\")]\nsys.exit(0 if \"sandbox\" in step and \"finally\" in step else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g close"
+  ]
+}

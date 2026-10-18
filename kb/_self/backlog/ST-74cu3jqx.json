@@ -1,0 +1,25 @@
+{
+  "id": "ST-74cu3jqx",
+  "kind": "story",
+  "title": "Sprint planning puts kb/_self/code.md in the touches of an item that adds a _tools module",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "An item whose goal adds a new _tools/*.py module carries kb/_self/code.md in its touches (its subsystem bullet lists every module of a prefix), and the kb-sprint plan step says so beside the docs map rule (SP-5y4ut64g close: ST-b2k5y46l and ST-ykdwo7a3 stopped at land's stale step on code.md and needed a touch widening and a worker resume each).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import re, sys\nt = open(\".claude/skills/kb-sprint/SKILL.md\", encoding=\"utf-8\").read()\nstep = t[t.index(\"## plan\"):t.index(\"## start\")]\nsys.exit(0 if re.search(r\"new tool module[^.]*code\\.md\", step) else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g close"
+  ]
+}

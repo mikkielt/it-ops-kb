@@ -1,0 +1,26 @@
+{
+  "id": "ST-c44m753j",
+  "kind": "story",
+  "title": "A gate about a benchmark sandbox's bare is not classed push for naming origin, remote or sync --push",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "Gate classing tells a sandbox's own bare from the clone's integration remote, or the worker brief tells a worker to name the sandbox bare without push words, so a design choice inside a sandbox stays a provisional gate (SP-5y4ut64g close: four sandbox gates, ST-b2k5y46l g2 and g5, ST-ovfyfksp g3, ST-dj4bgo4s g2, were classed push and made blocking, and each held its landing until the orchestrator answered it).",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0, \"_tools\")\nimport bl_authority\nq = \"Which landings does multi probe run in the sandbox's bare, and how does it read the checkout's own remote ref?\"\no = [\"the two commits land in the shared sandbox\", \"the two commits land in both sandboxes\"]\nitem = {\"id\": \"ST-aaaaaaaa\", \"touches\": [\"_tools/bench_multi.py\", \"_tools/benchmarks.py\"]}\nc = bl_authority.derived_class(item, {\"id\": \"g5\", \"question\": q, \"options\": o})\nsys.exit(0 if c != \"push\" else 1)\n"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "_tools/bl_dispatch.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5y4ut64g close"
+  ]
+}
