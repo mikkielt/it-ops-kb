@@ -2,7 +2,7 @@
   "id": "ST-3erithkf",
   "kind": "story",
   "title": "A worker whose re-anchor leaves its reworded fact unlocated anchors it with a quote or reports it",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,
@@ -32,5 +32,6 @@
   "links": [
     "parked: SP-3g3egfll close"
   ],
-  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the done bar names no unlocated fact). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside."
+  "notes": "Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the done bar names no unlocated fact). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: none from outside.",
+  "claimed_by": "orch-r14"
 }
