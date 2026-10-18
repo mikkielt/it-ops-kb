@@ -2,7 +2,7 @@
   "id": "ST-fn65hlod",
   "kind": "story",
   "title": "Research sprint goal: kbmon shows the kb, coord and running sessions live and as one JSON snapshot",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5gph7fh6",
   "goal_research": true,
   "priority": "P1",
@@ -21,5 +21,6 @@
   "touches": [
     "kb/public/**"
   ],
-  "notes": "Plan 2026-10-18: rag.py pack on 423d72d05 gives none for (1), (2) and (3) and weak for (4). Knowledge by item: ST-jhsyp3fq reads (2) and (4), ST-o2tr2ry4 reads (1) and (3); ST-q4qqiw2w and ST-jokdpvsi rest on facts the kb holds (python/stdlib-sqlite3-csv, python/stdlib-urllib-errors, claude/parallel-sessions)."
+  "notes": "Plan 2026-10-18: rag.py pack on 423d72d05 gives none for (1), (2) and (3) and weak for (4). Knowledge by item: ST-jhsyp3fq reads (2) and (4), ST-o2tr2ry4 reads (1) and (3); ST-q4qqiw2w and ST-jokdpvsi rest on facts the kb holds (python/stdlib-sqlite3-csv, python/stdlib-urllib-errors, claude/parallel-sessions).",
+  "claimed_by": "orch-r17"
 }
