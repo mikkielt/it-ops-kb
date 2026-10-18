@@ -50,6 +50,7 @@ SHAPES = {"bearer": ("Authorization: Bearer " + VALUE, VALUE), "basic": ("Author
           "escaped quote nested in an escaped JSON value": ("{" + BS + Q + "password" + BS + Q + ": " + BS + Q + "a" + BS * 3 + Q + "b" + VALUE + BS + Q + "}", VALUE),
           "escaped JSON header": ("{" + BS + Q + "Authorization" + BS + Q + ": " + BS + Q + "Bearer " + VALUE + BS + Q + "}", VALUE),
           "subscripted header": ("headers['Authorization'] = 'Bearer " + VALUE + "'", VALUE),
+          "subscripted key": ("cfg['password'] = '" + VALUE + "'", VALUE),
           "escaped quote in a value": ("password=" + Q + "Fa" + BS + Q + "kePass12345x" + Q, "kePass12345x"),
           "key body": ("before\n" + KEY_BLOCK + "\nafter", KEY_BODY),
           "cut-off key": ("before\n-----BEGIN " + "PRIVATE KEY-----\n" + KEY_BODY + "\nmore lines", KEY_BODY)}
@@ -90,6 +91,8 @@ def test_redact_replaces_every_class_of_value_leaves_ordinary_text_and_a_second_
     assert redact.redact(SHAPES["key body"][0]) == "before\n<secret>\nafter"
     assert redact.redact(SHAPES["cut-off key"][0]) == "before\n<secret>"
     assert redact.redact("\n".join(PLACEHOLDER_VALUES)) == "\n".join(PLACEHOLDER_VALUES)
+    prose = "[Secret]: see the docs for rotation\n[password]: https://x.example.com/a\nSee [api_key]: the field list"
+    assert redact.redact(prose) == prose  # a closing bracket with no opening bracket and quote is prose, not a subscripted key
     f = tmp_path / "in.txt"
     f.write_text(TEXT, encoding="utf-8", newline="\n")
     assert redact.main(["--scan", str(f)]) == 1
