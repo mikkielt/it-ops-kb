@@ -2,7 +2,7 @@
   "id": "ST-wi2volsz",
   "kind": "story",
   "title": "otel/ adapter serves kbmon's metrics at /metrics on 127.0.0.1 only",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",
@@ -66,5 +66,6 @@
       "logs/prometheus-retention-exposition"
     ]
   },
-  "notes": "Plan 2026-10-18: kb: prometheus_client's start_http_server binds 0.0.0.0 unless addr is given (logs/prometheus-retention-exposition.md:51, CODE S-3ylk7y4h), so the adapter passes 127.0.0.1 itself."
+  "notes": "Plan 2026-10-18: kb: prometheus_client's start_http_server binds 0.0.0.0 unless addr is given (logs/prometheus-retention-exposition.md:51, CODE S-3ylk7y4h), so the adapter passes 127.0.0.1 itself.",
+  "claimed_by": "orch-r19"
 }
