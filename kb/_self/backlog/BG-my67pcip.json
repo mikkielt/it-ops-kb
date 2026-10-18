@@ -2,7 +2,7 @@
   "id": "BG-my67pcip",
   "kind": "bug",
   "title": "redact takes any word]: or word]= in prose for a bracketed secret key and replaces the text after it",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-5xnbspyp",
   "priority": "P3",
   "rank": 0,
@@ -61,5 +61,27 @@
     "parked: SP-g4mwrwsv review"
   ],
   "notes": "Plan 2026-10-17: on origin/main 3dba0ef83 the three planted bracketed secrets are replaced and the three prose lines are not kept, so the check fails on its premise only; it is the guard that the fix keeps the secrets caught. Knowledge: the goal research story's CommonMark link reference definition facts.",
-  "claimed_by": "orch-r13"
+  "evidence": {
+    "commit": "7d040915fb375c36b7a81c698e9d7e09913a4a84",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R\nv=\"hunterFake\"+\"12345\";w=\"abcFake\"+\"1234567890xyz\"\nS=[\"cfg['pass\"+\"word'] = '\"+v+\"'\",'cfg[\"pass'+'word\"] = \"'+v+'\"',\"headers['Authori\"+\"zation'] = 'Bearer \"+w+\"'\"]\nP=[\"[Secret]: see the docs for rotation\",\"[pass\"+\"word]: https://x.example.com/a\",\"See [api_key]: the field list\"]\nbad=[s for s in S if v in R.redact(s) or w in R.redact(s)]+[p for p in P if R.redact(p)!=p]\nprint(bad);sys.exit(1 if bad else 0)\n"
+        ],
+        "exit": 0,
+        "sha256": "37517e5f3dc66819"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import sys;sys.path.insert(0,\"_tools\");import redact as R;t=\"[Secret]: see the docs for rotation\";o=R.redact(t);print(o);sys.exit(0 if o==t else 1)"
+        ],
+        "exit": 0,
+        "sha256": "f8aa0b63cb462bd7"
+      }
+    ]
+  }
 }
