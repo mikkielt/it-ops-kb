@@ -1,0 +1,21 @@
+{
+  "id": "ST-wgws6qbr",
+  "kind": "story",
+  "title": "Alias rows for the OpenTelemetry Python SDK topic's other names",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "_tools/aliases.csv holds these rows for logs/otel-python-sdk, so a question that says otel python, opentelemetry-python, otel python sdk or otel sdk reaches the article: otel python,opentelemetry python; opentelemetry-python,opentelemetry python; otel python sdk,opentelemetry python; otel sdk,opentelemetry python",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;rows=open('_tools/aliases.csv',encoding='utf-8').read().splitlines();want=['otel python,opentelemetry python','opentelemetry-python,opentelemetry python','otel python sdk,opentelemetry python','otel sdk,opentelemetry python'];sys.exit(0 if all(w in rows for w in want) else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/aliases.csv"
+  ]
+}
