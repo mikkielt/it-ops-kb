@@ -116,3 +116,20 @@ The panel reads the clone the script is in; `--root` naming another clone makes 
 - **Read through backlog.py.** The sprints and their items are `bl_base.Backlog`'s, `next` is the item `bl_view.ready` puts first (an active sprint only, else null) and `waiting` holds `{item, gate}` for each open blocking gate of the sprint (its start gate until it is answered) and of its items that are not done or dropped. A root with no backlog has an empty `sprints`.
 - **Landings.** The ops rows are `bl_stall.ops_rows`' (this host's spool and the committed sidecars). An item is in progress while its newest `land.step` row has no later `land.end` row; rows of one millisecond in the spool keep the order of the file. A landing that stopped without a `land.end` row (a killed process, or a row from before landing wrote one) stays listed.
 - **View.** A row for each sprint, its id, its state padded to 10 and `4/11 done · next ST-xxxxxxxx · todo 3, doing 1, done 4` (done and dropped count as done) for an active sprint, `not started` for an approved one and `waits on start gate` for a planned one; under it up to two `waiting  ITEM/GATE` rows of its other open gates (12 sprints at most); then up to six `landing  ITEM  STEP  since TIME` rows, each state written, not coloured.
+
+## The host panel
+
+`data` of `mon_host.py`:
+
+| key | holds |
+|---|---|
+| `load` | the 1, 5 and 15 minute load as three numbers, or `"unsupported"` on a host with no `os.getloadavg` (Windows) |
+| `cores` | `os.cpu_count()`, or null |
+| `suite_lock` | the whole-suite lock's live holder: `pid`, `clone` (`this` or `other`) and `started` (UTC time); null when none holds it |
+| `main_lock` | the main lock's live holder: `pid`, `clone`, `started` and `step`; null when none holds it |
+| `ceiling` | `max_ids`, `max_files` and `max_seconds` (this platform's) of `_tools/tests_ceiling.json`, against `ids` and `last_run_s` (the newest passing full `test.run` row that ran pytest, null before any) and `files` (the clone's `test_*.py`); `{"error": ...}` where `tests.read_ceiling` refuses the file |
+
+- **Read through the lockers' readers.** The two locks are the files `tests.py` (`kb-tests.lock`) and `kg_lock.py` (`kb-main.lock`) keep in the host lock directory (`KB_HOST_LOCK_DIR`, else `/tmp`); the panel reads them with `tests.read_lock`, `tests.parse_holder`, `tests.pid_alive` and `kg_lock.holder_step`, and the ceiling with `tests.read_ceiling`. It takes, clears and writes no lock, and the ceiling file is only read. A lock file whose pid no longer runs, or whose record cannot be read, is no holder.
+- **`this` or `other`, never a path.** A holder's `clone` is `this` when it is the clone the panel reads (`--root`), else `other`; the path in the lock record is not printed.
+- **Unsupported load.** A host with no `os.getloadavg` shows `load` as `unsupported`; the locks and the ceiling are shown as on any host.
+- **View.** `load` (`1.00 · 2.00 · 3.00 · 8 cores`), `suite` and `main` (`pid · this clone · since YYYY-MM-DD HH:MMZ`, the main lock also `step`, or `none`), then the ceiling: `ids`, `files` and `last run`, each as `{used}/{limit} [|||||||...] {pct}%` with 10 cells (the percentage floored to a cell). From 100 columns the three share one row, below that three aligned rows. A bar of 80 to 99% starts its row with `! ` (yellow) and one of 100% or more with `!!` (red), the shared row by its worst bar; a row under 80% has no colour, since the view colours whole rows.

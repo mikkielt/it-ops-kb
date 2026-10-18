@@ -68,6 +68,57 @@
       "answer": "this or other",
       "by": "operator",
       "host_unchecked": "a design choice of how the panel words a clone; no host setup to prove"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "Where does the host panel read the suite's ids and the last full-run seconds?",
+      "options": [
+        "the newest passing full test.run row of the ops rows",
+        "collect the ids with pytest and time nothing"
+      ],
+      "recommendation": "the newest passing full test.run row of the ops rows",
+      "do": {
+        "the newest passing full test.run row of the ops rows": "ST-iogk4rdb",
+        "collect the ids with pytest and time nothing": "ST-iogk4rdb"
+      },
+      "class": "design",
+      "answer": "the newest passing full test.run row of the ops rows",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How does the host panel colour a ceiling bar, given the view colours whole rows only?",
+      "options": [
+        "a gutter flag: yellow from 80%, red from 100%, no colour under 80%",
+        "extend mon_view to colour a bar's run, green under 80%"
+      ],
+      "recommendation": "a gutter flag: yellow from 80%, red from 100%, no colour under 80%",
+      "do": {
+        "a gutter flag: yellow from 80%, red from 100%, no colour under 80%": "ST-iogk4rdb",
+        "extend mon_view to colour a bar's run, green under 80%": "ST-iogk4rdb"
+      },
+      "class": "design",
+      "answer": "a gutter flag: yellow from 80%, red from 100%, no colour under 80%",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What does the host panel show for a lock file whose holder pid no longer runs?",
+      "options": [
+        "no holder (null)",
+        "the stale record marked stale"
+      ],
+      "recommendation": "no holder (null)",
+      "do": {
+        "no holder (null)": "ST-iogk4rdb",
+        "the stale record marked stale": "ST-iogk4rdb"
+      },
+      "class": "design",
+      "answer": "no holder (null)",
+      "by": "agent"
     }
   ],
   "knowledge": {
