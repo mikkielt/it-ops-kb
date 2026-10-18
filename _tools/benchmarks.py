@@ -190,15 +190,31 @@
                                             research agent coord.py dedup on its area and commits and syncs one planted
                                             _gaps.md entry to the bare, a code agent writes and commits its item's planted
                                             change in the worktree dispatch made, and the harness answers and lands it
+  benchmarks.py multi record [--dir DIR] [--out FILE]
+                                            merge the newest json line of each agent in DIR/results.jsonl into FILE (default
+                                            kb/_self/reports/benchmarks.csv) as rows of the scenario `multi`: record the first
+                                            7 characters of the sandbox's start sha, case the scenario, arm `concurrent` or
+                                            `sequential` followed by the knob values (and `replay`); per agent (`AGENT/METRIC`)
+                                            and for the run, input, out, cache_read, cache_write, cost, wall_s and turns, and
+                                            for the run dup_facts (facts two agents wrote as one claim, repro compare's match),
+                                            claims and claim_conflicts (the sandbox's coord store), land_stops, rebase_s,
+                                            right and asked (the lookup agents' answers scored as the pool scores them) and
+                                            eval_passed and eval_total (the research agents' frozen questions on the bare's
+                                            main); when the file holds a concurrent and a sequential arm of the same record,
+                                            case and knob values, it also holds the arm `delta ...`: the concurrent value
+                                            minus the sequential one per metric; the lines of a --replay run need --out and
+                                            never reach the results file; exit 0, 2 on a refusal
   benchmarks.py report [--check]            write the report's generated tables from the results file; --check writes
                                             nothing and exits 1 when a table, or a number in README.md, disagrees with
-                                            the results file, or a `bench:` marker names a scenario with no rows in it
+                                            the results file, or a `bench:` marker (the `multi` one apart) names a scenario
+                                            with no rows in it
 
 The results file has one row per scenario, record, case, arm and metric: `record` names one measurement (the date of a
 run of this tool, or the commit of a historical number taken from the reports it replaced), with its date, commit,
 Claude Code version and kb size (topics). The report's tables sit between `<!-- bench:table SCENARIO metrics=... -->`
 and `<!-- /bench -->` (a cell is each record's value in date order and the change of the newest from the one before),
-and its records tables between `<!-- bench:records SCENARIO -->` and `<!-- /bench -->`.
+and its records tables between `<!-- bench:records SCENARIO -->` and `<!-- /bench -->`; the tables of the scenario `multi`
+(`multi record`) between `<!-- bench:multi -->` and `<!-- /bench -->`, which stands with no row too.
 
 Isolation: model runs start `claude -p` with hooks off (kbcommon.NO_HOOKS) from a throwaway clone of HEAD under the
 scratch directory (BENCH_SCRATCH, default <temp>/it-ops-kb-bench) whose query log is `off` and whose origin is a local
@@ -395,6 +411,10 @@ def main(argv=None):
                     "it is recorded with the failure budget (default: no cap)")
     mr.add_argument("--timeout", type=int, default=bench_repro.DEFAULTS["timeout"], metavar="SECONDS",
                     help=f"the seconds one agent's session may take (default: {bench_repro.DEFAULTS['timeout']})")
+    mc = mp.add_parser("record")
+    mc.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
+    mc.add_argument("--out", metavar="FILE", help="the results file to merge into (default: kb/_self/reports/benchmarks.csv; "
+                    "required for the lines of a --replay run)")
     a = ap.parse_args(argv)
     if a.cmd == "list":
         for name, (section, _) in SCENARIOS.items():
@@ -442,6 +462,8 @@ def main(argv=None):
                 return bench_multi.probe()
             if a.multi_cmd == "inputs":
                 return bench_multi.inputs(a.file)
+            if a.multi_cmd == "record":
+                return bench_multi.record(a.dir, a.out)
             if a.multi_cmd == "run":
                 return bench_multi.run(a.scenario, a.dir, a.dry_run, {"sequential": a.sequential, "coord": a.coord, "stagger": a.stagger,
                                                                     "model": a.model, "pack_budget": a.pack_budget, "tools": a.tools,

@@ -1695,3 +1695,11 @@ Verdict: stop splitting. The split did not make the code cheaper to find in thes
 | jea | all | 1 | - | - |
 | typescript | all | 1 | - | - |
 <!-- /bench -->
+
+### Agents at once against agents one at a time
+
+**Setup:** `python3 _tools/benchmarks.py multi run SCENARIO --dir DIR` (SCENARIO is `lookups`, `research` or `mixed`, the frozen inputs of `kb/_self/reports/multi_bench.csv`) starts every agent of the scenario at once in a sandbox of its own: a bare copy of one commit, an agent clone each and one coordination store for all (`--coord shared`) or one each (`--coord isolated`). The same command with `--sequential` and another `--dir` starts the same agents one after the other, the baseline. `multi record --dir DIR` writes the rows of one run: record the start commit, case the scenario, arm `concurrent` or `sequential` and the knob values; per agent (`AGENT/METRIC`) and for the run `input`, `out`, `cache_read`, `cache_write`, `cost`, `wall_s` (for the run, the first start to the last end) and `turns`; for the run `dup_facts` (facts two agents wrote as one claim, found as `repro compare` finds them), `claims` and `claim_conflicts` (the rows of the sandbox's coordination store, and the keys held in more than one store plus its `dup_of` events), `land_stops` (the `backlog.py land` runs of the code agents that stopped), `rebase_s` (the time the agents' clones spent between the start and the end of a rebase), `right` and `asked` (the lookup agents' answers scored by the checks of their pool rows) and `eval_passed` and `eval_total` (the frozen questions of the research agents' areas on the sandbox bare's main). Once a record holds both arms with the same knob values it also holds the arm `delta`: the concurrent run's value minus the sequential run's, per metric. A `--replay` run (scripted agents, no model) is recorded only with `--out FILE`, never into the results file.
+
+<!-- bench:multi -->
+No multi-agent run is recorded in the results file.
+<!-- /bench -->

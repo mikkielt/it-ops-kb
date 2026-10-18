@@ -57,7 +57,7 @@ def fmt(metric, v):
     if f == "g1":
         return f"{round(x, 1):g}"
     if f:
-        return f.format(x)
+        return "-" + f.format(-x) if x < 0 and f.startswith("$") else f.format(x)
     return f"{x:,.0f}" if x == int(x) and abs(x) >= 1000 else (f"{x:g}")
 
 
@@ -215,7 +215,7 @@ def _isnum(v):
         return False
 
 
-BLOCK = re.compile(r"(<!-- bench:(table|records|spend|matrix|effort|session)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
+BLOCK = re.compile(r"(<!-- bench:(table|records|spend|matrix|effort|session|multi)((?: [^\n]*?)?) -->\n)(.*?)(<!-- /bench -->)", re.S)
 OPT = re.compile(r"(\w+)=(.*?)(?= \w+=|$)")
 
 
@@ -241,6 +241,34 @@ def spend_table(rows):
     return "\n".join(out)
 
 
+MULTI_HEADS = ("concurrent", "sequential", "delta")  # the first word of an arm of the scenario `multi` (bench_multi.HEADS)
+MULTI_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wall_s", "turns", "dup_facts", "claims", "claim_conflicts",
+                 "land_stops", "rebase_s", "right", "asked", "eval_passed", "eval_total")  # the run's, in this order
+MULTI_AGENT_METRICS = ("input", "out", "cache_read", "cache_write", "cost", "wall_s", "turns", "right", "eval_passed")  # an agent's
+
+
+def multi_tables(rows):
+    """The tables of the scenario `multi` (benchmarks.py multi record): per case (a scenario of the multi-agent
+    benchmark), a table of the run's metrics with a line for each arm (concurrent, sequential, then the delta of the two) and,
+    when the rows hold per-agent metrics (`AGENT/METRIC`), a table of the agents; cells as in `table`."""
+    mine = sorted((r for r in rows if r["scenario"] == "multi"),
+                  key=lambda r: MULTI_HEADS.index(r["arm"].split(" ")[0]) if r["arm"].split(" ")[0] in MULTI_HEADS else len(MULTI_HEADS))
+    if not mine:
+        return "No multi-agent run is recorded in the results file."
+    out = []
+    for case in dict.fromkeys(r["case"] for r in mine):
+        run = [r for r in mine if r["case"] == case and "/" not in r["metric"]]
+        agents = [{**r, "case": r["metric"].split("/")[0], "metric": r["metric"].split("/")[1]}
+                  for r in mine if r["case"] == case and "/" in r["metric"]]
+        have = lambda mm, rr: [m for m in mm if any(r["metric"] == m for r in rr)]  # noqa: E731
+        out += [f"#### {case}", "", table(run, "multi", have(MULTI_METRICS, run), cases=[case]), ""]
+        if agents:
+            names = list(dict.fromkeys(r["case"] for r in agents))
+            out += [f"Per agent of {case}:", "",
+                    table(agents, "multi", have(MULTI_AGENT_METRICS, agents), cases=names).replace("| case |", "| agent |", 1), ""]
+    return "\n".join(out).rstrip("\n")
+
+
 def render(text, rows):
     """The report text with every generated block rewritten from `rows`."""
     def one(m):
@@ -249,6 +277,8 @@ def render(text, rows):
         opts = dict(OPT.findall(rest))
         if kind == "spend":
             body = spend_table(rows)
+        elif kind == "multi":
+            body = multi_tables(rows)
         elif kind == "records":
             body = records_table(rows, scen)
         else:
@@ -266,12 +296,12 @@ def render(text, rows):
 
 
 def empty_markers(text, rows):
-    """One line per `bench:` marker of `text` (except `spend`) whose scenario has no rows in `rows`: its table would be
-    empty."""
+    """One line per `bench:` marker of `text` (except `spend` and `multi`, which says so when it has no rows) whose scenario
+    has no rows in `rows`: its table would be empty."""
     have = {r["scenario"] for r in rows}
     scen = lambda m: (m.group(3).split() or [""])[0]  # noqa: E731
     return [f"bench:{m.group(2)} marker of scenario {scen(m)!r} has no rows in the results file"
-            for m in BLOCK.finditer(text) if m.group(2) != "spend" and scen(m) not in have]
+            for m in BLOCK.finditer(text) if m.group(2) not in ("spend", "multi") and scen(m) not in have]
 
 
 def readme_misses(text, rows):

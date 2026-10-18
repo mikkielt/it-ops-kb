@@ -1,5 +1,5 @@
-"""The multi-agent benchmark's sandbox, plan and run: `benchmarks.py multi setup`, `multi probe`, `multi inputs` and `multi run`
-(stdlib only).
+"""The multi-agent benchmark's sandbox, plan, run and record: `benchmarks.py multi setup`, `multi probe`, `multi inputs`,
+`multi run` and `multi record` (stdlib only).
 
 A sandbox is a directory DIR holding one bare copy of one pinned commit (DIR/origin.git: the commit alone, no history,
 and on it one base commit that empties `lane_module` in backlog.json, so the sandbox has no code lane and an item lands on
@@ -11,10 +11,11 @@ directory, as the clones of bench_repro do, in a directory of their own for each
 of each coordination mode in a temporary directory, lands one `_gaps.md` commit from each clone of the shared one on its
 bare through `kbgit.py sync --push` and proves the landing and the stores stayed inside the sandbox. Nothing but `execute`
 (`multi run` without `--dry-run`) starts a model or reads the network, and under `--replay` it starts bench_replay.py, a
-scripted stand-in for `claude`, instead: no model call. This module imports bench_repro for its instance helpers
-(kb/_self/code.md, Layout); benchmarks.py holds the command line.
+scripted stand-in for `claude`, instead: no model call. `record` merges the lines of DIR/results.jsonl into the results
+file as the rows of the scenario `multi`. This module imports bench_repro for its instance helpers (kb/_self/code.md,
+Layout); benchmarks.py holds the command line.
 """
-import base64, hashlib, json, os, re, shlex, shutil, signal, subprocess, sys, threading, time
+import base64, csv, datetime, hashlib, json, os, re, shlex, shutil, signal, sqlite3, subprocess, sys, threading, time
 from collections import OrderedDict
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -23,7 +24,8 @@ import agent_bench
 import bench_pool
 import bench_repro
 import kbpublic
-from bench_core import HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, transcript
+from bench_core import (HOME, PRICE, RESULTS, isolate, pinned, read_rows, resolve_model, scratch_dir, spent_run, transcript,
+                        write_rows)
 from bench_repro import (Refused, failure_of, inside, instance_env, lock_dir, mcp_config, reset_clone, run_git, same_path, sh,
                          utc_now)
 
@@ -43,6 +45,7 @@ MANAGERS = ("code", "session")  # --manager: this tool starts the agents, or a m
 DEFAULT_MODELS = {"lookup": "haiku-5-5", "research": "sonnet-5-5", "code": "sonnet-5-5"}
 MANAGER_MODEL = "sonnet-5-5"
 RUN_RESULTS = "results.jsonl"  # DIR/results.jsonl: one json line per agent of a run
+KNOB_KEYS = ("stagger", "model", "pack_budget", "tools", "manager")  # the knobs besides --coord and --sequential a line records
 BIN = "bin"  # DIR/bin: the claude wrapper dispatch's worker starts through
 OPERATOR = "operator"  # who the harness answers a gate as
 PACK_BUDGET = 1200  # kb_pack's default budget in tokens; its limits are the next two
@@ -75,6 +78,11 @@ def clone_path(root, n):
 
 def mcp_path(root, n):
     return clone_path(root, n) / "_private" / "mcp-config.json"
+
+
+def agent_email(n):
+    """The author address of agent N's commits: how `record` tells the facts one agent wrote from another's on the bare."""
+    return f"agent{n}@corp.example.com"
 
 
 def store_path(root, coord, n):
@@ -186,6 +194,8 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
         clone.parent.mkdir(parents=True, exist_ok=True)
         run_git("clone", "-q", str(bare), str(clone), cwd=clone.parent)
         isolate(clone, "off", bare)
+        run_git("config", "user.name", f"multi agent {n}", cwd=clone)
+        run_git("config", "user.email", agent_email(n), cwd=clone)
         p = sh([sys.executable, str(clone / "_tools" / "kbgit.py"), "install-hooks"], clone, agent_env(root, coord, n))
         if p.returncode:
             raise Refused(f"agent {n}: install-hooks exited {p.returncode}: {(p.stdout + p.stderr).strip()[-300:]}")
@@ -900,8 +910,9 @@ class Budget:
 
 
 def blank_line(plan, scenario, k):
-    return {"scenario": scenario, "agent": plan["agent"], "role": plan["role"], "item": plan.get("item", ""), "model": bench_repro.model_id(plan["model"]),
-            "coord": k["coord"], "sequential": k["sequential"], "started": "", "ended": "", "failure": "", "subtype": "", "wall_s": 0,
+    return {"scenario": scenario, "agent": plan["agent"], "n": plan["n"], "role": plan["role"], "item": plan.get("item", ""),
+            "model": bench_repro.model_id(plan["model"]), "coord": k["coord"], "sequential": k["sequential"], "replay": k["replay"],
+            "knobs": {key: k[key] for key in KNOB_KEYS}, "started": "", "ended": "", "failure": "", "subtype": "", "wall_s": 0,
             "cost": 0, "input_tokens": 0, "output_tokens": 0, "cache_write_tokens": 0, "cache_read_tokens": 0, "turns": 0,
             "max_turns": plan["turns"], "tool_calls": 0, "steps": [], "commit": "", "land": ""}
 
@@ -1026,6 +1037,8 @@ def session_agent(plan, ctx, rec):
     r = run_session(plan["argv"], plan["prompt"], clone, env, ctx.timeout)
     worked = r.get("steps", [])
     rec.update(session_fields(r, plan, time.time() - t, len(worked) or None))
+    if plan["role"] == "lookup":
+        rec["answer"] = r.get("answer") or ""  # what `record` scores
     rec["steps"] += worked or ["session"]
 
 
@@ -1124,3 +1137,282 @@ def execute(scenario, root, k, plans, out):
     out(f"multi run {scenario}: {len(recs) - len(failed)} of {len(recs)} agent(s) finished" + ("" if not failed else f", {len(failed)} failed: "
         + ", ".join(f"{r['agent']} ({r['failure'] or r['land']})" for r in failed)) + f", ${ctx.budget.spent:.2f} recorded in {path}")
     return 1 if failed else 0
+
+
+# ------------------------------------------------------------------------------------------------------- the record
+
+SCENARIO = "multi"  # the scenario of the rows `record` merges into the results file
+HEADS = ("concurrent", "sequential", "delta")  # the first word of an arm: the run's order of starts, or the difference of the two
+AGENT_METRICS = (("input", "input_tokens"), ("out", "output_tokens"), ("cache_read", "cache_read_tokens"),
+                 ("cache_write", "cache_write_tokens"), ("cost", "cost"), ("wall_s", "wall_s"),
+                 ("turns", "turns"))  # (metric, key of the json line) of the numbers an agent and the run hold
+STAMP = "%Y-%m-%dT%H:%M:%SZ"  # bench_repro.utc_now's
+SESSION_LEASE = "session/"  # coord.SESSION_LEASE: the key of a session's presence lease, which is no claim
+ARTICLE = re.compile(r"kb/([^/_][^/]*)/([^/_][^/]*)/([^/_][^/]*\.md)")  # a kb article: root, domain, file
+REBASE = re.compile(r"\brebase(?: -i)? \((start|finish|abort)\)")  # a HEAD reflog message of a rebase's start and end
+
+
+def latest_lines(results):
+    """The newest line of each agent of DIR/results.jsonl, in plan order."""
+    last = {r["agent"]: r for r in results if r.get("agent")}
+    return sorted(last.values(), key=lambda r: (r.get("n") or 0, r["agent"]))
+
+
+def stamp(text):
+    """Seconds since the epoch of a line's `started` or `ended`; None for a blank or other text."""
+    try:
+        return datetime.datetime.strptime(text, STAMP).replace(tzinfo=datetime.timezone.utc).timestamp()
+    except (TypeError, ValueError):
+        return None
+
+
+def number(value):
+    """A json line's number as a row's value: a whole number as an int, else rounded to six places; 0 for none."""
+    value = value if isinstance(value, (int, float)) and not isinstance(value, bool) else 0
+    return int(value) if value == int(value) else round(value, 6)
+
+
+def run_wall(lines):
+    """The run's wall seconds: the first start to the last end, at least the longest agent's when they ran at once and the
+    sum of the agents' when they ran one at a time (the stamps have whole seconds)."""
+    starts = [t for t in (stamp(r.get("started")) for r in lines) if t is not None]
+    ends = [t for t in (stamp(r.get("ended")) for r in lines) if t is not None]
+    walls = [r.get("wall_s") or 0 for r in lines]
+    return round(max(max(ends) - min(starts) if starts and ends else 0,
+                     sum(walls) if lines and lines[0].get("sequential") else max(walls, default=0)), 1)
+
+
+def added_facts(bare, base, email):
+    """The fact lines (a line with an evidence tag) that the commits of one author added to kb articles between `base` and the
+    bare's main, as [{path, text, ids}] in the form bench_repro.match_facts reads."""
+    p = sh(["git", "log", f"{base}..refs/heads/main", "--no-merges", f"--author=<{email}>", "-p", "-U0", "--format=", "--", "kb"],
+           bare, os.environ)
+    import kbfacts
+    facts, path = [], None
+    for ln in p.stdout.splitlines():
+        if ln.startswith("+++ "):
+            m = ARTICLE.fullmatch(ln[6:]) if ln.startswith("+++ b/") else None
+            path = "/".join(m.groups()) if m else None
+        elif path and ln.startswith("+") and kbfacts.TAG.search(ln):
+            facts.append({"path": path, "text": ln[1:], "ids": [i for t in kbfacts.tags_in(ln) for i in t["ids"]]})
+    return facts
+
+
+def dup_facts(root, manifest, lines):
+    """How many facts two agents of the run wrote as one claim: the pairs bench_repro.match_facts finds in the facts each
+    agent added on the bare, over every two agents."""
+    bare = origin_path(root)
+    added = {r["agent"]: added_facts(bare, manifest["base"], agent_email(r["n"])) for r in lines if r.get("n")}
+    names = list(added)
+    return sum(len(bench_repro.match_facts(added[a], added[b])) for i, a in enumerate(names) for b in names[i + 1:]
+               if added[a] and added[b])
+
+
+def coord_counts(manifest):
+    """(claims, conflicts) from the coordination stores of the run (each file once): the claim rows of the stores, and the
+    claims of one key that more than one store holds, which only the isolated mode gives, plus the stores' `dup_of`
+    events. A claim that a shared store refused leaves no row."""
+    keys, events, seen = {}, 0, set()
+    for a in manifest["agents"]:
+        path = a["coord_store"]
+        if path in seen or not Path(path).is_file():
+            continue
+        seen.add(path)
+        con = sqlite3.connect(Path(path).resolve().as_uri() + "?mode=ro", uri=True)
+        try:
+            for (key,) in con.execute("SELECT key FROM entries WHERE substr(key, 1, ?) != ?", (len(SESSION_LEASE), SESSION_LEASE)):
+                keys.setdefault(key, set()).add(path)
+            events += con.execute("SELECT count(*) FROM events WHERE kind = 'dup_of'").fetchone()[0]
+        except sqlite3.Error:
+            pass
+        finally:
+            con.close()
+    return sum(len(v) for v in keys.values()), sum(len(v) - 1 for v in keys.values()) + events
+
+
+def land_stops(lines):
+    """How many `backlog.py land` runs of the code agents stopped: the `land:` steps that are not `ok`."""
+    return sum(1 for r in lines for s in r.get("steps") or [] if isinstance(s, str) and s.startswith("land: ") and s != "land: ok")
+
+
+def rebase_seconds(clone, started, ended):
+    """The seconds the HEAD reflog of an agent's clone puts between the start of a rebase and its end (finish or abort), for
+    the rebases inside the agent's window; the reflog has whole seconds. A code agent's rebase in the worktree `dispatch` made
+    is in that worktree's reflog, which is gone, and not counted."""
+    p = sh(["git", "log", "-g", "--date=unix", "--format=%gd|%gs", "HEAD"], clone, os.environ)
+    lo, hi = stamp(started), stamp(ended)
+    total, begun = 0, None
+    for ln in reversed(p.stdout.splitlines()):
+        when, _, message = ln.partition("|")
+        at = re.search(r"@\{(\d+)\}", when)
+        m = REBASE.search(message)
+        if not (at and m):
+            continue
+        t = int(at.group(1))
+        if m.group(1) == "start":
+            begun = t
+        elif begun is not None:
+            if lo is not None and hi is not None and begun >= lo - 1 and t <= hi + 1:
+                total += t - begun
+            begun = None
+    return total
+
+
+def answered(checks, result):
+    """Whether an answer passes every check of its question, as agent_bench.check scores one (bench_pool.record_of's way); a
+    question with no check, or a check that is no regex, is not answered."""
+    try:
+        return bool(checks) and all(agent_bench.check(c, result) for c in checks)
+    except (re.error, KeyError, TypeError):
+        return False
+
+
+def right_counts(scenario, lines):
+    """{agent: (right, asked)} of the lookup agents: of the questions of an agent's input, those whose checks (a pool row's
+    `checks`, an evaluation row's `expect_re`) its one answer passes."""
+    checks = {}
+    for r in bench_repro.read_csv(HOME / bench_pool.EVAL_FILE):
+        checks[r["id"]] = [r["expect_re"]] if r.get("expect_re") else []
+    for r in bench_repro.read_csv(HOME / bench_pool.PUBLIC_FILE):
+        try:
+            checks[r["id"]] = json.loads(r["checks"])
+        except ValueError:
+            checks[r["id"]] = []
+    ids = {a["agent"]: a["inputs"] for a in agents_of(load_inputs(), scenario)}
+    out = {}
+    for r in lines:
+        if r["role"] == "lookup":
+            res = {"answer": r.get("answer") or "", "tools": [], "fetched": [], "searches": [], "refetched": []}
+            out[r["agent"]] = (sum(1 for i in ids.get(r["agent"], []) if answered(checks.get(i), res)), len(ids.get(r["agent"], [])))
+    return out
+
+
+def frozen_counts(root, manifest, scenario, lines):
+    """{agent: (passed, total)} of the research agents: the frozen questions of the agent's area (repro_bench.csv) on the
+    sandbox bare's main, passing as bench_repro.frozen_pass reads them against the verdicts at the sandbox's base commit
+    (`rag.py eval` in a checkout of the bare); {} when no agent researches an area with a frozen question or `eval` printed no json."""
+    areas = {a["agent"]: a["inputs"][0] for a in agents_of(load_inputs(), scenario) if a["role"] == "research"}
+    asked = [q for q in bench_repro.load_questions() if q.get("area", "").strip() in {areas.get(r["agent"]) for r in lines}]
+    if not asked:
+        return {}
+    dest, env = clone_path(root, 1).parent / "eval", instance_env(root, 1)
+    qfile = dest.parent / "frozen.csv"
+    qfile.parent.mkdir(parents=True, exist_ok=True)
+    with open(qfile, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, list(asked[0]), lineterminator="\n")
+        w.writeheader()
+        w.writerows(asked)
+    bench_repro.make_checkout(origin_path(root), dest, env)
+    try:
+        bench_repro.put_at(dest, manifest["base"], env)
+        start = bench_repro.eval_rows(dest, qfile, env)
+        bench_repro.put_at(dest, bench_repro.sh_git(origin_path(root), env, "rev-parse", "refs/heads/main"), env)
+        end = bench_repro.eval_rows(dest, qfile, env)
+    finally:
+        shutil.rmtree(dest, ignore_errors=True)
+        qfile.unlink(missing_ok=True)
+    if start is None or end is None:
+        return {}
+    out = {}
+    for r in lines:
+        ids = [q["id"] for q in asked if q["area"].strip() == areas.get(r["agent"])]
+        if ids:
+            out[r["agent"]] = (sum(1 for q in ids if q in start and q in end
+                                   and bench_repro.frozen_pass(start[q]["verdict"], end[q]["verdict"], end[q]["found"])), len(ids))
+    return out
+
+
+def run_values(root, manifest, lines):
+    """{metric: value} of one run: each agent's AGENT_METRICS as `AGENT/METRIC` and the run's, the run's wall seconds its own
+    (`run_wall`), then dup_facts, claims, claim_conflicts, land_stops, rebase_s, right and asked (lookup agents), eval_passed
+    and eval_total (research agents with a frozen question)."""
+    values, total = {}, {m: 0 for m, _ in AGENT_METRICS}
+    for r in lines:
+        for metric, key in AGENT_METRICS:
+            values[f"{r['agent']}/{metric}"] = number(r.get(key))
+            total[metric] += r.get(key) or 0
+    total["wall_s"] = run_wall(lines)
+    values.update({m: number(v) for m, v in total.items()})
+    claims, conflicts = coord_counts(manifest)
+    values.update(dup_facts=dup_facts(root, manifest, lines), claims=claims, claim_conflicts=conflicts, land_stops=land_stops(lines),
+                  rebase_s=sum(rebase_seconds(Path(a["clone"]), r.get("started"), r.get("ended"))
+                               for r in lines for a in manifest["agents"][r["n"] - 1:r["n"]] if r.get("n")))
+    scenario = lines[0]["scenario"]
+    for key, counts in (("right", right_counts(scenario, lines)), ("eval_passed", frozen_counts(root, manifest, scenario, lines))):
+        for agent, (got, asked) in counts.items():
+            values[f"{agent}/{key}"] = got
+        if counts:
+            values[key] = sum(g for g, _ in counts.values())
+            values["asked" if key == "right" else "eval_total"] = sum(a for _, a in counts.values())
+    return values
+
+
+def knob_text(value):
+    return f"{value:g}" if isinstance(value, (int, float)) and not isinstance(value, bool) else str(value or "default")
+
+
+def arm_of(line, replay):
+    """The arm of a run's rows: `concurrent` or `sequential`, then the knob values (--coord, --stagger, --model,
+    --pack-budget, --tools, --manager), and `replay` for a run of scripted agents."""
+    knobs = [("coord", line.get("coord"))] + [(k, (line.get("knobs") or {}).get(k)) for k in KNOB_KEYS]
+    return " ".join([HEADS[1 if line.get("sequential") else 0]] + [f"{k}={knob_text(v)}" for k, v in knobs] + (["replay"] if replay else []))
+
+
+def delta_rows(rows):
+    """The `delta` rows of the scenario's rows: for each record, case and knob values that a concurrent and a sequential arm
+    share, per metric both hold, the concurrent run's value minus the sequential run's."""
+    got = {}
+    for r in rows:
+        head, _, tail = r["arm"].partition(" ")
+        if r["scenario"] == SCENARIO and head in HEADS[:2]:
+            got.setdefault((r["record"], r["case"], tail), {}).setdefault(head, {})[r["metric"]] = r
+    out = []
+    for (record, case, tail), arms in sorted(got.items()):
+        for metric, c in arms.get("concurrent", {}).items():
+            s = arms.get("sequential", {}).get(metric)
+            if s is not None:
+                diff = float(c["value"]) - float(s["value"])
+                out.append({**c, "arm": f"delta {tail}", "value": int(diff) if diff == int(diff) else round(diff, 6),
+                            "note": "the concurrent run's value minus the sequential run's"})
+    return out
+
+
+def record(root=None, file=None, out=print):
+    """`multi record`: merge the lines of DIR/results.jsonl (the newest of each agent) into the results file `file` (default
+    kb/_self/reports/benchmarks.csv) as the scenario `multi`: record the first 7 characters of DIR's start commit, case the
+    scenario, arm `concurrent` or `sequential` with the knob values, and the metrics of `run_values`; then, for the record,
+    case and knob values that a concurrent and a sequential arm share, the rows of the arm `delta ...` (`delta_rows`). It
+    replaces the rows of the same record, case and arm. The lines of a replay reach only `file`, which they then need. The same
+    lines again change nothing. Returns 0, or raises Refused (no manifest, a replay with no `file`)."""
+    root = (Path(root) if root else default_dir()).resolve()
+    lines = latest_lines(bench_repro.read_results(root / RUN_RESULTS))
+    if not lines:
+        out(f"multi record: {root / RUN_RESULTS} holds no result line: nothing to record")
+        return 0
+    if not (root / MANIFEST).is_file():
+        raise Refused(f"{root} holds no {MANIFEST}: the start commit of the result lines is unknown")
+    manifest = json.loads((root / MANIFEST).read_text(encoding="utf-8"))
+    replay = any(r.get("replay") for r in lines)
+    if replay and not file:
+        raise Refused("the lines of this run are a replay's (scripted agents): their rows reach only --out FILE, never the results file")
+    rev, arm = manifest.get("rev", ""), arm_of(lines[0], replay)
+    date = min((r["started"][:10] for r in lines if r.get("started")), default="")
+    note = f"start {rev}; sandbox of {len(manifest['agents'])} agent(s)" + ("; replay: scripted agents, no model call" if replay else "")
+    models = ",".join(sorted({r.get("model") or "" for r in lines} - {""}))
+    new = [{"scenario": SCENARIO, "record": rev[:7], "date": date, "commit": rev[:7], "claude_code": "", "kb_topics": "",
+            "case": lines[0]["scenario"], "arm": arm, "model": models, "metric": metric, "value": value, "runs": 1, "note": note}
+           for metric, value in run_values(root, manifest, lines).items()]
+    target = Path(file) if file else RESULTS
+    old = read_rows(target)
+    key = lambda r: (r["scenario"], r["record"], r["case"], r["arm"])  # noqa: E731
+    taken = {key(r) for r in new}
+    merged = [r for r in old if key(r) not in taken] + new
+    delta = delta_rows(merged)
+    held = taken | {key(r) for r in delta}
+    merged = [r for r in merged if key(r) not in held - taken] + delta
+    same = sorted(bench_repro.cells(r) for r in old if key(r) in held) == sorted(bench_repro.cells(r) for r in new + delta)
+    if not same:
+        write_rows(merged, target)
+    out(f"multi record: {len(new)} row(s) of record {rev[:7]}, arm {arm!r}, and {len(delta)} delta row(s) " + (
+        f"already in {target}: nothing changes" if same else f"merged into {target}"))
+    return 0
