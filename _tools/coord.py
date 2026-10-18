@@ -78,8 +78,10 @@ with the body {"argv": [the command and its arguments]}; the server answers 401 
 files hold) and runs the command on its store otherwise, answering {"code": N, "body": ...}, where code and body are
 what the command would have printed and exited with. The server adds the operator's name as the field `operator` to
 each event it records (a client cannot set it) and never serves `--store`. `wait` is a long-poll: the request is held
-until an event arrives or S seconds pass. The request carries the token in the clear, so reach a server beyond
-loopback through a TLS front end (an https URL is accepted).
+until an event arrives or S seconds pass. The request carries the token in the clear over plain http, so reach a server
+beyond loopback through a TLS front end (an https URL is accepted): a plain http --url whose host is not loopback, and a
+`serve --bind` host that is not loopback, exit 2 naming plain http and TLS, unless the global flag --plain-http is given
+before the command (`coord.py --plain-http serve ...`; `--plain-http --url ... --key-file ...`).
 
 Exit codes: 0 done; 1 the command's condition failed (key held, wrong or expired token, revision moved, key
 absent); 2 a bad argument, no store, or a server that refuses (401) or cannot be reached.
@@ -88,6 +90,7 @@ import argparse
 import csv
 import http.client
 import http.server
+import ipaddress
 import json
 import math
 import os
@@ -588,6 +591,7 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     if not remote:
         parser.add_argument("--url", help="send the command to the server at URL (with --key-file) instead of a local store")
         parser.add_argument("--key-file", help="the file holding this operator's token for --url")
+        parser.add_argument("--plain-http", action="store_true", help="allow a plain http --url, or a serve --bind, on a host that is not loopback")
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("claim", parents=parents)
     p.add_argument("key")
@@ -781,7 +785,31 @@ def split_bind(text):
     return host.strip("[]") or "127.0.0.1", number
 
 
+def is_loopback(host):
+    """True for localhost and a loopback IP address (127.0.0.0/8, ::1, and ::ffff:127.x.x.x)."""
+    if host.lower().rstrip(".") == "localhost":
+        return True
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return False
+    return ip.is_loopback or bool(getattr(ip, "ipv4_mapped", None) and ip.ipv4_mapped.is_loopback)
+
+
+def plain_http_refusal(what, host):
+    return (f"coord.py: {what} {host} is not loopback and the request carries the token over plain http, in the clear: "
+            "reach it through a TLS front end (an https URL), or pass --plain-http to accept the risk")
+
+
 def serve(args):
+    try:
+        host, port = split_bind(args.bind)
+    except Refused as refused:
+        print(f"coord.py: {refused.body['error']}", file=sys.stderr)
+        return 2
+    if not args.plain_http and not is_loopback(host):
+        print(plain_http_refusal("--bind host", host), file=sys.stderr)
+        return 2
     if not Path(args.keys).is_dir():
         print(f"coord.py: --keys {args.keys} is not a directory", file=sys.stderr)
         return 2
@@ -799,11 +827,7 @@ def serve(args):
     if loose:
         return 2
     try:
-        host, port = split_bind(args.bind)
         httpd = Server((host, port), args.keys, args.store)
-    except Refused as refused:
-        print(f"coord.py: {refused.body['error']}", file=sys.stderr)
-        return 2
     except OSError as error:
         print(f"coord.py: cannot bind {args.bind}: {error}", file=sys.stderr)
         return 2
@@ -818,8 +842,9 @@ def serve(args):
     return 0
 
 
-def send(url, key_file, argv):
-    """Run the command on the server at url as the operator whose token key_file holds."""
+def send(url, key_file, argv, plain_http=False):
+    """Run the command on the server at url as the operator whose token key_file holds; a plain http url to a host
+    that is not loopback is refused unless plain_http."""
     parsed = build_parser(argparse.ArgumentParser, True).parse_args(argv)
     mode = open_key_mode(key_file)
     if mode:
@@ -836,6 +861,9 @@ def send(url, key_file, argv):
     parts = urllib.parse.urlsplit(url)
     if parts.scheme not in ("http", "https") or not parts.hostname:
         print(f"coord.py: --url is http://HOST:PORT or https://HOST[:PORT], not {url[:60]!r}", file=sys.stderr)
+        return 2
+    if parts.scheme == "http" and not plain_http and not is_loopback(parts.hostname):
+        print(plain_http_refusal("--url host", parts.hostname), file=sys.stderr)
         return 2
     where = f"{parts.scheme}://{parts.netloc.rpartition('@')[2]}"
     seconds_to_wait = REQUEST_SECONDS + (parsed.timeout if parsed.command == "wait" else 0)
@@ -889,12 +917,13 @@ def main(argv=None):
     remote = argparse.ArgumentParser(add_help=False, allow_abbrev=False)
     remote.add_argument("--url")
     remote.add_argument("--key-file")
+    remote.add_argument("--plain-http", action="store_true")
     named, rest = remote.parse_known_args(argv)
     if named.url or named.key_file:
         if not (named.url and named.key_file):
             print("coord.py: --url and --key-file go together", file=sys.stderr)
             return 2
-        return send(named.url, named.key_file, rest)
+        return send(named.url, named.key_file, rest, named.plain_http)
     args = build_parser().parse_args(argv)
     args.store = getattr(args, "store", None) or os.environ.get("KB_COORD_STORE") or default_store()
     if not args.store:

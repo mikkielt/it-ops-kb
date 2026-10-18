@@ -55,6 +55,23 @@
       "answer": "refuse with exit 2 unless the global flag --plain-http is given",
       "by": "operator",
       "host_unchecked": "the gate is a design choice about remote hosts in coord.py's url and bind, not a setup of this host; the item's repro plants it with the unroutable 192.0.2.1"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which hosts count as loopback for the plain-http refusal in coord.py?",
+      "options": [
+        "localhost and loopback IP addresses (127.0.0.0/8, ::1, ::ffff:127.x.x.x)",
+        "loopback IP addresses only"
+      ],
+      "recommendation": "localhost and loopback IP addresses (127.0.0.0/8, ::1, ::ffff:127.x.x.x)",
+      "do": {
+        "localhost and loopback IP addresses (127.0.0.0/8, ::1, ::ffff:127.x.x.x)": "BG-gikebecb",
+        "loopback IP addresses only": "BG-gikebecb"
+      },
+      "class": "design",
+      "answer": "localhost and loopback IP addresses (127.0.0.0/8, ::1, ::ffff:127.x.x.x)",
+      "by": "agent"
     }
   ],
   "links": [
