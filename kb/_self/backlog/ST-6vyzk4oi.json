@@ -1,0 +1,27 @@
+{
+  "id": "ST-6vyzk4oi",
+  "kind": "story",
+  "title": "A worker's sample runs that record ops rows use a temporary query-log home",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the worker role and brief tell every sample run that records ops rows (ql_capture.record, kbmon, the otel adapter) to set CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT to a temporary home",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('agents/worker.md',encoding='utf-8').read()\nsys.exit(0 if 'CLAUDE_PLUGIN_DATA' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "agents/worker.md",
+    ".claude/agents/kb-worker.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw close"
+  ],
+  "notes": "SP-qvlnptiw close: a ST-jx3c5vxm sample wrote fake landing rows into the real spool; they were delivered into the committed query log and made the item's own check fail at done (ops: done.refused check-failed)."
+}

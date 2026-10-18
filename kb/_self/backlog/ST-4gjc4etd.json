@@ -1,0 +1,26 @@
+{
+  "id": "ST-4gjc4etd",
+  "kind": "story",
+  "title": "A planned check over an ops-row reader plants random ids and reads only its own records",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the sprint skill's plan step says a check over a reader of ops rows (kbmon --events, the otel adapter, bl_stall.ops_rows) plants random item ids and selects its own records, since the reader also reads the committed query log",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('.claude/skills/kb-sprint/SKILL.md',encoding='utf-8').read()\nsys.exit(0 if 'committed query log' in t else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/skills/kb-sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw close"
+  ],
+  "notes": "SP-qvlnptiw close: ST-jx3c5vxm's check planted ST-dddddddd and failed on a stray committed row; ST-gj4eicfw's check counted every kb.land root and could not pass with real landings in the store; the orchestrator rewrote both mid-sprint."
+}

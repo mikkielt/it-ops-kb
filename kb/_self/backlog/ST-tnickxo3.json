@@ -1,0 +1,26 @@
+{
+  "id": "ST-tnickxo3",
+  "kind": "story",
+  "title": "land retries a fetch that failed on a transient network error once before it stops",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "backlog.py land runs its fetch step again once after a network failure (refused key, timeout) before it stops at step fetch",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys;sys.path.insert(0,'_tools');import bl_land;sys.exit(0 if getattr(bl_land,'FETCH_RETRIES',0)>=1 else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-qvlnptiw close"
+  ],
+  "notes": "SP-qvlnptiw close: ops shows two landings stopped at fetch (ST-aqaa7xa6 'Permission denied (publickey)', ST-wi2volsz a 120 s timeout); each passed when run again by hand minutes later. near-duplicate of open ST-pq24h2lg: kept as this sprint's evidence (two fetch stops); merge into it when planned"
+}
