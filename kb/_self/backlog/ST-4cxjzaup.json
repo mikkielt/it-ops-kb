@@ -1,0 +1,26 @@
+{
+  "id": "ST-4cxjzaup",
+  "kind": "story",
+  "title": "The coord hook backs off after a failed ask poll and prints a new ask once across parallel hook runs",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "new_asks records asks_at after a coord call that failed or timed out, so a busy store costs the poll at most once per ASK_POLL_SECONDS, and two PreToolUse hooks of one session started together print a new ask once",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,sys,tempfile,subprocess as s\nD=tempfile.mkdtemp();bad=os.path.join(D,'store-is-a-dir');os.makedirs(bad)\nsid='chk-backoff-'+os.urandom(4).hex();E=dict(os.environ,KB_COORD_STORE=bad)\nev={'hook_event_name':'PreToolUse','session_id':sid,'tool_name':'Read','tool_input':{'file_path':'x'},'cwd':os.getcwd(),'transcript_path':os.path.join(D,'t.jsonl')}\ns.run([sys.executable,'.claude/hooks/coord_hook.py'],input=json.dumps(ev),capture_output=True,text=True,env=E,timeout=60)\nsys.path.insert(0,'.claude/hooks');import coord_hook\nst=coord_hook.load(sid);p=coord_hook.path(sid) if hasattr(coord_hook,'path') else None\nprint('asks_at after a failed poll:',st.get('asks_at'))\nfor f in os.listdir(coord_hook.STATE):\n    if f.startswith('chk-backoff-'): os.remove(os.path.join(coord_hook.STATE,f))\nsys.exit(0 if st.get('asks_at') else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    ".claude/hooks/coord_hook.py",
+    "kb/_self/maintaining.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt review"
+  ],
+  "notes": "SP-w6amecjt review, S4: a failed coord call returns before asks_at is saved; parallel hooks load the same asks_seq."
+}

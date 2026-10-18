@@ -86,7 +86,7 @@
       },
       "class": "querylog",
       "answer": "an empty one (redact.scan_known([])), which costs nothing and redacts every identifier shape",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -103,7 +103,7 @@
       },
       "class": "querylog",
       "answer": "up to 5 ask lines of 300 characters after redaction, a count line for the rest",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-18: a harness without hooks polls coord.py wait or the coord MCP tools itself; this item is the Claude Code client. The hook already prints systemMessage and additionalContext (coord_hook.py:271). The check plants its own store and removes its session's state file under _cache/coord_hook.",

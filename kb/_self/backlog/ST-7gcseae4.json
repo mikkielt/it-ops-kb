@@ -1,0 +1,27 @@
+{
+  "id": "ST-7gcseae4",
+  "kind": "story",
+  "title": "kbask keeps the remediation claim's token off every coord.py command line",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbask.py passes the claim token to coord.py release (in _watch and on the error path) by stdin or an environment variable, never on argv, as the _watch hand-off already does",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('_tools/kbask.py').read()\nn=t.count('\"--token\", token')\nprint('token on argv at',n,'call(s)');sys.exit(1 if n else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/kbask.py",
+    "_tools/coord.py",
+    "kb/_self/tools.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt review"
+  ],
+  "notes": "SP-w6amecjt review, S4: the token is visible in the process list for the length of a release call."
+}

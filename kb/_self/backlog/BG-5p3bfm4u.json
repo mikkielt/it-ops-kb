@@ -1,0 +1,28 @@
+{
+  "id": "BG-5p3bfm4u",
+  "kind": "bug",
+  "title": "The kb-observer role lists commands its kbask session may not run, and one form that exits 2",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "each command .claude/agents/kb-observer.md step 4 lets the observer run is admitted by kbask.ALLOWED_TOOLS (or the role names only those), and the coord wait form it gives runs (wait needs --since)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "def admits(rule,cmd):\n    if not (rule.startswith('Bash(') and rule.endswith(')')): return False\n    r=rule[5:-1]\n    for suf in (':*',' *','*'):\n        if r.endswith(suf): r=r[:-len(suf)];return cmd==r or cmd.startswith(r+' ')\n    return cmd==r\nimport sys,subprocess as s\nsys.path.insert(0,'_tools');import kbask\nC=['python3 _tools/kbmon.py --once','python3 _tools/backlog.py find x','python3 _tools/backlog.py goal','python3 _tools/backlog.py check','python3 _tools/querylog.py where','python3 _tools/rag.py pack x','git diff']\nt=open('.claude/agents/kb-observer.md').read()\nnamed=[c for c in C if c.split()[-2 if c.endswith(' x') else -1] in t]\nmiss=[c for c in named if not any(admits(r,c) for r in kbask.ALLOWED_TOOLS)]\nw=s.run([sys.executable,'_tools/coord.py','wait','--timeout','0'],capture_output=True,text=True,timeout=30).returncode if 'wait --timeout 0' in t else 0\nprint('named, not admitted:',miss,'wait form exit',w);sys.exit(1 if miss or w==2 else 0)"
+    ]
+  },
+  "touches": [
+    ".claude/agents/kb-observer.md",
+    "_tools/kbask.py"
+  ],
+  "relates_to": [
+    "BG-jpzlj4gi"
+  ],
+  "links": [
+    "parked: SP-w6amecjt review"
+  ],
+  "notes": "SP-w6amecjt review (and ST-hp5cccy7's worker): under dontAsk the denied commands cost turns of a 30-turn cap; the operator's allow gate on ST-hp5cccy7 holds the list, so the role is the side to narrow unless a gate widens the list."
+}

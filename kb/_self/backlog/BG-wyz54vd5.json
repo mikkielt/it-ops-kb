@@ -37,7 +37,7 @@
       },
       "class": "design",
       "answer": "REFRESH_S per panel module, with the kb counts and the ops rows kept by a cheap file signature inside the panel and the shared read",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -54,7 +54,7 @@
       },
       "class": "querylog",
       "answer": "kb 10, log 10, sessions 30, sprint 30, querylog 30, ops rows 30 (coord, host unthrottled)",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -71,7 +71,7 @@
       },
       "class": "querylog",
       "answer": "mon_view.LazyKnown scans only the GUIDs of the public root (equal to redact.known().guids) and mon_kb counts the audit's facts without linking ledger entries",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -88,7 +88,7 @@
       },
       "class": "design",
       "answer": "yes, one read per snapshot for every mode (output unchanged)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "evidence": {

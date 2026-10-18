@@ -1,0 +1,29 @@
+{
+  "id": "ST-xbnltvok",
+  "kind": "story",
+  "title": "kbmon's cheap GUID scan and fact counts share code with redact and kbfacts instead of copying it",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "mon_view's public-root GUID scan and mon_kb's audit rows call shared functions of redact and kbfacts (or one shared helper), so a change to either cannot leave kbmon's display redaction or counts behind",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys,inspect\nsys.path.insert(0,'_tools');import mon_view,mon_kb\nc=[n for n,m in (('mon_view',mon_view),('mon_kb',mon_kb)) if 'def scan_guids' in inspect.getsource(m) or 'def audit_rows' in inspect.getsource(m)]\nprint('modules with their own copy:',c);sys.exit(1 if c else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/mon_view.py",
+    "_tools/mon_kb.py",
+    "_tools/redact.py",
+    "_tools/kbfacts.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-w6amecjt review"
+  ],
+  "notes": "SP-w6amecjt review, S4 (BG-wyz54vd5 g3): copies match today (423 audit rows, 490 GUIDs). No new test (D-6kei5o2z)."
+}

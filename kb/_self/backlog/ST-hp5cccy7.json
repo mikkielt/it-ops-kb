@@ -124,7 +124,7 @@
       },
       "class": "design",
       "answer": "a hidden _watch subcommand of kbask.py, fed a JSON line on stdin",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -141,7 +141,7 @@
       },
       "class": "design",
       "answer": "claim lease 1800 seconds, session stopped after 1500 seconds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -158,7 +158,7 @@
       },
       "class": "querylog",
       "answer": "at most 8000 characters after redaction; id is A plus 10 hex digits",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -175,7 +175,7 @@
       },
       "class": "design",
       "answer": "completed with the result text when the session succeeded with a text, else failed with the reason (timeout, no start, no result)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-18 (operator interview): you start it by hand; kbmon stays read-only and kbask is the one writer of asks. Caps: --max-budget-usd 0.5 --max-turns 30 --model sonnet, --permission-mode dontAsk (claude -p denies what would prompt, agents/headless-agent-runtimes.md:23, DOC S1800; the budget is an estimate a run can pass, :52, DOC S1824). The checks put a fake claude first on PATH, so no check makes a paid model call; the paid path is the operator's first real run.",

@@ -55,7 +55,7 @@
       },
       "class": "design",
       "answer": "Not at all: the prompt says coord is out of reach",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -74,7 +74,7 @@
       },
       "class": "design",
       "answer": "No claim, exit 1 on no result",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-18 (operator, mid-plan): 'how my team's sprint and researches are going' is the same read-only agent with the operator's question. A team shares the backlog through git and coord through a serve URL (kbask --url and --key-file as coord.py takes them).",

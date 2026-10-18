@@ -1,0 +1,28 @@
+{
+  "id": "BG-ylrx5zt7",
+  "kind": "bug",
+  "title": "kbask's observer allow rules admit git log and git show with --output, which writes a file",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "no Bash rule kbask gives the observer session admits a git command that writes a file (git log or git show with --output), so the session stays read-only by its allow list",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "def admits(rule,cmd):\n    if not (rule.startswith('Bash(') and rule.endswith(')')): return False\n    r=rule[5:-1]\n    for suf in (':*',' *','*'):\n        if r.endswith(suf): r=r[:-len(suf)];return cmd==r or cmd.startswith(r+' ')\n    return cmd==r\nimport sys\nsys.path.insert(0,'_tools');import kbask\nbad=[c for c in ('git log --output=x','git show --output=x HEAD') if any(admits(r,c) for r in kbask.ALLOWED_TOOLS)]\nprint('admitted writes:',bad);sys.exit(1 if bad else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/kbask.py",
+    "kb/_self/tools.md"
+  ],
+  "relates_to": [
+    "BG-jpzlj4gi"
+  ],
+  "links": [
+    "parked: SP-w6amecjt review"
+  ],
+  "notes": "SP-w6amecjt review: stays a hole after BG-jpzlj4gi's settings fix unless that fix drops Bash."
+}
