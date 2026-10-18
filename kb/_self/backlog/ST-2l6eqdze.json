@@ -2,7 +2,7 @@
   "id": "ST-2l6eqdze",
   "kind": "story",
   "title": "Review sprint: kbmon shows the kb, coord and running sessions live and as one JSON snapshot",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5gph7fh6",
   "review": true,
   "priority": "P1",
@@ -22,5 +22,6 @@
         "_tools/tests.py"
       ]
     }
-  ]
+  ],
+  "claimed_by": "orch-r17"
 }
