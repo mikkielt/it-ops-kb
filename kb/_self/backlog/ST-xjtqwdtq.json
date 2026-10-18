@@ -75,7 +75,9 @@
           "none"
         ]
       },
-      "class": "design"
+      "class": "design",
+      "answer": "run as sized",
+      "by": "operator"
     }
   ],
   "links": [
