@@ -20,5 +20,24 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the view keep the log's newest rows when the log has more rows than fit: a plain bottom slice of the whole log body (a problems row, listed first, goes before any event), or problems rows pinned and only events dropped?",
+      "options": [
+        "bottom slice of the body, alert rows counted out first",
+        "pin problems rows, drop oldest events"
+      ],
+      "recommendation": "bottom slice of the body, alert rows counted out first",
+      "do": {
+        "bottom slice of the body, alert rows counted out first": "BG-bkdrmiy5",
+        "pin problems rows, drop oldest events": "BG-bkdrmiy5"
+      },
+      "class": "design",
+      "answer": "bottom slice of the body, alert rows counted out first",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r18"
 }
