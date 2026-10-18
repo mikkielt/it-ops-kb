@@ -1,10 +1,13 @@
 """The scripted stand-in for `claude` in `benchmarks.py multi run --replay` (stdlib only).
 
-`python3 bench_replay.py ROLE [--usage JSON] [--cost USD] [--question Q]... [--budget N] [--area A] [--holder H]` runs one
-agent's role in the current directory (the agent's clone, or the worktree `backlog.py dispatch` made for a code item) and
-makes no model call: a `lookup` agent runs `rag.py pack` on each question; a `research` agent runs `coord.py dedup` on its
-area, commits one planted `_gaps.md` entry and runs `kbgit.py sync --push`; a `code` agent writes the planted files of its
-item's touches, runs the item's check and commits them with the item's `KB-Work` trailer. It prints one stream-json result
+`python3 bench_replay.py ROLE [--usage JSON] [--cost USD] [--question Q]... [--budget N] [--area A] [--holder H] [--plant P]`
+runs one agent's role in the current directory (the agent's clone, or the worktree `backlog.py dispatch` made for a code
+item) and makes no model call: a `lookup` agent runs `rag.py pack` on each question; a `research` agent claims the key
+`research:replay:HOLDER` (with a `claim` event), runs `coord.py dedup` on its area, commits one planted `_gaps.md` entry,
+runs `kbgit.py sync --push`, then releases its claim (with a `release` event); a `code` agent writes the planted files of
+its item's touches, runs the item's check and commits them with the item's `KB-Work` trailer. `--plant lost-claim` makes a
+research agent end with its claim held and `--plant land-stop` makes a code agent leave its change uncommitted, so the
+item cannot land: the faults `benchmarks.py multi check` finds. It prints one stream-json result
 event with the planted `--usage` (the four token counts and the turns) and `--cost`, and the commands it ran as `steps`;
 the exit is 1 and the event an error when a command failed. The harness (bench_multi.py) reads the event as it reads a
 session's and lands the code item itself. This module imports nothing of the project: it runs from the checkout that
@@ -14,6 +17,8 @@ import argparse, json, shlex, subprocess, sys, time
 from pathlib import Path
 
 ITEM_DIR = "kb/_self/backlog"  # bench_multi.ITEM_DIR
+CLAIM_TTL = 3600  # seconds a replayed research agent's claim lasts
+PLANTS = ("lost-claim", "land-stop")  # bench_multi.PLANTS' names
 GAP = ("\n## replay-{agent}\n\n- **A planted entry that a replayed research agent commits and syncs.** Nothing was tried; the entry "
        "exists to be pushed to the sandbox's bare. [UNK] (topic: {topic})\n")
 PLANTED_CODE = {  # the file a replayed code agent writes for a touch of the planted items (kb/_self/reports/multi_bench.csv)
@@ -63,7 +68,16 @@ def lookup(a, steps):
         run([sys.executable, tool("rag.py"), "pack", q, "--budget", str(a.budget)], steps, f"rag.py pack {q!r} --budget {a.budget}")
 
 
+def coord_event(kind, key, holder, steps):
+    run([sys.executable, tool("coord.py"), "post", "--kind", kind, "--field", f"key={key}", "--field", f"holder={holder}"], steps,
+        f"coord.py post --kind {kind} {key}")
+
+
 def research(a, steps):
+    key = f"research:replay:{a.holder}"
+    token = json.loads(run([sys.executable, tool("coord.py"), "claim", key, "--ttl", str(CLAIM_TTL), "--holder", a.holder], steps,
+                           f"coord.py claim {key} --holder {a.holder}"))["token"]
+    coord_event("claim", key, a.holder, steps)
     out = run([sys.executable, tool("coord.py"), "dedup", a.area, "--holder", a.holder], steps, f"coord.py dedup {a.area!r} --holder {a.holder}")
     topic = str(json.loads(out.strip().splitlines()[-1]).get("topic", "")).removeprefix("public/")
     if not (Path("kb/public") / (topic + ".md")).is_file():  # a gap names a topic the root has
@@ -76,11 +90,15 @@ def research(a, steps):
     for _ in range(3):  # another agent's push in the same moment moves the bare's main: sync again
         try:
             run([sys.executable, tool("kbgit.py"), "sync", "--push"], steps, "kbgit.py sync --push")
-            return
+            break
         except Failed as e:
             last = str(e)
             steps.pop()
-    raise Failed(last)
+    else:
+        raise Failed(last)
+    if a.plant != "lost-claim":
+        run([sys.executable, tool("coord.py"), "release", key, "--token", token], steps, f"coord.py release {key}")
+        coord_event("release", key, a.holder, steps)
 
 
 def code(a, steps):
@@ -95,6 +113,8 @@ def code(a, steps):
         path.write_text(PLANTED_CODE[touch], encoding="utf-8", newline="\n")
     for chk in item.get("checks", []):
         run(chk["run"], steps, "item check: " + shlex.join(chk["run"])[:80])
+    if a.plant == "land-stop":
+        return
     run(["git", "add", "--", *item["touches"]], steps)
     run(["git", "commit", "-q", "-m", f"feat: {item['title']}\n\nKB-Work: {iid}"], steps)
 
@@ -111,6 +131,7 @@ def main(argv=None):
     ap.add_argument("--budget", type=int, default=1200)
     ap.add_argument("--area", default="")
     ap.add_argument("--holder", default="agent")
+    ap.add_argument("--plant", choices=PLANTS, default="", help="a fault the role makes on purpose")
     a = ap.parse_args(argv)
     usage, steps, t = json.loads(a.usage), [], time.time()
     try:

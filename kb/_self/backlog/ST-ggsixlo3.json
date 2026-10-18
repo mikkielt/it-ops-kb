@@ -41,6 +41,55 @@
     "kb/_self/tools.md",
     "_tools/bench_replay.py"
   ],
+  "gates": [
+    {
+      "id": "claimreplay",
+      "kind": "blocking",
+      "question": "What does a clean replay's research agent do with the coordination store, so the check has a claim to read?",
+      "options": [
+        "claims research:replay:HOLDER with a claim event, releases it with a release event after its sync",
+        "claims nothing in a replay (dedup finds no lack term), so only paid runs have claims"
+      ],
+      "recommendation": "claims research:replay:HOLDER with a claim event, releases it with a release event after its sync",
+      "do": {
+        "claims research:replay:HOLDER with a claim event, releases it with a release event after its sync": "ST-ggsixlo3",
+        "claims nothing in a replay (dedup finds no lack term), so only paid runs have claims": "ST-ggsixlo3"
+      },
+      "class": "push"
+    },
+    {
+      "id": "plants",
+      "kind": "blocking",
+      "question": "Which fault does each plant make?",
+      "options": [
+        "lost-claim: the first research agent ends with its claim held; land-stop: the first code agent leaves its change uncommitted",
+        "lost-claim: the claim is released with no release event and no commit; land-stop: the change fails the item's check"
+      ],
+      "recommendation": "lost-claim: the first research agent ends with its claim held; land-stop: the first code agent leaves its change uncommitted",
+      "do": {
+        "lost-claim: the first research agent ends with its claim held; land-stop: the first code agent leaves its change uncommitted": "ST-ggsixlo3",
+        "lost-claim: the claim is released with no release event and no commit; land-stop: the change fails the item's check": "ST-ggsixlo3"
+      },
+      "class": "push"
+    },
+    {
+      "id": "plantexit",
+      "kind": "provisional",
+      "question": "What does multi run exit with when only the agent that makes a planted fault failed?",
+      "options": [
+        "0: the planted fault is no failure of the run, multi check names it",
+        "1: as for any agent that failed or item that did not land"
+      ],
+      "recommendation": "0: the planted fault is no failure of the run, multi check names it",
+      "do": {
+        "0: the planted fault is no failure of the run, multi check names it": "ST-ggsixlo3",
+        "1: as for any agent that failed or item that did not land": "ST-ggsixlo3"
+      },
+      "class": "design",
+      "answer": "0: the planted fault is no failure of the run, multi check names it",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/research-repro.md",
