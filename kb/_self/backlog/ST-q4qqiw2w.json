@@ -20,7 +20,7 @@
       "run": [
         "python3",
         "-c",
-        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nD=tempfile.mkdtemp();st=os.path.join(D,'none.sqlite')\nd=js(k('--json','--panel','coord','--store',st))['panels']['coord']\nif d.get('state')!='absent': fail('missing store: %r'%d.get('state'))\nif os.path.exists(st): fail('the run created the store')\nprint('ok: a missing store is absent and not created')\n"
+        "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nif not os.path.exists('_tools/mon_coord.py'): fail('no mon_coord.py: the coord panel is not built yet')\nD=tempfile.mkdtemp();st=os.path.join(D,'none.sqlite')\nd=js(k('--json','--panel','coord','--store',st))['panels']['coord']\nif d.get('state')!='absent': fail('missing store: %r'%d.get('state'))\nif os.path.exists(st): fail('the run created the store')\nprint('ok: a missing store is absent and not created')\n"
       ]
     },
     {
