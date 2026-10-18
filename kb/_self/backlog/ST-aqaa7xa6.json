@@ -2,7 +2,7 @@
   "id": "ST-aqaa7xa6",
   "kind": "story",
   "title": "otel/ adapter: kbmon's metric points over OTLP/HTTP with the SDK, pinned by its own uv.lock, off until an endpoint is set",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",
@@ -156,5 +156,36 @@
     ]
   },
   "notes": "Plan 2026-10-18 (operator interview): the operator chose a separate SDK adapter over a stdlib OTLP encoder, in a top-level otel/ with its own pyproject.toml and uv.lock, run by uv --frozen, the checks allowed to fill uv's cache once. The checks are python3 scripts that run the adapter through uv and receive on a stdlib http.server; protobuf strings are raw bytes, so names and planted secrets are found in the body without decoding. kb: OTEL_EXPORTER_OTLP_ENDPOINT is a base URL to which v1/<signal> is appended (claude/otel-monitoring.md:38, DOC S-kumwk4fp); OTLP/HTTP posts to /v1/metrics, /v1/logs, /v1/traces on port 4318 (logs/otel-collector-otlp-pipeline.md:35, DOC S-v2wnj4qk).",
-  "claimed_by": "orch-r19"
+  "evidence": {
+    "commit": "1c3d516bed93d04ea0cd4d5dd52e3d4d06bfd1e7",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nimport re\nA40='A'*40\nSEC=['-----BEGIN '+'PRIVATE KEY-----','AK'+'IA'+'Q'*16,'gh'+'p_'+'b'*36,'github'+'_pat_'+'c'*22,'gl'+'pat-'+'d'*20,'gl'+'rt-'+'e'*20,'xo'+'xb-'+'f'*10,'sk-'+'ant-'+'g'*20,'sk-'+'h'*32,'Account'+'Key='+A40,'x?s'+'ig='+'i'*30,'ey'+'J'+'j'*10+'.ey'+'J'+'k'*10+'.'+'l'*10,'pass'+'word = \"'+'m'*9+'\"','api'+'_key='+'n7Qz'*6,'/Users/'+'zofia.nowak/x']\nTAILS=['PRIVATE KEY','Q'*16,'b'*36,'c'*22,'d'*20,'e'*20,'f'*10,'g'*20,'h'*32,A40,'i'*30,'j'*10,'m'*9,'n7Qz'*6,'zofia.nowak']\nIDS=[x for x in SEC if re.fullmatch(r'[A-Za-z0-9_.:/#@-]{1,120}',x)]\ndef leaks(t): return [x[:6] for x in TAILS if x in t]\nimport shutil\nUVB=shutil.which('uv') or fail('uv is not on PATH')\ndef ad(*a,env=None,t=180):\n    t0=time.time();p=s.run([UVB,'run','--frozen','--project','otel','python','otel/kbmon_otel.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\nimport http.server,threading,gzip\nGOT=[]\nclass Rq(http.server.BaseHTTPRequestHandler):\n    def do_POST(self):\n        b=self.rfile.read(int(self.headers.get('Content-Length') or 0))\n        if self.headers.get('Content-Encoding')=='gzip': b=gzip.decompress(b)\n        GOT.append((self.path,dict(self.headers),b));self.send_response(200);self.send_header('Content-Type',self.headers.get('Content-Type','application/json'));self.end_headers()\n    def log_message(self,*a): pass\nSV=http.server.ThreadingHTTPServer(('127.0.0.1',0),Rq);threading.Thread(target=SV.serve_forever,daemon=True).start()\nEP='http://127.0.0.1:%d'%SV.server_address[1]\ndef sent(path): return b''.join(b for p,h,b in GOT if p==path)\n\nimport secrets as z\nsnap={'schema':1,'taken':'2026-10-18T00:00:00Z','panels':{'kb':{'state':'error','seconds':0.1,'data':{'error':' '.join(SEC)}}},'alerts':[]}\nf=os.path.join(tempfile.mkdtemp(),'snap.json');open(f,'w',encoding='utf-8').write(json.dumps(snap))\nhv=z.token_hex(16);E=dict(os.environ,OTEL_EXPORTER_OTLP_ENDPOINT=EP,OTEL_EXPORTER_OTLP_HEADERS='x-kb-planted='+hv)\np=ad('--once','--from-snapshot',f,env=E);SV.shutdown()\nif p.returncode!=0: fail('adapter exit %s: %s'%(p.returncode,p.stderr[-400:]))\ngot=[(pa,h) for pa,h,b in GOT if pa=='/v1/metrics']\nif not got: fail('no POST /v1/metrics: %r'%[pa for pa,h,b in GOT])\nif not any(h.get('x-kb-planted')==hv or h.get('X-Kb-Planted')==hv for pa,h in got): fail('the planted header did not reach the receiver')\nif hv in p.stdout+p.stderr: fail('a header value was printed')\nbody=sent('/v1/metrics').decode('latin-1')\nif 'kbmon.' not in body: fail('no kbmon. metric in the body')\nhit=leaks(body)\nif hit: fail('planted secrets sent: %s'%hit)\nprint('ok: metrics sent with the planted header, header not printed, no secret sent')\n"
+        ],
+        "exit": 0,
+        "sha256": "3eb689a356407851"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nimport shutil\nUVB=shutil.which('uv') or fail('uv is not on PATH')\ndef ad(*a,env=None,t=180):\n    t0=time.time();p=s.run([UVB,'run','--frozen','--project','otel','python','otel/kbmon_otel.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\nimport http.server,threading,gzip\nGOT=[]\nclass Rq(http.server.BaseHTTPRequestHandler):\n    def do_POST(self):\n        b=self.rfile.read(int(self.headers.get('Content-Length') or 0))\n        if self.headers.get('Content-Encoding')=='gzip': b=gzip.decompress(b)\n        GOT.append((self.path,dict(self.headers),b));self.send_response(200);self.send_header('Content-Type',self.headers.get('Content-Type','application/json'));self.end_headers()\n    def log_message(self,*a): pass\nSV=http.server.ThreadingHTTPServer(('127.0.0.1',0),Rq);threading.Thread(target=SV.serve_forever,daemon=True).start()\nEP='http://127.0.0.1:%d'%SV.server_address[1]\ndef sent(path): return b''.join(b for p,h,b in GOT if p==path)\n\nE={x:v for x,v in os.environ.items() if not x.startswith('OTEL_')}\np=ad('--once',env=E);SV.shutdown()\nif p.returncode!=0 or 'off' not in (p.stdout+p.stderr).lower(): fail('no endpoint: exit %s %r'%(p.returncode,(p.stdout+p.stderr)[-200:]))\nif GOT: fail('a request was sent with no endpoint set')\nprint('ok: no endpoint, nothing sent, export off')\n"
+        ],
+        "exit": 0,
+        "sha256": "3d8dbcfbb6340674"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nimport ast,glob\nbad=[]\nfor f in glob.glob('_tools/*.py'):\n    for n in ast.walk(ast.parse(open(f,encoding='utf-8').read())):\n        names=[a.name for a in n.names] if isinstance(n,ast.Import) else [n.module or ''] if isinstance(n,ast.ImportFrom) else []\n        bad+=[(f,x) for x in names if x.split('.')[0]=='opentelemetry']\nif bad: fail('stdlib tools import OpenTelemetry: %r'%bad)\nif not os.path.isfile('otel/uv.lock') or 'opentelemetry-sdk' not in open('otel/uv.lock',encoding='utf-8').read(): fail('otel/uv.lock does not pin opentelemetry-sdk')\nprint('ok: _tools/ imports no OpenTelemetry package, otel/uv.lock pins the SDK')\n"
+        ],
+        "exit": 0,
+        "sha256": "ed7fb41bb808359b"
+      }
+    ]
+  }
 }
