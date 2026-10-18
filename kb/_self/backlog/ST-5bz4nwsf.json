@@ -1,0 +1,20 @@
+{
+  "id": "ST-5bz4nwsf",
+  "kind": "story",
+  "title": "kbmon live view at the default 5 s interval costs a fifth of a core, and over a core under suite load",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "kbmon live view at its default interval uses at most 10% of one core on this host, measured over four frames, so a pane or split left open beside a session does not compete with it for CPU",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import resource,subprocess as s,sys,time\nw=time.time();s.run([sys.executable,'_tools/kbmon.py','--interval','5','--count','4'],capture_output=True)\nu=resource.getrusage(resource.RUSAGE_CHILDREN);t=u.ru_utime+u.ru_stime;d=time.time()-w\nprint('live view, 4 frames at the default interval: %.1f CPU-s over %.1f s = %.0f%% of a core'%(t,d,100*t/d));sys.exit(1 if t/d>0.10 else 0)\n"
+      ]
+    }
+  ],
+  "notes": "Filed 2026-10-19 at the operator's request (kbmon in-chat discovery session), parked outside SP-3hgirkur. Measured on this macOS host, 14 cores: under suite load (another session held the suite lock, load 3.5) one full snapshot took 10-14 CPU-s, the coord panel alone and a --from-snapshot redraw 5 CPU-s each (redact.known scans the public root once per process when a string has an identifier shape), and a live frame at --interval 60 used 8.5 CPU-s; on a quieter host 30 minutes later the coord panel took 0.7 CPU-s, a full snapshot 2.8 CPU-s and the live view at the default 5 s interval 21% of a core (4 frames, 3.7 CPU-s over 17.7 s). Related: BG-222gbloh (redact's known names loaded after the panels' bound). The mod of SP-3hgirkur refreshes every 60 s and kbmon --split runs --interval 60 meanwhile."
+}

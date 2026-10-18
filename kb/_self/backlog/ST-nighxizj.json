@@ -1,0 +1,53 @@
+{
+  "id": "ST-nighxizj",
+  "kind": "story",
+  "title": "kbmon --receipt prints the agent's one-line receipt and an alert fingerprint",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-3hgirkur",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon.py --receipt prints one JSON object with line and fingerprint from the alerts of the querylog, sessions and host panels, or of the panels --panel names; line is at most 200 characters and passes redact.redact; line names up to two alert messages, how many more there are and the command python3 _tools/kbmon.py --once --panel NAME for the state on ask; fingerprint changes only when the set of alert kinds and ids changes; it writes no file and exits 0",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\ndef fail(m):\n    print(m);sys.exit(1)\nH=tempfile.mkdtemp();q=os.path.join(H,'querylog');os.makedirs(q)\nE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\nfake=['-----BEGIN '+'RSA PRIVATE KEY-----','AK'+'IA'+'Q'*16,'gh'+'p_'+'a1'*18,'github'+'_pat_'+'b'*24,'gl'+'pat-'+'c'*22,'gl'+'rt-'+'d'*22,'xo'+'xb-'+'e'*12,'sk-'+'ant-'+'f'*22,'sk-'+'g'*34,'Account'+'Key='+'h'*44,'&s'+'ig='+'i'*32,'ey'+'J'+'j'*12+'.ey'+'J'+'k'*12+'.'+'l'*12,'pass'+'word=\"'+'m'*10+'\"','Authorization: Bearer '+'n'*30,'https://u:'+'o'*12+'@corp.example.com/x','api'+'_key='+'p'*20]\ndef plant(line):\n    open(os.path.join(q,'distill.log'),'w').write('distill: run=x entries=1 dropped=0 waiting=0\\napply --push: '+line+'\\n')\ndef rec():\n    p=s.run([sys.executable,'_tools/kbmon.py','--receipt','--panel','querylog','--timeout','30'],capture_output=True,text=True,env=E,timeout=120)\n    if p.returncode!=0: fail('exit %s: %s'%(p.returncode,p.stderr[-300:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nplant('refused: kbgit.py sync exit 1: '+' '.join(fake))\na=rec();L=a.get('line','')\nif 'ALERT' not in L or 'kbmon.py --once' not in L or len(L)>200: fail('alert line %r'%L)\nleft=[f for f in fake if f in L or f[-10:] in L]\nif left: fail('%d planted secrets survived in the line'%len(left))\nplant('refused: the push was refused, another message')\nif rec().get('fingerprint')!=a.get('fingerprint'): fail('the fingerprint moved on the message text alone')\nplant('pushed 3 entries')\nc=rec()\nif 'ALERT' in c.get('line','') or c.get('fingerprint')==a.get('fingerprint') or len(c.get('line',''))>200: fail('no-alert result %r'%c)\nif sorted(os.listdir(q))!=['distill.log']: fail('receipt wrote files: %r'%os.listdir(q))\nprint('ok: alert line, redacted, fingerprint by kind and id only, cleared on a push, nothing written')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon.py --receipt prints one JSON object with line and fingerprint from the alerts of the querylog, sessions and host panels, or of the panels --panel names",
+      "check": 0
+    },
+    {
+      "clause": "line is at most 200 characters and passes redact.redact",
+      "check": 0
+    },
+    {
+      "clause": "line names up to two alert messages, how many more there are and the command python3 _tools/kbmon.py --once --panel NAME for the state on ask",
+      "check": 0
+    },
+    {
+      "clause": "fingerprint changes only when the set of alert kinds and ids changes",
+      "check": 0
+    },
+    {
+      "clause": "it writes no file and exits 0",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbmon.py",
+    "_tools/mon_receipt.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-dtahnx2a"
+  ],
+  "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --receipt (exit 2). Prototype in the discovery session: a receipt line of 99-186 characters (about 25-46 tokens at 4 characters a token, an estimate) from the querylog and sessions panels took 1.4 s warm and 6.5 s cold; querylog alone 0.23 s. A planted distill.log line 'apply --push: refused: ...' with CLAUDE_PLUGIN_DATA and CLAUDE_PLUGIN_ROOT gives the delivery alert whose message carries the line's text, so the planted secrets reach the receipt's input. The mod (ST-fobzhr5o) keeps the last fingerprint; kbmon stays read-only."
+}

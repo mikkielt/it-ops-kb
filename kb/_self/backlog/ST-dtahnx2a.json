@@ -1,0 +1,44 @@
+{
+  "id": "ST-dtahnx2a",
+  "kind": "story",
+  "title": "kbmon judges an orphan process and a low disk as snapshot alerts",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-3hgirkur",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon's snapshot holds an orphan alert (kind orphan, id sessions.orphan) while the sessions panel lists an orphan process and a disk alert (kind disk, id host.disk) while the clone's file system has under 10% free; the host panel's data gains disk with free_bytes, total_bytes and free_pct",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,os,subprocess as s,sys,tempfile\ndef fail(m):\n    print(m);sys.exit(1)\ndef snap(free,orphan):\n    procs=[{'pid':4242,'age_s':9,'class':'orphan' if orphan else 'hook','checkout':'.','session':None,'item':None}]\n    host={'load':[1.0,1.0,1.0],'cores':8,'suite_lock':None,'main_lock':None,'ceiling':{'error':'planted'},'disk':{'free_bytes':free*10**9,'total_bytes':100*10**9,'free_pct':free}}\n    d={'schema':1,'taken':'2026-10-19T00:00:00Z','alerts':[],'panels':{'sessions':{'state':'ok','seconds':0.1,'data':{'procs':procs,'worktrees':[]}},'host':{'state':'ok','seconds':0.1,'data':host}}}\n    f=os.path.join(tempfile.mkdtemp(),'s.json');json.dump(d,open(f,'w'));return f\ndef judged(f):\n    p=s.run([sys.executable,'_tools/kbmon.py','--json','--from-snapshot',f],capture_output=True,text=True,timeout=120)\n    if p.returncode not in (0,1): fail('exit %s: %s'%(p.returncode,p.stderr[-300:]))\n    return {(a['kind'],a['id']) for a in json.loads(p.stdout)['alerts']},p.returncode\nk,rc=judged(snap(3,True))\nif ('orphan','sessions.orphan') not in k or ('disk','host.disk') not in k or rc!=1: fail('alerts %r exit %s'%(sorted(k),rc))\nk,rc=judged(snap(60,False))\nif any(x[0] in ('orphan','disk') for x in k): fail('alerts on a healthy snapshot: %r'%sorted(k))\nprint('ok: an orphan and 3% free disk are alerts; a healthy snapshot has neither')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import json,subprocess as s,sys\np=s.run([sys.executable,'_tools/kbmon.py','--json','--panel','host','--timeout','30'],capture_output=True,text=True,timeout=120)\np.returncode in (0,1) or (print('exit',p.returncode,p.stderr[-300:]),sys.exit(1))\nh=json.loads(p.stdout)['panels']['host'];d=(h.get('data') or {}).get('disk') or {}\nok=h['state']=='ok' and isinstance(d.get('free_pct'),(int,float)) and 0<=d['free_pct']<=100 and d.get('total_bytes',0)>0 and d.get('free_bytes',-1)>=0\nprint(d);sys.exit(0 if ok else 1)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon's snapshot holds an orphan alert (kind orphan, id sessions.orphan) while the sessions panel lists an orphan process and a disk alert (kind disk, id host.disk) while the clone's file system has under 10% free",
+      "check": 0
+    },
+    {
+      "clause": "the host panel's data gains disk with free_bytes, total_bytes and free_pct",
+      "check": 1
+    }
+  ],
+  "touches": [
+    "_tools/mon_sessions.py",
+    "_tools/mon_host.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md"
+  ],
+  "notes": "Plan 2026-10-19: premise run on the base: a planted snapshot with an orphan process and 3% free disk judges no alert (alerts [] exit 0), and the host panel has no disk data. The sessions panel listed 2-4 real orphans during the session. The receipt (ST-nighxizj) and the pane read these alerts."
+}

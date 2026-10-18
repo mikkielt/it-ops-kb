@@ -1,0 +1,50 @@
+{
+  "id": "ST-atei6ybh",
+  "kind": "story",
+  "title": "kbmon --split opens the live view in a WezTerm, tmux or Windows Terminal pane beside the session",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-3hgirkur",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "kbmon.py --split opens the live view (kbmon.py --interval 60) in a pane beside the session: wezterm cli split-pane where WEZTERM_PANE is set, tmux split-window where TMUX is set, Windows Terminal split-pane where WT_SESSION is set; elsewhere it prints the command to run in a second terminal and names the optional WezTerm installer; --dry-run prints the command it would run; it exits 0 in every case",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import os,subprocess as s,sys\ndef fail(m):\n    print(m);sys.exit(1)\ndef run(env):\n    E={k:v for k,v in os.environ.items() if k not in ('TMUX','TMUX_PANE','WEZTERM_PANE','WT_SESSION','TERM_PROGRAM')};E.update(env)\n    p=s.run([sys.executable,'_tools/kbmon.py','--split','--dry-run'],capture_output=True,text=True,env=E,timeout=60)\n    return p.returncode,p.stdout\nrc,o=run({'WEZTERM_PANE':'7'})\nif rc!=0 or 'wezterm' not in o or 'split-pane' not in o or 'kbmon.py' not in o or '--interval 60' not in o: fail('wezterm: %s %r'%(rc,o))\nrc,o=run({'TMUX':'/tmp/tmux-0/default,1,0','TMUX_PANE':'%1'})\nif rc!=0 or 'split-window' not in o or 'kbmon.py' not in o: fail('tmux: %s %r'%(rc,o))\nrc,o=run({'WT_SESSION':'00000000-0000-0000-0000-000000000000'})\nif rc!=0 or ('wt' not in o.split() and 'wt.exe' not in o) or ('split-pane' not in o and ' sp ' not in o): fail('windows terminal: %s %r'%(rc,o))\nrc,o=run({})\nif rc!=0 or 'kbmon.py --interval 60' not in o or 'install_wezterm' not in o: fail('no splitter: %s %r'%(rc,o))\nprint('ok: wezterm, tmux and Windows Terminal commands, and the hint elsewhere')\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "kbmon.py --split opens the live view (kbmon.py --interval 60) in a pane beside the session: wezterm cli split-pane where WEZTERM_PANE is set, tmux split-window where TMUX is set, Windows Terminal split-pane where WT_SESSION is set",
+      "check": 0
+    },
+    {
+      "clause": "elsewhere it prints the command to run in a second terminal and names the optional WezTerm installer",
+      "check": 0
+    },
+    {
+      "clause": "--dry-run prints the command it would run",
+      "check": 0
+    },
+    {
+      "clause": "it exits 0 in every case",
+      "check": 0
+    }
+  ],
+  "touches": [
+    "_tools/kbmon.py",
+    "_tools/mon_split.py",
+    "kb/_self/monitoring.md",
+    "kb/_self/tools.md",
+    "kb/_self/map.csv"
+  ],
+  "depends_on": [
+    "ST-nighxizj",
+    "ST-qpcva3jl"
+  ],
+  "notes": "Plan 2026-10-19: premise on the base: kbmon.py has no --split (exit 2). Prototype: a tmux split-window -d -h -l 45% opened the live view from a SessionStart hook and redrew at once on a resize. wezterm cli split-pane --right --percent N --cwd DIR -- PROG targets WEZTERM_PANE (vendor docs wezterm.org/cli/cli/split-pane.html, 2026-10-19, not in the kb yet); Windows Terminal wt -w 0 split-pane -V -d DIR commandline (learn.microsoft.com/windows/terminal/command-line-arguments, 2026-10-19). Apple Terminal has no split command: the hint path. --interval 60 keeps the live view's CPU low until ST-5bz4nwsf."
+}

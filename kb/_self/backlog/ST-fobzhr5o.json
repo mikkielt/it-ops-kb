@@ -1,0 +1,61 @@
+{
+  "id": "ST-fobzhr5o",
+  "kind": "story",
+  "title": "The kbmon-pane mod shows kbmon live in a pane and gives the agent only the receipt",
+  "status": "draft",
+  "parent": "EP-wqgicmmj",
+  "sprint": "SP-3hgirkur",
+  "priority": "P2",
+  "rank": 0,
+  "goal": "a plugin of function hooks in .claude/skills/kbmon-pane loads in every session of the clone and does nothing in a session whose session.start says isInteractive false; in an interactive session it opens a kbmon pane that a 60-second timer fills with kbmon.py --once at the pane's columns, finding Python as python3, python or py -3; after a resize it lays the pane out again at the new width within one refresh; /kbmon opens the pane again; a toast tells the person when the alert set changes; the agent gets the kbmon.py --receipt line as one appended user-role row at session start and another only when the fingerprint changes",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import shutil,subprocess as s,sys\nc=shutil.which('claude')\nif not c:\n    print('claude is not on PATH');sys.exit(1)\np=s.run([c,'plugin','validate','.claude/skills/kbmon-pane'],capture_output=True,text=True,timeout=180);o=p.stdout+p.stderr\nneed=['session.start','ui.render{component=Pane','command.run{command=kbmon}','$.process.run','$.session.append','$.ui.toast','$.clock.every','$.ui.open']\nmiss=[n for n in need if n not in o]\nif p.returncode!=0 or 'Validation passed' not in o or miss:\n    print(o[-1200:]);print('missing:',miss);sys.exit(1)\nprint('ok: the mod validates and hooks and calls what the goal names')\n"
+      ]
+    },
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import glob,sys\nt=''.join(open(f,encoding='utf-8').read() for f in glob.glob('.claude/skills/kbmon-pane/hooks/**/*.ts*',recursive=True))\nneed=['isInteractive','--receipt','--once','bodyColumns',\"'-3'\",'60_000']\nmiss=[n for n in need if n not in t]\nprint('missing:',miss) if miss else print('ok');sys.exit(1 if miss else 0)\n"
+      ]
+    }
+  ],
+  "clauses": [
+    {
+      "clause": "a plugin of function hooks in .claude/skills/kbmon-pane loads in every session of the clone and does nothing in a session whose session.start says isInteractive false",
+      "check": 1
+    },
+    {
+      "clause": "in an interactive session it opens a kbmon pane that a 60-second timer fills with kbmon.py --once at the pane's columns, finding Python as python3, python or py -3",
+      "check": 0
+    },
+    {
+      "clause": "after a resize it lays the pane out again at the new width within one refresh",
+      "check": 1
+    },
+    {
+      "clause": "/kbmon opens the pane again",
+      "check": 0
+    },
+    {
+      "clause": "a toast tells the person when the alert set changes",
+      "check": 0
+    },
+    {
+      "clause": "the agent gets the kbmon.py --receipt line as one appended user-role row at session start and another only when the fingerprint changes",
+      "check": 0
+    }
+  ],
+  "touches": [
+    ".claude/skills/kbmon-pane/**",
+    "kb/_self/monitoring.md"
+  ],
+  "depends_on": [
+    "ST-nighxizj"
+  ],
+  "notes": "Plan 2026-10-19 (operator choices): the receipt comes from the mod, not settings hooks, since session.start's isInteractive (false for -p and the SDK) is the one documented headless signal; the mod lives in .claude/skills/kbmon-pane and loads with no install and no settings change. Prototype in the discovery session (scratchpad, --plugin-dir): the pane docked as a sidebar at 170 columns, clipped at once on a resize and was laid out again at the new width after one kbmon run (about 20 s); the demo agent quoted only the receipt row, nothing of the pane. Checks: claude plugin validate and a read of the module; no check runs the mod, since claude plugin test needs a *.test.ts file, which the operator ruled out (D-6kei5o2z, D-2tq4fhgs), and a live session makes a model call. The mods API is early access (bundled reference, Claude Code 2.1.290; this host runs 2.1.303)."
+}
