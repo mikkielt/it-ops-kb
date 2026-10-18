@@ -2,7 +2,7 @@
   "id": "ST-xlxkap7l",
   "kind": "story",
   "title": "kbask.py summary: the observer summarises sprints, research, sessions, coord and the query log on request",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -38,5 +38,6 @@
   "depends_on": [
     "ST-hp5cccy7"
   ],
-  "notes": "Plan 2026-10-18 (operator, mid-plan): 'how my team's sprint and researches are going' is the same read-only agent with the operator's question. A team shares the backlog through git and coord through a serve URL (kbask --url and --key-file as coord.py takes them)."
+  "notes": "Plan 2026-10-18 (operator, mid-plan): 'how my team's sprint and researches are going' is the same read-only agent with the operator's question. A team shares the backlog through git and coord through a serve URL (kbask --url and --key-file as coord.py takes them).",
+  "claimed_by": "orch-r20"
 }
