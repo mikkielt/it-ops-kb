@@ -88,14 +88,10 @@ ASSIGNMENT = re.compile(
     r"""((?P<bd>\\+)"(?:[^"\\\n]|\\+(?![\\"])|(?P=bd)\\+")*(?P=bd)"|(?P<bs>\\+)'(?:[^'\\\n]|\\+(?![\\'])|(?P=bs)\\+')*(?P=bs)'"""
     r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\\*["']?[^\s&;"']+)""")
 ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
-# English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
+# Nine English function words: a bare word of this list after a secret key name or an Authorization scheme is prose ("LAPS
 # password: where stored", "use Authorization: Bearer in Graph"), not a value. No other word is kept, a quoted word
 # is a value, and so is a word of the list inside a URL's user:password@ part.
-PROSE_WORDS = frozenset(
-    "a an the is are was were be been it its this that these those in on at of to for from with by as into about see "
-    "where when how what why which who whom whether if and or but not can do does should must may will would could "
-    "there here then than so".split())
-PROSE_VALUE = re.compile(r"([A-Za-z]+)[.,?!]?")
+PROSE_WORDS = frozenset("where in is it the see for to of".split())
 # A private key block whole, BEGIN line through END line; with no END line (cut off), BEGIN line to the end of the text
 # (the BEGIN line alone is a kbcommon.SECRETS shape).
 KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?-----END [A-Z ]*PRIVATE KEY(?: BLOCK)?-----|.*)", re.S)
@@ -176,9 +172,8 @@ def _assigned(m):
 
 
 def _prose(word):
-    """True for a bare word of PROSE_WORDS, in either case, with at most one closing punctuation mark."""
-    w = PROSE_VALUE.fullmatch(word)
-    return bool(w) and w.group(1).lower() in PROSE_WORDS
+    """True for a bare word of PROSE_WORDS, in either case, with nothing attached to it."""
+    return word.lower() in PROSE_WORDS
 
 
 def _credential(m, prose=False):
