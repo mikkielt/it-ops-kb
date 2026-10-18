@@ -2,7 +2,7 @@
   "id": "BG-bqvcba5e",
   "kind": "bug",
   "title": "A coord.py wait authenticated before its operator's key file is removed still returns the next event to that operator",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
@@ -31,5 +31,6 @@
   "links": [
     "parked: SP-rsmmwzr2 review"
   ],
-  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (the revoked waiter gets the next event). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests. Orchestrator 2026-10-18: repro fixed to chmod 0600 its key files (coord.py serve refuses a 0644 key file, so the old repro failed on a traceback); it now fails on the premise."
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (the revoked waiter gets the next event). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests. Orchestrator 2026-10-18: repro fixed to chmod 0600 its key files (coord.py serve refuses a 0644 key file, so the old repro failed on a traceback); it now fails on the premise.",
+  "claimed_by": "orch-r15"
 }
