@@ -2,7 +2,7 @@
   "id": "ST-d2ekxwvd",
   "kind": "story",
   "title": "kbmon log tail: the newest coord events, ops rows and delivery outcomes under the panels",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -100,5 +100,27 @@
     }
   ],
   "notes": "Layout of the log tail (operator's spec): title `log  {state}  {secs}s`, then the newest lines, oldest first, at column 2: `{HH:MM:SS} {source padded to 8} {event} {subject} {key=value …}` (e.g. `14:02:07 coord    claim ST-aaaaaaaa holder=w1 ttl=600`); warning lines take the `! ` gutter and yellow. Plan 2026-10-18: the operator's layout ends every frame with this log tail. kbmon --events (sprint SP-qvlnptiw) reads the same rows through mon_log's reader rather than a second one.",
-  "claimed_by": "orch-r18"
+  "evidence": {
+    "commit": "8e53bd7d8a1bca38470f63a757dd8f388ce3d41e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\nD=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');E=dict(os.environ,KB_COORD_STORE=st)\ndef c(*a):\n    return s.run([sys.executable,'_tools/coord.py',*a],capture_output=True,text=True,env=E,timeout=60)\nr=c('claim','ST-aaaaaaaa','--ttl','600','--holder','w1','--budget','2')\ntok=json.loads(r.stdout).get('token','') if r.returncode==0 else ''\nc('claim','topic/x','--ttl','300','--holder','w2')\nc('post','--kind','intent','--field','session=s1','--field','item=ST-aaaaaaaa')\nc('post','--kind','progress','--field','item=ST-aaaaaaaa','--field','state=working')\nif not tok or len(json.loads(c('list').stdout or '[]'))<2: fail('planting the coord store failed')\n\nimport re\nsys.path.insert(0,'_tools');os.environ.update(CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd());import ql_capture\nok=[ql_capture.record('ops',event='land.step',item='ST-dddddddd',step='fetch',exit=0,ms=10),\n    ql_capture.record('ops',event='done.refused',item='ST-dddddddd',reasons=['not-ready'],ms=5)]\nif not all(ok): fail('planting the ops rows failed')\nE.update(QE,COLUMNS='120',LINES='200',NO_COLOR='1');p=k('--once','--store',st,env=E)\nif p.returncode not in (0,1): fail('--once exit %s: %s'%(p.returncode,p.stderr[-300:]))\nL=p.stdout.splitlines();at=[i for i,x in enumerate(L) if x.startswith('log  ')]\nif not at or not L[at[0]].startswith('log  ok'): fail('log title %r'%(L[at[0]] if at else None))\nR=re.compile(r'^(  |! )\\d\\d:\\d\\d:\\d\\d \\S.{7} \\S+ \\S+');rows=[x for x in L[at[0]+1:] if R.match(x)]\nif len(rows)<3: fail('%d log lines'%len(rows))\nif not any('intent' in x for x in rows) or not any('land.step' in x and 'ST-dddddddd' in x for x in rows): fail('planted events missing: %r'%rows)\nif not any(x.startswith('! ') and 'done.refused' in x for x in rows): fail('done.refused without the warning gutter')\nprint('ok: %d log lines, planted coord and ops rows, refusal flagged'%len(rows))\n"
+        ],
+        "exit": 0,
+        "sha256": "6354f1aa50014365"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nH=tempfile.mkdtemp();QE=dict(os.environ,CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd())\nD=tempfile.mkdtemp();st=os.path.join(D,'c.sqlite');E=dict(os.environ,KB_COORD_STORE=st)\ndef c(*a):\n    return s.run([sys.executable,'_tools/coord.py',*a],capture_output=True,text=True,env=E,timeout=60)\nr=c('claim','ST-aaaaaaaa','--ttl','600','--holder','w1','--budget','2')\ntok=json.loads(r.stdout).get('token','') if r.returncode==0 else ''\nc('claim','topic/x','--ttl','300','--holder','w2')\nc('post','--kind','intent','--field','session=s1','--field','item=ST-aaaaaaaa')\nc('post','--kind','progress','--field','item=ST-aaaaaaaa','--field','state=working')\nif not tok or len(json.loads(c('list').stdout or '[]'))<2: fail('planting the coord store failed')\n\nsys.path.insert(0,'_tools');os.environ.update(CLAUDE_PLUGIN_DATA=H,CLAUDE_PLUGIN_ROOT=os.getcwd());import ql_capture\nfor i in range(40): c('post','--kind','heartbeat','--field','n=%d'%i)\nfor lines in (40,200):\n    E.update(QE,COLUMNS='120',LINES=str(lines),NO_COLOR='1');p=k('--once','--store',st,env=E)\n    L=p.stdout.splitlines()\n    if p.returncode not in (0,1) or not L: fail('--once exit %s'%p.returncode)\n    at=[i for i,x in enumerate(L) if x.startswith('log  ')]\n    n=len(L)-at[0]-1 if at else 0\n    if lines==200 and (len(L)>lines or n<40): fail('LINES=200: %d lines, %d in the log'%(len(L),n))\n    if lines==40 and n<3: fail('LINES=40: %d log lines'%n)\nprint('ok: the log fills the rows left and keeps at least 3')\n"
+        ],
+        "exit": 0,
+        "sha256": "0ff9838cc1e07648"
+      }
+    ]
+  }
 }
