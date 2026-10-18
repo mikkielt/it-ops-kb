@@ -25,7 +25,8 @@
   ],
   "touches": [
     "otel/otel_logs.py",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "otel/kbmon_otel.py"
   ],
   "depends_on": [
     "ST-aqaa7xa6",
