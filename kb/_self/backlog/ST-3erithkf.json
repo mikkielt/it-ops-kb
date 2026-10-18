@@ -43,7 +43,9 @@
         "quote, reword or report": "ST-3erithkf",
         "quote or report only": "ST-3erithkf"
       },
-      "class": "agents-rule"
+      "class": "agents-rule",
+      "answer": "quote, reword or report",
+      "by": "operator"
     }
   ],
   "links": [
