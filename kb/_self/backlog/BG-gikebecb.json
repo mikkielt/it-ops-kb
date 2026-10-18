@@ -71,7 +71,7 @@
       },
       "class": "design",
       "answer": "localhost and loopback IP addresses (127.0.0.0/8, ::1, ::ffff:127.x.x.x)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

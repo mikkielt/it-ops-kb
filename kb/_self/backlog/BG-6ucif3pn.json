@@ -78,7 +78,7 @@
       },
       "class": "design",
       "answer": "skip it, so its operator gets 401, and refuse at serve start",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -95,7 +95,7 @@
       },
       "class": "design",
       "answer": "skip the check where os.name is nt",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [

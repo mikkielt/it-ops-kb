@@ -59,7 +59,7 @@
       },
       "class": "design",
       "answer": "closing quote must have the same backslash run as the opening one; a longer run before a quote is nested (backreference)",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "links": [
