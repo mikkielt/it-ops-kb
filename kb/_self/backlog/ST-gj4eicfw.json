@@ -2,7 +2,7 @@
   "id": "ST-gj4eicfw",
   "kind": "story",
   "title": "otel/ adapter sends landings, worker runs, suite runs and query-log deliveries as OTLP spans",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",
@@ -56,5 +56,6 @@
       "How does a Python span take explicit start and end times and a parent from another span?"
     ]
   },
-  "notes": "Plan 2026-10-18 (operator interview): spans for landings, worker runs, suite runs and query-log deliveries. The check decodes /v1/traces with the opentelemetry-proto package the exporter pins, run through uv. check 0 plants a random item id per run and reads only that landing's trace: ops rows come from the spool and the committed query log, which holds real landings and a stray ST-dddddddd landing from 2026-10-18"
+  "notes": "Plan 2026-10-18 (operator interview): spans for landings, worker runs, suite runs and query-log deliveries. The check decodes /v1/traces with the opentelemetry-proto package the exporter pins, run through uv. check 0 plants a random item id per run and reads only that landing's trace: ops rows come from the spool and the committed query log, which holds real landings and a stray ST-dddddddd landing from 2026-10-18",
+  "claimed_by": "orch-r19"
 }
