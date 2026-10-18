@@ -62,6 +62,40 @@
       "class": "design",
       "answer": "refuse it with exit 2 and a line naming the file and mode 0600",
       "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What does a request do with a file in the keys directory that gains group or other permission bits after serve started?",
+      "options": [
+        "skip it, so its operator gets 401, and refuse at serve start",
+        "go on reading it"
+      ],
+      "recommendation": "skip it, so its operator gets 401, and refuse at serve start",
+      "do": {
+        "skip it, so its operator gets 401, and refuse at serve start": "BG-6ucif3pn",
+        "go on reading it": "BG-6ucif3pn"
+      },
+      "class": "design",
+      "answer": "skip it, so its operator gets 401, and refuse at serve start",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "Is the mode check made on Windows, whose files carry no group or other permission bits?",
+      "options": [
+        "skip the check where os.name is nt",
+        "check there too"
+      ],
+      "recommendation": "skip the check where os.name is nt",
+      "do": {
+        "skip the check where os.name is nt": "BG-6ucif3pn",
+        "check there too": "BG-6ucif3pn"
+      },
+      "class": "design",
+      "answer": "skip the check where os.name is nt",
+      "by": "agent"
     }
   ],
   "links": [

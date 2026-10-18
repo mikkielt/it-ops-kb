@@ -652,6 +652,32 @@ def emit(body, code):
         print(json.dumps(body, sort_keys=True, ensure_ascii=False))
 
 
+def open_key_mode(path):
+    """The mode of a key file as four octal digits when group or other hold any permission bit, else None (a platform
+    without those bits, or a file that cannot be read, is the caller's to meet)."""
+    if os.name == "nt":
+        return None
+    try:
+        mode = os.stat(path).st_mode
+    except OSError:
+        return None
+    return f"{mode & 0o7777:04o}" if mode & 0o077 else None
+
+
+def open_key_text(path, mode):
+    return f"coord.py: key file {path} has mode {mode}, so others can read the token: chmod 0600 {path}"
+
+
+def key_files(keys_dir):
+    """The files authenticate reads in keys_dir: (name, path) for each regular file named for an operator."""
+    out = []
+    for name in sorted(os.listdir(keys_dir)):
+        path = Path(keys_dir) / name
+        if OPERATOR_NAME.fullmatch(name) and path.is_file():
+            out.append((name, path))
+    return out
+
+
 def authenticate(keys_dir, header):
     """The operator a request comes from, else None: the one file in keys_dir (named for the operator) that holds the
     bearer token in the Authorization header. Every request reads the directory again, so removing a file revokes
@@ -662,12 +688,11 @@ def authenticate(keys_dir, header):
         return None
     found = []
     try:
-        names = sorted(os.listdir(keys_dir))
+        files = key_files(keys_dir)
     except OSError:
         return None
-    for name in names:
-        path = Path(keys_dir) / name
-        if not OPERATOR_NAME.fullmatch(name) or not path.is_file():
+    for name, path in files:
+        if open_key_mode(path):
             continue
         try:
             secret = path.read_text(encoding="utf-8").strip().encode("utf-8")
@@ -761,6 +786,19 @@ def serve(args):
         print(f"coord.py: --keys {args.keys} is not a directory", file=sys.stderr)
         return 2
     try:
+        files = key_files(args.keys)
+    except OSError as error:
+        print(f"coord.py: --keys {args.keys}: {error}", file=sys.stderr)
+        return 2
+    loose = 0
+    for _name, path in files:
+        mode = open_key_mode(path)
+        if mode:
+            print(open_key_text(path, mode), file=sys.stderr)
+            loose += 1
+    if loose:
+        return 2
+    try:
         host, port = split_bind(args.bind)
         httpd = Server((host, port), args.keys, args.store)
     except Refused as refused:
@@ -783,6 +821,10 @@ def serve(args):
 def send(url, key_file, argv):
     """Run the command on the server at url as the operator whose token key_file holds."""
     parsed = build_parser(argparse.ArgumentParser, True).parse_args(argv)
+    mode = open_key_mode(key_file)
+    if mode:
+        print(open_key_text(key_file, mode), file=sys.stderr)
+        return 2
     try:
         token = Path(key_file).read_text(encoding="utf-8").strip()
     except (OSError, UnicodeDecodeError) as error:
