@@ -1,0 +1,20 @@
+{
+  "id": "SP-ipeewrlv",
+  "kind": "sprint",
+  "title": "Leftovers are recorded when made and removed only when proven finished: backlog.py own, a safe_to_remove verdict in tidy, a kbmon cleanup panel",
+  "status": "planned",
+  "goal": "backlog.py own records each worktree, sandbox, scratch directory and worker process this clone's tools make as a coord own/ key; backlog.py tidy lists every candidate with the verdict, reason and bytes of one safe_to_remove function and removes only the safe set under the operator's permission decision; land, close and SessionStart run it for their own leftovers or as a one-line report; merged remote code branches and recorded orphan processes are removed only by an operator command; kbmon's cleanup panel and a selfcheck line show the leftover counts",
+  "gates": [
+    {
+      "id": "start",
+      "kind": "blocking",
+      "question": "Approve this sprint's goal and committed items?",
+      "options": [
+        "approve",
+        "change",
+        "cancel"
+      ],
+      "recommendation": "approve"
+    }
+  ]
+}
