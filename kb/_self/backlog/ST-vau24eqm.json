@@ -32,6 +32,42 @@
     "ST-aqaa7xa6",
     "ST-jx3c5vxm"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How do the adapter's event records relate to --panel, --from-snapshot and severity?",
+      "options": [
+        "independent",
+        "follow-panel"
+      ],
+      "recommendation": "independent",
+      "do": {
+        "independent": "ST-vau24eqm",
+        "follow-panel": "ST-vau24eqm"
+      },
+      "class": "design",
+      "answer": "independent",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Are event records sent whenever a logs endpoint is set, and does a failed send keep the cursor?",
+      "options": [
+        "on-by-default-keep-cursor",
+        "opt-in-flag-advance-cursor"
+      ],
+      "recommendation": "on-by-default-keep-cursor",
+      "do": {
+        "on-by-default-keep-cursor": "ST-vau24eqm",
+        "opt-in-flag-advance-cursor": "ST-vau24eqm"
+      },
+      "class": "design",
+      "answer": "on-by-default-keep-cursor",
+      "by": "agent"
+    }
+  ],
   "knowledge": {
     "refs": [
       "logs/otel-log-data-model",
