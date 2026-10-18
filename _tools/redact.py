@@ -81,8 +81,10 @@ SECRETS = [re.compile(f"(?i:{p[4:]})" if p.startswith("(?i)") else p) for p in k
 # key may close its quote behind backslashes (JSON inside a JSON string, \"key\": \"v\") or a bracket (cfg['key'] = 'v'), a
 # quoted value may hold an escaped quote ("a\"b"), and an escaped-quote value (\"v\") ends at the escaped quote whose
 # backslash run is as long as the opening one; a longer run before a quote (\\\" inside \"...\") is a nested escaped quote.
+_SECRET_NAME = r"(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)"
 ASSIGNMENT = re.compile(
-    r"""(?i)(?<![\w.-])([\w.-]*?(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key)(?:\\*["'])?\]?[ \t]*[:=](?![=>])[ \t]*)"""
+    r"""(?i)((?:\[\\*["'][\w.-]*?""" + _SECRET_NAME + r"""\\*["']\]|(?<![\w.-])[\w.-]*?""" + _SECRET_NAME
+    + r"""(?:\\*["'])?)[ \t]*[:=](?![=>])[ \t]*)"""
     r"""((?P<bd>\\+)"(?:[^"\\\n]|\\+(?![\\"])|(?P=bd)\\+")*(?P=bd)"|(?P<bs>\\+)'(?:[^'\\\n]|\\+(?![\\'])|(?P=bs)\\+')*(?P=bs)'"""
     r"""|"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|\\*["']?[^\s&;"']+)""")
 ASSIGNED_PLACEHOLDER = re.compile(r"<[^<>\s]*>|\$\{[^}\s]*\}|%\w+%|\*{3}")  # a value that is not a secret
@@ -92,7 +94,7 @@ KEY_BLOCK = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY(?: BLOCK)?-----(?:.*?----
 # The credential of an Authorization header, Bearer or Basic, whatever its length or entropy; the scheme stays. The name
 # and the scheme may sit behind escaped quotes or a bracket, as in ASSIGNMENT; the credential ends at a quote, escaped or not.
 AUTH_HEADER = re.compile(
-    r"""(?i)(\bAuthorization(?:\\*["'])?\]?[ \t]*[:=][ \t]*(?:\\*["'])?(?:Bearer|Basic)[ \t]+)"""
+    r"""(?i)((?:\[\\*["']Authorization\\*["']\]|\bAuthorization(?:\\*["'])?)[ \t]*[:=][ \t]*(?:\\*["'])?(?:Bearer|Basic)[ \t]+)"""
     r"""((?:[^\s"',;\\]|\\(?!["']))+)""")
 # The password of a URL's user:password@ part; the user stays.
 URL_USERINFO = re.compile(r"""(\b[A-Za-z][A-Za-z0-9+.-]*://[^\s/:@"'<>]*:)([^\s/"'<>]+)(?=@)""")
