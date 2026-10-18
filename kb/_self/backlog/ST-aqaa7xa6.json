@@ -75,7 +75,9 @@
         "only from OTEL_EXPORTER_OTLP_HEADERS in the environment, never from a flag or a file in the clone, never printed or logged": "ST-aqaa7xa6",
         "also from a key file outside the clone that a flag names": "ST-aqaa7xa6"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "only from OTEL_EXPORTER_OTLP_HEADERS in the environment, never from a flag or a file in the clone, never printed or logged",
+      "by": "operator"
     },
     {
       "id": "publish",
@@ -90,7 +92,9 @@
         "yes, like the other code": "ST-aqaa7xa6",
         "no: keep otel/ out of the public projection": "ST-aqaa7xa6"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "yes, like the other code",
+      "by": "operator"
     },
     {
       "id": "encoding",
