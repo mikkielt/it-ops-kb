@@ -13221,6 +13221,9 @@ dc5551876f2c,python/stdlib-os-loadavg.md,S-pfq6vvwq,located,,last;minut;over;sam
 273037b023ec,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-18
 2a6244381c96,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 3f8e7fa631e3,python/stdlib-sqlite3-csv.md,S-rle6nqpc,located,,keyword-only;3.15;becom;keyword;python,60b61453742bbbdd,They will become keyword-only parameters in Python 3.15.,2026-10-16
+413ceb988b6a,python/stdlib-sqlite3-csv.md,S-5vbo75zy,unlocated:no-match,,,,,2026-10-18
+413ceb988b6a,python/stdlib-sqlite3-csv.md,S-b4zlktyl,unlocated:no-match,,,,,2026-10-18
+413ceb988b6a,python/stdlib-sqlite3-csv.md,S-mvz475h7,unlocated:no-match,,,,,2026-10-18
 49f1bb4968de,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 5a97277c1c8f,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 62be7250f2f9,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
@@ -13249,9 +13252,6 @@ d8823c0713f2,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026
 e389e569c485,python/stdlib-sqlite3-csv.md,S-rle6nqpc,unlocated:no-match,,,,,2026-10-10
 e6a7ed701982,python/stdlib-sqlite3-csv.md,S-mvz475h7,located,SQLite C Interface > Register A Callback To Handle SQLITE_BUSY Errors,encounter;immediately;upon;null;sqlite_busy;return;lock;callback,96450f9263b758de,"If the busy callback is NULL, then SQLITEBUSY is returned immediately upon encountering the lock.",2026-10-18
 e925faea0bad,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10
-ef83677bd97f,python/stdlib-sqlite3-csv.md,S-5vbo75zy,unlocated:no-match,,,,,2026-10-18
-ef83677bd97f,python/stdlib-sqlite3-csv.md,S-b4zlktyl,unlocated:no-match,,,,,2026-10-18
-ef83677bd97f,python/stdlib-sqlite3-csv.md,S-mvz475h7,unlocated:no-match,,,,,2026-10-18
 f0da535aa346,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10
 f0da535aa346,python/stdlib-sqlite3-csv.md,S-xq53ipsf,unlocated:no-match,,,,,2026-10-10
 f0df580248e3,python/stdlib-sqlite3-csv.md,S-utoe3wfw,unlocated:no-match,,,,,2026-10-10

@@ -160,10 +160,10 @@ module's implicit `BEGIN` before a `DELETE` opens.
   about 0.0 s with `timeout=0`, 0.34 s with `timeout=0.3` and 1.07 s with `timeout=1.0`, and left `in_transaction` `False`; a
   connection that had begun a `DEFERRED` transaction and read, then ran an `INSERT` while the other held its `BEGIN IMMEDIATE`, raised
   the same error after about 0.0 s with `timeout=5`. WAL mode and other versions were not run. [DER S-b4zlktyl, S-5vbo75zy, S-mvz475h7, S-rle6nqpc: probe read against the documented lock and busy-handler rules]
-- So `BEGIN IMMEDIATE` asks for the write lock at the `BEGIN` itself, before any data statement, and the busy timeout is the wait for
+- So `BEGIN IMMEDIATE` takes the write lock at the `BEGIN` itself, before any data statement, and the busy timeout is the wait for
   it: sleeps add up to at least the timeout, then the error, with no transaction open. A write that follows an earlier read in a
   `DEFERRED` transaction asks for the lock late and can fail at once whatever the timeout, so a writer that must wait for its turn
-  begins `IMMEDIATE`. [DER S-b4zlktyl, S-5vbo75zy, S-mvz475h7: the documented moment of the lock, the sleep rule and the deadlock exception, with the probe above]
+  begins `IMMEDIATE`, which is the rule the shared-state concurrency article relies on for a SQLite claim table (python/stdlib-sqlite3-csv, the racing-claim fact below, gives the full sequence). [DER S-b4zlktyl, S-5vbo75zy, S-mvz475h7: the documented moment of the lock, the sleep rule and the deadlock exception, with the probe above]
 - WAL mode (`PRAGMA journal_mode=WAL`) lets readers and a writer run at the same time, but "there can only be one writer at a time";
   a query can still return `SQLITE_BUSY` in WAL mode when another connection holds the database in exclusive locking mode, while
   the last connection cleans up the WAL files, or during crash recovery. [DOC S-232dvyc5]
@@ -200,6 +200,7 @@ con = sqlite3.connect("cache.db", isolation_level=None)  # autocommit mode: no i
 con.execute("DELETE FROM postings WHERE stale = 1")
 con.execute("VACUUM")  # refused with OperationalError if a transaction were open
 ```
+- `agents/shared-state-concurrency.md`: concurrency control for shared-state that several agents write, with lock files and inode numbers beside the SQLite transaction rules of this stdlib-sqlite3-csv topic.
 
 ## Examples
 - A tool built for Python 3.9+ compatibility must not rely on `csv.QUOTE_NOTNULL`/`QUOTE_STRINGS`
