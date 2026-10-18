@@ -161,6 +161,9 @@
                                             the bare's main, neither reached the clone's own origin/main ref and the stores
                                             follow --coord in both modes; then removes the sandboxes; no model, no network;
                                             exit 1 naming each failure, 2 on a refusal
+  benchmarks.py multi remove [--dir DIR]    remove the sandbox in DIR (default as for setup) with its agent clones under the
+                                            scratch directory, which DIR's removal alone leaves; exit 2 on a refusal (DIR
+                                            exists and holds no sandbox.json)
   benchmarks.py multi inputs [--file FILE]  check the frozen inputs of the multi-agent scenarios (default
                                             kb/_self/reports/multi_bench.csv: one row per agent and input): a lookup agent's
                                             question id is a row of the question pool or the evaluation rows, a research
@@ -388,7 +391,9 @@ def main(argv=None):
     ms.add_argument("--start", metavar="REV", help="the commit every agent starts at (default: HEAD of this checkout)")
     ms.add_argument("--dry-run", action="store_true", help="print each agent's clone, mcp-config and KB_COORD_STORE and create nothing")
     mp.add_parser("probe")
-    mi = mp.add_parser("inputs")
+    mv = mp.add_parser("remove")
+    mv.add_argument("--dir", help="the sandbox's directory (default: _cache/bench-multi of the clone's main worktree)")
+    mi =mp.add_parser("inputs")
     mi.add_argument("--file", metavar="FILE", help="the inputs file (default: " + bench_multi.INPUTS + ")")
     mr = mp.add_parser("run")
     mr.add_argument("scenario", help="one of " + ", ".join(bench_multi.SCENARIOS))
@@ -460,6 +465,8 @@ def main(argv=None):
         try:
             if a.multi_cmd == "probe":
                 return bench_multi.probe()
+            if a.multi_cmd == "remove":
+                return bench_multi.remove(a.dir, print)
             if a.multi_cmd == "inputs":
                 return bench_multi.inputs(a.file)
             if a.multi_cmd == "record":

@@ -215,10 +215,19 @@ def setup(count, coord, root=None, start=None, dry_run=False, out=print, scenari
     return 0
 
 
-def remove(root):
-    """Remove a sandbox: its directory and the directory its clones sit in."""
-    shutil.rmtree(clone_path(root, 1).parent, ignore_errors=True)
+def remove(root, out=None):
+    """Remove a sandbox: its directory and the directory its clones sit in. With `out` (`multi remove`) it names both and
+    returns 0, or raises Refused when `root` is a directory that is no sandbox's."""
+    root = Path(root) if root else default_dir()
+    if out is not None and root.exists() and not (root / MANIFEST).is_file():
+        raise Refused(f"{root} holds no {MANIFEST}: not a sandbox of `multi setup`")
+    clones = clone_path(root, 1).parent
+    shutil.rmtree(clones, ignore_errors=True)
     shutil.rmtree(root, ignore_errors=True)
+    if out is not None:
+        out(f"removed: {root}")
+        out(f"removed: {clones}")
+    return 0
 
 
 def store_checks(root, coord):
