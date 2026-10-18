@@ -4,6 +4,7 @@
   "title": "multi run reuses a DIR that holds a finished run with no reset, so the sequential run of the delta pair fails its code agents",
   "status": "draft",
   "parent": "EP-giqleoy2",
+  "sprint": "SP-7s6uubs7",
   "priority": "P2",
   "rank": 0,
   "severity": "S2",
