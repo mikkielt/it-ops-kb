@@ -11,6 +11,7 @@ text of the spool or the store. Cost is priced as `backlog.py cost` prices it (`
 import ql_base
 import ql_report
 
+REFRESH_S = 30  # seconds the live view serves the last result: the spool and the store are read whole
 SHOWN_KINDS = 4  # spool kinds the text row names, most rows first, before it counts the rest
 HASH_CHARS = 7
 

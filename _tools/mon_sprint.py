@@ -12,6 +12,7 @@ has no sprints. The panel writes nothing and makes no request. Imports no siblin
 """
 from pathlib import Path
 
+REFRESH_S = 30  # seconds the live view serves the last result: a sprint's state changes with a commit or a landing
 SPRINT_STATES = ("active", "approved", "planned")  # the order the panel lists them in
 SPRINT_ROWS = 12  # sprints in the text view
 LANDING_ROWS = 6  # landings in the text view

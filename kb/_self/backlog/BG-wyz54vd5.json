@@ -21,5 +21,75 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does the live view serve a slow panel from its last result?",
+      "options": [
+        "REFRESH_S per panel module, with the kb counts and the ops rows kept by a cheap file signature inside the panel and the shared read",
+        "a signature call on every slow panel, served while it is unchanged"
+      ],
+      "recommendation": "REFRESH_S per panel module, with the kb counts and the ops rows kept by a cheap file signature inside the panel and the shared read",
+      "do": {
+        "REFRESH_S per panel module, with the kb counts and the ops rows kept by a cheap file signature inside the panel and the shared read": "BG-wyz54vd5",
+        "a signature call on every slow panel, served while it is unchanged": "BG-wyz54vd5"
+      },
+      "class": "design",
+      "answer": "REFRESH_S per panel module, with the kb counts and the ops rows kept by a cheap file signature inside the panel and the shared read",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "How many seconds does the live view serve each slow panel's last result, and how long the ops rows?",
+      "options": [
+        "kb 10, log 10, sessions 30, sprint 30, querylog 30, ops rows 30 (coord, host unthrottled)",
+        "every slow panel 5 (a frame, so no saving)"
+      ],
+      "recommendation": "kb 10, log 10, sessions 30, sprint 30, querylog 30, ops rows 30 (coord, host unthrottled)",
+      "do": {
+        "kb 10, log 10, sessions 30, sprint 30, querylog 30, ops rows 30 (coord, host unthrottled)": "BG-wyz54vd5",
+        "every slow panel 5 (a frame, so no saving)": "BG-wyz54vd5"
+      },
+      "class": "querylog",
+      "answer": "kb 10, log 10, sessions 30, sprint 30, querylog 30, ops rows 30 (coord, host unthrottled)",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How are the redaction's public-root scan and the kb counts made cheap for the live view?",
+      "options": [
+        "mon_view.LazyKnown scans only the GUIDs of the public root (equal to redact.known().guids) and mon_kb counts the audit's facts without linking ledger entries",
+        "leave both whole and only serve the results again"
+      ],
+      "recommendation": "mon_view.LazyKnown scans only the GUIDs of the public root (equal to redact.known().guids) and mon_kb counts the audit's facts without linking ledger entries",
+      "do": {
+        "mon_view.LazyKnown scans only the GUIDs of the public root (equal to redact.known().guids) and mon_kb counts the audit's facts without linking ledger entries": "BG-wyz54vd5",
+        "leave both whole and only serve the results again": "BG-wyz54vd5"
+      },
+      "class": "querylog",
+      "answer": "mon_view.LazyKnown scans only the GUIDs of the public root (equal to redact.known().guids) and mon_kb counts the audit's facts without linking ledger entries",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "Does the shared ops rows read also apply to --json, --once and --metrics?",
+      "options": [
+        "yes, one read per snapshot for every mode (output unchanged)",
+        "live view only"
+      ],
+      "recommendation": "yes, one read per snapshot for every mode (output unchanged)",
+      "do": {
+        "yes, one read per snapshot for every mode (output unchanged)": "BG-wyz54vd5",
+        "live view only": "BG-wyz54vd5"
+      },
+      "class": "design",
+      "answer": "yes, one read per snapshot for every mode (output unchanged)",
+      "by": "agent"
+    }
+  ],
   "claimed_by": "orch-r20"
 }

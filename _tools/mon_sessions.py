@@ -18,6 +18,7 @@ from pathlib import Path
 import mon_base
 
 CLAUDE = "claude"  # the command name of a Claude Code process
+REFRESH_S = 30  # seconds the live view serves the last result: the stalled signals read git for each claimed item
 WORK_BRANCH = re.compile(r"work/([^/\s]+)")
 PROCS_SHOWN = 12  # processes in the text view, orphans first
 TREES_SHOWN = 12  # worktrees in the text view, those on a work/ branch first
