@@ -1,0 +1,23 @@
+{
+  "id": "BG-qpcct4ps",
+  "kind": "bug",
+  "title": "kbmon panels cannot say absent or timeout for themselves: mon_coord wraps mon_base's private worker, and the view calls every absent panel a missing mon_ module",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "mon_base gives a panel's collect a way to end in absent or timeout with a reason (an exception beside Unsupported that the worker maps to its state), mon_view prints that reason in place of 'no mon_<name>.py' for an absent panel, mon_coord uses it and no longer replaces mon_base._worker, and the monitoring doc names the way",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys;sys.path.insert(0,'_tools');import mon_base,mon_coord;sys.exit(1 if mon_base._worker.__module__=='mon_coord' else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_base.py",
+    "_tools/mon_view.py",
+    "_tools/mon_coord.py",
+    "kb/_self/monitoring.md"
+  ]
+}
