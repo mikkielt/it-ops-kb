@@ -2,7 +2,7 @@
   "id": "BG-blw4edp4",
   "kind": "bug",
   "title": "ledger_lock's holder judges its own lock by inode number alone, so after a stale clear a reused inode lets it remove the next writer's live lock",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
@@ -40,5 +40,18 @@
     "parked: SP-6jfnx5i3 review"
   ],
   "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (the next writer's lock is removed after an inode reuse). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
-  "claimed_by": "orch-r15"
+  "evidence": {
+    "commit": "0fa9f11178c346e8cb086de7c410c1c06e0e607e",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import os,sys,tempfile,types,pathlib as P;sys.path.insert(0,'_tools');import bl_base as b\nd=P.Path(tempfile.mkdtemp());led=d/'c.json';lock=d/'c.json.lock'\nrf=os.fstat;os.fstat=lambda fd:types.SimpleNamespace(st_ino=4242,st_mtime_ns=1,st_mtime=0)\nrs=P.Path.stat\nwith b.ledger_lock(led):\n    os.fstat=rf\n    lock.unlink();lock.write_text('')\n    P.Path.stat=lambda self,*a,**k:(types.SimpleNamespace(st_ino=4242,st_mtime_ns=2,st_mtime=rs(self).st_mtime) if self==lock else rs(self,*a,**k))\nP.Path.stat=rs;kept=lock.exists()\nprint('the next writer lock kept when the first holder exits after an inode reuse:',kept);sys.exit(0 if kept else 1)"
+        ],
+        "exit": 0,
+        "sha256": "44d5088c8e72e466"
+      }
+    ]
+  }
 }
