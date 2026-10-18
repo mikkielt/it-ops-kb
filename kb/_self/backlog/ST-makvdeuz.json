@@ -2,7 +2,7 @@
   "id": "ST-makvdeuz",
   "kind": "story",
   "title": "Research sprint goal: A multi-agent benchmark harness runs every scenario on a sandbox and proves itself by a free replay",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-5y4ut64g",
   "goal_research": true,
   "priority": "P1",
@@ -20,5 +20,6 @@
   ],
   "touches": [
     "kb/public/**"
-  ]
+  ],
+  "claimed_by": "orch-r16"
 }
