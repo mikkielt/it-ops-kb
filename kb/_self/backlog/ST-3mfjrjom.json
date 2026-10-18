@@ -2,7 +2,7 @@
   "id": "ST-3mfjrjom",
   "kind": "story",
   "title": "A commit whose KB-Work check-trailers would refuse is refused by the commit-msg hook, not only warned of",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,
@@ -93,5 +93,18 @@
     "parked: SP-7nv2ffr2 close"
   ],
   "notes": "Merged from ST-ix5wl2lt (same check commit_msg_refuses_planning_kb_work) at the 2026-10-15 plan amendment. Its goal: kbgit.py commit-msg exits non-zero, and the commit is not made, for a backlog-planning commit whose KB-Work names an item whose file it does not change, since check-trailers refuses that commit at the push anyway (SP-7nv2ffr2 close). Its recurrences: SP-djl7za6x close, SP-htl7jkrm (2026-10-13), SP-j65ihctq retrospective. Not in the 2026-10-15 batch: turning the hook from warning to refusing reverses the documented rule that commit-msg never blocks a commit (kbgit.py, kg_hooks.hook_commit_msg), and kg_trailers.py is changed by ST-qivswoxw in SP-b36246xo; plan it after the batch with a design gate, its test check retargeted to an existing test (no new id). Plan 2026-10-17: the check fails on origin/main 3dba0ef83 (the hook prints the refusal and exits 0). The new refusal fires only on a message check-trailers already refuses at the push, so it refuses nothing main accepts today. Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: public/gitlab/git-trailers-and-hooks.md:25 (a non-zero commit-msg exit aborts the commit). Orchestrator 2026-10-18: g1/g2 answered with their recommendations; touches widened to the two hook scripts (comment \"Never blocks a commit\"). backlog.md:287-288 (\"the commit-msg hook warns\") is left to ST-7bqcngos, which touches backlog.md and depends on this item.",
-  "claimed_by": "orch-r14"
+  "evidence": {
+    "commit": "9cd8d31ffe94cd37ba79e39bc4025c800d61da8f",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "\nimport subprocess, sys, tempfile, os\ntool = os.path.abspath(\"_tools/kbgit.py\")\nd = tempfile.mkdtemp()\ndef g(*a):\n    return subprocess.run([\"git\", *a], cwd=d, capture_output=True, text=True)\ng(\"init\", \"-q\"); g(\"config\", \"user.email\", \"a@example.com\"); g(\"config\", \"user.name\", \"n\")\nopen(os.path.join(d, \"f.txt\"), \"w\").write(\"x\\n\"); g(\"add\", \"f.txt\"); g(\"commit\", \"-q\", \"-m\", \"init\", \"--no-verify\")\nopen(os.path.join(d, \"f.txt\"), \"w\").write(\"y\\n\"); g(\"add\", \"f.txt\")\ndef hook(msg):\n    mf = os.path.join(d, \"MSG\")\n    open(mf, \"w\").write(msg)\n    p = subprocess.run([sys.executable, tool, \"hook\", \"commit-msg\", mf], cwd=d, capture_output=True, text=True)\n    assert \"Traceback\" not in p.stderr, p.stderr\n    return p\nbad = hook(\"chore(backlog): plan\\n\\nKB-Work: ST-zzzzzzzz\\n\")\nok = hook(\"chore: edit\\n\\nbody\\n\")\nrefused = bad.returncode != 0 and \"refuses this commit\" in bad.stderr\nsys.exit(0 if refused and ok.returncode == 0 else 1)\n"
+        ],
+        "exit": 0,
+        "sha256": "e3b0c44298fc1c14"
+      }
+    ]
+  }
 }
