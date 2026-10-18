@@ -30,7 +30,8 @@
   "touches": [
     ".claude/hooks/coord_hook.py",
     "kb/_self/maintaining.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-lfjdie2c"
