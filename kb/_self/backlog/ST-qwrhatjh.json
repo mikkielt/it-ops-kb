@@ -64,6 +64,6 @@
   "links": [
     "parked: SP-yyjwfjtc review"
   ],
-  "notes": "Plan 2026-10-17: rag.py pack on the EC, DSA and PGP labels is weak (secret-shapes-in-text.md:34 names only PRIVATE KEY and ENCRYPTED PRIVATE KEY); the check fails on all three labels. It shares kb/public with the goal research story, so it runs after it.",
+  "notes": "Plan 2026-10-17: rag.py pack on the EC, DSA and PGP labels is weak (secret-shapes-in-text.md:34 names only PRIVATE KEY and ENCRYPTED PRIVATE KEY); the check fails on all three labels. It shares kb/public with the goal research story, so it runs after it. Orchestrator 2026-10-18 (operator delegate): g1 answered with its recommendation; its secrets class came from the words PRIVATE KEY in a question about which source states a label, and no secret value is involved.",
   "claimed_by": "orch-r13"
 }
