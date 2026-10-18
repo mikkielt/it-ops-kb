@@ -2,7 +2,7 @@
   "id": "ST-jhsyp3fq",
   "kind": "story",
   "title": "kbmon.py snapshot core and kb panel: --json and --once, per-panel timeouts, read-only and redacted",
-  "status": "doing",
+  "status": "done",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-5gph7fh6",
   "priority": "P2",
@@ -212,5 +212,54 @@
     ]
   },
   "notes": "Plan 2026-10-18: new capability, so every check fails on origin/main 423d72d05 for want of _tools/kbmon.py (precheck). Contract the later items' checks read: kbmon.main(argv) returns the exit code; each panel module mon_<name>.py has collect(ctx) returning its data dict (or raising for unsupported); a missing module is state absent. Flags: --root DIR, --panel NAME (repeatable), --json, --once, --ansi, --interval S, --count N, --timeout S, --store PATH, --url URL, --key-file PATH, --from-snapshot FILE. Exit 0 shown, 1 an alert is shown (SP-v4yih547), 2 a bad argument. kb panel data: roots [{root, articles, facts {TAG: n}}], gaps, conflicts, refreshed, census, eval {state, when} or null, index_age_s or null. Measured 2026-10-18: rag.py --json audit takes about 3.2 s warm, so the kb panel at --timeout 0.2 times out. No outside facts needed beyond the research story's (2). Layout of the kb panel (operator's spec): roots (articles per root) · facts by tag (DOC CODE DER COMMUNITY UNK DECISION) · open gaps, conflicts · refresh (last refresh date, census tag, eval passed/total with time, pack index age).",
-  "claimed_by": "orch-r17"
+  "evidence": {
+    "commit": "1246dd627cbe381b2489c7d544c62e88bcf7b2d6",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nd=js(k('--json'))\nP7=('kb','coord','sessions','querylog','host','sprint','log');S=('ok','timeout','error','absent','unsupported')\nif d.get('schema')!=1: fail('schema %r'%d.get('schema'))\nfor n in P7:\n    q=d.get('panels',{}).get(n)\n    if not q or q.get('state') not in S or not isinstance(q.get('seconds'),(int,float)): fail('panel %s: %r'%(n,q))\no=k('--once')\nif o.returncode not in (0,1) or '\\x1b' in o.stdout: fail('--once exit %s or an escape byte'%o.returncode)\nmiss=[n for n in P7 if n not in o.stdout]\nif miss: fail('--once lacks '+','.join(miss))\nprint('ok: seven panels with states in --json and --once, no escape byte')\n"
+        ],
+        "exit": 0,
+        "sha256": "8980b0923270b621"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\np=k('--json','--panel','kb','--timeout','0.2');d=js(p);q=d.get('panels',{}).get('kb',{})\nif q.get('state')!='timeout': fail('kb panel under --timeout 0.2: %r'%q.get('state'))\nif p.wall>4: fail('snapshot took %.1f s under --timeout 0.2'%p.wall)\nprint('ok: kb timed out at 0.2 s, snapshot returned in %.1f s'%p.wall)\n"
+        ],
+        "exit": 0,
+        "sha256": "5938f6da06ac1c93"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\nd=js(k('--json','--panel','kb'));q=d['panels']['kb']\nif q.get('state')!='ok': fail('kb panel %r'%q.get('state'))\ndata=q['data'];a=s.run([sys.executable,'_tools/rag.py','--json','audit'],capture_output=True,text=True,timeout=300)\npub=[r for r in json.loads(a.stdout) if r['path'].startswith('public/')]\nroots={r.get('root'):r for r in data.get('roots',[])}\nr=roots.get('public') or fail('no public root in %r'%list(roots))\nif r.get('articles')!=len(pub): fail('articles %r, audit %d'%(r.get('articles'),len(pub)))\nfor tag in ('DOC','DER','UNK'):\n    if r.get('facts',{}).get(tag)!=sum(x[tag] for x in pub): fail('facts %s %r'%(tag,r.get('facts',{}).get(tag)))\nfor key in ('gaps','conflicts'):\n    if not isinstance(data.get(key),int): fail(key+' is no count')\nmiss=[x for x in ('refreshed','census','eval','index_age_s') if x not in data]\nif miss: fail('kb panel lacks '+','.join(miss))\nprint('ok: kb panel counts match rag.py audit')\n"
+        ],
+        "exit": 0,
+        "sha256": "4da9ed970d4c9814"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\n\ndef state():\n    gs=s.run(['git','status','--porcelain=v1','-uall'],capture_output=True,text=True).stdout\n    hd=s.run(['git','rev-parse','HEAD'],capture_output=True,text=True).stdout\n    f=[]\n    for base in ('_cache',os.environ.get('CLAUDE_PLUGIN_DATA','')):\n        if base and os.path.isdir(base):\n            for dp,dn,fn in os.walk(base):\n                for x in fn:\n                    pth=os.path.join(dp,x);st=os.stat(pth);f.append((pth,st.st_size,st.st_mtime_ns))\n    return gs,hd,sorted(f)\nb=state();js(k('--json'));o=k('--once');a=state()\nif o.returncode not in (0,1): fail('--once exit %s'%o.returncode)\nif a!=b:\n    ch=sorted(set(a[2])^set(b[2]))[:5];fail('a run changed the clone or a data directory: %r %r'%(a[0]!=b[0],ch))\nprint('ok: --json and --once changed no file')\n"
+        ],
+        "exit": 0,
+        "sha256": "a41de7434404ac63"
+      },
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None,t=120):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=t);p.wall=time.time()-t0;return p\ndef fail(m):\n    print(m);sys.exit(1)\ndef js(p):\n    if p.returncode not in (0,1): fail('kbmon exit %s: %s'%(p.returncode,p.stderr[-400:]))\n    try: return json.loads(p.stdout)\n    except ValueError: fail('not JSON: '+p.stdout[:200])\nimport re\nA40='A'*40\nSEC=['-----BEGIN '+'PRIVATE KEY-----','AK'+'IA'+'Q'*16,'gh'+'p_'+'b'*36,'github'+'_pat_'+'c'*22,'gl'+'pat-'+'d'*20,'gl'+'rt-'+'e'*20,'xo'+'xb-'+'f'*10,'sk-'+'ant-'+'g'*20,'sk-'+'h'*32,'Account'+'Key='+A40,'x?s'+'ig='+'i'*30,'ey'+'J'+'j'*10+'.ey'+'J'+'k'*10+'.'+'l'*10,'pass'+'word = \"'+'m'*9+'\"','api'+'_key='+'n7Qz'*6,'/Users/'+'zofia.nowak/x']\nTAILS=['PRIVATE KEY','Q'*16,'b'*36,'c'*22,'d'*20,'e'*20,'f'*10,'g'*20,'h'*32,A40,'i'*30,'j'*10,'m'*9,'n7Qz'*6,'zofia.nowak']\nIDS=[x for x in SEC if re.fullmatch(r'[A-Za-z0-9_.:/#@-]{1,120}',x)]\ndef leaks(t): return [x[:6] for x in TAILS if x in t]\n\nsnap={'schema':1,'taken':'2026-10-18T00:00:00Z','panels':{'coord':{'state':'ok','seconds':0.1,'data':{'source':'local','claims':[{'key':x,'holder':x,'left_s':5} for x in SEC],'events':[],'digest':SEC}},'kb':{'state':'error','seconds':0.1,'data':{'error':' '.join(SEC)}}},'alerts':[]}\nf=os.path.join(tempfile.mkdtemp(),'snap.json');open(f,'w',encoding='utf-8').write(json.dumps(snap))\nfor mode in ('--json','--once'):\n    p=k('--from-snapshot',f,mode)\n    if p.returncode not in (0,1) or 'coord' not in p.stdout: fail('%s exit %s: %s'%(mode,p.returncode,p.stderr[-300:]))\n    hit=leaks(p.stdout+p.stderr)\n    if hit: fail('%s printed planted secrets: %s'%(mode,hit))\nprint('ok: no planted secret in --json or --once of a saved snapshot')\n"
+        ],
+        "exit": 0,
+        "sha256": "7d2ed31e4190c452"
+      }
+    ]
+  }
 }
