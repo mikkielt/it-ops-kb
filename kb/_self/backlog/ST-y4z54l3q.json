@@ -63,6 +63,93 @@
   "depends_on": [
     "ST-dj4bgo4s"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How are a run's rows laid out in the results file and merged: arm, per-agent metrics, record, delta and the run's wall_s?",
+      "options": [
+        "Scenario multi, record the start sha, case the scenario, arm concurrent or sequential then the knob values, per-agent metrics as AGENT/METRIC beside the run's, delta arm written at record time from the file's pair, rows replaced by record case and arm, the run's wall_s the first start to the last end",
+        "A separate scenario row set per agent and a delta computed only by the report"
+      ],
+      "recommendation": "Scenario multi, record the start sha, case the scenario, arm concurrent or sequential then the knob values, per-agent metrics as AGENT/METRIC beside the run's, delta arm written at record time from the file's pair, rows replaced by record case and arm, the run's wall_s the first start to the last end",
+      "do": {
+        "Scenario multi, record the start sha, case the scenario, arm concurrent or sequential then the knob values, per-agent metrics as AGENT/METRIC beside the run's, delta arm written at record time from the file's pair, rows replaced by record case and arm, the run's wall_s the first start to the last end": "ST-y4z54l3q",
+        "A separate scenario row set per agent and a delta computed only by the report": "ST-y4z54l3q"
+      },
+      "class": "design",
+      "answer": "Scenario multi, record the start sha, case the scenario, arm concurrent or sequential then the knob values, per-agent metrics as AGENT/METRIC beside the run's, delta arm written at record time from the file's pair, rows replaced by record case and arm, the run's wall_s the first start to the last end",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "What do claims and claim_conflicts count, given that a claim a shared coordination store refuses leaves no row?",
+      "options": [
+        "claims are the store rows but session leases, conflicts are keys held in more than one store plus dup_of events",
+        "Record the dedup output of each agent in the run line and count its overlaps"
+      ],
+      "recommendation": "claims are the store rows but session leases, conflicts are keys held in more than one store plus dup_of events",
+      "do": {
+        "claims are the store rows but session leases, conflicts are keys held in more than one store plus dup_of events": "ST-y4z54l3q",
+        "Record the dedup output of each agent in the run line and count its overlaps": "ST-y4z54l3q"
+      },
+      "class": "design",
+      "answer": "claims are the store rows but session leases, conflicts are keys held in more than one store plus dup_of events",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "From what are dup_facts, rebase_s, land_stops and right read, since the run lines hold none of them?",
+      "options": [
+        "dup_facts from the fact lines each agent's commits added on the bare (agents told apart by a git author address multi setup sets per clone), rebase_s from the HEAD reflog of each clone, land_stops from the land steps of the lines, right from the lookup answer a line now holds",
+        "Add a counter of each to the run lines while the agents run"
+      ],
+      "recommendation": "dup_facts from the fact lines each agent's commits added on the bare (agents told apart by a git author address multi setup sets per clone), rebase_s from the HEAD reflog of each clone, land_stops from the land steps of the lines, right from the lookup answer a line now holds",
+      "do": {
+        "dup_facts from the fact lines each agent's commits added on the bare (agents told apart by a git author address multi setup sets per clone), rebase_s from the HEAD reflog of each clone, land_stops from the land steps of the lines, right from the lookup answer a line now holds": "ST-y4z54l3q",
+        "Add a counter of each to the run lines while the agents run": "ST-y4z54l3q"
+      },
+      "class": "design",
+      "answer": "dup_facts from the fact lines each agent's commits added on the bare (agents told apart by a git author address multi setup sets per clone), rebase_s from the HEAD reflog of each clone, land_stops from the land steps of the lines, right from the lookup answer a line now holds",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "What does multi record do with the lines of a replay when no --out is given?",
+      "options": [
+        "Refuse with exit 2 naming --out",
+        "Skip the write and exit 0"
+      ],
+      "recommendation": "Refuse with exit 2 naming --out",
+      "do": {
+        "Refuse with exit 2 naming --out": "ST-y4z54l3q",
+        "Skip the write and exit 0": "ST-y4z54l3q"
+      },
+      "class": "design",
+      "answer": "Refuse with exit 2 naming --out",
+      "by": "agent"
+    },
+    {
+      "id": "g5",
+      "kind": "provisional",
+      "question": "How does the report section stand while the results file holds no multi row?",
+      "options": [
+        "A bench:multi marker that renders a sentence saying no run is recorded and that report --check does not count as an empty marker",
+        "No marker until a real run is recorded"
+      ],
+      "recommendation": "A bench:multi marker that renders a sentence saying no run is recorded and that report --check does not count as an empty marker",
+      "do": {
+        "A bench:multi marker that renders a sentence saying no run is recorded and that report --check does not count as an empty marker": "ST-y4z54l3q",
+        "No marker until a real run is recorded": "ST-y4z54l3q"
+      },
+      "class": "design",
+      "answer": "A bench:multi marker that renders a sentence saying no run is recorded and that report --check does not count as an empty marker",
+      "by": "agent"
+    }
+  ],
   "links": [
     "kb/_self/tools.md",
     "kb/_self/reports/research-repro.md",
