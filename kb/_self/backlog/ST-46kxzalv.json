@@ -30,7 +30,8 @@
   "touches": [
     ".claude/hooks/coord_hook.py",
     "kb/_self/maintaining.md",
-    "kb/_self/token-efficiency.md"
+    "kb/_self/token-efficiency.md",
+    "kb/_self/tools.md"
   ],
   "depends_on": [
     "ST-lfjdie2c"
@@ -52,6 +53,57 @@
       "class": "agents-rule",
       "answer": "SessionStart and PreToolUse, the events the hook already has",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How often does a PreToolUse event look for new asks?",
+      "options": [
+        "at most every 10 seconds, kept in the session state",
+        "at every Bash or Skill tool event"
+      ],
+      "recommendation": "at most every 10 seconds, kept in the session state",
+      "do": {
+        "at most every 10 seconds, kept in the session state": "ST-46kxzalv",
+        "at every Bash or Skill tool event": "ST-46kxzalv"
+      },
+      "class": "agents-rule",
+      "answer": "at most every 10 seconds, kept in the session state",
+      "by": "operator"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which allowlist does the hook give redact.redact for an ask's question?",
+      "options": [
+        "an empty one (redact.scan_known([])), which costs nothing and redacts every identifier shape",
+        "redact.known(), the public root's names, which costs several seconds per hook process"
+      ],
+      "recommendation": "an empty one (redact.scan_known([])), which costs nothing and redacts every identifier shape",
+      "do": {
+        "an empty one (redact.scan_known([])), which costs nothing and redacts every identifier shape": "ST-46kxzalv",
+        "redact.known(), the public root's names, which costs several seconds per hook process": "ST-46kxzalv"
+      },
+      "class": "querylog",
+      "answer": "an empty one (redact.scan_known([])), which costs nothing and redacts every identifier shape",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How much of the open asks does one hook event show?",
+      "options": [
+        "up to 5 ask lines of 300 characters after redaction, a count line for the rest",
+        "every open ask in full"
+      ],
+      "recommendation": "up to 5 ask lines of 300 characters after redaction, a count line for the rest",
+      "do": {
+        "up to 5 ask lines of 300 characters after redaction, a count line for the rest": "ST-46kxzalv",
+        "every open ask in full": "ST-46kxzalv"
+      },
+      "class": "querylog",
+      "answer": "up to 5 ask lines of 300 characters after redaction, a count line for the rest",
+      "by": "agent"
     }
   ],
   "notes": "Plan 2026-10-18: a harness without hooks polls coord.py wait or the coord MCP tools itself; this item is the Claude Code client. The hook already prints systemMessage and additionalContext (coord_hook.py:271). The check plants its own store and removes its session's state file under _cache/coord_hook.",
