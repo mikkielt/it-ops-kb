@@ -2,7 +2,7 @@
   "id": "BG-wepc3t4y",
   "kind": "bug",
   "title": "A session whose SessionStart claim of its presence lease failed never takes the lease on a tool event",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fp3hxl6q",
   "priority": "P3",
   "rank": 0,
@@ -33,5 +33,6 @@
   "links": [
     "parked: SP-4cc36epy review"
   ],
-  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (a tool event makes no claim when the state holds no token). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (a tool event makes no claim when the state holds no token). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
+  "claimed_by": "orch-r15"
 }
