@@ -93,6 +93,74 @@
       "class": "design",
       "answer": "plain frames one after another",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "provisional",
+      "question": "How does a panel module hand its body rows to the view?",
+      "options": [
+        "lines(data[, width]) returns rows without the gutter; the view adds two spaces unless a row starts with ! or !!",
+        "each module returns complete rows with the gutter"
+      ],
+      "recommendation": "lines(data[, width]) returns rows without the gutter; the view adds two spaces unless a row starts with ! or !!",
+      "do": {
+        "lines(data[, width]) returns rows without the gutter; the view adds two spaces unless a row starts with ! or !!": "ST-o2tr2ry4",
+        "each module returns complete rows with the gutter": "ST-o2tr2ry4"
+      },
+      "class": "design",
+      "answer": "lines(data[, width]) returns rows without the gutter; the view adds two spaces unless a row starts with ! or !!",
+      "by": "agent"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which output does --once give on a terminal, and which frames does a live view give on a terminal under NO_COLOR?",
+      "options": [
+        "--once is plain unless --ansi; a live view under NO_COLOR is plain frames one after another",
+        "--once is coloured on a terminal too"
+      ],
+      "recommendation": "--once is plain unless --ansi; a live view under NO_COLOR is plain frames one after another",
+      "do": {
+        "--once is plain unless --ansi; a live view under NO_COLOR is plain frames one after another": "ST-o2tr2ry4",
+        "--once is coloured on a terminal too": "ST-o2tr2ry4"
+      },
+      "class": "design",
+      "answer": "--once is plain unless --ansi; a live view under NO_COLOR is plain frames one after another",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "How does the alert line show several alerts, and what does it print of one?",
+      "options": [
+        "the first alert as message and since, then (+N more); a row of = under it without colour",
+        "one line for each alert"
+      ],
+      "recommendation": "the first alert as message and since, then (+N more); a row of = under it without colour",
+      "do": {
+        "the first alert as message and since, then (+N more); a row of = under it without colour": "ST-o2tr2ry4",
+        "one line for each alert": "ST-o2tr2ry4"
+      },
+      "class": "design",
+      "answer": "the first alert as message and since, then (+N more); a row of = under it without colour",
+      "by": "agent"
+    },
+    {
+      "id": "g4",
+      "kind": "provisional",
+      "question": "How is a frame redrawn in place?",
+      "options": [
+        "each frame starts with cursor-home and erase-screen in one write, cut to the terminal's lines less one",
+        "cursor-home, then erase-to-end of each line"
+      ],
+      "recommendation": "each frame starts with cursor-home and erase-screen in one write, cut to the terminal's lines less one",
+      "do": {
+        "each frame starts with cursor-home and erase-screen in one write, cut to the terminal's lines less one": "ST-o2tr2ry4",
+        "cursor-home, then erase-to-end of each line": "ST-o2tr2ry4"
+      },
+      "class": "delete",
+      "answer": "each frame starts with cursor-home and erase-screen in one write, cut to the terminal's lines less one",
+      "by": "agent"
     }
   ],
   "knowledge": {
