@@ -24,7 +24,9 @@ session's intents keep showing in other sessions' digests however long it runs. 
 last renew from a tool event returned, and the event reads that, so most events make no coord call; a SessionStart
 keeps none, so the first tool event after a start renews once and takes the expiry from the store. A call that timed
 out or failed for a busy store says nothing about the lease: the token stays, and the next try comes a minute later.
-Only a refusal (exit 1: the token no longer holds the lease) drops the token.
+Only a refusal (exit 1: the token no longer holds the lease) drops the token. A session with no token (its start claim
+was refused or could not run, or a renew was refused) claims the lease afresh at its next tool event, and a claim that
+fails again waits a minute for the next, so a live session shows in other sessions' digests again.
 
 A digest line is another session's: this session's own intent and lease are left out. The output is at most ten lines:
 a first line, up to eight digest lines, and a line telling Claude to ask the operator whether to wait, join or
@@ -210,19 +212,31 @@ def lease(sid, state):
 
 def renew_if_due(sid, state):
     """On a tool event: renew the lease when less than half of LEASE_SECONDS is left by the expiry the state kept, or
-    none is kept; the state is saved only when the lease changed."""
-    if not state.get("token") or state.get("lease_until", 0) - time.time() >= LEASE_SECONDS / 2:
-        return
-    rc, out = coord("renew", "session/" + sid, "--token", state["token"], "--ttl", str(LEASE_SECONDS))
-    if rc == 0:
-        state["lease_until"] = json.loads(out)["expires"]
-    elif rc != 1:
-        state["lease_until"] = time.time() + LEASE_SECONDS / 2 + RETRY_SECONDS
-    else:
+    none is kept; with no token (a start claim the store refused or could not run, a renew it refused) claim the
+    lease afresh, a failed claim waiting RETRY_SECONDS for the next. The state is saved only when the lease changed."""
+    now = time.time()
+    if state.get("token"):
+        if state.get("lease_until", 0) - now >= LEASE_SECONDS / 2:
+            return
+        rc, out = coord("renew", "session/" + sid, "--token", state["token"], "--ttl", str(LEASE_SECONDS))
+        if rc == 0:
+            state["lease_until"] = json.loads(out)["expires"]
+            save(sid, state)
+            return
+        if rc != 1:
+            state["lease_until"] = now + LEASE_SECONDS / 2 + RETRY_SECONDS
+            save(sid, state)
+            return
         state.pop("token")
         state.pop("lease_until", None)
-        lease(sid, state)
-        state["lease_until"] = time.time() + LEASE_SECONDS if state.get("token") else 0
+    elif state.get("claim_after", 0) > now:
+        return
+    lease(sid, state)
+    if state.get("token"):
+        state["lease_until"] = now + LEASE_SECONDS
+        state.pop("claim_after", None)
+    else:
+        state["claim_after"] = now + RETRY_SECONDS
     save(sid, state)
 
 
