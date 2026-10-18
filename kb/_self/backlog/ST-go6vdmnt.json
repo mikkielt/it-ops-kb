@@ -59,6 +59,55 @@
       "class": "querylog",
       "answer": "new structured readers in ql_report.py beside the text ones",
       "by": "operator"
+    },
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "Which entries does the querylog panel count as not yet delivered?",
+      "options": [
+        "run files of the local store that origin/main lacks (0 in mode local)",
+        "spool rows whose entry the local store holds"
+      ],
+      "recommendation": "run files of the local store that origin/main lacks (0 in mode local)",
+      "do": {
+        "run files of the local store that origin/main lacks (0 in mode local)": "ST-go6vdmnt",
+        "spool rows whose entry the local store holds": "ST-go6vdmnt"
+      },
+      "class": "push"
+    },
+    {
+      "id": "g2",
+      "kind": "provisional",
+      "question": "Which rows make the panel's usage of today?",
+      "options": [
+        "the day's usage rows of the spool plus the local store's usage sidecars of the day's runs, once per prompt",
+        "the day's usage rows of the spool only"
+      ],
+      "recommendation": "the day's usage rows of the spool plus the local store's usage sidecars of the day's runs, once per prompt",
+      "do": {
+        "the day's usage rows of the spool plus the local store's usage sidecars of the day's runs, once per prompt": "ST-go6vdmnt",
+        "the day's usage rows of the spool only": "ST-go6vdmnt"
+      },
+      "class": "design",
+      "answer": "the day's usage rows of the spool plus the local store's usage sidecars of the day's runs, once per prompt",
+      "by": "agent"
+    },
+    {
+      "id": "g3",
+      "kind": "provisional",
+      "question": "What time does the panel give for the last distill and apply outcome?",
+      "options": [
+        "the distill.log's last write, on the outcome that stands last in the log only",
+        "no time for an outcome"
+      ],
+      "recommendation": "the distill.log's last write, on the outcome that stands last in the log only",
+      "do": {
+        "the distill.log's last write, on the outcome that stands last in the log only": "ST-go6vdmnt",
+        "no time for an outcome": "ST-go6vdmnt"
+      },
+      "class": "design",
+      "answer": "the distill.log's last write, on the outcome that stands last in the log only",
+      "by": "agent"
     }
   ],
   "knowledge": {
