@@ -2,7 +2,7 @@
   "id": "BG-dg4eptu4",
   "kind": "bug",
   "title": "land's doc-row merge leaves the rebase in progress on a non-UTF-8 kb/_self doc and splits a row at U+2028",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
@@ -50,5 +50,6 @@
   "links": [
     "parked: SP-aoiqmnc6 review"
   ],
-  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (UnicodeDecodeError with the rebase left in progress; the U+2028 row split). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: the goal research story's str.splitlines and rebase --abort facts."
+  "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (UnicodeDecodeError with the rebase left in progress; the U+2028 row split). Fitness test it blocks (EP-gzr4mmkm): a content sprint lands on headless Sonnet with no operator step beyond its gates. Knowledge: the goal research story's str.splitlines and rebase --abort facts.",
+  "claimed_by": "orch-r14"
 }
