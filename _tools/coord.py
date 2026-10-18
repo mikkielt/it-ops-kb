@@ -569,6 +569,12 @@ def seconds(text):
     return value
 
 
+def token(text):
+    if not text or not text.isascii() or not text.isprintable() or " " in text:
+        raise argparse.ArgumentTypeError("must be one line of printable ASCII, no spaces")
+    return text
+
+
 class QuietParser(argparse.ArgumentParser):
     """The parser of a request: a bad argument or a help request raises Refused (exit 2) and prints nothing."""
 
@@ -600,18 +606,18 @@ def build_parser(parser_class=argparse.ArgumentParser, remote=False):
     p.add_argument("--budget", type=positive, help="USD the operator approved for the claimed item (KEY is its id)")
     p = sub.add_parser("renew", parents=parents)
     p.add_argument("key")
-    p.add_argument("--token", required=True)
+    p.add_argument("--token", type=token, required=True)
     p.add_argument("--ttl", type=positive, help="new lease length in seconds (default: the claim's own)")
     p = sub.add_parser("release", parents=parents)
     p.add_argument("key")
-    p.add_argument("--token", required=True)
+    p.add_argument("--token", type=token, required=True)
     p = sub.add_parser("get", parents=parents)
     p.add_argument("key")
     p = sub.add_parser("put", parents=parents)
     p.add_argument("key")
     p.add_argument("--value", required=True)
     p.add_argument("--revision", type=not_negative, required=True, help="the revision the key must still be at (absent: 0)")
-    p.add_argument("--token", help="the holder's token: needed to write a key a live lease holds, refused for a key none holds")
+    p.add_argument("--token", type=token, help="the holder's token: needed to write a key a live lease holds, refused for a key none holds")
     p = sub.add_parser("list", parents=parents)
     p.add_argument("--prefix", default="")
     p = sub.add_parser("post", parents=parents)
@@ -866,10 +872,21 @@ def send(url, key_file, argv, plain_http=False):
         print(plain_http_refusal("--url host", parts.hostname), file=sys.stderr)
         return 2
     where = f"{parts.scheme}://{parts.netloc.rpartition('@')[2]}"
+    try:
+        port = parts.port
+    except ValueError:
+        print(f"coord.py: --url port is 0 to 65535, not {parts.netloc.rpartition(':')[2][:20]!r}", file=sys.stderr)
+        return 2
     seconds_to_wait = REQUEST_SECONDS + (parsed.timeout if parsed.command == "wait" else 0)
+    try:
+        with socket.socket() as probe:
+            probe.settimeout(seconds_to_wait)
+    except (OverflowError, ValueError):
+        print(f"coord.py: --timeout {parsed.timeout:g} is too large for a socket timeout", file=sys.stderr)
+        return 2
     connect_to = http.client.HTTPSConnection if parts.scheme == "https" else http.client.HTTPConnection
     try:
-        conn = connect_to(parts.hostname, parts.port, timeout=seconds_to_wait)
+        conn = connect_to(parts.hostname, port, timeout=seconds_to_wait)
         try:
             conn.request("POST", parts.path.rstrip("/") + ENDPOINT, json.dumps({"argv": argv}),
                          {"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
