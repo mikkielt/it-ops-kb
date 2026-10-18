@@ -2,7 +2,7 @@
   "id": "ST-lfjdie2c",
   "kind": "story",
   "title": "coord.py carries asks and answers: two event kinds with A2A task states, the text in put values",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-fxrzbuza",
   "sprint": "SP-w6amecjt",
   "priority": "P2",
@@ -89,5 +89,6 @@
       "by": "operator"
     }
   ],
-  "notes": "Plan 2026-10-18 (operator): reuse coord's shared state, not a Claude Code built-in, so any agent asks and answers: coord.py (local store or serve URL), the kb MCP server's coord tools (KB_COORD_TOOLS=1) and the coord hook. Events stay references only (coord.py:126): the text lives in a put value. The task states follow A2A (agents/a2a-protocol.md:24, DOC S2120). A served post already gets the server's operator field (coord.py usage), which tags an ask from another operator."
+  "notes": "Plan 2026-10-18 (operator): reuse coord's shared state, not a Claude Code built-in, so any agent asks and answers: coord.py (local store or serve URL), the kb MCP server's coord tools (KB_COORD_TOOLS=1) and the coord hook. Events stay references only (coord.py:126): the text lives in a put value. The task states follow A2A (agents/a2a-protocol.md:24, DOC S2120). A served post already gets the server's operator field (coord.py usage), which tags an ask from another operator.",
+  "claimed_by": "orch-r20"
 }
