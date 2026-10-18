@@ -6,7 +6,7 @@
   "priority": "P2",
   "rank": 0,
   "severity": "S3",
-  "goal": "A test run with KB_BACKLOG_CONFIG set in the environment (a sandbox agent's sync gate, a developer shell) passes as without it: conftest clears KB_BACKLOG_CONFIG with the other leaky variables (bench_repro.LEAKY_ENV and test_bench.py's comparison follow), so test_authority.py's temporary roots read their own _backlog item directory, not the file the variable names",
+  "goal": "A test run with KB_BACKLOG_CONFIG set in the environment (a sandbox agent's sync gate, a developer shell) passes as without it: conftest clears KB_BACKLOG_CONFIG with the other leaky variables (and bench_repro.LEAKY_ENV, the list a benchmark instance's environment drops, follows), so test_authority.py's temporary roots read their own _backlog item directory, not the file the variable names",
   "repro": {
     "run": [
       "python3",
@@ -16,7 +16,6 @@
   },
   "touches": [
     "_tools/conftest.py",
-    "_tools/bench_repro.py",
-    "_tools/test_bench.py"
+    "_tools/bench_repro.py"
   ]
 }
