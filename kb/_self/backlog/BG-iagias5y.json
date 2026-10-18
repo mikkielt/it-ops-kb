@@ -2,7 +2,7 @@
   "id": "BG-iagias5y",
   "kind": "bug",
   "title": "The coord hook posts an intent for any Bash text that holds 'backlog.py claim ID', a commit message or echo included",
-  "status": "todo",
+  "status": "doing",
   "sprint": "SP-fp3hxl6q",
   "priority": "P2",
   "rank": 0,
@@ -42,5 +42,6 @@
   "links": [
     "parked: SP-xo45jvbj review"
   ],
-  "notes": "Hygiene 2026-10-17: the old repro passed on origin/main 3dba0ef83 only because SessionEnd now releases the session's intents; the CLAIM regex still posts an intent for a commit message that holds backlog.py claim ID. The repro now reads the digest before the session ends, under a fresh session id (the hook keeps per-session state in the clone's _cache/coord_hook). Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (an intent for ST-zzzzzzzz from a commit message). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests."
+  "notes": "Hygiene 2026-10-17: the old repro passed on origin/main 3dba0ef83 only because SessionEnd now releases the session's intents; the CLAIM regex still posts an intent for a commit message that holds backlog.py claim ID. The repro now reads the digest before the session ends, under a fresh session id (the hook keeps per-session state in the clone's _cache/coord_hook). Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (an intent for ST-zzzzzzzz from a commit message). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
+  "claimed_by": "orch-r15"
 }
