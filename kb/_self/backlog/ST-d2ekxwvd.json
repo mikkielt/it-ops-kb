@@ -2,7 +2,7 @@
   "id": "ST-d2ekxwvd",
   "kind": "story",
   "title": "kbmon log tail: the newest coord events, ops rows and delivery outcomes under the panels",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-v4yih547",
   "priority": "P2",
@@ -46,5 +46,6 @@
   "depends_on": [
     "ST-go6vdmnt"
   ],
-  "notes": "Layout of the log tail (operator's spec): title `log  {state}  {secs}s`, then the newest lines, oldest first, at column 2: `{HH:MM:SS} {source padded to 8} {event} {subject} {key=value …}` (e.g. `14:02:07 coord    claim ST-aaaaaaaa holder=w1 ttl=600`); warning lines take the `! ` gutter and yellow. Plan 2026-10-18: the operator's layout ends every frame with this log tail. kbmon --events (sprint SP-qvlnptiw) reads the same rows through mon_log's reader rather than a second one."
+  "notes": "Layout of the log tail (operator's spec): title `log  {state}  {secs}s`, then the newest lines, oldest first, at column 2: `{HH:MM:SS} {source padded to 8} {event} {subject} {key=value …}` (e.g. `14:02:07 coord    claim ST-aaaaaaaa holder=w1 ttl=600`); warning lines take the `! ` gutter and yellow. Plan 2026-10-18: the operator's layout ends every frame with this log tail. kbmon --events (sprint SP-qvlnptiw) reads the same rows through mon_log's reader rather than a second one.",
+  "claimed_by": "orch-r18"
 }
