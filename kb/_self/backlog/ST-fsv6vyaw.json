@@ -1,0 +1,27 @@
+{
+  "id": "ST-fsv6vyaw",
+  "kind": "story",
+  "title": "land warns of an unclaimed dependent sprint item whose check the landing makes pass",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "land's sibling stage also runs the checks of the sprint's open, unclaimed items that depend on the landed item and warns of each that now passes (it proves nothing yet), as precheck does after the goal research story",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys\nsys.path.insert(0,'_tools')\nimport bl_land\nt=inspect.getsource(bl_land.rerun_sibling_checks)+inspect.getsource(bl_land.land_siblings)\nok='depends_on' in t and 'proves nothing' in t\nprint('sibling stage reads dependents:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 close"
+  ],
+  "notes": "SP-5gph7fh6 close: ST-jhsyp3fq's answered cli gate let it build the live redraw and the coord panel's absent state, so three checks of ST-o2tr2ry4 and ST-q4qqiw2w passed before their work; only a hand rerun of precheck found it."
+}

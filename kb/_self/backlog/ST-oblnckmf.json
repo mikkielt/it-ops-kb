@@ -1,0 +1,26 @@
+{
+  "id": "ST-oblnckmf",
+  "kind": "story",
+  "title": "close --summary credits a goal clause part only by an item's goal, mapped clauses or checks, not its title",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "close --summary and precheck credit each part of a sprint goal clause (`dispatch runs`) to an item only when the item's goal or a mapped clause holds it, and name a part only a title holds as unmet",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import inspect,sys\nsys.path.insert(0,'_tools')\nimport bl_land\nt=inspect.getsource(bl_land.item_words)\nok=\"get('title'\" not in t\nprint('item_words reads the title:',not ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 close"
+  ],
+  "notes": "SP-5gph7fh6 close: the goal clause `the sessions panel shows Claude Code sessions, dispatch runs, ...` was credited to ST-jokdpvsi, whose title says dispatch runs while its goal and checks do not; the review found the part undelivered (ST-yozfikuv)."
+}

@@ -1,0 +1,26 @@
+{
+  "id": "ST-dfauycuq",
+  "kind": "story",
+  "title": "A gate about a terminal's erase-screen sequence is not classed delete",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "the gate classifier's delete words match the removal of kb content or history, not an ANSI erase sequence, so a view gate keeps class design; the classifier still fails closed on deletion of kb content",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nsys.path.insert(0,'_tools')\nimport bl_authority as a\ng={'id':'g4','question':'How is a frame redrawn in place?','options':['each frame starts with cursor-home and erase-screen in one write','cursor-home, then erase-to-end of each line']}\nc=a.class_reasons({'touches':['_tools/mon_view.py']},g);print(c);sys.exit(1 if c[0]=='delete' else 0)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_authority.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 close"
+  ],
+  "notes": "SP-5gph7fh6 close: ST-o2tr2ry4 g4 was classed delete by the word erase. It caused no stop; the classifier fails closed by design, so narrowing it is the operator's call (operator-only authority)."
+}

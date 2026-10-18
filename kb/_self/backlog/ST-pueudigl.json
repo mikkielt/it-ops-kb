@@ -1,0 +1,30 @@
+{
+  "id": "ST-pueudigl",
+  "kind": "story",
+  "title": "backlog.py next --batch prints the ready items that can run together by the overlap rule",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "next --sprint SP --batch prints up to four ready items whose touches do not overlap by bl_plan's rule (a shared kb/_self doc or a merge=union ledger is no overlap), so an orchestrator dispatches them together instead of reading touches by hand, and the sprint skill's run step 2 names the command",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import subprocess,sys\np=subprocess.run([sys.executable,'_tools/backlog.py','next','--all','--batch'],capture_output=True,text=True)\nprint(p.returncode,(p.stdout+p.stderr)[-200:]);sys.exit(p.returncode)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_cli.py",
+    "_tools/bl_plan.py",
+    "_tools/backlog.py",
+    "skills/sprint/SKILL.md",
+    "kb/_self/tools.md",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 close"
+  ],
+  "notes": "SP-5gph7fh6 close: the orchestrator ran ST-o2tr2ry4, ST-q4qqiw2w and ST-jokdpvsi one after another because all three named kb/_self/monitoring.md, which shared_doc in _tools/bl_plan.py exempts; about three worker rounds where one would do."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "ST-fqa5y4xt",
+  "kind": "story",
+  "title": "A landing that adds kb/_self/map.csv rows warns of each open sprint item whose touches now miss a mapped doc",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "goal": "after an item that changes kb/_self/map.csv lands, land prints the docs-map warning start prints (a mapped doc outside the touches) for every open item of the sprint, so siblings are widened before their claim",
+  "checks": [
+    {
+      "run": [
+        "python3",
+        "-c",
+        "import sys\nt=open('_tools/bl_land.py',encoding='utf-8').read()\nok='map.csv' in t or 'docs_map' in t\nprint('bl_land reads the docs map:',ok);sys.exit(0 if ok else 1)"
+      ]
+    }
+  ],
+  "touches": [
+    "_tools/bl_land.py",
+    "_tools/bl_plan.py",
+    "kb/_self/backlog.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 close"
+  ],
+  "notes": "SP-5gph7fh6 close: ST-jhsyp3fq added the rows mapping _tools/mon_*.py to kb/_self/tools.md; the three panel stories planned before it had no tools.md touch and nothing warned, so the orchestrator widened them by hand before dispatch (and ST-o2tr2ry4 also missed _tools/kbmon.py, where the core parsed --interval)."
+}
