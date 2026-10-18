@@ -1,0 +1,22 @@
+{
+  "id": "BG-prw7ktip",
+  "kind": "bug",
+  "title": "tests.py fails when KB_BACKLOG_CONFIG is set in the environment: conftest does not clear it",
+  "status": "draft",
+  "priority": "P2",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "A test run with KB_BACKLOG_CONFIG set in the environment (a sandbox agent's sync gate, a developer shell) passes as without it: conftest clears KB_BACKLOG_CONFIG with the other leaky variables (bench_repro.LEAKY_ENV and test_bench.py's comparison follow), so test_authority.py's temporary roots read their own _backlog item directory, not the file the variable names",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import os,subprocess,sys; sys.exit(subprocess.run([sys.executable,'_tools/tests.py','-k','test_an_agent_cannot_answer_or_provisionally_answer_an_operator_gate'],env=dict(os.environ,KB_BACKLOG_CONFIG='backlog.json')).returncode)"
+    ]
+  },
+  "touches": [
+    "_tools/conftest.py",
+    "_tools/bench_repro.py",
+    "_tools/test_bench.py"
+  ]
+}
