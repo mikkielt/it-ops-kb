@@ -2,7 +2,7 @@
   "id": "ST-n5gxcl3n",
   "kind": "story",
   "title": "Research sprint goal: An optional OpenTelemetry adapter exports kbmon's metrics, events and spans and serves /metrics on loopback",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-qvlnptiw",
   "goal_research": true,
   "priority": "P1",
@@ -58,5 +58,19 @@
     }
   ],
   "notes": "Plan 2026-10-18: rag.py pack on 423d72d05 gives none for (1), (2), (4), (5), (7) and (8); (3) comes back good on DSC lines that do not answer it, (6) good on Claude API 429 lines with no OTLP. The kb holds the OTLP JSON encoding (claude/otel-monitoring.md:40), the base endpoint rule (:38), the /v1/<signal> paths and port 4318 (logs/otel-collector-otlp-pipeline.md:35) and prometheus_client binding 0.0.0.0 by default (logs/prometheus-retention-exposition.md:51). Knowledge by item: ST-aqaa7xa6 reads (1) to (4) and (6), ST-wi2volsz (5), ST-gj4eicfw (7), ST-vau24eqm (8).",
-  "claimed_by": "orch-r19"
+  "evidence": {
+    "commit": "504b7770290d3065a825724e46744751d9682dcc",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "_tools/backlog.py",
+          "researched",
+          "ST-n5gxcl3n"
+        ],
+        "exit": 0,
+        "sha256": "83570e1bf0f68d73"
+      }
+    ]
+  }
 }
