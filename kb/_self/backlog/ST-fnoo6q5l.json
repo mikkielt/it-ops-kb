@@ -2,7 +2,7 @@
   "id": "ST-fnoo6q5l",
   "kind": "story",
   "title": "The sync gate runs backlog.py check when a tracked file is deleted or renamed",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,

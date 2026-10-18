@@ -2,7 +2,7 @@
   "id": "ST-eoiziu4t",
   "kind": "story",
   "title": "backlog.md says an item file that turns the live-backlog tests red fails its own push, but those tests were deleted",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,

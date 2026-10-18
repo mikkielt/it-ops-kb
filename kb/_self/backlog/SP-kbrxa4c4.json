@@ -2,7 +2,7 @@
   "id": "SP-kbrxa4c4",
   "kind": "sprint",
   "title": "A headless sprint lands its items with no hand fix",
-  "status": "planned",
+  "status": "active",
   "goal": "A worker's stage-back, anchor rows and lint run in its own worktree as the landing will run them; the commit-msg hook and the trailer rule agree with the push gate; the landing's doc-row merge and the sync gate's backlog check hold on odd docs and deleted files",
   "gates": [
     {

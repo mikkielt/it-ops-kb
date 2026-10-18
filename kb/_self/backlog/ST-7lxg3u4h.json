@@ -2,7 +2,7 @@
   "id": "ST-7lxg3u4h",
   "kind": "story",
   "title": "A worker's factdiff.py anchor --file adds anchor rows only for the facts its item wrote, not for untouched facts of the file",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,

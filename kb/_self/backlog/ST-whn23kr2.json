@@ -2,7 +2,7 @@
   "id": "ST-whn23kr2",
   "kind": "story",
   "title": "A content worker runs the landing's lint on every article its branch changes, not only the new one",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,

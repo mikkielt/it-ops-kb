@@ -2,7 +2,7 @@
   "id": "BG-dg4eptu4",
   "kind": "bug",
   "title": "land's doc-row merge leaves the rebase in progress on a non-UTF-8 kb/_self doc and splits a row at U+2028",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,

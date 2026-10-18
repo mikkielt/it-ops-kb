@@ -2,7 +2,7 @@
   "id": "BG-idrely3y",
   "kind": "bug",
   "title": "stage-back run in a worker's own worktree looks for the worktree nested inside itself",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P3",
   "rank": 0,

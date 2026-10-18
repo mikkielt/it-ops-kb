@@ -2,7 +2,7 @@
   "id": "ST-sgzhsq4p",
   "kind": "story",
   "title": "A worker whose touches name a kb/_self doc runs the _self lookup eval before it reports, so a reword that costs a tested row a pack note is found before the landing",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-kbrxa4c4",
   "priority": "P2",
   "rank": 0,
