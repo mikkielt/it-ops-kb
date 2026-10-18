@@ -149,7 +149,7 @@
       },
       "class": "design",
       "answer": "10 seconds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -166,7 +166,7 @@
       },
       "class": "design",
       "answer": "in this process through kbfacts.audit, with KB_INDEX=0, and the newest land.step row of rag.py-eval",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -183,7 +183,7 @@
       },
       "class": "design",
       "answer": "root other than this clone is unsupported; a bare run is a live text view of --count frames every --interval seconds",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -200,7 +200,7 @@
       },
       "class": "querylog",
       "answer": "redact.redact with a lazy Known that reads the public root when a rule first needs it",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

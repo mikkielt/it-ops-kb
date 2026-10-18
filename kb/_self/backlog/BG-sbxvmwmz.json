@@ -1,0 +1,24 @@
+{
+  "id": "BG-sbxvmwmz",
+  "kind": "bug",
+  "title": "kbmon's kb panel counts closed and non-UNK gap entries and resolved conflicts as open",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the kb panel's gaps figure counts the open gaps by the rule kbfacts and bench_pool use (an [UNK entry with no settling line), and its conflicts figure leaves out resolved entries",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=120);p.wall=time.time()-t0\n    if p.returncode not in (0,1): print('kbmon exit',p.returncode,p.stderr[-300:]);sys.exit(1)\n    return p\nsys.path.insert(0,'_tools')\nimport kbfacts,kbcommon as c\ne=kbfacts.ledger_entries(c.GAPS);want=sum('[UNK' in x['text'] and not kbfacts.OPEN_GAP.search(x['text']) for x in e)\ngot=json.loads(k('--json','--panel','kb').stdout)['panels']['kb']['data']['gaps']\nprint('panel',got,'rule',want);sys.exit(0 if got==want else 1)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_kb.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 review"
+  ]
+}

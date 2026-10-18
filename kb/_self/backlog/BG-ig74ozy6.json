@@ -1,0 +1,24 @@
+{
+  "id": "BG-ig74ozy6",
+  "kind": "bug",
+  "title": "kbmon's coord panel changes an older coord store: coord.py list, wait and digest add the events table and budget column",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S4",
+  "goal": "a kbmon run leaves a coord store byte for byte as it found it, an older schema included (the panel reads it read-only, or coord.py's read commands do not migrate)",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=120);p.wall=time.time()-t0\n    if p.returncode not in (0,1): print('kbmon exit',p.returncode,p.stderr[-300:]);sys.exit(1)\n    return p\nimport sqlite3,hashlib\nf=os.path.join(tempfile.mkdtemp(),'old.sqlite');c=sqlite3.connect(f)\nc.execute('CREATE TABLE entries (key TEXT PRIMARY KEY, value TEXT, revision INTEGER NOT NULL, holder TEXT, token TEXT, ttl REAL, expires REAL)');c.commit();c.close()\nh=lambda:hashlib.sha256(open(f,'rb').read()).hexdigest()\nb=h();k('--once','--panel','coord','--store',f)\nprint('changed' if h()!=b else 'same');sys.exit(1 if h()!=b else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/coord.py",
+    "_tools/mon_coord.py"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 review"
+  ]
+}

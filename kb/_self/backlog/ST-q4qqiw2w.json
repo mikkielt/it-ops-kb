@@ -97,7 +97,7 @@
       },
       "class": "design",
       "answer": "mon_coord wraps mon_base's worker so collect declares absent or timeout, and a bug asks mon_base for the state",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -114,7 +114,7 @@
       },
       "class": "design",
       "answer": "all three at once, capped together at 30 seconds, killed at exit; kbmon's --timeout bounds the panel",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -131,7 +131,7 @@
       },
       "class": "design",
       "answer": "wait --since 0 --timeout 0 keeping the newest 10 events; digest --key '*' --lines 20",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

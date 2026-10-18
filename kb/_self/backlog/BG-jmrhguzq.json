@@ -1,0 +1,24 @@
+{
+  "id": "BG-jmrhguzq",
+  "kind": "bug",
+  "title": "kbmon's kb panel cuts its refreshed, eval and index row at 80 columns, losing counts and dates",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "at 80 columns the kb panel's rows keep every count, date and state whole, wrapping a ` · ` list at an item as kb/_self/monitoring.md's narrow rules say, and cut only free text",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import json,os,subprocess as s,sys,tempfile,time\ndef k(*a,env=None):\n    t0=time.time();p=s.run([sys.executable,'_tools/kbmon.py',*a],capture_output=True,text=True,env=env or os.environ,timeout=120);p.wall=time.time()-t0\n    if p.returncode not in (0,1): print('kbmon exit',p.returncode,p.stderr[-300:]);sys.exit(1)\n    return p\np=k('--once','--panel','kb',env=dict(os.environ,COLUMNS='80'))\nrows=[x for x in p.stdout.splitlines() if 'eval' in x or 'index' in x]\nprint(rows)\nsys.exit(1 if not rows or any(x.endswith('\\u2026') for x in rows) else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_kb.py",
+    "kb/_self/monitoring.md"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 review"
+  ]
+}

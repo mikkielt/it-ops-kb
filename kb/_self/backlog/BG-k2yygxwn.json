@@ -1,0 +1,23 @@
+{
+  "id": "BG-k2yygxwn",
+  "kind": "bug",
+  "title": "kbmon's sessions panel keys worktrees by directory name, so a same-named worktree shows as the clone",
+  "status": "draft",
+  "priority": "P3",
+  "rank": 0,
+  "severity": "S3",
+  "goal": "the sessions panel names each worktree by its own path, so two checkouts that share a directory name keep separate rows and a process in the clone keeps its branch",
+  "repro": {
+    "run": [
+      "python3",
+      "-c",
+      "import sys\nsys.path.insert(0,'_tools')\nimport mon_sessions as m\nn=m.display_names('/x/a/wt',['/x/a/wt','/x/b/wt'])\nprint(n);sys.exit(1 if len(n)<2 else 0)"
+    ]
+  },
+  "touches": [
+    "_tools/mon_sessions.py"
+  ],
+  "links": [
+    "parked: SP-5gph7fh6 review"
+  ]
+}

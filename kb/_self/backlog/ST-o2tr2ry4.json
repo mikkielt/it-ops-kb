@@ -109,7 +109,7 @@
       },
       "class": "design",
       "answer": "lines(data[, width]) returns rows without the gutter; the view adds two spaces unless a row starts with ! or !!",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -126,7 +126,7 @@
       },
       "class": "design",
       "answer": "--once is plain unless --ansi; a live view under NO_COLOR is plain frames one after another",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -143,7 +143,7 @@
       },
       "class": "design",
       "answer": "the first alert as message and since, then (+N more); a row of = under it without colour",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g4",
@@ -160,7 +160,7 @@
       },
       "class": "delete",
       "answer": "each frame starts with cursor-home and erase-screen in one write, cut to the terminal's lines less one",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {

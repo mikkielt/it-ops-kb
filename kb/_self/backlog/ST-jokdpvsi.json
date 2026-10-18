@@ -79,7 +79,7 @@
       },
       "class": "design",
       "answer": "no: the panel starts no network request, so mr-dead is never read",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g2",
@@ -96,7 +96,7 @@
       },
       "class": "design",
       "answer": "relative to the clone: . for the clone, the path under it, else the directory name",
-      "by": "agent"
+      "by": "operator"
     },
     {
       "id": "g3",
@@ -113,7 +113,7 @@
       },
       "class": "design",
       "answer": "only items with a signal; a process that is no claude one has null session and item",
-      "by": "agent"
+      "by": "operator"
     }
   ],
   "knowledge": {
