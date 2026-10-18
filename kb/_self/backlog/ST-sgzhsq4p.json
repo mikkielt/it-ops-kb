@@ -30,6 +30,25 @@
   "depends_on": [
     "BG-idrely3y"
   ],
+  "gates": [
+    {
+      "id": "g1",
+      "kind": "blocking",
+      "question": "How does the brief tell a kb/_self-doc worker to run the _self lookup eval?",
+      "options": [
+        "fixed rule in the brief naming rag.py eval --root _self",
+        "new backlog.py wrapper command"
+      ],
+      "recommendation": "fixed rule in the brief naming rag.py eval --root _self",
+      "do": {
+        "fixed rule in the brief naming rag.py eval --root _self": "ST-sgzhsq4p",
+        "new backlog.py wrapper command": "ST-sgzhsq4p"
+      },
+      "class": "agents-rule",
+      "answer": "fixed rule in the brief naming rag.py eval --root _self",
+      "by": "operator"
+    }
+  ],
   "links": [
     "parked: SP-g2ssvhi2 close",
     "duplicate: ST-lj6os2ue (merged 2026-10-17)"
