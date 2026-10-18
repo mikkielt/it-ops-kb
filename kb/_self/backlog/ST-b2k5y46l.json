@@ -126,7 +126,9 @@
         "the two commits land in the shared sandbox; the isolated sandbox is built and its stores proven by one claim of a key by each agent; the ref is read and the commits must not be in its history": "ST-b2k5y46l",
         "the two commits land in both sandboxes": "ST-b2k5y46l"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the two commits land in the shared sandbox; the isolated sandbox is built and its stores proven by one claim of a key by each agent; the ref is read and the commits must not be in its history",
+      "by": "operator"
     }
   ],
   "links": [
