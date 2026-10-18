@@ -87,7 +87,9 @@
         "After a land that left the code on its code/<id> branch, the harness merges the branch into the bare's main as the forge's merge request would (a merge commit in a throwaway clone) and runs land again": "ST-dj4bgo4s",
         "The planted items' touches are moved to a content-lane path, so sync pushes them to main": "ST-dj4bgo4s"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "After a land that left the code on its code/<id> branch, the harness merges the branch into the bare's main as the forge's merge request would (a merge commit in a throwaway clone) and runs land again",
+      "by": "operator"
     },
     {
       "id": "g3",
