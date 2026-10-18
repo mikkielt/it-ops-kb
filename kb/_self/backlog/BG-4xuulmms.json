@@ -2,7 +2,7 @@
   "id": "BG-4xuulmms",
   "kind": "bug",
   "title": "The coord hook's SessionStart saves the lease token only after its post and digest calls, so a hook killed at its 10 s timeout loses a lease the store accepted",
-  "status": "doing",
+  "status": "done",
   "sprint": "SP-fp3hxl6q",
   "priority": "P3",
   "rank": 0,
@@ -34,5 +34,18 @@
     "parked: SP-4cc36epy review"
   ],
   "notes": "Plan 2026-10-17: the repro fails on origin/main 3dba0ef83 (calls claim, post; saved token None). Value: cross-agent coordination, the operator's second theme of 2026-10-17; a parallel research session reads these digests.",
-  "claimed_by": "orch-r15"
+  "evidence": {
+    "commit": "0651011aed524f572563a8b5ea2463e1340113f8",
+    "checks": [
+      {
+        "run": [
+          "python3",
+          "-c",
+          "import importlib.util,json,sys,tempfile,time\ns=importlib.util.spec_from_file_location('h','.claude/hooks/coord_hook.py');h=importlib.util.module_from_spec(s);s.loader.exec_module(h)\nh.STATE=tempfile.mkdtemp();calls=[];resp={}\ndef fake(*a):\n    calls.append(a[0]);r=resp.get(a[0],(0,json.dumps({'token':'T1','expires':time.time()+h.LEASE_SECONDS})))\n    if r=='kill':raise SystemExit('killed')\n    return r\nh.coord=fake\nh.branch_item=lambda c:'ST-abcd1234';resp['post']='kill'\ntry:h.session_start({'cwd':tempfile.gettempdir(),'source':'startup'},'sidA')\nexcept SystemExit:pass\nst=h.load('sidA');print('calls',calls,'saved token',st.get('token'));sys.exit(0 if st.get('token')=='T1' else 1)"
+        ],
+        "exit": 0,
+        "sha256": "75aedc0d152bf781"
+      }
+    ]
+  }
 }
