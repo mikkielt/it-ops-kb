@@ -2,7 +2,7 @@
   "id": "ST-dtahnx2a",
   "kind": "story",
   "title": "kbmon judges an orphan process and a low disk as snapshot alerts",
-  "status": "todo",
+  "status": "doing",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3hgirkur",
   "priority": "P2",
@@ -40,5 +40,6 @@
     "kb/_self/monitoring.md",
     "kb/_self/tools.md"
   ],
-  "notes": "Plan 2026-10-19: premise run on the base: a planted snapshot with an orphan process and 3% free disk judges no alert (alerts [] exit 0), and the host panel has no disk data. The sessions panel listed 2-4 real orphans during the session. The receipt (ST-nighxizj) and the pane read these alerts."
+  "notes": "Plan 2026-10-19: premise run on the base: a planted snapshot with an orphan process and 3% free disk judges no alert (alerts [] exit 0), and the host panel has no disk data. The sessions panel listed 2-4 real orphans during the session. The receipt (ST-nighxizj) and the pane read these alerts.",
+  "claimed_by": "orch-r23"
 }
