@@ -64,7 +64,9 @@
         "usage": "BG-gmaaoumg",
         "refusal": "BG-gmaaoumg"
       },
-      "class": "secrets"
+      "class": "secrets",
+      "answer": "usage",
+      "by": "operator"
     }
   ],
   "links": [
