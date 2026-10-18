@@ -2,7 +2,7 @@
   "id": "ST-n5gxcl3n",
   "kind": "story",
   "title": "Research sprint goal: An optional OpenTelemetry adapter exports kbmon's metrics, events and spans and serves /metrics on loopback",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qvlnptiw",
   "goal_research": true,
   "priority": "P1",

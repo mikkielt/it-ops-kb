@@ -2,7 +2,7 @@
   "id": "ST-jx3c5vxm",
   "kind": "story",
   "title": "kbmon --events: ops rows, coord events and delivery outcomes as event and span records with id-only attributes",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",

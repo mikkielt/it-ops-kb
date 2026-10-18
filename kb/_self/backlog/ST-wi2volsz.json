@@ -2,7 +2,7 @@
   "id": "ST-wi2volsz",
   "kind": "story",
   "title": "otel/ adapter serves kbmon's metrics at /metrics on 127.0.0.1 only",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",

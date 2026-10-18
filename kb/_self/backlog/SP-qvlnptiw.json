@@ -2,7 +2,7 @@
   "id": "SP-qvlnptiw",
   "kind": "sprint",
   "title": "An optional OpenTelemetry adapter exports kbmon's metrics, events and spans and serves /metrics on loopback",
-  "status": "planned",
+  "status": "active",
   "goal": "kbmon.py turns a snapshot into metric points and its new ops rows and coord events into event and span records whose attributes are ids, counts and states that passed redact.redact; the otel/ adapter, pinned by its own uv.lock and off until an endpoint is set, sends the metric points over OTLP/HTTP with the SDK's standard OTEL_EXPORTER_OTLP_ENDPOINT and OTEL_EXPORTER_OTLP_HEADERS settings and never prints a header value; the adapter serves the same metrics at /metrics on 127.0.0.1 only; the adapter sends the events as OTLP log records; the adapter sends landings, worker runs, suite runs and query-log deliveries as OTLP spans",
   "gates": [
     {

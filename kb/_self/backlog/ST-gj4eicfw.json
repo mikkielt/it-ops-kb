@@ -2,7 +2,7 @@
   "id": "ST-gj4eicfw",
   "kind": "story",
   "title": "otel/ adapter sends landings, worker runs, suite runs and query-log deliveries as OTLP spans",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",

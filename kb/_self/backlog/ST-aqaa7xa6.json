@@ -2,7 +2,7 @@
   "id": "ST-aqaa7xa6",
   "kind": "story",
   "title": "otel/ adapter: kbmon's metric points over OTLP/HTTP with the SDK, pinned by its own uv.lock, off until an endpoint is set",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",

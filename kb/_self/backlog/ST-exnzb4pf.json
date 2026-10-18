@@ -2,7 +2,7 @@
   "id": "ST-exnzb4pf",
   "kind": "story",
   "title": "kbmon --metrics: a snapshot as metric points with id-only, redacted attributes",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-qvlnptiw",
   "priority": "P2",

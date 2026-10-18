@@ -2,7 +2,7 @@
   "id": "ST-o7rootzj",
   "kind": "story",
   "title": "Review sprint: An optional OpenTelemetry adapter exports kbmon's metrics, events and spans and serves /metrics on loopback",
-  "status": "draft",
+  "status": "todo",
   "sprint": "SP-qvlnptiw",
   "review": true,
   "priority": "P1",
