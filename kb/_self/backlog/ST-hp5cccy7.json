@@ -72,9 +72,7 @@
   ],
   "depends_on": [
     "ST-lfjdie2c",
-    "ST-qkme64fk",
-    "ST-y3twtacd",
-    "ST-d2ekxwvd"
+    "ST-qkme64fk"
   ],
   "gates": [
     {
