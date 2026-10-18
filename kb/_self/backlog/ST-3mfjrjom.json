@@ -46,7 +46,9 @@
         "add .githooks/commit-msg to touches and pass the exit on": "ST-3mfjrjom",
         "leave the script: the refusal is only kbgit.py's exit status": "ST-3mfjrjom"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "add .githooks/commit-msg to touches and pass the exit on",
+      "by": "operator"
     },
     {
       "id": "g2",
