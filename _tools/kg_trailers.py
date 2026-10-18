@@ -558,8 +558,8 @@ def work_ids_ok(values, load):
 
 WORK_RULE = ("a commit's KB-Work names, on one line, only items claimed (doing or done) in a started sprint, or a "
              "sprint or review item; a backlog-planning commit (it changes only item files: a claim, a release, a "
-             "gate, a plan) names exactly the items whose files it changes, so a release commit names the released "
-             "item and no other, and no later work commit names that item until it is claimed again")
+             "gate, a plan) changes the item file of each id it names (it may change other item files without "
+             "naming them), and no later work commit names a released item until it is claimed again")
 
 
 REFUSED = 3  # refuse_commit_msg's exit: the hook script blocks the commit on this code only, not on a crash (exit 1)
