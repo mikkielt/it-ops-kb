@@ -268,9 +268,9 @@ def session_start(payload, sid):
     state["items"] = items
     lease(sid, state)
     state.pop("lease_until", None)
+    save(sid, state)  # before announce and overlaps: a hook killed at its timeout keeps the token the store accepted
     if payload.get("source") != "compact":
         announce(sid, items)
-    save(sid, state)
     show("SessionStart", items, overlaps(sid, items, branch))
 
 
