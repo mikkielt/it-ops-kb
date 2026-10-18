@@ -621,15 +621,17 @@ def ledger_lock(path):
     """Hold the exclusive lock of the claims ledger for the block: the file `<ledger>.lock`, made by exclusive create
     (no fcntl, so the same on every OS) and removed on exit, so concurrent `claim` and dispatch runs read and write the
     ledger one at a time. Refused when it is still held after twice the stale age. The holder removes the lock on exit
-    only when the file at the name is the one it made (its inode), so a lock another waiter made after a stale clearer
-    removed the holder's is never removed by the wrong holder."""
+    only when the file at the name is the one it made (its inode and modification time, as the stale clearer compares
+    them), so a lock another waiter made after a stale clearer removed the holder's is never removed by the wrong holder,
+    even when the filesystem gave the new file the freed inode number."""
     lock = path.with_name(path.name + ".lock")
     deadline = time.monotonic() + 2 * LEDGER_LOCK_STALE_S
     while True:
         try:
             fd = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
             try:
-                mine = os.fstat(fd).st_ino
+                made = os.fstat(fd)
+                mine = (made.st_ino, made.st_mtime_ns)
             finally:
                 os.close(fd)
             break
@@ -652,7 +654,8 @@ def ledger_lock(path):
         yield
     finally:
         with contextlib.suppress(OSError):
-            if lock.stat().st_ino == mine:
+            now = lock.stat()
+            if (now.st_ino, now.st_mtime_ns) == mine:
                 lock.unlink()
 
 
