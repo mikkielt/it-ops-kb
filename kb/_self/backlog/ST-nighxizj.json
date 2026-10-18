@@ -2,7 +2,7 @@
   "id": "ST-nighxizj",
   "kind": "story",
   "title": "kbmon --receipt prints the agent's one-line receipt and an alert fingerprint",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3hgirkur",
   "priority": "P2",

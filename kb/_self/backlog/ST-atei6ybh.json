@@ -2,7 +2,7 @@
   "id": "ST-atei6ybh",
   "kind": "story",
   "title": "kbmon --split opens the live view in a WezTerm, tmux or Windows Terminal pane beside the session",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3hgirkur",
   "priority": "P2",

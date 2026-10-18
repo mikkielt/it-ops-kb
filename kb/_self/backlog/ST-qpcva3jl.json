@@ -2,7 +2,7 @@
   "id": "ST-qpcva3jl",
   "kind": "story",
   "title": "A pinned WezTerm installer that /kb-setup offers as an optional dependency",
-  "status": "draft",
+  "status": "todo",
   "parent": "EP-wqgicmmj",
   "sprint": "SP-3hgirkur",
   "priority": "P2",
@@ -74,7 +74,9 @@
         "the newest stable release at work time, its SHA-256 taken from the release's own checksum files": "ST-qpcva3jl",
         "a nightly build": "ST-qpcva3jl"
       },
-      "class": "push"
+      "class": "push",
+      "answer": "the newest stable release at work time, its SHA-256 taken from the release's own checksum files",
+      "by": "operator"
     }
   ],
   "notes": "Plan 2026-10-19 (operator choice): a pinned installer like _tools/install-python.ps1, SHA-256 checked, per user; /kb-setup asks permission first and, on a no, quotes the saved --declined text: WezTerm is a quality-of-life dependency, never critical; without it the kbmon pane of the mod still works, and kbmon runs by hand or Claude reads it on request. Standard library only. The pinned version is the gate pin. Premise on the base: no _tools/install_wezterm.py (exit 2)."
