@@ -31,7 +31,8 @@
     "_tools/kbmon.py",
     "_tools/mon_events.py",
     "kb/_self/tools.md",
-    "kb/_self/monitoring.md"
+    "kb/_self/monitoring.md",
+    "kb/_self/code.md"
   ],
   "depends_on": [
     "ST-exnzb4pf",
